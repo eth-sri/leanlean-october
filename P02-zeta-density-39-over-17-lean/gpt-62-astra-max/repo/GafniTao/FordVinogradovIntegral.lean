@@ -64,14 +64,11 @@ theorem fordVinogradovPowerVector_bounds
     have hpow : ((x i : ℕ) + 1) ^ d ≤ Q ^ d := Nat.pow_le_pow_left hbase d
     exact_mod_cast hpow
   constructor
-  · change (s : ℤ) ≤ ∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d
-    calc
+  · calc
       (s : ℤ) = ∑ _i : Fin s, (1 : ℤ) := by simp
       _ ≤ ∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d :=
         Finset.sum_le_sum fun i _hi => htermLower i
-  · change (∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d) ≤
-      (s : ℤ) * (Q : ℤ) ^ d
-    calc
+  · calc
       (∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d) ≤
           ∑ _i : Fin s, (Q : ℤ) ^ d :=
         Finset.sum_le_sum fun i _hi => htermUpper i
@@ -97,7 +94,7 @@ character has integral one. -/
 theorem ford_integral_fourier_haar_eq (n : ℤ) :
     ∫ x : UnitAddCircle, fourier n x ∂AddCircle.haarAddCircle =
       if n = 0 then 1 else 0 := by
-  let : Fact (0 < (1 : ℝ)) := ⟨by norm_num⟩
+  
   split_ifs with hn
   · subst n
     simp

@@ -20,11 +20,11 @@ theorem quadratic_scalar_absorption {N L T V R S Q Λ A : ℝ}
     (hfirst : N^3*T/L ≤ Q*S^((1:ℝ)/2)*V^4)
     (hsecond : N^3*T^((1:ℝ)/4) ≤ Q*S^((5:ℝ)/12)*V^4) :
     R ≤ (1+6*A)^3*Λ^3*Q^3*S := by
-  have hR : 0 < R := hS.trans_le hSR
+  have hR  := hS.trans_le hSR
   have hq : 0 < Q := by linarith
-  have hl : 0 < Λ := by linarith
+  
   let Y := S^((5:ℝ)/12)*R^((19:ℝ)/12)*V^4
-  have hY : 0 < Y := by dsimp [Y]; positivity
+  
   have hb : S^2 ≤ S^((5:ℝ)/12)*R^((19:ℝ)/12) := by
     calc
       _ = S^((5:ℝ)/12)*S^((19:ℝ)/12) := by rw [← Real.rpow_add hS]; norm_num
@@ -39,15 +39,15 @@ theorem quadratic_scalar_absorption {N L T V R S Q Λ A : ℝ}
   have hb' : (N*L)^2 ≤ Q*Y := by
     have hh := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left hb hq.le) (pow_nonneg hV.le 4)
-    exact hbase.trans (hh.trans_eq (by dsimp [Y]; ring))
+    exact hbase.trans (hh.trans_eq (by ring))
   have hf' : (N^3*T/L)*R^((3:ℝ)/2) ≤ Q*Y := by
     calc
       _ ≤ (Q*S^((1:ℝ)/2)*V^4)*R^((3:ℝ)/2) := by gcongr
       _ = Q*(S^((1:ℝ)/2)*R^((3:ℝ)/2))*V^4 := by ring
       _ ≤ Q*(S^((5:ℝ)/12)*R^((19:ℝ)/12))*V^4 := by gcongr
-      _ = _ := by dsimp [Y]; ring
+      _ = _ := by ring
   have hs' : N^3*T^((1:ℝ)/4)*R^((19:ℝ)/12) ≤ Q*Y := by
-    exact (mul_le_mul_of_nonneg_right hsecond (by positivity)).trans_eq (by dsimp [Y]; ring)
+    exact (mul_le_mul_of_nonneg_right hsecond (by positivity)).trans_eq (by ring)
   have hsum : (N*L)^2+N^3*R^2+(N^3*T/L)*R^((3:ℝ)/2)+
       N^3*T^((1:ℝ)/4)*R^((19:ℝ)/12) ≤ N^3*R^2+3*Q*Y := by linarith only [hb',hf',hs']
   have hsource := hquad.trans (mul_le_mul_of_nonneg_left hsum (by positivity))
@@ -78,6 +78,6 @@ theorem quadratic_scalar_absorption {N L T V R S Q Λ A : ℝ}
       _ ≤ F^((12:ℝ)/5) := Real.rpow_le_rpow (by positivity) (by dsimp [F]; nlinarith) (by norm_num)
       _ ≤ F^(3:ℝ) := Real.rpow_le_rpow_of_exponent_le hF (by norm_num)
       _ = _ := Real.rpow_natCast F 3
-  exact hp.trans ((mul_le_mul_of_nonneg_right hcoef hS.le).trans_eq (by dsimp [F]; ring))
+  exact hp.trans ((mul_le_mul_of_nonneg_right hcoef hS.le).trans_eq (by ring))
 
 end Montgomery.RationalMoment

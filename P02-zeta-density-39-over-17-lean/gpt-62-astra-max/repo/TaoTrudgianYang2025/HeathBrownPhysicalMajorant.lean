@@ -42,14 +42,8 @@ theorem heathBrownDerivativeMajorant_mono_length {k : ℕ} (hk : 3 ≤ k)
     heathBrownDerivativeMajorant_expand k η lambda hN]
   have hd := (heathBrownDerivativeExponent_bounds hk).2.2
   apply add_le_add
-  · apply add_le_add
-    · exact mul_le_mul_of_nonneg_right
-        (Real.rpow_le_rpow hL.le hLN (by linarith))
-        (Real.rpow_nonneg hlambda.le _)
-    · exact Real.rpow_le_rpow hL.le hLN (by linarith)
-  · exact mul_le_mul_of_nonneg_right
-      (Real.rpow_le_rpow hL.le hLN (by linarith))
-      (Real.rpow_nonneg hlambda.le _)
+  · bound
+  · bound
 
 theorem heathBrownDerivativeMajorant_physical {k : ℕ} (hk : 3 ≤ k)
     {c T N : ℝ} (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) (η : ℝ) :

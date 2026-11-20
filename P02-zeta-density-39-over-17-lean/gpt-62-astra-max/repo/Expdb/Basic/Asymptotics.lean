@@ -1,6 +1,8 @@
 module
 
-public import Expdb.Basic.Definitions
+public import Mathlib.Analysis.Complex.Circle
+public import Mathlib.Analysis.Normed.Field.Basic
+public import Mathlib.Topology.MetricSpace.Pseudo.Defs
 public import Mathlib.Analysis.Asymptotics.Theta
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Order.Filter.Basic
@@ -59,7 +61,6 @@ theorem isUnbounded_iff_forall_eventually_norm_ge (X : VariableObject α) :
 infinity. -/
 theorem isUnbounded_iff_tendsto_atTop {X : VariableObject ℝ} (hX : ∀ i, 0 ≤ X i) :
     X.IsUnbounded ↔ Tendsto X atTop atTop := by
-  rw [IsUnbounded]
   exact tendsto_congr fun i ↦ by rw [Real.norm_eq_abs, abs_of_nonneg (hX i)]
 
 /-- A variable object whose norm tends to zero. -/
@@ -116,9 +117,6 @@ open scoped Expdb
 private theorem isEqUpToInfinitesimal_iff_tendsto_sub
     (X Y : VariableObject E) :
     (X =o Y) ↔ Tendsto (fun i ↦ X i - Y i) atTop (nhds 0) := by
-  rw [IsEqUpToInfinitesimal, VariableObject.IsInfinitesimal]
-  change Tendsto (fun i ↦ ‖X i - Y i‖) atTop (nhds 0) ↔
-    Tendsto (fun i ↦ X i - Y i) atTop (nhds 0)
   exact tendsto_zero_iff_norm_tendsto_zero.symm
 
 /-- The relation `=o` is reflexive. -/
@@ -211,11 +209,9 @@ theorem isEqUpToInfinitesimal_iff_leUpToInfinitesimal
     constructor
     · intro δ hδ
       filter_upwards [h δ hδ] with i hi
-      rw [Real.norm_eq_abs] at hi
       linarith [lt_of_le_of_lt (le_abs_self (X i - Y i)) hi]
     · intro δ hδ
       filter_upwards [h δ hδ] with i hi
-      rw [Real.norm_eq_abs] at hi
       linarith [lt_of_le_of_lt (neg_le_abs (X i - Y i)) hi]
   · rintro ⟨hXY, hYX⟩ δ hδ
     have hδ2 : 0 < δ / 2 := by linarith

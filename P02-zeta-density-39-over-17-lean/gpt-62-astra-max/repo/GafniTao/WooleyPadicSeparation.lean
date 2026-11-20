@@ -49,10 +49,9 @@ theorem wooleyResidueDifference_factorization
       wooleyResidueUnit xi eta *
         (p : ℤ) ^ wooleyResidueValuation xi eta := by
   let d := wooleyResidueDifference xi eta
-  have hnat :
-      p ^ padicValNat p d.natAbs * Nat.divMaxPow d.natAbs p = d.natAbs :=
+  have hnat  :=
     Nat.pow_padicValNat_mul_divMaxPow p d.natAbs
-  have hsign : (Int.sign d) * (d.natAbs : ℤ) = d :=
+  have hsign  :=
     Int.sign_mul_natAbs d
   change d =
     (Int.sign d * (Nat.divMaxPow d.natAbs p : ℤ)) *
@@ -63,7 +62,7 @@ theorem wooleyResidueDifference_factorization
         ((Nat.divMaxPow d.natAbs p : ℤ) *
           (p : ℤ) ^ padicValNat p d.natAbs) := by
       congr 1
-      exact_mod_cast (by simpa only [Nat.mul_comm] using hnat.symm)
+      exact_mod_cast (by simp)
     _ = _ := by ring
 
 theorem wooleyResidueUnitNat_coprime
@@ -82,8 +81,8 @@ theorem wooleyResidueValuation_lt
     (hsep : wooleyResiduesSeparated nu xi eta) :
     wooleyResidueValuation xi eta < nu := by
   let d := wooleyResidueDifference xi eta
-  have hd : d ≠ 0 := wooleyResidueDifference_ne_zero_of_separated hsep
-  have hn : d.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr hd
+  have hd  := wooleyResidueDifference_ne_zero_of_separated hsep
+  have hn  := Int.natAbs_ne_zero.mpr hd
   have hnotdvd : ¬ p ^ nu ∣ d.natAbs := by
     intro hdvd
     have hdvdInt : ((p ^ nu : ℕ) : ℤ) ∣ d := by
@@ -110,7 +109,7 @@ theorem wooley_padic_separation
     wooleyResidueUnit xi eta, wooleyResidueValuation_lt hp hsep, ?_,
     wooleyResidueDifference_factorization xi eta⟩
   have hcop := wooleyResidueUnitNat_coprime hp hsep
-  have hd : wooleyResidueDifference xi eta ≠ 0 :=
+  have hd  :=
     wooleyResidueDifference_ne_zero_of_separated hsep
   simpa [wooleyResidueUnit, wooleyResidueUnitNat,
     Int.natAbs_mul, Int.natAbs_sign, hd] using hcop

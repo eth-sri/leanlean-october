@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCorrelationSum
 
 @[expose] public section
@@ -19,18 +16,12 @@ namespace TaoTrudgianYang2025
 theorem integer_interval_contraction_subset (S : Finset ℤ) (a b r : ℤ)
     (hr : 0 ≤ r) :
     S ∩ Finset.Icc (a+r) (b-r) ⊆ S ∩ Finset.Icc a b := by
-  intro m hm
-  simp only [Finset.mem_inter,Finset.mem_Icc] at hm ⊢
-  exact ⟨hm.1,by omega,by omega⟩
+  grind
 
 theorem integer_interval_contraction_boundary (S : Finset ℤ) (a b r : ℤ) :
     (S ∩ Finset.Icc a b) \ (S ∩ Finset.Icc (a+r) (b-r)) ⊆
       Finset.Ico a (a+r) ∪ Finset.Ioc (b-r) b := by
-  intro m hm
-  simp only [Finset.mem_sdiff,Finset.mem_inter,Finset.mem_Icc] at hm
-  simp only [Finset.mem_union,Finset.mem_Ico,Finset.mem_Ioc]
-  have hn : ¬ (a+r ≤ m ∧ m ≤ b-r) := fun ht => hm.2 ⟨hm.1.1,ht⟩
-  omega
+  grind
 
 theorem integer_interval_contraction_card (S : Finset ℤ) (a b r : ℤ)
     (hr : 0 ≤ r) :
@@ -78,8 +69,6 @@ theorem norm_integer_interval_endpoint_shift (w : ℤ → ℂ) (S : Finset ℤ)
     have hs := norm_integer_interval_contraction w S (a+r) (b-r) (-r) hn hw
     have ha : a+r+-r = a := by omega
     have hb : b-r- -r = b := by omega
-    rw [ha,hb] at hs
-    simpa only [Int.cast_neg,abs_of_neg (show (r:ℝ) < 0 by exact_mod_cast
-      (show r < 0 by omega))] using hs
+    grind
 
 end TaoTrudgianYang2025

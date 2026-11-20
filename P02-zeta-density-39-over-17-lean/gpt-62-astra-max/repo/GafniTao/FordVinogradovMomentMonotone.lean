@@ -34,8 +34,7 @@ theorem fordVinogradovPowerVector_include
     {s k Q M : ℕ} (hQM : Q ≤ M) (x : FordVinogradovTuple s Q) :
     fordVinogradovPowerVector s k M (fordVinogradovTupleInclude hQM x) =
       fordVinogradovPowerVector s k Q x := by
-  ext j
-  simp only [fordVinogradovPowerVector, fordVinogradovTupleInclude]
+  rfl
 
 theorem fordVinogradovMomentNat_mono
     (s k : ℕ) {Q M : ℕ} (hQM : Q ≤ M) :

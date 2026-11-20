@@ -34,25 +34,23 @@ theorem integrable_heathBrownMellinCriticalMoment
     {delta t : ℝ} (hdelta : 0 < delta) :
     Integrable (fun u : ℝ => Real.exp (-|u|) / (delta + |u|) *
       zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)) := by
-  let f : ℝ → ℝ := fun u => Real.exp (-|u|) / (delta + |u|) *
+  let f  := fun u => Real.exp (-|u|) / (delta + |u|) *
     zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
   let B : ℝ := |t| + 2
   let M : ℝ := 100 / delta
-  let g : ℝ → ℝ := fun u => M * (|u| ^ 2 * Real.exp (-|u|))
+  let g  := fun u => M * (|u| ^ 2 * Real.exp (-|u|))
   have hBpos : 0 < B := by
     dsimp only [B]
     linarith [abs_nonneg t]
-  have hMnonneg : 0 ≤ M := by dsimp only [M]; positivity
+  
   have hCont : Continuous f := by
     apply Continuous.mul
     · apply Continuous.div
       · fun_prop
       · fun_prop
-      · intro u hu
-        have : 0 < delta + |u| := by positivity
-        exact this.ne' hu
+      · grind
     · exact (continuous_zetaMomentCriticalNorm.pow 2).comp (by fun_prop)
-  have hg : Integrable g :=
+  have hg  :=
     integrable_abs_sq_mul_exp_neg_abs.const_mul M
   have hTail : ∀ u : ℝ, B < |u| → ‖f u‖ ≤ g u := by
     intro u hu
@@ -117,7 +115,7 @@ theorem integrable_heathBrownMellinCriticalMoment
     linarith
   have hMid : IntegrableOn f (Icc (-B) B) :=
     hCont.continuousOn.integrableOn_Icc
-  have hNegClosed : IntegrableOn f (Iic (-B)) :=
+  have hNegClosed  :=
     (integrableOn_Iic_iff_integrableOn_Iio).2 hNeg
   have hLeft := hNegClosed.union hMid
   have hLeftSet : Iic (-B) ∪ Icc (-B) B = Iic B := by
@@ -125,10 +123,7 @@ theorem integrable_heathBrownMellinCriticalMoment
     simp only [mem_union, mem_Iic, mem_Icc]
     constructor
     · rintro (h | h) <;> linarith
-    · intro h
-      by_cases hu : u ≤ -B
-      · exact Or.inl hu
-      · exact Or.inr ⟨by linarith, h⟩
+    · grind
   rw [hLeftSet] at hLeft
   rw [← integrableOn_univ]
   have hAll := hLeft.union hPos
@@ -142,17 +137,17 @@ theorem integrable_heathBrownMellinCriticalMoment
 theorem integrable_heathBrownFullCriticalMoment (t : ℝ) :
     Integrable (fun u : ℝ => Real.exp (-|u|) *
       zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)) := by
-  let f : ℝ → ℝ := fun u => Real.exp (-|u|) *
+  let f  := fun u => Real.exp (-|u|) *
     zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
   let B : ℝ := |t| + 2
-  let g : ℝ → ℝ := fun u => 100 * (|u| ^ 2 * Real.exp (-|u|))
+  let g  := fun u => 100 * (|u| ^ 2 * Real.exp (-|u|))
   have hBpos : 0 < B := by
     dsimp only [B]
     linarith [abs_nonneg t]
   have hCont : Continuous f := by
     exact (by fun_prop : Continuous (fun u : ℝ => Real.exp (-|u|))).mul
       ((continuous_zetaMomentCriticalNorm.pow 2).comp (by fun_prop))
-  have hg : Integrable g :=
+  have hg  :=
     integrable_abs_sq_mul_exp_neg_abs.const_mul 100
   have hTail : ∀ u : ℝ, B < |u| → ‖f u‖ ≤ g u := by
     intro u hu
@@ -208,7 +203,7 @@ theorem integrable_heathBrownFullCriticalMoment (t : ℝ) :
     linarith
   have hMid : IntegrableOn f (Icc (-B) B) :=
     hCont.continuousOn.integrableOn_Icc
-  have hNegClosed : IntegrableOn f (Iic (-B)) :=
+  have hNegClosed  :=
     (integrableOn_Iic_iff_integrableOn_Iio).2 hNeg
   have hLeft := hNegClosed.union hMid
   have hLeftSet : Iic (-B) ∪ Icc (-B) B = Iic B := by
@@ -216,10 +211,7 @@ theorem integrable_heathBrownFullCriticalMoment (t : ℝ) :
     simp only [mem_union, mem_Iic, mem_Icc]
     constructor
     · rintro (h | h) <;> linarith
-    · intro h
-      by_cases hu : u ≤ -B
-      · exact Or.inl hu
-      · exact Or.inr ⟨by linarith, h⟩
+    · grind
   rw [hLeftSet] at hLeft
   rw [← integrableOn_univ]
   have hAll := hLeft.union hPos
@@ -231,7 +223,6 @@ theorem integrable_heathBrownFullCriticalMoment (t : ℝ) :
 
 theorem heathBrownFullCriticalMoment_nonneg (t : ℝ) :
     0 ≤ heathBrownFullCriticalMoment t := by
-  unfold heathBrownFullCriticalMoment
   exact integral_nonneg fun u => by positivity
 
 end MathCollab.Density.Stronger.PointMean

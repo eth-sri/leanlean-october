@@ -36,7 +36,6 @@ theorem riemannZeta_eq_voronoiFactor {z : ℂ} (hz : z.re < 1) (hz0 : z ≠ 0) :
     apply hz0
     linear_combination -h
   have h := riemannZeta_one_sub hn hne
-  rw [show 1 - (1 - z) = z by ring] at h
   simpa [dfiPeriodicArchimedeanFactor, mul_assoc] using h
 
 theorem riemannZeta_sq_eq_voronoiMultipliers {z : ℂ} (hz : z.re < 1) (hz0 : z ≠ 0) :
@@ -51,7 +50,6 @@ theorem riemannZeta_sq_eq_voronoiMultipliers {z : ℂ} (hz : z.re < 1) (hz0 : z 
   rw [hp, hm] at hc
   rw [riemannZeta_eq_voronoiFactor hz hz0]
   unfold dfiVoronoiMinusMultiplier dfiVoronoiPlusMultiplier
-  simp only [Nat.cast_one, one_mul, mul_one]
   calc
     _ = dfiPeriodicArchimedeanFactor 1 (1 - z) ^ 2 *
         (4 * Complex.cos (Real.pi * (1 - z) / 2) ^ 2) * riemannZeta (1 - z) ^ 2 := by ring

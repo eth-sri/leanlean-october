@@ -48,7 +48,7 @@ theorem exists_integral_sq_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
   calc
     _ ≤ 2*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*L :=
       integral_norm_sq_dirichletPrefix_reflected_le M (zetaFourthCoeff c) u hH hone hmass
-    _ = _ := by dsimp [L]; ring
+    _ = _ := by ring
 
 theorem integrable_gaussian_dirichletPrefix_prod
     {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
@@ -56,7 +56,7 @@ theorem integrable_gaussian_dirichletPrefix_prod
       Real.exp (-b*z.2^2)*‖dirichletPrefix N a (z.2-z.1)‖^2)
       ((volume.restrict (uIoc A B)).prod volume) := by
   let C : ℝ := ∑ n ∈ Finset.Ioc 0 N, ‖a n‖
-  have hC : 0 ≤ C := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  
   have hc : Integrable (fun _ : ℝ => C^2) (volume.restrict (uIoc A B)) := by
     change Integrable (fun _ : ℝ => C^2)
       (volume.restrict (Ioc (min A B) (max A B)))

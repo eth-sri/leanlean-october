@@ -11,8 +11,7 @@ namespace GuthMaynard.Improvement
 
 /-- Compact support gives genuine integrability of every radial derivative. -/
 theorem compact_iteratedDeriv_integrable {f : ℝ → ℂ} (hf : ContDiff ℝ ∞ f)
-    {l u : ℝ} (hs : ∀ x, x ∉ Icc l u → f x = 0) (n : ℕ) : Integrable (iteratedDeriv n f) := by
-  exact (hf.continuous_iteratedDeriv n (by simp)).integrable_of_hasCompactSupport
+    {l u : ℝ} (hs : ∀ x, x ∉ Icc l u → f x = 0) (n : ℕ) : Integrable (iteratedDeriv n f) := (hf.continuous_iteratedDeriv n (by simp)).integrable_of_hasCompactSupport
     (HasCompactSupport.intro isCompact_Icc (fun x hx => iteratedDeriv_zero_off_interval hs n hx))
 
 /-- Quantitative Fourier decay from an actual bounded derivative on fixed

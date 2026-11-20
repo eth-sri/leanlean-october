@@ -23,10 +23,9 @@ theorem exists_zetaSquareRightKernel_uniform_gaussian_bound :
       ‖zetaSquareRightKernel t u‖ ≤
         C * Real.exp (100 - 100 * u ^ 2) * (3 + |t| + |u|) ^ 12 := by
   let G : ℝ := Real.pi ^ (-(3 / 2 : ℝ) / 2) * Real.Gamma ((3 / 2 : ℝ) / 2)
-  have hG : 0 < G := mul_pos (Real.rpow_pos_of_pos Real.pi_pos _)
-    (Real.Gamma_pos_of_pos (by norm_num))
+  
   let C : ℝ := 10000 * G ^ 2
-  refine ⟨C, (by dsimp [C]; positivity), ?_⟩
+  refine ⟨C, (by positivity), ?_⟩
   intro t u
   have hden := zetaSquarePoleNormalization_norm_lower t
   let w : ℂ := 1 + (u : ℂ) * I
@@ -37,12 +36,11 @@ theorem exists_zetaSquareRightKernel_uniform_gaussian_bound :
     simpa [w, Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
   have hwlower : 1 ≤ ‖w‖ := by
     simpa [w] using Complex.abs_re_le_norm w
-  have hwR : ‖w‖ ≤ R := hwupper.trans (by dsimp [R]; linarith [abs_nonneg t])
+  have hwR : ‖w‖ ≤ R := hwupper.trans (by linarith [abs_nonneg t])
   have hcrit (v : ℝ) : ‖afeCriticalPoint v‖ ≤ 1 / 2 + |v| := by
     simpa [afeCriticalPoint, Real.norm_eq_abs] using
       norm_add_le ((1 / 2 : ℝ) : ℂ) ((v : ℂ) * I)
   have hsR : ‖s‖ ≤ R := (norm_add_le _ _).trans (by
-    dsimp [R]
     linarith [hcrit t])
   have hsubR : ‖1 - s‖ ≤ R := by
     have heq : 1 - s = afeCriticalPoint (-t) - w := by
@@ -64,7 +62,7 @@ theorem exists_zetaSquareRightKernel_uniform_gaussian_bound :
   have hsre : s.re = 3 / 2 := by norm_num [s, w, afeCriticalPoint]
   have hgamma : ‖Complex.Gammaℝ s‖ ≤ G := by
     simpa only [hsre, G] using norm_GammaR_le_realGamma_re
-      (show 0 < s.re by rw [hsre]; norm_num)
+      (show 0 < s.re by positivity)
   have hexp : ‖Complex.exp (100 * w ^ 2)‖ = Real.exp (100 - 100 * u ^ 2) := by
     rw [Complex.norm_exp]
     congr 1
@@ -77,7 +75,7 @@ theorem exists_zetaSquareRightKernel_uniform_gaussian_bound :
   calc
     _ ≤ (Real.exp (100 - 100 * u ^ 2) * (625 * R ^ 8) * R ^ 4 * G ^ 2 /
         (1 / 16)) / 1 := by gcongr
-    _ = C * Real.exp (100 - 100 * u ^ 2) * R ^ 12 := by dsimp [C]; ring
+    _ = C * Real.exp (100 - 100 * u ^ 2) * R ^ 12 := by ring
 
 /-- Fixed-height integrability of the literal unnormalized right kernel. -/
 theorem integrable_zetaSquareRightKernel (t : ℝ) : Integrable (zetaSquareRightKernel t) := by
@@ -86,7 +84,7 @@ theorem integrable_zetaSquareRightKernel (t : ℝ) : Integrable (zetaSquareRight
   let D : ℝ := Real.exp (12*A+36)
   have hpoly (u : ℝ) : (A+|u|)^12 ≤ D*Real.exp (u^2) := by
     have h := abs_polynomial_mul_exp_le_gaussian
-      (by dsimp [A]; positivity : 0 ≤ A) (by norm_num : (0 : ℝ) ≤ 1) 0 12 u
+      (by positivity : 0 ≤ A) (by norm_num : (0 : ℝ) ≤ 1) 0 12 u
     norm_num at h
     exact h
   have hpoint (u : ℝ) : ‖zetaSquareRightKernel t u‖ ≤
@@ -107,8 +105,7 @@ theorem integrable_zetaSquareRightKernel (t : ℝ) : Integrable (zetaSquareRight
   exact Filter.Eventually.of_forall hpoint
 
 theorem summable_divisorDirichletTerm {s : ℂ} (hs : 1 < s.re) :
-    Summable (divisorDirichletTerm s) := by
-  exact divisorLSeries_summable hs
+    Summable (divisorDirichletTerm s) := divisorLSeries_summable hs
 
 theorem tsum_divisorDirichletTerm (s : ℂ) :
     ∑' n : ℕ, divisorDirichletTerm s n =

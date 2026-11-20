@@ -1,8 +1,5 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.BetaModelJetEstimates
 
 @[expose] public section
 set_option autoImplicit false
@@ -76,7 +73,7 @@ theorem aProcessShiftPhase_iteratedDerivWithin {F : ℝ → ℝ} {η u : ℝ}
       (1-η)^n/(σ*η) *
         (iteratedDerivWithin n F phaseInterval (aProcessShiftPoint η 0 u)-
          iteratedDerivWithin n F phaseInterval (aProcessShiftPoint η 1 u)) := by
-  have hf : ContDiffOn ℝ n F phaseInterval :=
+  have hf  :=
     hF.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl n)
   have hc (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
       ContDiffOn ℝ n (fun u => F (aProcessShiftPoint η t u)) phaseInterval := by

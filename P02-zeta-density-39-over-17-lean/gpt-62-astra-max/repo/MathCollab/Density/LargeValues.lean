@@ -25,7 +25,7 @@ theorem large_values_data {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
   have hT : 0 < d.T := by linarith [d.T_ge_two]
   have hT1 : 1 ≤ d.T := by linarith [d.T_ge_two]
   have hV := d.V_pos
-  have hpow1 : 1 ≤ d.T^ε := Real.one_le_rpow hT1 hε.le
+  have hpow1  := Real.one_le_rpow hT1 hε.le
   have hF : 0 ≤ (d.N : ℝ)^2/d.V^2+(d.N : ℝ)^3*Real.sqrt d.T/d.V^4 := by positivity
   by_cases hW : d.W.Nonempty
   · by_cases hbig : T₀ ≤ d.T

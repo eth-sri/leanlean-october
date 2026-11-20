@@ -21,13 +21,13 @@ theorem mixed_compact_affine
       affineIndexIntegral f S ≤ C*T^ε*
         (R^2*K^4*(∫ x, f x)^2+R*K^3*(∫ x, f x^2)) := by
   let L := ⌈b⌉₊
-  have hL : 0 < L := Nat.ceil_pos.mpr (ha.trans_le hab)
+  have hL  := Nat.ceil_pos.mpr (ha.trans_le hab)
   have hbL : b ≤ (L:ℝ) := Nat.le_ceil _
   obtain ⟨C,hC,h⟩ := mixed_affine_full_finite D hD L hL C₀ hC₀ hε
   refine ⟨C,hC,?_⟩
   intro T R K B Q f S hT hK hKR hB hBR hQ hQK hRT hfd hf hs hp hbox
-  have hc : HasCompactSupport f := HasCompactSupport.intro isCompact_Icc hs
-  let fs : 𝓢(ℝ, ℝ) := hc.toSchwartzMap hfd
+  have hc  := HasCompactSupport.intro isCompact_Icc hs
+  let fs  := hc.toSchwartzMap hfd
   have hfs : GMAffineSupportedOn 0 L fs := by
     intro x hx
     apply hs
@@ -72,7 +72,7 @@ theorem compact_smoothed_mixed_affine (a b C₀ : ℝ)
     (hprofile T δ g hT hδ hδ1 hδT hgi hg0 hs) hbox
   rw [hm] at hh
   have hK0 : 0 ≤ K := by linarith
-  have hR0 : 0 ≤ R := hK0.trans hKR
+  have hR0  := hK0.trans hKR
   exact hh.trans (by gcongr)
 
 /-- The masked affine consumer retains the literal restricted square mass

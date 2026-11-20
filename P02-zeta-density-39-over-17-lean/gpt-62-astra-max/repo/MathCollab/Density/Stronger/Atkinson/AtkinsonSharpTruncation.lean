@@ -97,7 +97,7 @@ theorem exists_norm_atkinsonLeadingSum_sub_band_finite_le :
         C * G ^ 2 * L * T ^ (-(3 / 4 : ℝ)) := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonLeadingTerm_band_le
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
+  
   refine ⟨C * (1 + S), by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth N hN
   have hs := summable_atkinsonLeadingTerm_of_band hT hG hGT hL hwidth
@@ -127,7 +127,7 @@ theorem exists_norm_atkinsonLeadingSum_sub_band_finite_le :
       exact hN.trans (by exact_mod_cast Nat.le_add_left N n)
     _ = K * ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) (n + N)‖ := tsum_mul_left
     _ ≤ K * S := mul_le_mul_of_nonneg_left htail hK
-    _ ≤ _ := by dsimp [K]; nlinarith
+    _ ≤ _ := by linarith
 
 theorem atkinsonBand_tail_scale_le {T G L : ℝ}
     (hT : 1 ≤ T) (hG : 0 ≤ G) (hGT : G ^ 2 ≤ 2 * T)

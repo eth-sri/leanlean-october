@@ -29,13 +29,13 @@ theorem discrete_energy_adjacent_band {η : ℝ} (hη : 0 < η) :
   refine ⟨(C₀*C₁)^2+2*C₀*C₂,by positivity,?_⟩
   intro T t₀ N hT hN hNT a W V hR hRT ha hV hlargeW hW hsep
   have ht : 0 < T := by linarith
-  have hr : (0:ℝ) < W.card := (Real.rpow_pos_of_pos ht _).trans_le hR
+  have hr  := (Real.rpow_pos_of_pos ht _).trans_le hR
   let A := GuthMaynard.Improvement.sourceRatioIndices N
   let P := A ×ˢ A
   let F := fun p : ℕ × ℕ => ‖∑ t ∈ W, phase (pairRatio p) t‖^3
   let B := N*(W.card:ℝ)^3+T*(W.card:ℝ)^((5:ℝ)/2)+
     N*T^((1:ℝ)/4)*(W.card:ℝ)^((31:ℝ)/12)
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  
   have hP : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
       N < p.1 ∧ (p.1:ℝ) ≤ 2*N ∧ N < p.2 ∧ (p.2:ℝ) ≤ 2*N := by
     intro p hp
@@ -97,7 +97,7 @@ theorem discrete_energy_adjacent_band {η : ℝ} (hη : 0 < η) :
     rw [mul_pow,mul_pow,Real.sq_sqrt hr.le]
     ring
   rw [hsq] at habs
-  have hpow : 1 ≤ T^η := Real.one_le_rpow hT.le hη.le
+  have hpow  := Real.one_le_rpow hT.le hη.le
   have h₁ : 0 ≤ N^4*(W.card:ℝ)/V^4 := by positivity
   have h₂ : 0 ≤ B/V^2 := by positivity
   calc
@@ -130,13 +130,12 @@ theorem discrete_additive_energy_adjacent {η : ℝ} (hη : 0 < η) :
   refine ⟨C+D,by positivity,?_⟩
   intro T t₀ N hT hN hNT a W V hR ha hV hl hW hsep
   have ht : 0 < T := by linarith
-  have hn : 0 < N := (Real.rpow_pos_of_pos ht _).trans_le hN
+  have hn  := (Real.rpow_pos_of_pos ht _).trans_le hN
   have hRn : (0:ℝ) ≤ W.card := Nat.cast_nonneg _
   by_cases hcap : (W.card:ℝ)^3 ≤ T^2
   · exact (hb T t₀ N hT hn hNT a W V hR hcap ha hV hl hW hsep).trans
       (mul_le_mul_of_nonneg_right (by
-        have hh : C ≤ C+D := by linarith
-        exact mul_le_mul_of_nonneg_right hh (by positivity)) (by positivity))
+        bound) (by positivity))
   · have hrange : T^((2:ℝ)/3) ≤ W.card := by
       apply (pow_le_pow_iff_left₀ (by positivity) hRn (by norm_num : (3:ℕ) ≠ 0)).mp
       rw [adjacent_rpow_nat ht.le]

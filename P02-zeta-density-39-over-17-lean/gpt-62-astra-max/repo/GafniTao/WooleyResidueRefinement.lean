@@ -27,9 +27,9 @@ def wooleyResidueRefinementFiber (p a b : ℕ) [NeZero p] (hab : a ≤ b)
 theorem wooleyResidueRefinementFiber_card
     {p a b : ℕ} [NeZero p] (hab : a ≤ b) (xi : ZMod (p ^ a)) :
     (wooleyResidueRefinementFiber p a b hab xi).card = p ^ (b - a) := by
-  let f : ZMod (p ^ b) →+ ZMod (p ^ a) :=
+  let f  :=
     (ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))).toAddMonoidHom
-  have hf : Function.Surjective f :=
+  have hf  :=
     ZMod.castHom_surjective (pow_dvd_pow p hab)
   have hfiber (y : ZMod (p ^ a)) :
       (Finset.univ.filter fun z : ZMod (p ^ b) => f z = y).card =
@@ -58,13 +58,10 @@ theorem wooleyResidueRefinementFiber_card
         simp_rw [hfiber]
         simp
       _ = p ^ b := htotal
-  have hpPow : 0 < p ^ a := pow_pos (NeZero.pos p) a
+  have hpPow  := pow_pos (NeZero.pos p) a
   have hcanonical : p ^ a * p ^ (b - a) = p ^ b := by
     rw [Nat.mul_comm, Nat.pow_sub_mul_pow p hab]
-  have hcard :
-      (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card =
-        p ^ (b - a) := by
-    exact Nat.eq_of_mul_eq_mul_left (by omega) (hmul.trans hcanonical.symm)
+  have hcard := Nat.eq_of_mul_eq_mul_left (by omega) (hmul.trans hcanonical.symm)
   simpa [wooleyResidueRefinementFiber, f] using hcard
 
 theorem wooley_sum_refined_residue_mass

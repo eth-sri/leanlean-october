@@ -27,9 +27,7 @@ theorem heathBrownHat_eq_fordTent (B x : ℝ) :
     heathBrownHat B x = fordTent x B := by
   unfold heathBrownHat fordTent
   rw [heathBrownDistanceToInteger_eq_unitAddCircle_norm]
-  simp only [div_eq_mul_inv]
-  rw [mul_comm B⁻¹ ‖(x : UnitAddCircle)‖]
-  rw [max_comm]
+  grind
 
 theorem heathBrownHatFourierCoefficient_eq_fordTent
     {B : ℝ} (hB : 0 < B) (r : ℤ) :
@@ -39,8 +37,7 @@ theorem heathBrownHatFourierCoefficient_eq_fordTent
   · subst r
     simp [heathBrownHatFourierCoefficient_zero,
       fordTentFourierCoefficient_zero]
-  · have harg : Real.pi * (r : ℝ) * B ≠ 0 := by
-      exact mul_ne_zero (mul_ne_zero Real.pi_ne_zero (Int.cast_ne_zero.mpr hr)) hB.ne'
+  · have harg := mul_ne_zero (mul_ne_zero Real.pi_ne_zero (Int.cast_ne_zero.mpr hr)) hB.ne'
     simp only [heathBrownHatFourierCoefficient,
       heathBrownSincCoefficient, hr, ite_false,
       fordTentFourierCoefficient]
@@ -82,21 +79,21 @@ theorem hasSum_heathBrownTriangularFourierSeries
           fordAdditiveCharacter ((rs.1 : ℝ) * x) *
           fordAdditiveCharacter ((rs.2 : ℝ) * y))
       (heathBrownTriangularKernel B C x y : ℂ) := by
-  let f : ℤ → ℂ := fun r =>
+  let f  := fun r =>
     (heathBrownHatFourierCoefficient B r : ℂ) *
       fordAdditiveCharacter ((r : ℝ) * x)
-  let g : ℤ → ℂ := fun s =>
+  let g  := fun s =>
     (heathBrownHatFourierCoefficient C s : ℂ) *
       fordAdditiveCharacter ((s : ℝ) * y)
-  have hf : HasSum f (heathBrownHat B x : ℂ) :=
+  have hf  :=
     hasSum_heathBrownHatFourierSeries hB hBHalf x
-  have hg : HasSum g (heathBrownHat C y : ℂ) :=
+  have hg  :=
     hasSum_heathBrownHatFourierSeries hC hCHalf y
-  have habsF : Summable (fun r : ℤ => ‖f r‖) :=
+  have habsF  :=
     summable_norm_heathBrownHatFourierTerm hB x
-  have habsG : Summable (fun s : ℤ => ‖g s‖) :=
+  have habsG  :=
     summable_norm_heathBrownHatFourierTerm hC y
-  have hcross : Summable (fun rs : ℤ × ℤ => f rs.1 * g rs.2) :=
+  have hcross  :=
     summable_mul_of_summable_norm habsF habsG
   convert hf.mul hg hcross using 1
   · ext rs

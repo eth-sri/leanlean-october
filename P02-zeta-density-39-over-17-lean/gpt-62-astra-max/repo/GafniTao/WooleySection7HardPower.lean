@@ -43,7 +43,7 @@ theorem wooley_section7_hard_power_loss_zero
   have hk : 2 ≤ k := by omega
   have hkSq : (4 : ℝ) ≤ (k : ℝ) ^ 2 := by
     nlinarith [show (2 : ℝ) ≤ k by exact_mod_cast hk]
-  have hnuPos : (0 : ℝ) < nu := by exact_mod_cast (show 0 < nu by omega)
+  
   have hexp :
       (bp0 : ℝ) * epsilon ^ 2 + (R : ℝ) * (d : ℝ) <
         ((k ^ 2 * nu : ℕ) : ℝ) := by
@@ -51,9 +51,7 @@ theorem wooley_section7_hard_power_loss_zero
     norm_num [Nat.cast_sub
       (wooley_section7_a_add_HPrime_le_nextB hr hBPrime)] at htri ⊢
     nlinarith
-  have hpow :
-      (p : ℝ) ^ ((bp0 : ℝ) * epsilon ^ 2 + (R : ℝ) * (d : ℝ)) ≤
-        (p : ℝ) ^ ((k ^ 2 * nu : ℕ) : ℝ) :=
+  have hpow  :=
     Real.rpow_le_rpow_of_exponent_le hpReal hexp.le
   calc
     ((p : ℝ) ^ bp0) ^ (epsilon ^ 2) * ((p : ℝ) ^ d) ^ R =

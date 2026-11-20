@@ -40,10 +40,10 @@ theorem kernelMixed_row_bound (ν : Measure ℝ) [IsFiniteMeasure ν]
       _ = _ := by ring
   have htri : Integrable (fun t : Triple => C (t.1-t.2.1)*K (t.2.1-t.2.2)*K (t.2.2-t.1)) (tripleMeasure ν) := by
     let : IsFiniteMeasure (tripleMeasure ν) := by unfold tripleMeasure; infer_instance
-    apply (integrable_const (L*D*B^2)).mono' (by apply Measurable.aestronglyMeasurable; fun_prop)
+    apply (integrable_const (L*D*B^2)).mono' (by fun_prop)
     exact Filter.Eventually.of_forall (fun t => hpoint t.1 t.2.1 t.2.2)
   have hpair (u : ℝ) : Integrable (fun p : ℝ × ℝ => C (u-p.1)*K (p.1-p.2)*K (p.2-u)) (ν.prod ν) := by
-    apply (integrable_const (L*D*B^2)).mono' (by apply Measurable.aestronglyMeasurable; fun_prop)
+    apply (integrable_const (L*D*B^2)).mono' (by fun_prop)
     exact Filter.Eventually.of_forall (fun p => hpoint u p.1 p.2)
   have he : kernelMixed ν C K = ∫ u, ∫ v, ∫ t, C (u-v)*K (v-t)*K (t-u) ∂ν ∂ν ∂ν := by
     rw [kernelMixed,tripleMeasure,integral_prod _ htri]

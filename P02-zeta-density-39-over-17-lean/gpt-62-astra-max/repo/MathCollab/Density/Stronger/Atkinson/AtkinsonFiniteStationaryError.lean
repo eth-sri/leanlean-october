@@ -27,12 +27,12 @@ theorem exists_norm_atkinsonLeadingTerm_sub_stationary_le :
   obtain ⟨C,hC,hbound⟩ := exists_atkinsonPowerIntegral_fourthRoot_pair (1/4)
   let q : ℝ := Real.sqrt Real.pi/Real.pi
   let D : ℝ := 1+‖neumannLeadingPlus‖+‖neumannLeadingMinus‖
-  have hq : 0 < q := by dsimp [q]; positivity
-  have hD : 0 < D := by dsimp [D]; positivity
+  
+  
   refine ⟨2*Real.pi*q*(4*Real.pi)^(-(1/2 : ℝ))*D*C,by positivity,?_⟩
   intro T G L hT hlower hupper hL hwidth n hn
   have hT0 : 0 < T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
+  have hG  := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
   obtain ⟨hp,hm⟩ := hbound T G L hT hlower hupper hL hwidth n hn
   norm_num only [show (-(1/4 : ℝ)-1/4) = -(1/2 : ℝ) by norm_num] at hp hm
   let E : ℝ := C*G*Real.sqrt G*T^(-(1/2 : ℝ))
@@ -67,8 +67,7 @@ theorem exists_norm_atkinsonLeadingTerm_sub_stationary_le :
   have hd := norm_divisorDirichletTerm_real (1/4) n
   norm_num only [Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] at hd
   rw [he,norm_mul,norm_mul,norm_mul,norm_mul,hpi,hqn,hs,hd]
-  apply (mul_le_mul_of_nonneg_left hpair (by
-    exact mul_nonneg (by positivity) (atkinsonBesselScale_nonneg _ _))).trans_eq
+  apply (mul_le_mul_of_nonneg_left hpair (mul_nonneg (by positivity) (atkinsonBesselScale_nonneg _ _))).trans_eq
   dsimp [E,atkinsonBesselScale]
   norm_num only [show (-2 : ℝ)*(1/4) = -(1/2) by norm_num]
   ring
@@ -104,7 +103,7 @@ theorem exists_norm_atkinsonLeadingFiniteSum_sub_stationary_le {ε : ℝ} (hε :
   refine ⟨C*D,by positivity,?_⟩
   intro T G L hT hlower hupper hL hwidth N hN
   have hT0 : 0 < T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
+  have hG  := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
   apply (hbound T G L hT hlower hupper hL hwidth N hN).trans
   apply (mul_le_mul_of_nonneg_left (hprefix N) (by positivity)).trans_eq
   ring

@@ -53,8 +53,7 @@ theorem heathBrownFourierAtom_mul_conj
     _ = fordAdditiveCharacter
           ((rs.1 : ℝ) * (g₁ m - g₁ n) +
             (rs.2 : ℝ) * (g₂ m - g₂ n)) := by
-        congr 2
-        ring_nf
+        ring
     _ = fordAdditiveCharacter ((rs.1 : ℝ) * (g₁ m - g₁ n)) *
           fordAdditiveCharacter ((rs.2 : ℝ) * (g₂ m - g₂ n)) := by
         rw [fordAdditiveCharacter_add]

@@ -11,7 +11,7 @@ theorem integrable_iteratedDeriv_of_complex
     (f : ℝ → ℂ) (hf : ContDiff ℝ ∞ f) (hfc : HasCompactSupport f)
     (j : ℕ) :
     Integrable (iteratedDeriv j f) := by
-  have hcont : Continuous (iteratedDeriv j f) :=
+  have hcont  :=
     hf.continuous_iteratedDeriv j
       (WithTop.coe_le_coe.mpr (le_of_lt (ENat.natCast_lt_top j)))
   have hcomp : HasCompactSupport (iteratedDeriv j f) := by
@@ -34,7 +34,7 @@ theorem abs_pow_mul_norm_fourier_complex_le
       Integrable (iteratedDeriv n f) := by
     intro n _hn
     exact integrable_iteratedDeriv_of_complex f hf hfc n
-  have hjtop : j ≤ (⊤ : ℕ∞) := le_of_lt (ENat.natCast_lt_top j)
+  have hjtop  := le_of_lt (ENat.natCast_lt_top j)
   have hpoint := congrFun (Real.fourier_iteratedDeriv hf hall hjtop) ξ
   have hfactor :
       ‖(2 * Real.pi * Complex.I * (ξ : ℂ)) ^ j‖ =
@@ -45,7 +45,7 @@ theorem abs_pow_mul_norm_fourier_complex_le
   rw [norm_smul, hfactor] at hnormeq
   have hbase : |ξ| ≤ 2 * Real.pi * |ξ| := by
     nlinarith [abs_nonneg ξ, Real.pi_gt_three]
-  have hpow : |ξ| ^ j ≤ (2 * Real.pi * |ξ|) ^ j :=
+  have hpow  :=
     pow_le_pow_left₀ (abs_nonneg ξ) hbase j
   calc
     |ξ| ^ j * ‖𝓕 f ξ‖ ≤
@@ -130,14 +130,14 @@ theorem one_add_abs_fourier_decay_of_support_of_bounds_order
           (2 : ℝ) ^ p * ((D - C) * K₀) :=
         mul_le_mul hWeight (hZero ξ) (norm_nonneg _) (by positivity)
       _ ≤ (2 : ℝ) ^ p * (D - C) * (K₀ + Kp) := by
-        have hLen : 0 ≤ D - C := sub_nonneg.mpr hCD
+        have hLen  := sub_nonneg.mpr hCD
         have hmono : K₀ ≤ K₀ + Kp := le_add_of_nonneg_right hKp
         calc
           (2 : ℝ) ^ p * ((D - C) * K₀) =
               ((2 : ℝ) ^ p * (D - C)) * K₀ := by ring
           _ ≤ ((2 : ℝ) ^ p * (D - C)) * (K₀ + Kp) :=
             mul_le_mul_of_nonneg_left hmono (mul_nonneg (by positivity) hLen)
-  · have hξOne : 1 ≤ |ξ| := le_of_lt (lt_of_not_ge hξ)
+  · have hξOne  := le_of_lt (lt_of_not_ge hξ)
     have hWeight : (1 + |ξ|) ^ p ≤ (2 : ℝ) ^ p * |ξ| ^ p := by
       have hp := pow_le_pow_left₀ (by positivity : 0 ≤ 1 + |ξ|)
         (by linarith : 1 + |ξ| ≤ 2 * |ξ|) p
@@ -150,7 +150,7 @@ theorem one_add_abs_fourier_decay_of_support_of_bounds_order
       _ ≤ (2 : ℝ) ^ p * ((D - C) * Kp) :=
         mul_le_mul_of_nonneg_left (hHigh ξ) (by positivity)
       _ ≤ (2 : ℝ) ^ p * (D - C) * (K₀ + Kp) := by
-        have hLen : 0 ≤ D - C := sub_nonneg.mpr hCD
+        have hLen  := sub_nonneg.mpr hCD
         have hmono : Kp ≤ K₀ + Kp := le_add_of_nonneg_left hK₀
         calc
           (2 : ℝ) ^ p * ((D - C) * Kp) =

@@ -31,8 +31,7 @@ theorem heathBrownShiftedDifference_nat
     heathBrownShiftedDifference f j d n =
       heathBrownDerivativeCoordinate f j (n + d) -
         heathBrownDerivativeCoordinate f j n := by
-  unfold heathBrownShiftedDifference
-  norm_num
+  rfl
 
 theorem deriv_heathBrownShiftedDifference
     (f : ℝ → ℝ) (j d : ℕ) (x : ℝ)
@@ -62,7 +61,7 @@ theorem heathBrown_shiftedDifference_continuousOn
       (Set.Icc 0 (N : ℝ))) :
     ContinuousOn (heathBrownShiftedDifference f j d)
       (Set.Icc 0 ((N - d : ℕ) : ℝ)) := by
-  let s : Set ℝ := Set.Icc 0 ((N - d : ℕ) : ℝ)
+  let s  := Set.Icc 0 ((N - d : ℕ) : ℝ)
   have hsub : s ⊆ Set.Icc (0 : ℝ) N := by
     intro x hx
     change x ∈ Set.Icc (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
@@ -88,7 +87,7 @@ theorem heathBrown_shiftedDifference_differentiableOn
       (Set.Ioo 0 (N : ℝ))) :
     DifferentiableOn ℝ (heathBrownShiftedDifference f j d)
       (Set.Ioo 0 ((N - d : ℕ) : ℝ)) := by
-  let s : Set ℝ := Set.Ioo 0 ((N - d : ℕ) : ℝ)
+  let s  := Set.Ioo 0 ((N - d : ℕ) : ℝ)
   have hsub : s ⊆ Set.Ioo (0 : ℝ) N := by
     intro x hx
     change x ∈ Set.Ioo (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
@@ -177,12 +176,8 @@ theorem heathBrown_shiftedDifference_deriv_bounds
         (isOpen_Ioo.mem_nhds hxdOpen)), hkpred2]
   rw [hderiv]
   constructor
-  · apply (div_le_div_iff_of_pos_right (by positivity :
-      (0 : ℝ) < (k - 2).factorial)).2
-    simpa only [hxdiff] using hlower
-  · apply (div_le_div_iff_of_pos_right (by positivity :
-      (0 : ℝ) < (k - 2).factorial)).2
-    simpa only [hxdiff] using hupper
+  · bound
+  · bound
 
 
 end

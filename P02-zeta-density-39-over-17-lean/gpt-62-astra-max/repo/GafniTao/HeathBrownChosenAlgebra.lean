@@ -116,8 +116,8 @@ theorem heathBrownChosenShiftFactor_le_source_sum
   let L := lambda ^ (-(2 / (k : ℝ)))
   let q := lambda ^ (1 - 3 / (k : ℝ))
   have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
-  have hC₁ : 0 ≤ C₁ := heathBrownChosenFirstConstant_nonneg k hA.le
-  have hC₂ : 0 ≤ C₂ := heathBrownChosenSecondConstant_nonneg k hA.le
+  have hC₁  := heathBrownChosenFirstConstant_nonneg k hA.le
+  have hC₂  := heathBrownChosenSecondConstant_nonneg k hA.le
   have hL : 0 ≤ L := by dsimp only [L]; positivity
   have hexp : 0 ≤ 1 - 3 / (k : ℝ) := by
     have hkReal : (3 : ℝ) ≤ k := by exact_mod_cast hk
@@ -153,12 +153,9 @@ theorem heathBrownChosenShiftFactor_le_source_sum
   have hcoeff₂ : C₁ * C₂ ≤ heathBrownChosenTotalConstant k A := by
     change C₁ * C₂ ≤ 4 * C₁ + C₁ * C₂
     nlinarith
-  have hterm₁ : 4 * C₁ * L ≤
-      heathBrownChosenTotalConstant k A * L :=
+  have hterm₁  :=
     mul_le_mul_of_nonneg_right hcoeff₁ hL
-  have hterm₂b : C₁ * C₂ * (N : ℝ) ≤
-      heathBrownChosenTotalConstant k A * N := by
-    exact mul_le_mul_of_nonneg_right hcoeff₂ (Nat.cast_nonneg N)
+  have hterm₂b := mul_le_mul_of_nonneg_right hcoeff₂ (Nat.cast_nonneg N)
   calc
     4 * C₁ * L + C₁ * C₂ * (N : ℝ) * q ≤
         heathBrownChosenTotalConstant k A * L +

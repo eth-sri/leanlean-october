@@ -24,7 +24,7 @@ namespace MathCollab.Density.Stronger.Fourth
 theorem norm_hughesYoungAuxiliaryZero_le_polynomial
     {w : ℂ} {R : ℝ} (hR : 1 ≤ R) (hw : ‖w‖ ≤ R) :
     ‖hughesYoungAuxiliaryZero w‖ ≤ 625 * R ^ 8 := by
-  have hw0 : 0 ≤ ‖w‖ := norm_nonneg w
+  have hw0  := norm_nonneg w
   have hsq : ‖w‖ ^ 2 ≤ R ^ 2 := by nlinarith
   have hbase : ‖1 - 4 * w ^ 2‖ ≤ 1 + 4 * R ^ 2 := by
     calc
@@ -53,7 +53,7 @@ theorem exists_zetaSquareNumerator_strip_gaussian (t c : ℝ) (hc : 0 ≤ c) :
   obtain ⟨C,hC,hxi⟩ := exists_completedXiNumerator_strip_cubic hc
   let A : ℝ := 2+|t|+c
   have hA : 1 ≤ A := by dsimp [A]; linarith [abs_nonneg t]
-  have hp : 0 < ‖zetaSquarePoleNormalization t‖ :=
+  have hp  :=
     norm_pos_iff.mpr (zetaSquarePoleNormalization_ne_zero t)
   refine ⟨Real.exp (100*c^2)*625*C^2*A^14/‖zetaSquarePoleNormalization t‖,
     by positivity, ?_⟩
@@ -124,7 +124,6 @@ theorem gaussianPolynomial_le (u : ℝ) :
         _ ≤ (2*|u|)^14 := by gcongr; linarith
         _ = (2 : ℝ)^14*u^14 := by rw [mul_pow, heven]
         _ ≤ _ := by nlinarith
-  unfold gaussianPolynomial
   calc
     _ ≤ ((2 : ℝ)^14*(1+u^14))*Real.exp (-100*u^2) :=
       mul_le_mul_of_nonneg_right hpoly (Real.exp_pos _).le
@@ -143,7 +142,7 @@ theorem integrable_gaussianPolynomial : Integrable gaussianPolynomial := by
   exact gaussianPolynomial_le u
 
 theorem tendsto_gaussianPolynomial_zero : Tendsto gaussianPolynomial atTop (𝓝 0) := by
-  have hbase : Tendsto (fun u : ℝ => Real.exp (-(1/2 : ℝ)*u)) atTop (𝓝 0) :=
+  have hbase  :=
     Real.tendsto_exp_atBot.comp
       (tendsto_id.const_mul_atTop_of_neg (by norm_num : -(1/2 : ℝ) < 0))
   have h0 : Tendsto (fun u : ℝ => Real.exp (-100*u^2)) atTop (𝓝 0) := by
@@ -251,8 +250,7 @@ theorem tendsto_zetaSquare_vertical_integral (t : ℝ) {c : ℝ} (hc : 0 < c) :
 /-- Exact infinite-height actual-zeta identity; no contour limit is assumed. -/
 theorem completedZeta_square_eq_vertical_integrals (t : ℝ) {c : ℝ} (hc : 0 < c) :
     completedRiemannZeta (afeCriticalPoint t)^2 =
-      zetaSquareVerticalIntegral t c + zetaSquareVerticalIntegral (-t) c := by
-  exact tendsto_nhds_unique (zetaSquareAFE_vertical_limit t hc)
+      zetaSquareVerticalIntegral t c + zetaSquareVerticalIntegral (-t) c := tendsto_nhds_unique (zetaSquareAFE_vertical_limit t hc)
     ((tendsto_zetaSquare_vertical_integral t hc).add
       (tendsto_zetaSquare_vertical_integral (-t) hc))
 

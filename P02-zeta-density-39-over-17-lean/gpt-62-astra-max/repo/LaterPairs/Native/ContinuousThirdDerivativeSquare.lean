@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ContinuousThirdDerivativeWeyl
 public import LaterPairs.Native.ThirdDerivativeFloor
 public import LaterPairs.Native.ThirdDerivativeRootScale

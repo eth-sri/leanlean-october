@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
 public import TaoTrudgianYang2025.BetaMorseWindowIntegral
 
@@ -32,9 +31,6 @@ theorem IntervalC1Bound.fourierChar_of_closed_slope_gap
   have h := IntervalC1Bound.integral_mul_of_primitive_bound hf hab hJ hsub
     (k := fun x => (𝐞 (φ x) : ℂ))
     (by
-      intro x hx
-      have hc := (hφ x hx).continuousAt
-      simp only [Real.fourierChar_apply]
       fun_prop)
     (B := 1/(lam*Real.pi)) (by
       intro x hx
@@ -58,7 +54,7 @@ theorem norm_buffered_subinterval_nonstationary
       (∀ u ∈ Icc a b, T*deriv F u-q ≤ -lam)) :
     ‖∫ u in a..b, (modelPhaseBufferedCutoff l r η u : ℂ)*
       (𝐞 (T*F u-q*u) : ℂ)‖ ≤ 4/(lam*Real.pi) := by
-  let φ : ℝ → ℝ := fun u => T*F u-q*u
+  let φ  := fun u => T*F u-q*u
   have hs : Icc a b ⊆ Ioo (1 : ℝ) 2 :=
     fun u hu => ⟨ha.trans_le hu.1,hu.2.trans_lt hb⟩
   have hd {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :

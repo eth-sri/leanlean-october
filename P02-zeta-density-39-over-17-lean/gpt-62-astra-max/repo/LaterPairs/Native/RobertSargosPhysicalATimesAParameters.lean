@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQFloorBudgets
 
 @[expose] public section
@@ -25,11 +22,11 @@ theorem robertSargos_physical_a_times_a_ranges (M H : ℕ) {lam : ℝ}
   have hH : 0 < H := by
     have hc := (Real.rpow_pos_of_pos hlam (-(1:ℝ)/7)).trans_le hHmin
     exact_mod_cast hc
-  have hQM : (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) ≤ M :=
+  have hQM  :=
     (Nat.floor_le (Real.rpow_nonneg hlam.le _)).trans
       ((Real.rpow_le_rpow_of_exponent_ge hlam hlam1
         (by norm_num : -(8:ℝ)/13 ≤ -3/13)).trans hM)
-  have hRH : (⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ H :=
+  have hRH  :=
     hRhi.trans ((Real.rpow_le_rpow_of_exponent_ge hlam hlam1
       (by norm_num : -(1:ℝ)/7 ≤ -1/13)).trans hHmin)
   exact ⟨hH,hQ,hR,by exact_mod_cast hQM,by exact_mod_cast (show
@@ -47,7 +44,7 @@ theorem robertSargos_physical_endpoint_budget (M H : ℕ) {lam : ℝ}
   have h8 : T^8 = lam^(-(8:ℝ)/13) := by
     simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 8
   have hHM : (H:ℝ) ≤ T^2/2 := by rwa [h2]
-  have hMM : T^8 ≤ (M:ℝ) := by rwa [h8]
+  
   have hR : (⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ T := Nat.floor_le (by positivity)
   have hH2 : (H:ℝ)^2 ≤ T^4/4 := by
     have hs := mul_self_le_mul_self (Nat.cast_nonneg H) hHM

@@ -11,9 +11,9 @@ namespace GuthMaynard.Improvement
 theorem primitive_ratio_cross_unique {a b c d : ℕ}
     (ha : 0 < a) (hab : a.Coprime b) (hcd : c.Coprime d)
     (he : a*d=c*b) : a=c ∧ b=d := by
-  have hac : a ∣ c := hab.dvd_of_dvd_mul_right ⟨d,he.symm⟩
-  have hca : c ∣ a := hcd.dvd_of_dvd_mul_right ⟨b,he⟩
-  have hac' : a=c := Nat.dvd_antisymm hac hca
+  have hac  := hab.dvd_of_dvd_mul_right ⟨d,he.symm⟩
+  have hca  := hcd.dvd_of_dvd_mul_right ⟨b,he⟩
+  have hac'  := Nat.dvd_antisymm hac hca
   refine ⟨hac',?_⟩
   apply Nat.eq_of_mul_eq_mul_left ha
   simpa only [← hac'] using he.symm
@@ -23,13 +23,10 @@ scale. This is the actual source of ratio multiplicities. -/
 theorem primitive_ratio_fiber_scale {a b n m : ℕ} (ha : 0 < a)
     (hn : 0 < n) (hab : a.Coprime b) (he : n*b=a*m) :
     ∃ k : ℕ, 0 < k ∧ n=a*k ∧ m=b*k := by
-  have han : a ∣ n := hab.dvd_of_dvd_mul_right ⟨m,he⟩
+  have han  := hab.dvd_of_dvd_mul_right ⟨m,he⟩
   obtain ⟨k,hk⟩ := han
   refine ⟨k,?_,hk,?_⟩
-  · by_contra h
-    have hk0 : k=0 := by omega
-    simp [hk0] at hk
-    omega
+  · grind
   · apply Nat.eq_of_mul_eq_mul_left ha
     calc
       a*m = n*b := he.symm
@@ -55,18 +52,16 @@ theorem reducedRatioFiber_card {X a b : ℕ} (ha : 0 < a) (_hb : 0 < b)
     refine ⟨hk,?_⟩
     apply (Nat.le_div_iff_mul_le (lt_of_lt_of_le ha (le_max_left _ _))).mpr
     by_cases hh : a ≤ b
-    · rw [max_eq_right hh,mul_comm]
-      simpa only [← hmk] using (mem_Icc.mp hm).2
-    · rw [max_eq_left (by omega),mul_comm]
-      simpa only [← hnk] using (mem_Icc.mp hn).2
+    · grind
+    · grind
   have hinj : Set.InjOn (fun p : ℕ × ℕ => p.1/a) (reducedRatioFiber X a b : Set (ℕ × ℕ)) := by
     intro p hp q hq he
     obtain ⟨hp,hpc⟩ := mem_filter.mp hp
     obtain ⟨hq,hqc⟩ := mem_filter.mp hq
     obtain ⟨kp,hkp,hpn,hpm⟩ := primitive_ratio_fiber_scale ha
-      (by have := (mem_Icc.mp (mem_product.mp hp).1).1; omega) hab hpc
+      (by grind) hab hpc
     obtain ⟨kq,hkq,hqn,hqm⟩ := primitive_ratio_fiber_scale ha
-      (by have := (mem_Icc.mp (mem_product.mp hq).1).1; omega) hab hqc
+      (by grind) hab hqc
     have hk : kp=kq := by simpa [hpn,hqn,Nat.mul_div_cancel_left _ ha] using he
     exact Prod.ext (by rw [hpn,hqn,hk]) (by rw [hpm,hqm,hk])
   have hc := card_le_card_of_injOn (fun p : ℕ × ℕ => p.1/a) hmap hinj
@@ -105,7 +100,7 @@ theorem primitive_log_ratio_separated {a b c d : ℕ} {Y : ℝ}
       Real.log_mul (by positivity) (by positivity),Real.log_mul (by positivity) (by positivity)]
     ring
   rw [heq]
-  have hY : 0 ≤ Y := (show 0 ≤ (a:ℝ) by positivity).trans haY
+  have hY  := (show 0 ≤ (a:ℝ) by positivity).trans haY
   have hadY : (a:ℝ)*d ≤ Y^2 := by nlinarith [mul_le_mul haY hdY (by positivity : 0 ≤ (d:ℝ)) hY]
   have hcbY : (c:ℝ)*b ≤ Y^2 := by nlinarith [mul_le_mul hcY hbY (by positivity : 0 ≤ (b:ℝ)) hY]
   rcases lt_or_gt_of_ne hcross with h | h
@@ -128,8 +123,7 @@ theorem positive_height_shell_card (S : Finset (ℕ × ℕ))
     have hp2q : p.2 ≤ q := (le_max_right _ _).trans_eq hpq
     by_cases he : p.1=q
     · exact mem_union_left _ (mem_product.mpr ⟨mem_singleton.mpr he,mem_Icc.mpr ⟨hp2,hp2q⟩⟩)
-    · have he' : p.2=q := by omega
-      exact mem_union_right _ (mem_product.mpr ⟨mem_Icc.mpr ⟨hp1,hp1q⟩,mem_singleton.mpr he'⟩)
+    · grind
   exact (card_le_card hsub).trans ((card_union_le _ _).trans_eq (by simp; omega))
 
 /-- The actual squared ratio-weight budget follows just from the integral

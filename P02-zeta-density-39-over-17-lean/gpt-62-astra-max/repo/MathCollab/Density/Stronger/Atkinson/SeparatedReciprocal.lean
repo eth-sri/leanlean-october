@@ -6,7 +6,8 @@ Copyright 2026 S. McColm. See third_party/twelfth/ATKINSON_PACKET_MANIFEST.json 
 third_party/twelfth/LICENSE-MIT-0.
 Mathlib dependencies retain Apache-2.0 attribution.
 -/
-public import MathCollab.Density.Stronger.Atkinson.AtkinsonNearGap
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixMax
 public import Mathlib.NumberTheory.Harmonic.Bounds
 
 @[expose] public section
@@ -38,35 +39,17 @@ theorem separated_annulus_card_le_two
     (W : Finset ℝ) (t : ℝ) (k : ℕ) (hSep : IsSeparated 1 W) :
     ({u ∈ W | u ≠ t ∧ (k : ℝ) ≤ |u - t| ∧ |u - t| < (k : ℝ) + 1}).card ≤ 2 := by
   let S := {u ∈ W | u ≠ t ∧ (k : ℝ) ≤ |u - t| ∧ |u - t| < (k : ℝ) + 1}
-  let P : ℝ → Prop := fun u => t ≤ u
+  let P  := fun u => t ≤ u
   have hpos : (S.filter P).card ≤ 1 := by
     apply separated_subset_card_le_one_of_diameter W (S.filter P) hSep
     · intro u hu
       exact (Finset.mem_filter.mp hu).1 |> Finset.mem_filter.mp |>.1
-    · intro x hx y hy
-      have hxData := Finset.mem_filter.mp hx
-      have hyData := Finset.mem_filter.mp hy
-      have hxS := Finset.mem_filter.mp hxData.1
-      have hyS := Finset.mem_filter.mp hyData.1
-      rw [abs_of_nonneg (sub_nonneg.mpr hxData.2)] at hxS
-      rw [abs_of_nonneg (sub_nonneg.mpr hyData.2)] at hyS
-      rw [abs_lt]
-      constructor <;> linarith [hxS.2.2, hyS.2.2]
+    · grind
   have hneg : (S.filter (fun u => ¬ P u)).card ≤ 1 := by
     apply separated_subset_card_le_one_of_diameter W (S.filter (fun u => ¬ P u)) hSep
     · intro u hu
       exact (Finset.mem_filter.mp hu).1 |> Finset.mem_filter.mp |>.1
-    · intro x hx y hy
-      have hxData := Finset.mem_filter.mp hx
-      have hyData := Finset.mem_filter.mp hy
-      have hxS := Finset.mem_filter.mp hxData.1
-      have hyS := Finset.mem_filter.mp hyData.1
-      have hxt : x - t ≤ 0 := by linarith
-      have hyt : y - t ≤ 0 := by linarith
-      rw [abs_of_nonpos hxt] at hxS
-      rw [abs_of_nonpos hyt] at hyS
-      rw [abs_lt]
-      constructor <;> linarith [hxS.2.2, hyS.2.2]
+    · grind
   have hsplit := Finset.card_filter_add_card_filter_not (s := S) P
   change S.card ≤ 2
   omega
@@ -78,7 +61,7 @@ theorem sum_inv_distance_near_le_harmonic
     (∑ u ∈ {u ∈ W | u ≠ t ∧ |u - t| ≤ (N : ℝ)}, 1 / |u - t|) ≤
       2 * (((harmonic N : ℚ) : ℝ)) := by
   let S := {u ∈ W | u ≠ t ∧ |u - t| ≤ (N : ℝ)}
-  let shell : ℝ → ℕ := fun u => Nat.floor |u - t|
+  let shell  := fun u => Nat.floor |u - t|
   have hmaps : ∀ u ∈ S, shell u ∈ Finset.Icc 1 N := by
     intro u hu
     have huData := Finset.mem_filter.mp hu
@@ -99,7 +82,7 @@ theorem sum_inv_distance_near_le_harmonic
         ∑ k ∈ Finset.Icc 1 N, 2 * (1 / (k : ℝ)) := by
       apply Finset.sum_le_sum
       intro k hk
-      have hkPos : 0 < k := (Finset.mem_Icc.mp hk).1
+      have hkPos  := (Finset.mem_Icc.mp hk).1
       have hfiberCard : ({u ∈ S | shell u = k}).card ≤ 2 := by
         calc
           ({u ∈ S | shell u = k}).card ≤
@@ -125,13 +108,13 @@ theorem sum_inv_distance_near_le_harmonic
           apply Finset.sum_le_sum
           intro u hu
           have huData := Finset.mem_filter.mp hu
-          have huS := Finset.mem_filter.mp huData.1
+          
           have hfloor := huData.2
           have hqNonneg : 0 ≤ |u - t| := abs_nonneg _
           have hkq : (k : ℝ) ≤ |u - t| := by
             rw [← hfloor]
             exact Nat.floor_le hqNonneg
-          exact one_div_le_one_div_of_le (by exact_mod_cast hkPos) hkq
+          exact one_div_le_one_div_of_le (by positivity) hkq
         _ = (({u ∈ S | shell u = k}).card : ℝ) * (1 / (k : ℝ)) := by simp
         _ ≤ 2 * (1 / (k : ℝ)) := by
           gcongr

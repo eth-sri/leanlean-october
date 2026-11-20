@@ -71,8 +71,7 @@ theorem wooleySourcePolynomial_lemma_4_1_local
     have hhNonneg : (0 : ℝ) ≤ h := by positivity
     push_cast at hphiScale ⊢
     nlinarith
-  have hgammaXi : gammaXi.Admissible := by
-    exact hgamma.affinePullback (p ^ h) (pow_pos hpPrime.pos h) xi.val
+  have hgammaXi := hgamma.affinePullback (p ^ h) (pow_pos hpPrime.pos h) xi.val
   have hterm (alpha : Fin k → ZMod (p ^ B)) :
       wooleySourcePolynomialMean (wooleyTriangular k) (p ^ B') Psi
           (wooleySourceTwist gammaXi
@@ -143,7 +142,7 @@ theorem wooleySourcePolynomial_lemma_4_1
                 (wooleyCriticalExponent k p + epsilon)) *
               wooleySourcePolynomialConditionedMean (wooleyTriangular k)
                 (p ^ B) (p ^ (B ⌈/⌉ k)) phi gamma := by
-  have htau : 0 < tau := lt_trans hepsilon hepsilonTau
+  have htau  := lt_trans hepsilon hepsilonTau
   have hpPositive : 0 < p := by omega
   have hcritical := wooley_uniformExponentBound_above_critical
     (k := k) (p := p) hk
@@ -156,8 +155,8 @@ theorem wooleySourcePolynomial_lemma_4_1
     exists_nat_ge (((Bcrit + k : ℕ) : ℝ) / delta)
   refine ⟨C, hC, max N₁ N₂, ?_⟩
   intro B phi gamma h hB hphi hgamma hh
-  have hBN₁ : N₁ ≤ B := le_trans (le_max_left _ _) hB
-  have hBN₂ : N₂ ≤ B := le_trans (le_max_right _ _) hB
+  have hBN₁  := le_trans (le_max_left _ _) hB
+  have hBN₂  := le_trans (le_max_right _ _) hB
   have htauB : (1 : ℝ) ≤ tau * B := by
     have hN₁B : (N₁ : ℝ) ≤ B := by exact_mod_cast hBN₁
     have htauNonzero : tau ≠ 0 := ne_of_gt htau

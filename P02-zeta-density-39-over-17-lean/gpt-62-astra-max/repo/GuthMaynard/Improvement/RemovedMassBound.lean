@@ -64,9 +64,9 @@ theorem removed_dyadic_cover {δ : ℝ} (hδ : 0 < δ) :
       ∃ J : ℕ, 2*N ≤ (2:ℝ)^J ∧ (J:ℝ)+1 ≤ K*N^δ := by
   let K := (2/Real.log 2)*(Real.log 2+1/δ)+1
   have hl : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  refine ⟨K,by positivity,?_⟩
   intro N hN
-  have hn : 0 < N := by linarith
+  
   obtain ⟨J,hcover,_,hupper,_⟩ := source_least_height_cover
     (X := 2*N) (Y := 1) (by norm_num) (by linarith)
   simp only [mul_one] at hcover hupper
@@ -106,19 +106,19 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
   have hu : 0 < U := by linarith
   let β := fun t => fixedTimeCutoff (t/T)
   let D := boundedPolynomial N a
-  have hβm : Measurable β :=
+  have hβm  :=
     (fixedTimeCutoff_smooth.continuous.comp (continuous_id.div_const T)).measurable
   have hβi : Integrable β := by
     simpa [β,div_eq_mul_inv,mul_comm] using
       (fixedTimeCutoff_smooth.continuous.integrable_of_hasCompactSupport
         fixedTimeCutoff_compact).comp_mul_left' (inv_ne_zero ht.ne')
-  have hβ0 : ∀ t, 0 ≤ β t := fun t => (fixedTimeCutoff_bounds (t/T)).1
-  have hβ1 : ∀ t, β t ≤ 1 := fun t => (fixedTimeCutoff_bounds (t/T)).2
+  have hβ0  := fun t => (fixedTimeCutoff_bounds (t/T)).1
+  have hβ1  := fun t => (fixedTimeCutoff_bounds (t/T)).2
   have hs : Function.support β ⊆ Icc (-2*T) (3*T) := by
     intro t hmem
     have hh := fixedTimeCutoff_support (subset_closure hmem)
     exact ⟨(le_div_iff₀ ht).mp hh.1,(div_le_iff₀ ht).mp hh.2⟩
-  have hDm : Measurable D := (boundedPolynomial_regular N a).1.measurable
+  have hDm  := (boundedPolynomial_regular N a).1.measurable
   obtain ⟨J,hJ,hJK⟩ := hcover N hN
   have hb : ∀ t, ‖D t‖ ≤ (2:ℝ)^J*U := by
     intro t
@@ -139,8 +139,7 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
       (5*C*N^(ε/2))*(4*(J:ℝ)*N^2+8*T*N^4/U^4) := by
     calc
       _ ≤ ∑ j ∈ Finset.range J, 4*((2:ℝ)^j*U)^2*
-          (5*C*N^(ε/2)*(N^2/((2:ℝ)^j*U)^2+T*N^4/((2:ℝ)^j*U)^6)) := by
-        exact Finset.sum_le_sum fun j _ => mul_le_mul_of_nonneg_left (hlev j) (by positivity)
+          (5*C*N^(ε/2)*(N^2/((2:ℝ)^j*U)^2+T*N^4/((2:ℝ)^j*U)^6)) := Finset.sum_le_sum fun j _ => mul_le_mul_of_nonneg_left (hlev j) (by positivity)
       _ = (5*C*N^(ε/2))*(∑ j ∈ Finset.range J, 4*((2:ℝ)^j*U)^2*
           (N^2/((2:ℝ)^j*U)^2+T*N^4/((2:ℝ)^j*U)^6)) := by
         rw [Finset.mul_sum]
@@ -164,8 +163,6 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
     _ ≤ (5*C*N^(ε/2))*(8*(K*N^(ε/2))*(N^2+T*N^4/U^4)) :=
       mul_le_mul_of_nonneg_left hscalar (by positivity)
     _ = _ := by
-      calc
-        _ = 40*C*K*(N^(ε/2)*N^(ε/2))*(N^2+T*N^4/U^4) := by ring
-        _ = _ := by rw [hp]
+      grind
 
 end GuthMaynard.Improvement

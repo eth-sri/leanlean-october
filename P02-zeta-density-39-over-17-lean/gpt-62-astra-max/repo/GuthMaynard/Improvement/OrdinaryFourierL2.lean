@@ -13,7 +13,7 @@ Hilbert-space Fourier transform for ordinary L1/L2 functions. -/
 theorem ordinary_fourier_ae_L2 {f : ℝ → ℂ} (h1 : Integrable f)
     (h2 : MemLp f 2) :
     ((𝓕 (h2.toLp f) : Lp ℂ 2 volume) : ℝ → ℂ) =ᵐ[volume] 𝓕 f := by
-  have hcont : Continuous (𝓕 f) := VectorFourier.fourierIntegral_continuous
+  have hcont  := VectorFourier.fourierIntegral_continuous
     Real.continuous_fourierChar (innerSL ℝ).continuous₂ h1
   apply ae_eq_of_integral_contDiff_smul_eq
     ((Lp.memLp (𝓕 (h2.toLp f))).locallyIntegrable (by norm_num))
@@ -39,10 +39,10 @@ theorem ordinary_fourier_ae_L2 {f : ℝ → ℂ} (h1 : Integrable f)
       (ContinuousLinearMap.mul ℂ ℂ) (μ := volume) (ν := volume) (L := innerₗ ℝ)
       Real.continuous_fourierChar continuous_inner G.integrable h1
   calc
-    _ = ∫ x, G x * (𝓕 (h2.toLp f)) x := by simp [G, Complex.real_smul]
+    _ = ∫ x, G x * (𝓕 (h2.toLp f)) x := by rfl
     _ = ∫ x, (𝓕 G) x * f x := hd'.symm
     _ = ∫ x, G x * (𝓕 f) x := hpair
-    _ = _ := by simp [G, Complex.real_smul]
+    _ = _ := by rfl
 
 /-- Square integrability of the actual integral Fourier transform. -/
 theorem ordinary_fourier_memLp {f : ℝ → ℂ} (h1 : Integrable f)

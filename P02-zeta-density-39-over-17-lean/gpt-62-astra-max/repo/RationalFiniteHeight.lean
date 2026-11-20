@@ -20,8 +20,7 @@ theorem positiveRatPair_ratio {r : ℚ} (hr : 0 < r) : pairRatio (positiveRatPai
 
 theorem positiveRatPair_properties {r : ℚ} (hr : 0 < r) :
     0 < (positiveRatPair r).1 ∧ 0 < (positiveRatPair r).2 ∧
-      Nat.Coprime (positiveRatPair r).1 (positiveRatPair r).2 := by
-  exact ⟨Int.natAbs_pos.mpr (Rat.num_pos.mpr hr).ne', r.pos, r.reduced⟩
+      Nat.Coprime (positiveRatPair r).1 (positiveRatPair r).2 := ⟨Int.natAbs_pos.mpr (Rat.num_pos.mpr hr).ne', r.pos, r.reduced⟩
 
 theorem positive_rational_log_gap {r s : ℚ} (hr : 0 < r) (hs : 0 < s) (hne : r ≠ s)
     {H L : ℝ} (hrH : (r.den : ℝ) ≤ H) (hsH : (s.den : ℝ) ≤ H)

@@ -17,8 +17,8 @@ theorem mem_localSet_iff_floor {U : Finset ℝ} {H t : ℝ} (hH : 0 < H) (j : �
   simp only [localSet, Finset.mem_filter]
   constructor
   · rintro ⟨ht, hlo, hhi⟩
-    have hj : (j : ℝ) ≤ t/H := (le_div_iff₀ hH).2 hlo
-    have hj' : t/H < (j : ℝ)+3 := (div_lt_iff₀ hH).2 hhi
+    have hj  := (le_div_iff₀ hH).2 hlo
+    have hj'  := (div_lt_iff₀ hH).2 hhi
     have hf := Int.floor_le (t/H)
     have hfloor : ⌊t/H⌋ < j+3 := by exact_mod_cast (hf.trans_lt hj')
     exact ⟨ht, by omega, Int.le_floor.mpr hj⟩

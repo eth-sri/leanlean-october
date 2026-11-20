@@ -24,12 +24,12 @@ theorem wooley_two_factor_holder_ennreal
     (∑ i ∈ t, f i ^ u * g i ^ (1 - u)) ≤
       (∑ i ∈ t, f i) ^ u * (∑ i ∈ t, g i) ^ (1 - u) := by
   classical
-  let subF : Fintype {i : ι // i ∈ t} := Finset.fintypeCoeSort t
-  let : Fintype {i : ι // i ∈ t} := subF
+  let subF  := Finset.fintypeCoeSort t
+  let  := subF
   let : MeasurableSpace {i : ι // i ∈ t} := ⊤
   let fs : Fin 2 → {i : ι // i ∈ t} → ℝ≥0∞ :=
     fun j x => Fin.cases (f x.1) (fun _ => g x.1) j
-  let exps : Fin 2 → ℝ := ![u, 1 - u]
+  let exps  := ![u, 1 - u]
   have hmeas : ∀ j ∈ (Finset.univ : Finset (Fin 2)),
       AEMeasurable (fs j)
         (MeasureTheory.Measure.count : MeasureTheory.Measure {i : ι // i ∈ t}) := by
@@ -58,10 +58,10 @@ theorem wooley_two_factor_holder_real
     {u : ℝ} (hu0 : 0 ≤ u) (hu1 : u ≤ 1) :
     (∑ i ∈ t, f i ^ u * g i ^ (1 - u)) ≤
       (∑ i ∈ t, f i) ^ u * (∑ i ∈ t, g i) ^ (1 - u) := by
-  let F : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (f i)
-  let G : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (g i)
+  let F  := fun i => ENNReal.ofReal (f i)
+  let G  := fun i => ENNReal.ofReal (g i)
   have hholder := wooley_two_factor_holder_ennreal t F G hu0 hu1
-  have hOne : 0 ≤ 1 - u := sub_nonneg.mpr hu1
+  have hOne  := sub_nonneg.mpr hu1
   have hterm (i : ι) (hi : i ∈ t) :
       ENNReal.ofReal (f i ^ u * g i ^ (1 - u)) =
         F i ^ u * G i ^ (1 - u) := by
@@ -73,12 +73,9 @@ theorem wooley_two_factor_holder_real
       ENNReal.ofReal (∑ i ∈ t, h i) =
         ∑ i ∈ t, ENNReal.ofReal (h i) :=
     ENNReal.ofReal_sum_of_nonneg hh
-  have hleft : 0 ≤ ∑ i ∈ t, f i ^ u * g i ^ (1 - u) :=
-    Finset.sum_nonneg fun i hi =>
-      mul_nonneg (Real.rpow_nonneg (hf i hi) _)
-        (Real.rpow_nonneg (hg i hi) _)
-  have hsumF : 0 ≤ ∑ i ∈ t, f i := Finset.sum_nonneg hf
-  have hsumG : 0 ≤ ∑ i ∈ t, g i := Finset.sum_nonneg hg
+  
+  have hsumF  := Finset.sum_nonneg hf
+  have hsumG  := Finset.sum_nonneg hg
   have hright :
       0 ≤ (∑ i ∈ t, f i) ^ u * (∑ i ∈ t, g i) ^ (1 - u) := by
     positivity

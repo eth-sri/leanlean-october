@@ -34,8 +34,8 @@ theorem norm_exponentialSumAt_le_secondDerivative
     (hscale : T ≤ N^2) :
     ‖exponentialSumAt F T N a b‖ ≤
       modelPhaseSumConstant σ*(Real.sqrt T+N/Real.sqrt T) := by
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
-  have hNpos : 0 < N := lt_of_lt_of_le zero_lt_one hN
+  have hTpos  := lt_of_lt_of_le zero_lt_one hT
+  have hNpos  := lt_of_lt_of_le zero_lt_one hN
   have hsqrt : 1 ≤ Real.sqrt T := by simpa using Real.sqrt_le_sqrt hT
   have hsum : 1 ≤ Real.sqrt T+N/Real.sqrt T := by
     have : 0 ≤ N/Real.sqrt T := by positivity

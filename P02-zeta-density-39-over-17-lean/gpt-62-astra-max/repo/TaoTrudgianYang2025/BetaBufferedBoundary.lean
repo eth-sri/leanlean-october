@@ -1,7 +1,6 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedCutoff
-public import TaoTrudgianYang2025.BetaPoissonBoundary
+public import TaoTrudgianYang2025.BetaFourierModes
 
 @[expose] public section
 

@@ -13,28 +13,28 @@ namespace MathCollab.Density
 
 /-- The exact infinite contour identity, with no Weyl premise or fixed relation
 between the independent mollifier and smoothing parameters. -/
-theorem smoothedDetector_contour_identity {ρ : ℂ} {X Y : ℝ}
-    (hY : 1 ≤ Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re < 1)
-    (hZero : riemannZeta ρ = 0) :
+theorem smoothedDetector_contour_identity {ρ : ℂ} {X Y u : ℝ}
+    (hY : 1 ≤ Y) (hβ : u < ρ.re) (hβ' : ρ.re < 1)
+    (hZero : riemannZeta ρ = 0) (hu : 1/2 ≤ u := by norm_num) :
     smoothedDetector ρ X (1/Y) = detectorResidue ρ X Y +
       (((1/(2*Real.pi) : ℝ) : ℂ) * ∫ t : ℝ,
-        detectorKernel ρ X Y (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
-  let a : ℝ := 1/2-ρ.re
+        detectorKernel ρ X Y (((u-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
+  let a : ℝ := u-ρ.re
   let F := detectorKernel ρ X Y
   let Jl : ℂ := ∫ t : ℝ, F ((a : ℂ)+(t : ℂ)*I)
   let Jr : ℂ := ∫ t : ℝ, F (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)
   let c : ℂ := 1/(2*Real.pi*I)
   have hYpos : 0 < Y := lt_of_lt_of_le zero_lt_one hY
   have hl := intervalIntegral_tendsto_integral
-    (integrable_detectorKernel_left (X := X) hYpos hβ hβ'.le)
+    (integrable_detectorKernel_left (X := X) hYpos hβ hβ'.le hu)
     tendsto_neg_atTop_atBot (tendsto_id : Tendsto (fun R : ℝ => R) atTop atTop)
   have hr := intervalIntegral_tendsto_integral
-    (integrable_detectorKernel_right (X := X) hYpos hβ)
+    (integrable_detectorKernel_right (ρ := ρ) (X := X) hYpos (by linarith))
     tendsto_neg_atTop_atBot (tendsto_id : Tendsto (fun R : ℝ => R) atTop atTop)
   have hb := tendsto_detector_horizontal_integral (X := X) hY hβ hβ'.le
-    (show |(-1 : ℝ)| = 1 by norm_num)
+    (show |(-1 : ℝ)| = 1 by norm_num) hu
   have ht := tendsto_detector_horizontal_integral (X := X) hY hβ hβ'.le
-    (show |(1 : ℝ)| = 1 by norm_num)
+    (show |(1 : ℝ)| = 1 by norm_num) hu
   have hlim : Tendsto (fun R : ℝ => RectangleIntegral' F
       ((a : ℂ)-(R : ℂ)*I) (((1/2 : ℝ) : ℂ)+(R : ℂ)*I)) atTop
       (𝓝 (c*(I*Jr-I*Jl))) := by
@@ -44,10 +44,10 @@ theorem smoothedDetector_contour_identity {ρ : ℂ} {X Y : ℝ}
   have heq : ∀ᶠ R : ℝ in atTop, RectangleIntegral' F
       ((a : ℂ)-(R : ℂ)*I) (((1/2 : ℝ) : ℂ)+(R : ℂ)*I) = detectorResidue ρ X Y := by
     filter_upwards [eventually_gt_atTop |ρ.im|] with R hR
-    exact detector_finite_rectangle_kernel hYpos hβ hβ' hR hZero
+    exact detector_finite_rectangle_kernel hYpos hβ hβ' hR hZero hu
   have he : c*(I*Jr-I*Jl) = detectorResidue ρ X Y :=
     tendsto_nhds_unique hlim ((tendsto_congr' heq).mpr tendsto_const_nhds)
-  rw [smoothedDetector_eq_rightContour hYpos hβ]
+  rw [smoothedDetector_eq_rightContour hYpos (by linarith)]
   change (((1/(2*Real.pi) : ℝ) : ℂ)*Jr) = detectorResidue ρ X Y +
     (((1/(2*Real.pi) : ℝ) : ℂ)*Jl)
   rw [← he]

@@ -1,5 +1,6 @@
 module
-public import GuthMaynard.NativeSource.GuthMaynard.WeylExplicit
+public import GuthMaynard.NativeSource.GuthMaynard.SecondOrderMeanValue
+public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem norm_weighted_sum_le_of_antitone
         ∑ i ∈ Finset.Ico 0 (N - 1),
           ((f (i + 1) - f i : Real) : Complex) *
             (∑ j ∈ Finset.range (i + 1), g j)‖ := by
-      simp only [Finset.sum_range_zero, Complex.real_smul, mul_zero, sub_zero]
+      simp
     _ <= ‖(f (N - 1) : Complex) * (∑ i ∈ Finset.range N, g i)‖ +
         ‖∑ i ∈ Finset.Ico 0 (N - 1),
           ((f (i + 1) - f i : Real) : Complex) * (∑ j ∈ Finset.range (i + 1), g j)‖ :=
@@ -70,11 +71,5 @@ theorem norm_weighted_sum_le_of_antitone
       rw [← Finset.sum_mul, htel]
       ring
 
-theorem logarithmicSum_eq_sum_range (t : Real) (A N : Nat) :
-    logarithmicSum t A (A + N) =
-      ∑ n ∈ Finset.range N, unitaryPhase (logarithmicPhase t (A + n)) := by
-  unfold logarithmicSum phaseSum
-  rw [Finset.sum_Ico_eq_sum_range]
-  simp only [Nat.add_sub_cancel_left, Nat.cast_add]
 
 end GuthMaynard.NativeMoment

@@ -35,9 +35,9 @@ theorem heathBrown_three_sum_rpow_le
       (3 : ℝ) ^ r * (x ^ r + y ^ r + z ^ r) := by
   let m := max x (max y z)
   have hxm : x ≤ m := le_max_left _ _
-  have hym : y ≤ m := (le_max_left y z).trans (le_max_right x (max y z))
-  have hzm : z ≤ m := (le_max_right y z).trans (le_max_right x (max y z))
-  have hm0 : 0 ≤ m := hx.trans hxm
+  have hym  := (le_max_left y z).trans (le_max_right x (max y z))
+  have hzm  := (le_max_right y z).trans (le_max_right x (max y z))
+  have hm0  := hx.trans hxm
   have hsum : x + y + z ≤ 3 * m := by linarith
   have hpow := Real.rpow_le_rpow (by positivity) hsum hr
   rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 3) hm0] at hpow
@@ -64,7 +64,6 @@ theorem heathBrownSpacingBase_rpow_le
         ((N : ℝ) ^ r +
           (lambda * (N : ℝ) ^ 2) ^ r +
           (lambda ^ (-(2 / (k : ℝ)))) ^ r) := by
-  unfold heathBrownSpacingBase
   exact heathBrown_three_sum_rpow_le
     (by positivity) (by positivity) (by positivity) hr
 
@@ -80,8 +79,8 @@ theorem heathBrown_spacing_monomial_identity
   dsimp only
   let r := heathBrownCriticalReciprocal k
   have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
-  have hlambdaNonneg : 0 ≤ lambda := hlambda.le
-  have hNnonneg : (0 : ℝ) ≤ N := hNpos.le
+  have hlambdaNonneg  := hlambda.le
+  have hNnonneg  := hNpos.le
   have hkr : (k : ℝ) ≠ 0 := by positivity
   rw [mul_add, mul_add]
   have hfirst :

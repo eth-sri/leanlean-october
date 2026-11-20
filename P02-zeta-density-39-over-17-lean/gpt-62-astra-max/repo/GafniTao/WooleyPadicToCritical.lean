@@ -38,17 +38,16 @@ theorem vinogradovCriticalEndpoint_of_wooleyPadic
   let delta := epsilon / (k : ℝ)
   have hkPos : 0 < k := by omega
   have hkReal : (0 : ℝ) < k := by exact_mod_cast hkPos
-  have hdelta : 0 < delta := div_pos hepsilon hkReal
+  have hdelta  := div_pos hepsilon hkReal
   obtain ⟨C, hC, B0, hconcentration⟩ :=
     hconc.specialize hp hkp hdelta
   let D : ℕ := p ^ (B0 + 1) * s
-  have hsPos : 0 < s := by
-    exact fordVinogradovKappa_pos hk
+  have hsPos := fordVinogradovKappa_pos hk
   have hDPos : 0 < D := by
     dsimp [D]
     exact Nat.mul_pos (pow_pos hp.pos (B0 + 1)) hsPos
   refine ⟨C * (D : ℝ) ^ epsilon, mul_pos hC (Real.rpow_pos_of_pos
-    (by exact_mod_cast hDPos) _), ?_⟩
+    (by positivity) _), ?_⟩
   intro Q hQ
   obtain ⟨h, hB, hQph, hnowrap, hphUpper⟩ :=
     exists_wooleyPadicScale hk hp.two_le hQ
@@ -60,7 +59,7 @@ theorem vinogradovCriticalEndpoint_of_wooleyPadic
   have hphUpperNat : p ^ h ≤ D * Q := by
     simpa [D, s, Nat.mul_assoc] using hphUpper
   have hpowUpperNat : p ^ (k * h) ≤ (D * Q) ^ k := by
-    rw [show p ^ (k * h) = (p ^ h) ^ k by rw [← pow_mul, Nat.mul_comm]]
+    rw [show p ^ (k * h) = (p ^ h) ^ k by ring]
     exact Nat.pow_le_pow_left hphUpperNat k
   have hpowUpperReal :
       ((p ^ (k * h) : ℕ) : ℝ) ≤ ((D * Q : ℕ) : ℝ) ^ k := by
@@ -76,7 +75,7 @@ theorem vinogradovCriticalEndpoint_of_wooleyPadic
           (((D * Q : ℕ) : ℝ) ^ k) ^ delta :=
         Real.rpow_le_rpow (by positivity) hpowUpperReal hdelta.le
       _ = (((D : ℝ) * (Q : ℝ)) ^ (k : ℝ)) ^ delta := by
-        norm_num [Real.rpow_natCast]
+        simp
       _ = ((D : ℝ) * (Q : ℝ)) ^ ((k : ℝ) * delta) := by
         rw [Real.rpow_mul (mul_pos hDPosReal hQPos).le]
       _ = ((D : ℝ) * (Q : ℝ)) ^ epsilon := by rw [hdeltaScale]

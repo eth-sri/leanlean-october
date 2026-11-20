@@ -13,7 +13,7 @@ theorem sublinear_energy_power_solve {E A V p : ℝ}
     (h : E * V ^ 2 ≤ A * E ^ p) :
     E ≤ (A / V ^ 2) ^ (1 / (1 - p)) := by
   by_cases hEpos : 0 < E
-  · have hEp : 0 < E ^ p := Real.rpow_pos_of_pos hEpos p
+  · have hEp  := Real.rpow_pos_of_pos hEpos p
     have hId : E ^ p * E ^ (1 - p) = E := by
       rw [← Real.rpow_add hEpos, show p + (1 - p) = 1 by ring, Real.rpow_one]
     have hCancel : E ^ (1 - p) * V ^ 2 ≤ A := by
@@ -22,7 +22,7 @@ theorem sublinear_energy_power_solve {E A V p : ℝ}
         E ^ p * (E ^ (1 - p) * V ^ 2) = E * V ^ 2 := by rw [← mul_assoc, hId]
         _ ≤ A * E ^ p := h
         _ = E ^ p * A := mul_comm _ _
-    have hBase : E ^ (1 - p) ≤ A / V ^ 2 :=
+    have hBase  :=
       (le_div_iff₀ (sq_pos_of_pos hV)).mpr hCancel
     have hRaise := Real.rpow_le_rpow (Real.rpow_nonneg hE (1 - p))
       hBase (show 0 ≤ 1 / (1 - p) by positivity)

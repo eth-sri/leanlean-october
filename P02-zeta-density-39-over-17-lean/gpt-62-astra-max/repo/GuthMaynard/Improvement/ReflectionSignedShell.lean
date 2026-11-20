@@ -69,10 +69,10 @@ theorem reflection_both_shell_density (w : MathCollab.Density.ReflectionCutoff)
   refine ⟨K,C,hK,hC,?_⟩
   intro N L H u hN hL hH a ha μ hm hi h0 hμ S hS
   rcases hS with rfl | hS
-  · exact h N L H u hN hL hH a ha μ hm hi h0 hμ
-  have he : S = Icc (u-2*H) (u-H) := hS
+  · apply h <;> assumption
+  have he  := hS
   subst S
-  have hm' : Measurable (fun t => μ (-t)) := hm.comp measurable_neg
+  have hm'  := hm.comp measurable_neg
   have hi' : Integrable (fun t => μ (-t)) := by
     simpa using hi.comp_mul_left' (by norm_num : (-1:ℝ) ≠ 0)
   have hμ' (t : ℝ) : μ (-t) ≤ ‖boundedPolynomial N (fun n => conj (a n)) t‖^2 := by

@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPlanarRegularity
 
 @[expose] public section
@@ -67,8 +64,8 @@ theorem sargosPlanar_window_le_nearPairs {ι : Type*} (S : Finset ι)
     (∫ α in Icc c (c+δ), ∫ γ in Icc d (d+lambda),
       ‖sargosPlanarSum S z u v α γ‖^2) ≤
         (16*δ*lambda)*((sargosNearPairs S u v (1/δ) (1/lambda)).card : ℝ) := by
-  have hA : 0 < 1/δ := one_div_pos.mpr hδ
-  have hB : 0 < 1/lambda := one_div_pos.mpr hlambda
+  have hA  := one_div_pos.mpr hδ
+  have hB  := one_div_pos.mpr hlambda
   have hi := integrable_sargosWeightedPlanarIntegrand_outer S z u v hA hB
     (c+δ/2) (d+lambda/2)
   have hC : 0 ≤ 16*δ*lambda := by positivity

@@ -62,7 +62,7 @@ theorem eventually_zetaSmoothDivisorTest_support_physical {δ : ℝ} (hδ : 0 < 
   refine ⟨hT, ?_⟩
   intro G hG
   have hT0 : 0 < T := by linarith
-  have hG0 : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hG
+  have hG0  := (Real.rpow_pos_of_pos hT0 δ).trans_le hG
   have hlog0 : 0 < Real.log T := Real.log_pos (by linarith)
   have hwidth : 8 * Real.log T ≤ G := by simpa only [pow_one] using hlog.trans hG
   exact ⟨hG0, hlog0, hwidth, support_zetaSmoothDivisorTest_physical hT0 hG0 hlog0 hwidth⟩

@@ -26,7 +26,7 @@ theorem exists_smoothPowered_height {σ T t X Y : ℝ} (j : ℤ) (e r : ℕ) {k 
       ‖detectingPolynomial (2^l*(smoothHalfScale j e)^k) (smoothPoweredCoefficient X Y j e r k) t‖ := by
   obtain ⟨l, hl, hh⟩ := exists_smoothTaylor_powered_piece X Y t j e r hk
   refine ⟨l, hl, ?_⟩
-  have hlogpos : 0 < Real.log T := by linarith
+  
   have hkpos : (0 : ℝ) < k := by exact_mod_cast hk
   have hkKR : (k : ℝ) ≤ K+1 := by exact_mod_cast (show k ≤ K+1 by omega)
   have hlK : l ≤ K := by have := Finset.mem_range.mp hl; omega
@@ -99,7 +99,7 @@ theorem normalizedSmoothPoweredCoefficient_eventually {η : ℝ} (hη : 0 < η) 
   · rw [hz, norm_zero]
     positivity
   · have hu := (finiteBlock_pow_support (smoothTaylorArithmetic_support X Y j e r) k n hz).2
-    have hn : (n : ℝ) ≤ T^2 := (by exact_mod_cast hu : (n : ℝ) ≤ (2*(smoothHalfScale j e : ℝ))^k).trans hs
+    have hn  := (by exact_mod_cast hu : (n : ℝ) ≤ (2*(smoothHalfScale j e : ℝ))^k).trans hs
     exact hb (smoothTaylorArithmetic X Y j e r) (smoothTaylorArithmetic_norm_le X hY j e r) k n hk
       (by simpa only [Real.rpow_two] using hn)
 

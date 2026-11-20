@@ -13,7 +13,7 @@ theorem card_differenceFloorSupport_le_height {T : ℝ} {W : Finset ℝ}
     (hT : 2 ≤ T) (hBase : InBaseInterval T W) :
     ((differenceFloorSupport W).card : ℝ) ≤ 4 * T := by
   let K : ℕ := ⌈T⌉₊
-  have hKT : T ≤ (K : ℝ) := Nat.le_ceil T
+  have hKT  := Nat.le_ceil T
   have hKupper : (K : ℝ) < T + 1 := Nat.ceil_lt_add_one (by linarith)
   have hSub : differenceFloorSupport W ⊆ Icc (-(K : ℤ)) (K : ℤ) := by
     intro j hj
@@ -48,8 +48,6 @@ theorem card_four_le_four_height_energy {T : ℝ} {W : Finset ℝ}
       (W.card : ℝ) ^ 2 := by exact_mod_cast sum_differenceFloorCount W
   rw [hSum] at h
   have hCard := card_differenceFloorSupport_le_height hT hBase
-  have hm := mul_le_mul_of_nonneg_right hCard
-    (Nat.cast_nonneg (discreteAdditiveEnergy W) : (0 : ℝ) ≤ discreteAdditiveEnergy W)
   nlinarith
 
 theorem card_sq_le_four_quarter_height_energy {T : ℝ} {W : Finset ℝ}

@@ -24,7 +24,7 @@ theorem reflection_shell_integral (w : MathCollab.Density.ReflectionCutoff)
   intro ν _ L H u B hL hH hsupport hB
   let F := fun t => ∫ r, ‖MathCollab.Density.mellinLine (fun x => (w x:ℂ)) r‖*
     ‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2
-  have hi : Integrable F ν := (reflection_mellin_integrable w ν L H u).integral_prod_left
+  have hi  := (reflection_mellin_integrable w ν L H u).integral_prod_left
   let D := (1000/Real.pi^2)*MathCollab.Density.mellinMass w*(L^2/H)
   have hD : 0 ≤ D := by
     dsimp [D]
@@ -42,7 +42,7 @@ theorem reflection_shell_integral (w : MathCollab.Density.ReflectionCutoff)
       ring
     _ ≤ D*(MathCollab.Density.mellinMass w*B)+2*(K*L/L^A)^2*ν.real univ :=
       add_le_add (mul_le_mul_of_nonneg_left (reflection_mellin_integral_bound w ν L H u B hB) hD) le_rfl
-    _ = _ := by dsimp [D]; ring
+    _ = _ := by ring
 
 /-- Ordinary density domination discharges the shell's time-energy input. -/
 theorem reflection_shell_density_energy {μ : ℝ → ℝ} (hm : Measurable μ)

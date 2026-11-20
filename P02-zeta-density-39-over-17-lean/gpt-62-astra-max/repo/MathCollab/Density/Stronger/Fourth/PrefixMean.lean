@@ -69,8 +69,7 @@ theorem dirichletPrefix_one (a : ℕ → ℂ) (t : ℝ) :
   simp [dirichletPrefix]
 
 theorem dirichletPrefix_double (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
-    dirichletPrefix (2*N) a t = dirichletPrefix N a t+dirichletTime N a t := by
-  exact (Finset.sum_Ioc_consecutive
+    dirichletPrefix (2*N) a t = dirichletPrefix N a t+dirichletTime N a t := (Finset.sum_Ioc_consecutive
     (fun n : ℕ => a n*Complex.exp (-(I*(t:ℂ)*(Real.log n:ℂ))))
     (Nat.zero_le N) (by omega : N ≤ 2*N)).symm
 
@@ -135,8 +134,8 @@ theorem integral_norm_sq_dirichletPrefix_le
       (∑ n ∈ Finset.Ioc (2^j) (2*(2^j)), ‖a n‖^2) ≤ L) :
     (∫ t : ℝ in A..B, ‖dirichletPrefix (2^M) a t‖^2) ≤
       2*((M:ℝ)+1)^2*(B-A+2*(5*Real.pi+1)*(2:ℝ)^M)*L := by
-  have hL : 0 ≤ L := (sq_nonneg ‖a 1‖).trans hone
-  have hT : 0 ≤ B-A := sub_nonneg.mpr hAB
+  
+  
   let E : ℝ := (B-A+2*(5*Real.pi+1)*(2:ℝ)^M)*L
   have hfirst : (B-A)*‖a 1‖^2 ≤ E := by
     dsimp [E]
@@ -164,10 +163,8 @@ theorem integral_norm_sq_dirichletPrefix_le
         ∑ j ∈ Finset.range M, ∫ t : ℝ in A..B, ‖dirichletTime (2^j) a t‖^2) :=
       integral_norm_sq_dirichletPrefix_le_blocks M a hAB
     _ ≤ 2*((M:ℝ)+1)*((M:ℝ)+1)*E := by
-      rw [mul_assoc (2*((M:ℝ)+1))]
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
       nlinarith
-    _ = _ := by dsimp [E]; ring
+    _ = _ := by ring
 
 theorem integral_norm_sq_dirichletPrefix_reflected_le
     (M : ℕ) (a : ℕ → ℂ) (u : ℝ) {H L : ℝ} (hH : 0 ≤ H)
@@ -210,9 +207,7 @@ theorem sum_fourth_divisorTerm_eq_prefix (t c u : ℝ) (N : ℕ) :
         divisorDirichletTerm (afeCriticalPoint (-t)+((c:ℂ)+(u:ℂ)*I)) n := by
       symm
       apply Finset.sum_subset
-      · intro n hn
-        simp only [Finset.mem_Ioc,Finset.mem_range] at *
-        omega
+      · grind
       · intro n hn hnot
         have hn0 : n = 0 := by
           simp only [Finset.mem_Ioc,Finset.mem_range] at *

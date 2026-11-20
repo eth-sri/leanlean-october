@@ -50,8 +50,7 @@ theorem wooley_section7_BPrimeNat_le_zero
 theorem wooley_section7_BPrime_le_mul_HPrime
     {k r a b gamma : ℕ} (hr : 1 ≤ r) :
     wooleySection7BPrimeNat k r a b gamma ≤
-      r * wooleySection7HPrime k r a b gamma := by
-  exact le_smul_ceilDiv (by omega : 0 < r)
+      r * wooleySection7HPrime k r a b gamma := le_smul_ceilDiv (by omega : 0 < r)
 
 /-- The refinement depth in (7.22) is ordered correctly:
 `a + H' ≤ b'`.  This follows from the two literal ceiling definitions and
@@ -73,8 +72,7 @@ theorem wooley_section7_a_add_HPrime_le_nextB
     exact le_smul_ceilDiv (by omega : 0 < r)
   have hra : r * a ≤ r * nb := by
     omega
-  have ha : a ≤ nb := by
-    exact Nat.le_of_mul_le_mul_left hra (by omega)
+  have ha := Nat.le_of_mul_le_mul_left hra (by omega)
   have hbp : bp ≤ r * (nb - a) := by
     rw [Nat.mul_sub_left_distrib]
     omega
@@ -145,7 +143,7 @@ theorem wooley_section7_hard_triangular_loss
   have hRtwo : 2 * (wooleyTriangular r : ℝ) ≤
       (r : ℝ) * ((r : ℝ) + 1) := by
     exact_mod_cast hRtwoNat
-  have hkrPos : 0 < k - r := Nat.sub_pos_of_lt hrk
+  have hkrPos  := Nat.sub_pos_of_lt hrk
   have htailStrict : r + (k - r) * gamma < k * nu := by
     have hmul : (k - r) * gamma < (k - r) * nu :=
       Nat.mul_lt_mul_of_pos_left hgamma hkrPos
@@ -178,7 +176,7 @@ theorem wooley_section7_hard_triangular_loss
     dsimp [d]
     linarith
   have hR : (0 : ℝ) ≤ wooleyTriangular r := by positivity
-  have hrPos : (0 : ℝ) < r := by exact_mod_cast (show 0 < r by omega)
+  
   change (wooleyTriangular r : ℝ) * d < (k : ℝ) ^ 2 * (nu : ℝ) / 2
   by_cases hdNonneg : 0 ≤ d
   · have hmul := mul_le_mul hRtwo hd hdNonneg
@@ -191,10 +189,10 @@ theorem wooley_section7_hard_triangular_loss
       field_simp
     rw [heq] at hmul
     nlinarith
-  · have hdNeg : d < 0 := lt_of_not_ge hdNonneg
+  · have hdNeg  := lt_of_not_ge hdNonneg
     have hkPos : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
-    have hnuPos : (0 : ℝ) < nu := by exact_mod_cast (show 0 < nu by omega)
-    have : (wooleyTriangular r : ℝ) * d ≤ 0 :=
+    
+    have  :=
       mul_nonpos_of_nonneg_of_nonpos hR hdNeg.le
     exact this.trans_lt (by positivity)
 

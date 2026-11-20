@@ -48,8 +48,7 @@ theorem integrable_heathBrownStrongMellinCriticalMoment
       · apply Continuous.div
         · fun_prop
         · fun_prop
-        · intro u hu
-          exact (by positivity : 0 < delta + |u|).ne' hu
+        · grind
       · exact (continuous_zetaMomentCriticalNorm.pow 2).comp (by fun_prop)
     exact hcont.aestronglyMeasurable
   · filter_upwards with u
@@ -65,7 +64,6 @@ theorem integrable_heathBrownStrongMellinCriticalMoment
 theorem heathBrownStrongMellinCriticalMoment_nonneg
     {delta t : ℝ} (hdelta : 0 < delta) :
     0 ≤ heathBrownStrongMellinCriticalMoment delta t := by
-  unfold heathBrownStrongMellinCriticalMoment
   exact integral_nonneg fun u => by positivity
 
 theorem exists_norm_heathBrown_leftMellinIntegrand_strong_le :
@@ -93,7 +91,6 @@ theorem exists_norm_heathBrown_leftMellinIntegrand_strong_le :
         ((1 / 2 : ℝ) : ℂ) + ((t + u : ℝ) : ℂ) * I := by
     apply Complex.ext <;> simp
   rw [heathBrownZetaSquareMellinIntegrand, norm_mul, norm_pow, harg]
-  change _ * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ) ≤ _
   calc
     ‖Complex.Gamma (((-delta : ℝ) : ℂ) + (u : ℂ) * I)‖ *
         zetaMomentCriticalNorm (t + u) ^ (2 : ℕ) ≤
@@ -126,7 +123,7 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
   let f : ℝ → ℂ := fun u =>
     heathBrownZetaSquareMellinIntegrand s
       (((-delta : ℝ) : ℂ) + (u : ℂ) * I)
-  let g : ℝ → ℝ := fun u => Real.exp (-(4 / 3 : ℝ) * |u|) /
+  let g  := fun u => Real.exp (-(4 / 3 : ℝ) * |u|) /
     (delta + |u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
   have hf : Integrable f := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_minus
@@ -176,7 +173,7 @@ theorem exists_heathBrown_offCritical_plus_strong_le :
     exists_norm_heathBrown_leftVertical_strong_le
   let S : ℝ := heathBrownSmoothedDivisorMajorant
   let C : ℝ := S + R + V + 1
-  have hS : 0 ≤ S := heathBrownSmoothedDivisorMajorant_nonneg
+  have hS  := heathBrownSmoothedDivisorMajorant_nonneg
   have hC : 0 < C := by dsimp only [C]; linarith
   refine ⟨C, hC, ?_⟩
   intro delta t hdelta hdeltaUpper ht
@@ -185,8 +182,8 @@ theorem exists_heathBrown_offCritical_plus_strong_le :
   have hsRe : s.re = 1 / 2 + delta := by simp [s]
   have hEq := heathBrown_zetaSquare_eq_smoothed_sub_residue_sub_leftVertical
     (s := s) hdelta hdeltaUpper hsRe
-  have hSeries : ‖heathBrownSmoothedDivisorSeries s‖ ≤ S :=
-    norm_heathBrownSmoothedDivisorSeries_le (by rw [hsRe]; linarith)
+  have hSeries  :=
+    norm_heathBrownSmoothedDivisorSeries_le (by linarith)
   have hRes : ‖heathBrownMovingPoleResidue s‖ ≤ R := by
     simpa only [s] using hResidue delta t hdelta hdeltaUpper ht
   have hVert :
@@ -210,8 +207,7 @@ theorem exists_heathBrown_offCritical_plus_strong_le :
       linarith
     _ ≤ S + R + V * m := by linarith
     _ ≤ C * (1 + m) := by
-      dsimp only [C]
-      nlinarith [mul_nonneg hS hm, mul_nonneg hR.le hm, mul_nonneg hV.le hm]
+      nlinarith
 
 
 end MathCollab.Density.Stronger.PointMean

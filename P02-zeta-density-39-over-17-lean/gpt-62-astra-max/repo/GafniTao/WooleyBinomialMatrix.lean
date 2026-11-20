@@ -51,8 +51,6 @@ def wooleyIntMatrixMod {r : ℕ} (A : Matrix (Fin r) (Fin r) ℤ) (q : ℕ) :
 theorem wooleyIntMatrixMod_det {r q : ℕ}
     (A : Matrix (Fin r) (Fin r) ℤ) :
     (A.det : ZMod q) = (wooleyIntMatrixMod A q).det := by
-  change (Int.castRingHom (ZMod q)) A.det =
-    ((Int.castRingHom (ZMod q)).mapMatrix A).det
   exact (Int.castRingHom (ZMod q)).map_det A
 
 /-- The paper's factorial scaling and row factorization, entry for entry. -/
@@ -112,7 +110,7 @@ theorem wooleySection7_binomialMatrix_det_ne_zero
     {k r p : ℕ} (hp : p.Prime) (hrk : r ≤ k) (hkp : k < p) :
     (wooleySection7BinomialMatrix k r p).det ≠ 0 := by
   let : Fact p.Prime := ⟨hp⟩
-  let v : Fin r → ZMod p :=
+  let v  :=
     fun l => (wooleySection7Node k r l : ZMod p)
   let P : Fin r → Polynomial (ZMod p) :=
     fun i => descPochhammer (ZMod p) (i : ℕ)
@@ -171,13 +169,13 @@ theorem wooleySection7_sourceMatrix_isUnit_primePower
       (Omega i l : ZMod p) =
         (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) : ZMod p)) :
     IsUnit (wooleyIntMatrixMod Omega (p ^ L)) := by
-  have hdetp : (Omega.det : ZMod p) ≠ 0 :=
+  have hdetp  :=
     wooleySection7_sourceMatrix_det_mod_prime_ne_zero hp hrk hkp Omega hOmega
   let : Fact p.Prime := ⟨hp⟩
-  have hunitp : IsUnit (Omega.det : ZMod p) := isUnit_iff_ne_zero.mpr hdetp
-  have hcoprime : IsCoprime (p : ℤ) Omega.det :=
+  have hunitp  := isUnit_iff_ne_zero.mpr hdetp
+  have hcoprime  :=
     (ZMod.coe_int_isUnit_iff_isCoprime Omega.det p).mp hunitp
-  have hunitPow : IsUnit (Omega.det : ZMod (p ^ L)) :=
+  have hunitPow  :=
     (ZMod.coe_int_isUnit_iff_isCoprime Omega.det (p ^ L)).mpr (by
       simpa only [Int.natCast_pow] using
         hcoprime.pow_left (m := L))
@@ -195,7 +193,7 @@ theorem wooleySection7_sourceMatrix_transpose_exists_leftInverse_primePower
         (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) : ZMod p)) :
     ∃ G : Matrix (Fin r) (Fin r) (ZMod (p ^ L)),
       G * Matrix.transpose (wooleyIntMatrixMod Omega (p ^ L)) = 1 := by
-  have hunit : IsUnit (wooleyIntMatrixMod Omega (p ^ L)) :=
+  have hunit  :=
     wooleySection7_sourceMatrix_isUnit_primePower
       (L := L) hp hrk hkp Omega hOmega
   have hunitT :

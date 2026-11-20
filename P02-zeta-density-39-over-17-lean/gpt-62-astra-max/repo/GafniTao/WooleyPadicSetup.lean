@@ -45,7 +45,7 @@ theorem fordVinogradovPowerVector_le_top_degree
     (x : FordVinogradovTuple s Q) (j : Fin k) :
     fordVinogradovPowerVector s k Q x j ≤ (s * Q ^ k : ℕ) := by
   have hx := (fordVinogradovPowerVector_bounds x j).2
-  have hj : (j : ℕ) + 1 ≤ k := j.isLt
+  have hj  := j.isLt
   have hpow : Q ^ ((j : ℕ) + 1) ≤ Q ^ k :=
     Nat.pow_le_pow_right (by omega) hj
   have hx' : fordVinogradovPowerVector s k Q x j ≤
@@ -78,8 +78,7 @@ theorem wooleyPadicSolution_powerVector_eq
     exact_mod_cast fordVinogradovPowerVector_le_top_degree hQ z.1.1 j
   have hbUpper : b ≤ ((s * Q ^ k : ℕ) : ℤ) := by
     exact_mod_cast fordVinogradovPowerVector_le_top_degree hQ z.1.2 j
-  have hmodulusZ : ((s * Q ^ k : ℕ) : ℤ) < ((p ^ B : ℕ) : ℤ) := by
-    exact_mod_cast hmodulus
+  
   have habs : |b - a| < ((p ^ B : ℕ) : ℤ) := by
     rw [abs_lt]
     constructor <;> omega

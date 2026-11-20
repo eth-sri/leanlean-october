@@ -36,10 +36,10 @@ theorem coprime_dyadic_cubic {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
     have hp := hQ p p.2
     have hq := hQ q q.2
     have hgap := rational_log_separation ⟨hp.1,hp.2.1,hp.2.2.1⟩
-      ⟨hq.1,hq.2.1,hq.2.2.1⟩ (by exact fun he => hpq (Subtype.ext he))
+      ⟨hq.1,hq.2.1,hq.2.2.1⟩ (fun he => hpq (Subtype.ext he))
       hp.2.2.2.2.2.2 hq.2.2.2.2.2.2
-      (U := 2) ((div_le_iff₀ (by exact_mod_cast hp.2.1)).mpr (by linarith [hp.2.2.2.1,hp.2.2.2.2.2.1]))
-      ((div_le_iff₀ (by exact_mod_cast hq.2.1)).mpr (by linarith [hq.2.2.2.1,hq.2.2.2.2.2.1]))
+      (U := 2) ((div_le_iff₀ (by exact_mod_cast hp.2.1)).mpr (by linarith))
+      ((div_le_iff₀ (by exact_mod_cast hq.2.1)).mpr (by linarith))
     dsimp [x,δ]
     rw [← sub_div,abs_div,abs_of_pos (by positivity : 0 < 2*Real.pi)]
     apply (le_div_iff₀ (by positivity : 0 < 2*Real.pi)).mpr
@@ -51,8 +51,7 @@ theorem coprime_dyadic_cubic {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
     simp only [pairRatio,Rat.cast_div,Rat.cast_natCast]
   simp only [he] at hh
   rw [Finset.sum_coe_sort Q (fun q => ‖∑ t ∈ W, phase (pairRatio q) t‖^3)] at hh
-  have hd : δ⁻¹=16*Real.pi*M^2 := by dsimp [δ]; rw [inv_div,div_one]
-  rwa [hd] at hh
+  grind
 
 /-- Summing the small-gcd classes costs N^2, with no logarithmic or
 subpower loss and with the original quadruple energy retained. -/
@@ -67,7 +66,7 @@ theorem small_gcd_cubic_energy :
       (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖^3) ≤
         C*N^2*Real.sqrt (W.card:ℝ)*Real.sqrt (discreteAdditiveEnergy W:ℝ) := by
   let C : ℝ := 512*(1+12*Real.pi)
-  refine ⟨C*(1+32*Real.pi),by dsimp [C]; positivity,?_⟩
+  refine ⟨C*(1+32*Real.pi),by positivity,?_⟩
   intro T t₀ N hT hN P hP W hW hsep
   have hTp : 0 < T := by linarith
   have hgeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -115,7 +114,6 @@ theorem small_gcd_cubic_energy :
     _ = C*(∑ d ∈ gcdValues P, (T+16*Real.pi*(N/d)^2))*Real.sqrt (W.card:ℝ)*
         Real.sqrt (discreteAdditiveEnergy W:ℝ) := by simp only [sum_mul,mul_sum]
     _ ≤ C*((1+32*Real.pi)*N^2)*Real.sqrt (W.card:ℝ)*Real.sqrt (discreteAdditiveEnergy W:ℝ) := by
-      have hC : 0 ≤ C := by dsimp [C]; positivity
       gcongr
     _ = _ := by ring
 

@@ -79,7 +79,6 @@ theorem integrable_heathBrownCellIntersectionIndicator
   let : IsFiniteMeasure (heathBrownCoefficientMeasure k) := by
     unfold heathBrownCoefficientMeasure
     infer_instance
-  unfold heathBrownCellIntersectionIndicator
   exact (integrable_const (1 : ℝ)).indicator
     ((measurableSet_heathBrownCoefficientCell k H f p.1).inter
       (measurableSet_heathBrownCoefficientCell k H f p.2))
@@ -91,7 +90,6 @@ theorem integral_heathBrownCellIntersectionIndicator
       (heathBrownCoefficientMeasure k).real
         (heathBrownCoefficientCell k H f p.1 ∩
           heathBrownCoefficientCell k H f p.2) := by
-  unfold heathBrownCellIntersectionIndicator
   exact integral_indicator_one
     ((measurableSet_heathBrownCoefficientCell k H f p.1).inter
       (measurableSet_heathBrownCoefficientCell k H f p.2))
@@ -153,8 +151,7 @@ theorem integral_heathBrownNu_sq_le_overlap_count
         simp only [P, heathBrownOverlappingCellPairs, Finset.mem_filter]
         exact fun h => hover h.2
       rw [ite_eq_right hpP]
-      have hempty : heathBrownCoefficientCell k H f p.1 ∩
-          heathBrownCoefficientCell k H f p.2 = ∅ := not_nonempty_iff_eq_empty.mp hover
+      have hempty  := not_nonempty_iff_eq_empty.mp hover
       simp [hempty]
   calc
     ∑ p ∈ S,

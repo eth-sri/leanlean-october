@@ -42,8 +42,8 @@ theorem smooth_square_le {κ g : ℝ → ℝ} {B : ℝ}
     smooth κ g x ^ 2 ≤ smooth κ (fun y => g y ^ 2) x := by
   have hkxm : Measurable (fun y : ℝ => κ (x - y)) :=
     hκm.comp (measurable_const.sub measurable_id)
-  have hkxi : Integrable (fun y : ℝ => κ (x - y)) := hκi.comp_sub_left x
-  have hprod2 : Integrable (fun y => κ (x - y) * g y ^ 2) :=
+  have hkxi  := hκi.comp_sub_left x
+  have hprod2  :=
     hg2.bdd_mul hkxm.aestronglyMeasurable (Eventually.of_forall (fun y => hκB (x-y)))
   have hs1 : MemLp (fun y => Real.sqrt (κ (x - y))) 2 volume := by
     apply (memLp_two_iff_integrable_sq hkxm.sqrt.aestronglyMeasurable).2

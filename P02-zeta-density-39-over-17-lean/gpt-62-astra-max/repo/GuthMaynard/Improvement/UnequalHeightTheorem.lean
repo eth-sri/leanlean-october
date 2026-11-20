@@ -32,8 +32,8 @@ theorem adaptive_sparse_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   have hS : 0 < S := div_pos (gmAffineSecondPoissonCutoff_pos hTp hQ) hQ
   have hTS : T ≤ S := gmAffineSecondPoissonSmoothingScale_ge hQ
   let ft := gmAffineTildeSchwartz S hS f
-  have hft : ∀ x, 0 ≤ ft x := gmAffineTildeSchwartz_nonneg S hS f hf
-  have hwidth : 2/S ≤ (1/4:ℝ) := (div_le_iff₀ hS).mpr (by linarith only [hT,hTS])
+  have hft  := gmAffineTildeSchwartz_nonneg S hS f hf
+  have hwidth : 2/S ≤ (1/4:ℝ) := (div_le_iff₀ hS).mpr (by linarith)
   have hsft : GMAffineSupportedOn (1/4:ℝ) (9/4) ft :=
     (gmAffineTildeSchwartz_supportedOn hS f hs.supportedOn).mono (by linarith) (by linarith)
   have hpft : GMAffineHeightFourierMassFamilyAtDepth T (fun β n => 2*D β n) 0 ft := by

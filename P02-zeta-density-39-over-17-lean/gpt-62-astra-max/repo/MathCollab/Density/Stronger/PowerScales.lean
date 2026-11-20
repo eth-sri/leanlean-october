@@ -16,14 +16,14 @@ halves of that exponent. The upper bound on k is fixed before x varies. -/
 theorem bounded_power_exponent {a d x : ℝ}
     (ha : 0 < a) (hd : 0 < d) (hdx : d ≤ x) (hx : x ≤ 3*a/4) :
     ∃ k : ℕ, 1 ≤ k ∧ k ≤ ⌈a/d⌉₊ ∧ a ≤ (k : ℝ)*x ∧ (k : ℝ)*x ≤ 3*a/2 := by
-  have hxpos : 0 < x := hd.trans_le hdx
+  have hxpos  := hd.trans_le hdx
   refine ⟨⌈a/x⌉₊, ?_, ?_, ?_, ?_⟩
   · have hc := Nat.le_ceil (a/x)
     by_contra h
     have hz : ⌈a/x⌉₊ = 0 := by omega
     rw [hz, Nat.cast_zero] at hc
     exact (not_le_of_gt (div_pos ha hxpos)) hc
-  · exact Nat.ceil_mono (div_le_div_of_nonneg_left ha.le hd hdx)
+  · gcongr
   · exact (div_le_iff₀ hxpos).mp (Nat.le_ceil (a/x))
   · by_cases hsmall : x ≤ a/2
     · have hc := Nat.ceil_lt_add_one (show 0 ≤ a/x by positivity)
@@ -42,8 +42,8 @@ theorem bounded_power_scale {T M a d : ℝ}
     (hlo : T^d ≤ M) (hhi : M ≤ T^(3*a/4)) :
     ∃ k : ℕ, 1 ≤ k ∧ k ≤ ⌈a/d⌉₊ ∧ T^a ≤ M^k ∧ M^k ≤ T^(3*a/2) := by
   have hTpos : 0 < T := by linarith
-  have hlogT : 0 < Real.log T := Real.log_pos hT
-  have hMpos : 0 < M := (Real.rpow_pos_of_pos hTpos d).trans_le hlo
+  have hlogT  := Real.log_pos hT
+  have hMpos  := (Real.rpow_pos_of_pos hTpos d).trans_le hlo
   let x := Real.log M / Real.log T
   have hxlo : d ≤ x := by
     apply (le_div_iff₀ hlogT).mpr
@@ -92,12 +92,12 @@ theorem bounded_power_piece_scales {T M a c : ℝ} {k K ℓ : ℕ}
     (hlo : T^a ≤ M^k) (hhi : M^k ≤ T^c) :
     T^a ≤ (2 : ℝ)^ℓ*M^k ∧ (2 : ℝ)^ℓ*M^k ≤ (2 : ℝ)^K*T^c := by
   have htwo : (1 : ℝ) ≤ 2^ℓ := one_le_pow₀ (by norm_num)
-  have hpow : 0 ≤ M^k := pow_nonneg hM k
+  have hpow  := pow_nonneg hM k
   have htwoK : (2 : ℝ)^ℓ ≤ 2^K :=
     pow_le_pow_right₀ (by norm_num) (by omega)
   refine ⟨hlo.trans ?_, ?_⟩
   · nlinarith
-  · exact mul_le_mul htwoK hhi hpow (by positivity)
+  · gcongr
 
 /-- The complete convolution support obeys the same fixed upper factor. -/
 theorem bounded_power_support_scale {T M c : ℝ} {k K : ℕ}
@@ -107,15 +107,5 @@ theorem bounded_power_support_scale {T M c : ℝ} {k K : ℕ}
   exact mul_le_mul (pow_le_pow_right₀ (by norm_num) hkK) hhi
     (pow_nonneg hM k) (by positivity)
 
-/-- A fixed dyadic enlargement stays below the original height once c<1.
-This is the precise eventual assertion needed after convolution splitting. -/
-theorem fixed_scale_factor_eventually_below_height {C c : ℝ} (hc : c < 1) :
-    ∀ᶠ T : ℝ in atTop, C*T^c ≤ T := by
-  filter_upwards [eventually_gt_atTop (0 : ℝ),
-    (tendsto_rpow_atTop (show 0 < 1-c by linarith)).eventually_ge_atTop C]
-    with T hT hlarge
-  calc
-    C*T^c ≤ T^(1-c)*T^c := mul_le_mul_of_nonneg_right hlarge (by positivity)
-    _ = T := by rw [← Real.rpow_add hT]; norm_num
 
 end MathCollab.Density.Stronger

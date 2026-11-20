@@ -32,35 +32,31 @@ theorem norm_zetaMollifier_le_cutoff (X : ℝ) {s : ℂ} (hs : 0 ≤ s.re) :
 
 /-- Actual zeta has a global linear majorant on the critical line. This is
 coarse growth for contour convergence, not a Weyl estimate. -/
+theorem norm_zeta_line {u : ℝ} (hu : 1/2 ≤ u) (hu' : u < 1) (t : ℝ) :
+    ‖riemannZeta ((u:ℂ)+(t:ℂ)*I)‖ ≤ (1/(1-u)+2)*(1+|t|) := by
+  let s := (u:ℂ)+(t:ℂ)*I
+  have hr : s.re=u := by simp [s]
+  have hs1 : s≠1 := by intro h; rw [h] at hr; simp at hr; linarith
+  have hd : 1-u ≤ ‖s-1‖ := by simpa [hr,abs_of_nonpos (sub_nonpos.mpr hu'.le)] using abs_re_le_norm (s-1)
+  have ha := ZetaGrowth.norm_abelZetaRemainder_le (s:=s) (by linarith)
+  have hsn : ‖s‖ ≤ 1+|t| := (norm_le_abs_re_add_abs_im s).trans (by simp [s,abs_of_nonneg (by linarith : 0≤u)]; linarith)
+  change ‖riemannZeta s‖ ≤ _
+  rw [ZetaGrowth.riemannZeta_eq_abel (by linarith) hs1]
+  apply (norm_sub_le ..).trans
+  rw [norm_div,norm_mul,div_eq_mul_one_div]
+  have hd' := one_div_le_one_div_of_le (by linarith : 0<1-u) hd
+  have ha' : ‖ZetaGrowth.abelZetaRemainder s‖ ≤ 2 := ha.trans ((div_le_iff₀ (by linarith)).mpr (by linarith))
+  calc
+    _ ≤ (1+|t|)*(1/(1-u))+(1+|t|)*2 := by gcongr
+    _ = _ := by ring
+
 theorem norm_riemannZeta_critical_le_linear (t : ℝ) :
     ‖riemannZeta ((1/2 : ℂ)+(t : ℂ)*I)‖ ≤ 4*(1+|t|) := by
-  let s : ℂ := (1/2 : ℂ)+(t : ℂ)*I
-  have hre : s.re = 1/2 := by simp [s]
-  have hs : s ≠ 1 := by intro h; have he := congrArg Complex.re h; simp [hre] at he
-  have hden : (1/2 : ℝ) ≤ ‖s-1‖ := by
-    have h := Complex.abs_re_le_norm (s-1)
-    norm_num [hre] at h ⊢
-    exact h
-  have hr := ZetaGrowth.norm_abelZetaRemainder_le (s := s) (by rw [hre]; norm_num)
-  rw [hre] at hr
-  norm_num at hr
-  have hsn : ‖s‖ ≤ 1+|t| := by
-    have h := Complex.norm_le_abs_re_add_abs_im s
-    norm_num [s] at h
-    linarith
-  change ‖riemannZeta s‖ ≤ _
-  rw [ZetaGrowth.riemannZeta_eq_abel (by rw [hre]; norm_num) hs]
-  calc
-    _ ≤ ‖s/(s-1)‖ + ‖s*ZetaGrowth.abelZetaRemainder s‖ := norm_sub_le _ _
-    _ = ‖s‖/‖s-1‖ + ‖s‖*‖ZetaGrowth.abelZetaRemainder s‖ := by rw [norm_div, norm_mul]
-    _ ≤ ‖s‖/(1/2)+‖s‖*2 := add_le_add
-      (div_le_div_of_nonneg_left (norm_nonneg _) (by norm_num) hden)
-      (mul_le_mul_of_nonneg_left hr (norm_nonneg _))
-    _ ≤ _ := by linarith
+  convert norm_zeta_line (u:=1/2) le_rfl (by norm_num) t using 1 <;> norm_num
 
 /-- The right contour is absolutely integrable for independent X and Y. -/
 theorem integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
-    (hY : 0 < Y) (hρ : 3/4 ≤ ρ.re) :
+    (hY : 0 < Y) (hρ : 1/2 < ρ.re) :
     Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)) := by
   let line := fun t : ℝ => ((1/2 : ℝ) : ℂ)+(t : ℂ)*I
   have hg : Integrable (fun t : ℝ => Complex.Gamma (line t) *
@@ -87,15 +83,15 @@ theorem integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
   ring
 
 /-- The shifted contour is absolutely integrable using only linear zeta growth. -/
-theorem integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
-    (hY : 0 < Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
-    Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
-  let a : ℝ := 1/2-ρ.re
+theorem integrable_detectorKernel_left {ρ : ℂ} {X Y u : ℝ}
+    (hY : 0 < Y) (hβ : u < ρ.re) (hβ' : ρ.re ≤ 1) (hu : 1/2 ≤ u := by norm_num) :
+    Integrable (fun t : ℝ => detectorKernel ρ X Y (((u-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
+  let a : ℝ := u-ρ.re
   let line := fun t : ℝ => (a : ℂ)+(t : ℂ)*I
-  have he : ∀ t : ℝ, ρ+line t = (1/2 : ℂ)+((ρ.im+t : ℝ) : ℂ)*I := by
+  have he : ∀ t : ℝ, ρ+line t = (u : ℂ)+((ρ.im+t : ℝ) : ℂ)*I := by
     intro t
     apply Complex.ext <;> simp [line, a]
-  have hg := (uniform_detector_gamma_mass.choose_spec.2 ρ.re hβ hβ').2.1
+  have hg := ((uniform_detector_gamma_mass hβ hu).choose_spec.2 ρ.re le_rfl hβ').2.1
   have hc : Continuous (fun t : ℝ => detectorKernel ρ X Y (line t)) := by
     unfold detectorKernel
     apply Continuous.mul
@@ -116,23 +112,28 @@ theorem integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
       rw [he]
       intro h
       have hr := congrArg Complex.re h
-      norm_num at hr
-  let C : ℝ := Y^a*(⌊X⌋₊ : ℝ)*4*(1+|ρ.im|)
+      simp at hr
+      linarith
+  let K := 1/(1-u)+2
+  have hd : 0 < 1-u := by linarith
+  have hK : 0 ≤ K := by dsimp [K]; positivity
+  let C : ℝ := Y^a*(⌊X⌋₊ : ℝ)*K*(1+|ρ.im|)
   have hbound : ∀ t : ℝ, ‖detectorKernel ρ X Y (line t)‖ ≤
       C*((1+|t|)*‖Complex.Gamma (line t)‖) := by
     intro t
-    have hm := norm_zetaMollifier_le_cutoff X (s := ρ+line t) (by rw [he]; norm_num)
-    have hz := norm_riemannZeta_critical_le_linear (ρ.im+t)
+    have hm := norm_zetaMollifier_le_cutoff X (s := ρ+line t) (by rw [he]; simp; linarith)
+    have hz := norm_zeta_line hu (by linarith) (ρ.im+t)
     rw [← he] at hz
     have hab := abs_add_le ρ.im t
-    have hzt : ‖riemannZeta (ρ+line t)‖ ≤ 4*(1+|ρ.im|)*(1+|t|) := by
-      nlinarith [mul_nonneg (abs_nonneg ρ.im) (abs_nonneg t)]
+    have hzt : ‖riemannZeta (ρ+line t)‖ ≤ K*(1+|ρ.im|)*(1+|t|) := by
+      rw [mul_assoc]
+      exact hz.trans (mul_le_mul_of_nonneg_left (by nlinarith [mul_nonneg (abs_nonneg ρ.im) (abs_nonneg t)]) hK)
     dsimp [detectorKernel]
     rw [norm_mul, norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hY]
     have hre : (line t).re = a := by simp [line]
     rw [hre]
     calc
-      _ ≤ (Y^a*‖Complex.Gamma (line t)‖)*(⌊X⌋₊ : ℝ)*(4*(1+|ρ.im|)*(1+|t|)) :=
+      _ ≤ (Y^a*‖Complex.Gamma (line t)‖)*(⌊X⌋₊ : ℝ)*(K*(1+|ρ.im|)*(1+|t|)) :=
         mul_le_mul (mul_le_mul_of_nonneg_left hm (by positivity)) hzt (norm_nonneg _) (by positivity)
       _ = _ := by dsimp [C]; ring
   exact (hg.const_mul C).mono' hc.aestronglyMeasurable (Filter.Eventually.of_forall hbound)
@@ -191,26 +192,24 @@ theorem tendsto_detector_horizontal_majorant (C : ℝ) :
   · simp
 
 /-- Both horizontal integrals vanish as the independent rectangle height grows. -/
-theorem tendsto_detector_horizontal_integral {ρ : ℂ} {X Y ε : ℝ}
-    (hY : 1 ≤ Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) :
-    Tendsto (fun R : ℝ => ∫ u in (1/2-ρ.re)..(1/2 : ℝ),
+theorem tendsto_detector_horizontal_integral {ρ : ℂ} {X Y ε u : ℝ}
+    (hY : 1 ≤ Y) (hβ : u < ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) (hu : 1/2 ≤ u := by norm_num) :
+    Tendsto (fun R : ℝ => ∫ u in (u-ρ.re)..(1/2 : ℝ),
       detectorKernel ρ X Y ((u : ℂ)+((ε*R : ℝ) : ℂ)*I)) atTop (𝓝 0) := by
   let C : ℝ := 60*Y^(1/2 : ℝ)*(⌊X⌋₊ : ℝ)*(2+|ρ.im|)
   apply squeeze_zero_norm' _ (tendsto_detector_horizontal_majorant C)
   filter_upwards [eventually_ge_atTop (|ρ.im|+1)] with R hR
   have hRpos : 0 < R := by linarith [abs_nonneg ρ.im]
   have he : |ε*R| = R := by rw [abs_mul, hε, one_mul, abs_of_pos hRpos]
-  have hlength : |(1/2 : ℝ)-(1/2-ρ.re)| ≤ 1 := by
-    rw [show (1/2 : ℝ)-(1/2-ρ.re) = ρ.re by ring,
-      abs_of_nonneg (show 0 ≤ ρ.re by linarith)]
-    exact hβ'
-  have hpoint : ∀ u ∈ Set.uIoc (1/2-ρ.re) (1/2 : ℝ),
-      ‖detectorKernel ρ X Y ((u : ℂ)+((ε*R : ℝ) : ℂ)*I)‖ ≤
+  have hlength : |(1/2 : ℝ)-(u-ρ.re)| ≤ 1 := by
+    rw [abs_le]; constructor <;> linarith
+  have hpoint : ∀ v ∈ Set.uIoc (u-ρ.re) (1/2 : ℝ),
+      ‖detectorKernel ρ X Y ((v : ℂ)+((ε*R : ℝ) : ℂ)*I)‖ ≤
         C*(1+R)^3*Real.exp (-R) := by
-    intro u hu
-    rw [Set.uIoc_of_le (by linarith : 1/2-ρ.re ≤ (1/2 : ℝ))] at hu
+    intro v hv
+    rw [Set.uIoc_of_le (by linarith : u-ρ.re ≤ (1/2 : ℝ))] at hv
     have h := norm_detectorKernel_horizontal (ρ := ρ) (X := X) (Y := Y)
-      (u := u) (t := ε*R) hY hβ' hu.1.le hu.2 (by rw [he]; exact hR)
+      (u := v) (t := ε*R) hY hβ' (by linarith [hv.1]) hv.2 (by rw [he]; exact hR)
     rw [he] at h
     exact h
   have hnonneg : 0 ≤ C*(1+R)^3*Real.exp (-R) := by dsimp [C]; positivity

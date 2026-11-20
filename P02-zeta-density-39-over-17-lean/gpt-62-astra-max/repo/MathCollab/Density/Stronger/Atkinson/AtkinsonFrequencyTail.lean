@@ -21,7 +21,7 @@ theorem atkinsonRootSlope_far_positive {T b y : ℝ} (hT : 0 < T)
     (hy : y ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T))
     (hb : 8 * Real.sqrt T ≤ b) :
     b ≤ atkinsonRootSlope T b y := by
-  have hy0 : 0 < y := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
+  have hy0  := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
   have hp : 0 ≤ T / (Real.pi * y) := by positivity
   unfold atkinsonRootSlope
   nlinarith [Real.sqrt_nonneg T, hy.2]
@@ -30,7 +30,7 @@ theorem atkinsonRootSlope_far_negative {T b y : ℝ} (hT : 0 < T)
     (hy : y ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T))
     (hb : 8 * Real.sqrt T ≤ b) :
     atkinsonRootSlope T (-b) y ≤ -b := by
-  have hy0 : 0 < y := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
+  have hy0  := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
   have hs : Real.sqrt (T / 16) = Real.sqrt T / 4 := by
     rw [Real.sqrt_div hT.le]
     norm_num
@@ -52,7 +52,7 @@ theorem norm_atkinsonRootKernel_integral_far {T b c : ℝ} (hT : 0 < T)
     ‖∫ y in Real.sqrt (T / 16)..c, atkinsonRootKernel T b y‖ ≤ 1 / (b * Real.pi) ∧
     ‖∫ y in Real.sqrt (T / 16)..c, atkinsonRootKernel T (-b) y‖ ≤ 1 / (b * Real.pi) := by
   have ha : 0 < Real.sqrt (T / 16) := Real.sqrt_pos.2 (by positivity)
-  have hb0 : 0 < b := (by positivity : 0 < 8 * Real.sqrt T).trans_le hb
+  have hb0  := (by positivity : 0 < 8 * Real.sqrt T).trans_le hb
   have hmem (y : ℝ) (hy : y ∈ Icc (Real.sqrt (T / 16)) c) :
       y ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T) := ⟨hy.1, hy.2.trans hc.2⟩
   have hd (u y : ℝ) (hy : y ∈ Icc (Real.sqrt (T / 16)) c) :

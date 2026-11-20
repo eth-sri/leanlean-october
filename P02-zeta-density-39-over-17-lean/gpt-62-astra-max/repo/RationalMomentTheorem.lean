@@ -20,7 +20,7 @@ theorem numerator_bound_of_log {r : ℚ} (hr : 0 < r)
     rw [← Real.exp_log hrR]
     exact Real.exp_le_exp.mpr (le_trans (le_abs_self _) hlog)
   rw [← hrat] at hval
-  exact (div_le_iff₀ (by exact_mod_cast r.pos : (0 : ℝ) < r.den)).mp hval
+  exact (div_le_iff₀ (by positivity : (0 : ℝ) < r.den)).mp hval
 
 /-- Complete finite-height rational moment theorem. The coefficient-energy
 estimate is proved internally, and the constant is uniform in all data after

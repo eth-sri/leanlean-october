@@ -44,7 +44,7 @@ theorem measurable_dfiBesselY0 : Measurable dfiBesselY0 := by
     unfold dfiBesselY0Osc
     simp only [intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2)]
     simpa only [Function.comp_def] using! h
-  have hts : Measurable dfiBesselY0Tail :=
+  have hts  :=
     (ht.integral_prod_right' (ν := volume.restrict (Ioi (0 : ℝ)))).measurable
   exact measurable_const.mul (hos.sub hts)
 

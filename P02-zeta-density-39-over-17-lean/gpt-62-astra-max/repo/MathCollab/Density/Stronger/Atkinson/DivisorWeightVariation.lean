@@ -132,10 +132,7 @@ theorem abs_log_height_shift_le {T x : ℝ} (hT : 0 < T) (hx : |x| ≤ T / 2) :
     have hp := mul_le_mul_of_nonneg_left hx (abs_nonneg x)
     have hpT := mul_le_mul_of_nonneg_right hp hT.le
     nlinarith [sq_abs x]
-  rw [sub_add_cancel, habs] at htri
-  calc
-    _ ≤ 2 * (|x| / T) := by linarith
-    _ = _ := by ring
+  grind
 
 theorem zetaDivisorWeightArgument_height_shift {T x : ℝ} (hT : 0 < T)
     (hx : 0 < T + x) (n : ℕ) :

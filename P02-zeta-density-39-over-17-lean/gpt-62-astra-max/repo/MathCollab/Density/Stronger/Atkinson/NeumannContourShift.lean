@@ -44,7 +44,7 @@ theorem tendsto_neumannContourKernel_horizontal_integral {x b : ℝ}
     (hx : 0 < x) (hb : 0 ≤ b) (hb1 : b ≤ 1) :
     Tendsto (fun H : ℝ =>
       ∫ u in (0 : ℝ)..b, neumannContourKernel x ((u : ℂ) + H * I)) atTop (𝓝 0) := by
-  have hlin : Tendsto (fun H : ℝ => -x * H) atTop atBot :=
+  have hlin  :=
     tendsto_id.const_mul_atTop_of_neg (neg_neg_of_pos hx)
   have hexp := Real.tendsto_exp_atBot.comp hlin
   apply squeeze_zero_norm' _ hexp

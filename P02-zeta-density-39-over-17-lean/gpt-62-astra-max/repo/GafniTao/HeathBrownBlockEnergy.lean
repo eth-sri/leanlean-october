@@ -47,9 +47,9 @@ theorem heathBrownFrequencyEnergy_le_block_energies
         heathBrownFrequencyEnergy B C g₁ g₂
           (heathBrownBlock N K i) rs := by
   let c := heathBrownTriangularFourierCoefficient B C rs.1 rs.2
-  let V : ℕ → ℂ := fun i =>
+  let V  := fun i =>
     ∑ n ∈ heathBrownBlock N K i, heathBrownFourierAtom g₁ g₂ rs n
-  have hc : 0 ≤ c :=
+  have hc  :=
     heathBrownTriangularFourierCoefficient_nonneg hB hC rs.1 rs.2
   have hsplit := heathBrownFourierAtom_sum_eq_block_sums
     (N := N) (K := K) hK g₁ g₂ rs
@@ -107,16 +107,13 @@ theorem heathBrown_full_kernel_sum_le_blocks
             ∑ n ∈ heathBrownBlock N K i,
               heathBrownTriangularKernel B C
                 (g₁ m - g₁ n) (g₂ m - g₂ n) := by
-  let fullEnergy : (ℤ × ℤ) → ℝ :=
+  let fullEnergy  :=
     heathBrownFrequencyEnergy B C g₁ g₂ (Finset.Icc 1 N)
-  let blockEnergy : (ℤ × ℤ) → ℝ := fun rs =>
+  let blockEnergy  := fun rs =>
     ∑ i ∈ Finset.range K,
       heathBrownFrequencyEnergy B C g₁ g₂
         (heathBrownBlock N K i) rs
-  have hfull : HasSum fullEnergy
-      (∑ m ∈ Finset.Icc 1 N, ∑ n ∈ Finset.Icc 1 N,
-        heathBrownTriangularKernel B C
-          (g₁ m - g₁ n) (g₂ m - g₂ n)) :=
+  have hfull  :=
     hasSum_heathBrownFrequencyEnergy hB hBHalf hC hCHalf
       g₁ g₂ (Finset.Icc 1 N)
   have hblocks : HasSum blockEnergy

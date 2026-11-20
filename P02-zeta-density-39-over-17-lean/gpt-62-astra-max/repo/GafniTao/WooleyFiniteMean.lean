@@ -278,8 +278,7 @@ theorem wooleyMonomialRawGridMoment_eq_count
 
 theorem wooleyModularCount_primePower_eq_padic
     (s k Q p B : ℕ) :
-    wooleyModularCount s k Q (p ^ B) = wooleyPadicCount s k Q p B := by
-  rfl
+    wooleyModularCount s k Q (p ^ B) = wooleyPadicCount s k Q p B := rfl
 
 /-- Wooley's normalized coefficient-one mean `U^B_{s,k}` on a grid of
 modulus `q`. -/
@@ -294,9 +293,7 @@ theorem wooleyMonomialNormalizedGridMean_eq_count
       (wooleyModularCount s k Q q : ℝ) / ((Q ^ s : ℕ) : ℝ) := by
   rw [wooleyMonomialNormalizedGridMean,
     wooleyMonomialRawGridMoment_eq_count]
-  have hq : 0 < q := NeZero.pos q
-  have hqpow : (((q ^ k : ℕ) : ℝ)) ≠ 0 := by positivity
-  have hQpow : (((Q ^ s : ℕ) : ℝ)) ≠ 0 := by positivity
+  have hq  := NeZero.pos q
   field_simp
 
 /-- Equations (3.5)--(3.7) at Wooley's literal prime-power modulus. -/

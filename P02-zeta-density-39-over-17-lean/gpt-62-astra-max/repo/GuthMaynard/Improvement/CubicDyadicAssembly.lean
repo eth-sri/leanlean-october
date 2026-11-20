@@ -103,7 +103,7 @@ theorem cubic_dyadic_strip_assembly (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
       have hB : 1 ≤ (2:ℝ)^k.1 := one_le_pow₀ (by norm_num)
       have hK : 1 ≤ (2:ℝ)^k.2.1 := one_le_pow₀ (by norm_num)
       have hD : 1 ≤ (2:ℝ)^k.2.2 := one_le_pow₀ (by norm_num)
-      have hKp : 0 < (2:ℝ)^k.2.1 := by positivity
+      
       obtain ⟨hw₁,hw₂,hw₃⟩ := cubic_dyadic_width ha hL hH hK hKU hTp.le hw1 hwc hbudget
       obtain ⟨hInt,hbound⟩ := hbox T U ((2:ℝ)^k.2.1) ((2:ℝ)^k.1) ((2:ℝ)^k.2.2) L H
         r₀ r A₀ (S.filter (fun m => cubicDyadicClass m = k)) hT hK hKU hB hBU hD hDU hUT
@@ -116,7 +116,7 @@ theorem cubic_dyadic_strip_assembly (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
           gcongr
           exact cubic_shell_sqrt_normalization hK hKU hM hE
         _ = Z := by dsimp [Z]; field_simp
-    · have he : S.filter (fun m => cubicDyadicClass m = k) = ∅ := Finset.not_nonempty_iff_eq_empty.mp hn
+    · have he  := Finset.not_nonempty_iff_eq_empty.mp hn
       have hf0 : F k = 0 := by funext v; simp [F,he]
       rw [hf0]
       exact ⟨integrableOn_zero,by simpa using hZ⟩

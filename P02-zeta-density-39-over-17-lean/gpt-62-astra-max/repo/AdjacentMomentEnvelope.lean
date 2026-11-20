@@ -29,7 +29,7 @@ theorem adjacent_two_three {U T H R : ℝ}
     norm_num
   apply (pow_le_pow_iff_left₀ hU (by positivity) (by norm_num : (12:ℕ) ≠ 0)).mp
   rw [hp]
-  exact hh.trans (by nlinarith [mul_nonneg (by positivity : 0 ≤ H^12*T^3) (pow_nonneg hR 19)])
+  exact hh.trans (by nlinarith)
 
 /-- Exact scalar interpolation of moments three and four, keeping the
 cardinality condition needed to compare it with the k=2 envelope. -/

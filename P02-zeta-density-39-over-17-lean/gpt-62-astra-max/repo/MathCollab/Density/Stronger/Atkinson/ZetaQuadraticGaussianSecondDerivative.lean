@@ -33,9 +33,7 @@ theorem hasDerivAt_deriv_zetaGaussianQuadraticIntegral (T : ℝ) {G : ℝ}
       ((((v : ℂ) ^ 2 / (4 * zetaGaussianQuadraticCoefficient T G ^ 2)) -
         1 / (2 * zetaGaussianQuadraticCoefficient T G)) *
           zetaGaussianQuadraticIntegral T G v) v := by
-  have he : deriv (zetaGaussianQuadraticIntegral T G) = fun w : ℝ =>
-      -(w : ℂ) / (2 * zetaGaussianQuadraticCoefficient T G) *
-        zetaGaussianQuadraticIntegral T G w :=
+  have he  :=
     funext (fun w => (hasDerivAt_zetaGaussianQuadraticIntegral T hG w).deriv)
   have h := (((hasDerivAt_id v).ofReal_comp.neg).div_const
     (2 * zetaGaussianQuadraticCoefficient T G)).mul

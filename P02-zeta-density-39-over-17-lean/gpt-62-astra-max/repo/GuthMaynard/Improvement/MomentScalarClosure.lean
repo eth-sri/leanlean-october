@@ -14,9 +14,9 @@ theorem normalized_moment_absorption {M P Q : ℝ}
     M ≤ (1+3*Q)*P := by
   by_cases hMP : M ≤ P
   · nlinarith [mul_nonneg hQ hP]
-  · have hm : 0 < M := lt_of_le_of_lt hP (lt_of_not_ge hMP)
-    have hpm : P ≤ M := (lt_of_not_ge hMP).le
-    have hs : Real.sqrt P ≤ Real.sqrt M := Real.sqrt_le_sqrt hpm
+  · have hm  := lt_of_le_of_lt hP (lt_of_not_ge hMP)
+    have hpm  := (lt_of_not_ge hMP).le
+    have hs  := Real.sqrt_le_sqrt hpm
     have hmid : P*Real.sqrt P*M*Real.sqrt M ≤ P*M^2 := by
       calc
         _ ≤ P*Real.sqrt M*M*Real.sqrt M := by gcongr
@@ -45,7 +45,7 @@ theorem normalized_moment_power_absorption {M P Q N ε : ℝ}
     (h : M^3 ≤ Q*N^ε*(P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M)) :
     M ≤ (1+3*Q)*N^ε*P := by
   have hn : 0 ≤ N := by linarith
-  have hp : 1 ≤ N^ε := Real.one_le_rpow hN hε
+  have hp  := Real.one_le_rpow hN hε
   have hh := normalized_moment_absorption hM hP (mul_nonneg hQ (Real.rpow_nonneg hn _)) h
   have hb : (1+3*(Q*N^ε))*P ≤ (1+3*Q)*N^ε*P := by
     apply mul_le_mul_of_nonneg_right _ hP
@@ -67,10 +67,10 @@ theorem raw_moment_normalized_budget {N L T P M H S C D K A B F X Y Z R : ℝ}
         3060*D*N^7*T^3*(Real.log (2*N))^2)+25*P^2*M)) :
     M^3 ≤ (S*(150+C*A*(5+5*D*(1+K)+3060*D*B)))*F*X*Y*Z*
       (P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M) := by
-  have hL : 0 ≤ L := hN.trans hNL
+  have hL  := hN.trans hNL
   have hx : 0 ≤ X := by linarith
-  have hy : 0 ≤ Y := by linarith
-  have hz : 0 ≤ Z := by linarith
+  
+  
   let V := P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M
   have hv : 0 ≤ V := by dsimp [V]; positivity
   have hv10 : 0 ≤ P^3 := by positivity
@@ -92,15 +92,15 @@ theorem raw_moment_normalized_budget {N L T P M H S C D K A B F X Y Z R : ℝ}
       _ = 3060*D*(N^7*T^3)*(Real.log (2*N))^2 := by ring
       _ ≤ 3060*D*P^3*(B*Z) := by gcongr
       _ = _ := by ring
-  have hvx : V ≤ X*V := le_mul_of_one_le_left hv hX
-  have hvz : V ≤ Z*V := le_mul_of_one_le_left hv hZ
+  have hvx  := le_mul_of_one_le_left hv hX
+  have hvz  := le_mul_of_one_le_left hv hZ
   have hvxz : V ≤ X*Z*V := by
     calc
       V ≤ X*V := hvx
       _ ≤ X*(Z*V) := mul_le_mul_of_nonneg_left hvz hx
       _ = _ := by ring
   let E := 5+5*D*(1+K)+3060*D*B
-  have he : 0 ≤ E := by dsimp [E]; positivity
+  
   have hbracket : 5*P*Real.sqrt P*M*Real.sqrt M+5*D*N^4*T*(N^2+H)*M+
         3060*D*N^7*T^3*(Real.log (2*N))^2 ≤ E*X*Z*V := by
     have h1 := mul_le_mul_of_nonneg_left (hv2.trans hvxz) (show (0:ℝ)≤5 by norm_num)
@@ -128,6 +128,6 @@ theorem raw_moment_normalized_budget {N L T P M H S C D K A B F X Y Z R : ℝ}
     _ ≤ S*F*(150*X*Y*Z*V+C*(A*Y)*(E*X*Z*V)) := by
       apply mul_le_mul_of_nonneg_left _ (mul_nonneg hS hF)
       linarith only [hbase,hprod]
-    _ = _ := by dsimp [E,V]; ring
+    _ = _ := by ring
 
 end GuthMaynard.Improvement

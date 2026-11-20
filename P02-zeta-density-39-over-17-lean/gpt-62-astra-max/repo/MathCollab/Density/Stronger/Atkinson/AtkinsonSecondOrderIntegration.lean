@@ -31,8 +31,7 @@ theorem hasDerivAt_atkinsonRootKernel (T b : ℝ) {y : ℝ} (hy : 0 < y) :
   have h := (((hasDerivAt_atkinsonRootPhase T b hy).ofReal_comp).const_mul
     (2 * Real.pi * I)).cexp
   convert h using 1
-  · unfold atkinsonRootKernel
-    ring
+  · rfl
   · unfold atkinsonRootKernel
     push_cast
     ring
@@ -46,7 +45,7 @@ theorem IntervalC2Bound.atkinsonRoot_secondOrder {f : ℝ → ℂ} {T b a c M R 
     (hprimitive : ∀ x ∈ Icc a c, ‖∫ y in a..x, atkinsonRootKernel T b y‖ ≤ B) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤
       B * M * (R + (c - a) * R ^ 2) / Real.pi := by
-  let w : ℝ → ℂ := fun y => f y * (((atkinsonRootSlope T b y)⁻¹ : ℝ) : ℂ)
+  let w  := fun y => f y * (((atkinsonRootSlope T b y)⁻¹ : ℝ) : ℂ)
   let k : ℂ := ((2 * Real.pi : ℝ) : ℂ) * I
   have hdi : IntervalIntegrable (deriv w) volume a c := by
     apply ContinuousOn.intervalIntegrable
@@ -83,10 +82,9 @@ theorem IntervalC2Bound.atkinsonRoot_secondOrder {f : ℝ → ℂ} {T b a c M R 
     calc
       _ = k * (f y * atkinsonRootKernel T b y) *
           ((((atkinsonRootSlope T b y)⁻¹ : ℝ) : ℂ) * (atkinsonRootSlope T b y : ℂ)) := by
-        dsimp only [w]
         ring
       _ = _ := by
-        rw [← Complex.ofReal_mul, inv_mul_cancel₀ (hne y hy), Complex.ofReal_one, mul_one]
+        simp [*]
   rw [he, hwa, hwc, zero_mul, zero_mul, sub_self, zero_sub] at hparts
   have hnorm := congrArg norm hparts
   have hk : ‖k‖ = 2 * Real.pi := by
@@ -96,7 +94,6 @@ theorem IntervalC2Bound.atkinsonRoot_secondOrder {f : ℝ → ℂ} {T b a c M R 
   rw [norm_mul, hk, norm_neg] at hnorm
   have hd := (hw.deriv_c1 hac).atkinsonRoot_of_primitive_bound b ha hac hprimitive
   apply (le_div_iff₀ Real.pi_pos).2
-  change ‖∫ y in a..c, deriv w y * atkinsonRootKernel T b y‖ ≤ _ at hd
   nlinarith
 
 end MathCollab.Density.Stronger.Atkinson

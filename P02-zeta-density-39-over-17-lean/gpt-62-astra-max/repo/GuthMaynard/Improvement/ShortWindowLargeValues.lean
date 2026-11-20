@@ -76,7 +76,7 @@ theorem short_window_large_values {δ : ℝ} (hδ : 0 < δ) (hδ' : δ ≤ 1/100
           102*(N*(H+N*Real.log (2*N))/(N^σ*H^(-2*δ))^2) := by ring
       rw [he,hdivM] at hh
       exact hh
-    have hlog : Real.log (2*N) ≤ D*H^(2*δ) :=
+    have hlog  :=
       (classical_log_budget (by linarith : 1 ≤ N) hδ).trans
         (mul_le_mul_of_nonneg_left hsmall hD.le)
     have hmean1 := short_density_mean_budget hσ hσ' hH1 (le_of_not_ge hm)

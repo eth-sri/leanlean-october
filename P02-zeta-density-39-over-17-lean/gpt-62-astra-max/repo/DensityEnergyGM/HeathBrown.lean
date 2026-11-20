@@ -190,7 +190,7 @@ theorem heathBrownWeightedMoment_pow_le
   have h := pow_sum_le_card_mul_sum_pow
     (s := W.product W) (f := f)
     (by intro p hp; exact sq_nonneg _) (k - 1)
-  have hkSub : k - 1 + 1 = k := Nat.sub_add_cancel hk
+  have hkSub  := Nat.sub_add_cancel hk
   rw [hkSub] at h
   rw [Finset.product_eq_sprod] at h
   simp_rw [Finset.sum_product] at h
@@ -267,11 +267,11 @@ theorem heathBrown_poweredBlock_subset
   · exact lt_of_le_of_lt
       (Nat.le_mul_of_pos_left _ (pow_pos (by omega) r)) hm.1
   · have hrSucc : r + 1 ≤ k := by omega
-    have hPow : 2 ^ (r + 1) ≤ (2 : ℕ) ^ k :=
+    have hPow  :=
       pow_le_pow_right₀ (by omega : (1 : ℕ) ≤ 2) hrSucc
     calc
       m ≤ 2 * (2 ^ r * N ^ k) := hm.2
-      _ = 2 ^ (r + 1) * N ^ k := by rw [pow_succ]; ring
+      _ = 2 ^ (r + 1) * N ^ k := by ring
       _ ≤ 2 ^ k * N ^ k := Nat.mul_le_mul_right _ hPow
 
 /-- Reversing the ordinate changes the negative-sign polynomial into the
@@ -358,7 +358,7 @@ theorem sourceDirichletPoly_orderedDifference_meanValue
       (3 * (2 + 2 * (5 * Real.pi + 1))) * (W.card : ℝ) *
         (2 * T + (N : ℝ)) *
           ∑ n ∈ Ioc N (2 * N), ‖a n‖ ^ 2 := by
-  let a' : ℕ → ℂ := conjugateCoeffs a
+  let a'  := conjugateCoeffs a
   let C : ℝ := 3 * (2 + 2 * (5 * Real.pi + 1))
   have hRow : ∀ u ∈ W,
       (∑ t ∈ W, ‖dirichletPoly N a' (t - u)‖ ^ 2) ≤
@@ -384,7 +384,6 @@ theorem sourceDirichletPoly_orderedDifference_meanValue
         apply Finset.sum_congr rfl
         intro n hn
         rw [norm_phaseShiftCoeffs]
-        change ‖conjugateCoeffs a n‖ ^ 2 = ‖a n‖ ^ 2
         rw [norm_conjugateCoeffs]
   have hSign : ∀ y : ℝ,
       ‖sourceDirichletPoly N a y‖ = ‖dirichletPoly N a' y‖ := by
@@ -400,18 +399,13 @@ theorem sourceDirichletPoly_orderedDifference_meanValue
         ‖sourceDirichletPoly N a (t - u)‖ ^ 2) =
         ∑ t ∈ W, ∑ u ∈ W,
           ‖dirichletPoly N a' (t - u)‖ ^ 2 := by
-      apply Finset.sum_congr rfl
-      intro t ht
-      apply Finset.sum_congr rfl
-      intro u hu
-      rw [hSign]
+      simp [*]
     _ = ∑ u ∈ W, ∑ t ∈ W,
           ‖dirichletPoly N a' (t - u)‖ ^ 2 := by
       rw [Finset.sum_comm]
     _ ≤ ∑ u ∈ W,
         C * (2 * T + (N : ℝ)) *
-          ∑ n ∈ Ioc N (2 * N), ‖a n‖ ^ 2 := by
-      exact Finset.sum_le_sum hRow
+          ∑ n ∈ Ioc N (2 * N), ‖a n‖ ^ 2 := Finset.sum_le_sum hRow
     _ = (3 * (2 + 2 * (5 * Real.pi + 1))) * (W.card : ℝ) *
         (2 * T + (N : ℝ)) *
           ∑ n ∈ Ioc N (2 * N), ‖a n‖ ^ 2 := by
@@ -480,7 +474,7 @@ theorem norm_add_add_sq_le_three (a b c : ℂ) :
   have hTri : ‖a + b + c‖ ≤ ‖a‖ + ‖b‖ + ‖c‖ := by
     exact (norm_add_le (a + b) c).trans (by linarith [norm_add_le a b])
   have hLeft : 0 ≤ ‖a + b + c‖ := norm_nonneg _
-  have hRight : 0 ≤ ‖a‖ + ‖b‖ + ‖c‖ := by positivity
+  
   have hSquare : ‖a + b + c‖ ^ 2 ≤ (‖a‖ + ‖b‖ + ‖c‖) ^ 2 := by
     nlinarith
   have hCS : (‖a‖ + ‖b‖ + ‖c‖) ^ 2 ≤
@@ -511,7 +505,7 @@ theorem ofReal_heathBrownDifferenceMoment_eq_kernel_sum
   unfold heathBrownDifferencePolynomial
   simp only [map_sum, map_mul]
   simp_rw [Finset.sum_mul, Finset.mul_sum]
-  let F : ℝ → ℝ → ℕ → ℕ → ℂ := fun y x n m =>
+  let F  := fun y x n m =>
     star (a n) * star (heathBrownPhase n y) *
         star (star (heathBrownPhase n x)) *
       (a m * heathBrownPhase m y * star (heathBrownPhase m x))
@@ -521,8 +515,7 @@ theorem ofReal_heathBrownDifferenceMoment_eq_kernel_sum
       apply Finset.sum_congr rfl
       intro y hy
       exact Finset.sum_comm
-    _ = ∑ n ∈ s, ∑ y ∈ W, ∑ x ∈ W, ∑ m ∈ s, F y x n m := by
-      exact Finset.sum_comm
+    _ = ∑ n ∈ s, ∑ y ∈ W, ∑ x ∈ W, ∑ m ∈ s, F y x n m := Finset.sum_comm
     _ = ∑ n ∈ s, ∑ y ∈ W, ∑ m ∈ s, ∑ x ∈ W, F y x n m := by
       apply Finset.sum_congr rfl
       intro n hn
@@ -592,8 +585,7 @@ theorem heathBrownDifferenceMoment_le_of_norm_le
           star (a n) * a m * (heathBrownMajorantKernel W n m : ℂ)‖ := by
       rw [ofReal_heathBrownDifferenceMoment_eq_kernel_sum]
     _ ≤ ∑ n ∈ s, ‖∑ m ∈ s,
-          star (a n) * a m * (heathBrownMajorantKernel W n m : ℂ)‖ := by
-      exact norm_sum_le _ _
+          star (a n) * a m * (heathBrownMajorantKernel W n m : ℂ)‖ := norm_sum_le _ _
     _ ≤ ∑ n ∈ s, ∑ m ∈ s,
           ‖star (a n) * a m * (heathBrownMajorantKernel W n m : ℂ)‖ := by
       apply Finset.sum_le_sum
@@ -673,7 +665,7 @@ theorem star_heathBrownPhase_mul_eq_ratio_cpow
           (Complex.mul_cpow_ofReal_nonneg hn0
             (inv_nonneg.mpr hm0) ((t : ℂ) * I)).symm
     _ = (((n : ℝ) / m : ℝ) : ℂ) ^ ((t : ℂ) * I) := by
-      rw [div_eq_mul_inv]
+      rfl
 
 /-- The positive majorant kernel is exactly the squared norm of the
 Guth--Maynard ratio sum `R(n/m)`. -/
@@ -839,9 +831,9 @@ theorem natCast_mul_heathBrownHalfWeight_mul
   have hqR : (0 : ℝ) < q := by exact_mod_cast hq
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
   have hmR : (0 : ℝ) < m := by exact_mod_cast hm
-  have hqRoot : 0 < Real.sqrt (q : ℝ) := Real.sqrt_pos.2 hqR
-  have hnRoot : 0 < Real.sqrt (n : ℝ) := Real.sqrt_pos.2 hnR
-  have hmRoot : 0 < Real.sqrt (m : ℝ) := Real.sqrt_pos.2 hmR
+  have hqRoot  := Real.sqrt_pos.2 hqR
+  have hnRoot  := Real.sqrt_pos.2 hnR
+  have hmRoot  := Real.sqrt_pos.2 hmR
   unfold heathBrownHalfWeight
   push_cast
   rw [Real.sqrt_mul (le_of_lt hqR), Real.sqrt_mul (le_of_lt hqR)]
@@ -899,9 +891,7 @@ theorem heathBrownTransfer_polynomial_identity
               (heathBrownPhase l t * star (heathBrownPhase l u)) := by
             apply Finset.sum_congr rfl
             intro x hx
-            have hprod := (Finset.mem_filter.mp hx).2
-            rw [hprod]
-            ring
+            grind
         _ = (∑ x ∈ tuples with x.1 * x.2 = l,
               (heathBrownHalfWeight (x.1 * x.2) : ℂ)) *
               (heathBrownPhase l t * star (heathBrownPhase l u)) := by
@@ -920,8 +910,6 @@ theorem heathBrownTransferredDifferencePolynomial_eq_grouped
     heathBrownTransferredDifferencePolynomial P N t u =
       heathBrownDifferencePolynomial (heathBrownTransferSupport P N)
         (fun l => (heathBrownTransferCoeff P N l : ℂ)) t u := by
-  unfold heathBrownTransferredDifferencePolynomial
-    heathBrownDifferencePolynomial
   exact heathBrownTransfer_polynomial_identity P N t u
 
 /-- Exact moment-level grouping of all colliding products. -/
@@ -937,7 +925,6 @@ theorem heathBrownTransferredDifferenceMoment_eq_grouped
 theorem heathBrownTransferCoeff_nonneg
     (P : Finset ℕ) (N l : ℕ) :
     0 ≤ heathBrownTransferCoeff P N l := by
-  unfold heathBrownTransferCoeff
   exact Finset.sum_nonneg fun x hx =>
     heathBrownHalfWeight_nonneg (x.1 * x.2)
 
@@ -964,8 +951,8 @@ theorem heathBrownTransfer_fiber_card_le_divisors
     have hxFilter := Finset.mem_filter.mp hx
     have hyFilter := Finset.mem_filter.mp hy
     have hxTuple := Finset.mem_product.mp hxFilter.1
-    have hyTuple := Finset.mem_product.mp hyFilter.1
-    have hxPos : 0 < x.1 := hP x.1 hxTuple.1
+    
+    have hxPos  := hP x.1 hxTuple.1
     apply Prod.ext hxy
     apply Nat.mul_left_cancel hxPos
     calc
@@ -981,7 +968,6 @@ theorem heathBrownTransferCoeff_eq_card_mul_halfWeight
     heathBrownTransferCoeff P N l =
       (((heathBrownTransferTuples P N).filter
         (fun x => x.1 * x.2 = l)).card : ℝ) * heathBrownHalfWeight l := by
-  unfold heathBrownTransferCoeff
   calc
     (∑ x ∈ (heathBrownTransferTuples P N).filter
         (fun x => x.1 * x.2 = l),
@@ -1048,8 +1034,7 @@ theorem one_half_le_heathBrownTransferAuxiliary_harmonic
     _ = ∑ _p ∈ heathBrownTransferAuxiliary J,
           (1 / (2 * J : ℝ)) := by
       simp [hCard]
-    _ ≤ ∑ p ∈ heathBrownTransferAuxiliary J, (p : ℝ)⁻¹ := by
-      exact Finset.sum_le_sum hTerm
+    _ ≤ ∑ p ∈ heathBrownTransferAuxiliary J, (p : ℝ)⁻¹ := Finset.sum_le_sum hTerm
 
 /-- Products in the auxiliary transfer occupy exactly two adjacent dyadic
 blocks, from `JN` to `4JN`. -/
@@ -1215,15 +1200,13 @@ theorem heathBrownTransferCoeff_two_dyadic_bound
         omega
     have hlUpper : (l : ℝ) ≤ ((4 * (J * N) : ℕ) : ℝ) := by
       exact_mod_cast hlUpperNat
-    have hPow : (l : ℝ) ^ η ≤ ((4 * (J * N) : ℕ) : ℝ) ^ η := by
-      exact Real.rpow_le_rpow (Nat.cast_nonneg l) hlUpper hη.le
+    have hPow := Real.rpow_le_rpow (Nat.cast_nonneg l) hlUpper hη.le
     have hWeight := heathBrownHalfWeight_nonneg l
     calc
       heathBrownTransferCoeff (heathBrownTransferAuxiliary J) N l
           ≤ C * (l : ℝ) ^ η * heathBrownHalfWeight l := hCoeff
       _ ≤ C * ((4 * (J * N) : ℕ) : ℝ) ^ η * heathBrownHalfWeight l := by
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left hPow hCNonneg) hWeight
+        gcongr
       _ = (C * (4 * (J * N) : ℝ) ^ η) *
           heathBrownHalfWeight l := by norm_num
   · simp only [hlS, ite_false, norm_zero]
@@ -1247,7 +1230,7 @@ theorem exists_heathBrownTransferredDifferenceMoment_two_dyadic_bound
   refine ⟨C, hC, ?_⟩
   intro J N W hJ hN
   let S := heathBrownTransferSupport (heathBrownTransferAuxiliary J) N
-  let a : ℕ → ℂ := fun l =>
+  let a  := fun l =>
     if l ∈ S then
       (heathBrownTransferCoeff (heathBrownTransferAuxiliary J) N l : ℂ)
     else 0
@@ -1311,11 +1294,7 @@ theorem exists_heathBrownTransferredDifferenceMoment_two_dyadic_bound
                     a t u‖ ^ 2 +
               ‖heathBrownDifferencePolynomial
                     (dyadicInterval (2 * (J * N))) a t u‖ ^ 2) := by
-        apply Finset.sum_le_sum
-        intro t ht
-        apply Finset.sum_le_sum
-        intro u hu
-        exact hPoint t ht u hu
+        bound
       _ = 2 * ((∑ t ∈ W, ∑ u ∈ W,
               ‖heathBrownDifferencePolynomial (dyadicInterval (J * N))
                 a t u‖ ^ 2) +
@@ -1339,7 +1318,6 @@ theorem exists_heathBrownTransferredDifferenceMoment_two_dyadic_bound
     _ = 2 * (C * (4 * (J * N) : ℝ) ^ η) ^ 2 *
         (heathBrownWeightedMoment (J * N) W +
           heathBrownWeightedMoment (2 * (J * N)) W) := by
-      dsimp only [B]
       ring
 
 /-- Expanding the exact grouped product moment recovers the positive
@@ -1353,7 +1331,7 @@ theorem heathBrownTransferredDifferenceMoment_eq_kernel
   let tuples := heathBrownTransferTuples P N
   let support := heathBrownTransferSupport P N
   let prod : ℕ × ℕ → ℕ := fun x => x.1 * x.2
-  let F : (ℕ × ℕ) → (ℕ × ℕ) → ℝ := fun x y =>
+  let F  := fun x y =>
     heathBrownHalfWeight (prod x) * heathBrownHalfWeight (prod y) *
       heathBrownMajorantKernel W (prod x) (prod y)
   have hMaps : ∀ x ∈ tuples, prod x ∈ support := by
@@ -1394,8 +1372,7 @@ theorem heathBrownTransferredDifferenceMoment_eq_kernel
       exact Finset.sum_comm
     _ = ∑ x ∈ tuples,
           ∑ k ∈ support,
-            ∑ y ∈ tuples with prod y = k, F x y := by
-      exact Finset.sum_fiberwise_of_maps_to hMaps _
+            ∑ y ∈ tuples with prod y = k, F x y := Finset.sum_fiberwise_of_maps_to hMaps _
     _ = ∑ x ∈ tuples, ∑ y ∈ tuples, F x y := by
       apply Finset.sum_congr rfl
       intro x hx
@@ -1495,13 +1472,12 @@ theorem exists_heathBrownWeightedMoment_transfer
   refine ⟨C, hC, ?_⟩
   intro J N W hJ hN
   let H : ℝ := ∑ p ∈ heathBrownTransferAuxiliary J, (p : ℝ)⁻¹
-  have hH : (1 / 2 : ℝ) ≤ H :=
+  have hH  :=
     one_half_le_heathBrownTransferAuxiliary_harmonic J hJ
   have hMomentNonneg : 0 ≤ heathBrownWeightedMoment N W := by
     unfold heathBrownWeightedMoment
     positivity
-  have hHalf : (1 / 2 : ℝ) * heathBrownWeightedMoment N W ≤
-      H * heathBrownWeightedMoment N W :=
+  have hHalf  :=
     mul_le_mul_of_nonneg_right hH hMomentNonneg
   have hDiagonal : H * heathBrownWeightedMoment N W ≤
       heathBrownTransferredDifferenceMoment
@@ -1510,21 +1486,7 @@ theorem exists_heathBrownWeightedMoment_transfer
     exact harmonic_mul_heathBrownWeightedMoment_le_transferred
       (heathBrownTransferAuxiliary J) N W
       (heathBrownTransferAuxiliary_pos J)
-  have hTransfer := hUpper J N W hJ hN
-  calc
-    heathBrownWeightedMoment N W ≤
-        2 * (H * heathBrownWeightedMoment N W) := by
-      nlinarith
-    _ ≤ 2 * heathBrownTransferredDifferenceMoment
-        (heathBrownTransferAuxiliary J) N W := by
-      gcongr
-    _ ≤ 2 * (2 * (C * (4 * (J * N) : ℝ) ^ η) ^ 2 *
-          (heathBrownWeightedMoment (J * N) W +
-            heathBrownWeightedMoment (2 * (J * N)) W)) := by
-      gcongr
-    _ = 4 * (C * (4 * (J * N) : ℝ) ^ η) ^ 2 *
-          (heathBrownWeightedMoment (J * N) W +
-            heathBrownWeightedMoment (2 * (J * N)) W) := by ring
+  grind
 
 /-- On `(N,2N]`, multiplication by `sqrt(2N)` dominates the coefficient
 one by the critical-line weight.  This is the exact normalization used
@@ -1534,11 +1496,11 @@ theorem one_le_sqrt_two_mul_mul_heathBrownHalfWeight
     1 ≤ Real.sqrt (2 * N) * heathBrownHalfWeight n := by
   have hnBounds : N < n ∧ n ≤ 2 * N := by
     simpa [dyadicInterval] using (Finset.mem_Ioc.mp hn)
-  have hnPosNat : 0 < n := lt_of_le_of_lt (Nat.zero_le N) hnBounds.1
+  have hnPosNat  := lt_of_le_of_lt (Nat.zero_le N) hnBounds.1
   have hnPos : (0 : ℝ) < n := by exact_mod_cast hnPosNat
-  have hrootPos : 0 < Real.sqrt n := Real.sqrt_pos.2 hnPos
+  have hrootPos  := Real.sqrt_pos.2 hnPos
   have hcastLe : (n : ℝ) ≤ 2 * N := by exact_mod_cast hnBounds.2
-  have hrootLe : Real.sqrt n ≤ Real.sqrt (2 * N) :=
+  have hrootLe  :=
     Real.sqrt_le_sqrt hcastLe
   unfold heathBrownHalfWeight
   rw [one_div, ← div_eq_mul_inv]
@@ -1564,7 +1526,7 @@ theorem sourceCoefficientOne_differenceMoment_le_two_mul_weighted
         ‖sourceDirichletPoly N (fun _ => (1 : ℂ)) (t - u)‖ ^ 2) ≤
       (2 * N : ℝ) * heathBrownWeightedMoment N W := by
   let B : ℝ := Real.sqrt (2 * N)
-  let b : ℕ → ℝ := fun n => B * heathBrownHalfWeight n
+  let b  := fun n => B * heathBrownHalfWeight n
   have hMajorant := sourceDirichletPoly_differenceMoment_le_of_norm_le
     N W (fun _ => (1 : ℂ)) b
     (by
@@ -1592,10 +1554,7 @@ theorem sourceCoefficientOne_differenceMoment_le_two_mul_weighted
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (Real.sqrt_nonneg _), mul_pow]
     _ = (2 * N : ℝ) * heathBrownWeightedMoment N W := by
-      congr 1
-      dsimp only [B]
-      rw [Real.sq_sqrt]
-      positivity
+      grind
 
 /-- The common terminal scale used in the source powering lemma. -/
 def heathBrownPoweredTargetScale (N k c : ℕ) : ℕ :=
@@ -1607,7 +1566,6 @@ theorem heathBrownPoweredBlock_mul_aux_eq_target
     (N k c r : ℕ) (hrc : r ≤ c) :
     2 ^ (c - r) * (2 ^ r * N ^ k) =
       heathBrownPoweredTargetScale N k c := by
-  unfold heathBrownPoweredTargetScale
   calc
     2 ^ (c - r) * (2 ^ r * N ^ k) =
         (2 ^ (c - r) * 2 ^ r) * N ^ k := by ring
@@ -1627,11 +1585,9 @@ theorem heathBrownCoefficientOneMeanSquare_of_weighted
   have hNormalize :=
     sourceCoefficientOne_differenceMoment_le_two_mul_weighted N W
   have hCore := hWeightedBound N T W hN hT hSep hInterval
-  have hN0 : (0 : ℝ) ≤ N := by positivity
+  
   have hTwoN0 : (0 : ℝ) ≤ 2 * N := by positivity
   have hT0 : (0 : ℝ) ≤ T := by linarith
-  have hCT0 : 0 ≤ C * T ^ ε := by
-    exact mul_nonneg hC.le (Real.rpow_nonneg hT0 _)
   calc
     (∑ t ∈ W, ∑ u ∈ W,
         ‖sourceDirichletPoly N (fun _ => (1 : ℂ)) (t - u)‖ ^ 2) ≤
@@ -1699,9 +1655,7 @@ theorem abs_sub_le_height_of_mem_baseInterval
     |t - u| ≤ T := by
   have htBounds := hInterval t ht
   have huBounds := hInterval u hu
-  rw [Set.mem_Icc] at htBounds huBounds
-  rw [abs_le]
-  constructor <;> linarith
+  grind
 
 /-- The exact source-level coefficient-majorant reduction: proving the
 coefficient-one analytic estimate proves Heath--Brown's theorem for every

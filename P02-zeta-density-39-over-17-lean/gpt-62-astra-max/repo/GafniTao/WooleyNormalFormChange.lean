@@ -78,8 +78,7 @@ theorem wooleyNormalFormPositiveLow_map_eq_monomial
               intro j hj
               rw [wooleyZModMatrixIntLift_cast, hlow]
       _ = if i = d then 1 else 0 := by
-        simpa only [Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply]
-          using hentry
+        solve_by_elim
   unfold wooleyNormalFormPositiveLow
   simp only [Polynomial.map_sum, Polynomial.map_mul, Polynomial.map_C,
     Polynomial.map_pow, Polynomial.map_X]
@@ -89,15 +88,9 @@ theorem wooleyNormalFormPositiveLow_map_eq_monomial
           ((d : ℕ) + 1) : ℤ) : ZMod (p ^ B)) * X ^ ((d : ℕ) + 1)) =
       ∑ d : Fin k, C (if i = d then 1 else 0) *
         X ^ ((d : ℕ) + 1) := by
-          apply Finset.sum_congr rfl
-          intro d hd
-          rw [hcoeff d]
+          simp [*]
     _ = X ^ ((i : ℕ) + 1) := by
-      rw [Finset.sum_eq_single i]
-      · simp
-      · intro d hd hdi
-        simp [Ne.symm hdi]
-      · simp
+      simp
 
 /-- The modular error in the low positive part is an exact integral
 multiple of `p^B`. -/
@@ -140,7 +133,7 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalar_X_tail
         C z * X ^ (k + 1) * theta := by
   obtain ⟨Xi, hXi⟩ :=
     wooleyPolynomial_exists_positiveLow_add_scalarTail k f z hzero hhigh
-  let low : Polynomial ℤ :=
+  let low  :=
     ∑ i : Fin k, C (f.coeff ((i : ℕ) + 1)) * X ^ ((i : ℕ) + 1)
   have hXiLow : ∀ n < k + 1, Xi.coeff n = 0 := by
     intro n hn
@@ -158,23 +151,16 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalar_X_tail
           omega
         rw [Finset.sum_eq_single i]
         · simp [hi]
-        · intro d hd hdi
-          have hval : (d : ℕ) + 1 ≠ n := by
-            intro heq
-            apply hdi
-            apply Fin.ext
-            omega
-          simp [Ne.symm hval]
+        · grind
         · simp
     simp only [coeff_add, coeff_C_mul] at hcoeff
     rw [hlowCoeff] at hcoeff
     have hmul : z * Xi.coeff n = 0 := by linarith
     exact (mul_eq_zero.mp hmul).resolve_left hz
-  have hXdvd : X ^ (k + 1) ∣ Xi :=
+  have hXdvd  :=
     X_pow_dvd_iff.mpr hXiLow
   obtain ⟨theta, htheta⟩ := hXdvd
   refine ⟨theta, ?_⟩
-  change f = low + C z * X ^ (k + 1) * theta
   calc
     f = low + C z * Xi := hXi
     _ = low + C z * (X ^ (k + 1) * theta) := by rw [htheta]

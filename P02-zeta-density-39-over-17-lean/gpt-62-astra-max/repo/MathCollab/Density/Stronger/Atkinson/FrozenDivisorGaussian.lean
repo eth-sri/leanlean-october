@@ -132,11 +132,9 @@ theorem norm_zetaFrozenDivisorGaussianMean_sub_quadratic_le {T G r : ℝ}
   have hsum : HasSum e (zetaFrozenDivisorGaussianMean T G - zetaFrozenDivisorQuadraticSum T G) := by
     convert (hasSum_zetaFrozenDivisorGaussianMean hT0 hG.ne').sub
       (summable_zetaFrozenDivisorQuadraticTerm hT0 hG hGT).hasSum using 1
-    · funext n
-      dsimp only [e, Pi.sub_apply]
-      ring
+    · grind
     · rfl
-  have hnorm : Summable (fun n => ‖e n‖) :=
+  have hnorm  :=
     Summable.of_nonneg_of_le (fun n => norm_nonneg _) hpoint
       ((summable_norm_zetaFrozenDivisorCoefficient hT0).mul_right E)
   rw [← hsum.tsum_eq]

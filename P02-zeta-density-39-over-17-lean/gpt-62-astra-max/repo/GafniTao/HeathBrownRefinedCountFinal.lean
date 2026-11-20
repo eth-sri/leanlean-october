@@ -90,14 +90,13 @@ theorem heathBrownPairCount_card_cast_le_source_scale
     positivity
   have hS : 0 ≤ S := by dsimp only [S]; positivity
   have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hlog : 0 ≤ Real.log (N : ℝ) := Real.log_nonneg hNreal
+  have hlog  := Real.log_nonneg hNreal
   have hLone : 1 ≤ L := by dsimp only [L]; linarith
   have hL : 0 ≤ L := hLone.trans' (by norm_num)
   have hNleS : (N : ℝ) ≤ S := by
     dsimp only [S]
     linarith [Real.rpow_nonneg hlambda.le (-(2 / (k : ℝ)))]
-  have hNleSL : (N : ℝ) ≤ S * L := by
-    exact hNleS.trans (le_mul_of_one_le_right hS hLone)
+  have hNleSL := hNleS.trans (le_mul_of_one_le_right hS hLone)
   have hinside :
       (N : ℝ) + 2 * heathBrownChosenShiftFactor N k A lambda * L ≤
         (1 + 2 * C) * S * L := by
@@ -105,7 +104,7 @@ theorem heathBrownPairCount_card_cast_le_source_scale
       calc
         heathBrownChosenShiftFactor N k A lambda ≤
             C * (lambda ^ (-(2 / (k : ℝ))) + N) := by
-          simpa only [C] using hshift
+          linarith
         _ = C * S := by simp only [S, add_comm]
     have hmul := mul_le_mul_of_nonneg_right hshift' hL
     have hmul' := mul_le_mul_of_nonneg_left hmul
@@ -113,7 +112,7 @@ theorem heathBrownPairCount_card_cast_le_source_scale
     calc
       (N : ℝ) + 2 * heathBrownChosenShiftFactor N k A lambda * L ≤
           N + 2 * (C * S) * L := by
-        simpa only [mul_assoc] using add_le_add_right hmul' (N : ℝ)
+        linarith
       _ ≤ (1 + 2 * C) * S * L := by nlinarith
   have hK : (K : ℝ) ≤ 1 + 4 * A * lambda * N := by
     simpa only [K] using heathBrownBlockParameter_cast_le
@@ -123,16 +122,13 @@ theorem heathBrownPairCount_card_cast_le_source_scale
     ((heathBrownPairCount N k (heathBrownHChoice k A lambda) f).card : ℝ) ≤
         4 * K * ((N : ℝ) +
           2 * heathBrownChosenShiftFactor N k A lambda * L) := by
-      simpa only [K, L, mul_assoc] using hcount
+      linarith
     _ ≤ 4 * K * ((1 + 2 * C) * S * L) := by gcongr
     _ ≤ 4 * (1 + 4 * A * lambda * N) *
         ((1 + 2 * C) * S * L) := by gcongr
     _ ≤ 16 * (1 + A * lambda * N) *
         ((1 + 2 * C) * S * L) := by
-      have hx : 0 ≤ A * lambda * (N : ℝ) := by positivity
-      have hcoeff : 4 * (1 + 4 * A * lambda * (N : ℝ)) ≤
-          16 * (1 + A * lambda * N) := by nlinarith
-      exact mul_le_mul_of_nonneg_right hcoeff hrightNonneg
+      linarith
     _ = heathBrownRefinedCountConstant k A *
         (1 + A * lambda * N) * S * L := by
       unfold heathBrownRefinedCountConstant
@@ -141,7 +137,7 @@ theorem heathBrownPairCount_card_cast_le_source_scale
     _ = heathBrownRefinedCountConstant k A *
         (1 + A * lambda * N) *
         (N + lambda ^ (-(2 / (k : ℝ)))) *
-        (1 + Real.log N) := by rfl
+        (1 + Real.log N) := rfl
 
 theorem heathBrownPairCount_card_cast_le_lemma_two
     {N k : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -181,11 +177,11 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
   dsimp only at hsource
   let P := lambda ^ (-(2 / (k : ℝ)))
   let B := (N : ℝ) + lambda * N ^ 2 + P
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
+  
   have hexp : 0 ≤ 1 - 2 / (k : ℝ) := by
     rw [sub_nonneg, div_le_one (by positivity : (0 : ℝ) < k)]
     exact_mod_cast (by omega : 2 ≤ k)
-  have hq : lambda ^ (1 - 2 / (k : ℝ)) ≤ 1 :=
+  have hq  :=
     Real.rpow_le_one hlambda.le hlambdaOne hexp
   have hcombine : lambda * P = lambda ^ (1 - 2 / (k : ℝ)) := by
     dsimp only [P]
@@ -194,9 +190,9 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
           lambda ^ (1 : ℝ) * lambda ^ (-(2 / (k : ℝ))) := by simp
       _ = lambda ^ ((1 : ℝ) + -(2 / (k : ℝ))) := by
         rw [Real.rpow_add hlambda]
-      _ = lambda ^ (1 - 2 / (k : ℝ)) := by rfl
+      _ = lambda ^ (1 - 2 / (k : ℝ)) := rfl
   have hP : 0 ≤ P := by dsimp only [P]; positivity
-  have hB : 0 ≤ B := by dsimp only [B]; positivity
+  
   have hproduct :
       (1 + A * lambda * (N : ℝ)) * (N + P) ≤ (1 + A) * B := by
     have hcross : A * (N : ℝ) * (lambda * P) ≤ A * N := by
@@ -218,22 +214,17 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
     have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
     have := Real.log_nonneg hNreal
     linarith
-  have hC : 0 ≤ heathBrownRefinedCountConstant k A :=
+  have hC  :=
     (heathBrownRefinedCountConstant_pos k hA).le
   calc
     ((heathBrownPairCount N k (heathBrownHChoice k A lambda) f).card : ℝ) ≤
         heathBrownRefinedCountConstant k A *
           (1 + A * lambda * N) * (N + P) *
-          (1 + Real.log N) := by simpa only [P] using hsource
+          (1 + Real.log N) := by linarith
     _ ≤ heathBrownRefinedCountConstant k A * ((1 + A) * B) *
         (1 + Real.log N) := by
       have hmul := mul_le_mul_of_nonneg_left hproduct hC
-      have hmul' :
-          heathBrownRefinedCountConstant k A *
-              (1 + A * lambda * (N : ℝ)) * (N + P) ≤
-            heathBrownRefinedCountConstant k A * ((1 + A) * B) := by
-        simpa only [mul_assoc] using hmul
-      exact mul_le_mul_of_nonneg_right hmul' hlog
+      apply mul_le_mul_of_nonneg_right <;> first | assumption | positivity | linarith
     _ = heathBrownLemmaTwoConstant k A *
         (N + lambda * N ^ 2 + lambda ^ (-(2 / (k : ℝ)))) *
         (1 + Real.log N) := by

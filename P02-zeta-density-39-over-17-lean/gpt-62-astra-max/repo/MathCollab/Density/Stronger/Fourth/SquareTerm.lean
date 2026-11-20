@@ -102,26 +102,26 @@ theorem exists_norm_zetaFourthKernel_strip_le
       ‖zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)‖ ≤ K*Real.exp (-99*u^2) := by
   obtain ⟨G,hG,hGamma⟩ := exists_norm_GammaR_strip_le (a := 1/2+a) (b := 1/2+b) (by linarith : (0:ℝ) < 1/2+a)
   let D : ℝ := ‖(zetaSquareGammaNormalization t)⁻¹‖
-  have hD : 0 < D := norm_pos_iff.mpr
+  have hD  := norm_pos_iff.mpr
     (inv_ne_zero (zetaSquareGammaNormalization_ne_zero t))
   let A : ℝ := 10000*G^2*D/a
   let Q : ℝ := 12*(3+b+t)+36
   let K : ℝ := A*Real.exp (100*b^2)*Real.exp Q
   have hA : 0 < A := by dsimp [A]; positivity
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  refine ⟨K,by positivity,?_⟩
   intro c hc u
-  have hc0 : 0 < c := ha.trans_le hc.1
-  have hb : 0 < b := ha.trans_le hab
+  have hc0  := ha.trans_le hc.1
+  have hb  := ha.trans_le hab
   let w : ℂ := (c:ℂ)+(u:ℂ)*I
   let R : ℝ := 3+c+t+|u|
   let B : ℝ := 3+b+t+|u|
   have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
   have hw := norm_vertical_shift_le hc0.le u
-  have hwlower : a ≤ ‖w‖ := hc.1.trans (vertical_shift_re_le_norm hc0.le u)
-  have haux : ‖hughesYoungAuxiliaryZero w‖ ≤ 625*R^8 :=
+  have hwlower  := hc.1.trans (vertical_shift_re_le_norm hc0.le u)
+  have haux  :=
     norm_hughesYoungAuxiliaryZero_le_polynomial hR
-      (hw.trans (by dsimp [R]; linarith))
-  have hpole : ‖zetaSquarePoleShift t w‖ ≤ 16*R^4 :=
+      (hw.trans (by linarith))
+  have hpole  :=
     norm_zetaSquarePoleShift_le_polynomial ht hc0.le u
   have hg : ‖Complex.Gammaℝ (afeCriticalPoint (-t)+w)‖ ≤ G := by
     have heq : afeCriticalPoint (-t)+w =
@@ -175,7 +175,7 @@ theorem exists_norm_zetaFourthKernel_strip_le
     _ = A*Real.exp (100*b^2)*B^12*Real.exp (-100*u^2) := by rw [he]; ring
     _ ≤ A*Real.exp (100*b^2)*(Real.exp Q*Real.exp (u^2))*Real.exp (-100*u^2) := by
       gcongr
-    _ = K*(Real.exp (u^2)*Real.exp (-100*u^2)) := by dsimp [K]; ring
+    _ = K*(Real.exp (u^2)*Real.exp (-100*u^2)) := by ring
     _ = _ := by rw [hgauss]
 
 
@@ -210,7 +210,7 @@ theorem integrable_zetaFourthTerm_vertical {t c : ℝ}
     (ht : 0 ≤ t) (hc : 0 < c) (n : ℕ) :
     Integrable (fun u : ℝ => zetaFourthTerm t n ((c:ℂ)+(u:ℂ)*I)) := by
   obtain ⟨K,_,hK⟩ := exists_norm_zetaFourthTerm_strip_le hc le_rfl ht n
-  have hg : Integrable (fun u : ℝ => K*Real.exp (-99*u^2)) :=
+  have hg  :=
     (integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 99)).const_mul K
   exact hg.mono' (continuous_zetaFourthTerm_vertical t n hc).aestronglyMeasurable
     (Eventually.of_forall (fun u => hK c ⟨le_rfl,le_rfl⟩ u))
@@ -233,7 +233,7 @@ theorem tendsto_zetaFourthTerm_horizontal_of_sq_eq
     simpa only [hv H] using hK x hx' (v H)
   have hp : Tendsto (fun H : ℝ => H^2) atTop atTop :=
     tendsto_pow_atTop (by decide : 2 ≠ 0)
-  have hm : Tendsto (fun H : ℝ => 99*H^2) atTop atTop :=
+  have hm  :=
     Tendsto.const_mul_atTop (by norm_num : (0:ℝ) < 99) hp
   have he : Tendsto (fun H : ℝ => Real.exp (-99*H^2)) atTop (𝓝 0) := by
     simpa only [neg_mul] using! Real.tendsto_exp_neg_atTop_nhds_zero.comp hm

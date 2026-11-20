@@ -1,7 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedReferenceJets
-public import TaoTrudgianYang2025.BetaLegendreAllOrders
 
 @[expose] public section
 

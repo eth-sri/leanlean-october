@@ -102,8 +102,8 @@ theorem sharp_cubic_profile_expansion {T R E : ℝ}
       T ^ (17 / 40 : ℝ) * R ^ (9 / 10 : ℝ) * E ^ (21 / 40 : ℝ) := by
     dsimp only [C]
     rw [Real.mul_rpow hTpos.le hE.le, hT17, hR9, hE21b]; ring
-  have hBbound := mul_le_mul_of_nonneg_left hKa (show 0 ≤ B by dsimp only [B]; positivity)
-  have hCbound := mul_le_mul_of_nonneg_left hKb (show 0 ≤ C by dsimp only [C]; positivity)
+  have hBbound := mul_le_mul_of_nonneg_left hKa (show 0 ≤ B by positivity)
+  have hCbound := mul_le_mul_of_nonneg_left hKb (show 0 ≤ C by positivity)
   rw [mul_add, hB1, hB2] at hBbound
   rw [mul_add, hC1, hC2] at hCbound
   have hCompare : T ^ (2 / 5 : ℝ) * R ^ (9 / 10 : ℝ) * E ^ (21 / 40 : ℝ) ≤
@@ -125,7 +125,7 @@ theorem sharpCubicProfile_le_expanded {T : ℝ} (hT : 1 ≤ T) (W : Finset ℝ) 
       have hd : (W.card : ℝ) ^ 2 ≤ (discreteAdditiveEnergy W : ℝ) := by exact_mod_cast h
       nlinarith
     exact sharp_cubic_profile_expansion hT hR hE
-  · have he : W = ∅ := Finset.not_nonempty_iff_eq_empty.mp hW
+  · have he  := Finset.not_nonempty_iff_eq_empty.mp hW
     subst W
     norm_num [sharpCubicProfile, expandedSharpCubicProfile, discreteAdditiveEnergy]
 
@@ -149,7 +149,7 @@ theorem discrete_energy_sublinear_native (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, T₀, hC, hT₀, h⟩ := discrete_energy_sharp_profile_native ε hε
   refine ⟨C, T₀, hC, hT₀, ?_⟩
   intro T N a W V hT hN hTN hNT ha hV hValues hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
+  have hTtwo  := hT₀.trans hT
   have hProfile := sharpCubicProfile_le_expanded (by linarith : 1 ≤ T) W
   have hActual := h T N a W V hT hN hTN hNT ha hV hValues hSep hBase
   apply hActual.trans

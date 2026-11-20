@@ -64,8 +64,7 @@ theorem hasDerivAt_atkinsonRootSlope (T b : ℝ) {y : ℝ} (hy : 0 < y) :
     unfold atkinsonRootSlope
     dsimp
     ring
-  · simp only [id_eq, zero_mul, mul_one, zero_sub]
-    ring
+  · grind
 
 theorem atkinsonRootSlope_strictAnti {T : ℝ} (hT : 0 ≤ T) (b : ℝ) :
     StrictAntiOn (atkinsonRootSlope T b) (Ioi 0) := by

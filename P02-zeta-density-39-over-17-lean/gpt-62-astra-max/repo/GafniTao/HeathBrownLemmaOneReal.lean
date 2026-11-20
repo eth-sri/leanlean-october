@@ -37,7 +37,6 @@ noncomputable def heathBrownLemmaOneExpandedRealBound
 theorem heathBrownLemmaTwoConstant_pos
     (k : ℕ) {A : ℝ} (hA : 0 < A) :
     0 < heathBrownLemmaTwoConstant k A := by
-  unfold heathBrownLemmaTwoConstant
   exact mul_pos (heathBrownRefinedCountConstant_pos k hA) (by linarith)
 
 theorem heathBrownLemmaOne_source_P_pos
@@ -47,7 +46,7 @@ theorem heathBrownLemmaOne_source_P_pos
       (N + lambda * N ^ 2 + lambda ^ (-(2 / (k : ℝ)))) *
       (1 + Real.log N) := by
   have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hlog : 0 ≤ Real.log (N : ℝ) := Real.log_nonneg hNreal
+  have hlog  := Real.log_nonneg hNreal
   have hmiddle : 0 < (N : ℝ) + lambda * N ^ 2 +
       lambda ^ (-(2 / (k : ℝ))) := by positivity
   exact mul_pos (mul_pos (heathBrownLemmaTwoConstant_pos k hA) hmiddle)
@@ -66,7 +65,7 @@ theorem heathBrownLemmaOneRawBound_toReal
     (N + lambda * N ^ 2 + lambda ^ (-(2 / (k : ℝ)))) *
     (1 + Real.log N)
   have hH : 0 < H := heathBrownHChoice_pos (by omega) hA hlambda hsmall
-  have hHr : (0 : ℝ) < H := by exact_mod_cast hH
+  
   have hs : 0 < s := by
     dsimp only [s, heathBrownCriticalMoment]
     have hprod : 2 ≤ k * (k - 1) := by
@@ -74,7 +73,7 @@ theorem heathBrownLemmaOneRawBound_toReal
         2 = 2 * 1 := by omega
         _ ≤ k * (k - 1) := Nat.mul_le_mul (by omega) (by omega)
     exact Nat.div_pos hprod (by omega)
-  have hsReal : (0 : ℝ) < s := by exact_mod_cast hs
+  
   have hV : 0 < V := by
     dsimp only [V]
     positivity
@@ -82,7 +81,7 @@ theorem heathBrownLemmaOneRawBound_toReal
     dsimp only [P]
     exact heathBrownLemmaOne_source_P_pos hN hA hlambda
   have hvmvtBase : 0 < C * (H : ℝ) ^ ((s : ℝ) + epsilon) := by positivity
-  have hPV : 0 < P * V := mul_pos hP hV
+  have hPV  := mul_pos hP hV
   have hNV : 0 < (N : ℝ) * V := by positivity
   have hfirst : 0 ≤
       2 * Real.pi * (A * lambda * (H : ℝ) ^ (k - 1)) := by positivity

@@ -72,8 +72,8 @@ theorem norm_atkinsonRootKernel_integral_le_four {T : ℝ} (hT : 0 < T)
     apply max_le
     · exact hav
     · exact le_min (by linarith) (by linarith)
-  have hu0 : 0 < u := ha.trans_le hau
-  have hv0 : 0 < v := ha.trans_le hav
+  have hu0  := ha.trans_le hau
+  have hv0  := ha.trans_le hav
   have hlow : ‖∫ y in a..u, atkinsonRootKernel T b y‖ ≤ 1 := by
     rcases le_total (r - 1) a with hr | hr
     · have hu : u = a := max_eq_left hr

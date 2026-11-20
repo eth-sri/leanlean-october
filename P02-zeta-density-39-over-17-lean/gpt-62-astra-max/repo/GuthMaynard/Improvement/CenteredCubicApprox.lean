@@ -44,13 +44,13 @@ theorem centered_cubic_approximation {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   intro T L t₀ t₁ μ hT hL hLT ht hlen hm h0 hi h2 hsup
   let J := retainedPoissonKernel (volume.restrict (Icc l u)) a L (poissonModes (T^(1+η)/L))
   have hLp : 0 < L := by linarith
-  have hTp : 0 < T := by linarith
+  
   have hpow : T^(-200:ℝ) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hT (by norm_num)
   have he : ∀ s, |s| ≤ t₁-t₀ → ‖centeredKernel a l u L s-J s‖ ≤ E*T^(-200:ℝ) := by
     intro s hst
     dsimp only [J]
     rw [retainedPoissonKernel_fourier ha.continuous.measurable hb hs]
-    exact herr T L s hT hL hLT (by simpa using hst.trans hlen)
+    exact herr T L s hT hL hLT (by linarith)
   have hk : ∀ s, |s| ≤ t₁-t₀ → ‖centeredKernel a l u L s‖ ≤ (D+E)*L := by
     intro s _
     exact (hbound L s hL).trans (by nlinarith)

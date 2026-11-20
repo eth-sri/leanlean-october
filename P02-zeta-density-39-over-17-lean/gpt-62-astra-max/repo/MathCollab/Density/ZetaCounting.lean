@@ -35,8 +35,7 @@ theorem nontrivialZetaZero_ne_one {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) : �
 
 theorem zetaMultiplicity_local_factorization {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) :
     ∃ g : ℂ → ℂ, AnalyticAt ℂ g ρ ∧ g ρ ≠ 0 ∧
-      ∀ᶠ z in 𝓝 ρ, riemannZeta z = (z-ρ)^(zetaMultiplicity ρ)*g z := by
-  exact (analyticOn_riemannZeta ρ (nontrivialZetaZero_ne_one hρ)).analyticOrderAt_ne_top.mp
+      ∀ᶠ z in 𝓝 ρ, riemannZeta z = (z-ρ)^(zetaMultiplicity ρ)*g z := (analyticOn_riemannZeta ρ (nontrivialZetaZero_ne_one hρ)).analyticOrderAt_ne_top.mp
     (zeta_analyticOrder_ne_top (nontrivialZetaZero_ne_one hρ))
 
 /-- Closed height and real-part cutoffs, inside the open critical strip. -/
@@ -64,7 +63,7 @@ def zetaZeroFinset (σ a b : ℝ) : Finset ℂ := (zetaZeroRegion_finite σ a b)
 theorem mem_zetaZeroFinset {σ a b : ℝ} {ρ : ℂ} :
     ρ ∈ zetaZeroFinset σ a b ↔
       IsNontrivialZetaZero ρ ∧ σ ≤ ρ.re ∧ a ≤ ρ.im ∧ ρ.im ≤ b := by
-  exact Set.Finite.mem_toFinset (zetaZeroRegion_finite σ a b)
+  apply Set.Finite.mem_toFinset <;> assumption
 
 /-- Count all actual zeros in the slab, with analytic multiplicity. -/
 def zetaSlabCount (σ a b : ℝ) : ℕ :=

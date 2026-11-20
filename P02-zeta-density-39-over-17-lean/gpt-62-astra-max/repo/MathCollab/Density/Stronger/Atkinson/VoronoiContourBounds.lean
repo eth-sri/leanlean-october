@@ -92,9 +92,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_horizontal_limits
       (a := -(1/2 : ℝ)) (b := (3/2 : ℝ))
       (f := fun x : ℝ => ordinaryDivisorMellinIntegrand g ((x : ℂ)+(H : ℂ)*I))
       (C := C/(1+|H|)^2) (fun x hx => by
-        have hx' := Set.uIoc_subset_uIcc hx
-        rw [Set.uIcc_of_le (by norm_num : -(1/2 : ℝ) ≤ 3/2)] at hx'
-        exact hdecay x hx'.1 hx'.2 H hH)
+        grind)
     convert hInt using 1 <;> norm_num [HIntegral]
   have hEnv : Tendsto (fun H : ℝ => C/(1+|H|)^2*2) atTop (𝓝 0) := by
     have ha : Tendsto (fun H : ℝ => |H|) atTop atTop :=

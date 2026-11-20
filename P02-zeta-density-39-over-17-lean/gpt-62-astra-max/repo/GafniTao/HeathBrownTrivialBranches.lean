@@ -39,9 +39,9 @@ theorem norm_heathBrownExponentialSum_le_of_lambda_lower
         (N : ℝ) ^ (1 + epsilon) *
           heathBrownKthDerivativeFactor k N lambda := by
   let r := heathBrownCriticalReciprocal k
-  have hr0 : 0 ≤ r :=
+  have hr0  :=
     (heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)).le
-  have hbpow : b ^ r ≤ lambda ^ r :=
+  have hbpow  :=
     Real.rpow_le_rpow hb.le hblambda hr0
   have hbpowPos : 0 < b ^ r := Real.rpow_pos_of_pos hb _
   have hcomponent := heathBrown_lambda_component_le_factor
@@ -49,21 +49,16 @@ theorem norm_heathBrownExponentialSum_le_of_lambda_lower
   have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
   have hNpow : (N : ℝ) ≤ (N : ℝ) ^ (1 + epsilon) := by
     calc
-      (N : ℝ) = (N : ℝ) ^ (1 : ℝ) := by rw [Real.rpow_one]
+      (N : ℝ) = (N : ℝ) ^ (1 : ℝ) := by simp
       _ ≤ (N : ℝ) ^ (1 + epsilon) :=
         Real.rpow_le_rpow_of_exponent_le hNReal (by linarith)
-  have htarget : (N : ℝ) * b ^ r ≤
-      (N : ℝ) ^ (1 + epsilon) *
-        heathBrownKthDerivativeFactor k N lambda :=
+  have htarget  :=
     mul_le_mul hNpow (hbpow.trans hcomponent) (by positivity) (by positivity)
   have htrivial := norm_heathBrownExponentialSum_le N f
   calc
     ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast htrivial
     _ = (b ^ r)⁻¹ * ((N : ℝ) * b ^ r) := by
-      calc
-        (N : ℝ) = ((b ^ r)⁻¹ * b ^ r) * (N : ℝ) := by
-          rw [inv_mul_cancel₀ hbpowPos.ne', one_mul]
-        _ = (b ^ r)⁻¹ * ((N : ℝ) * b ^ r) := by ring
+      grind
     _ ≤ (b ^ r)⁻¹ *
         ((N : ℝ) ^ (1 + epsilon) *
           heathBrownKthDerivativeFactor k N lambda) := by gcongr
@@ -94,10 +89,7 @@ theorem norm_heathBrownExponentialSum_le_of_third_lower
   calc
     ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast htrivial
     _ = c⁻¹ * (c * (N : ℝ)) := by
-      calc
-        (N : ℝ) = (c⁻¹ * c) * (N : ℝ) := by
-          rw [inv_mul_cancel₀ hc.ne', one_mul]
-        _ = c⁻¹ * (c * (N : ℝ)) := by ring
+      grind
     _ ≤ c⁻¹ *
         ((N : ℝ) ^ (1 + epsilon) *
           heathBrownKthDerivativeFactor k N lambda) := by gcongr
@@ -109,8 +101,8 @@ theorem one_le_heathBrown_scaled_factor
     1 ≤ (N : ℝ) ^ (1 + epsilon) *
       heathBrownKthDerivativeFactor k N lambda := by
   let r := heathBrownCriticalReciprocal k
-  have hr : 0 < r := heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)
-  have hrHalf : r ≤ 1 / 2 :=
+  have hr  := heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)
+  have hrHalf  :=
     heathBrownCriticalReciprocal_le_half (by omega : 2 ≤ k)
   have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
   rw [← heathBrownThreeTerm_scaled_identity hN (by omega : 2 ≤ k)
@@ -128,12 +120,12 @@ theorem one_le_heathBrown_scaled_factor
       nlinarith [mul_le_mul hNq hlambdaNeg (by norm_num : (0 : ℝ) ≤ 1)
         (by positivity : 0 ≤ (N : ℝ) ^ (1 - 2 * r))]
     have hthirdThree := heathBrownThirdTerm_le_threeTerm (k := k) hN hlambda
-    have hNpowOne : 1 ≤ (N : ℝ) ^ epsilon :=
+    have hNpowOne  :=
       Real.one_le_rpow hNReal hepsilon.le
     have hthree0 := (heathBrownThreeTerm_pos (k := k) hN hlambda).le
     nlinarith
-  · have hlambdaLower : 1 ≤ lambda := le_of_not_ge hlambdaOne
-    have hlambdaPow : 1 ≤ lambda ^ r :=
+  · have hlambdaLower  := le_of_not_ge hlambdaOne
+    have hlambdaPow  :=
       Real.one_le_rpow hlambdaLower hr.le
     have hcomponent : lambda ^ r ≤ heathBrownThreeTerm N k lambda := by
       unfold heathBrownThreeTerm
@@ -145,9 +137,9 @@ theorem one_le_heathBrown_scaled_factor
       have hlast : 0 ≤ (N : ℝ) ^ (1 - 2 * r) *
           lambda ^ (-2 * r / (k : ℝ)) := by positivity
       linarith
-    have hNpowOne : 1 ≤ (N : ℝ) ^ epsilon :=
+    have hNpowOne  :=
       Real.one_le_rpow hNReal hepsilon.le
-    have hthree0 := (heathBrownThreeTerm_pos (k := k) hN hlambda).le
+    
     nlinarith
 
 theorem norm_heathBrownExponentialSum_le_small_N_factor

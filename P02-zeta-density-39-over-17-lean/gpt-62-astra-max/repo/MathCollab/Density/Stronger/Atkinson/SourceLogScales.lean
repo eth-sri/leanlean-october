@@ -26,10 +26,10 @@ theorem exists_logGaussian_power_tail_bound (C p A : ℝ) {b : ℝ} (hb : 0 < b)
   let T₀ := max 1 (max C (Real.exp ((A + p + 1) / b)))
   refine ⟨T₀, le_max_left _ _, ?_⟩
   intro T hT₀
-  have hT1 : 1 ≤ T := (le_max_left _ _).trans hT₀
+  have hT1  := (le_max_left _ _).trans hT₀
   have hT : 0 < T := by linarith
-  have hTC : C ≤ T := (le_max_left _ _).trans ((le_max_right _ _).trans hT₀)
-  have hTexp : Real.exp ((A + p + 1) / b) ≤ T :=
+  have hTC  := (le_max_left _ _).trans ((le_max_right _ _).trans hT₀)
+  have hTexp  :=
     (le_max_right _ _).trans ((le_max_right _ _).trans hT₀)
   have hlog0 := Real.log_nonneg hT1
   have hlog : (A + p + 1) / b ≤ Real.log T := by
@@ -63,7 +63,6 @@ theorem exists_zetaQuadraticDivisor_log_tail_bound (A : ℝ) :
   rw [Real.rpow_one] at he
   norm_num only [show (1 / 2 + 1 / 2 : ℝ) = 1 by norm_num, Real.rpow_one] at h
   apply h.trans
-  rw [show -(Real.log T) ^ 2 / 8 = -(1 / 8) * (Real.log T) ^ 2 by ring]
   calc
     _ = G * (C * T * Real.exp (-(1 / 8) * (Real.log T) ^ 2)) := by ring
     _ ≤ _ := he
@@ -99,7 +98,7 @@ theorem eventually_zeta_source_log_window_scales {δ : ℝ} (hδ : 0 < δ) :
   have hT1 : 1 ≤ T := by linarith
   have hT0 : 0 < T := by linarith
   have hsq := gaussian_width_sq_le_height hT1 hG.le hδ.le hwidth
-  have hGpow : G ≤ T := hwidth.trans (by
+  have hGpow  := hwidth.trans (by
     calc
       _ ≤ T ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hT1 (by linarith)
       _ = _ := Real.rpow_one T)

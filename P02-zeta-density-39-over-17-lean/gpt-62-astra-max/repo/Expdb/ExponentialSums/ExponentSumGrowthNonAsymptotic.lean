@@ -108,7 +108,6 @@ private lemma isModelPhaseFunction_of_approximations
   filter_upwards [hP p, hδsmall] with i hip hiδ
   intro u
   have herror := (happrox i).2 p hip u
-  rw [Real.norm_eq_abs] at hiδ
   exact lt_of_le_of_lt herror ((le_abs_self (δ i)).trans_lt hiδ)
 
 private lemma nonAsymptotic_of_isExponentSumBound
@@ -118,43 +117,34 @@ private lemma nonAsymptotic_of_isExponentSumBound
   by_contra hfailure
   push Not at hfailure
   let δ : VariableObject ℝ := fun i ↦ 1 / ((i : ℝ) + 1)
-  let P : VariableObject ℕ := fun i ↦ i + 1
+  let P  := fun i ↦ i + 1
   let C : VariableObject ℝ := fun i ↦ (i : ℝ) + 3
   have hδpos : ∀ i, 0 < δ i := fun i ↦ by
-    dsimp [δ]
     positivity
   have hPone : ∀ i, 1 ≤ P i := fun i ↦ by
     dsimp [P]
     omega
   have hCone : ∀ i, 1 ≤ C i := fun i ↦ by
-    dsimp [C]
-    have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
-    linarith
+    grind
   choose T N F a b hdata using fun i ↦
     hfailure (δ i) (hδpos i) (P i) (hPone i) (C i) (hCone i)
-  have hCT : ∀ i, C i ≤ T i :=
+  have hCT  :=
     fun i ↦ (hdata i).1.threshold_le_param
-  have hlower : ∀ i, T i ^ ((α : ℝ) - δ i) ≤ N i :=
+  have hlower  :=
     fun i ↦ (hdata i).1.rpow_sub_le_scale
-  have hupper : ∀ i, N i ≤ T i ^ ((α : ℝ) + δ i) :=
+  have hupper  :=
     fun i ↦ (hdata i).1.scale_le_rpow_add
-  have happrox : ∀ i,
-      IsApproximateModelPhaseFunction (F i) σ (P i) (δ i) :=
+  have happrox  :=
     fun i ↦ (hdata i).1.isApproximateModelPhase
-  have ha : ∀ i, N i ≤ (a i : ℝ) :=
+  have ha  :=
     fun i ↦ (hdata i).1.scale_le_start
-  have hb : ∀ i, (b i : ℝ) ≤ 2 * N i :=
+  have hb  :=
     fun i ↦ (hdata i).1.end_le_two_mul_scale
-  have hviolate : ∀ i,
-      C i * T i ^ (β + ε) <
-        ‖exponentialSumAt (F i) (T i) (N i) (a i) (b i)‖ :=
+  have hviolate  :=
     fun i ↦ (hdata i).2
   have hTgt : ∀ i, 1 < T i := fun i ↦ by
-    have hCthree : 3 ≤ C i := by
-      dsimp [C]
-      exact le_add_of_nonneg_left (Nat.cast_nonneg i)
-    linarith [hCT i]
-  have hTone : ∀ i, 1 ≤ T i := fun i ↦ (hTgt i).le
+    grind
+  have hTone  := fun i ↦ (hTgt i).le
   have hTunbounded : VariableObject.IsUnbounded T := by
     apply (VariableObject.isUnbounded_iff_forall_eventually_norm_ge T).2
     intro D
@@ -165,7 +155,6 @@ private lemma nonAsymptotic_of_isExponentSumBound
       D ≤ (k : ℝ) := hk
       _ ≤ (i : ℝ) := by exact_mod_cast hi
       _ ≤ C i := by
-        dsimp [C]
         linarith
       _ ≤ T i := hCT i
   have hδinfinitesimal : δ.IsInfinitesimal := by
@@ -181,11 +170,11 @@ private lemma nonAsymptotic_of_isExponentSumBound
     filter_upwards [eventually_ge_atTop p] with i hi
     dsimp [P]
     omega
-  have hNpos : ∀ i, 0 < N i := fun i ↦
+  have hNpos  := fun i ↦
     lt_of_lt_of_le
       (Real.rpow_pos_of_pos (lt_trans zero_lt_one (hTgt i)) _)
       (hlower i)
-  have hβnonneg : 0 ≤ β := hbound.nonneg
+  have hβnonneg  := hbound.nonneg
   have hNone : ∀ i, 1 ≤ N i := by
     intro i
     by_contra hiN
@@ -214,11 +203,11 @@ private lemma nonAsymptotic_of_isExponentSumBound
         _ ≤ C i * T i ^ (β + ε) :=
           mul_le_mul_of_nonneg_left hpow (le_trans (by norm_num) hCthree)
     linarith [hviolate i]
-  have hNT : IsPowerAsymptotic N T (α : ℝ) :=
+  have hNT  :=
     isPowerAsymptotic_of_between_of_infinitesimal hTgt hNpos
       hδinfinitesimal
       (fun i ↦ ⟨hlower i, hupper i⟩)
-  have hF : IsModelPhaseFunction F :=
+  have hF  :=
     isModelPhaseFunction_of_approximations hσ hPtop
       hδinfinitesimal happrox
   have hasymptotic :=
@@ -236,7 +225,6 @@ private lemma nonAsymptotic_of_isExponentSumBound
       K ≤ (k : ℝ) := hk
       _ ≤ (i : ℝ) := by exact_mod_cast hi
       _ ≤ C i := by
-        dsimp [C]
         linarith
   obtain ⟨i, hiK, hiCK⟩ := (hK.and hCK).exists
   have hnorm :
@@ -250,8 +238,7 @@ private lemma nonAsymptotic_of_isExponentSumBound
     calc
       ‖exponentialSumAt (F i) (T i) (N i) (a i) (b i)‖ ≤
           K * T i ^ (β + ε / 2) := hnorm
-      _ ≤ C i * T i ^ (β + ε / 2) := by
-        exact mul_le_mul_of_nonneg_right hiCK
+      _ ≤ C i * T i ^ (β + ε / 2) := mul_le_mul_of_nonneg_right hiCK
           (Real.rpow_nonneg (le_trans zero_le_one (hTone i)) _)
       _ ≤ C i * T i ^ (β + ε) :=
         mul_le_mul_of_nonneg_left

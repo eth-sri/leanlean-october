@@ -97,13 +97,7 @@ theorem wooley_equation_7_17_tuple
                   ∏ l, ZMod.stdAddChar
                     (beta l * wooleyEquation717InsertedDisplacement
                       psi qPrime R S left right omega l) := by
-  exact wooley_insert_redundant_grid_average q k qPrime r
-    (wooleySourceMixedTupleCoefficient R S left right)
-    (wooleyEquation717OriginalDisplacement
-      leftPhi rightPhi q R S left right)
-    (wooleyEquation717InsertedDisplacement
-      psi qPrime R S left right)
-    h712
+  apply wooley_insert_redundant_grid_average <;> assumption
 
 
 end

@@ -32,7 +32,7 @@ theorem eventually_const_height_log_pow_mul_rpow_le_rpow
     k (sub_pos.mpr hab)
   filter_upwards [hs,eventually_ge_atTop (3:ℝ)] with H hs hH
   have hH0 : 0 < H := by linarith
-  have hlog3 : Real.log 3 ≤ Real.log H :=
+  have hlog3  :=
     Real.log_le_log (by norm_num) hH
   have hlog : Real.log (3*H) ≤ 2*Real.log H := by
     rw [Real.log_mul (by norm_num) hH0.ne']
@@ -58,7 +58,7 @@ theorem eventually_pointValue_sixth_power_source_range
   let r : ℝ := 1/2-(1/48:ℝ)
   have hlower := eventually_const_height_log_pow_mul_rpow_le_rpow
     (C := K*2^q) (a := q) (b := 1/3+2*η) (by positivity) 2
-    (by dsimp only [q]; linarith)
+    (by linarith)
   have hlog := Real.tendsto_log_atTop.eventually
     (eventually_ge_atTop (max 1 (1/K)))
   filter_upwards [hlower,hlog,eventually_ge_atTop (3:ℝ)] with H hlower hlog hH
@@ -66,7 +66,7 @@ theorem eventually_pointValue_sixth_power_source_range
   have hH1 : 1 ≤ H := by linarith
   have hLmono : Real.log H ≤ Real.log (3*H) :=
     Real.log_le_log hH0 (by linarith)
-  have hL1 : 1 ≤ Real.log (3*H) := ((le_max_left _ _).trans hlog).trans hLmono
+  have hL1  := ((le_max_left _ _).trans hlog).trans hLmono
   have hKL : 1 ≤ K*Real.log (3*H) := by
     have hr : 1/K ≤ Real.log (3*H) :=
       ((le_max_right _ _).trans hlog).trans hLmono
@@ -89,7 +89,7 @@ theorem eventually_pointValue_sixth_power_source_range
     nlinarith [hlower]
   · calc
       H^(1/3+2*η) ≤ H^r :=
-        Real.rpow_le_rpow_of_exponent_le hH1 (by dsimp only [r]; linarith)
+        Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
       _ ≤ K*(Real.log (3*H))^2*H^r := by
         have hh := mul_le_mul_of_nonneg_right hKL2 (by positivity : 0 ≤ H^r)
         simpa only [one_mul] using hh

@@ -1,13 +1,8 @@
 module
-public import Mathlib.Analysis.Analytic.Order
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
-public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
-public import Mathlib.NumberTheory.LSeries.Dirichlet
 public import Mathlib.NumberTheory.LSeries.Linearity
-public import Mathlib.NumberTheory.LSeries.ZetaZeros
 public import GuthMaynard.NativeSource.GuthMaynard.DyadicTransfer
-public import GuthMaynard.NativeSource.GuthMaynard.InghamBound
-public import GuthMaynard.NativeSource.GuthMaynard.ZeroCount
+public import GuthMaynard.NativeSource.GuthMaynard.Statements
 
 @[expose] public section
 
@@ -23,48 +18,10 @@ noncomputable def zetaMollifier (X : ℕ) (s : ℂ) : ℂ :=
   ∑ n ∈ Icc 1 X,
     ((ArithmeticFunction.moebius n : ℤ) : ℂ) * (n : ℂ) ^ (-s)
 
-/-- The finite Möbius mollifier as an arithmetic function. -/
-noncomputable def truncatedMoebius (X : ℕ) : ArithmeticFunction ℂ where
-  toFun n := if n ∈ Icc 1 X then
-    ((ArithmeticFunction.moebius n : ℤ) : ℂ) else 0
-  map_zero' := by simp
 
-@[simp] theorem truncatedMoebius_apply (X n : ℕ) :
-    truncatedMoebius X n = if n ∈ Icc 1 X then
-      ((ArithmeticFunction.moebius n : ℤ) : ℂ) else 0 := rfl
 
-theorem truncatedMoebius_hasFiniteSupport (X : ℕ) :
-    Function.HasFiniteSupport (truncatedMoebius X) := by
-  apply Set.Finite.subset (Icc 1 X).finite_toSet
-  intro n hn
-  simp only [Function.mem_support, ne_eq] at hn
-  by_contra hnMem
-  have hnMem' : n ∉ Icc 1 X := by simpa using hnMem
-  exact hn (by rw [truncatedMoebius_apply, ite_eq_right hnMem'])
 
-theorem truncatedMoebius_LSeriesSummable (X : ℕ) (s : ℂ) :
-    LSeriesSummable (truncatedMoebius X) s := by
-  unfold LSeriesSummable
-  exact summable_of_hasFiniteSupport <|
-    (truncatedMoebius_hasFiniteSupport X).subset (by
-      intro n hn
-      simp only [Function.mem_support, ne_eq] at hn ⊢
-      contrapose! hn
-      rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-      simp [hn])
 
-/-- The finite-sum definition of the mollifier agrees exactly with its
-L-series representation. -/
-theorem zetaMollifier_eq_LSeries (X : ℕ) (s : ℂ) :
-    zetaMollifier X s = LSeries (truncatedMoebius X) s := by
-  rw [zetaMollifier, LSeries, tsum_eq_sum (s := Icc 1 X)]
-  · apply Finset.sum_congr rfl
-    intro n hn
-    rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-    simp only [truncatedMoebius_apply, ite_eq_left hn]
-  · intro n hn
-    rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-    simp [hn]
 
 /-- Ingham's zero-containing auxiliary function
 `1 - (ζ M_X - 1)^2 = (2 - ζ M_X) ζ M_X`.  The factored definition makes the
@@ -73,21 +30,7 @@ noncomputable def inghamZeroDetector (X : ℕ) (s : ℂ) : ℂ :=
   (2 - riemannZeta s * zetaMollifier X s) *
     (riemannZeta s * zetaMollifier X s)
 
-/-- There are no zeta zeros in a rectangle whose real interval is the
-singleton `{1}`. -/
-theorem zerosInRect_one_eq_empty (T₁ T₂ : ℝ) :
-    zerosInRect 1 1 T₁ T₂ = ∅ := by
-  apply Finset.eq_empty_iff_forall_notMem.mpr
-  intro s hs
-  rw [zerosInRect, Set.Finite.mem_toFinset, Set.mem_inter_iff] at hs
-  rcases hs with ⟨hsRect, hsZero⟩
-  rw [mem_ZeroRectangle] at hsRect
-  exact riemannZeta_ne_zero_of_one_le_re hsRect.1 hsZero
 
-/-- The symmetric zeta-zero count vanishes identically at `σ = 1`. -/
-@[simp] theorem N_one (T : ℝ) : N 1 T = 0 := by
-  rw [N, zeroCountRect, zerosInRect_one_eq_empty]
-  simp
 
 /-- All zeta zeros in one unit-height bin of a positive dyadic slab. -/
 noncomputable def zeroUnitBin (σ T : ℝ) (z : ℤ) : Finset ℂ :=

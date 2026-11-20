@@ -27,22 +27,6 @@ theorem gmTraceEnergy_sublinearity (j : Fin 3) (i : Fin 5) :
   fin_cases j <;> fin_cases i <;>
     norm_num [gmTraceG,gmTraceD,gmEnergyR]
 
-theorem gmTraceEnergyMargin_of_endpoints {σ a x : ℝ} (j : Fin 3) (i : Fin 5)
-    (hx : a ≤ x) (hx' : x ≤ 3*a/2)
-    (hlo : 0 ≤ gmTraceEnergyMargin σ a a j i)
-    (hhi : 0 ≤ gmTraceEnergyMargin σ a (3*a/2) j i) :
-    0 ≤ gmTraceEnergyMargin σ a x j i := by
-  let c := (4-2*gmTraceB j-gmTraceD j*gmEnergyW i)*σ-3+gmTraceB j-
-    gmTraceD j*gmEnergyU i
-  by_cases hc : 0 ≤ c
-  · have h := mul_le_mul_of_nonneg_left hx hc
-    dsimp only [c] at h
-    unfold gmTraceEnergyMargin at *
-    linarith only [hlo,h]
-  · have h := mul_le_mul_of_nonpos_left hx' (le_of_not_ge hc)
-    dsimp only [c] at h
-    unfold gmTraceEnergyMargin at *
-    linarith only [hhi,h]
 
 theorem gmTraceEnergy_length_slope_nonneg {σ : ℝ} (hσ : 4/5 ≤ σ)
     (j : Fin 3) (i : Fin 5) :

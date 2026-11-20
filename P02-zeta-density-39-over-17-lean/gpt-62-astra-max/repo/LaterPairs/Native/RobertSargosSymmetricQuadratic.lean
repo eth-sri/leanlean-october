@@ -1,8 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.FiniteSmoothTaylor
 public import LaterPairs.Native.RobertSargosCubicPhase
 
 @[expose] public section
@@ -70,7 +66,7 @@ theorem abs_symmetric_first_jet_remainder_le
       2*h*iteratedDeriv 2 f x| ≤ B*h^3/3 := by
   have hg : ∀ y ∈ Icc a b, ContDiffAt ℝ 3 (iteratedDeriv 1 f) y := by
     intro y hy
-    exact contDiffAt_iteratedDeriv_finite (n := 3) (j := 1) (by norm_num; exact hf y hy)
+    exact contDiffAt_iteratedDeriv_finite (n := 3) (j := 1) (by exact hf y hy)
   have hgd : ∀ y ∈ Icc a b, |iteratedDeriv 3 (iteratedDeriv 1 f) y| ≤ B := by
     intro y hy
     rw [iteratedDeriv_real_comp_order]

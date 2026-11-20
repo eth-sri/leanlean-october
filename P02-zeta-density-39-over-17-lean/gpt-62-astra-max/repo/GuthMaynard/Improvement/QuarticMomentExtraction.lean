@@ -82,9 +82,9 @@ theorem quartic_moment_extraction (q : ℕ) :
   let Z := quarticDeleted W K R
   let G := W \ Z
   have hGW : G ⊆ W := Finset.sdiff_subset
-  have hGsep : MathCollab.Density.oneSeparated G := fun x hx y hy => hsep x (hGW hx) y (hGW hy)
-  have hμi : Integrable (fun t => μ t^2) := (fixed_truncated_source_regular hN hT a ha U).2.2.1
-  have hM0 : 0 ≤ M := (integral_nonneg (fun t => sq_nonneg (μ t))).trans hM
+  have hGsep  := fun x hx y hy => hsep x (hGW hx) y (hGW hy)
+  have hμi  := (fixed_truncated_source_regular hN hT a ha U).2.2.1
+  have hM0  := (integral_nonneg (fun t => sq_nonneg (μ t))).trans hM
   have hiw (w : ℝ) : Integrable (fun t => sourceQuarticWeight (t-w)*μ t^2) :=
     quartic_truncated_weight_integrable hN hT a ha U w
   have hsum : (∑ w ∈ G, ∫ t, sourceQuarticWeight (t-w)*μ t^2) ≤ B*M := by

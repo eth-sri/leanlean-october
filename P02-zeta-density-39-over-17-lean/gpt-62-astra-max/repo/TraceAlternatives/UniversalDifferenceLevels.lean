@@ -36,7 +36,7 @@ theorem universal_difference_cell_level_count (ε : ℝ) (hε : 0 < ε) :
   refine ⟨3 * C₀, D, by positivity, hD, ?_⟩
   intro M T a W hM hT hMT ha hBase
   have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTone
+  
   obtain ⟨p, hrep⟩ := exists_difference_peak_representatives W
     (fun t => ‖dirichletPoly M a t‖)
   refine ⟨p, hrep, ?_⟩
@@ -44,7 +44,7 @@ theorem universal_difference_cell_level_count (ε : ℝ) (hε : 0 < ε) :
   let S := (differenceFloorSupport W).filter fun j =>
     U ≤ ‖dirichletPoly M a ((p j).1 - (p j).2)‖
   let color : ℤ → ℕ := fun j => (j % 3).toNat
-  let y : ℤ → ℝ := fun j => (p j).1 - (p j).2 + T
+  let y  := fun j => (p j).1 - (p j).2 + T
   have hsupport : ∀ j ∈ S, j ∈ differenceFloorSupport W :=
     fun j hj => (Finset.mem_filter.mp hj).1
   have hcolor : ∀ j ∈ S, color j ∈ Finset.range 3 := by
@@ -54,8 +54,7 @@ theorem universal_difference_cell_level_count (ε : ℝ) (hε : 0 < ε) :
     rw [Finset.mem_range]
     change (j % 3).toNat < 3
     omega
-  have hcounts : S.card = ∑ r ∈ Finset.range 3,
-      ((S.filter fun j => color j = r).card) :=
+  have hcounts  :=
     Finset.card_eq_sum_card_fiberwise hcolor
   have hEach : ∀ r ∈ Finset.range 3,
       (((S.filter fun j => color j = r).card) : ℝ) ≤

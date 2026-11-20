@@ -46,12 +46,7 @@ theorem wooleySource_sum_refined_residue_mass
   apply Finset.sum_congr rfl
   intro n hn
   rw [Fintype.sum_eq_single (n : ZMod (p ^ b))]
-  · have hcast :
-        ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))
-            (n : ZMod (p ^ b)) = (n : ZMod (p ^ a)) :=
-      ZMod.cast_intCast (pow_dvd_pow p hab) n
-    rw [hcast]
-    by_cases hxi : (n : ZMod (p ^ a)) = xi <;> simp [hxi]
+  · simp
   · intro z hzne
     by_cases hzxi : ZMod.castHom (pow_dvd_pow p hab)
         (ZMod (p ^ a)) z = xi
@@ -86,17 +81,8 @@ theorem wooleySource_sum_refined_polynomialResidueSum
   apply Finset.sum_congr rfl
   intro n hn
   rw [Fintype.sum_eq_single (n : ZMod (p ^ b))]
-  · have hcast :
-        ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))
-            (n : ZMod (p ^ b)) = (n : ZMod (p ^ a)) :=
-      ZMod.cast_intCast (pow_dvd_pow p hab) n
-    rw [hcast]
-    by_cases hxi : (n : ZMod (p ^ a)) = xi <;> simp [hxi]
-  · intro z hzne
-    by_cases hzxi : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi
-    · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
-    · rw [ite_eq_right hzxi]
+  · simp
+  · grind
 
 theorem wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
     {k qH qB : ℕ} [NeZero qB]
@@ -112,7 +98,7 @@ theorem wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
   unfold wooleySourcePolynomialResidueSum
   apply Finset.sum_eq_zero
   intro n hn
-  have hnzero : ‖gamma n‖ = 0 := (sq_eq_zero_iff).mp (hterm n hn)
+  have hnzero  := (sq_eq_zero_iff).mp (hterm n hn)
   rw [norm_eq_zero] at hnzero
   simp [hnzero]
 
@@ -127,7 +113,7 @@ theorem wooleySource_sqrt_mass_mul_normalizedResidueSum
   · simp [wooleySourceNormalizedPolynomialResidueSum, hmass,
       wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
         phi gamma alpha xi hmass]
-  · have hmassPos : 0 < wooleySourceResidueMassSq gamma qH xi :=
+  · have hmassPos  :=
       lt_of_le_of_ne (wooleySourceResidueMassSq_nonneg gamma qH xi)
         (Ne.symm hmass)
     simp [wooleySourceNormalizedPolynomialResidueSum, hmass,
@@ -176,7 +162,7 @@ theorem wooleySourcePolynomial_lemma_6_2
     dsimp [M] at hMzero
     rw [hMzero, zero_mul]
     exact mul_nonneg (by positivity) hR
-  · have hMpos : 0 < M := lt_of_le_of_ne
+  · have hMpos  := lt_of_le_of_ne
       (wooleySourceResidueMassSq_nonneg gamma (p ^ a) xi)
       (Ne.symm hMzero)
     have hholder := wooley_weighted_complex_sum_pow_le
@@ -237,8 +223,7 @@ theorem wooley_equation_7_22_native
           wooleySourceResidueMassSq gamma
               (p ^ wooleySection7NextB k r b) xiPrime *
             ‖wooleySourceNormalizedPolynomialResidueSum
-                phi gamma alpha xiPrime‖ ^ (2 * wooleyTriangular r) := by
-  exact wooleySourcePolynomial_lemma_6_2 phi
+                phi gamma alpha xiPrime‖ ^ (2 * wooleyTriangular r) := wooleySourcePolynomial_lemma_6_2 phi
     (wooley_section7_a_add_HPrime_le_nextB hr hBPrime)
     (by
       unfold wooleyTriangular

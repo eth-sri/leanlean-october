@@ -17,7 +17,7 @@ theorem ordered_ratio_gap {a b c d : ℕ} (hb : 0 < b) (hd : 0 < d)
     1 / H ^ 2 ≤ (c : ℝ) / d - (a : ℝ) / b := by
   have hbR : (0 : ℝ) < b := by exact_mod_cast hb
   have hdR : (0 : ℝ) < d := by exact_mod_cast hd
-  have hH : 0 < H := hbR.trans_le hbH
+  have hH  := hbR.trans_le hbH
   have hcross : a * d < c * b := by
     exact_mod_cast (div_lt_div_iff₀ hbR hdR).mp hlt
   have hgap : (1 : ℝ) ≤ (c : ℝ) * b - (a : ℝ) * d := by
@@ -36,9 +36,9 @@ theorem ordered_ratio_gap {a b c d : ℕ} (hb : 0 < b) (hd : 0 < d)
 /-- A logarithmic gap controls the original gap with the upper endpoint U. -/
 theorem ordered_log_gap {x y U : ℝ} (hx : 0 < x) (hxy : x < y) (hyU : y ≤ U) :
     (y - x) / U ≤ Real.log y - Real.log x := by
-  have hy : 0 < y := hx.trans hxy
-  have hU : 0 < U := hy.trans_le hyU
-  have hlog : 0 ≤ Real.log y - Real.log x :=
+  have hy  := hx.trans hxy
+  have hU  := hy.trans_le hyU
+  have hlog  :=
     sub_nonneg.mpr (Real.log_le_log hx hxy.le)
   have hh := Real.log_le_sub_one_of_pos (div_pos hx hy)
   rw [Real.log_div hx.ne' hy.ne'] at hh
@@ -63,7 +63,7 @@ theorem rational_log_separation {p q : ℕ × ℕ}
     div_pos (by exact_mod_cast hp.1) (by exact_mod_cast hp.2.1)
   have hq0 : (0 : ℝ) < (q.1 : ℝ) / q.2 :=
     div_pos (by exact_mod_cast hq.1) (by exact_mod_cast hq.2.1)
-  have hU : 0 < U := hp0.trans_le hpU
+  have hU  := hp0.trans_le hpU
   have hne : (p.1 : ℝ) / p.2 ≠ (q.1 : ℝ) / q.2 := by
     intro he
     apply hpq

@@ -55,8 +55,8 @@ theorem energy_pow_le_of_moment (A : Finset ι) (W : Finset τ)
   · change S ^ k ≤ _
     rw [hz, zero_pow (by omega : k ≠ 0)]
     positivity
-  have hSpos : 0 < S := lt_of_le_of_ne hS (Ne.symm hz)
-  let c : ι → ℂ := fun r => star (∑ t ∈ W, K r t)
+  have hSpos  := lt_of_le_of_ne hS (Ne.symm hz)
+  let c  := fun r => star (∑ t ∈ W, K r t)
   have hcoeff : (∑ r ∈ A, ‖c r‖ ^ 2) = S := by
     dsimp only [c, S]
     simp only [norm_star]
@@ -76,7 +76,7 @@ theorem energy_pow_le_of_moment (A : Finset ι) (W : Finset τ)
   have heq : S ^ (2 * k) = S ^ k * S ^ k := by
     rw [show 2 * k = k + k by omega, pow_add]
   rw [heq] at hpow
-  exact (mul_le_mul_iff_left₀ (pow_pos hSpos k)).mp (by simpa [mul_comm] using hpow)
+  exact (mul_le_mul_iff_left₀ (pow_pos hSpos k)).mp (by linarith)
 
 /-- The literal phase of a positive rational number (also defined for all reals). -/
 def phase (r t : ℝ) : ℂ := Complex.exp (((t * Real.log r : ℝ) : ℂ) * Complex.I)

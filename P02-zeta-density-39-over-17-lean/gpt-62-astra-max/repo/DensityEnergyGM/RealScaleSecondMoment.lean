@@ -48,13 +48,13 @@ theorem real_scale_ratio_second_sharp_native (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, T₀, hC, hT₀, hNative⟩ := ratio_second_moment_sharp_native ε hε
   refine ⟨2 * C + 16, T₀, by positivity, hT₀, ?_⟩
   intro M T W hM hT hMT hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
-  have hTpos : 0 < T := by linarith
-  have hPow : 1 ≤ T ^ ε := Real.one_le_rpow (by linarith) hε.le
+  have hTtwo  := hT₀.trans hT
+  
+  have hPow  := Real.one_le_rpow (by linarith) hε.le
   let E : ℝ := discreteAdditiveEnergy W
   let R : ℝ := W.card
   let L : ℝ := R * E ^ (1 / 4 : ℝ) * T ^ (1 / 4 : ℝ)
-  let S : ℝ → ℝ := fun x => x ^ 2 * E ^ (1 / 2 : ℝ) +
+  let S  := fun x => x ^ 2 * E ^ (1 / 2 : ℝ) +
     R * E ^ (1 / 4 : ℝ) * (x ^ (9 / 5 : ℝ) + T ^ (1 / 4 : ℝ) * x ^ (6 / 5 : ℝ))
   change finiteRatioSecond (sourceRatioIndices M) W ≤ (2 * C + 16) * T ^ ε * S M
   have hL0 : 0 ≤ L := by dsimp only [L, R, E]; positivity
@@ -72,9 +72,9 @@ theorem real_scale_ratio_second_sharp_native (ε : ℝ) (hε : 0 < ε) :
   have hSgrow : S M ≤ T ^ ε * S M := by nlinarith
   by_cases hMone : 1 ≤ M
   · let N : ℕ := ⌊M⌋₊
-    have hN : 0 < N := (Nat.one_le_floor_iff M).mpr hMone
-    have hNM : (N : ℝ) ≤ M := Nat.floor_le hM.le
-    have hNT : (N : ℝ) ^ 2 ≤ T :=
+    have hN  := (Nat.one_le_floor_iff M).mpr hMone
+    have hNM  := Nat.floor_le hM.le
+    have hNT  :=
       (pow_le_pow_left₀ (Nat.cast_nonneg N) hNM 2).trans hMT
     have hEndNot : 2 * N + 1 ∉ dyadicInterval N := by
       intro h
@@ -84,27 +84,27 @@ theorem real_scale_ratio_second_sharp_native (ε : ℝ) (hε : 0 < ε) :
       (by intro n hn; exact Nat.zero_lt_of_lt (Finset.mem_Ioc.mp hn).1) W
     rw [finiteRatioSecond_dyadic] at hBound
     have hFull := finiteRatioSecond_mono (real_dyadic_indices_subset_floor_insert hM.le) W
-    have hNative' : gmDiscreteRatioMoment 2 N W ≤ C * T ^ ε * S (N : ℝ) :=
+    have hNative'  :=
       hNative N T W hN hT hNT hSep hBase
     have hMono : S (N : ℝ) ≤ S M := by
       dsimp only [S]
       gcongr
     have hScale : 1 ≤ M ^ (6 / 5 : ℝ) := Real.one_le_rpow hMone (by norm_num)
     have hLle : L ≤ S M := by nlinarith
-    have hEnd : R ^ 2 ≤ 4 * S M := by linarith
+    
     calc
       _ ≤ 2 * gmDiscreteRatioMoment 2 N W + 2 * R ^ 2 := hFull.trans hBound
       _ ≤ 2 * (C * T ^ ε * S M) + 8 * S M := by
         have h := hNative'.trans (mul_le_mul_of_nonneg_left hMono (by positivity))
         linarith
       _ ≤ _ := by nlinarith
-  · have hMsmall : M < 1 := lt_of_not_ge hMone
+  · have hMsmall  := lt_of_not_ge hMone
     by_cases hA : (sourceRatioIndices M).Nonempty
     · obtain ⟨n, hn⟩ := hA
       obtain ⟨hnlo, hnhi⟩ := (sourceRatioIndices_mem hM.le n).mp hn
       have hnpos : 0 < n := by exact_mod_cast hM.trans hnlo
       have hnOne : (1 : ℝ) ≤ n := by exact_mod_cast hnpos
-      have hMhalf : (1 / 2 : ℝ) ≤ M := by linarith
+      
       have hSub : sourceRatioIndices M ⊆ {1} := by
         intro m hm
         obtain ⟨hl, hu⟩ := (sourceRatioIndices_mem hM.le m).mp hm

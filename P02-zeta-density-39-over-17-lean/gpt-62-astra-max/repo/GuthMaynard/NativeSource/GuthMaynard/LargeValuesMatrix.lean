@@ -61,7 +61,6 @@ theorem gmMatrix_sample_energy_lower (cutoff : GMSmoothCutoff) (N : ℕ)
       intro t ht
       rw [gmMatrix_mulVec_apply]
       have htLarge := hLarge t t.property
-      have htNorm : 0 ≤ ‖gmSmoothDirichletPoly cutoff N b t‖ := norm_nonneg _
       nlinarith
 
 /-- A pointwise coefficient bound gives the source `O(N)` coefficient energy. -/
@@ -71,12 +70,7 @@ theorem gmCoefficient_energy_le (N : ℕ) (b : ℕ → ℂ)
   calc
     ∑ n : GMColumn N, ‖gmCoefficientVector N b n‖ ^ 2
         ≤ ∑ _n : GMColumn N, (1 : ℝ) := by
-      apply Finset.sum_le_sum
-      intro n hn
-      have hbn := hb n n.property
-      have hnorm := norm_nonneg (b n)
-      simp only [gmCoefficientVector]
-      nlinarith
+      bound
     _ = N := by
       rw [Finset.sum_const, nsmul_eq_mul, mul_one, Finset.card_univ]
       rw [show Fintype.card (GMColumn N) = (dyadicInterval N).card from Fintype.card_coe _]
@@ -91,9 +85,9 @@ theorem gmMatrix_energy_le_operatorNorm (cutoff : GMSmoothCutoff) (N : ℕ)
         ‖(gmMatrix cutoff N W).mulVec (gmCoefficientVector N b) t‖ ^ 2 ≤
       gmMatrixOperatorNorm cutoff N W ^ 2 *
         ∑ n : GMColumn N, ‖gmCoefficientVector N b n‖ ^ 2 := by
-  let x : EuclideanSpace ℂ (GMColumn N) :=
+  let x  :=
     EuclideanSpace.equiv (GMColumn N) ℂ |>.symm (gmCoefficientVector N b)
-  let y : EuclideanSpace ℂ (GMRow W) :=
+  let y  :=
     EuclideanSpace.equiv (GMRow W) ℂ |>.symm
       ((gmMatrix cutoff N W).mulVec (gmCoefficientVector N b))
   have h := Matrix.l2_opNorm_mulVec (gmMatrix cutoff N W) x
@@ -146,7 +140,7 @@ theorem gmMatrix_mul_conjTranspose_apply (cutoff : GMSmoothCutoff) (N : ℕ)
     (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose) t u =
       ∑ n : GMColumn N,
         gmMatrixEntry cutoff N t n * star (gmMatrixEntry cutoff N u n) := by
-  simp [gmMatrix, Matrix.mul_apply, Matrix.conjTranspose_apply]
+  rfl
 
 /-- Source equation for the row Gram kernel: its entry depends only on the
 ordinate difference and uses the squared cutoff. -/
@@ -198,20 +192,17 @@ theorem gmMatrix_gram_apply_eq_phase_sum (cutoff : GMSmoothCutoff) (N : ℕ)
 /-- The row Gram matrix is Hermitian. -/
 theorem gmMatrix_gram_isHermitian (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) :
-    (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose).IsHermitian := by
-  exact Matrix.isHermitian_mul_conjTranspose_self _
+    (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose).IsHermitian := Matrix.isHermitian_mul_conjTranspose_self _
 
 /-- The row Gram matrix is positive semidefinite. -/
 theorem gmMatrix_gram_posSemidef (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) :
-    (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose).PosSemidef := by
-  exact Matrix.posSemidef_self_mul_conjTranspose _
+    (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose).PosSemidef := Matrix.posSemidef_self_mul_conjTranspose _
 
 /-- Every eigenvalue of the row Gram matrix is nonnegative. -/
 theorem gmMatrix_gram_eigenvalue_nonneg (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) (i : GMRow W) :
-    0 ≤ (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := by
-  exact (gmMatrix_gram_posSemidef cutoff N W).eigenvalues_nonneg i
+    0 ≤ (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := (gmMatrix_gram_posSemidef cutoff N W).eigenvalues_nonneg i
 
 /-- Singular values of the sampling matrix, defined through the nonnegative
 eigenvalues of its row Gram matrix. -/
@@ -221,14 +212,12 @@ noncomputable def gmMatrixSingularValue (cutoff : GMSmoothCutoff) (N : ℕ)
 
 theorem gmMatrixSingularValue_nonneg (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) (i : GMRow W) :
-    0 ≤ gmMatrixSingularValue cutoff N W i := by
-  exact Real.sqrt_nonneg _
+    0 ≤ gmMatrixSingularValue cutoff N W i := Real.sqrt_nonneg _
 
 theorem gmMatrixSingularValue_sq (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) (i : GMRow W) :
     gmMatrixSingularValue cutoff N W i ^ 2 =
-      (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := by
-  exact Real.sq_sqrt (gmMatrix_gram_eigenvalue_nonneg cutoff N W i)
+      (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := Real.sq_sqrt (gmMatrix_gram_eigenvalue_nonneg cutoff N W i)
 
 theorem gmMatrixSingularValue_sixth (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) (i : GMRow W) :
@@ -302,9 +291,7 @@ theorem exists_gmMatrixOperatorNorm_le_singularValue (cutoff : GMSmoothCutoff)
     intro i
     rw [← hj]
     exact Finset.le_sup' H.eigenvalues (Finset.mem_univ i)
-  have hGramNorm :
-      ‖gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose‖ ≤
-        H.eigenvalues j :=
+  have hGramNorm  :=
     Matrix.IsHermitian.l2_opNorm_le_eigenvalue H
       (gmMatrix_gram_eigenvalue_nonneg cutoff N W) j hjMax
   have hGramEq :
@@ -341,7 +328,7 @@ theorem Matrix.IsHermitian.trace_cube_eq_sum_eigenvalues_cube
     {A : Matrix ι ι ℂ} (hA : A.IsHermitian) :
     Matrix.trace (A ^ 3) = ∑ i, ((hA.eigenvalues i : ℂ) ^ 3) := by
   let U : Matrix ι ι ℂ := hA.eigenvectorUnitary
-  let D : Matrix ι ι ℂ :=
+  let D  :=
     Matrix.diagonal (Complex.ofReal ∘ hA.eigenvalues)
   have hspec : A = U * (D * star U) := by
     simpa [Unitary.conjStarAlgAut_apply, mul_assoc] using hA.spectral_theorem

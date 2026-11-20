@@ -37,10 +37,10 @@ theorem middle_source_moment_raw {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 < ε) :
   have hn : 0 < N := by linarith
   have ht : 0 < T := by linarith
   have hl : 0 < L := by dsimp [L,middleLength]; positivity
-  have h1 : N*L*U^2=P := middle_length_threshold_identity hn ht
-  have h2 : N^4*T^2/L=P*Real.sqrt P :=
+  have h1  := middle_length_threshold_identity hn ht
+  have h2  :=
     (middle_moment_three_halves hn ht).1.trans (middle_moment_three_halves hn ht).2
-  have h3 : N^5*L*T=P^2 := middle_length_moment_square hn ht
+  have h3  := middle_length_moment_square hn ht
   have hraw := hr N T (5*L) hN hNT hTN hNL hLl hLu a U ha
   have he1 : (N*(5*L)*U^2)^3=125*P^3 := by
     calc

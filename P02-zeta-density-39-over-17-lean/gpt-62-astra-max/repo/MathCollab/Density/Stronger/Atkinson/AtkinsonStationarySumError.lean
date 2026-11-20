@@ -27,7 +27,7 @@ theorem exists_atkinsonLeadingSum_sub_stationary_bound {δ ε : ℝ}
   refine ⟨A+D,by positivity,max B E,hB.trans (le_max_left _ _),?_⟩
   intro T G hT hlower hupper hquarter
   have hT0 : 0 < T := by linarith [hB.trans ((le_max_left B E).trans hT)]
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
+  have hG  := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
   have hf := hfinite T G ((le_max_left _ _).trans hT) hlower hupper hquarter
   have ht := htail T G ((le_max_right _ _).trans hT) hlower hupper
     (atkinsonSourceCutoff T G (Real.log T)) (atkinsonSourceCutoff_lower _ _ _)
@@ -44,7 +44,7 @@ theorem exists_atkinsonLeadingSum_sub_stationary_above_fourthRoot {δ κ : ℝ}
   refine ⟨2*C,by positivity,B,hB,?_⟩
   intro T G hT hlower hupper hquarter
   have hT1 : 1 ≤ T := by linarith
-  have hq : T^(1/4 : ℝ) ≤ G :=
+  have hq  :=
     (Real.rpow_le_rpow_of_exponent_le hT1 (by linarith : (1/4:ℝ) ≤ 1/4+κ)).trans hquarter
   apply (hbound T G hT hlower hupper hq).trans
   nlinarith

@@ -21,7 +21,7 @@ theorem supportIndexMap_injective {L : ℕ} (hL : 0 < L) : Function.Injective (s
   have h₃ := congrArg (fun p : ℤ × (ℤ × ℤ) => p.2.2) hpq
   dsimp only [supportIndexMap] at h₁ h₂ h₃
   have hLi : (L:ℤ) ≠ 0 := by exact_mod_cast hL.ne'
-  have hq : p.2.1 = q.2.1 := mul_left_cancel₀ hLi h₂
+  have hq  := mul_left_cancel₀ hLi h₂
   apply Prod.ext h₁
   apply Prod.ext hq
   rw [hq] at h₃

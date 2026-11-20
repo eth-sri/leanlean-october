@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosDualTentKernel
 
 @[expose] public section
@@ -27,8 +24,7 @@ theorem integrable_sargosTentPlanarIntegrand_complex {ι : Type*}
 
 theorem integrable_sargosTentPlanarIntegrand {ι : Type*}
     (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
-    Integrable (sargosTentPlanarIntegrand S u v a b) (volume.prod volume) := by
-  exact (Integrable.iff_ofReal (𝕜 := ℂ)).mpr
+    Integrable (sargosTentPlanarIntegrand S u v a b) (volume.prod volume) := (Integrable.iff_ofReal (𝕜 := ℂ)).mpr
     (integrable_sargosTentPlanarIntegrand_complex S u v ha hb)
 
 theorem integral_sargosTentPlanarIntegrand_eq_gram {ι : Type*}

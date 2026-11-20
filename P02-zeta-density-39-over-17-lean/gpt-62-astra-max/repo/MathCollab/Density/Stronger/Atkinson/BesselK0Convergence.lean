@@ -29,7 +29,7 @@ theorem integrableOn_cpow_mul_exp_neg_mul_Ioi
       (x : ℂ) ^ (s - 1) * Complex.exp (-(x : ℂ))
     rw [Complex.ofReal_exp, Complex.ofReal_neg]
     ring
-  have hscaled : MellinConvergent (fun x => f (a * x)) s :=
+  have hscaled  :=
     (MellinConvergent.comp_mul_left (f := f) (s := s) ha).2 hbase
   unfold MellinConvergent at hscaled
   refine hscaled.congr_fun ?_ measurableSet_Ioi
@@ -166,12 +166,7 @@ theorem dfiBesselK0_ofReal_eq_integral {x : ℝ} :
   refine integral_ofReal.symm.trans ?_
   apply setIntegral_congr_fun measurableSet_Ioi
   intro t _
-  change (Real.exp (-x * Real.cosh t) : ℂ) =
-    Complex.exp (-(x * Real.cosh t))
-  rw [Complex.ofReal_exp]
-  congr 1
-  push_cast
-  ring
+  simp
 
 /-- Absolute Mellin convergence of the literal Macdonald kernel throughout
 its natural right half-plane.  This is extracted from the joint integral
@@ -212,8 +207,7 @@ theorem mellinConvergent_dfiBesselK0_mul_sqrt
     apply mellinConvergent_dfiBesselK0
     norm_num
     linarith
-  have hscaled : MellinConvergent
-      (fun y : ℝ => (dfiBesselK0 (A * y) : ℂ)) (2 * s) :=
+  have hscaled  :=
     (MellinConvergent.comp_mul_left hA).2 hbase
   have hscaled' : MellinConvergent
       (fun y : ℝ => (dfiBesselK0 (A * y) : ℂ))

@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedPowerError
 
 @[expose] public section
@@ -43,7 +42,7 @@ theorem modelPhaseBufferedPlateau_frequency_gaps
   have hupp : (q : ℝ)+1 ≤ (T/N)*deriv F (l+2*η) := by
     dsimp [modelPhaseBufferedPlateauUpper] at hU
     linarith
-  have hs : 0 ≤ N/T := (div_pos hN hT).le
+  have hs  := (div_pos hN hT).le
   have he (x : ℝ) : (T/N*x+1)*(N/T) = x+N/T := by field_simp
   constructor
   · have h := mul_le_mul_of_nonneg_right hlow hs
@@ -71,7 +70,7 @@ theorem modelPhaseBufferedPlateau_critical_geometry
   have hg := modelPhaseBufferedPlateau_frequency_gaps hT hN hq
   have ha : l+2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
   have hb : r-2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hw : 0 < N/T := div_pos hN hT
+  have hw  := div_pos hN hT
   have hv : (q : ℝ)*N/T ∈ modelPhaseSlopeRange F := by
     rw [modelPhaseSlopeRange_eq_endpoint_Ioo hσ hδ hF]
     have hba := modelPhaseClosedSlope_deriv_bounds hσ hδ hF ha
@@ -110,7 +109,6 @@ theorem modelPhaseSlopeRange_positive_window
   have he := approximateModelPhase_firstDeriv_bounds hσ hF hu
   rw [deriv_modelPhaseInverseSlope_apply hv] at he
   have hd₁ := hδ.trans (min_le_left _ _)
-  have hd₂ := hδ.trans (min_le_right _ _)
-  constructor <;> linarith [he.1,he.2]
+  grind
 
 end TaoTrudgianYang2025

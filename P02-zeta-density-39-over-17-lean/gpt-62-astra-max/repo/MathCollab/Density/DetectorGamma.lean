@@ -13,35 +13,37 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 
-/-- Uniform on the entire detector strip, including zero ordinate. -/
-theorem norm_Gamma_detector_strip {a t : ℝ} (ha : -(1/2 : ℝ) ≤ a) (ha' : a ≤ -(1/4 : ℝ)) :
-    ‖Complex.Gamma ((a : ℂ)+(t : ℂ)*Complex.I)‖ ≤
-      48*(1+|t|)*Real.exp (-|t|) := by
-  let z : ℂ := (a : ℂ)+(t : ℂ)*Complex.I
+/-- Correct negative Gamma strip, uniformly on the entire imaginary axis.
+The singular dependence on the distance to zero is explicit. -/
+theorem norm_Gamma_negative_strip {a : ℝ} (ha : 0 < a) (hahi : a ≤ 1/2) (u : ℝ) :
+    ‖Complex.Gamma (((-a:ℝ):ℂ)+(u:ℂ)*Complex.I)‖ ≤
+      (12/a)*(1+|u|)*Real.exp (-|u|) := by
+  let z : ℂ := ((-a:ℝ):ℂ)+(u:ℂ)*Complex.I
   have hz : z ≠ 0 := by
     intro he
     have hr := congrArg Complex.re he
     simp [z] at hr
     linarith
-  have hlower : (1/4 : ℝ) ≤ ‖z‖ := by
-    have h := Complex.abs_re_le_norm z
-    have hre : z.re = a := by simp [z]
-    rw [hre, abs_of_neg (show a < 0 by linarith)] at h
-    linarith
+  have hlower : a ≤ ‖z‖ := by
+    simpa [z,abs_of_pos ha] using Complex.abs_re_le_norm z
   have hrec := congrArg norm (Complex.Gamma_add_one z hz)
   rw [norm_mul] at hrec
   have hshift := GammaBounds.norm_Gamma_positive_strip_le_exp
-    (s := a+1) (t := t) (by linarith) (by linarith)
-  have he : z+1 = GammaBounds.stripPoint (a+1) t := by
-    dsimp [z, GammaBounds.stripPoint]
+    (s := 1-a) (t := u) (by linarith) (by linarith)
+  have he : z+1 = GammaBounds.stripPoint (1-a) u := by
+    dsimp [z,GammaBounds.stripPoint]
     push_cast
     ring
-  rw [← he, hrec] at hshift
+  rw [← he,hrec] at hshift
+  have hm : a*‖Complex.Gamma z‖ ≤ 12*(1+|u|)*Real.exp (-|u|) := by
+    exact (mul_le_mul_of_nonneg_right hlower (norm_nonneg _)).trans hshift
+  have hd := (le_div_iff₀ ha).mpr (show ‖Complex.Gamma z‖*a ≤
+    12*(1+|u|)*Real.exp (-|u|) by nlinarith [hm])
   change ‖Complex.Gamma z‖ ≤ _
-  nlinarith [norm_nonneg (Complex.Gamma z)]
+  convert hd using 1; ring
 
 theorem continuous_Gamma_detector_strip {a : ℝ} (ha : -(1/2 : ℝ) ≤ a)
-    (ha' : a ≤ -(1/4 : ℝ)) :
+    (ha' : a < 0) :
     Continuous (fun t : ℝ => Complex.Gamma ((a : ℂ)+(t : ℂ)*Complex.I)) := by
   apply continuous_iff_continuousAt.mpr
   intro t
@@ -101,7 +103,7 @@ theorem norm_Gamma_contour_strip {a t : ℝ} (ha : -(1/2 : ℝ) ≤ a) (ha' : a 
         _ = _ := by ring
 
 /-- Uniform gamma factor at the crossed zeta pole. -/
-theorem norm_Gamma_one_sub_zero_le {ρ : ℂ} (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+theorem norm_Gamma_one_sub_zero_le {ρ : ℂ} (hβ : 1/2 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
     (hγ : 1 ≤ |ρ.im|) :
     ‖Complex.Gamma (1-ρ)‖ ≤ 12*(1+|ρ.im|)*Real.exp (-|ρ.im|) := by
   have he : 1-ρ = ((1-ρ.re : ℝ) : ℂ)+((-ρ.im : ℝ) : ℂ)*Complex.I := by
@@ -139,34 +141,45 @@ theorem integrable_detectorGammaMajorant : Integrable detectorGammaMajorant := b
   simpa only [Iic_union_Ioi, integrableOn_univ] using h
 
 /-- The mass constant is fixed before beta; no gamma estimate is a premise. -/
-theorem uniform_detector_gamma_mass :
-    ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, 3/4 ≤ β → β ≤ 1 →
-      Integrable (fun t : ℝ => Complex.Gamma (((1/2-β : ℝ) : ℂ)+(t : ℂ)*Complex.I)) ∧
+theorem uniform_detector_gamma_mass {u s : ℝ} (hs : u < s) (hu : 1/2 ≤ u := by norm_num) :
+    ∃ C : ℝ, 0 < C ∧ ∀ β : ℝ, s ≤ β → β ≤ 1 →
+      Integrable (fun t : ℝ => Complex.Gamma (((u-β : ℝ) : ℂ)+(t : ℂ)*Complex.I)) ∧
       Integrable (fun t : ℝ => (1+|t|)*
-        ‖Complex.Gamma (((1/2-β : ℝ) : ℂ)+(t : ℂ)*Complex.I)‖) ∧
+        ‖Complex.Gamma (((u-β : ℝ) : ℂ)+(t : ℂ)*Complex.I)‖) ∧
       (∫ t : ℝ, (1+|t|)*
-        ‖Complex.Gamma (((1/2-β : ℝ) : ℂ)+(t : ℂ)*Complex.I)‖) ≤ C := by
-  have hnonneg : 0 ≤ ∫ t : ℝ, detectorGammaMajorant t :=
+        ‖Complex.Gamma (((u-β : ℝ) : ℂ)+(t : ℂ)*Complex.I)‖) ≤ C := by
+  let A := 12/(s-u)
+  have hs0 : 0 < s-u := by linarith
+  have hA : 0 < A := by dsimp [A]; positivity
+  have hmajor : Integrable (fun t => (A/48)*detectorGammaMajorant t) :=
+    integrable_detectorGammaMajorant.const_mul _
+  have hnonneg : 0 ≤ ∫ t : ℝ, (A/48)*detectorGammaMajorant t :=
     integral_nonneg (fun t => by dsimp [detectorGammaMajorant]; positivity)
-  refine ⟨(∫ t : ℝ, detectorGammaMajorant t)+1, by linarith, ?_⟩
+  refine ⟨(∫ t : ℝ, (A/48)*detectorGammaMajorant t)+1, by linarith, ?_⟩
   intro β hβ hβ'
-  let g := fun t : ℝ => Complex.Gamma (((1/2-β : ℝ) : ℂ)+(t : ℂ)*Complex.I)
+  let g := fun t : ℝ => Complex.Gamma (((u-β : ℝ) : ℂ)+(t : ℂ)*Complex.I)
   have hg : Continuous g := continuous_Gamma_detector_strip (by linarith) (by linarith)
-  have hbound : ∀ t : ℝ, (1+|t|)*‖g t‖ ≤ detectorGammaMajorant t := by
+  have hbound : ∀ t : ℝ, (1+|t|)*‖g t‖ ≤ (A/48)*detectorGammaMajorant t := by
     intro t
-    have h := norm_Gamma_detector_strip (a := 1/2-β) (t := t) (by linarith) (by linarith)
-    have hm := mul_le_mul_of_nonneg_left h (show 0 ≤ 1+|t| by positivity)
-    dsimp [detectorGammaMajorant, g]
-    nlinarith
+    have ha : 0 < β-u := by linarith
+    have h := norm_Gamma_negative_strip ha (show β-u ≤ 1/2 by linarith) t
+    rw [show -(β-u)=u-β by ring] at h
+    have hc : 12/(β-u) ≤ A := div_le_div_of_nonneg_left (by norm_num) hs0 (by linarith)
+    have hh : ‖g t‖ ≤ A*(1+|t|)*Real.exp (-|t|) :=
+      h.trans (mul_le_mul_of_nonneg_right
+        (mul_le_mul_of_nonneg_right hc (by positivity)) (by positivity))
+    have hm := mul_le_mul_of_nonneg_left hh (show 0 ≤ 1+|t| by positivity)
+    dsimp [detectorGammaMajorant]
+    convert hm using 1; ring
   have hwcont : Continuous (fun t : ℝ => (1+|t|)*‖g t‖) := by fun_prop
   have hw : Integrable (fun t : ℝ => (1+|t|)*‖g t‖) :=
-    integrable_detectorGammaMajorant.mono' hwcont.aestronglyMeasurable
+    hmajor.mono' hwcont.aestronglyMeasurable
       (Filter.Eventually.of_forall fun t => by
         rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
         exact hbound t)
   have hgint : Integrable g := hw.mono' hg.aestronglyMeasurable
     (Filter.Eventually.of_forall fun t => by nlinarith [abs_nonneg t, norm_nonneg (g t)])
   refine ⟨hgint, hw, ?_⟩
-  exact (integral_mono hw integrable_detectorGammaMajorant hbound).trans (by linarith)
+  exact (integral_mono hw hmajor hbound).trans (by linarith)
 
 end MathCollab.Density

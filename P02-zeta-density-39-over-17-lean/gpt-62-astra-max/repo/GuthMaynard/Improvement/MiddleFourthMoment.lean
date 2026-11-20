@@ -23,7 +23,7 @@ theorem middle_fourth_moment {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨S,C,D,hS,hC,hD,hr⟩ := middle_source_moment_raw hθ hθ
   obtain ⟨K,hK,hremoved⟩ := fixed_source_removed_mass hθ
   let J := Real.log 2+1/θ
-  have hJ : 0 < J := by dsimp [J]; positivity
+  
   let Q := S*(150+C*(5:ℝ)^θ*(5+5*D*(1+2*K)+3060*D*J^2))
   have hQ : 0 ≤ Q := by dsimp [Q]; positivity
   refine ⟨1+3*Q,by positivity,?_⟩
@@ -46,9 +46,9 @@ theorem middle_fourth_moment {ε : ℝ} (hε : 0 < ε) :
     apply integral_nonneg
     intro t
     exact indicator_nonneg (fun x _ => mul_nonneg (fixedTimeCutoff_bounds (x/T)).1 (sq_nonneg _)) t
-  have hU : 1 ≤ U := middle_threshold_ge_one hn1 ht1
+  have hU  := middle_threshold_ge_one hn1 ht1
   have hrem := hremoved N T U hN hNT hTN hU a ha
-  have hu4 : T*N^4/U^4=N*L := middle_threshold_fourth_quotient hn ht
+  have hu4  := middle_threshold_fourth_quotient hn ht
   rw [hu4] at hrem
   have hH : H ≤ (2*K)*N^θ*N*L := by
     have hN2 : N^2 ≤ N*L := by nlinarith [mul_le_mul_of_nonneg_left hNL hn.le]
@@ -70,7 +70,7 @@ theorem middle_fourth_moment {ε : ℝ} (hε : 0 < ε) :
         rw [mul_pow,← Real.rpow_natCast (N^θ) 2,← Real.rpow_mul hn.le]
         congr 2
         ring
-  have hX : 1 ≤ N^θ := Real.one_le_rpow hn1 hθ.le
+  have hX  := Real.one_le_rpow hn1 hθ.le
   have hY : 1 ≤ N^(2*θ) := Real.one_le_rpow hn1 (by positivity)
   have hb := raw_moment_normalized_budget hn.le hNL ht.le hP hM hS.le hC.le hD.le
     (show 0 ≤ 2*K by positivity) (show 0 ≤ (5:ℝ)^θ by positivity)

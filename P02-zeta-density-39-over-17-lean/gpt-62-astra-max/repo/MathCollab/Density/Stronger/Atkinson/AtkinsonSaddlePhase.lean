@@ -43,7 +43,7 @@ theorem atkinson_sqrt_frequency_radical {T : ℝ} (hT : 0 < T) (n : ℕ) :
     Real.pi * Real.sqrt (n : ℝ) * Real.sqrt ((Real.sqrt (n : ℝ)) ^ 2 +
       4 * (T / (2 * Real.pi))) =
       Real.sqrt (2 * Real.pi * (n : ℝ) * T + Real.pi ^ 2 * (n : ℝ) ^ 2) := by
-  have hA : 0 < T / (2 * Real.pi) := by positivity
+  
   have he : (Real.pi * Real.sqrt (n : ℝ) * Real.sqrt ((Real.sqrt (n : ℝ)) ^ 2 +
       4 * (T / (2 * Real.pi)))) ^ 2 =
       2 * Real.pi * (n : ℝ) * T + Real.pi ^ 2 * (n : ℝ) ^ 2 := by

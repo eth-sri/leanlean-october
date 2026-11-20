@@ -61,8 +61,7 @@ theorem wooley_weighted_sum_abs_pow_expand
 theorem wooleySource_sum_eq_support_subtype
     (gamma : WooleySourceSequence) (f : ℤ → ℂ) :
     ∑ n ∈ gamma.support, gamma n * f n =
-      ∑ n : ↑gamma.support, gamma n * f n := by
-  exact (Finset.sum_attach gamma.support
+      ∑ n : ↑gamma.support, gamma n * f n := (Finset.sum_attach gamma.support
     (fun n => gamma n * f n)).symm
 
 

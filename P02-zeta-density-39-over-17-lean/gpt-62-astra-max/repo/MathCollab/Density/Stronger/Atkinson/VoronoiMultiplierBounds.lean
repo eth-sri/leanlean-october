@@ -125,7 +125,7 @@ theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
     apply Real.exp_le_one_iff.mpr
     have := abs_nonneg z.im
     nlinarith [Real.pi_pos]
-  have hF' : ‖dfiPeriodicArchimedeanFactor q (1-z)‖ ≤ 72*(q:ℝ)*(1+|z.im|) :=
+  have hF'  :=
     hF.trans (mul_le_of_le_one_right (by positivity) he)
   unfold dfiVoronoiPlusMultiplier
   rw [norm_mul, norm_mul, norm_pow, Complex.norm_natCast, norm_ofNat]

@@ -22,7 +22,7 @@ theorem unequal_reduction_of_estimates {J Q E H R K m n : ℝ}
     (hpoisson : J ≤ E * (R ^ 2 * K ^ 4 * m ^ 2 + R * K * n * Real.sqrt Q))
     (haffine : Q ≤ H * (K ^ 6 * m ^ 2 + K ^ 4 * n ^ 2)) :
     J ≤ 2 * E * Real.sqrt H * unequalScaleBound R K m n := by
-  have hR : 0 ≤ R := hK.trans hKR
+  have hR  := hK.trans hKR
   have hH0 : 0 ≤ H := by linarith
   have hcross : R * K ^ 4 * m * n ≤ R ^ 2 * K ^ 4 * m ^ 2 + R * K ^ 3 * n ^ 2 := by
     have h1 : 0 ≤ K ^ 4 * (R * m - n) ^ 2 := by positivity
@@ -38,7 +38,7 @@ theorem unequal_reduction_of_estimates {J Q E H R K m n : ℝ}
         Real.sqrt_le_sqrt (haffine.trans (mul_le_mul_of_nonneg_left hsq hH0))
       _ = Real.sqrt H * (K ^ 3 * m + K ^ 2 * n) := by
         rw [Real.sqrt_mul hH0, Real.sqrt_sq (by positivity)]
-  have hroot1 : 1 ≤ Real.sqrt H := Real.one_le_sqrt.mpr hH
+  have hroot1  := Real.one_le_sqrt.mpr hH
   have hlow : R ^ 2 * K ^ 4 * m ^ 2 ≤
       Real.sqrt H * (R ^ 2 * K ^ 4 * m ^ 2) := by
     simpa only [one_mul] using mul_le_mul_of_nonneg_right hroot1

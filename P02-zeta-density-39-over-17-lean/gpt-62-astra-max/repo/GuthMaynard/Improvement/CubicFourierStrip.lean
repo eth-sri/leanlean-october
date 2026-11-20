@@ -13,9 +13,9 @@ namespace GuthMaynard.Improvement
 theorem ratio_box_input_coordinates {a b v y : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b)
     (hv : v ∈ Icc a b) (hy : y ∈ Icc a b) :
     v ∈ Icc (a/b) (b/a) ∧ y ∈ Icc (a/b) (b/a) ∧ y/v ∈ Icc (a/b) (b/a) := by
-  have hb : 0 < b := lt_of_lt_of_le zero_lt_one hb1
-  have hvp : 0 < v := ha.trans_le hv.1
-  have hyp : 0 < y := ha.trans_le hy.1
+  have hb  := lt_of_lt_of_le zero_lt_one hb1
+  have hvp  := ha.trans_le hv.1
+  
   have hcover : ∀ z ∈ Icc a b, z ∈ Icc (a/b) (b/a) := by
     intro z hz
     constructor
@@ -37,8 +37,8 @@ theorem ratioFourier_mask_domination (μ : ℝ → ℝ) {a b v y : ℝ}
       (mellinFrequency ⁻¹' A).indicator (ratioFourierInput μ (a/b) (b/a)) v *
       (mellinFrequency ⁻¹' D).indicator (ratioFourierInput μ (a/b) (b/a)) y *
       (mellinFrequency ⁻¹' D).indicator (ratioFourierInput μ (a/b) (b/a)) (y/v) := by
-  have hvp : 0 < v := ha.trans_le hv.1
-  have hyp : 0 < y := ha.trans_le hy.1
+  have hvp  := ha.trans_le hv.1
+  have hyp  := ha.trans_le hy.1
   obtain ⟨hvi,hyi,hyvi⟩ := ratio_box_input_coordinates ha ha1 hb1 hv hy
   have hfreq : mellinFrequency v-mellinFrequency y = -mellinFrequency (y/v) := by
     unfold mellinFrequency
@@ -49,9 +49,9 @@ theorem ratioFourier_mask_domination (μ : ℝ → ℝ) {a b v y : ℝ}
   by_cases hA : -mellinFrequency v ∈ A
   · by_cases hB : mellinFrequency v-mellinFrequency y ∈ B
     · by_cases hC : mellinFrequency y ∈ C
-      · have hAv : mellinFrequency v ∈ A := (hAsym _).mp hA
-        have hDy : mellinFrequency y ∈ D := hCD hC
-        have hDyv : mellinFrequency (y/v) ∈ D := (hDsym _).mp (by rw [← hfreq]; exact hBD hB)
+      · have hAv  := (hAsym _).mp hA
+        have hDy  := hCD hC
+        have hDyv  := (hDsym _).mp (by rw [← hfreq]; exact hBD hB)
         simp only [ratioMaskProduct,Set.indicator_of_mem hA,Set.indicator_of_mem hB,Set.indicator_of_mem hC,
           norm_one,mul_one,Set.indicator_of_mem (show v ∈ mellinFrequency ⁻¹' A from hAv),
           Set.indicator_of_mem (show y ∈ mellinFrequency ⁻¹' D from hDy),
@@ -107,17 +107,17 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
   let r := (mellinFrequency ⁻¹' D).indicator r₀
   let first := (mellinFrequency ⁻¹' A).indicator r₀
   dsimp only
-  have hb : 0 < b := lt_of_lt_of_le zero_lt_one hb1
-  have hab : a ≤ b := ha1.trans hb1
-  have hc : 0 < a/b := div_pos ha hb
+  have hb  := lt_of_lt_of_le zero_lt_one hb1
+  
+  have hc  := div_pos ha hb
   have hcd : a/b ≤ b/a := by apply (div_le_div_iff₀ hb ha).mpr; nlinarith
   have hfreq : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
-  have hAP : MeasurableSet (mellinFrequency ⁻¹' A) := hA.preimage hfreq
-  have hDP : MeasurableSet (mellinFrequency ⁻¹' D) := hD.preimage hfreq
+  have hAP  := hA.preimage hfreq
+  have hDP  := hD.preimage hfreq
   have hr₀ : Measurable r₀ := ratioFourierInput_measurable h1 _ _
-  have hr : Measurable r := hr₀.indicator hDP
-  have hfirst : Measurable first := hr₀.indicator hAP
-  have hr₀2 : Integrable (fun v => r₀ v^2) := ratioFourierInput_square_integrable hc hcd h1 h2
+  have hr  := hr₀.indicator hDP
+  have hfirst  := hr₀.indicator hAP
+  have hr₀2  := ratioFourierInput_square_integrable hc hcd h1 h2
   have hr2 : Integrable (fun v => r v^2) := by
     have heq : (fun v => r v^2) = (mellinFrequency ⁻¹' D).indicator (fun v => r₀ v^2) := by
       funext v; by_cases hv : v ∈ mellinFrequency ⁻¹' D <;> simp [r,hv]

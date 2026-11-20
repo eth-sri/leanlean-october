@@ -41,7 +41,6 @@ theorem truncatedMoebius_hasFiniteSupport (X : ℝ) :
 
 theorem truncatedMoebius_LSeriesSummable (X : ℝ) (s : ℂ) :
     LSeriesSummable (truncatedMoebius X) s := by
-  unfold LSeriesSummable
   exact summable_of_hasFiniteSupport <|
     (truncatedMoebius_hasFiniteSupport X).subset (by
       intro n hn
@@ -75,22 +74,16 @@ theorem zeta_mul_truncatedMoebius_apply (X : ℝ) (n : ℕ) :
     simp only [Finset.mem_filter, and_congr_right_iff]
     intro hd
     have hdData := Nat.mem_divisors.mp hd
-    have hdNe : d ≠ 0 := ne_zero_of_dvd_ne_zero hdData.2 hdData.1
+    have hdNe  := ne_zero_of_dvd_ne_zero hdData.2 hdData.1
     simp [Nat.one_le_iff_ne_zero.mpr hdNe]
-  · intro d hd
-    simp only [Finset.mem_filter] at hd
-    simp
+  · simp
 
 /-- In the half-plane of absolute convergence, the analytic mollified zeta
 product is the L-series with the truncated Möbius divisor coefficients. -/
 theorem riemannZeta_mul_zetaMollifier_eq_LSeries (X : ℝ) {s : ℂ}
     (hs : 1 < s.re) :
     riemannZeta s * zetaMollifier X s = LSeries (mollifierDirichletCoeff X) s := by
-  have hProd :
-      LSeries (fun n => ((ArithmeticFunction.zeta : ArithmeticFunction ℂ) *
-        truncatedMoebius X) n) s =
-      LSeries (fun n => (ArithmeticFunction.zeta : ArithmeticFunction ℂ) n) s *
-        LSeries (fun n => truncatedMoebius X n) s :=
+  have hProd  :=
     ArithmeticFunction.LSeries_mul'
       (f := (ArithmeticFunction.zeta : ArithmeticFunction ℂ))
       (g := truncatedMoebius X) (s := s)
@@ -142,7 +135,6 @@ theorem norm_mollifierDirichletCoeff_le_cutoff (X : ℝ) (n : ℕ) :
       simp [mollifierDirichletCoeff, mollifierCoefficient, S]
     _ ≤ ∑ d ∈ S, ‖(ArithmeticFunction.moebius d : ℂ)‖ := norm_sum_le _ _
     _ ≤ ∑ _d ∈ S, (1 : ℝ) := Finset.sum_le_sum fun d _ => by
-      rw [Complex.norm_intCast]
       exact_mod_cast (ArithmeticFunction.abs_moebius_le_one (n := d))
     _ = (S.card : ℝ) := by simp
     _ ≤ (⌊X⌋₊ : ℝ) := by exact_mod_cast hcard

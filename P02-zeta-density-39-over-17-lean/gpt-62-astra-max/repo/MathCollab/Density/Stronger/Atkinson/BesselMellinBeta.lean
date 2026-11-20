@@ -42,8 +42,7 @@ theorem dfiBesselY0MellinSymbol_two_mul (w : ℂ) :
   unfold dfiBesselY0MellinSymbol
   congr 2
   · ring_nf
-  · congr 1
-    ring_nf
+  · simp
 
 /-- The elementary Gamma integral after a positive real dilation. -/
 theorem integral_cpow_mul_exp_neg_mul_Ioi_eq
@@ -62,10 +61,8 @@ theorem image_sq_Ioo_zero_one :
   constructor
   · rintro ⟨x, hx, rfl⟩
     constructor
-    · change 0 < x ^ 2
-      exact sq_pos_of_pos hx.1
-    · change x ^ 2 < 1
-      nlinarith [hx.1, hx.2, sq_nonneg (x - 1)]
+    · exact sq_pos_of_pos hx.1
+    · nlinarith [hx.1, hx.2, sq_nonneg (x - 1)]
   · intro hy
     have hs := Real.sq_sqrt hy.1.le
     refine ⟨Real.sqrt y, ⟨Real.sqrt_pos.2 hy.1, ?_⟩, hs⟩
@@ -95,8 +92,8 @@ theorem betaIntegral_square_substitution (u v : ℂ) :
       convert (hasDerivAt_pow 2 x).hasDerivWithinAt using 1
       ring_nf)
     (fun x hx y hy hxy => by
-      have hxp : 0 < x := hx.1
-      have hyp : 0 < y := hy.1
+      have hxp  := hx.1
+      have hyp  := hy.1
       nlinarith)
     (fun x : ℝ =>
       (x : ℂ) ^ (u - 1) * (1 - (x : ℂ)) ^ (v - 1))
@@ -185,14 +182,14 @@ theorem inv_sq_mul_inv_sq_cpow_sub_one
         (((1 / c ^ 2 : ℝ) : ℂ) ^ (w - 1)) =
       (c : ℂ) ^ (-2 * w) := by
   let C : ℂ := (c : ℂ)
-  have hC : C ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
-  have hCarg : C.arg = 0 := Complex.arg_ofReal_of_nonneg hc.le
+  have hC  := Complex.ofReal_ne_zero.mpr hc.ne'
+  have hCarg  := Complex.arg_ofReal_of_nonneg hc.le
   have hbase : (((1 / c ^ 2 : ℝ) : ℂ)) = (C ^ (2 : ℕ))⁻¹ := by
     dsimp [C]
     push_cast
     field_simp
   rw [hbase]
-  have hB : (C ^ (2 : ℕ))⁻¹ ≠ 0 := inv_ne_zero (pow_ne_zero 2 hC)
+  have hB  := inv_ne_zero (pow_ne_zero 2 hC)
   calc
     (C ^ (2 : ℕ))⁻¹ * ((C ^ (2 : ℕ))⁻¹ ^ (w - 1)) =
         ((C ^ (2 : ℕ))⁻¹ ^ (w - 1)) *
@@ -202,7 +199,6 @@ theorem inv_sq_mul_inv_sq_cpow_sub_one
     _ = (C ^ (2 : ℕ))⁻¹ ^ ((w - 1) + 1) :=
       (Complex.cpow_add (w - 1) 1 hB).symm
     _ = (C ^ (2 : ℕ))⁻¹ ^ w := by
-      congr 1
       ring
     _ = ((C ^ (2 : ℕ)) ^ w)⁻¹ := by
       have hpow : C ^ (2 : ℕ) = ((c ^ 2 : ℝ) : ℂ) := by
@@ -222,7 +218,7 @@ theorem inv_sq_mul_inv_sq_cpow_sub_one
           exact Real.pi_pos.le) w).symm
     _ = C ^ (-2 * w) := by
       rw [show -2 * w = -(2 * w) by ring, Complex.cpow_neg]
-    _ = (c : ℂ) ^ (-2 * w) := by rfl
+    _ = (c : ℂ) ^ (-2 * w) := rfl
 
 /-- Pointwise Jacobian identity for the hyperbolic substitution. -/
 theorem tanh_jacobian_smul_one_sub_sq_cpow
@@ -231,7 +227,6 @@ theorem tanh_jacobian_smul_one_sub_sq_cpow
         (((1 - Real.tanh x ^ 2 : ℝ) : ℂ) ^ (w - 1)) =
       (Real.cosh x : ℂ) ^ (-2 * w) := by
   rw [one_sub_tanh_sq_eq_inv_cosh_sq]
-  rw [Complex.real_smul]
   exact inv_sq_mul_inv_sq_cpow_sub_one (Real.cosh_pos x) w
 
 /-- Exact beta evaluation of the hyperbolic power integral. -/
@@ -278,7 +273,7 @@ theorem integrableOn_one_sub_sq_cpow_Ioo
   have hgIoc : IntegrableOn g (Set.Ioc 0 1) := by
     rw [← intervalIntegrable_iff_integrableOn_Ioc_of_le zero_le_one]
     exact Complex.betaIntegral_convergent (by norm_num) hw
-  have hg : IntegrableOn g (Set.Ioo 0 1) :=
+  have hg  :=
     hgIoc.mono_set Set.Ioo_subset_Ioc_self
   have htrans : IntegrableOn
       (fun x : ℝ => |2 * x| • g (x ^ 2)) (Set.Ioo 0 1) := by
@@ -289,8 +284,8 @@ theorem integrableOn_one_sub_sq_cpow_Ioo
         convert (hasDerivAt_pow 2 x).hasDerivWithinAt using 1
         ring_nf)
       (fun x hx y hy hxy => by
-        have hxp : 0 < x := hx.1
-        have hyp : 0 < y := hy.1
+        have hxp  := hx.1
+        have hyp  := hy.1
         nlinarith) g
     rw [image_sq_Ioo_zero_one] at hiff
     exact hiff.mp hg
@@ -320,9 +315,9 @@ theorem integrableOn_cosh_cpow_neg_two_mul_Ioi
     IntegrableOn
       (fun x : ℝ => (Real.cosh x : ℂ) ^ (-2 * w))
       (Set.Ioi 0) := by
-  let g : ℝ → ℂ := fun u =>
+  let g  := fun u =>
     ((1 - u ^ 2 : ℝ) : ℂ) ^ (w - 1)
-  have hg : IntegrableOn g (Set.Ioo 0 1) :=
+  have hg  :=
     integrableOn_one_sub_sq_cpow_Ioo hw
   have hiff := integrableOn_image_iff_integrableOn_abs_deriv_smul
     (s := Set.Ioi (0 : ℝ)) (f := Real.tanh)

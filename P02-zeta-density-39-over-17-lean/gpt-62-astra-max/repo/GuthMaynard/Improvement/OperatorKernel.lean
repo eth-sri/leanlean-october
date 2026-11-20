@@ -32,8 +32,7 @@ theorem operator_mellin_phase_measurable (ν : Measure ℝ) [IsFiniteMeasure ν]
 
 theorem operator_weighted_phase_measurable (ν : Measure ℝ) [IsFiniteMeasure ν]
     {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) :
-    AEStronglyMeasurable (fun x => ((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x)) volume := by
-  exact ((Complex.continuous_ofReal.comp_aestronglyMeasurable
+    AEStronglyMeasurable (fun x => ((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x)) volume := ((Complex.continuous_ofReal.comp_aestronglyMeasurable
     (hi.aestronglyMeasurable.const_mul L))).smul (operator_mellin_phase_measurable ν)
 
 /-- The nuclear norm-product condition is derived, not assumed. -/

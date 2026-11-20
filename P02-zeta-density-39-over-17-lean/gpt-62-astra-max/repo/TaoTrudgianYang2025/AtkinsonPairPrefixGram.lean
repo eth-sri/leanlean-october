@@ -28,11 +28,11 @@ theorem ExponentPair.atkinson_physical_gap_sum_bound {k l ε : ℝ}
   obtain ⟨η,hη,C,hC,hbound⟩ := hpair.atkinson_gap_sum_bound hε
   refine ⟨η,hη,12*C,by linarith,?_⟩
   intro H M t u a b hH hM hu hu2 htu ht2 hsmall ha hb
-  have hMp : 0 < M := zero_lt_one.trans_le hM
-  have hup : 0 < u := hH.trans_le hu
-  have hgap : 0 < t-u := sub_pos.mpr htu
+  have hMp  := zero_lt_one.trans_le hM
+  have hup  := hH.trans_le hu
+  
   have htU : t ≤ 2*u := by linarith
-  have hq : Real.pi*M/(2*u) < η :=
+  have hq  :=
     (div_le_div_of_nonneg_left (by positivity) (by positivity : 0 < 2*H)
       (by linarith : 2*H ≤ 2*u)).trans_lt hsmall
   have h := hbound M t u a b hM hup htu htU hq ha hb

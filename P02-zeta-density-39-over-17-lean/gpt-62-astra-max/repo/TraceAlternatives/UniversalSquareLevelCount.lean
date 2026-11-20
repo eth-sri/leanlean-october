@@ -33,7 +33,7 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
   let D : ℝ := 8*D₀*(2:ℝ)^ν*B^4
   have hB : 1 ≤ B := le_max_left _ _
   have hBp : 0 < B := by linarith
-  refine ⟨C,D,by dsimp only [C]; positivity,by dsimp only [D]; positivity,?_⟩
+  refine ⟨C,D,by positivity,by positivity,?_⟩
   intro M T U a W hM hT hMT hU hCut ha hSep hBase hLarge
   have hTp : 0 < T := by linarith
   have hT1 : 1 ≤ T := by linarith
@@ -65,7 +65,7 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
     rw [hdForm]
     exact mul_le_mul (le_max_right _ _)
       (Real.rpow_le_rpow (sq_nonneg _) hMT hν.le) (by positivity) hBp.le
-  have hP : 1 ≤ B*T^ν := one_le_mul_of_one_le_of_one_le hB
+  have hP  := one_le_mul_of_one_le_of_one_le hB
     (Real.one_le_rpow hT1 hν.le)
   have hPow (k : ℕ) : (B*T^ν)^k = B^k*T^(ν*k) := by
     rw [mul_pow,← Real.rpow_natCast (T^ν),← Real.rpow_mul hTp.le]
@@ -150,11 +150,10 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
   have hExp10 : T^(ν+ν*10) ≤ T^ε :=
     Real.rpow_le_rpow_of_exponent_le hT1 (by dsimp only [ν]; linarith)
   calc
-    (W.card:ℝ) ≤ 2*(W'.card:ℝ) := by simpa only [Nat.cast_ofNat] using hcard
+    (W.card:ℝ) ≤ 2*(W'.card:ℝ) := by omega
     _ ≤ 2*(C₀*(2*T)^ν*(512*(B*T^ν)^10*
         ((M:ℝ)^4*U^(-4:ℝ)+T^(2/3:ℝ)*(M:ℝ)^(16/3:ℝ)*U^(-8:ℝ)+
-          T^(3/5:ℝ)*(M:ℝ)^(72/5:ℝ)*U^(-96/5:ℝ)))) := by
-      exact mul_le_mul_of_nonneg_left (hBound.trans
+          T^(3/5:ℝ)*(M:ℝ)^(72/5:ℝ)*U^(-96/5:ℝ)))) := mul_le_mul_of_nonneg_left (hBound.trans
         (mul_le_mul_of_nonneg_left hShape (by positivity))) (by norm_num)
     _ = C*T^(ν+ν*10)*((M:ℝ)^4*U^(-4:ℝ)+
         T^(2/3:ℝ)*(M:ℝ)^(16/3:ℝ)*U^(-8:ℝ)+

@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairCorrelationNormalized
 
 @[expose] public section
@@ -56,7 +53,7 @@ theorem sum_sourceShiftCorrelation_le
     sourceShiftCorrelation_normalized_bound hkl hσ hε
   refine ⟨δ,hδ,P,hP,η₀,hη₀,hηhalf,C,hC,?_⟩
   intro F T N a L H hT hN hHN ha hb hF
-  have hNpos : 0 < N := by linarith
+  
   have hM : 0 ≤ (T/N^2)^(k+ε)*N^(l+ε) := by positivity
   have hI : 0 ≤ N^2/T := by positivity
   calc

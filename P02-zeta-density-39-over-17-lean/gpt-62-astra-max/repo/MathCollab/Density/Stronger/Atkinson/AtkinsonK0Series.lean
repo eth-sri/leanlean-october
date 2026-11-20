@@ -35,7 +35,7 @@ theorem exists_norm_zetaAtkinsonBesselPlusTerm_le {k : ℕ} (hk : 2 ≤ k) :
   · simp [hn, zetaAtkinsonBesselPlusTerm, divisorWeight, divisorDirichletTerm, LSeries.term]
   have hnpos := Nat.pos_of_ne_zero hn
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hnpos
-  have hnk : (n : ℝ) ^ 2 ≤ (n : ℝ) ^ k := pow_le_pow_right₀ hn1 hk
+  have hnk  := pow_le_pow_right₀ hn1 hk
   have hsmall : C * G * T / (T ^ k * (n : ℝ) ^ k) ≤
       C * G * T / (T ^ k * (n : ℝ) ^ 2) := by
     exact div_le_div_of_nonneg_left (by positivity) (by positivity)
@@ -61,13 +61,12 @@ theorem exists_norm_zetaAtkinsonBesselPlus_le {k : ℕ} (hk : 2 ≤ k) :
       0 < L → 8 * L ≤ G → ‖zetaAtkinsonBesselPlus T G L‖ ≤ C * G * T / T ^ k := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaAtkinsonBesselPlusTerm_le hk
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm 2 n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
+  
   refine ⟨C * (1 + S), by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth
   have hs := summable_zetaAtkinsonBesselPlusTerm hT hG hGT hL hwidth
   have hd := (summable_divisorDirichletTerm (s := (2 : ℂ)) (by norm_num)).norm
   have hnorm := norm_tsum_le_tsum_norm hs.norm
-  change ‖∑' n : ℕ, zetaAtkinsonBesselPlusTerm T G L n‖ ≤ _
   calc
     _ ≤ ∑' n : ℕ, ‖zetaAtkinsonBesselPlusTerm T G L n‖ := hnorm
     _ ≤ ∑' n : ℕ, (C * G * T / T ^ k) * ‖divisorDirichletTerm 2 n‖ :=

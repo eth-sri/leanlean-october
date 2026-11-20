@@ -27,8 +27,7 @@ noncomputable def heathBrownInteriorShift (f : ℝ → ℝ) (x : ℝ) : ℝ :=
 theorem iteratedDeriv_heathBrownInteriorShift
     (k : ℕ) (f : ℝ → ℝ) :
     iteratedDeriv k (heathBrownInteriorShift f) =
-      fun x => iteratedDeriv k f (x + 1) := by
-  exact iteratedDeriv_comp_add_const k f 1
+      fun x => iteratedDeriv k f (x + 1) := iteratedDeriv_comp_add_const k f 1
 
 theorem heathBrownInteriorShift_contDiffOn
     {N k : ℕ} {f : ℝ → ℝ}
@@ -76,9 +75,7 @@ theorem sum_Icc_two_sub_one_eq_shifted
   classical
   symm
   refine Finset.sum_nbij (fun n => n + 1) ?_ ?_ ?_ ?_
-  · intro n hn
-    simp only [Finset.mem_Icc] at hn ⊢
-    omega
+  · grind
   · intro a _ b _ hab
     exact Nat.add_right_cancel hab
   · intro b hb
@@ -86,12 +83,7 @@ theorem sum_Icc_two_sub_one_eq_shifted
     rw [Finset.mem_Icc] at hb
     have heq : b - 1 + 1 = b := by omega
     refine ⟨b - 1, ?_, heq⟩
-    · rw [Finset.mem_coe, Finset.mem_Icc]
-      constructor
-      · omega
-      · calc
-          b - 1 ≤ (N - 1) - 1 := Nat.sub_le_sub_right hb.2 1
-          _ = N - 2 := by omega
+    · grind
   · intro _ _
     rfl
 

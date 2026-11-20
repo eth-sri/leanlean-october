@@ -31,7 +31,7 @@ theorem wooleyPolynomialResidueGridSum_eq_zero_of_massSq_eq_zero
   unfold wooleyPolynomialWeightedResidueGridSum
   apply Finset.sum_eq_zero
   intro n hn
-  have hnzero : ‖gamma n‖ = 0 := (sq_eq_zero_iff).mp (hterm n hn)
+  have hnzero  := (sq_eq_zero_iff).mp (hterm n hn)
   rw [norm_eq_zero] at hnzero
   simp [hnzero]
 
@@ -45,7 +45,7 @@ theorem wooleyPolynomial_sqrt_mass_mul_normalizedResidueGridSum
   · simp [wooleyPolynomialNormalizedResidueGridSum, hmass,
       wooleyPolynomialResidueGridSum_eq_zero_of_massSq_eq_zero
         phi gamma alpha xi hmass]
-  · have hmassPos : 0 < wooleyWeightedResidueMassSq gamma xi :=
+  · have hmassPos  :=
       lt_of_le_of_ne (wooleyWeightedResidueMassSq_nonneg gamma xi)
         (Ne.symm hmass)
     simp [wooleyPolynomialNormalizedResidueGridSum, hmass,
@@ -102,7 +102,7 @@ theorem wooleyPolynomial_equation_3_9
     wooleyWeightedResidueMassSq gamma xi *
       ‖wooleyPolynomialNormalizedResidueGridSum
         phi qB gamma alpha xi‖ ^ (2 * s)
-  have hM : 0 < M := lt_of_le_of_ne
+  have hM  := lt_of_le_of_ne
     (wooleyWeightedMassSq_nonneg gamma) (Ne.symm hmass)
   have hdecomp := wooleyPolynomial_normalizedGridSum_decomposition
     (qH := qH) phi gamma alpha hmass
@@ -133,7 +133,7 @@ theorem wooleyPolynomial_equation_3_9
               ((Real.sqrt M)⁻¹ ^ (2 * s) * M ^ (s - 1)) * R := by ring
         _ = (qH : ℝ) ^ s * M⁻¹ * R := by
           rw [wooley_sqrt_inverse_power_mul hM hs]
-    _ = _ := by rfl
+    _ = _ := rfl
 
 /-- Polynomial-system equation (3.10). -/
 theorem wooleyPolynomial_equation_3_10
@@ -166,8 +166,7 @@ theorem wooleyPolynomial_equation_3_10
                 wooleyWeightedResidueMassSq gamma xi *
                   ‖wooleyPolynomialNormalizedResidueGridSum
                     phi qB gamma alpha xi‖ ^ (2 * s)) := by
-          apply mul_le_mul_of_nonneg_left _ hscale
-          exact Finset.sum_le_sum fun alpha _ => hpoint alpha
+          bound
       _ = (qH : ℝ) ^ s *
           ((wooleyWeightedMassSq gamma)⁻¹ *
             ∑ xi : ZMod qH,

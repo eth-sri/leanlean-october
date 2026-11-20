@@ -150,8 +150,7 @@ theorem wooleySection9Admissible_predecessor
         (k - r + 1) * b + r ≤ (k - r + 1) * b + b :=
           Nat.add_le_add_left hrb _
         _ = (k - (r - 1) + 1) * b := by
-          rw [hcoeff]
-          simp only [Nat.add_mul, one_mul]
+          grind
     exact hleft.trans (hnextMul.trans hright)
   have hBPred : (k - (r - 1) + 1) * b ≤ B := by
     have hcoeff : k - (r - 1) + 1 ≤ k := by omega

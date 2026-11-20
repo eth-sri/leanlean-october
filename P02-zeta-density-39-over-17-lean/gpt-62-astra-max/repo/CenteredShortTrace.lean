@@ -48,16 +48,14 @@ theorem reflection_shell_count {T L : ℝ} (hT : 1 < T) (hL : 1 ≤ L)
     ∃ J : ℕ, T < (2:ℝ)^J*(Real.pi*L/8) ∧
       (∀ j < J, (2:ℝ)^j*(Real.pi*L/8) < 2*T) ∧
       (J:ℝ) ≤ 4+Real.log T/Real.log 2 := by
-  have hLp : 0 < L := by linarith
+  
   have hYp : 0 < Real.pi*L/8 := by positivity
   obtain ⟨J,hcover,hmin,_,_⟩ := GuthMaynard.Improvement.source_least_height_cover hYp
     (show Real.pi*L/8 ≤ 2*T by linarith)
   refine ⟨J,lt_of_lt_of_le (by linarith) hcover,hmin,?_⟩
   cases hJ : J with
   | zero =>
-    simp only [Nat.cast_zero]
-    have hlT := Real.log_nonneg hT.le
-    positivity
+    grind
   | succ j =>
     have hh := hmin j (by omega)
     have hylo : 1/4 ≤ Real.pi*L/8 := by nlinarith [Real.pi_gt_three]
@@ -157,8 +155,8 @@ theorem centered_energy_short_range (w : MathCollab.Density.ReflectionCutoff)
   have hLp : 0 < L := by linarith
   let Y : ℝ := Real.pi*L/8
   have hYp : 0 < Y := by dsimp [Y]; positivity
-  have hd1 : 1 ≤ T^(η/2) := Real.one_le_rpow hT.le hδ.le
-  have hη1 : 1 ≤ T^η := Real.one_le_rpow hT.le hη.le
+  have hd1  := Real.one_le_rpow hT.le hδ.le
+  have hη1  := Real.one_le_rpow hT.le hη.le
   have hpow : T^(η/2)*T^(η/2)=T^η := by
     rw [← Real.rpow_add hTp]
     congr 1
@@ -231,7 +229,7 @@ theorem centered_energy_short_range (w : MathCollab.Density.ReflectionCutoff)
         _ ≤ 4*T^(η/2)+(T^(η/2)/(η/2))/Real.log 2 := by
           apply add_le_add (by linarith)
           exact div_le_div_of_nonneg_right (Real.log_le_rpow_div hTp.le hδ) htwo.le
-        _ = _ := by dsimp [D]; field_simp
+        _ = _ := by ring
     calc
       _ = ∑ p ∈ W ×ˢ W, ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2 := (sum_product _ _ _).symm
       _ = _ := he

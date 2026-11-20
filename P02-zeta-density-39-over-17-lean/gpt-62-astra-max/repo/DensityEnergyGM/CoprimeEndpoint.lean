@@ -16,7 +16,7 @@ theorem coprime_fourth_insert_product_le {A : Finset ℕ} {e : ℕ}
     (∑ p ∈ (A ×ˢ A).filter (fun p => Nat.Coprime p.1 p.2),
       ‖gmR W ((p.1 : ℝ) / p.2)‖ ^ 4) +
         (2 * (A.card : ℝ) + 1) * (W.card : ℝ) ^ 4 := by
-  let H : ℕ → ℕ → ℝ := fun n m =>
+  let H  := fun n m =>
     if Nat.Coprime n m then ‖gmR W ((n : ℝ) / m)‖ ^ 4 else 0
   have hH : ∀ n m, H n m ≤ (W.card : ℝ) ^ 4 := by
     intro n m

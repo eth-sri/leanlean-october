@@ -35,10 +35,10 @@ theorem iteratedDerivWithin_log_eq_rpow_neg_one
     (p : ℕ) (u : phaseInterval) :
     iteratedDerivWithin (p + 1) Real.log phaseInterval u =
       iteratedDerivWithin p (modelPhase 1) phaseInterval u := by
-  have hu_pos : 0 < (u : ℝ) := lt_of_lt_of_le zero_lt_one u.property.1
+  have hu_pos  := lt_of_lt_of_le zero_lt_one u.property.1
   rw [show modelPhase 1 = fun v : ℝ ↦ v ^ (-(1 : ℝ)) from rfl]
   have hunique : UniqueDiffOn ℝ phaseInterval :=
-    uniqueDiffOn_Icc (by norm_num [phaseInterval])
+    uniqueDiffOn_Icc (by norm_num)
   rw [iteratedDerivWithin_eq_iteratedDeriv hunique
       (Real.contDiffAt_log.2 hu_pos.ne') u.property,
     iteratedDerivWithin_eq_iteratedDeriv hunique
@@ -55,7 +55,6 @@ theorem isModelPhaseFunction_log : IsModelPhaseFunction logPhase := by
   · intro i
     change ContDiffOn ℝ ∞ Real.log phaseInterval
     exact Real.contDiffOn_log.mono fun u hu ↦ by
-      simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
       exact ne_of_gt (lt_of_lt_of_le zero_lt_one hu.1)
   · intro p u
     rw [VariableObject.IsInfinitesimal]

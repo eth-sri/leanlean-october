@@ -14,10 +14,7 @@ theorem separated_interval_card {T t₀ : ℝ} (hT : 0 ≤ T)
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) :
     (W.card : ℝ) ≤ T+1 := by
   have hspan := MathCollab.Density.intervalSpan_le_of_forall hT (U := W) (by
-    intro t ht u hu
-    have ht' := hloc t ht
-    have hu' := hloc u hu
-    exact abs_le.mpr ⟨by linarith [ht'.1, hu'.2], by linarith [hu'.1, ht'.2]⟩)
+    grind)
   have hc := MathCollab.Density.separated_card_le_localDiameter hsep
   dsimp [MathCollab.Density.localDiameter] at hc
   linarith
@@ -40,7 +37,7 @@ theorem rational_energy_interval_short_range {K : ℕ} (hK : 1 ≤ K)
   let U := max T (W.card : ℝ)
   have hTU : T ≤ U := le_max_left _ _
   have hRU : (W.card : ℝ) ≤ U := le_max_right _ _
-  have hU : 1 < U := hT.trans_le hTU
+  have hU  := hT.trans_le hTU
   have hUT : U ≤ 2*T := by
     have hp := separated_interval_card (by linarith : 0 ≤ T) W hW hsep
     exact max_le (by linarith) (by linarith)
@@ -51,7 +48,7 @@ theorem rational_energy_interval_short_range {K : ℕ} (hK : 1 ≤ K)
   have hR' : U^(((K : ℝ)+1)/(2*K+1)) ≤ W.card := by
     by_cases hRT : (W.card : ℝ) ≤ T
     · simpa only [U, max_eq_left hRT] using hR
-    · have hTR : T ≤ (W.card : ℝ) := le_of_lt (lt_of_not_ge hRT)
+    · have hTR  := le_of_lt (lt_of_not_ge hRT)
       rw [show U = (W.card : ℝ) from max_eq_right hTR]
       simpa only [Real.rpow_one] using
         Real.rpow_le_rpow_of_exponent_le (hT.le.trans hTR) hα

@@ -170,8 +170,7 @@ theorem exists_bourgain_C4_variable_source_common_fourier :
         0<μ i ∧ μ i*(N i:ℝ)^2≤1 ∧ 1≤μ i*(q i:ℝ)^2*N i) →
       ∀ (M : ℕ) [NeZero M], (∀ i∈S, 7*(μ i*(q i:ℝ)*(N i:ℝ)^2)≤M) →
       ∃ r : ι → ℤ, (∀ i∈S, (q i:ℤ)∣a i*r i-1) ∧
-      let b := fun i (p : Fin 2) => (⌊(q i:ℝ)*ℓ i⌋+(p:ℕ) : ℤ)
-      let τ := fun i p => ((b i p:ℝ)-(q i:ℝ)*ℓ i)/2
+      GaussMainCommonFourierParameters ι q ℓ (fun b τ =>
       let s := fun i => Real.sqrt (2/(3*μ i*(q i:ℝ)))
       let K := fun i => -2*μ i*(s i)^3
       let x := fun i p =>
@@ -186,7 +185,8 @@ theorem exists_bourgain_C4_variable_source_common_fourier :
               fordAdditiveCharacter (∑ d,x i p d*
                 (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
                   Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖)+
-          ∑ i∈S, (Real.sqrt (N i)*Real.log (2*(N i:ℝ))+1/(μ i*(N i:ℝ)^2))) := by
+          ∑ i∈S, (Real.sqrt (N i)*Real.log (2*(N i:ℝ))+1/(μ i*(N i:ℝ)^2)))) := by
+  dsimp -zeta only [GaussMainCommonFourierParameters]
   classical
   obtain ⟨C,hC,hsource⟩ := exists_bourgain_cubic_C4_source_entry
   let Q : ℝ := 6*(3+56*Real.pi)
@@ -279,8 +279,7 @@ private theorem exists_bourgain_C4_variable_source_second_spacing_reduction
       ∀ d : ℝ, 0 < d → (∀ i∈S, d ≤ μ i*(q i:ℝ)*N i) →
       ∀ (M : ℕ) [NeZero M], (∀ i∈S, 7*(μ i*(q i:ℝ)*(N i:ℝ)^2) ≤ M) →
       ∃ r : ι → ℤ, (∀ i∈S, (q i:ℤ)∣a i*r i-1) ∧
-      let b := fun i (p : Fin 2) => (⌊(q i:ℝ)*ℓ i⌋+(p:ℕ) : ℤ)
-      let τ := fun i p => ((b i p:ℝ)-(q i:ℝ)*ℓ i)/2
+      GaussMainCommonFourierParameters ι q ℓ (fun b τ =>
       let K := fun i => -2*μ i*(Real.sqrt (2/(3*μ i*(q i:ℝ))))^3
       let x := fun i p =>
         (![-(r i:ℝ)*b i p/q i,-(r i:ℝ)/q i,K i,3*K i*τ i p/2] : Fin 4 → ℝ)
@@ -293,7 +292,8 @@ private theorem exists_bourgain_C4_variable_source_second_spacing_reduction
       (∑ i∈S, ‖∑ n∈Finset.Ioc (m i+N i) (m i+N i+H i),(𝐞 (f i n):ℂ)‖)^12 ≤
         C*((2/d)^6*(1+Real.log M)^12*(M:ℝ)^((12:ℝ)+ε)*(V.card:ℝ)^10*
           (((V ×ˢ V).filter (fun ij => ∀ e,|y ij.1 e-y ij.2 e| ≤ 2*A e)).card:ℝ)+
-          (∑ i∈S, (Real.sqrt (N i)*Real.log (2*(N i:ℝ))+1/(μ i*(N i:ℝ)^2)))^12) := by
+          (∑ i∈S, (Real.sqrt (N i)*Real.log (2*(N i:ℝ))+1/(μ i*(N i:ℝ)^2)))^12)) := by
+  dsimp -zeta only [GaussMainCommonFourierParameters]
   classical
   obtain ⟨F,hF,hsource⟩ := exists_bourgain_C4_variable_source_common_fourier
   obtain ⟨C₀,hC₀,hsieve⟩ := exists_bourgain_cubic_dual_source_sieve.{v} hε

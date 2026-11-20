@@ -24,8 +24,7 @@ theorem wooley_constant_le_primePower_rpow_eventually
     ∃ H0 : ℕ, ∀ H : ℕ, H0 ≤ H →
       C ≤ (((p ^ H : ℕ) : ℝ) ^ eta) := by
   have hpReal : (1 : ℝ) < p := by exact_mod_cast hp
-  have hpTop : Filter.Tendsto (fun H : ℕ ↦ ((p : ℝ) ^ H))
-      Filter.atTop Filter.atTop :=
+  have hpTop  :=
     tendsto_pow_atTop_atTop_of_one_lt hpReal
   have hTop : Filter.Tendsto
       (fun H : ℕ ↦ (((p ^ H : ℕ) : ℝ) ^ eta))
@@ -92,9 +91,7 @@ theorem wooley_lemma41_absorb_constant
             (wooleyCriticalExponent k p + epsilon / 2)) *
         wooleySourcePolynomialConditionedMean (wooleyTriangular k)
           (p ^ B) (p ^ H) phi gamma := by
-      exact mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_right hC'
-          (by positivity)) hmean0
+      gcongr
     _ = (((p ^ (H - h) : ℕ) : ℝ) ^
           (wooleyCriticalExponent k p + epsilon)) *
         wooleySourcePolynomialConditionedMean (wooleyTriangular k)
@@ -123,7 +120,7 @@ theorem wooleySourcePolynomial_lemma_4_1_coefficientOne_half
               (wooleyCriticalExponent k p + epsilon)) *
             wooleySourcePolynomialConditionedMean (wooleyTriangular k)
               (p ^ B) (p ^ (B ⌈/⌉ k)) phi gamma := by
-  have hp : 1 < p := lt_of_le_of_lt hk hkp
+  have hp  := lt_of_le_of_lt hk hkp
   have hepsilonHalf : 0 < epsilon / 2 := by positivity
   have hdeltaOne : delta < 1 := lt_of_le_of_lt hdeltaHalf (by norm_num)
   obtain ⟨C, hC, B0, hraw⟩ :=
@@ -134,21 +131,19 @@ theorem wooleySourcePolynomial_lemma_4_1_coefficientOne_half
       (show 0 < epsilon / 4 by positivity) (C := C)
   refine ⟨max B0 (k * H0), ?_⟩
   intro B phi gamma h hB hphi hgamma hhalf
-  have hB0 : B0 ≤ B := (le_max_left _ _).trans hB
-  have hkH0B : k * H0 ≤ B := (le_max_right _ _).trans hB
+  have hB0  := (le_max_left _ _).trans hB
+  have hkH0B  := (le_max_right _ _).trans hB
   have hBceil : B ≤ k * (B ⌈/⌉ k) :=
     le_smul_ceilDiv (by omega : 0 < k)
-  have hH0 : H0 ≤ B ⌈/⌉ k := by
-    exact Nat.le_of_mul_le_mul_left (hkH0B.trans hBceil) (by omega)
-  have hhH : h ≤ B ⌈/⌉ k := by omega
+  have hH0 := Nat.le_of_mul_le_mul_left (hkH0B.trans hBceil) (by omega)
+  
   have hdepth : (h : ℝ) ≤ (1 - delta) * (B ⌈/⌉ k : ℕ) := by
     have hhalfReal : 2 * (h : ℝ) ≤ ((B ⌈/⌉ k : ℕ) : ℝ) := by
       exact_mod_cast hhalf
     have hHnonneg : (0 : ℝ) ≤ ((B ⌈/⌉ k : ℕ) : ℝ) := by positivity
     nlinarith
   have hraw' := hraw B phi gamma h hB0 hphi hgamma hdepth
-  have hCscale :
-      C ≤ (((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) ^ (epsilon / 4)) :=
+  have hCscale  :=
     habsorb (B ⌈/⌉ k) hH0
   exact wooley_lemma41_absorb_constant hp hepsilon hhalf hCscale hraw'
 

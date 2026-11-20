@@ -118,7 +118,7 @@ theorem integral_heathBrownNu_sq_le_pairCount
   refine hover.trans ?_
   apply mul_le_mul_of_nonneg_right
   · exact_mod_cast card_heathBrownOverlappingCellPairs_le_pairCount f
-  · exact measureReal_nonneg
+  · positivity
 
 
 end

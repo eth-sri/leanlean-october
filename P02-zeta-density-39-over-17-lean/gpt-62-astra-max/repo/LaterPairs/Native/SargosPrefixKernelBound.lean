@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosCharacterGap
 
 @[expose] public section
@@ -57,7 +54,7 @@ theorem sargos_geometric_kernel_product_le_two {N : ℕ} [NeZero N]
   rw [← norm_mul,sargos_sum_stdAddChar_mul_sub_one]
   calc
     _ ≤ ‖(ZMod.stdAddChar k)^H‖+‖(1 : ℂ)‖ := norm_sub_le _ _
-    _ = 2 := by rw [norm_pow,sargos_stdAddChar_norm]; norm_num
+    _ = 2 := by norm_num
 
 theorem norm_sargosPrefixKernel_le_inv_distance {N : ℕ} [NeZero N]
     (H : ℕ) {k : ZMod N} (hk : k ≠ 0) :
@@ -96,7 +93,7 @@ theorem norm_sargosPrefixKernel_le_majorant {N H : ℕ} [NeZero N]
     by_cases hd : (k.val : ℝ) ≤ (N : ℝ)-k.val
     · rw [min_eq_left hd,one_div] at h
       exact h.trans (le_add_of_nonneg_right (inv_nonneg.mpr
-        (sub_nonneg.mpr (by exact_mod_cast (ZMod.val_lt k).le))))
+        (sub_nonneg.mpr (by linarith))))
     · rw [min_eq_right (le_of_not_ge hd),one_div] at h
       exact h.trans (le_add_of_nonneg_left (inv_nonneg.mpr (Nat.cast_nonneg _)))
 

@@ -74,7 +74,7 @@ theorem IntervalC2Bound.congr_of_eventuallyEq {f g : ℝ → ℂ} {a b M R : ℝ
 theorem IntervalC2Bound.absorb_scale {f : ℝ → ℂ} {a b M K R : ℝ}
     (hf : IntervalC2Bound f a b M (K * R)) (hK : 1 ≤ K) (hR : 0 ≤ R) :
     IntervalC2Bound f a b (M * K ^ 2) R := by
-  have hK0 : 0 ≤ K := by linarith
+  
   have hKsq : K ≤ K ^ 2 := by nlinarith
   refine ⟨mul_nonneg hf.nonneg (sq_nonneg _), hR, hf.smooth, ?_, ?_, ?_⟩
   · intro x hx

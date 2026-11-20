@@ -95,11 +95,11 @@ theorem scaled_modulated_poisson
       · simpa only [Complex.ofRealCLM_apply] using!
           Complex.ofRealCLM.contDiff.comp
             (show ContDiff ℝ ∞ (fun x : ℝ => 2 * Real.pi * (y * x)) by fun_prop)
-      · exact contDiff_const
-  let h : SchwartzMap ℝ ℂ := hcompact.toSchwartzMap hsmooth
+      · fun_prop
+  let h  := hcompact.toSchwartzMap hsmooth
   calc
     ∑' ell : ℤ, psi (A * ell) * sourcePhase (y * ell) =
-        ∑' ell : ℤ, h ell := by rfl
+        ∑' ell : ℤ, h ell := rfl
     _ = ∑' j : ℤ, FourierTransform.fourier h j := schwartz_poisson_at_zero h
     _ = ∑' j : ℤ, (A⁻¹ : ℝ) •
         FourierTransform.fourier psi ((j - y) / A) := by
@@ -139,8 +139,7 @@ theorem mellin_inversion_line_one
           (x : ℂ) ^ (-((1 : ℂ) + r * Complex.I)) *
             mellin f ((1 : ℂ) + r * Complex.I) := by
   have h := mellinInv_mellin_eq 1 f hx hconv hvertical hcontinuous
-  rw [mellinInv] at h
-  simpa only [Complex.real_smul, Complex.ofReal_one, smul_eq_mul] using h.symm
+  solve_by_elim
 
 def mellinLogLift (f : ℝ → ℂ) (u : ℝ) : ℂ :=
   (Real.exp (-u) : ℂ) * f (Real.exp (-u))
@@ -149,7 +148,7 @@ theorem mellinLogLift_contDiff
     {f : ℝ → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (mellinLogLift f) := by
   have hneg : ContDiff ℝ (⊤ : ℕ∞) (fun u : ℝ => -u) := contDiff_neg
-  have hexpR : ContDiff ℝ (⊤ : ℕ∞) (fun u : ℝ => Real.exp (-u)) :=
+  have hexpR  :=
     Real.contDiff_exp.comp hneg
   have hexpC : ContDiff ℝ (⊤ : ℕ∞)
       (fun u : ℝ => (Real.exp (-u) : ℂ)) := by
@@ -222,7 +221,7 @@ theorem scaledPower_mul_norm_mellin_line_one_le_seminorm
           (mellinLogLift_hasCompactSupport ha hb hsupport)
           (mellinLogLift_contDiff hf)) : 𝓢(ℝ, ℂ)) := by
   rw [mellin_line_one_eq_fourier_logLift]
-  let psi : 𝓢(ℝ, ℂ) := mellinLogLiftSchwartz f
+  let psi  := mellinLogLiftSchwartz f
     (mellinLogLift_hasCompactSupport ha hb hsupport)
     (mellinLogLift_contDiff hf)
   have hFourier :

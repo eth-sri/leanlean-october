@@ -99,7 +99,7 @@ theorem wooleySourcePolynomial_lemma_7_1_uniform_global
               wooleySourcePolynomialMixedMean phi s r p B
                 (wooleyNextB k r b) b nu gamma := by
   let I := {r : ℕ // r ∈ wooleyGradeRange (k - 1)}
-  let : Fintype I := Fintype.ofFinset
+  let  := Fintype.ofFinset
     (wooleyGradeRange (k - 1)) (by intro i; rfl)
   have hex : ∀ i : I,
       ∃ C : ℝ, 1 ≤ C ∧ ∃ B0 : ℕ,
@@ -132,17 +132,14 @@ theorem wooleySourcePolynomial_lemma_7_1_uniform_global
   let C : ℝ := ∑ i : I, Cr i
   let B0 : ℕ := ∑ i : I, B0r i
   rcases (show k = 0 ∨ k = 1 ∨ 2 ≤ k by omega) with hk0 | hk1 | hk
-  · subst k
-    exact ⟨1, le_rfl, 0, by omega⟩
-  · subst k
-    exact ⟨1, le_rfl, 0, by omega⟩
+  · exact ⟨1, le_rfl, 0, by omega⟩
+  · exact ⟨1, le_rfl, 0, by omega⟩
   · have hgrades : Nonempty I := by
       obtain ⟨r0, hr0⟩ := wooleyGradeRange_nonempty (r := k - 1) (by omega)
       exact ⟨⟨r0, hr0⟩⟩
     have hCOne : 1 ≤ C := by
       let i0 : I := Classical.choice hgrades
       exact (hCr i0).trans (by
-        dsimp [C]
         exact Finset.single_le_sum
           (fun i _ => (hCr i).trans' (by norm_num)) (Finset.mem_univ i0))
     refine ⟨C, hCOne, B0, ?_⟩

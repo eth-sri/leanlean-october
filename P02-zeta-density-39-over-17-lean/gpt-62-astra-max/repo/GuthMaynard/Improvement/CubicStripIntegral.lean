@@ -51,7 +51,7 @@ theorem smoothedStripPair_bounded_measurable {r : ℝ → ℝ} (hr : Measurable 
     ∃ W : ℝ, 0 ≤ W ∧ ∀ m : ℤ × (ℤ × ℤ), Measurable (smoothedStripPair r a δ m) ∧
       ∀ v, 0 ≤ smoothedStripPair r a δ m v ∧ smoothedStripPair r a δ m v ≤ W := by
   have hq : 0 < max 1 (1/a) := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hw : 0 < max 1 (1/a)*δ := mul_pos hq hδ
+  have hw  := mul_pos hq hδ
   obtain ⟨B,hB,hb⟩ := compactKernel_bound
   obtain ⟨hFm,hFb⟩ := squareSmoothing_bounded_measurable
     (scaledKernel_measurable compactKernel_smooth.continuous.measurable _)
@@ -66,7 +66,6 @@ theorem smoothedStripPair_bounded_measurable {r : ℝ → ℝ} (hr : Measurable 
     fun_prop
   · intro v
     refine ⟨mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _),?_⟩
-    unfold smoothedStripPair
     calc
       _ ≤ Real.sqrt W*Real.sqrt W := mul_le_mul
         (Real.sqrt_le_sqrt (hFb _).2) (Real.sqrt_le_sqrt (hFb _).2)
@@ -86,9 +85,9 @@ theorem cubic_strip_transverse (a b : ℝ) (ha : 0 < a) :
   obtain ⟨C,hC,h⟩ := compact_masked_transverse a b ha
   refine ⟨C,hC,?_⟩
   intro L H K v m r hL hH hK hKm hav hvb hr hr2 hr0
-  have hv : 0 < v := ha.trans_le hav
-  have hm : 0 < (m.2.1:ℝ) := hK.trans_le hKm
-  have hδ : 0 < H/(L*K) := div_pos hH (mul_pos hL hK)
+  have hv  := ha.trans_le hav
+  have hm  := hK.trans_le hKm
+  have hδ  := div_pos hH (mul_pos hL hK)
   have hp := (memLp_two_iff_integrable_sq hr.aestronglyMeasurable).mpr hr2
   have hpv := (memLp_two_iff_integrable_sq (hr.comp (measurable_id.div_const v)).aestronglyMeasurable).mpr
     (hr2.comp_div hv.ne')

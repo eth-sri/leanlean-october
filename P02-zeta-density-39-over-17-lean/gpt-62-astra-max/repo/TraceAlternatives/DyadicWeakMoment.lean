@@ -21,7 +21,7 @@ theorem finite_dyadic_weighted_square_bound {ι : Type*} (S : Finset ι)
     (∑ i ∈ S, r i * v i ^ 2) ≤
       (2+Real.logb 2 T)*((∑ i ∈ S, r i)+4*B) := by
   classical
-  have hTp : 0 < T := by linarith
+  
   have hlogtwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
   have hlogT : 0 ≤ Real.logb 2 T := by
     unfold Real.logb

@@ -18,7 +18,7 @@ theorem dirichlet_log_gap {m n X : ℕ} (hm : 0 < m) (hmn : m < n) (hnX : n ≤ 
     ((n-m:ℕ):ℝ)/(X:ℝ) ≤ Real.log n - Real.log m := by
   have hm0 : (0:ℝ) < m := by exact_mod_cast hm
   have hmn' : (m:ℝ) < n := by exact_mod_cast hmn
-  have hn0 : (0:ℝ) < n := lt_trans hm0 hmn'
+  have hn0  := lt_trans hm0 hmn'
   have hX : (n:ℝ) ≤ X := by exact_mod_cast hnX
   have hh := Real.one_sub_inv_le_log_of_pos (div_pos hn0 hm0)
   rw [Real.log_div (ne_of_gt hn0) (ne_of_gt hm0),inv_div] at hh
@@ -91,9 +91,7 @@ theorem dirichlet_harmonic_row {X n : ℕ} (hn : n ∈ Finset.Icc 1 X) :
   have hright := dirichlet_distance_other_side X n (S.filter (fun m => ¬m<n))
     (fun m hm => Finset.mem_of_mem_erase (Finset.mem_filter.mp hm).1)
     (fun m hm => by
-      have hne := (Finset.mem_erase.mp (Finset.mem_filter.mp hm).1).1
-      have hnot := (Finset.mem_filter.mp hm).2
-      omega)
+      grind)
   have heleft : (∑ m ∈ S.filter (fun m => m<n), (|(n:ℝ)-m|)⁻¹) =
       ∑ m ∈ S.filter (fun m => m<n), ((n-m:ℕ):ℝ)⁻¹ := by
     apply Finset.sum_congr rfl
@@ -131,8 +129,8 @@ theorem dirichlet_off_diagonal {X n m : ℕ} (hn : n ∈ Finset.Icc 1 X)
     (hm : m ∈ Finset.Icc 1 X) (hne : n ≠ m) (a b : ℝ) :
     ‖∫ t in a..b, dirichletPhase n t * conj (dirichletPhase m t)‖ ≤
       2*(X:ℝ)/|(n:ℝ)-m| := by
-  have hn0 : 0 < n := (Finset.mem_Icc.mp hn).1
-  have hm0 : 0 < m := (Finset.mem_Icc.mp hm).1
+  have hn0  := (Finset.mem_Icc.mp hn).1
+  have hm0  := (Finset.mem_Icc.mp hm).1
   have hX0 : (0:ℝ)<X := by exact_mod_cast (lt_of_lt_of_le hn0 (Finset.mem_Icc.mp hn).2)
   have hdist : 0 < |(n:ℝ)-m| := abs_pos.mpr (sub_ne_zero.mpr (by exact_mod_cast hne))
   have hgap : |(n:ℝ)-m|/(X:ℝ) ≤ |Real.log n-Real.log m| := by

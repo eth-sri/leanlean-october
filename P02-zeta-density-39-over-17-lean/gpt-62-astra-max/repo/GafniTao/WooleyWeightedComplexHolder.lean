@@ -33,16 +33,9 @@ theorem wooley_weighted_complex_sum_pow_le
         norm_sum_le _ _
       _ = A := by
         apply Finset.sum_congr rfl
-        intro i hi
         simp [Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
-  have hA : 0 ≤ A := by
-    dsimp [A]
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _)
-  have hD : 0 ≤ D := by
-    dsimp [D]
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (hw i) (sq_nonneg _)
+  
+  
   have hCauchy : A ^ 2 ≤ (#t : ℝ) * D := by
     have h := sum_mul_sq_le_sq_mul_sq (R := ℝ) t
       (fun _ : ι => 1)
@@ -50,9 +43,7 @@ theorem wooley_weighted_complex_sum_pow_le
     simpa only [A, D, one_mul, one_pow, sum_const, nsmul_eq_mul,
       Nat.cast_ofNat, Nat.cast_card, mul_one, mul_pow,
       Real.sq_sqrt (hw _)] using h
-  have hBase :
-      ‖∑ i ∈ t, (Real.sqrt (w i) : ℂ) * z i‖ ^ 2 ≤
-        (#t : ℝ) * D :=
+  have hBase  :=
     (pow_le_pow_left₀ (norm_nonneg _) hnorm 2).trans hCauchy
   have hPower := pow_le_pow_left₀ (by positivity) hBase s
   have hWeighted := wooley_weighted_rpow_sum_le t w
@@ -65,7 +56,7 @@ theorem wooley_weighted_complex_sum_pow_le
       rw [Nat.cast_sub hs]
       norm_num
     calc
-      D ^ s = D ^ (s : ℝ) := by rw [Real.rpow_natCast]
+      D ^ s = D ^ (s : ℝ) := by simp
       _ ≤ (∑ i ∈ t, w i) ^ ((s : ℝ) - 1) *
           ∑ i ∈ t, w i * (‖z i‖ ^ 2) ^ (s : ℝ) := hWeighted
       _ = (∑ i ∈ t, w i) ^ (s - 1) *

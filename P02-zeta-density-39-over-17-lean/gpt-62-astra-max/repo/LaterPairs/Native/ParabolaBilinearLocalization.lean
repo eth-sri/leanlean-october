@@ -1,2 +1,0 @@
-module
-public import LaterPairs.Native.ParabolaBilinearLocalization.Part03

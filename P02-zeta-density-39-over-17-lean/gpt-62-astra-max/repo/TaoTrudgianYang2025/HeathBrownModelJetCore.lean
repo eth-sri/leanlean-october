@@ -21,7 +21,7 @@ theorem approximateModelPhase_iteratedDeriv_error
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (p : ℕ) (hp : p ≤ P) :
     |iteratedDeriv (p+1) F u - iteratedDeriv p (modelPhase σ) u| ≤ δ := by
   have he := hF.2 p hp ⟨u, hu.1.le, hu.2.le⟩
-  have hc : ContDiffAt ℝ (p+1) F u :=
+  have hc  :=
     (hF.1.contDiffAt (Icc_mem_nhds hu.1 hu.2)).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl (p+1))
   have hm : ContDiffAt ℝ p (modelPhase σ) u :=

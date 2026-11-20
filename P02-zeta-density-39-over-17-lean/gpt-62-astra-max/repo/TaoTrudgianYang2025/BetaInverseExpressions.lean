@@ -1,7 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaLegendreDual
-public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 
 @[expose] public section
 

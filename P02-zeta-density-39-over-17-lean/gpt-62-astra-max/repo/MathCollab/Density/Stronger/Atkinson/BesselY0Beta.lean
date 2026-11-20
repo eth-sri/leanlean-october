@@ -45,9 +45,9 @@ theorem cos_mul_one_sub_sin_sq_cpow
     |Real.cos u| •
         (((1 - Real.sin u ^ 2 : ℝ) : ℂ) ^ (-(s + 1) / 2)) =
       (Real.cos u : ℂ) ^ (-s) := by
-  have hneg : -(Real.pi / 2) < u :=
+  have hneg  :=
     (neg_nonpos.mpr (by positivity : 0 ≤ Real.pi / 2)).trans_lt hu.1
-  have hcos : 0 < Real.cos u := Real.cos_pos_of_mem_Ioo ⟨hneg, hu.2⟩
+  have hcos  := Real.cos_pos_of_mem_Ioo ⟨hneg, hu.2⟩
   rw [abs_of_pos hcos, Complex.real_smul]
   have htrig : 1 - Real.sin u ^ 2 = Real.cos u ^ 2 := by
     nlinarith [Real.sin_sq_add_cos_sq u]
@@ -57,7 +57,7 @@ theorem cos_mul_one_sub_sin_sq_cpow
     push_cast
     ring
   rw [hcast]
-  have hC : (Real.cos u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hcos.ne'
+  have hC  := Complex.ofReal_ne_zero.mpr hcos.ne'
   rw [← Complex.cpow_nat_mul' (n := 2) (x := (Real.cos u : ℂ)) (by
       rw [Complex.arg_ofReal_of_nonneg hcos.le]
       norm_num
@@ -69,11 +69,10 @@ theorem cos_mul_one_sub_sin_sq_cpow
     (Real.cos u : ℂ) * (Real.cos u : ℂ) ^
         ((2 : ℂ) * (-(s + 1) / 2)) =
       (Real.cos u : ℂ) ^ (1 : ℂ) * (Real.cos u : ℂ) ^
-        ((2 : ℂ) * (-(s + 1) / 2)) := by rw [Complex.cpow_one]
+        ((2 : ℂ) * (-(s + 1) / 2)) := by simp
     _ = (Real.cos u : ℂ) ^ ((1 : ℂ) + 2 * (-(s + 1) / 2)) :=
       (Complex.cpow_add (1 : ℂ) (2 * (-(s + 1) / 2)) hC).symm
     _ = (Real.cos u : ℂ) ^ (-s) := by
-      apply congrArg ((Real.cos u : ℂ) ^ ·)
       ring
 
 theorem integral_cos_cpow_neg_eq_beta (s : ℂ) :
@@ -116,7 +115,7 @@ theorem abs_two_mul_smul_sq_cpow_general
       2 * ((x : ℂ) ^ (-s) *
         (((1 - x ^ 2 : ℝ) : ℂ) ^ (s / 2 - 1))) := by
   rw [abs_of_pos (mul_pos (by norm_num) hx.1), Complex.real_smul]
-  have hxC : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hx.1.ne'
+  have hxC  := Complex.ofReal_ne_zero.mpr hx.1.ne'
   have hcast : (((x ^ 2 : ℝ) : ℂ)) = (x : ℂ) ^ (2 : ℕ) := by
     push_cast
     ring
@@ -172,11 +171,11 @@ theorem tanh_jacobian_beta_integrand
         ((Real.tanh t : ℂ) ^ (-s) *
           (((1 - Real.tanh t ^ 2 : ℝ) : ℂ) ^ (s / 2 - 1))) =
       (Real.sinh t : ℂ) ^ (-s) := by
-  have hcosh : 0 < Real.cosh t := Real.cosh_pos t
+  have hcosh  := Real.cosh_pos t
   have htanh : 0 < Real.tanh t := by
     rw [Real.tanh_eq_sinh_div_cosh]
     exact div_pos (Real.sinh_pos_iff.2 ht) hcosh
-  have hsinh : 0 < Real.sinh t := Real.sinh_pos_iff.2 ht
+  
   rw [abs_of_pos (by positivity : 0 < 1 / Real.cosh t ^ 2), Complex.real_smul]
   rw [one_sub_tanh_sq_eq_inv_cosh_sq]
   rw [show ((1 / Real.cosh t ^ 2 : ℝ) : ℂ) *
@@ -234,15 +233,13 @@ theorem sinh_tail_jacobian
         ((Real.sinh u : ℂ) ^ (-s) /
           Real.sqrt (1 + Real.sinh u ^ 2)) =
       (Real.sinh u : ℂ) ^ (-s) := by
-  have hcosh : 0 < Real.cosh u := Real.cosh_pos u
+  have hcosh  := Real.cosh_pos u
   have hsqrt : Real.sqrt (1 + Real.sinh u ^ 2) = Real.cosh u := by
     rw [show 1 + Real.sinh u ^ 2 = Real.cosh u ^ 2 by
       nlinarith [Real.cosh_sq_sub_sinh_sq u], Real.sqrt_sq_eq_abs,
       abs_of_pos hcosh]
   rw [abs_of_pos hcosh, Complex.real_smul, hsqrt]
-  have hcoshC : (Real.cosh u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hcosh.ne'
-  change (Real.cosh u : ℂ) *
-      ((Real.sinh u : ℂ) ^ (-s) / (Real.cosh u : ℂ)) = _
+  have hcoshC  := Complex.ofReal_ne_zero.mpr hcosh.ne'
   field_simp [hcoshC]
 
 theorem integral_tail_power_eq_beta (s : ℂ) :

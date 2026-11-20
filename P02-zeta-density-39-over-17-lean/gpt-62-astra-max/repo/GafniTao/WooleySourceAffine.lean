@@ -24,7 +24,7 @@ def wooleyAffineEmbedding (q : ℕ) (hq : 0 < q) (xi : ℤ) : ℤ ↪ ℤ where
   inj' := by
     intro y z h
     have hmul : (q : ℤ) * y = (q : ℤ) * z := by linarith
-    exact mul_left_cancel₀ (by exact_mod_cast hq.ne') hmul
+    exact mul_left_cancel₀ (by positivity) hmul
 
 @[simp] theorem wooleyAffineEmbedding_apply
     (q : ℕ) (hq : 0 < q) (xi y : ℤ) :
@@ -63,9 +63,7 @@ theorem WooleySourceSequence.Admissible.affinePullback
     {gamma : WooleySourceSequence} (hgamma : gamma.Admissible)
     (q : ℕ) (hq : 0 < q) (xi : ℤ) :
     (wooleyAffinePullback gamma q hq xi).Admissible := by
-  intro y
-  rw [wooleyAffinePullback_apply]
-  exact hgamma _
+  solve_by_elim
 
 /-- The support of the pullback maps bijectively to the part of the source
 support in the selected residue class. -/
@@ -86,9 +84,7 @@ theorem wooleyAffineEmbedding_bijOn_support
     obtain ⟨y, hy⟩ :=
       (mem_range_wooleyAffineEmbedding_iff q hq xi n).mpr hn.2
     refine ⟨y, ?_, hy⟩
-    change wooleyAffineEmbedding q hq xi y ∈
-      gamma.support.filter fun m : ℤ => (m : ZMod q) = (xi : ZMod q)
-    simpa only [hy, Finset.mem_filter] using hn
+    grind
 
 /-- Equation (4.3) preserves the `L²` mass exactly. -/
 theorem wooleySourceMassSq_affinePullback
@@ -203,8 +199,6 @@ theorem wooleySourceResidueSequence_affinePullback_one
         (wooleySourceResidueSequence gamma q (z + (t : ZMod q)))
         1 (by norm_num) t := by
   ext y
-  simp only [wooleySourceResidueSequence_apply,
-    wooleyAffinePullback_apply]
   norm_num
 
 /-- Residue masses are permuted, not changed, by translation. -/

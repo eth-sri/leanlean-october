@@ -1,5 +1,6 @@
 module
-public import GafniTao.FordExponentialSum
+public import Mathlib
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 
 @[expose] public section

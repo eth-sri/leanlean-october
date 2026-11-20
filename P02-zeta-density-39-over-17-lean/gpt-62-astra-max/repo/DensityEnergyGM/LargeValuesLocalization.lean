@@ -35,7 +35,6 @@ theorem gmSmoothDirichletPoly_restricted_eq_sum
   let f : ℕ → ℂ := fun n =>
     cutoff ((n : ℝ) / Q) * gmRestrictedCoeffs S b n *
       (n : ℂ) ^ ((t : ℂ) * I)
-  change (∑ n ∈ dyadicInterval Q, f n) = _
   calc
     (∑ n ∈ dyadicInterval Q, f n) = ∑ n ∈ S, f n := by
       symm
@@ -75,7 +74,7 @@ theorem gmSourcePieces_partition (N : ℕ) (b : ℕ → ℂ) (t : ℝ) :
       (∑ n ∈ gmSourceRightPiece N, b n * (n : ℂ) ^ ((t : ℂ) * I)) := by
   classical
   rw [sourceDirichletPoly]
-  let f : ℕ → ℂ := fun n => b n * (n : ℂ) ^ ((t : ℂ) * I)
+  let f  := fun n => b n * (n : ℂ) ^ ((t : ℂ) * I)
   change (∑ n ∈ dyadicInterval N, f n) = _
   rw [← Finset.sum_filter_add_sum_filter_not (s := dyadicInterval N)
     (p := fun n => 5 * n ≤ 6 * N) (f := f)]
@@ -107,8 +106,7 @@ theorem gmSourceLeftPiece_mem_dyadic {N n : ℕ} (hN : 30 ≤ N)
   omega
 
 theorem gmSourceMiddlePiece_mem_dyadic {N n : ℕ}
-    (hn : n ∈ gmSourceMiddlePiece N) : n ∈ dyadicInterval N := by
-  exact (Finset.mem_filter.mp hn).1
+    (hn : n ∈ gmSourceMiddlePiece N) : n ∈ dyadicInterval N := (Finset.mem_filter.mp hn).1
 
 theorem gmSourceRightPiece_mem_dyadic {N n : ℕ} (hN : 30 ≤ N)
     (hn : n ∈ gmSourceRightPiece N) :
@@ -135,11 +133,11 @@ theorem gmSourceLeftPiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
     dsimp only [gmSourceLeftScale]
     omega
   constructor
-  · rw [le_div_iff₀ (by exact_mod_cast hQpos : (0 : ℝ) < gmSourceLeftScale N)]
+  · rw [le_div_iff₀ (by positivity : (0 : ℝ) < gmSourceLeftScale N)]
     have hLowerReal : (6 : ℝ) * gmSourceLeftScale N ≤ 5 * n := by
       exact_mod_cast hLowerNat
     nlinarith
-  · rw [div_le_iff₀ (by exact_mod_cast hQpos : (0 : ℝ) < gmSourceLeftScale N)]
+  · rw [div_le_iff₀ (by positivity : (0 : ℝ) < gmSourceLeftScale N)]
     have hUpperReal : (5 : ℝ) * n ≤ 9 * gmSourceLeftScale N := by
       exact_mod_cast hUpperNat
     nlinarith
@@ -177,11 +175,11 @@ theorem gmSourceRightPiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
     dsimp only [gmSourceRightScale]
     omega
   constructor
-  · rw [le_div_iff₀ (by exact_mod_cast hQpos : (0 : ℝ) < gmSourceRightScale N)]
+  · rw [le_div_iff₀ (by positivity : (0 : ℝ) < gmSourceRightScale N)]
     have hLowerReal : (6 : ℝ) * gmSourceRightScale N ≤ 5 * n := by
       exact_mod_cast hLowerNat
     nlinarith
-  · rw [div_le_iff₀ (by exact_mod_cast hQpos : (0 : ℝ) < gmSourceRightScale N)]
+  · rw [div_le_iff₀ (by positivity : (0 : ℝ) < gmSourceRightScale N)]
     have hUpperReal : (5 : ℝ) * n ≤ 9 * gmSourceRightScale N := by
       exact_mod_cast hUpperNat
     nlinarith
@@ -261,13 +259,13 @@ theorem source_large_values_localize_to_matrix
       (W'.card : ℝ) ≤
         (Q : ℝ) * gmMatrixOperatorNorm cutoff Q W' ^ 2 / (V / 3) ^ 2 := by
   classical
-  let L : Finset ℝ := W.filter fun t =>
+  let L  := W.filter fun t =>
     V / 3 ≤ ‖gmSmoothDirichletPoly cutoff (gmSourceLeftScale N)
       (gmRestrictedCoeffs (gmSourceLeftPiece N) b) t‖
-  let M : Finset ℝ := W.filter fun t =>
+  let M  := W.filter fun t =>
     V / 3 ≤ ‖gmSmoothDirichletPoly cutoff N
       (gmRestrictedCoeffs (gmSourceMiddlePiece N) b) t‖
-  let R : Finset ℝ := W.filter fun t =>
+  let R  := W.filter fun t =>
     V / 3 ≤ ‖gmSmoothDirichletPoly cutoff (gmSourceRightScale N)
       (gmRestrictedCoeffs (gmSourceRightPiece N) b) t‖
   have hcover : W ⊆ L ∪ M ∪ R := by

@@ -105,8 +105,6 @@ theorem wooleySourcePolynomialMixedMean_box
       wooleyPolynomialMixedGridMean phi s r p B a b nu gamma := by
   unfold wooleySourcePolynomialMixedMean wooleyPolynomialMixedGridMean
   rw [wooleyBoxSourceSequence_massSq]
-  split_ifs
-  · rfl
   · simp_rw [wooleySourceResidueMassSq_box,
       wooleySourcePolynomialMixedResidueMoment_box]
 
@@ -142,13 +140,7 @@ theorem wooleyResiduesSeparated_add_iff
   rw [wooleyResiduesSeparated_iff_cast_ne hna hnb,
     wooleyResiduesSeparated_iff_cast_ne hna hnb]
   simp only [map_add, map_intCast]
-  constructor
-  · intro h hEq
-    apply h
-    rw [hEq]
-  · intro h hEq
-    apply h
-    exact add_right_cancel hEq
+  simp
 
 /-- A simultaneous translation of coefficients and polynomial arguments
 only translates the two residue labels in the local mixed moment. -/

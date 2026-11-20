@@ -10,7 +10,7 @@ reduced to the stationary source inequality by Atkinson.AtkinsonSourceAssembly.
 No unconditional high-value, twelfth-moment or stronger-density bound is asserted.
 -/
 public import MathCollab.Density.Stronger.MomentGrowth
-public import MathCollab.Density.Stronger.AtkinsonGlobalCardinality
+public import MathCollab.Density.Stronger.AtkinsonHeightCover
 public import WeylPort.GrowthAlgebra
 
 @[expose] public section

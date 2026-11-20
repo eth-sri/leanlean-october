@@ -78,8 +78,6 @@ theorem source_tail_scalar_absorption {A K Q Λ : ℝ}
     rw [hc] at hh
     nlinarith
   have hs := Real.sq_sqrt hA
-  have hroot := Real.sqrt_nonneg A
-  have hh : Real.sqrt A ≤ 2*Q := by nlinarith
   nlinarith
 
 /-- Conditional source tail for the actual low-value density. All inverse-Fourier,

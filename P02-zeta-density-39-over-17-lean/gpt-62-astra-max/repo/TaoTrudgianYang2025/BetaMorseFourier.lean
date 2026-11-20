@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaFourierModes
 public import TaoTrudgianYang2025.BetaMorseAmplitude
 

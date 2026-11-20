@@ -1,3 +1,0 @@
-module
-public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
-public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.MeasureTheory.Integral.IntegrableOn

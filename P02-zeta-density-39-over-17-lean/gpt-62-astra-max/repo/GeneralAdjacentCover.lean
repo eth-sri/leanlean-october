@@ -15,8 +15,8 @@ theorem adjacent_finite_height_cover {K : ℕ} (hK : 1 ≤ K)
     (hm : m ≤ 1/(2*(K:ℝ))) :
     ∃ j : ℕ, K ≤ j ∧ j ≤ ⌈1/δ⌉₊ ∧
       2*(j:ℝ)*m ≤ 1 ∧ 1 ≤ 2*((j:ℝ)+1)*m := by
-  have hkp : (0:ℝ) < K := by exact_mod_cast (show 0 < K by omega)
-  have hmp : 0 < m := hδ.trans_le hδm
+  
+  have hmp  := hδ.trans_le hδm
   let j := ⌊1/(2*m)⌋₊
   have hKj : K ≤ j := Nat.le_floor ((le_div_iff₀ (by positivity : 0 < 2*m)).mpr (by
     have hh := (le_div_iff₀ (by positivity : 0 < 2*(K:ℝ))).mp hm
@@ -44,9 +44,9 @@ theorem adjacent_log_remainder {k j r t : ℝ}
     let ck := (2*k+1)/(2*k*(k+1))
     let cj := (2*j+1)/(2*j*(j+1))
     t/(2*j)-cj*r ≤ max 0 (t/(2*k)-ck*r) := by
-  have hj : 0 < j := hk.trans_le hkj
-  have hk1 : 0 < k+1 := by linarith
-  have hj1 : 0 < j+1 := by linarith
+  have hj  := hk.trans_le hkj
+  
+  
   dsimp only
   have hid : (t/(2*j)-(2*j+1)/(2*j*(j+1))*r)-
       (k/j)*(t/(2*k)-(2*k+1)/(2*k*(k+1))*r) =
@@ -59,7 +59,7 @@ theorem adjacent_log_remainder {k j r t : ℝ}
       div_nonpos_of_nonpos_of_nonneg (mul_nonpos_of_nonneg_of_nonpos hr (by linarith)) (by positivity)
     linarith only [hid,hh]
   have hθ : 0 ≤ k/j := by positivity
-  have hθ1 : k/j ≤ 1 := (div_le_one hj).mpr hkj
+  have hθ1  := (div_le_one hj).mpr hkj
   have hd : t/(2*k)-(2*k+1)/(2*k*(k+1))*r ≤
       max 0 (t/(2*k)-(2*k+1)/(2*k*(k+1))*r) := le_max_right _ _
   have hd0 : 0 ≤ max 0 (t/(2*k)-(2*k+1)/(2*k*(k+1))*r) := le_max_left _ _

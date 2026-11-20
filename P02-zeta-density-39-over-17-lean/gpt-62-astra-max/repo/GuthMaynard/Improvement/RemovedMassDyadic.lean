@@ -17,8 +17,8 @@ theorem removed_square_dyadic {x U : ℝ} (hx : 0 ≤ x)
   | succ J ih =>
     rw [Finset.sum_range_succ]
     by_cases hj : x ≤ 2^J*U
-    · exact (ih hj).trans (le_add_of_nonneg_right (by split_ifs <;> positivity))
-    · have ht : 2^J*U < x := lt_of_not_ge hj
+    · grind
+    · have ht  := lt_of_not_ge hj
       have hp : x^2 ≤ 4*(2^J*U)^2 := by
         have hh := pow_le_pow_left₀ hx hb 2
         rw [pow_succ (2:ℝ) J] at hh

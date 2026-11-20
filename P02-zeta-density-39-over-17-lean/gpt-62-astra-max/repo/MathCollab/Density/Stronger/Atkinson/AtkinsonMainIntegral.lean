@@ -54,7 +54,7 @@ theorem exists_norm_zetaAtkinsonVoronoiMain_le :
   rw [zetaAtkinsonVoronoiMain_eq_reflection hT0 hG hL hwidth]
   have h := (hweight T G L hT hlog hG hGT hL).reflection_source hT0
   convert h using 1
-  have hs : Real.sqrt T ≠ 0 := ne_of_gt (Real.sqrt_pos.2 hT0)
+  have hs  := ne_of_gt (Real.sqrt_pos.2 hT0)
   field_simp
 
 theorem exists_zetaAtkinsonVoronoiMain_log_bound {δ : ℝ} (hδ : 0 < δ) :

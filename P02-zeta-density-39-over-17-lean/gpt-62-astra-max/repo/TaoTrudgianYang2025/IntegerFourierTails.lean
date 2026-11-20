@@ -1,6 +1,9 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.ZetaFourthTailPower
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 
 @[expose] public section
@@ -22,7 +25,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 theorem tsum_nat_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
     (∑' n : ℕ, if R < n then 1/(n : ℝ)^2 else 0) ≤ 1/(R : ℝ) := by
-  let f : ℕ → ℝ := fun n => if R < n then 1/(n : ℝ)^2 else 0
+  let f  := fun n => if R < n then 1/(n : ℝ)^2 else 0
   have hs : Summable f := by
     have hi := (Real.summable_one_div_nat_pow.mpr
       (by norm_num : 1 < (2 : ℕ))).indicator {n | R < n}
@@ -52,7 +55,7 @@ theorem tsum_nat_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
 theorem tsum_int_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
     (∑' q : ℤ, if R < q.natAbs then 1/(q : ℝ)^2 else 0) ≤ 2/(R : ℝ) := by
   let g : ℤ → ℝ := fun q => if R < q.natAbs then 1/(q : ℝ)^2 else 0
-  let f : ℕ → ℝ := fun n => if R < n then 1/(n : ℝ)^2 else 0
+  let f  := fun n => if R < n then 1/(n : ℝ)^2 else 0
   have hg : Summable g := by
     have hi := (Real.summable_one_div_int_pow.mpr
       (by norm_num : 1 < (2 : ℕ))).indicator {q | R < q.natAbs}
@@ -86,7 +89,6 @@ theorem tsum_int_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
   change (∑' q, g q) ≤ _
   rw [tsum_of_nat_of_neg_add_one hpSum hnSum,hp,hm,hshift]
   have hb := tsum_nat_inverse_square_tail_le hR
-  change (∑' n, f n) ≤ 1/(R : ℝ) at hb
   calc
     _ ≤ 1/(R : ℝ)+1/(R : ℝ) := add_le_add hb hb
     _ = _ := by ring
@@ -118,9 +120,7 @@ theorem norm_integer_far_tail_le_of_inverse_square
       apply Summable.tsum_le_tsum _ hs (hg.mul_left K)
       intro q
       by_cases hq : R < q.natAbs
-      · rw [ite_eq_left hq,ite_eq_left hq]
-        have hq₀ : q ≠ 0 := by intro hz; subst q; simp at hq
-        simpa only [mul_one_div] using hb q hq₀
+      · grind
       · simp only [ite_eq_right hq,mul_zero,le_refl]
     _ = K*(∑' q : ℤ, if R < q.natAbs then 1/(q : ℝ)^2 else 0) := tsum_mul_left
     _ ≤ K*(2/(R : ℝ)) := mul_le_mul_of_nonneg_left (tsum_int_inverse_square_tail_le hR) hK
@@ -146,8 +146,8 @@ theorem tsum_int_eq_sum_Icc_add_far {f : ℤ → ℂ}
     apply tsum_congr
     intro q
     by_cases hq : q.natAbs ≤ R
-    · simp only [ite_eq_left hq,ite_eq_right (Nat.not_lt_of_ge hq),add_zero]
-    · simp only [ite_eq_right hq,ite_eq_left (Nat.lt_of_not_ge hq),zero_add]
+    · simp [*]
+    · simp [*]
   rw [he]
   congr 1
   rw [tsum_eq_sum (s := Finset.Icc (-(R : ℤ)) (R : ℤ))]

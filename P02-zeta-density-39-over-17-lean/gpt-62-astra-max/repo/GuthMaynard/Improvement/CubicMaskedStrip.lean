@@ -45,7 +45,7 @@ theorem masked_radial_discard_integral_bound {a : ℝ → ℂ} (ha : ContDiff �
       exact mul_le_mul hr (ratioFourierProduct_bound hm h0 hi p) (norm_nonneg _) (by positivity)
     · simp only [norm_zero]
       positivity
-  have hmasked : Measurable (fun p => radialDiscard a μ L H m p*ratioMaskProduct A B Cmask p) :=
+  have hmasked  :=
     hmeas.mul (ratioMaskProduct_measurable hA hB hCmask)
   have hmaskedpoint : ∀ p ∈ Icc v₀ v₁ ×ˢ Icc y₀ y₁,
       ‖radialDiscard a μ L H m p*ratioMaskProduct A B Cmask p‖ ≤ C/H^n*(∫ t, μ t)^3 := by
@@ -53,7 +53,7 @@ theorem masked_radial_discard_integral_bound {a : ℝ → ℂ} (ha : ContDiff �
     rw [norm_mul]
     exact (mul_le_of_le_one_right (norm_nonneg _) (ratioMaskProduct_norm_le_one A B Cmask p)).trans (hpoint p hp)
   have hfinite : volume (Icc v₀ v₁ ×ˢ Icc y₀ y₁) < ⊤ := (isCompact_Icc.prod isCompact_Icc).measure_lt_top
-  have hInt : IntegrableOn (fun p => radialDiscard a μ L H m p*ratioMaskProduct A B Cmask p) (Icc v₀ v₁ ×ˢ Icc y₀ y₁) :=
+  have hInt  :=
     (integrableOn_const hfinite.ne).mono' hmasked.aestronglyMeasurable
       (ae_restrict_of_forall_mem (measurableSet_Icc.prod measurableSet_Icc) hmaskedpoint)
   refine ⟨hInt,?_⟩
@@ -103,7 +103,7 @@ theorem masked_radial_near_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     split_ifs
     · exact (mul_le_of_le_one_right (norm_nonneg _) (ratioMaskProduct_norm_le_one A B C p)).trans (ratioFourierProduct_bound hm h0 hi p)
     · positivity
-  have hni : IntegrableOn (maskedRadialNearMass μ A B C L H m) (Icc v₀ v₁ ×ˢ Icc y₀ y₁) :=
+  have hni  :=
     (integrableOn_const hQ.ne (C := (∫ t, μ t)^3)).mono' hnm.aestronglyMeasurable
       (Filter.Eventually.of_forall (fun p => by rw [Real.norm_eq_abs,abs_of_nonneg (hnear0 p)]; exact hnearBound p))
   have hcm : Measurable (maskedRadialNear a μ A B C L H m) :=
@@ -120,7 +120,7 @@ theorem masked_radial_near_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     · simp only [norm_mul]
       nlinarith [mul_le_mul_of_nonneg_right hk (mul_nonneg (norm_nonneg (ratioFourierProduct μ p)) (norm_nonneg (ratioMaskProduct A B C p)))]
     · simp
-  have hci : IntegrableOn (maskedRadialNear a μ A B C L H m) (Icc v₀ v₁ ×ˢ Icc y₀ y₁) :=
+  have hci  :=
     (hni.const_mul Cnear).mono' hcm.aestronglyMeasurable
       (ae_restrict_of_forall_mem (measurableSet_Icc.prod measurableSet_Icc) hpoint)
   refine ⟨hni,hci,?_⟩
@@ -136,8 +136,8 @@ theorem masked_radial_near_discard (a : ℝ → ℂ) (μ : ℝ → ℝ) (A B C :
       maskedRadialNear a μ A B C L H m p + radialDiscard a μ L H m p*ratioMaskProduct A B C p := by
   unfold maskedRadialNear radialDiscard
   by_cases h : |L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ))| ≤ H
-  · simp only [ite_eq_left h,ite_eq_right (not_lt_of_ge h),zero_mul,add_zero]
-  · simp only [ite_eq_right h,ite_eq_left (lt_of_not_ge h),zero_add]
+  · grind
+  · grind
 
 /-- The actual summed discarded complex integral has the same mask-uniform tail. -/
 theorem masked_radial_total_discard_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)

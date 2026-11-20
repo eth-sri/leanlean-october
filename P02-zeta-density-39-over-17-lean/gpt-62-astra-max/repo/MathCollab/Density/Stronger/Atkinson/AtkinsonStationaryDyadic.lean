@@ -42,8 +42,8 @@ theorem exists_norm_atkinsonStationarySum_le_dyadic {δ : ℝ} (hδ : 0 < δ) :
   obtain ⟨B,hB⟩ := eventually_atTop.mp (eventually_zetaSmoothDivisorTest_support_physical hδ)
   refine ⟨C,hC,max A B,hA.trans (le_max_left _ _),?_⟩
   intro T G hT hlower hupper
-  have hAT : A ≤ T := (le_max_left _ _).trans hT
-  have hBT : B ≤ T := (le_max_right _ _).trans hT
+  have hAT  := (le_max_left _ _).trans hT
+  have hBT  := (le_max_right _ _).trans hT
   have hT0 : 0 < T := by linarith [hA.trans hAT]
   obtain ⟨hG,hL,hwidth,_⟩ := (hB T hBT).2 G hlower
   rw [atkinsonStationaryLeadingSum_eq_finite hT0 hG hL hwidth]
@@ -66,7 +66,7 @@ theorem exists_norm_atkinsonStationarySum_le_fullDyadic {δ : ℝ} (hδ : 0 < δ
   refine ⟨C,hC,A,hA,?_⟩
   intro T G hT hlower hupper
   have hT0 : 0 < T := by linarith [hA.trans hT]
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
+  have hG  := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
   exact (hbound T G hT hlower hupper).trans (mul_le_mul_of_nonneg_left
     (atkinsonDyadicPhaseBound_le_full T G _) (by positivity))
 
@@ -81,7 +81,7 @@ theorem exists_norm_atkinsonStationarySum_le_undamped {δ : ℝ} (hδ : 0 < δ) 
   refine ⟨C,hC,T₀,hT₀,?_⟩
   intro T G hT hlower hupper
   have hT0 : 0 < T := by linarith [hT₀.trans hT]
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
+  have hG  := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
   exact (hbound T G hT hlower hupper).trans (mul_le_mul_of_nonneg_left
     (atkinsonFullDyadicPhaseBound_le_undamped hT0 G _) (by positivity))
 

@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSevenCount
 public import LaterPairs.Native.RobertSargosTaylorSystem
 
@@ -36,7 +33,7 @@ theorem robertSargos_taylor_remainder_le {R H r h : ℝ}
   calc
     _ ≤ |r*h^2|+|r^2*h| := abs_add_le _ _
     _ = |r| * h^2+r^2*|h| := by
-      rw [abs_mul,abs_mul,abs_of_nonneg (sq_nonneg h),abs_of_nonneg (sq_nonneg r)]
+      simp
     _ ≤ R*(2*H)^2+R^2*(2*H) :=
       add_le_add (mul_le_mul hr hh2 (sq_nonneg h) hR)
         (mul_le_mul hr2 hh (abs_nonneg h) (sq_nonneg R))
@@ -114,13 +111,13 @@ theorem exists_robertSargos_taylor_count (ε : ℝ) (hε : 0 < ε) :
   refine ⟨C,hC,?_⟩
   intro S R H Q N E hR hH hQ hN hE hRH hS
   have hHp : 0 < H := by linarith
-  have hQp : 0 < Q := by linarith
+  
   let δ := (E+12*R*H^2)/(H*Q^2)
   have hδ : 0 ≤ δ := by dsimp [δ]; positivity
   have hscale : E+12*R*H^2 = δ*H*Q^2 := by
     dsimp [δ]
     field_simp
-  have hcard : (S.image robertSargosReverseR).card = S.card :=
+  have hcard  :=
     Finset.card_image_of_injective S robertSargos_reverseR_injective
   have ht := hcount (S.image robertSargosReverseR) R H Q N δ hR hH hQ hN hδ hRH
     (by

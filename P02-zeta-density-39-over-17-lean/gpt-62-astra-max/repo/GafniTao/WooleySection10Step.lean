@@ -134,8 +134,7 @@ theorem wooleySourcePolynomial_iterationStep_of_lemma_9_1
             phi p B H (wooleyTriangular k) rPrime aPrime bPrime
               nu Lambda gamma) ^ rho *
           (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) := by
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_right hcoef hmeanNonneg) htailNonneg
+        gcongr
   exact ⟨aPrime, bPrime, rPrime, rho, ha, hb', hrel, hr', hr'top,
     hrho, hrhoOne, hgrowth, hupper, hceil, hweighted, huniform⟩
 

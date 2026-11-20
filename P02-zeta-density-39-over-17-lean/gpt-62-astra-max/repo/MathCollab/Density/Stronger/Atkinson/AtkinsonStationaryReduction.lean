@@ -1,3 +1,0 @@
-module
-public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalStationary
-public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerWeightRoot

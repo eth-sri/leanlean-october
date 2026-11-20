@@ -57,13 +57,13 @@ theorem wooleySection7_primePower_unit_cancel_to_common
     (hed : e ≤ d) (hdM : d ≤ M)
     (hdiv : (p : ℤ) ^ M ∣ (p : ℤ) ^ e * omega * z) :
     (p : ℤ) ^ (M - d) ∣ z := by
-  have heM : e ≤ M := hed.trans hdM
-  have hrewrite : M = e + (M - e) := (Nat.add_sub_of_le heM).symm
+  have heM  := hed.trans hdM
+  have hrewrite  := (Nat.add_sub_of_le heM).symm
   have hfirst : (p : ℤ) ^ (M - e) ∣ z := by
     apply wooleySection7_primePower_unit_cancel_dvd hp hcop
     rw [← hrewrite]
     exact hdiv
-  have hle : M - d ≤ M - e := Nat.sub_le_sub_left hed M
+  have hle  := Nat.sub_le_sub_left hed M
   exact dvd_trans (pow_dvd_pow (p : ℤ) hle) hfirst
 
 /-- Integral tuple displacement, before reduction modulo the Fourier
@@ -93,8 +93,7 @@ def wooleySection7LowerSystem
 
 theorem wooleySection7LowerSystem_spaced
     (r p d : ℕ) (Xi : Fin r → Polynomial ℤ) :
-    (wooleySection7LowerSystem r p d Xi).Spaced p d := by
-  exact ⟨Xi, fun _ => rfl⟩
+    (wooleySection7LowerSystem r p d Xi).Spaced p d := ⟨Xi, fun _ => rfl⟩
 
 end
 

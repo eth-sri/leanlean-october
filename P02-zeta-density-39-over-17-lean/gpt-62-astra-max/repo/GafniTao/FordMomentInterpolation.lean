@@ -9,7 +9,6 @@ namespace GafniTao
 noncomputable section
 theorem continuous_fordVinogradovWeylSum (k Q : ℕ) :
     Continuous (fordVinogradovWeylSum k Q) := by
-  unfold fordVinogradovWeylSum fordVinogradovMonomial
   exact continuous_finsetSum _ fun n _ =>
     (UnitAddTorus.mFourier (fordVinogradovExponent n)).continuous
 
@@ -33,9 +32,7 @@ theorem ford_vinogradov_lintegral_mean_eq (s k Q : ℕ) :
         ∫⁻ α : UnitAddTorus (Fin k), ENNReal.ofReal
           (‖fordVinogradovWeylSum k Q α‖ ^ (2 * s))
           ∂Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle) := by
-      apply lintegral_congr
-      intro α
-      rw [ENNReal.ofReal_pow (norm_nonneg _)]
+      simp
     _ = ENNReal.ofReal (∫ α : UnitAddTorus (Fin k),
           ‖fordVinogradovWeylSum k Q α‖ ^ (2 * s)
           ∂Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle)) :=

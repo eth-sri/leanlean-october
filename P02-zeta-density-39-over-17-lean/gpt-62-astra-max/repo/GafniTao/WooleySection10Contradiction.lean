@@ -41,7 +41,7 @@ theorem wooley_section10_force_final_bound
     (N : ℝ) * Lambda / (2 * (k : ℝ)) ≤ 4 * (s : ℝ) := by
   have hpR : (1 : ℝ) < p := by exact_mod_cast hp
   have hpPos : (0 : ℝ) < p := lt_trans (by norm_num) hpR
-  have hbase : (1 : ℝ) ≤ p := hpR.le
+  have hbase  := hpR.le
   have hHepsilon0 : 0 ≤ (H : ℝ) * epsilon := by positivity
   have hCtermPow : Cterm ^ R ≤ max 1 Cterm := by
     rcases le_total Cterm 1 with hle | hle

@@ -30,14 +30,12 @@ noncomputable def heathBrownIntegratedWeyl
 theorem measurable_heathBrownCellIndicator
     (k H n : ℕ) (f : ℝ → ℝ) :
     Measurable (heathBrownCellIndicator k H f n) := by
-  unfold heathBrownCellIndicator
   exact measurable_const.indicator
     (measurableSet_heathBrownCoefficientCell k H f n)
 
 theorem measurable_heathBrownNu
     (N k H : ℕ) (f : ℝ → ℝ) :
     Measurable (heathBrownNu N k H f) := by
-  unfold heathBrownNu
   exact Finset.measurable_sum (heathBrownInteriorIndices N H) fun n hn =>
     measurable_heathBrownCellIndicator k H n f
 
@@ -194,8 +192,7 @@ theorem heathBrown_cellwise_center_lintegral_le
         measurable_const
   rw [hleft] at hmono
   -- The right side is exactly `I(Q) + c * sum_{j<Q} I(j)` after Tonelli.
-  have hnu : Measurable (fun α : HeathBrownCoefficientTorus k =>
-      ENNReal.ofReal (heathBrownNu N k H f α)) :=
+  have hnu  :=
     (measurable_heathBrownNu N k H f).ennreal_ofReal
   have hweyl (j : ℕ) : Measurable (fun α : HeathBrownCoefficientTorus k =>
       ENNReal.ofReal ‖heathBrownWeylSum k j α‖) :=
@@ -205,10 +202,7 @@ theorem heathBrown_cellwise_center_lintegral_le
       ENNReal.ofReal ‖heathBrownWeylSum k j α‖ *
         ENNReal.ofReal (heathBrownNu N k H f α)) :=
     (hweyl j).mul hnu
-  have hsum : Measurable (fun α : HeathBrownCoefficientTorus k =>
-      ∑ j ∈ Finset.Ico 1 Q,
-        ENNReal.ofReal ‖heathBrownWeylSum k j α‖ *
-          ENNReal.ofReal (heathBrownNu N k H f α)) :=
+  have hsum  :=
     Finset.measurable_sum (Finset.Ico 1 Q) fun j hj => hterm j
   have hright :
       (∫⁻ α : HeathBrownCoefficientTorus k,

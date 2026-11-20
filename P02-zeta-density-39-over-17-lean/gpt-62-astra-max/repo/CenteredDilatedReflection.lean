@@ -65,7 +65,7 @@ theorem reflection_local_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
         C*T^η*(H/L)*(W.card:ℝ)^2 := by
   obtain ⟨C,hC,hbound⟩ := reflection_complete_pair_dilated_short_range hK hη
     (B := 2*B) (by linarith)
-  have hBp : 0 < B := by linarith
+  
   refine ⟨30*C,by positivity,?_⟩
   intro T t₀ L H hT hL hH W hR hlen hW hsep
   let U : ℝ := H/(B*L)
@@ -111,7 +111,7 @@ theorem centered_shell_dilated_short_range (w : MathCollab.Density.ReflectionCut
   obtain ⟨C,hC,hbound⟩ := reflection_local_energy_dilated_short_range hK hη hD
   obtain ⟨B,hB,href⟩ := MathCollab.Density.uniform_reflection w hA
   let F : ℝ := (20000/Real.pi^2)*(MathCollab.Density.mellinMass w)^2
-  have hF : 0 ≤ F := by dsimp [F]; positivity
+  
   refine ⟨1+F*C,4*B^2,by positivity,by positivity,?_⟩
   intro T t₀ L H hT hL hH W hR hlen hW hsep
   have he := (href L H W hL hH).1

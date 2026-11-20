@@ -27,8 +27,8 @@ theorem coprime_dyadic_adjacent_general {K : ℕ} (hK : 1 ≤ K) {η B : ℝ} (h
   by_cases he : Q.Nonempty
   · obtain ⟨q,hq⟩ := he
     have h2M : 0 ≤ 2*M := by positivity
-    have hf : (⌊2*M⌋₊:ℝ) ≤ 2*M := Nat.floor_le h2M
-    have hH : 1 ≤ ⌊2*M⌋₊ :=
+    have hf  := Nat.floor_le h2M
+    have hH  :=
       (show 1 ≤ q.2 from (hQ q hq).2.1).trans
         ((Nat.le_floor_iff h2M).mpr (hQ q hq).2.2.2.2.2.2)
     have hrat : ∀ r ∈ Q.image pairRatio,
@@ -36,7 +36,7 @@ theorem coprime_dyadic_adjacent_general {K : ℕ} (hK : 1 ≤ K) {η B : ℝ} (h
       intro r hr
       obtain ⟨p,hp,rfl⟩ := mem_image.mp hr
       obtain ⟨hp1,hp2,hcop,hl1,hu1,hl2,hu2⟩ := hQ p hp
-      refine ⟨div_pos (by exact_mod_cast hp1) (by exact_mod_cast hp2),?_,
+      refine ⟨div_pos (by positivity) (by positivity),?_,
         dyadic_pair_log hp1 hp2 hl1 hu1 hl2 hu2⟩
       rw [coprime_pair_den hp2 hcop]
       exact (Nat.le_floor_iff h2M).mpr hu2

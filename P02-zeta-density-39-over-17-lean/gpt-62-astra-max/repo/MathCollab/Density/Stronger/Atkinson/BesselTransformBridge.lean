@@ -62,8 +62,6 @@ theorem dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin
     calc
       (Real.sqrt n : ℂ) ^ (-2 + z * 2) =
           (Real.sqrt n : ℂ) ^ ((2 : ℕ) * (-1 + z)) := by
-            congr 1
-            norm_num
             ring
       _ = ((Real.sqrt n : ℂ) ^ (2 : ℕ)) ^ (-1 + z) := hcp
       _ = (n : ℂ) ^ (-1 + z) := by rw [hsqrtSq]
@@ -161,12 +159,12 @@ theorem dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin
           ((Real.pi : ℂ) ^ (-2 + z * 2) * (n : ℂ) ^ (-1 + z) *
             ((q : ℂ) ^ (-2 + z * 2))⁻¹ * (2 : ℂ) ^ (-4 + z * 4)) *
           (2 : ℂ) ^ (-(z * 2)) * 8 := by
-            simp only [mul_assoc, mul_left_comm, mul_comm]
+            ring
     _ = (n : ℂ) ^ (-1 + z) * (Real.pi : ℂ) ^ (-2 + z * 2) *
           Gamma (1 - z) ^ 2 * (q : ℂ)⁻¹ *
           ((q : ℂ) ^ (-2 + z * 2))⁻¹ *
           (2 : ℂ) ^ (-4 + z * 4) * (2 : ℂ) ^ (-(z * 2)) * 8 := by
-            simp only [mul_assoc, mul_left_comm, mul_comm]
+            ring
 
 /-- Two vertical integrals agree when their integrands agree on the line of
 integration. -/
@@ -177,9 +175,7 @@ theorem verticalIntegral'_congr_line {f h : ℂ → ℂ} (σ : ℝ)
   unfold PointMean.VerticalIntegral' PointMean.VerticalIntegral
   rw [show (∫ t : ℝ, f ((σ : ℂ) + (t : ℂ) * I)) =
       ∫ t : ℝ, h ((σ : ℂ) + (t : ℂ) * I) by
-    apply MeasureTheory.integral_congr_ae
-    filter_upwards with u
-    rw [heq u]]
+    simp [*]]
 
 /-- Constant factors may be pulled through a complete vertical integral. -/
 theorem verticalIntegral'_const_mul_bridge (c : ℂ) (f : ℂ → ℂ) (σ : ℝ) :
@@ -198,16 +194,15 @@ theorem dfiVoronoiPlusTransform_mellin_eq_bessel
     dfiVoronoiPlusTransform q (mellin g) n =
       dfiVoronoiPlusBesselTransform q g n := by
   let A : ℝ := 4 * Real.pi * Real.sqrt n / q
-  let h : ℝ → ℂ := fun x => (dfiBesselK0 (A * Real.sqrt x) : ℂ)
+  let h  := fun x => (dfiBesselK0 (A * Real.sqrt x) : ℂ)
   have hq : (0 : ℝ) < q := by exact_mod_cast NeZero.pos q
-  have hnR : (0 : ℝ) < n := by exact_mod_cast hn
+  
   have hA : 0 < A := by dsimp [A]; positivity
   have hConv : MellinConvergent h (3 / 2 : ℂ) := by
     simpa only [h] using
       (mellinConvergent_dfiBesselK0_mul_sqrt hA
         (s := (3 / 2 : ℂ)) (by norm_num))
-  have hMeas : AEStronglyMeasurable h
-      (volume.restrict (Set.Ioi 0)) :=
+  have hMeas  :=
     MellinConvergent.aestronglyMeasurable_positive hConv
   have hInt : IntegrableOn (fun x : ℝ => x ^ (1 / 2 : ℝ) * ‖h x‖)
       (Set.Ioi 0) := by
@@ -226,8 +221,7 @@ theorem dfiVoronoiPlusTransform_mellin_eq_bessel
             mellin h
               (1 - ((↑(-(1 / 2 : ℝ)) : ℂ) + (u : ℂ) * I))) := by
     rw [dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin q n hn]
-    · dsimp [h, A]
-      ring
+    · ring
     · norm_num
   have hKernel (x : ℝ) (hx : x ∈ Set.Ioi (0 : ℝ)) :
       h x = (dfiBesselK0
@@ -255,10 +249,7 @@ theorem dfiVoronoiPlusTransform_mellin_eq_bessel
       congr 1
       apply setIntegral_congr_fun measurableSet_Ioi
       intro x hx
-      change g x * h x =
-        g x * (dfiBesselK0
-          (4 * Real.pi * Real.sqrt (x * n) / q) : ℂ)
-      rw [hKernel x hx]
+      simp [*]
 
 /-- The analytically continued Mellin symbol of `Y₀` differs from the
 `K₀` symbol by the classical cosine factor. -/
@@ -290,7 +281,7 @@ theorem dfiVoronoiMinusMultiplier_eq_scaled_Y0_symbol
         (2 * ((4 * Real.pi * Real.sqrt n / q : ℝ) : ℂ) ^
           (-(2 * (1 - z))) * dfiBesselY0MellinSymbol (2 * (1 - z))) := by
   have hqR : (0 : ℝ) < q := by exact_mod_cast NeZero.pos q
-  have hnR : (0 : ℝ) < n := by exact_mod_cast hn
+  
   have hPlus := dfiVoronoiPlusMultiplier_eq_scaled_K0_mellin q n hn z hz
   rw [mellin_dfiBesselK0_mul_sqrt
     (by positivity : 0 < 4 * Real.pi * Real.sqrt n / q) hz] at hPlus
@@ -333,16 +324,15 @@ theorem verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel
         (13 / 16 : ℝ) =
       dfiVoronoiMinusBesselTransform q g n := by
   let A : ℝ := 4 * Real.pi * Real.sqrt n / q
-  let h : ℝ → ℂ := fun x => (dfiBesselY0 (A * Real.sqrt x) : ℂ)
+  let h  := fun x => (dfiBesselY0 (A * Real.sqrt x) : ℂ)
   have hq : (0 : ℝ) < q := by exact_mod_cast NeZero.pos q
-  have hnR : (0 : ℝ) < n := by exact_mod_cast hn
+  
   have hA : 0 < A := by dsimp [A]; positivity
   have hConv : MellinConvergent h (3 / 16 : ℂ) := by
     simpa only [h] using
       (mellinConvergent_dfiBesselY0_mul_sqrt hA
         (s := (3 / 16 : ℂ)) (by norm_num) (by norm_num))
-  have hMeas : AEStronglyMeasurable h
-      (volume.restrict (Set.Ioi 0)) :=
+  have hMeas  :=
     MellinConvergent.aestronglyMeasurable_positive hConv
   have hInt : IntegrableOn (fun x : ℝ => x ^ (-(13 / 16 : ℝ)) * ‖h x‖)
       (Set.Ioi 0) := by
@@ -396,10 +386,7 @@ theorem verticalIntegral_dfiVoronoiMinus_mellin_thirteenSixteenths_eq_bessel
       congr 1
       apply setIntegral_congr_fun measurableSet_Ioi
       intro x hx
-      change g x * h x =
-        g x * (dfiBesselY0
-          (4 * Real.pi * Real.sqrt (x * n) / q) : ℂ)
-      rw [hKernel x hx]
+      simp [*]
 
 
 end MathCollab.Density.Stronger.Atkinson

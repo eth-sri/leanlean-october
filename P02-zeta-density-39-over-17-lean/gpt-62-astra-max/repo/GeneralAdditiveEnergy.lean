@@ -26,7 +26,7 @@ theorem discrete_energy_adjacent_unrestricted {η : ℝ} (hη : 0 < η) :
   obtain ⟨C₂,hC₂,hlarge⟩ := large_gcd_adjacent_general hη
   refine ⟨(C₀*C₁)^2+2*C₀*C₂,by positivity,?_⟩
   intro T t₀ N hT hN hNT a W V ha hV hlargeW hW hsep
-  have ht : 0 < T := by linarith
+  
   by_cases he : W = ∅
   · subst W
     simp [discreteAdditiveEnergy]
@@ -36,7 +36,7 @@ theorem discrete_energy_adjacent_unrestricted {η : ℝ} (hη : 0 < η) :
   let F := fun p : ℕ × ℕ => ‖∑ t ∈ W, phase (pairRatio p) t‖^3
   let B := N*(W.card:ℝ)^3+T*(W.card:ℝ)^((5:ℝ)/2)+
     N*T^((1:ℝ)/4)*(W.card:ℝ)^((31:ℝ)/12)
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  
   have hP : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
       N < p.1 ∧ (p.1:ℝ) ≤ 2*N ∧ N < p.2 ∧ (p.2:ℝ) ≤ 2*N := by
     intro p hp
@@ -98,7 +98,7 @@ theorem discrete_energy_adjacent_unrestricted {η : ℝ} (hη : 0 < η) :
     rw [mul_pow,mul_pow,Real.sq_sqrt hr.le]
     ring
   rw [hsq] at habs
-  have hpow : 1 ≤ T^η := Real.one_le_rpow hT.le hη.le
+  have hpow  := Real.one_le_rpow hT.le hη.le
   have h₁ : 0 ≤ N^4*(W.card:ℝ)/V^4 := by positivity
   have h₂ : 0 ≤ B/V^2 := by positivity
   calc

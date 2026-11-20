@@ -55,7 +55,6 @@ theorem logarithmicKernel_eq_shifted_phaseSum (N : ℕ) (t : ℝ) (hN : 0 < N) :
 
 theorem norm_logarithmicKernel_zero (N : ℕ) :
     ‖logarithmicKernel N 0‖ = (N : ℝ) := by
-  rw [logarithmicKernel_zero]
   simp
 
 /-- Reversing the frequency conjugates the logarithmic kernel. -/
@@ -91,17 +90,13 @@ private theorem log_succ_sub_log_bounds (m : ℕ) (hm : 0 < m) :
   have hmReal : 0 < (m : ℝ) := by exact_mod_cast hm
   have hsuccReal : 0 < ((m + 1 : ℕ) : ℝ) := by positivity
   have hratio : 0 < (((m + 1 : ℕ) : ℝ) / (m : ℝ)) := by positivity
-  have hlog :
-      Real.log (((m + 1 : ℕ) : ℝ) / (m : ℝ)) =
-        Real.log ((m + 1 : ℕ) : ℝ) - Real.log (m : ℝ) :=
+  have hlog  :=
     Real.log_div hsuccReal.ne' hmReal.ne'
   constructor
   · calc
       1 / ((m : ℝ) + 1) =
           1 - ((((m + 1 : ℕ) : ℝ) / (m : ℝ))⁻¹) := by
-            push_cast
-            field_simp [hmReal.ne']
-            ring
+            grind
       _ ≤ Real.log (((m + 1 : ℕ) : ℝ) / (m : ℝ)) :=
         Real.one_sub_inv_le_log_of_pos hratio
       _ = Real.log ((m + 1 : ℕ) : ℝ) - Real.log (m : ℝ) := hlog
@@ -111,9 +106,7 @@ private theorem log_succ_sub_log_bounds (m : ℕ) (hm : 0 < m) :
           ((m + 1 : ℕ) : ℝ) / (m : ℝ) - 1 :=
         Real.log_le_sub_one_of_pos hratio
       _ = 1 / (m : ℝ) := by
-        push_cast
-        field_simp [hmReal.ne']
-        ring
+        grind
 
 /-- The first-derivative estimate for the dyadic logarithmic kernel.  Its
 numerical factor is deliberately generous; the decisive feature is harmonic decay in
@@ -123,7 +116,7 @@ theorem norm_logarithmicKernel_le_div
     (htN : |t| ≤ (N : ℝ)) :
     ‖logarithmicKernel N t‖ ≤ 6 * Real.pi * (N : ℝ) / |t| := by
   let q := |t|
-  have hq : 0 < q := lt_of_lt_of_le zero_lt_one htOne
+  have hq  := lt_of_lt_of_le zero_lt_one htOne
   have hNReal : 0 < (N : ℝ) := by exact_mod_cast hN
   let δ := q / (3 * (N : ℝ))
   have hδ : 0 < δ := by dsimp only [δ]; positivity
@@ -163,9 +156,7 @@ theorem norm_logarithmicKernel_le_div
         (mul_le_mul_of_nonneg_left hrecip hq.le).trans
           (mul_le_mul_of_nonneg_left hlogs.1 hq.le)
     constructor
-    · have hlogUpper : q *
-          (Real.log ((m + 1 : ℕ) : ℝ) - Real.log (m : ℝ)) ≤ 1 := by
-        exact (mul_le_mul_of_nonneg_left hlogs.2 hq.le).trans (by
+    · have hlogUpper := (mul_le_mul_of_nonneg_left hlogs.2 hq.le).trans (by
           simpa only [div_eq_mul_inv, one_mul] using hqOverM)
       nlinarith [Real.pi_gt_three]
     · linarith
@@ -206,13 +197,11 @@ theorem norm_logarithmicKernel_le_div
     (N + 1) (N - 1)
     (-1) δ hδ
     (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).1)
+      grind)
     (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).2)
+      grind)
     (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hmono n hn)
+      grind)
   have hpred : N - 1 + 1 = N := by omega
   rw [hpred] at hKL
   norm_num only [Nat.cast_add, Nat.cast_one] at hKL
@@ -222,9 +211,7 @@ theorem norm_logarithmicKernel_le_div
   calc
     ‖logarithmicKernel N q‖ ≤ 2 * Real.pi / δ := hKL
     _ = 6 * Real.pi * (N : ℝ) / q := by
-      dsimp only [δ]
-      field_simp [hq.ne', hNReal.ne']
-      ring
+      grind
 
 /-- The second difference of the shifted logarithmic phase has the expected
 `t / N²` curvature throughout a dyadic block. -/
@@ -256,12 +243,9 @@ theorem logarithmicPhase_secondDifference_bounds
   have hxiLower : (N : ℝ) ≤ xi := by
     calc
       (N : ℝ) ≤ (N : ℝ) + 1 + (n : ℝ) := by
-        have hnNonneg : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
         linarith
       _ ≤ xi := by
-        have hxilt : (N : ℝ) + 1 + (n : ℝ) < xi := by
-          simpa only [x, Nat.cast_add, Nat.cast_one] using hxi.1
-        exact hxilt.le
+        grind
   have hxiUpper : xi ≤ 3 * (N : ℝ) := by
     have hxi' : xi < (N : ℝ) + 1 + (n : ℝ) + 2 := by
       simpa only [x, Nat.cast_add, Nat.cast_one] using hxi.2
@@ -269,7 +253,7 @@ theorem logarithmicPhase_secondDifference_bounds
     have hnUpperReal : ((n + 3 : ℕ) : ℝ) ≤ 2 * (N : ℝ) := by exact_mod_cast hnUpper
     push_cast at hnUpperReal
     linarith
-  have hxiPos : 0 < xi := lt_of_lt_of_le hNreal hxiLower
+  have hxiPos  := lt_of_lt_of_le hNreal hxiLower
   have hlower : t / (9 * (N : ℝ) ^ 2) ≤ t / xi ^ 2 := by
     apply (div_le_div_iff₀ (by positivity : 0 < 9 * (N : ℝ) ^ 2)
       (sq_pos_of_pos hxiPos)).2
@@ -293,8 +277,8 @@ theorem logarithmicPhase_secondDifference_bounds
     rw [hxiEq]
     ring_nf
   constructor
-  · exact hlower.trans_eq hEq
-  · exact hEq.symm.trans_le hupper
+  · linarith
+  · linarith
 
 theorem logarithmic_B_process_majorant_le
     (N : ℕ) (t : ℝ) (hN : 0 < N) (hNt : (N : ℝ) ≤ t)
@@ -401,11 +385,9 @@ theorem norm_logarithmicKernel_le_sqrt
     (fun n => logarithmicPhase q (N + 1 + n)) (N - 1)
     (q / (9 * (N : ℝ) ^ 2)) (q / (N : ℝ) ^ 2) hlambda
     (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.cast_ofNat, Nat.add_assoc] using
-        hcurvLower n hn)
+      grind)
     (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.cast_ofNat, Nat.add_assoc] using
-        hcurvUpper n hn)
+      grind)
   have hpred : N - 1 + 1 = N := by omega
   rw [hpred] at hB
   have hkernel := logarithmicKernel_eq_shifted_phaseSum N q hN

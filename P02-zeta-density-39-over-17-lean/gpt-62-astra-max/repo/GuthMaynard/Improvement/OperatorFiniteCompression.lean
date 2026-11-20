@@ -64,8 +64,7 @@ theorem operator_finite_compressed_trace_tendsto [Countable ι]
     Tendsto (fun s : Finset ι => operatorDiagonalTrace b
       ((operatorFiniteProjection b w s * operatorIntegral ν x y * operatorFiniteProjection b w s)*
         (operatorFiniteProjection b w s * H * operatorFiniteProjection b w s)^2)) atTop
-      (𝓝 (operatorDiagonalTrace b ((H^2)*operatorIntegral ν x y))) := by
-  exact operatorIntegral_compressed_trace_tendsto ν b H
+      (𝓝 (operatorDiagonalTrace b ((H^2)*operatorIntegral ν x y))) := operatorIntegral_compressed_trace_tendsto ν b H
     (operator_finite_projection_norm b w) (operator_finite_projection_idempotent b w)
     (operator_finite_projection_tendsto b w) hx hy hxy
 

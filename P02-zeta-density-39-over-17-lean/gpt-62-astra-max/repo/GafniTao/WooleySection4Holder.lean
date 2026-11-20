@@ -29,7 +29,7 @@ theorem wooley_equation_4_15_integrand
     (x ^ (2 * s)) ^ ((R : ℝ) / (s : ℝ)) *
         (y ^ (2 * s)) ^ (1 - (R : ℝ) / (s : ℝ)) =
       x ^ (2 * R) * y ^ (2 * (s - R)) := by
-  have hsR : (0 : ℝ) < s := by exact_mod_cast (show 0 < s by omega)
+  
   have hxid :
       (x ^ (2 * s)) ^ ((R : ℝ) / (s : ℝ)) = x ^ (2 * R) := by
     rw [← Real.rpow_natCast x (2 * s), ← Real.rpow_natCast x (2 * R),

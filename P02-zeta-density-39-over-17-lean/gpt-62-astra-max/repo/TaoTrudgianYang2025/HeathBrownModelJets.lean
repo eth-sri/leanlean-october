@@ -31,7 +31,7 @@ theorem modelPhaseJetCoefficient_pos {σ : ℝ} (hσ : 0 < σ) (p : ℕ) :
   rw [descPochhammer_eval_eq_prod_range]
   apply Finset.prod_ne_zero_iff.mpr
   intro i _
-  have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
+  
   linarith
 
 theorem modelPhaseJetSign_abs (σ : ℝ) (p : ℕ) :
@@ -46,12 +46,10 @@ theorem modelPhaseJetSign_coefficient (σ : ℝ) (p : ℕ) :
   split
   · rename_i h
     simp only [one_mul,abs_of_nonneg h]
-  · rename_i h
-    simp only [neg_mul,one_mul,abs_of_neg (lt_of_not_ge h)]
+  · grind
 
 theorem modelPhaseJetLower_pos {σ : ℝ} (hσ : 0 < σ) (p : ℕ) :
     0 < modelPhaseJetLower σ p := by
-  unfold modelPhaseJetLower
   exact div_pos (mul_pos (modelPhaseJetCoefficient_pos hσ p)
     (Real.rpow_pos_of_pos (by norm_num) _)) (by norm_num)
 

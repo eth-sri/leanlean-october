@@ -22,9 +22,7 @@ theorem negateCubicMode_injective : Function.Injective negateCubicMode :=
 theorem cubicStripMass_negate (r : ℝ → ℝ) (L H : ℝ) (m : ℤ × (ℤ × ℤ)) (v : ℝ) :
     cubicStripMass r L H (negateCubicMode m) v = cubicStripMass r L H m v := by
   unfold cubicStripMass negateCubicMode
-  have hlin (y : ℝ) : L*(((-m.1:ℤ):ℝ)*v+((-m.2.1:ℤ):ℝ)*y+((-m.2.2:ℤ):ℝ)) =
-      -(L*((m.1:ℝ)*v+(m.2.1:ℝ)*y+(m.2.2:ℝ))) := by push_cast; ring
-  simp only [hlin,abs_neg]
+  grind
 
 theorem cubicStripMass_sum_negate (S : Finset (ℤ × (ℤ × ℤ))) (r : ℝ → ℝ) (L H v : ℝ) :
     (∑ m ∈ S.image negateCubicMode, cubicStripMass r L H m v) =

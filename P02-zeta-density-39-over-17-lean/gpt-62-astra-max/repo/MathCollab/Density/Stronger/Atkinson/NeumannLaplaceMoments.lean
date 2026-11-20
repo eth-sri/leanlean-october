@@ -35,7 +35,7 @@ theorem integrableOn_neumannLaplaceMomentIntegrand {x : ℝ} (hx : 0 < x) (k : �
     IntegrableOn (neumannLaplaceMomentIntegrand x k) (Ioi 0) := by
   simpa only [neumannLaplaceMomentIntegrand, Real.rpow_one] using!
     integrableOn_rpow_mul_exp_neg_mul_rpow
-      (by have hk : (0 : ℝ) ≤ k := Nat.cast_nonneg k; linarith : -1 < (k : ℝ) - 1 / 2)
+      (by linarith : -1 < (k : ℝ) - 1 / 2)
       (by norm_num : 0 < (1 : ℝ)) hx
 
 theorem neumannLaplaceMomentIntegrand_nonneg {x t : ℝ} (ht : 0 ≤ t) (k : ℕ) :
@@ -98,10 +98,7 @@ theorem neumannRayCoefficient_eq : neumannRayCoefficient = (1 + I) / 2 := by
   unfold neumannRayCoefficient
   rw [mul_comm, ← hp, ← hsq, Complex.cpow_neg, one_div,
     Complex.sq_cpow_two_inv (by simp : 0 < (1 - I).re)]
-  apply inv_eq_of_mul_eq_one_right
-  calc
-    _ = (1 - I * I) / 2 := by ring
-    _ = 1 := by rw [I_mul_I]; norm_num
+  grind
 
 theorem norm_neumannRayCoefficient_le_one : ‖neumannRayCoefficient‖ ≤ 1 := by
   rw [neumannRayCoefficient_eq, norm_div]

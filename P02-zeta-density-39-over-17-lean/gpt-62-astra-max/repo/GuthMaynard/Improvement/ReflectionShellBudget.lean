@@ -27,7 +27,7 @@ theorem reflection_signed_shell_budget (w : MathCollab.Density.ReflectionCutoff)
   refine ⟨K,1+F*D,hK,by positivity,?_⟩
   intro N L H u hN hNL hH hupper a ha μ hm hi h0 hμ S hS
   have hN0 : 0 < N := by linarith
-  have hL : 0 < L := hN0.trans_le hNL
+  have hL  := hN0.trans_le hNL
   have hh := hshell N L H u hN0 hL hH a ha μ hm hi h0 hμ S hS
   have hb : (1000/Real.pi^2)*MathCollab.Density.mellinMass w^2*(L^2/H)*
       reflectionShellMeanBudget B η N L H ≤ (F*D)*N^ε*L*N*H := by
@@ -38,8 +38,6 @@ theorem reflection_signed_shell_budget (w : MathCollab.Density.ReflectionCutoff)
     _ ≤ (F*D)*N^ε*L*N*H+2*(K*L/L^q)^2*((timeMeasure μ).restrict S).real univ :=
       hh.trans (add_le_add hb le_rfl)
     _ ≤ (1+F*D)*N^ε*L*N*H+2*(K*L/L^q)^2*((timeMeasure μ).restrict S).real univ := by
-      apply add_le_add _ le_rfl
-      have hn : 0 ≤ N^ε*L*N*H := by positivity
-      nlinarith
+      bound
 
 end GuthMaynard.Improvement

@@ -14,12 +14,12 @@ theorem critical_excess_integral_le_two_tails_interval {L U v A D q : ℝ}
         A*u^(-6:ℝ)+D*u^(-q)) :
     (∫ t in Icc L U,criticalExcess v t) ≤
       (A/5)*v^(-5:ℝ)+(D/(q-1))*v^(1-q) := by
-  let μ : Measure ℝ := volume.restrict (Icc L U)
+  let μ  := volume.restrict (Icc L U)
   have he : Integrable (criticalExcess v) μ :=
     (criticalExcess_continuous v).continuousOn.integrableOn_compact isCompact_Icc
   have h₆ := shifted_power_tail_integral hv (by norm_num : (1:ℝ)<6)
   have hq' := shifted_power_tail_integral hv hq
-  have hi : IntegrableOn (fun t : ℝ => A*(v+t)^(-6:ℝ)+D*(v+t)^(-q)) (Ioi 0) :=
+  have hi  :=
     (h₆.1.const_mul A).add (hq'.1.const_mul D)
   have hb : (∫ t in Icc L U,criticalExcess v t) ≤
       ∫ t in Ioi 0,A*(v+t)^(-6:ℝ)+D*(v+t)^(-q) := by

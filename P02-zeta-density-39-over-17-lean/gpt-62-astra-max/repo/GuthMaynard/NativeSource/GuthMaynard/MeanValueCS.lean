@@ -27,12 +27,12 @@ lemma sum_sq_le_card_mul_sum_sq {ι : Type*} (s : Finset ι) (f : ι → ℝ) :
 
 lemma complex_sum_sq_le_card_mul_sum_sq {ι : Type*} (s : Finset ι) (f : ι → ℂ) :
   ‖∑ i ∈ s, f i‖^2 ≤ (s.card : ℝ) * ∑ i ∈ s, ‖f i‖^2 := by
-  have h1 : ‖∑ i ∈ s, f i‖ ≤ ∑ i ∈ s, ‖f i‖ := norm_sum_le s f
+  have h1  := norm_sum_le s f
   have h2 : 0 ≤ ‖∑ i ∈ s, f i‖ := norm_nonneg _
   have h3 : 0 ≤ ∑ i ∈ s, ‖f i‖ := Finset.sum_nonneg (fun i _ => norm_nonneg _)
   have h4 : ‖∑ i ∈ s, f i‖^2 ≤ (∑ i ∈ s, ‖f i‖)^2 := by
     nlinarith [h1, h2, h3]
-  have h5 : (∑ i ∈ s, ‖f i‖)^2 ≤ (s.card : ℝ) * ∑ i ∈ s, ‖f i‖^2 := sum_sq_le_card_mul_sum_sq s (fun i => ‖f i‖)
+  have h5  := sum_sq_le_card_mul_sum_sq s (fun i => ‖f i‖)
   exact le_trans h4 h5
 
 end GuthMaynard.NativeMoment

@@ -32,13 +32,13 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
   refine ⟨C,hC,?_⟩
   intro T f R K M₁ M₂ M₃ hT hf hs hp hK hKR hRT h₁ h₂ h₃ h₁R h₂K h₃R
   have hTp : 0 < T := by linarith
-  have hR : 0 < R := hK.trans_le hKR
+  have hR  := hK.trans_le hKR
   have hr1 : (1:ℝ) ≤ R := by exact_mod_cast hR
   have hk1 : (1:ℝ) ≤ K := by exact_mod_cast hK
   have hkr : (K:ℝ) ≤ R := by exact_mod_cast hKR
-  have hKT : (K:ℝ) ≤ T^4 := hkr.trans hRT
+  have hKT  := hkr.trans hRT
   have h₂k : (M₂:ℝ) ≤ K := by exact_mod_cast h₂K
-  have h₂T : (M₂:ℝ) ≤ T^4 := h₂k.trans hKT
+  have h₂T  := h₂k.trans hKT
   have hmass : 0 ≤ ∫ x, f x := integral_nonneg hf
   have hL2 : 0 ≤ ∫ x, f x^2 := integral_nonneg (fun _ => sq_nonneg _)
   have hpow : 1 ≤ T^ε := Real.one_le_rpow (by linarith) hε.le
@@ -78,14 +78,13 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
         _ = _ := by rw [hpows]
     exact hfinal.trans (by
       apply mul_le_mul_of_nonneg_right _ hW
-      apply mul_le_mul_of_nonneg_right _ (by positivity)
-      exact le_add_of_nonneg_right (by positivity))
-  · have hT8 : T ≤ 8 := le_of_lt (lt_of_not_ge hlarge)
+      linarith)
+  · have hT8  := le_of_lt (lt_of_not_ge hlarge)
     have hR8 : (R:ℝ)^6 ≤ (8:ℝ)^24 := by
       calc
         _ ≤ ((8:ℝ)^4)^6 := by gcongr; exact hRT.trans (by gcongr)
         _ = _ := by norm_num
-    have hf2 : Integrable (fun x => f x^2) :=
+    have hf2  :=
       (memLp_two_iff_integrable_sq f.continuous.aestronglyMeasurable).1 (f.memLp 2)
     have hcrude := gmAffineTransformIntegral_le_crude hf2
       (mem_gmAffineScaleTriples.mpr ⟨h₁,h₁R,h₂,h₂K.trans hKR,h₃,h₃R⟩)

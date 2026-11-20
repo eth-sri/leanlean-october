@@ -65,7 +65,7 @@ theorem wooleySection7NormalSystem_eval_dilation
         c + h + (h * ((i : ℕ) + 1) +
           h * (k - ((i : ℕ) + 1))) := by omega
       _ = c + h + h * k := by rw [hsplit]
-      _ = c + h * (k + 1) := by rw [Nat.mul_succ]; omega
+      _ = c + h * (k + 1) := by ring
   have hpow :
       (p : ℤ) ^ c * (p : ℤ) ^ (h * (k + 1)) =
         (p : ℤ) ^ (h * ((i : ℕ) + 1)) *

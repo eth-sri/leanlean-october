@@ -39,13 +39,12 @@ def comparisonCutoff : ComparisonCutoff := by
   · intro x hx
     apply f.one_of_mem_closedBall
     rw [Metric.mem_closedBall, Real.dist_eq]
-    change |x - 5/2| ≤ 3/2
     exact abs_le.mpr ⟨by linarith [hx.1], by linarith [hx.2]⟩
 
 /-- Uniform quadratic decay of the continuous cutoff term, internalized from Mellin decay. -/
 theorem cutoffIntegral_quadratic_decay (w : ReflectionCutoff) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ v : ℝ, ‖cutoffIntegral w v‖ ≤ C/(1+|v|)^2 := by
-  let f : ℝ → ℂ := fun x => (w x : ℂ)
+  let f  := fun x => (w x : ℂ)
   have hs : ∀ x, x ∉ Icc (1/2 : ℝ) 5 → f x = 0 :=
     fun x hx => image_eq_zero_of_notMem_tsupport (fun hh => hx (w.complex_support hh))
   let ψ := Transforms.mellinLogLiftSchwartz f
@@ -53,8 +52,8 @@ theorem cutoffIntegral_quadratic_decay (w : ReflectionCutoff) :
     (Transforms.mellinLogLift_contDiff w.complex_smooth)
   let C₀ : ℝ := SchwartzMap.seminorm ℂ 0 0 (𝓕 ψ)
   let C₂ : ℝ := SchwartzMap.seminorm ℂ 2 0 (𝓕 ψ)
-  have hC₀ : 0 ≤ C₀ := apply_nonneg _ _
-  have hC₂ : 0 ≤ C₂ := apply_nonneg _ _
+  
+  
   refine ⟨2*C₀ + 2*(2*Real.pi)^2*C₂, by positivity, ?_⟩
   intro v
   have h₀ := Transforms.scaledPower_mul_norm_mellin_line_one_le_seminorm

@@ -34,9 +34,9 @@ theorem actual_second_moment_optimized_log (ε : ℝ) (hε : 0 < ε) :
   let E : ℝ := discreteAdditiveEnergy W
   let B : ℝ := (M : ℝ) ^ (36 / 5 : ℝ) + (2 * T) * (M : ℝ) ^ (24 / 5 : ℝ)
   let K : ℝ := E * C * (2 * T) ^ ε
-  have hTtwo : 2 ≤ T := (le_max_left _ _).trans hT
+  have hTtwo  := (le_max_left _ _).trans hT
   have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := by linarith
+  
   have hR : 0 < R := by dsimp only [R]; exact_mod_cast Finset.card_pos.mpr hW
   have hRone : 1 ≤ R := by dsimp only [R]; exact_mod_cast Finset.card_pos.mpr hW
   have hMone : (1 : ℝ) ≤ M := by exact_mod_cast hM

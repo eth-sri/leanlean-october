@@ -104,7 +104,7 @@ theorem wooleyAffinePolynomialSystem_lowMatrixMod_primePower_isUnit
     (hphi : phi.Spaced p c) (hc : 1 ≤ c) (eta : ℤ) :
     IsUnit (wooleyPolynomialSystemLowMatrixMod
       (wooleyAffinePolynomialSystem phi 1 eta) (p ^ B)) := by
-  let A : Matrix (Fin k) (Fin k) ℤ :=
+  let A  :=
     wooleyPolynomialSystemLowMatrix
       (wooleyAffinePolynomialSystem phi 1 eta)
   have hunitpMatrix : IsUnit (wooleyIntMatrixMod A p) := by
@@ -115,9 +115,9 @@ theorem wooleyAffinePolynomialSystem_lowMatrixMod_primePower_isUnit
     rw [wooleyIntMatrixMod_det]
     rw [← Matrix.isUnit_iff_isUnit_det]
     exact hunitpMatrix
-  have hcoprime : IsCoprime (p : ℤ) A.det :=
+  have hcoprime  :=
     (ZMod.coe_int_isUnit_iff_isCoprime A.det p).mp hunitpDet
-  have hunitPowDet : IsUnit (A.det : ZMod (p ^ B)) :=
+  have hunitPowDet  :=
     (ZMod.coe_int_isUnit_iff_isCoprime A.det (p ^ B)).mpr (by
       simpa only [Int.natCast_pow] using hcoprime.pow_left (m := B))
   rw [Matrix.isUnit_iff_isUnit_det]

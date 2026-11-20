@@ -39,7 +39,6 @@ theorem norm_genericTaylorCoefficient_le {a : ℕ → ℂ} {N n : ℕ}
 theorem norm_genericTaylorPolynomial_le {a : ℕ → ℂ} {N : ℕ}
     (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ)) (hN : 0 < N) (j : ℕ) (t : ℝ) :
     ‖genericTaylorPolynomial a N j t‖ ≤ 2*(N : ℝ)^2 := by
-  unfold genericTaylorPolynomial detectingPolynomial
   calc
     _ ≤ ∑ n ∈ Finset.Ioc N (2*N), ‖genericTaylorCoefficient a N j n * dirichletPhase ((n : ℝ)/N) (-t)‖ := norm_sum_le _ _
     _ ≤ ∑ _n ∈ Finset.Ioc N (2*N), (2*(N : ℝ)) := by
@@ -70,7 +69,7 @@ theorem norm_genericTaylor_tail_le {a : ℕ → ℂ} {β : ℝ} {N : ℕ}
       _ ≤ (1/3 : ℝ)^(j+J)*(2*(N : ℝ)^2) :=
         mul_le_mul (abs_detectorTaylorWeight_le hβ hβ' _) (norm_genericTaylorPolynomial_le ha hN _ _)
           (norm_nonneg _) (by positivity)
-      _ = _ := by rw [pow_add]; ring
+      _ = _ := by ring
   have hn := hg.summable.of_nonneg_of_le (fun j => norm_nonneg _) hb
   calc
     _ ≤ ∑' j : ℕ, ‖(detectorTaylorWeight β (j+J) : ℂ)*genericTaylorPolynomial a N (j+J) t‖ := norm_tsum_le_tsum_norm hn
@@ -135,8 +134,7 @@ theorem hasSum_genericTaylorPolynomial {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : �
       ring
   have hs := hasSum_sum hterm
   convert hs using 1
-  · funext j
-    simp [genericTaylorPolynomial, detectingPolynomial, genericTaylorCoefficient, Finset.mul_sum]
+  · simp [genericTaylorPolynomial, detectingPolynomial, genericTaylorCoefficient, Finset.mul_sum]
   · rw [normalizedGenericBlock, Finset.mul_sum]
 
 /-- The full Taylor combination is at least the beta-rescaled original block. -/
@@ -202,7 +200,6 @@ theorem exists_genericTaylor_component {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ
   obtain ⟨j, hj, hlarge⟩ := exists_large_taylor_component hβ hβ' J (genericTaylorPolynomial a N · ρ.im)
   refine ⟨j, hj, ?_⟩
   have hh := div_le_div_of_nonneg_right hpartial (by norm_num : (0 : ℝ) ≤ 2)
-  change ‖∑ j ∈ Finset.range (J+1), W j‖/2 ≤ _ at hlarge
   exact (show (N : ℝ)^ρ.re/(8*D) = ((N : ℝ)^ρ.re/(4*D))/2 by ring).trans_le (hh.trans hlarge)
 
 

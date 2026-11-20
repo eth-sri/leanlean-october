@@ -55,7 +55,7 @@ theorem heathBrown_gammaPole_finite_rectangle
       riemannZeta s ^ 2 := by
   let z : ℂ := (-delta : ℂ) - (H : ℂ) * I
   let w : ℂ := (d : ℂ) + (H : ℂ) * I
-  let F : ℂ → ℂ := heathBrownGammaPoleNumerator s
+  let F  := heathBrownGammaPoleNumerator s
   have hzre : z.re ≤ w.re := by simp [z, w]; linarith
   have hzim : z.im ≤ w.im := by simp [z, w]; linarith
   have hzero : Rectangle z w ∈ 𝓝 (0 : ℂ) := by
@@ -107,7 +107,7 @@ theorem heathBrown_gammaPole_finite_rectangle
   have hCleared := ResidueTheoremOnRectangleWithSimplePole
     (f := fun u : ℂ => F u / u) (g := dslope F 0)
     (p := 0) (A := F 0) hzre hzim hzero hSlope hPrincipal
-  have hzeroNotBorder : (0 : ℂ) ∉ RectangleBorder z w :=
+  have hzeroNotBorder  :=
     not_mem_rectangleBorder_of_rectangle_mem_nhds hzero
   have hCongr : Set.EqOn
       (heathBrownZetaSquareMellinIntegrand s)
@@ -145,12 +145,10 @@ theorem heathBrownLemmaThreeDelta_pos {t : ℝ} (ht : 10 ≤ t) :
 
 theorem heathBrownLemmaThreeDelta_lt_half {t : ℝ} (ht : 10 ≤ t) :
     heathBrownLemmaThreeDelta t < 1 / 2 := by
-  unfold heathBrownLemmaThreeDelta
   exact one_div_lt_one_div_of_lt (by norm_num) (two_lt_log_of_ten_le ht)
 
 theorem heathBrownLemmaThreeRadius_pos {t : ℝ} (ht : 10 ≤ t) :
     0 < heathBrownLemmaThreeRadius t := by
-  unfold heathBrownLemmaThreeRadius
   exact sq_pos_of_pos (by linarith [two_lt_log_of_ten_le ht])
 
 /-- The exact residue identity used in the proof of Heath--Brown Lemma 3. -/
@@ -166,16 +164,16 @@ theorem heathBrownLemmaThree_finiteRectangle (t : ℝ) (ht : 10 ≤ t) :
   let s : ℂ := ((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I
   let delta : ℝ := heathBrownLemmaThreeDelta t
   let H : ℝ := heathBrownLemmaThreeRadius t
-  have hdelta : 0 < delta := heathBrownLemmaThreeDelta_pos ht
-  have hdeltaHalf : delta < 1 / 2 := heathBrownLemmaThreeDelta_lt_half ht
-  have hH : 0 < H := heathBrownLemmaThreeRadius_pos ht
+  have hdelta  := heathBrownLemmaThreeDelta_pos ht
+  have hdeltaHalf  := heathBrownLemmaThreeDelta_lt_half ht
+  have hH  := heathBrownLemmaThreeRadius_pos ht
   have hpRe : (1 - s).re = 1 / 2 := by
     simp [s]
     ring
   have hrect := heathBrown_gammaPole_finite_rectangle
     (s := s) (delta := delta) (d := delta) (H := H)
     hdelta (hdeltaHalf.trans (by norm_num)) hdelta
-    (by rw [hpRe]; exact hdeltaHalf) hH
+    (by linarith) hH
   simpa only [s, delta, H, ofReal_neg] using hrect
 
 /-- Expansion of the normalized source rectangle into its two horizontal

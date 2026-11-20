@@ -1,7 +1,6 @@
 module
-public import DensityEnergyGM.RealScaleSecondMoment
 public import DensityEnergyGM.FiveTermEnergyUniform
-public import DensityEnergyGM.EnergyCenteredReflection
+public import DensityEnergyGM.PolynomialHeightSecondEnergy
 
 @[expose] public section
 

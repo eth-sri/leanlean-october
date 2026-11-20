@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosKernelBasic
 
 @[expose] public section
@@ -39,7 +36,7 @@ theorem sargos_integral_symmetric_tent_character
           fordAdditiveCharacter (-(ξ * x))) =
       ((2 * ∫ x in (0 : ℝ)..w,
           (1 - x / w) * Real.cos (2 * Real.pi * ξ * x) : ℝ) : ℂ) := by
-  let f : ℝ → ℂ := fun x =>
+  let f  := fun x =>
     ((1 - |x| / w : ℝ) : ℂ) * fordAdditiveCharacter (-(ξ * x))
   have hchar : Continuous fordAdditiveCharacter := by
     unfold fordAdditiveCharacter
@@ -82,7 +79,7 @@ theorem sargos_integral_symmetric_tent_character
       intervalIntegral.integral_ofReal
     _ = ((2 * ∫ x in (0 : ℝ)..w,
           (1 - x / w) * Real.cos (2 * Real.pi * ξ * x) : ℝ) : ℂ) := by
-      rw [intervalIntegral.integral_const_mul]
+      simp
 
 
 theorem sargos_integral_symmetric_tent_character_eq_kernel

@@ -23,18 +23,18 @@ theorem two_term_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
     (h4 : N^9*T^2 ≤ Q^2*S^2*V^14)
     (h5 : N^4*L ≤ Q*S*V^6) :
     R ≤ A*(4+2*B)*Λ^2*Q*S := by
-  have hR : 0 < R := hS.trans_le hSR
-  have hq : 0 ≤ Q := by linarith
+  have hR  := hS.trans_le hSR
+  
   have hl : 0 ≤ Λ := by linarith
   let Y := Q*S*R^2*V^6
   have hy : 0 ≤ Y := by dsimp [Y]; positivity
-  have hr2 : S^2 ≤ R^2 := pow_le_pow_left₀ hS.le hSR 2
+  have hr2  := pow_le_pow_left₀ hS.le hSR 2
   have hr3 : S^3 ≤ S*R^2 := by nlinarith only [mul_le_mul_of_nonneg_left hr2 hS.le]
   have hb1 : (N*L)^3 ≤ Y := by
     calc
       _ ≤ Q*S^3*V^6 := h1
       _ ≤ Q*(S*R^2)*V^6 := by gcongr
-      _ = Y := by dsimp [Y]; ring
+      _ = Y := by ring
   have hb2 : (N^4*T^2/L)*R*Real.sqrt R ≤ Y := by
     apply (sq_le_sq₀ (by positivity) hy).mp
     calc
@@ -42,7 +42,7 @@ theorem two_term_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ ≤ (Q^2*S^3*V^12)*R^3 := mul_le_mul_of_nonneg_right h2 (by positivity)
       _ = (Q^2*S^2*V^12*R^3)*S := by ring
       _ ≤ (Q^2*S^2*V^12*R^3)*R := mul_le_mul_of_nonneg_left hSR (by positivity)
-      _ = Y^2 := by dsimp [Y]; ring
+      _ = Y^2 := by ring
   have hb5 : N^4*L*R^2 ≤ Y := by
     have hh := mul_le_mul_of_nonneg_right h5 (sq_nonneg R)
     convert hh using 1; dsimp [Y]; ring
@@ -63,7 +63,7 @@ theorem two_term_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ ≤ N^8*T^2*R*(B*Λ*(N^4*R/V^4+N*R^3/V^2)) := by gcongr
       _ = B*Λ*(N^12*T^2*R^2/V^4+N^9*T^2*R^4/V^2) := by ring
       _ ≤ B*Λ*(2*(Q^2*S^2*R^4*V^12)) := by gcongr; linarith only [he3,he4]
-      _ = _ := by dsimp [Y]; ring
+      _ = _ := by ring
   have hbE : N^4*T*Real.sqrt R*Real.sqrt E ≤ (1+2*B)*Λ*Y := by
     apply (sq_le_sq₀ (by positivity) (by positivity)).mp
     have hcoef : 2*B*Λ ≤ ((1+2*B)*Λ)^2 := by
@@ -84,7 +84,7 @@ theorem two_term_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ ≤ A*Λ*((N*L)^3+(N^4*T^2/L)*R*Real.sqrt R+
           N^4*T*Real.sqrt R*Real.sqrt E+N^4*L*R^2) := hcubic
       _ ≤ A*Λ*((4+2*B)*Λ*Y) := mul_le_mul_of_nonneg_left hsum (by positivity)
-      _ = _ := by dsimp [Y]; ring
+      _ = _ := by ring
   exact le_of_mul_le_mul_right hh (by positivity)
 
 end Montgomery.RationalMoment

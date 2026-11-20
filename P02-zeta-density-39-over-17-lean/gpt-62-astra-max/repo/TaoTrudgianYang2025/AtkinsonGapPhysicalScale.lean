@@ -16,11 +16,11 @@ theorem atkinsonGap_denominator_bounds {H M t u : ℝ}
         M*Real.sqrt (2*Real.pi*u/M)*(Real.sqrt (t/u)+1) ∧
       M*Real.sqrt (2*Real.pi*u/M)*(Real.sqrt (t/u)+1) ≤
         12*Real.sqrt (H*M) := by
-  have hup : 0 < u := hH.trans_le hu
-  have htp : 0 < t := hup.trans ht
+  have hup  := hH.trans_le hu
+  have htp  := hup.trans ht
   have hs : 0 < Real.sqrt (2*Real.pi*u/M) := by positivity
   have hR : 0 < Real.sqrt (H*M) := by positivity
-  have ha : 0 < M*Real.sqrt (2*Real.pi*u/M) := mul_pos hM hs
+  have ha  := mul_pos hM hs
   have he : (M*Real.sqrt (2*Real.pi*u/M))^2 = 2*Real.pi*M*u := by
     rw [mul_pow,Real.sq_sqrt (by positivity : 0 ≤ 2*Real.pi*u/M)]
     field_simp
@@ -38,7 +38,7 @@ theorem atkinsonGap_denominator_bounds {H M t u : ℝ}
   have hau : M*Real.sqrt (2*Real.pi*u/M) ≤ 4*Real.sqrt (H*M) := by
     have hh := mul_le_mul_of_nonneg_left hpiu (show 0 ≤ 2*M by positivity)
     nlinarith
-  have hr : t/u ≤ 2 := (div_le_iff₀ hup).mpr ht2
+  have hr  := (div_le_iff₀ hup).mpr ht2
   have hrs : Real.sqrt (t/u) ≤ 2 := by
     apply (Real.sqrt_le_iff).mpr
     exact ⟨by norm_num,by linarith⟩
@@ -56,10 +56,10 @@ theorem atkinsonGap_frequency_physical_bounds {H M t u : ℝ}
     atkinsonGapFrequency M t u/(2*Real.pi*M) ≤ (t-u)/Real.sqrt (H*M) ∧
       2*Real.pi*M/atkinsonGapFrequency M t u ≤
         12*Real.sqrt (H*M)/(t-u) := by
-  have hup : 0 < u := hH.trans_le hu
-  have hgap : 0 < t-u := sub_pos.mpr ht
+  have hup  := hH.trans_le hu
+  have hgap  := sub_pos.mpr ht
   have hR : 0 < Real.sqrt (H*M) := by positivity
-  have hs : 0 < Real.sqrt (2*Real.pi*u/M) := by positivity
+  
   obtain ⟨hl,hh⟩ := atkinsonGap_denominator_bounds hH hM hu hu2 ht ht2
   have he : atkinsonGapFrequency M t u/(2*Real.pi*M) =
       (t-u)/(M*Real.sqrt (2*Real.pi*u/M)*(Real.sqrt (t/u)+1)) := by

@@ -1,9 +1,5 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSourceThirdDerivative
-public import LaterPairs.Native.RobertSargosSymmetricArray
 
 @[expose] public section
 set_option autoImplicit false
@@ -52,7 +48,6 @@ theorem robertSargos_symmetric_block_third_derivative_bound
   have hcard : (Finset.Ico (H:ℤ) (2*H)).card = H := by
     rw [Int.card_Ico]
     omega
-  change ‖∑ h ∈ Finset.Ico (H:ℤ) (2*H), robertSargosSourceCenteredPhase f M h‖ ≤ _
   calc
     _ ≤ ∑ h ∈ Finset.Ico (H:ℤ) (2*H), ‖robertSargosSourceCenteredPhase f M h‖ :=
       norm_sum_le _ _

@@ -5,7 +5,9 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Data.Finset.Interval
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Basic.Real.Basic
-public import GuthMaynard.NativeSource.FiniteDirichletPolynomial
+public import Mathlib.NumberTheory.LSeries.RiemannZeta
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 
 @[expose] public section
 

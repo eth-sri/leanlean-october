@@ -41,7 +41,7 @@ private theorem lemma_IBP_bound_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (
               fun h ↦ h.mono_set Ioo_subset_Icc_self
           refine hintF'.congr ?_
           filter_upwards [ae_restrict_mem measurableSet_Ioo] with x hx using
-            by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)
+            derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)
         apply Integrable.mono' _ _ _
         · exact fun x ↦ ‖deriv F x‖ * sSup (Set.image (fun x ↦ |g x|) (Icc a b))
         · exact Integrable.mul_const hintF.norm _
@@ -60,7 +60,7 @@ private theorem lemma_IBP_bound_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (
           have hintg' : IntegrableOn (fun x ↦ derivWithin g (Icc a b) x) (Ioo a b) :=
             hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self
           exact hintg'.congr_fun (fun x hx ↦
-            by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
+            derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
         have hintFg : IntegrableOn (fun x ↦ F x * deriv g x) (Ioo a b) := by
           have hbdd : ∃ C, ∀ x ∈ Ioo a b, ‖F x‖ ≤ C :=
             IsCompact.exists_bound_of_continuousOn isCompact_Icc hF.continuousOn |>
@@ -84,7 +84,7 @@ private theorem lemma_IBP_bound_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (
             fun h ↦ h.mono_set Ioo_subset_Icc_self
         refine hintF'.congr ?_
         filter_upwards [ae_restrict_mem measurableSet_Ioo] with x hx using
-          by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)
+          derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)
       refine hintF.norm.const_mul ?_ |> fun h ↦ h.mono' ?_ ?_
       · exact sSup (Set.image (fun x ↦ ‖g x‖) (Icc a b))
       · exact AEStronglyMeasurable.mul
@@ -103,7 +103,7 @@ private theorem lemma_IBP_bound_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (
           have hintg'' : IntegrableOn (fun x ↦ derivWithin g (Icc a b) x) (Ioo a b) :=
             hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self
           exact hintg''.congr_fun (fun x hx ↦
-            by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
+            derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
         rwa [IntegrableOn, Measure.restrict_congr_set Ioo_ae_eq_Ioc] at *
       have hintFg : IntegrableOn (fun x ↦ F x * deriv g x) (Ioc a b) := by
         have hbdd : ∃ C, ∀ x ∈ Ioc a b, ‖F x‖ ≤ C :=
@@ -128,7 +128,7 @@ private theorem lemma_IBP_bound_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (
     have hderivint : IntegrableOn (deriv g) (Ioo a b) := by
       have hcont := hg.continuousOn_derivWithin (uniqueDiffOn_Icc hab) le_rfl
       exact (hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self) |> fun h ↦ h.congr_fun
-        (fun x hx ↦ by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
+        (fun x hx ↦ derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
     simpa only [IntegrableOn, Measure.restrict_congr_set Ioo_ae_eq_Icc] using hderivint.abs
   · filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     refine le_trans ?_ (mul_le_mul_of_nonneg_right (le_ciSup ?_ t) (abs_nonneg _))
@@ -144,7 +144,7 @@ private theorem lemma_IBP_bound_C1_monotone {a b : ℝ} (hab : a < b) (g : ℝ �
     ‖(∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)‖ ≤
     (⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a) := by
   have hbound := @lemma_IBP_bound_C1 a b hab g F hg hF
-  have hdiff : DifferentiableOn ℝ g (Icc a b) := hg.differentiableOn_one
+  have hdiff  := hg.differentiableOn_one
   have hderiv_nonneg : ∀ t ∈ Ioo a b, 0 ≤ deriv g t := by
     intro t ht
     have hlim : Tendsto (fun h ↦ (g (t + h) - g t) / h) (𝓝[Ioi 0] 0) (𝓝 (deriv g t)) := by
@@ -270,11 +270,11 @@ private theorem lemma_approx_monotone_C1_I (f : C(I, ℝ)) (hf_mono : Monotone f
   obtain ⟨n, hn⟩ := Metric.tendsto_atTop.mp (tendsto_iff_norm_sub_tendsto_zero.mp
     (bernsteinApproximation_uniform f)) ε hεpos
   have hn : ‖bernsteinApproximation n f - f‖ < ε := by simpa [dist_zero_right, norm_norm] using hn n le_rfl
-  let P : ℝ → ℝ := fun x ↦ ∑ k : Fin (n + 1), (n.choose k : ℝ) * x ^ (k : ℕ) * (1 - x) ^ (n - k : ℕ) * f (bernstein.z k)
+  let P  := fun x ↦ ∑ k : Fin (n + 1), (n.choose k : ℝ) * x ^ (k : ℕ) * (1 - x) ^ (n - k : ℕ) * f (bernstein.z k)
   have hP (x) (hx : x ∈ I) : P x = bernsteinApproximation n f ⟨x, hx⟩ := by
     simp [P, bernsteinApproximation, bernstein, bernsteinPolynomial, mul_comm]
   refine ⟨P, ContDiff.contDiffOn <| ContDiff.sum fun k _ ↦ ?_, fun x hx y hy hxy ↦ ?_, fun x ↦ ?_⟩
-  · apply_rules [ContDiff.mul, ContDiff.pow, contDiff_const, contDiff_id, ContDiff.sub]
+  · fun_prop
   · rw [hP x hx, hP y hy]
     exact bernsteinApproximation_monotone n f hf_mono (Subtype.mk_le_mk.mpr hxy)
   · rw [abs_sub_comm, hP x x.2]
@@ -299,8 +299,7 @@ private theorem lemma_approx_monotone_C1 {a b : ℝ} (hab : a < b) (g : ℝ → 
     have := @lemma_approx_monotone_C1_I
     exact this ⟨f, by simpa using hf_cont⟩ hf_mono ε hε_pos
   refine ⟨fun x ↦ P ((x - a) / (b - a)), ?_, ?_, ?_⟩
-  · simp_all only [MonotoneOn, Set.mem_Icc, and_imp, gt_iff_lt, Subtype.forall]
-    refine hP_cont.comp (ContDiffOn.div_const (contDiffOn_id.sub contDiffOn_const) _)
+  · refine hP_cont.comp (ContDiffOn.div_const (contDiffOn_id.sub contDiffOn_const) _)
       fun x hx ↦ ⟨?_, ?_⟩ <;> nlinarith [hx.1, hx.2, mul_div_cancel₀ (x - a) (sub_ne_zero_of_ne hab.ne')]
   · simp_all only [MonotoneOn, Set.mem_Icc, and_imp, gt_iff_lt, Subtype.forall]
     exact fun x hx₁ hx₂ y hy₁ hy₂ hxy ↦ hP_mono (div_nonneg (by linarith) (by linarith))
@@ -326,16 +325,15 @@ private theorem lemma_IBP_bound_monotone {a b : ℝ} (hab : a < b) (g : ℝ → 
   choose! g' hg'_cont hg'_mono hg'_approx using happrox
   let gₙ := fun (n : ℕ) ↦ g' (1 / (n + 1 : ℝ))
   have hpos : ∀ n : ℕ, 0 < (1 : ℝ) / (n + 1) := fun n ↦ by positivity
-  have hgₙ_cont : ∀ n, ContDiffOn ℝ 1 (gₙ n) (Icc a b) := fun n ↦ hg'_cont _ (hpos n)
-  have hgₙ_mono : ∀ n, MonotoneOn (gₙ n) (Icc a b) := fun n ↦ hg'_mono _ (hpos n)
+  have hgₙ_cont  := fun n ↦ hg'_cont _ (hpos n)
+  have hgₙ_mono  := fun n ↦ hg'_mono _ (hpos n)
   have hgₙ_bound : ∀ n, ∀ x ∈ Icc a b, |gₙ n x - g x| ≤ 1 / (n + 1 : ℝ) := fun n x hx ↦ by
     rw [abs_sub_comm]; exact (hg'_approx _ (hpos n) x hx).le
   have hgₙ_lim : ∀ x ∈ Icc a b, Tendsto (fun n ↦ gₙ n x) atTop (nhds (g x)) := fun x hx ↦ by
     rw [tendsto_iff_norm_sub_tendsto_zero]
     exact squeeze_zero (fun _ ↦ by positivity) (fun n ↦ hgₙ_bound n x hx)
       tendsto_one_div_add_atTop_nhds_zero_nat
-  have hboundₙ : ∀ n, ‖(∫ t in Icc a b, (gₙ n t : ℂ) * deriv F t) - (gₙ n b * F b - gₙ n a * F a)‖ ≤
-      (⨆ t ∈ Icc a b, ‖F t‖) * (gₙ n b - gₙ n a) := fun n ↦ by
+  have hboundₙ  := fun n ↦ by
     convert lemma_IBP_bound_C1_monotone hab (gₙ n) F (hgₙ_cont n) (hgₙ_mono n) hF_C1 using 1
   have hconv : Tendsto (fun n ↦ ∫ t in Icc a b, (gₙ n t : ℂ) * deriv F t) atTop
       (nhds (∫ t in Icc a b, (g t : ℂ) * deriv F t)) := by
@@ -358,9 +356,9 @@ private theorem lemma_IBP_bound_monotone {a b : ℝ} (hab : a < b) (g : ℝ → 
       filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
       simp only [norm_mul]; gcongr; norm_cast
       calc |gₙ n x| = ‖gₙ n x‖ := (norm_eq_abs _).symm
-        _ = ‖(gₙ n x - g x) + g x‖ := by rw [sub_add_cancel]
+        _ = ‖(gₙ n x - g x) + g x‖ := by simp
         _ ≤ ‖gₙ n x - g x‖ + ‖g x‖ := norm_add_le _ _
-        _ = |gₙ n x - g x| + |g x| := by simp only [norm_eq_abs]
+        _ = |gₙ n x - g x| + |g x| := by rfl
         _ ≤ 1 / ((n : ℝ) + 1) + M := add_le_add (hgₙ_bound n x hx) (hM x hx)
         _ ≤ 1 + M := by gcongr; rw [div_le_one (by positivity)]; linarith [n.cast_nonneg (α := ℝ)]
         _ = M + 1 := add_comm ..
@@ -391,7 +389,7 @@ private theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ 
     by_cases hsign : ∃ a' b' : ℝ, a ≤ a' ∧ a' < b' ∧ b' ≤ b ∧ g a' * g b' < 0
     · obtain ⟨a', b', ha', hb', hab', hsign⟩ := hsign
       obtain ⟨r, hr⟩ : ∃ r ∈ Icc a' b', g r = 0 := by
-        have hivt : ContinuousOn g (Icc a' b') := hgcont.mono (Icc_subset_Icc ha' hab')
+        have hivt  := hgcont.mono (Icc_subset_Icc ha' hab')
         have := hivt.image_Icc hb'.le
         exact this.symm.subset (Set.mem_Icc.mpr ⟨by nlinarith [Set.mem_Icc.mp (this ▸
           mem_image_of_mem g (Set.left_mem_Icc.mpr hb'.le)), Set.mem_Icc.mp (this ▸
@@ -457,8 +455,7 @@ private theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ 
       have h := norm_add_le ((∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)) (g b * F b - g a * F a)
       simpa using h.trans (add_le_add hbd₁ hbd₂)
     convert hbd₃ using 1
-    rw [abs_of_nonpos (hsign b <| right_mem_Icc.mpr hab.le), abs_of_nonpos (hsign a <| left_mem_Icc.mpr hab.le)]
-    ring
+    grind
 
 set_option backward.isDefEq.respectTransparency false in
 

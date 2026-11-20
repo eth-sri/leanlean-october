@@ -1,7 +1,5 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
 set_option autoImplicit false
@@ -50,7 +48,7 @@ theorem primitive_fraction_coordinates_eq {u₁ v₁ u₂ v₂ : ℤ}
   have hm : u₁*v₂ = u₂*v₁ := by
     exact_mod_cast (div_eq_div_iff hd₁ hd₂).mp h
   apply Rat.div_int_inj hv₁ hv₂ hp₁ hp₂
-  apply (div_eq_div_iff (by exact_mod_cast hv₁.ne') (by exact_mod_cast hv₂.ne')).mpr
+  apply (div_eq_div_iff (by positivity) (by positivity)).mpr
   exact_mod_cast hm
 
 theorem primitive_fraction_determinant_ne_zero {u₁ v₁ u₂ v₂ : ℤ}
@@ -63,7 +61,7 @@ theorem primitive_fraction_determinant_ne_zero {u₁ v₁ u₂ v₂ : ℤ}
   have hm : (u₁:ℝ)*(v₂:ℝ) = (u₂:ℝ)*(v₁:ℝ) := by
     exact_mod_cast (sub_eq_zero.mp hz)
   have he := primitive_fraction_coordinates_eq hv₁ hv₂ hp₁ hp₂
-    ((div_eq_div_iff (by exact_mod_cast hv₁.ne') (by exact_mod_cast hv₂.ne')).mpr hm)
+    ((div_eq_div_iff (by positivity) (by positivity)).mpr hm)
   exact hne (Prod.ext he.1 he.2)
 
 theorem primitive_linear_congruence_ratio_spacing
@@ -76,8 +74,8 @@ theorem primitive_linear_congruence_ratio_spacing
     (h₁ : c ∣ a*u₁+b*v₁) (h₂ : c ∣ a*u₂+b*v₂)
     (hne : (u₁,v₁) ≠ (u₂,v₂)) :
     (c:ℝ)/(4*V^2) ≤ |(u₁:ℝ)/v₁-(u₂:ℝ)/v₂| := by
-  have hv₁p : 0 < (v₁:ℝ) := hV.trans_le hv₁
-  have hv₂p : 0 < (v₂:ℝ) := hV.trans_le hv₂
+  have hv₁p  := hV.trans_le hv₁
+  have hv₂p  := hV.trans_le hv₂
   have hv₁z : 0 < v₁ := by exact_mod_cast hv₁p
   have hv₂z : 0 < v₂ := by exact_mod_cast hv₂p
   have hdvd := primitive_linear_congruence_determinant_dvd hprim h₁ h₂
@@ -89,7 +87,7 @@ theorem primitive_linear_congruence_ratio_spacing
     rw [ht,abs_mul,abs_of_pos hc]
     nlinarith
   have hDr : (c:ℝ) ≤ |((u₁*v₂-u₂*v₁:ℤ):ℝ)| := by exact_mod_cast hD
-  have hprod : 0 < (v₁:ℝ)*v₂ := mul_pos hv₁p hv₂p
+  have hprod  := mul_pos hv₁p hv₂p
   have hprodu : (v₁:ℝ)*v₂ ≤ 4*V^2 := by
     have hm := mul_le_mul hv₁u hv₂u hv₂p.le (by positivity : 0 ≤ 2*V)
     nlinarith only [hm]
@@ -100,7 +98,7 @@ theorem primitive_linear_congruence_ratio_spacing
   rw [he,abs_div,abs_of_pos hprod]
   calc
     _ ≤ (c:ℝ)/((v₁:ℝ)*v₂) :=
-      div_le_div_of_nonneg_left (by exact_mod_cast hc.le) hprod hprodu
+      div_le_div_of_nonneg_left (by positivity) hprod hprodu
     _ ≤ _ := div_le_div_of_nonneg_right hDr hprod.le
 
 end TaoTrudgianYang2025

@@ -28,16 +28,31 @@ noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 
 
+abbrev GridChunkPhysicalSieveHypotheses
+    (σsrc csrc : ℝ) (Y : Finset ℝ) (Q N Uref : ℕ) (R M Buffer : ℝ) (h : ℝ → ℝ → ℝ)
+    (rest : ∀ (n : ℕ) (Chunks Dcover : Finset (ℝ × ℤ)), Prop) : Prop :=
+  ∀ n : ℕ, N=8*n →
+  ∀ (Chunks : Finset (ℝ × ℤ))
+    (anchor : (ℝ × ℤ) → Fin 2 → ℚ) (za : (ℝ × ℤ) → Fin 2 → ℝ),
+  (∀ p∈Chunks, p.1∈Y) →
+  (∀ p∈Chunks, (n:ℝ)*p.2∈
+    Icc (M+Buffer+(14*σsrc/csrc)*(Uref:ℝ)*(N:ℝ)+4*(N:ℝ))
+      (2*M-Buffer-(14*σsrc/csrc)*(Uref:ℝ)*(N:ℝ)-(N:ℝ))) →
+  (∀ p∈Chunks, ∀ i : Fin 2,
+    |za p i-(if i=0 then (n:ℝ)*p.2-2*(N:ℝ)
+      else (n:ℝ)*p.2-11*(N:ℝ)/4)| ≤ (N:ℝ)/16 ∧
+    h p.1 (za p i)=(anchor p i:ℝ) ∧
+    768*(anchor p i).den ≤ Q ∧
+    (24576*σsrc)*R^2 ≤ csrc*(Q:ℝ)*(anchor p i).den) →
+  ∃ Dcover : Finset (ℝ × ℤ),
+  rest n Chunks Dcover
+
 private theorem eventually_positive_difference_selected_eight_grid_chunk_physical_sieve
     {σsrc csrc Usrc σ εloss : ℝ}
     (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
     (hσ : 0 < σ) (hεloss : 0 < εloss)
     (hanchorBudget : csrc ≤ 4*modelPhaseThirdLower σ*σsrc/(σ*(σ+1)+3)) :
-    let κ := modelPhaseThirdLower σ
-    let Ratio := 18*Usrc^2/(σsrc*csrc*κ)
-    let L := max (8*Ratio^2)
-      (32*(modelPhaseJetCoefficient σ 3+1)*(3*Usrc/σsrc)/κ^2)
-    ∃ Csrc η₀ a Cupper Clower Dupper Dlower C Dtype : ℝ,
+    ReferenceCorePhysicalSieveParameters6 σsrc csrc Usrc σ (fun κ L Csrc η₀ a Cupper Clower Dupper Dlower C Dtype =>
       1 ≤ Csrc ∧ 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧ 0 < Dupper ∧ 0 < Dlower ∧ 0 < C ∧ 0 < Dtype ∧
     ∀ {θ : ℝ}, 0 < θ → θ ≤ 1/24 → θ ≤ 1/(8*(L+3)) →
@@ -45,109 +60,28 @@ private theorem eventually_positive_difference_selected_eight_grid_chunk_physica
       (Q K₀ N Uref : ℕ) [NeZero K₀] (R Jsep : ℝ) {η M δ Bcut Bselect : ℝ},
     0 < η → η ≤ η₀ → 0 < T → 2 ≤ N →
     1 ≤ R → R ≤ M → 0 ≤ δ → δ ≤ min κ 1 →
-    0 < Jsep → Jsep ≤ M →
-    (∀ y ∈ Y, y ∈ Icc (1:ℝ) 2) →
-    (∀ y ∈ Y, ∀ z ∈ Y, y ≠ z → 1 ≤ Jsep*|y-z|) →
-    (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-    (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
-    (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    (∀ w ∈ Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
-    (∀ y ∈ Y, Expdb.IsApproximateModelPhaseFunction
-      (fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)) σ 4 δ) →
-    T*(N:ℝ)*R^2 = M^3 →
-    7*(N:ℝ)+2 ≤ M/4 →
-    (3*Usrc/σsrc)*(6*(N:ℝ)+1)^4 ≤ M*(N:ℝ)*R^2 →
-    (3*Usrc/(4*σsrc))*(6*(N:ℝ)+1)^2 ≤ (N:ℝ)*R^2 →
+    ReferenceCorePhysicalSieveHypotheses Y Jsep M (
+    SourceJetAssumptions csrc Usrc Fsrc (
+    ReferenceCorePhysicalSieveHypotheses3 σsrc csrc Usrc σ T Fsrc Y N R η M δ (
     12*Usrc ≤ σsrc*(Uref:ℝ) →
-    63*(Usrc/(2*σsrc*(N:ℝ)*R^2))*(Q:ℝ)*(N:ℝ)^2 ≤ K₀ →
-    (Q:ℝ)*(N:ℝ) ≤ (K₀:ℝ)*R^2 →
-    (N:ℝ)^4 ≤ M*R^3*(Real.log T)^((3:ℝ)/2) →
-    1 ≤ Uref → 0 < Bcut →
-    2+168/κ ≤ Bselect → 7*Bcut ≤ κ*Bselect →
-    Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2 →
-    (Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect →
+    ReferenceCorePhysicalSieveHypotheses2 σsrc Usrc κ T Q K₀ N Uref R M Bcut Bselect (
     ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/(2*Bselect) ≤ (Uref:ℝ) →
     (N:ℝ)^10 ≤ M^3*R^7 →
     Q ≤ N → (N:ℝ)^2 ≤ M → (Uref:ℝ) ≤ R^2 →
     768*R ≤ (Q:ℝ) → (N:ℝ)*R ≤ M →
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/(N:ℝ)^2 ≤ 1/2 →
-    (N:ℝ) ≤ R^2 → R ≤ (N:ℝ) → (N:ℝ)^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
+    CurvatureScaleBounds Q N σ M R κ (fun Cphys B =>
     let Vscale := (Uref:ℝ)^((3:ℝ)/2)
     let lambda := csrc*κ*T/(12*Usrc*M^2)
-    let Uband := (3*Usrc/σsrc)*T/(2*M^2)
-    let ChartCap := (4/a+3)*((6*Usrc/σsrc)/a+3)*((4*σsrc/csrc)/a+3)
-    let NarrowCap := (4/θ+3)*(72*Usrc^2/(σsrc*csrc*κ*θ)+3)
-    let Cap := 3*ChartCap*NarrowCap
-    let μ₀ := csrc*T/(12*σsrc*M^3)
-    let U₀ := Usrc*T/(2*σsrc*M^3)
+    ReferenceCorePhysicalSieveParameters2 σsrc csrc Usrc κ a θ T M (fun Uband Cap μ₀ U₀ =>
     let Δtype := (16*U₀/μ₀)*Real.sqrt (U₀*(Q:ℝ)^3)*Real.sqrt K₀/(6*(K₀:ℝ)^2)
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
-    D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
-    let AupperConst := 2*Cupper*(Cthird+1)*1^2/(κ*Lunit^3)
-    let BupperConst := Cupper*(Cthird+1)*1^2/Lunit^2+Dupper*(B+1)*1^2/4
-    let AlowerConst := 8*Clower*(Cthird+1)/(κ*Lunit^3)
-    let BlowerConst := 4*Clower*(Cthird+1)/Lunit^2+Dlower*(B+1)
-    let DupperConst := θ*(3*Usrc/σsrc)*1/2
-    let DlowerConst := 12*Usrc*θ/(csrc*κ)
+    ResidualScaleBounds Bselect Q N σ δ Bcut κ Cphys B (fun Kres =>
+    ReferenceCorePhysicalSieveParameters σsrc csrc Usrc σ κ Cupper Clower Dupper Dlower θ δ Cphys B Kres (fun Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst =>
     let CostUpper := M^2/((N:ℝ)^4*(Uref:ℝ))
     let CostLower := R^4/((N:ℝ)^2*(Uref:ℝ))
-    let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
-    let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
-    let Ctail := 4*Cpack/Lunit^2+Cgap
-    let Kupper := 240*CostUpper*
-      (9*(AupperConst*DupperConst^2)^((3:ℝ)⁻¹)+2*BupperConst+(3/2:ℝ)*DupperConst)
-    let Klower := 240*CostLower*
-      (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+2*BlowerConst+(3/2:ℝ)*DlowerConst)
-    let Klarge := 2*Bselect*60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
-      (Cmain+Ctail)*((Q:ℝ)/(N:ℝ))^((2:ℝ)/3)
-
-    let Buffer := (56*(Uref:ℝ)/κ)*(N:ℝ)+(N:ℝ)/(Cphys+2)+2
-    let Error := (Y.card:ℝ)*(M/(N:ℝ)+1)*
-      (Real.sqrt (3*(N:ℝ))*Real.log (6*(N:ℝ))+12*σsrc*R^2/(csrc*(N:ℝ)))
-    let FamilyBound := fun (P : Finset (ℝ × ℤ)) =>
-      (48*σsrc/csrc)^6*(R^2/(Q:ℝ))^6*
-        C*(K₀:ℝ)^((12:ℝ)+εloss)*Cap^11*(2*(P.card:ℝ))^10*
-          (Vscale*Dtype*((P.image Prod.fst).card:ℝ)*(M/(N:ℝ))*(1+Δtype*Jsep)+
-            ((P.image Prod.fst).card:ℝ)^2*(Vscale*(Kupper+Klower)+Klarge)*T^εloss)
-    let f := fun y w => T*(Fsrc (w/M)-Fsrc (w/M+η*y))/(σsrc*η)
-    let h := fun y w => iteratedDeriv 2 (f y) w/2
-    ∀ n : ℕ, N=8*n →
-    ∀ (Chunks : Finset (ℝ × ℤ))
-      (anchor : (ℝ × ℤ) → Fin 2 → ℚ) (za : (ℝ × ℤ) → Fin 2 → ℝ),
-    (∀ p∈Chunks, p.1∈Y) →
-    (∀ p∈Chunks, (n:ℝ)*p.2∈
-      Icc (M+Buffer+(14*σsrc/csrc)*(Uref:ℝ)*(N:ℝ)+4*(N:ℝ))
-        (2*M-Buffer-(14*σsrc/csrc)*(Uref:ℝ)*(N:ℝ)-(N:ℝ))) →
-    (∀ p∈Chunks, ∀ i : Fin 2,
-      |za p i-(if i=0 then (n:ℝ)*p.2-2*(N:ℝ)
-        else (n:ℝ)*p.2-11*(N:ℝ)/4)| ≤ (N:ℝ)/16 ∧
-      h p.1 (za p i)=(anchor p i:ℝ) ∧
-      768*(anchor p i).den ≤ Q ∧
-      (24576*σsrc)*R^2 ≤ csrc*(Q:ℝ)*(anchor p i).den) →
-    ∃ Dcover : Finset (ℝ × ℤ),
+    PackingCoefficients σ δ κ Cphys B Lunit Gamma Cthird (fun Cmain Ctail =>
+    TypeOnePairMassParameters AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst CostUpper CostLower (fun Kupper Klower =>
+    ReferenceCorePhysicalSieveParameters3 σsrc csrc εloss κ C Dtype T Fsrc Y Q K₀ N Uref R Jsep η M Bselect Cphys Vscale lambda Uband Cap Δtype Cmain Ctail Kupper Klower (fun Buffer Error FamilyBound f h =>
+    GridChunkPhysicalSieveHypotheses σsrc csrc Y Q N Uref R M Buffer h (fun n Chunks Dcover =>
       Dcover ⊆ Chunks ∪ Chunks.image (fun p => (p.1,p.2-6)) ∧
       Dcover.card ≤ 2*Chunks.card ∧
       let Grid := fun r : ℤ =>
@@ -158,7 +92,8 @@ private theorem eventually_positive_difference_selected_eight_grid_chunk_physica
         (𝐞 (f p.1 k):ℂ)‖)^12 ≤
         (4:ℝ)^12*(8:ℝ)^11*∑ r∈Finset.Ico (0:ℤ) 8,
           (2^11*((Csrc*Error)^12+
-            (Csrc*(1+Real.log K₀))^12*FamilyBound (Grid r))) := by
+            (Csrc*(1+Real.log K₀))^12*FamilyBound (Grid r)))))))))))))))) := by
+  dsimp -zeta only [ReferenceCorePhysicalSieveParameters6, ReferenceCorePhysicalSieveHypotheses, SourceJetAssumptions, ReferenceCorePhysicalSieveHypotheses3, ReferenceCorePhysicalSieveHypotheses2, CurvatureScaleBounds, ReferenceCorePhysicalSieveParameters2, ResidualScaleBounds, ReferenceCorePhysicalSieveParameters, PackingCoefficients, TypeOnePairMassParameters, ReferenceCorePhysicalSieveParameters3, GridChunkPhysicalSieveHypotheses]
 
   classical
   intro κ Ratio L
@@ -287,11 +222,7 @@ private theorem eventually_positive_difference_triangular_selected_eight_grid_ch
     (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
     (hσ : 0 < σ) (hεloss : 0 < εloss)
     (hanchorBudget : csrc ≤ 4*modelPhaseThirdLower σ*σsrc/(σ*(σ+1)+3)) :
-    let κ := modelPhaseThirdLower σ
-    let Ratio := 18*Usrc^2/(σsrc*csrc*κ)
-    let L := max (8*Ratio^2)
-      (32*(modelPhaseJetCoefficient σ 3+1)*(3*Usrc/σsrc)/κ^2)
-    ∃ Csrc η₀ a Cupper Clower Dupper Dlower C Dtype : ℝ,
+    ReferenceCorePhysicalSieveParameters6 σsrc csrc Usrc σ (fun κ L Csrc η₀ a Cupper Clower Dupper Dlower C Dtype =>
       1 ≤ Csrc ∧ 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧ 0 < Dupper ∧ 0 < Dlower ∧ 0 < C ∧ 0 < Dtype ∧
     ∀ {θ : ℝ}, 0 < θ → θ ≤ 1/24 → θ ≤ 1/(8*(L+3)) →
@@ -299,101 +230,24 @@ private theorem eventually_positive_difference_triangular_selected_eight_grid_ch
       (Q K₀ N Uref : ℕ) [NeZero K₀] (R Jsep Vscale : ℝ) {η M δ Bcut Bselect : ℝ},
     0 < η → η ≤ η₀ → 0 < T → 2 ≤ N →
     1 ≤ R → R ≤ M → 1 ≤ Vscale → 0 ≤ δ → δ ≤ min κ 1 →
-    0 < Jsep → Jsep ≤ M →
-    (∀ y ∈ Y, y ∈ Icc (1:ℝ) 2) →
-    (∀ y ∈ Y, ∀ z ∈ Y, y ≠ z → 1 ≤ Jsep*|y-z|) →
-    (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-    (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
-    (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    (∀ w ∈ Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
-    (∀ y ∈ Y, Expdb.IsApproximateModelPhaseFunction
-      (fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)) σ 4 δ) →
-    T*(N:ℝ)*R^2 = M^3 →
-    7*(N:ℝ)+2 ≤ M/4 →
-    (3*Usrc/σsrc)*(6*(N:ℝ)+1)^4 ≤ M*(N:ℝ)*R^2 →
-    (3*Usrc/(4*σsrc))*(6*(N:ℝ)+1)^2 ≤ (N:ℝ)*R^2 →
+    ReferenceCorePhysicalSieveHypotheses Y Jsep M (
+    SourceJetAssumptions csrc Usrc Fsrc (
+    ReferenceCorePhysicalSieveHypotheses3 σsrc csrc Usrc σ T Fsrc Y N R η M δ (
     12*Usrc ≤ σsrc*(Uref:ℝ) →
-    63*(Usrc/(2*σsrc*(N:ℝ)*R^2))*(Q:ℝ)*(N:ℝ)^2 ≤ K₀ →
-    (Q:ℝ)*(N:ℝ) ≤ (K₀:ℝ)*R^2 →
-    (N:ℝ)^4 ≤ M*R^3*(Real.log T)^((3:ℝ)/2) →
-    1 ≤ Uref → 0 < Bcut →
-    2+168/κ ≤ Bselect → 7*Bcut ≤ κ*Bselect →
-    Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2 →
-    (Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect →
+    ReferenceCorePhysicalSieveHypotheses2 σsrc Usrc κ T Q K₀ N Uref R M Bcut Bselect (
     (N:ℝ)^10 ≤ M^3*R^7 →
     Q ≤ N → (N:ℝ)^2 ≤ M → (Uref:ℝ) ≤ R^2 →
     768*R ≤ (Q:ℝ) → (N:ℝ)*R ≤ M →
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/(N:ℝ)^2 ≤ 1/2 →
-    (N:ℝ) ≤ R^2 → R ≤ (N:ℝ) → (N:ℝ)^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
-    let Uband := (3*Usrc/σsrc)*T/(2*M^2)
-    let ChartCap := (4/a+3)*((6*Usrc/σsrc)/a+3)*((4*σsrc/csrc)/a+3)
-    let NarrowCap := (4/θ+3)*(72*Usrc^2/(σsrc*csrc*κ*θ)+3)
-    let Cap := 3*ChartCap*NarrowCap
-    let μ₀ := csrc*T/(12*σsrc*M^3)
-    let U₀ := Usrc*T/(2*σsrc*M^3)
+    CurvatureScaleBounds Q N σ M R κ (fun Cphys B =>
+    ReferenceCorePhysicalSieveParameters2 σsrc csrc Usrc κ a θ T M (fun Uband Cap μ₀ U₀ =>
     let Δtype := (16*U₀/μ₀)*Real.sqrt (U₀*(Q:ℝ)^3)*Real.sqrt K₀/(6*(K₀:ℝ)^2)
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
-    D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
-    let AupperConst := 2*Cupper*(Cthird+1)*1^2/(κ*Lunit^3)
-    let BupperConst := Cupper*(Cthird+1)*1^2/Lunit^2+Dupper*(B+1)*1^2/4
-    let AlowerConst := 8*Clower*(Cthird+1)/(κ*Lunit^3)
-    let BlowerConst := 4*Clower*(Cthird+1)/Lunit^2+Dlower*(B+1)
-    let DupperConst := θ*(3*Usrc/σsrc)*1/2
-    let DlowerConst := 12*Usrc*θ/(csrc*κ)
+    ResidualScaleBounds Bselect Q N σ δ Bcut κ Cphys B (fun Kres =>
+    ReferenceCorePhysicalSieveParameters σsrc csrc Usrc σ κ Cupper Clower Dupper Dlower θ δ Cphys B Kres (fun Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst =>
     let CostUpper := M^2/((N:ℝ)^4*(Uref:ℝ))
     let CostLower := R^4/((N:ℝ)^2*(Uref:ℝ))
-    let Kupper := 240*CostUpper*
-      (9*(AupperConst*DupperConst^2)^((3:ℝ)⁻¹)+2*BupperConst+(3/2:ℝ)*DupperConst)
-    let Klower := 240*CostLower*
-      (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+2*BlowerConst+(3/2:ℝ)*DlowerConst)
-    ∀ isUpper : Bool,
-    (if isUpper then Vscale=1+R^4/(6*(N:ℝ)^2)
-      else Uband ≤ 1/16 ∧ Vscale=1+R^4*Uband^2/(N:ℝ)^2) →
-    let Buffer := (56*(Uref:ℝ)/κ)*(N:ℝ)+(N:ℝ)/(Cphys+2)+2
-    let Error := (Y.card:ℝ)*(M/(N:ℝ)+1)*
-      (Real.sqrt (3*(N:ℝ))*Real.log (6*(N:ℝ))+12*σsrc*R^2/(csrc*(N:ℝ)))
-    let FamilyBound := fun (P : Finset (ℝ × ℤ)) =>
-      (48*σsrc/csrc)^6*(R^2/(Q:ℝ))^6*
-        C*(K₀:ℝ)^((12:ℝ)+εloss)*Cap^11*(2*(P.card:ℝ))^10*
-          (Vscale*Dtype*((P.image Prod.fst).card:ℝ)*(M/(N:ℝ))*(1+Δtype*Jsep)+
-            ((P.image Prod.fst).card:ℝ)^2*Vscale*(if isUpper then Kupper else Klower)*T^εloss)
-    let f := fun y w => T*(Fsrc (w/M)-Fsrc (w/M+η*y))/(σsrc*η)
-    let h := fun y w => iteratedDeriv 2 (f y) w/2
-    ∀ n : ℕ, N=8*n →
-    ∀ (Chunks : Finset (ℝ × ℤ))
-      (anchor : (ℝ × ℤ) → Fin 2 → ℚ) (za : (ℝ × ℤ) → Fin 2 → ℝ),
-    (∀ p∈Chunks, p.1∈Y) →
-    (∀ p∈Chunks, (n:ℝ)*p.2∈
-      Icc (M+Buffer+(14*σsrc/csrc)*(Uref:ℝ)*(N:ℝ)+4*(N:ℝ))
-        (2*M-Buffer-(14*σsrc/csrc)*(Uref:ℝ)*(N:ℝ)-(N:ℝ))) →
-    (∀ p∈Chunks, ∀ i : Fin 2,
-      |za p i-(if i=0 then (n:ℝ)*p.2-2*(N:ℝ)
-        else (n:ℝ)*p.2-11*(N:ℝ)/4)| ≤ (N:ℝ)/16 ∧
-      h p.1 (za p i)=(anchor p i:ℝ) ∧
-      768*(anchor p i).den ≤ Q ∧
-      (24576*σsrc)*R^2 ≤ csrc*(Q:ℝ)*(anchor p i).den) →
-    ∃ Dcover : Finset (ℝ × ℤ),
+    TypeOnePairMassParameters AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst CostUpper CostLower (fun Kupper Klower =>
+    ReferenceCorePhysicalSieveParameters5 σsrc csrc εloss κ C Dtype T Fsrc Y Q K₀ N Uref R Jsep Vscale η M Cphys Uband Cap Δtype Kupper Klower (fun Buffer Error FamilyBound f h =>
+    GridChunkPhysicalSieveHypotheses σsrc csrc Y Q N Uref R M Buffer h (fun n Chunks Dcover =>
       Dcover ⊆ Chunks ∪ Chunks.image (fun p => (p.1,p.2-6)) ∧
       Dcover.card ≤ 2*Chunks.card ∧
       let Grid := fun r : ℤ =>
@@ -404,7 +258,8 @@ private theorem eventually_positive_difference_triangular_selected_eight_grid_ch
         (𝐞 (f p.1 k):ℂ)‖)^12 ≤
         (4:ℝ)^12*(8:ℝ)^11*∑ r∈Finset.Ico (0:ℤ) 8,
           (2^11*((Csrc*Error)^12+
-            (Csrc*(1+Real.log K₀))^12*FamilyBound (Grid r))) := by
+            (Csrc*(1+Real.log K₀))^12*FamilyBound (Grid r))))))))))))))) := by
+  dsimp -zeta only [ReferenceCorePhysicalSieveParameters6, ReferenceCorePhysicalSieveHypotheses, SourceJetAssumptions, ReferenceCorePhysicalSieveHypotheses3, ReferenceCorePhysicalSieveHypotheses2, CurvatureScaleBounds, ReferenceCorePhysicalSieveParameters2, ResidualScaleBounds, ReferenceCorePhysicalSieveParameters, TypeOnePairMassParameters, ReferenceCorePhysicalSieveParameters5, GridChunkPhysicalSieveHypotheses]
 
   classical
   intro κ Ratio L
@@ -544,8 +399,7 @@ private theorem positive_difference_chunk_grid_dyadic_bands
     (hscale : T*(N:ℝ)*R^2=M^3)
     (hQbase : 768 ≤ Qbase)
     (hQmax : (N:ℝ)*(Qbase*2^kmax:ℕ) ≤ M) :
-    let f := fun y w => T*(F (w/M)-F (w/M+η*y))/(σ*η)
-    let h := fun y w => iteratedDeriv 2 (f y) w/2
+    DifferenceConstructedReferenceSystemParameters F σ η T M (fun f h =>
     let probe := fun (p : ℝ × ℤ) (i : Fin 2) =>
       if i=0 then (n:ℝ)*p.2-2*(N:ℝ) else (n:ℝ)*p.2-11*(N:ℝ)/4
     (∀ p∈Chunks, ∀ i, probe p i∈Icc (M+(N:ℝ)/4) (2*M-(N:ℝ)/4)) →
@@ -569,7 +423,8 @@ private theorem positive_difference_chunk_grid_dyadic_bands
       (∀ k ≤ kmax, ((Chunks.filter (fun p => band p=some (k+1))).card:ℝ) ≤
         (Y.card:ℝ)*Density k) ∧
       ((Chunks.filter (fun p => band p=none)).card:ℝ) ≤
-        (Y.card:ℝ)*Density kmax := by
+        (Y.card:ℝ)*Density kmax) := by
+  dsimp -zeta only [DifferenceConstructedReferenceSystemParameters]
   classical
   intro f h probe hpoints Q Ctail Clow Cerror Density
   have hnp : (0:ℝ) < n := Nat.cast_pos.mpr hn
@@ -930,8 +785,7 @@ private theorem positive_difference_phase_subinterval_dyadic_band_reduction
     (hroom : 2*(Buffer+Width)+6*(N:ℝ) ≤ M)
     (A B : ℝ → ℤ) (hA : ∀ y∈Y, ⌈M⌉ ≤ A y)
     (hab : ∀ y∈Y, A y ≤ B y) (hB : ∀ y∈Y, B y ≤ ⌊2*M⌋) :
-    let f := fun y w => T*(F (w/M)-F (w/M+η*y))/(σ*η)
-    let h := fun y w => iteratedDeriv 2 (f y) w/2
+    DifferenceConstructedReferenceSystemParameters F σ η T M (fun f h =>
     let probe := fun (p : ℝ × ℤ) (i : Fin 2) =>
       if i=0 then (n:ℝ)*p.2-2*(N:ℝ) else (n:ℝ)*p.2-11*(N:ℝ)/4
     let Q := fun k : ℕ => Qbase*2^k
@@ -965,7 +819,8 @@ private theorem positive_difference_phase_subinterval_dyadic_band_reduction
             ∑ k∈Finset.range (kmax+1),
               (∑ p∈Chunks.filter (fun p => band p=some k),
                 ‖∑ j∈Finset.Ioc ((n:ℤ)*p.2) ((n:ℤ)*(p.2+1)),
-                  (𝐞 (f p.1 j):ℂ)‖)^12)+Endpoint^12) := by
+                  (𝐞 (f p.1 j):ℂ)‖)^12)+Endpoint^12)) := by
+  dsimp -zeta only [DifferenceConstructedReferenceSystemParameters]
   classical
   intro f h probe Q Ctail Clow Cerror Density Endpoint
   have hnp : (0:ℝ) < n := Nat.cast_pos.mpr hn
@@ -1050,16 +905,66 @@ private theorem positive_difference_phase_subinterval_dyadic_band_reduction
                                                                                   
                                                                                           
                                          
+abbrev PhaseSubintervalPhysicalSieveParameters
+    (σ κ δ Cphys B : ℝ)
+    (rest : ∀ (C₂ C₃ Ct Cc Ccurv Kres Esize Dbase Tbase : ℝ), Prop) : Prop :=
+  let C₂ := modelPhaseJetCoefficient σ 2+δ
+  let C₃ := modelPhaseJetCoefficient σ 3+δ
+  let Ct := C₂/2+5*C₃/12
+  let Cc := C₂/κ+C₃/(2*κ)
+  let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
+  let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
+    2*quarticNonlinearResidualConstant σ δ)/κ
+  let Esize := κ/(16*(Cphys+2))
+  let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
+  let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+  rest C₂ C₃ Ct Cc Ccurv Kres Esize Dbase Tbase
+
+abbrev PhaseSubintervalPhysicalSieveHypotheses
+    (σsrc csrc σ T : ℝ) (Fsrc : ℝ → ℝ) (Y : Finset ℝ) (N : ℕ) (R η M δ : ℝ)
+    (rest : Prop) : Prop :=
+  (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
+    csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
+  (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
+  (∀ y∈Y, Expdb.IsApproximateModelPhaseFunction
+    (fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)) σ 4 δ) →
+  T*(N:ℝ)*R^2=M^3 →
+  rest
+
+abbrev PhaseSubintervalPhysicalSieveParameters2
+    (σ : ℝ) (N : ℕ) (Kmesh Usel : ℕ → ℕ) (R M δ : ℝ) (Q : ℕ → ℕ)
+    (B μ₀ U₀ Ct Cc AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst : ℝ)
+    (rest : ∀ (Δtype Δ D Kupper Klower : ℕ → ℝ), Prop) : Prop :=
+  let Δtype := fun k : ℕ =>
+    let Q := Q k
+    let K₀ := Kmesh k
+    (16*U₀/μ₀)*Real.sqrt (U₀*(Q:ℝ)^3)*Real.sqrt K₀/(6*(K₀:ℝ)^2)
+  let Δ := fun k : ℕ =>
+    let Q := Q k
+    (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
+  let D := fun k : ℕ =>
+    let Q := Q k
+    (Δ k)+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
+  let CostUpper := fun k : ℕ =>
+    let Uref := Usel k
+    M^2/((N:ℝ)^4*(Uref:ℝ))
+  let CostLower := fun k : ℕ =>
+    let Uref := Usel k
+    R^4/((N:ℝ)^2*(Uref:ℝ))
+  let Kupper := fun k : ℕ =>
+    240*(CostUpper k)*
+      (9*(AupperConst*DupperConst^2)^((3:ℝ)⁻¹)+2*BupperConst+(3/2:ℝ)*DupperConst)
+  let Klower := fun k : ℕ =>
+    240*(CostLower k)*
+      (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+2*BlowerConst+(3/2:ℝ)*DlowerConst)
+  rest Δtype Δ D Kupper Klower
+
 theorem eventually_positive_difference_selected_band_phase_subinterval_physical_sieve
     {σsrc csrc Usrc σ εloss : ℝ}
     (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
     (hσ : 0 < σ) (hεloss : 0 < εloss)
     (hanchorBudget : csrc ≤ 4*modelPhaseThirdLower σ*σsrc/(σ*(σ+1)+3)) :
-    let κ := modelPhaseThirdLower σ
-    let Ratio := 18*Usrc^2/(σsrc*csrc*κ)
-    let L := max (8*Ratio^2)
-      (32*(modelPhaseJetCoefficient σ 3+1)*(3*Usrc/σsrc)/κ^2)
-    ∃ Csrc η₀ a Cupper Clower Dupper Dlower C Dtype : ℝ,
+    ReferenceCorePhysicalSieveParameters6 σsrc csrc Usrc σ (fun κ L Csrc η₀ a Cupper Clower Dupper Dlower C Dtype =>
       1 ≤ Csrc ∧ 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧ 0 < Dupper ∧ 0 < Dlower ∧ 0 < C ∧ 0 < Dtype ∧
     ∀ {θ : ℝ}, 0 < θ → θ ≤ 1/24 → θ ≤ 1/(8*(L+3)) →
@@ -1069,17 +974,10 @@ theorem eventually_positive_difference_selected_band_phase_subinterval_physical_
     (∀ k, 0 < Kmesh k) → N=8*n →
     0 < η → η ≤ η₀ → 0 < T → 2 ≤ N →
     1 ≤ R → R ≤ M → 0 ≤ δ → δ ≤ min κ 1 →
-    0 < Jsep → Jsep ≤ M →
-    (∀ y∈Y, y∈Icc (1:ℝ) 2) →
-    (∀ y∈Y, ∀ z∈Y, y≠z → 1 ≤ Jsep*|y-z|) →
+    ReferenceCorePhysicalSieveHypotheses Y Jsep M (
     (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
     (∀ w∈Icc (1/2:ℝ) 3, ∀ j ≤ 6, |iteratedDeriv (j+1) Fsrc w| ≤ Usrc) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
-    (∀ y∈Y, Expdb.IsApproximateModelPhaseFunction
-      (fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)) σ 4 δ) →
-    T*(N:ℝ)*R^2=M^3 →
+    PhaseSubintervalPhysicalSieveHypotheses σsrc csrc σ T Fsrc Y N R η M δ (
     7*(N:ℝ)+2 ≤ M/4 →
     (3*Usrc/σsrc)*(6*(N:ℝ)+1)^4 ≤ M*(N:ℝ)*R^2 →
     (3*Usrc/(4*σsrc))*(6*(N:ℝ)+1)^2 ≤ (N:ℝ)*R^2 →
@@ -1092,64 +990,17 @@ theorem eventually_positive_difference_selected_band_phase_subinterval_physical_
     let J := Cphys/6
     let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
     let lambda := csrc*κ*T/(12*Usrc*M^2)
-    let Uband := (3*Usrc/σsrc)*T/(2*M^2)
-    let ChartCap := (4/a+3)*((6*Usrc/σsrc)/a+3)*((4*σsrc/csrc)/a+3)
-    let NarrowCap := (4/θ+3)*(72*Usrc^2/(σsrc*csrc*κ*θ)+3)
-    let Cap := 3*ChartCap*NarrowCap
-    let μ₀ := csrc*T/(12*σsrc*M^3)
-    let U₀ := Usrc*T/(2*σsrc*M^3)
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
-    let AupperConst := 2*Cupper*(Cthird+1)*1^2/(κ*Lunit^3)
-    let BupperConst := Cupper*(Cthird+1)*1^2/Lunit^2+Dupper*(B+1)*1^2/4
-    let AlowerConst := 8*Clower*(Cthird+1)/(κ*Lunit^3)
-    let BlowerConst := 4*Clower*(Cthird+1)/Lunit^2+Dlower*(B+1)
-    let DupperConst := θ*(3*Usrc/σsrc)*1/2
-    let DlowerConst := 12*Usrc*θ/(csrc*κ)
-    let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
-    let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
-    let Ctail := 4*Cpack/Lunit^2+Cgap
+    ReferenceCorePhysicalSieveParameters2 σsrc csrc Usrc κ a θ T M (fun Uband Cap μ₀ U₀ =>
+    PhaseSubintervalPhysicalSieveParameters σ κ δ Cphys B (fun C₂ C₃ Ct Cc Ccurv Kres Esize Dbase Tbase =>
+    ReferenceCorePhysicalSieveParameters σsrc csrc Usrc σ κ Cupper Clower Dupper Dlower θ δ Cphys B Kres (fun Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst =>
+    PackingCoefficients σ δ κ Cphys B Lunit Gamma Cthird (fun Cmain Ctail =>
     let Error := (Y.card:ℝ)*(M/(N:ℝ)+1)*
       (Real.sqrt (3*(N:ℝ))*Real.log (6*(N:ℝ))+12*σsrc*R^2/(csrc*(N:ℝ)))
     let f := fun y w => T*(Fsrc (w/M)-Fsrc (w/M+η*y))/(σsrc*η)
     let Vscale := fun k : ℕ =>
       let Uref := Usel k
       (Uref:ℝ)^((3:ℝ)/2)
-    let Δtype := fun k : ℕ =>
-      let Q := Q k
-      let K₀ := Kmesh k
-      (16*U₀/μ₀)*Real.sqrt (U₀*(Q:ℝ)^3)*Real.sqrt K₀/(6*(K₀:ℝ)^2)
-    let Δ := fun k : ℕ =>
-      let Q := Q k
-      (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let D := fun k : ℕ =>
-      let Q := Q k
-      (Δ k)+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let CostUpper := fun k : ℕ =>
-      let Uref := Usel k
-      M^2/((N:ℝ)^4*(Uref:ℝ))
-    let CostLower := fun k : ℕ =>
-      let Uref := Usel k
-      R^4/((N:ℝ)^2*(Uref:ℝ))
-    let Kupper := fun k : ℕ =>
-      240*(CostUpper k)*
-        (9*(AupperConst*DupperConst^2)^((3:ℝ)⁻¹)+2*BupperConst+(3/2:ℝ)*DupperConst)
-    let Klower := fun k : ℕ =>
-      240*(CostLower k)*
-        (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+2*BlowerConst+(3/2:ℝ)*DlowerConst)
+    PhaseSubintervalPhysicalSieveParameters2 σ N Kmesh Usel R M δ Q B μ₀ U₀ Ct Cc AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst (fun Δtype Δ D Kupper Klower =>
     let Klarge := fun k : ℕ =>
       let Q := Q k
       2*Bselect*60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
@@ -1212,7 +1063,8 @@ theorem eventually_positive_difference_selected_band_phase_subinterval_physical_
               ∑ r∈Finset.Ico (0:ℤ) 8,
                 (2^11*((Csrc*Error)^12+
                   (Csrc*(1+Real.log (Kmesh k)))^12*FamilyBound k (Grid k r))))+
-            Endpoint^12) := by
+            Endpoint^12))))))))) := by
+  dsimp -zeta only [ReferenceCorePhysicalSieveParameters6, ReferenceCorePhysicalSieveHypotheses, PhaseSubintervalPhysicalSieveHypotheses, ReferenceCorePhysicalSieveParameters2, PhaseSubintervalPhysicalSieveParameters, ReferenceCorePhysicalSieveParameters, PackingCoefficients, PhaseSubintervalPhysicalSieveParameters2]
 
   classical
   intro κ Ratio L
@@ -1348,11 +1200,7 @@ theorem eventually_positive_difference_triangular_selected_band_phase_subinterva
     (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
     (hσ : 0 < σ) (hεloss : 0 < εloss)
     (hanchorBudget : csrc ≤ 4*modelPhaseThirdLower σ*σsrc/(σ*(σ+1)+3)) :
-    let κ := modelPhaseThirdLower σ
-    let Ratio := 18*Usrc^2/(σsrc*csrc*κ)
-    let L := max (8*Ratio^2)
-      (32*(modelPhaseJetCoefficient σ 3+1)*(3*Usrc/σsrc)/κ^2)
-    ∃ Csrc η₀ a Cupper Clower Dupper Dlower C Dtype : ℝ,
+    ReferenceCorePhysicalSieveParameters6 σsrc csrc Usrc σ (fun κ L Csrc η₀ a Cupper Clower Dupper Dlower C Dtype =>
       1 ≤ Csrc ∧ 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧ 0 < Dupper ∧ 0 < Dlower ∧ 0 < C ∧ 0 < Dtype ∧
     ∀ {θ : ℝ}, 0 < θ → θ ≤ 1/24 → θ ≤ 1/(8*(L+3)) →
@@ -1362,17 +1210,10 @@ theorem eventually_positive_difference_triangular_selected_band_phase_subinterva
     (∀ k, 0 < Kmesh k) → N=8*n →
     0 < η → η ≤ η₀ → 0 < T → 2 ≤ N →
     1 ≤ R → R ≤ M → 1 ≤ Vscale → 0 ≤ δ → δ ≤ min κ 1 →
-    0 < Jsep → Jsep ≤ M →
-    (∀ y∈Y, y∈Icc (1:ℝ) 2) →
-    (∀ y∈Y, ∀ z∈Y, y≠z → 1 ≤ Jsep*|y-z|) →
+    ReferenceCorePhysicalSieveHypotheses Y Jsep M (
     (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
     (∀ w∈Icc (1/2:ℝ) 3, ∀ j ≤ 6, |iteratedDeriv (j+1) Fsrc w| ≤ Usrc) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
-    (∀ y∈Y, Expdb.IsApproximateModelPhaseFunction
-      (fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)) σ 4 δ) →
-    T*(N:ℝ)*R^2=M^3 →
+    PhaseSubintervalPhysicalSieveHypotheses σsrc csrc σ T Fsrc Y N R η M δ (
     7*(N:ℝ)+2 ≤ M/4 →
     (3*Usrc/σsrc)*(6*(N:ℝ)+1)^4 ≤ M*(N:ℝ)*R^2 →
     (3*Usrc/(4*σsrc))*(6*(N:ℝ)+1)^2 ≤ (N:ℝ)*R^2 →
@@ -1384,56 +1225,13 @@ theorem eventually_positive_difference_triangular_selected_band_phase_subinterva
     let c := κ/6
     let J := Cphys/6
     let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    let Uband := (3*Usrc/σsrc)*T/(2*M^2)
-    let ChartCap := (4/a+3)*((6*Usrc/σsrc)/a+3)*((4*σsrc/csrc)/a+3)
-    let NarrowCap := (4/θ+3)*(72*Usrc^2/(σsrc*csrc*κ*θ)+3)
-    let Cap := 3*ChartCap*NarrowCap
-    let μ₀ := csrc*T/(12*σsrc*M^3)
-    let U₀ := Usrc*T/(2*σsrc*M^3)
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
-    let AupperConst := 2*Cupper*(Cthird+1)*1^2/(κ*Lunit^3)
-    let BupperConst := Cupper*(Cthird+1)*1^2/Lunit^2+Dupper*(B+1)*1^2/4
-    let AlowerConst := 8*Clower*(Cthird+1)/(κ*Lunit^3)
-    let BlowerConst := 4*Clower*(Cthird+1)/Lunit^2+Dlower*(B+1)
-    let DupperConst := θ*(3*Usrc/σsrc)*1/2
-    let DlowerConst := 12*Usrc*θ/(csrc*κ)
+    ReferenceCorePhysicalSieveParameters2 σsrc csrc Usrc κ a θ T M (fun Uband Cap μ₀ U₀ =>
+    PhaseSubintervalPhysicalSieveParameters σ κ δ Cphys B (fun C₂ C₃ Ct Cc Ccurv Kres Esize Dbase Tbase =>
+    ReferenceCorePhysicalSieveParameters σsrc csrc Usrc σ κ Cupper Clower Dupper Dlower θ δ Cphys B Kres (fun Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst =>
     let Error := (Y.card:ℝ)*(M/(N:ℝ)+1)*
       (Real.sqrt (3*(N:ℝ))*Real.log (6*(N:ℝ))+12*σsrc*R^2/(csrc*(N:ℝ)))
     let f := fun y w => T*(Fsrc (w/M)-Fsrc (w/M+η*y))/(σsrc*η)
-    let Δtype := fun k : ℕ =>
-      let Q := Q k
-      let K₀ := Kmesh k
-      (16*U₀/μ₀)*Real.sqrt (U₀*(Q:ℝ)^3)*Real.sqrt K₀/(6*(K₀:ℝ)^2)
-    let Δ := fun k : ℕ =>
-      let Q := Q k
-      (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let D := fun k : ℕ =>
-      let Q := Q k
-      (Δ k)+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let CostUpper := fun k : ℕ =>
-      let Uref := Usel k
-      M^2/((N:ℝ)^4*(Uref:ℝ))
-    let CostLower := fun k : ℕ =>
-      let Uref := Usel k
-      R^4/((N:ℝ)^2*(Uref:ℝ))
-    let Kupper := fun k : ℕ =>
-      240*(CostUpper k)*
-        (9*(AupperConst*DupperConst^2)^((3:ℝ)⁻¹)+2*BupperConst+(3/2:ℝ)*DupperConst)
-    let Klower := fun k : ℕ =>
-      240*(CostLower k)*
-        (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+2*BlowerConst+(3/2:ℝ)*DlowerConst)
+    PhaseSubintervalPhysicalSieveParameters2 σ N Kmesh Usel R M δ Q B μ₀ U₀ Ct Cc AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst (fun Δtype Δ D Kupper Klower =>
     let Buffer := fun k : ℕ =>
       let Uref := Usel k
       (56*(Uref:ℝ)/κ)*(N:ℝ)+(N:ℝ)/(Cphys+2)+2
@@ -1493,7 +1291,8 @@ theorem eventually_positive_difference_triangular_selected_band_phase_subinterva
               ∑ r∈Finset.Ico (0:ℤ) 8,
                 (2^11*((Csrc*Error)^12+
                   (Csrc*(1+Real.log (Kmesh k)))^12*FamilyBound k (Grid k r))))+
-            Endpoint^12) := by
+            Endpoint^12)))))))) := by
+  dsimp -zeta only [ReferenceCorePhysicalSieveParameters6, ReferenceCorePhysicalSieveHypotheses, PhaseSubintervalPhysicalSieveHypotheses, ReferenceCorePhysicalSieveParameters2, PhaseSubintervalPhysicalSieveParameters, ReferenceCorePhysicalSieveParameters, PhaseSubintervalPhysicalSieveParameters2]
 
   classical
   intro κ Ratio L
@@ -2872,68 +2671,89 @@ private theorem upper_selected_grid_family_total_bound
         (Couter*Cpref*Cv*Cmass)*T^(2*ε)*L^10*(m₁+m₂+m₃)
       ac_rfl
 
+abbrev UpperFiniteNumericalConsequenceParameters
+    (σsrc csrc Usrc Bselect Csep ε : ℝ)
+    (rest : ∀ (εloss CerrorBand T : ℝ) (Y : Finset ℝ) (n N kmax : ℕ) (Kmesh Usel : ℕ → ℕ) (R M Jsep : ℝ) (Chunks : Finset (ℝ × ℤ)) (band : ℝ × ℤ → Option ℕ) (Dcover : ℕ → Finset (ℝ × ℤ)) (S : ℝ) (Q : ℕ → ℕ) (Yc μ₀ U₀ : ℝ), Prop) : Prop :=
+  let εloss := ε/4
+  let Cmesh := 2*max 1 (63*Usrc/(2*σsrc))
+  let CtailBand := (6*Usrc/σsrc)*(64*σsrc/csrc)^2+192*σsrc/csrc
+  let ClowBand := (3*Usrc/σsrc+csrc/(32*σsrc))*((3072*σsrc)/csrc)^2+(3072*σsrc)/csrc
+  let CerrorBand := (768:ℝ)^2*CtailBand+ClowBand
+  ∀ᶠ T : ℝ in Filter.atTop, ∀ (Y : Finset ℝ)
+    (n N Qbase kmax : ℕ) (Kmesh Usel : ℕ → ℕ) (R M Jsep : ℝ)
+    (Chunks : Finset (ℝ × ℤ)) (band : (ℝ × ℤ) → Option ℕ)
+    (Dcover : ℕ → Finset (ℝ × ℤ)) {S : ℝ},
+    N=8*n → 2 ≤ N → 1 ≤ R → (N:ℝ) ≤ R^2 → (N:ℝ)^2 ≤ M →
+    M ≤ T → 0 ≤ Jsep → T*(N:ℝ)*R^2=M^3 →
+    0 < Qbase → (Qbase:ℝ) ≤ 1536*R → (N:ℝ)/Csep ≤ (Qbase*2^kmax:ℕ) →
+    (kmax:ℝ) ≤ Real.log N/Real.log 2 → (∀ k, 0 < Kmesh k) →
+    let Q := fun k : ℕ => Qbase*2^k
+    (∀ k ≤ kmax,
+      R ≤ (Q k:ℝ) ∧ Q k ≤ N ∧
+      (Q k:ℝ)*(N:ℝ) ≤ (Kmesh k:ℝ)*R^2 ∧
+      (Kmesh k:ℝ) ≤ Cmesh*(Q k:ℝ)*(N:ℝ)/R^2 ∧
+      (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/Bselect ∧
+      ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/(2*Bselect) ≤ (Usel k:ℝ)) →
+    let Yc := (Y.card:ℝ)
+    let μ₀ := csrc*T/(12*σsrc*M^3)
+    let U₀ := Usrc*T/(2*σsrc*M^3)
+  rest εloss CerrorBand T Y n N kmax Kmesh Usel R M Jsep Chunks band Dcover S Q Yc μ₀ U₀
+
+abbrev UpperFiniteNumericalConsequenceParameters2
+    (σsrc csrc Csrc CerrorBand : ℝ) (Y : Finset ℝ) (n N kmax : ℕ) (Kmesh : ℕ → ℕ) (R M : ℝ)
+    (Chunks : Finset (ℝ × ℤ)) (band : ℝ × ℤ → Option ℕ) (Dcover : ℕ → Finset (ℝ × ℤ)) (S : ℝ)
+    (Q : ℕ → ℕ) (Yc Error : ℝ) (Buffer Width : ℕ → ℝ) (FamilyBound : ℕ → Finset (ℝ × ℤ) → ℝ)
+    (rest : ∀ (ErrorTotal : ℝ), Prop) : Prop :=
+  let Density := fun k => 128*CerrorBand*(M*R^2/((N:ℝ)*(Q k:ℝ)^2))*
+    (2+Real.log (512*σsrc*R^2/(csrc*((Q k:ℝ)/768))+1))
+  let Endpoint := Yc*(2*Buffer 0+2*Width 0+6*(N:ℝ)+2*(n:ℝ))
+  let Selected := fun k => Chunks.filter (fun p => band p=some k)
+  let Grid := fun (k : ℕ) (r : ℤ) =>
+    ((Dcover k).filter (fun p => p.2%8=r)).image (fun p => (p.1,p.2/8-2))
+  (Chunks.card:ℝ) ≤ Yc*(8*M/(N:ℝ)) →
+  (∀ k ≤ kmax, ((Chunks.filter (fun p => band p=some (k+1))).card:ℝ) ≤ Yc*Density k) →
+  (∀ k ≤ kmax, ∀ r : ℤ, (Grid k r).card ≤ 2*(Selected k).card) →
+  (∀ k ≤ kmax, ∀ r : ℤ, (Grid k r).image Prod.fst ⊆ Y) →
+  S ≤ 2^11*(((kmax:ℝ)+2)^11*
+    (((n:ℝ)*Yc*Density kmax)^12+
+      (4:ℝ)^12*(8:ℝ)^11*∑ k∈Finset.range (kmax+1),∑ r∈Finset.Ico (0:ℤ) 8,
+        (2^11*((Csrc*Error)^12+
+          (Csrc*(1+Real.log (Kmesh k)))^12*FamilyBound k (Grid k r))))+Endpoint^12) →
+  let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
+    Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+  rest ErrorTotal
+
+abbrev UpperFiniteNumericalConsequenceParameters3
+    (σsrc csrc κ Cphys : ℝ) (N : ℕ) (Kmesh Usel : ℕ → ℕ) (R M : ℝ) (Q : ℕ → ℕ) (Yc μ₀ U₀ : ℝ)
+    (rest : ∀ (Error : ℝ) (Δtype Buffer Width : ℕ → ℝ), Prop) : Prop :=
+  let Error := Yc*(M/(N:ℝ)+1)*
+    (Real.sqrt (3*(N:ℝ))*Real.log (6*(N:ℝ))+12*σsrc*R^2/(csrc*(N:ℝ)))
+  let Δtype := fun k : ℕ =>
+    (16*U₀/μ₀)*Real.sqrt (U₀*(Q k:ℝ)^3)*Real.sqrt (Kmesh k)/(6*(Kmesh k:ℝ)^2)
+  let Buffer := fun k : ℕ =>
+    (56*(Usel k:ℝ)/κ)*(N:ℝ)+(N:ℝ)/(Cphys+2)+2
+  let Width := fun k : ℕ => (14*σsrc/csrc)*(Usel k:ℝ)*(N:ℝ)
+  rest Error Δtype Buffer Width
+
 private theorem eventually_upper_finite_numerical_consequence
     {σsrc csrc Usrc κ Cphys Csrc Couter CUP Dtype Bselect Csep ε : ℝ}
     (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) (hκ : 0 < κ)
     (hCphys : 0 ≤ Cphys) (hCsrcZero : 0 ≤ Csrc) (hCouter : 0 ≤ Couter)
     (hCUP : 0 ≤ CUP) (hDtype : 0 ≤ Dtype) (hBsOne : 1 ≤ Bselect)
     (hCsep : 1 ≤ Csep) (hε : 0 < ε) :
-    let εloss := ε/4
-    let Cmesh := 2*max 1 (63*Usrc/(2*σsrc))
-    let CtailBand := (6*Usrc/σsrc)*(64*σsrc/csrc)^2+192*σsrc/csrc
-    let ClowBand := (3*Usrc/σsrc+csrc/(32*σsrc))*((3072*σsrc)/csrc)^2+(3072*σsrc)/csrc
-    let CerrorBand := (768:ℝ)^2*CtailBand+ClowBand
-    ∀ᶠ T : ℝ in Filter.atTop, ∀ (Y : Finset ℝ)
-      (n N Qbase kmax : ℕ) (Kmesh Usel : ℕ → ℕ) (R M Jsep : ℝ)
-      (Chunks : Finset (ℝ × ℤ)) (band : (ℝ × ℤ) → Option ℕ)
-      (Dcover : ℕ → Finset (ℝ × ℤ)) {S : ℝ},
-      N=8*n → 2 ≤ N → 1 ≤ R → (N:ℝ) ≤ R^2 → (N:ℝ)^2 ≤ M →
-      M ≤ T → 0 ≤ Jsep → T*(N:ℝ)*R^2=M^3 →
-      0 < Qbase → (Qbase:ℝ) ≤ 1536*R → (N:ℝ)/Csep ≤ (Qbase*2^kmax:ℕ) →
-      (kmax:ℝ) ≤ Real.log N/Real.log 2 → (∀ k, 0 < Kmesh k) →
-      let Q := fun k : ℕ => Qbase*2^k
-      (∀ k ≤ kmax,
-        R ≤ (Q k:ℝ) ∧ Q k ≤ N ∧
-        (Q k:ℝ)*(N:ℝ) ≤ (Kmesh k:ℝ)*R^2 ∧
-        (Kmesh k:ℝ) ≤ Cmesh*(Q k:ℝ)*(N:ℝ)/R^2 ∧
-        (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/Bselect ∧
-        ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/(2*Bselect) ≤ (Usel k:ℝ)) →
-      let Yc := (Y.card:ℝ)
-      let μ₀ := csrc*T/(12*σsrc*M^3)
-      let U₀ := Usrc*T/(2*σsrc*M^3)
+    UpperFiniteNumericalConsequenceParameters σsrc csrc Usrc Bselect Csep ε (fun εloss CerrorBand T Y n N kmax Kmesh Usel R M Jsep Chunks band Dcover S Q Yc μ₀ U₀ =>
       let Vscale := 1+R^4/(6*(N:ℝ)^2)
-      let Error := Yc*(M/(N:ℝ)+1)*
-        (Real.sqrt (3*(N:ℝ))*Real.log (6*(N:ℝ))+12*σsrc*R^2/(csrc*(N:ℝ)))
-      let Δtype := fun k : ℕ =>
-        (16*U₀/μ₀)*Real.sqrt (U₀*(Q k:ℝ)^3)*Real.sqrt (Kmesh k)/(6*(Kmesh k:ℝ)^2)
-      let Buffer := fun k : ℕ =>
-        (56*(Usel k:ℝ)/κ)*(N:ℝ)+(N:ℝ)/(Cphys+2)+2
-      let Width := fun k : ℕ => (14*σsrc/csrc)*(Usel k:ℝ)*(N:ℝ)
+      UpperFiniteNumericalConsequenceParameters3 σsrc csrc κ Cphys N Kmesh Usel R M Q Yc μ₀ U₀ (fun Error Δtype Buffer Width =>
       let FamilyBound := fun (k : ℕ) (P : Finset (ℝ × ℤ)) =>
         Couter*(R^2/(Q k:ℝ))^6*(Kmesh k:ℝ)^((12:ℝ)+εloss)*(2*(P.card:ℝ))^10*
           (Vscale*Dtype*((P.image Prod.fst).card:ℝ)*(M/(N:ℝ))*(1+(Δtype k)*Jsep)+
             ((P.image Prod.fst).card:ℝ)^2*Vscale*
               (CUP*M^2/((N:ℝ)^4*(Usel k:ℝ)))*T^εloss)
-      let Density := fun k => 128*CerrorBand*(M*R^2/((N:ℝ)*(Q k:ℝ)^2))*
-        (2+Real.log (512*σsrc*R^2/(csrc*((Q k:ℝ)/768))+1))
-      let Endpoint := Yc*(2*Buffer 0+2*Width 0+6*(N:ℝ)+2*(n:ℝ))
-      let Selected := fun k => Chunks.filter (fun p => band p=some k)
-      let Grid := fun (k : ℕ) (r : ℤ) =>
-        ((Dcover k).filter (fun p => p.2%8=r)).image (fun p => (p.1,p.2/8-2))
-      (Chunks.card:ℝ) ≤ Yc*(8*M/(N:ℝ)) →
-      (∀ k ≤ kmax, ((Chunks.filter (fun p => band p=some (k+1))).card:ℝ) ≤ Yc*Density k) →
-      (∀ k ≤ kmax, ∀ r : ℤ, (Grid k r).card ≤ 2*(Selected k).card) →
-      (∀ k ≤ kmax, ∀ r : ℤ, (Grid k r).image Prod.fst ⊆ Y) →
-      S ≤ 2^11*(((kmax:ℝ)+2)^11*
-        (((n:ℝ)*Yc*Density kmax)^12+
-          (4:ℝ)^12*(8:ℝ)^11*∑ k∈Finset.range (kmax+1),∑ r∈Finset.Ico (0:ℤ) 8,
-            (2^11*((Csrc*Error)^12+
-              (Csrc*(1+Real.log (Kmesh k)))^12*FamilyBound k (Grid k r))))+Endpoint^12) →
-      let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-        Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+      UpperFiniteNumericalConsequenceParameters2 σsrc csrc Csrc CerrorBand Y n N kmax Kmesh R M Chunks band Dcover S Q Yc Error Buffer Width FamilyBound (fun ErrorTotal =>
       let Main := Yc^11*M^11/((N:ℝ)*R^2)+Yc^11*Jsep*M^11/(N:ℝ)^3+
         Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
-      S ≤ T^ε*(ErrorTotal^12+Main) := by
+      S ≤ T^ε*(ErrorTotal^12+Main)))) := by
+  dsimp -zeta only [UpperFiniteNumericalConsequenceParameters, UpperFiniteNumericalConsequenceParameters3, UpperFiniteNumericalConsequenceParameters2]
 
   classical
   intro εloss Cmesh CtailBand ClowBand CerrorBand
@@ -3161,6 +2981,16 @@ private theorem eventually_upper_finite_numerical_consequence
                                                                                     
                                                                                    
                                                                                 
+abbrev QuantitativePhaseSubintervalBoundParameters
+    (Y : Finset ℝ) (N : ℕ) (R M : ℝ)
+    (rest : ∀ (A Bint : ℝ → ℤ) (Yc ErrorTotal : ℝ), Prop) : Prop :=
+  ∀ A Bint : ℝ → ℤ, (∀ y∈Y, ⌈M⌉ ≤ A y) →
+  (∀ y∈Y, A y ≤ Bint y) → (∀ y∈Y, Bint y ≤ ⌊2*M⌋) →
+  let Yc := (Y.card:ℝ)
+  let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
+    Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+  rest A Bint Yc ErrorTotal
+
 theorem eventually_upper_quantitative_phase_subinterval_bound
     {σsrc csrc Usrc σ δ ε : ℝ}
     (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
@@ -3171,30 +3001,20 @@ theorem eventually_upper_quantitative_phase_subinterval_bound
     ∀ᶠ T : ℝ in Filter.atTop, ∀ (Fsrc : ℝ → ℝ) (Y : Finset ℝ)
       (n N : ℕ) (R Jsep : ℝ) {η M : ℝ},
       N=8*n → 2 ≤ N → 1 ≤ R → 0 < η → η ≤ η₀ →
-      0 < Jsep → Jsep ≤ M →
-      (∀ y∈Y, y∈Icc (1:ℝ) 2) →
-      (∀ y∈Y, ∀ z∈Y, y≠z → 1 ≤ Jsep*|y-z|) →
+      ReferenceCorePhysicalSieveHypotheses Y Jsep M (
       (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
       (∀ w∈Icc (1/2:ℝ) 3, ∀ j ≤ 6, |iteratedDeriv (j+1) Fsrc w| ≤ Usrc) →
-      (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-        csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-      (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
-      (∀ y∈Y, Expdb.IsApproximateModelPhaseFunction
-        (fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)) σ 4 δ) →
-      T*(N:ℝ)*R^2=M^3 →
+      PhaseSubintervalPhysicalSieveHypotheses σsrc csrc σ T Fsrc Y N R η M δ (
       Cbudget*R ≤ N → Cbudget*(N:ℝ) ≤ R^2 → Cbudget*(N:ℝ)^2 ≤ M →
       (N:ℝ)^4 ≤ M*R^3 → (N:ℝ)^10 ≤ M^3*R^7 →
-      ∀ A Bint : ℝ → ℤ, (∀ y∈Y, ⌈M⌉ ≤ A y) →
-      (∀ y∈Y, A y ≤ Bint y) → (∀ y∈Y, Bint y ≤ ⌊2*M⌋) →
-      let Yc := (Y.card:ℝ)
-      let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-        Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+      QuantitativePhaseSubintervalBoundParameters Y N R M (fun A Bint Yc ErrorTotal =>
       let Main := Yc^11*M^11/((N:ℝ)*R^2)+
         Yc^11*Jsep*M^11/(N:ℝ)^3+
         Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
       (∑ y∈Y, ‖∑ j∈Finset.Ioc (A y) (Bint y),
         (𝐞 (T*(Fsrc ((j:ℝ)/M)-Fsrc ((j:ℝ)/M+η*y))/(σsrc*η)):ℂ)‖)^12 ≤
-        T^ε*(ErrorTotal^12+Main) := by
+        T^ε*(ErrorTotal^12+Main)))) := by
+  dsimp -zeta only [ReferenceCorePhysicalSieveHypotheses, PhaseSubintervalPhysicalSieveHypotheses, QuantitativePhaseSubintervalBoundParameters]
 
   classical
   let εloss := ε/4
@@ -3839,23 +3659,18 @@ private theorem upperOriginal_approximateModelPhase_enlarged_quantitative_upper
               Expdb.exponentialSumAt Fext X M a b‖ ≤ 6) ∧
           ∀ (T : ℝ) (Y : Finset ℝ) (n N : ℕ) (R Jsep η : ℝ),
             C ≤ T → N=8*n → 2 ≤ N → B ≤ R →
-            0 < η → η ≤ η₀ → 0 < Jsep → Jsep ≤ M →
-            (∀ y∈Y, y∈Icc (1:ℝ) 2) →
-            (∀ y∈Y, ∀ z∈Y, y≠z → 1 ≤ Jsep*|y-z|) →
+            0 < η → η ≤ η₀ → ReferenceCorePhysicalSieveHypotheses Y Jsep M (
             T*(N:ℝ)*R^2=M^3 →
             B*R ≤ N → B*(N:ℝ) ≤ R^2 → B*(N:ℝ)^2 ≤ M →
             B*(N:ℝ)^4 ≤ M*R^3 → B*(N:ℝ)^10 ≤ M^3*R^7 →
-            ∀ A Bint : ℝ → ℤ, (∀ y∈Y, ⌈M⌉ ≤ A y) →
-              (∀ y∈Y, A y ≤ Bint y) → (∀ y∈Y, Bint y ≤ ⌊2*M⌋) →
-              let Yc := (Y.card:ℝ)
-              let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-                Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+            QuantitativePhaseSubintervalBoundParameters Y N R M (fun A Bint Yc ErrorTotal =>
               let Main := Yc^11*M^11/((N:ℝ)*R^2)+
                 Yc^11*Jsep*M^11/(N:ℝ)^3+
                 Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
               (∑ y∈Y, ‖∑ j∈Finset.Ioc (A y) (Bint y),
                 (𝐞 (T*(Fext ((j:ℝ)/M)-Fext ((j:ℝ)/M+η*y))/η):ℂ)‖)^12 ≤
-                  C*T^ε*(ErrorTotal^12+Main) := by
+                  C*T^ε*(ErrorTotal^12+Main))) := by
+  dsimp -zeta only [ReferenceCorePhysicalSieveHypotheses, QuantitativePhaseSubintervalBoundParameters]
   classical
   have hσone : 0<σ+1 := by linarith only [hσ]
   let δmodel := min (modelPhaseThirdLower (σ+1)) 1/2
@@ -4169,6 +3984,17 @@ public  theorem upperOriginal_upper_endpoint_error_absorption
   have hfirst : 0≤Y*M/Real.sqrt N+Y*M*R^2/N^2 := by positivity
   exact hh.trans (le_add_of_nonneg_left hfirst)
 
+abbrev EnlargedUpperCorrelationMomentHypotheses
+    (η₀ B C M : ℝ)
+    (rest : ∀ (X : ℝ) (N a L k : ℕ) (R : ℝ), Prop) : Prop :=
+  ∀ (X : ℝ) (n N a L k : ℕ) (R : ℝ),
+  C≤X*k/M → N=8*n → 2≤N → B≤R →
+  0<k → (k:ℝ)/M≤η₀ → (k:ℝ)≤M →
+  M≤(a:ℝ) → ((a+L:ℕ):ℝ)≤2*M →
+  (X*k/M)*(N:ℝ)*R^2=M^3 →
+  B*R≤N → B*(N:ℝ)≤R^2 → B*(N:ℝ)^2≤M →
+  rest X N a L k R
+
 private theorem upperOriginal_approximateModelPhase_enlarged_upper_correlation_moment
     {σ ε : ℝ} (hσ : 0<σ) (hε : 0<ε) :
     ∃ δ η₀ B C : ℝ, 0<δ ∧ 0<η₀ ∧ η₀≤1/8 ∧ 1≤B ∧ 1≤C ∧
@@ -4178,12 +4004,7 @@ private theorem upperOriginal_approximateModelPhase_enlarged_upper_correlation_m
           (∀ (X : ℝ) (a b : ℕ), M≤(a:ℝ) → (b:ℝ)≤2*M →
             ‖Expdb.exponentialSumAt F X M a b-
               Expdb.exponentialSumAt Fext X M a b‖≤6) ∧
-          ∀ (X : ℝ) (n N a L k : ℕ) (R : ℝ),
-            C≤X*k/M → N=8*n → 2≤N → B≤R →
-            0<k → (k:ℝ)/M≤η₀ → (k:ℝ)≤M →
-            M≤(a:ℝ) → ((a+L:ℕ):ℝ)≤2*M →
-            (X*k/M)*(N:ℝ)*R^2=M^3 →
-            B*R≤N → B*(N:ℝ)≤R^2 → B*(N:ℝ)^2≤M →
+          EnlargedUpperCorrelationMomentHypotheses η₀ B C M (fun X N a L k R =>
             B*(N:ℝ)^4≤M*R^3 → B*(N:ℝ)^10≤M^3*R^7 →
             let K := (k:ℝ)
             let E := K*M/Real.sqrt (N:ℝ)+K*M*R^2/(N:ℝ)^2+
@@ -4192,7 +4013,8 @@ private theorem upperOriginal_approximateModelPhase_enlarged_upper_correlation_m
               K^11*K*M^11/(N:ℝ)^3+
               K^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
             (∑ j∈Finset.range k,‖sourceShiftCorrelation Fext X M a L (k+j)‖)^12 ≤
-              C*(X*k/M)^ε*(E^12+Main) := by
+              C*(X*k/M)^ε*(E^12+Main)) := by
+  dsimp -zeta only [EnlargedUpperCorrelationMomentHypotheses]
   classical
   obtain ⟨δ,η₀,B,C₀,hδ,hη₀,hηcap,hB,hC₀,hsource⟩ :=
     upperOriginal_approximateModelPhase_enlarged_quantitative_upper hσ hε
@@ -5469,37 +5291,9 @@ private theorem middleOriginal_eventually_general_finite_numerical_consequence
     (hCUP : 0 ≤ CUP) (hCLOW : 0 ≤ CLOW) (hCLARGE : 0 ≤ CLARGE)
     (hDtype : 0 ≤ Dtype) (hBsOne : 1 ≤ Bselect)
     (hCsep : 1 ≤ Csep) (hε : 0 < ε) :
-    let εloss := ε/4
-    let Cmesh := 2*max 1 (63*Usrc/(2*σsrc))
-    let CtailBand := (6*Usrc/σsrc)*(64*σsrc/csrc)^2+192*σsrc/csrc
-    let ClowBand := (3*Usrc/σsrc+csrc/(32*σsrc))*((3072*σsrc)/csrc)^2+(3072*σsrc)/csrc
-    let CerrorBand := (768:ℝ)^2*CtailBand+ClowBand
-    ∀ᶠ T : ℝ in Filter.atTop, ∀ (Y : Finset ℝ)
-      (n N Qbase kmax : ℕ) (Kmesh Usel : ℕ → ℕ) (R M Jsep : ℝ)
-      (Chunks : Finset (ℝ × ℤ)) (band : (ℝ × ℤ) → Option ℕ)
-      (Dcover : ℕ → Finset (ℝ × ℤ)) {S : ℝ},
-      N=8*n → 2 ≤ N → 1 ≤ R → (N:ℝ) ≤ R^2 → (N:ℝ)^2 ≤ M →
-      M ≤ T → 0 ≤ Jsep → T*(N:ℝ)*R^2=M^3 →
-      0 < Qbase → (Qbase:ℝ) ≤ 1536*R → (N:ℝ)/Csep ≤ (Qbase*2^kmax:ℕ) →
-      (kmax:ℝ) ≤ Real.log N/Real.log 2 → (∀ k, 0 < Kmesh k) →
-      let Q := fun k : ℕ => Qbase*2^k
-      (∀ k ≤ kmax,
-        R ≤ (Q k:ℝ) ∧ Q k ≤ N ∧
-        (Q k:ℝ)*(N:ℝ) ≤ (Kmesh k:ℝ)*R^2 ∧
-        (Kmesh k:ℝ) ≤ Cmesh*(Q k:ℝ)*(N:ℝ)/R^2 ∧
-        (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/Bselect ∧
-        ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/(2*Bselect) ≤ (Usel k:ℝ)) →
-      let Yc := (Y.card:ℝ)
-      let μ₀ := csrc*T/(12*σsrc*M^3)
-      let U₀ := Usrc*T/(2*σsrc*M^3)
+    UpperFiniteNumericalConsequenceParameters σsrc csrc Usrc Bselect Csep ε (fun εloss CerrorBand T Y n N kmax Kmesh Usel R M Jsep Chunks band Dcover S Q Yc μ₀ U₀ =>
       let Vscale := fun k : ℕ => (Usel k:ℝ)^((3:ℝ)/2)
-      let Error := Yc*(M/(N:ℝ)+1)*
-        (Real.sqrt (3*(N:ℝ))*Real.log (6*(N:ℝ))+12*σsrc*R^2/(csrc*(N:ℝ)))
-      let Δtype := fun k : ℕ =>
-        (16*U₀/μ₀)*Real.sqrt (U₀*(Q k:ℝ)^3)*Real.sqrt (Kmesh k)/(6*(Kmesh k:ℝ)^2)
-      let Buffer := fun k : ℕ =>
-        (56*(Usel k:ℝ)/κ)*(N:ℝ)+(N:ℝ)/(Cphys+2)+2
-      let Width := fun k : ℕ => (14*σsrc/csrc)*(Usel k:ℝ)*(N:ℝ)
+      UpperFiniteNumericalConsequenceParameters3 σsrc csrc κ Cphys N Kmesh Usel R M Q Yc μ₀ U₀ (fun Error Δtype Buffer Width =>
       let FamilyBound := fun (k : ℕ) (P : Finset (ℝ × ℤ)) =>
         Couter*(R^2/(Q k:ℝ))^6*(Kmesh k:ℝ)^((12:ℝ)+εloss)*(2*(P.card:ℝ))^10*
           ((Vscale k)*Dtype*((P.image Prod.fst).card:ℝ)*(M/(N:ℝ))*(1+(Δtype k)*Jsep)+
@@ -5507,28 +5301,13 @@ private theorem middleOriginal_eventually_general_finite_numerical_consequence
               ((Vscale k)*(CUP*M^2/((N:ℝ)^4*(Usel k:ℝ))+
                 CLOW*R^4/((N:ℝ)^2*(Usel k:ℝ)))+
                 CLARGE*M^2*R^4/(N:ℝ)^6*((Q k:ℝ)/(N:ℝ))^((2:ℝ)/3))*T^εloss)
-      let Density := fun k => 128*CerrorBand*(M*R^2/((N:ℝ)*(Q k:ℝ)^2))*
-        (2+Real.log (512*σsrc*R^2/(csrc*((Q k:ℝ)/768))+1))
-      let Endpoint := Yc*(2*Buffer 0+2*Width 0+6*(N:ℝ)+2*(n:ℝ))
-      let Selected := fun k => Chunks.filter (fun p => band p=some k)
-      let Grid := fun (k : ℕ) (r : ℤ) =>
-        ((Dcover k).filter (fun p => p.2%8=r)).image (fun p => (p.1,p.2/8-2))
-      (Chunks.card:ℝ) ≤ Yc*(8*M/(N:ℝ)) →
-      (∀ k ≤ kmax, ((Chunks.filter (fun p => band p=some (k+1))).card:ℝ) ≤ Yc*Density k) →
-      (∀ k ≤ kmax, ∀ r : ℤ, (Grid k r).card ≤ 2*(Selected k).card) →
-      (∀ k ≤ kmax, ∀ r : ℤ, (Grid k r).image Prod.fst ⊆ Y) →
-      S ≤ 2^11*(((kmax:ℝ)+2)^11*
-        (((n:ℝ)*Yc*Density kmax)^12+
-          (4:ℝ)^12*(8:ℝ)^11*∑ k∈Finset.range (kmax+1),∑ r∈Finset.Ico (0:ℤ) 8,
-            (2^11*((Csrc*Error)^12+
-              (Csrc*(1+Real.log (Kmesh k)))^12*FamilyBound k (Grid k r))))+Endpoint^12) →
-      let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-        Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+      UpperFiniteNumericalConsequenceParameters2 σsrc csrc Csrc CerrorBand Y n N kmax Kmesh R M Chunks band Dcover S Q Yc Error Buffer Width FamilyBound (fun ErrorTotal =>
       let Main := Yc^11*M^11*(N:ℝ)^2/R^7+Yc^11*Jsep*M^11/R^5+
         Yc^12*M^12/((N:ℝ)*R^7)*(R/(N:ℝ))^((2:ℝ)/3)+
         Yc^12*M^10*(N:ℝ)/R^3*(R/(N:ℝ))^((2:ℝ)/3)+
         Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
-      S ≤ T^ε*(ErrorTotal^12+Main) := by
+      S ≤ T^ε*(ErrorTotal^12+Main)))) := by
+  dsimp -zeta only [UpperFiniteNumericalConsequenceParameters, UpperFiniteNumericalConsequenceParameters3, UpperFiniteNumericalConsequenceParameters2]
 
   classical
   intro εloss Cmesh CtailBand ClowBand CerrorBand
@@ -5768,16 +5547,7 @@ public  theorem middleOriginal_general_source_constants_nonnegative
     let c := κ/6
     let J := Cphys/6
     let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    PhaseSubintervalPhysicalSieveParameters σ κ δ Cphys B (fun C₂ C₃ Ct Cc Ccurv Kres Esize Dbase Tbase =>
     let Lunit := 2*κ/Cphys
     let Gamma := Cphys/κ
     let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
@@ -5822,7 +5592,8 @@ public  theorem middleOriginal_general_source_constants_nonnegative
     0 ≤ Cfirst ∧
     0 ≤ Cgap ∧
     0 ≤ Cmain ∧
-    0 ≤ Ctail := by
+    0 ≤ Ctail) := by
+  dsimp -zeta only [PhaseSubintervalPhysicalSieveParameters]
   intro Cphys c J B C₂ C₃ Ct Cc Ccurv Kres Esize Dbase Tbase Lunit Gamma Cthird AupperConst BupperConst DupperConst AlowerConst BlowerConst DlowerConst Cpack Cfirst Cgap Cmain Ctail
   have hModelPhase : 0 < modelPhaseThirdLower σ := modelPhaseThirdLower_pos hσ
   have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
@@ -5878,31 +5649,21 @@ private theorem middleOriginal_eventually_general_quantitative_phase_subinterval
     ∀ᶠ T : ℝ in Filter.atTop, ∀ (Fsrc : ℝ → ℝ) (Y : Finset ℝ)
       (n N : ℕ) (R Jsep : ℝ) {η M : ℝ},
       N=8*n → 2 ≤ N → 1 ≤ R → 0 < η → η ≤ η₀ →
-      0 < Jsep → Jsep ≤ M →
-      (∀ y∈Y, y∈Icc (1:ℝ) 2) →
-      (∀ y∈Y, ∀ z∈Y, y≠z → 1 ≤ Jsep*|y-z|) →
+      ReferenceCorePhysicalSieveHypotheses Y Jsep M (
       (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
       (∀ w∈Icc (1/2:ℝ) 3, ∀ j ≤ 6, |iteratedDeriv (j+1) Fsrc w| ≤ Usrc) →
-      (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-        csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-      (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
-      (∀ y∈Y, Expdb.IsApproximateModelPhaseFunction
-        (fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)) σ 4 δ) →
-      T*(N:ℝ)*R^2=M^3 →
+      PhaseSubintervalPhysicalSieveHypotheses σsrc csrc σ T Fsrc Y N R η M δ (
       Cbudget*R ≤ N → Cbudget*(N:ℝ) ≤ R^2 → Cbudget*(N:ℝ)^2 ≤ M →
       (N:ℝ)^4 ≤ M*R^3 → (N:ℝ)^10 ≤ M^3*R^7 →
-      ∀ A Bint : ℝ → ℤ, (∀ y∈Y, ⌈M⌉ ≤ A y) →
-      (∀ y∈Y, A y ≤ Bint y) → (∀ y∈Y, Bint y ≤ ⌊2*M⌋) →
-      let Yc := (Y.card:ℝ)
-      let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-        Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+      QuantitativePhaseSubintervalBoundParameters Y N R M (fun A Bint Yc ErrorTotal =>
       let Main := Yc^11*M^11*(N:ℝ)^2/R^7+Yc^11*Jsep*M^11/R^5+
         Yc^12*M^12/((N:ℝ)*R^7)*(R/(N:ℝ))^((2:ℝ)/3)+
         Yc^12*M^10*(N:ℝ)/R^3*(R/(N:ℝ))^((2:ℝ)/3)+
         Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
       (∑ y∈Y, ‖∑ j∈Finset.Ioc (A y) (Bint y),
         (𝐞 (T*(Fsrc ((j:ℝ)/M)-Fsrc ((j:ℝ)/M+η*y))/(σsrc*η)):ℂ)‖)^12 ≤
-        T^ε*(ErrorTotal^12+Main) := by
+        T^ε*(ErrorTotal^12+Main)))) := by
+  dsimp -zeta only [ReferenceCorePhysicalSieveHypotheses, PhaseSubintervalPhysicalSieveHypotheses, QuantitativePhaseSubintervalBoundParameters]
 
   classical
   let εloss := ε/4
@@ -6186,24 +5947,19 @@ private theorem middleOriginal_approximateModelPhase_enlarged_quantitative_gener
               Expdb.exponentialSumAt Fext X M a b‖ ≤ 6) ∧
           ∀ (T : ℝ) (Y : Finset ℝ) (n N : ℕ) (R Jsep η : ℝ),
             C ≤ T → N=8*n → 2 ≤ N → B ≤ R →
-            0 < η → η ≤ η₀ → 0 < Jsep → Jsep ≤ M →
-            (∀ y∈Y, y∈Icc (1:ℝ) 2) →
-            (∀ y∈Y, ∀ z∈Y, y≠z → 1 ≤ Jsep*|y-z|) →
+            0 < η → η ≤ η₀ → ReferenceCorePhysicalSieveHypotheses Y Jsep M (
             T*(N:ℝ)*R^2=M^3 →
             B*R ≤ N → B*(N:ℝ) ≤ R^2 → B*(N:ℝ)^2 ≤ M →
             B*(N:ℝ)^4 ≤ M*R^3 → B*(N:ℝ)^10 ≤ M^3*R^7 →
-            ∀ A Bint : ℝ → ℤ, (∀ y∈Y, ⌈M⌉ ≤ A y) →
-              (∀ y∈Y, A y ≤ Bint y) → (∀ y∈Y, Bint y ≤ ⌊2*M⌋) →
-              let Yc := (Y.card:ℝ)
-              let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-                Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+            QuantitativePhaseSubintervalBoundParameters Y N R M (fun A Bint Yc ErrorTotal =>
               let Main := Yc^11*M^11*(N:ℝ)^2/R^7+Yc^11*Jsep*M^11/R^5+
                 Yc^12*M^12/((N:ℝ)*R^7)*(R/(N:ℝ))^((2:ℝ)/3)+
                 Yc^12*M^10*(N:ℝ)/R^3*(R/(N:ℝ))^((2:ℝ)/3)+
                 Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
               (∑ y∈Y, ‖∑ j∈Finset.Ioc (A y) (Bint y),
                 (𝐞 (T*(Fext ((j:ℝ)/M)-Fext ((j:ℝ)/M+η*y))/η):ℂ)‖)^12 ≤
-                  C*T^ε*(ErrorTotal^12+Main) := by
+                  C*T^ε*(ErrorTotal^12+Main))) := by
+  dsimp -zeta only [ReferenceCorePhysicalSieveHypotheses, QuantitativePhaseSubintervalBoundParameters]
   classical
   have hσone : 0<σ+1 := by linarith only [hσ]
   let δmodel := min (modelPhaseThirdLower (σ+1)) 1/2
@@ -6415,12 +6171,7 @@ public  theorem middleOriginal_approximateModelPhase_enlarged_general_correlatio
           (∀ (X : ℝ) (a b : ℕ), M≤(a:ℝ) → (b:ℝ)≤2*M →
             ‖Expdb.exponentialSumAt F X M a b-
               Expdb.exponentialSumAt Fext X M a b‖≤6) ∧
-          ∀ (X : ℝ) (n N a L k : ℕ) (R : ℝ),
-            C≤X*k/M → N=8*n → 2≤N → B≤R →
-            0<k → (k:ℝ)/M≤η₀ → (k:ℝ)≤M →
-            M≤(a:ℝ) → ((a+L:ℕ):ℝ)≤2*M →
-            (X*k/M)*(N:ℝ)*R^2=M^3 →
-            B*R≤N → B*(N:ℝ)≤R^2 → B*(N:ℝ)^2≤M →
+          EnlargedUpperCorrelationMomentHypotheses η₀ B C M (fun X N a L k R =>
             B*(N:ℝ)^4≤M*R^3 → B*(N:ℝ)^10≤M^3*R^7 →
             let K := (k:ℝ)
             let E := K*M/Real.sqrt (N:ℝ)+K*M*R^2/(N:ℝ)^2+
@@ -6430,7 +6181,8 @@ public  theorem middleOriginal_approximateModelPhase_enlarged_general_correlatio
               K^12*M^10*(N:ℝ)/R^3*(R/(N:ℝ))^((2:ℝ)/3)+
               K^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
             (∑ j∈Finset.range k,‖sourceShiftCorrelation Fext X M a L (k+j)‖)^12 ≤
-              C*(X*k/M)^ε*(E^12+Main) := by
+              C*(X*k/M)^ε*(E^12+Main)) := by
+  dsimp -zeta only [EnlargedUpperCorrelationMomentHypotheses]
   classical
   obtain ⟨δ,η₀,B,C₀,hδ,hη₀,hηcap,hB,hC₀,hsource⟩ :=
     middleOriginal_approximateModelPhase_enlarged_quantitative_general hσ hε

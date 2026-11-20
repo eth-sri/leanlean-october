@@ -30,7 +30,7 @@ theorem finite_quadratic_large_value_universal (w : MathCollab.Density.Compariso
   intro T t₀ N L hT hN hNL hLs hLT a ha W V hV hW hlarge hsep
   have hTp : 0 < T := by linarith
   have hNp : 0 < N := by linarith
-  have hLp : 0 < L := hNp.trans_le hNL
+  have hLp  := hNp.trans_le hNL
   have hb := universalCenteredBudget_nonneg hTp.le hLp.le (Nat.cast_nonneg W.card) (Nat.cast_nonneg (discreteAdditiveEnergy W))
   have hamp' := hamp T N L (by linarith) hN hNL hLT a ha W V hV hlarge hsep
   have ht := htrace T t₀ L hT hLs W hW hsep
@@ -52,7 +52,7 @@ theorem finite_quadratic_large_value_universal (w : MathCollab.Density.Compariso
         have h1 : 0 ≤ (N*L)^2 := sq_nonneg _
         have h2 : 0 ≤ (N^3/L)*universalCenteredBudget T L W.card (discreteAdditiveEnergy W) := by positivity
         have hh1 := mul_nonneg hB.le h1
-        have hh2 := mul_nonneg (show 0 ≤ 1+B by positivity) h2
+        
         have hi : (N*L)^2+B*((N^3/L)*universalCenteredBudget T L W.card (discreteAdditiveEnergy W)) ≤ (1+B)*X := by
           dsimp [X]
           nlinarith only [hh1,h2]

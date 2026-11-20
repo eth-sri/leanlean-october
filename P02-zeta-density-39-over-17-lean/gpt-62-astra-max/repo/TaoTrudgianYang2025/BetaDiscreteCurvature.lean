@@ -27,10 +27,10 @@ theorem betaModelSample_hasDerivAt {F : ℝ → ℝ} {T N A x : ℝ}
     (hF : ContDiffOn ℝ ∞ F phaseInterval) (hu : (A+x)/N ∈ Ioo (1 : ℝ) 2) :
     HasDerivAt (betaModelSample F T N A)
       ((-2*Real.pi*T/N)*deriv F ((A+x)/N)) x := by
-  have hc : ContDiffAt ℝ 1 F ((A+x)/N) :=
+  have hc  :=
     (hF.contDiffAt (Icc_mem_nhds hu.1 hu.2)).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 1)
-  have hin : HasDerivAt (fun y : ℝ => (A+y)/N) (1/N) x :=
+  have hin  :=
     ((hasDerivAt_id x).const_add A).div_const N
   convert ((hc.differentiableAt_one.hasDerivAt.comp x hin).const_mul
     (-2*Real.pi*T)) using 1
@@ -41,12 +41,12 @@ theorem betaModelSample_firstDeriv_hasDerivAt {F : ℝ → ℝ} {T N A x : ℝ}
     (hF : ContDiffOn ℝ ∞ F phaseInterval) (hu : (A+x)/N ∈ Ioo (1 : ℝ) 2) :
     HasDerivAt (fun y : ℝ => (-2*Real.pi*T/N)*deriv F ((A+y)/N))
       ((-2*Real.pi*T/N^2)*deriv (deriv F) ((A+x)/N)) x := by
-  have hc : ContDiffAt ℝ 2 F ((A+x)/N) :=
+  have hc  :=
     (hF.contDiffAt (Icc_mem_nhds hu.1 hu.2)).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2)
   have hd : ContDiffAt ℝ 1 (deriv F) ((A+x)/N) :=
     hc.derivWithin (by norm_num)
-  have hin : HasDerivAt (fun y : ℝ => (A+y)/N) (1/N) x :=
+  have hin  :=
     ((hasDerivAt_id x).const_add A).div_const N
   convert ((hd.differentiableAt_one.hasDerivAt.comp x hin).const_mul
     (-2*Real.pi*T/N)) using 1

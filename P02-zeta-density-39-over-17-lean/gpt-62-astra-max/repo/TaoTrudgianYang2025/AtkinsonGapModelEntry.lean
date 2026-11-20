@@ -15,7 +15,7 @@ open MathCollab.Density.Stronger.Atkinson
 theorem contDiffAt_atkinsonNormalizedGapPhase {M t u x : ℝ}
     (hM : 0 < M) (hu : 0 < u) (htu : u < t) (hx : 0 < x) :
     ContDiffAt ℝ ∞ (atkinsonNormalizedGapPhase M t u) x := by
-  have ht : 0 < t := hu.trans htu
+  have ht  := hu.trans htu
   unfold atkinsonNormalizedGapPhase atkinsonIndexPhaseDifference atkinsonIndexRealPhase
   fun_prop (disch := positivity)
 

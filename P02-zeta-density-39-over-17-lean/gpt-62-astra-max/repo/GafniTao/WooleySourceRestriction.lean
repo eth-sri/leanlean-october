@@ -95,10 +95,9 @@ theorem wooleySourceResidueSequence_eq_zero_iff
     apply Finsupp.ext
     intro n
     by_contra hn
-    have hmem : n ∈ (wooleySourceResidueSequence gamma q xi).support :=
+    have hmem  :=
       Finsupp.mem_support_iff.mpr hn
-    have hterm : 0 < ‖wooleySourceResidueSequence gamma q xi n‖ ^ 2 := by
-      exact sq_pos_of_pos (norm_pos_iff.mpr hn)
+    have hterm := sq_pos_of_pos (norm_pos_iff.mpr hn)
     have hle : ‖wooleySourceResidueSequence gamma q xi n‖ ^ 2 ≤
         wooleySourceMassSq (wooleySourceResidueSequence gamma q xi) := by
       unfold wooleySourceMassSq

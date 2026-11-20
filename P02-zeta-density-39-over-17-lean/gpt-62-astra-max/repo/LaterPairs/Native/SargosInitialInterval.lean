@@ -1,17 +1,8 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosDualTentWindow
 public import LaterPairs.Native.SargosIntegerPrefix
 public import LaterPairs.Native.SargosMomentTuples
-public import LaterPairs.Native.SargosPositiveQuadraticRemainder
-public import LaterPairs.Native.SargosPrefixFourthMajorant
 public import LaterPairs.Native.SargosQuarticKernelJets
-public import LaterPairs.Native.SargosQuarticPhase
-public import LaterPairs.Native.SargosQuarticPoisson
-public import LaterPairs.Native.SargosSlowAbel
-public import LaterPairs.Native.SargosSlowCharacter
 
 @[expose] public section
 set_option autoImplicit false

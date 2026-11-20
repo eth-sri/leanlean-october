@@ -33,10 +33,10 @@ theorem real_scale_coprime_fourth_min_native (ε : ℝ) (hε : 0 < ε) :
   let E : ℝ := discreteAdditiveEnergy W
   let K₀ : ℝ := R ^ 4 + T ^ (1 / 2 : ℝ) * R * E ^ (3 / 4 : ℝ)
   let F : ℕ × ℕ → ℝ := fun q => ‖gmR W ((q.1 : ℝ) / q.2)‖ ^ 4
-  have hTtwo : 2 ≤ T := (le_max_right _ _).trans hT
+  have hTtwo  := (le_max_right _ _).trans hT
   have hTpos : 0 < T := by linarith
-  have hPow : 1 ≤ T ^ ε := Real.one_le_rpow (by linarith) hε.le
-  have hR0 : 0 ≤ R := Nat.cast_nonneg _
+  have hPow  := Real.one_le_rpow (by linarith) hε.le
+  
   have hE0 : 0 ≤ E := Nat.cast_nonneg _
   have hK0 : 0 ≤ K₀ := by dsimp only [K₀]; positivity
   have hRfour : R ^ 4 ≤ K₀ := by
@@ -50,9 +50,9 @@ theorem real_scale_coprime_fourth_min_native (ε : ℝ) (hε : 0 < ε) :
     by_cases hMone : 1 ≤ M
     · let N : ℕ := ⌊M⌋₊
       let e : ℕ := 2 * N + 1
-      have hN : 0 < N := (Nat.one_le_floor_iff M).mpr hMone
-      have hNM : (N : ℝ) ≤ M := Nat.floor_le hM.le
-      have hNT : (N : ℝ) ^ 2 ≤ T :=
+      have hN  := (Nat.one_le_floor_iff M).mpr hMone
+      have hNM  := Nat.floor_le hM.le
+      have hNT  :=
         (pow_le_pow_left₀ (Nat.cast_nonneg N) hNM 2).trans hMT
       have heA : e ∉ dyadicInterval N := by
         intro h
@@ -76,9 +76,7 @@ theorem real_scale_coprime_fourth_min_native (ε : ℝ) (hε : 0 < ε) :
       change (∑ q ∈ ((insert e (dyadicInterval N)) ×ˢ
         (insert e (dyadicInterval N))).filter (fun q => Nat.Coprime q.1 q.2), F q) ≤
           nativeCoprimeFourth N W + (2 * (N : ℝ) + 1) * R ^ 4 at hCover
-      have hInner : (∑ q ∈ Q, F q) ≤
-          nativeCoprimeFourth N W + (2 * (N : ℝ) + 1) * R ^ 4 := by
-        exact (Finset.sum_le_sum_of_subset_of_nonneg hSub
+      have hInner := (Finset.sum_le_sum_of_subset_of_nonneg hSub
           (fun q hq hnot => by dsimp only [F]; positivity)).trans hCover
       have hMain : nativeCoprimeFourth N W ≤ C * T ^ ε * ((N : ℝ) * K₀) := by
         have h := hNative N T W hN ((le_max_left _ _).trans hT) hNT hSep hBase
@@ -96,11 +94,11 @@ theorem real_scale_coprime_fourth_min_native (ε : ℝ) (hε : 0 < ε) :
         (mul_le_mul_of_nonneg_right hDlarge (by positivity)) (mul_nonneg hM.le hK0))
     · by_cases hNonempty : Q.Nonempty
       · obtain ⟨q, hq⟩ := hNonempty
-        have hq2 := (hQ q hq).2.2.2.1
+        
         have hqUpper := (hQ q hq).2.2.2.2.1
         have hqOne : (1 : ℝ) ≤ q.1 := by exact_mod_cast (hQ q hq).1
-        have hMhalf : (1 / 2 : ℝ) ≤ M := by linarith
-        have hSmall : M < 1 := lt_of_not_ge hMone
+        
+        
         have hSub : Q ⊆ {(1, 1)} := by
           intro p hp
           obtain ⟨hp1, hp2, hcop, hl1, hu1, hl2, hu2⟩ := hQ p hp
@@ -108,8 +106,7 @@ theorem real_scale_coprime_fourth_min_native (ε : ℝ) (hε : 0 < ε) :
           have h2 : p.2 < 2 := by exact_mod_cast (show (p.2 : ℝ) < 2 by linarith)
           exact Finset.mem_singleton.mpr (Prod.ext (by omega) (by omega))
         have hOne : (∑ p ∈ {(1, 1)}, F p) = R ^ 4 := by simp [F, gmR_one, R]
-        have hSum : (∑ p ∈ Q, F p) ≤ R ^ 4 := by
-          exact (Finset.sum_le_sum_of_subset_of_nonneg hSub
+        have hSum := (Finset.sum_le_sum_of_subset_of_nonneg hSub
             (fun p hp hnot => by dsimp only [F]; positivity)).trans_eq hOne
         calc
           _ ≤ R ^ 4 := hSum

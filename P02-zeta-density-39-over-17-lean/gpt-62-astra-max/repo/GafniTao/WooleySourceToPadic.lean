@@ -37,7 +37,7 @@ theorem wooleyMonomialPadicConcentration_of_polynomialCorollary32
     intro Q h hQ hB hQph
     rw [wooleyPadicCount_degree_zero]
     simp [fordVinogradovKappa]
-  · have hk : 1 ≤ k := Nat.one_le_iff_ne_zero.mpr hkzero
+  · have hk  := Nat.one_le_iff_ne_zero.mpr hkzero
     let : NeZero p := ⟨hp.ne_zero⟩
     obtain ⟨C, hC, B0, hmain⟩ :=
       hsource k p hp hk hkp 1 delta (by norm_num) hdelta
@@ -48,8 +48,7 @@ theorem wooleyMonomialPadicConcentration_of_polynomialCorollary32
     have hPhi : phi.InPhiTau p (k * h) 1 := by
       refine ⟨k * h, wooleyMonomialPolynomialSystem_spaced k p (k * h), ?_⟩
       norm_num
-    have hadm : (wooleyBoxSourceSequence gamma).Admissible := by
-      exact wooleyBoxSourceSequence_one_admissible Q
+    have hadm := wooleyBoxSourceSequence_one_admissible Q
     have hbound := hmain (k * h) phi (wooleyBoxSourceSequence gamma)
       hB hPhi hadm
     have hceil : (k * h) ⌈/⌉ k = h := wooley_mul_ceilDiv_self hk
@@ -75,7 +74,7 @@ theorem wooleyMonomialPadicConcentration_of_polynomialCorollary32
         wooleyWeightedGridMean_one hQ,
         wooley_equations_3_5_to_3_7 hp hQ]
     rw [hmean, hconditioned, mul_one] at hbound
-    have hQpos : (0 : ℝ) < Q := by exact_mod_cast (show 0 < Q by omega)
+    
     have hQpowPos : (0 : ℝ) < ((Q ^ wooleyTriangular k : ℕ) : ℝ) := by
       positivity
     have hmul := (div_le_iff₀ hQpowPos).mp hbound

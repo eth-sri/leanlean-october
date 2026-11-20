@@ -96,7 +96,7 @@ theorem dilated_dyadic_pair_energy {K : ℕ} (hK : 1 ≤ K)
   obtain ⟨C,hC,hbound⟩ := dilated_dyadic_pair_energy_log hK
     (show 0 < η/2 by positivity) hB
   let D : ℝ := 1+(4*B)^(η/2)/(η/2)
-  have hD : 0 < D := by dsimp [D]; positivity
+  
   refine ⟨C*D,by positivity,?_⟩
   intro T t₀ M U hT hM hU hMU P hP W hR hUR hW hsep
   have hTp : 0 < T := by linarith
@@ -109,7 +109,7 @@ theorem dilated_dyadic_pair_energy {K : ℕ} (hK : 1 ≤ K)
   have hUT := short_length_le_twice_time hK hT W hUR hW hsep
   have hN : (⌊2*M⌋₊:ℝ) ≤ 4*B*T := (Nat.floor_le h2M).trans (by nlinarith)
   have hδ : 0 < η/2 := by positivity
-  have h1 : 1 ≤ T^(η/2) := Real.one_le_rpow hT.le hδ.le
+  have h1  := Real.one_le_rpow hT.le hδ.le
   have hlog : Real.log ⌊2*M⌋₊ ≤ ((4*B)^(η/2)*T^(η/2))/(η/2) := by
     calc
       _ ≤ (⌊2*M⌋₊:ℝ)^(η/2)/(η/2) := Real.log_natCast_le_rpow_div _ hδ
@@ -118,7 +118,7 @@ theorem dilated_dyadic_pair_energy {K : ℕ} (hK : 1 ≤ K)
   have hl : 1+Real.log ⌊2*M⌋₊ ≤ D*T^(η/2) := by
     calc
       _ ≤ T^(η/2)+((4*B)^(η/2)*T^(η/2))/(η/2) := add_le_add h1 hlog
-      _ = _ := by dsimp [D]; ring
+      _ = _ := by ring
   have hh := hbound T t₀ M U hT hM hU hMU ⌊2*M⌋₊ P hP' W hR hUR hW hsep
   have hp : T^(η/2)*T^(η/2)=T^η := by
     rw [← Real.rpow_add hTp]

@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaLegendreAnchoring
 public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
 

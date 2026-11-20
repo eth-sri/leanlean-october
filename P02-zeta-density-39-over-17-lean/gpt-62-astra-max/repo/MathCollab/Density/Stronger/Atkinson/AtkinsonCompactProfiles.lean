@@ -54,7 +54,6 @@ theorem contDiffAt_atkinsonPowerProfile (α : ℝ) {u : ℝ} (hu : 0 < u) :
   have hm := contDiffAt_zetaMainMellinProfile hu
   have hp : ContDiffAt ℝ 1 (fun v : ℝ => v ^ (-α)) u := by
     fun_prop (disch := exact hu.ne')
-  unfold atkinsonPowerProfile
   exact (Complex.ofRealCLM.contDiff.contDiffAt.comp u hp).mul hm
 
 theorem exists_intervalC2Bound_atkinsonPowerRootProfile (α : ℝ) :
@@ -63,7 +62,7 @@ theorem exists_intervalC2Bound_atkinsonPowerRootProfile (α : ℝ) :
   apply exists_intervalC2Bound_fixed
   intro u hu
   have hu0 : 0 < u := by linarith [hu.1]
-  have hw : ContDiff ℝ 2 zetaDivisorWeight :=
+  have hw  :=
     contDiff_zetaDivisorWeight.of_le (le_of_lt (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top 2)))
   have hcast : ContDiff ℝ 2 (fun x : ℝ => (x : ℂ)) := Complex.ofRealCLM.contDiff
   unfold atkinsonPowerProfile zetaMainMellinProfile

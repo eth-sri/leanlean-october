@@ -16,8 +16,7 @@ def universalShortProfile (T M R E : ℝ) : ℝ :=
 
 theorem universalShortProfile_nonneg {T M R E : ℝ}
     (hT : 0≤T) (hM : 0≤M) (hR : 0≤R) (hE : 0≤E) :
-    0≤universalShortProfile T M R E := by
-  exact add_nonneg (by positivity) (universalShortSublinearProfile_nonneg hT hM hR hE)
+    0≤universalShortProfile T M R E := add_nonneg (by positivity) (universalShortSublinearProfile_nonneg hT hM hR hE)
 
 /-- The complementary small-amplitude range is bounded without discarding
 its quadratic cardinality factor. -/
@@ -56,13 +55,13 @@ theorem actual_second_moment_universal_log (δ : ℝ) (hδ : 0<δ) :
   have hK : 0<K := by dsimp only [K]; positivity
   refine ⟨K,hK,?_⟩
   intro M T a W hM hT hMT ha hBase
-  have hTp : 0<T := by linarith
+  
   have hH : 1≤2*T := by linarith
   have hMp : (0:ℝ)<M := by exact_mod_cast hM
   obtain ⟨p,hrep,hCount⟩ := hLevels M T a W hM hT hMT ha hBase
   let S := differenceFloorSupport W
   let r : ℤ→ℝ := fun j => differenceFloorCount W j
-  let v : ℤ→ℝ := fun j => ‖dirichletPoly M a ((p j).1-(p j).2)‖
+  let v  := fun j => ‖dirichletPoly M a ((p j).1-(p j).2)‖
   have hr : ∀ j∈S, 0≤r j := fun _ _ => Nat.cast_nonneg _
   have hv : ∀ j∈S, 0≤v j := fun _ _ => norm_nonneg _
   have hTotal : (∑ j∈S, r j) = (W.card:ℝ)^2 := by
@@ -137,6 +136,6 @@ theorem actual_second_moment_universal_log (δ : ℝ) (hδ : 0<δ) :
         have hj : differenceFloor q∈S := mem_image.mpr ⟨q,hq,rfl⟩
         exact pow_le_pow_left₀ (norm_nonneg _) ((hrep _ hj).2.2 q hq rfl) 2
       _ = _ := sum_differenceFloor_values W (fun j => v j^2)
-  exact hOriginal.trans (hDyad.trans_eq (by dsimp only [F]; ring))
+  exact hOriginal.trans (hDyad.trans_eq (by ring))
 
 end Montgomery.RationalMoment

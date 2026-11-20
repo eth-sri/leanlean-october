@@ -31,9 +31,9 @@ theorem integrable_heathBrown_reserve_sq_mul_critical_add
     Integrable (fun p : ℝ × ℝ =>
       heathBrownGammaReserveKernel delta p.1 ^ (2 : ℕ) *
         heathBrownCriticalWeighted t (p.1 + p.2)) := by
-  let r : ℝ → ℝ := fun w =>
+  let r  := fun w =>
     heathBrownGammaReserveKernel delta w ^ (2 : ℕ)
-  let h : ℝ → ℝ := heathBrownCriticalWeighted t
+  let h  := heathBrownCriticalWeighted t
   have hr : Integrable r := by
     simpa only [r] using integrable_heathBrownGammaReserveKernel_sq hdelta
   have hh : Integrable h := by
@@ -48,8 +48,7 @@ theorem integrable_heathBrown_reserve_sq_mul_critical_add
         apply Continuous.div
         · fun_prop
         · fun_prop
-        · intro p hp
-          exact (by positivity : 0 < delta + |p.1|).ne' hp
+        · grind
       · apply Continuous.mul
         · fun_prop
         · exact (continuous_zetaMomentCriticalNorm.pow 2).comp (by fun_prop)
@@ -61,21 +60,15 @@ theorem integrable_heathBrown_reserve_sq_mul_critical_add
   · filter_upwards with w
     have hshift := hh.comp_sub_right (-w)
     have hmul := hshift.mul_const (r w)
-    convert hmul using 1
-    funext v
-    simp only [sub_neg_eq_add]
-    ring_nf
+    grind
   · let I : ℝ := ∫ u : ℝ, ‖h u‖
-    have houter : Integrable (fun w : ℝ => I * r w) := hr.const_mul I
+    have houter  := hr.const_mul I
     convert houter using 1
     funext w
     have hshiftIntegral : (∫ v : ℝ, ‖h (w + v)‖) = I := by
       calc
         (∫ v : ℝ, ‖h (w + v)‖) = ∫ v : ℝ, ‖h (v - (-w))‖ := by
-          apply integral_congr_ae
-          filter_upwards with v
-          congr 2
-          ring_nf
+          ring
         _ = ∫ v : ℝ, ‖h v‖ :=
           integral_sub_right_eq_self (fun v : ℝ => ‖h v‖) (-w) (μ := volume)
         _ = I := rfl
@@ -97,12 +90,11 @@ theorem integral_heathBrown_reserve_sq_mul_critical_add
         heathBrownCriticalWeighted t (p.1 + p.2)) =
       (∫ w : ℝ, heathBrownGammaReserveKernel delta w ^ (2 : ℕ)) *
         heathBrownFullCriticalMoment t := by
-  let r : ℝ → ℝ := fun w =>
+  let r  := fun w =>
     heathBrownGammaReserveKernel delta w ^ (2 : ℕ)
-  let h : ℝ → ℝ := heathBrownCriticalWeighted t
+  let h  := heathBrownCriticalWeighted t
   have hprod := integrable_heathBrown_reserve_sq_mul_critical_add hdelta t
-  have hh : Integrable h := by
-    simpa only [h] using integrable_heathBrownCriticalWeighted t
+  
   rw [MeasureTheory.Measure.volume_eq_prod ℝ ℝ] at hprod ⊢
   rw [integral_prod _ hprod]
   change (∫ w : ℝ, ∫ v : ℝ, r w * h (w + v)) = _
@@ -113,10 +105,7 @@ theorem integral_heathBrown_reserve_sq_mul_critical_add
     congr 1
     calc
       (∫ v : ℝ, h (w + v)) = ∫ v : ℝ, h (v - (-w)) := by
-        apply integral_congr_ae
-        filter_upwards with v
-        congr 1
-        ring_nf
+        ring
       _ = ∫ u : ℝ, h u :=
         integral_sub_right_eq_self h (-w) (μ := volume)
   simp_rw [hinner]
@@ -155,14 +144,9 @@ theorem integral_heathBrown_reserve_sq_snd_mul_critical_add
       heathBrownGammaReserveKernel delta p.2 ^ (2 : ℕ) *
         heathBrownCriticalWeighted t (p.1 + p.2) ∂volume.prod volume) =
       ∫ p : ℝ × ℝ, f p.swap ∂volume.prod volume := by
-        apply integral_congr_ae
-        filter_upwards with p
-        rcases p with ⟨p, q⟩
-        simp only [f, Prod.swap_prod_mk]
-        rw [add_comm q p]
+        grind
     _ = ∫ p : ℝ × ℝ, f p ∂volume.prod volume := hswap
     _ = _ := by
-      rw [← MeasureTheory.Measure.volume_eq_prod ℝ ℝ]
       exact integral_heathBrown_reserve_sq_mul_critical_add hdelta t
 
 noncomputable def heathBrownStrongDoubleIntegrand
@@ -201,8 +185,7 @@ theorem heathBrownStrongDoubleIntegrand_le
       heathBrownStrongGammaConvolutionIntegrand,
       show w + v - w = v by ring] using hkernel
   unfold heathBrownStrongDoubleIntegrand heathBrownStrongDoubleMajorant
-  have hz : 0 ≤ zetaMomentCriticalNorm (t + w + v) ^ (2 : ℕ) :=
-    sq_nonneg _
+  
   calc
     heathBrownStrongSingularKernel delta w *
         heathBrownStrongSingularKernel delta v *
@@ -244,13 +227,11 @@ theorem integrable_heathBrownStrongDoubleIntegrand
         · apply Continuous.div
           · fun_prop
           · fun_prop
-          · intro p hp
-            exact (by positivity : 0 < delta + |p.1|).ne' hp
+          · grind
         · apply Continuous.div
           · fun_prop
           · fun_prop
-          · intro p hp
-            exact (by positivity : 0 < delta + |p.2|).ne' hp
+          · grind
       · exact (continuous_zetaMomentCriticalNorm.pow 2).comp (by fun_prop)
     exact hcont.aestronglyMeasurable
   · filter_upwards with p
@@ -267,8 +248,7 @@ theorem integral_heathBrownStrongDoubleIntegrand_le
   have hfull := heathBrownFullCriticalMoment_nonneg t
   calc
     (∫ p : ℝ × ℝ, heathBrownStrongDoubleIntegrand delta t p) ≤
-        ∫ p : ℝ × ℝ, heathBrownStrongDoubleMajorant delta t p := by
-      exact integral_mono
+        ∫ p : ℝ × ℝ, heathBrownStrongDoubleMajorant delta t p := integral_mono
         (integrable_heathBrownStrongDoubleIntegrand hdelta t)
         (integrable_heathBrownStrongDoubleMajorant hdelta t)
         (fun p => heathBrownStrongDoubleIntegrand_le hdelta p)

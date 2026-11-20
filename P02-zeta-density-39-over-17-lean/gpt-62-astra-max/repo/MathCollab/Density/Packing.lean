@@ -60,7 +60,7 @@ theorem separated_card_le_localDiameter {U : Finset ℝ} (hsep : oneSeparated U)
   by_cases hU : U.Nonempty
   · let a := U.min' hU
     let D := U.max' hU - a
-    have hD : 0 ≤ D := sub_nonneg.mpr (U.min'_le _ (U.max'_mem hU))
+    have hD  := sub_nonneg.mpr (U.min'_le _ (U.max'_mem hU))
     have hf : (0 : ℤ) ≤ ⌊D⌋ := Int.le_floor.mpr (by exact_mod_cast hD)
     have hmap : Set.MapsTo (fun t : ℝ => ⌊t-a⌋) (U : Set ℝ) (Finset.Icc (0 : ℤ) ⌊D⌋) := by
       intro t ht
@@ -123,7 +123,7 @@ theorem decay_le_floor_majorant (x : ℝ) :
 
 theorem separated_decay_row {U : Finset ℝ} (hsep : oneSeparated U) (t : ℝ) :
     (∑ u ∈ U, 1/(1+|t-u|)^2) ≤ separationMass := by
-  let f : ℝ → ℤ := fun u => ⌊u-t⌋
+  let f  := fun u => ⌊u-t⌋
   calc
     _ = ∑ u ∈ U, 1/(1+|u-t|)^2 := by simp only [abs_sub_comm]
     _ ≤ ∑ u ∈ U, 4/(1+|(f u : ℝ)|)^2 :=

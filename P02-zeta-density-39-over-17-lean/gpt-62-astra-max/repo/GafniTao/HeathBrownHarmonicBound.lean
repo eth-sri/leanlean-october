@@ -20,15 +20,14 @@ theorem harmonic_cast_le_one_add_log_of_le
     (harmonic D : ℝ) ≤ 1 + Real.log N := by
   by_cases hD0 : D = 0
   · have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-    have hlog : 0 ≤ Real.log (N : ℝ) := Real.log_nonneg hNreal
+    have hlog  := Real.log_nonneg hNreal
     simp [hD0]
     linarith
   · have hDpos : (0 : ℝ) < D := by
       exact_mod_cast (Nat.pos_of_ne_zero hD0)
     calc
       (harmonic D : ℝ) ≤ 1 + Real.log D := harmonic_le_one_add_log D
-      _ ≤ 1 + Real.log N := by
-        exact add_le_add_right
+      _ ≤ 1 + Real.log N := add_le_add_right
           (Real.log_le_log hDpos
             (by exact_mod_cast hDN : (D : ℝ) ≤ (N : ℝ))) 1
 

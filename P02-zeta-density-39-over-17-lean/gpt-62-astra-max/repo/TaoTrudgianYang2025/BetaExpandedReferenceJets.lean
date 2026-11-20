@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedModelJets
 
 @[expose] public section
@@ -34,19 +33,13 @@ theorem reciprocalModel_hasDerivAt_inverse_curvature
     rw [(referenceModelPrimitive_hasDerivAt σ (Real.rpow_pos_of_pos hw _)).deriv,
       reciprocal_modelPhase_identity hσ hw.le]
     rfl
-  have hprod : deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹))*
-      ((-σ⁻¹)*v^(-σ⁻¹-1)) = 1 :=
+  have hprod  :=
     hc.unique ((hasDerivAt_id v).congr_of_eventuallyEq he)
   have hne : deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)) ≠ 0 := by
     intro h
     rw [h,zero_mul] at hprod
     norm_num at hprod
-  have hcoef : (-σ⁻¹)*v^(-σ⁻¹-1) =
-      (deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)))⁻¹ := by
-    apply (mul_left_cancel₀ hne)
-    rw [mul_inv_cancel₀ hne]
-    exact hprod
-  rwa [hcoef] at hp
+  grind
 
 theorem referenceModelPrimitive_secondDeriv_reciprocal_ne_zero
     {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v) :

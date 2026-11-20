@@ -28,12 +28,12 @@ theorem two_term_lower_large_values {σ a p α δ : ℝ}
   intro T N t₀ b W hT hlo hhi hb hloc hsep hlarge
   have ht : 1 ≤ T := by linarith
   have htp : 0 < T := by linarith
-  have hn1 : 1 ≤ N := (Real.one_le_rpow ht (show 0 ≤ a by linarith [hw.a_low])).trans hlo
+  have hn1  := (Real.one_le_rpow ht (show 0 ≤ a by linarith [hw.a_low])).trans hlo
   have hn : 0 < N := by linarith
   let L := twoTermAmplifier T N σ p
   obtain ⟨hnl,hll,hlt,hs,hen⟩ := two_term_amplifier_budgets hw ht hn hlo hhi
-  have hnt : N ≤ T := hnl.trans hlt
-  have hlp : 0 < L := hn.trans_le hnl
+  have hnt  := hnl.trans hlt
+  have hlp  := hn.trans_le hnl
   have hv : 0 < N^σ*T^(-2*δ) := by positivity
   have hp : 0 < T^p := by positivity
   have hpow : 1 ≤ T^(18*δ) := Real.one_le_rpow ht (by positivity)
@@ -41,10 +41,9 @@ theorem two_term_lower_large_values {σ a p α δ : ℝ}
   · calc
       _ ≤ T^p := hr
       _ ≤ (1+A*(4+2*B))*(T^(18*δ)*T^p) := by
-        have hh : 1 ≤ 1+A*(4+2*B) := by nlinarith [mul_nonneg hA.le (show 0 ≤ 4+2*B by linarith)]
         nlinarith only [mul_le_mul_of_nonneg_right hpow hp.le,mul_nonneg (by positivity : 0 ≤ A*(4+2*B)) (by positivity : 0 ≤ T^(18*δ)*T^p)]
       _ = _ := by rw [← Real.rpow_add htp]; congr 2; ring
-  · have hrs : T^p ≤ (W.card:ℝ) := (lt_of_not_ge hr).le
+  · have hrs  := (lt_of_not_ge hr).le
     have hrange : T^(((2:ℝ)+1)/(2*2+1)) ≤ (W.card:ℝ) := by
       norm_num
       exact hs.trans hrs
@@ -130,7 +129,7 @@ theorem two_term_upper_large_values {σ a p α δ : ℝ}
         102*(N*(H+N*Real.log (2*N))/(N^σ*H^(-2*δ))^2) := by ring
     rw [he,hdivM] at hh
     exact hh
-  have hlog : Real.log (2*N) ≤ D*H^(2*δ) :=
+  have hlog  :=
     (classical_log_budget (by linarith : 1 ≤ N) hδ).trans
       (mul_le_mul_of_nonneg_left hsmall hD.le)
   have hmean2 : N^(2-2*σ)*Real.log (2*N) ≤ D*H^(p+4*δ) := by

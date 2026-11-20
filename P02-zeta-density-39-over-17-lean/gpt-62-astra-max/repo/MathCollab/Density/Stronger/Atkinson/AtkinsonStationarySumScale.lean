@@ -19,7 +19,7 @@ theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
     (hT : 1 ≤ T) (hG : 0 < G) (hupper : G ≤ Real.sqrt T) (hL : 1 ≤ L) :
     (atkinsonSourceCutoff T G L : ℝ) ≤ 37*T*L^2/G^2 := by
   have hT0 : 0 < T := by linarith
-  have hG2 : 0 < G^2 := sq_pos_of_pos hG
+  have hG2  := sq_pos_of_pos hG
   have hGT : G^2 ≤ T := by nlinarith [Real.sq_sqrt hT0.le]
   have hL2 : 1 ≤ L^2 := by nlinarith
   have hU : 1 ≤ T*L^2/G^2 := (le_div_iff₀ hG2).2 (by nlinarith)

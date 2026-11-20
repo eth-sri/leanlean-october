@@ -24,20 +24,18 @@ theorem ratio_second_universal_uniform_translate (ε B : ℝ)
   refine ⟨C*D^ε*D^3,by positivity,?_⟩
   intro T t₀ hT M hM hMT W hW
   have hTp : 0<T := by linarith
-  have hDT : T≤D*T := le_mul_of_one_le_left hTp.le hD1
+  have hDT  := le_mul_of_one_le_left hTp.le hD1
   have hBase : InBaseInterval (D*T) (translateSet t₀ W) := by
     intro t ht
     obtain ⟨u,hu,rfl⟩ := mem_image.mp ht
     obtain ⟨hl,hh⟩ := hW u hu
     exact ⟨by linarith,by linarith⟩
   have h := hBound M (D*T) (fun _ => 1) (translateSet t₀ W) hM
-    (hT.trans hDT) (hMT.trans (by gcongr)) (by intro n hn; norm_num) hBase
+    (hT.trans hDT) (hMT.trans (by gcongr)) (by norm_num) hBase
   rw [coefficient_one_difference_eq_ratio_second,← finiteRatioSecond_dyadic,
     finiteRatioSecond_translateSet _ (fun n hn => by have := (mem_Ioc.mp hn).1; omega),
     translateSet_card,discrete_energy_translateSet,Real.mul_rpow hD.le hTp.le] at h
-  have hScale : universalShortProfile (D*T) M W.card (discreteAdditiveEnergy W) ≤
-      D^3*universalShortProfile T M W.card (discreteAdditiveEnergy W) := by
-    exact (universalShortProfile_mono (mul_nonneg hD.le hTp.le) le_rfl
+  have hScale := (universalShortProfile_mono (mul_nonneg hD.le hTp.le) le_rfl
       (Nat.cast_nonneg M) (le_mul_of_one_le_left (Nat.cast_nonneg M) hD1)
       (Nat.cast_nonneg W.card) (Nat.cast_nonneg (discreteAdditiveEnergy W))).trans
       (universalShortProfile_scale hD1 hTp.le (Nat.cast_nonneg M)

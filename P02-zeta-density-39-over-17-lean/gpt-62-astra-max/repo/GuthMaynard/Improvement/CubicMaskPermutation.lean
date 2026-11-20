@@ -34,10 +34,6 @@ theorem maskedSpatialCubicMode_cycle (a : ℝ → ℂ) (μ : ℝ → ℝ) (L : �
   have he : cycleSpatial x = (x.2.1,x.2.2,x.1) := rfl
   rw [he]
   unfold maskedSpatialCubicMode spatialCubicMode cycleCubicMode
-  dsimp only
-  have hp : -L*((m.2.1:ℝ)*x.2.1+(m.2.2:ℝ)*x.2.2+(m.1:ℝ)*x.1) =
-      -L*((m.1:ℝ)*x.1+(m.2.1:ℝ)*x.2.1+(m.2.2:ℝ)*x.2.2) := by ring
-  rw [hp]
   ring
 
 theorem maskedSpatialCubicMode_integrable {a : ℝ → ℂ} {μ : ℝ → ℝ}

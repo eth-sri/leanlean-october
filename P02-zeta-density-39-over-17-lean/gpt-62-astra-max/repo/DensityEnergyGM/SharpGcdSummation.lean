@@ -52,10 +52,10 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, T₀, hC, hT₀, hCubic⟩ :=
     real_scale_coprime_cubic_sharp_native (ε / 2) (by positivity)
   let L : ℝ := 1 + (4 : ℝ) ^ (ε / 2) / (ε / 2)
-  have hL : 0 < L := by dsimp only [L]; positivity
+  
   refine ⟨C * L, T₀, by positivity, hT₀, ?_⟩
   intro T N P W hT hN hTN hNT hP hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
+  have hTtwo  := hT₀.trans hT
   have hTpos : 0 < T := by linarith
   have hGeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
       N < p.1 ∧ (p.1 : ℝ) ≤ 2 * N ∧ N < p.2 ∧ (p.2 : ℝ) ≤ 2 * N := by
@@ -103,8 +103,7 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
     intro p hp
     exact ⟨(hP p hp).1, (Nat.le_floor_iff (by positivity : 0 ≤ 2 * N)).mpr
       (hP p hp).2.2.2.1⟩) W
-      (by
-        exact mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTpos.le _))
+      (mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTpos.le _))
           (sharpCubicProfile_nonneg hTpos.le W)) hN.le hBlock
   have hFloor : (⌊2 * N⌋₊ : ℝ) ≤ 4 * T :=
     (Nat.floor_le (by positivity : 0 ≤ 2 * N)).trans (by linarith)
@@ -119,8 +118,7 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
     _ ≤ (C * T ^ (ε / 2) * sharpCubicProfile T W) * N *
         (1 + Real.log ⌊2 * N⌋₊) := hBound
     _ ≤ (C * T ^ (ε / 2) * sharpCubicProfile T W) * N * (L * T ^ (ε / 2)) :=
-      mul_le_mul_of_nonneg_left hLog (by
-        exact mul_nonneg (mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTpos.le _))
+      mul_le_mul_of_nonneg_left hLog (mul_nonneg (mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hTpos.le _))
           (sharpCubicProfile_nonneg hTpos.le W)) hN.le)
     _ = (C * L) * (T ^ (ε / 2) * T ^ (ε / 2)) * N * sharpCubicProfile T W := by ring
     _ = _ := by rw [hPower]

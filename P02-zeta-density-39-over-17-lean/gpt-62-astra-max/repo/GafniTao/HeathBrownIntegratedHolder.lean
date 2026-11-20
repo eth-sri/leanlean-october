@@ -68,8 +68,7 @@ theorem lintegral_heathBrownNu_sq_le
     _ =
         ENNReal.ofReal
           (∫ α, (heathBrownNu N k H f α) ^ 2
-            ∂(heathBrownCoefficientMeasure k)) := by
-      exact (ofReal_integral_eq_lintegral_ofReal
+            ∂(heathBrownCoefficientMeasure k)) := (ofReal_integral_eq_lintegral_ofReal
         (integrable_heathBrownNu_sq N k H f)
         (Filter.Eventually.of_forall fun _ => sq_nonneg _)).symm
     _ ≤ _ := ENNReal.ofReal_le_ofReal

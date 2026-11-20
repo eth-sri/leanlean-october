@@ -49,7 +49,7 @@ theorem exists_atkinsonLeading_source_band_bound {δ : ℝ} (hδ : 0 < δ) :
     apply (hbound T G (Real.log T) hT hG hGT hscale.2.1 hwidth N hN).trans
     have h := mul_le_mul_of_nonneg_left
       (atkinsonBand_tail_scale_le hT hG0.le hGT hlog0.le
-        (by simpa only [one_mul, pow_one] using hlog)) hC.le
+        (by linarith)) hC.le
     convert h using 1 <;> ring
   obtain ⟨B, hB⟩ := eventually_atTop.mp hev
   refine ⟨2 * C, by positivity, max 16 B, le_max_left _ _, ?_⟩

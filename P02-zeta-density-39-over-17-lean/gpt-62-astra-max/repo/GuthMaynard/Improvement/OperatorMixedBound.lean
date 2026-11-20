@@ -23,7 +23,7 @@ theorem operator_mixed_bound (w : MathCollab.Density.ReflectionCutoff) :
         (operatorDiscrete (timeMeasure μ) w L (1/2) 5-operatorContinuous (timeMeasure μ) w L)^2)‖ ≤
         C*L*Q*(∫ t, μ t^2) := by
   let P := ∫ s, ‖mixedCutoffKernel w s‖
-  have hP : 0 ≤ P := integral_nonneg (fun s => norm_nonneg _)
+  
   refine ⟨1+P,by positivity,?_⟩
   intro μ hm h0 hi h2 L Q hL hQ hrow ι hι b
   let := timeMeasure_finite hi
@@ -39,12 +39,12 @@ theorem operator_mixed_bound (w : MathCollab.Density.ReflectionCutoff) :
   have hwB (x : ℝ) : |w x| ≤ max 0 B := by
     by_cases hx : x ∈ Icc (1/2:ℝ) 5
     · exact (hb x hx).trans (le_max_right _ _)
-    · simp only [hs x hx,abs_zero]; exact le_max_left _ _
+    · grind
   rw [operator_centered_mixed (timeMeasure μ) w.smooth.continuous.measurable hwi
     (le_max_left 0 B) hwB (by norm_num : (0:ℝ)<1/2) hLp hs b]
   obtain ⟨D,hD,hDb⟩ := centeredKernel_uniform_bound w.complex_smooth
     (by norm_num : (0:ℝ)<1/2) (by norm_num : (1/2:ℝ)≤5) hsc
-  have hc : Measurable (mixedCutoffKernel w) := mixedCutoffKernel_measurable w
+  have hc  := mixedCutoffKernel_measurable w
   have hbound := kernelMixed_time_row_bound hm h0 hi h2
     (C := fun s => (L:ℂ)*mixedCutoffKernel w s)
     (K := centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L)

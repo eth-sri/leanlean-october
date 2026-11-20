@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedInteriorStationary
 public import TaoTrudgianYang2025.BetaClosedSlopeInverseAdapter
 
@@ -73,7 +72,7 @@ theorem modelPhaseBufferedFourierMode_interior_frequency_uniform
   refine ⟨C*(σ+1),by nlinarith,?_⟩
   intro l r η hl hr hη hflat F δ T N q lam hδ hF hT hN hlam hright hleft
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
-  have hscale : 0 < N/T := div_pos hN hT
+  have hscale  := div_pos hN hT
   have hL := mul_le_mul_of_nonneg_right hleft hscale.le
   have hR := mul_le_mul_of_nonneg_right hright hscale.le
   have he (u : ℝ) : ((T/N)*u)*(N/T) = u := by field_simp
@@ -85,7 +84,7 @@ theorem modelPhaseBufferedFourierMode_interior_frequency_uniform
     convert hR using 1 <;> ring
   have ha : l+2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
   have hb : r-2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hw : 0 < N*lam/T := div_pos (mul_pos hN hlam) hT
+  have hw  := div_pos (mul_pos hN hlam) hT
   have hv : q*N/T ∈ modelPhaseSlopeRange F := by
     rw [modelPhaseSlopeRange_eq_endpoint_Ioo hσ hδ hF₁]
     have hba := modelPhaseClosedSlope_deriv_bounds hσ hδ hF₁ ha
@@ -93,7 +92,7 @@ theorem modelPhaseBufferedFourierMode_interior_frequency_uniform
     constructor <;> linarith [hba.2,hbb.1]
   have hi := modelPhaseInverseSlope_interior_of_gap hσ hδ hF₁ hv
     ha hb hw hL' hR'
-  have hd : 0 < (N*lam/T)/(σ+1) := div_pos (div_pos (mul_pos hN hlam) hT) hσ₁
+  have hd  := div_pos (div_pos (mul_pos hN hlam) hT) hσ₁
   have h := hmode l r η ((N*lam/T)/(σ+1)) hl hr hη hd F δ T N q
     hδ hF hT hN hv hi.1 hi.2
   apply h.trans_eq

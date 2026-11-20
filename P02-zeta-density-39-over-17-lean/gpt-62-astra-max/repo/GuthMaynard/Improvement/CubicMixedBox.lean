@@ -163,19 +163,19 @@ theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
           Real.sqrt (T^ε*(R^2*K^4*(∫ x, r x^2)^2+R*K^3*(∫ x, r x^4))) := by
   obtain ⟨Ca,hCa,he⟩ := cubic_mixed_energies a b c d ha hab hc hcd hε
   obtain ⟨Ct,hCt,ht⟩ := cubic_strip_integral a b ha hab
-  have hb : 0 < b := ha.trans_le hab
+  have hb  := ha.trans_le hab
   let P := max 1 (b^2)*Ca
   have hP : 0 < P := mul_pos (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) hCa
   refine ⟨Ct*Real.sqrt b*Real.sqrt P,by positivity,?_⟩
   intro T R K B D L H r₀ r A₀ S hT hK hKR hB hBR hD hDR hRT hL hH hw1 hwc hwT
     hA₀ hr₀ hmem₀ hr₀0 hr hr2 hr4 hr0 hs hbox
   have hKp : 0 < K := by linarith
-  have hδ : 0 < H/(L*K) := div_pos hH (mul_pos hL hKp)
+  have hδ  := div_pos hH (mul_pos hL hKp)
   let w := max 1 (1/a)*(H/(L*K))
   have hw : 0 < w := mul_pos (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) hδ
   let F := squareSmoothing (scaledKernel compactKernel w) r
   let W := R^2*K^4*(∫ x, r x^2)^2+R*K^3*(∫ x, r x^4)
-  have hR0 : 0 ≤ R := (show 0 ≤ K by linarith).trans hKR
+  have hR0  := (show 0 ≤ K by linarith).trans hKR
   have hW : 0 ≤ W := by
     dsimp only [W]
     exact add_nonneg (by positivity) (mul_nonneg (by positivity) (integral_nonneg (fun _ => by positivity)))
@@ -186,7 +186,7 @@ theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     (scaledKernel_measurable compactKernel_smooth.continuous.measurable _)
     (scaledKernel_nonneg compactKernel_nonneg hw) (by positivity)
     (scaledKernel_bound hw hκbound) hr hr2
-  have hF0 : ∀ x, 0 ≤ F x := fun x => (hFb x).1
+  have hF0  := fun x => (hFb x).1
   have hFbound : ∀ x, ‖F x‖ ≤ w⁻¹*κB*(∫ y, r y^2) := by
     intro x
     rw [Real.norm_eq_abs,abs_of_nonneg (hF0 x)]
@@ -222,8 +222,7 @@ theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   have hstrip := ht L H K S A₀ r₀ r hL hH hKp (fun m hm => (hbox m hm).2.2.1)
     hA₀ hr₀ hmem₀ hr₀0 hr hr2 hr0
   refine ⟨hstrip.1,?_⟩
-  have hmasked' : (∫ v in Icc a b, A₀.indicator r₀ v * ∑ m ∈ S, smoothedStripPair r a (H/(L*K)) m v) ≤
-      Real.sqrt (∫ v in A₀, r₀ v^2 ∂volume.restrict (Icc a b))*Real.sqrt (P*(T^ε*W)) := hmasked
+  have hmasked'  := hmasked
   calc
     _ ≤ (Ct*(H/(L*K))*Real.sqrt b)*
       (Real.sqrt (∫ v in A₀, r₀ v^2 ∂volume.restrict (Icc a b))*Real.sqrt (P*(T^ε*W))) :=

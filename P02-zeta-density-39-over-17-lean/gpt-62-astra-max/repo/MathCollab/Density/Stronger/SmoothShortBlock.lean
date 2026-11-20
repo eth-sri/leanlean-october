@@ -17,7 +17,7 @@ def smoothShortCoefficient (X Y N : ℝ) (n : ℕ) : ℂ :=
 
 theorem norm_smoothShortCoefficient_le (X N : ℝ) {Y : ℝ} (hY : 0 < Y) (n : ℕ) :
     ‖smoothShortCoefficient X Y N n‖ ≤ (n.divisors.card : ℝ) := by
-  have he : Real.exp (-(n : ℝ)/Y) ≤ 1 := Real.exp_le_one_iff.mpr
+  have he  := Real.exp_le_one_iff.mpr
     (div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (Nat.cast_nonneg n)) hY.le)
   have hw := smoothDyadicWeight_bounds ((n : ℝ)/N)
   rw [smoothShortCoefficient, norm_mul, norm_mul, Complex.norm_real, Complex.norm_real,
@@ -53,7 +53,7 @@ theorem smoothShortCoefficient_tsum_split (ρ : ℂ) (X Y : ℝ) {M : ℕ} (hM :
     (∑' n : ℕ, smoothShortCoefficient X Y (2*M) n*(n : ℂ)^(-ρ)) =
       genericBlock ρ (smoothShortCoefficient X Y (2*M)) M +
       genericBlock ρ (smoothShortCoefficient X Y (2*M)) (2*M) := by
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast hM
+  
   have hz : ∀ n ∉ Finset.Ioc M (2*(2*M)),
       smoothShortCoefficient X Y (2*M) n*(n : ℂ)^(-ρ) = 0 := by
     intro n hn
@@ -107,8 +107,8 @@ theorem smoothDetector_tail_half_split (ρ : ℂ) (X Y : ℝ) {M : ℕ} (hM : 0 
       (smoothDyadicWeight (((n+2 : ℕ) : ℝ)/(2*M)) : ℂ)) =
       genericBlock ρ (smoothShortCoefficient X Y (2*M)) M +
       genericBlock ρ (smoothShortCoefficient X Y (2*M)) (2*M) := by
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast hM
-  have hMone : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  
+  
   have h0 := smoothShortCoefficient_zero_of_le_half X Y
     (by positivity : 0 < 2*(M : ℝ)) (n := 0) (by norm_num)
   have h1 := smoothShortCoefficient_zero_of_le_half X Y

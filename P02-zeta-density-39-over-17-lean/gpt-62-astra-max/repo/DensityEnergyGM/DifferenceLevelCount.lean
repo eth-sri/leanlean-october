@@ -35,8 +35,8 @@ theorem difference_cell_level_count_native (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C₀, T₀, hC₀, hT₀, hJ⟩ := squared_polynomial_level_count_native ε hε
   refine ⟨3 * C₀, T₀, by positivity, hT₀, ?_⟩
   intro M T a W hM hT hMT ha hBase
-  have hTone : 1 ≤ T := hT₀.trans hT
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTone
+  have hTone  := hT₀.trans hT
+  
   obtain ⟨p, hrep⟩ := exists_difference_peak_representatives W
     (fun t => ‖dirichletPoly M a t‖)
   refine ⟨p, hrep, ?_⟩
@@ -44,7 +44,7 @@ theorem difference_cell_level_count_native (ε : ℝ) (hε : 0 < ε) :
   let S := (differenceFloorSupport W).filter fun j =>
     U ≤ ‖dirichletPoly M a ((p j).1 - (p j).2)‖
   let color : ℤ → ℕ := fun j => (j % 3).toNat
-  let y : ℤ → ℝ := fun j => (p j).1 - (p j).2 + T
+  let y  := fun j => (p j).1 - (p j).2 + T
   have hsupport : ∀ j ∈ S, j ∈ differenceFloorSupport W :=
     fun j hj => (Finset.mem_filter.mp hj).1
   have hcolor : ∀ j ∈ S, color j ∈ Finset.range 3 := by
@@ -54,8 +54,7 @@ theorem difference_cell_level_count_native (ε : ℝ) (hε : 0 < ε) :
     rw [Finset.mem_range]
     change (j % 3).toNat < 3
     omega
-  have hcounts : S.card = ∑ r ∈ Finset.range 3,
-      ((S.filter fun j => color j = r).card) :=
+  have hcounts  :=
     Finset.card_eq_sum_card_fiberwise hcolor
   have hEach : ∀ r ∈ Finset.range 3,
       (((S.filter fun j => color j = r).card) : ℝ) ≤
@@ -161,11 +160,11 @@ theorem difference_cell_weighted_level_native (ε : ℝ) (hε : 0 < ε) :
       (2 * T) * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ))
   let mass : ℝ := ∑ j ∈ J, (differenceFloorCount W j : ℝ)
   have hsub : J ⊆ differenceFloorSupport W := Finset.filter_subset _ _
-  have hmass0 : 0 ≤ mass := Finset.sum_nonneg fun j hj => Nat.cast_nonneg _
+  
   have hE0 : 0 ≤ (discreteAdditiveEnergy W : ℝ) := Nat.cast_nonneg _
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one (hT₀.trans hT)
+  have hTpos  := lt_of_lt_of_le zero_lt_one (hT₀.trans hT)
   have hB0 : 0 ≤ B := by dsimp only [B]; positivity
-  have hcard : (J.card : ℝ) ≤ B := hcounts U hU
+  have hcard  := hcounts U hU
   have hmassSq : mass ^ 2 ≤ (discreteAdditiveEnergy W : ℝ) * B := by
     have h := differenceFloor_subset_mass_sq W J hsub
     have hc := mul_le_mul_of_nonneg_right hcard hE0

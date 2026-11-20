@@ -52,7 +52,6 @@ theorem heathBrown_cellVolume_pos
     {k H : ℕ} (hH : 1 ≤ H) :
     0 < ENNReal.ofReal
       ((2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹)) := by
-  rw [ENNReal.ofReal_pos]
   positivity
 
 theorem heathBrown_cellVolume_ne_top (k H : ℕ) :
@@ -81,14 +80,13 @@ theorem heathBrown_lemma_one_raw_of_source
       heathBrownLemmaOneRawBound N k A lambda epsilon C := by
   let H := heathBrownHChoice k A lambda
   let s := heathBrownCriticalMoment k
-  let V : ENNReal := ENNReal.ofReal
+  let V  := ENNReal.ofReal
     ((2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ s)⁻¹))
   have hassembled := heathBrown_lemma_one_assembled_of_source
     hU hk hN hA hlambda hlambdaOne hsmall hlargeH hHN hf hsub hkBounds hVMVT
   dsimp only at hassembled
-  have hV0 : V ≠ 0 := by
-    exact (heathBrown_cellVolume_pos (k := k) (H := H) (by omega)).ne'
-  have hVtop : V ≠ ∞ := heathBrown_cellVolume_ne_top k H
+  have hV0 := (heathBrown_cellVolume_pos (k := k) (H := H) (by omega)).ne'
+  have hVtop  := heathBrown_cellVolume_ne_top k H
   have hH0 : (H : ENNReal) ≠ 0 := by exact_mod_cast (by omega : H ≠ 0)
   have hHtop : (H : ENNReal) ≠ ∞ := ENNReal.coe_ne_top
   apply (ENNReal.le_div_iff_mul_le (Or.inl (mul_ne_zero hV0 hH0))

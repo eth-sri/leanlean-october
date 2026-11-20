@@ -20,7 +20,7 @@ theorem reciprocal_separated_sum (S : Finset ι) (f : ι → ℝ)
     (hsep : ∀ i ∈ S, ∀ j ∈ S, i ≠ j → δ ≤ |f i - f j|) :
     (∑ i ∈ S, (f i)⁻¹) ≤ δ⁻¹ * (1 + Real.log ⌊L / δ⌋₊) := by
   classical
-  let g : ι → ℕ := fun i => ⌊f i / δ⌋₊
+  let g  := fun i => ⌊f i / δ⌋₊
   let N : ℕ := ⌊L / δ⌋₊
   have hg (i : ι) (hi : i ∈ S) : 1 ≤ g i ∧ g i ≤ N := by
     refine ⟨Nat.le_floor ((le_div_iff₀ hδ).mpr (by simpa using (hf i hi).1)), ?_⟩
@@ -48,7 +48,7 @@ theorem reciprocal_separated_sum (S : Finset ι) (f : ι → ℝ)
       apply sum_le_sum
       intro i hi
       have hgpos : (0 : ℝ) < g i := by exact_mod_cast (hg i hi).1
-      have hfloor : (g i : ℝ) * δ ≤ f i :=
+      have hfloor  :=
         (le_div_iff₀ hδ).mp (Nat.floor_le (div_nonneg (hδ.le.trans (hf i hi).1) hδ.le))
       have hh := inv_anti₀ (mul_pos hgpos hδ) hfloor
       simpa [mul_inv_rev] using hh
@@ -79,9 +79,7 @@ theorem reciprocal_frequency_row [DecidableEq ι] (S : Finset ι) (ω : ι → �
       rw [abs_of_pos (sub_pos.mpr hlt)] at hs
       exact ⟨hs, (le_abs_self _).trans (habs m (mem_of_mem_erase hm))⟩)
     (fun i hi j hj hne => by
-      have hh := hsep i (mem_of_mem_erase (mem_filter.mp hi).1)
-        j (mem_of_mem_erase (mem_filter.mp hj).1) hne
-      simpa [show ω n - ω i - (ω n - ω j) = -(ω i - ω j) by ring, abs_sub_comm] using hh)
+      grind)
   have hright := reciprocal_separated_sum B (fun m => ω m - ω n) hδ
     (fun m hm => by
       obtain ⟨hm, hlt⟩ := mem_filter.mp hm
@@ -90,9 +88,7 @@ theorem reciprocal_frequency_row [DecidableEq ι] (S : Finset ι) (ω : ι → �
       rw [abs_of_nonneg (sub_nonneg.mpr (le_of_not_gt hlt))] at hs
       exact ⟨hs, (le_abs_self _).trans (by simpa [abs_sub_comm] using habs m (mem_of_mem_erase hm))⟩)
     (fun i hi j hj hne => by
-      have hh := hsep i (mem_of_mem_erase (mem_filter.mp hi).1)
-        j (mem_of_mem_erase (mem_filter.mp hj).1) hne
-      simpa only [sub_sub_sub_cancel_right] using hh)
+      grind)
   have hl : (∑ m ∈ A, |ω n - ω m|⁻¹) = ∑ m ∈ A, (ω n - ω m)⁻¹ := by
     apply sum_congr rfl
     intro m hm
@@ -196,7 +192,7 @@ theorem separated_frequency_mean_value (S : Finset ι) (ω : ι → ℝ) (c : ι
       simp only [integral_const, Measure.real, Measure.restrict_apply_univ, Real.volume_Icc,
         ENNReal.toReal_ofReal (sub_nonneg.mpr hab), Complex.real_smul, mul_one]
       rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (sub_nonneg.mpr hab)]
-    · have hne : ω n - ω m ≠ 0 := abs_pos.mp (hδ.trans_le (hsep n hn m hm he))
+    · have hne  := abs_pos.mp (hδ.trans_le (hsep n hn m hm he))
       simp_rw [exponentialPhase_pair]
       rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hab]
       simpa only [k, ite_eq_right he, exponentialPhase] using
@@ -235,12 +231,7 @@ theorem exponentialPolynomial_derivative (S : Finset ι) (ω : ι → ℝ) (c : 
 
 theorem frequency_cost_nonneg {δ D L : ℝ} (hδ : 0 < δ) (hD : 0 ≤ D) :
     0 ≤ D + 4 * δ⁻¹ * (1 + Real.log ⌊2*L/δ⌋₊) := by
-  by_cases hN : ⌊2*L/δ⌋₊ = 0
-  · simp only [hN, Nat.cast_zero, Real.log_zero, add_zero]
-    positivity
-  · have hN1 : (1 : ℝ) ≤ ⌊2*L/δ⌋₊ := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
-    have hl := Real.log_nonneg hN1
-    positivity
+  positivity
 
 /-- Actual values on any one-separated ordinate set, with arbitrary complex
 coefficients. All integral and derivative estimates are discharged. -/
@@ -260,8 +251,8 @@ theorem separated_frequency_discrete_mean_value (S : Finset ι) (ω : ι → ℝ
   let C := T+1 + 4 * δ⁻¹ * (1 + Real.log ⌊2*L/δ⌋₊)
   let E := ∑ n ∈ S, ‖c n‖ ^ 2
   have hC : 0 ≤ C := frequency_cost_nonneg hδ (by linarith)
-  have hc : Continuous D := exponentialPolynomial_continuous S ω c
-  have hc' : Continuous D' := exponentialPolynomial_continuous S ω c'
+  have hc  := exponentialPolynomial_continuous S ω c
+  have hc'  := exponentialPolynomial_continuous S ω c'
   have hd : ∀ t, HasDerivAt (fun x => D x ^ 2) (2 * D t * D' t) t := by
     intro t
     convert (exponentialPolynomial_derivative S ω c t).pow 2 using 1

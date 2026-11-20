@@ -21,8 +21,7 @@ noncomputable section
 by the multiplier itself. -/
 theorem wooley_section7_multiplier_rpow_le
     {k r : ℕ} {D : ℝ} (hr : 1 ≤ r) (hrk : r < k) (hD : 1 ≤ D) :
-    D ^ wooleyNormalizationExponent k r ≤ D := by
-  exact Real.rpow_le_self_of_one_le hD
+    D ^ wooleyNormalizationExponent k r ≤ D := Real.rpow_le_self_of_one_le hD
     (wooleyNormalizationExponent_le_one hr hrk)
 
 /-- The exact coefficient algebra in the base case of Lemma 9.1. -/
@@ -184,11 +183,11 @@ theorem wooleySourcePolynomial_lemma_9_1_of_section7
               phi p B H (wooleyTriangular k) (k - j) b
                 (wooleyNextB k j b) nu Lambda gamma) := by
   let D : ℝ := C * (p : ℝ) ^ (((k ^ 2 * nu : ℕ) : ℝ))
-  let X : ℕ → ℝ := fun j =>
+  let X  := fun j =>
     wooleySourceNormalizedMixedMean
       phi p B H (wooleyTriangular k) (k - j) b
         (wooleyNextB k j b) nu Lambda gamma
-  let K : ℕ → ℕ → ℝ := fun r a =>
+  let K  := fun r a =>
     wooleySourceNormalizedMixedMean
       phi p B H (wooleyTriangular k) r a b nu Lambda gamma
   have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
@@ -262,12 +261,11 @@ theorem wooleySourcePolynomial_lemma_9_1_of_section7
           (X r) ^ (1 / ((k - r + 1 : ℕ) : ℝ)) *
           (K (r - 1) (wooleyNextB k r b)) ^
             (1 - 1 / (r : ℝ)) := by
-        simpa only [D, X, K] using h84
+        linarith
       _ ≤ D * (X r) ^ (1 / ((k - r + 1 : ℕ) : ℝ)) *
           (K (r - 1) (wooleyNextB k r b)) ^
             (1 - 1 / (r : ℝ)) := by
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_right hpowD hXnonneg) hKnonneg
+        gcongr
       _ = D * (X r) ^ (wooleyRho k r / (r : ℝ)) *
           (K (r - 1) (wooleyNextB k r b)) ^
             (1 - 1 / (r : ℝ)) := by
@@ -354,7 +352,7 @@ theorem wooleySourcePolynomial_lemma_9_2_of_lemma_9_1
               (wooleyNextB k rPrime b) nu Lambda gamma) ^
               wooleyRho k rPrime *
           (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) := by
-  let X : ℕ → ℝ := fun j =>
+  let X  := fun j =>
     wooleySourceNormalizedMixedMean
       phi p B H (wooleyTriangular k) (k - j) b
         (wooleyNextB k j b) nu Lambda gamma
@@ -369,8 +367,7 @@ theorem wooleySourcePolynomial_lemma_9_2_of_lemma_9_1
   have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
   have hcoef := wooley_section9_constant_loss_absorption
     hp hk hr hrk hC hLambda hhierarchy
-  have htail : 0 ≤ (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) :=
-    Real.rpow_nonneg hpR.le _
+  
   have hselected :
       (C * (p : ℝ) ^ (((k ^ 2 * nu : ℕ) : ℝ))) ^
             ((r + 1 : ℕ) : ℝ) *
@@ -397,12 +394,11 @@ theorem wooleySourcePolynomial_lemma_9_2_of_lemma_9_1
         mul_le_mul_of_nonneg_left hselect hlead0
       _ ≤ (C ^ ((r + 1 : ℕ) : ℝ) *
             (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ)))) *
-          (X rPrime) ^ wooleyRho k rPrime := by
-        exact mul_le_mul_of_nonneg_right hcoef (Real.rpow_nonneg (hX rPrime hrPrime) _)
+          (X rPrime) ^ wooleyRho k rPrime := mul_le_mul_of_nonneg_right hcoef (Real.rpow_nonneg (hX rPrime hrPrime) _)
       _ = C ^ ((r + 1 : ℕ) : ℝ) *
           (X rPrime) ^ wooleyRho k rPrime *
           (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) := by ring_nf
-  exact h91.trans (by simpa only [X] using hselected)
+  exact h91.trans (by linarith)
 
 
 end

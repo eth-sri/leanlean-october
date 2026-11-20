@@ -51,7 +51,7 @@ theorem amplifier_fiber_subpower {η : ℝ} (hη : 0 < η) :
   obtain ⟨C,hC,hd⟩ := MathCollab.Density.divisor_card_subpower hη
   refine ⟨C*4^η,by positivity,?_⟩
   intro N L hN hNL m
-  have hL : 0 < L := hN.trans_le hNL
+  have hL  := hN.trans_le hNL
   by_cases hp : (amplifierFiber N L m).Nonempty
   · obtain ⟨p,hp⟩ := hp
     obtain ⟨hpair,hprod⟩ := mem_filter.mp hp
@@ -94,7 +94,7 @@ theorem amplifier_matrix_energy {η : ℝ} (hη : 0 < η) :
   obtain ⟨C,hC,hcard⟩ := amplifier_fiber_subpower hη
   refine ⟨C,hC,?_⟩
   intro N L hN hNL a z M ha
-  have hL : 0 < L := hN.trans_le hNL
+  have hL  := hN.trans_le hNL
   have hD : 0 ≤ C*(1+L)^η := by positivity
   have hsum : (∑ m ∈ M, ∑ p ∈ amplifierFiber N L m, ‖z p.1‖^2) ≤
       ((amplifierSource N).card:ℝ)*(∑ q ∈ amplifierColumns N L, ‖z q‖^2) := by

@@ -56,7 +56,7 @@ theorem norm_heathBrownTaylorError_weight_succ_sub_le_source
       2 * Real.pi * (A * lambda * (H : ℝ) ^ (k - 1)) := by
   have hjmem := Finset.mem_Ico.mp hj
   have hjone : (1 : ℝ) ≤ (j : ℝ) := by exact_mod_cast hjmem.1
-  have hjsucc : j + 1 ≤ H := Nat.succ_le_iff.mpr hjmem.2
+  have hjsucc  := Nat.succ_le_iff.mpr hjmem.2
   have hjsuccR : (j : ℝ) + 1 ≤ (H : ℝ) := by exact_mod_cast hjsucc
   apply norm_heathBrownTaylorError_phase_succ_sub_le j
   · intro x hx
@@ -73,9 +73,8 @@ theorem norm_heathBrownTaylorError_weight_succ_sub_le_source
     · exact hxSource.2
     · exact hfd x hxSource
     · exact hfat
-    · exact hfon x hxSource
-    · intro ξ hξ
-      exact hderiv x hxSource ξ hξ
+    · fun_prop
+    · apply hderiv <;> assumption
 
 /-- Exact partial-sum form of the first Abel transfer in Heath-Brown Lemma 1.
 Unlike the convenient uniform-`R` corollary above, this form preserves every
@@ -101,11 +100,9 @@ theorem heathBrown_shifted_source_sum_norm_le_partial
       (fun h => heathBrownPhase (heathBrownTaylorError k f n h))
       (fun h => heathBrownPhase (heathBrownTaylorPolynomial k f n h)) hH
       (2 * Real.pi * (A * lambda * (H : ℝ) ^ (k - 1)))
-      (by exact norm_heathBrownPhase _ |>.le)
+      (norm_heathBrownPhase _ |>.le)
       (by
-        intro j hj
-        exact norm_heathBrownTaylorError_weight_succ_sub_le_source
-          hk hfat hfd hfon hderiv hj))
+        apply norm_heathBrownTaylorError_weight_succ_sub_le_source <;> assumption))
 
 end
 

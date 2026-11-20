@@ -30,7 +30,6 @@ theorem wooleyResiduesSeparated_symm
     {p nu a b : ℕ} {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)} :
     wooleyResiduesSeparated nu xi eta ↔
       wooleyResiduesSeparated nu eta xi := by
-  unfold wooleyResiduesSeparated
   exact ne_comm
 
 theorem wooley_sum_separatedResiduePairsAt
@@ -79,8 +78,8 @@ theorem wooley_scaled_two_factor_holder_real
       (c * ∑ i ∈ t, f i) ^ u *
         (c * ∑ i ∈ t, g i) ^ (1 - u) := by
   have hholder := wooley_two_factor_holder_real t f g hf hg hu0 hu1
-  have hsumF : 0 ≤ ∑ i ∈ t, f i := Finset.sum_nonneg hf
-  have hsumG : 0 ≤ ∑ i ∈ t, g i := Finset.sum_nonneg hg
+  have hsumF  := Finset.sum_nonneg hf
+  have hsumG  := Finset.sum_nonneg hg
   have hscale := mul_le_mul_of_nonneg_left hholder hc.le
   calc
     c * (∑ i ∈ t, f i ^ u * g i ^ (1 - u)) ≤
@@ -108,10 +107,10 @@ theorem wooley_scaled_weighted_two_factor_holder_real
     c * (∑ i ∈ t, w i * h i) ≤
       (c * ∑ i ∈ t, w i * f i) ^ u *
         (c * ∑ i ∈ t, w i * g i) ^ (1 - u) := by
-  let F : ι → ℝ := fun i => w i * f i
-  let G : ι → ℝ := fun i => w i * g i
-  have hF : ∀ i ∈ t, 0 ≤ F i := fun i hi => mul_nonneg (hw i hi) (hf i hi)
-  have hG : ∀ i ∈ t, 0 ≤ G i := fun i hi => mul_nonneg (hw i hi) (hg i hi)
+  let F  := fun i => w i * f i
+  let G  := fun i => w i * g i
+  have hF  := fun i hi => mul_nonneg (hw i hi) (hf i hi)
+  have hG  := fun i hi => mul_nonneg (hw i hi) (hg i hi)
   have hweight (i : ι) (hi : i ∈ t) :
       F i ^ u * G i ^ (1 - u) =
         w i * (f i ^ u * g i ^ (1 - u)) := by
@@ -150,11 +149,9 @@ theorem wooley_section8_integrand_identity
         (((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ))) =
       x ^ (2 * wooleyTriangular r) *
         y ^ (2 * (wooleyTriangular k - wooleyTriangular r)) := by
-  have htriSub : wooleyTriangular (k - r) ≤ wooleyTriangular k :=
-    wooleyTriangular_sub_le k r
-  have htriPred : wooleyTriangular (r - 1) ≤ wooleyTriangular k :=
-    wooleyTriangular_pred_le (show r ≤ k by omega)
-  have htriR : wooleyTriangular r ≤ wooleyTriangular k :=
+  
+  
+  have htriR  :=
     wooleyTriangular_mono (show r ≤ k by omega)
   have hleft := wooley_section8_left_exponent hr hrk
   have hright := wooley_section8_right_exponent hr hrk
@@ -174,7 +171,7 @@ theorem wooley_section8_integrand_identity
         ((2 * (wooleyTriangular k - wooleyTriangular r) : ℕ) : ℝ) := by
     simpa only [Nat.cast_mul, Nat.cast_ofNat, mul_comm, mul_left_comm,
       mul_assoc] using hright
-  have hrReal : (1 : ℝ) ≤ r := by exact_mod_cast hr
+  
   have htriRReal : (0 : ℝ) < (wooleyTriangular r : ℕ) := by
     rw [wooleyTriangular_cast]
     positivity
@@ -203,7 +200,7 @@ theorem wooley_section8_integrand_identity
     rw [hright']
     apply ne_of_gt
     exact_mod_cast (show 0 < 2 * (wooleyTriangular k - wooleyTriangular r) by
-      exact Nat.mul_pos (by norm_num) (Nat.sub_pos_of_lt htriLt))
+      omega)
   rw [Real.mul_rpow (pow_nonneg hy _) (pow_nonneg hx _),
     Real.mul_rpow (pow_nonneg hx _) (pow_nonneg hy _)]
   simp_rw [← Real.rpow_natCast]
@@ -277,7 +274,7 @@ theorem wooleyPolynomial_section8_local_holder
     dsimp [c]
     have hpB : 0 < p ^ B := Nat.pos_of_ne_zero (NeZero.ne (p ^ B))
     have hpow : 0 < (p ^ B) ^ k := pow_pos hpB k
-    exact inv_pos.mpr (by exact_mod_cast hpow)
+    exact inv_pos.mpr (by positivity)
   have hf : ∀ alpha ∈ (Finset.univ : Finset (Fin k → ZMod (p ^ B))),
       0 ≤ f alpha := by
     intro alpha halpha
@@ -322,9 +319,7 @@ theorem wooleyPolynomial_equation_8_3
         (((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ)) := by
   unfold wooleyPolynomialMixedGridMean
   split_ifs with hmass
-  · have hkrPos : 0 < k - r := Nat.sub_pos_of_lt hrk
-    rw [Real.zero_rpow (by positivity), Real.zero_rpow (by positivity)]
-    norm_num
+  · positivity
   · let pairs := wooleySeparatedResiduePairsAt p nu bPrime b
     let w : (ZMod (p ^ bPrime) × ZMod (p ^ b)) → ℝ := fun xy =>
       wooleyWeightedResidueMassSq gamma xy.1 *
@@ -354,7 +349,7 @@ theorem wooleyPolynomial_equation_8_3
         ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ) := by
       dsimp [u]
       exact wooley_section8_weight_complement hrk
-    have hmassPos : 0 < wooleyWeightedMassSq gamma :=
+    have hmassPos  :=
       lt_of_le_of_ne (wooleyWeightedMassSq_nonneg gamma) (Ne.symm hmass)
     have hc : 0 < c := by dsimp [c]; positivity
     have hw : ∀ xy ∈ pairs, 0 ≤ w xy := by
@@ -526,8 +521,7 @@ theorem wooleyPolynomialMixedGridMean_zero_le_conditioned
         (∑ xi : ZMod (p ^ a) with wooleyResiduesSeparated nu eta xi,
             wooleyWeightedResidueMassSq gamma xi) ≤
             ∑ xi : ZMod (p ^ a),
-              wooleyWeightedResidueMassSq gamma xi := by
-          exact Finset.sum_le_univ_sum_of_nonneg fun xi =>
+              wooleyWeightedResidueMassSq gamma xi := Finset.sum_le_univ_sum_of_nonneg fun xi =>
             wooleyWeightedResidueMassSq_nonneg gamma xi
         _ = wooleyWeightedMassSq gamma :=
           wooley_sum_weightedResidueMassSq gamma
@@ -552,7 +546,7 @@ theorem wooleyPolynomialMixedGridMean_zero_le_conditioned
           apply Finset.sum_congr rfl
           intro eta heta
           ring
-    have hmassPos : 0 < wooleyWeightedMassSq gamma :=
+    have hmassPos  :=
       lt_of_le_of_ne (wooleyWeightedMassSq_nonneg gamma) (Ne.symm hmass)
     have hscaled := mul_le_mul_of_nonneg_left hsum
       (sq_nonneg (wooleyWeightedMassSq gamma)⁻¹)
@@ -570,7 +564,7 @@ theorem wooleyPolynomialMixedGridMean_zero_le_conditioned
           ∑ eta : ZMod (p ^ b),
             wooleyWeightedResidueMassSq gamma eta * L eta := by
         field_simp [ne_of_gt hmassPos]
-      _ = _ := by rfl
+      _ = _ := rfl
 
 end
 

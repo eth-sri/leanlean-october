@@ -25,18 +25,18 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
     (h6 : N^8*T^3 ≤ Q^2*S^((5:ℝ)/2)*V^14)
     (h7 : N^9*T^((9:ℝ)/4) ≤ Q^2*S^((29:ℝ)/12)*V^14) :
     R ≤ A*(4+4*B)*Λ^2*Q*S := by
-  have hR : 0 < R := hS.trans_le hSR
-  have hq : 0 ≤ Q := by linarith
+  have hR  := hS.trans_le hSR
+  
   have hl : 0 ≤ Λ := by linarith
   let Y := Q*S*R^2*V^6
   have hy : 0 ≤ Y := by dsimp [Y]; positivity
-  have hr2 : S^2 ≤ R^2 := pow_le_pow_left₀ hS.le hSR 2
+  have hr2  := pow_le_pow_left₀ hS.le hSR 2
   have hr3 : S^3 ≤ S*R^2 := by nlinarith only [mul_le_mul_of_nonneg_left hr2 hS.le]
   have hb1 : (N*L)^3 ≤ Y := by
     calc
       _ ≤ Q*S^3*V^6 := h1
       _ ≤ Q*(S*R^2)*V^6 := by gcongr
-      _ = Y := by dsimp [Y]; ring
+      _ = Y := by ring
   have hb2 : (N^4*T^2/L)*R*Real.sqrt R ≤ Y := by
     apply (sq_le_sq₀ (by positivity) hy).mp
     calc
@@ -44,7 +44,7 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ ≤ (Q^2*S^3*V^12)*R^3 := mul_le_mul_of_nonneg_right h2 (by positivity)
       _ = (Q^2*S^2*V^12*R^3)*S := by ring
       _ ≤ (Q^2*S^2*V^12*R^3)*R := mul_le_mul_of_nonneg_left hSR (by positivity)
-      _ = Y^2 := by dsimp [Y]; ring
+      _ = Y^2 := by ring
   have hb5 : N^4*L*R^2 ≤ Y := by
     have hh := mul_le_mul_of_nonneg_right h5 (sq_nonneg R)
     convert hh using 1; dsimp [Y]; ring
@@ -102,12 +102,9 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
         have ht9 : T^2*T^((1:ℝ)/4)=T^((9:ℝ)/4) := by
           rw [← Real.rpow_natCast T 2,← Real.rpow_add hT]
           norm_num
-        rw [mul_add,mul_add,mul_add]
-        ring_nf
-        simp only [← hr5,← hr31,← ht9]
-        ring
+        grind
       _ ≤ B*Λ*(4*(Q^2*S^2*R^4*V^12)) := by gcongr; linarith only [he3,he4,he6,he7]
-      _ = _ := by dsimp [Y]; ring
+      _ = _ := by ring
   have hbE : N^4*T*Real.sqrt R*Real.sqrt E ≤ (1+4*B)*Λ*Y := by
     apply (sq_le_sq₀ (by positivity) (by positivity)).mp
     have hcoef : 4*B*Λ ≤ ((1+4*B)*Λ)^2 := by
@@ -128,7 +125,7 @@ theorem adjacent_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ ≤ A*Λ*((N*L)^3+(N^4*T^2/L)*R*Real.sqrt R+
           N^4*T*Real.sqrt R*Real.sqrt E+N^4*L*R^2) := hcubic
       _ ≤ A*Λ*((4+4*B)*Λ*Y) := mul_le_mul_of_nonneg_left hsum (by positivity)
-      _ = _ := by dsimp [Y]; ring
+      _ = _ := by ring
   exact le_of_mul_le_mul_right hh (by positivity)
 
 end Montgomery.RationalMoment

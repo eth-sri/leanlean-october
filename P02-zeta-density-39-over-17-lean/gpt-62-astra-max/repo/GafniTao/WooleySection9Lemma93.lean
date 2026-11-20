@@ -24,17 +24,16 @@ theorem wooley_lemma_9_3_constant_le
     C ^ ((r + 1 : ℕ) : ℝ) *
         (C ^ (((k - r₁) + 1 : ℕ) : ℝ)) ^ wooleyRho k r₁ ≤
       C ^ ((2 * k : ℕ) : ℝ) := by
-  have hC0 : 0 ≤ C := zero_le_one.trans hC
-  have hCpos : 0 < C := zero_lt_one.trans_le hC
-  have hden : (0 : ℝ) < (k - r₁ + 1 : ℕ) := by positivity
+  have hC0  := zero_le_one.trans hC
+  have hCpos  := zero_lt_one.trans_le hC
+  
   have hmul : (((k - r₁) + 1 : ℕ) : ℝ) * wooleyRho k r₁ = r₁ := by
     unfold wooleyRho
     field_simp
   rw [← Real.rpow_mul hC0, hmul, ← Real.rpow_add hCpos]
   apply Real.rpow_le_rpow_of_exponent_le hC
   norm_num only [Nat.cast_add, Nat.cast_one, Nat.cast_mul]
-  have hrle : r ≤ k - 1 := hrk
-  have hr₁le : r₁ ≤ k - 1 := by omega
+  
   exact_mod_cast (show r + 1 + r₁ ≤ 2 * k by omega)
 
 /-- The exact two-selection conclusion of Wooley Lemma 9.3.  The hypotheses

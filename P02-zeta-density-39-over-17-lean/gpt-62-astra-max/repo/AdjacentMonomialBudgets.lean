@@ -27,9 +27,9 @@ theorem adjacent_monomial_budgets {σ a p α δ T N : ℝ}
     N^9*T^((9:ℝ)/4) ≤ Q^2*S^((29:ℝ)/12)*V^14 := by
   have hTp : 0 < T := by linarith
   have ha : 0 ≤ a := by linarith [hw.a_low]
-  have hN1 : 1 ≤ N := (Real.one_le_rpow hT ha).trans hlo
-  have ht : 0 ≤ Real.log T := Real.log_nonneg hT
-  have hn : 0 ≤ Real.log N := Real.log_nonneg hN1
+  have hN1  := (Real.one_le_rpow hT ha).trans hlo
+  have ht  := Real.log_nonneg hT
+  have hn  := Real.log_nonneg hN1
   have hlow : a*Real.log T ≤ Real.log N := by
     have hh := Real.log_le_log (Real.rpow_pos_of_pos hTp a) hlo
     simpa only [Real.log_rpow hTp] using hh
@@ -56,7 +56,7 @@ theorem adjacent_monomial_budgets {σ a p α δ T N : ℝ}
   · have hh := mul_le_mul_of_nonneg_left hlow (show 0 ≤ 14*σ-9 by linarith [hw.sigma_low])
     have hb := mul_nonneg (show 0 ≤ 2*p-2+a*(14*σ-9) by linarith [hw.energy_resonant]) ht
     nlinarith only [hh,hb,hd]
-  · nlinarith only [hd]
+  · linarith
   · have hh := mul_le_mul_of_nonneg_left hlow (show 0 ≤ 14*σ-8 by linarith [hw.sigma_low])
     have hb := mul_nonneg (show 0 ≤ (5/2)*p+a*(14*σ-8)-3 by linarith [hw.energy_adjacent_third]) ht
     nlinarith only [hh,hb,hd]

@@ -45,7 +45,7 @@ theorem middle_range_large_values : CandidateMiddleRangeEstimate := by
         _ ≤ C*N^ε*(N^2/V^2) := mul_le_mul_of_nonneg_right h2 (by positivity)
         _ ≤ _ := mul_le_mul_of_nonneg_left
           (le_add_of_nonneg_right (by positivity)) (by positivity)
-    · have hV1 : 1 ≤ V := le_of_not_gt hsmall
+    · have hV1  := le_of_not_gt hsmall
       by_cases hVU : V ≤ middleThreshold N T
       · have hh := hlow N T V hN hlo hhi hV1 hVU b Z hb hZ hZsep hZv
         have hc : C₁ ≤ C := by dsimp [C]; linarith

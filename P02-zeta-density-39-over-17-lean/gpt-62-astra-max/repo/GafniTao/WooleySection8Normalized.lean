@@ -54,12 +54,9 @@ theorem wooleySourcePolynomial_equation_8_4_quotient
     (hZ := hscale) (hD := hD)
     (he := (wooleyNormalizationExponent_pos (show 1 ≤ r by omega) hrk).le)
     (huv := ?_) (hmain := hraw)
-  · exact wooleySourcePolynomialMixedMean_nonneg
-      phi (wooleyTriangular k) r p B a b nu gamma
-  · exact wooleySourcePolynomialMixedMean_nonneg
-      phi (wooleyTriangular k) (k - r) p B b bPrime nu gamma
-  · exact wooleySourcePolynomialMixedMean_nonneg
-      phi (wooleyTriangular k) (r - 1) p B bPrime b nu gamma
+  · apply wooleySourcePolynomialMixedMean_nonneg <;> assumption
+  · apply wooleySourcePolynomialMixedMean_nonneg <;> assumption
+  · apply wooleySourcePolynomialMixedMean_nonneg <;> assumption
   · rw [wooley_section8_raw_complement hrk]
     ring
 
@@ -100,10 +97,10 @@ theorem wooleySourcePolynomial_equation_8_4
   have hq := wooleySourcePolynomial_equation_8_4_quotient
     phi p B H r a b bPrime nu Delta D hr hrk hnub hnuPrime gamma
       hscale hD hsection7
-  have hXZ : 0 ≤ X / Z := div_nonneg
+  have hXZ  := div_nonneg
     (wooleySourcePolynomialMixedMean_nonneg
       phi (wooleyTriangular k) (k - r) p B b bPrime nu gamma) hscale.le
-  have hYZ : 0 ≤ Y / Z := div_nonneg
+  have hYZ  := div_nonneg
     (wooleySourcePolynomialMixedMean_nonneg
       phi (wooleyTriangular k) (r - 1) p B bPrime b nu gamma) hscale.le
   have hx :
@@ -136,8 +133,7 @@ theorem wooleySourcePolynomial_equation_8_4
       wooleyNormalizationExponent k (k - r)) ^ u *
     ((Y / Z) ^ wooleyNormalizationExponent k (r - 1)) ^
       (1 - 1 / (r : ℝ))
-  change _ ≤ D ^ e * (X / Z) ^ (u * e) * (Y / Z) ^ (v * e) at hq
-  simpa only [hx, hy] using hq
+  grind
 
 /-- The normalized `r=1` conclusion before the Section-6 estimate for the
 conditioned mean is inserted. -/
@@ -188,14 +184,11 @@ theorem wooleySourcePolynomial_equation_8_5_pre
     (wooleySourcePolynomialConditionedMean_nonneg
       phi (wooleyTriangular k) (p ^ B) (p ^ b) gamma)
     hscale hD (by norm_num) huv hraw
-  have hXZ : 0 ≤ X / Z := div_nonneg
-    (wooleySourcePolynomialMixedMean_nonneg
-      phi (wooleyTriangular k) (k - 1) p B b (k * b) nu gamma) hscale.le
+  
   unfold wooleySourceNormalizedMixedMean
   rw [wooleyNormalizationExponent_one hk,
     wooleyNormalizationExponent_pred hk]
   change _ ≤ D * ((X / Z) ^ 1) ^ u * (Y / Z) ^ v
-  change _ ≤ D ^ (1 : ℝ) * (X / Z) ^ (u * 1) * (Y / Z) ^ (v * 1) at hq
   simpa only [Real.rpow_one, mul_one] using hq
 
 /-- Equation (8.5) with an explicit upper bound for the conditioned-mean
@@ -233,11 +226,7 @@ theorem wooleySourcePolynomial_equation_8_5_of_ratio
     have hkPos : (0 : ℝ) < k := by positivity
     rw [sub_nonneg, div_le_iff₀ hkPos]
     linarith
-  have hratio0 : 0 ≤
-      wooleySourcePolynomialConditionedMean
-          (wooleyTriangular k) (p ^ B) (p ^ b) phi gamma /
-        wooleySourceNormalizationScale
-          phi p B H (wooleyTriangular k) Delta gamma := div_nonneg
+  have hratio0  := div_nonneg
     (wooleySourcePolynomialConditionedMean_nonneg
       phi (wooleyTriangular k) (p ^ B) (p ^ b) gamma) hscale.le
   have hp := Real.rpow_le_rpow hratio0 hratio hv

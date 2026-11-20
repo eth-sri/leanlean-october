@@ -26,12 +26,12 @@ theorem bootstrap_preabsorption (w : ComparisonCutoff) :
   intro κ d hW U L hU hL
   let b := bootstrapScalar d.T d.N d.V
   let B := bootstrapBound w.toReflectionCutoff d
-  have hb : 0 ≤ b := bootstrapScalar_nonneg d.T d.V d.N
-  have hB : 0 ≤ B := bootstrapBound_nonneg w.toReflectionCutoff d hW
+  have hb  := bootstrapScalar_nonneg d.T d.V d.N
+  have hB  := bootstrapBound_nonneg w.toReflectionCutoff d hW
   have hT : 0 < d.T := by linarith [d.T_ge_two]
   have hT1 : 1 ≤ d.T := by linarith [d.T_ge_two]
   have hsep := oneSeparated_subset d.separated hU
-  have hd : localDiameter U ≤ d.T+1 := (d.local_card_le hU).2
+  have hd  := (d.local_card_le hU).2
   have hdiam : intervalSpan U ≤ d.T := by dsimp [localDiameter] at hd; linarith
   have hQ := kernelEnergy_le_dyadic_shells w.toReflectionCutoff L hsep
   have hdi := (hdiag d.T L 1 U d.T_ge_two (d.scale_lower.trans hL) (by norm_num) hsep hdiam).2
@@ -92,10 +92,10 @@ theorem bootstrap_absorption_inequality (w : ComparisonCutoff) :
   let B := bootstrapBound w.toReflectionCutoff d
   let D := b*U.card*(L^2+(d.N : ℝ)*localDiameter U)
   let ℓ := Real.log (2*d.T)/Real.log 2
-  have hb : 0 ≤ b := bootstrapScalar_nonneg d.T d.V d.N
-  have hB : 0 ≤ B := bootstrapBound_nonneg w.toReflectionCutoff d hW
+  have hb  := bootstrapScalar_nonneg d.T d.V d.N
+  have hB  := bootstrapBound_nonneg w.toReflectionCutoff d hW
   have hN : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
-  have hD : 1 ≤ D := (by exact_mod_cast d.N_pos : (1 : ℝ) ≤ d.N).trans (d.normalization_lower hU hL.1)
+  have hD  := (by exact_mod_cast d.N_pos : (1 : ℝ) ≤ d.N).trans (d.normalization_lower hU hL.1)
   have hDp : 0 < D := by linarith
   have hℓ : 1 ≤ ℓ := (le_div_iff₀ hlog2).2 (by
     simpa only [one_mul] using Real.log_le_log (by norm_num : (0 : ℝ) < 2) (by linarith [d.T_ge_two] : 2 ≤ 2*d.T))
@@ -116,8 +116,8 @@ theorem bootstrap_absorption_inequality (w : ComparisonCutoff) :
     have hh := Real.rpow_le_rpow_of_exponent_le (by linarith [d.T_ge_two] : 1 ≤ d.T)
       (by norm_num : (-90 : ℝ) ≤ 0)
     simpa only [Real.rpow_zero] using hh
-  have he₀ : E*1 ≤ E*D := mul_le_mul_of_nonneg_left hD hE
-  have he : E*d.T^(-90 : ℝ) ≤ E*D := (mul_le_mul_of_nonneg_left hpow hE).trans he₀
+  have he₀  := mul_le_mul_of_nonneg_left hD hE
+  have he  := (mul_le_mul_of_nonneg_left hpow hE).trans he₀
   change kernelEnergy w.toReflectionCutoff L U / D ≤ _
   apply (div_le_iff₀ hDp).2
   have hrewrite : (2*C/Real.log 2)*(d.N : ℝ)*b^2*Real.log (2*d.T)*B*D =

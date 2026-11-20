@@ -33,7 +33,7 @@ theorem sum_le_cover {α ι : Type*} [DecidableEq α] [DecidableEq ι]
 theorem integrable_affine_square (f : 𝓢(ℝ, ℝ)) {M₁ M₂ M₃ : ℕ}
     (h₁ : 0 < M₁) (h₂ : 0 < M₂) :
     Integrable (fun u => gmAffineTransformSum f M₁ M₂ M₃ u^2) := by
-  have hf2 : Integrable (fun x => f x^2) :=
+  have hf2  :=
     (memLp_two_iff_integrable_sq f.continuous.aestronglyMeasurable).1 (f.memLp 2)
   have hi : Integrable (fun u => ((gmAffineIndexSet M₁ M₂ M₃).card:ℝ)*
       ∑ p ∈ gmAffineIndexSet M₁ M₂ M₃, gmAffineTerm f p.1 p.2.1 p.2.2 u^2) := by
@@ -82,7 +82,7 @@ theorem affine_integral_le_cover {ι : Type*} [DecidableEq ι]
 theorem real_dyadic_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
     (hlo : R ≤ (m:ℝ)) (hhi : (m:ℝ) ≤ 2*R) :
     m ∈ gmAffinePositiveShell ⌊R⌋₊ ∨ m ∈ gmAffinePositiveShell (2*⌊R⌋₊) := by
-  have hp : 0 < ⌊R⌋₊ := Nat.floor_pos.mpr hR
+  have hp  := Nat.floor_pos.mpr hR
   have hpr : (1:ℝ) ≤ ⌊R⌋₊ := by exact_mod_cast hp
   have hfloor := Nat.floor_le (show 0 ≤ R by linarith)
   have hupper := Nat.lt_floor_add_one R
@@ -107,13 +107,8 @@ theorem real_signed_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
     rcases mem_gmAffinePositiveShell.mp hp with ⟨hl,hu⟩
     apply mem_gmAffineSignedShell.mpr
     by_cases hz : 0 ≤ m
-    · right
-      simpa only [abs_of_nonneg hz] using And.intro hl hu
-    · left
-      have hz' : m < 0 := lt_of_not_ge hz
-      rw [abs_of_neg hz'] at hl hu
-      push_cast
-      constructor <;> omega
+    · grind
+    · grind
   exact h.elim (fun hp => Or.inl (hc hp)) (fun hp => Or.inr (hc hp))
 
 end GuthMaynard.Improvement

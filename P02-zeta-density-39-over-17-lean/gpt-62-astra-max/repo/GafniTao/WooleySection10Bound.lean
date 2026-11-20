@@ -56,8 +56,8 @@ theorem WooleyIterationChain.composed_bound
       let R' : ℝ := rho * R
       let Cacc : ℝ := D * Ctail ^ rho
       let E : ℝ := (b : ℝ) + rho * Etail
-      have hrhoNonneg : 0 ≤ rho := hrho.le
-      have hR'pos : 0 < R' := mul_pos hrho hRpos
+      have hrhoNonneg  := hrho.le
+      have hR'pos  := mul_pos hrho hRpos
       have hR'one : R' ≤ 1 := by
         dsimp [R']
         nlinarith
@@ -89,10 +89,7 @@ theorem WooleyIterationChain.composed_bound
         push_cast
         nlinarith
       have hKPrime : 0 ≤ K rPrime aPrime bPrime := hK _ _ _
-      have hraised :
-          (K rPrime aPrime bPrime) ^ rho ≤
-            (Ctail * (K rFinal aFinal bFinal) ^ R *
-              (p : ℝ) ^ (-Etail * Lambda / (2 * (k : ℝ)))) ^ rho :=
+      have hraised  :=
         Real.rpow_le_rpow hKPrime htailBound hrhoNonneg
       have hsubstitute : K r a b ≤
           D *
@@ -169,14 +166,13 @@ theorem WooleyIterationChain.composed_bound
           (b : ℝ) ≤ rho * (bPrime : ℝ) := hweighted
           _ ≤ rho * (R * (bFinal : ℝ)) :=
             mul_le_mul_of_nonneg_left hweightedTail hrhoNonneg
-          _ = R' * (bFinal : ℝ) := by dsimp [R']; ring
+          _ = R' * (bFinal : ℝ) := by ring
       · calc
           bFinal ≤ k ^ (2 * n) * bPrime := hscaleTail
           _ ≤ k ^ (2 * n) * (k ^ 2 * b) :=
             Nat.mul_le_mul_left _ hupper
           _ = k ^ (2 * (n + 1)) * b := by
-            rw [show 2 * (n + 1) = 2 * n + 2 by omega, pow_add]
-            simp only [mul_assoc]
+            ring
       · exact hsubstitute.trans_eq hrearrange
 
 

@@ -1,6 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.BetaLegendreModelCover
+public import TaoTrudgianYang2025.BetaPhaseNormalization
 public import TaoTrudgianYang2025.BetaStationaryPoint
 
 @[expose] public section

@@ -94,10 +94,7 @@ theorem wooley_equation_7_19_outer_native
               (wooleySourceTwist left
                 (fun n => wooleySourcePolynomialPhase leftPhi alpha n))) *
             ‖wooleySourceNormalizedPolynomialSum rightPhi right alpha‖ ^ (2 * S) := by
-      apply mul_le_mul_of_nonneg_left _ hscale
-      apply Finset.sum_le_sum
-      intro alpha halpha
-      exact mul_le_mul_of_nonneg_right (hpoint alpha) (by positivity)
+      bound
     _ = ((((q ^ k : ℕ) : ℝ))⁻¹) * (C * loss) *
         (∑ alpha : Fin k → ZMod q,
           wooleySourcePolynomialConditionedMean R qPrime qH Psi

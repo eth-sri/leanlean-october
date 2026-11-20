@@ -86,8 +86,7 @@ theorem spatialCubicMode_radial_fubini {a : ℝ → ℂ} {μ : ℝ → ℝ}
     exact hs x (fun h => (not_lt_of_ge hx) (lt_of_lt_of_le hl h.1))
   rw [spatialCubicMode_radial_integrals ha0]
   have hInt := radialIntegrand_integrable ha hl hlu hs hm h0 hi L m
-  have hip : Integrable (fun z : ℝ × (ℝ × ℝ) => radialIntegrand a μ L m z.1 z.2)
-      (volume.prod volume) := hInt
+  have hip  := hInt
   have hsplit : (∫ r, ∫ v, ∫ y, radialIntegrand a μ L m r (v,y)) =
       ∫ r, ∫ p : ℝ × ℝ, radialIntegrand a μ L m r p := by
     apply integral_congr_ae

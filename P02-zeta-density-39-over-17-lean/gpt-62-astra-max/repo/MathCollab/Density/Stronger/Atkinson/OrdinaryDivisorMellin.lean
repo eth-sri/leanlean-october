@@ -39,8 +39,7 @@ theorem DFIVoronoiTestFunction.integrable_ordinaryDivisorMellinTerm
       have hBase : (n : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr hn
       have hExponent : Continuous (fun u : ℝ =>
           (c : ℂ) + (u : ℂ) * I) := by fun_prop
-      have hPow : Continuous (fun u : ℝ =>
-          (n : ℂ) ^ ((c : ℂ) + (u : ℂ) * I)) :=
+      have hPow  :=
         hExponent.const_cpow (Or.inl hBase)
       exact (continuous_const.div hPow (fun _u =>
         Complex.cpow_ne_zero_iff.mpr (Or.inl hBase))).aestronglyMeasurable
@@ -72,8 +71,7 @@ theorem DFIVoronoiTestFunction.summable_integral_norm_ordinaryDivisorMellinTerm
       ∫ u : ℝ, ‖ordinaryDivisorMellinTerm g c n u‖) := by
   have hCoeff : LSeriesSummable divisorWeight (c : ℂ) :=
     divisorLSeries_summable (by simpa using hc)
-  have hNorm : Summable (fun n : ℕ =>
-      ‖LSeries.term divisorWeight (c : ℂ) n‖) :=
+  have hNorm  :=
     summable_norm_iff.mpr hCoeff
   have hMul := hNorm.mul_right
     (∫ u : ℝ, ‖mellin g ((c : ℂ) + (u : ℂ) * I)‖)
@@ -127,7 +125,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisorSum_eq_zetaSquareMellinIntegral
     intro n
     rcases eq_or_ne n 0 with rfl | hn
     · simp [divisorWeight]
-    · rw [hg.mellinInversion σ (by exact_mod_cast Nat.pos_of_ne_zero hn)]
+    · rw [hg.mellinInversion σ (by positivity)]
   simp_rw [hInvAll, divisorWeight_mul_mellinInv]
   rw [tsum_mul_left]
   rw [MeasureTheory.integral_tsum_of_summable_integral_norm

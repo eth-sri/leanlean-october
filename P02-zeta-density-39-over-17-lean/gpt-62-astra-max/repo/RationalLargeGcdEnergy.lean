@@ -31,7 +31,7 @@ theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
         C*T^η*X*(W.card : ℝ)^2 := by
   obtain ⟨C, hC, hbound⟩ := coprime_dyadic_short_range hK (show 0 < η/2 by positivity)
   let L : ℝ := 1+4^(η/2)/(η/2)
-  have hL : 0 < L := by dsimp [L]; positivity
+  
   refine ⟨C*L, by positivity, ?_⟩
   intro T t₀ X D hT hX hXT hD P hP W hR hXR hW hsep
   have hgeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -122,13 +122,12 @@ theorem large_gcd_cubic_at_transition {K : ℕ} (hK : 1 ≤ K)
   obtain ⟨C, hC, hbound⟩ := large_gcd_cubic_energy hK hη
   refine ⟨C, hC, ?_⟩
   intro T t₀ X hT hX hXT P hP W hR hXR hW hsep
-  have hTp : 0 < T := by linarith
+  
   have he : X/(X^2/T) = T/X := by field_simp
   apply hbound T t₀ X (X^2/T) hT hX.le hXT (by positivity) _ _ W hR
     (by rw [he]; exact hXR) hW hsep
   intro p hp
   obtain ⟨hp, hd⟩ := mem_filter.mp hp
-  obtain ⟨h1,h2,hl1,hu1,hl2,hu2⟩ := hP p hp
-  exact ⟨h1,h2,hl1,hu1,hl2,hu2,hd⟩
+  grind
 
 end Montgomery.RationalMoment

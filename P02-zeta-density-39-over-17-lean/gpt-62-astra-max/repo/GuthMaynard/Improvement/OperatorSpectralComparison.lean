@@ -66,7 +66,7 @@ theorem operator_finite_spectral_comparison [FiniteDimensional ℂ E]
       ‖∑ i, inner ℂ (d i) (((G-C)^3) (d i))‖+
       (∑ i, inner ℂ (d i) ((C*(G-C)^2) (d i))).re := by
   let H := G-C
-  have hs : H.toLinearMap.IsSymmetric := hG.isSymmetric.sub hC.isSymmetric
+  have hs  := hG.isSymmetric.sub hC.isSymmetric
   let b := hs.eigenvectorBasis rfl
   let e := hs.eigenvalues rfl
   have he (i : Fin (Module.finrank ℂ E)) : H (b i) = (e i:ℂ) • b i :=

@@ -39,8 +39,7 @@ theorem source_ratio_fourier_square (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 0 
   have hh := sampling_fourier_square h1 h2 hR hs
     (fun q : S => sourceRatioFrequency q) (by positivity : 0 < (2*Real.pi*Y^2)⁻¹)
     (source_ratio_frequency_separated S hS)
-  have he : (∑ q : S, ‖𝓕 f (sourceRatioFrequency q)‖^2) =
-      ∑ q ∈ S, ‖𝓕 f (sourceRatioFrequency q)‖^2 :=
+  have he  :=
     Finset.sum_coe_sort S (fun q => ‖𝓕 f (sourceRatioFrequency q)‖^2)
   rw [← he]
   simpa only [inv_inv] using hh
@@ -54,8 +53,7 @@ theorem source_ratio_fourier_weighted_low (S : Finset (ℕ × ℕ)) {Y : ℝ} (h
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     (∑ q ∈ S, w q*‖𝓕 f (sourceRatioFrequency q)‖) ≤
-      Real.sqrt W * Real.sqrt ((2*Real.pi*Y^2+4*Real.pi*R)*(∫ t, ‖f t‖^2)) := by
-  exact (Real.sum_mul_le_sqrt_mul_sqrt S w (fun q => ‖𝓕 f (sourceRatioFrequency q)‖)).trans
+      Real.sqrt W * Real.sqrt ((2*Real.pi*Y^2+4*Real.pi*R)*(∫ t, ‖f t‖^2)) := (Real.sum_mul_le_sqrt_mul_sqrt S w (fun q => ‖𝓕 f (sourceRatioFrequency q)‖)).trans
     (mul_le_mul (Real.sqrt_le_sqrt hW)
       (Real.sqrt_le_sqrt (source_ratio_fourier_square S hY hS h1 h2 hR hs))
       (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
@@ -83,8 +81,7 @@ theorem source_ratio_fourier_first (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 1 �
     constructor <;> linarith [ht.1,ht.2]
   have hh := sampling_fourier_first_variation h1 h2 hR hs
     (fun q : S => sourceRatioFrequency q) hd (source_ratio_frequency_separated S hS) hb
-  have he : (∑ q : S, ‖𝓕 f (sourceRatioFrequency q)‖) =
-      ∑ q ∈ S, ‖𝓕 f (sourceRatioFrequency q)‖ :=
+  have he  :=
     Finset.sum_coe_sort S (fun q => ‖𝓕 f (sourceRatioFrequency q)‖)
   rw [← he]
   simpa only [inv_inv] using hh
@@ -102,7 +99,7 @@ theorem source_ratio_fourier_weighted_shell (S : Finset (ℕ × ℕ)) {Q X : ℝ
     (∑ q ∈ S, w q*‖𝓕 f (sourceRatioFrequency q)‖) ≤
       8*Real.pi*X*Q*(∫ ξ in Icc (-2:ℝ) 2, ‖𝓕 f ξ‖)+
       4*Real.pi*X*R/Q*Real.sqrt (∫ t, ‖f t‖^2) := by
-  have hQ0 : 0 < Q := lt_of_lt_of_le zero_lt_one hQ
+  have hQ0  := lt_of_lt_of_le zero_lt_one hQ
   have hb := source_ratio_fourier_first S (Y := 2*Q) (by linarith)
     (fun q hq => by
       obtain ⟨ha,hb,hc,_,hh⟩ := hS q hq

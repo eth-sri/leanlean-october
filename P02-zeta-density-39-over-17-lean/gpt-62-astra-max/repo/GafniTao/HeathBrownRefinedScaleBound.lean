@@ -130,7 +130,7 @@ theorem heathBrownPairCount_card_cast_le_chosen_factor
           (1 + Real.log N)) := by
   dsimp only
   let H := heathBrownHChoice k A lambda
-  let K := heathBrownBlockParameter A lambda N
+  
   let D := heathBrownShiftBound N k H lambda
   let c : ℝ := 8 * ((k - 2).factorial : ℝ) *
     (((H : ℝ) ^ (k - 2))⁻¹) / lambda

@@ -31,8 +31,7 @@ theorem short_density_scale_bounds {σ : ℝ} (hσ : 9/13 ≤ σ) (hσ' : σ ≤
   refine ⟨ha,ha',?_,?_,?_,?_⟩
   · unfold shortDensityB; linarith
   · unfold shortDensityB; linarith
-  · unfold shortDensityExponent
-    exact div_pos (by linarith) hd
+  · exact div_pos (by linarith) hd
   · unfold shortDensityExponent
     apply (le_div_iff₀ hd).mpr
     nlinarith [mul_nonneg (show 0 ≤ 5/7-σ by linarith)
@@ -58,7 +57,7 @@ theorem short_density_middle_time {σ H N : ℝ} (hσ : 9/13 ≤ σ)
     rw [← Real.rpow_mul hH0.le] at hh
     norm_num at hh
     exact hh
-  · have hl : H^(3/5:ℝ) ≤ N :=
+  · have hl  :=
       (Real.rpow_le_rpow_of_exponent_le hH (by linarith : (3/5:ℝ) ≤ shortDensityA σ)).trans hlo
     have hh := Real.rpow_le_rpow (Real.rpow_nonneg hH0.le _) hl
       (by norm_num : (0:ℝ) ≤ 5/3)

@@ -25,8 +25,7 @@ theorem exists_unitAddCircle_centeredLift (u : UnitAddCircle) :
   induction u using Quotient.inductionOn with
   | _ x =>
       refine ⟨x - round x, ?_, ?_⟩
-      · rw [AddCircle.coe_sub]
-        simp
+      · simp
       · exact (UnitAddCircle.norm_eq (x := x)).symm
 
 noncomputable def unitAddCircleCenteredLift (u : UnitAddCircle) : ℝ :=

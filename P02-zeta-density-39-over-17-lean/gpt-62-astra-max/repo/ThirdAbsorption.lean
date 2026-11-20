@@ -27,18 +27,18 @@ theorem third_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
     (h8 : N^4*T ≤ Q*S^((5:ℝ)/4)*V^6)
     (h9 : N^4*L*T^((1:ℝ)/8) ≤ Q*S^((49:ℝ)/40)*V^6) :
     R ≤ A*(6+4*B)*Λ^2*Q*S := by
-  have hR : 0 < R := hS.trans_le hSR
-  have hq : 0 ≤ Q := by linarith
+  have hR  := hS.trans_le hSR
+  
   have hl : 0 ≤ Λ := by linarith
   let Y := Q*S*R^2*V^6
   have hy : 0 ≤ Y := by dsimp [Y]; positivity
-  have hr2 : S^2 ≤ R^2 := pow_le_pow_left₀ hS.le hSR 2
+  have hr2  := pow_le_pow_left₀ hS.le hSR 2
   have hr3 : S^3 ≤ S*R^2 := by nlinarith only [mul_le_mul_of_nonneg_left hr2 hS.le]
   have hb1 : (N*L)^3 ≤ Y := by
     calc
       _ ≤ Q*S^3*V^6 := h1
       _ ≤ Q*(S*R^2)*V^6 := by gcongr
-      _ = Y := by dsimp [Y]; ring
+      _ = Y := by ring
   have hb2 : (N^4*T^2/L)*R*Real.sqrt R ≤ Y := by
     apply (sq_le_sq₀ (by positivity) hy).mp
     calc
@@ -46,7 +46,7 @@ theorem third_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ ≤ (Q^2*S^3*V^12)*R^3 := mul_le_mul_of_nonneg_right h2 (by positivity)
       _ = (Q^2*S^2*V^12*R^3)*S := by ring
       _ ≤ (Q^2*S^2*V^12*R^3)*R := mul_le_mul_of_nonneg_left hSR (by positivity)
-      _ = Y^2 := by dsimp [Y]; ring
+      _ = Y^2 := by ring
   have hb5 : N^4*L*R^2 ≤ Y := by
     have hh := mul_le_mul_of_nonneg_right h5 (sq_nonneg R)
     convert hh using 1; dsimp [Y]; ring
@@ -61,8 +61,7 @@ theorem third_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ ≤ (Q*S^(3-g)*V^6)*R^g := mul_le_mul_of_nonneg_right hc (by positivity)
       _ = (Q*S*V^6)*(S^(2-g)*R^g) := by rw [hs]; ring
       _ ≤ (Q*S*V^6)*(R^(2-g)*R^g) := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow hS.le hSR (by linarith)) (by positivity)
+        gcongr
       _ = Y := by rw [hr]; dsimp [Y]; ring
   have hb8 : N^4*T*R^((7:ℝ)/4) ≤ Y := by
     apply hpowabs ((7:ℝ)/4) (N^4*T) (by norm_num)
@@ -126,12 +125,9 @@ theorem third_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
         have ht9 : T^2*T^((1:ℝ)/4)=T^((9:ℝ)/4) := by
           rw [← Real.rpow_natCast T 2,← Real.rpow_add hT]
           norm_num
-        rw [mul_add,mul_add,mul_add]
-        ring_nf
-        simp only [← hr5,← hr31,← ht9]
-        ring
+        grind
       _ ≤ B*Λ*(4*(Q^2*S^2*R^4*V^12)) := by gcongr; linarith only [he3,he4,he6,he7]
-      _ = _ := by dsimp [Y]; ring
+      _ = _ := by ring
   have hbE : N^4*T*Real.sqrt R*Real.sqrt E ≤ (1+4*B)*Λ*Y := by
     apply (sq_le_sq₀ (by positivity) (by positivity)).mp
     have hcoef : 4*B*Λ ≤ ((1+4*B)*Λ)^2 := by
@@ -152,7 +148,7 @@ theorem third_scalar_absorption {N L T V R E S Q Λ A B : ℝ}
       _ ≤ A*Λ*((N*L)^3+(N^4*T^2/L)*R*Real.sqrt R+
           N^4*T*Real.sqrt R*Real.sqrt E+N^4*L*R^2+N^4*T*R^((7:ℝ)/4)+N^4*L*T^((1:ℝ)/8)*R^((71:ℝ)/40)) := hcubic
       _ ≤ A*Λ*((6+4*B)*Λ*Y) := mul_le_mul_of_nonneg_left hsum (by positivity)
-      _ = _ := by dsimp [Y]; ring
+      _ = _ := by ring
   exact le_of_mul_le_mul_right hh (by positivity)
 
 end Montgomery.RationalMoment

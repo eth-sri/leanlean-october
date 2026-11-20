@@ -1,12 +1,6 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.BourgainDyadicBands
-public import LaterPairs.Native.DyadicMomentCutoff
-public import LaterPairs.Native.ExponentPairShiftUniformity
 public import LaterPairs.Native.LogarithmicSixthMoment
-public import LaterPairs.Native.SargosDualTentWindow
 public import LaterPairs.Native.SargosWithinDerivativeCalculus
 
 @[expose] public section

@@ -27,8 +27,7 @@ theorem intervalIntegrable_exp_neg_abs_sub_mul
 theorem sum_intervalIntegral_exp_neg_abs_sub_mul_eq
     (W : Finset ℝ) (f : ℝ → ℝ) (hf : Continuous f) (a b : ℝ) :
     ∑ t ∈ W, (∫ u in a..b, Real.exp (-|t - u|) * f u) =
-      ∫ u in a..b, ∑ t ∈ W, Real.exp (-|t - u|) * f u := by
-  exact (intervalIntegral.integral_finsetSum fun t ht ↦
+      ∫ u in a..b, ∑ t ∈ W, Real.exp (-|t - u|) * f u := (intervalIntegral.integral_finsetSum fun t ht ↦
     intervalIntegrable_exp_neg_abs_sub_mul f hf t a b).symm
 
 /-- Heath--Brown's bounded-overlap consumer: summing the exact exponential
@@ -65,8 +64,7 @@ theorem sum_intervalIntegral_exp_kernel_zeta_sq_le_four
     ∑ t ∈ W,
         (∫ u in a..b,
           Real.exp (-|t - u|) * zetaMomentCriticalNorm u ^ (2 : ℕ)) ≤
-      4 * ∫ u in a..b, zetaMomentCriticalNorm u ^ (2 : ℕ) := by
-  exact sum_intervalIntegral_exp_neg_abs_sub_mul_le_four W
+      4 * ∫ u in a..b, zetaMomentCriticalNorm u ^ (2 : ℕ) := sum_intervalIntegral_exp_neg_abs_sub_mul_le_four W
     (fun u : ℝ ↦ zetaMomentCriticalNorm u ^ (2 : ℕ))
     (continuous_zetaMomentCriticalNorm.pow 2) (fun u ↦ sq_nonneg _) a b hab hSep
 
@@ -102,10 +100,8 @@ theorem sum_truncated_exp_kernel_zeta_sq_le_localSecondMoment
           (fun u : ℝ ↦ zetaMomentCriticalNorm u ^ (2 : ℕ))
           (continuous_zetaMomentCriticalNorm.pow 2) t (center - G) (center + G)
     _ ≤ 4 * ∫ u in center - G..center + G,
-        zetaMomentCriticalNorm u ^ (2 : ℕ) := by
-      exact sum_intervalIntegral_exp_kernel_zeta_sq_le_four W
+        zetaMomentCriticalNorm u ^ (2 : ℕ) := sum_intervalIntegral_exp_kernel_zeta_sq_le_four W
         (center - G) (center + G) (by linarith) hSep
-    _ = 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ)) := by
-      rfl
+    _ = 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ)) := rfl
 
 end MathCollab.Density.Stronger.PointMean

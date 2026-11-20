@@ -12,10 +12,7 @@ theorem heathBrownBetaBound_five_first {α : ℝ}
     heathBrownBetaBound 5 α = 1/20+3/4*α := by
   rw [heathBrownBetaBound_eq_max (by norm_num : 3 ≤ (5 : ℕ))]
   norm_num [heathBrownDerivativeExponent,heathBrownInverseExponent]
-  have hfirst : max (α*(19/20)) (α-1/50) ≤ 1/20+α*(3/4) :=
-    max_le (by linarith) (by linarith)
-  rw [max_eq_left hfirst]
-  ring
+  grind
 
 theorem heathBrownBetaBound_five_second {α : ℝ}
     (hα : 1/4 ≤ α) (hα₁ : α ≤ 2/5) :

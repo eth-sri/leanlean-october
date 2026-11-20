@@ -68,7 +68,6 @@ theorem neumannContourHalfPowers_imaginary_axis (t : ℝ) :
     rw [Complex.norm_def]
     congr 1
     simp [z, normSq_apply, pow_two]
-  change (1 - (t : ℂ) * I) ^ (-(1 / 2 : ℂ)) * z ^ (-(1 / 2 : ℂ)) = _
   rw [hc, mul_comm, Complex.mul_conj, Complex.normSq_eq_norm_sq, hs, hzNorm]
 
 theorem neumannContourKernel_imaginary_axis (x t : ℝ) :
@@ -78,7 +77,7 @@ theorem neumannContourKernel_imaginary_axis (x t : ℝ) :
     push_cast
     calc
       _ = (x : ℂ) * t * (I * I) := by ring
-      _ = _ := by rw [I_mul_I]; ring
+      _ = _ := by simp
   unfold neumannContourKernel
   rw [mul_assoc, neumannContourHalfPowers_imaginary_axis, he, ← Complex.ofReal_exp]
   push_cast
@@ -95,9 +94,9 @@ theorem neumannContourHalfPowers_sine {u : ℝ}
     (Real.cos u : ℂ) *
       ((1 - (Real.sin u : ℂ)) ^ (-(1 / 2 : ℂ)) *
         (1 + (Real.sin u : ℂ)) ^ (-(1 / 2 : ℂ))) = 1 := by
-  have hc : 0 < Real.cos u := Real.cos_pos_of_mem_Ioo ⟨by linarith [Real.pi_pos], hu1⟩
-  have hs : 0 ≤ Real.sin u := Real.sin_nonneg_of_nonneg_of_le_pi hu (by linarith [Real.pi_pos])
-  have hm : 0 ≤ 1 - Real.sin u := sub_nonneg.mpr (Real.sin_le_one u)
+  have hc  := Real.cos_pos_of_mem_Ioo ⟨by linarith, hu1⟩
+  have hs  := Real.sin_nonneg_of_nonneg_of_le_pi hu (by linarith)
+  have hm  := sub_nonneg.mpr (Real.sin_le_one u)
   have hp : 0 ≤ 1 + Real.sin u := by linarith
   have hprod : (1 - Real.sin u) * (1 + Real.sin u) = (Real.cos u) ^ 2 := by
     nlinarith [Real.sin_sq_add_cos_sq u]

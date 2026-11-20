@@ -31,7 +31,7 @@ theorem weak_count_monomial_bound {R E K M T U mass a b w : ℝ}
     rw [show (-w)*(1/2:ℝ)=-(w/2) by ring] at hh
     exact hh
   have hθ0 : 0 ≤ 4/w := by positivity
-  have hθ1 : 4/w ≤ 1 := (div_le_one hwp).mpr hw
+  have hθ1  := (div_le_one hwp).mpr hw
   have hpθ : (w/2)*(4/w)=2 := by field_simp; ring
   have hh := weak_power_square_mass_bound (sq_nonneg R) hD hU hθ0 hθ1 hpθ hMassR hRoot
   have hId : (R^2)^(1-4/w)*D^(4/w) =

@@ -53,11 +53,11 @@ theorem centered_shell_universal (w : MathCollab.Density.ReflectionCutoff)
   obtain ⟨C,hC,hBound⟩ := reflection_local_energy_universal hη
   obtain ⟨B,hB,hRef⟩ := MathCollab.Density.uniform_reflection w hA
   let F : ℝ := (20000/Real.pi^2)*(MathCollab.Density.mellinMass w)^2
-  have hF : 0 ≤ F := by dsimp only [F]; positivity
+  
   refine ⟨1+2*F*C,4*B^2,by positivity,by positivity,?_⟩
   intro T t₀ L H hT hL hH hHT W hW hSep
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.sqrt_pos.mpr hTp).trans_le hL
+  have hLp  := (Real.sqrt_pos.mpr hTp).trans_le hL
   have hReflected := (hRef L H W hLp hH).1
   have hLocal := hBound T t₀ L H hT hL hH hHT W hW hSep
   have hScale := universal_shell_budget_le hTp hLp hH hHT

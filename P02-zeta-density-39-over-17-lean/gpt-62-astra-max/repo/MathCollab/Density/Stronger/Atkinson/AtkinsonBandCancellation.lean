@@ -47,7 +47,7 @@ theorem norm_atkinsonRootKernel_integral_outside_band {T G L b c : ℝ}
       ‖∫ y in atkinsonRootBandLower T G L..c, atkinsonRootKernel T (-b) y‖ ≤
         1 / (b * Real.pi) := by
   have ha := atkinsonRootBandLower_pos hT G L
-  have hb0 : 0 < b := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hb
+  have hb0  := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hb
   have hmem (y : ℝ) (hy : y ∈ Icc (atkinsonRootBandLower T G L) c) :
       y ∈ Icc (atkinsonRootBandLower T G L) (atkinsonRootBandUpper T G L) :=
     ⟨hy.1, hy.2.trans hc.2⟩

@@ -24,8 +24,7 @@ def atkinsonUndampedDyadicPhaseBound (T : ℝ) (N : ℕ) : ℝ :=
     ((2^j:ℕ):ℝ)^(-(1/4:ℝ))*atkinsonPhaseBlockMax T (2^j) (2^j)
 
 theorem atkinsonUndampedDyadicPhaseBound_nonneg (T : ℝ) (N : ℕ) :
-    0 ≤ atkinsonUndampedDyadicPhaseBound T N := by
-  exact Finset.sum_nonneg (fun j _ => mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _)
+    0 ≤ atkinsonUndampedDyadicPhaseBound T N := Finset.sum_nonneg (fun j _ => mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg _) _)
     (atkinsonPhaseBlockMax_nonneg _ _ _))
 
 theorem atkinsonUndampedDyadicPhaseBound_mono (T : ℝ) {N K : ℕ} (hNK : N ≤ K) :
@@ -41,8 +40,8 @@ def atkinsonDyadicGramBudget (N : ℕ) (W : Finset ℝ) : ℝ :=
 
 theorem sum_atkinsonUndampedDyadicPhaseBound_sq_le_budget (N : ℕ) (W : Finset ℝ) :
     (∑ t ∈ W, atkinsonUndampedDyadicPhaseBound t N)^2 ≤ atkinsonDyadicGramBudget N W := by
-  let S : ℕ → ℝ := fun j => ∑ t ∈ W, atkinsonPhaseBlockMax t (2^j) (2^j)
-  let w : ℕ → ℝ := fun j => ((2^j:ℕ):ℝ)^(-(1/4:ℝ))
+  let S  := fun j => ∑ t ∈ W, atkinsonPhaseBlockMax t (2^j) (2^j)
+  let w  := fun j => ((2^j:ℕ):ℝ)^(-(1/4:ℝ))
   have he : (∑ t ∈ W, atkinsonUndampedDyadicPhaseBound t N) =
       ∑ j ∈ Finset.range (Nat.clog 2 N), w j*S j := by
     unfold atkinsonUndampedDyadicPhaseBound

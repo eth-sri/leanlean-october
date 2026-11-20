@@ -60,8 +60,8 @@ theorem hasDerivAt_dfiComplexLaplace
   let F' : ℂ → ℝ → ℂ := fun b x =>
     (x : ℂ) ^ (s - 1) * (-x) * cexp (-(b * x))
   let r : ℝ := a.re / 2
-  have hr : 0 < r := half_pos ha
-  have hball : Metric.ball a r ∈ 𝓝 a := Metric.ball_mem_nhds a hr
+  have hr  := half_pos ha
+  have hball  := Metric.ball_mem_nhds a hr
   have hMeas : ∀ᶠ b in 𝓝 a,
       AEStronglyMeasurable (F b) (volume.restrict (Set.Ioi 0)) := by
     filter_upwards with b
@@ -82,7 +82,7 @@ theorem hasDerivAt_dfiComplexLaplace
         (Or.inr hx.ne')).mul (by fun_prop)).mul
           (Complex.continuous_exp.continuousAt.comp (by fun_prop))
     exact hcont.aestronglyMeasurable measurableSet_Ioi
-  let bound : ℝ → ℝ := fun x => x ^ s.re * Real.exp (-(r * x))
+  let bound  := fun x => x ^ s.re * Real.exp (-(r * x))
   have hBoundInt : Integrable bound (volume.restrict (Set.Ioi 0)) := by
     have h := integrableOn_rpow_mul_exp_neg_mul_rpow
       (p := (1 : ℝ)) (s := s.re) (b := r) (by linarith) (by norm_num) hr
@@ -111,7 +111,7 @@ theorem hasDerivAt_dfiComplexLaplace
     rw [show x ^ (s.re - 1) * x = x ^ s.re by
       calc
         x ^ (s.re - 1) * x = x ^ (s.re - 1) * x ^ (1 : ℝ) := by
-          rw [Real.rpow_one]
+          simp
         _ = x ^ ((s.re - 1) + 1) := (Real.rpow_add hx0 _ _).symm
         _ = x ^ s.re := by congr 1; ring]
     exact mul_le_mul_of_nonneg_left hexp (Real.rpow_nonneg hx0.le _)
@@ -146,9 +146,6 @@ theorem dfiComplexLaplace_ofReal
       (x : ℂ) ^ (s - 1) * cexp (-((r : ℂ) * x))) =
       ∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * cexp (-(r * x)) by
-    apply setIntegral_congr_fun measurableSet_Ioi
-    intro x _
-    push_cast
     rfl]
   rw [h]
   congr 1
@@ -160,9 +157,9 @@ theorem dfiComplexLaplace_ofReal
 theorem dfiComplexLaplace_eq
     {s a : ℂ} (hs : 0 < s.re) (ha : 0 < a.re) :
     dfiComplexLaplace s a = a ^ (-s) * Gamma s := by
-  let U : Set ℂ := {b : ℂ | 0 < b.re}
-  let F : ℂ → ℂ := dfiComplexLaplace s
-  let G : ℂ → ℂ := fun b => b ^ (-s) * Gamma s
+  let U  := {b : ℂ | 0 < b.re}
+  let F  := dfiComplexLaplace s
+  let G  := fun b => b ^ (-s) * Gamma s
   have hF : AnalyticOnNhd ℂ F U := by
     simpa only [F, U] using analyticOnNhd_dfiComplexLaplace hs
   have hGDiff : DifferentiableOn ℂ G U := by
@@ -175,7 +172,7 @@ theorem dfiComplexLaplace_eq
   have hUOpen : IsOpen U := by
     dsimp [U]
     exact isOpen_lt continuous_const continuous_re
-  have hG : AnalyticOnNhd ℂ G U := hGDiff.analyticOnNhd hUOpen
+  have hG  := hGDiff.analyticOnNhd hUOpen
   have hReal : ∃ᶠ (x : ℝ) in 𝓝[≠] (1 : ℝ), F x = G x := by
     have hEventually : ∀ᶠ x : ℝ in 𝓝 (1 : ℝ), F x = G x := by
       filter_upwards [Ioi_mem_nhds (show (0 : ℝ) < 1 by norm_num)] with x hx

@@ -48,7 +48,7 @@ theorem exists_norm_atkinsonFiniteStationaryMain_sub_main_le (α : ℝ) :
   obtain ⟨C, hC, hbound⟩ := exists_intervalC1Bound_atkinsonPowerWeight_root α
   refine ⟨C, hC, ?_⟩
   intro T G L b H hT hG hGT hL hH hr
-  have hc : 1 < atkinsonSaddleCurvature T b := one_lt_atkinsonSaddleCurvature hT b
+  have hc  := one_lt_atkinsonSaddleCurvature hT b
   have hW := (hbound T G L hT hG hGT hL).norm_le _ hr
   have hF := norm_atkinsonQuadraticWindow_sub_gaussianValue_le (by linarith : 0 <
     atkinsonSaddleCurvature T b) hH

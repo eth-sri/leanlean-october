@@ -50,14 +50,10 @@ theorem wooleyResidueLift_injective
     {p a H : ℕ} [NeZero p] (xi : ZMod (p ^ a)) :
     Function.Injective (wooleyResidueLift p a H xi) := by
   intro zeta1 zeta2 heq
-  have hmod :
-      p ^ a * zeta1.val + xi.val ≡ p ^ a * zeta2.val + xi.val
-        [MOD p ^ (a + H)] := by
-    exact (ZMod.natCast_eq_natCast_iff _ _ _).mp heq
-  have hmul : p ^ a * zeta1.val ≡ p ^ a * zeta2.val
-      [MOD p ^ (a + H)] := hmod.add_right_cancel' xi.val
+  have hmod := (ZMod.natCast_eq_natCast_iff _ _ _).mp heq
+  have hmul  := hmod.add_right_cancel' xi.val
   rw [pow_add] at hmul
-  have hzmod : zeta1.val ≡ zeta2.val [MOD p ^ H] :=
+  have hzmod  :=
     Nat.ModEq.mul_left_cancel' (pow_ne_zero a (NeZero.ne p)) hmul
   apply ZMod.val_injective
   exact Nat.ModEq.eq_of_lt_of_lt hzmod zeta1.val_lt zeta2.val_lt
@@ -96,11 +92,9 @@ theorem wooley_sum_residueLift
   calc
     ∑ zeta : ZMod (p ^ H), F (wooleyResidueLift p a H xi zeta) =
         ∑ z : {z // z ∈ wooleyResidueRefinementFiber p a (a + H)
-            (Nat.le_add_right a H) xi}, F z.1 := by
-      exact e.sum_comp (fun z => F z.1)
+            (Nat.le_add_right a H) xi}, F z.1 := e.sum_comp (fun z => F z.1)
     _ = ∑ kappa ∈ wooleyResidueRefinementFiber p a (a + H)
-          (Nat.le_add_right a H) xi, F kappa := by
-      exact (Finset.sum_subtype _ (fun _ => Iff.rfl) F).symm
+          (Nat.le_add_right a H) xi, F kappa := (Finset.sum_subtype _ (fun _ => Iff.rfl) F).symm
 
 theorem wooley_castHom_tower
     {p a m b : ℕ} [NeZero p] (ham : a ≤ m) (hmb : m ≤ b)
@@ -152,12 +146,7 @@ theorem wooley_sum_refinement_tower
     rw [Fintype.sum_eq_single
       (ZMod.castHom (pow_dvd_pow p hmb) (ZMod (p ^ m)) z)]
     · rw [ite_eq_left hcompose, ite_eq_left rfl]
-    · intro kappa hkappa
-      by_cases hkm :
-          ZMod.castHom (pow_dvd_pow p ham) (ZMod (p ^ a)) kappa = xi
-      · rw [ite_eq_left hkm]
-        rw [ite_eq_right (fun h => hkappa h.symm)]
-      · rw [ite_eq_right hkm]
+    · grind
   · rw [ite_eq_right hza]
     apply Finset.sum_eq_zero
     intro kappa hkappa

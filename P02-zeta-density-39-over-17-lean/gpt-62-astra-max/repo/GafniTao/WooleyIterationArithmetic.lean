@@ -23,8 +23,7 @@ def wooleyIterationLength (s k : ℕ) (Lambda : ℝ) : ℕ :=
 theorem wooley_iteration_length_lower
     {s k : ℕ} {Lambda : ℝ} :
     16 * (s : ℝ) * (k : ℝ) / Lambda ≤
-      (wooleyIterationLength s k Lambda : ℝ) := by
-  exact Nat.le_ceil _
+      (wooleyIterationLength s k Lambda : ℝ) := Nat.le_ceil _
 
 /-- The exact numerical contradiction at the end of Wooley Section 10.
 The first inequality is supplied by the ceiling in (10.2), while the second
@@ -73,15 +72,14 @@ theorem wooleyRho_pos
 
 theorem wooley_nextB_lower
     {k r b : ℕ} (hr : 1 ≤ r) :
-    (k - r + 1) * b ≤ r * wooleyNextB k r b := by
-  exact le_smul_ceilDiv (by omega : 0 < r)
+    (k - r + 1) * b ≤ r * wooleyNextB k r b := le_smul_ceilDiv (by omega : 0 < r)
 
 theorem wooley_nextB_le_k_mul
     {k r b : ℕ} (hr : 1 ≤ r) (hrk : r ≤ k) :
     wooleyNextB k r b ≤ k * b := by
   rw [wooleyNextB, ceilDiv_le_iff_le_mul (by omega : 0 < r)]
   have hkr : k - r + 1 ≤ k := by omega
-  have hb : (k - r + 1) * b ≤ k * b :=
+  have hb  :=
     Nat.mul_le_mul_right b hkr
   exact hb.trans (by
     simpa only [one_mul] using Nat.mul_le_mul_right (k * b) hr)

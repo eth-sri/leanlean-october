@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosFixedCoefficientLoss
 public import LaterPairs.Native.RobertSargosPrimitiveProjection
 
@@ -34,7 +31,7 @@ theorem exists_robertSargos_coefficient_fiber_bound (ε : ℝ) (hε : 0 < ε) :
     have hc : Int.gcd (Int.gcd r h₁ : ℤ) h₂ = 1 := by
       simpa only [hr₀,hh₁₀,hh₂₀] using h₀.coefficient_primitive
     have hr : r ≠ 0 := by simpa only [hr₀] using h₀.r_ne_zero
-    have hrH : |(r:ℝ)| ≤ H/2 :=
+    have hrH  :=
       (show |(r:ℝ)| ≤ R by simpa only [hr₀] using h₀.r_bound).trans hRH
     have hh₁ : H ≤ (h₁:ℝ) := by simpa only [hh₁₀] using h₀.h₁_support.1
     have hh₂ : H ≤ (h₂:ℝ) := by simpa only [hh₂₀] using h₀.h₂_support.1
@@ -77,7 +74,7 @@ theorem exists_robertSargos_coefficient_fiber_bound (ε : ℝ) (hε : 0 < ε) :
         (hmem p hp).near
     have hb := hbound T r h₁ h₂ H Q δ hc hr hH hQ hδ hrH hh₁ hh₂
       hTq₁ hTq₂ hTs hTp hTl hTn
-    have hcard : T.card = S.card := Finset.card_image_of_injOn hinj
+    have hcard  := Finset.card_image_of_injOn hinj
     rwa [hcard] at hb
   · rw [Finset.not_nonempty_iff_eq_empty.mp hs]
     simp only [Finset.card_empty,Nat.cast_zero]

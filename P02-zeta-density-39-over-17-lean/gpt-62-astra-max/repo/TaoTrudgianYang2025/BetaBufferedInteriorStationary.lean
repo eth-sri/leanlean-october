@@ -1,7 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedWindowTails
-public import TaoTrudgianYang2025.BetaMorseRemainder
 
 @[expose] public section
 
@@ -94,8 +92,8 @@ theorem modelPhaseBufferedMorseRemainder_interior_uniform
   intro l r η d hl hr hη hd F δ v T hδ hF hv hT hleft hright
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have hd₁ : d ≤ 1 := by linarith
-  have hH : 0 < γ*d := mul_pos hγ hd
-  have hH₁ : γ*d ≤ 1 := (mul_le_mul hγ₁ hd₁ hd.le (by norm_num)).trans_eq (one_mul 1)
+  have hH  := mul_pos hγ hd
+  have hH₁  := (mul_le_mul hγ₁ hd₁ hd.le (by norm_num)).trans_eq (one_mul 1)
   have hsmall := mul_lt_mul_of_pos_right hγs hd
   have hb := bufferedNormalizedMode_interior_window_remainder hσ hδ hF hv hη hl hr hd
     hleft hright hH hH₁ hsmall hT

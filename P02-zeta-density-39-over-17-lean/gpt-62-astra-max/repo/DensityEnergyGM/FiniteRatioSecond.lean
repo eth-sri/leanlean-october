@@ -38,10 +38,7 @@ theorem finiteRatioSecond_insert_le {A : Finset ℕ} {e : ℕ}
     finiteRatioSecond (insert e A) W ≤
       2 * finiteRatioSecond A W + 2 * (W.card : ℝ) ^ 2 := by
   rw [finiteRatioSecond_eq_difference _ _ (by
-    intro n hn
-    rcases Finset.mem_insert.mp hn with rfl | hn
-    · exact he
-    · exact hA n hn), finiteRatioSecond_eq_difference _ _ hA]
+    grind), finiteRatioSecond_eq_difference _ _ hA]
   have hPhase : ∀ t : ℝ, ‖heathBrownPhase e t‖ = 1 := by
     intro t
     rw [heathBrownPhase, Complex.norm_natCast_cpow_of_pos he]

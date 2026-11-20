@@ -1,4 +1,0 @@
-module
-public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalQuadratic
-public import MathCollab.Density.Stronger.Atkinson.AtkinsonNaturalAmplitude
-public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerIntegral

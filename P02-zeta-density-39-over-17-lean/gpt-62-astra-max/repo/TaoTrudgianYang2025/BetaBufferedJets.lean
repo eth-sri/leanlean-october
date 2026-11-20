@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedCutoff
 
 @[expose] public section
@@ -62,7 +61,7 @@ theorem abs_iteratedDeriv_modelPhaseBufferedCutoff_le
     _ ≤ ∑ j ∈ Finset.range (n+1), (n.choose j : ℝ)*(M^2*(η⁻¹)^n) := by
       apply Finset.sum_le_sum
       intro j hj
-      have hjn : j ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)
+      have hjn  := Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)
       rw [abs_mul,abs_mul,abs_mul,abs_mul,abs_pow,abs_pow,abs_neg,
         abs_of_nonneg (inv_nonneg.mpr hη.le),abs_of_nonneg (Nat.cast_nonneg _)]
       have hleft := mul_le_mul_of_nonneg_left (hb ((u-l)/η-1) j hjn)
@@ -89,8 +88,7 @@ theorem modelPhaseBufferedCutoff_uniform_ordered_jets (Q : ℕ) :
       ∀ j ≤ Q, |iteratedDeriv j (modelPhaseBufferedCutoff l r η) u| ≤ C*(η⁻¹)^j := by
   obtain ⟨M,hM,hb⟩ := smoothTransition_finite_jet_bound Q
   refine ⟨(2 : ℝ)^Q*M^2,?_,?_⟩
-  · have hpow : 1 ≤ (2 : ℝ)^Q := one_le_pow₀ (by norm_num)
-    nlinarith [sq_nonneg (M-1)]
+  · bound
   · intro l r η u hη j hj
     have h := abs_iteratedDeriv_modelPhaseBufferedCutoff_le (zero_le_one.trans hM) hη j
       (fun x k hk => hb x k (hk.trans hj)) l r u

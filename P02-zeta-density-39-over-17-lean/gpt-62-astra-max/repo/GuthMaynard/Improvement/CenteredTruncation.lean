@@ -79,7 +79,7 @@ theorem centeredKernel_truncation_negligible {a : ℝ → ℂ} (ha : ContDiff �
   refine ⟨C,hC,?_⟩
   intro T L s hT hL hLT hst
   have hLp : 0 < L := by linarith
-  have hTp : 0 < T := by linarith
+  
   rw [centeredKernel_truncation ha hl hlu hLp (by positivity) hs s]
   rw [mul_div_cancel₀ _ hLp.ne']
   exact (h T L s 0 hT hL hLT hst).2

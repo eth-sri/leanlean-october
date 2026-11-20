@@ -81,7 +81,7 @@ theorem exists_norm_tsum_zetaNeumannRemainderTerm_le :
         ‖∑' n : ℕ, zetaNeumannRemainderTerm T G L n‖ ≤ C * G := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaNeumannRemainderTerm_le
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
+  
   refine ⟨C * (1 + S), by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth
   have hs := summable_zetaNeumannRemainderTerm hT hG hGT hL hwidth

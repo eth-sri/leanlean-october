@@ -33,7 +33,7 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
   obtain ⟨n,hn⟩ := choose_radial_discard_order hη
   obtain ⟨Cn,Ct,hCn,hCt,hprofile⟩ := radial_profile_sum_bound w n
   let D : ℝ := 27*Ct*(99/10:ℝ)^2
-  refine ⟨η,2048*Cn*Cs+D,T₀,hη,hη1,by dsimp [D]; positivity,hT₀,?_⟩
+  refine ⟨η,2048*Cn*Cs+D,T₀,hη,hη1,by positivity,hT₀,?_⟩
   intro T L hT hLl hLu W hsep
   let R : ℝ := W.card
   let E : ℝ := discreteAdditiveEnergy W
@@ -43,18 +43,18 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
   let U := T^(1+η)/L
   let S := retainedCubicModes U
   let X := T^2*R*Real.sqrt R+T*L*Real.sqrt R*Real.sqrt E
-  have hT2 : 2 ≤ T := hT₀.trans hT
+  have hT2  := hT₀.trans hT
   have hT1 : 1 ≤ T := by linarith
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
+  have hLp  := (Real.rpow_pos_of_pos hTp _).trans_le hLl
   have hH : 0 < T^η := Real.rpow_pos_of_pos hTp _
   have hR : 0 ≤ R := Nat.cast_nonneg _
   have hE : 0 ≤ E := Nat.cast_nonneg _
-  have hM : 0 ≤ M := integral_nonneg (fun _ => sq_nonneg _)
-  have hEF : 0 ≤ EF := integral_nonneg (fun _ => by positivity)
-  have hX : 0 ≤ X := by dsimp [X]; positivity
-  have hMb : M ≤ 32*R := box_time_square_bound W hsep
-  have hEb : EF ≤ 64*E := box_time_fourth_bound W
+  
+  
+  
+  have hMb  := box_time_square_bound W hsep
+  have hEb  := box_time_fourth_bound W
   have hrootM : Real.sqrt M ≤ 8*Real.sqrt R := by
     apply (Real.sqrt_le_iff).mpr
     refine ⟨by positivity,?_⟩
@@ -65,7 +65,7 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
     refine ⟨by positivity,?_⟩
     rw [mul_pow,Real.sq_sqrt hE]
     nlinarith [hEb]
-  have hS : ∀ m ∈ S, m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U :=
+  have hS  :=
     fun m hm => (retainedCubicModes_mem U m).mp hm
   have hs := hstrip T L μ univ univ univ univ S hT hLl hLu
     (box_time_measurable W) (box_time_nonneg W) (box_time_integrable W)
@@ -114,7 +114,7 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
   have htail : L^3*(S.card:ℝ)*Ct/(T^η)^n*R^3*(99/10:ℝ)^2 ≤ D*T^(-100:ℝ)*R^3 := by
     calc
       _ ≤ L^3*(27*U^3)*Ct/(T^η)^n*R^3*(99/10:ℝ)^2 := by gcongr
-      _ = D*((L^3*U^3)/(T^η)^n)*R^3 := by dsimp [D]; ring
+      _ = D*((L^3*U^3)/(T^η)^n)*R^3 := by ring
       _ ≤ D*(T^(6+3*η)/(T^η)^n)*R^3 := by gcongr
       _ ≤ _ := by gcongr; exact hn T hT1
   have hsupp : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (w x:ℂ)=0 := by
@@ -141,7 +141,7 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
       convert mul_le_mul_of_nonneg_left hs' (show 0 ≤ Cn*8 by positivity) using 1
       ring
     _ ≤ (2048*Cn*Cs+D)*(T^ε*X+T^(-100:ℝ)*R^3) := by
-      nlinarith [mul_nonneg (show 0 ≤ D by dsimp [D]; positivity) (show 0 ≤ T^ε*X by positivity),
+      nlinarith [mul_nonneg (show 0 ≤ D by positivity) (show 0 ≤ T^ε*X by positivity),
         mul_nonneg (show 0 ≤ 2048*Cn*Cs by positivity) (show 0 ≤ T^(-100:ℝ)*R^3 by positivity)]
 
 end Montgomery.RationalMoment

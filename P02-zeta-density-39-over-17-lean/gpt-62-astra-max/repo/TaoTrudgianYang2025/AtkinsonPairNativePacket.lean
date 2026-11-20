@@ -25,8 +25,8 @@ theorem ExponentPair.atkinson_physical_gram_budget_all_lengths {k l δ ν : ℝ}
   refine ⟨F,hF,A,hA,?_⟩
   intro H G L W hH hwidth hupper hL hsep hrange hdiam
   have hH0 : 0 < H := by linarith [hA.trans hH]
-  have hG : 0 < G := (Real.rpow_pos_of_pos hH0 δ).trans_le hwidth
-  have hmin : 0 < min L H := lt_min hL hH0
+  have hG  := (Real.rpow_pos_of_pos hH0 δ).trans_le hwidth
+  have hmin  := lt_min hL hH0
   have hd : ∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ min L H := by
     intro t ht u hu
     apply le_min (hdiam t ht u hu)
@@ -55,15 +55,15 @@ theorem ExponentPair.localMeanPacket_native {k l : ℝ} (hpair : ExponentPair k 
   refine ⟨C,hC,C^2*F,by positivity,max T₀ H₁,hT₀.trans (le_max_left _ _),?_⟩
   intro H G L W hH hG hL hsep hrange hdiam
   by_cases hW : W.Nonempty
-  · have hTH : T₀ ≤ H := (le_max_left _ _).trans hH
-    have h1H : H₁ ≤ H := (le_max_right _ _).trans hH
+  · have hTH  := (le_max_left _ _).trans hH
+    have h1H  := (le_max_right _ _).trans hH
     have hHone : 1 ≤ H := by linarith [hT₀.trans hTH]
     have hHp : 0 < H := by linarith
     have hwidth := packet_width_scales hδ hHone hG hW
       (fun t ht => ⟨(hrange t ht).1,(hrange t ht).2.1,
         (hrange t ht).2.2.1,(hrange t ht).2.2.2.1⟩)
     let N := atkinsonSourceCutoff (2*H) G (Real.log (2*H))
-    let B : ℝ → ℝ := fun t => atkinsonUndampedDyadicPhaseBound t N
+    let B  := fun t => atkinsonUndampedDyadicPhaseBound t N
     have hpoint (t : ℝ) (ht : t ∈ W) :
         Peaks.atkinsonLocalMeanExcess G t (C*G*Real.log t) ≤
           C*G*H^(-(1/4:ℝ))*B t := by
@@ -79,7 +79,7 @@ theorem ExponentPair.localMeanPacket_native {k l : ℝ} (hpair : ExponentPair k 
         _ ≤ C*G*t^(-(1/4:ℝ))*
             atkinsonUndampedDyadicPhaseBound t (atkinsonSourceCutoff t G (Real.log t)) := by
           apply max_le
-          · exact mul_nonneg (by positivity) hpos
+          · positivity
           · linarith
         _ ≤ C*G*H^(-(1/4:ℝ))*B t :=
           mul_le_mul (mul_le_mul_of_nonneg_left hpower (by positivity)) hphase hpos (by positivity)

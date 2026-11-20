@@ -1,7 +1,7 @@
 module
 /- Actual short-detector critical-line input, using the audited zeta and
 mollifier bounds. This file does not assume a fourth moment. -/
-public import GuthMaynard.Improvement.ShortDetectorIdentity
+public import MathCollab.Density.DetectorError
 public import MathCollab.Density.BandEnergy
 
 @[expose] public section
@@ -11,10 +11,10 @@ open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
 
-def shortTwistedNorm (H t : ℝ) : ℝ :=
-  ‖riemannZeta ((1/2:ℂ)+(t:ℂ)*I)*zetaMollifier (2*H^((1:ℝ)/100)) ((1/2:ℂ)+(t:ℂ)*I)‖
+def mollifiedNorm (X t : ℝ) : ℝ :=
+  ‖riemannZeta ((1/2:ℂ)+(t:ℂ)*I)*zetaMollifier X ((1/2:ℂ)+(t:ℂ)*I)‖
 
-theorem shortTwistedNorm_continuous (H : ℝ) : Continuous (shortTwistedNorm H) := by
+theorem mollifiedNorm_continuous (X : ℝ) : Continuous (mollifiedNorm X) := by
   apply Continuous.norm
   apply Continuous.mul
   · apply continuous_iff_continuousAt.mpr
@@ -27,23 +27,23 @@ theorem shortTwistedNorm_continuous (H : ℝ) : Continuous (shortTwistedNorm H) 
     intro t
     exact ContinuousAt.comp' (differentiableAt_zetaMollifier _ _).continuousAt (by fun_prop)
 
-theorem shortTwistedNorm_bound (H t : ℝ) :
-    shortTwistedNorm H t ≤ 4*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|t|) := by
+theorem mollifiedNorm_bound (X t : ℝ) :
+    mollifiedNorm X t ≤ 4*(⌊X⌋₊:ℝ)*(1+|t|) := by
   have hz := norm_riemannZeta_critical_le_linear t
-  have hm := norm_zetaMollifier_le_cutoff (2*H^((1:ℝ)/100))
+  have hm := norm_zetaMollifier_le_cutoff X
     (s := (1/2:ℂ)+(t:ℂ)*I) (by norm_num)
-  unfold shortTwistedNorm
+  unfold mollifiedNorm
   rw [norm_mul]
   convert mul_le_mul hz hm (norm_nonneg _) (by positivity) using 1; ring
 
 /-- Exact norm identity: the real power of Y retains the actual beta. -/
-theorem short_detector_kernel_norm {ρ : ℂ} {Y : ℝ} (hY : 0 < Y) (H t : ℝ) :
-    ‖detectorKernel ρ (2*H^((1:ℝ)/100)) Y (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖ =
+theorem short_detector_kernel_norm {ρ : ℂ} {Y : ℝ} (hY : 0 < Y) (X t : ℝ) :
+    ‖detectorKernel ρ X Y (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖ =
       Y^(1/2-ρ.re)*‖Complex.Gamma (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖*
-        shortTwistedNorm H (ρ.im+t) := by
+        mollifiedNorm X (ρ.im+t) := by
   have he : ρ+(((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I) = (1/2:ℂ)+((ρ.im+t:ℝ):ℂ)*I := by
     apply Complex.ext <;> simp
-  unfold detectorKernel shortTwistedNorm
+  unfold detectorKernel mollifiedNorm
   rw [he,norm_mul,norm_mul,norm_mul,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hY]
   simp only [Complex.add_re,Complex.ofReal_re,Complex.mul_re,Complex.ofReal_im,Complex.I_re,
     Complex.I_im,mul_zero,zero_mul,sub_self,add_zero]

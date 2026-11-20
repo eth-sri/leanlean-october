@@ -50,7 +50,7 @@ theorem cell_displacement_mul_powerDifference_le
           (q : ℝ) ^ ((j : ℕ) + 1)| ≤
       (k : ℝ) / H := by
   let d : ℕ := (j : ℕ) + 1
-  have hd : 1 ≤ d := by simp [d]
+  
   have hdk : d ≤ k := by
     dsimp [d]
     have hj := j.isLt
@@ -58,22 +58,21 @@ theorem cell_displacement_mul_powerDifference_le
   have hHpos : (0 : ℝ) < H := by positivity
   have hβ := abs_heathBrownCoefficientDisplacement_le_radius hα j
   have hpow := abs_natCast_succ_pow_sub_pow_le (d := d) hqH
-  have hpowNonneg : (0 : ℝ) ≤ (d : ℝ) * (H : ℝ) ^ (d - 1) := by positivity
+  
   calc
     |heathBrownCoefficientDisplacement
         (heathBrownCoefficientCenter k f n) α j| *
         |((q : ℝ) + 1) ^ d - (q : ℝ) ^ d| ≤
       heathBrownCellRadius H j *
         ((d : ℝ) * (H : ℝ) ^ (d - 1)) :=
-      mul_le_mul hβ hpow (abs_nonneg _) (by
-        exact (heathBrownCellRadius_pos (by omega : 1 ≤ H) j).le)
+      mul_le_mul hβ hpow (abs_nonneg _) ((heathBrownCellRadius_pos (by omega : 1 ≤ H) j).le)
     _ = (d : ℝ) / H := by
       unfold heathBrownCellRadius
       dsimp [d]
       rw [pow_succ]
       field_simp
     _ ≤ (k : ℝ) / H := by
-      exact div_le_div_of_nonneg_right (by exact_mod_cast hdk) hHpos.le
+      gcongr
 
 theorem abs_heathBrownDisplacementPolynomial_succ_sub_le
     {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ}
@@ -119,8 +118,7 @@ theorem abs_heathBrownDisplacementPolynomial_succ_sub_le
           apply Finset.sum_congr rfl
           intro j hj
           rw [← mul_sub, abs_mul]
-    _ ≤ ∑ _j : Fin (k - 1), (k : ℝ) / H := by
-      exact Finset.sum_le_sum fun j hj =>
+    _ ≤ ∑ _j : Fin (k - 1), (k : ℝ) / H := Finset.sum_le_sum fun j hj =>
         cell_displacement_mul_powerDifference_le hH hα hqH j
     _ ≤ (k : ℝ) ^ 2 / H := by
       rw [Finset.sum_const, nsmul_eq_mul, Finset.card_univ, Fintype.card_fin]

@@ -49,8 +49,6 @@ theorem heathBrown_floor_endpoint_remainder_le
   have hHReal : (8 : ℝ) ≤ H := by exact_mod_cast hlargeH
   have hHScale := heathBrownHChoice_cast_le_separated_scale
     (k := k) hA hlambda
-  change (H : ℝ) ≤
-    A ^ (-(1 / (k : ℝ))) * lambda ^ (-(1 / (k : ℝ))) at hHScale
   calc
     (H : ℝ) + 2 ≤ (5 / 4 : ℝ) * H := by linarith
     _ ≤ (5 / 4 : ℝ) *
@@ -93,14 +91,14 @@ theorem norm_heathBrownExponentialSum_le_fourTerm_open_of_vmvt
   let P := (N : ℝ) ^ epsilon
   let Q := heathBrownThreeTerm N k lambda
   let L := lambda ^ (-(1 / (k : ℝ)))
-  have hS0 : 0 ≤ S :=
+  have hS0  :=
     (heathBrownLemmaOneSourceConstant_pos hk hA hC hepsilon).le
   have hR0 : 0 ≤ R := by dsimp only [R]; positivity
   have hPone : 1 ≤ P := by
     dsimp only [P]
     exact Real.one_le_rpow (by exact_mod_cast (show 1 ≤ N by omega)) hepsilon.le
   have hP0 : 0 ≤ P := le_trans (by norm_num) hPone
-  have hQ0 : 0 ≤ Q :=
+  have hQ0  :=
     (heathBrownThreeTerm_pos (k := k) (show 1 ≤ N by omega) hlambda).le
   have hL0 : 0 ≤ L := by dsimp only [L]; positivity
   change (heathBrownHChoice k A lambda : ℝ) + 2 ≤ R * L at hrem

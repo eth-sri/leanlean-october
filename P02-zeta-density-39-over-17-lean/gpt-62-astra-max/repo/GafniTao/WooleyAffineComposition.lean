@@ -99,7 +99,6 @@ theorem wooleySourceResidueSequence_twist
     wooleySourceResidueSequence (wooleySourceTwist gamma phase) h zeta =
       wooleySourceTwist (wooleySourceResidueSequence gamma h zeta) phase := by
   ext n
-  simp only [wooleySourceResidueSequence_apply, wooleySourceTwist_apply]
   by_cases hn : (n : ZMod h) = zeta <;> simp [hn]
 
 end

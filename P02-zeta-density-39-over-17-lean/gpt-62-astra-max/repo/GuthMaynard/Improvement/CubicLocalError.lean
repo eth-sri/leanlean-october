@@ -35,11 +35,7 @@ theorem kernelCubic_congr_interval (ν : Measure ℝ) [SFinite ν] {a b : ℝ}
   unfold kernelCubic
   apply integral_congr_ae
   filter_upwards [tripleMeasure_ae_interval ν hs] with t ht
-  have hd : ∀ u ∈ Icc a b, ∀ v ∈ Icc a b, |u-v| ≤ b-a := by
-    intro u hu v hv
-    apply abs_le.mpr
-    constructor <;> linarith [hu.1,hu.2,hv.1,hv.2]
-  rw [heq _ (hd _ ht.1 _ ht.2.1),heq _ (hd _ ht.2.1 _ ht.2.2),heq _ (hd _ ht.2.2 _ ht.1)]
+  grind
 
 /-- Local kernel approximation on the time-difference interval suffices
 for the actual homogeneous L2 cubic remainder. -/

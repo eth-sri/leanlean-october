@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosNormalizationGeometry
 
 @[expose] public section
@@ -19,8 +16,8 @@ theorem RobertSargosReducedSystem.normalized {R H Q δ : ℝ}
     {j k : ℕ} (hj : j = robertSargosCoefficientGcd p)
     (hk : k = robertSargosFrequencyGcd p) :
     RobertSargosReducedSystem (R/j) (H/j) (Q/k) δ (robertSargosNormalize j k p) := by
-  have hjp : 0 < j := hj ▸ h.coefficient_gcd_pos
-  have hkp : 0 < k := hk ▸ h.frequency_gcd_pos
+  have hjp  := hj ▸ h.coefficient_gcd_pos
+  have hkp  := hk ▸ h.frequency_gcd_pos
   have hjR : (0:ℝ) < j := by exact_mod_cast hjp
   have hkR : (0:ℝ) < k := by exact_mod_cast hkp
   have hdj : (j:ℤ) ∣ p.r ∧ (j:ℤ) ∣ p.h₁ ∧ (j:ℤ) ∣ p.h₂ := by

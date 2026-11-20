@@ -59,8 +59,7 @@ theorem wooleySourcePolynomial_equation_8_1_of_section7_mul
           (1 / ((k - r + 1 : ℕ) : ℝ)) *
         (wooleySourcePolynomialMixedMean
             phi (wooleyTriangular k) (r - 1) p B bPrime b nu gamma) ^
-          (((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ))) := by
-  exact hsection7.trans (mul_le_mul_of_nonneg_left
+          (((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ))) := hsection7.trans (mul_le_mul_of_nonneg_left
     (wooleySourcePolynomial_equation_8_3
       phi p B r bPrime b nu (by omega) hrk hnuPrime hnub gamma) hD)
 

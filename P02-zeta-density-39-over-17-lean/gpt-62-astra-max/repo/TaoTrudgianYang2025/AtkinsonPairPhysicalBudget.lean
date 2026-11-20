@@ -31,7 +31,7 @@ theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ
   have hK : 0 ≤ K := by
     simpa only [harmonic_zero,Rat.cast_zero] using
       atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
-  have hk : K ≤ 2*Real.log (2*H) :=
+  have hk  :=
     atkinson_pair_harmonic_le_height_log hH hG hLH hlog
   have hd : P*(N : ℝ)^(3/2:ℝ) ≤ 5476*(H/G)*(Real.log (2*H))^3 := by
     calc
@@ -72,11 +72,11 @@ theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ
   have hX : 0 ≤ X := by dsimp [X]; positivity
   have hY : 0 ≤ Y := by dsimp [Y]; positivity
   calc
-    _ = (5476+296*C)*X+5476*C*Y := by dsimp [X,Y]; ring
+    _ = (5476+296*C)*X+5476*C*Y := by ring
     _ ≤ (10000*C)*X+(10000*C)*Y := add_le_add
       (mul_le_mul_of_nonneg_right (by linarith) hX)
       (mul_le_mul_of_nonneg_right (by linarith) hY)
-    _ = _ := by dsimp [X,Y]; ring
+    _ = _ := by ring
 
 theorem atkinsonPairPowerBudget_physical_log_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ)
     (hC : 1 ≤ C) (hH : 1 ≤ H) (hG : 1 ≤ G)

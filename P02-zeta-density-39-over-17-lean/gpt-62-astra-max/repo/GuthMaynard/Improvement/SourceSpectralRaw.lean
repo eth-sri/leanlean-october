@@ -35,9 +35,9 @@ theorem source_spectral_raw (w : MathCollab.Density.ComparisonCutoff)
     hε hA hp
   refine ⟨P,D,R,hP,hD,hR,?_⟩
   intro N L T t₀ hN hNL hT hupper a μ ha hm hi h2 h0 hsupport B hB hμ
-  let _ : IsFiniteMeasure (timeMeasure μ) := timeMeasure_finite hi
+  let _  := timeMeasure_finite hi
   obtain ⟨S,hS,⟨b⟩⟩ := operator_countable_hilbertBasis (timeMeasure μ)
-  let : Countable S := hS
+  let  := hS
   have hμD (t : ℝ) : μ t ≤ ‖boundedPolynomial N a t‖^2 :=
     (hμ t).trans (min_le_left _ _)
   have hmixed := hmix N L T t₀ hN hNL hT hupper a μ ha hm hi h2 h0 hsupport hμD S b

@@ -13,7 +13,7 @@ theorem sampling_interval_variation {f f' : ℝ → E} {a δ t : ℝ}
     (hd : ∀ x, HasDerivAt f (f' x) x)
     (hi : IntegrableOn f' (Ioc a (a+δ))) (ht : t ∈ Ioc a (a+δ)) :
     ‖f a‖ ≤ ‖f t‖ + ∫ x in Ioc a (a+δ), ‖f' x‖ := by
-  have hat : a ≤ t := ht.1.le
+  have hat  := ht.1.le
   have hit : IntervalIntegrable f' volume a t := by
     rw [intervalIntegrable_iff_integrableOn_Ioc_of_le hat]
     exact hi.mono_set (Ioc_subset_Ioc le_rfl ht.2)
@@ -58,7 +58,7 @@ theorem sampling_disjoint_intervals {ι : Type*} [Fintype ι]
   have hsum := Finset.sum_le_sum (s := Finset.univ) (fun i _ =>
     sampling_interval_average hδ hd (hf.mono_set (hsub i)) (hi.mono_set (hsub i)))
   rw [← Finset.mul_sum, Finset.sum_add_distrib, ← Finset.mul_sum] at hsum
-  have hu : (⋃ i, Ioc (x i) (x i+δ)) ⊆ A := iUnion_subset hsub
+  have hu  := iUnion_subset hsub
   have hnorm (g : ℝ → E) (hg : IntegrableOn g A) :
       (∑ i, ∫ t in Ioc (x i) (x i+δ), ‖g t‖) ≤ ∫ t in A, ‖g t‖ := by
     rw [← integral_iUnion_fintype (fun _ => measurableSet_Ioc) hs

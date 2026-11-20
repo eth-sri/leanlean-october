@@ -41,7 +41,7 @@ theorem abs_dfiBesselY0Tail_le_quarter {x : ℝ} (hx : 0 < x) :
         ∫ t in Set.Ioi (0 : ℝ),
           t ^ ((1 / 4 : ℝ) - 1) * Real.exp (-(x * t)) := by
       exact setIntegral_mono_on hTail hMajorant measurableSet_Ioi fun t ht => by
-        have htPos : 0 < t := ht
+        have htPos  := ht
         have htPowPos : 0 < t ^ (3 / 4 : ℝ) := Real.rpow_pos_of_pos htPos _
         have hsqrtPos : 0 < Real.sqrt (1 + t ^ 2) := by positivity
         have htPowLe : t ^ (3 / 4 : ℝ) ≤ Real.sqrt (1 + t ^ 2) := by
@@ -52,14 +52,14 @@ theorem abs_dfiBesselY0Tail_le_quarter {x : ℝ} (hx : 0 < x) :
               have hsquare := Real.sq_sqrt (by positivity : 0 ≤ 1 + t ^ 2)
               nlinarith [Real.sqrt_nonneg (1 + t ^ 2), sq_nonneg t]
             exact hpowOne.trans hsqrtOne
-          · have htOne' : 1 ≤ t := le_of_not_ge htOne
+          · have htOne'  := le_of_not_ge htOne
             have hpowT : t ^ (3 / 4 : ℝ) ≤ t := by
               simpa using Real.rpow_le_self_of_one_le htOne' (by norm_num : 3 / 4 ≤ (1 : ℝ))
             have htSqrt : t ≤ Real.sqrt (1 + t ^ 2) := by
               have hsquare := Real.sq_sqrt (by positivity : 0 ≤ 1 + t ^ 2)
               nlinarith [Real.sqrt_nonneg (1 + t ^ 2)]
             exact hpowT.trans htSqrt
-        have hInv : 1 / Real.sqrt (1 + t ^ 2) ≤ 1 / t ^ (3 / 4 : ℝ) :=
+        have hInv  :=
           one_div_le_one_div_of_le htPowPos htPowLe
         rw [show t ^ ((1 / 4 : ℝ) - 1) = 1 / t ^ (3 / 4 : ℝ) by
           rw [show (1 / 4 : ℝ) - 1 = -(3 / 4 : ℝ) by ring,

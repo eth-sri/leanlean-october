@@ -1,8 +1,6 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaFourierCarrierBounds
 public import TaoTrudgianYang2025.BetaTaylorJets
-public import TaoTrudgianYang2025.BetaFourierModes
 
 @[expose] public section
 
@@ -47,7 +45,7 @@ theorem modelPhaseBufferedKernel_uniform_second_derivative
     dsimp [D]
     have hh : 0 ≤ (2*Real.pi)^2*K^2+2*Real.pi*K := by positivity
     linarith
-  refine ⟨4*M*D,by nlinarith [mul_le_mul hM hD (by norm_num) (by linarith : 0 ≤ M)],?_⟩
+  refine ⟨4*M*D,by nlinarith,?_⟩
   intro l r η hl hr hη hη₁ F δ T hδ hF u
   let χ := modelPhaseBufferedCutoff l r η
   have heq : modelPhaseWeightedKernel χ F T 1 =
@@ -55,28 +53,28 @@ theorem modelPhaseBufferedKernel_uniform_second_derivative
     funext x
     simp only [modelPhaseWeightedKernel,div_one]
   by_cases hu : u ∈ tsupport χ
-  · have hu' : u ∈ Ioo (1 : ℝ) 2 :=
+  · have hu'  :=
       modelPhaseBufferedCutoff_tsupport_model hη hl hr hu
     have hphase := intervalC2Bound_fourierChar_of_derivative_bounds (a := u) (b := u) hK
       (F := F) (fun x hx => by
-        have hx' : x = u := le_antisymm hx.2 hx.1
+        have hx'  := le_antisymm hx.2 hx.1
         subst x
         exact (approximateModelPhase_contDiffAt hF hu').of_le
           (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2))
       (fun x hx => by
-        have hx' : x = u := le_antisymm hx.2 hx.1
+        have hx'  := le_antisymm hx.2 hx.1
         subst x
         have hb := approximateModelPhase_iteratedDeriv_abs_le hσ hF hu' 0 (by norm_num)
         simp only [zero_add,iteratedDeriv_one] at hb
         dsimp [K]
         linarith [modelPhaseJetCoefficient_nonneg σ 1])
       (fun x hx => by
-        have hx' : x = u := le_antisymm hx.2 hx.1
+        have hx'  := le_antisymm hx.2 hx.1
         subst x
         have hb := approximateModelPhase_iteratedDeriv_abs_le hσ hF hu' 1 le_rfl
         dsimp [K]
         linarith [modelPhaseJetCoefficient_nonneg σ 0]) T
-    have hA : 1 ≤ η⁻¹ := (one_le_inv₀ hη).mpr hη₁
+    have hA  := (one_le_inv₀ hη).mpr hη₁
     have hR₁ : η⁻¹ ≤ η⁻¹*(1+|T|) :=
       le_mul_of_one_le_right (by positivity) (by linarith [abs_nonneg T])
     have hR₂ : 1+|T| ≤ η⁻¹*(1+|T|) :=
@@ -92,8 +90,8 @@ theorem modelPhaseBufferedKernel_uniform_second_derivative
       simp only [modelPhaseWeightedKernel,div_one,hx,Pi.zero_apply,Complex.ofReal_zero,zero_mul]
     rw [hz.iteratedDeriv_eq 2]
     simp only [iteratedDeriv_const,show (2 : ℕ) ≠ 0 by norm_num,ite_false,norm_zero]
-    have hM₀ : 0 ≤ M := by linarith
-    have hD₀ : 0 ≤ D := by linarith
+    
+    
     positivity
 
 end TaoTrudgianYang2025

@@ -51,17 +51,15 @@ lemma sum_inv_natCast_add_one (n : ℕ) :
 /-- The summand of the digamma series, in closed form. -/
 lemma inv_add_one_sub_inv_eq {z : ℂ} {m : ℕ} (hzm : z + m ≠ 0) :
     ((m : ℂ) + 1)⁻¹ - (z + m)⁻¹ = (z - 1) * (((m : ℂ) + 1) * (z + m))⁻¹ := by
-  have hm : ((m : ℂ) + 1) ≠ 0 := Nat.cast_add_one_ne_zero m
-  field_simp
-  ring
+  field_simp <;> ring
 
 /-- The Weierstrass bound for the digamma series summand on a bounded substrip of the
 right half-plane. -/
 lemma norm_inv_add_one_sub_inv_le {a R : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {z : ℂ}
     (hza : a ≤ z.re) (hzR : ‖z‖ ≤ R) (m : ℕ) :
     ‖((m : ℂ) + 1)⁻¹ - (z + m)⁻¹‖ ≤ (R + 1) / (a * ((m : ℝ) + 1) ^ 2) := by
-  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  have hR0 : (0 : ℝ) ≤ R := le_trans (norm_nonneg z) hzR
+  
+  have hR0  := le_trans (norm_nonneg z) hzR
   have hrepos : 0 < (z + m).re := by
     rw [add_re, natCast_re]
     linarith
@@ -108,7 +106,7 @@ lemma logGammaSeq_succ_sub {z : ℂ} (hz : 0 < z.re) (n : ℕ) :
         = Real.log ((n : ℝ) + 1) + Real.log ((n ! : ℕ) : ℝ) := by
       rw [Nat.factorial_succ]
       push_cast
-      rw [Real.log_mul (by positivity) (by exact_mod_cast n.factorial_ne_zero)]
+      rw [Real.log_mul (by positivity) (by positivity)]
     rw [← ofReal_add]
     exact_mod_cast congrArg (fun t : ℝ => (t : ℂ)) hfac
   have hlog : log (z + ((n + 1 : ℕ) : ℂ))
@@ -174,8 +172,7 @@ lemma cauchySeq_logGammaSeq {z : ℂ} (hz : 0 < z.re) : CauchySeq (logGammaSeq z
       nlinarith
     rw [abs_le]
     constructor
-    · have : (0 : ℝ) ≤ 2 * (1 / ((n : ℝ) + 1) ^ 2) := by positivity
-      linarith
+    · linarith
     · linarith
   calc ‖z * ((Real.log ((n : ℝ) + 1) - Real.log n - ((n : ℝ) + 1)⁻¹ : ℝ) : ℂ)
         + (z / ((n : ℂ) + 1) - log (1 + z / ((n : ℂ) + 1)))‖

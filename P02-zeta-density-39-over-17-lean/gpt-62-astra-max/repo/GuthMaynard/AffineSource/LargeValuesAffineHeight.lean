@@ -132,7 +132,7 @@ theorem exists_gmAffineHeightDecayConstant
     · intro xi hxi
       rw [hfC]
       simp
-  · have hS0pos : 0 < S0 :=
+  · have hS0pos  :=
       lt_of_le_of_ne (by positivity) (Ne.symm hS0)
     have hmass : 0 ≤ mass := by
       dsimp only [mass]
@@ -142,17 +142,14 @@ theorem exists_gmAffineHeightDecayConstant
       dsimp only [C]
       positivity
     refine ⟨C, hC, ?_, ?_⟩
-    · dsimp only [C, S0, mass]
-      rw [div_mul_cancel₀ _ hS0]
+    · rw [div_mul_cancel₀ _ hS0]
     · intro xi hxi
       have hpoint := hbound.pointwise hxi
-      have hxiabs : |xi| ≠ 0 := (abs_pos.mpr hxi).ne'
+      have hxiabs  := (abs_pos.mpr hxi).ne'
       apply hpoint.trans_eq
       dsimp only [C, S0, mass]
       rw [div_pow, pow_add]
-      field_simp [hS0, hxiabs]
-      simpa only [S0, mass] using
-        (mul_div_cancel_right₀ (D * mass) hS0).symm
+      grind
 
 /-- One Section 9 smoothing preserves a height-aware profile with only the
 fixed factor two.  This is the uniformity needed by the finite descent. -/
@@ -290,8 +287,8 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
     apply integral_congr_ae
     filter_upwards with u
     exact abs_of_nonneg (hf u)
-  have hmass : 0 ≤ ∫ x : ℝ, f x := integral_nonneg hf
-  have hmiddle : 0 ≤ gmAffineMiddleFarSourceConstant n :=
+  
+  have hmiddle  :=
     gmAffineMiddleFarSourceConstant_nonneg n
   have hA :
       0 ≤ (512 * Cdiv *
@@ -348,42 +345,7 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
         (192 * 3 * (4 : ℝ) ^ n * D ^ 2 *
           (∫ u : ℝ, f u) ^ 2) := by
     convert hsecondTerm using 1 <;> ring
-  have hhighExact :
-      4 * (gmAffineRegionIFarConstant n * (∫ x : ℝ, f x)) ^ 2 *
-          (T ^ (30 : ℕ) /
-            ((T ^ gmAffineIterationEta delta) ^ n) ^ 2) ≤
-        4 * (gmAffineRegionIFarConstant n * (∫ x : ℝ, f x)) ^ 2 := by
-    simpa only [mul_one] using hhighTerm
-  calc
-    (512 * Cdiv *
-          SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (64 * gmAffineMiddleFarSourceConstant n *
-            (∫ u : ℝ, f u) ^ 2) *
-          (T ^ (23 + 8 * gmAffineIterationEta delta) /
-            (T ^ gmAffineIterationEta delta) ^ n) +
-      (512 * Cdiv *
-          SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (192 * 3 * (4 : ℝ) ^ n *
-          (D ^ 2 * T ^ (4 : ℕ) * (∫ x : ℝ, f x) ^ 2)) *
-          (T ^ (26 + 11 * gmAffineIterationEta delta) /
-            ((T ^ gmAffineIterationEta delta) ^ n) ^ 2) +
-      4 * (gmAffineRegionIFarConstant n * (∫ x : ℝ, f x)) ^ 2 *
-        (T ^ (30 : ℕ) /
-          ((T ^ gmAffineIterationEta delta) ^ n) ^ 2) ≤
-      (512 * Cdiv *
-          SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (64 * gmAffineMiddleFarSourceConstant n * (∫ x : ℝ, f x) ^ 2) +
-      (512 * Cdiv *
-          SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (192 * 3 * (4 : ℝ) ^ n * D ^ 2 * (∫ x : ℝ, f x) ^ 2) +
-      4 * (gmAffineRegionIFarConstant n * (∫ x : ℝ, f x)) ^ 2 := by
-        exact add_le_add (add_le_add hfirstExact hsecondExact) hhighExact
-    _ = (512 * Cdiv *
-          SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2 *
-          (64 * gmAffineMiddleFarSourceConstant n +
-            192 * 3 * (4 : ℝ) ^ n * D ^ 2) +
-        4 * gmAffineRegionIFarConstant n ^ 2) *
-          (∫ x : ℝ, f x) ^ 2 := by ring
+  grind
 
 /-- The physical `T^n` Fourier cost is more than cancelled by the
 `Y = T^6` Region-III frequency tail. -/
@@ -396,8 +358,7 @@ theorem gmAffineIterationRegionIII_height_scale_le_one
   have hTone : 1 ≤ T := by linarith
   have hTpos : 0 < T := by linarith
   have hMpow := gmAffineIteration_M_pow_add_three_le (n := n) hMT
-  have htailNonneg : 0 ≤ (T ^ (6 : ℕ)) ^ (1 - 2 * (n : ℝ)) := by
-    positivity
+  
   have hscale :
       (T ^ gmAffineIterationEta delta * (M : ℝ) ^ (n + 3)) ^ 2 *
           (T ^ (6 : ℕ)) ^ (1 - 2 * (n : ℝ)) ≤
@@ -481,7 +442,7 @@ theorem gmAffineRegionIIISourceBound_le_heightMass
       0 ≤ (16 * (2 : ℝ) ^ n * D * gmAffineRegionIIIKernelConstant n) *
           (T ^ gmAffineIterationEta delta * T ^ (n + 2)) *
             ∫ x : ℝ, f x := by positivity
-  have henvSq := (sq_le_sq₀ henvNonneg henvRhs).2 henv
+  
   have hscale := gmAffineIterationRegionIII_height_scale_le_one
     (delta := delta) hT hMT hn
   unfold gmAffineRegionIIISourceBound
@@ -555,7 +516,7 @@ theorem gmAffineLemma92ComponentsAt_to_heightMassRecurrence
             apply div_pos
             · exact gmAffineSecondPoissonCutoff_pos (by linarith)
                 (Real.rpow_pos_of_pos (by linarith) _)
-            · exact Real.rpow_pos_of_pos (by linarith) _) f) M₂))
+            · positivity) f) M₂))
   have hZ : 0 ≤ Z := by dsimp only [Z]; positivity
   have hcore :
       Cdiv * gmAffineRegionIICoreConstant *
@@ -596,7 +557,7 @@ theorem gmAffineLemma92ComponentsAt_to_heightMassRecurrence
                   apply div_pos
                   · exact gmAffineSecondPoissonCutoff_pos (by linarith)
                       (Real.rpow_pos_of_pos (by linarith) _)
-                  · exact Real.rpow_pos_of_pos (by linarith) _) f) M₂)) ≤
+                  · positivity) f) M₂)) ≤
         Cdiv * gmAffineRegionIICoreConstant * T ^ delta *
           (M : ℝ) ^ 2 *
           (Real.sqrt (∫ u : ℝ, f u ^ 2) *
@@ -609,7 +570,7 @@ theorem gmAffineLemma92ComponentsAt_to_heightMassRecurrence
                   apply div_pos
                   · exact gmAffineSecondPoissonCutoff_pos (by linarith)
                       (Real.rpow_pos_of_pos (by linarith) _)
-                  · exact Real.rpow_pos_of_pos (by linarith) _) f) M₂)) := by
+                  · positivity) f) M₂)) := by
     convert hcore using 1 <;> dsimp only [Z] <;> ring
   exact add_le_add (add_le_add hregionI (add_le_add hcore' htail)) hhigh
 
@@ -635,7 +596,7 @@ theorem exists_n_Cdiv_forall_gmAffineLemma92HeightMassRecurrence
     have hetaUpper := gmAffineIterationEta_le_one delta
     have hnNonneg : (0 : ℝ) ≤ n := by positivity
     nlinarith
-  have hnReal : (31 : ℝ) ≤ n := hn.trans hnUpper
+  
   have hnNat : 1 ≤ n := by exact_mod_cast (show (1 : ℝ) ≤ n by linarith)
   obtain ⟨Cdiv, hCdiv, hcard⟩ :=
     exists_global_card_gmAffineFirstPoissonPairs_middle_real_le hetaPos
@@ -644,7 +605,7 @@ theorem exists_n_Cdiv_forall_gmAffineLemma92HeightMassRecurrence
   obtain ⟨Ctail, hCtail, hproduct, hdecay⟩ :=
     exists_gmAffineHeightDecayConstant (by linarith) hD hf hheight
   have hTone : 1 ≤ T := by linarith
-  have hQ : 1 ≤ T ^ gmAffineIterationEta delta :=
+  have hQ  :=
     one_le_rpow_gmAffineIterationEta hdelta hTone
   have hY : 0 < T ^ (6 : ℕ) := pow_pos (by linarith) 6
   have hQMY := gmAffineIterationQ_mul_M_le_four_Y
@@ -728,7 +689,7 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
         have hle : (depth : ℝ) ≤ ((depth + Nat.succ r : ℕ) : ℝ) := by
           exact_mod_cast Nat.le_add_right depth (Nat.succ r)
         linarith
-      have hiter : GMAffineIterationSupported f :=
+      have hiter  :=
         hsupp.iterationSupported hdepthBudget hTpos
       have hratio : GMAffineHeightFourierMassBound
           (gmAffineIterationEta (delta / 8)) T n Dcur f := by
@@ -751,7 +712,7 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
       have hTS : T ≤ S := by
         dsimp only [S]
         exact gmAffineSecondPoissonSmoothingScale_ge hQ
-      let ft : SchwartzMap ℝ ℝ := gmAffineTildeSchwartz S hS f
+      let ft  := gmAffineTildeSchwartz S hS f
       have hftNonneg : ∀ x, 0 ≤ ft x := by
         dsimp only [ft]
         exact gmAffineTildeSchwartz_nonneg S hS f hf
@@ -769,8 +730,7 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
         convert hbudget using 1
         push_cast
         ring
-      have hM₂T : (M₂ : ℝ) ≤ T ^ 4 := by
-        exact (by exact_mod_cast hM₂M : (M₂ : ℝ) ≤ M).trans hMT
+      have hM₂T := (by exact_mod_cast hM₂M : (M₂ : ℝ) ≤ M).trans hMT
       have hJft := hIH hT hnextBudget ft hftNonneg hftSupp hftProfile
         hM₂ hM₂T
       let W : ℝ := (M : ℝ) ^ 6 * (∫ x : ℝ, f x) ^ 2 +
@@ -788,10 +748,9 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
           gmAffineJ ft M₂ ≤ Cih * T ^ (3 * delta / 2) * Wt := by
             simpa only [Wt] using hJft
           _ ≤ Cih * T ^ (3 * delta / 2) * (16 * W) := by
-            exact mul_le_mul_of_nonneg_left hWtW (by positivity)
+            gcongr
           _ = 16 * Cih * T ^ (3 * delta / 2) * W := by ring
-      have hsqrtJft : Real.sqrt (gmAffineJ ft M₂) ≤
-          4 * Real.sqrt Cih * T ^ (3 * delta / 4) * Real.sqrt W :=
+      have hsqrtJft  :=
         sqrt_le_four_mul_sqrt_rpow_mul_sqrt hCih.le hTpos.le hJft'
       have hmixed : (M : ℝ) ^ 2 *
           Real.sqrt (∫ x : ℝ, f x ^ 2) * Real.sqrt W ≤ W := by
@@ -832,8 +791,7 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
         have hAterm : Acoef * T ^ (delta / 8) * X ≤
             Acoef * T ^ delta * W := by
           calc
-            _ ≤ Acoef * T ^ delta * X := by
-              exact mul_le_mul_of_nonneg_right
+            _ ≤ Acoef * T ^ delta * X := mul_le_mul_of_nonneg_right
                 (mul_le_mul_of_nonneg_left hpowAlphaLe hAcoef) hX
             _ ≤ Acoef * T ^ delta * W :=
               mul_le_mul_of_nonneg_left hXW (by positivity)
@@ -867,8 +825,7 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
                 Real.sqrt W) := by rw [← hpowSeven]; ring
           _ ≤ (4 * Bcoef * Real.sqrt Cih) * T ^ (7 * delta / 8) * W :=
             mul_le_mul_of_nonneg_left hmixed (by positivity)
-          _ ≤ (4 * Bcoef * Real.sqrt Cih) * T ^ delta * W := by
-            exact mul_le_mul_of_nonneg_right
+          _ ≤ (4 * Bcoef * Real.sqrt Cih) * T ^ delta * W := mul_le_mul_of_nonneg_right
               (mul_le_mul_of_nonneg_left hpowSevenLe (by positivity)) hW
       have hrecNorm : gmAffineJ f M ≤
           Acoef * T ^ (delta / 8) * X +
@@ -877,7 +834,6 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
                 Real.sqrt (gmAffineJ ft M₂)) + Rcoef * massSq := by
         convert hmassRec using 1
         all_goals
-          dsimp only [Acoef, Bcoef, Rcoef, Dcur, Q, S, ft, X, massSq]
           ring
       calc
         gmAffineJ f M ≤ _ := hrecNorm
@@ -892,17 +848,14 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
             le_add_of_nonneg_right (by norm_num)
           calc
             _ = (Acoef + Rcoef + K) * (T ^ delta * W) := by
-              dsimp only [K]
               ring
             _ ≤ (Acoef + Rcoef + K + 1) * (T ^ delta * W) :=
               mul_le_mul_of_nonneg_right hcoeff hTW
             _ = C * T ^ delta * W := by
-              dsimp only [C, K]
               ring
         _ = C * T ^ delta *
             ((M : ℝ) ^ 6 * (∫ x : ℝ, f x) ^ 2 +
-              (M : ℝ) ^ 4 * ∫ x : ℝ, f x ^ 2) := by
-          rfl
+              (M : ℝ) ^ 4 * ∫ x : ℝ, f x ^ 2) := rfl
 
 /-- Correct height-family form of Guth--Maynard Proposition 9.1.  One
 The constant works simultaneously for every physical height and every source
@@ -928,8 +881,8 @@ theorem gmAffine_proposition9_1_height_family_native
   have hT₀ : 2 ≤ T₀ := le_max_left _ _
   refine ⟨C, T₀, hC, hT₀, ?_⟩
   intro T hT f hf hsupp hprofile M hM hMT
-  have hTtwo : 2 ≤ T := hT₀.trans hT
-  have hjT : 8 * (j : ℝ) ≤ T := (le_max_right _ _).trans hT
+  have hTtwo  := hT₀.trans hT
+  have hjT  := (le_max_right _ _).trans hT
   have hsupp₀ : GMAffineWideDepthSupported T 0 f :=
     hsupp.wideDepthSupported_zero
   exact hdescent hTtwo (by simpa using hjT) f hf hsupp₀ hprofile hM hMT

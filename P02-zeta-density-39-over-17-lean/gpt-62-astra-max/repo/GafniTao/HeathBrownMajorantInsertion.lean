@@ -136,9 +136,7 @@ theorem heathBrownIntegratedMajorant_le_critical
     exact Nat.mul_le_mul (by omega) (by omega)
   apply heathBrownIntegratedMajorant_le_of_bounds hs
   · exact heathBrownCriticalMoment_bound (by omega) (by omega) hVMVT
-  · exact heathBrownPairCount_card_cast_le_lemma_two
-      hk hN hA hlambda hlambdaOne hsmall hlargeH hcoordLow hcoordLowD
-      hcoordLast hcoordLastD hraw hrawd hkBounds
+  · apply heathBrownPairCount_card_cast_le_lemma_two <;> assumption
 
 /-- Heath-Brown Lemma 1 after inserting both of its genuine number-theoretic
 inputs.  The statement deliberately keeps the two Abel factors, the

@@ -23,23 +23,23 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
       (k : ℝ) * m ≤ r := by
   have hKr : (1 : ℝ) ≤ K := by exact_mod_cast hK
   have hKpos : (0 : ℝ) < K := by linarith
-  have hmpos : 0 < m := hδ.trans_le hδm
+  have hmpos  := hδ.trans_le hδm
   have hden : (0 : ℝ) < 2 * K + 1 := by positivity
-  have hrbudget : (K : ℝ) + 1 ≤ r * (2 * K + 1) := (div_le_iff₀ hden).mp hr
+  have hrbudget  := (div_le_iff₀ hden).mp hr
   have hrhalf : (1 : ℝ) / 2 < r := by
     by_contra hn
     have hh : r ≤ 1 / 2 := le_of_not_gt hn
     nlinarith [mul_le_mul_of_nonneg_right hh hden.le]
-  have hrpos : 0 < r := by linarith
+  
   let k : ℕ := ⌊r / m⌋₊
   have hKk : K ≤ k := Nat.le_floor ((le_div_iff₀ hmpos).mpr (by
     have hh := (le_div_iff₀ hKpos).mp hm
     nlinarith))
   have hkR : (K : ℝ) ≤ k := by exact_mod_cast hKk
-  have hkpos : (0 : ℝ) < k := hKpos.trans_le hkR
-  have hfloor : (k : ℝ) * m ≤ r := (le_div_iff₀ hmpos).mp
+  have hkpos  := hKpos.trans_le hkR
+  have hfloor  := (le_div_iff₀ hmpos).mp
     (Nat.floor_le (by positivity : 0 ≤ r / m))
-  have hnext : r < ((k : ℝ) + 1) * m := (div_lt_iff₀ hmpos).mp
+  have hnext  := (div_lt_iff₀ hmpos).mp
     (Nat.lt_floor_add_one (r / m))
   have hbudget : (k : ℝ) + 1 ≤ r * (2 * k + 1) := by
     nlinarith [mul_nonneg (show 0 ≤ 2 * r - 1 by linarith) (sub_nonneg.mpr hkR)]

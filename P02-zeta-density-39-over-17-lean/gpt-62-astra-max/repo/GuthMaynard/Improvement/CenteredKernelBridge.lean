@@ -101,7 +101,6 @@ theorem centeredKernel_uniform_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     have hh := norm_setIntegral_le_of_norm_le_const (μ := volume)
       (s := Icc l u) isCompact_Icc.measure_lt_top (fun x _ => hn x)
     rwa [setIntegral_eq_integral_of_forall_compl_eq_zero hz,Real.volume_real_Icc_of_le hlu] at hh
-  unfold centeredKernel
   calc
     _ ≤ ‖∑ d ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋, logModulated a s ((d:ℝ)/L)‖ +
         ‖(L:ℂ)*(∫ x, logModulated a s x)‖ := norm_sub_le _ _

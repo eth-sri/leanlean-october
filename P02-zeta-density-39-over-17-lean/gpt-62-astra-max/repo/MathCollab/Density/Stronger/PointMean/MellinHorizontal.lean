@@ -69,7 +69,7 @@ theorem heathBrown_Gamma_wide_strip_norm_le
     {a t : ℝ} (haLower : -(1 / 4 : ℝ) ≤ a) (haUpper : a ≤ 2)
     (ht : 1 ≤ |t|) :
     ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * I)‖ ≤ 24 / |t| ^ 3 := by
-  have htPos : 0 < |t| := zero_lt_one.trans_le ht
+  have htPos  := zero_lt_one.trans_le ht
   apply (le_div_iff₀ (pow_pos htPos 3)).2
   simpa [mul_comm] using heathBrown_Gamma_wide_strip_decay haLower haUpper
 
@@ -111,9 +111,7 @@ theorem norm_heathBrownZetaSquareMellinIntegrand_horizontal_le
       _ = heathBrownMellinHorizontalSize s R := by
         simp only [heathBrownMellinHorizontalSize]
         ring
-  have hzeta' : ‖riemannZeta
-      (s + ((x : ℂ) + (R : ℂ) * I))‖ ≤
-        5 * heathBrownMellinHorizontalSize s R :=
+  have hzeta'  :=
     hzeta.trans (mul_le_mul_of_nonneg_left hnorm (by norm_num))
   exact mul_le_mul hGamma (pow_le_pow_left₀ (norm_nonneg _) hzeta' 2)
     (by positivity) (by positivity)
@@ -159,7 +157,7 @@ theorem norm_heathBrownMellin_HIntegral'_le
         mul_le_mul hscalar hbase (norm_nonneg _) (by positivity)
     _ ≤ (9 / 4 : ℝ) * M := by
       nlinarith [mul_le_mul_of_nonneg_left hwidth (by positivity : 0 ≤ M)]
-    _ = _ := by rfl
+    _ = _ := rfl
 
 theorem tendsto_heathBrownMellin_HIntegral'_zero
     {s : ℂ} (hsLower : 1 / 2 ≤ s.re)
@@ -173,12 +171,12 @@ theorem tendsto_heathBrownMellin_HIntegral'_zero
   apply squeeze_zero' (g := fun R : ℝ => C * R⁻¹)
     (Eventually.of_forall fun _ => norm_nonneg _)
   · filter_upwards [eventually_ge_atTop (max 1 (max D (|s.im| + 1)))] with R hR
-    have hRone : 1 ≤ R := (le_max_left _ _).trans hR
-    have hDR : D ≤ R := (le_max_left D (|s.im| + 1)).trans
+    have hRone  := (le_max_left _ _).trans hR
+    have hDR  := (le_max_left D (|s.im| + 1)).trans
       ((le_max_right 1 _).trans hR)
-    have hHeightR : |s.im| + 1 ≤ R :=
+    have hHeightR  :=
       (le_max_right D (|s.im| + 1)).trans ((le_max_right 1 _).trans hR)
-    have hRpos : 0 < R := zero_lt_one.trans_le hRone
+    have hRpos  := zero_lt_one.trans_le hRone
     have hheight : 1 ≤ |s.im + R| := by
       rw [abs_of_nonneg (by linarith [neg_abs_le s.im])]
       linarith [neg_abs_le s.im]
@@ -200,8 +198,7 @@ theorem tendsto_heathBrownMellin_HIntegral'_zero
         rw [abs_of_pos hRpos]
         gcongr
       _ = C * R⁻¹ := by
-        dsimp only [C]
-        field_simp
+        field_simp <;> ring
   · simpa using (tendsto_const_nhds.mul tendsto_inv_atTop_zero :
       Tendsto (fun R : ℝ => C * R⁻¹) atTop (nhds (C * 0)))
 
@@ -217,12 +214,12 @@ theorem tendsto_heathBrownMellin_HIntegral'_neg_zero
   apply squeeze_zero' (g := fun R : ℝ => C * R⁻¹)
     (Eventually.of_forall fun _ => norm_nonneg _)
   · filter_upwards [eventually_ge_atTop (max 1 (max D (|s.im| + 1)))] with R hR
-    have hRone : 1 ≤ R := (le_max_left _ _).trans hR
-    have hDR : D ≤ R := (le_max_left D (|s.im| + 1)).trans
+    have hRone  := (le_max_left _ _).trans hR
+    have hDR  := (le_max_left D (|s.im| + 1)).trans
       ((le_max_right 1 _).trans hR)
-    have hHeightR : |s.im| + 1 ≤ R :=
+    have hHeightR  :=
       (le_max_right D (|s.im| + 1)).trans ((le_max_right 1 _).trans hR)
-    have hRpos : 0 < R := zero_lt_one.trans_le hRone
+    have hRpos  := zero_lt_one.trans_le hRone
     have hheight : 1 ≤ |s.im - R| := by
       have habsRaw := abs_sub_abs_le_abs_sub R s.im
       rw [abs_of_pos hRpos] at habsRaw
@@ -250,8 +247,7 @@ theorem tendsto_heathBrownMellin_HIntegral'_neg_zero
         rw [abs_neg, abs_of_pos hRpos]
         gcongr
       _ = C * R⁻¹ := by
-        dsimp only [C]
-        field_simp
+        field_simp <;> ring
   · simpa using (tendsto_const_nhds.mul tendsto_inv_atTop_zero :
       Tendsto (fun R : ℝ => C * R⁻¹) atTop (nhds (C * 0)))
 

@@ -30,9 +30,9 @@ theorem amplifier_column_bounds {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) {q : �
     (hq : q ∈ amplifierColumns N L) :
     0 < q ∧ L/N ≤ (q:ℝ) ∧ (q:ℝ) ≤ 2*L/N := by
   obtain ⟨h₁,h₂⟩ := mem_Icc.mp hq
-  have hL : 0 < L := hN.trans_le hNL
-  have hlo : L/N ≤ (q:ℝ) := Nat.ceil_le.mp h₁
-  have hhi : (q:ℝ) ≤ 2*L/N := (Nat.le_floor_iff (by positivity)).mp h₂
+  have hL  := hN.trans_le hNL
+  have hlo  := Nat.ceil_le.mp h₁
+  have hhi  := (Nat.le_floor_iff (by positivity)).mp h₂
   exact ⟨by exact_mod_cast (lt_of_lt_of_le (div_pos hL hN) hlo),hlo,hhi⟩
 
 theorem amplifier_product_plateau {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L)
@@ -40,9 +40,9 @@ theorem amplifier_product_plateau {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L)
     1 ≤ ((q*n:ℕ):ℝ)/L ∧ ((q*n:ℕ):ℝ)/L ≤ 4 := by
   obtain ⟨hq0,hqlo,hqhi⟩ := amplifier_column_bounds hN hNL hq
   obtain ⟨hnlo,hnhi⟩ := amplifier_source_bounds hN hn
-  have hL : 0 < L := hN.trans_le hNL
-  have hqN : L ≤ (q:ℝ)*N := (div_le_iff₀ hN).mp hqlo
-  have hqN' : (q:ℝ)*N ≤ 2*L := (le_div_iff₀ hN).mp hqhi
+  have hL  := hN.trans_le hNL
+  have hqN  := (div_le_iff₀ hN).mp hqlo
+  have hqN'  := (le_div_iff₀ hN).mp hqhi
   constructor
   · apply (le_div_iff₀ hL).mpr
     push_cast
@@ -55,7 +55,7 @@ theorem amplifier_product_row {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L)
     (hl : l ≤ 1) (hu : 4 ≤ u) {q n : ℕ}
     (hq : q ∈ amplifierColumns N L) (hn : n ∈ amplifierSource N) :
     ((q*n:ℕ):ℤ) ∈ Icc ⌈l*L⌉ ⌊u*L⌋ := by
-  have hL : 0 < L := hN.trans_le hNL
+  have hL  := hN.trans_le hNL
   obtain ⟨hlo,hhi⟩ := amplifier_product_plateau hN hNL hq hn
   push_cast at hlo hhi
   rw [mem_Icc,Int.ceil_le,Int.le_floor]
@@ -70,7 +70,7 @@ theorem amplifier_columns_card {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) :
       ((amplifierColumns N L).card:ℝ) ≤ 2*L/N := by
   let x := L/N
   have hx : 1 ≤ x := (le_div_iff₀ hN).mpr (by simpa using hNL)
-  have hxc : x ≤ (⌈x⌉₊:ℝ) := Nat.le_ceil x
+  have hxc  := Nat.le_ceil x
   have hxc' : (⌈x⌉₊:ℝ) ≤ x+1 := by
     have hh : (⌈x⌉₊:ℝ) ≤ (⌊x⌋₊:ℝ)+1 := by exact_mod_cast Nat.ceil_le_floor_add_one x
     have hf := Nat.floor_le (by linarith : 0 ≤ x)
@@ -84,21 +84,15 @@ theorem amplifier_columns_card {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) :
     push_cast
     rfl
   have hf : (⌊2*x⌋₊:ℝ) ≤ 2*x := Nat.floor_le (by linarith)
-  have hf' : 2*x < (⌊2*x⌋₊:ℝ)+1 := Nat.lt_floor_add_one (2*x)
+  have hf'  := Nat.lt_floor_add_one (2*x)
   have hone : 1 ≤ ((amplifierColumns N L).card:ℝ) := by
     have hp : 0 < (amplifierColumns N L).card := Finset.card_pos.mpr ⟨⌈x⌉₊,by
       unfold amplifierColumns
-      rw [show 2*L/N=2*x by dsimp [x]; ring]
-      exact mem_Icc.mpr ⟨le_rfl,hcf⟩⟩
+      grind⟩
     exact_mod_cast hp
   constructor
-  · change x/2 ≤ _
-    by_cases hh : x ≤ 2
-    · linarith
-    · rw [hcard]
-      linarith
-  · rw [hcard,show 2*L/N=2*x by dsimp [x]; ring]
-    linarith
+  · linarith
+  · grind
 
 /-- The source has at most N+1 terms, uniformly for real N. -/
 theorem amplifier_source_card {N : ℝ} (hN : 0 ≤ N) :
@@ -159,7 +153,7 @@ theorem amplifier_column_identity {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L)
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro n hn
-  have hn' : n ∈ amplifierSource N := hn
+  have hn'  := hn
   have hp := amplifier_product_plateau hN hNL hq hn'
   have hq0 := (amplifier_column_bounds hN hNL hq).1
   have hn0 : 0 < n := by

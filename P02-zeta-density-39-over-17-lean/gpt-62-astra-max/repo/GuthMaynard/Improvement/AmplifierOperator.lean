@@ -32,7 +32,7 @@ theorem amplifier_operator_norm {η : ℝ} (hη : 0 < η) :
   obtain ⟨C,hC,henergy⟩ := amplifier_matrix_energy hη
   refine ⟨C,hC,?_⟩
   intro N L hN hNL a M ha
-  have hL : 0 < L := hN.trans_le hNL
+  have hL  := hN.trans_le hNL
   let D := C*(1+L)^η*(N+1)
   have hD : 0 ≤ D := by dsimp [D]; positivity
   have hvec (z : EuclideanSpace ℂ (amplifierColumns N L)) :

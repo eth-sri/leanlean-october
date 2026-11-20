@@ -1,3 +1,0 @@
-module
-public import LaterPairs.PairPhysicalExcess
-public import DetectorPowerRange

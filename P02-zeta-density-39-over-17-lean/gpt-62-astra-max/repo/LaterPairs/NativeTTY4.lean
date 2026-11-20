@@ -1,10 +1,7 @@
 module
-public import LaterPairs.Native.HuxleyCore
-public import LaterPairs.Native.SquareProductCount
+public import LaterPairs.Native.HuxleyCore.Part06
 public import LaterPairs.HeathBrownRows
 public import LaterPairs.RestrictedPeakTail
-public import TaoTrudgianYang2025.BetaHalfDuality
-public import TaoTrudgianYang2025.ExponentPairBProcess
 
 @[expose] public section
 set_option autoImplicit false

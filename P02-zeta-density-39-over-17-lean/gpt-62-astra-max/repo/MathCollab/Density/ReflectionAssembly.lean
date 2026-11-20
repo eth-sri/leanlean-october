@@ -75,12 +75,11 @@ theorem positiveShell_bandPhaseSum_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H)
       apply Finset.sum_le_sum
       intro u _
       by_cases hs : H ≤ t-u ∧ t-u < 2*H
-      · have hp : 0 < t-u := hH.trans_le hs.1
+      · have hp  := hH.trans_le hs.1
         have hc : |t-u| < 2*H := by rw [abs_of_pos hp]; exact hs.2
         simpa only [ite_eq_left hs, ite_eq_left hc] using norm_bandPhaseSum_sq_le_blocks hL hH (t-u) r
       · rw [ite_eq_right hs]
-        apply mul_nonneg (by norm_num)
-        exact Finset.sum_nonneg (fun _ _ => by split_ifs <;> positivity)
+        positivity
     _ = 10 * ∑ M ∈ reflectionBlocks L H, ∑ t ∈ U, ∑ u ∈ U,
         if |t-u| < 2*H then ‖blockPolynomial L H M r (t-u)‖ ^ 2 else 0 := by
       simp only [Finset.mul_sum]
@@ -154,7 +153,7 @@ theorem positiveShell_bandContribution_le (w : ReflectionCutoff) {L H : ℝ}
     positiveShell H U (fun v => ‖bandContribution w L H v‖ ^ 2) ≤
       (5000/Real.pi^2) * (mellinMass w)^2 * (L^2/H) * localReflectionEnergy L H U := by
   let W := mellinLine (fun x => (w x : ℂ))
-  have hW : Integrable W := integrable_mellin_line_one w.complex_smooth w.complex_support
+  have hW  := integrable_mellin_line_one w.complex_smooth w.complex_support
   have hi (v : ℝ) : Integrable (fun r => ‖W r‖ * ‖bandPhaseSum L H v r‖ ^ 2) :=
     integrable_weighted_norm_sq hW (measurable_bandPhaseSum L H v).aestronglyMeasurable
       (norm_bandPhaseSum_le L H v)

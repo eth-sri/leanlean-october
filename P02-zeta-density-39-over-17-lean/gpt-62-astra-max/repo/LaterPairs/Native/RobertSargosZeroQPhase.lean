@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSymmetricQuadratic
 public import LaterPairs.Native.RobertSargosSymmetricThirdDerivative
 
@@ -44,8 +41,7 @@ theorem hasDerivAt_robertSargos_zero_q_remainder
   have hdr := hasDerivAt_robertSargos_symmetric_jet (by norm_num : 0 < 4) hrp hrm
   have hd1 := (hasDerivAt_iteratedDeriv_finite (by norm_num : 1 < 4) hx).const_mul (2*r)
   convert (hdp.sub hdr).add hd1 using 1
-  funext y
-  simp only [robertSargosZeroQRemainder,iteratedDeriv_zero,Pi.add_apply,Pi.sub_apply]
+  rfl
 
 theorem abs_robertSargos_zero_q_remainder_derivative_le
     {f : ℝ → ℝ} {a b x h r B : ℝ} (hh : 0 ≤ h) (hhr : 0 ≤ h+r)
@@ -81,7 +77,6 @@ theorem abs_robertSargos_zero_q_remainder_derivative_le
 theorem hasDerivAt_robertSargos_zero_q_leading_jet
     {f : ℝ → ℝ} {x r : ℝ} {j : ℕ} (hj : j < 3) (hf : ContDiffAt ℝ 4 f x) :
     HasDerivAt (fun y => -2*r*iteratedDeriv (j+1) f y)
-      (-2*r*iteratedDeriv (j+2) f x) x := by
-  exact (hasDerivAt_iteratedDeriv_finite (show j+1 < 4 by omega) hf).const_mul (-2*r)
+      (-2*r*iteratedDeriv (j+2) f x) x := (hasDerivAt_iteratedDeriv_finite (show j+1 < 4 by omega) hf).const_mul (-2*r)
 
 end TaoTrudgianYang2025

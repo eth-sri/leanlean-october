@@ -106,7 +106,7 @@ theorem norm_heathBrownExponentialSum_le_factor_of_critical_vmvt
   have htarget : 0 ≤ target := by
     dsimp only [target]
     exact heathBrown_scaled_factor_nonneg k (by positivity) hlambda
-  have hgood0 : 0 ≤ heathBrownLemmaOneGoodConstant k A C epsilon :=
+  have hgood0  :=
     (heathBrownLemmaOneGoodConstant_pos hk hA hC hepsilon).le
   have hquarterPos := heathBrownQuarterLambdaBase_pos hA
   have hsmallHPos := heathBrownSmallHBase_pos (k := k) hA
@@ -154,7 +154,7 @@ theorem norm_heathBrownExponentialSum_le_factor_of_critical_vmvt
               simpa only [target, mul_assoc] using hgood
             simpa only [target, mul_assoc] using
               (bound_lift_to_global hgoodGlobal htarget hgood')
-          · have hHN' : N - 2 < heathBrownHChoice k A lambda :=
+          · have hHN'  :=
               lt_of_not_ge hHN
             have hthird := heathBrown_third_lower_of_H_gt_N_sub_two
               hNlarge hk hA hlambda hHN'
@@ -165,7 +165,7 @@ theorem norm_heathBrownExponentialSum_le_factor_of_critical_vmvt
               simpa only [target, mul_assoc] using hbound
             simpa only [target, mul_assoc] using
               (bound_lift_to_global hlongHGlobal htarget hbound')
-        · have hHlt : heathBrownHChoice k A lambda < 8 :=
+        · have hHlt  :=
             lt_of_not_ge hlargeH
           have hlowerStrict := heathBrown_lambda_lower_of_H_lt_eight
             hk hA hlambda hHlt
@@ -177,10 +177,10 @@ theorem norm_heathBrownExponentialSum_le_factor_of_critical_vmvt
             simpa only [target, mul_assoc] using hbound
           simpa only [target, mul_assoc] using
             (bound_lift_to_global hsmallHGlobal htarget hbound')
-      · have hAlambda : (1 / 4 : ℝ) < A * lambda := lt_of_not_ge hsmall
+      · have hAlambda  := lt_of_not_ge hsmall
         have hlower : heathBrownQuarterLambdaBase A < lambda := by
           unfold heathBrownQuarterLambdaBase
-          exact (div_lt_iff₀ hA).2 (by simpa only [mul_comm] using hAlambda)
+          exact (div_lt_iff₀ hA).2 (by linarith)
         have hbound := norm_heathBrownExponentialSum_le_of_lambda_lower
           hN hk f hlambda hepsilon hquarterPos hlower.le
         have hbound' : ‖heathBrownExponentialSum N f‖ ≤
@@ -189,7 +189,7 @@ theorem norm_heathBrownExponentialSum_le_factor_of_critical_vmvt
           simpa only [target, mul_assoc] using hbound
         simpa only [target, mul_assoc] using
           (bound_lift_to_global hquarterGlobal htarget hbound')
-    · have hlower : (1 : ℝ) ≤ lambda := le_of_not_ge hlambdaOne
+    · have hlower  := le_of_not_ge hlambdaOne
       have hbound := norm_heathBrownExponentialSum_le_of_lambda_lower
         hN hk f hlambda hepsilon (by norm_num : (0 : ℝ) < 1) hlower
       have hbound' : ‖heathBrownExponentialSum N f‖ ≤ target := by
@@ -214,7 +214,7 @@ theorem heathBrownKthDerivativeTheorem_of_vmvt
     (hVMVT : HeathBrownVMVTMainConjecture) :
     HeathBrownKthDerivativeTheorem := by
   intro k A epsilon hk hA hepsilon
-  have hsPos : (0 : ℝ) < heathBrownCriticalMoment k :=
+  have hsPos  :=
     heathBrownCriticalMoment_pos (by omega : 2 ≤ k)
   obtain ⟨C, hC, hcritical⟩ := hVMVT.critical
     (by omega : 2 ≤ k) (mul_pos hepsilon hsPos)

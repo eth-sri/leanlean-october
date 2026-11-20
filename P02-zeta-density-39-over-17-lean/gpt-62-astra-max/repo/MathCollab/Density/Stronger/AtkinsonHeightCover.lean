@@ -1,5 +1,7 @@
 module
-public import MathCollab.Density.Stronger.AtkinsonCardinalityAbsorption
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import Mathlib.Analysis.Real.Sqrt
+public import Mathlib.Tactic
 
 @[expose] public section
 
@@ -49,7 +51,7 @@ theorem atkinsonHeightFiber_interval {H L : ℝ} {W : Finset ℝ} (k : ℕ)
       H+(k:ℝ)*L ≤ t ∧ t ≤ (H+(k:ℝ)*L)+L := by
   intro t ht
   obtain ⟨htW,htbin⟩ := Finset.mem_filter.mp ht
-  have hq : 0 ≤ (t-H)/L := div_nonneg (sub_nonneg.mpr (hrange t htW)) hL.le
+  have hq  := div_nonneg (sub_nonneg.mpr (hrange t htW)) hL.le
   have hlo := Nat.floor_le hq
   have hhi := Nat.lt_floor_add_one ((t-H)/L)
   change (atkinsonHeightBin H L t:ℝ) ≤ (t-H)/L at hlo
@@ -62,8 +64,7 @@ theorem atkinsonHeightFiber_interval {H L : ℝ} {W : Finset ℝ} (k : ℕ)
 theorem atkinsonHeightFiber_card_partition {H L : ℝ} (W : Finset ℝ)
     (hL : 0 < L) (hrange : ∀ t ∈ W, t ≤ 2*H) :
     W.card = ∑ k ∈ Finset.range (Nat.floor (H/L)+1),
-      (atkinsonHeightFiber H L W k).card := by
-  exact Finset.card_eq_sum_card_fiberwise
+      (atkinsonHeightFiber H L W k).card := Finset.card_eq_sum_card_fiberwise
     (fun t ht => atkinsonHeightBin_mem_range hL (hrange t ht))
 
 theorem atkinson_card_le_of_height_fibers {H L B : ℝ} {W : Finset ℝ}

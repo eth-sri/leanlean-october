@@ -23,10 +23,10 @@ theorem universal_quadratic_classical_mass (η : ℝ) (hη : 0 < η) :
       ∀ V : ℝ, 0 ≤ V → (∀ t ∈ W, V ≤ ‖boundedPolynomial N a t‖) →
       (W.card:ℝ)*V^2 ≤ K*T^η*T*N := by
   let H : ℝ := 1+(2:ℝ)^η/η
-  have hH : 0 < H := by dsimp [H]; positivity
+  
   refine ⟨12+48*H,by positivity,?_⟩
   intro T t₀ N hT hN hNT a ha W hW hsep V hV hlarge
-  have hTp : 0 < T := by linarith
+  
   have hNp : 0 < N := by linarith
   have ht : 1 ≤ T^η := Real.one_le_rpow (by linarith) hη.le
   have hlog : 1+Real.log ⌊2*N⌋₊ ≤ H*T^η := by
@@ -35,7 +35,7 @@ theorem universal_quadratic_classical_mass (η : ℝ) (hη : 0 < η) :
         (by simpa using hNT)
   have hf : (⌊2*N⌋₊:ℝ) ≤ 2*T := (Nat.floor_le (by positivity : 0 ≤ 2*N)).trans (by linarith)
   have hraw := separated_second_moment_raw hNp (by linarith : 0 ≤ T) a
-    (by simpa only [sourceRatioIndices,amplifierSource] using ha) W hW hsep
+    (by solve_by_elim) W hW hsep
   have hsum : (W.card:ℝ)*V^2 ≤ ∑ t∈W,‖boundedPolynomial N a t‖^2 := by
     calc
       _ = ∑ _t∈W,V^2 := by simp
@@ -85,7 +85,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
   let C : ℝ := A+B+F+1
   let D : ℝ := 8*Q+1
   have hA : 0 < A := by dsimp [A]; positivity
-  have hA1 : 1 ≤ A := by dsimp [A]; linarith
+  
   have hAK : K ≤ A := by dsimp [A]; linarith
   have hA8 : 8*Q ≤ A^2 := by
     have ha : 8*Q ≤ A := by dsimp [A]; linarith
@@ -93,7 +93,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
   have hB : 0 < B := by dsimp [B]; positivity
   have hF : 0 < F := by dsimp [F]; positivity
   have hC : 0 < C := by dsimp [C]; positivity
-  refine ⟨C,D,hC,by dsimp [D]; positivity,?_⟩
+  refine ⟨C,D,hC,by positivity,?_⟩
   intro T t₀ N V hT hN hNT hV hcut a ha W hW hsep hlarge
   have hTp : 0 < T := by linarith
   have hNp : 0 < N := by linarith
@@ -110,8 +110,8 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
     rw [he]
     positivity
   let L : ℝ := R*V^2/(A*T^η*N)
-  have hLp : 0 < L := by dsimp [L]; positivity
-  have hm : R*V^2 ≤ K*T^η*T*N := hmass T t₀ N hT hN hNT a ha W hW hsep V hV.le hlarge
+  
+  have hm  := hmass T t₀ N hT hN hNT a ha W hW hsep V hV.le hlarge
   have hLT : L ≤ T := by
     apply (div_le_iff₀ (by positivity : 0 < A*T^η*N)).mpr
     exact hm.trans (by
@@ -120,7 +120,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
         _ = T*(A*T^η*N) := by ring_nf)
   let Z : ℝ := N^2*V^(-2:ℝ)+N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ)+
     N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ)
-  have hZ : 0 ≤ Z := by dsimp [Z]; positivity
+  
   by_cases hNL : N ≤ L
   swap
   · have hs : R*V^2 ≤ A*T^η*N^2 := by
@@ -166,7 +166,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
         calc
           _ = R^(1+1/2:ℝ) := by norm_num
           _ = R^((1:ℝ))*R^(1/2:ℝ) := Real.rpow_add hR _ _
-          _ = _ := by rw [Real.rpow_one]
+          _ = _ := by simp
       rw [hp,show T^(2*η)=T^η*T^η by rw [←Real.rpow_add hTp];congr 1;ring_nf]
       dsimp [L]
       field_simp

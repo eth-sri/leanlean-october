@@ -1,5 +1,5 @@
 module
-public import RationalShortRange
+public import RationalMomentTheorem
 public import RationalMomentCover
 
 @[expose] public section

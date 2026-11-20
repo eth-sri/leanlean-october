@@ -29,8 +29,8 @@ theorem masked_spatial_near_tail_bound {a : ℝ → ℂ}
         Cnear*L^3*(∑ m ∈ S, ∫ p in Icc (l/u) (u/l) ×ˢ Icc (l/u) (u/l),
           maskedRadialNearMass μ A B C L (T^η) m p) +
         Ctail*T^(-100:ℝ)*(u/l-l/u)^2*Real.sqrt (∫ t, μ t^2)^3 := by
-  have hu : 0 < u := hl.trans_le hlu
-  have hq : l/u ≤ u/l :=
+  have hu  := hl.trans_le hlu
+  have hq  :=
     ((div_le_iff₀ hu).mpr (by simpa using hlu)).trans
       ((le_div_iff₀ hl).mpr (by simpa using hlu) : (1:ℝ) ≤ u/l)
   obtain ⟨Cnear,hCn,hn⟩ := masked_radial_near_bound ha hlu hs (l/u) (u/l) (l/u) (u/l)

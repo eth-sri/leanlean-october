@@ -22,7 +22,7 @@ noncomputable section
 theorem wooley_sqrt_inverse_power_mul
     {M : ℝ} {s : ℕ} (hM : 0 < M) (hs : 1 ≤ s) :
     (Real.sqrt M)⁻¹ ^ (2 * s) * M ^ (s - 1) = M⁻¹ := by
-  have hsqrt : Real.sqrt M ≠ 0 := (Real.sqrt_pos.2 hM).ne'
+  
   have hpow : M ^ s = M ^ (s - 1) * M := by
     conv_lhs => rw [← Nat.sub_add_cancel hs, pow_add, pow_one]
   rw [pow_mul, inv_pow, Real.sq_sqrt hM.le]

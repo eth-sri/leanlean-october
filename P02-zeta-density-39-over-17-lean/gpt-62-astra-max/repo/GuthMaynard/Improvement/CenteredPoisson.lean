@@ -19,7 +19,7 @@ theorem logModulated_scaled_schwartz {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     {l u L : ℝ} (hl : 0 < l) (hL : 0 < L)
     (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
     ∃ ψ : 𝓢(ℝ,ℂ), (ψ : ℝ → ℂ) = fun x => logModulated a s (x/L) := by
-  have hd : ContDiff ℝ ∞ (fun x => logModulated a s (x/L)) :=
+  have hd  :=
     (logModulated_smooth ha hl hs s).comp (contDiff_id.div_const L)
   have hc : HasCompactSupport (fun x => logModulated a s (x/L)) := by
     apply HasCompactSupport.intro (K := Icc (l*L) (u*L)) isCompact_Icc

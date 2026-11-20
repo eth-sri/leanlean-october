@@ -39,7 +39,7 @@ theorem neumann_sine_integral_eq_cosine (x : ℝ) :
 theorem neumann_schlafli_complex_identity {x : ℝ} (hx : 0 < x) :
     (∫ u in (0 : ℝ)..Real.pi / 2, Complex.exp (I * (x : ℂ) * Real.cos u)) =
       I * neumannVerticalIntegral x 0 - I * neumannVerticalIntegral x 1 := by
-  let a : ℝ → ℝ := fun H => Real.pi / 2 - H⁻¹
+  let a  := fun H => Real.pi / 2 - H⁻¹
   have ha : Tendsto a atTop (𝓝 (Real.pi / 2)) := by
     simpa only [sub_zero] using
       (tendsto_const_nhds (x := Real.pi / 2)).sub tendsto_inv_atTop_zero
@@ -57,15 +57,14 @@ theorem neumann_schlafli_complex_identity {x : ℝ} (hx : 0 < x) :
     have hInv : H⁻¹ ≤ 1 := (inv_le_one₀ hH0).2 hH
     have ha0 : 0 ≤ a H := by dsimp [a]; linarith [Real.pi_gt_three]
     have ha1 : a H < Real.pi / 2 := by dsimp [a]; linarith [inv_pos.mpr hH0]
-    have hs0 := Real.sin_nonneg_of_nonneg_of_le_pi ha0 (by linarith [Real.pi_pos])
+    have hs0 := Real.sin_nonneg_of_nonneg_of_le_pi ha0 (by linarith)
     have hs1 : Real.sin (a H) < 1 := by
       have h := Real.sin_lt_sin_of_lt_of_le_pi_div_two
-        (by linarith [Real.pi_pos] : -(Real.pi / 2) ≤ a H) (le_refl (Real.pi / 2)) ha1
+        (by linarith : -(Real.pi / 2) ≤ a H) (le_refl (Real.pi / 2)) ha1
       simpa only [Real.sin_pi_div_two] using h
     rw [← neumannContourKernel_angular_change x ha0 ha1]
     exact neumannContourKernel_infinite_rectangle hx hs0 hs1
-  have hid : (∫ u in (0 : ℝ)..Real.pi / 2, Complex.exp (I * (x : ℂ) * Real.sin u)) =
-      I * neumannVerticalIntegral x 0 - I * neumannVerticalIntegral x 1 :=
+  have hid  :=
     tendsto_nhds_unique hl (hr.congr' (heq.mono (fun _ h => h.symm)))
   rwa [neumann_sine_integral_eq_cosine] at hid
 

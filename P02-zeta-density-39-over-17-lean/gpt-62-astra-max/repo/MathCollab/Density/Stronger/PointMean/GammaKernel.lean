@@ -100,8 +100,7 @@ theorem norm_Gamma_positive_strip_strong {a v : ℝ}
       gcongr
       exact norm_Gamma_half_vertical_le_exp v
     _ = 12 * ((1 + |v|) * Real.exp (-(Real.pi * |v|) / 2)) := by ring
-    _ ≤ 12 * (6 * Real.exp (-(4 / 3 : ℝ) * |v|)) := by
-      exact mul_le_mul_of_nonneg_left
+    _ ≤ 12 * (6 * Real.exp (-(4 / 3 : ℝ) * |v|)) := mul_le_mul_of_nonneg_left
         (add_one_mul_exp_neg_pi_half_le |v| (abs_nonneg v)) (by norm_num)
     _ = _ := by ring
 
@@ -129,7 +128,6 @@ theorem Gamma_displaced_strong_bound {a v : ℝ}
   have hg := norm_Gamma_positive_strip_strong
     (a := a + 1) (v := v) (by linarith) (by linarith)
   rw [← hshift, Complex.Gamma_add_one z hz, norm_mul] at hg
-  change (|a| + |v|) * ‖Complex.Gamma z‖ ≤ _
   nlinarith [mul_le_mul_of_nonneg_right hcoord (norm_nonneg (Complex.Gamma z))]
 
 theorem heathBrown_Gamma_shift_kernel_strong_bound {δ v : ℝ}

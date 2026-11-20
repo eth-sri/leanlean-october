@@ -29,7 +29,6 @@ theorem LargeValueData.scalar_square_le {κ : ℝ} (d : LargeValueData κ) :
     _ = (divisorMaximum d.T : ℝ)^2*(d.N : ℝ)^3/d.V^4 := by unfold bootstrapScalar; ring
     _ ≤ (divisorMaximum d.T : ℝ)^2/(d.N : ℝ)^(4*κ) := by
       apply (div_le_div_iff₀ (by positivity) (by positivity)).2
-      have hh := mul_le_mul_of_nonneg_left hp (sq_nonneg (divisorMaximum d.T : ℝ))
       nlinarith
     _ = _ := by rw [show -4*κ = -(4*κ) by ring, Real.rpow_neg hN.le]; ring
 
@@ -86,8 +85,8 @@ theorem uniform_absorption_threshold {κ : ℝ} (hκ : 0 < κ) (A : ℝ) (hA : 0
   obtain ⟨T₂, hT₂⟩ := eventually_atTop.mp (hlog.eventually_lt_const (by norm_num : (0 : ℝ) < 1/2))
   refine ⟨max 2 (max T₁ T₂), le_max_left _ _, ?_⟩
   intro d hT
-  have ht₁ : T₁ ≤ d.T := (le_max_left T₁ T₂).trans ((le_max_right 2 _).trans hT)
-  have ht₂ : T₂ ≤ d.T := (le_max_right T₁ T₂).trans ((le_max_right 2 _).trans hT)
+  have ht₁  := (le_max_left T₁ T₂).trans ((le_max_right 2 _).trans hT)
+  have ht₂  := (le_max_right T₁ T₂).trans ((le_max_right 2 _).trans hT)
   have hlogpos : 0 ≤ Real.log (2*d.T) := Real.log_nonneg (by linarith [d.T_ge_two])
   constructor
   · have hh := mul_le_mul_of_nonneg_left (hc d) (mul_nonneg hA hlogpos)

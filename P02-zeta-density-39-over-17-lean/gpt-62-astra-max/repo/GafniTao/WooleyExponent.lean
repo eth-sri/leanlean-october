@@ -82,21 +82,15 @@ theorem WooleyUniformExponentBoundAt.mono
   refine ⟨C, hC, B0, ?_⟩
   intro B phi gamma hB hphi hgamma
   have hold := hbound B phi gamma hB hphi hgamma
-  have hp : 1 ≤ p := Nat.one_le_iff_ne_zero.mpr (NeZero.ne p)
+  have hp  := Nat.one_le_iff_ne_zero.mpr (NeZero.ne p)
   have hbase : (1 : ℝ) ≤ ((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) := by
     exact_mod_cast (Nat.one_le_pow (B ⌈/⌉ k) p hp)
-  have hpow :
-      (((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) ^ Lambda) ≤
-        (((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) ^ Lambda') :=
+  have hpow  :=
     Real.rpow_le_rpow_of_exponent_le hbase hLambda
-  have hmean0 : 0 ≤ wooleySourcePolynomialConditionedMean
-      (wooleyTriangular k) (p ^ B) (p ^ (B ⌈/⌉ k)) phi gamma := by
-    exact wooleySourcePolynomialConditionedMean_nonneg
+  have hmean0 := wooleySourcePolynomialConditionedMean_nonneg
       phi (wooleyTriangular k) (p ^ B) (p ^ (B ⌈/⌉ k)) gamma
   exact hold.trans (by
-    simpa only [mul_assoc] using
-      mul_le_mul_of_nonneg_left
-        (mul_le_mul_of_nonneg_right hpow hmean0) hC.le)
+    gcongr)
 
 /-- The set used to define the nonnegative critical exponent. -/
 def wooleyUniformExponentSet (k p : ℕ) [NeZero p] : Set ℝ :=
@@ -131,7 +125,6 @@ theorem wooleyCriticalExponent_nonneg
 theorem wooleyCriticalExponent_le_triangular
     {k p : ℕ} [NeZero p] (hk : 1 ≤ k) :
     wooleyCriticalExponent k p ≤ (wooleyTriangular k : ℝ) := by
-  unfold wooleyCriticalExponent
   exact csInf_le (wooleyUniformExponentSet_bddBelow k p)
     ⟨Nat.cast_nonneg _, wooley_uniformExponentBound_trivial hk⟩
 
@@ -188,7 +181,7 @@ theorem wooley_arbitrarilyLarge_counterexamples
                 (wooleyTriangular k) (p ^ B) (p ^ (B ⌈/⌉ k)) phi gamma <
             wooleySourcePolynomialMean (wooleyTriangular k) (p ^ B)
               phi gamma := by
-  have hnonneg : 0 ≤ wooleyCriticalExponent k p - epsilon :=
+  have hnonneg  :=
     sub_nonneg.mpr hepsilonCritical.le
   have hbelow : wooleyCriticalExponent k p - epsilon <
       wooleyCriticalExponent k p := by linarith
@@ -198,9 +191,7 @@ theorem wooley_arbitrarilyLarge_counterexamples
   obtain ⟨tau, htau, hfail⟩ := hnot
   refine ⟨tau, htau, ?_⟩
   intro C hC B0
-  obtain ⟨B, phi, gamma, hB, hphi, hgamma, hstrict⟩ :=
-    hfail C hC B0
-  exact ⟨B, phi, gamma, hB, hphi, hgamma, hstrict⟩
+  solve_by_elim
 
 end
 

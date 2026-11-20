@@ -32,20 +32,17 @@ theorem short_setIntegral_comp_add_Icc (f : ℝ → ℝ) (u R : ℝ) :
 
 /-- Actual Gamma windows have bounded total overlap for every one-separated
 family, even when each representative has a different real part. -/
-theorem short_typeII_window_packing :
-    ∃ B : ℝ, 0 < B ∧ ∀ H : ℝ, 0 ≤ H → ∀ (W : Finset ℝ) (ρ : ℝ → ℂ),
+theorem short_typeII_window_packing {s : ℝ} (hs : 1/2 < s) :
+    ∃ B : ℝ, 0 < B ∧ ∀ (H : ℝ) (F : ℝ → ℝ), Continuous F → (∀ t, 0 ≤ F t) → 0 ≤ H → ∀ (W : Finset ℝ) (ρ : ℝ → ℂ),
       oneSeparated W → (∀ u ∈ W,u ∈ Icc H (2*H)) →
-      (∀ u ∈ W,9/13 ≤ (ρ u).re ∧ (ρ u).re ≤ 1) →
+      (∀ u ∈ W,s ≤ (ρ u).re ∧ (ρ u).re ≤ 1) →
       (∑ u ∈ W, ∫ v in Icc (-(H/2)) (H/2),
-        ‖Complex.Gamma (((1/2-(ρ u).re:ℝ):ℂ)+(v:ℂ)*I)‖*(shortTwistedNorm H (u+v))^4) ≤
-        B*(∫ t in Icc (H/2) (3*H),(shortTwistedNorm H t)^4) := by
-  obtain ⟨K,hK,hk⟩ := short_gamma_decay
+        ‖Complex.Gamma (((1/2-(ρ u).re:ℝ):ℂ)+(v:ℂ)*I)‖*F (u+v)) ≤
+        B*(∫ t in Icc (H/2) (3*H),F t) := by
+  obtain ⟨K,hK,hk⟩ := short_gamma_decay hs
   refine ⟨K*separationMass+1,by have hm := separationMass_nonneg; positivity,?_⟩
-  intro H hH W ρ hsep hw hβ
-  let F := fun t => (shortTwistedNorm H t)^4
+  intro H F hf hf0 hH W ρ hsep hw hβ
   let q := fun u t : ℝ => K/(1+|t-u|)^2
-  have hf : Continuous F := (shortTwistedNorm_continuous H).pow 4
-  have hf0 (t : ℝ) : 0 ≤ F t := by dsimp [F]; positivity
   have hq (u : ℝ) : Continuous (q u) := by
     dsimp [q]
     exact continuous_const.div ((continuous_const.add (continuous_id.sub continuous_const).abs).pow 2)
@@ -54,10 +51,10 @@ theorem short_typeII_window_packing :
     ((hq u).mul hf).integrableOn_Icc
   have hone (u : ℝ) (hu : u ∈ W) :
       (∫ v in Icc (-(H/2)) (H/2),
-        ‖Complex.Gamma (((1/2-(ρ u).re:ℝ):ℂ)+(v:ℂ)*I)‖*(shortTwistedNorm H (u+v))^4) ≤
+        ‖Complex.Gamma (((1/2-(ρ u).re:ℝ):ℂ)+(v:ℂ)*I)‖*F (u+v)) ≤
       ∫ t in Icc (H/2) (3*H), q u t*F t := by
     let g := fun v : ℝ => ‖Complex.Gamma (((1/2-(ρ u).re:ℝ):ℂ)+(v:ℂ)*I)‖
-    have hg : Continuous g := (short_continuous_Gamma_detector_strip
+    have hg : Continuous g := (continuous_Gamma_detector_strip
       (by linarith [(hβ u hu).2]) (by linarith [(hβ u hu).1])).norm
     have he : (∫ v in Icc (-(H/2)) (H/2),g v*F (u+v)) =
         ∫ t in Icc (u-H/2) (u+H/2),g (t-u)*F t := by
@@ -72,7 +69,7 @@ theorem short_typeII_window_packing :
         intro t _
         exact mul_le_mul_of_nonneg_right (hk (ρ u).re (t-u) (hβ u hu).1 (hβ u hu).2) (hf0 t)
       _ ≤ _ := by
-        apply setIntegral_mono_set (hi u) (Filter.Eventually.of_forall (fun t => by dsimp [q]; positivity))
+        apply setIntegral_mono_set (hi u) (Filter.Eventually.of_forall (fun t => mul_nonneg (by dsimp [q]; positivity) (hf0 t)))
         apply Filter.Eventually.of_forall
         intro t ht
         obtain ⟨hu0,hu1⟩ := hw u hu

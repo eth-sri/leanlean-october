@@ -1,2 +1,0 @@
-module
-public import GuthMaynard.AffineSource.LargeValuesAffineHeight

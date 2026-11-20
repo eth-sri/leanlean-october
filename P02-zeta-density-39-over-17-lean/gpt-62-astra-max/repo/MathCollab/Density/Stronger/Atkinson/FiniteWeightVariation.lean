@@ -41,7 +41,7 @@ theorem FiniteVariationBound.congr {f g : ℕ → ℂ} {N : ℕ} {M : ℝ}
 theorem FiniteVariationBound.mul {f g : ℕ → ℂ} {N : ℕ} {M D : ℝ}
     (hf : FiniteVariationBound f N M) (hg : FiniteVariationBound g N D) :
     FiniteVariationBound (fun i => f i*g i) N (2*M*D) := by
-  have hMD : 0 ≤ M*D := mul_nonneg hf.nonneg hg.nonneg
+  have hMD  := mul_nonneg hf.nonneg hg.nonneg
   refine ⟨by nlinarith,?_,?_⟩
   · intro i hi
     rw [norm_mul]
@@ -164,7 +164,7 @@ theorem norm_sum_mul_le_discrete_parts (w a : ℕ → ℂ) (N : ℕ) :
   rw [he]
   apply (norm_sub_le _ _).trans
   rw [norm_mul]
-  exact add_le_add le_rfl ((norm_sum_le _ _).trans_eq (by simp only [norm_mul]))
+  exact add_le_add le_rfl ((norm_sum_le _ _).trans_eq (by simp))
 
 theorem FiniteVariationBound.norm_sum_mul_le {w a : ℕ → ℂ} {N : ℕ} {M A : ℝ}
     (hw : FiniteVariationBound w N M) (hA : 0 ≤ A)

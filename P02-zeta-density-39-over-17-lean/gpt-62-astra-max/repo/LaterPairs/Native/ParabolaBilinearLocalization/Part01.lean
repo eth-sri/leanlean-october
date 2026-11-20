@@ -1,25 +1,5 @@
 module
-public import LaterPairs.Native.ParabolaFirstSpacing
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import MathCollab.Density.Stronger.Atkinson.FiniteWeightedGram
-public import TaoTrudgianYang2025.FourierDecayCore
-public import MathCollab.Density.Stronger.Atkinson.SeparatedReciprocal
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.ContinuousPhaseAbel
-public import LaterPairs.Native.ContinuousSecondDerivativeRange
-public import LaterPairs.Native.ExponentPairShiftJets
-public import LaterPairs.Native.FiniteSmoothThirdDerivative
-public import LaterPairs.Native.IntegerIntervalCount
-public import LaterPairs.Native.RobertSargosCubicJets
-public import LaterPairs.Native.RobertSargosDisplacementSums
-public import LaterPairs.Native.RobertSargosExponentPair
-public import LaterPairs.Native.SargosDoubleLargeSieve
-public import LaterPairs.Native.SargosLocalAffineJets
-public import LaterPairs.Native.SargosPlanarIntegral
-public import LaterPairs.Native.SargosPlanarRegularity
-public import LaterPairs.Native.SargosPrefixFourthMajorant
-public import LaterPairs.Native.SargosQuarticKernelJets
+public import LaterPairs.Native.ParabolaFirstSpacing.Part03
 
 @[expose] public section
 set_option autoImplicit false
@@ -2459,6 +2439,13 @@ private theorem exists_bourgain_cubic_shifted_zero_error :
   rw [he]
   apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ 2*C)
   exact add_le_add (div_le_self (by positivity) hr) le_rfl
+abbrev GaussMainCommonFourierParameters
+    (ι : Type*) (q : ι → ℕ) (ℓ : ι → ℝ)
+    (rest : ∀ (b : ι → Fin 2 → ℤ) (τ : ι → Fin 2 → ℝ), Prop) : Prop :=
+  let b := fun i (p : Fin 2) => (⌊(q i:ℝ)*ℓ i⌋+(p:ℕ) : ℤ)
+  let τ := fun i p => ((b i p:ℝ)-(q i:ℝ)*ℓ i)/2
+  rest b τ
+
 set_option maxHeartbeats 400000 in
 
                                                                      
@@ -4867,8 +4854,7 @@ theorem bourgain_cubic_gauss_main_common_fourier
     (hμ : ∀ i∈S, 0<μ i) (hscale : ∀ i∈S, 1≤μ i*(q i:ℝ)^2*N i)
     (har : ∀ i∈S, (q i:ℤ)∣a i*r i-1)
     (hM : ∀ i∈S, 7*(μ i*(q i:ℝ)*(N i:ℝ)^2)≤M) :
-    let b := fun i (p : Fin 2) => (⌊(q i:ℝ)*ℓ i⌋+(p:ℕ) : ℤ)
-    let τ := fun i p => ((b i p:ℝ)-(q i:ℝ)*ℓ i)/2
+    GaussMainCommonFourierParameters ι q ℓ (fun b τ =>
     let s := fun i => Real.sqrt (2/(3*μ i*(q i:ℝ)))
     let K := fun i => -2*μ i*(s i)^3
     let x := fun i p =>
@@ -4886,7 +4872,7 @@ theorem bourgain_cubic_gauss_main_common_fourier
             ‖∑ j : ZMod M,ZMod.stdAddChar (-(j*k))*
               fordAdditiveCharacter (∑ d,x i p d*
                 (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
-                  Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖ := by
+                  Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖) := by
   classical
   dsimp only
   let b := fun i (p : Fin 2) => (⌊(q i:ℝ)*ℓ i⌋+(p:ℕ) : ℤ)
@@ -5175,8 +5161,7 @@ theorem exists_bourgain_cubic_dual_source_sieve {ε : ℝ} (hε : 0 < ε) :
       (∀ i∈S, 0 < q i ∧ 1 ≤ N i ∧ q i ≤ N i ∧ 0 < μ i ∧
         1 ≤ μ i*(q i:ℝ)^2*N i) →
       (∀ i∈S, 7*(μ i*(q i:ℝ)*(N i:ℝ)^2) ≤ M) →
-      let b := fun i (p : Fin 2) => (⌊(q i:ℝ)*ℓ i⌋+(p:ℕ) : ℤ)
-      let τ := fun i p => ((b i p:ℝ)-(q i:ℝ)*ℓ i)/2
+      GaussMainCommonFourierParameters ι q ℓ (fun b τ =>
       let K := fun i => -2*μ i*(Real.sqrt (2/(3*μ i*(q i:ℝ))))^3
       let x := fun i p =>
         (![-(r i:ℝ)*b i p/q i,-(r i:ℝ)/q i,K i,3*K i*τ i p/2] : Fin 4 → ℝ)
@@ -5192,7 +5177,8 @@ theorem exists_bourgain_cubic_dual_source_sieve {ε : ℝ} (hε : 0 < ε) :
           (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
             Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖)^12 ≤
         C*(M:ℝ)^((12:ℝ)+ε)*(V.card:ℝ)^10*
-          (((V ×ˢ V).filter (fun ij => ∀ d,|y ij.1 d-y ij.2 d| ≤ 2*a d)).card:ℝ) := by
+          (((V ×ˢ V).filter (fun ij => ∀ d,|y ij.1 d-y ij.2 d| ≤ 2*a d)).card:ℝ)) := by
+  dsimp -zeta only [GaussMainCommonFourierParameters]
   classical
   obtain ⟨C,hC,hsource⟩ := bourgain_completed_source_sieve.{v} hε
   refine ⟨C,hC,?_⟩

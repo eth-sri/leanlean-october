@@ -109,7 +109,6 @@ noncomputable def ApproxAddEnergy (η : ℝ) (W : Finset ℝ) : ℕ :=
 
 theorem approxAddEnergy_le_card_pow_four (η : ℝ) (W : Finset ℝ) :
     ApproxAddEnergy η W ≤ W.card ^ 4 := by
-  unfold ApproxAddEnergy approximateAdditiveQuadruples
   calc
     (((W ×ˢ W) ×ˢ (W ×ˢ W)).filter fun q =>
         |q.1.1 + q.1.2 - q.2.1 - q.2.2| ≤ η).card
@@ -119,7 +118,7 @@ theorem approxAddEnergy_le_card_pow_four (η : ℝ) (W : Finset ℝ) :
 theorem card_sq_le_approxAddEnergy {η : ℝ} (hη : 0 ≤ η) (W : Finset ℝ) :
     W.card ^ 2 ≤ ApproxAddEnergy η W := by
   classical
-  let diagonal : Finset ((ℝ × ℝ) × (ℝ × ℝ)) :=
+  let diagonal  :=
     (W ×ˢ W).image fun p => (p, p)
   have hDiagonalCard : diagonal.card = (W ×ˢ W).card := by
     dsimp [diagonal]
@@ -146,7 +145,6 @@ theorem gmR_one (W : Finset ℝ) : gmR W 1 = W.card := by
 /-- The trivial pointwise estimate for the source exponential sum. -/
 theorem norm_gmR_le_card (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
     ‖gmR W v‖ ≤ W.card := by
-  rw [gmR]
   calc
     ‖∑ t ∈ W, ((|v| : ℝ) : ℂ) ^ ((t : ℂ) * I)‖ ≤
         ∑ t ∈ W, ‖((|v| : ℝ) : ℂ) ^ ((t : ℂ) * I)‖ :=
@@ -164,7 +162,7 @@ theorem gmR_reciprocal (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
   rw [gmR, gmR, star_sum]
   apply Finset.sum_congr rfl
   intro t ht
-  have hvabs : 0 < |v| := abs_pos.mpr hv
+  have hvabs  := abs_pos.mpr hv
   have harg : (((|v| : ℝ) : ℂ)).arg ≠ Real.pi := by
     rw [Complex.arg_ofReal_of_nonneg hvabs.le]
     exact Real.pi_ne_zero.symm

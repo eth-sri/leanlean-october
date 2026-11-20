@@ -29,7 +29,7 @@ theorem norm_zetaFrozenDivisorQuadraticSum_sub_short_le {T G L : ℝ}
   let f := fun n : ℕ => zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
     zetaGaussianQuadraticIntegral T G (Real.log (n : ℝ) - Real.log (T / (2 * Real.pi)))
   let B := Real.sqrt Real.pi * G * Real.exp (-L ^ 2 / 8)
-  have hf : Summable f := summable_zetaFrozenDivisorQuadraticTerm hT hG hGT
+  have hf  := summable_zetaFrozenDivisorQuadraticTerm hT hG hGT
   have hc := summable_norm_zetaFrozenDivisorCoefficient hT
   have hpoint (n : {n : ℕ // n ∉ S}) : ‖f n‖ ≤ ‖zetaFrozenDivisorCoefficient T n‖ * B :=
     norm_zetaQuadraticDivisorTerm_off_band_le hT hG hGT hL n.2
@@ -42,7 +42,7 @@ theorem norm_zetaFrozenDivisorQuadraticSum_sub_short_le {T G L : ℝ}
     _ = (∑' n : {n : ℕ // n ∉ S}, ‖zetaFrozenDivisorCoefficient T n‖) * B := tsum_mul_right
     _ ≤ _ := mul_le_mul_of_nonneg_right
       (Summable.tsum_subtype_le (fun n : ℕ => ‖zetaFrozenDivisorCoefficient T n‖)
-        (fun n => n ∉ S) (fun _ => norm_nonneg _) hc) (by dsimp [B]; positivity)
+        (fun n => n ∉ S) (fun _ => norm_nonneg _) hc) (by positivity)
 
 /-- The omitted source has a uniform square-root coefficient factor,
 not a height-dependent constant chosen after the Gaussian width. -/

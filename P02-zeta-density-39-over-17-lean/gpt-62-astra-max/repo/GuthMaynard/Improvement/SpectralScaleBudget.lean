@@ -17,7 +17,7 @@ theorem spectral_prefactor_budget {δ η ε A p P N L : ℝ}
   have hN0 : 0 < N := by linarith
   have hL0 : 0 < L := by linarith
   have hN1 : 1 ≤ N := by linarith
-  have hNp : 1 ≤ N^p := Real.one_le_rpow hN1 hp.le
+  have hNp  := Real.one_le_rpow hN1 hp.le
   have hbase : 1+L ≤ (1+A)*N^p := by nlinarith
   have hpow : (1+L)^η ≤ (1+A)^η*N^(p*η) := by
     calc
@@ -50,12 +50,12 @@ theorem spectral_raw_scale_budget {δ η ε A p P D R N L T B M X : ℝ}
       ((D*L*B)^3+(2*N/L)*(X+R*N^ε*L^2*N*T*M)) ≤
     (32*P^3*((1+A)^η)^3)*(D^3+2+2*R)*N^δ*
       ((N*L*B)^3+(N^4/L)*X+N^5*L*T*M) := by
-  have hN0 : 0 < N := by linarith
+  
   have hL0 : 0 < L := by linarith
   have he : 1 ≤ N^ε := Real.one_le_rpow (by linarith) hε.le
   have hf := spectral_prefactor_budget hη hA hp hP hN hL hLA hexp
   let K := 32*P^3*((1+A)^η)^3
-  have hK : 0 ≤ K := by dsimp [K]; positivity
+  
   have hstep : (D*L*B)^3+(2*N/L)*(X+R*N^ε*L^2*N*T*M) ≤
       N^ε*((D*L*B)^3+(2*N/L)*(X+R*L^2*N*T*M)) := by
     have h1 : (D*L*B)^3 ≤ N^ε*(D*L*B)^3 := le_mul_of_one_le_left (by positivity) he
@@ -70,9 +70,7 @@ theorem spectral_raw_scale_budget {δ η ε A p P D R N L T B M X : ℝ}
     _ ≤ (K*N^δ*N^3)*((D*L*B)^3+(2*N/L)*(X+R*L^2*N*T*M)) :=
       mul_le_mul_of_nonneg_right hf (by positivity)
     _ = K*N^δ*(D^3*(N*L*B)^3+2*((N^4/L)*X)+2*R*(N^5*L*T*M)) := by
-      dsimp [K]
-      field_simp
-      ring
+      field_simp <;> ring
     _ ≤ _ := by
       have hb : 0 ≤ (N*L*B)^3 := by positivity
       have hx : 0 ≤ (N^4/L)*X := by positivity

@@ -25,7 +25,7 @@ theorem integral_cpow_mul_dfiBesselK0_Ioi_eq_beta
         Gamma s := by
   let F : ℝ × ℝ → ℂ := fun p =>
     (p.1 : ℂ) ^ (s - 1) * Complex.exp (-(p.1 * Real.cosh p.2))
-  have hjointOn : IntegrableOn F (Set.Ioi 0 ×ˢ Set.Ioi 0) :=
+  have hjointOn  :=
     integrableOn_dfiBesselK0_mellin_joint hs
   have hjoint : Integrable F
       ((volume.restrict (Set.Ioi 0)).prod
@@ -56,7 +56,7 @@ theorem integral_cpow_mul_dfiBesselK0_Ioi_eq_beta
             intro x _
             push_cast
             ring_nf
-          · rw [Complex.ofReal_div, Complex.ofReal_one]
+          · simp
     _ = (∫ t : ℝ in Set.Ioi 0,
           ((1 / Real.cosh t : ℝ) : ℂ) ^ s) * Gamma s := by
           rw [MeasureTheory.integral_mul_const]
@@ -79,7 +79,7 @@ theorem half_beta_mul_Gamma_eq_besselK0MellinSymbol
       norm_num [div_re, normSq]
     rw [hre]
     linarith
-  have hden : Gamma (s / 2 + (1 / 2 : ℂ)) ≠ 0 :=
+  have hden  :=
     Complex.Gamma_ne_zero_of_re_pos hdenRe
   have hden' : Gamma ((s + 1) / 2) ≠ 0 := by
     rw [show (s + 1) / 2 = s / 2 + (1 / 2 : ℂ) by ring]
@@ -127,8 +127,7 @@ theorem half_beta_mul_Gamma_eq_besselK0MellinSymbol
       s / 2 + (1 / 2 : ℂ) by ring, hhalf]
   unfold dfiBesselK0MellinSymbol
   field_simp [hden, hden']
-  rw [show (s + 1) / 2 = s / 2 + (1 / 2 : ℂ) by ring]
-  simpa only [mul_assoc, mul_comm, mul_left_comm] using hcore
+  grind
 
 /-- The classical Mellin transform of the Macdonald kernel on its absolute
 convergence half-plane. This is the analytic identity used in the positive
@@ -175,7 +174,6 @@ theorem mellin_dfiBesselK0_mul_sqrt
     simpa only [smul_eq_mul] using
       integral_cpow_mul_dfiBesselK0_Ioi_eq hs2
   rw [hk]
-  change 2 * ((A : ℂ) ^ (-(2 * s)) * dfiBesselK0MellinSymbol (2 * s)) = _
   ring
 
 

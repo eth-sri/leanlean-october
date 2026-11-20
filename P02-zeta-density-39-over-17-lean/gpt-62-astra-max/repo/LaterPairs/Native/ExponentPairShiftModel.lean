@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairDifferenceError
 
 @[expose] public section
@@ -58,7 +55,7 @@ theorem aProcessShiftPhase_jet_error
     (aProcessShiftPoint_distance hη.le (by norm_num) ⟨hu.1.le,hu.2.le⟩)
     (aProcessShiftPoint_distance hη.le (by norm_num) ⟨hu.1.le,hu.2.le⟩) p hp
   rw [hdiff] at he
-  have hden : 0 < σ*η := mul_pos hσ hη
+  have hden  := mul_pos hσ hη
   have hquot : |D/(σ*η)-R| ≤ δ/σ+C*η := by
     have hq := div_le_div_of_nonneg_right he hden.le
     have hleft : D/(σ*η)-R = (D-σ*η*R)/(σ*η) := by field_simp
@@ -79,7 +76,7 @@ theorem aProcessShiftPhase_jet_error
     _ ≤ (δ/σ+C*η)+((p+1 : ℕ)*η)*J := by
       apply add_le_add
       · exact (mul_le_of_le_one_left (abs_nonneg _) ha1).trans hquot
-      · exact mul_le_mul hscale hR (abs_nonneg _) (by positivity)
-    _ = _ := by dsimp [C,J]; ring
+      · gcongr
+    _ = _ := by ring
 
 end TaoTrudgianYang2025

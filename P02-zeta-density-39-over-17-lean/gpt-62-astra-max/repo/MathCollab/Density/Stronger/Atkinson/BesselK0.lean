@@ -43,8 +43,7 @@ theorem dfiBesselK0_integrand_le_gaussian
   apply Real.exp_le_exp.mpr
   have hcosh := one_add_sq_div_two_le_cosh t
   calc
-    -x * Real.cosh t ≤ -x * (1 + t ^ 2 / 2) := by
-      exact mul_le_mul_of_nonpos_left hcosh (neg_nonpos.mpr hx)
+    -x * Real.cosh t ≤ -x * (1 + t ^ 2 / 2) := mul_le_mul_of_nonpos_left hcosh (neg_nonpos.mpr hx)
     _ ≤ -(x / 2) * t ^ 2 := by
       nlinarith
 
@@ -56,8 +55,7 @@ theorem integrableOn_dfiBesselK0_integrand {x : ℝ} (hx : 0 < x) :
       (fun t : ℝ => Real.exp (-(x / 2) * t ^ 2)) (Set.Ioi 0) := by
     exact (integrable_exp_neg_mul_sq (by positivity : 0 < x / 2)).integrableOn
   refine hgauss.mono' ?_ ?_
-  · exact (Real.continuous_exp.comp
-      (continuous_const.mul Real.continuous_cosh)).aestronglyMeasurable
+  · fun_prop
   · filter_upwards with t
     rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     exact dfiBesselK0_integrand_le_gaussian hx.le t
@@ -74,7 +72,6 @@ theorem abs_dfiBesselK0_le {x : ℝ} (hx : 0 < x) :
     unfold dfiBesselK0
     exact integral_nonneg fun _ => (Real.exp_pos _).le
   rw [abs_of_nonneg hnonneg]
-  unfold dfiBesselK0
   calc
     ∫ t in Set.Ioi (0 : ℝ), Real.exp (-x * Real.cosh t) ≤
         ∫ t in Set.Ioi (0 : ℝ), Real.exp (-(x / 2) * t ^ 2) := by
@@ -85,12 +82,11 @@ theorem abs_dfiBesselK0_le {x : ℝ} (hx : 0 < x) :
 /-- A simpler power form of the preceding estimate. -/
 theorem abs_dfiBesselK0_le_two_div_sqrt {x : ℝ} (hx : 0 < x) :
     |dfiBesselK0 x| ≤ 2 / Real.sqrt x := by
-  have hsqrtPos : 0 < Real.sqrt x := Real.sqrt_pos.2 hx
+  have hsqrtPos  := Real.sqrt_pos.2 hx
   have hquotPos : 0 ≤ Real.pi / (x / 2) := by positivity
-  have hsquareA : Real.sqrt (Real.pi / (x / 2)) ^ 2 =
-      Real.pi / (x / 2) := Real.sq_sqrt hquotPos
-  have hsquareX : Real.sqrt x ^ 2 = x := Real.sq_sqrt hx.le
-  have hpi : Real.pi < 4 := Real.pi_lt_four
+  have hsquareA  := Real.sq_sqrt hquotPos
+  have hsquareX  := Real.sq_sqrt hx.le
+  have hpi  := Real.pi_lt_four
   have hprodNonneg :
       0 ≤ Real.sqrt (Real.pi / (x / 2)) * Real.sqrt x := by positivity
   have hprodSq :

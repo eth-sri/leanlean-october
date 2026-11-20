@@ -32,7 +32,7 @@ theorem norm_boundedPolynomial_native_conjugate {M : ℕ} (hM : 0<M)
     simp only [dirichletPhase]
     congr 2
     rw [Complex.cpow_def_of_ne_zero (by
-      have hh : 0<n := lt_of_le_of_lt (Nat.zero_le _) (mem_Ioc.mp hn).1
+      have hh  := lt_of_le_of_lt (Nat.zero_le _) (mem_Ioc.mp hn).1
       exact_mod_cast hh.ne')]
     rw [← Complex.natCast_log]
     congr 1

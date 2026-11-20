@@ -22,8 +22,7 @@ theorem measurable_bandPhaseSum (L H v : ℝ) : Measurable (bandPhaseSum L H v) 
   fun_prop
 
 theorem norm_bandPhaseSum_le (L H v r : ℝ) :
-    ‖bandPhaseSum L H v r‖ ≤ (reflectionBand L H).card := by
-  exact (norm_sum_le _ _).trans_eq (by simp only [norm_dirichletPhase, Finset.sum_const,
+    ‖bandPhaseSum L H v r‖ ≤ (reflectionBand L H).card := (norm_sum_le _ _).trans_eq (by simp only [norm_dirichletPhase, Finset.sum_const,
     nsmul_eq_mul, mul_one])
 
 /-- Interchange of the finite retained-mode sum with the full Mellin integral. -/

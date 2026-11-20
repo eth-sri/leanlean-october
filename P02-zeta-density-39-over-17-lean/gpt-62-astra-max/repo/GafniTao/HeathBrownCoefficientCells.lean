@@ -38,7 +38,6 @@ def heathBrownCoefficientCell
 theorem measurableSet_heathBrownCoefficientCell
     (k H : ℕ) (f : ℝ → ℝ) (n : ℝ) :
     MeasurableSet (heathBrownCoefficientCell k H f n) := by
-  unfold heathBrownCoefficientCell
   exact MeasurableSet.pi countable_univ fun j hj => measurableSet_closedBall
 
 theorem heathBrownCellRadius_pos
@@ -55,9 +54,7 @@ theorem two_mul_heathBrownCellRadius_le_one
     calc
       (2 : ℝ) ≤ (H : ℝ) := by exact_mod_cast hH
       _ ≤ (H : ℝ) ^ (j + 1) := by
-        have hHreal : (1 : ℝ) ≤ H := by exact_mod_cast (by omega : 1 ≤ H)
-        simpa only [pow_one] using
-          (pow_le_pow_right₀ hHreal (by omega : 1 ≤ j + 1))
+        bound
   have hpowPos : 0 < (H : ℝ) ^ (j + 1) := by positivity
   rw [mul_inv_le_iff₀ hpowPos]
   simpa [mul_comm] using hpow

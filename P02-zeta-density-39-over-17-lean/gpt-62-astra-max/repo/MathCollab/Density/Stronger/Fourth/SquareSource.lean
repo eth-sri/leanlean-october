@@ -64,8 +64,6 @@ theorem riemannZeta_sq_eq_divisorLSeries {s : ℂ} (hs : 1 < s.re) :
     _ = LSeries (↗(ArithmeticFunction.sigma 0)) s := by
       rw [arithmeticZeta_mul_self_eq_sigma_zero]
     _ = LSeries (fun n : ℕ => (n.divisors.card : ℂ)) s := by
-      apply congrArg (fun f : ℕ → ℂ => LSeries f s)
-      funext n
       simp [ArithmeticFunction.sigma_zero_apply]
 
 /-- Absolute summability of the divisor Dirichlet series on the same right
@@ -93,9 +91,7 @@ theorem completedXiNumerator_eq (s : ℂ) (hs0 : s ≠ 0) (hs1 : s ≠ 1) :
     completedXiNumerator s = s * (1 - s) * completedRiemannZeta s := by
   rw [completedRiemannZeta_eq]
   unfold completedXiNumerator
-  have h1m : 1 - s ≠ 0 := sub_ne_zero.mpr hs1.symm
-  field_simp [hs0, h1m]
-  ring
+  field_simp <;> ring
 
 theorem completedXiNumerator_one_sub (s : ℂ) :
     completedXiNumerator (1 - s) = completedXiNumerator s := by
@@ -172,7 +168,6 @@ noncomputable def zetaSquarePoleNormalization (t : ℝ) : ℂ :=
 
 theorem zetaSquarePoleNormalization_ne_zero (t : ℝ) :
     zetaSquarePoleNormalization t ≠ 0 := by
-  unfold zetaSquarePoleNormalization
   exact pow_ne_zero 2 (mul_ne_zero (afeCriticalPoint_ne_zero t)
     (sub_ne_zero.mpr (afeCriticalPoint_ne_one t).symm))
 
@@ -181,8 +176,7 @@ theorem zetaSquarePoleNormalization_neg (t : ℝ) :
       zetaSquarePoleNormalization t := by
   unfold zetaSquarePoleNormalization
   rw [show afeCriticalPoint (-t) = 1 - afeCriticalPoint t by
-    symm
-    exact one_sub_afeCriticalPoint t]
+    simp]
   ring
 
 theorem zetaSquarePoleNormalization_eq (t : ℝ) :
@@ -264,10 +258,10 @@ theorem zetaSquare_finiteRectangle
         (fun w : ℂ => zetaSquareContourNumerator t w / w)
         ((-c : ℂ) - (H : ℂ) * I) ((c : ℂ) + (H : ℂ) * I) =
       completedRiemannZeta (afeCriticalPoint t) ^ 2 := by
-  let F : ℂ → ℂ := zetaSquareContourNumerator t
+  let F  := zetaSquareContourNumerator t
   let z : ℂ := (-c : ℂ) - (H : ℂ) * I
   let w : ℂ := (c : ℂ) + (H : ℂ) * I
-  have hF : Differentiable ℂ F :=
+  have hF  :=
     differentiable_zetaSquareContourNumerator t
   have hzero : Rectangle z w ∈ 𝓝 (0 : ℂ) := by
     rw [rectangle_mem_nhds_iff, mem_reProdIm,
@@ -388,8 +382,7 @@ def zetaSquareGammaNormalization (t : ℝ) : ℂ :=
   Gammaℝ (afeCriticalPoint t) * Gammaℝ (afeCriticalPoint (-t))
 
 theorem zetaSquareGammaNormalization_ne_zero (t : ℝ) :
-    zetaSquareGammaNormalization t ≠ 0 := by
-  exact mul_ne_zero
+    zetaSquareGammaNormalization t ≠ 0 := mul_ne_zero
     (Gammaℝ_ne_zero_of_re_pos (by norm_num [afeCriticalPoint]))
     (Gammaℝ_ne_zero_of_re_pos (by norm_num [afeCriticalPoint]))
 

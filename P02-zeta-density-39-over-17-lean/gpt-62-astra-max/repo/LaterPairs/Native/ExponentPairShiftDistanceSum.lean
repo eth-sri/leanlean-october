@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairFiniteCorrelation
 
 @[expose] public section
@@ -86,7 +83,6 @@ theorem sum_shift_distance_row_le (C : ℕ → ℝ) (D : ℝ) {H h : ℕ}
   rw [sum_add_distrib,sum_add_distrib]
   have hdiag : (∑ k ∈ range H, if k = h then D else 0) = D := by
     simp [mem_range.mpr hh]
-  rw [hdiag]
   linarith [sum_lower_shift_distances_le C hh hC,sum_upper_shift_distances_le (h := h) C hC]
 
 end TaoTrudgianYang2025

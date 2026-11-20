@@ -70,8 +70,7 @@ theorem retainedPoissonKernel_cubic (μ ν : Measure ℝ) [IsFiniteMeasure μ] [
         retainedAmplitude a L S x.2.2)*
         (measureFourier μ (mellinFrequency x.2.2-mellinFrequency x.1)*
           measureFourier μ (mellinFrequency x.1-mellinFrequency x.2.1)*
-          measureFourier μ (mellinFrequency x.2.1-mellinFrequency x.2.2)) ∂tripleMeasure ν := by
-  exact frequencyKernel_cubic μ ν (retainedAmplitude_measurable ha L S)
+          measureFourier μ (mellinFrequency x.2.1-mellinFrequency x.2.2)) ∂tripleMeasure ν := frequencyKernel_cubic μ ν (retainedAmplitude_measurable ha L S)
     (by unfold mellinFrequency; fun_prop) (by positivity)
     (retainedAmplitude_bound hB hb L S)
 

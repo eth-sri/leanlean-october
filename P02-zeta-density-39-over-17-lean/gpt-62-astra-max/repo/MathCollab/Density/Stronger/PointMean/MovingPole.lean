@@ -116,10 +116,6 @@ theorem heathBrownMovingPoleResidue_eq
         (h₂ := riemannZetaPoleRemoved) p hRemovedAt hAffine
   have hProduct := hGamma.mul (hRemoved.pow 2)
   unfold heathBrownMovingPoleResidue heathBrownMovingPoleNumerator
-  change deriv
-      (fun w : ℂ => Complex.Gamma w * riemannZetaPoleRemoved (w - p) ^ 2) p =
-    Complex.Gamma p * Complex.digamma p +
-      2 * Complex.Gamma p * deriv riemannZetaPoleRemoved 0
   calc
     deriv
         (fun w : ℂ => Complex.Gamma w *
@@ -152,7 +148,7 @@ theorem heathBrown_movingPole_finite_rectangle
   let z : ℂ := (d : ℂ) - (H : ℂ) * I
   let w : ℂ := (c : ℂ) + (H : ℂ) * I
   let p : ℂ := heathBrownMovingPole s
-  let N : ℂ → ℂ := heathBrownMovingPoleNumerator s
+  let N  := heathBrownMovingPoleNumerator s
   have hzre : z.re ≤ w.re := by
     simp [z, w]
     linarith
@@ -171,11 +167,11 @@ theorem heathBrown_movingPole_finite_rectangle
     change 0 < u.re
     have hzReal : z.re = d := by simp [z]
     linarith [huBounds.1]
-  have hN : DifferentiableOn ℂ N (Rectangle z w) :=
+  have hN  :=
     (differentiableOn_heathBrownMovingPoleNumerator s).mono hRectPositive
   have hPoleCleared := rectangleIntegral'_div_sq_eq_deriv
     hzre hzim hpInterior hN
-  have hpNotBorder : p ∉ RectangleBorder z w :=
+  have hpNotBorder  :=
     not_mem_rectangleBorder_of_rectangle_mem_nhds hpInterior
   have hCongr : Set.EqOn
       (heathBrownZetaSquareMellinIntegrand s)

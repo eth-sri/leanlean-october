@@ -44,7 +44,7 @@ theorem heathBrownPowerMajorant_window {k : ℕ} (hk : 3 ≤ k)
     heathBrownPowerMajorant k η T N ≤
       3*T^(heathBrownBetaBound k α+(α+1)*η+2*δ) := by
   have hd := heathBrownDerivativeExponent_bounds hk
-  have hkd : 0 ≤ (k : ℝ)*heathBrownDerivativeExponent k :=
+  have hkd  :=
     mul_nonneg (Nat.cast_nonneg k) hd.1.le
   have hp₁ : 0 ≤ 1-(k : ℝ)*heathBrownDerivativeExponent k := by linarith [hd.2.1]
   have hp₂ : 0 ≤ 1-heathBrownDerivativeExponent k := by linarith [hd.2.2]

@@ -33,8 +33,8 @@ theorem atkinsonSymmetricError_le_physical {T G H b : ℝ}
     atkinsonSymmetricError T b (G/Real.sqrt T) H ≤
       4/(H*Real.pi) + 4*G^2*H^3/T + 216*G*H^5/T +
         1296*H^5/T + 11664*H^7/T := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hr := atkinsonSaddleRoot_pos (by positivity : 0 < T/(2*Real.pi)) b
+  
+  
   have hlo := (atkinsonSaddleRoot_small_frequency hT hb).1
   have h3 : 8*(G/Real.sqrt T)*T*H^5/(atkinsonSaddleRoot (T/(2*Real.pi)) b)^3 ≤
       8*(G/Real.sqrt T)*T*H^5/(Real.sqrt T/3)^3 := by gcongr
@@ -49,24 +49,7 @@ theorem atkinsonSymmetricError_le_physical {T G H b : ℝ}
         16*T*H^5/(Real.sqrt T/3)^4 +
         16*T^2*H^7/(Real.sqrt T/3)^6 := by linarith
     _ = _ := by
-      have h4 : (Real.sqrt T)^4 = T^2 := by
-        rw [show (Real.sqrt T)^4 = ((Real.sqrt T)^2)^2 by ring,Real.sq_sqrt hT.le]
-      have h6 : (Real.sqrt T)^6 = T^3 := by
-        rw [show (Real.sqrt T)^6 = ((Real.sqrt T)^2)^3 by ring,Real.sq_sqrt hT.le]
-      have he3 : 8*(G/Real.sqrt T)*T*H^5/(Real.sqrt T/3)^3 = 216*G*H^5/T := by
-        calc
-          _ = 216*G*H^5*T/(Real.sqrt T)^4 := by ring
-          _ = _ := by rw [h4]; field_simp
-      have he4 : 16*T*H^5/(Real.sqrt T/3)^4 = 1296*H^5/T := by
-        calc
-          _ = 1296*T*H^5/(Real.sqrt T)^4 := by ring
-          _ = _ := by rw [h4]; field_simp
-      have he6 : 16*T^2*H^7/(Real.sqrt T/3)^6 = 11664*H^7/T := by
-        calc
-          _ = 11664*T^2*H^7/(Real.sqrt T)^6 := by ring
-          _ = _ := by rw [h6]; field_simp
-      rw [he3,he4,he6,div_pow,Real.sq_sqrt hT.le]
-      ring
+      grind
 
 theorem atkinsonSymmetric_error_le_of_power_balance {T G X : ℝ}
     (hT : 0 < T) (hG : 0 ≤ G) (hX : 1 ≤ X)
@@ -79,7 +62,7 @@ theorem atkinsonSymmetric_error_le_of_power_balance {T G X : ℝ}
   have hg2 : G^2*X^4 ≤ T := by nlinarith [sq_le_sq₀ (by positivity : 0 ≤ G*X^2) hs |>.2 hGX]
   have hg6 : G*X^6 ≤ T := by nlinarith [mul_le_mul hGX hXS (by positivity) hs]
   have hx8 : X^8 ≤ T := by nlinarith [sq_le_sq₀ (by positivity : 0 ≤ X^4) hs |>.2 hXS]
-  have hx6 : X^6 ≤ T := (pow_le_pow_right₀ hX (by norm_num : (6:ℕ) ≤ 8)).trans hx8
+  have hx6  := (pow_le_pow_right₀ hX (by norm_num : (6:ℕ) ≤ 8)).trans hx8
   have hfirst : 4/((X/12)*Real.pi) ≤ 16/X := by
     apply (div_le_div_iff₀ (by positivity) hX0).2
     nlinarith [Real.pi_gt_three]
@@ -110,10 +93,10 @@ theorem exists_atkinsonPowerIntegral_symmetric_balance (α : ℝ) :
   refine ⟨20*C,by positivity,?_⟩
   intro T G L b X hT hG hGT hL hwidth hX hGX hXS hb
   have hT0 : 0 < T := by linarith
-  have hX0 : 0 < X := by linarith
+  
   have hXpow : X ≤ X^4 := by
     simpa only [pow_one] using pow_le_pow_right₀ hX (by norm_num : (1:ℕ) ≤ 4)
-  have hXle : X ≤ Real.sqrt T := hXpow.trans hXS
+  
   obtain ⟨hleft,hright,hwindow⟩ :=
     atkinsonSaddleRoot_small_frequency_window hT0 hb (show X/12 ≤ Real.sqrt T/12 by linarith)
   have h := hbound T G L b (X/12) hT0 hG hGT hL hwidth (by positivity) hleft hright hwindow

@@ -45,9 +45,7 @@ private theorem heathBrownHolderExponent_nonneg
   · simp only [heathBrownHolderExponent]
     positivity
   · simp only [heathBrownHolderExponent]
-    have hsR : (1 : ℝ) ≤ s := by exact_mod_cast hs
-    exact sub_nonneg.mpr (by
-      simpa using one_div_le_one_div_of_le zero_lt_one hsR)
+    bound
 
 private theorem prod_heathBrownHolderFunction
     {X : Type*} (A B : X → ENNReal) {s : ℕ} (hs : 1 ≤ s) (x : X) :
@@ -57,8 +55,8 @@ private theorem prod_heathBrownHolderFunction
             (heathBrownHolderExponent s i) =
       A x * B x := by
   have hs0 : (s : ℝ) ≠ 0 := by exact_mod_cast (by omega : s ≠ 0)
-  have htwoS : (2 * (s : ℝ)) ≠ 0 := by positivity
-  have hq : 0 ≤ 1 / (2 * (s : ℝ)) := by positivity
+  
+  
   have hr : 0 ≤ 1 - 1 / (s : ℝ) := by
     have hsR : (1 : ℝ) ≤ s := by exact_mod_cast hs
     exact sub_nonneg.mpr (by
@@ -72,8 +70,7 @@ private theorem prod_heathBrownHolderFunction
   rw [ENNReal.rpow_one]
   rw [← ENNReal.rpow_natCast, ← ENNReal.rpow_mul]
   rw [show ((2 : ℕ) : ℝ) * (1 / (2 * (s : ℝ))) = 1 / (s : ℝ) by
-    norm_num
-    field_simp]
+    ring]
   rw [← ENNReal.rpow_add_of_nonneg _ _ hr (by positivity)]
   rw [show (1 - 1 / (s : ℝ)) + 1 / (s : ℝ) = 1 by ring]
   rw [ENNReal.rpow_one]

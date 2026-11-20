@@ -23,18 +23,18 @@ lemma exponent_succ_le_const_mul_two_rpow (eps : ℝ) (heps : 0 < eps) :
     ∃ K : ℝ, 1 ≤ K ∧ ∀ a : ℕ,
       ((a + 1 : ℕ) : ℝ) ≤ K * (2 : ℝ) ^ (eps * (a : ℝ)) := by
   let c : ℝ := eps * Real.log 2
-  have hc : 0 < c := mul_pos heps (Real.log_pos one_lt_two)
+  have hc  := mul_pos heps (Real.log_pos one_lt_two)
   refine ⟨c⁻¹ + 1, by
-    have : 0 ≤ c⁻¹ := inv_nonneg.mpr hc.le
+    have  := inv_nonneg.mpr hc.le
     linarith, ?_⟩
   intro a
-  have hca : 0 ≤ c * (a : ℝ) := mul_nonneg hc.le (Nat.cast_nonneg a)
+  have hca  := mul_nonneg hc.le (Nat.cast_nonneg a)
   have hmul : c * (a : ℝ) ≤ Real.exp (c * (a : ℝ)) :=
     le_trans (le_add_of_nonneg_right zero_le_one) (Real.add_one_le_exp _)
   have ha : (a : ℝ) ≤ c⁻¹ * Real.exp (c * (a : ℝ)) := by
     rw [inv_mul_eq_div, le_div_iff₀ hc]
     simpa [mul_comm] using hmul
-  have hone : (1 : ℝ) ≤ Real.exp (c * (a : ℝ)) := Real.one_le_exp hca
+  have hone  := Real.one_le_exp hca
   have hsum : (a : ℝ) + 1 ≤ (c⁻¹ + 1) * Real.exp (c * (a : ℝ)) := by
     nlinarith
   calc
@@ -63,15 +63,14 @@ lemma exponent_succ_le_large_prime_rpow (eps : ℝ) (p a : ℕ)
 theorem divisorCountBound_native : DivisorCountBoundProp := by
   intro eps heps
   obtain ⟨K, hK, hsmall⟩ := exponent_succ_le_const_mul_two_rpow eps heps
-  have htendsto :
-      Filter.Tendsto (fun p : ℕ => (p : ℝ) ^ eps) Filter.atTop Filter.atTop :=
+  have htendsto  :=
     (tendsto_rpow_atTop heps).comp tendsto_natCast_atTop_atTop
-  have hevent : ∀ᶠ p : ℕ in Filter.atTop, (2 : ℝ) ≤ (p : ℝ) ^ eps :=
+  have hevent  :=
     htendsto.eventually (eventually_ge_atTop 2)
   obtain ⟨B, hB⟩ := (eventually_atTop.1 hevent)
   refine ⟨K ^ B, pow_pos (lt_of_lt_of_le zero_lt_one hK) B, ?_⟩
   intro n hn
-  have hn0 : n ≠ 0 := Nat.ne_of_gt hn
+  have hn0  := Nat.ne_of_gt hn
   let smallFactors := n.primeFactors.filter (fun p => p < B)
   have hsmall_card : smallFactors.card ≤ B := by
     have hsubset : smallFactors ⊆ Finset.range B := by
@@ -104,8 +103,7 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
       (∏ p ∈ n.primeFactors, ((n.factorization p : ℝ) + 1)) ≤
           ∏ p ∈ n.primeFactors,
             ((if p < B then K else 1) *
-              (p : ℝ) ^ (eps * (n.factorization p : ℝ))) := by
-            exact Finset.prod_le_prod₀ (fun _ _ => by positivity) hfactor
+              (p : ℝ) ^ (eps * (n.factorization p : ℝ))) := Finset.prod_le_prod₀ (fun _ _ => by positivity) hfactor
       _ = (∏ p ∈ n.primeFactors, (if p < B then K else 1)) *
           ∏ p ∈ n.primeFactors,
             (p : ℝ) ^ (eps * (n.factorization p : ℝ)) := by
@@ -131,7 +129,7 @@ theorem divisorCountBound_native : DivisorCountBoundProp := by
                     _ = ((p : ℝ) ^ (n.factorization p : ℝ)) ^ eps :=
                           Real.rpow_mul (Nat.cast_nonneg p) _ _
                     _ = ((p : ℝ) ^ n.factorization p) ^ eps := by
-                          rw [Real.rpow_natCast]
+                          simp
             _ = (∏ p ∈ n.primeFactors, (p : ℝ) ^ n.factorization p) ^ eps := by
                   rw [Real.finsetProd_rpow]
                   intro p hp
@@ -165,10 +163,10 @@ theorem factorizationCountBound_native : FactorizationCountBoundProp := by
     intro i
     rw [Nat.mem_divisors]
     constructor
-    · have hi : p i ∣ ∏ j : Fin k, p j :=
+    · have hi  :=
         dvd_prod_of_mem (fun j => p j) (Finset.mem_univ i)
       simpa [hpProduct] using hi
-    · exact Nat.ne_of_gt hm
+    · positivity
   have hcardNat : tuples.card ≤ m.divisors.card ^ k := by
     calc
       tuples.card ≤ (Fintype.piFinset (fun (_ : Fin k) => m.divisors)).card :=
@@ -176,7 +174,7 @@ theorem factorizationCountBound_native : FactorizationCountBoundProp := by
       _ = m.divisors.card ^ k := Fintype.card_piFinset_const m.divisors k
   have hcardReal : (tuples.card : ℝ) ≤ (m.divisors.card : ℝ) ^ k := by
     exact_mod_cast hcardNat
-  have hdivisorReal : (m.divisors.card : ℝ) ≤ C * (m : ℝ) ^ delta :=
+  have hdivisorReal  :=
     hDivisor m hm
   have hpowBound : (m.divisors.card : ℝ) ^ k ≤
       (C * (m : ℝ) ^ delta) ^ k := by
@@ -187,14 +185,12 @@ theorem factorizationCountBound_native : FactorizationCountBoundProp := by
       (div_le_one hkOnePos).mpr hkLe
     calc
       delta * (k : ℝ) = eps * ((k : ℝ) / (k + 1 : ℕ)) := by
-        dsimp [delta]
-        field_simp
+        ring
       _ ≤ eps * 1 := mul_le_mul_of_nonneg_left hratio heps.le
       _ = eps := mul_one eps
   have hmOne : (1 : ℝ) ≤ m := by exact_mod_cast hm
-  have hrpow : (m : ℝ) ^ (delta * (k : ℝ)) ≤ (m : ℝ) ^ eps :=
+  have hrpow  :=
     Real.rpow_le_rpow_of_exponent_le hmOne hdeltaK
-  change (tuples.card : ℝ) ≤ C ^ k * (m : ℝ) ^ eps
   calc
     (tuples.card : ℝ) ≤ (m.divisors.card : ℝ) ^ k := hcardReal
     _ ≤ (C * (m : ℝ) ^ delta) ^ k := hpowBound

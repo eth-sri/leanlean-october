@@ -38,7 +38,7 @@ theorem VariableFunction.isChoicewiseInfinitesimal_iff_forall_pos_uniform
   · intro hf ε hε
     classical
     let x₀ : ∀ i, E i := fun i ↦ ⟨(hE i).choose, (hE i).choose_spec⟩
-    let x : ∀ i, E i := fun i ↦
+    let x  := fun i ↦
       if h : ∃ y : E i, ε ≤ ‖f i y‖ then h.choose else x₀ i
     have hx (i : ℕ) (h : ∃ y : E i, ε ≤ ‖f i y‖) :
         ε ≤ ‖f i (x i)‖ := by
@@ -52,8 +52,7 @@ theorem VariableFunction.isChoicewiseInfinitesimal_iff_forall_pos_uniform
         ∃ᶠ i in atTop, ε ≤ ‖f i (x i)‖ := (not_eventually.mp h).mono fun i hi ↦ by
       apply hx i
       simpa only [not_forall, not_lt] using hi
-    obtain ⟨i, hilarge, hismall⟩ := (hfrequent.and_eventually hsmall).exists
-    exact (not_lt_of_ge hilarge) hismall
+    grind
   · intro h x
     apply (VariableObject.isInfinitesimal_iff_forall_pos
       (fun i ↦ f i (x i))).2

@@ -1,12 +1,6 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.RobertSargosCorrelationBoundary
-public import LaterPairs.Native.RobertSargosNonzeroShiftReorder
 public import LaterPairs.Native.RobertSargosPhysicalNonzeroShiftedTriple
 public import LaterPairs.Native.RobertSargosWeightRemoval
-public import LaterPairs.Native.SargosIntegerPrefix
 
 @[expose] public section
 set_option autoImplicit false

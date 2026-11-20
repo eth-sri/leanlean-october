@@ -58,7 +58,7 @@ theorem IntervalC1Bound.mul {f g : ℝ → ℂ} {a b M N : ℝ}
       deriv (fun y => f y * g y) x = deriv f x * g x + f x * deriv g x :=
     ((hf.smooth x hx).differentiableAt (by norm_num)).hasDerivAt.mul
       ((hg.smooth x hx).differentiableAt (by norm_num)).hasDerivAt |>.deriv
-  have hs : ∀ x ∈ Icc a b, ContDiffAt ℝ 1 (fun y => f y * g y) x :=
+  have hs  :=
     fun x hx => (hf.smooth x hx).mul (hg.smooth x hx)
   have hdi : IntervalIntegrable (deriv (fun x => f x * g x)) volume a b := by
     apply ContinuousOn.intervalIntegrable

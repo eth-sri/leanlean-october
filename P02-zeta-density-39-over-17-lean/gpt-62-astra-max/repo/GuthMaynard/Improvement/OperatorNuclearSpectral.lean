@@ -28,7 +28,7 @@ theorem operator_nuclear_spectral_comparison [Countable ι] [Fintype κ]
     k*(max (a-B) 0)^3 ≤ ‖operatorDiagonalTrace b ((G-C)^3)‖+
       (operatorDiagonalTrace b (C*(G-C)^2)).re := by
   classical
-  let w : Finset E := Finset.univ.image v
+  let w  := Finset.univ.image v
   have hwU (s : Finset ι) (j : κ) : v j ∈ operatorFiniteSpace b w s := by
     apply Submodule.subset_span
     exact Finset.mem_union_left _ (Finset.mem_image_of_mem v (Finset.mem_univ j))

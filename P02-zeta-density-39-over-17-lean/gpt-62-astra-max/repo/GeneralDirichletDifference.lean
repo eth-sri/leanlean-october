@@ -26,7 +26,7 @@ theorem general_pair_energy {K : ℕ} (hK : 1 ≤ K)
           T^(1/(2*(K:ℝ)))*(W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1)))) := by
   obtain ⟨C,hC,hb⟩ := coprime_dyadic_adjacent_general hK (show 0 < η/2 by positivity) hB
   let L : ℝ := 1+4^(η/2)/(η/2)
-  have hL : 0 < L := by dsimp [L]; positivity
+  
   refine ⟨C*L*B^(η/2),by positivity,?_⟩
   intro T t₀ X hT hX hXT P hP W hW hsep
   have ht : 0 < T := by linarith
@@ -98,11 +98,7 @@ theorem general_dirichlet_difference {K : ℕ} (hK : 1 ≤ K)
   refine ⟨C,hC,?_⟩
   intro T t₀ X hT hX hXT A hA W hW hsep a ha
   have hh := hb T t₀ X hT hX hXT (A ×ˢ A) (by
-    intro p hp
-    obtain ⟨hp1,hp2⟩ := mem_product.mp hp
-    obtain ⟨h1,hl1,hu1⟩ := hA p.1 hp1
-    obtain ⟨h2,hl2,hu2⟩ := hA p.2 hp2
-    exact ⟨h1,h2,hl1,hu1,hl2,hu2⟩) W hW hsep
+    grind) W hW hsep
   simp only [sum_product,pairRatio,Rat.cast_div,Rat.cast_natCast] at hh
   exact (dirichlet_difference_energy_le A (fun n hn => (hA n hn).1) W a ha).trans hh
 

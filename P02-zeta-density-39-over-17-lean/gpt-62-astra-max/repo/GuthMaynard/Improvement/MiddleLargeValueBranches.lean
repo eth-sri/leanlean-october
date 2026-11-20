@@ -32,8 +32,8 @@ theorem middle_high_threshold_budget {N T V : ℝ} (hn : 0 < N) (ht : 0 < T)
     (hV : middleThreshold N T ≤ V) :
     T*N^4/V^6 ≤ middleMoment N T/V^4 := by
   have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
-  have hv : 0 < V := hu.trans_le hV
-  have hs : (middleThreshold N T)^2 ≤ V^2 := pow_le_pow_left₀ hu.le hV 2
+  have hv  := hu.trans_le hV
+  have hs  := pow_le_pow_left₀ hu.le hV 2
   have hh : T*N^4/V^2 ≤ T*N^4/(middleThreshold N T)^2 := by gcongr
   rw [middle_threshold_square_quotient hn ht] at hh
   calc
@@ -58,7 +58,7 @@ theorem middle_large_values_high {ε : ℝ} (hε : 0 < ε) :
   have hn : 0 < N := by linarith
   have ht : 0 < T := by linarith
   have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
-  have hv : 0 < V := hu.trans_le hV
+  have hv  := hu.trans_le hV
   exact (h N T V t₀ hN hNT hTN hv a W ha hloc hsep hlarge).trans
     (mul_le_mul_of_nonneg_left (add_le_add le_rfl (middle_high_threshold_budget hn ht hV))
       (by positivity))
@@ -71,10 +71,7 @@ theorem middle_large_values_small {N T V t₀ : ℝ} (hN : 2 ≤ N)
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) :
     (W.card:ℝ) ≤ 2*N^2/V^2 := by
   have hspan := MathCollab.Density.intervalSpan_le_of_forall hT (U := W) (by
-    intro t ht u hu
-    have ht' := hloc t ht
-    have hu' := hloc u hu
-    exact abs_le.mpr ⟨by linarith [ht'.1,hu'.2],by linarith [hu'.1,ht'.2]⟩)
+    grind)
   have hc := MathCollab.Density.separated_card_le_localDiameter hsep
   have hpack : (W.card:ℝ) ≤ T+1 := by
     dsimp [MathCollab.Density.localDiameter] at hc
@@ -85,8 +82,6 @@ theorem middle_large_values_small {N T V t₀ : ℝ} (hN : 2 ≤ N)
     _ ≤ T+1 := hpack
     _ ≤ 2*N^2 := by linarith
     _ ≤ _ := by
-      apply (le_div_iff₀ (show 0 < V^2 by positivity)).mpr
-      have hh := mul_le_mul_of_nonneg_left hVs (show 0 ≤ 2*N^2 by positivity)
-      simpa only [mul_one] using hh
+      bound
 
 end GuthMaynard.Improvement

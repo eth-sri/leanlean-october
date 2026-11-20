@@ -47,7 +47,7 @@ theorem difference_second_moment_le_peak_integral {M : ℕ} (a : ℕ → ℂ)
           (differenceFloorCount W j : ℝ) := by
   classical
   let S := differenceFloorSupport W
-  let f : ℤ → ℝ := fun j => ‖dirichletPoly M a ((p j).1 - (p j).2)‖ ^ 2
+  let f  := fun j => ‖dirichletPoly M a ((p j).1 - (p j).2)‖ ^ 2
   have hLayer := finite_weighted_layer_cake
     (fun j : S => differenceFloorCount W j) (fun j : S => f j)
     (by intro j; exact sq_nonneg _)

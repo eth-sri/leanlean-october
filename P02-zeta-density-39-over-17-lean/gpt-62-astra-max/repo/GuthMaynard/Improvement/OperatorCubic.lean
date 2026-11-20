@@ -47,7 +47,7 @@ theorem operator_frequency_cubic (μ ν : Measure ℝ)
     operatorDiagonalTrace b ((operatorFrequency μ ν A f)^3) =
       kernelCubic μ (frequencyKernel ν A f) := by
   let : IsFiniteMeasure (tripleMeasure μ) := by unfold tripleMeasure; infer_instance
-  let : IsFiniteMeasure (tripleMeasure ν) := by unfold tripleMeasure; infer_instance
+  
   obtain ⟨hx,hy,hxy⟩ := operator_frequency_inputs μ ν hA hf hB hb
   rw [operatorFrequency,operatorIntegral_cubic_cycle ν b hx hy hxy,
     frequencyKernel_cubic μ ν hA hf hB hb]
@@ -58,7 +58,7 @@ theorem operator_frequency_cubic (μ ν : Measure ℝ)
     have hi := (cubicIntegrand_integrable μ ν hA hf hB hb).integral_prod_left
     simpa only [cubicIntegrand_time_integral] using hi
   change _ = ∫ x, Q x ∂tripleMeasure ν
-  have hQi : Integrable Q (ν.prod (ν.prod ν)) := hQ
+  have hQi  := hQ
   rw [tripleMeasure,integral_prod _ hQi]
   apply integral_congr_ae
   filter_upwards [hQi.prod_right_ae] with x hxQ

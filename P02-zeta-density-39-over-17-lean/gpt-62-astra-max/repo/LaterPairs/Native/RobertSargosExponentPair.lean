@@ -1,16 +1,9 @@
 module
 public import TaoTrudgianYang2025.ExponentPairBProcess
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.AdditiveEnergy
 public import LaterPairs.Native.ClassicalSecondDerivativePair
 public import LaterPairs.Native.DyadicMomentCutoff
 public import LaterPairs.Native.ExponentPairAProcess
 public import LaterPairs.Native.RobertSargosPhysicalSieve
-public import LaterPairs.Native.SargosQuarticPoisson
-public import LaterPairs.Native.ZetaMomentKernel
-public import LaterPairs.Native.ZetaSourceLogScales
 
 @[expose] public section
 set_option autoImplicit false

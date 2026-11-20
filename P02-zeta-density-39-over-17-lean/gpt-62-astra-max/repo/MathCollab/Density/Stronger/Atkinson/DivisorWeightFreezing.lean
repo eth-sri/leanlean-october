@@ -46,9 +46,7 @@ theorem min_self_inv_le_min_one (a : ℝ) : min a a⁻¹ ≤ min 1 a := by
   by_cases ha : a ≤ 1
   · rw [min_eq_right ha]
     exact min_le_left _ _
-  · rw [min_eq_left (le_of_not_ge ha)]
-    apply (min_le_right _ _).trans
-    simpa only [one_div, inv_one] using one_div_le_one_div_of_le zero_lt_one (le_of_not_ge ha)
+  · bound
 
 theorem exists_norm_zetaSquareDivisor_freezing_error_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T → ∀ x : ℝ, |x| ≤ T / 2 → ∀ n : ℕ,

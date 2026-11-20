@@ -770,6 +770,14 @@ theorem curvature_surface_profile_columns_bound
 
                                                                         
                                                                            
+abbrev InverseProfileColumnsBoundParameters
+    (F : ℝ → ℝ) (ρ : ℝ × ℝ → ℝ) (σ η : ℝ)
+    (rest : ∀ (g : ℝ × ℝ → ℝ), Prop) : Prop :=
+  let H := fun v : ℝ × ℝ =>
+    (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
+  let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
+  rest g
+
 theorem positive_difference_inverse_profile_columns_bound
     (F : ℝ → ℝ) (ρ : ℝ × ℝ → ℝ)
     {σ c U η : ℝ} {z : ℝ × ℝ} {I : Set ℝ}
@@ -786,12 +794,11 @@ theorem positive_difference_inverse_profile_columns_bound
       (iteratedDeriv 2 F (ρ w)-iteratedDeriv 2 F (ρ w+η*w.1))/(σ*η)=w.2)
     (huniq : ∀ᶠ w in 𝓝 z, Set.InjOn
       (fun x => (iteratedDeriv 2 F x-iteratedDeriv 2 F (x+η*w.1))/(σ*η)) I) :
-    let H := fun v : ℝ × ℝ =>
-      (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-    let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
+    InverseProfileColumnsBoundParameters F ρ σ η (fun g =>
     let Φ := fun w => (g w,fderiv ℝ g w (0,1))
     let R := max 1 (max (3*U/σ) (2*σ/c))
-    ‖fderiv ℝ Φ z (1,0)‖ ≤ 4*R^6 ∧ ‖fderiv ℝ Φ z (0,1)‖ ≤ 4*R^6 := by
+    ‖fderiv ℝ Φ z (1,0)‖ ≤ 4*R^6 ∧ ‖fderiv ℝ Φ z (0,1)‖ ≤ 4*R^6) := by
+  dsimp -zeta only [InverseProfileColumnsBoundParameters]
   intro H g Φ R
   let p : ℝ × ℝ := (z.1,ρ z)
   let J := fun (r : ℕ) (v : ℝ × ℝ) =>
@@ -1182,15 +1189,14 @@ theorem positive_difference_profile_chart_bound
       (iteratedDeriv 2 F (ρ w)-iteratedDeriv 2 F (ρ w+η*w.1))/(σ*η)=w.2)
     (huniq : ∀ᶠ w in 𝓝 z, Set.InjOn
       (fun x => (iteratedDeriv 2 F x-iteratedDeriv 2 F (x+η*w.1))/(σ*η)) I) :
-    let H := fun v : ℝ × ℝ =>
-      (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-    let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
+    InverseProfileColumnsBoundParameters F ρ σ η (fun g =>
     let Φ := fun w => (g w,fderiv ℝ g w (0,1))
     let W := fun w => differenceProfileJet F σ η (w.1,ρ w)
     let R := max 1 (max (3*U/σ) (2*σ/c))
     DifferentiableAt ℝ W z ∧ (∀ i, |W z i| ≤ R) ∧
     ‖fderiv ℝ W z‖ ≤ 6*R^5 ∧
-    (fderiv ℝ Φ z (1,0),fderiv ℝ Φ z (0,1))=profileDerivativeColumns (W z) := by
+    (fderiv ℝ Φ z (1,0),fderiv ℝ Φ z (0,1))=profileDerivativeColumns (W z)) := by
+  dsimp -zeta only [InverseProfileColumnsBoundParameters]
   intro H g Φ W R
   let p : ℝ × ℝ := (z.1,ρ z)
   let J := fun (r : ℕ) (v : ℝ × ℝ) =>
@@ -1281,27 +1287,32 @@ theorem positive_difference_profile_chart_bound
 
                                                                             
                                                                                 
+abbrev ModelJetAssumptions
+    (c U : ℝ) (F : ℝ → ℝ)
+    (rest : Prop) : Prop :=
+  (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
+  (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
+  (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
+    c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
+      (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
+  rest
+
 theorem positive_difference_profile_uniform_variation
     {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
     ∃ L : ℝ, 0 < L ∧
       ∀ (F : ℝ → ℝ) (ρ : ℝ × ℝ → ℝ) (η : ℝ) (I : Set ℝ) (S : Set (ℝ × ℝ)),
       0 < η → η ≤ 1/8 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
+      ModelJetAssumptions c U F (
       IsOpen I → IsOpen S → Convex ℝ S →
       (∀ w ∈ S, ρ w ∈ Icc (3/4:ℝ) (9/4) ∧ w.1 ∈ Icc (1/2:ℝ) 3) →
       (∀ w ∈ S, ρ w ∈ I ∧
         (iteratedDeriv 2 F (ρ w)-iteratedDeriv 2 F (ρ w+η*w.1))/(σ*η)=w.2) →
       (∀ w ∈ S, Set.InjOn
         (fun x => (iteratedDeriv 2 F x-iteratedDeriv 2 F (x+η*w.1))/(σ*η)) I) →
-      let H := fun v : ℝ × ℝ =>
-        (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-      let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
+      InverseProfileColumnsBoundParameters F ρ σ η (fun g =>
       let Φ := fun w => (g w,fderiv ℝ g w (0,1))
-      ∀ p ∈ S, ∀ q ∈ S, ‖fderiv ℝ Φ q-fderiv ℝ Φ p‖ ≤ L*‖q-p‖ := by
+      ∀ p ∈ S, ∀ q ∈ S, ‖fderiv ℝ Φ q-fderiv ℝ Φ p‖ ≤ L*‖q-p‖)) := by
+  dsimp -zeta only [ModelJetAssumptions, InverseProfileColumnsBoundParameters]
   let R := max 1 (max (3*U/σ) (2*σ/c))
   have hR : 0 < R := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   obtain ⟨D,hD,hvar⟩ := profile_columns_uniform_variation R
@@ -1388,23 +1399,26 @@ private theorem interval_root_coverage_of_abs_derivative
                                                                            
                                                                           
                                                                            
+abbrev DifferenceUniformRootChartParameters
+    (σ : ℝ) (F : ℝ → ℝ) (η : ℝ)
+    (rest : ∀ (H ρ : ℝ × ℝ → ℝ), Prop) : Prop :=
+  let H := fun v : ℝ × ℝ =>
+    (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
+  let ρ := fun w : ℝ × ℝ =>
+    Function.invFunOn (fun x => H (w.1,x)) (Ioo (3/4:ℝ) (9/4)) w.2
+  rest H ρ
+
 theorem positive_difference_uniform_root_chart
     {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
     ∃ r : ℝ, 0 < r ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ : ℝ),
       0 < η → η ≤ 1/8 → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
-      let H := fun v : ℝ × ℝ =>
-        (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-      let ρ := fun w : ℝ × ℝ =>
-        Function.invFunOn (fun x => H (w.1,x)) (Ioo (3/4:ℝ) (9/4)) w.2
+      ModelJetAssumptions c U F (
+      DifferenceUniformRootChartParameters σ F η (fun H ρ =>
       ∀ w : ℝ × ℝ, ‖w-(y₀,H (y₀,x₀))‖ < r →
         ρ w ∈ Ioo (3/4:ℝ) (9/4) ∧ w.1 ∈ Icc (1/2:ℝ) 3 ∧
-        H (w.1,ρ w)=w.2 ∧ Set.InjOn (fun x => H (w.1,x)) (Ioo (3/4:ℝ) (9/4)) := by
+        H (w.1,ρ w)=w.2 ∧ Set.InjOn (fun x => H (w.1,x)) (Ioo (3/4:ℝ) (9/4)))) := by
+  dsimp -zeta only [ModelJetAssumptions, DifferenceUniformRootChartParameters]
   let V := U/σ
   let r := min (1/4:ℝ) (c/(16*σ*(1+V)))
   have hV : 0 < V := div_pos hU hσ
@@ -1590,15 +1604,8 @@ theorem positive_difference_constructed_endpoint_compression
     ∃ a : ℝ, 0 < a ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b l r δ : ℝ),
       0 < η → η ≤ 1/8 → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
-      let H := fun v : ℝ × ℝ =>
-        (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-      let ρ := fun w : ℝ × ℝ =>
-        Function.invFunOn (fun x => H (w.1,x)) (Ioo (3/4:ℝ) (9/4)) w.2
+      ModelJetAssumptions c U F (
+      DifferenceUniformRootChartParameters σ F η (fun H ρ =>
       let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
       let z₀ := (y₀,H (y₀,x₀))
       let R := max 1 (max (3*U/σ) (2*σ/c))
@@ -1606,7 +1613,8 @@ theorem positive_difference_constructed_endpoint_compression
       l < r → r-l ≤ 2 →
       (∀ t ∈ Icc l r, ‖((ya,t):ℝ × ℝ)-z₀‖ < a ∧ ‖((yb,t+b):ℝ × ℝ)-z₀‖ < a) →
       |g (yb,l+b)-g (ya,l)| ≤ δ → |g (yb,r+b)-g (ya,r)| ≤ δ →
-      κ*‖((yb-ya,b):ℝ × ℝ)‖*(r-l) ≤ 64*R^6*δ := by
+      κ*‖((yb-ya,b):ℝ × ℝ)‖*(r-l) ≤ 64*R^6*δ)) := by
+  dsimp -zeta only [ModelJetAssumptions, DifferenceUniformRootChartParameters]
   let R := max 1 (max (3*U/σ) (2*σ/c))
   let κ := (c/(6*U))^2*(c^2*c/(6*U^4))
   have hR : 0 < R := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
@@ -2099,23 +2107,18 @@ theorem positive_difference_reciprocal_profile_jacobian_lower
         (z : ℝ × ℝ) (I : Set ℝ),
       0 < η → η ≤ η₀ → z.2 ≠ 0 →
       ρ (z.1,z.2⁻¹) ∈ Icc (3/4:ℝ) (9/4) → z.1 ∈ Icc (1:ℝ) 2 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
+      ModelJetAssumptions c U F (
       IsOpen I → ρ (z.1,z.2⁻¹) ∈ I →
       (∀ᶠ w in 𝓝 (z.1,z.2⁻¹), ρ w ∈ I ∧
         (iteratedDeriv 2 F (ρ w)-iteratedDeriv 2 F (ρ w+η*w.1))/(σ*η)=w.2) →
       (∀ᶠ w in 𝓝 (z.1,z.2⁻¹), Set.InjOn
         (fun x => (iteratedDeriv 2 F x-iteratedDeriv 2 F (x+η*w.1))/(σ*η)) I) →
-      let H := fun v : ℝ × ℝ =>
-        (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-      let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
+      InverseProfileColumnsBoundParameters F ρ σ η (fun g =>
       let k := fun w : ℝ × ℝ => w.2^3*g (w.1,w.2⁻¹)
       let Φ := fun w => (k w,fderiv ℝ k w (0,1))
       κ ≤ |(fderiv ℝ Φ z (1,0)).1*(fderiv ℝ Φ z (0,1)).2-
-        (fderiv ℝ Φ z (0,1)).1*(fderiv ℝ Φ z (1,0)).2| := by
+        (fderiv ℝ Φ z (0,1)).1*(fderiv ℝ Φ z (1,0)).2|)) := by
+  dsimp -zeta only [ModelJetAssumptions, InverseProfileColumnsBoundParameters]
   obtain ⟨η₀,d,hη₀,hηcap,hd,hcase⟩ :=
     positive_jets_difference_case_two_tests hσ hc hU
   let R := max 1 (max (3*U/σ) (2*σ/c))
@@ -2264,22 +2267,16 @@ theorem positive_difference_uniform_reciprocal_root_chart
     ∃ s : ℝ, 0 < s ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ : ℝ),
       0 < η → η ≤ 1/8 → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
-      let H := fun v : ℝ × ℝ =>
-        (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-      let ρ := fun w : ℝ × ℝ =>
-        Function.invFunOn (fun x => H (w.1,x)) (Ioo (3/4:ℝ) (9/4)) w.2
+      ModelJetAssumptions c U F (
+      DifferenceUniformRootChartParameters σ F η (fun H ρ =>
       ∀ w : ℝ × ℝ, ‖w-(y₀,(H (y₀,x₀))⁻¹)‖ < s →
         w.2 ≠ 0 ∧ ρ (w.1,w.2⁻¹) ∈ Ioo (3/4:ℝ) (9/4) ∧
         w.1 ∈ Icc (1/2:ℝ) 3 ∧ H (w.1,ρ (w.1,w.2⁻¹))=w.2⁻¹ ∧
         (∀ᶠ v in 𝓝 (w.1,w.2⁻¹), ρ v ∈ Ioo (3/4:ℝ) (9/4) ∧
           H (v.1,ρ v)=v.2) ∧
         (∀ᶠ v in 𝓝 (w.1,w.2⁻¹), Set.InjOn
-          (fun x => H (v.1,x)) (Ioo (3/4:ℝ) (9/4))) := by
+          (fun x => H (v.1,x)) (Ioo (3/4:ℝ) (9/4))))) := by
+  dsimp -zeta only [ModelJetAssumptions, DifferenceUniformRootChartParameters]
   obtain ⟨r,hr,hchart⟩ := positive_difference_uniform_root_chart hσ hc hU
   let A := 3*U/σ
   have hA : 0 < A := by dsimp only [A]; positivity
@@ -2341,15 +2338,8 @@ theorem positive_difference_constructed_reciprocal_profile
     ∃ η₀ κ s : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < κ ∧ 0 < s ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ : ℝ),
       0 < η → η ≤ η₀ → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
-      let H := fun v : ℝ × ℝ =>
-        (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-      let ρ := fun w : ℝ × ℝ =>
-        Function.invFunOn (fun x => H (w.1,x)) (Ioo (3/4:ℝ) (9/4)) w.2
+      ModelJetAssumptions c U F (
+      DifferenceUniformRootChartParameters σ F η (fun H ρ =>
       let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
       let k := fun w : ℝ × ℝ => w.2^3*g (w.1,w.2⁻¹)
       let Φ := fun w => (k w,fderiv ℝ k w (0,1))
@@ -2357,7 +2347,8 @@ theorem positive_difference_constructed_reciprocal_profile
         z.1 ∈ Icc (1:ℝ) 2 →
         ContDiffAt ℝ 2 k z ∧
         κ ≤ |(fderiv ℝ Φ z (1,0)).1*(fderiv ℝ Φ z (0,1)).2-
-          (fderiv ℝ Φ z (0,1)).1*(fderiv ℝ Φ z (1,0)).2| := by
+          (fderiv ℝ Φ z (0,1)).1*(fderiv ℝ Φ z (1,0)).2|)) := by
+  dsimp -zeta only [ModelJetAssumptions, DifferenceUniformRootChartParameters]
   obtain ⟨η₀,κ,hη₀,hηcap,hκ,hjac⟩ := positive_difference_reciprocal_profile_jacobian_lower hσ hc hU
   obtain ⟨s,hs,hchart⟩ := positive_difference_uniform_reciprocal_root_chart hσ hc hU
   refine ⟨η₀,κ,s,hη₀,hηcap,hκ,hs,?_⟩
@@ -2438,9 +2429,7 @@ theorem positive_difference_reciprocal_profile_chart_bound
       (iteratedDeriv 2 F (ρ w)-iteratedDeriv 2 F (ρ w+η*w.1))/(σ*η)=w.2)
     (huniq : ∀ᶠ w in 𝓝 (z.1,z.2⁻¹), Set.InjOn
       (fun x => (iteratedDeriv 2 F x-iteratedDeriv 2 F (x+η*w.1))/(σ*η)) I) :
-    let H := fun v : ℝ × ℝ =>
-      (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-    let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
+    InverseProfileColumnsBoundParameters F ρ σ η (fun g =>
     let k := fun w : ℝ × ℝ => w.2^3*g (w.1,w.2⁻¹)
     let Φ := fun w => (k w,fderiv ℝ k w (0,1))
     let W := fun w => differenceProfileJet F σ η (w.1,ρ w)
@@ -2448,7 +2437,8 @@ theorem positive_difference_reciprocal_profile_chart_bound
     let R := max 1 (max (3*U/σ) (2*σ/c))
     DifferentiableAt ℝ V z ∧ ‖V z‖ ≤ R ∧
     ‖fderiv ℝ V z‖ ≤ 6*R^7 ∧
-    (fderiv ℝ Φ z (1,0),fderiv ℝ Φ z (0,1))=reciprocalProfileColumns (V z) := by
+    (fderiv ℝ Φ z (1,0),fderiv ℝ Φ z (0,1))=reciprocalProfileColumns (V z)) := by
+  dsimp -zeta only [InverseProfileColumnsBoundParameters]
   intro H g k Φ W V R
   let z₀ : ℝ × ℝ := (z.1,z.2⁻¹)
   let p : ℝ × ℝ := (z.1,ρ z₀)
@@ -2583,11 +2573,7 @@ theorem positive_difference_reciprocal_profile_uniform_variation
       ∀ (F : ℝ → ℝ) (ρ : ℝ × ℝ → ℝ) (η : ℝ)
         (I : Set ℝ) (S : Set (ℝ × ℝ)),
       0 < η → η ≤ 1/8 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
+      ModelJetAssumptions c U F (
       IsOpen I → Convex ℝ S →
       (∀ w ∈ S, w.2 ≠ 0 ∧ ρ (w.1,w.2⁻¹) ∈ Icc (3/4:ℝ) (9/4) ∧
         w.1 ∈ Icc (1/2:ℝ) 3) →
@@ -2595,13 +2581,12 @@ theorem positive_difference_reciprocal_profile_uniform_variation
         (iteratedDeriv 2 F (ρ w)-iteratedDeriv 2 F (ρ w+η*w.1))/(σ*η)=w.2) →
       (∀ z ∈ S, ∀ᶠ w in 𝓝 (z.1,z.2⁻¹), Set.InjOn
         (fun x => (iteratedDeriv 2 F x-iteratedDeriv 2 F (x+η*w.1))/(σ*η)) I) →
-      let H := fun v : ℝ × ℝ =>
-        (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-      let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
+      InverseProfileColumnsBoundParameters F ρ σ η (fun g =>
       let k := fun w : ℝ × ℝ => w.2^3*g (w.1,w.2⁻¹)
       let Φ := fun w => (k w,fderiv ℝ k w (0,1))
       (∀ w ∈ S, ‖fderiv ℝ Φ w (1,0)‖ ≤ D ∧ ‖fderiv ℝ Φ w (0,1)‖ ≤ D) ∧
-      ∀ p ∈ S, ∀ q ∈ S, ‖fderiv ℝ Φ q-fderiv ℝ Φ p‖ ≤ L*‖q-p‖ := by
+      ∀ p ∈ S, ∀ q ∈ S, ‖fderiv ℝ Φ q-fderiv ℝ Φ p‖ ≤ L*‖q-p‖)) := by
+  dsimp -zeta only [ModelJetAssumptions, InverseProfileColumnsBoundParameters]
   let R := max 1 (max (3*U/σ) (2*σ/c))
   have hR : 0 < R := zero_lt_one.trans_le (le_max_left _ _)
   obtain ⟨D,hD,hpoly⟩ := reciprocalProfileColumns_uniform_bound R
@@ -2675,22 +2660,16 @@ theorem positive_difference_constructed_reciprocal_endpoint_compression
       ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b l r δ : ℝ),
       0 < η → η ≤ η₀ → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
       ya ∈ Icc (1:ℝ) 2 → yb ∈ Icc (1:ℝ) 2 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
-      let H := fun v : ℝ × ℝ =>
-        (iteratedDeriv 2 F v.2-iteratedDeriv 2 F (v.2+η*v.1))/(σ*η)
-      let ρ := fun w : ℝ × ℝ =>
-        Function.invFunOn (fun x => H (w.1,x)) (Ioo (3/4:ℝ) (9/4)) w.2
+      ModelJetAssumptions c U F (
+      DifferenceUniformRootChartParameters σ F η (fun H ρ =>
       let g := fun w => fderiv ℝ H (w.1,ρ w) (0,1)
       let k := fun w : ℝ × ℝ => w.2^3*g (w.1,w.2⁻¹)
       let z₀ := (y₀,(H (y₀,x₀))⁻¹)
       l < r → r-l ≤ 2 →
       (∀ t ∈ Icc l r, ‖((ya,t):ℝ × ℝ)-z₀‖ < a ∧ ‖((yb,t+b):ℝ × ℝ)-z₀‖ < a) →
       |k (yb,l+b)-k (ya,l)| ≤ δ → |k (yb,r+b)-k (ya,r)| ≤ δ →
-      ‖((yb-ya,b):ℝ × ℝ)‖*(r-l) ≤ C*δ := by
+      ‖((yb-ya,b):ℝ × ℝ)‖*(r-l) ≤ C*δ)) := by
+  dsimp -zeta only [ModelJetAssumptions, DifferenceUniformRootChartParameters]
   obtain ⟨η₀,κ,s₁,hη₀,hηcap,hκ,hs₁,hregular⟩ :=
     positive_difference_constructed_reciprocal_profile hσ hc hU
   obtain ⟨s₂,hs₂,hchart⟩ := positive_difference_uniform_reciprocal_root_chart hσ hc hU
@@ -2982,11 +2961,7 @@ theorem positive_difference_local_parameter_count
     ∃ a C : ℝ, 0 < a ∧ a ≤ 1/4 ∧ 0 < C ∧
       ∀ (F : ℝ → ℝ) (η x₀ y₀ E J g : ℝ) (S : Finset ℝ) (x : ℝ → ℝ),
       0 < η → η ≤ 1/8 → x₀ ∈ Icc (1:ℝ) 2 → y₀ ∈ Icc (1:ℝ) 2 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
+      ModelJetAssumptions c U F (
       0 ≤ E → 0 < J →
       (∀ y ∈ S, y ∈ Icc (1:ℝ) 2 ∧ |y-y₀| < a ∧ x y ∈ Icc (1:ℝ) 2) →
       (∀ y ∈ S, ∀ z ∈ S, y ≠ z → 1 ≤ J*|y-z|) →
@@ -2996,7 +2971,7 @@ theorem positive_difference_local_parameter_count
         (iteratedDeriv 3 F v.2-iteratedDeriv 3 F (v.2+η*v.1))/(σ*η)
       (∀ y ∈ S, H (y,x y)=H (y₀,x₀)) →
       (∀ y ∈ S, |G (y,x y)-g| ≤ E) →
-      (S.card:ℝ) ≤ 1+C*E*J := by
+      (S.card:ℝ) ≤ 1+C*E*J) := by
   obtain ⟨r,hr,hchart⟩ := positive_difference_uniform_root_chart hσ hc hU
   let a := min r (1/4:ℝ)
   let L := c/(2*σ)
@@ -3055,11 +3030,7 @@ theorem positive_difference_parameter_count
     ∃ K C : ℝ, 0 < K ∧ 0 < C ∧
       ∀ (F : ℝ → ℝ) (η E J q g : ℝ) (S : Finset ℝ) (x : ℝ → ℝ),
       0 < η → η ≤ 1/8 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
+      ModelJetAssumptions c U F (
       0 ≤ E → 0 < J →
       (∀ y ∈ S, y ∈ Icc (1:ℝ) 2 ∧ x y ∈ Icc (1:ℝ) 2) →
       (∀ y ∈ S, ∀ z ∈ S, y ≠ z → 1 ≤ J*|y-z|) →
@@ -3069,7 +3040,7 @@ theorem positive_difference_parameter_count
         (iteratedDeriv 3 F v.2-iteratedDeriv 3 F (v.2+η*v.1))/(σ*η)
       (∀ y ∈ S, H (y,x y)=q) →
       (∀ y ∈ S, |G (y,x y)-g| ≤ E) →
-      (S.card:ℝ) ≤ K*(1+C*E*J) := by
+      (S.card:ℝ) ≤ K*(1+C*E*J)) := by
   classical
   obtain ⟨a,C,ha,hacap,hC,hlocal⟩ := positive_difference_local_parameter_count hσ hc hU
   refine ⟨2+1/a,C,by positivity,hC,?_⟩
@@ -3144,11 +3115,7 @@ theorem positive_difference_physical_parameter_count
     ∃ K C : ℝ, 0 < K ∧ 0 < C ∧
       ∀ (F : ℝ → ℝ) (η ya xa Δ J q t T M : ℝ) (S : Finset ℝ) (x : ℝ → ℝ),
       0 < η → η ≤ 1/8 → ya ∈ Icc (1:ℝ) 2 →
-      (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-      (∀ w ∈ Icc (1/2:ℝ) 3, ∀ j,
-        c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
-          (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
+      ModelJetAssumptions c U F (
       0 < T → 2 ≤ M → 0 ≤ Δ → 0 < J → t ∈ Icc (1/2:ℝ) 2 →
       xa ∈ Icc M (2*M) →
       (∀ y ∈ S, y ∈ Icc (1:ℝ) 2 ∧ x y ∈ Icc M (2*M)) →
@@ -3158,7 +3125,7 @@ theorem positive_difference_physical_parameter_count
       (∀ y ∈ S, iteratedDeriv 2 (f y) (x y)/2=q) →
       (∀ y ∈ S, |μ y (x y)/μ ya xa*t^3-1| ≤ Δ) →
       let B := max 1 (max (3*U/σ) (2*σ/c))
-      (S.card:ℝ) ≤ K*(1+8*C*B*(Δ+5/M)*J) := by
+      (S.card:ℝ) ≤ K*(1+8*C*B*(Δ+5/M)*J)) := by
   obtain ⟨K,C,hK,hC,hcount⟩ := positive_difference_parameter_count hσ hc hU
   refine ⟨K,C,hK,hC,?_⟩
   intro F η ya xa Δ J q t T M S x hη hηmax hya hf hbound htests hT hM hΔ hJ ht
@@ -4431,6 +4398,13 @@ theorem positive_difference_reference_preimage_width
                                                                      
                                                                          
                                                                     
+abbrev DifferenceConstructedReferenceSystemParameters
+    (F : ℝ → ℝ) (σ η T M : ℝ)
+    (rest : ∀ (f h : ℝ → ℝ → ℝ), Prop) : Prop :=
+  let f := fun y w => T*(F (w/M)-F (w/M+η*y))/(σ*η)
+  let h := fun y w => iteratedDeriv 2 (f y) w/2
+  rest f h
+
 theorem positive_difference_constructed_reference_system
     (F : ℝ → ℝ) {σ c J η T M N R U : ℝ}
     (hσ : 0 < σ) (hc : 0 < c) (hJ : 0 < J)
@@ -4443,8 +4417,7 @@ theorem positive_difference_constructed_reference_system
     (hnegative : ∀ w ∈ Icc (1/2:ℝ) 3, iteratedDeriv 4 F w ≤ -c)
     (hT : 0 < T) (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
     (hU : 0 < U) (hUmax : U ≤ R^2) (hphase : T*N*R^2=M^3) :
-    let f := fun y w => T*(F (w/M)-F (w/M+η*y))/(σ*η)
-    let h := fun y w => iteratedDeriv 2 (f y) w/2
+    DifferenceConstructedReferenceSystemParameters F σ η T M (fun f h =>
     let curvatureScale := 3*J*T/(2*σ*M^2)
     ∃ H : ℤ, 2 ≤ H ∧ ∃ S : Finset ℝ,
       (∀ q : ℚ, (q.den:ℤ) ≤ H → |(q:ℝ)| ≤ curvatureScale → (q:ℝ) ∈ S) ∧
@@ -4470,7 +4443,8 @@ theorem positive_difference_constructed_reference_system
           IsCoprime m n ∧ IsCoprime u v ∧ 0 < n ∧ 0 < v ∧
           R^2 ≤ U*((max n v:ℤ):ℝ)^2) ∧
         (∀ y ∈ Icc (1:ℝ) 2, ∀ x ∈ Icc M (2*M), ∀ z ∈ Icc M (2*M),
-          h y x=a → h y z=b → |z-x| ≤ (14*σ/c)*U*N)) := by
+          h y x=a → h y z=b → |z-x| ≤ (14*σ/c)*U*N))) := by
+  dsimp -zeta only [DifferenceConstructedReferenceSystemParameters]
   intro f h curvatureScale
   let δ := U/R^2
   have hδ : 0 < δ := div_pos hU (sq_pos_of_pos hR)

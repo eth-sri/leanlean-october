@@ -1,7 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaDualScales
-public import Mathlib.Analysis.Fourier.PoissonSummation
 
 @[expose] public section
 

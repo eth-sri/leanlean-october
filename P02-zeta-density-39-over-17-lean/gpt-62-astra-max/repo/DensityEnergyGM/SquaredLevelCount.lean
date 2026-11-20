@@ -32,11 +32,11 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
   let B : ℝ := max 1 (2 * A * (4 : ℝ) ^ η)
   let C : ℝ := 32 * C₀ * B ^ 4
   have hBone : 1 ≤ B := le_max_left _ _
-  have hBpos : 0 < B := lt_of_lt_of_le zero_lt_one hBone
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  have hBpos  := lt_of_lt_of_le zero_lt_one hBone
+  refine ⟨C, T₀, by positivity, hT₀, ?_⟩
   intro M T U a W hM hT hMT hU ha hSep hBase hLarge
-  have hTone : 1 ≤ T := hT₀.trans hT
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTone
+  have hTone  := hT₀.trans hT
+  have hTpos  := lt_of_lt_of_le zero_lt_one hTone
   have hMpos : (0 : ℝ) < M := by exact_mod_cast hM
   obtain ⟨r, hr, W', hsub, hcard, hbound⟩ :=
     hPowered M a T U W hM (by norm_num) hT hU ha hSep hBase hLarge
@@ -62,7 +62,7 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
     exact mul_le_mul
       (le_max_right _ _) (Real.rpow_le_rpow (sq_nonneg _) hMT hη.le)
       (Real.rpow_nonneg (sq_nonneg _) _) hBpos.le
-  have hPone : 1 ≤ B * T ^ η :=
+  have hPone  :=
     one_le_mul_of_one_le_of_one_le hBone (Real.one_le_rpow hTone hη.le)
   have hPpow : (B * T ^ η) ^ 4 = B ^ 4 * T ^ (4 * η) := by
     rw [mul_pow, ← Real.rpow_natCast (T ^ η) 4,
@@ -95,7 +95,7 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
     dsimp only [δ, η]
     ring_nf
   calc
-    (W.card : ℝ) ≤ 2 * (W'.card : ℝ) := by simpa only [Nat.cast_ofNat] using hcard
+    (W.card : ℝ) ≤ 2 * (W'.card : ℝ) := by omega
     _ ≤ 2 * (C₀ * T ^ δ *
         (q ^ 2 * (U ^ 2 / D) ^ (-2 : ℝ) +
           q ^ (18 / 5 : ℝ) * (U ^ 2 / D) ^ (-4 : ℝ) +
@@ -108,7 +108,6 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
         ((M : ℝ) ^ 4 * U ^ (-4 : ℝ) +
           (M : ℝ) ^ (36 / 5 : ℝ) * U ^ (-8 : ℝ) +
           T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)) := by
-      dsimp only [C]
       rw [show 2 * (C₀ * T ^ δ * (16 * (B ^ 4 * T ^ (4 * η)) *
           ((M : ℝ) ^ 4 * U ^ (-4 : ℝ) + (M : ℝ) ^ (36 / 5 : ℝ) * U ^ (-8 : ℝ) +
             T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)))) =

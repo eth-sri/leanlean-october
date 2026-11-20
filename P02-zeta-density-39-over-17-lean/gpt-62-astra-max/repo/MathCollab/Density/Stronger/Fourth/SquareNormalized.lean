@@ -161,8 +161,6 @@ theorem zeta_fourth_le_four_mul_rightPiece_sq (t : ℝ) :
     zetaMomentCriticalNorm t^4 ≤ 4*‖zetaFourthRightPiece t‖^2 := by
   have h := zetaSquareNorm_eq_two_re_fourthRightPiece t
   have hre := Complex.re_le_norm (zetaFourthRightPiece t)
-  have hn := zetaFourthRightPiece_re_nonneg t
-  have hs := pow_le_pow_left₀ hn hre 2
   nlinarith [sq_nonneg (zetaMomentCriticalNorm t^2 - 2*(zetaFourthRightPiece t).re)]
 
 theorem norm_zetaSquareGammaNormalization (t : ℝ) :
@@ -248,7 +246,7 @@ theorem norm_zetaSquarePoleShift_sub_one_le {t : ℝ} (ht : 0 < t)
     {w : ℂ} (hw : ‖w‖ ≤ t / 2) : ‖zetaSquarePoleShift t w - 1‖ ≤ 12 * ‖w‖ / t := by
   let p := (afeCriticalPoint (-t) + w) * (1 - (afeCriticalPoint (-t) + w)) /
     (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t)))
-  have h : ‖p - 1‖ ≤ 3 * ‖w‖ / t := norm_poleShift_linear_sub_one_le ht hw
+  have h  := norm_poleShift_linear_sub_one_le ht hw
   have hfrac : 3 * ‖w‖ / t ≤ 3 / 2 := (div_le_iff₀ ht).mpr (by linarith)
   have hp : ‖p‖ ≤ 5 / 2 := by
     have hn := norm_le_norm_sub_add p (1 : ℂ)

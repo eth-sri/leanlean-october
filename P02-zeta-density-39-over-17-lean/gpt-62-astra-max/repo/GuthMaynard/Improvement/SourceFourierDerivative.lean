@@ -82,7 +82,7 @@ theorem source_l2_interval_l1 {f : ℝ → ℂ} (h2 : MemLp f 2) :
     IntegrableOn f (Icc (-2:ℝ) 2) ∧
     (∫ ξ in Icc (-2:ℝ) 2, ‖f ξ‖) ≤ 2*Real.sqrt (∫ ξ, ‖f ξ‖^2) := by
   have hs : MemLp f 2 (volume.restrict (Icc (-2:ℝ) 2)) := h2.restrict _
-  have hi : IntegrableOn f (Icc (-2:ℝ) 2) := hs.integrable (by norm_num)
+  have hi  := hs.integrable (by norm_num)
   refine ⟨hi,?_⟩
   have hcs := integral_cauchy_schwarz_nonneg
     (μ := volume.restrict (Icc (-2:ℝ) 2))

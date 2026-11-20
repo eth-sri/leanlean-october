@@ -1,7 +1,5 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
 set_option autoImplicit false

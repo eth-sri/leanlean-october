@@ -1,9 +1,5 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.AtkinsonNaturalAmplitude
-public import LaterPairs.Native.IntervalAmplitudeBounds
+public import LaterPairs.Native.ZetaSourceLogScales
 public import LaterPairs.Native.ReciprocalSecondDerivativeBounds
 
 @[expose] public section

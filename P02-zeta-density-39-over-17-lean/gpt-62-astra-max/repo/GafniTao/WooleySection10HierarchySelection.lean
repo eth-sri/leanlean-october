@@ -22,22 +22,18 @@ def wooleyIterationTheta (mu : ℝ) (H : ℕ) : ℕ :=
 
 theorem wooley_iterationTheta_lower
     {mu : ℝ} {H : ℕ} :
-    mu * (H : ℝ) ≤ (wooleyIterationTheta mu H : ℝ) := by
-  exact Nat.le_ceil _
+    mu * (H : ℝ) ≤ (wooleyIterationTheta mu H : ℝ) := Nat.le_ceil _
 
 theorem wooley_iterationTheta_lt_add_one
     {mu : ℝ} {H : ℕ} (hmu : 0 ≤ mu) :
-    (wooleyIterationTheta mu H : ℝ) < mu * (H : ℝ) + 1 := by
-  exact Nat.ceil_lt_add_one (mul_nonneg hmu (Nat.cast_nonneg H))
+    (wooleyIterationTheta mu H : ℝ) < mu * (H : ℝ) + 1 := Nat.ceil_lt_add_one (mul_nonneg hmu (Nat.cast_nonneg H))
 
 theorem wooley_initialNu_lt_add_one
     {epsilon Lambda : ℝ} {H : ℕ}
     (hepsilon : 0 ≤ epsilon) (hLambda : 0 < Lambda) :
     (wooleyInitialNu epsilon Lambda H : ℝ) <
       4 * epsilon * (H : ℝ) / Lambda + 1 := by
-  exact Nat.ceil_lt_add_one
-    (div_nonneg (mul_nonneg (mul_nonneg (by norm_num) hepsilon)
-      (Nat.cast_nonneg H)) hLambda.le)
+  apply Nat.ceil_lt_add_one <;> first | assumption | positivity | linarith
 
 /-- A positive gap between two linear slopes eventually absorbs a fixed
 nonnegative additive loss. -/
@@ -48,9 +44,9 @@ theorem wooley_eventually_linear_gap
   obtain ⟨H0 : ℕ, hH0⟩ := exists_nat_ge (c / (b - a))
   refine ⟨H0, ?_⟩
   intro H hH
-  have hgap : 0 < b - a := sub_pos.mpr hab
+  have hgap  := sub_pos.mpr hab
   have hH0H : (H0 : ℝ) ≤ H := by exact_mod_cast hH
-  have hquot : c / (b - a) ≤ (H : ℝ) := hH0.trans hH0H
+  have hquot  := hH0.trans hH0H
   have hcGap : c ≤ (b - a) * (H : ℝ) := by
     rw [div_le_iff₀ hgap] at hquot
     simpa [mul_comm] using hquot
@@ -88,8 +84,7 @@ theorem wooley_initialNu_le_iterationTheta_eventually
       (4 * epsilon / Lambda) * (H : ℝ) := by
     field_simp
   rw [hrewrite] at hnu
-  have hreal : (wooleyInitialNu epsilon Lambda H : ℝ) ≤
-      (wooleyIterationTheta mu H : ℝ) := hnu.trans (hlin.trans htheta)
+  have hreal  := hnu.trans (hlin.trans htheta)
   exact_mod_cast hreal
 
 /-- The source inequality `epsilon H <= theta` follows without an eventual
@@ -131,7 +126,7 @@ theorem wooley_iterationTheta_double_scale_succ_eventually
           nlinarith
       _ = (2 * (k : ℝ) ^ (2 * N + 1) * mu) * (H : ℝ) +
           (2 * (k : ℝ) ^ (2 * N + 1) + 1) := by ring
-      _ ≤ (H : ℝ) := by simpa only [one_mul] using hlin
+      _ ≤ (H : ℝ) := by linarith
   exact_mod_cast hreal
 
 /-- Simultaneous ceiling ledger.  This single estimate is reused for the
@@ -146,9 +141,8 @@ theorem wooley_theta_nu_linear_eventually
       alpha * (wooleyIterationTheta mu H : ℝ) +
           beta * (wooleyInitialNu epsilon Lambda H : ℝ) ≤
         target * (wooleyIterationTheta mu H : ℝ) := by
-  have hslopeLeft : 0 ≤ alpha * mu + beta * (4 * epsilon / Lambda) := by
-    positivity
-  have hadd : 0 ≤ alpha + beta := add_nonneg halpha hbeta
+  
+  
   obtain ⟨H0, hH0⟩ := wooley_eventually_linear_gap
     (c := alpha + beta) hslope
   refine ⟨H0, ?_⟩
@@ -170,7 +164,6 @@ theorem wooley_theta_nu_linear_eventually
           beta * (4 * epsilon * (H : ℝ) / Lambda + 1) := by gcongr
       _ = (alpha * mu + beta * (4 * epsilon / Lambda)) * (H : ℝ) +
           (alpha + beta) := by
-        field_simp
         ring
   calc
     alpha * (wooleyIterationTheta mu H : ℝ) +
@@ -193,7 +186,7 @@ theorem wooley_theta_epsilon_sq_lt_nu_eventually
     ∃ H0 : ℕ, ∀ H : ℕ, H0 ≤ H →
       alpha * (wooleyIterationTheta mu H : ℝ) * epsilon ^ 2 <
         (wooleyInitialNu epsilon Lambda H : ℝ) := by
-  have hcoef : 0 ≤ alpha * epsilon ^ 2 := mul_nonneg halpha (sq_nonneg epsilon)
+  have hcoef  := mul_nonneg halpha (sq_nonneg epsilon)
   have hslope' : alpha * epsilon ^ 2 * mu < 4 * epsilon / Lambda := by
     nlinarith
   obtain ⟨H0, hH0⟩ := wooley_eventually_linear_gap_strict
@@ -279,7 +272,7 @@ theorem wooley_section10_globalHierarchy_eventually
       (alpha := 0) (beta := 4 * (k : ℝ) ^ 3)
       (target := (k : ℝ) ^ 2 * delta)
       (by norm_num) (by positivity) (by positivity) hmu.le hepsilon.le
-      hLambda (by simpa only [zero_mul, zero_add] using hnuScaleSlope)
+      hLambda (by linarith)
   obtain ⟨Hcurrent, hHcurrent⟩ :=
     wooley_theta_nu_linear_eventually
       (alpha := tau * (k : ℝ) ^ (2 * N + 1)) (beta := k)
@@ -300,42 +293,35 @@ theorem wooley_section10_globalHierarchy_eventually
       (alpha := 0) (beta := 2 * (k : ℝ) ^ 5)
       (target := (k : ℝ) ^ 2 * delta * Lambda)
       (by norm_num) (by positivity) (by positivity) hmu.le hepsilon.le
-      hLambda (by simpa only [zero_mul, zero_add] using hhierarchySlope)
+      hLambda (by linarith)
   let H0 := max 1 (max Hscale (max HnuTheta
     (max HnuScale (max Hcurrent (max Hsecond (max Hepsilon Hhierarchy))))))
   refine ⟨H0, ?_⟩
   intro H hH
-  have hHone : 1 ≤ H := (le_max_left 1 _).trans hH
-  have hscale : Hscale ≤ H := by
-    exact (le_max_left Hscale _).trans
+  have hHone  := (le_max_left 1 _).trans hH
+  have hscale := (le_max_left Hscale _).trans
       ((le_max_right 1 _).trans hH)
-  have hnuTheta : HnuTheta ≤ H := by
-    exact (le_max_left HnuTheta _).trans
+  have hnuTheta := (le_max_left HnuTheta _).trans
       ((le_max_right Hscale _).trans ((le_max_right 1 _).trans hH))
-  have hnuScale : HnuScale ≤ H := by
-    exact (le_max_left HnuScale _).trans
+  have hnuScale := (le_max_left HnuScale _).trans
       ((le_max_right HnuTheta _).trans
         ((le_max_right Hscale _).trans ((le_max_right 1 _).trans hH)))
-  have hcurrent : Hcurrent ≤ H := by
-    exact (le_max_left Hcurrent _).trans
+  have hcurrent := (le_max_left Hcurrent _).trans
       ((le_max_right HnuScale _).trans
         ((le_max_right HnuTheta _).trans
           ((le_max_right Hscale _).trans ((le_max_right 1 _).trans hH))))
-  have hsecond : Hsecond ≤ H := by
-    exact (le_max_left Hsecond _).trans
+  have hsecond := (le_max_left Hsecond _).trans
       ((le_max_right Hcurrent _).trans
         ((le_max_right HnuScale _).trans
           ((le_max_right HnuTheta _).trans
             ((le_max_right Hscale _).trans ((le_max_right 1 _).trans hH)))))
-  have hepsH : Hepsilon ≤ H := by
-    exact (le_max_left Hepsilon _).trans
+  have hepsH := (le_max_left Hepsilon _).trans
       ((le_max_right Hsecond _).trans
         ((le_max_right Hcurrent _).trans
           ((le_max_right HnuScale _).trans
             ((le_max_right HnuTheta _).trans
               ((le_max_right Hscale _).trans ((le_max_right 1 _).trans hH))))))
-  have hhierH : Hhierarchy ≤ H := by
-    exact (le_max_right Hepsilon Hhierarchy).trans
+  have hhierH := (le_max_right Hepsilon Hhierarchy).trans
       ((le_max_right Hsecond _).trans
         ((le_max_right Hcurrent _).trans
           ((le_max_right HnuScale _).trans
@@ -353,9 +339,7 @@ theorem wooley_section10_globalHierarchy_eventually
     exact lt_of_lt_of_le hraw hlow
   refine ⟨by exact_mod_cast hthetaPosR, by exact_mod_cast hnuPosR,
     hHnuTheta H hnuTheta, hHscale H hscale, ?_, ?_, ?_, ?_, ?_⟩
-  · have h := hHnuScale H hnuScale
-    push_cast at h ⊢
-    simpa only [zero_mul, zero_add, mul_assoc] using h
+  · grind
   · have h := hHcurrent H hcurrent
     push_cast at h ⊢
     convert h using 1
@@ -368,10 +352,7 @@ theorem wooley_section10_globalHierarchy_eventually
     push_cast at h ⊢
     convert h using 1
     all_goals ring
-  · have h := hHhierarchy H hhierH
-    push_cast at h ⊢
-    convert h using 1
-    all_goals ring
+  · grind
 
 set_option maxHeartbeats 1000000 in
 /-- Source hierarchy (6.2), with explicit quantitative reserves sufficient
@@ -591,11 +572,7 @@ theorem WooleySection10GlobalHierarchy.physical_scales
       apply lt_of_le_of_lt _ hceil
       simpa only [Nat.mul_add, Nat.mul_one] using hscaled
     omega
-  have heq : k ^ (2 * N + 2) * thetaNat =
-      k * (k ^ (2 * N + 1) * thetaNat) := by
-    rw [show 2 * N + 2 = (2 * N + 1) + 1 by omega, pow_succ]
-    ring
-  exact ⟨by simpa only [heq] using hmul, hscaleH⟩
+  grind
 
 /-- The global hierarchy is a complete consumer for the per-node arithmetic
 obligations; no scale hypothesis remains to be supplied during recursion. -/
@@ -630,7 +607,7 @@ theorem WooleySection10GlobalHierarchy.mono_epsilon
       Lambda delta tau epsilon' := by
   rcases h with ⟨htheta, hnu, hnuTheta, hscale, hnuScale,
     hcurrent, hsecond, hepsilonSmall, hhierarchy⟩
-  have hepsilon0 : 0 ≤ epsilon := le_trans hepsilon' hepsilon
+  
   have hsquare : epsilon' ^ 2 ≤ epsilon ^ 2 := by nlinarith
   have hfactor : (0 : ℝ) ≤
       ((k ^ 2 * (k ^ (2 * N) * thetaNat) : ℕ) : ℝ) := by positivity

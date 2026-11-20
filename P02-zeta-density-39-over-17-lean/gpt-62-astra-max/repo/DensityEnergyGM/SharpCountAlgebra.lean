@@ -1,6 +1,5 @@
 module
 public import DensityEnergyGM.SharpQuadraticLargeValues
-public import DensityEnergyGM.EnergyPowerMean
 
 @[expose] public section
 

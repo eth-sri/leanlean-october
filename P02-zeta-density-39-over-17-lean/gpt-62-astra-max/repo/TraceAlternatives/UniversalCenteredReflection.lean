@@ -21,10 +21,10 @@ theorem reflection_local_energy_universal {η : ℝ} (hη : 0 < η) :
   refine ⟨240*C,by positivity,?_⟩
   intro T t₀ L H hT hL hH hHT W hW _hSep
   have hTp : 0<T := by linarith
-  have hRoot : 0<Real.sqrt T := Real.sqrt_pos.mpr hTp
-  have hLp : 0<L := hRoot.trans_le hL
+  have hRoot  := Real.sqrt_pos.mpr hTp
+  have hLp  := hRoot.trans_le hL
   let X : ℝ := H/L
-  have hX : 0<X := div_pos hH hLp
+  have hX  := div_pos hH hLp
   have hXbound : X≤2*Real.sqrt T := by
     apply (div_le_iff₀ hLp).mpr
     nlinarith [Real.sq_sqrt hTp.le,

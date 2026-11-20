@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedInteriorSum
 public import TaoTrudgianYang2025.BetaBufferedSupportGap
 public import TaoTrudgianYang2025.BetaBufferedCurvature
@@ -49,13 +48,11 @@ theorem modelPhaseBufferedBand_endpoints
   have hb : r-2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
   have hb₀ : r-η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
   have hm := (approximateModelPhase_deriv_strictAntiOn hσ hδ hF).antitoneOn
-  have hscale : 0 ≤ T/N := (div_pos hT hN).le
+  have hscale  := (div_pos hT hN).le
   have h₁ := mul_le_mul_of_nonneg_left (hm hb hb₀ (by linarith)) hscale
   have h₂ := mul_le_mul_of_nonneg_left (hm ha₀ hb (by linarith)) hscale
   have h₃ := mul_le_mul_of_nonneg_left (hm ha hb₀ (by linarith)) hscale
   have h₄ := mul_le_mul_of_nonneg_left (hm ha₀ ha (by linarith)) hscale
-  unfold modelPhaseBufferedSupportLower modelPhaseBufferedSupportUpper
-    modelPhaseBufferedPlateauLower modelPhaseBufferedPlateauUpper
   exact ⟨(Int.floor_mono h₁).trans (Int.floor_le_ceil _),Int.ceil_mono h₂,
     Int.floor_mono h₃,(Int.floor_mono h₄).trans (Int.floor_le_ceil _)⟩
 
@@ -93,7 +90,7 @@ theorem modelPhaseBufferedBand_card_bounds
       (modelPhaseBufferedSupportUpper F l η T N : ℝ)+1-
         (modelPhaseBufferedPlateauUpper F l η T N : ℝ) := by
     exact_mod_cast Int.card_Icc_of_le _ _ (show modelPhaseBufferedPlateauUpper F l η T N ≤
-      modelPhaseBufferedSupportUpper F l η T N+1 by linarith [he.2.2.2])
+      modelPhaseBufferedSupportUpper F l η T N+1 by linarith)
   rw [hcardL,hcardR]
   unfold modelPhaseBufferedPlateauLower modelPhaseBufferedSupportLower
     modelPhaseBufferedSupportUpper modelPhaseBufferedPlateauUpper

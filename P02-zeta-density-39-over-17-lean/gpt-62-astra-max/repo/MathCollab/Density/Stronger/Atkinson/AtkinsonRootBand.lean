@@ -119,9 +119,7 @@ theorem atkinsonPowerIntegral_eq_root_band {T G L : ℝ}
     (a := atkinsonRootBandLower T G L) (b := atkinsonRootBandUpper T G L)
     (by fun_prop) (fun y _ => by simpa using! (hasDerivAt_id y).pow 2)
     (fun y hy => by
-      rw [min_eq_left hab, max_eq_right hab] at hy
-      have := ha.trans hy.1
-      positivity)
+      grind)
   rw [show (atkinsonRootBandLower T G L) ^ 2 = zetaDivisorBandEdge T G (-2 * L) from
     Real.sq_sqrt (zetaDivisorBandEdge_pos hT G (-2 * L)).le,
     show (atkinsonRootBandUpper T G L) ^ 2 = zetaDivisorBandEdge T G (2 * L) from

@@ -62,8 +62,7 @@ theorem exists_norm_normalized_zetaSquareRightKernel_far_le :
       exact hk.trans (by gcongr)
     _ = (K * D * 5 ^ 12) * (Real.exp (100 - 100 * u ^ 2) * Real.exp (Real.pi * t)) *
         (1 + |u|) ^ 12 := by ring
-    _ ≤ (K * D * 5 ^ 12) * (Real.exp 164 * Real.exp (-90 * u ^ 2)) * (1 + |u|) ^ 12 := by
-      exact mul_le_mul_of_nonneg_right
+    _ ≤ (K * D * 5 ^ 12) * (Real.exp 164 * Real.exp (-90 * u ^ 2)) * (1 + |u|) ^ 12 := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left (gaussian_fusion_le he) (by positivity)) (by positivity)
     _ = _ := by unfold zetaSquareKernelErrorMajorant; ring
 
@@ -110,7 +109,7 @@ theorem exists_norm_zetaSquareLeadingRightKernel_far_le :
   have htR : t / (2 * Real.pi) ≤ 4 * R := by
     calc
       _ ≤ t / 1 := by gcongr; linarith [Real.pi_gt_three]
-      _ ≤ _ := by dsimp [R]; linarith
+      _ ≤ _ := by linarith
   have he : u * (Real.pi / 2) ≤ 64 + 10 * u ^ 2 := by
     have h : u * (Real.pi / 2) ≤ 2 * |u| := by
       apply (mul_le_mul_of_nonneg_right (le_abs_self u) (by positivity : 0 ≤ Real.pi / 2)).trans
@@ -121,8 +120,7 @@ theorem exists_norm_zetaSquareLeadingRightKernel_far_le :
     _ ≤ Real.exp (100 - 100 * u ^ 2) * (625 * R ^ 8) / 1 *
         (4 * R * Real.exp (u * (Real.pi / 2))) := by gcongr
     _ = 2500 * (Real.exp (100 - 100 * u ^ 2) * Real.exp (u * (Real.pi / 2))) * R ^ 9 := by ring
-    _ ≤ 2500 * (Real.exp 164 * Real.exp (-90 * u ^ 2)) * R ^ 12 := by
-      exact mul_le_mul (mul_le_mul_of_nonneg_left (gaussian_fusion_le he) (by norm_num))
+    _ ≤ 2500 * (Real.exp 164 * Real.exp (-90 * u ^ 2)) * R ^ 12 := mul_le_mul (mul_le_mul_of_nonneg_left (gaussian_fusion_le he) (by norm_num))
         (pow_le_pow_right₀ hR (show (9 : ℕ) ≤ 12 by norm_num)) (by positivity) (by positivity)
     _ = _ := by unfold zetaSquareKernelErrorMajorant; dsimp [R]; ring
 

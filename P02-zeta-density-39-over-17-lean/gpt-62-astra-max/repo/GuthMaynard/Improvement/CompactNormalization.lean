@@ -39,7 +39,7 @@ theorem compact_smoothing_mass_le {g : ℝ → ℝ} {a b δ U : ℝ}
     (hU : ∀ x, smooth (scaledKernel compactKernel δ) g x ≤ U) :
     (∫ x, g x) ≤ (b-a+4*δ)*U := by
   let F := smooth (scaledKernel compactKernel δ) g
-  have hF0 : ∀ x, 0 ≤ F x := smooth_nonneg
+  have hF0  := smooth_nonneg
     (scaledKernel_nonneg compactKernel_nonneg hδ) hg0
   have hz : ∀ x, x ∉ Set.Icc (a-2*δ) (b+2*δ) → F x = 0 := by
     intro x hx
@@ -70,7 +70,7 @@ theorem compact_smoothing_normalized_fourier {a b : ℝ} (hab : a ≤ b) (j : �
   obtain ⟨C, hC, h⟩ := scaled_smooth_power_bound compactKernel ψ hψ compactKernel_integrable j
   refine ⟨C*(b-a+4), mul_pos hC (by linarith), ?_⟩
   intro δ hδ hδ1 g hg hg0 hs U hU ξ
-  have hU0 : 0 ≤ U := (smooth_nonneg
+  have hU0  := (smooth_nonneg
     (scaledKernel_nonneg compactKernel_nonneg hδ) hg0 0).trans (hU 0)
   have hm := compact_smoothing_mass_le hg hg0 hδ hab hs hU
   have hm' : (∫ x, g x) ≤ (b-a+4)*U := hm.trans (by nlinarith)

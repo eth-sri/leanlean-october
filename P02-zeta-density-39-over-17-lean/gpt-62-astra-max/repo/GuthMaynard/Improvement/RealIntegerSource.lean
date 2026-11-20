@@ -11,10 +11,9 @@ namespace GuthMaynard.Improvement
 /-- The integer length loses at most a factor two from a real source length. -/
 theorem source_floor_bounds {N : ℝ} (hN : 2 ≤ N) :
     2 ≤ ⌊N⌋₊ ∧ N/2 ≤ (⌊N⌋₊:ℝ) ∧ (⌊N⌋₊:ℝ) ≤ N := by
-  have hM : 2 ≤ ⌊N⌋₊ := Nat.le_floor hN
+  have hM  := Nat.le_floor hN
   have hlo := Nat.floor_le (by linarith : 0 ≤ N)
   have hhi := Nat.lt_floor_add_one N
-  have hm : (2:ℝ) ≤ ⌊N⌋₊ := by exact_mod_cast hM
   exact ⟨hM,by linarith,hlo⟩
 
 /-- Exactly zero or one endpoint lies beyond the integer dyadic source. -/
@@ -82,7 +81,7 @@ theorem boundedPolynomial_le_detecting_floor_add_one {N : ℝ} (hN : 2 ≤ N)
   · rw [he]
     linarith
   · rw [he,sum_Ioc_succ_top (by omega : ⌊N⌋₊ ≤ 2*⌊N⌋₊)]
-    have ha' : ‖a (2*⌊N⌋₊+1)‖ ≤ 1 := ha _ (by
+    have ha'  := ha _ (by
       unfold sourceRatioIndices
       rw [he]
       exact mem_Ioc.mpr ⟨by omega,le_rfl⟩)

@@ -26,7 +26,7 @@ theorem eventually_log_sq_le_rpow {q : ℝ} (hq : 0 < q) :
     ∀ᶠ X : ℝ in atTop, (Real.log X) ^ 2 ≤ X ^ q := by
   have hLittle := isLittleO_log_rpow_rpow_atTop (2 : ℝ) hq
   filter_upwards [hLittle.eventuallyLE, eventually_ge_atTop (1 : ℝ)] with X hBound hX
-  have hLogNonneg : 0 ≤ Real.log X := Real.log_nonneg hX
+  have hLogNonneg  := Real.log_nonneg hX
   have hXNonneg : 0 ≤ X := by linarith
   rw [Real.norm_eq_abs,
     abs_of_nonneg (Real.rpow_nonneg hLogNonneg 2),
@@ -37,10 +37,10 @@ theorem eventually_log_sq_le_rpow {q : ℝ} (hq : 0 < q) :
 theorem eventually_const_mul_rpow_le_rpow
     {D a b : Real} (hab : a < b) :
     ∀ᶠ U : Real in atTop, D * U ^ a <= U ^ b := by
-  have hgap : 0 < b - a := sub_pos.mpr hab
-  have hTend : Tendsto (fun U : Real => U ^ (b - a)) atTop atTop :=
+  have hgap  := sub_pos.mpr hab
+  have hTend  :=
     tendsto_rpow_atTop hgap
-  have hEventually : ∀ᶠ U : Real in atTop, D <= U ^ (b - a) :=
+  have hEventually  :=
     (tendsto_atTop.1 hTend) D
   filter_upwards [hEventually, eventually_gt_atTop (0 : Real)] with U hU hUpos
   calc
@@ -139,13 +139,10 @@ theorem exists_norm_heathBrownLemmaThree_horizontal_integrand_le :
           simpa using h
       _ ≤ (1 / 2 + |x|) + (|t| + |R|) := by
         gcongr
-        · calc
-            |1 / 2 + x| ≤ |(1 / 2 : ℝ)| + |x| := abs_add_le _ _
-            _ = 1 / 2 + |x| := by norm_num
+        · grind
         · exact abs_add_le _ _
       _ ≤ 1 + |t| + |R| := by
-        have hxAbs : |x| ≤ delta := abs_le.mpr hx
-        linarith
+        grind
   rw [heathBrownZetaSquareMellinIntegrand, norm_mul, norm_pow]
   exact mul_le_mul
     (hGamma delta x R hdelta hdeltaUpper hx hR)
@@ -165,7 +162,7 @@ theorem exists_norm_heathBrownLemmaThree_horizontalEdge_le :
   let C : ℝ := B
   refine ⟨C, hB, ?_⟩
   intro delta t R hdelta hdeltaUpper hheight hR
-  let F : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand
+  let F  := heathBrownZetaSquareMellinIntegrand
     (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I)
   let M : ℝ := B * Real.exp (-(4 / 3 : ℝ) * |R|) *
     (5 * (1 + |t| + |R|)) ^ (2 : ℕ)
@@ -198,7 +195,7 @@ theorem exists_norm_heathBrownLemmaThree_horizontalEdge_le :
       mul_le_mul hscalar hbase (norm_nonneg _) (by positivity)
     _ ≤ M := by nlinarith [mul_le_mul_of_nonneg_left hwidth hM]
     _ = C * Real.exp (-(4 / 3 : ℝ) * |R|) *
-          (5 * (1 + |t| + |R|)) ^ (2 : ℕ) := by rfl
+          (5 * (1 + |t| + |R|)) ^ (2 : ℕ) := rfl
 
 theorem heathBrown_logSquare_exponential_absorption
     {D t : ℝ} (ht : 0 < t) (hDt : D ≤ t)
@@ -206,7 +203,7 @@ theorem heathBrown_logSquare_exponential_absorption
     D * t ^ (2 : ℕ) *
       Real.exp (-(4 / 3 : ℝ) * (Real.log t ^ (2 : ℕ))) ≤ 1 := by
   let L : ℝ := Real.log t
-  have hlog' : 9 / 4 ≤ L := by simpa only [L] using hlog
+  
   have htEq : t = Real.exp L := by
     dsimp only [L]
     exact (Real.exp_log ht).symm
@@ -245,8 +242,8 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
   filter_upwards [eventually_heathBrownLemmaThreeRadius_le_half_identity,
     hLog, Filter.eventually_ge_atTop (max 2 (100 * B))] with
       t hRadius hlog htLarge
-  have htTwo : 2 ≤ t := (le_max_left _ _).trans htLarge
-  have hBt : 100 * B ≤ t := (le_max_right _ _).trans htLarge
+  have htTwo  := (le_max_left _ _).trans htLarge
+  have hBt  := (le_max_right _ _).trans htLarge
   have ht : 0 < t := by linarith
   have hdelta : 0 < heathBrownLemmaThreeDelta t := by
     unfold heathBrownLemmaThreeDelta
@@ -275,7 +272,7 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
   · have hraw := hHorizontal (heathBrownLemmaThreeDelta t) t
       (-heathBrownLemmaThreeRadius t) hdelta hdeltaUpper
       (by simpa only [sub_eq_add_neg] using hminusHeight)
-      (by simpa only [abs_neg, abs_of_nonneg hHNonneg] using hH)
+      (by grind)
     calc
       ‖HIntegral' (heathBrownZetaSquareMellinIntegrand
           (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I))

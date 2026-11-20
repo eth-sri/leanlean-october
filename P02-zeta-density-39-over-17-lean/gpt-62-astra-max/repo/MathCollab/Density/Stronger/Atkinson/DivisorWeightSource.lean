@@ -43,7 +43,6 @@ theorem divisorDirichletTerm_add_eq_mul_exp (s w : ℂ) (n : ℕ) :
   rw [divisorDirichletTerm_eq_divisorWeight_mul_cpow,
     divisorDirichletTerm_eq_divisorWeight_mul_cpow, neg_add,
     Complex.cpow_add _ _ hne, Complex.cpow_def_of_ne_zero hne (-w), hlog]
-  rw [show ((Real.log (n : ℝ) : ℂ)) * -w = -((Real.log (n : ℝ) : ℂ)) * w by ring]
   ring
 
 theorem zetaSquareLeadingDivisorTerm_eq_weightKernel (t : ℝ) (n : ℕ) (u : ℝ) :

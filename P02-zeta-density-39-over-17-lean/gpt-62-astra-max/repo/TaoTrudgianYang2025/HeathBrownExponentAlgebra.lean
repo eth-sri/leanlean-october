@@ -42,7 +42,7 @@ theorem heathBrownDerivativeExponent_bounds {k : ℕ} (hk : 3 ≤ k) :
 
 theorem heathBrownInverseExponent_identity {k : ℕ} (hk : 3 ≤ k) :
     (k : ℝ)*heathBrownInverseExponent k = 2*heathBrownDerivativeExponent k := by
-  have hp : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+  
   unfold heathBrownInverseExponent heathBrownDerivativeExponent
   field_simp
 
@@ -58,9 +58,7 @@ theorem heathBrownBetaBound_eq_max {k : ℕ} (hk : 3 ≤ k) (α : ℝ) :
   rw [add_max,add_max]
   congr 1
   · ring
-  · congr 1
-    · ring
-    · field_simp
+  · · field_simp
       ring
 
 theorem heathBrown_physical_monomial {c T N : ℝ}

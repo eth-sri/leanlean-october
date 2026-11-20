@@ -28,12 +28,11 @@ private theorem continuous_Gamma_two_vertical :
   intro n h
   have hr := congrArg Complex.re h
   simp at hr
-  have hn : (0 : ℝ) ≤ n := by positivity
+  
   linarith
 
 private theorem integrable_Gamma_two_vertical :
-    Integrable (fun t : ℝ => Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)) := by
-  exact GammaMellin.verticalIntegrable_Gamma (by norm_num : (0 : ℝ) < 2)
+    Integrable (fun t : ℝ => Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)) := GammaMellin.verticalIntegrable_Gamma (by norm_num : (0 : ℝ) < 2)
 
 private theorem inverseMellin_exp_neg {x : ℝ} (hx : 0 < x) :
     (((1 / (2 * Real.pi) : ℝ) : ℂ)) *
@@ -91,7 +90,7 @@ theorem norm_heathBrownDivisorMellinSeriesTerm_le
     rw [heathBrownDivisorMellinSeriesTerm, ite_eq_left rfl, norm_zero,
       Nat.cast_zero]
     exact mul_nonneg (Real.rpow_nonneg (by norm_num) _) (norm_nonneg _)
-  · have hnNatPos : 0 < n := Nat.pos_of_ne_zero hn
+  · have hnNatPos  := Nat.pos_of_ne_zero hn
     have hnPos : (0 : ℝ) < n := by exact_mod_cast hnNatPos
     have hCard : (n.divisors.card : ℝ) ≤ n := by
       exact_mod_cast Nat.card_divisors_le_self n
@@ -104,7 +103,7 @@ theorem norm_heathBrownDivisorMellinSeriesTerm_le
       rw [show (n : ℂ) = ((n : ℝ) : ℂ) by norm_num,
         Complex.norm_cpow_eq_rpow_re_of_pos hnPos]
       simp [w]
-    have hCardNonneg : 0 ≤ (n.divisors.card : ℝ) := by positivity
+    
     have hPowSNonneg : 0 ≤ (n : ℝ) ^ (-s.re) := Real.rpow_nonneg hnPos.le _
     have hPowWNonneg : 0 ≤ (n : ℝ) ^ (-(2 : ℝ)) := Real.rpow_nonneg hnPos.le _
     unfold heathBrownDivisorMellinSeriesTerm
@@ -124,7 +123,7 @@ theorem norm_heathBrownDivisorMellinSeriesTerm_le
         (n : ℝ) * (n : ℝ) ^ (-s.re) *
           ((n : ℝ) ^ (-(2 : ℝ)) *
             ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖) := by
-          simpa only [mul_assoc] using hMul
+          linarith
       _ = (n : ℝ) ^ (-s.re - 1) *
           ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖ := by
         calc
@@ -134,7 +133,7 @@ theorem norm_heathBrownDivisorMellinSeriesTerm_le
             (n : ℝ) ^ (1 : ℝ) * (n : ℝ) ^ (-s.re) *
               ((n : ℝ) ^ (-(2 : ℝ)) *
                 ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖) := by
-              rw [Real.rpow_one]
+              simp
           _ = (n : ℝ) ^ (-s.re - 1) *
               ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖ := by
             rw [← Real.rpow_add hnPos, ← mul_assoc,
@@ -188,7 +187,7 @@ theorem integral_heathBrownDivisorMellinSeriesTerm
   · subst n
     simp [heathBrownDivisorMellinSeriesTerm,
       heathBrownSmoothedDivisorTerm]
-  · have hnNatPos : 0 < n := Nat.pos_of_ne_zero hn
+  · have hnNatPos  := Nat.pos_of_ne_zero hn
     have hnPos : (0 : ℝ) < n := by exact_mod_cast hnNatPos
     have hMellin := inverseMellin_exp_neg (x := (n : ℝ)) hnPos
     unfold heathBrownDivisorMellinSeriesTerm heathBrownSmoothedDivisorTerm

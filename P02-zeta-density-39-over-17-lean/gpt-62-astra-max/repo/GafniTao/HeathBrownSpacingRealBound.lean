@@ -24,16 +24,14 @@ theorem int_Icc_floor_ceil_card_cast_le
     have hreal : (⌊a⌋ : ℝ) ≤ (⌈b⌉ : ℝ) :=
       (Int.floor_le a).trans (hab.trans (Int.le_ceil b))
     exact_mod_cast hreal
-  have hcardInt : ((Finset.Icc ⌊a⌋ ⌈b⌉).card : ℤ) =
-      ⌈b⌉ + 1 - ⌊a⌋ := by
-    exact Int.card_Icc_of_le (a := ⌊a⌋) (b := ⌈b⌉)
+  have hcardInt := Int.card_Icc_of_le (a := ⌊a⌋) (b := ⌈b⌉)
       (by omega)
   have hcardReal : ((Finset.Icc ⌊a⌋ ⌈b⌉).card : ℝ) =
       (⌈b⌉ : ℝ) + 1 - (⌊a⌋ : ℝ) := by
     exact_mod_cast hcardInt
   rw [hcardReal]
-  have hceil : (⌈b⌉ : ℝ) ≤ b + 1 := (Int.ceil_lt_add_one b).le
-  have hfloor : a - 1 ≤ (⌊a⌋ : ℝ) := (Int.sub_one_lt_floor a).le
+  have hceil  := (Int.ceil_lt_add_one b).le
+  have hfloor  := (Int.sub_one_lt_floor a).le
   linarith
 
 theorem heathBrown_spacing_card_cast_le
@@ -65,8 +63,7 @@ theorem heathBrown_spacing_card_cast_le
   have hspread := heathBrown_upper_slope hg hgd hderivUpper hOneI hNI
     (by exact_mod_cast hN)
   have hNminus : (N : ℝ) - 1 ≤ N := by linarith
-  have hspread' : g N - g 1 ≤ M * N :=
-    hspread.trans (mul_le_mul_of_nonneg_left hNminus hM)
+  
   have hinterval' : ((Finset.Icc ⌊lo⌋ ⌈hi⌉).card : ℝ) ≤
       M * N + 2 * theta + 3 := by
     apply hinterval.trans
@@ -86,8 +83,7 @@ theorem heathBrown_spacing_card_cast_le
     ((heathBrownSpacingSet N g theta).card : ℝ) ≤
         ((⌊max 0 z⌋₊ + 1 : ℕ) : ℝ) *
           ((Finset.Icc ⌊lo⌋ ⌈hi⌉).card : ℝ) := hcast
-    _ ≤ (z + 1) * (M * N + 2 * theta + 3) := by
-      exact mul_le_mul hfloor hinterval' (by positivity)
+    _ ≤ (z + 1) * (M * N + 2 * theta + 3) := mul_le_mul hfloor hinterval' (by positivity)
         (by linarith [hz])
     _ = (2 * theta / mu + 1) * (M * N + 2 * theta + 3) := by
       dsimp [z]

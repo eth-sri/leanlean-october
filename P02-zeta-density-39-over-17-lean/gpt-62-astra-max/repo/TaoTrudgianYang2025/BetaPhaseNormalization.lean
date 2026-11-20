@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaLegendreCorrection
 
 @[expose] public section
@@ -35,7 +34,7 @@ theorem rescaledPhaseCorrection_iteratedDeriv {H : ℝ → ℝ}
     (hH : ContDiff ℝ ∞ H) (s A u : ℝ) (n : ℕ) :
     iteratedDeriv n (rescaledPhaseCorrection H s A) u =
       A^(s-1) * A^n * iteratedDeriv n H (A*u) := by
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+  have hN  :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   unfold rescaledPhaseCorrection
   rw [iteratedDeriv_const_mul_field,
@@ -57,8 +56,8 @@ theorem referencePlusCorrection_approximate {H : ℝ → ℝ}
   refine ⟨fun u hu => ((referenceModelPrimitive_contDiffAt s
     (zero_lt_one.trans_le hu.1)).add hH.contDiffAt).contDiffWithinAt,?_⟩
   intro n hn u
-  have hu : 0 < (u : ℝ) := zero_lt_one.trans_le u.property.1
-  have hN : ((n+1 : ℕ) : WithTop ℕ∞) ≤ ∞ :=
+  have hu  := zero_lt_one.trans_le u.property.1
+  have hN  :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl (n+1)
   have hR := (referenceModelPrimitive_contDiffAt s hu).of_le hN
   have hC : ContDiffAt ℝ (n+1) H u := hH.contDiffAt.of_le hN

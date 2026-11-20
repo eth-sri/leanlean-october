@@ -44,7 +44,7 @@ theorem finite_eigenbasis_quadratic (b : OrthonormalBasis ι ℂ E)
     rw [inner_mul_symm_re_eq_norm (𝕜 := ℂ), norm_mul, norm_inner_symm v (b i), pow_two]
   calc
     _ = ((e i:ℂ)*(inner ℂ v (b i)*inner ℂ (b i) v)).re := by congr 1; ring
-    _ = _ := by rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, hn]
+    _ = _ := by simp [*]
 
 theorem finite_eigenbasis_witness_sum (b : OrthonormalBasis ι ℂ E)
     (H : E →L[ℂ] E) (hs : H.toLinearMap.IsSymmetric) (e : ι → ℝ)
@@ -68,7 +68,7 @@ theorem finite_operator_positive_cube (b : OrthonormalBasis ι ℂ E)
     (hB : ‖C‖ ≤ B)
     (hw : k*a ≤ ∑ j, (inner ℂ (v j) ((H+C) (v j))).re) :
     k*(max (a-B) 0)^3 ≤ ∑ i, (max (e i) 0)^3 := by
-  have hB0 : 0 ≤ B := (norm_nonneg C).trans hB
+  have hB0  := (norm_nonneg C).trans hB
   have hc (j : κ) : (inner ℂ (v j) (C (v j))).re ≤ B := by
     calc
       _ ≤ ‖v j‖*‖C (v j)‖ := re_inner_le_norm (𝕜 := ℂ) _ _

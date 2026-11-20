@@ -28,13 +28,10 @@ theorem level_volume_interval_multiple {E : Set ℝ} {T B : ℝ} (hT : 0 ≤ T)
       simp only [mem_inter_iff,mem_Icc,mem_union]
       push_cast
       constructor
-      · intro hx
-        by_cases hh : x ≤ s+k*T
-        · exact Or.inl ⟨hx.1,hx.2.1,hh⟩
-        · exact Or.inr ⟨hx.1,by linarith,by nlinarith [hx.2.2]⟩
+      · grind
       · rintro (hx|hx)
         · exact ⟨hx.1,hx.2.1,by nlinarith [hx.2.2]⟩
-        · exact ⟨hx.1,by nlinarith [hx.2.1,mul_nonneg (Nat.cast_nonneg k : (0:ℝ)≤k) hT],by nlinarith [hx.2.2]⟩
+        · exact ⟨hx.1,by nlinarith,by nlinarith [hx.2.2]⟩
     rw [he]
     have hh := measureReal_union_le (μ := volume)
       (E ∩ Icc s (s+k*T)) (E ∩ Icc (s+k*T) (s+k*T+T))

@@ -15,7 +15,7 @@ namespace Montgomery.RationalMoment
 theorem fourth_power_with_linear_term (a z : ℂ) {E : ℝ}
     (hE : ‖z‖ ^ 2 ≤ E) :
     ‖a+z‖ ^ 4 ≤ (‖a‖ ^ 2 + 4*E)^2 + 4*‖a‖^2*(conj a*z).re := by
-  have hE0 : 0 ≤ E := (sq_nonneg _).trans hE
+  have hE0  := (sq_nonneg _).trans hE
   have hr : (conj a*z).re ^ 2 ≤ ‖a‖ ^ 2 * ‖z‖ ^ 2 := by
     simpa only [Complex.normSq_eq_norm_sq, norm_mul, Complex.norm_conj, mul_pow, ← pow_two]
       using Complex.re_sq_le_normSq (conj a*z)
@@ -40,8 +40,7 @@ theorem mean_zero_fourth_moment {ι : Type*} (S : Finset ι)
   have hlinear : (∑ x ∈ S, w x * (conj a*f x).re) = 0 := by
     calc
       _ = (∑ x ∈ S, (w x : ℂ)*(conj a*f x)).re := by
-        rw [Complex.re_sum]
-        simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+        simp
       _ = (conj a * (∑ x ∈ S, (w x : ℂ)*f x)).re := by
         congr 1
         rw [mul_sum]
@@ -195,7 +194,6 @@ theorem tensorize_fourth_bound {ι κ τ υ : Type*}
     ring
   have he : (∑ i ∈ A, u i*E i) = ∑ i ∈ A, ∑ j ∈ B, u i*v j*‖c i j‖^2 := by
     simp only [E, mul_sum, mul_assoc]
-  change (∑ y ∈ Y, ∑ x ∈ X, wy y*wx x*‖∑ i ∈ A, F i y*χ i x‖^4) ≤ _
   exact (ht.trans hb).trans_eq (congrArg (fun t : ℝ => t^2) he)
 
 end Montgomery.RationalMoment

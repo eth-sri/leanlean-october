@@ -21,12 +21,12 @@ theorem IntervalC1Bound.reflection_source {f : ℝ → ℂ} {T M : ℝ}
       Complex.exp (((T*Real.log x-2*Real.pi*x:ℝ):ℂ)*I))‖ ≤
         48*M/Real.sqrt T := by
   let a := T/16
-  let K : ℝ → ℂ := fun x => ((max a x : ℝ):ℂ)⁻¹ *
+  let K  := fun x => ((max a x : ℝ):ℂ)⁻¹ *
     Complex.exp (((T*Real.log (max a x)-2*Real.pi*(max a x):ℝ):ℂ)*I)
   have ha : 0<a := by dsimp [a]; positivity
   have hpos (x : ℝ) : 0 < max a x := ha.trans_le (le_max_left _ _)
   have hmax : Continuous (fun x : ℝ => max a x) := by fun_prop
-  have hlog : Continuous (fun x : ℝ => Real.log (max a x)) := hmax.log (fun x => (hpos x).ne')
+  have hlog  := hmax.log (fun x => (hpos x).ne')
   have hK : Continuous K := by
     have hi : Continuous (fun x : ℝ => ((max a x:ℝ):ℂ)⁻¹) :=
       (Complex.continuous_ofReal.comp hmax).inv₀ (fun x => Complex.ofReal_ne_zero.mpr (hpos x).ne')
@@ -51,7 +51,7 @@ theorem IntervalC1Bound.reflection_source {f : ℝ → ℂ} {T M : ℝ}
     exact congrArg (fun z : ℂ => f x*z) (hKeq x hx.1)
   rw [he] at h
   have hd : 0<Real.sqrt (2*Real.pi*a) := Real.sqrt_pos.mpr (by positivity)
-  have ht : 0<Real.sqrt T := Real.sqrt_pos.mpr hT
+  have ht  := Real.sqrt_pos.mpr hT
   have hs : Real.sqrt T ≤ 4*Real.sqrt (2*Real.pi*a) := by
     have hsq := Real.sq_sqrt (show 0≤2*Real.pi*a by positivity)
     have hsqT := Real.sq_sqrt hT.le

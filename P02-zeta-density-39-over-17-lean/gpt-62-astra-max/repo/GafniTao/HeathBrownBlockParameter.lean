@@ -31,7 +31,6 @@ theorem heathBrown_scale_lt_blockParameter
     4 * A * lambda * N <
       (heathBrownBlockParameter A lambda N : ℝ) := by
   unfold heathBrownBlockParameter
-  push_cast
   simpa [add_comm] using Nat.lt_floor_add_one (4 * A * lambda * N)
 
 /-- The exact strict half-unit margin used to remove wrapping in the last
@@ -43,7 +42,7 @@ theorem heathBrown_block_scale_lt_half
         (1 + (N : ℝ) / heathBrownBlockParameter A lambda N) <
       1 / 2 := by
   let K := heathBrownBlockParameter A lambda N
-  have hKposNat : 0 < K := heathBrownBlockParameter_pos A lambda N
+  have hKposNat  := heathBrownBlockParameter_pos A lambda N
   have hKpos : (0 : ℝ) < K := by exact_mod_cast hKposNat
   have hscale : 4 * A * lambda * N < (K : ℝ) :=
     heathBrown_scale_lt_blockParameter
@@ -104,7 +103,7 @@ theorem heathBrown_pairCountTwo_index_le_block_length
       1 + (N : ℝ) / heathBrownBlockParameter A lambda N := by
   rw [mem_heathBrownPairCountTwo] at hp
   let L := 1 + N / heathBrownBlockParameter A lambda N
-  have hNat : Nat.dist m n ≤ L := hp.2.2.2.2.1
+  have hNat  := hp.2.2.2.2.1
   have hcast : |(m : ℝ) - n| ≤ (L : ℝ) := by
     rcases le_total m n with hmn | hnm
     · rw [abs_of_nonpos (sub_nonpos.mpr (by exact_mod_cast hmn)), neg_sub,

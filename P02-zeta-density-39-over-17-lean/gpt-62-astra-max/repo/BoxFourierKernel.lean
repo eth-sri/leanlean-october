@@ -92,7 +92,7 @@ theorem energy_box_fourier_lower {ξ : ℝ} (hξ : |ξ| ≤ 1) :
     rw [he]
     have hh := norm_setIntegral_le_of_norm_le_const (μ := volume)
       isCompact_Icc.measure_lt_top hb
-    exact hh.trans (by norm_num [J,Real.volume_real_Icc_of_le])
+    exact hh.trans (by norm_num)
   have ht := norm_sub_le (𝓕 energyBox ξ) (𝓕 energyBox ξ-1)
   rw [sub_sub_cancel] at ht
   norm_num at ht
@@ -105,8 +105,6 @@ theorem energy_pair_box_integrable : Integrable energyPairBox :=
   energy_box_integrable.integrable_convolution _ energy_box_integrable
 
 theorem energy_pair_box_bound (t : ℝ) : ‖energyPairBox t‖ ≤ 32 := by
-  unfold energyPairBox
-  rw [convolution_def]
   calc
     _ ≤ ∫ x, ‖energyBox x*energyBox (t-x)‖ := norm_integral_le_integral_norm _
     _ ≤ ∫ x, ‖energyBox x‖*32 := by

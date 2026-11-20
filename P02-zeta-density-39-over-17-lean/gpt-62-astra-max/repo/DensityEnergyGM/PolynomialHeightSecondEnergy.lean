@@ -1,5 +1,5 @@
 module
-public import DensityEnergyGM.BasicPairSecondEnergy
+public import DensityEnergyGM.CoprimeFourthNative
 
 @[expose] public section
 

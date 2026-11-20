@@ -26,7 +26,7 @@ theorem centered_source_row (w : MathCollab.Density.ReflectionCutoff)
   refine ⟨1+C₀+2*C₁,by positivity,?_⟩
   intro N L T t₀ u hN hNL hT hupper hu a μ ha hm hi h0 hs hμ
   have hN0 : 0 < N := by linarith
-  have hL : 0 < L := hN0.trans_le hNL
+  have hL  := hN0.trans_le hNL
   have hpow : 1 ≤ N^ε := Real.one_le_rpow (by linarith) hε.le
   let Y := Real.pi*L/8
   have hY : 0 < Y := by dsimp [Y]; positivity

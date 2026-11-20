@@ -30,7 +30,7 @@ theorem atkinsonRootBand_derivative_bracket {T G L : ℝ}
       (32 * (G / Real.sqrt T)) ^ 2 ≤ 4128 * L * (G / Real.sqrt T) := by
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  
   have hlen := atkinsonRootBand_length_le hT hG0 hL0 hwidth
   calc
     _ ≤ 32 * (G / Real.sqrt T) + (4 * Real.sqrt T * (L / G)) *
@@ -52,8 +52,8 @@ theorem exists_norm_atkinsonPowerIntegral_band_secondOrder_le (α : ℝ) :
   intro T G L b hT hG hGT hL hwidth hb
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hb0 : 0 < b := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hb
+  
+  have hb0  := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hb
   have ha := atkinsonRootBandLower_pos hT G L
   have hab := atkinsonRootBand_order hT hG0 hL0.le
   have hfend := atkinsonPowerWeight_rootBand_endpoints hT hG0 hL0 α
@@ -76,7 +76,7 @@ theorem exists_norm_atkinsonPowerIntegral_band_secondOrder_le (α : ℝ) :
         mul_le_mul_of_nonneg_left h (by norm_num)
       _ ≤ 2 * ((1 / (b * Real.pi)) * (C * G * T ^ (-α) / b) *
           (4128 * L * (G / Real.sqrt T)) / Real.pi) := by gcongr
-      _ = _ := by field_simp; ring
+      _ = _ := by ring
   constructor
   · apply hp b
     · intro y hy

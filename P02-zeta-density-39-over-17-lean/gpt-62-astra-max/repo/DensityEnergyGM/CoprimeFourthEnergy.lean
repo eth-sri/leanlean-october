@@ -35,10 +35,10 @@ theorem coprime_dyadic_fourth_energy {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
     have hp := hQ p p.2
     have hq := hQ q q.2
     have hgap := rational_log_separation ⟨hp.1,hp.2.1,hp.2.2.1⟩
-      ⟨hq.1,hq.2.1,hq.2.2.1⟩ (by exact fun he => hpq (Subtype.ext he))
+      ⟨hq.1,hq.2.1,hq.2.2.1⟩ (fun he => hpq (Subtype.ext he))
       hp.2.2.2.2.2.2 hq.2.2.2.2.2.2
-      (U := 2) ((div_le_iff₀ (by exact_mod_cast hp.2.1)).mpr (by linarith [hp.2.2.2.1,hp.2.2.2.2.2.1]))
-      ((div_le_iff₀ (by exact_mod_cast hq.2.1)).mpr (by linarith [hq.2.2.2.1,hq.2.2.2.2.2.1]))
+      (U := 2) ((div_le_iff₀ (by exact_mod_cast hp.2.1)).mpr (by linarith))
+      ((div_le_iff₀ (by exact_mod_cast hq.2.1)).mpr (by linarith))
     dsimp [x,δ]
     rw [← sub_div,abs_div,abs_of_pos (by positivity : 0 < 2*Real.pi)]
     apply (le_div_iff₀ (by positivity : 0 < 2*Real.pi)).mpr
@@ -50,8 +50,7 @@ theorem coprime_dyadic_fourth_energy {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
     simp only [pairRatio,Rat.cast_div,Rat.cast_natCast]
   simp only [he] at hh
   rw [Finset.sum_coe_sort Q (fun q => ‖∑ t ∈ W, phase (pairRatio q) t‖^4)] at hh
-  have hd : δ⁻¹=16*Real.pi*M^2 := by dsimp [δ]; rw [inv_div,div_one]
-  simpa only [hd] using hh
+  grind
 
 
 /-- The reduced fourth moment at every short real scale, including small

@@ -47,7 +47,7 @@ theorem exp_neg_le_factorial_div_pow {x : ℝ} (hx : 0 < x) (k : ℕ) :
     Real.exp (-x) ≤ (k.factorial : ℝ) / x ^ k := by
   have h := Real.pow_div_factorial_le_exp x hx.le k
   have hf : (0 : ℝ) < k.factorial := by exact_mod_cast Nat.factorial_pos k
-  have hp : 0 < x ^ k := pow_pos hx k
+  have hp  := pow_pos hx k
   rw [Real.exp_neg, inv_eq_one_div]
   apply (div_le_div_iff₀ (Real.exp_pos x) hp).mpr
   have hmul := (div_le_iff₀ hf).mp h

@@ -56,7 +56,7 @@ theorem wooleySourceMassSq_mul_conditionedMean
           hsum xi (Finset.mem_univ xi)
     simp_rw [hzero]
     simp
-  · rw [ite_eq_right hmass, ← mul_assoc, mul_inv_cancel₀ hmass, one_mul]
+  · simp [*]
 
 /-- Equation (4.2) after Fourier averaging: a residue-class mean is the
 ordinary mean of the affine pullback sequence and affine polynomial system. -/
@@ -73,9 +73,7 @@ theorem wooleySourcePolynomialMean_affinePullback
   apply Finset.sum_congr rfl
   intro alpha halpha
   rw [wooleySourceNormalizedPolynomialSum_affinePullback]
-  have hxi : (((xi.val : ℕ) : ℤ) : ZMod q₁) = xi := by
-    simpa only [Int.cast_natCast] using ZMod.natCast_zmod_val xi
-  rw [hxi]
+  simp
 
 /-- Exact equation (4.2) summed over the initial residue classes. -/
 theorem wooleySourceMassSq_mul_conditionedMean_eq_affineSum
@@ -191,9 +189,7 @@ theorem wooleySourcePolynomialConditionedMean_tower
       apply Finset.sum_congr rfl
       intro xi hxi
       rw [wooleySourceMassSq_affinePullback]
-      have hxiCast : (((xi.val : ℕ) : ℤ) : ZMod q₁) = xi := by
-        simpa only [Int.cast_natCast] using ZMod.natCast_zmod_val xi
-      rw [hxiCast]
+      simp
     _ = ∑ xi : ZMod q₁, ∑ eta : ZMod q₂,
         wooleySourceResidueMassSq
             (wooleyAffinePullback gamma q₁ (NeZero.pos q₁) xi.val) q₂ eta *
@@ -218,8 +214,7 @@ theorem wooleySourcePolynomialConditionedMean_tower
         wooleySourcePolynomialResidueMean_affinePullback_mixedRadix]
     _ = ∑ zeta : ZMod (q₂ * q₁),
         wooleySourceResidueMassSq gamma (q₂ * q₁) zeta *
-          wooleySourcePolynomialResidueMean s q (q₂ * q₁) phi gamma zeta := by
-      exact wooley_sum_mixedRadix (fun zeta : ZMod (q₂ * q₁) =>
+          wooleySourcePolynomialResidueMean s q (q₂ * q₁) phi gamma zeta := wooley_sum_mixedRadix (fun zeta : ZMod (q₂ * q₁) =>
         wooleySourceResidueMassSq gamma (q₂ * q₁) zeta *
           wooleySourcePolynomialResidueMean s q (q₂ * q₁) phi gamma zeta)
     _ = wooleySourceMassSq gamma *

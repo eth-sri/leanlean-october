@@ -66,7 +66,7 @@ theorem abs_frequency_le_of_saddle_log_bound {T G L b : ℝ}
   have hx := abs_le_three_mul_of_arsinh_bound ha
     (show |Real.arsinh (b / (2 * Real.sqrt (T / (2 * Real.pi))))| ≤ L / G by linarith)
   have hA : 0 < T / (2 * Real.pi) := by positivity
-  have hS : 0 < Real.sqrt (T / (2 * Real.pi)) := Real.sqrt_pos.2 hA
+  have hS  := Real.sqrt_pos.2 hA
   rw [abs_div, abs_of_pos (by positivity : 0 < 2 * Real.sqrt (T / (2 * Real.pi)))] at hx
   have hbnd := (div_le_iff₀ (by positivity : 0 < 2 * Real.sqrt (T / (2 * Real.pi)))).mp hx
   have hsqrt : 2 * Real.sqrt (T / (2 * Real.pi)) ≤ Real.sqrt T := by

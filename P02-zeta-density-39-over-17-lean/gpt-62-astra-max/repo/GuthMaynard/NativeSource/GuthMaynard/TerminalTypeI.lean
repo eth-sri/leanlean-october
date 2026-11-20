@@ -202,11 +202,11 @@ theorem dirichletPoly_classicalZetaLongLineCoeff_eq_terminal
 
 /-- Concrete terminal estimate for the actual sharp Type-I dyadic block.
 It remains valid when the sharp upper cutoff stops inside the block. -/
-theorem norm_terminal_classicalZetaLongLineCoeff_le
+theorem long_block_of_prefix_bound
     (C N : ℕ) (σ t : ℝ) (hσ : 0 ≤ σ) (hN : 0 < N)
-    (hNC : N < C) (htOne : 1 ≤ t) (htN : t ≤ (N : ℝ)) :
-    ‖dirichletPoly N (classicalZetaLongLineCoeff C σ) t‖ ≤
-      (N + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (N : ℝ) / t) := by
+    (hNC : N < C) {B : ℝ}
+    (hb : ∀ j ≤ N, ‖∑ n ∈ Finset.range j, unitaryPhase (logarithmicPhase t (N+1+n))‖ ≤ B) :
+    ‖dirichletPoly N (classicalZetaLongLineCoeff C σ) t‖ ≤ (N+1:ℝ)^(-σ)*B := by
   let f : ℕ → ℝ := fun i =>
     if N + 1 + i ≤ C then (N + 1 + i : ℝ) ^ (-σ) else 0
   let g : ℕ → ℂ := fun i =>
@@ -224,7 +224,7 @@ theorem norm_terminal_classicalZetaLongLineCoeff_le
     · rw [ite_eq_right hnext]
       positivity
   have hBound := norm_weighted_sum_le_of_antitone f g N
-    (6 * Real.pi * (N : ℝ) / t) hN
+    B hN
     (by
       intro i hi
       dsimp only [f]
@@ -232,29 +232,12 @@ theorem norm_terminal_classicalZetaLongLineCoeff_le
       · positivity
       · exact le_rfl)
     hanti
-    (by
-      intro j hj
-      dsimp only [g]
-      exact norm_logarithmicPhase_prefix_le_div N j t hN hj htOne htN)
+    hb
   rw [dirichletPoly_classicalZetaLongLineCoeff_eq_terminal C N σ t hN]
   have hStart : N + 1 ≤ C := by omega
   simpa only [f, g, ite_eq_left hStart, Nat.cast_add, Nat.cast_one, Nat.cast_ofNat,
     Nat.cast_zero, add_zero, ite_smul, zero_smul] using hBound
 
-/-- A block whose asserted detector threshold exceeds the terminal
-Kusmin--Landau majorant must lie strictly below the height.  This is the
-case-splitting form consumed by the finite density reduction. -/
-theorem typeI_scale_lt_height_of_large
-    (C N : ℕ) (σ t V : ℝ) (hσ : 0 ≤ σ) (hN : 0 < N)
-    (hNC : N < C) (htOne : 1 ≤ t)
-    (hLarge : V ≤ ‖dirichletPoly N (classicalZetaLongLineCoeff C σ) t‖)
-    (hMajorant :
-      (N + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (N : ℝ) / t) < V) :
-    (N : ℝ) < t := by
-  by_contra hNot
-  have htN : t ≤ (N : ℝ) := le_of_not_gt hNot
-  have hUpper := norm_terminal_classicalZetaLongLineCoeff_le
-    C N σ t hσ hN hNC htOne htN
-  linarith
+
 
 end GuthMaynard.NativeMoment

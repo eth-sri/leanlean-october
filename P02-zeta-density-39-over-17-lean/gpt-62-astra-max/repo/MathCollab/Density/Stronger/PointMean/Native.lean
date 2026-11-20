@@ -31,18 +31,17 @@ theorem exists_zetaMomentCriticalNorm_sq_le_quadratic :
   refine ⟨C, lt_of_lt_of_le (by norm_num) (le_max_left 100 B), ?_⟩
   intro y
   by_cases hy : |y| ≤ 1
-  · have hyMem : y ∈ Set.Icc (-1 : ℝ) 1 := by
-      exact (abs_le.mp hy)
-    have hyB : zetaMomentCriticalNorm y ^ (2 : ℕ) ≤ B :=
+  · have hyMem := (abs_le.mp hy)
+    have hyB  :=
       hB ⟨y, hyMem, rfl⟩
-    have hBC : B ≤ C := le_max_right 100 B
+    have hBC  := le_max_right 100 B
     have hC : 0 ≤ C := (lt_of_lt_of_le (by norm_num) (le_max_left 100 B)).le
     calc
       zetaMomentCriticalNorm y ^ (2 : ℕ) ≤ C := hyB.trans hBC
       _ = C * 1 := by ring
       _ ≤ C * (1 + y ^ (2 : ℕ)) := by
-        exact mul_le_mul_of_nonneg_left (by nlinarith [sq_nonneg y]) hC
-  · have hyOne : 1 < |y| := lt_of_not_ge hy
+        nlinarith
+  · have hyOne  := lt_of_not_ge hy
     let z : ℂ := ((1 / 2 : ℝ) : ℂ) + (y : ℂ) * I
     have hzRe : (1 / 4 : ℝ) ≤ z.re := by
       simp [z]
@@ -67,14 +66,14 @@ theorem exists_zetaMomentCriticalNorm_sq_le_quadratic :
         _ = 100 * y ^ (2 : ℕ) := by
           rw [mul_pow, sq_abs]
           norm_num
-    have hC100 : (100 : ℝ) ≤ C := le_max_left 100 B
+    have hC100  := le_max_left 100 B
     have hC : 0 ≤ C := by linarith
     calc
       zetaMomentCriticalNorm y ^ (2 : ℕ) ≤ 100 * y ^ (2 : ℕ) := hsq
       _ ≤ C * y ^ (2 : ℕ) :=
         mul_le_mul_of_nonneg_right hC100 (sq_nonneg y)
       _ ≤ C * (1 + y ^ (2 : ℕ)) := by
-        exact mul_le_mul_of_nonneg_left (by linarith) hC
+        linarith
 
 theorem integral_exp_neg_half_abs_heathBrown :
     (∫ x : ℝ, Real.exp (-|x| / 2)) = 4 := by
@@ -111,8 +110,8 @@ theorem heathBrown_fullMoment_tail_pointwise
     Real.exp (-|u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ) ≤
       (19 * C) * Real.exp (-|u| / 2) := by
   have htPos : 0 < t := by linarith
-  have hlogNonneg : 0 ≤ Real.log t := by linarith
-  have habsNonneg : 0 ≤ |u| := abs_nonneg u
+  
+  
   have htExp : t ^ (2 : ℕ) ≤ Real.exp (|u| / 2) := by
     have hExponent : 2 * Real.log t ≤ |u| / 2 := by
       nlinarith [sq_nonneg (Real.log t - 4)]
@@ -144,7 +143,7 @@ theorem heathBrown_fullMoment_tail_pointwise
   calc
     Real.exp (-|u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ) ≤
         Real.exp (-|u|) * (C * (1 + (t + u) ^ (2 : ℕ))) := by
-      exact mul_le_mul_of_nonneg_left hzeta (Real.exp_pos _).le
+      gcongr
     _ ≤ Real.exp (-|u|) * (C * (19 * Real.exp (|u| / 2))) := by
       gcongr
     _ = (19 * C) * Real.exp (-|u| / 2) := by
@@ -164,16 +163,16 @@ theorem exists_heathBrownFullCriticalMoment_le_truncated :
         heathBrownLemmaThreeMoment t (Real.log t ^ (2 : ℕ)) + D := by
   obtain ⟨C, hCpos, hC⟩ := exists_zetaMomentCriticalNorm_sq_le_quadratic
   let D : ℝ := 4 * (19 * C)
-  refine ⟨D, by dsimp only [D]; positivity, ?_⟩
+  refine ⟨D, by positivity, ?_⟩
   intro t ht hlog
   let H : ℝ := Real.log t ^ (2 : ℕ)
-  let f : ℝ → ℝ := fun u =>
+  let f  := fun u =>
     Real.exp (-|u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
-  let g : ℝ → ℝ := fun u => (19 * C) * Real.exp (-|u| / 2)
+  let g  := fun u => (19 * C) * Real.exp (-|u| / 2)
   have hH : 0 ≤ H := by dsimp only [H]; positivity
   have hf : Integrable f := by
     simpa only [f] using integrable_heathBrownFullCriticalMoment t
-  have hg : Integrable g :=
+  have hg  :=
     integrable_exp_neg_half_abs_heathBrown.const_mul (19 * C)
   have htail : ∀ u ∈ (Set.Ioc (-H) H)ᶜ, f u ≤ g u := by
     intro u hu
@@ -182,12 +181,8 @@ theorem exists_heathBrownFullCriticalMoment_le_truncated :
         using hu
     have huAbs : H ≤ |u| := by
       rcases huCases with huLeft | huRight
-      · have huNonpos : u ≤ 0 := by linarith
-        rw [abs_of_nonpos huNonpos]
-        linarith
-      · have huPos : 0 < u := lt_of_le_of_lt hH huRight
-        rw [abs_of_pos huPos]
-        exact huRight.le
+      · grind
+      · grind
     dsimp only [f, g]
     exact heathBrown_fullMoment_tail_pointwise hC ht hlog
       (by simpa only [H] using huAbs)
@@ -195,12 +190,11 @@ theorem exists_heathBrownFullCriticalMoment_le_truncated :
       (∫ u in (Set.Ioc (-H) H)ᶜ, f u) ≤ D := by
     calc
       (∫ u in (Set.Ioc (-H) H)ᶜ, f u) ≤
-          ∫ u in (Set.Ioc (-H) H)ᶜ, g u := by
-        exact MeasureTheory.setIntegral_mono_on hf.integrableOn hg.integrableOn
+          ∫ u in (Set.Ioc (-H) H)ᶜ, g u := MeasureTheory.setIntegral_mono_on hf.integrableOn hg.integrableOn
           measurableSet_Ioc.compl htail
       _ ≤ ∫ u : ℝ, g u := by
         exact MeasureTheory.setIntegral_le_integral hg
-          (Filter.Eventually.of_forall fun u => by dsimp only [g]; positivity)
+          (Filter.Eventually.of_forall fun u => by positivity)
       _ = D := by
         dsimp only [g, D]
         rw [integral_const_mul, integral_exp_neg_half_abs_heathBrown]
@@ -216,7 +210,6 @@ theorem exists_heathBrownFullCriticalMoment_le_truncated :
 theorem heathBrownLemmaThreeMoment_nonneg
     {t L : ℝ} (hL : 0 ≤ L) :
     0 ≤ heathBrownLemmaThreeMoment t L := by
-  unfold heathBrownLemmaThreeMoment
   exact intervalIntegral.integral_nonneg (by linarith) fun u hu => by positivity
 
 /-- The contour estimate after replacing the complete convolution by the
@@ -231,8 +224,8 @@ theorem exists_eventually_heathBrownLemmaThree_truncated :
   obtain ⟨D, hDpos, hTail⟩ :=
     exists_heathBrownFullCriticalMoment_le_truncated
   let C : ℝ := C₀ * (1 + D)
-  refine ⟨C, by dsimp only [C]; positivity, ?_⟩
-  have hLogEventually : ∀ᶠ t : ℝ in atTop, 4 ≤ Real.log t :=
+  refine ⟨C, by positivity, ?_⟩
+  have hLogEventually  :=
     Real.tendsto_log_atTop.eventually (eventually_ge_atTop 4)
   filter_upwards [hFull, eventually_ge_atTop (10 : ℝ), hLogEventually]
     with t hFullT ht hlog
@@ -250,9 +243,8 @@ theorem exists_eventually_heathBrownLemmaThree_truncated :
     zetaMomentCriticalNorm t ^ (2 : ℕ) ≤
         C₀ * Real.log t * (1 + heathBrownFullCriticalMoment t) := hFullT
     _ ≤ C₀ * Real.log t * ((1 + D) * (1 + M)) := by
-      exact mul_le_mul_of_nonneg_left hFactor (mul_nonneg hC₀pos.le hlogNonneg)
+      gcongr
     _ = C * Real.log t * (1 + M) := by
-      dsimp only [C]
       ring
 
 /-- Heath--Brown (1978), Lemma 3, proved with its literal truncated
@@ -267,8 +259,7 @@ theorem heathBrownLemmaThree_native : HeathBrownLemmaThree := by
     (K := Set.Icc (10 : ℝ) K)
     (continuous_zetaMomentCriticalNorm.pow 2).continuousOn
   let C : ℝ := max C₀ (max 1 B)
-  have hCpos : 0 < C := by
-    exact lt_of_lt_of_le zero_lt_one
+  have hCpos := lt_of_lt_of_le zero_lt_one
       ((le_max_left 1 B).trans (le_max_right C₀ (max 1 B)))
   refine ⟨C, hCpos, ?_⟩
   intro t ht
@@ -276,34 +267,31 @@ theorem heathBrownLemmaThree_native : HeathBrownLemmaThree := by
   have hM : 0 ≤ M := by
     dsimp only [M]
     exact heathBrownLemmaThreeMoment_nonneg (by positivity)
-  have hlogTwo : 2 < Real.log t := two_lt_log_of_ten_le ht
+  have hlogTwo  := two_lt_log_of_ten_le ht
   have hlogNonneg : 0 ≤ Real.log t := by linarith
   have hOneM : 0 ≤ 1 + M := by linarith
   by_cases hlarge : T₀ ≤ t
   · have hSource := hT₀ t hlarge
-    have hC₀C : C₀ ≤ C := le_max_left C₀ (max 1 B)
+    have hC₀C  := le_max_left C₀ (max 1 B)
     calc
       zetaMomentCriticalNorm t ^ (2 : ℕ) ≤
-          C₀ * Real.log t * (1 + M) := by simpa only [M] using hSource
+          C₀ * Real.log t * (1 + M) := by linarith
       _ ≤ C * Real.log t * (1 + M) := by
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_right hC₀C hlogNonneg) hOneM
+        gcongr
   · have htMem : t ∈ Set.Icc (10 : ℝ) K := by
       refine ⟨ht, ?_⟩
       dsimp only [K]
       exact le_max_of_le_right (le_of_not_ge hlarge)
-    have htB : zetaMomentCriticalNorm t ^ (2 : ℕ) ≤ B :=
+    have htB  :=
       hB ⟨t, htMem, rfl⟩
-    have hBC : B ≤ C :=
+    have hBC  :=
       (le_max_right 1 B).trans (le_max_right C₀ (max 1 B))
-    have hCnonneg : 0 ≤ C := hCpos.le
+    have hCnonneg  := hCpos.le
     calc
       zetaMomentCriticalNorm t ^ (2 : ℕ) ≤ B := htB
       _ ≤ C := hBC
       _ = C * 1 * 1 := by ring
       _ ≤ C * Real.log t * (1 + M) := by
-        exact mul_le_mul
-          (mul_le_mul_of_nonneg_left (by linarith) hCnonneg)
-          (by linarith) (by norm_num) (mul_nonneg hCnonneg hlogNonneg)
+        bound
 
 end MathCollab.Density.Stronger.PointMean

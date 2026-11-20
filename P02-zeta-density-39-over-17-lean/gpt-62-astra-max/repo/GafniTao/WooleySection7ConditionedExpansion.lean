@@ -35,14 +35,9 @@ theorem wooleySourcePolynomialConditionedMean_polynomialTwist_expand
             (wooleySourceTwist
               (wooleySourceResidueSequence left qH zeta)
               (fun n => wooleySourcePolynomialPhase leftPhi alpha n)) := by
-  have hphase : ∀ n,
-      ‖wooleySourcePolynomialPhase leftPhi alpha n‖ = 1 :=
+  have hphase  :=
     wooleySourcePolynomialPhase_norm leftPhi alpha
-  have hmassTwist :
-      wooleySourceMassSq
-          (wooleySourceTwist left
-            (fun n => wooleySourcePolynomialPhase leftPhi alpha n)) =
-        wooleySourceMassSq left :=
+  have hmassTwist  :=
     wooleySourceMassSq_twist left _ hphase
   have hresidue (zeta : ZMod qH) :
       wooleySourceResidueMassSq
@@ -64,8 +59,7 @@ theorem wooleySourcePolynomialConditionedMean_polynomialTwist_expand
   unfold wooleySourcePolynomialConditionedMean
     wooleySourcePolynomialMean
   rw [hmassTwist, ite_eq_right hleft]
-  simp_rw [hresidue, hsum]
-  rw [← mul_assoc, mul_inv_cancel₀ hleft, one_mul]
+  grind
 
 /-- Exact equation (7.20) before the lower-degree loss factor is inserted.
 The right side is a literal finite sum of the inserted averages attached to
@@ -132,10 +126,7 @@ theorem wooley_equation_7_20_expansion
                   (fun n => wooleySourcePolynomialPhase leftPhi alpha n))) *
             ‖wooleySourceNormalizedPolynomialSum
                 rightPhi right alpha‖ ^ (2 * S) := by
-      apply congrArg (fun x : ℝ => ((((q ^ k : ℕ) : ℝ))⁻¹) * x)
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      rw [hexpand alpha]
+      simp [*]
     _ = ∑ zeta : ZMod qH,
         wooleySourceResidueMassSq left qH zeta *
           (((((q ^ k : ℕ) : ℝ))⁻¹) *

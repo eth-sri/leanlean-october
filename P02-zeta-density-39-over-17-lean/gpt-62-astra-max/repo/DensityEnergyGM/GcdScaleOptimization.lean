@@ -59,7 +59,7 @@ theorem gcd_scale_sqrt_min {M H K q : ℝ}
   rw [hShape] at hBound
   have hInside : 0 ≤ M ^ q * min (M * K) H := by positivity
   have hSq := Real.sq_sqrt hInside
-  have hRoot := Real.sqrt_nonneg (M ^ q * min (M * K) H)
+  
   have hRight : 0 ≤ M * H ^ ((q - 1) / 2) * K ^ ((2 - q) / 2) := by positivity
   nlinarith
 

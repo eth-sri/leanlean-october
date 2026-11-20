@@ -44,7 +44,7 @@ theorem integral_shift_inv {z : ℂ} (hz : 0 < z.re) {a b : ℝ}
   apply intervalIntegral.integral_eq_sub_of_hasDerivAt ?_
     (hc.intervalIntegrable_of_Icc hab)
   intro x hx
-  have hx0 : 0 ≤ x := ha.trans ((uIcc_of_le hab ▸ hx).1)
+  have hx0  := ha.trans ((uIcc_of_le hab ▸ hx).1)
   have hslit : z + (x : ℂ) ∈ Complex.slitPlane := by
     apply Complex.mem_slitPlane_iff.mpr
     left
@@ -122,8 +122,6 @@ theorem sum_reciprocal_sq_le {y : ℝ} (hy : 1 ≤ y) (N : ℕ) :
     _ ≤ ∑ n ∈ range N, 4 * (((n : ℝ) + y)⁻¹ - ((n : ℝ) + y + 1)⁻¹) :=
       sum_le_sum (fun n _ => hstep n)
     _ = 4 * (y⁻¹ - ((N : ℝ) + y)⁻¹) := by
-      rw [← mul_sum]
-      congr 1
       induction N with
       | zero => simp
       | succ N ih => rw [sum_range_succ, ih]; push_cast; ring
@@ -217,12 +215,12 @@ explicit dependence on the real coordinate. -/
 theorem abs_re_digamma_sub_log_im_le {z : ℂ} (hz : 0 < z.re)
     (hy : 1 ≤ |z.im|) :
     |(Complex.digamma z).re - Real.log (|z.im|)| ≤ (4 + z.re) / |z.im| := by
-  have hy0 : 0 < |z.im| := lt_of_lt_of_le zero_lt_one hy
+  have hy0  := lt_of_lt_of_le zero_lt_one hy
   have hynorm := Complex.abs_im_le_norm z
   have hn0 := hy0.trans_le hynorm
   have hnup : ‖z‖ ≤ z.re + |z.im| := by
     simpa only [abs_of_pos hz] using Complex.norm_le_abs_re_add_abs_im z
-  have hlog0 : 0 ≤ Real.log ‖z‖ - Real.log |z.im| :=
+  have hlog0  :=
     sub_nonneg.mpr (Real.log_le_log hy0 hynorm)
   have hlogup : Real.log ‖z‖ - Real.log |z.im| ≤ z.re / |z.im| := by
     have h := Real.log_le_sub_one_of_pos (div_pos hn0 hy0)

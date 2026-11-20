@@ -113,10 +113,7 @@ theorem finitePowCoeff_bound_uniform
     apply Finset.prod_le_one₀
     · intro x _
       exact norm_nonneg _
-    · intro x _
-      have hpSource := (Finset.mem_filter.mp hp).1
-      rw [Fintype.mem_piFinset] at hpSource
-      exact ha (p x) (hpSource x)
+    · grind
   calc
     ‖finitePowCoeff N k a m‖
         ≤ ∑ p ∈ source, ‖∏ x : Fin k, a (p x)‖ := by
@@ -145,7 +142,7 @@ theorem wideDirichletPoly_finitePoweredLineCoeffs
   rw [hUpper, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro m hm
-  have hmPos : 0 < m := lt_of_le_of_lt (Nat.zero_le _) (Finset.mem_Ioc.mp hm).1
+  have hmPos  := lt_of_le_of_lt (Nat.zero_le _) (Finset.mem_Ioc.mp hm).1
   have hmNe : (m : ℂ) ≠ 0 := by exact_mod_cast hmPos.ne'
   rw [mul_assoc, mul_assoc, ← Complex.cpow_add _ _ hmNe]
   congr 2
@@ -156,13 +153,13 @@ theorem norm_finitePoweredLineCoeffs_le
     (hN : 0 < N) (hσ : 0 ≤ σ)
     (hm : m ∈ Ioc (N ^ k) (2 ^ k * N ^ k)) :
     ‖finitePoweredLineCoeffs N k a σ m‖ ≤ ‖finitePowCoeff N k a m‖ := by
-  have hQNat : 0 < N ^ k := pow_pos hN k
-  have hmNat : 0 < m := lt_of_le_of_lt (Nat.zero_le _) (Finset.mem_Ioc.mp hm).1
+  have hQNat  := pow_pos hN k
+  have hmNat  := lt_of_le_of_lt (Nat.zero_le _) (Finset.mem_Ioc.mp hm).1
   have hQ : (0 : ℝ) < (N ^ k : ℕ) := by exact_mod_cast hQNat
   have hmReal : (0 : ℝ) < m := by exact_mod_cast hmNat
   have hQm : ((N ^ k : ℕ) : ℝ) ≤ (m : ℝ) := by
     exact_mod_cast (Finset.mem_Ioc.mp hm).1.le
-  have hPow : (((N ^ k : ℕ) : ℝ)) ^ σ ≤ (m : ℝ) ^ σ :=
+  have hPow  :=
     Real.rpow_le_rpow hQ.le hQm hσ
   have hmPowPos : 0 < (m : ℝ) ^ σ := Real.rpow_pos_of_pos hmReal _
   have hScale : (((N ^ k : ℕ) : ℝ)) ^ σ * (m : ℝ) ^ (-σ) ≤ 1 := by
@@ -198,13 +195,13 @@ theorem norm_normalizedFinitePoweredCoeffs_le_one
     (hm : m ∈ Ioc (N ^ k) (2 ^ k * N ^ k))
     (hCoeff : ‖finitePowCoeff N k a m‖ ≤ C * (m : ℝ) ^ η) :
     ‖normalizedFinitePoweredCoeffs N k a σ C η m‖ ≤ 1 := by
-  have hmUpper : m ≤ 2 ^ k * N ^ k := (Finset.mem_Ioc.mp hm).2
+  have hmUpper  := (Finset.mem_Ioc.mp hm).2
   have hUpperPos : 0 < 2 ^ k * N ^ k :=
     mul_pos (pow_pos (by omega) k) (pow_pos hN k)
   have hRpow : (m : ℝ) ^ η ≤ ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
     exact Real.rpow_le_rpow (Nat.cast_nonneg m) (by exact_mod_cast hmUpper) hη.le
   have hDenomPos : 0 < C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
-    exact mul_pos hC (Real.rpow_pos_of_pos (by exact_mod_cast hUpperPos) _)
+    exact mul_pos hC (Real.rpow_pos_of_pos (by positivity) _)
   have hDenomNorm :
       ‖((C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η : ℝ) : ℂ)‖ =
         C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
@@ -241,7 +238,7 @@ theorem normalized_finite_powered_wide_lower
         (C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η) ≤
       ‖wideDirichletPoly (N ^ k) k
         (normalizedFinitePoweredCoeffs N k a σ C η) t‖ := by
-  have hQNat : 0 < N ^ k := pow_pos hN k
+  have hQNat  := pow_pos hN k
   have hQ : (0 : ℝ) < (N ^ k : ℕ) := by exact_mod_cast hQNat
   have hQNorm : ‖((((N ^ k : ℕ) : ℝ) : ℂ) ^ (σ : ℂ))‖ =
       ((N ^ k : ℕ) : ℝ) ^ σ := by

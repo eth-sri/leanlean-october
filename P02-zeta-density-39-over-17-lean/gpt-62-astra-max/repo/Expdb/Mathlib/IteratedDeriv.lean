@@ -24,12 +24,12 @@ theorem iteratedDerivWithin_comp_affine_of_mapsTo
   induction n generalizing x with
   | zero => simp
   | succ n ih =>
-      have hcx : c * x + d ∈ t := hst hx
+      have hcx  := hst hx
       have heq : Set.EqOn
           (iteratedDerivWithin n (fun y ↦ f (c * y + d)) s)
           (fun y ↦ c ^ n * iteratedDerivWithin n f t (c * y + d)) s :=
         fun y hy ↦ ih hf.of_succ hy
-      have houter : DifferentiableWithinAt ℝ (iteratedDerivWithin n f t) t (c * x + d) :=
+      have houter  :=
         hf.differentiableOn_iteratedDerivWithin (Nat.cast_lt.mpr n.lt_succ_self) ht _ hcx
       have haffine : HasDerivWithinAt (fun y : ℝ ↦ c * y + d) c s x := by
         simpa using (((hasDerivAt_id x).const_mul c).add_const d |>.hasDerivWithinAt)

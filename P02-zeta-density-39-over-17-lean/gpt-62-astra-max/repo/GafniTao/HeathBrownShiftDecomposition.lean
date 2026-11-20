@@ -158,9 +158,7 @@ theorem heathBrownPairCountTwoNegative_subset_shiftImage
   rw [Finset.mem_image]
   refine ⟨⟨d, p.1⟩, ?_, ?_⟩
   · simp [heathBrownAllPositiveShiftFibers, hd, hdN, hpFiber]
-  · apply Prod.ext
-    · rfl
-    · simp [heathBrownPairOfNegativeShift, d, Nat.add_sub_of_le hlt.le]
+  · · simp [heathBrownPairOfNegativeShift, d, Nat.add_sub_of_le hlt.le]
 
 theorem heathBrownAllPositiveShiftFibers_card
     (N k H K : ℕ) (f : ℝ → ℝ) :
@@ -195,12 +193,7 @@ theorem heathBrownPairCountTwo_card_le_shift_sum
         (dset ∪ (pset ∪ nset)).card :=
       Finset.card_le_card heathBrownPairCountTwo_subset_three_parts
     _ ≤ dset.card + (pset.card + nset.card) := by
-      calc
-        (dset ∪ (pset ∪ nset)).card ≤
-            dset.card + (pset ∪ nset).card :=
-          Finset.card_union_le dset (pset ∪ nset)
-        _ ≤ dset.card + (pset.card + nset.card) :=
-          Nat.add_le_add_left (Finset.card_union_le pset nset) _
+      grind
     _ ≤ N + (fibers.card + fibers.card) := by omega
     _ = N + 2 * ∑ d ∈ Finset.Icc 1 N,
         (heathBrownPositiveShiftFiber N k H K f d).card := by

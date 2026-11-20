@@ -16,8 +16,7 @@ namespace MathCollab.Density
 def ordinateBin (ρ : ℂ) : ℤ := ⌊ρ.im⌋
 
 theorem ordinateBin_eq_iff {ρ : ℂ} {k : ℤ} :
-    ordinateBin ρ = k ↔ (k : ℝ) ≤ ρ.im ∧ ρ.im < (k : ℝ)+1 := by
-  exact Int.floor_eq_iff
+    ordinateBin ρ = k ↔ (k : ℝ) ≤ ρ.im ∧ ρ.im < (k : ℝ)+1 := Int.floor_eq_iff
 
 /-- Half the occupied bins have a common parity, including for negative indices. -/
 theorem occupied_bins_parity (K : Finset ℤ) :
@@ -31,11 +30,7 @@ theorem occupied_bins_parity (K : Finset ℤ) :
   · refine ⟨A, Finset.filter_subset _ _, by omega, ?_⟩
     intro k hk l hl
     exact (Finset.mem_filter.mp hk).2.trans (Finset.mem_filter.mp hl).2.symm
-  · refine ⟨B, Finset.filter_subset _ _, by omega, ?_⟩
-    intro k hk l hl
-    have hk' := (Finset.mem_filter.mp hk).2
-    have hl' := (Finset.mem_filter.mp hl).2
-    omega
+  · grind
 
 theorem same_parity_bins_separated {x y : ℝ} (hne : ⌊x⌋ ≠ ⌊y⌋)
     (hpar : ⌊x⌋ % 2 = ⌊y⌋ % 2) : 1 ≤ |x-y| := by
@@ -66,11 +61,10 @@ theorem weighted_separated_extraction (S : Finset ℂ) (w : ℂ → ℝ)
   have hex : ∀ k : ℤ, ∃ ρ : ℂ, k ∈ K → ρ ∈ S ∧ ordinateBin ρ = k := by
     intro k
     by_cases hk : k ∈ K
-    · obtain ⟨ρ, hρ, he⟩ := Finset.mem_image.mp hk
-      exact ⟨ρ, fun _ => ⟨hρ, he⟩⟩
+    · grind
     · exact ⟨0, fun h => (hk h).elim⟩
   choose f hf using hex
-  have hfJ : ∀ k ∈ J, f k ∈ S ∧ ordinateBin (f k) = k := fun k hk => hf k (hJK hk)
+  have hfJ  := fun k hk => hf k (hJK hk)
   have hinj : Set.InjOn f (J : Set ℤ) := by
     intro k hk l hl he
     calc
@@ -86,9 +80,7 @@ theorem weighted_separated_extraction (S : Finset ℂ) (w : ℂ → ℝ)
       exact congrArg Int.floor he
     rw [hkl]
   refine ⟨J.image f, ?_, Finset.card_image_of_injOn himinj, ?_, ?_⟩
-  · intro ρ hρ
-    obtain ⟨k, hk, rfl⟩ := Finset.mem_image.mp hρ
-    exact (hfJ k hk).1
+  · grind
   · intro x hx y hy hxy
     obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp hx
     obtain ⟨ω, hω, rfl⟩ := Finset.mem_image.mp hy

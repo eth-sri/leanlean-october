@@ -77,7 +77,6 @@ theorem boundedPolynomial_regular (N : ℝ) (a : ℕ → ℂ) :
     fun_prop
   · intro t
     rw [boundedPolynomial_phase]
-    unfold sourcePhasePolynomial
     exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun n _ => by rw [norm_mul,phase_norm,mul_one])
 
 /-- The literal bounded-coefficient target polynomial is controlled by the

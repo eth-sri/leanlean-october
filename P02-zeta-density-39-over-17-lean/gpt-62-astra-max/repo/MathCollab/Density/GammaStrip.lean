@@ -115,7 +115,7 @@ theorem norm_betaIntegral_le_real_integral {u v : ℂ} :
       intro hx
       simp only [uIoc_of_le zero_le_one] at hx
       rcases hx with ⟨hx0, hx1⟩
-      have hx1lt : x < 1 := hx1.lt_of_ne hxne
+      have hx1lt  := hx1.lt_of_ne hxne
       rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx0,
         show 1 - (x : ℂ) = ((1 - x : ℝ) : ℂ) by norm_cast,
         Complex.norm_cpow_eq_rpow_re_of_pos (sub_pos.mpr hx1lt)]
@@ -131,7 +131,7 @@ theorem betaIntegral_ofReal_eq_ofReal_integral {s d : ℝ} :
   intro hx
   simp only [uIoc_of_le zero_le_one] at hx
   rcases hx with ⟨hx0, hx1⟩
-  have hx1lt : x < 1 := hx1.lt_of_ne hxne
+  have hx1lt  := hx1.lt_of_ne hxne
   rw [show (s : ℂ) - 1 = ((s - 1 : ℝ) : ℂ) by norm_cast,
     show (d : ℂ) - 1 = ((d - 1 : ℝ) : ℂ) by norm_cast,
     show 1 - (x : ℂ) = ((1 - x : ℝ) : ℂ) by norm_cast]
@@ -178,7 +178,6 @@ theorem one_le_Gamma_half : (1 : ℝ) ≤ Real.Gamma (1 / 2) := by
   nlinarith [Gamma_half_sq, Real.pi_gt_three]
 
 theorem Gamma_half_le_two : Real.Gamma (1 / 2) ≤ 2 := by
-  have hpos := Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 1 / 2)
   nlinarith [Gamma_half_sq, Real.pi_le_four]
 
 theorem Gamma_real_Icc_half_three_half_le_two {s : ℝ}
@@ -191,7 +190,7 @@ theorem Gamma_real_Icc_half_three_half_le_two {s : ℝ}
     by_cases hseq_one : s = 1
     · subst s
       simp
-    have hs_lt_one : s < 1 := lt_of_le_of_ne hs_one hseq_one
+    have hs_lt_one  := lt_of_le_of_ne hs_one hseq_one
     let a : ℝ := 2 - 2 * s
     let b : ℝ := 2 * s - 1
     have ha : 0 < a := by dsimp [a]; linarith
@@ -205,9 +204,8 @@ theorem Gamma_real_Icc_half_three_half_le_two {s : ℝ}
       ring
     rw [harg, Real.Gamma_one, Real.one_rpow, mul_one] at hconv
     exact hconv.trans <| (Real.rpow_le_self_of_one_le one_le_Gamma_half (by
-      dsimp [a]
       linarith)).trans Gamma_half_le_two
-  · have hs_gt_one : 1 < s := lt_of_not_ge hs_one
+  · have hs_gt_one  := lt_of_not_ge hs_one
     let a : ℝ := 2 - s
     let b : ℝ := s - 1
     have ha : 0 < a := by dsimp [a]; linarith
@@ -266,7 +264,7 @@ theorem norm_Gamma_stripPoint_le_four_upper
         have hdG := Real.Gamma_pos_of_pos hd
         nlinarith [Gamma_three_half_ge_half]
   have hprod := Complex.Gamma_mul_Gamma_eq_betaIntegral hu_re hd_re
-  rw [stripPoint_add_real, show s + d = 3 / 2 by dsimp [d]; ring] at hprod
+  rw [stripPoint_add_real, show s + d = 3 / 2 by ring] at hprod
   have hnorm := congrArg norm hprod
   rw [norm_mul, norm_mul] at hnorm
   have hGd : ‖Complex.Gamma (d : ℂ)‖ = Real.Gamma d := by

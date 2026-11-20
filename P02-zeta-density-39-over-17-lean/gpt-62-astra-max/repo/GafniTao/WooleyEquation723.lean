@@ -80,11 +80,11 @@ theorem wooley_equation_7_23_native
       hseparated hxiMass hetaMass C loss hpoint
   let H := wooleySection7HPrime k r a b gammaVal
   let bPrime := wooleySection7NextB k r b
-  let hAb : a + H ≤ bPrime :=
+  let hAb  :=
     wooley_section7_a_add_HPrime_le_nextB hr (hBPrime gammaVal hgammaVal)
-  let haB : a ≤ bPrime := (Nat.le_add_right a H).trans hAb
+  let haB  := (Nat.le_add_right a H).trans hAb
   let factor : ℝ := (p ^ (bPrime - (a + H)) : ℝ) ^ wooleyTriangular r
-  let F : ZMod (p ^ bPrime) → ℝ := fun xiPrime =>
+  let F  := fun xiPrime =>
     wooleySourceResidueMassSq gamma (p ^ bPrime) xiPrime *
       wooleySourcePolynomialMixedResidueMoment phi s r p B
         bPrime b gamma xiPrime eta
@@ -146,22 +146,7 @@ theorem wooley_equation_7_23_native
                 (a + H) b gamma (wooleyResidueLift p a H xi zeta) eta := by
     simpa only [H, wooleyResidueLift_eq_section7] using hlocal
   have hscaled := mul_le_mul_of_nonneg_left hrefine hCloss
-  refine ⟨gammaVal, hgammaVal, ?_⟩
-  calc
-    _ ≤ C * loss *
-          ∑ zeta : ZMod (p ^ H),
-            wooleySourceResidueMassSq gamma (p ^ (a + H))
-                (wooleyResidueLift p a H xi zeta) *
-              wooleySourcePolynomialMixedResidueMoment phi s r p B
-                (a + H) b gamma (wooleyResidueLift p a H xi zeta) eta := hlocalLift
-    _ ≤ C * loss * (factor *
-          ∑ xiPrime ∈ wooleyResidueRefinementFiber p a bPrime haB xi,
-            F xiPrime) := hscaled
-    _ = C * loss * factor *
-          ∑ xiPrime ∈ wooleyResidueRefinementFiber p a bPrime haB xi,
-            F xiPrime := by ring
-    _ = _ := by
-      rfl
+  grind
 
 
 end

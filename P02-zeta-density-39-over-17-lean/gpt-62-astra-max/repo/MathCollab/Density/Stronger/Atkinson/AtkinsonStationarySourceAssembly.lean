@@ -37,11 +37,11 @@ theorem localMeanSourceToPrefix_of_stationary (hSource : LocalMeanStationaryInpu
   have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C,hC,max U V,hU.trans (le_max_left _ _),?_⟩
   intro t G ht hlower hupper hquarter
-  have htU : U ≤ t := (le_max_left _ _).trans ht
-  have htV : V ≤ t := (le_max_right _ _).trans ht
+  have htU  := (le_max_left _ _).trans ht
+  have htV  := (le_max_right _ _).trans ht
   have ht0 : 0 < t := by linarith [hU.trans htU]
-  have hG : 0 < G := (Real.rpow_pos_of_pos ht0 δ).trans_le hlower
-  have hlog : 0 ≤ Real.log t := Real.log_nonneg (by linarith [hU.trans htU])
+  have hG  := (Real.rpow_pos_of_pos ht0 δ).trans_le hlower
+  have hlog : 0 ≤ Real.log t := Real.log_nonneg (by linarith)
   have hprefix := atkinsonUndampedDyadicPhaseBound_nonneg t
     (atkinsonSourceCutoff t G (Real.log t))
   have hs := (Complex.re_le_norm (atkinsonStationaryLeadingSum t G (Real.log t))).trans
@@ -59,9 +59,5 @@ theorem localMeanSourceToPrefix_of_stationary (hSource : LocalMeanStationaryInpu
   have hactual := hsource t G htU hlower hupper hquarter
   nlinarith
 
-/-- Native packet estimates require only the remaining actual source approximation. -/
-theorem localMeanPacketInput_of_stationary (hSource : LocalMeanStationaryInput) :
-    Peaks.LocalMeanPacketInput :=
-  localMeanPacketInput_of_sourceToPrefix (localMeanSourceToPrefix_of_stationary hSource)
 
 end MathCollab.Density.Stronger.Atkinson

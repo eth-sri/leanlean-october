@@ -62,7 +62,7 @@ theorem integrable_zetaGaussianQuadraticIntegrand (T v : ℝ) {G : ℝ} (hG : G 
 theorem inverse_re_lower_of_im_le_re {a : ℂ} (ha : 0 < a.re) (hi : |a.im| ≤ a.re) :
     1 / (2 * a.re) ≤ a⁻¹.re := by
   have ha0 : a ≠ 0 := by intro h; simp [h] at ha
-  have hn : 0 < Complex.normSq a := Complex.normSq_pos.mpr ha0
+  have hn  := Complex.normSq_pos.mpr ha0
   have hi2 : a.im ^ 2 ≤ a.re ^ 2 := by
     calc
       _ = |a.im| ^ 2 := (sq_abs _).symm
@@ -76,7 +76,7 @@ theorem norm_fourierGaussian_le_of_im_le_re {a : ℂ} (ha : 0 < a.re)
     (hi : |a.im| ≤ a.re) (v : ℝ) :
     ‖((Real.pi : ℂ) / a) ^ (1 / 2 : ℂ) * Complex.exp (-(v : ℂ) ^ 2 / (4 * a))‖ ≤
       Real.sqrt (Real.pi / a.re) * Real.exp (-v ^ 2 / (8 * a.re)) := by
-  have haNorm : a.re ≤ ‖a‖ := (le_abs_self _).trans (Complex.abs_re_le_norm a)
+  have haNorm  := (le_abs_self _).trans (Complex.abs_re_le_norm a)
   have hexp : (-(v : ℂ) ^ 2 / (4 * a)).re = -(v ^ 2 / 4) * a⁻¹.re := by
     have heq : -(v : ℂ) ^ 2 / (4 * a) = ((-(v ^ 2 / 4) : ℝ) : ℂ) * a⁻¹ := by
       rw [div_eq_mul_inv, mul_inv_rev]
@@ -125,8 +125,7 @@ theorem norm_zetaGaussianQuadraticIntegral_tail {T G L v : ℝ}
       _ ≤ (G * |v|) ^ 2 := pow_le_pow_left₀ hL hfrequency 2
       _ = _ := by rw [mul_pow, mul_pow, sq_abs]
   apply (norm_zetaGaussianQuadraticIntegral_le hT hG hscale v).trans
-  apply mul_le_mul_of_nonneg_left _ (by positivity)
-  exact Real.exp_le_exp.mpr (by linarith)
+  gcongr
 
 theorem hasDerivAt_zetaGaussianQuadraticIntegral (T : ℝ) {G : ℝ} (hG : G ≠ 0) (v : ℝ) :
     HasDerivAt (zetaGaussianQuadraticIntegral T G)

@@ -62,7 +62,7 @@ theorem mellin_compact_mask_integral {w h : ℝ → ℝ} {a b W : ℝ} {A : Set 
       (∫ v, w v*A.indicator h (mellinFrequency v)) ≤
         (b*W*(2*Real.pi))*(∫ ξ in A, h ξ) := by
   have hpi : (2*Real.pi) ≠ 0 := by positivity
-  have hi : Integrable (fun u : ℝ => A.indicator h (u/(2*Real.pi))) :=
+  have hi  :=
     (hh.indicator hA).comp_div hpi
   have h0 : ∀ u : ℝ, 0 ≤ A.indicator h (u/(2*Real.pi)) := by
     intro u

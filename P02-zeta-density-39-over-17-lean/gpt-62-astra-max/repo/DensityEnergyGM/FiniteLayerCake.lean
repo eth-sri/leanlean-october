@@ -51,15 +51,11 @@ theorem finite_weighted_layer_cake {ι : Type*} [Fintype ι]
   calc
     (((Finset.univ.filter fun p : (Σ i, Fin (r i)) => u ≤ f p.1).card) : ℝ) =
         ∑ p : (Σ i, Fin (r i)), if u ≤ f p.1 then (1 : ℝ) else 0 := by
-      simp only [Finset.card_eq_sum_ones, Nat.cast_sum, Finset.sum_filter,
-        Nat.cast_ite, Nat.cast_one, Nat.cast_zero]
+      simp
     _ = ∑ i, ∑ _j : Fin (r i), if u ≤ f i then (1 : ℝ) else 0 := by
       rw [Fintype.sum_sigma]
     _ = ∑ i, if u ≤ f i then (r i : ℝ) else 0 := by
-      apply Finset.sum_congr rfl
-      intro i hi
-      by_cases hui : u ≤ f i <;> simp only [hui, ↓reduceIte, Finset.sum_const,
-        Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_one, mul_zero]
+      simp
     _ = ∑ i ∈ (Finset.univ.filter fun i => u ≤ f i), (r i : ℝ) := by
       rw [Finset.sum_filter]
 

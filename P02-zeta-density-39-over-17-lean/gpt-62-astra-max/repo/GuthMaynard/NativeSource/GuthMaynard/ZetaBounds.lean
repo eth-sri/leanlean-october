@@ -37,8 +37,8 @@ lemma norm_abelZetaKernel_le_one (x : ℝ) : ‖abelZetaKernel x‖ ≤ 1 := by
 
 lemma measurable_abelZetaKernel : Measurable abelZetaKernel := by
   apply Measurable.ite measurableSet_Ioi
-  · exact Complex.measurable_ofReal.comp measurable_fract
-  · exact measurable_const
+  · fun_prop
+  · fun_prop
 
 lemma locallyIntegrableOn_abelZetaKernel :
     LocallyIntegrableOn abelZetaKernel (Ioi 0) := by
@@ -144,7 +144,7 @@ lemma differentiableAt_regularizedRiemannZeta (s : ℂ) :
   · subst s
     refine (analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt ?_ ?_).differentiableAt
     · filter_upwards [self_mem_nhdsWithin] with z hz
-      have hbase : DifferentiableAt ℂ (fun w : ℂ => (w - 1) * riemannZeta w) z :=
+      have hbase  :=
         (differentiableAt_id.sub_const 1).mul (differentiableAt_riemannZeta hz)
       apply hbase.congr_of_eventuallyEq
       filter_upwards [eventually_ne_nhds hz] with w hw
@@ -152,7 +152,7 @@ lemma differentiableAt_regularizedRiemannZeta (s : ℂ) :
         (v := (1 : ℂ)) hw
     · rw [continuousAt_update_same]
       exact riemannZeta_residue_one
-  · have hbase : DifferentiableAt ℂ (fun w : ℂ => (w - 1) * riemannZeta w) s :=
+  · have hbase  :=
       (differentiableAt_id.sub_const 1).mul (differentiableAt_riemannZeta hs)
     apply hbase.congr_of_eventuallyEq
     filter_upwards [eventually_ne_nhds hs] with w hw
@@ -161,7 +161,6 @@ lemma differentiableAt_regularizedRiemannZeta (s : ℂ) :
 
 lemma differentiableAt_regularizedAbelZeta {s : ℂ} (hs : 0 < s.re) :
     DifferentiableAt ℂ regularizedAbelZeta s := by
-  unfold regularizedAbelZeta
   exact differentiableAt_id.sub
     ((differentiableAt_id.mul (differentiableAt_id.sub_const 1)).mul
       (differentiableAt_abelZetaRemainder hs))
@@ -210,7 +209,7 @@ lemma riemannZeta_eq_abel_of_one_lt_re {s : ℂ} (hs : 1 < s.re) :
       dsimp only
       rw [sum_one_Icc, natFloor_cast_complex t ht, sub_mul]
       congr 1
-      have ht0 : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr (ne_of_gt (zero_lt_one.trans ht))
+      have ht0  := ofReal_ne_zero.mpr (ne_of_gt (zero_lt_one.trans ht))
       calc
         (t : ℂ) * (t : ℂ) ^ (-(s + 1)) =
             (t : ℂ) ^ (1 : ℂ) * (t : ℂ) ^ (-(s + 1)) := by rw [cpow_one]
@@ -227,7 +226,7 @@ lemma regularized_zeta_eq_abel_of_one_lt_re {s : ℂ} (hs : 1 < s.re) :
   have hs1 : s ≠ 1 := ne_of_apply_ne re (by simp; linarith)
   rw [regularizedRiemannZeta, Function.update_of_ne hs1, regularizedAbelZeta,
     riemannZeta_eq_abel_of_one_lt_re hs]
-  have hsub : s - 1 ≠ 0 := sub_ne_zero.mpr hs1
+  have hsub  := sub_ne_zero.mpr hs1
   field_simp [hsub]
 
 /-- Abel's expression analytically continues the pole-removed zeta function throughout
@@ -238,11 +237,11 @@ theorem regularized_zeta_eq_abel {s : ℂ} (hs : 0 < s.re) :
   have hUOpen : IsOpen U := isOpen_lt continuous_const continuous_re
   have hZetaDiff : DifferentiableOn ℂ regularizedRiemannZeta U := fun z _hz =>
     (differentiableAt_regularizedRiemannZeta z).differentiableWithinAt
-  have hZeta : AnalyticOnNhd ℂ regularizedRiemannZeta U :=
+  have hZeta  :=
     hZetaDiff.analyticOnNhd hUOpen
   have hAbelDiff : DifferentiableOn ℂ regularizedAbelZeta U := fun z hz =>
     (differentiableAt_regularizedAbelZeta hz).differentiableWithinAt
-  have hAbel : AnalyticOnNhd ℂ regularizedAbelZeta U :=
+  have hAbel  :=
     hAbelDiff.analyticOnNhd hUOpen
   have hEventually : regularizedRiemannZeta =ᶠ[𝓝 (2 : ℂ)] regularizedAbelZeta := by
     have hOpen : IsOpen {z : ℂ | 1 < z.re} := isOpen_lt continuous_const continuous_re
@@ -256,9 +255,7 @@ theorem riemannZeta_eq_abel {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) :
     riemannZeta s = s / (s - 1) - s * abelZetaRemainder s := by
   have h := regularized_zeta_eq_abel hs
   rw [regularizedRiemannZeta, Function.update_of_ne hs1, regularizedAbelZeta] at h
-  have hsub : s - 1 ≠ 0 := sub_ne_zero.mpr hs1
-  field_simp [hsub] at h ⊢
-  linear_combination h
+  grind
 
 /-- The fractional-part remainder in Abel's zeta formula is at most `1 / Re(s)`. -/
 theorem norm_abelZetaRemainder_le {s : ℂ} (hs : 0 < s.re) :
@@ -306,7 +303,7 @@ theorem norm_riemannZeta_le_five_mul_norm {s : ℂ} (hre : (1 / 4 : ℝ) ≤ s.r
   calc
     ‖s / (s - 1) - s * abelZetaRemainder s‖ ≤
         ‖s / (s - 1)‖ + ‖s * abelZetaRemainder s‖ := norm_sub_le _ _
-    _ = ‖s‖ / ‖s - 1‖ + ‖s‖ * ‖abelZetaRemainder s‖ := by rw [norm_div, norm_mul]
+    _ = ‖s‖ / ‖s - 1‖ + ‖s‖ * ‖abelZetaRemainder s‖ := by simp
     _ ≤ ‖s‖ + ‖s‖ * 4 := by
       gcongr
       exact div_le_self (norm_nonneg s) hDen

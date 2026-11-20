@@ -65,7 +65,7 @@ theorem poisson_cubic_error_budget {T L C D d M : ℝ}
     3*(C*T^(-200:ℝ))*(D*L)^2*Real.sqrt d^3*Real.sqrt M^3 ≤
       (3*C*D^2)*T^(-100:ℝ)*Real.sqrt M^3 := by
   have hTp : 0 < T := by linarith
-  have hsqrt : Real.sqrt d ≤ T := (Real.sqrt_le_iff).mpr ⟨hTp.le,by nlinarith⟩
+  have hsqrt  := (Real.sqrt_le_iff).mpr ⟨hTp.le,by nlinarith⟩
   have he : T^(-200:ℝ)*(T^2)^2*T^3 = T^(-193:ℝ) := by
     rw [← pow_mul,← Real.rpow_natCast T (2*2),← Real.rpow_add hTp,
       ← Real.rpow_natCast T 3,← Real.rpow_add hTp]
@@ -74,7 +74,6 @@ theorem poisson_cubic_error_budget {T L C D d M : ℝ}
     _ ≤ 3*(C*T^(-200:ℝ))*(D*T^2)^2*T^3*Real.sqrt M^3 := by gcongr
     _ = (3*C*D^2)*T^(-193:ℝ)*Real.sqrt M^3 := by rw [← he]; ring
     _ ≤ _ := by
-      have hp : T^(-193:ℝ) ≤ T^(-100:ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by norm_num)
-      gcongr
+      bound
 
 end GuthMaynard.Improvement

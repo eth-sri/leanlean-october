@@ -60,7 +60,7 @@ theorem modeIntegral_eq_interval {w : ℝ → ℂ}
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (v k : ℝ) :
     modeIntegral w v k = ∫ x in (1 / 3 : ℝ)..6, w x *
       Complex.exp (((v * Real.log x - 2 * Real.pi * k * x : ℝ) : ℂ) * Complex.I) := by
-  let f : ℝ → ℂ := fun x => w x *
+  let f  := fun x => w x *
     Complex.exp (((v * Real.log x - 2 * Real.pi * k * x : ℝ) : ℂ) * Complex.I)
   have hs : Function.support f ⊆ Icc (1 / 2 : ℝ) 5 := by
     intro x hx
@@ -130,20 +130,19 @@ theorem uniform_discarded_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   have hZ : 0 ≤ Z := tsum_nonneg (fun m => by unfold integerPowerMajorant; positivity)
   refine ⟨C * Z, mul_nonneg hC hZ, ?_⟩
   intro L H v hL hH hv hv2
-  have hp : Summable (fun m : ℤ => (C / L ^ A) * integerPowerMajorant A m) :=
+  have hp  :=
     (summable_integerPowerMajorant hA).mul_left (C / L ^ A)
   have hb (m : ℤ) : ‖discardedMode w L H v m‖ ≤ (C / L ^ A) * integerPowerMajorant A m := by
     unfold discardedMode
     split_ifs with hm
     · have hmR : (m : ℝ) ≠ 0 := by exact_mod_cast hm.1
-      have habs : 0 < |(m : ℝ)| := abs_pos.mpr hmR
+      have habs  := abs_pos.mpr hmR
       calc
         ‖modeIntegral w v ((m : ℝ) * L)‖ ≤ C / (H + |(m : ℝ) * L|) ^ A :=
           hbound H v _ hH hv hv2 (outsideBand_scaled hL hH hm.1 hm.2)
         _ ≤ C / (|(m : ℝ)| * L) ^ A := by
           rw [abs_mul, abs_of_pos hL]
-          apply div_le_div_of_nonneg_left hC (pow_pos (mul_pos habs hL) A)
-          exact pow_le_pow_left₀ (by positivity) (by linarith) A
+          bound
         _ = (C / L ^ A) * integerPowerMajorant A m := by
           unfold integerPowerMajorant
           rw [mul_pow]
@@ -151,7 +150,7 @@ theorem uniform_discarded_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     · simp only [norm_zero]
       unfold integerPowerMajorant
       positivity
-  have hsumNorm : Summable (fun m : ℤ => ‖discardedMode w L H v m‖) :=
+  have hsumNorm  :=
     hp.of_nonneg_of_le (fun m => norm_nonneg _) hb
   refine ⟨hsumNorm, ?_⟩
   have hsum := tsum_of_norm_bounded hp.hasSum hb
@@ -165,7 +164,7 @@ theorem uniform_discarded_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
 
 theorem zero_normalized_mem {k : ℝ} (hk : k ≠ 0) :
     (0, 2 * Real.pi * k / |k|) ∈ offBandParameters := by
-  have ha : 0 < |k| := abs_pos.mpr hk
+  
   have he : abs (2 * Real.pi * k / |k|) = 2 * Real.pi := by
     rw [abs_div, abs_mul, abs_of_pos (by positivity : 0 < 2 * Real.pi), abs_abs]
     field_simp
@@ -181,7 +180,7 @@ theorem uniform_zero_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   obtain ⟨C, hC, hh⟩ := uniform_normalized_decay hw hws A
   refine ⟨C, hC, ?_⟩
   intro k hk
-  have ha : 0 < |k| := abs_pos.mpr hk
+  have ha  := abs_pos.mpr hk
   have hbound := hh _ (zero_normalized_mem hk) _ ha
   have heq : ibpIntegral w |k| (0, 2 * Real.pi * k / |k|) 0 = modeIntegral w 0 k := by
     rw [modeIntegral_eq_interval hws]
@@ -207,7 +206,7 @@ theorem uniform_zero_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   have hZ : 0 ≤ Z := tsum_nonneg (fun m => by unfold integerPowerMajorant; positivity)
   refine ⟨C * Z, mul_nonneg hC hZ, ?_⟩
   intro L hL
-  have hp : Summable (fun m : ℤ => (C / L ^ A) * integerPowerMajorant A m) :=
+  have hp  :=
     (summable_integerPowerMajorant hA).mul_left (C / L ^ A)
   have hb (m : ℤ) : ‖nonzeroMode w L 0 m‖ ≤ (C / L ^ A) * integerPowerMajorant A m := by
     unfold nonzeroMode

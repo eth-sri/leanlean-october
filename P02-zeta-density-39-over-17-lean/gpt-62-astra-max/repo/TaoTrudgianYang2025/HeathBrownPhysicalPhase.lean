@@ -44,7 +44,7 @@ theorem heathBrownPhysicalPhase_contDiffOn {F : ℝ → ℝ} {N A L : ℝ}
     (hF : ContDiffOn ℝ ∞ F phaseInterval)
     (hN : 0 < N) (ha : N ≤ A) (hb : A+L ≤ 2*N) (T s : ℝ) :
     ContDiffOn ℝ ∞ (heathBrownPhysicalPhase F T N A s) (Icc 0 L) := by
-  have hc : ContDiffOn ℝ ∞ (fun x => F ((A+x)/N)) (Icc 0 L) :=
+  have hc  :=
     hF.comp (by fun_prop) (fun _ hx => heathBrownPhysicalPoint_mem hN ha hb hx)
   exact contDiffOn_const.mul hc
 

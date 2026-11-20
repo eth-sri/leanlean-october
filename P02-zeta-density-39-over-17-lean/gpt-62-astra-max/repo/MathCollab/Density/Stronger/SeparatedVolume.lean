@@ -26,9 +26,9 @@ theorem exists_unitSeparated_closedBall_cover_of_card_bound
       ∀ t ∈ S, ∃ u ∈ W, dist t u ≤ 1 := by
   classical
   let N : ℕ := Nat.ceil B
-  let Q : Finset ℕ := (Finset.range (N+1)).filter (fun n =>
+  let Q  := (Finset.range (N+1)).filter (fun n =>
     ∃ W : Finset ℝ, (∀ t ∈ W, t ∈ S) ∧ oneSeparated W ∧ W.card = n)
-  have hN : B ≤ (N:ℝ) := Nat.le_ceil B
+  have hN  := Nat.le_ceil B
   have hmem : ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ S) →
       oneSeparated W → W.card ∈ Q := by
     intro W hWS hsep
@@ -62,7 +62,7 @@ theorem exists_unitSeparated_closedBall_cover_of_card_bound
       · simpa only [Real.dist_eq] using (hfar y hyW).le
     · rcases Finset.mem_insert.mp hy with rfl | hyW
       · simpa only [dist_comm, Real.dist_eq] using (hfar x hxW).le
-      · exact hsep x hxW y hyW hxy
+      · apply hsep <;> assumption
   have hmax : (insert t W).card ≤ Q.max' hQ :=
     Q.le_max' (insert t W).card (hmem (insert t W) hWS' hsep')
   rw [Finset.card_insert_of_notMem htW,← hcard] at hmax
@@ -83,9 +83,8 @@ theorem volume_le_two_mul_of_separated_card_bound
   calc
     volume S ≤ volume (⋃ u ∈ W, Metric.closedBall u 1) := measure_mono hsub
     _ ≤ ∑ u ∈ W, volume (Metric.closedBall u 1) := measure_biUnion_finset_le W _
-    _ = (W.card:ℝ≥0∞)*2 := by simp [Real.volume_closedBall]
+    _ = (W.card:ℝ≥0∞)*2 := by simp
     _ = ENNReal.ofReal (2*(W.card:ℝ)) := by
-      rw [ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2)]
       simp [mul_comm]
     _ ≤ ENNReal.ofReal (2*B) :=
       ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left (hcount W hWS hsep) (by norm_num))

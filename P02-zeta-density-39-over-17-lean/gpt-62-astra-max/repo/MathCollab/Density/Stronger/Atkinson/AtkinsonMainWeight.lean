@@ -40,7 +40,7 @@ theorem zetaAtkinsonMainWeight_carrier {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G 
   rw [zetaAtkinsonMainWeight_eq_amplitude hT hx G L,
     zetaAtkinsonDivisorTest_eq_amplitude_phase T G L hx]
   simp only [zetaAtkinsonPhase, mul_zero, zero_mul, add_zero]
-  have hxC : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hx.ne'
+  have hxC  := Complex.ofReal_ne_zero.mpr hx.ne'
   field_simp
 
 theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :

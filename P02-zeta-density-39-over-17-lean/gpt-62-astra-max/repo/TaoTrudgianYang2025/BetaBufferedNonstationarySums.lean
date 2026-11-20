@@ -1,7 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedFrequencyGap
-public import Mathlib.NumberTheory.Harmonic.Bounds
 
 @[expose] public section
 
@@ -40,7 +38,6 @@ theorem sum_norm_bufferedModes_right_le_harmonic
       ring
     _ = _ := by
       rw [← Finset.mul_sum]
-      congr 1
       simp only [harmonic,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
 
 theorem sum_norm_bufferedModes_left_le_harmonic
@@ -63,7 +60,6 @@ theorem sum_norm_bufferedModes_left_le_harmonic
       ring
     _ = _ := by
       rw [← Finset.mul_sum]
-      congr 1
       simp only [harmonic,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
 
 theorem norm_bufferedModes_exterior_blocks_le_log

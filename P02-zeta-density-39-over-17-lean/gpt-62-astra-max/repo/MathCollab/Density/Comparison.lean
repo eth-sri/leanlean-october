@@ -32,7 +32,7 @@ theorem comparison_extension_bound (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
           intro q hq
           have hh := detecting_insertion_bound U ha hD
             (fun t => dirichletPhase ((q : ℝ)/M) t * conj (dirichletPhase ((r : ℝ)/M) t))
-          have hqp : 0 < q := hM.trans_le (Finset.mem_Ico.mp hq).1
+          have hqp  := hM.trans_le (Finset.mem_Ico.mp hq).1
           have he : (∑ n ∈ Finset.Ioc N (2*N),
               ‖∑ t ∈ U, dirichletPhase ((n : ℝ)/N) t *
                 (dirichletPhase ((q : ℝ)/M) t * conj (dirichletPhase ((r : ℝ)/M) t)) /
@@ -68,8 +68,7 @@ theorem detecting_pair_division_bound {T V : ℝ} {N : ℕ} {a : ℕ → ℂ}
   rw [norm_div, norm_mul, Complex.norm_conj]
   calc
     _ ≤ (N : ℝ)*(divisorMaximum T : ℝ)*(‖z‖/V^2) := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      exact div_le_div_of_nonneg_left (norm_nonneg _) (by positivity) hden
+      gcongr
     _ = _ := by dsimp [bootstrapScalar]; ring
 
 theorem bootstrapScalar_nonneg (T V : ℝ) (N : ℕ) : 0 ≤ bootstrapScalar T N V := by
@@ -88,7 +87,7 @@ theorem comparison_continuous_bound (w : ComparisonCutoff) {C T V : ℝ} {N M : 
           (detectingPolynomial N a t * conj (detectingPolynomial N a u))‖) ≤
       (C*separationMass)*bootstrapScalar T N V*(N : ℝ)*(M : ℝ)^2*U.card := by
   let b := bootstrapScalar T N V
-  have hb : 0 ≤ b := bootstrapScalar_nonneg T V N
+  have hb  := bootstrapScalar_nonneg T V N
   have hp (t u : ℝ) (ht : t ∈ U) (hu : u ∈ U) :
       (N : ℝ)*(divisorMaximum T : ℝ)*
         ‖(((N : ℝ)*M : ℝ) : ℂ)*cutoffIntegral w.toReflectionCutoff (t-u) *
@@ -108,7 +107,7 @@ theorem comparison_continuous_bound (w : ComparisonCutoff) {C T V : ℝ} {N M : 
         apply mul_le_mul
         · exact mul_le_mul_of_nonneg_left (hdecay (t-u)) (by positivity)
         · exact dyadicPolynomial_norm_le M (t-u)
-        · exact norm_nonneg _
+        · positivity
         · positivity
       _ = _ := by ring
   calc
@@ -124,7 +123,7 @@ theorem comparison_continuous_bound (w : ComparisonCutoff) {C T V : ℝ} {N M : 
       simp only [Finset.mul_sum]
     _ ≤ (b*(N : ℝ)*(M : ℝ)^2*C)*(separationMass*U.card) :=
       mul_le_mul_of_nonneg_left (separated_decay_pairs hsep) (by positivity)
-    _ = _ := by dsimp [b]; ring
+    _ = _ := by ring
 
 theorem comparison_remainder_bound (w : ComparisonCutoff) {T V : ℝ} {N M : ℕ}
     (hV : 0 < V) (a : ℕ → ℂ) (U : Finset ℝ)

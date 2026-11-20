@@ -35,8 +35,7 @@ theorem sum_reflectionBand_eq_nat {E : Type*} [AddCommMonoid E]
   · intro m hm n hn he
     have hm0 := ((mem_reflectionBand L H m).1 hm).1.le
     have hn0 := ((mem_reflectionBand L H n).1 hn).1.le
-    have hh := congrArg (fun x : ℕ => (x : ℤ)) he
-    simpa only [Int.toNat_of_nonneg hm0, Int.toNat_of_nonneg hn0] using hh
+    grind
   · intro n hn
     refine ⟨(n : ℤ), (mem_reflectionBand L H _).2 ((mem_reflectionNatBand L H n).1 hn), ?_⟩
     simp
@@ -55,8 +54,7 @@ theorem log2_block_bounds {m : ℕ} (hm : 0 < m) : 2^m.log2 ≤ m ∧ m < 2*(2^m
     simpa only [pow_succ, mul_comm] using hh
 
 theorem mem_dyadicExponents (L H : ℝ) (j : ℕ) :
-    j ∈ dyadicExponents L H ↔ ∃ m ∈ reflectionNatBand L H, m.log2 = j := by
-  exact Finset.mem_image
+    j ∈ dyadicExponents L H ↔ ∃ m ∈ reflectionNatBand L H, m.log2 = j := Finset.mem_image
 
 theorem dyadicExponent_scale_bounds {L H : ℝ} (hL : 0 < L) (_hH : 0 < H)
     {j : ℕ} (hj : j ∈ dyadicExponents L H) :
@@ -74,13 +72,13 @@ theorem dyadicExponent_scale_bounds {L H : ℝ} (hL : 0 < L) (_hH : 0 < H)
   · have hh := (div_le_iff₀ (by positivity : 0 < 20*Real.pi*L)).1 hlo
     apply (div_le_iff₀ (by positivity : 0 < 40*Real.pi*L)).2
     nlinarith [mul_lt_mul_of_pos_right hmhi (show 0 < 20*Real.pi*L by positivity)]
-  · exact hmlo.trans hhi
+  · linarith
 
 theorem dyadicExponents_card_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H) :
     (dyadicExponents L H).card ≤ 10 := by
   by_cases hn : (dyadicExponents L H).Nonempty
   · let j₀ := (dyadicExponents L H).min' hn
-    have hj₀ : j₀ ∈ dyadicExponents L H := Finset.min'_mem _ hn
+    have hj₀  := Finset.min'_mem _ hn
     have hs : dyadicExponents L H ⊆ Finset.Icc j₀ (j₀+9) := by
       intro j hj
       apply Finset.mem_Icc.mpr
@@ -133,7 +131,7 @@ theorem natBand_filter_log2 (L H : ℝ) (j : ℕ) :
       omega
     exact ⟨(log2_eq_iff_block hmpos).1 hj, hm⟩
   · rintro ⟨hb, hm⟩
-    have hmpos : 0 < m := (by positivity : 0 < 2^j).trans_le hb.1
+    have hmpos  := (by positivity : 0 < 2^j).trans_le hb.1
     exact ⟨hm, (log2_eq_iff_block hmpos).2 hb⟩
 
 theorem dirichletPhase_add (x a b : ℝ) :

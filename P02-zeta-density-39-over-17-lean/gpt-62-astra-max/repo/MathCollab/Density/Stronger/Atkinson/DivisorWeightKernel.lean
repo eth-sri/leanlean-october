@@ -94,7 +94,7 @@ theorem norm_zetaDivisorWeightNumerator_right_le {B : ℝ} (hB : 0 ≤ B)
   rw [norm_zetaDivisorWeightNumerator_right]
   calc
     _ ≤ Real.exp ((100 + B ^ 2 / 2) - q.re - 99 * u ^ 2) * (625 * (1 + |u|) ^ 8) := by
-      exact mul_le_mul (Real.exp_le_exp.mpr he) haux (norm_nonneg _) (Real.exp_pos _).le
+      gcongr
     _ = _ := by
       unfold zetaDivisorWeightEnvelope
       rw [show (100 + B ^ 2 / 2) - q.re - 99 * u ^ 2 =
@@ -126,7 +126,7 @@ theorem exists_norm_zetaDivisorWeight_le {B : ℝ} (hB : 0 ≤ B) :
   let M : ℝ := 625 * Real.exp (100 + B ^ 2 / 2)
   let J : ℝ := ∫ u : ℝ, zetaDivisorWeightEnvelope u
   have hJ : 0 ≤ J := integral_nonneg (by intro u; unfold zetaDivisorWeightEnvelope; positivity)
-  have hM : 0 < M := by dsimp [M]; positivity
+  
   refine ⟨1 + M * J / (2 * Real.pi), by positivity, ?_⟩
   intro q hq
   have h := integral_mono (integrable_zetaDivisorWeightKernel_right q).norm
@@ -141,7 +141,7 @@ theorem exists_norm_zetaDivisorWeight_le {B : ℝ} (hB : 0 ≤ B) :
   apply (mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (by positivity)).trans
   apply (mul_le_mul_of_nonneg_left h (by positivity : 0 ≤ 1 / (2 * Real.pi))).trans
   calc
-    _ = (M * J / (2 * Real.pi)) * Real.exp (-q.re) := by dsimp [J]; ring
+    _ = (M * J / (2 * Real.pi)) * Real.exp (-q.re) := by ring
     _ ≤ _ := by nlinarith [Real.exp_pos (-q.re)]
 
 end MathCollab.Density.Stronger.Atkinson

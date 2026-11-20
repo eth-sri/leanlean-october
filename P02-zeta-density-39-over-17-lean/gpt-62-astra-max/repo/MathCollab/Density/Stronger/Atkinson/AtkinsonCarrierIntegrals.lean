@@ -50,7 +50,6 @@ theorem integrable_atkinsonPowerIntegrand {T G L : ℝ}
     rw [← support_zetaAtkinsonDivisorTest]
     exact hz
   have hb := hB x (support_zetaSmoothDivisorTest_physical hT hG hL hwidth hs)
-  rw [Real.norm_eq_abs] at hb
   calc
     _ ≤ ‖zetaAtkinsonDivisorTest T G L x‖ * B :=
       mul_le_mul_of_nonneg_left hb (norm_nonneg _)

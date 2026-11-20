@@ -15,7 +15,7 @@ theorem shifted_lattice_decay (α : ℝ) :
     (∑' n : ℤ, 1/(1+|(n:ℝ)-α|)^2) ≤ MathCollab.Density.separationMass := by
   let q := ⌊-α⌋
   let F : ℤ → ℝ := fun n => 4/(1+|(n:ℝ)|)^2
-  have hs : Summable (fun n : ℤ => F (n+q)) :=
+  have hs  :=
     (Equiv.addRight q).summable_iff.mpr MathCollab.Density.summable_separation_majorant
   have hb (n : ℤ) : 1/(1+|(n:ℝ)-α|)^2 ≤ F (n+q) := by
     simpa [F, q, sub_eq_add_neg, Int.floor_intCast_add] using

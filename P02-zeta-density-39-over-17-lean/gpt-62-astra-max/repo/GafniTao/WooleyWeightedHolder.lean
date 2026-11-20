@@ -37,7 +37,7 @@ theorem wooley_weighted_rpow_sum_le
     dsimp [D]
     exact Finset.sum_nonneg fun i hi =>
       mul_nonneg (hw i) (Real.rpow_nonneg (hf i) p)
-  have hpPos : 0 < p := zero_lt_one.trans_le hp
+  have hpPos  := zero_lt_one.trans_le hp
   have hHolder : A ≤ W ^ (1 - p⁻¹) * D ^ p⁻¹ := by
     simpa only [A, W, D] using
       Real.inner_le_weight_mul_Lp_of_nonneg t hp w f hw hf
@@ -47,12 +47,12 @@ theorem wooley_weighted_rpow_sum_le
     _ = (W ^ (p - 1)) * D := by
       rw [Real.mul_rpow (Real.rpow_nonneg hW _) (Real.rpow_nonneg hD _),
         ← Real.rpow_mul hW, ← Real.rpow_mul hD]
-      have hpNe : p ≠ 0 := ne_of_gt hpPos
+      have hpNe  := ne_of_gt hpPos
       rw [inv_mul_cancel₀ hpNe, Real.rpow_one]
       congr 1
       field_simp
     _ = (∑ i ∈ t, w i) ^ (p - 1) *
-        ∑ i ∈ t, w i * f i ^ p := by rfl
+        ∑ i ∈ t, w i * f i ^ p := rfl
 
 
 end

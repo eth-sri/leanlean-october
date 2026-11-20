@@ -20,19 +20,19 @@ theorem rational_energy_dilated_overlap {k : ℕ} (hk : 1 ≤ k)
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       Y^k ≤ W.card → T ≤ Y^k*W.card →
       rationalEnergy A W ≤ D*Y^η*Y*(W.card : ℝ)^2 := by
-  have hkp : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+  
   obtain ⟨C, hC, hdual⟩ := rational_dual_moment hk (show 0 < η*(k : ℝ) by positivity)
   let F := C*(1+B^(2*k))*B^(η*(k : ℝ))
   let D := max 1 F
   have hD : 1 ≤ D := le_max_left _ _
-  have hFD : F ≤ D^k := (le_max_right 1 F).trans (by
+  have hFD  := (le_max_right 1 F).trans (by
     simpa only [pow_one] using pow_le_pow_right₀ hD hk)
   refine ⟨D, by linarith, ?_⟩
   intro Y hY H hH hHY T t₀ hT A hA W hW hsep hYR hTR
   have hHpos : (0 : ℝ) < H := by exact_mod_cast (show 0 < H by omega)
   have hBpos : 0 < B := by linarith
   let R : ℝ := W.card
-  have hR : 0 ≤ R := Nat.cast_nonneg _
+  
   have hE : 0 ≤ rationalEnergy A W := sum_nonneg (fun _ _ => sq_nonneg _)
   have htotal : T+(H : ℝ)^(2*k) ≤ (1+B^(2*k))*Y^k*R := by
     have hh := pow_le_pow_left₀ hHpos.le hHY (2*k)
@@ -54,11 +54,9 @@ theorem rational_energy_dilated_overlap {k : ℕ} (hk : 1 ≤ k)
       hdual H hH T t₀ hT A hA W hW hsep
     _ ≤ R^(2*k-1)*(C*((1+B^(2*k))*Y^k*R)*(B^(η*(k : ℝ))*(Y^η)^k)) := by gcongr
     _ = F*(Y^η)^k*Y^k*R^(2*k) := by
-      calc
-        _ = F*(Y^η)^k*Y^k*(R^(2*k-1)*R) := by dsimp [F]; ring
-        _ = _ := by rw [hRmul]
+      grind
     _ ≤ D^k*(Y^η)^k*Y^k*R^(2*k) := by gcongr
-    _ = _ := by simp only [mul_pow, ← pow_mul]; ring
+    _ = _ := by ring
 
 theorem rational_energy_dilated_cover {K : ℕ} (hK : 1 ≤ K)
     {δ η B : ℝ} (hδ : 0 < δ) (hη : 0 < η) (hB : 1 ≤ B) :
@@ -82,11 +80,11 @@ theorem rational_energy_dilated_cover {K : ℕ} (hK : 1 ≤ K)
   refine ⟨D, hD, ?_⟩
   intro T t₀ r m hT hr1 hr hδm hm H hH hHpow A hA W hRpow hW hsep
   obtain ⟨k, hKk, hkJ, hlo, hhi⟩ := finite_moment_cover hK hδ hδm hr1 hr hm
-  have hk : 1 ≤ k := hK.trans hKk
-  have hki : k-1+1 = k := Nat.sub_add_cancel hk
+  have hk  := hK.trans hKk
+  have hki  := Nat.sub_add_cancel hk
   have hCk : C (k-1) ≤ D := by
     have hh : C (k-1) ≤ ∑ n ∈ range J, C n :=
-      single_le_sum (fun n _ => (hC n).le) (mem_range.mpr (by dsimp [J]; omega))
+      single_le_sum (fun n _ => (hC n).le) (mem_range.mpr (by omega))
     dsimp [D]
     linarith
   have hTp : 0 < T := by linarith
@@ -122,13 +120,13 @@ theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
   intro T t₀ M hT hM A hA W hRT hR hMR hW hsep
   have hTp : 0 < T := by linarith
   have hBp : 0 < B := by linarith
-  have hBM : 0 ≤ B*M := mul_nonneg hBp.le hM
+  have hBM  := mul_nonneg hBp.le hM
   by_cases he : A.Nonempty
   · obtain ⟨q, hq⟩ := he
     have hMpos : 0 < M := by
       have hd : (0 : ℝ) < q.den := by exact_mod_cast q.pos
       nlinarith [(hA q hq).2.1]
-    have hH : 1 ≤ ⌊B*M⌋₊ := (show 1 ≤ q.den from q.pos).trans
+    have hH  := (show 1 ≤ q.den from q.pos).trans
       ((Nat.le_floor_iff hBM).mpr (hA q hq).2.1)
     have hAf : ∀ q ∈ A, 0 < q ∧ q.den ≤ ⌊B*M⌋₊ ∧ |Real.log (q : ℝ)| ≤ 1 := by
       intro q hq
@@ -145,10 +143,10 @@ theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
         _ = (3*B^2)*M*M*(W.card : ℝ)^2 := by ring
         _ ≤ (3*B^2)*T^η*M*(W.card : ℝ)^2 := by gcongr; exact hs.trans hhalf
         _ ≤ _ := by gcongr; linarith
-    · have hlog : 0 < Real.log T := Real.log_pos hT
-      have hRp : (0 : ℝ) < W.card := (Real.rpow_pos_of_pos hTp _).trans_le hR
+    · have hlog  := Real.log_pos hT
+      have hRp  := (Real.rpow_pos_of_pos hTp _).trans_le hR
       have hKp : (0 : ℝ) < K := by exact_mod_cast (show 0 < K by omega)
-      have hr1 : Real.log W.card / Real.log T ≤ 1 :=
+      have hr1  :=
         (div_le_one hlog).mpr (Real.log_le_log hRp hRT)
       have hr : ((K : ℝ)+1)/(2*K+1) ≤ Real.log W.card / Real.log T := by
         apply (le_div_iff₀ hlog).mpr
@@ -171,13 +169,13 @@ theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
       rw [hpow] at hh
       have hMT : M ≤ T := by
         by_cases hM1 : M ≤ 1
-        · exact hM1.trans hT.le
+        · linarith
         · have hp : M ≤ M^K := by
             simpa only [pow_one] using pow_le_pow_right₀ (le_of_lt (lt_of_not_ge hM1)) hK
           exact hp.trans (hMR.trans hRT)
-      have hp : M^(η/2) ≤ T^η := (Real.rpow_le_rpow hM hMT (by positivity)).trans hhalf
+      have hp  := (Real.rpow_le_rpow hM hMT (by positivity)).trans hhalf
       exact hh.trans (by gcongr; nlinarith [sq_nonneg B])
-  · have hAe : A = ∅ := not_nonempty_iff_eq_empty.mp he
+  · have hAe  := not_nonempty_iff_eq_empty.mp he
     rw [hAe, rationalEnergy, sum_empty]
     positivity
 

@@ -43,9 +43,9 @@ theorem compactKernel_bound : ∃ B : ℝ, 0 < B ∧ ∀ x, ‖compactKernel x�
 
 theorem compactKernel_schwartz : ∃ ψ : 𝓢(ℝ, ℂ),
     (ψ : ℝ → ℂ) = fun x => (compactKernel x : ℂ) := by
-  have hc : HasCompactSupport (fun x => (compactKernel x : ℂ)) :=
+  have hc  :=
     compactKernel_compact.comp_left (g := Complex.ofReal) (by simp)
-  have hd : ContDiff ℝ ∞ (fun x => (compactKernel x : ℂ)) :=
+  have hd  :=
     Complex.ofRealCLM.contDiff.comp compactKernel_smooth
   exact ⟨hc.toSchwartzMap hd, rfl⟩
 

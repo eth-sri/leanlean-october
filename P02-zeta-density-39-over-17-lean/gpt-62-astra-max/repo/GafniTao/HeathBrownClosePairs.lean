@@ -51,8 +51,8 @@ theorem heathBrownPairCountTwo_index_separation
       (4 * (((H : ℝ) ^ (k - 1))⁻¹)) / mu := by
   have hpMem := hp
   rw [mem_heathBrownPairCountTwo] at hp
-  have hmN : m ≤ N := hp.2.1
-  have hnN : n ≤ N := hp.2.2.2.1
+  have hmN  := hp.2.1
+  have hnN  := hp.2.2.2.1
   have hmI : (m : ℝ) ∈ Set.Icc (0 : ℝ) N :=
     ⟨by positivity, by exact_mod_cast hmN⟩
   have hnI : (n : ℝ) ∈ Set.Icc (0 : ℝ) N :=
@@ -76,7 +76,7 @@ theorem heathBrownPairCountTwo_index_separation
     rw [abs_of_nonpos (sub_nonpos.mpr (by exact_mod_cast hmn)), neg_sub,
       div_eq_mul_inv]
     have hmuInv : mu * mu⁻¹ = 1 := by field_simp
-    have hinvPos : 0 < mu⁻¹ := inv_pos.mpr hmuPos
+    have hinvPos  := inv_pos.mpr hmuPos
     nlinarith [mul_le_mul_of_nonneg_right hslope hinvPos.le]
   · have hslope := heathBrown_lower_slope hg hgd hderivLower hnI hmI
       (by exact_mod_cast hnm)
@@ -95,7 +95,7 @@ theorem heathBrownPairCountTwo_index_separation
     rw [abs_of_nonneg (sub_nonneg.mpr (by exact_mod_cast hnm)),
       div_eq_mul_inv]
     have hmuInv : mu * mu⁻¹ = 1 := by field_simp
-    have hinvPos : 0 < mu⁻¹ := inv_pos.mpr hmuPos
+    have hinvPos  := inv_pos.mpr hmuPos
     nlinarith [mul_le_mul_of_nonneg_right hslope hinvPos.le]
 
 

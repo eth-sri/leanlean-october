@@ -68,7 +68,7 @@ theorem exists_atkinsonStationary_finite_power_error {δ ε : ℝ}
   obtain ⟨D,hD⟩ := eventually_atTop.mp (eventually_const_log_pow_le_rpow 1 (by norm_num) 2 hη)
   refine ⟨C,hC,max B D,hB.trans (le_max_left _ _),?_⟩
   intro T G hT hlower hupper hquarter
-  have hTB : B ≤ T := (le_max_left _ _).trans hT
+  have hTB  := (le_max_left _ _).trans hT
   have hT0 : 0 < T := by linarith
   have hlog := hD T ((le_max_right _ _).trans hT)
   simp only [one_mul] at hlog

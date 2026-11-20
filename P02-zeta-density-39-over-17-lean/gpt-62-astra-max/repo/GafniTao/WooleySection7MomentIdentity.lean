@@ -320,7 +320,7 @@ theorem norm_wooleySourceNormalizedPolynomialSum_pow_even
         ‖wooleySourcePolynomialSum phi gamma alpha‖ ^ (2 * R) := by
   unfold wooleySourceNormalizedPolynomialSum
   rw [ite_eq_right hmass, norm_mul, norm_inv]
-  have hnonneg : 0 ≤ wooleySourceMassSq gamma :=
+  have hnonneg  :=
     wooleySourceMassSq_nonneg gamma
   rw [Complex.norm_real]
   rw [Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]

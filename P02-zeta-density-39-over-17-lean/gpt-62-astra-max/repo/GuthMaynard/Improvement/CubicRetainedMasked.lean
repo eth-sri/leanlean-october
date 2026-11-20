@@ -42,19 +42,18 @@ theorem retained_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
   let Z := T^(-100:ℝ)*Real.sqrt M^3
   have hT1 : 1 ≤ T := by linarith
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
+  have hLp  := (Real.rpow_pos_of_pos hTp _).trans_le hLl
   have hM : 0 ≤ M := integral_nonneg (fun _ => sq_nonneg _)
-  have hQ : 0 ≤ Q := integral_nonneg (fun _ => sq_nonneg _)
+  
   have hQM : Q ≤ M := by
     calc
       _ ≤ ∫ ξ, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2 :=
         setIntegral_le_integral (ordinary_real_fourier_square_integrable hi h2)
           (Filter.Eventually.of_forall (fun _ => sq_nonneg _))
       _ = _ := ordinary_real_fourier_integral_square hi h2
-  have hAc : ∀ ξ, -ξ ∈ Aᶜ ↔ ξ ∈ Aᶜ := fun ξ => not_congr (hAsym ξ)
+  have hAc  := fun ξ => not_congr (hAsym ξ)
   have hUniv : ∀ ξ : ℝ, -ξ ∈ (univ : Set ℝ) ↔ ξ ∈ (univ : Set ℝ) := by simp
-  have hS : ∀ m ∈ retainedCubicModes U, m.1 ∈ poissonModes U ∧
-      m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U :=
+  have hS  :=
     fun m hm => (retainedCubicModes_mem U m).mp hm
   have hlow := h T L t₀ t₁ μ Aᶜ Aᶜ Aᶜ Aᶜ (retainedCubicModes U)
     hT hLl hLu ht hlen hm h0 hi h2 hsup hA.compl hA.compl hA.compl hA.compl
@@ -75,11 +74,11 @@ theorem retained_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
     calc
       _ ≤ T^ε*Real.sqrt M*(T^2*M+T*L*Real.sqrt E₀) := by
         apply mul_le_mul
-        · exact mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hQM) (Real.rpow_nonneg hTp.le _)
-        · exact add_le_add (mul_le_mul_of_nonneg_left hQM (sq_nonneg T)) le_rfl
+        · gcongr
+        · gcongr
         · positivity
         · positivity
-      _ = T^ε*X := by dsimp [X]; ring
+      _ = T^ε*X := by ring
   have hh₁ : ‖maskedRetainedCubic a μ L U A univ univ‖ ≤ C*(T^ε*Y+Z) := by
     simpa only [maskedRetainedCubic, Y, Z, M, E, A₂, mul_assoc, setIntegral_univ,ordinary_real_fourier_integral_square hi h2] using hhigh₁
   have hh₂ : ‖maskedRetainedCubic a μ L U A univ Aᶜ‖ ≤ C*(T^ε*Y+Z) := by

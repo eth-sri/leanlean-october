@@ -45,7 +45,7 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
   obtain ⟨K,C,hK,hC,h⟩ := reflection_signed_shell_budget w (q := 2) (by norm_num) hε hA hp
   refine ⟨2*(C+8*K^2),by positivity,?_⟩
   intro N L H u hN hNL hH hupper a μ ha hm hi h0 hμ
-  let := timeMeasure_finite hi
+  
   let F := fun t => μ t*‖centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L (t-u)‖^2
   have hiF : Integrable F := centered_row_integrable w (by linarith) u hi
   have hF0 (t : ℝ) : 0 ≤ F t := mul_nonneg (h0 t) (sq_nonneg _)
@@ -54,7 +54,7 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
     have hSm : MeasurableSet S := by
       rcases hS with rfl | hS
       · exact measurableSet_Icc
-      · have heS : S = Icc (u-2*H) (u-H) := hS
+      · have heS  := hS
         subst S
         exact measurableSet_Icc
     have hmass : ((timeMeasure μ).restrict S).real univ ≤ 4*N^2*H := by
@@ -64,7 +64,7 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
       rcases hS with rfl | hS
       · have hh := source_density_interval_mass hN a ha μ hi hμ (show u+H ≤ u+2*H by linarith)
         convert hh using 1; ring
-      · have heS : S = Icc (u-2*H) (u-H) := hS
+      · have heS  := hS
         subst S
         have hh := source_density_interval_mass hN a ha μ hi hμ (show u-2*H ≤ u-H by linarith)
         convert hh using 1; ring
@@ -84,12 +84,8 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
     intro t ht
     change H < |t-u| ∧ |t-u| ≤ 2*H at ht
     rcases lt_or_ge (t-u) 0 with hn | hn
-    · right
-      rw [abs_of_neg hn] at ht
-      constructor <;> linarith [ht.1,ht.2]
-    · left
-      rw [abs_of_nonneg hn] at ht
-      constructor <;> linarith [ht.1,ht.2]
+    · grind
+    · grind
   calc
     _ ≤ ∫ t in Icc (u+H) (u+2*H) ∪ Icc (u-2*H) (u-H), F t :=
       setIntegral_mono_set hiF.integrableOn (Filter.Eventually.of_forall hF0)

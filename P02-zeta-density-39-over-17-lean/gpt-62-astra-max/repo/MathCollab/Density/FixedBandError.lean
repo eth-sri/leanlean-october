@@ -47,8 +47,7 @@ theorem summable_retainedMode (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H v
   unfold retainedMode
   split_ifs
   · exact le_rfl
-  · simpa only [norm_zero] using
-      norm_nonneg (modeIntegral (fun x => (w x : ℂ)) v ((m : ℝ) * L))
+  · bound
 
 theorem summable_discardedMode (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H v : ℝ) :
     Summable (discardedMode (fun x => (w x : ℂ)) L H v) := by
@@ -58,8 +57,7 @@ theorem summable_discardedMode (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H 
   unfold discardedMode
   split_ifs
   · exact le_rfl
-  · simpa only [norm_zero] using
-      norm_nonneg (modeIntegral (fun x => (w x : ℂ)) v ((m : ℝ) * L))
+  · bound
 
 theorem nonzeroMode_eq_retained_add_discarded (w : ℝ → ℂ) (L H v : ℝ) (m : ℤ) :
     nonzeroMode w L v m = retainedMode w L H v m + discardedMode w L H v m := by
@@ -68,7 +66,7 @@ theorem nonzeroMode_eq_retained_add_discarded (w : ℝ → ℂ) (L H v : ℝ) (m
   · subst m
     have hnot : ¬inReflectionBand L H 0 := by intro h; exact lt_irrefl 0 h.1
     simp only [hnot, ↓reduceIte, ne_eq, not_true_eq_false, false_and, add_zero]
-  · by_cases hb : inReflectionBand L H m <;> simp [hm, hb]
+  · grind
 
 /-- Exact fixed-band decomposition of h_L, before any estimate. -/
 theorem hKernel_sub_bandContribution (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H v : ℝ) :

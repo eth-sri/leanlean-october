@@ -29,7 +29,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem neumann_cpow_positive_real_mul {r : ℝ} (hr : 0 < r) {z : ℂ}
     (hz : z ≠ 0) (s : ℂ) :
     ((r : ℂ) * z) ^ s = (r : ℂ) ^ s * z ^ s := by
-  have hr0 : (r : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hr.ne'
+  have hr0  := Complex.ofReal_ne_zero.mpr hr.ne'
   rw [Complex.cpow_def_of_ne_zero (mul_ne_zero hr0 hz),
     Complex.log_ofReal_mul hr hz, Complex.ofReal_log hr.le,
     add_mul, Complex.exp_add, ← Complex.cpow_def_of_ne_zero hr0,
@@ -74,7 +74,7 @@ theorem neumannContourKernel_unit_ray (x : ℝ) {t : ℝ} (ht : 0 < t) :
       push_cast
       calc
         _ = I * (x : ℂ) + (x : ℂ) * t * (I * I) := by ring
-        _ = _ := by rw [I_mul_I]; ring
+        _ = _ := by simp
     rw [harg, Complex.exp_add, ← Complex.ofReal_exp]
   unfold neumannContourKernel
   have htwo := neumann_cpow_positive_real_mul (by norm_num : (0 : ℝ) < 2) hp0 (-(1 / 2 : ℂ))
@@ -100,7 +100,7 @@ theorem integrableOn_neumannLaplaceIntegrand {x : ℝ} (hx : 0 < x) :
   have hm : AEStronglyMeasurable (neumannLaplaceIntegrand x) (volume.restrict (Ioi 0)) := by
     unfold neumannLaplaceIntegrand
     apply AEStronglyMeasurable.mul
-    · exact (Complex.measurable_ofReal.comp (by fun_prop)).aestronglyMeasurable
+    · fun_prop
     · exact (continuous_neumannLaplaceAmplitude.comp (by fun_prop)).aestronglyMeasurable
   apply hi.mono' hm
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht

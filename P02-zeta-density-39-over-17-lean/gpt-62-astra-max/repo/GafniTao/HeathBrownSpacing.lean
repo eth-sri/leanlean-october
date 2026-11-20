@@ -27,8 +27,7 @@ def heathBrownDistanceToInteger (x : ℝ) : ℝ :=
   |x - (round x : ℝ)|
 
 theorem heathBrownDistanceToInteger_nonneg (x : ℝ) :
-    0 ≤ heathBrownDistanceToInteger x := by
-  exact abs_nonneg _
+    0 ≤ heathBrownDistanceToInteger x := abs_nonneg _
 
 /-- On the centered fundamental interval, distance to the nearest integer
 is the ordinary absolute value.  The right endpoint is handled separately
@@ -37,13 +36,12 @@ theorem heathBrownDistanceToInteger_eq_abs_of_abs_le_half
     {x : ℝ} (hx : |x| ≤ 1 / 2) :
     heathBrownDistanceToInteger x = |x| := by
   rcases lt_or_eq_of_le (le_trans (le_abs_self x) hx) with hlt | heq
-  · have hlo : -(1 / 2 : ℝ) ≤ x := by
-      exact (neg_le_of_abs_le hx)
+  · have hlo := (neg_le_of_abs_le hx)
     have hround : round x = 0 := by
       rw [round_eq_zero_iff]
       exact ⟨hlo, hlt⟩
     simp [heathBrownDistanceToInteger, hround]
-  · have hxhalf : x = (1 : ℝ) / 2 := heq
+  · have hxhalf  := heq
     subst x
     norm_num [heathBrownDistanceToInteger]
 
@@ -78,14 +76,7 @@ theorem heathBrown_same_round_upper_difference
     (hn : |g n - (round (g n) : ℝ)| ≤ theta)
     (hround : round (g m) = round (g n)) :
     |g m - g n| ≤ 2 * theta := by
-  have htriangle := abs_sub_le (g m) (round (g m) : ℝ) (g n)
-  have hmiddle :
-      |(round (g m) : ℝ) - g n| =
-        |g n - (round (g n) : ℝ)| := by
-    rw [hround]
-    exact abs_sub_comm _ _
-  rw [hmiddle] at htriangle
-  linarith
+  grind
 
 /-- Two counted points in one nearest-integer fiber have source-index
 separation at most `2 theta / mu`.  This is the exact finite packing input
@@ -135,15 +126,15 @@ theorem heathBrown_spacing_fiber_card_le
       (fun n : ℕ => round (g (n : ℝ)) = q)).card ≤
       ⌊max 0 (2 * theta / mu)⌋₊ + 1 := by
   classical
-  let F : Finset ℕ := (heathBrownSpacingSet N g theta).filter
+  let F  := (heathBrownSpacingSet N g theta).filter
     (fun n : ℕ => round (g (n : ℝ)) = q)
   change F.card ≤ ⌊max 0 (2 * theta / mu)⌋₊ + 1
   by_cases hF : F.Nonempty
   · let n₀ := F.min' hF
-    have hn₀F : n₀ ∈ F := Finset.min'_mem F hF
-    have hn₀S : n₀ ∈ heathBrownSpacingSet N g theta :=
+    have hn₀F  := Finset.min'_mem F hF
+    have hn₀S  :=
       (Finset.mem_filter.mp hn₀F).1
-    have hn₀Round : round (g n₀) = q :=
+    have hn₀Round  :=
       (Finset.mem_filter.mp hn₀F).2
     have htheta : 0 ≤ theta := by
       rw [mem_heathBrownSpacingSet] at hn₀S
@@ -170,7 +161,7 @@ theorem heathBrown_spacing_fiber_card_le
         omega
       _ = ⌊max 0 (2 * theta / mu)⌋₊ + 1 := by
         rw [max_eq_right hRnonneg]
-  · have : F = ∅ := Finset.not_nonempty_iff_eq_empty.mp hF
+  · have  := Finset.not_nonempty_iff_eq_empty.mp hF
     simp only [this, Finset.card_empty, Nat.zero_le]
 
 /-- Every nearest integer arising from a counted source point lies in the
@@ -185,9 +176,9 @@ theorem heathBrown_spacing_round_mem_endpoint_interval
     round (g n) ∈
       Finset.Icc ⌊g 1 - theta⌋ ⌈g N + theta⌉ := by
   rw [mem_heathBrownSpacingSet] at hn
-  have htheta : 0 ≤ theta := (abs_nonneg _).trans hn.2.2
-  have h1n : (1 : ℕ) ≤ n := hn.1
-  have hnN : n ≤ N := hn.2.1
+  
+  have h1n  := hn.1
+  have hnN  := hn.2.1
   have hOneI : (1 : ℝ) ∈ Set.Icc (0 : ℝ) N := by
     exact ⟨by norm_num, by exact_mod_cast hN⟩
   have hnI : (n : ℝ) ∈ Set.Icc (0 : ℝ) N := by
@@ -202,8 +193,8 @@ theorem heathBrown_spacing_round_mem_endpoint_interval
     exact mul_nonneg hmuPos.le (sub_nonneg.mpr (by exact_mod_cast h1n))
   have hmuN : 0 ≤ mu * ((N : ℝ) - n) := by
     exact mul_nonneg hmuPos.le (sub_nonneg.mpr (by exact_mod_cast hnN))
-  have hgOne : g 1 ≤ g n := by linarith
-  have hgN : g n ≤ g N := by linarith
+  
+  
   have hroundLower : g n - theta ≤ (round (g n) : ℝ) := by
     have := le_of_abs_le hn.2.2
     linarith
@@ -212,7 +203,7 @@ theorem heathBrown_spacing_round_mem_endpoint_interval
     linarith
   rw [Finset.mem_Icc]
   constructor
-  · have hreal : (⌊g 1 - theta⌋ : ℝ) ≤ (round (g n) : ℝ) :=
+  · have hreal  :=
       (Int.floor_le (g 1 - theta)).trans (by linarith)
     exact_mod_cast hreal
   · have hreal : (round (g n) : ℝ) ≤ (⌈g N + theta⌉ : ℝ) := by
@@ -235,9 +226,7 @@ theorem heathBrown_spacing_card_le_exact
     (f := fun n : ℕ => round (g (n : ℝ)))
     (s := heathBrownSpacingSet N g theta)
     (t := Finset.Icc ⌊g 1 - theta⌋ ⌈g N + theta⌉)
-  · intro n hn
-    exact heathBrown_spacing_round_mem_endpoint_interval hN hmuPos hg hgd
-      hderivLower hn
+  · apply heathBrown_spacing_round_mem_endpoint_interval <;> assumption
   · intro q hq
     exact heathBrown_spacing_fiber_card_le hmuPos hg hgd hderivLower q
 

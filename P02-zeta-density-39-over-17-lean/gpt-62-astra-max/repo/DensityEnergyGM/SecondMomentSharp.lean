@@ -32,14 +32,14 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
   have hCpos : 0 < C := by dsimp only [C, K₁, K₂, D]; positivity
   refine ⟨C, T₀, hCpos, hT₀, ?_⟩
   intro M T a W hM hT hMT ha hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
+  have hTtwo  := hT₀.trans hT
   have hTone : 1 ≤ T := by linarith
   have hTpos : 0 < T := by linarith
   have hM0 : (0 : ℝ) ≤ M := Nat.cast_nonneg _
   have hE0 : 0 ≤ (discreteAdditiveEnergy W : ℝ) := Nat.cast_nonneg _
   by_cases hW : W.Nonempty
   swap
-  · have he : W = ∅ := Finset.not_nonempty_iff_eq_empty.mp hW
+  · have he  := Finset.not_nonempty_iff_eq_empty.mp hW
     subst W
     simp only [Finset.sum_empty]
     positivity
@@ -52,9 +52,9 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
   have hCzero : 0 ≤ C₀ := by linarith
   have hK0 : 0 ≤ K := by dsimp only [K]; positivity
   have hB0 : 0 ≤ B := by dsimp only [B]; positivity
-  have hR0 : 0 ≤ R := Nat.cast_nonneg _
+  
   have hP0 : 0 ≤ P := by dsimp only [P]; positivity
-  have hZ0 : 0 ≤ Z := by dsimp only [Z]; positivity
+  
   have hD : 1 ≤ D := Real.one_le_rpow (by norm_num) (by norm_num)
   have hBquarter : B ^ (1 / 4 : ℝ) ≤ D * (P + Z) := by
     have h : B ^ (1 / 4 : ℝ) ≤ P + D * Z := by
@@ -88,7 +88,7 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
         apply mul_le_mul_of_nonneg_left ?_ (by positivity)
         apply mul_le_mul ?_ hBquarter (by positivity) (by positivity)
         exact mul_le_mul_of_nonneg_left hQuarterPow (by positivity)
-      _ = _ := by dsimp only [K₁]; ring
+      _ = _ := by ring
   have hSecond : 3 * Real.sqrt K * (M : ℝ) ^ 2 * Real.log T ≤
       K₂ * T ^ ε * ((M : ℝ) ^ 2 * E ^ (1 / 2 : ℝ)) := by
     rw [hKhalf]
@@ -98,7 +98,7 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
             (T ^ (ε / 2) * Real.log T) := by ring
       _ ≤ (3 * E ^ (1 / 2 : ℝ) * C₀ ^ (1 / 2 : ℝ) *
           (2 : ℝ) ^ (ε / 2) * (M : ℝ) ^ 2) * (T ^ ε / (ε / 2)) := by gcongr
-      _ = _ := by dsimp only [K₂]; ring
+      _ = _ := by ring
   have h := hLog M T a W hM hT hMT ha hSep hBase hW
   change (∑ t ∈ W, ∑ u ∈ W, ‖dirichletPoly M a (t - u)‖ ^ 2) ≤
     2 * R * Real.sqrt (Real.sqrt K * Real.sqrt B) +
@@ -113,6 +113,6 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
       h.trans (add_le_add hFirst hSecond)
     _ ≤ C * T ^ ε * (R * E ^ (1 / 4 : ℝ) * (P + Z)) +
         C * T ^ ε * ((M : ℝ) ^ 2 * E ^ (1 / 2 : ℝ)) := by gcongr
-    _ = _ := by dsimp only [R, E, P, Z]; ring
+    _ = _ := by ring
 
 end Montgomery.RationalMoment

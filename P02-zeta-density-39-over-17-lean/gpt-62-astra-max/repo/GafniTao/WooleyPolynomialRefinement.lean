@@ -57,11 +57,7 @@ theorem wooleyPolynomial_sum_refined_residue_grid
     rw [hcast]
     by_cases hxi : ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ a))) = xi <;>
       simp [hxi]
-  · intro z hzne
-    by_cases hzxi : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi
-    · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
-    · rw [ite_eq_right hzxi]
+  · grind
 
 theorem wooleyPolynomial_refined_normalized_residue_decomposition
     {Q p a b qB k : ℕ} [NeZero p] [NeZero qB]
@@ -108,7 +104,7 @@ theorem wooleyPolynomial_lemma_6_2
     dsimp [M] at hMzero
     rw [hMzero, zero_mul]
     exact mul_nonneg (by positivity) hR
-  · have hMpos : 0 < M := lt_of_le_of_ne
+  · have hMpos  := lt_of_le_of_ne
       (wooleyWeightedResidueMassSq_nonneg gamma xi) (Ne.symm hMzero)
     have hholder := wooley_weighted_complex_sum_pow_le
       (wooleyResidueRefinementFiber p a b hab xi)

@@ -23,8 +23,7 @@ theorem atkinsonSaddle_quarter_power_curvature {T : ℝ} (hT : 0 < T) (b : ℝ) 
       Real.sqrt (2*atkinsonSaddleCurvature T b) = atkinsonCommonSaddleFactor T b := by
   let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
   have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
-  have hc : 0 < atkinsonSaddleCurvature T b := by
-    linarith [one_lt_atkinsonSaddleCurvature hT b]
+  
   have hp : T^(-(1/4 : ℝ)) * (zetaAtkinsonSaddle T b/T)^(-(1/4 : ℝ)) =
       (Real.sqrt r)⁻¹ := by
     rw [← Real.mul_rpow hT.le (by unfold zetaAtkinsonSaddle; positivity),

@@ -47,7 +47,7 @@ theorem exists_zetaAtkinsonBesselPlus_powerSaving {δ : ℝ} (hδ : 0 < δ) (A :
     obtain ⟨hG, hlog, hwidth, _⟩ := hsupport.2 G hlower
     have hb := hbound T G (Real.log T) hsupport.1 hG (hscale.2.2 G hG hupper).1 hlog hwidth
     have hp := mul_le_mul_of_nonneg_left
-      (besselK0_source_power_absorb (by linarith [hsupport.1]) hTC hkA) hG.le
+      (besselK0_source_power_absorb (by linarith) hTC hkA) hG.le
     apply hb.trans
     convert hp using 1
     ring

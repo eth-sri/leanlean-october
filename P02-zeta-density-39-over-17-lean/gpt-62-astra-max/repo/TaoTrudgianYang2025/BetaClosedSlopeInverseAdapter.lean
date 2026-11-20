@@ -1,8 +1,6 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaSlopeInverse
 public import TaoTrudgianYang2025.BetaClosedSlope
-public import Mathlib
 
 @[expose] public section
 set_option autoImplicit false

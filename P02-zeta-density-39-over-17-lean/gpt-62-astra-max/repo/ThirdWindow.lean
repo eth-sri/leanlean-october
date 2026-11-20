@@ -1,7 +1,7 @@
 module
 public import GeneralAdditiveEnergy
 public import GeneralCubicLargeValues
-public import GeneralDetectorCover
+public import DensityWindowBudgets
 
 @[expose] public section
 

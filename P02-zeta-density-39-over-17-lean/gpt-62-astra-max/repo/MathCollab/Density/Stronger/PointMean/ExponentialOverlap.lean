@@ -26,9 +26,7 @@ theorem exp_neg_abs_le_half_pow_floor (u x : ℝ) :
       (1 / 2 : ℝ) ^ Nat.floor |u - x| := by
   have hfloor : (Nat.floor |u - x| : ℝ) ≤ |u - x| :=
     Nat.floor_le (abs_nonneg _)
-  have hexp : Real.exp (-|u - x|) ≤
-      Real.exp (-(Nat.floor |u - x| : ℝ)) := by
-    exact Real.exp_le_exp.mpr (neg_le_neg hfloor)
+  have hexp := Real.exp_le_exp.mpr (neg_le_neg hfloor)
   have hrewrite : Real.exp (-(Nat.floor |u - x| : ℝ)) =
       (Real.exp (-1)) ^ Nat.floor |u - x| := by
     rw [← Real.exp_nat_mul]
@@ -48,7 +46,7 @@ theorem separated_distance_shell_card_le_two
     (W : Finset ℝ) (x : ℝ) (k : ℕ) (hSep : oneSeparated W) :
     ({u ∈ W | Nat.floor |u - x| = k}).card ≤ 2 := by
   let S := {u ∈ W | Nat.floor |u - x| = k}
-  let P : ℝ → Prop := fun u => x ≤ u
+  let P  := fun u => x ≤ u
   have hpos : (S.filter P).card ≤ 1 := by
     rw [Finset.card_le_one]
     intro a ha b hb
@@ -113,7 +111,7 @@ theorem separated_distance_shell_card_le_two
 theorem sum_exp_neg_abs_sub_le_four
     (W : Finset ℝ) (x : ℝ) (hSep : oneSeparated W) :
     ∑ u ∈ W, Real.exp (-|u - x|) ≤ 4 := by
-  let shell : ℝ → ℕ := fun u => Nat.floor |u - x|
+  let shell  := fun u => Nat.floor |u - x|
   have hpoint : ∀ u ∈ W, Real.exp (-|u - x|) ≤
       (1 / 2 : ℝ) ^ shell u := by
     intro u _hu
@@ -121,7 +119,7 @@ theorem sum_exp_neg_abs_sub_le_four
   calc
     ∑ u ∈ W, Real.exp (-|u - x|) ≤
         ∑ u ∈ W, (1 / 2 : ℝ) ^ shell u := by
-      exact Finset.sum_le_sum fun u hu => hpoint u hu
+      apply Finset.sum_le_sum <;> assumption
     _ = ∑ k ∈ W.image shell,
         ∑ u ∈ W with shell u = k, (1 / 2 : ℝ) ^ shell u := by
       symm
@@ -143,8 +141,7 @@ theorem sum_exp_neg_abs_sub_le_four
         _ ≤ 2 * (1 / 2 : ℝ) ^ k := by
           gcongr
           exact_mod_cast separated_distance_shell_card_le_two W x k hSep
-    _ ≤ ∑' k : ℕ, 2 * (1 / 2 : ℝ) ^ k := by
-      exact (Summable.mul_left 2 summable_geometric_two).sum_le_tsum _
+    _ ≤ ∑' k : ℕ, 2 * (1 / 2 : ℝ) ^ k := (Summable.mul_left 2 summable_geometric_two).sum_le_tsum _
           (fun k _ => by positivity)
     _ = 4 := by
       rw [tsum_mul_left, tsum_geometric_of_norm_lt_one]

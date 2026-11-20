@@ -36,10 +36,10 @@ theorem exists_pointCluster_superlevel_count
   intro H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm
   let A : ℝ := V^2/(16*P*Real.log (3*H))
   let Y : ℝ := (m:ℝ)*A
-  let S : Finset ℕ := pointClusterSuperlevel H G W m
+  let S  := pointClusterSuperlevel H G W m
   have hHlarge : 20 ≤ H := by linarith [hH₀.trans hH]
   have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith)
-  have hA : 0 < A := by dsimp only [A]; positivity
+  
   have hY : 0 < Y := by dsimp only [Y]; positivity
   have hcolor : ∀ e : ℕ,
       ((S.filter (fun n => n%2 = e)).card:ℝ) ≤
@@ -95,10 +95,7 @@ theorem occupancy_inverse_power_budget {a g b H G A m : ℝ}
   rw [mul_pow, Real.mul_rpow hm0.le hA.le]
   calc
     _ ≤ H/(G*(m^2*A^2))+H^a/(G^g*(m^2*A^b)) := by
-      apply add_le_add le_rfl
-      apply div_le_div_of_nonneg_left (Real.rpow_pos_of_pos hH a).le (by positivity)
-      exact mul_le_mul_of_nonneg_left
-        (mul_le_mul_of_nonneg_right hp (by positivity)) (by positivity)
+      gcongr
     _ = _ := by field_simp
 
 theorem exists_pointValue_card_le_with_width
@@ -125,7 +122,7 @@ theorem exists_pointValue_card_le_with_width
   let A : ℝ := V^2/(16*P*Real.log (3*H))
   let B : ℝ := 2*D*H^ν*(H/(G*A^2)+H^a/(G^g*A^b))
   have hHpos : 0 < H := by linarith [hH₀.trans hH]
-  have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith [hH₀.trans hH])
+  have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith)
   have hA : 0 < A := by dsimp only [A]; positivity
   have hB : 0 ≤ B := by dsimp only [B]; positivity
   have hsuper : ∀ m : ℕ, 0 < m →
@@ -139,16 +136,13 @@ theorem exists_pointValue_card_le_with_width
       _ ≤ 2*D*H^ν*(H/(G*((m:ℝ)*A)^2)+H^a/(G^g*((m:ℝ)*A)^b)) := hc
       _ ≤ 2*D*H^ν*((H/(G*A^2)+H^a/(G^g*A^b))/(m:ℝ)^2) :=
         mul_le_mul_of_nonneg_left hp (by positivity)
-      _ = B/(m:ℝ)^2 := by dsimp only [B]; ring
+      _ = B/(m:ℝ)^2 := by ring
   have hsum := sum_nat_occupancy_le_of_superlevels
     (pointClusterBins H G W) (fun n => (pointCluster H G W n).card) hB hsuper
   have hpartition : (W.card:ℝ) = ∑ n ∈ pointClusterBins H G W,
       ((pointCluster H G W n).card:ℝ) := by
     exact_mod_cast pointCluster_card_partition H G W
-  rw [← hpartition] at hsum
-  calc
-    (W.card:ℝ) ≤ 2*B := hsum
-    _ = (4*D)*H^ν*(H/(G*A^2)+H^a/(G^g*A^b)) := by dsimp only [B]; ring
+  grind
 
 
 

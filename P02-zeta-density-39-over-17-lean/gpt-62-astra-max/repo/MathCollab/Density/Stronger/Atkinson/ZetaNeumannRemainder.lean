@@ -137,8 +137,7 @@ theorem exists_norm_integral_zetaNeumannRemainder_le :
     _ ≤ _ := by
       have h := mul_le_mul_of_nonneg_left
         (neumann_source_height_absorb (by linarith : 1 ≤ T))
-        (show 0 ≤ neumannTwoTermErrorConstant * C * G * (n : ℝ) ^ (-(5 / 4 : ℝ)) from by
-          exact mul_nonneg (mul_nonneg (mul_nonneg neumannTwoTermErrorConstant_pos.le hC.le) hG.le)
+        (show 0 ≤ neumannTwoTermErrorConstant * C * G * (n : ℝ) ^ (-(5 / 4 : ℝ)) from mul_nonneg (mul_nonneg (mul_nonneg neumannTwoTermErrorConstant_pos.le hC.le) hG.le)
             (by positivity))
       simpa only [mul_one] using h
 

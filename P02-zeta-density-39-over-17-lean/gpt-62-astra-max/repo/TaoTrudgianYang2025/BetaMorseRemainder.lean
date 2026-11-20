@@ -1,6 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.BetaMorsePoisson
+public import TaoTrudgianYang2025.BetaMorseFourier
 
 @[expose] public section
 

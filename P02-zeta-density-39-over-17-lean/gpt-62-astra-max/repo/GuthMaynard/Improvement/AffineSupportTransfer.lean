@@ -14,7 +14,7 @@ open RiemannZeta.GuthMaynard
 theorem fourier_norm_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) (ξ : ℝ) :
     ‖𝓕 (fun x => (f (L*(x-1)) : ℂ)) ξ‖ =
       L⁻¹*‖𝓕 (fun x => (f x : ℂ)) (ξ/L)‖ := by
-  let ψ : ℝ → ℂ := fun x => (f (L*x) : ℂ)
+  let ψ  := fun x => (f (L*x) : ℂ)
   have heq : ψ = scaledModulated (fun x => (f x : ℂ)) L⁻¹ 0 := by
     funext x
     simp [ψ,scaledModulated,phase,mul_comm]
@@ -56,15 +56,15 @@ theorem affine_input_fourier_family (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 
   have hLp : 0 < L := by linarith
   have hsup := affine_input_sup_eq hLp hg
   intro β hβ n ξ hξ
-  have hfreq : ξ/L ≠ 0 := div_ne_zero hξ hLp.ne'
+  have hfreq  := div_ne_zero hξ hLp.ne'
   have heq : (fun x => (g x : ℂ)) = (fun x => (f (L*(x-1)) : ℂ)) := by funext x; rw [hg]
   change ‖𝓕 (fun x => (g x : ℂ)) ξ‖ ≤ _
   rw [heq,fourier_norm_affine_input _ hLp]
   have hdec := mul_le_mul_of_nonneg_left (hp β hβ n (ξ/L) hfreq) (inv_nonneg.mpr hLp.le)
   have harg : T/|ξ/L| = (L*T)/|ξ| := by rw [abs_div,abs_of_pos hLp]; field_simp
   rw [harg] at hdec
-  have hTS : T ≤ L*T := le_mul_of_one_le_left hT.le hL
-  have hLi : L⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hL
+  have hTS  := le_mul_of_one_le_left hT.le hL
+  have hLi  := inv_le_one_of_one_le₀ hL
   have hd := hD β n
   calc
     _ ≤ L⁻¹*(D β n*T^β*((L*T)/|ξ|)^n*SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f)) := hdec
@@ -78,18 +78,18 @@ spatial decay or derivative estimates are required. -/
 theorem canonical_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L)
     (hf : ContDiff ℝ ∞ f) (hs : ∀ x, x ∉ Icc (0:ℝ) L → f x = 0) :
     ∃ g : 𝓢(ℝ, ℝ), (∀ x, g x = f (L*(x-1))) ∧ GMAffineSourceSupported g := by
-  let g : ℝ → ℝ := fun x => f (L*(x-1))
+  let g  := fun x => f (L*(x-1))
   have hg : ∀ x, x ∉ Icc (1:ℝ) 2 → g x = 0 := by
     intro x hx
     apply hs
     intro hh
     apply hx
     constructor
-    · have : 0 ≤ x-1 := (mul_nonneg_iff_of_pos_left hL).mp hh.1
+    · have  := (mul_nonneg_iff_of_pos_left hL).mp hh.1
       linarith
     · have : x-1 ≤ 1 := by nlinarith only [hh.2,hL]
       linarith
-  have hc : HasCompactSupport g := HasCompactSupport.intro isCompact_Icc hg
+  have hc  := HasCompactSupport.intro isCompact_Icc hg
   have hd : ContDiff ℝ ∞ g := hf.comp (by fun_prop)
   refine ⟨hc.toSchwartzMap hd,fun _ => rfl,?_⟩
   intro x hx

@@ -37,11 +37,11 @@ theorem exists_shellIndex {U : Finset ℝ} {x : ℝ} (hx : 1 ≤ x) (hxU : x ≤
 theorem shellIndices_sum_le (U : Finset ℝ) :
     (∑ k ∈ shellIndices U, (2 : ℝ)^k) ≤ 2*localDiameter U := by
   let n := ⌊intervalSpan U⌋₊
-  have hn : (n : ℝ) ≤ intervalSpan U := Nat.floor_le (intervalSpan_nonneg U)
+  have hn  := Nat.floor_le (intervalSpan_nonneg U)
   have hpow : (2 : ℝ)^n.log2 ≤ localDiameter U := by
     by_cases hp : 0 < n
     · have hh : (2 : ℝ)^n.log2 ≤ n := by exact_mod_cast (log2_block_bounds hp).1
-      have hd := intervalSpan_nonneg U
+      
       dsimp [localDiameter]
       linarith
     · have hz : n = 0 := by omega
@@ -58,8 +58,8 @@ theorem shellIndices_card_le_log {U : Finset ℝ} {T : ℝ} (hT : 2 ≤ T)
   have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
   by_cases hD1 : 1 ≤ intervalSpan U
   · let n := ⌊intervalSpan U⌋₊
-    have hnp : 0 < n := (Nat.one_le_floor_iff _).2 hD1
-    have hn : (n : ℝ) ≤ intervalSpan U := Nat.floor_le (intervalSpan_nonneg U)
+    have hnp  := (Nat.one_le_floor_iff _).2 hD1
+    have hn  := Nat.floor_le (intervalSpan_nonneg U)
     have hp : (2 : ℝ)^n.log2 ≤ n := by exact_mod_cast (log2_block_bounds hnp).1
     have he : (2 : ℝ)^(n.log2+1) ≤ 2*T := by rw [pow_succ]; nlinarith
     have hh := Real.log_le_log (by positivity : (0 : ℝ) < (2 : ℝ)^(n.log2+1)) he
@@ -98,13 +98,13 @@ theorem kernelEnergy_le_dyadic_shells (w : ReflectionCutoff) (L : ℝ)
     by_cases he : t=u
     · subst u
       simp only [sub_self]
-      exact le_add_of_nonneg_right (Finset.sum_nonneg (fun _ _ => by split_ifs <;> positivity))
+      exact le_add_of_nonneg_right (Finset.sum_nonneg (fun _ _ => by positivity))
     · rw [ite_eq_right he, zero_add]
       obtain ⟨k, hk, hdist⟩ := exists_shellIndex (hsep t ht u hu he) (abs_sub_le_intervalSpan ht hu)
       have hh := Finset.single_le_sum (s := shellIndices U)
         (f := fun k => if (2 : ℝ)^k ≤ |t-u| ∧ |t-u| < 2*(2 : ℝ)^k then
           ‖hKernel w L (t-u)‖^2 else 0)
-        (fun _ _ => by split_ifs <;> positivity) hk
+        (fun _ _ => by positivity) hk
       simpa only [ite_eq_left hdist] using hh
   calc
     _ ≤ ∑ t ∈ U, ∑ u ∈ U,
@@ -115,9 +115,7 @@ theorem kernelEnergy_le_dyadic_shells (w : ReflectionCutoff) (L : ℝ)
     _ = _ := by
       simp only [Finset.sum_add_distrib]
       congr 1
-      · apply Finset.sum_congr rfl
-        intro t ht
-        simp [ht]
+      · simp
       · simp_rw [Finset.sum_comm (s := U) (t := shellIndices U)]
         rfl
 

@@ -16,7 +16,7 @@ theorem operatorIntegral_comp_right (S : E →L[ℂ] E)
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
     (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
     operatorIntegral ν x y * S = operatorIntegral ν x (fun a => S.adjoint (y a)) := by
-  let comp : (E →L[ℂ] E) →L[ℂ] (E →L[ℂ] E) :=
+  let comp  :=
     (ContinuousLinearMap.compL ℂ E E E).flip S
   have hh := comp.integral_comp_comm (operatorIntegral_integrable ν hx hy hxy)
   simpa only [operatorIntegral, comp, ContinuousLinearMap.flip_apply,
@@ -97,8 +97,7 @@ omit [CompleteSpace E] in
 theorem operator_compression_word_norm (H P : E →L[ℂ] E) (hp : ‖P‖ ≤ 1) :
     ‖P*H*P*H*P‖ ≤ ‖H‖^2 := by
   calc
-    _ ≤ ‖P‖*‖H‖*‖P‖*‖H‖*‖P‖ := by
-      exact (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right
+    _ ≤ ‖P‖*‖H‖*‖P‖*‖H‖*‖P‖ := (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right
         ((norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right
           ((norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right
             (norm_mul_le _ _) (norm_nonneg _))) (norm_nonneg _))) (norm_nonneg _))

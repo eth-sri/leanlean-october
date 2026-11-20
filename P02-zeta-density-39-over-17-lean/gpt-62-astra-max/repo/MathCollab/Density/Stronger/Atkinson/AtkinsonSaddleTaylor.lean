@@ -61,7 +61,7 @@ theorem norm_exp_real_phase_sub_le (a b : ℝ) :
     congr 2
     push_cast
     ring
-  rw [he, norm_mul, show ‖Complex.exp ((b : ℂ) * I)‖ = 1 by simp [Complex.norm_exp], one_mul]
+  rw [he, norm_mul, show ‖Complex.exp ((b : ℂ) * I)‖ = 1 by simp, one_mul]
   exact Real.norm_exp_I_mul_ofReal_sub_one_le
 
 end MathCollab.Density.Stronger.Atkinson

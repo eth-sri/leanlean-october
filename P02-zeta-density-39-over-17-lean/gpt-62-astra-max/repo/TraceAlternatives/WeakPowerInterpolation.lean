@@ -19,8 +19,8 @@ theorem min_le_geometric_power {A D θ : ℝ}
   by_cases hDz : D=0
   · rw [hDz,min_eq_right hA]
     positivity
-  have hAp : 0 < A := lt_of_le_of_ne hA (Ne.symm hAz)
-  have hDp : 0 < D := lt_of_le_of_ne hD (Ne.symm hDz)
+  have hAp  := lt_of_le_of_ne hA (Ne.symm hAz)
+  have hDp  := lt_of_le_of_ne hD (Ne.symm hDz)
   by_cases hAD : A ≤ D
   · rw [min_eq_left hAD]
     calc

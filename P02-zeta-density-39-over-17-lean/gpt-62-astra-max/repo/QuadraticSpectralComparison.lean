@@ -20,7 +20,7 @@ theorem finite_weighted_positive_square {ι : Type*} [Fintype ι]
   · rw [max_eq_right hd]
     simp only [zero_pow (by decide : 2 ≠ 0),mul_zero]
     exact Finset.sum_nonneg (fun i _ => sq_nonneg _)
-  have hdp : 0 < d := lt_of_not_ge hd
+  have hdp  := lt_of_not_ge hd
   rw [max_eq_left hdp.le]
   have htangent (i : ι) : α i*(2*d*e i-d^2) ≤ α i*(e i)^2 := by
     exact mul_le_mul_of_nonneg_left (by nlinarith [sq_nonneg (e i-d)]) (hα i)
@@ -49,7 +49,7 @@ theorem finite_operator_positive_square (b : OrthonormalBasis ι ℂ E)
     (hB : ‖C‖ ≤ B)
     (hw : k*a ≤ ∑ j, (inner ℂ (v j) ((H+C) (v j))).re) :
     k*(max (a-B) 0)^2 ≤ ∑ i, (e i)^2 := by
-  have hB0 : 0 ≤ B := (norm_nonneg C).trans hB
+  have hB0  := (norm_nonneg C).trans hB
   have hc (j : κ) : (inner ℂ (v j) (C (v j))).re ≤ B := by
     calc
       _ ≤ ‖v j‖*‖C (v j)‖ := re_inner_le_norm (𝕜 := ℂ) _ _
@@ -82,7 +82,7 @@ theorem operator_finite_quadratic_comparison [FiniteDimensional ℂ E]
     (hw : k*a ≤ ∑ j, (inner ℂ (v j) (G (v j))).re) :
     k*(max (a-B) 0)^2 ≤ (∑ i, inner ℂ (d i) (((G-C)^2) (d i))).re := by
   let H := G-C
-  have hs : H.toLinearMap.IsSymmetric := hG.isSymmetric.sub hC.isSymmetric
+  have hs  := hG.isSymmetric.sub hC.isSymmetric
   let b := hs.eigenvectorBasis rfl
   let e := hs.eigenvalues rfl
   have he (i : Fin (Module.finrank ℂ E)) : H (b i) = (e i:ℂ) • b i :=

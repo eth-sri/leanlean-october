@@ -38,7 +38,7 @@ theorem heathBrownIntegratedWeyl_le_majorant
     (f : ℝ → ℝ) :
     heathBrownIntegratedWeyl N k H Q f ≤
       heathBrownIntegratedMajorant N k H s f := by
-  exact heathBrown_integratedWeyl_le_source_moments N k H hH f hQH hs
+  apply heathBrown_integratedWeyl_le_source_moments <;> assumption
 
 theorem card_Ico_one_le (Q : ℕ) :
     (Finset.Ico 1 Q).card ≤ Q := by
@@ -74,10 +74,10 @@ theorem heathBrown_centerWeyl_sum_preVMVT
           heathBrownIntegratedWeyl N k H j f) ≤
           ∑ _j ∈ Finset.Ico 1 Q,
             heathBrownIntegratedMajorant N k H s f := by
-        exact Finset.sum_le_sum fun j hj => hjmajor j hj
+        apply Finset.sum_le_sum <;> assumption
       _ = (Finset.Ico 1 Q).card *
           heathBrownIntegratedMajorant N k H s f := by
-        rw [Finset.sum_const, nsmul_eq_mul]
+        simp
       _ ≤ Q * heathBrownIntegratedMajorant N k H s f := by
         gcongr
         exact_mod_cast card_Ico_one_le Q

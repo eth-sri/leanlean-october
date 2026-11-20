@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveDivisorGrowth
 public import LaterPairs.Native.RobertSargosFixedDisplacementConic
 public import LaterPairs.Native.RobertSargosFixedDisplacementLinear

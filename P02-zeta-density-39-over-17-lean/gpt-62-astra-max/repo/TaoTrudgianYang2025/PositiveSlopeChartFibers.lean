@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.PositiveSlopeCharts
 
 @[expose] public section
@@ -79,8 +78,7 @@ theorem int_Icc_eq_image_nat_Icc {x y : ℤ} (hx : 0 ≤ x) (hxy : x ≤ y) :
   constructor
   · rintro ⟨hqlo,hqhi⟩
     refine ⟨q.toNat,⟨?_,?_⟩,?_⟩ <;> omega
-  · rintro ⟨n,⟨hnlo,hnhi⟩,rfl⟩
-    constructor <;> omega
+  · grind
 
 theorem positiveSlopeChartFiber_Ioo_natural_interval {x y : ℤ} {d N T : ℝ} {j : ℕ}
     (hd : 0 < d) (hN : 0 < N) (hT : 0 < T)
@@ -92,8 +90,8 @@ theorem positiveSlopeChartFiber_Ioo_natural_interval {x y : ℤ} {d N T : ℝ} {
   let s := positiveSlopeChartFiber (Finset.Ioo x y) d N T j
   let lo := s.min' hne
   let hi := s.max' hne
-  have hlo : 0 ≤ lo := hnonneg _ (Finset.min'_mem s hne)
-  have horder : lo ≤ hi := Finset.min'_le_max' s hne
+  have hlo  := hnonneg _ (Finset.min'_mem s hne)
+  have horder  := Finset.min'_le_max' s hne
   refine ⟨lo.toNat,hi.toNat-lo.toNat,?_⟩
   rw [show lo.toNat+(hi.toNat-lo.toNat) = hi.toNat by omega]
   exact (positiveSlopeChartFiber_Ioo_eq_Icc hd hN hT hne).trans

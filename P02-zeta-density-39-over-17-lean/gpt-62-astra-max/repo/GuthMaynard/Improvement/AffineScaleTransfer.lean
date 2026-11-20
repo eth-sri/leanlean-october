@@ -15,7 +15,7 @@ theorem fourier_sup_family_mono (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ 
     (hf : FourierSupFamily D T f) : FourierSupFamily D S f := by
   intro β hβ n ξ hξ
   have hd := hD β n
-  have hS : 0 ≤ S := hT.trans hTS
+  have hS  := hT.trans hTS
   exact (hf β hβ n ξ hξ).trans (by gcongr)
 
 set_option maxHeartbeats 600000 in
@@ -32,12 +32,12 @@ theorem mixed_affine_real_scales (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   obtain ⟨C,hC,hbound⟩ := mixed_height_affine (massProfile D) (massProfile_nonneg D hD) hε
   let P := L+1
   have hP : 1 ≤ P := by dsimp only [P]; linarith
-  have hPp : 0 < P := zero_lt_one.trans_le hP
+  have hPp  := zero_lt_one.trans_le hP
   refine ⟨C*P^ε*P^6,by positivity,?_⟩
   intro T R K f M₁ M₂ M₃ hT hK hKR hRT hf hs hp h₁ h₂ h₃ h₁R h₂K h₃R
   have hTp : 0 < T := by linarith
-  have hR : 1 ≤ R := hK.trans hKR
-  have hLp : 0 < L := by linarith
+  have hR  := hK.trans hKR
+  
   let RN := ⌈L*R⌉₊
   let KN := ⌈L*K⌉₊
   have hRN : (RN:ℝ) ≤ P*R := by
@@ -53,8 +53,8 @@ theorem mixed_affine_real_scales (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   have h₁N : M₁ ≤ RN := by exact_mod_cast h₁R.trans (Nat.le_ceil _)
   have h₂N : M₂ ≤ KN := by exact_mod_cast h₂K.trans (Nat.le_ceil _)
   have h₃N : M₃ ≤ RN := by exact_mod_cast h₃R.trans (Nat.le_ceil _)
-  have hTS : T ≤ P*T := le_mul_of_one_le_left hTp.le hP
-  have hS : 2 ≤ P*T := hT.trans hTS
+  have hTS  := le_mul_of_one_le_left hTp.le hP
+  have hS  := hT.trans hTS
   have hRNT : (RN:ℝ) ≤ (P*T)^4 := by
     calc
       _ ≤ P*R := hRN
@@ -65,15 +65,14 @@ theorem mixed_affine_real_scales (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   have hh := hbound (P*T) f RN KN M₁ M₂ M₃ hS hf hs
     (fourier_sup_family_to_height_mass D hD (by positivity) f hf hpS)
     hKNp hKNRN hRNT h₁ h₂ h₃ h₁N h₂N h₃N
-  have hmass : 0 ≤ ∫ x, f x := integral_nonneg hf
-  have hL2 : 0 ≤ ∫ x, f x^2 := integral_nonneg (fun _ => sq_nonneg _)
+  
+  
   have hW : (RN:ℝ)^2*(KN:ℝ)^4*(∫ x, f x)^2+(RN:ℝ)*(KN:ℝ)^3*(∫ x, f x^2) ≤
       P^6*(R^2*K^4*(∫ x, f x)^2+R*K^3*(∫ x, f x^2)) := by
     calc
       _ ≤ (P*R)^2*(P*K)^4*(∫ x, f x)^2+(P*R)*(P*K)^3*(∫ x, f x^2) := by gcongr
       _ = P^6*(R^2*K^4*(∫ x, f x)^2)+P^4*(R*K^3*(∫ x, f x^2)) := by ring
-      _ ≤ P^6*(R^2*K^4*(∫ x, f x)^2)+P^6*(R*K^3*(∫ x, f x^2)) := by
-        exact add_le_add le_rfl (mul_le_mul_of_nonneg_right
+      _ ≤ P^6*(R^2*K^4*(∫ x, f x)^2)+P^6*(R*K^3*(∫ x, f x^2)) := add_le_add le_rfl (mul_le_mul_of_nonneg_right
           (pow_le_pow_right₀ hP (show 4 ≤ 6 by decide)) (by positivity))
       _ = _ := by ring
   apply hh.trans

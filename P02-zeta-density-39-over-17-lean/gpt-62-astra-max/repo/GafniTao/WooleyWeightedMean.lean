@@ -73,13 +73,11 @@ def wooleyWeightedConditionedGridMean {Q : ℕ} (s k qB qH : ℕ)
                 qB k gamma alpha xi‖ ^ (2 * s))
 
 theorem wooleyWeightedMassSq_nonneg {Q : ℕ} (gamma : Fin Q → ℂ) :
-    0 ≤ wooleyWeightedMassSq gamma := by
-  exact Finset.sum_nonneg fun _ _ => sq_nonneg _
+    0 ≤ wooleyWeightedMassSq gamma := Finset.sum_nonneg fun _ _ => sq_nonneg _
 
 theorem wooleyWeightedResidueMassSq_nonneg {Q q : ℕ}
     (gamma : Fin Q → ℂ) (xi : ZMod q) :
-    0 ≤ wooleyWeightedResidueMassSq gamma xi := by
-  exact Finset.sum_nonneg fun _ _ => sq_nonneg _
+    0 ≤ wooleyWeightedResidueMassSq gamma xi := Finset.sum_nonneg fun _ _ => sq_nonneg _
 
 /-- Residue classes partition the coefficient `L²` mass exactly. -/
 theorem wooley_sum_weightedResidueMassSq {Q q : ℕ} [NeZero q]

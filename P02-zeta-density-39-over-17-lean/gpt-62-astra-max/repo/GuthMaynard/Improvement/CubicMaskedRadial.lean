@@ -16,9 +16,9 @@ def ratioMaskProduct (A B C : Set ℝ) (p : ℝ × ℝ) : ℂ :=
 theorem ratioMaskProduct_measurable {A B C : Set ℝ}
     (hA : MeasurableSet A) (hB : MeasurableSet B) (hC : MeasurableSet C) :
     Measurable (ratioMaskProduct A B C) := by
-  have hAi : Measurable (A.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hA
-  have hBi : Measurable (B.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hB
-  have hCi : Measurable (C.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hC
+  
+  
+  
   unfold ratioMaskProduct mellinFrequency
   fun_prop
 
@@ -42,7 +42,7 @@ theorem maskedSpatialCubicMode_radial {a : ℝ → ℂ}
   · simp [maskedSpatialCubicMode,spatialCubicMode,radialIntegrand,radialAmplitude,mul_comm v r,hv]
   by_cases hy : a (r*y) = 0
   · simp [maskedSpatialCubicMode,spatialCubicMode,radialIntegrand,radialAmplitude,mul_comm y r,hy]
-  have hrp : 0 < r := lt_of_not_ge (fun h => hr (ha r h))
+  have hrp  := lt_of_not_ge (fun h => hr (ha r h))
   have hvp : 0 < v := by
     by_contra hn
     exact hv (ha _ (mul_nonpos_of_nonneg_of_nonpos hrp.le (le_of_not_gt hn)))
@@ -117,8 +117,7 @@ theorem maskedSpatialCubicMode_radial_fubini {a : ℝ → ℂ} {μ : ℝ → ℝ
       simp_rw [maskedSpatialCubicMode_radial ha0]
   rw [hscale]
   have hint := maskedRadialIntegrand_integrable ha hl hlu hs hm h0 hi L m hA hB hC
-  have hint' : Integrable (fun z : Triple => radialIntegrand a μ L m z.1 z.2*ratioMaskProduct A B C z.2)
-      (volume.prod volume) := hint
+  have hint'  := hint
   have hmerge : (∫ r, ∫ v, ∫ y, radialIntegrand a μ L m r (v,y)*ratioMaskProduct A B C (v,y)) =
       ∫ r, ∫ p : ℝ × ℝ, radialIntegrand a μ L m r p*ratioMaskProduct A B C p := by
     apply integral_congr_ae

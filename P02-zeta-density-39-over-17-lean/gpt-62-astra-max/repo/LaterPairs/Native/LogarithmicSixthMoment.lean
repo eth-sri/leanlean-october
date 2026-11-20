@@ -1,9 +1,5 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import TaoTrudgianYang2025.FourierDecayCore
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.ParabolaBilinearLocalization
+public import LaterPairs.Native.ParabolaBilinearLocalization.Part03
 
 @[expose] public section
 set_option autoImplicit false

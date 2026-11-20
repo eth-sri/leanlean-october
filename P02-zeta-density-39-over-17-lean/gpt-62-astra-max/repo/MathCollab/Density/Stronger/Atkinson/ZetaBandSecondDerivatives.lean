@@ -69,8 +69,7 @@ theorem iteratedDeriv_two_smoothTransition_quadratic (c d x : ℝ) :
     iteratedDeriv 2 (fun y => Real.smoothTransition (c * y ^ 2 + d)) x =
       (2 * c * x) ^ 2 * iteratedDeriv 2 Real.smoothTransition (c * x ^ 2 + d) +
         (2 * c) * deriv Real.smoothTransition (c * x ^ 2 + d) := by
-  have he : deriv (fun y => Real.smoothTransition (c * y ^ 2 + d)) =
-      fun y => (2 * c * y) * deriv Real.smoothTransition (c * y ^ 2 + d) :=
+  have he  :=
     funext (deriv_smoothTransition_quadratic c d)
   have hq := (((hasDerivAt_id x).pow 2).const_mul c).add_const d
   have hd := ((Real.smoothTransition.contDiff : ContDiff ℝ 2 Real.smoothTransition).differentiable_deriv_two
@@ -104,7 +103,7 @@ theorem exists_intervalC2Bound_quadraticTransition :
     ?_, ?_, ?_⟩
   · intro u hu
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.smoothTransition.nonneg _)]
-    exact (Real.smoothTransition.le_one _).trans (by dsimp [M]; nlinarith)
+    exact (Real.smoothTransition.le_one _).trans (by nlinarith)
   · intro u hu
     have he := iteratedDeriv_ofReal_fun ((hs.of_le (by norm_num :
       (1 : WithTop ℕ∞) ≤ 2)).contDiffAt (x := u))
@@ -114,7 +113,7 @@ theorem exists_intervalC2Bound_quadraticTransition :
       simpa only [iteratedDeriv_one, Real.norm_eq_abs] using hfirst (c * u ^ 2 + d)
     calc
       _ ≤ (2 * R) * A := mul_le_mul (hpow u hu) hb (abs_nonneg _) (by positivity)
-      _ ≤ M * R := by dsimp [M]; nlinarith
+      _ ≤ M * R := by nlinarith
   · intro u hu
     have he := iteratedDeriv_ofReal_fun (hs.contDiffAt (x := u))
     rw [he, Complex.norm_real, iteratedDeriv_two_smoothTransition_quadratic,
@@ -128,10 +127,7 @@ theorem exists_intervalC2Bound_quadraticTransition :
       simpa only [Real.norm_eq_abs] using hsecond (c * u ^ 2 + d)
     calc
       _ ≤ (2 * R) ^ 2 * B + (2 * R) * A := by
-        exact add_le_add
-          (mul_le_mul (pow_le_pow_left₀ (abs_nonneg _) (hpow u hu) 2) hb2
-            (abs_nonneg _) (by positivity))
-          (mul_le_mul (by nlinarith : 2 * |c| ≤ 2 * R) hb1 (abs_nonneg _) (by positivity))
+        bound
       _ ≤ M * R ^ 2 := by dsimp [M]; nlinarith [mul_nonneg hA.le (show 0 ≤ R ^ 2 - R by nlinarith)]
 
 end MathCollab.Density.Stronger.Atkinson

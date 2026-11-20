@@ -6,7 +6,8 @@ Adapted from source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
 Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
-public import MathCollab.Density.Stronger.Atkinson.VoronoiInverseWeights
+public import MathCollab.Density.Stronger.Atkinson.VoronoiTest
+public import Mathlib.Analysis.MellinInversion
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.Analysis.Real.Pi.Bounds
 
@@ -67,11 +68,6 @@ noncomputable def dfiVoronoiMellinKernelSchwartz
   (hg.hasCompactSupport_mellinKernel σ).toSchwartzMap
     (hg.contDiff_mellinKernel σ)
 
-@[simp]
-theorem DFIVoronoiTestFunction.mellinKernelSchwartz_apply
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ u : ℝ) :
-    dfiVoronoiMellinKernelSchwartz hg σ u =
-      dfiVoronoiMellinKernel σ g u := rfl
 
 theorem DFIVoronoiTestFunction.mellin_eq_fourier_mellinKernel
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ u : ℝ) :
@@ -84,6 +80,7 @@ theorem DFIVoronoiTestFunction.mellin_eq_fourier_mellinKernel
     sub_zero, add_zero, zero_add, mul_one, neg_mul]
   apply congrArg (fun f : ℝ → ℂ => 𝓕 f (u / (2 * Real.pi)))
   funext v
+  change _ = dfiVoronoiMellinKernel σ g v
   simp [dfiVoronoiMellinKernel]
 
 /-- A compactly supported smooth DFI test function has an integrable Mellin

@@ -40,7 +40,7 @@ theorem integral_atkinsonRootQuadratic_odd (T b H : ℝ) {k : ℕ} (hk : Odd k) 
         (((y-atkinsonSaddleRoot (T/(2*Real.pi)) b)^k : ℝ) : ℂ) *
           atkinsonRootQuadraticKernel T b y) = 0 := by
   let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
-  let F : ℝ → ℂ := fun y => (((y-r)^k : ℝ) : ℂ) * atkinsonRootQuadraticKernel T b y
+  let F  := fun y => (((y-r)^k : ℝ) : ℂ) * atkinsonRootQuadraticKernel T b y
   have hodd (y : ℝ) : F (2*r-y) = -F y := by
     dsimp [F]
     rw [show 2*r-y-r = -(y-r) by ring, hk.neg_pow,
@@ -88,7 +88,7 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
   have hmem {y : ℝ} (hy : y ∈ Icc (r-H) (r+H)) : y ∈ Icc a c :=
     ⟨hleft.trans hy.1, hy.2.trans hright⟩
   have hrmem : r ∈ Icc a c := hmem ⟨by linarith, by linarith⟩
-  let P : ℝ → ℂ := fun y =>
+  let P  := fun y =>
     f r * atkinsonRootQuadraticKernel T b y +
     deriv f r * (((y-r : ℝ) : ℂ) * atkinsonRootQuadraticKernel T b y) +
     ((2*T/(3*r^3) : ℝ) : ℂ) * I * f r *
@@ -101,7 +101,7 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
   have hquad := hq.intervalIntegrable (μ := volume) (a := r-H) (b := r+H)
   have hlinearInt := hlinear.intervalIntegrable (μ := volume) (a := r-H) (b := r+H)
   have hcubicInt := hcubic.intervalIntegrable (μ := volume) (a := r-H) (b := r+H)
-  have hP : IntervalIntegrable P volume (r-H) (r+H) :=
+  have hP  :=
     ((hquad.const_mul (f r)).add (hlinearInt.const_mul (deriv f r))).add
       (hcubicInt.const_mul (((2*T/(3*r^3) : ℝ) : ℂ)*I*f r))
   have hPint : (∫ y in r-H..r+H, P y) =

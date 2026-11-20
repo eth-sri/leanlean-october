@@ -70,7 +70,7 @@ theorem wooleySection7_exists_uniform_shifted_forcing
             R S left right tuple = 0 := by
   obtain ⟨G, psi, Error, hchange⟩ :=
     hphi.exists_translated_tail_normal_change hc hpPrime.ne_zero eta
-  have hkpos : 1 ≤ k := hr.trans hrk.le
+  have hkpos  := hr.trans hrk.le
   have hgamma : gamma ≤ a := by
     have hle : gamma ≤ gamma * k := by
       simpa only [Nat.mul_one] using Nat.mul_le_mul_left gamma hkpos
@@ -92,10 +92,7 @@ theorem wooleySection7_exists_uniform_shifted_forcing
       (k - r + 1) * b = bp + r * a + (k - r) * gamma := by
         simpa only [bp] using hsum.symm
       _ = gamma * (k - r) + gamma * r + r * (a - gamma) + bp := by
-        rw [Nat.mul_comm (k - r) gamma]
-        have hgammaR' : gamma * r + r * (a - gamma) = r * a := by
-          simpa [Nat.mul_comm] using hgammaR
-        omega
+        grind
   have hgammaM : gamma * k ≤ M := by omega
   have hcommon : r * (a - gamma) ≤ M - gamma * k := by omega
   obtain ⟨Psi, hPsi, huniform⟩ :=
@@ -107,7 +104,7 @@ theorem wooleySection7_exists_uniform_shifted_forcing
             wooleySection7Node_succ_le hrk.le u⟩)
   refine ⟨Psi, hPsi, ?_⟩
   intro R S left right tuple horiginal
-  let swapped : WooleySourceMixedTuple R S left right :=
+  let swapped  :=
     (tuple.1, (tuple.2.2, tuple.2.1))
   have hdiv : ∀ j : Fin k, (p : ℤ) ^ B ∣
       wooleyIntegerMixedPolynomialDisplacement R S

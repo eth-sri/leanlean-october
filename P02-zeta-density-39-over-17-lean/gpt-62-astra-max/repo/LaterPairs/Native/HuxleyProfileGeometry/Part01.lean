@@ -1,36 +1,6 @@
 module
-public import GuthMaynard.AffineSource.Foundation
-public import LaterPairs.Native.DoubledBlockPrefixes
-public import LaterPairs.Native.ExponentPairDifferencingBound
-public import LaterPairs.Native.ExponentPairShiftJets
-public import LaterPairs.Native.ExponentPairShiftUniformity
-public import LaterPairs.Native.ExponentPairSourceCorrelation
-public import LaterPairs.Native.ExponentPairSourceWeyl
-public import LaterPairs.Native.FiniteSmoothTaylor
-public import LaterPairs.Native.FiniteSmoothThirdDerivative
 public import LaterPairs.Native.HuxleyModelNondegeneracy
-public import LaterPairs.Native.IntegerIntervalCount
-public import LaterPairs.Native.ParabolaBilinearLocalization
-public import LaterPairs.Native.ReciprocalSecondDerivativeBounds
-public import LaterPairs.Native.RobertSargosInitialDyadicLog
-public import LaterPairs.Native.SargosLocalAffineJets
-public import LaterPairs.Native.SecondDerivativeComposition
-public import LaterPairs.Native.ZetaSourceLogScales
-public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.BetaAmplitudeMonotonicity
-public import TaoTrudgianYang2025.BetaExpandedModelJets
-public import TaoTrudgianYang2025.BetaInverseJets
-public import TaoTrudgianYang2025.BetaLegendreAllOrders
-public import TaoTrudgianYang2025.BetaModelJetEstimatesFull
-public import TaoTrudgianYang2025.BetaStationaryMain
-public import TaoTrudgianYang2025.BetaTaylorPolynomialRemainder
-public import TaoTrudgianYang2025.BetaUniformity
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import TaoTrudgianYang2025.HeathBrownModelJetCore
-public import TaoTrudgianYang2025.HeathBrownPhysicalPhase
-public import TaoTrudgianYang2025.ModelEndpointEntry
+public import LaterPairs.Native.ParabolaBilinearLocalization.Part03
 
 @[expose] public section
 set_option autoImplicit false
@@ -3360,6 +3330,13 @@ theorem actual_derivative_base_centered_bound
                                                                    
                                                                         
                                               
+abbrev BaseResidualDifferenceBoundHypotheses
+    (u t : ℤ) (x₀ x₁ : Fin 2 → ℝ) (e r v : Fin 2 → ℤ) (f : Fin 2 → ℝ → ℝ) (q : Fin 2 → ℝ)
+    (rest : Prop) : Prop :=
+  (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=(e i:ℝ)/r i) →
+  (∀ i, iteratedDeriv 2 (f i) (x₁ i)/2=((e i:ℝ)*u+v i*t)/q i) →
+  rest
+
 theorem physicalModelPhase_base_residual_difference_bound
     {σ δ T M N R ε η D₂ D₄ : ℝ} {u t : ℤ}
     {F : Fin 2 → ℝ → ℝ} {A W x₀ x₁ : Fin 2 → ℝ} {e r v s : Fin 2 → ℤ}
@@ -3397,13 +3374,12 @@ theorem physicalModelPhase_base_residual_difference_bound
       (12*ε+4*η)*|rationalBranch (μ 0) (r 0) (s 0) ((u:ℝ)/t)| * |(t:ℝ)|+
       D₄*|q 0/r 0|+(1/2:ℝ)*|(t:ℝ)| * (η*|U|)+
       |q 0| * D 0+|q 1| * D 1+V 0*|(t:ℝ)/r 0|+V 1*|(t:ℝ)/r 1|
-    (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=(e i:ℝ)/r i) →
-    (∀ i, iteratedDeriv 2 (f i) (x₁ i)/2=((e i:ℝ)*u+v i*t)/q i) →
+    BaseResidualDifferenceBoundHypotheses u t x₀ x₁ e r v f q (
     |μ 1*(r 1:ℝ)^3/(μ 0*(r 0:ℝ)^3)-1| ≤ ε →
     |(s 1:ℝ)/r 1-(s 0:ℝ)/r 0| ≤ η*|U| →
     |C-round C| ≤ D₂ →
     |θ 0-θ 1| ≤ D₄ →
-    |H 0-H 1-(round C:ℝ)*t| ≤ Λ := by
+    |H 0-H 1-(round C:ℝ)*t| ≤ Λ) := by
   let f := fun i => TaoTrudgianYang2025.heathBrownPhysicalPhase (F i) T M (A i) 1
   let n := fun i => round (x₁ i)-round (x₀ i)
   let q := fun i => (r i:ℝ)*u+s i*t
@@ -4280,14 +4256,13 @@ theorem physicalModelPhase_quartic_fourth_condition_nonlinear_with_labels
     let z := fun i => q i*iteratedDeriv 1 (f i) (b i)
     let j := fun i => round ((r i:ℝ)*d₀ i)*u+2*n i*(e i*u+v i*t)
     let h := (cnew 0-j 0)-(cnew 1-j 1)
-    (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=(e i:ℝ)/r i) →
-    (∀ i, iteratedDeriv 2 (f i) (x₁ i)/2=((e i:ℝ)*u+v i*t)/q i) →
+    BaseResidualDifferenceBoundHypotheses u t x₀ x₁ e r v f q (
     (∀ i, |(n i:ℝ)|^2 ≤ M*R) →
     |(z 0-cnew 0)-(z 1-cnew 1)| ≤ Δ →
     |(θ 0-θ 1)*u+(β₀ 0-β₀ 1)*t-
       (t:ℝ)*rationalPhase (μ 0) (r 0) (s 0) (μ 1) (r 1) (s 1) ((u:ℝ)/t)+
       (t:ℝ)*quarticPhase (μ 0) (ν 0) (r 0) (s 0) (μ 1) (ν 1) (r 1) (s 1) ((u:ℝ)/t)-h| ≤
-      Δ+quarticNonlinearResidualConstant σ δ*(|q 0|+|q 1|)/N := by
+      Δ+quarticNonlinearResidualConstant σ δ*(|q 0|+|q 1|)/N) := by
   let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
   let q := fun i => (r i:ℝ)*u+s i*t
   let j := fun i => round ((r i:ℝ)*iteratedDeriv 1 (f i) (round (x₀ i)))*u+
@@ -5313,6 +5288,19 @@ theorem quarticPhase_cubic_ratio_of_curvature
                                                                         
                                                                    
                                                                     
+abbrev FourPointThirdConditionParameters
+    (T M : ℝ) (F : Fin 2 → ℝ → ℝ) (A x₀ r s : Fin 2 → ℝ) (x₁ : ℝ → Fin 2 → ℝ)
+    (rest : ∀ (f : Fin 2 → ℝ → ℝ) (n : ℝ → Fin 2 → ℝ) (μ : Fin 2 → ℝ) (μnew D : ℝ → Fin 2 → ℝ) (g H : ℝ → ℝ), Prop) : Prop :=
+  let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
+  let n := fun y i => (round (x₁ y i):ℝ)-(round (x₀ i):ℝ)
+  let μ := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
+  let μnew := fun y i => iteratedDeriv 3 (f i) (round (x₁ y i))/6
+  let ν := fun i => iteratedDeriv 4 (f i) (round (x₀ i))/24
+  let D := fun y i => r i*y+s i
+  let g := rationalPhase (μ 0) (r 0) (s 0) (μ 1) (r 1) (s 1)
+  let H := quarticPhase (μ 0) (ν 0) (r 0) (s 0) (μ 1) (ν 1) (r 1) (s 1)
+  rest f n μ μnew D g H
+
 theorem physicalModelPhase_quartic_four_point_third_condition
     {σ δ T M N R L a b c d h E α β : ℝ}
     {F : Fin 2 → ℝ → ℝ} {A W x₀ e r v s : Fin 2 → ℝ}
@@ -5327,14 +5315,7 @@ theorem physicalModelPhase_quartic_four_point_third_condition
     (hr : ∀ i, r i ≠ 0) (hdet : ∀ i, v i*r i-e i*s i=1)
     (hden : ∀ y ∈ Set.Icc a d, ∀ i, 0 < r i*y+s i)
     (hh : 0 < h) (hab : h ≤ b-a) (hbc : h ≤ c-b) (hcd : h ≤ d-c) :
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    let n := fun y i => (round (x₁ y i):ℝ)-(round (x₀ i):ℝ)
-    let μ := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
-    let μnew := fun y i => iteratedDeriv 3 (f i) (round (x₁ y i))/6
-    let ν := fun i => iteratedDeriv 4 (f i) (round (x₀ i))/24
-    let D := fun y i => r i*y+s i
-    let g := rationalPhase (μ 0) (r 0) (s 0) (μ 1) (r 1) (s 1)
-    let H := quarticPhase (μ 0) (ν 0) (r 0) (s 0) (μ 1) (ν 1) (r 1) (s 1)
+    FourPointThirdConditionParameters T M F A x₀ r s x₁ (fun f n μ μnew D g H =>
     let ε := quarticReciprocalConstant σ δ*R^2/(L*N)^2
     (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=e i/r i) →
     (∀ y ∈ Set.Icc a d, ∀ i, iteratedDeriv 2 (f i) (x₁ y i)/2=(e i*y+v i)/D y i) →
@@ -5343,7 +5324,7 @@ theorem physicalModelPhase_quartic_four_point_third_condition
     ∃ z ∈ Set.Ioo a d,
       |μnew z 1*(D z 1)^3/(μnew z 0*(D z 0)^3)-1| ≤
         (3*μnew z 1*(D z 1)^3/2)*
-          (4*E/h^2+2*ε/(3*μ 0*(D z 0)^3)+2*ε/(3*μ 1*(D z 1)^3)) := by
+          (4*E/h^2+2*ε/(3*μ 0*(D z 0)^3)+2*ε/(3*μ 1*(D z 1)^3))) := by
   let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
   let μ := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
   let μnew := fun y i => iteratedDeriv 3 (f i) (round (x₁ y i))/6
@@ -5447,14 +5428,7 @@ theorem physicalModelPhase_quartic_long_block_third_condition
     (hden : ∀ y ∈ Set.Icc (x 0) (x 3), ∀ i, d ≤ r i*y+s i)
     (hdenUpper : ∀ y ∈ Set.Icc (x 0) (x 3), ∀ i, r i*y+s i ≤ 2*d)
     (hmono : StrictMono x) :
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    let n := fun y i => (round (x₁ y i):ℝ)-(round (x₀ i):ℝ)
-    let μ := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
-    let μnew := fun y i => iteratedDeriv 3 (f i) (round (x₁ y i))/6
-    let ν := fun i => iteratedDeriv 4 (f i) (round (x₀ i))/24
-    let D := fun y i => r i*y+s i
-    let g := rationalPhase (μ 0) (r 0) (s 0) (μ 1) (r 1) (s 1)
-    let H := quarticPhase (μ 0) (ν 0) (r 0) (s 0) (μ 1) (ν 1) (r 1) (s 1)
+    FourPointThirdConditionParameters T M F A x₀ r s x₁ (fun f n μ μnew D g H =>
     let G := minorArcCoordinate (μ 0) (r 0) (s 0)
     (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=e i/r i) →
     (∀ y ∈ Set.Icc (x 0) (x 3), ∀ i,
@@ -5465,7 +5439,7 @@ theorem physicalModelPhase_quartic_long_block_third_condition
     ∃ z ∈ Set.Ioo (x 0) (x 3),
       |μnew z 1*(D z 1)^3/(μnew z 0*(D z 0)^3)-1| ≤
         ((σ*(σ+1)+1)/modelPhaseThirdLower σ)*
-          (32*K+9*quarticReciprocalConstant σ δ)*R^2/(L^2*N^2) := by
+          (32*K+9*quarticReciprocalConstant σ δ)*R^2/(L^2*N^2)) := by
   let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
   let μ := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
   let μnew := fun y i => iteratedDeriv 3 (f i) (round (x₁ y i))/6
@@ -5589,14 +5563,7 @@ theorem physicalModelPhase_quartic_two_long_block_witnesses
     (hden : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i, d ≤ r i*y+s i)
     (hdenUpper : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i, r i*y+s i ≤ 2*d)
     (hmono : StrictMono x) :
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    let n := fun y i => (round (x₁ y i):ℝ)-(round (x₀ i):ℝ)
-    let μ := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
-    let μnew := fun y i => iteratedDeriv 3 (f i) (round (x₁ y i))/6
-    let ν := fun i => iteratedDeriv 4 (f i) (round (x₀ i))/24
-    let D := fun y i => r i*y+s i
-    let g := rationalPhase (μ 0) (r 0) (s 0) (μ 1) (r 1) (s 1)
-    let H := quarticPhase (μ 0) (ν 0) (r 0) (s 0) (μ 1) (ν 1) (r 1) (s 1)
+    FourPointThirdConditionParameters T M F A x₀ r s x₁ (fun f n μ μnew D g H =>
     let G := minorArcCoordinate (μ 0) (r 0) (s 0)
     (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=e i/r i) →
     (∀ y ∈ Set.Icc (x 0) (x 7), ∀ i,
@@ -5609,7 +5576,7 @@ theorem physicalModelPhase_quartic_two_long_block_witnesses
       (∀ z ∈ ({z₀,z₁} : Finset ℝ),
         |μnew z 1*(D z 1)^3/(μnew z 0*(D z 0)^3)-1| ≤
           ((σ*(σ+1)+1)/modelPhaseThirdLower σ)*
-            (32*K+9*quarticReciprocalConstant σ δ)*R^2/(L^2*N^2)) := by
+            (32*K+9*quarticReciprocalConstant σ δ)*R^2/(L^2*N^2))) := by
 
   let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
   let μ := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6

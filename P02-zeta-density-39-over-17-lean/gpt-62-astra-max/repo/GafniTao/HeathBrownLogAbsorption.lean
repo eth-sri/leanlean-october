@@ -32,7 +32,7 @@ theorem heathBrown_one_add_log_le
         (N : ℝ) ^ (epsilon / 2) := by
   have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
   have hhalf : 0 < epsilon / 2 := by positivity
-  have hone : (1 : ℝ) ≤ (N : ℝ) ^ (epsilon / 2) :=
+  have hone  :=
     Real.one_le_rpow hNReal hhalf.le
   have hlog := Real.log_le_rpow_div
     (show (0 : ℝ) ≤ N by positivity) hhalf
@@ -61,7 +61,7 @@ theorem heathBrown_one_add_log_rpow_le
     linarith
   have hmain := Real.rpow_le_rpow hbase
     (heathBrown_one_add_log_le hN hepsilon) hr0
-  have hconstant : 0 ≤ heathBrownLogConstant epsilon :=
+  have hconstant  :=
     (heathBrownLogConstant_pos hepsilon).le
   rw [Real.mul_rpow hconstant (by positivity)] at hmain
   have hexponent : epsilon / 2 * r ≤ epsilon / 2 := by

@@ -46,11 +46,11 @@ theorem amplifier_quantitative_witness {η : ℝ} (hη : 0 < η) :
     intro j _
     rw [← B.adjoint_inner_left,inner_self_eq_norm_sq_to_K]
     exact_mod_cast sq_nonneg ‖B.adjoint (v j)‖
-  have hn : ‖A‖^2 ≤ C*(1+L)^η*(N+1) := hnorm N L hN hNL a M ha
+  have hn  := hnorm N L hN hNL a M ha
   rw [hmass] at henergy
   have hb := henergy.trans (mul_le_mul_of_nonneg_right hn hnonneg)
   simp_rw [hfactor] at hb
-  have hL : 0 < L := hN.trans_le hNL
+  have hL  := hN.trans_le hNL
   have hD : 0 < C*(1+L)^η*(N+1) := by positivity
   rw [← mul_div_assoc]
   apply (div_le_iff₀ hD).mpr

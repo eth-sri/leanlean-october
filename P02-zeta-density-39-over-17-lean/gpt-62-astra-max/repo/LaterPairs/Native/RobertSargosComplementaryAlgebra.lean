@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosComplementaryCount
 
 @[expose] public section
@@ -22,10 +19,10 @@ theorem robertSargos_conic_count_algebra {R H Q δ : ℝ}
   have hHp : 0 < H := by linarith
   have hQ0 : 0 ≤ Q := by linarith
   have hR0 : 0 ≤ R := by linarith
-  have hRH : H ≤ R*H := le_mul_of_one_le_left hHp.le hR
-  have hq : Q ≤ R*H := hQH.trans hRH
+  have hRH  := le_mul_of_one_le_left hHp.le hR
+  have hq  := hQH.trans hRH
   have h1 : Q^2 ≤ R*H*Q := by nlinarith only [mul_le_mul_of_nonneg_right hq hQ0]
-  have hsq : Q^2 ≤ H^2 := pow_le_pow_left₀ hQ0 hQH 2
+  have hsq  := pow_le_pow_left₀ hQ0 hQH 2
   have h2 : R*Q^3/H ≤ R*H*Q := by
     apply (div_le_iff₀ hHp).mpr
     nlinarith only [mul_le_mul_of_nonneg_left hsq
@@ -64,7 +61,7 @@ theorem robertSargos_linear_count_algebra {R H Q δ : ℝ}
       7300*(R*H*Q)*(1+δ*Q) := by
   have hHp : 0 < H := by linarith
   have hQ0 : 0 ≤ Q := by linarith
-  have hRH : H ≤ R*H := le_mul_of_one_le_left hHp.le hR
+  have hRH  := le_mul_of_one_le_left hHp.le hR
   have hb : 1+(δ*Q+99*R*Q/H) ≤ 100*(1+δ*Q) := by
     have hm := mul_le_mul_of_nonneg_right hRδ hQ0
     have he : (R/H)*Q = R*Q/H := by ring

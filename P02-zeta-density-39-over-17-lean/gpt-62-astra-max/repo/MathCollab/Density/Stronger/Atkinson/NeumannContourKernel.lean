@@ -35,8 +35,7 @@ def neumannContourKernel (x : ℝ) (z : ℂ) : ℂ :=
 
 theorem differentiableAt_neumannContourKernel (x : ℝ) {z : ℂ}
     (hminus : 1 - z ∈ slitPlane) (hplus : 1 + z ∈ slitPlane) :
-    DifferentiableAt ℂ (neumannContourKernel x) z := by
-  exact ((by fun_prop : DifferentiableAt ℂ (fun z : ℂ => Complex.exp (I * (x : ℂ) * z)) z).mul
+    DifferentiableAt ℂ (neumannContourKernel x) z := ((by fun_prop : DifferentiableAt ℂ (fun z : ℂ => Complex.exp (I * (x : ℂ) * z)) z).mul
     ((differentiableAt_const 1).sub differentiableAt_id |>.cpow_const hminus)).mul
     ((differentiableAt_const 1).add differentiableAt_id |>.cpow_const hplus)
 

@@ -1,5 +1,5 @@
 module
-public import LaterPairs.Native.HuxleyCore
+public import LaterPairs.Native.HuxleyCore.Part06
 
 @[expose] public section
 set_option autoImplicit false

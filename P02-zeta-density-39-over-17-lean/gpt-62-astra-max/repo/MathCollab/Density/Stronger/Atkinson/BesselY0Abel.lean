@@ -136,11 +136,7 @@ theorem integral_cpow_mul_damped_sin_Ioi
       rw [MeasureTheory.integral_sub hPInt hMInt]
     _ = (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) /
         (2 * I) * Gamma s := by
-      rw [show (∫ x : ℝ in Set.Ioi 0, P x) =
-          ((ε : ℂ) - I * a) ^ (-s) * Gamma s by exact hp,
-        show (∫ x : ℝ in Set.Ioi 0, M x) =
-          ((ε : ℂ) + I * a) ^ (-s) * Gamma s by exact hm]
-      field_simp
+      grind
 
 /-- The two damped complex powers have their expected nontangential Abel
 limit at the imaginary axis. -/
@@ -178,7 +174,7 @@ theorem dfiDampedSineFactor_limit_eq
     (s : ℂ) {a : ℝ} (ha : 0 < a) :
     (((-I * a) ^ (-s) - (I * a) ^ (-s)) / (2 * I)) =
       (a : ℂ) ^ (-s) * Complex.sin (Real.pi * s / 2) := by
-  have haC : (a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ha.ne'
+  have haC  := Complex.ofReal_ne_zero.mpr ha.ne'
   have hnegI : (-I : ℂ) ≠ 0 := by simp
   have hI : (I : ℂ) ≠ 0 := by simp
   rw [Complex.cpow_def_of_ne_zero (mul_ne_zero hnegI haC),

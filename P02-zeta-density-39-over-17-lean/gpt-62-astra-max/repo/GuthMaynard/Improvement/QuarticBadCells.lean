@@ -21,24 +21,22 @@ theorem separated_three_intervals {T B : ℝ} (W : Finset ℝ)
   have hsub₁ : Z₁ ⊆ W := Finset.filter_subset _ _
   have hsub₂ : Z₂ ⊆ W := Finset.filter_subset _ _
   have hsub₃ : Z₃ ⊆ W := Finset.filter_subset _ _
-  have h₁ : (Z₁.card:ℝ) ≤ B := hb Z₁ (-T) hsub₁ (by
-    intro t ht; simpa using (Finset.mem_filter.mp ht).2)
+  have h₁  := hb Z₁ (-T) hsub₁ (by
+    grind)
     (MathCollab.Density.oneSeparated_subset hsep hsub₁)
-  have h₂ : (Z₂.card:ℝ) ≤ B := hb Z₂ 0 hsub₂ (by
-    intro t ht; simpa using (Finset.mem_filter.mp ht).2)
+  have h₂  := hb Z₂ 0 hsub₂ (by
+    grind)
     (MathCollab.Density.oneSeparated_subset hsep hsub₂)
-  have h₃ : (Z₃.card:ℝ) ≤ B := hb Z₃ T hsub₃ (by
-    intro t ht; simpa only [two_mul] using (Finset.mem_filter.mp ht).2)
+  have h₃  := hb Z₃ T hsub₃ (by
+    grind)
     (MathCollab.Density.oneSeparated_subset hsep hsub₃)
   have hcover : W ⊆ Z₁ ∪ Z₂ ∪ Z₃ := by
     intro t ht
     obtain ⟨hlo,hhi⟩ := hw t ht
     by_cases h0 : t ≤ 0
     · exact Finset.mem_union_left _ (Finset.mem_union_left _ (Finset.mem_filter.mpr ⟨ht,hlo,h0⟩))
-    · by_cases hT : t ≤ T
-      · exact Finset.mem_union_left _ (Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨ht,by linarith,hT⟩))
-      · exact Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨ht,by linarith,hhi⟩)
-  have hcard : W.card ≤ Z₁.card+Z₂.card+Z₃.card :=
+    · grind
+  have hcard  :=
     (Finset.card_le_card hcover).trans ((Finset.card_union_le _ _).trans
       (Nat.add_le_add_right (Finset.card_union_le _ _) _))
   have hc : (W.card:ℝ) ≤ (Z₁.card:ℝ)+Z₂.card+Z₃.card := by exact_mod_cast hcard

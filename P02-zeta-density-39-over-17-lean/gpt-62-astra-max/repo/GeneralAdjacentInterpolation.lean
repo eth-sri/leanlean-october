@@ -16,8 +16,8 @@ theorem adjacent_log_interpolation {U T H R : ℝ} {j : ℕ}
     Real.log U ≤ Real.log 2+Real.log H+Real.log T/(2*(j:ℝ))+
       (2-(2*(j:ℝ)+1)/(2*j*(j+1)))*Real.log R := by
   have hjr : (1:ℝ) ≤ j := by exact_mod_cast hj
-  have hjp : (0:ℝ) < j := by linarith
-  have hj1 : 0 < (j:ℝ)+1 := by linarith
+  
+  
   have hl₁ := Real.log_le_log (pow_pos hU j) h₁
   have hl₂ := Real.log_le_log (pow_pos hU (j+1)) h₂
   simp (disch := positivity) only [Real.log_mul,Real.log_pow] at hl₁ hl₂

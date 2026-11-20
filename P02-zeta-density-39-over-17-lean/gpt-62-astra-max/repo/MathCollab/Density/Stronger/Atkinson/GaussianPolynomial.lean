@@ -26,7 +26,6 @@ theorem integrable_abs_pow_mul_exp_neg_mul_sq
       (fun u : ℝ => |u| ^ j * Real.exp (-b * u ^ 2)) (Set.Ioi 0) := by
     have hraw := integrableOn_rpow_mul_exp_neg_mul_sq hb
       (s := (j : ℝ)) (by
-        have hj : (0 : ℝ) ≤ (j : ℝ) := Nat.cast_nonneg _
         linarith)
     apply hraw.congr_fun _ measurableSet_Ioi
     intro u hu
@@ -48,10 +47,7 @@ theorem integrable_exp_sub_mul_sq_mul_add_abs_pow
     intro i _hi
     exact (integrable_abs_pow_mul_exp_neg_mul_sq hB (j - i)).const_mul
       (Real.exp A * (j.choose i : ℝ) * C ^ i)
-  have hsum : Integrable (fun u : ℝ =>
-      ∑ i ∈ Finset.range (j + 1),
-        (Real.exp A * (j.choose i : ℝ) * C ^ i) *
-          (|u| ^ (j - i) * Real.exp (-B * u ^ 2))) :=
+  have hsum  :=
     integrable_finsetSum (Finset.range (j + 1)) hterm
   apply hsum.congr
   filter_upwards with u

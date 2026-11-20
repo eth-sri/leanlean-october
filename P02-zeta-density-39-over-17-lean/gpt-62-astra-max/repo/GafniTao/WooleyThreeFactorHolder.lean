@@ -32,14 +32,14 @@ theorem wooley_three_factor_holder_ennreal
         (∑ i ∈ t, f₁ i) ^ a₁ *
           (∑ i ∈ t, f₂ i) ^ a₂ := by
   classical
-  let subF : Fintype {i : ι // i ∈ t} :=
+  let subF  :=
     Finset.fintypeCoeSort t
-  let : Fintype {i : ι // i ∈ t} := subF
+  let  := subF
   let : MeasurableSpace {i : ι // i ∈ t} := ⊤
   let fs : Fin 3 → {i : ι // i ∈ t} → ℝ≥0∞ := fun j x =>
     Fin.cases (f₀ x.1)
       (fun j' => Fin.cases (f₁ x.1) (fun _ => f₂ x.1) j') j
-  let exps : Fin 3 → ℝ := ![a₀, a₁, a₂]
+  let exps  := ![a₀, a₁, a₂]
   have hmeas : ∀ j ∈ (Finset.univ : Finset (Fin 3)),
       AEMeasurable (fs j)
         (Measure.count : Measure {i : ι // i ∈ t}) := by
@@ -77,7 +77,7 @@ theorem wooley_three_factor_holder_critical_ennreal
           (∑ i ∈ t, f₂ i) := by
   have hsReal : (0 : ℝ) < s := by exact_mod_cast (by omega : 0 < s)
   have hsTwo : (2 : ℝ) ≤ s := by exact_mod_cast hs
-  have ha₀ : 0 ≤ ((s : ℝ) - 2) / (s : ℝ) :=
+  have ha₀  :=
     div_nonneg (sub_nonneg.mpr hsTwo) hsReal.le
   have ha₁ : 0 ≤ 1 / (s : ℝ) := by positivity
   have hexp : ((s : ℝ) - 2) / (s : ℝ) +
@@ -88,7 +88,7 @@ theorem wooley_three_factor_holder_critical_ennreal
     (((s : ℝ) - 2) / (s : ℝ)) (1 / (s : ℝ)) (1 / (s : ℝ))
     ha₀ ha₁ ha₁ hexp
   have hraised := ENNReal.rpow_le_rpow hholder
-    (by exact_mod_cast (Nat.zero_le s) : (0 : ℝ) ≤ s)
+    (by positivity : (0 : ℝ) ≤ s)
   calc
     (∑ i ∈ t,
         f₀ i ^ (((s : ℝ) - 2) / (s : ℝ)) *
@@ -103,12 +103,9 @@ theorem wooley_three_factor_holder_critical_ennreal
       rw [ENNReal.mul_rpow_of_nonneg _ _ hsReal.le,
         ENNReal.mul_rpow_of_nonneg _ _ hsReal.le]
       simp only [← ENNReal.rpow_mul]
-      have hsNe : (s : ℝ) ≠ 0 := ne_of_gt hsReal
+      have hsNe  := ne_of_gt hsReal
       congr 1
-      · congr 1
-        · congr 1
-          field_simp
-        · field_simp
+      · · field_simp
           simp
       · field_simp
         simp
@@ -133,12 +130,12 @@ theorem wooley_three_factor_holder_critical_real
   have hsReal : (0 : ℝ) < s := by
     exact_mod_cast (by omega : 0 < s)
   have hsTwo : (2 : ℝ) ≤ s := by exact_mod_cast hs
-  have ha₀ : 0 ≤ ((s : ℝ) - 2) / (s : ℝ) :=
+  have ha₀  :=
     div_nonneg (sub_nonneg.mpr hsTwo) hsReal.le
   have ha₁ : 0 ≤ 1 / (s : ℝ) := by positivity
-  let F₀ : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (f₀ i)
-  let F₁ : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (f₁ i)
-  let F₂ : ι → ℝ≥0∞ := fun i => ENNReal.ofReal (f₂ i)
+  let F₀  := fun i => ENNReal.ofReal (f₀ i)
+  let F₁  := fun i => ENNReal.ofReal (f₁ i)
+  let F₂  := fun i => ENNReal.ofReal (f₂ i)
   have hholder := wooley_three_factor_holder_critical_ennreal
     t F₀ F₁ F₂ hs
   have hterm (i : ι) (hi : i ∈ t) :

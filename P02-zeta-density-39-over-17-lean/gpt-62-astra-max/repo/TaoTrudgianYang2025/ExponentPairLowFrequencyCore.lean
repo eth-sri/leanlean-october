@@ -28,7 +28,7 @@ theorem norm_modelPhaseCore_le_firstDerivative
     ‖∑ n ∈ Finset.range (L+1), oscillatory F T N (A+n)‖ ≤
       (2/(2 : ℝ)^(-σ))*(N/T) := by
   let d := Real.pi*(2 : ℝ)^(-σ)*T/N
-  have hq : 0 < (2 : ℝ)^(-σ) := Real.rpow_pos_of_pos (by norm_num) _
+  
   have hq₁ : (2 : ℝ)^(-σ) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (neg_nonpos.mpr hσ.le)
   have hd : 0 < d := by dsimp [d]; positivity
@@ -47,28 +47,19 @@ theorem norm_modelPhaseCore_le_firstDerivative
       have hh := betaModelSample_firstDifference_bounds hσ hT hN hslope hF
         hstart hend n hn
       simp only [Nat.zero_add,Nat.cast_add,Nat.cast_one,Int.cast_neg,Int.cast_one]
-      have hlo : -(4*Real.pi*T/N) ≤
-          betaModelSample F T N A (n+1)-betaModelSample F T N A n := by
-        convert hh.1 using 1
-        ring
-      linarith)
+      grind)
     (fun n hn => by
       have hh := betaModelSample_firstDifference_bounds hσ hT hN hslope hF
         hstart hend n hn
       simp only [Nat.zero_add,Nat.cast_add,Nat.cast_one,Int.cast_neg,Int.cast_one]
-      have hhi : betaModelSample F T N A (n+1)-betaModelSample F T N A n ≤ -d := by
-        dsimp [d]
-        convert hh.2 using 1
-        ring
-      linarith)
+      grind)
     (fun n hn => by
       have hh := betaModelSample_secondDifference_bounds hσ hT hN hcurv hF
         hstart hend n hn
       have hc : 0 ≤ (2*Real.pi*modelPhaseCurvatureLower σ)*T/N^2 :=
-        le_of_lt (by exact div_pos (mul_pos (mul_pos (by positivity)
+        le_of_lt (div_pos (mul_pos (mul_pos (by positivity)
           (modelPhaseCurvatureLower_pos hσ)) hT) (sq_pos_of_pos hN))
-      simp only [Nat.zero_add,Nat.cast_add,Nat.cast_ofNat,Nat.cast_one]
-      linarith [hh.1])
+      grind)
   simp only [Nat.zero_add] at hb
   have heq : (∑ n ∈ Finset.range (L+1), unitaryPhase (betaModelSample F T N A n)) =
       starRingEnd ℂ (∑ n ∈ Finset.range (L+1), oscillatory F T N (A+n)) := by

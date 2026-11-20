@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroRFloorBudgets
 
@@ -88,7 +85,7 @@ theorem robertSargos_zero_zero_physical_a_times_a (f : ℝ → ℝ) (M H : ℕ)
       rw [← h3]
       exact one_le_pow₀ (by linarith)
     exact_mod_cast (positive_floor_half_bounds h1).1
-  have hs : (H:ℝ)^2 ≤ Q*R := zero_zero_floor_scale hlam hsmall hHmax
+  have hs  := zero_zero_floor_scale hlam hsmall hHmax
   have hb := mul_le_mul_of_nonneg_left (robertSargos_zero_zero_bound f M H)
     (show 0 ≤ 8*(M:ℝ)*H/(Q*R) by positivity)
   change (8*(M:ℝ)*H/(Q*R))*_ ≤ _

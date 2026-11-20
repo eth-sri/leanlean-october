@@ -81,9 +81,7 @@ theorem atkinsonPowerIntegral_eq_root {T G L : ℝ}
     (f' := fun y : ℝ => 2 * y) (a := Real.sqrt (T / 16)) (b := Real.sqrt T)
     (by fun_prop) (fun y _ => by simpa using! (hasDerivAt_id y).pow 2)
     (fun y hy => by
-      rw [min_eq_left hab, max_eq_right hab] at hy
-      have := ha.trans hy.1
-      positivity)
+      grind)
   rw [Real.sq_sqrt (by positivity : 0 ≤ T / 16), Real.sq_sqrt hT.le] at hc
   rw [he, ← hc, ← intervalIntegral.integral_const_mul]
   apply intervalIntegral.integral_congr

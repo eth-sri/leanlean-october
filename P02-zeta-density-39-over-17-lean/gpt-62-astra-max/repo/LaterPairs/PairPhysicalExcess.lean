@@ -20,7 +20,7 @@ theorem ExponentPair.critical_physical_excess_general {k l η ε : ℝ}
       (∫ t in Icc 0 (3*T),criticalExcess v t) ≤
         C*T^ε*(T*v^(-5:ℝ)+T^(1+l/k)*v^(-3-(2+4*l)/k)) := by
   have hl : 0 < l := lt_of_lt_of_le (by norm_num) hpair.inTriangle.2.2.1
-  have hden : 0 < 3+(2+4*l)/k := by positivity
+  
   have hp : 1 ≤ 1+ε := by linarith
   have hr : 1 ≤ 1+l/k+ε := by have hh := div_pos hl hk; linarith
   obtain ⟨B₀,hB₀⟩ := eventually_atTop.mp (hpair.critical_slab_excess_general hk hη hε)
@@ -37,10 +37,10 @@ theorem ExponentPair.critical_physical_excess_general {k l η ε : ℝ}
   have hsmall := (tendsto_rpow_atTop hq).eventually (eventually_ge_atTop M)
   filter_upwards [hsmall,eventually_ge_atTop B] with T hsmall hT
   intro v hv hvrange
-  have hT1 : 1 ≤ T := hB.trans hT
+  have hT1  := hB.trans hT
   have hT0 : 0 < T := by linarith
   have hL0 : 0 < 3*T := by positivity
-  have hvM : M ≤ v := hsmall.trans ((Real.rpow_le_rpow hT0.le (by linarith) hq.le).trans hvrange)
+  have hvM  := hsmall.trans ((Real.rpow_le_rpow hT0.le (by linarith) hq.le).trans hvrange)
   have hpref := hM v hvM
   have hdyad : ∀ H : ℝ,B ≤ H → H ≤ 3*T →
       (∫ t in H..2*H,criticalExcess v t) ≤

@@ -36,7 +36,6 @@ theorem universal_low_coefficient_small {A T : ℝ} (hA : 0<A)
   rw [← Real.rpow_natCast_mul (by positivity : (0:ℝ)≤2*A)] at hh
   norm_num at hh
   rw [show (-1/200:ℝ)= -(1/200:ℝ) by norm_num,Real.rpow_neg hTp.le]
-  change A/T^(1/200:ℝ)≤1/2
   exact (div_le_iff₀ (by positivity : 0<T^(1/200:ℝ))).mpr (by linarith)
 
 end Montgomery.RationalMoment

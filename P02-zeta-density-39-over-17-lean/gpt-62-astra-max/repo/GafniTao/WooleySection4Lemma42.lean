@@ -69,7 +69,7 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
     exact div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
   have hu1 : u ≤ 1 := by
     dsimp [u]
-    rw [div_le_one (by exact_mod_cast (show 0 < s by omega))]
+    rw [div_le_one (by positivity)]
     exact_mod_cast hRle
   have hRpos : 0 < R := by
     dsimp [R]
@@ -88,15 +88,15 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
     exact_mod_cast hreal
   have huPos : 0 < u := by
     dsimp [u]
-    exact div_pos (by exact_mod_cast hRpos)
-      (by exact_mod_cast (show 0 < s by omega))
+    exact div_pos (by positivity)
+      (by positivity)
   have huLt : u < 1 := by
     dsimp [u]
-    rw [div_lt_one (by exact_mod_cast (show 0 < s by omega))]
+    rw [div_lt_one (by positivity)]
     exact_mod_cast hRlt
-  have he0 : 0 ≤ e :=
+  have he0  :=
     (wooleyNormalizationExponent_pos hr hrk).le
-  have he1 : e ≤ 1 :=
+  have he1  :=
     wooleyNormalizationExponent_le_one hr hrk
   have hK0 : 0 ≤ K := by
     dsimp [K]
@@ -141,7 +141,7 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
     simp only [zero_div,
       Real.zero_rpow (ne_of_gt (wooleyNormalizationExponent_pos hr hrk))]
     exact mul_nonneg (by positivity) (Real.rpow_nonneg (by positivity) _)
-  have hZ : 0 < Z := lt_of_le_of_ne hZ0 (Ne.symm hZzero)
+  have hZ  := lt_of_le_of_ne hZ0 (Ne.symm hZzero)
   by_cases hCzero : C = 0
   · have hXzero : X = 0 := by
       apply le_antisymm _ hX0
@@ -159,7 +159,7 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
     simp only [zero_div,
       Real.zero_rpow (ne_of_gt (wooleyNormalizationExponent_pos hr hrk))]
     exact mul_nonneg (by positivity) (Real.rpow_nonneg (by positivity) _)
-  have hCpos : 0 < C := lt_of_le_of_ne hC (Ne.symm hCzero)
+  have hCpos  := lt_of_le_of_ne hC (Ne.symm hCzero)
   have hnormalized :
       (K / Z) ^ e ≤
         (X / Z) ^ (u * e) * (Y / Z) ^ ((1 - u) * e) := by
@@ -176,22 +176,19 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
   have hratioB : Y / Z ≤ C * (p : ℝ) ^ D := by
     rw [div_le_iff₀ hZ]
     simpa only [Y, Z, D, s] using hupperB
-  have hratioA0 : 0 ≤ X / Z := div_nonneg hX0 hZ.le
-  have hratioB0 : 0 ≤ Y / Z := div_nonneg hY0 hZ.le
-  have hue0 : 0 ≤ u * e := mul_nonneg hu0 he0
-  have hve0 : 0 ≤ (1 - u) * e :=
+  have hratioA0  := div_nonneg hX0 hZ.le
+  have hratioB0  := div_nonneg hY0 hZ.le
+  have hue0  := mul_nonneg hu0 he0
+  have hve0  :=
     mul_nonneg (sub_nonneg.mpr hu1) he0
-  have hpowA :
-      (X / Z) ^ (u * e) ≤ (C * (p : ℝ) ^ A) ^ (u * e) :=
+  have hpowA  :=
     Real.rpow_le_rpow hratioA0 hratioA hue0
-  have hpowB :
-      (Y / Z) ^ ((1 - u) * e) ≤
-        (C * (p : ℝ) ^ D) ^ ((1 - u) * e) :=
+  have hpowB  :=
     Real.rpow_le_rpow hratioB0 hratioB hve0
   have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
-  have hA0 : 0 ≤ A := mul_nonneg (Nat.cast_nonneg _) hLambdaEpsilon
-  have hD0 : 0 ≤ D := mul_nonneg (Nat.cast_nonneg _) hLambdaEpsilon
-  have hweighted0 : 0 ≤ A * u + D * (1 - u) := by positivity
+  
+  
+  
   have hAle : A ≤ (H : ℝ) * (Lambda + epsilon) := by
     dsimp [A]
     rw [Nat.cast_sub haH]
@@ -257,7 +254,7 @@ theorem wooley_natPrimePower_rpow
     (((p ^ n : ℕ) : ℝ) ^ Lambda) =
       (p : ℝ) ^ ((n : ℝ) * Lambda) := by
   rw [Nat.cast_pow]
-  exact (Real.rpow_natCast_mul (by exact_mod_cast hp.le) n Lambda).symm
+  exact (Real.rpow_natCast_mul (by positivity) n Lambda).symm
 
 end
 

@@ -91,8 +91,7 @@ theorem wooley_section10_bounds_contradict_twoLoss
     (hHeta : (H : ℝ) * eta ≤ theta)
     (hHepsilon : (H : ℝ) * epsilon ≤ theta)
     (hconstants : C0 * D ^ (wooleyIterationLength s k Lambda) *
-      max 1 Cterm ≤ (p : ℝ) ^ theta) : False := by
-  exact wooley_iteration_length_final_bound_impossible hs hk hLambda
+      max 1 Cterm ≤ (p : ℝ) ^ theta) : False := wooley_iteration_length_final_bound_impossible hs hk hLambda
     (wooley_section10_force_final_bound_twoLoss hp hk hs htheta hLambda
       heta hD hC0 hCterm hKfinal hR hRone hinitial hiterated
       hCaccUpper hE hterminal hHeta hHepsilon hconstants)
@@ -130,7 +129,7 @@ theorem wooleySourcePolynomial_iterationChain_contradict_twoLoss
     (hconstants : C0 * D ^
         (wooleyIterationLength (wooleyTriangular k) k Lambda) *
         max 1 Cterm ≤ (p : ℝ) ^ theta) : False := by
-  let K : ℕ → ℕ → ℕ → ℝ := fun r a b =>
+  let K  := fun r a b =>
     wooleySourceNormalizedMixedMean phi p B H (wooleyTriangular k)
       r a b nu Lambda gamma
   have hKnonneg : ∀ r a b, 0 ≤ K r a b := by
@@ -173,7 +172,7 @@ theorem wooleySourcePolynomial_iterationChain_contradict_twoLoss
               theta) := Nat.mul_le_mul_left k hscale
         _ = k ^
             (2 * wooleyIterationLength (wooleyTriangular k) k Lambda + 1) *
-              theta := by rw [pow_succ']; ring
+              theta := by ring
     exact wooleySourceNormalizedMixedMean_terminal
       phi p B H rFinal aFinal bFinal nu Lambda epsilon Cterm gamma
         hp hrFinal (by omega) hepsilon hCterm

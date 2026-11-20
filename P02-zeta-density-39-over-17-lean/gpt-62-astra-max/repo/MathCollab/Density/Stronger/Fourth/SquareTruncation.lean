@@ -35,7 +35,7 @@ theorem exists_norm_zetaFourthContribution_le {c : ℝ} (hc : 0 < c) :
     apply norm_pos_iff.mpr
     exact one_div_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))
   let K : ℝ := B*A*Real.sqrt (Real.pi/98)
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  refine ⟨K,by positivity,?_⟩
   intro t ht hct n
   calc
     ‖zetaFourthContribution t c n‖
@@ -47,9 +47,8 @@ theorem exists_norm_zetaFourthContribution_le {c : ℝ} (hc : 0 < c) :
       rw [integral_norm_zetaFourthTerm_vertical]
     _ ≤ B*(((n.divisors.card:ℝ)*(n:ℝ)^(-(1/2+c))) *
         (A*t^c*Real.sqrt (Real.pi/98))) := by
-      exact mul_le_mul_of_nonneg_left
-        (mul_le_mul_of_nonneg_left (hbound t ht hct) (by positivity)) hB.le
-    _ = _ := by dsimp [K]; ring
+      bound
+    _ = _ := by ring
 
 theorem summable_fourth_divisorWeight {c : ℝ} (hc : 3/2 < c) :
     Summable (fun n : ℕ => (n.divisors.card:ℝ)*(n:ℝ)^(-(1/2+c))) := by

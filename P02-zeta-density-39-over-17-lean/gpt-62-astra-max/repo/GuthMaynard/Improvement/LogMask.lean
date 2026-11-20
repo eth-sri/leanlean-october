@@ -69,7 +69,7 @@ theorem log_compact_mask_integral {w h : ℝ → ℝ} {a b W : ℝ} {A : Set ℝ
     (hh : Integrable h) (hh0 : ∀ u, 0 ≤ h u) :
     Integrable (fun v => w v*A.indicator h (Real.log v)) ∧
       (∫ v, w v*A.indicator h (Real.log v)) ≤ b*W*(∫ u in A, h u) := by
-  have hb : 0 ≤ b := ha.le.trans hab
+  have hb  := ha.le.trans hab
   apply log_mask_integral hw hw0 (mul_nonneg hb hW) _ _ hA hh hh0
   · intro v hv
     by_cases hx : v ∈ Icc a b

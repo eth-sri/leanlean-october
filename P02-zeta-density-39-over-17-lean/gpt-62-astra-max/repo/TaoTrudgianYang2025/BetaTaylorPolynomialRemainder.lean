@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorPolynomialJets
 
 @[expose] public section
@@ -46,7 +45,7 @@ theorem abs_finiteTaylorPolynomial_remainder_le
   · subst x
     simp only [finiteTaylorPolynomial,taylorWithinEval_self,sub_self,abs_zero,
       zero_pow (Nat.succ_ne_zero n),mul_zero,zero_div,le_refl]
-  · have hn : ((n+1 : ℕ) : WithTop ℕ∞) ≤ ∞ :=
+  · have hn  :=
       ENat.natCast_le_of_coe_top_le_withTop le_rfl (n+1)
     obtain ⟨y,hy,he⟩ := taylor_mean_remainder_lagrange_iteratedDeriv hax
       (fun z hz => ((hf z hz).of_le hn).contDiffWithinAt)
@@ -66,8 +65,8 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le
     (hb : ∀ y ∈ uIcc a x, |iteratedDeriv (Q+1) f y| ≤ M) :
     |iteratedDeriv j (fun y => f y-finiteTaylorPolynomial f Q a y) x| ≤
       M*|x-a|^(Q+1-j) := by
-  have hM : 0 ≤ M := (abs_nonneg _).trans (hb a left_mem_uIcc)
-  have hN : (j : WithTop ℕ∞) ≤ ∞ :=
+  have hM  := (abs_nonneg _).trans (hb a left_mem_uIcc)
+  have hN  :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl j
   rw [iteratedDeriv_fun_sub ((hf x right_mem_uIcc).of_le hN)
     ((finiteTaylorPolynomial_contDiff f Q a).contDiffAt.of_le hN),

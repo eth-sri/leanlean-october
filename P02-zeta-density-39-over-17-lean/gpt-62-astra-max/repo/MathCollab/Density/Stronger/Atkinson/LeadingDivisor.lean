@@ -95,8 +95,7 @@ theorem exists_norm_zetaSquareDivisorContribution_error_le :
   calc
     _ ≤ (1 / (2 * Real.pi)) * ∫ u : ℝ,
         ‖zetaSquareDivisorTerm (-t) n u / zetaSquareGammaNormalization t -
-          zetaSquareLeadingDivisorTerm t n u‖ := by
-      exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (by positivity)
+          zetaSquareLeadingDivisorTerm t n u‖ := mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (by positivity)
     _ = (1 / (2 * Real.pi)) * (‖divisorDirichletTerm (3 / 2) n‖ * ∫ u : ℝ,
         ‖zetaSquareRightKernel (-t) u / zetaSquareGammaNormalization t -
           zetaSquareLeadingRightKernel t u‖) := by
@@ -116,16 +115,16 @@ theorem exists_norm_zetaSquareDivisorIntegral_sub_leading_le :
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaSquareDivisorContribution_error_le
   have hs := (summable_divisorDirichletTerm (s := (3 / 2 : ℂ)) (by norm_num)).norm
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (3 / 2) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
+  
   refine ⟨1 + C * S, by positivity, ?_⟩
   intro t ht
-  let e : ℕ → ℂ := fun n => zetaSquareDivisorContribution (-t) n / zetaSquareGammaNormalization t -
+  let e  := fun n => zetaSquareDivisorContribution (-t) n / zetaSquareGammaNormalization t -
     zetaSquareLeadingDivisorContribution t n
   have hsum : HasSum e (zetaSquareDivisorIntegral (-t) / zetaSquareGammaNormalization t -
       zetaSquareLeadingDivisorIntegral t) :=
     ((hasSum_zetaSquareDivisorContribution (-t)).div_const _).sub
       (hasSum_zetaSquareLeadingDivisorContribution ht)
-  have he : Summable (fun n => ‖e n‖) :=
+  have he  :=
     Summable.of_nonneg_of_le (fun n => norm_nonneg _) (hbound t ht) (hs.mul_left C)
   rw [← hsum.tsum_eq]
   calc

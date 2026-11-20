@@ -79,8 +79,6 @@ theorem wooleySourcePolynomialPhase_eq_pointCharacter
     (alpha : Fin k → ZMod q) (n : ℤ) :
     wooleySourcePolynomialPhase phi alpha n =
       wooleyPointCharacter q k (wooleyPolynomialValue phi q) alpha n := by
-  unfold wooleySourcePolynomialPhase wooleyPointCharacter
-    wooleyPolynomialValue
   exact wooley_addChar_sum_eq_prod ZMod.stdAddChar _
 
 end

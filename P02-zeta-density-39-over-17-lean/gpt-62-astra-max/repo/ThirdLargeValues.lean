@@ -28,12 +28,12 @@ theorem third_lower_large_values {σ a p α δ : ℝ}
   intro T N t₀ b W hT hlo hhi hb hloc hsep hlarge
   have ht : 1 ≤ T := by linarith
   have htp : 0 < T := by linarith
-  have hn1 : 1 ≤ N := (Real.one_le_rpow ht (show 0 ≤ a by linarith [hw.a_low])).trans hlo
+  have hn1  := (Real.one_le_rpow ht (show 0 ≤ a by linarith [hw.a_low])).trans hlo
   have hn : 0 < N := by linarith
   obtain ⟨L,hnl,hll,hlt,h1,h2,h3,h4,h5,h6,h7,h8,h9⟩ :=
     third_monomial_budgets hw hδ.le (by linarith) hn hlo hhi
-  have hnt : N ≤ T := hnl.trans hlt
-  have hlp : 0 < L := hn.trans_le hnl
+  have hnt  := hnl.trans hlt
+  have hlp  := hn.trans_le hnl
   have hv : 0 < N^σ*T^(-2*δ) := by positivity
   have hp : 0 < T^p := by positivity
   have hpow : 1 ≤ T^(18*δ) := Real.one_le_rpow ht (by positivity)
@@ -41,10 +41,9 @@ theorem third_lower_large_values {σ a p α δ : ℝ}
   · calc
       _ ≤ T^p := hr
       _ ≤ (1+A*(6+4*B))*(T^(18*δ)*T^p) := by
-        have hh : 1 ≤ 1+A*(6+4*B) := by nlinarith [mul_nonneg hA.le (show 0 ≤ 6+4*B by linarith)]
         nlinarith only [mul_le_mul_of_nonneg_right hpow hp.le,mul_nonneg (by positivity : 0 ≤ A*(6+4*B)) (by positivity : 0 ≤ T^(18*δ)*T^p)]
       _ = _ := by rw [← Real.rpow_add htp]; congr 2; ring
-  · have hrs : T^p ≤ (W.card:ℝ) := (lt_of_not_ge hr).le
+  · have hrs  := (lt_of_not_ge hr).le
     have henergy := he T t₀ N (by linarith) hn hnt b W (N^σ*T^(-2*δ))
       hb hv hlarge hloc hsep
     have hcubic := hc T t₀ N L hT hn1 hnl hll hlt b hb W (N^σ*T^(-2*δ))

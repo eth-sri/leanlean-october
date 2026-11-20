@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ContinuousThirdDerivativeSquare
 public import LaterPairs.Native.ThirdDerivativeNormScale
 public import LaterPairs.Native.ThirdDerivativeRpowScale
@@ -36,9 +33,7 @@ theorem continuous_third_derivative_bound
     hC hμ hR hscale hF hF' hF'' hlo hhi
   have hn := third_derivative_norm_of_square (Nat.cast_nonneg N)
     (zero_lt_one.trans_le hR) hC hb
-  have he : (N:ℝ)/Real.sqrt (μ^(-(1:ℝ)/3)) = (N:ℝ)*μ^((1:ℝ)/6) := by
-    rw [div_eq_mul_one_div,hi]
-  rwa [he,hs] at hn
+  grind
 
 theorem norm_sum_fordAdditiveCharacter_neg_phase
     (F : ℝ → ℝ) (A : ℝ) (N : ℕ) :

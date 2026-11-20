@@ -38,8 +38,7 @@ theorem wooleySection7NormalSystem_top
       wooleySection7TopSystem k r p c
         (fun u => psi
           ⟨wooleySection7Node k r u,
-            wooleySection7Node_succ_le hrk u⟩) l := by
-  rfl
+            wooleySection7Node_succ_le hrk u⟩) l := rfl
 
 /-- Evaluation of equation `j` in the normal system on the progression
 `p^b*t` is divisible by `p^(b*(j+1))`. -/
@@ -133,7 +132,7 @@ theorem wooleySection7_original_implies_top_congruences
   let rightDisp : ℤ := wooleyIntegerTupleDisplacement S
     (fun x => (wooleySection7NormalSystem k p c psi j).eval
       ((p : ℤ) ^ b * rightPoint x)) rightXY
-  have hcombined : (p : ℤ) ^ M ∣ leftDisp - rightDisp :=
+  have hcombined  :=
     dvd_trans (pow_dvd_pow (p : ℤ) hMB) (horiginal j)
   have hnode : k - r + 1 ≤ (j : ℕ) + 1 := by
     dsimp only [j, wooleySection7Node]

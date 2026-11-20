@@ -41,10 +41,10 @@ theorem logModulated_fourier_decay {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       _ ≤ 2^n*D₀ := mul_le_mul (pow_le_pow_left₀ (by positivity) (by linarith) n) hz (norm_nonneg _) (by positivity)
       _ ≤ (2^n*D₀)*(1+|s|)^n := by nlinarith [mul_nonneg (show 0 ≤ (2:ℝ)^n*D₀ by positivity) (sub_nonneg.mpr hs1)]
       _ ≤ _ := by gcongr; linarith
-  · have hx' : 1 ≤ |ξ| := (lt_of_not_ge hx).le
+  · have hx'  := (lt_of_not_ge hx).le
     calc
       _ ≤ (2*|ξ|)^n*‖𝓕 (logModulated a s) ξ‖ := by gcongr; linarith
-      _ = 2^n*(|ξ|^n*‖𝓕 (logModulated a s) ξ‖) := by rw [mul_pow]; ring
+      _ = 2^n*(|ξ|^n*‖𝓕 (logModulated a s) ξ‖) := by ring
       _ ≤ 2^n*(Dₙ*(1+|s|)^n) := mul_le_mul_of_nonneg_left hn (by positivity)
       _ ≤ _ := by nlinarith [mul_nonneg (show 0 ≤ (2:ℝ)^n*D₀ by positivity) (pow_nonneg (by positivity : 0 ≤ 1+|s|) n)]
 

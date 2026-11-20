@@ -15,7 +15,7 @@ def sourceQuarticWeight (t : ℝ) : ℝ := ‖sourceReproducingKernel t‖
 theorem source_quartic_weight_decay (q : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ t, sourceQuarticWeight t ≤ C/(1+|t|)^q := by
   let C := 2^q*(Finset.Iic (q,0)).sup (fun m => SchwartzMap.seminorm ℝ m.1 m.2) sourceReproducingKernel
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  
   refine ⟨C+1,by positivity,?_⟩
   intro t
   have hh := SchwartzMap.one_add_le_sup_seminorm_apply (𝕜 := ℝ)
@@ -23,7 +23,7 @@ theorem source_quartic_weight_decay (q : ℕ) :
   simp only [norm_iteratedFDeriv_zero,Real.norm_eq_abs] at hh
   apply (le_div_iff₀ (by positivity : 0 < (1+|t|)^q)).mpr
   dsimp [sourceQuarticWeight]
-  have he : (1+|t|)^q*‖sourceReproducingKernel t‖ ≤ C := hh
+  
   nlinarith
 
 /-- Bounded overlap is the audited separated-decay packing theorem,
@@ -78,7 +78,7 @@ theorem boundedPolynomial_quartic_reproduce {N : ℝ} (hN : 0 < N)
     (show Integrable (fun t => sourceQuarticWeight (t-w)*(‖boundedPolynomial N a t‖^2)^2) volume by
       simpa only [← pow_mul] using source_quartic_weighted_integrable N a w 4)
   rw [hmass] at hsecond
-  have h0 : 0 ≤ ∫ s, sourceQuarticWeight s := integral_nonneg (fun s => norm_nonneg _)
+  
   have hsq := pow_le_pow_left₀ (sq_nonneg _) hfirst 2
   have hh := mul_le_mul_of_nonneg_left hsecond (sq_nonneg (∫ s, sourceQuarticWeight s))
   simp only [← pow_mul] at hsq hh

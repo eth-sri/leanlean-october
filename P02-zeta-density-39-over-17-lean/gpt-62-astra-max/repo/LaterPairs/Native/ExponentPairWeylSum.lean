@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftDistanceSum
 
 @[expose] public section
@@ -33,8 +30,8 @@ theorem interval_weyl_differencing_sum
     (H : ℝ)^2*‖∑ n ∈ Ico (0 : ℤ) N, a n‖^2 ≤
       ((N+H : ℕ) : ℝ)*((H : ℝ)*N+2*H*∑ r ∈ Icc 1 (H-1), C r) := by
   let s := Ico (-(H : ℤ)) (N : ℤ)
-  let b : ℤ → ℕ → ℂ := fun n h => paddedShift a N n h
-  let u : ℤ → ℂ := fun n => ∑ h ∈ range H, b n h
+  let b  := fun n h => paddedShift a N n h
+  let u  := fun n => ∑ h ∈ range H, b n h
   let S : ℂ := ∑ n ∈ Ico (0 : ℤ) N, a n
   have hsum : ∑ n ∈ s, u n = H • S := by
     dsimp [u,b,s]
@@ -53,7 +50,7 @@ theorem interval_weyl_differencing_sum
         apply sum_le_sum
         intro n hn
         nlinarith [norm_nonneg (a n),ha n hn]
-      _ = _ := by simp [Int.card_Ico]
+      _ = _ := by simp
   have hexpand : ∑ n ∈ s, ‖u n‖^2 =
       ∑ h ∈ range H, ∑ k ∈ range H, ∑ n ∈ s, ⟪b n h,b n k⟫_ℝ := by
     simp only [u,← real_inner_self_eq_norm_sq,sum_inner,inner_sum]

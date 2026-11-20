@@ -42,7 +42,7 @@ theorem complete_pair_coefficient_domination {ι κ : Type*} (Q : Finset ι) (U 
   let E := ∑ t ∈ U, ∑ u ∈ U, ‖∑ q ∈ Q, c q * (a q t * conj (a q u))‖ ^ 2
   let S := ∑ t ∈ U, ∑ u ∈ U, ‖∑ q ∈ Q, a q t * conj (a q u)‖ ^ 2
   have hE : 0 ≤ E := Finset.sum_nonneg fun t _ => Finset.sum_nonneg fun u _ => sq_nonneg _
-  have hS : 0 ≤ S := Finset.sum_nonneg fun t _ => Finset.sum_nonneg fun u _ => sq_nonneg _
+  
   have hEexp := complete_pair_expansion Q U a c
   have hSexp := complete_pair_expansion Q U a (fun _ => 1)
   simp only [one_mul, map_one, mul_one] at hSexp

@@ -42,13 +42,13 @@ theorem heathBrown_lambda_lower_of_H_lt_eight
     have hHSevenReal : (H : ℝ) ≤ 7 := by exact_mod_cast hHSeven
     linarith
   have hkRealPos : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
-  have hpow : (8 : ℝ) ^ (-(k : ℝ)) < q ^ (-(k : ℝ)) :=
+  have hpow  :=
     Real.rpow_lt_rpow_of_neg hqpos hqEight (neg_neg_of_pos hkRealPos)
   have hscale : q ^ (-(k : ℝ)) = A * lambda := by
     simpa only [q] using
       heathBrown_source_scale_neg_k (by omega : 1 ≤ k) hA hlambda
   rw [hscale] at hpow
-  exact (div_lt_iff₀ hA).2 (by simpa only [mul_comm] using hpow)
+  exact (div_lt_iff₀ hA).2 (by linarith)
 
 theorem heathBrown_source_scale_separated
     {k : ℕ} (hk : 1 ≤ k) {A lambda : ℝ}
@@ -56,7 +56,7 @@ theorem heathBrown_source_scale_separated
     A ^ (1 / (k : ℝ)) *
         (A * lambda) ^ (-(1 / (k : ℝ))) =
       lambda ^ (-(1 / (k : ℝ))) := by
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hk)
+  
   rw [Real.mul_rpow hA.le hlambda.le]
   calc
     A ^ (1 / (k : ℝ)) *
@@ -66,8 +66,7 @@ theorem heathBrown_source_scale_separated
     _ = A ^ (1 / (k : ℝ) + -(1 / (k : ℝ))) *
           lambda ^ (-(1 / (k : ℝ))) := by rw [Real.rpow_add hA]
     _ = lambda ^ (-(1 / (k : ℝ))) := by
-      rw [show 1 / (k : ℝ) + -(1 / (k : ℝ)) = 0 by ring,
-        Real.rpow_zero, one_mul]
+      simp
 
 theorem heathBrown_lambda_scale_lower_of_H_gt_N_sub_two
     {N k : ℕ} (hN : 3 ≤ N) (hk : 3 ≤ k)
@@ -86,7 +85,7 @@ theorem heathBrown_lambda_scale_lower_of_H_gt_N_sub_two
     linarith
   have hHq : (H : ℝ) ≤ q := by
     simpa only [H, q] using heathBrownHChoice_cast_le_rpow hA hlambda
-  have hqLower : (N : ℝ) / 2 ≤ q := hNHalf.trans hHq
+  have hqLower  := hNHalf.trans hHq
   have hAroot : 0 ≤ A ^ (1 / (k : ℝ)) := by positivity
   have hscaled := mul_le_mul_of_nonneg_left hqLower hAroot
   rw [heathBrown_source_scale_separated
@@ -106,9 +105,8 @@ theorem heathBrown_third_lower_of_H_gt_N_sub_two
   let r := heathBrownCriticalReciprocal k
   let c := A ^ (1 / (k : ℝ)) / 2
   let L := lambda ^ (-(1 / (k : ℝ)))
-  have hr : 0 < r := heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)
-  have hq : 0 ≤ 1 - 2 * r := by
-    linarith [heathBrownCriticalReciprocal_le_half (by omega : 2 ≤ k)]
+  have hr  := heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)
+  
   have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
   have hc0 : 0 ≤ c := by dsimp only [c]; positivity
   have hL : c * (N : ℝ) ≤ L := by
@@ -122,9 +120,6 @@ theorem heathBrown_third_lower_of_H_gt_N_sub_two
       (by omega : 2 ≤ k) hlambda
   unfold heathBrownThirdTerm
   dsimp only
-  change c ^ (2 * r) * (N : ℝ) ≤
-    (N : ℝ) ^ (1 - 2 * r) *
-      lambda ^ (-2 * r / (k : ℝ))
   calc
     c ^ (2 * r) * (N : ℝ) =
         (N : ℝ) ^ (1 - 2 * r) *

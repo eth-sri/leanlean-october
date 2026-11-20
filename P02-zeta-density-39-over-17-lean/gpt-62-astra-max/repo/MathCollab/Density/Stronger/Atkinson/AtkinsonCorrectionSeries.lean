@@ -46,7 +46,7 @@ theorem exists_norm_atkinsonCorrectionSum_le :
       0 < L → 8 * L ≤ G → ‖atkinsonCorrectionSum T G L‖ ≤ C * G := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonCorrectionTerm_le
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
+  
   refine ⟨C * (1 + S), by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth
   have hs := summable_atkinsonCorrectionTerm hT hG hGT hL hwidth

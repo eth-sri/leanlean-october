@@ -26,7 +26,7 @@ theorem sourceSup_eq_seminorm (f : 𝓢(ℝ, ℝ)) :
       SchwartzMap.norm_le_seminorm (𝕜 := ℝ) (gmAffineComplexify f) x
   have hbdd : BddAbove (Set.range (fun x => |f x|)) :=
     ⟨_,by rintro y ⟨x,rfl⟩; exact hbound x⟩
-  have hle : ∀ x, |f x| ≤ sourceSup f := fun x => le_csSup hbdd (mem_range_self x)
+  have hle  := fun x => le_csSup hbdd (mem_range_self x)
   apply le_antisymm
   · exact csSup_le (Set.range_nonempty _) (by rintro y ⟨x,rfl⟩; exact hbound x)
   · apply SchwartzMap.seminorm_le_bound' (𝕜 := ℝ) 0 0 _ ((abs_nonneg (f 0)).trans (hle 0))

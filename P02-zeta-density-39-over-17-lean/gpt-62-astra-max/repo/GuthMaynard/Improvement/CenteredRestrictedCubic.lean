@@ -40,11 +40,11 @@ theorem centered_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
     Real.sqrt (∫ ξ in A, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2)*(T^2*M+T*L*Real.sqrt (∫ ξ, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^4))
   have hM : 0 ≤ M := integral_nonneg (fun _ => sq_nonneg _)
   have hT1 : 1 ≤ T := by linarith
-  have hTp : 0 < T := by linarith
-  have hL1 : 1 ≤ L := (Real.one_le_rpow hT1 (by norm_num : (0:ℝ) ≤ 4/5)).trans hLl
-  have hLp : 0 < L := by linarith
+  
+  have hL1  := (Real.one_le_rpow hT1 (by norm_num : (0:ℝ) ≤ 4/5)).trans hLl
+  
   have hLT2 : L ≤ T^2 := hLu.trans (by nlinarith)
-  have hTe : 1 ≤ T^ε := Real.one_le_rpow hT1 hε.le
+  have hTe  := Real.one_le_rpow hT1 hε.le
   have hZ : 0 ≤ Z := by dsimp [Z]; positivity
   have hbase : T^2*M*Real.sqrt M ≤ Z := by
     dsimp [Z]
@@ -58,8 +58,8 @@ theorem centered_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
   · let K := kernelCubic (timeMeasure μ) (centeredKernel a l u L)
     let J := kernelCubic (timeMeasure μ)
       (retainedPoissonKernel (volume.restrict (Icc l u)) a L (poissonModes (T^(1+η)/L)))
-    have hJ : ‖J‖ ≤ C*T^ε*Z := hret T L t₀ t₁ μ A hbig hLl hLu ht hlen hm h0 hi h2 hsup hA hAsym
-    have hd : ‖K-J‖ ≤ E*T^(-100:ℝ)*Real.sqrt M^3 :=
+    have hJ  := hret T L t₀ t₁ μ A hbig hLl hLu ht hlen hm h0 hi h2 hsup hA hAsym
+    have hd  :=
       herr T L t₀ t₁ μ hT1 hL1 hLT2 ht hlen hm h0 hi h2 hsup
     have hpow : T^(-100:ℝ) ≤ T^2 := by
       rw [← Real.rpow_natCast T 2]
@@ -106,13 +106,13 @@ theorem centered_restricted_cubic {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   refine ⟨3*C,by positivity,?_⟩
   intro T L t₀ t₁ Λ μ hT hLl hLu ht hlen hΛ hm h0 hi h2 hsup
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
+  have hLp  := (Real.rpow_pos_of_pos hTp _).trans_le hLl
   let A := {ξ | Λ < ‖𝓕 (fun t => (μ t:ℂ)) ξ‖}
-  have hf : Continuous (𝓕 (fun t => (μ t:ℂ))) :=
+  have hf  :=
     VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar (innerSL ℝ).continuous₂
       (Complex.ofRealCLM.integrable_comp hi)
   have hA : MeasurableSet A := measurableSet_lt measurable_const hf.measurable.norm
-  have hsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A := realDensity_level_symmetry μ Λ
+  have hsym  := realDensity_level_symmetry μ Λ
   have hh := ordinary_restricted_cubic_of_masked h0 hi h2 hΛ
     (show 0 ≤ C*T^ε by positivity) hTp.le hLp.le
     (kernelCubic (timeMeasure μ) (centeredKernel a l u L))

@@ -96,7 +96,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
         ((H : ℝ) ^ ((epsilon * (s : ℝ)) * r) *
           (heathBrownLemmaTwoConstant k A * B * L) ^ r *
           (N : ℝ) ^ (1 - 2 * r)) + H at hcore
-  have hr0 : 0 ≤ r :=
+  have hr0  :=
     (heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)).le
   have hr1 : r ≤ 1 :=
     (heathBrownCriticalReciprocal_le_half
@@ -109,7 +109,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
     have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
     have := Real.log_nonneg hNReal
     linarith
-  have hCtwo0 : 0 ≤ heathBrownLemmaTwoConstant k A :=
+  have hCtwo0  :=
     (heathBrownLemmaTwoConstant_pos (k := k) hA).le
   have hPExpansion :
       (heathBrownLemmaTwoConstant k A * B * L) ^ r =
@@ -199,24 +199,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
             ((heathBrownLogConstant epsilon) ^ r *
               (N : ℝ) ^ epsilon) *
             ((3 : ℝ) ^ r * heathBrownThreeTerm N k lambda) := by
-        calc
-          heathBrownLemmaOneCoreConstant k C *
-                (heathBrownLemmaTwoConstant k A) ^ r *
-                ((H : ℝ) ^ ((epsilon * (s : ℝ)) * r) * L ^ r) *
-                ((N : ℝ) ^ (1 - 2 * r) * B ^ r) ≤
-              heathBrownLemmaOneCoreConstant k C *
-                (heathBrownLemmaTwoConstant k A) ^ r *
-                ((heathBrownLogConstant epsilon) ^ r *
-                  (N : ℝ) ^ epsilon) *
-                ((N : ℝ) ^ (1 - 2 * r) * B ^ r) :=
-            mul_le_mul_of_nonneg_right
-              (mul_le_mul_of_nonneg_left hHL hPrefix0) hBNLeft0
-          _ ≤ heathBrownLemmaOneCoreConstant k C *
-                (heathBrownLemmaTwoConstant k A) ^ r *
-                ((heathBrownLogConstant epsilon) ^ r *
-                  (N : ℝ) ^ epsilon) *
-                ((3 : ℝ) ^ r * heathBrownThreeTerm N k lambda) :=
-            mul_le_mul_of_nonneg_left hBN (mul_nonneg hPrefix0 hHLRight0)
+        bound
       _ = heathBrownLemmaOneSourceConstant k A C epsilon *
           (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda := by
         unfold heathBrownLemmaOneSourceConstant

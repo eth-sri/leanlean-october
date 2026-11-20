@@ -24,7 +24,7 @@ noncomputable def heathBrownGammaReserveKernel (delta x : ℝ) : ℝ :=
 
 theorem integrable_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
     Integrable (fun x : ℝ => (delta ^ 2 + x ^ 2)⁻¹) := by
-  have hbase : Integrable (fun x : ℝ => (1 + (x / delta) ^ 2)⁻¹) :=
+  have hbase  :=
     integrable_inv_one_add_sq.comp_div hdelta.ne'
   have hscaled := hbase.const_mul (delta ^ 2)⁻¹
   convert hscaled using 1
@@ -65,7 +65,6 @@ theorem heathBrownGammaReserveKernel_sq_le
     linarith [abs_nonneg x]
   have hexpSq : Real.exp (-|x| / 6) ^ (2 : ℕ) ≤ 1 := by
     nlinarith [Real.exp_pos (-|x| / 6)]
-  unfold heathBrownGammaReserveKernel
   calc
     (Real.exp (-|x| / 6) / (delta + |x|)) ^ (2 : ℕ) =
         Real.exp (-|x| / 6) ^ (2 : ℕ) / (delta + |x|) ^ (2 : ℕ) :=
@@ -88,8 +87,7 @@ theorem integrable_heathBrownGammaReserveKernel_sq
       apply Continuous.div
       · fun_prop
       · fun_prop
-      · intro x hx
-        exact (by positivity : 0 < delta + |x|).ne' hx
+      · grind
     exact hcont.aestronglyMeasurable
   · filter_upwards with x
     rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
@@ -131,12 +129,12 @@ theorem heathBrownStrongGammaConvolutionIntegrand_le
           heathBrownGammaReserveKernel delta (u - w) ^ (2 : ℕ)) := by
   let a := heathBrownGammaReserveKernel delta w
   let b := heathBrownGammaReserveKernel delta (u - w)
-  have ha : 0 ≤ a := by unfold a heathBrownGammaReserveKernel; positivity
-  have hb : 0 ≤ b := by unfold b heathBrownGammaReserveKernel; positivity
+  
+  
   have hab : a * b ≤ (a ^ (2 : ℕ) + b ^ (2 : ℕ)) / 2 := by
     nlinarith [sq_nonneg (a - b)]
-  have hdenW : 0 < delta + |w| := by positivity
-  have hdenUW : 0 < delta + |u - w| := by positivity
+  
+  
   have hreserve := heathBrown_strong_exponential_reserve u w
   have hdiv :
       (Real.exp (-(4 / 3 : ℝ) * |w|) *
@@ -165,7 +163,6 @@ theorem heathBrownStrongGammaConvolutionIntegrand_le
     _ = Real.exp (-|u|) / 2 *
         (heathBrownGammaReserveKernel delta w ^ (2 : ℕ) +
           heathBrownGammaReserveKernel delta (u - w) ^ (2 : ℕ)) := by
-      unfold a b
       ring
 
 end MathCollab.Density.Stronger.PointMean

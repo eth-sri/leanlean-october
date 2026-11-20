@@ -45,7 +45,7 @@ theorem wooley_equation_7_22_integrated_native
               (wooleySection7NextB k r b) b gamma xiPrime eta := by
   let A := a + wooleySection7HPrime k r a b gammaVal
   let bPrime := wooleySection7NextB k r b
-  let hAb : A ≤ bPrime :=
+  let hAb  :=
     wooley_section7_a_add_HPrime_le_nextB hr hBPrime
   let factor : ℝ := (p ^ (bPrime - A) : ℝ) ^ wooleyTriangular r
   let mass : ℝ := wooleySourceResidueMassSq gamma (p ^ A) kappa

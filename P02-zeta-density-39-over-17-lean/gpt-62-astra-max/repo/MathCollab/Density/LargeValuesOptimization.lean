@@ -23,7 +23,7 @@ theorem cardinality_at_length (w : ComparisonCutoff) {κ : ℝ} (d : LargeValueD
   let b := bootstrapScalar d.T d.N d.V
   let r : ℝ := d.W.card
   let C := comparisonConstant w
-  have hb : 0 < b := d.scalar_pos hW
+  have hb  := d.scalar_pos hW
   have hr : 0 < r := by dsimp [r]; exact_mod_cast Finset.card_pos.mpr hW
   have hMr : (0 : ℝ) < M := by exact_mod_cast hM
   have hdiag := completePairEnergy_diagonal_lower M d.W
@@ -57,16 +57,16 @@ theorem optimal_integer_scale {κ : ℝ} (d : LargeValueData κ) (hW : d.W.Nonem
   let b := bootstrapScalar d.T d.N d.V
   let s := Real.sqrt d.T
   let M := ⌈b*s⌉₊
-  have hb : 0 < b := d.scalar_pos hW
+  have hb  := d.scalar_pos hW
   have hT : 0 < d.T := by linarith [d.T_ge_two]
-  have hs : 0 < s := Real.sqrt_pos.2 hT
-  have hs2 : s^2 = d.T := Real.sq_sqrt hT.le
+  have hs  := Real.sqrt_pos.2 hT
+  have hs2  := Real.sq_sqrt hT.le
   have hNp : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
-  have hM : 0 < M := (Nat.one_le_ceil_iff).2 (mul_pos hb hs)
+  have hM  := (Nat.one_le_ceil_iff).2 (mul_pos hb hs)
   have hMr : (0 : ℝ) < M := by exact_mod_cast hM
   have hM1 : (1 : ℝ) ≤ M := by exact_mod_cast hM
   have hlo : b*s ≤ M := Nat.le_ceil _
-  have hhi : (M : ℝ) ≤ b*s+1 := (Nat.ceil_lt_add_one (show 0 ≤ b*s by positivity)).le
+  have hhi  := (Nat.ceil_lt_add_one (show 0 ≤ b*s by positivity)).le
   have hbalance : (d.N : ℝ)*b*s ≤ d.T := by
     have hi := mul_le_mul_of_nonneg_left hsmall (show 0 ≤ (d.N : ℝ)*d.T by positivity)
     have hnT := mul_le_mul_of_nonneg_right d.scale_upper hT.le
@@ -101,7 +101,7 @@ theorem large_values_with_divisors {κ : ℝ} (hκ : 0 < κ) :
   let w := comparisonCutoff
   obtain ⟨K, T₀, hK, hT₀, hk⟩ := uniform_absorbed_kernel w hκ
   let C₀ := comparisonConstant w
-  have hC₀ : 0 ≤ C₀ := comparisonConstant_nonneg w
+  have hC₀  := comparisonConstant_nonneg w
   refine ⟨C₀+3*K+1, T₀, by positivity, hT₀, ?_⟩
   intro d hT
   by_cases hW : d.W.Nonempty

@@ -27,8 +27,8 @@ theorem smoothDetectorBlock_index_pos {ρ : ℂ} {X Y : ℝ} {j : ℤ}
 
 theorem smoothHalfScale_zero_eq {j : ℤ} (hj : 0 < j) :
     (2 : ℝ)^j = 2*(smoothHalfScale j 0 : ℝ) := by
-  have hjn : 1 ≤ j.toNat := by omega
-  have he : j = (j.toNat : ℤ) := (Int.toNat_of_nonneg hj.le).symm
+  
+  have he  := (Int.toNat_of_nonneg hj.le).symm
   simp only [smoothHalfScale, add_zero, Nat.cast_pow, Nat.cast_ofNat]
   conv_lhs => rw [he, zpow_natCast, show j.toNat = j.toNat-1+1 by omega, pow_succ]
   ring
@@ -63,7 +63,7 @@ theorem exists_smoothBlock_Taylor_member {ρ : ℂ} {X Y T D : ℝ} {j : ℤ}
       (smoothHalfScale j e : ℝ)^ρ.re/(8*D) ≤
         ‖genericTaylorPolynomial (smoothShortCoefficient X Y ((2 : ℝ)^j))
           (smoothHalfScale j e) r ρ.im‖ := by
-  have hj : 0 < j := smoothDetectorBlock_index_pos
+  have hj  := smoothDetectorBlock_index_pos
     (norm_pos_iff.mp (lt_of_lt_of_le (by positivity) hblock))
   refine ⟨hj, ?_⟩
   obtain ⟨L, hL, hb⟩ := exists_smoothShort_half ρ X Y (smoothHalfScale_pos j 0)
@@ -97,7 +97,6 @@ theorem smoothTaylorArithmetic_support (X Y : ℝ) (j : ℤ) (e r n : ℕ)
     n ∈ Finset.Ioc (smoothHalfScale j e) (2*smoothHalfScale j e) := by
   by_contra hh
   apply hn
-  change (if n ∈ Finset.Ioc (smoothHalfScale j e) (2*smoothHalfScale j e) then _ else 0) = 0
   exact ite_eq_right hh
 
 theorem smoothTaylorArithmetic_norm_le (X : ℝ) {Y : ℝ} (hY : 0 < Y)

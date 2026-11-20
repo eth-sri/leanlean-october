@@ -31,7 +31,7 @@ theorem fixed_truncated_source_moment_raw {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 
   intro N T L hN hNT hTN hNL hLl hLu a U ha
   dsimp only
   let μ := sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U
-  let H := ∫ t, sourceRemovedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U t
+  
   let M := ∫ t, μ t^2
   have hT : 0 < T := by linarith
   have hL : 0 < L := by linarith

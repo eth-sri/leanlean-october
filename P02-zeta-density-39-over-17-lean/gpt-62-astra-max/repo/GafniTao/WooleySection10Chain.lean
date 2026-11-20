@@ -69,7 +69,6 @@ theorem wooley_iterationChain_exists_bounded
           _ ≤ k ^ 2 * (k ^ (2 * m) * q) :=
             Nat.mul_le_mul_left (k ^ 2) hbUpper
           _ = k ^ (2 * (m + 1)) * q := by
-            rw [show 2 * (m + 1) = 2 + 2 * m by omega, pow_add]
             ring
       exact .cons
         ⟨haPrime, hbPrime, hrelPrime, hrPrime, hrPrimeTop,

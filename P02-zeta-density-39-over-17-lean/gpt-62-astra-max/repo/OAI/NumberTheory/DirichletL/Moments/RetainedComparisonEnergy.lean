@@ -1,3 +1,0 @@
-module
-public import OAI.NumberTheory.DirichletL.Moments.RetainedWeightedSource
-public import OAI.NumberTheory.DirichletL.Moments.ReflectedChoiceEnergy

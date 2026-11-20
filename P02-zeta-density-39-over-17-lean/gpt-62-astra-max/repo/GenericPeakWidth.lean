@@ -35,7 +35,7 @@ theorem exists_pointValue_card_le_source_range
   have hD₁ : 0 < D₁ := by dsimp only [D₁]; positivity
   refine ⟨K,D₁,max B B₁,hK,hD₁,le_max_of_le_left hB,?_⟩
   intro H V W hH hV hLower hUpper hsep hrange hlarge
-  have hHB : B ≤ H := (le_max_left _ _).trans hH
+  have hHB  := (le_max_left _ _).trans hH
   obtain ⟨hH20,hL1,hPL,hlogFit⟩ := hB₁ H ((le_max_right _ _).trans hH)
   have hH0 : 0 < H := by linarith
   have hH1 : 1 ≤ H := by linarith
@@ -46,16 +46,16 @@ theorem exists_pointValue_card_le_source_range
   have hG : 0 < G := by dsimp only [G]; positivity
   have hGlo : (2*H)^(1/4+κ) ≤ G := by
     dsimp only [G]
-    exact (le_div_iff₀ hDen).mpr (by simpa only [L,mul_comm] using hLower)
+    exact (le_div_iff₀ hDen).mpr (by linarith)
   have hGhi : G ≤ H^(1/2-δ) := by
     dsimp only [G]
-    exact (div_le_iff₀ hDen).mpr (by simpa only [L,mul_comm] using hUpper)
+    exact (div_le_iff₀ hDen).mpr (by linarith)
   have hGH : G ≤ H := by
     calc
       G ≤ H^(1/2-δ) := hGhi
       _ ≤ H^(1:ℝ) := Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
       _ = H := Real.rpow_one H
-  have hfit : 2*(Real.log (3*H))^2 ≤ G :=
+  have hfit  :=
     hlogFit.trans ((Real.rpow_le_rpow hH0.le (by linarith) hq.le).trans hGlo)
   have hwidth : ∀ t : ℝ, H ≤ t → t ≤ 2*H →
       t^δ ≤ G ∧ G ≤ t^(1/2-δ) ∧ t^(1/4+κ) ≤ G := by
@@ -103,7 +103,6 @@ theorem exists_pointValue_card_le_source_range
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       nlinarith [mul_nonneg hkx hy,mul_nonneg hky hx]
     _ = D₁*H^ν*(H*(Real.log (3*H))^4/V^6+H^a*(Real.log (3*H))^(2*g+b)/V^(2*g+2*b)) := by
-      dsimp only [D₁,L]
       ring
 
 

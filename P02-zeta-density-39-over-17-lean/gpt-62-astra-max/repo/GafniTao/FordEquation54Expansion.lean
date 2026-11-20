@@ -7,7 +7,6 @@ open scoped ComplexConjugate
 namespace GafniTao
 theorem conj_fordAdditiveCharacter (x : ℝ) :
     conj (fordAdditiveCharacter x) = fordAdditiveCharacter (-x) := by
-  unfold fordAdditiveCharacter
   calc
     conj (Complex.exp (2 * Real.pi * Complex.I * (x : ℂ))) =
         Complex.exp (conj (2 * Real.pi * Complex.I * (x : ℂ))) :=

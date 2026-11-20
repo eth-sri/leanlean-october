@@ -39,13 +39,11 @@ theorem product_range {N M : ℕ} (_hN : 0 < N) (hM : 0 < M)
   obtain ⟨hn, hq⟩ := Finset.mem_product.mp hp
   obtain ⟨hnlo, hnhi⟩ := Finset.mem_Ioc.mp hn
   obtain ⟨hqlo, hqhi⟩ := Finset.mem_Ico.mp hq
-  have hqpos : 0 < p.2 := hM.trans_le hqlo
+  have hqpos  := hM.trans_le hqlo
   have hnpos : 0 < p.1 := by omega
   refine ⟨Nat.mul_pos hnpos hqpos, ?_, ?_⟩
   · exact (Nat.mul_lt_mul_of_pos_right hnlo hM).trans_le (Nat.mul_le_mul_left _ hqlo)
-  · have hh := Nat.mul_lt_mul_of_pos_left hqhi hnpos
-    have hi := Nat.mul_le_mul_right (2*M) hnhi
-    nlinarith
+  · nlinarith
 
 theorem divisorMaximum_ge_one {T : ℝ} (hT : 0 ≤ T) : 1 ≤ divisorMaximum T := by
   have hmem : 1 ∈ Finset.Icc 1 ⌈32*(T+1)⌉₊ := by
@@ -79,7 +77,7 @@ theorem product_cutoff_one (w : ComparisonCutoff) {N M : ℕ} (hN : 0 < N) (hM :
   have hhi : ((p.1*p.2 : ℕ) : ℝ) < 4*((N : ℝ)*M) := by exact_mod_cast hh.2.2
   apply w.one_on
   constructor
-  · exact (le_div_iff₀ hL).2 (by simpa only [one_mul] using hlo.le)
+  · exact (le_div_iff₀ hL).2 (by linarith)
   · exact (div_le_iff₀ hL).2 hhi.le
 
 /-- Group only original products, bound their multiplicities, then extend using the cutoff. -/

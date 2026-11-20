@@ -1,11 +1,7 @@
 module
 public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
-public import Mathlib.Analysis.Calculus.Deriv.Support
-public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
-public import Mathlib.Analysis.Normed.Group.Bounded
-public import DensityEnergyGM.DFIDelta
 public import DensityEnergyGM.DFIEstimates
-public import DensityEnergyGM.DFIEquation21
+public import Mathlib.Analysis.Calculus.FDeriv.Const
 
 @[expose] public section
 

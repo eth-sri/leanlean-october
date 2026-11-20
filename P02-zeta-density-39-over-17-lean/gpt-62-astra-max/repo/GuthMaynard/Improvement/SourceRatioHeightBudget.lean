@@ -133,9 +133,9 @@ theorem source_sampling_low_scalar {N T c M : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
     Real.sqrt (16*N^2*Real.log (2*N))*
       Real.sqrt ((2*Real.pi*(sourceHeight N T)^2+4*Real.pi*c*T)*M) ≤
       (8*Real.sqrt (Real.pi*(1+c)))*N*Real.sqrt (T*Real.log (2*N))*Real.sqrt M := by
-  have hlog : 0 ≤ Real.log (2*N) := (by norm_num : (0:ℝ) ≤ 1).trans (source_log_mass_ge_one hN)
+  have hlog  := (by norm_num : (0:ℝ) ≤ 1).trans (source_log_mass_ge_one hN)
   have hT0 : 0 ≤ T := by linarith
-  have hN0 : 0 ≤ N := by linarith
+  
   have hp : 0 ≤ Real.pi*(1+c) := by positivity
   have hY := (sourceHeight_bounds hN hT).2.2
   have hK : (2*Real.pi*(sourceHeight N T)^2+4*Real.pi*c*T)*M ≤
@@ -163,7 +163,7 @@ theorem source_sampling_scalar_budget (c : ℝ) (hc : 0 ≤ c) :
           16*Real.pi*c*(N*T/sourceHeight N T)*Real.sqrt M) ≤
         C*(N^2*I+N*Real.sqrt (T*Real.log (2*N))*Real.sqrt M) := by
   let C := 64*Real.pi+8*Real.sqrt (Real.pi*(1+c))+16*Real.pi*c
-  refine ⟨C,by dsimp [C]; positivity,?_⟩
+  refine ⟨C,by positivity,?_⟩
   intro N T M I hN hT hM hI
   let Z := N*Real.sqrt (T*Real.log (2*N))*Real.sqrt M
   have hZ : 0 ≤ Z := by dsimp [Z]; positivity
@@ -176,7 +176,7 @@ theorem source_sampling_scalar_budget (c : ℝ) (hc : 0 ≤ c) :
       16*Real.pi*c*(N*T/sourceHeight N T)*Real.sqrt M) ≤ (16*Real.pi*c)*Z := by
     split_ifs with he
     · positivity
-    · have hh : sourceHeight N T < 2*N := lt_of_le_of_ne (sourceHeight_bounds hN hT).2.1 he
+    · have hh  := lt_of_le_of_ne (sourceHeight_bounds hN hT).2.1 he
       have hroot : Real.sqrt T ≤ Real.sqrt (T*Real.log (2*N)) := by
         apply Real.sqrt_le_sqrt
         nlinarith [source_log_mass_ge_one hN]
@@ -191,7 +191,7 @@ theorem source_sampling_scalar_budget (c : ℝ) (hc : 0 ≤ c) :
     _ ≤ 64*Real.pi*(N^2*I)+(8*Real.sqrt (Real.pi*(1+c))+16*Real.pi*c)*Z := by nlinarith
     _ ≤ C*(N^2*I)+C*Z := add_le_add
       (mul_le_mul_of_nonneg_right (by dsimp [C]; nlinarith [Real.sqrt_nonneg (Real.pi*(1+c)), mul_nonneg Real.pi_pos.le hc]) hX)
-      (mul_le_mul_of_nonneg_right (by dsimp [C]; linarith [Real.pi_pos]) hZ)
-    _ = _ := by dsimp [Z]; ring
+      (mul_le_mul_of_nonneg_right (by linarith [Real.pi_pos]) hZ)
+    _ = _ := by ring
 
 end GuthMaynard.Improvement

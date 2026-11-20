@@ -76,7 +76,7 @@ theorem actual_spectral_mass_bound {w : ℝ → ℝ} (hw : ContDiff ℝ ∞ w)
         ((D*L*B)^3+(2*N/L)*
           (‖kernelCubic (timeMeasure μ) (centeredKernel (fun x => ((w x^2:ℝ):ℂ)) l u L)‖+Q)) := by
   let cutoff := fun x => w x^2
-  have hc : Continuous cutoff := hw.continuous.pow 2
+  have hc  := hw.continuous.pow 2
   have hc0 (x : ℝ) : 0 ≤ cutoff x := sq_nonneg _
   have hcs (x : ℝ) (hx : x ∉ Icc l u) : cutoff x=0 := by simp [cutoff,hs x hx]
   have hlu : l ≤ u := by linarith
@@ -92,17 +92,16 @@ theorem actual_spectral_mass_bound {w : ℝ → ℝ} (hw : ContDiff ℝ ∞ w)
   obtain ⟨D,hD,hschur⟩ := operator_fixed_cutoff_schur hc hc0 hl hlu hcs
   refine ⟨A,D,hA,hD,?_⟩
   intro N L hN hNL a ha μ hm hiμ h2 h0 B hB hμ
-  let _ : IsFiniteMeasure (timeMeasure μ) := timeMeasure_finite hiμ
+  let _  := timeMeasure_finite hiμ
   dsimp only
   intro ι _ b Q hQ
-  have hL : 0 < L := hN.trans_le hNL
+  have hL  := hN.trans_le hNL
   have hP : 0 < A*(1+L)^η*(N+1) := by positivity
   have hμB (t : ℝ) : μ t ≤ B := (hμ t).trans (min_le_right _ _)
   have hμD (t : ℝ) : μ t ≤ ‖boundedPolynomial N a t‖^2 := (hμ t).trans (min_le_left _ _)
   obtain ⟨r,hr,v,hv,hwit⟩ := hamp N L l u hN hNL hl1 hu4 a w ha hplateau μ hm hiμ h0
   have hmass := spectral_mass_le_polynomial_mass N a hiμ h2 h0 hμD
-  have hwit' : ((amplifierColumns N L).card:ℝ)*((∫ t, μ t^2)/(A*(1+L)^η*(N+1))) ≤
-      ∑ j, (inner ℂ (v j) (operatorDiscrete (timeMeasure μ) cutoff L l u (v j))).re :=
+  have hwit'  :=
     (mul_le_mul_of_nonneg_left (div_le_div_of_nonneg_right hmass hP.le) (Nat.cast_nonneg _)).trans hwit
   have hC := hschur μ hm hiμ h0 B hB hμB L hL.le
   have hspec := operator_centered_spectral_comparison (timeMeasure μ) hc.measurable hci hc0

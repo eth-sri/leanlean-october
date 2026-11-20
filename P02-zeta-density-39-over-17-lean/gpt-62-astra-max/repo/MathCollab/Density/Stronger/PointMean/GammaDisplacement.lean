@@ -21,7 +21,7 @@ namespace MathCollab.Density.Stronger.PointMean
 theorem re_digamma_le_log_height_add_four {z : ℂ}
     (hz : 0 < z.re) (hz' : z.re ≤ 1) (hy : 1 ≤ |z.im|) :
     (Complex.digamma z).re ≤ Real.log (|z.im| + 2) + 4 := by
-  have hn : 1 ≤ ‖z‖ := hy.trans (Complex.abs_im_le_norm z)
+  have hn  := hy.trans (Complex.abs_im_le_norm z)
   have hnorm : ‖z‖ ≤ |z.im| + 2 := by
     have h := Complex.norm_le_abs_re_add_abs_im z
     rw [abs_of_pos hz] at h

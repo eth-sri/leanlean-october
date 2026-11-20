@@ -66,7 +66,7 @@ theorem gmCubicSpectralDispersion_nonneg
     (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) (hW : W.Nonempty) :
     0 ≤ gmCubicSpectralDispersion cutoff N W := by
   let s : Finset (GMRow W) := Finset.univ
-  let x : GMRow W → ℝ := gmMatrixSingularValue cutoff N W
+  let x  := gmMatrixSingularValue cutoff N W
   have hs : s.Nonempty := by
     rcases hW with ⟨t, ht⟩
     exact ⟨⟨t, ht⟩, Finset.mem_univ _⟩
@@ -162,19 +162,19 @@ theorem gmCubicDiagonalMain_sub_spectralAverage_bounded
     gmMatrix_hilbertSchmidt_trace_estimate cutoff 3 2 (by norm_num)
   let L : ℝ := |gmCutoffL2Sq cutoff| + 1
   let K : ℝ := 3 * K₀ * L ^ 2 + 1
-  refine ⟨K, by dsimp only [K, L]; positivity, ?_⟩
+  refine ⟨K, by positivity, ?_⟩
   intro N W hN hCard hW
   have hn : (0 : ℝ) < N := by exact_mod_cast hN
-  have hnOne : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hwNat : 0 < W.card := hW.card_pos
+  
+  have hwNat  := hW.card_pos
   have hw : (0 : ℝ) < W.card := by exact_mod_cast hwNat
-  have hwne : (W.card : ℝ) ≠ 0 := hw.ne'
+  have hwne  := hw.ne'
   let t₀ : GMRow W := ⟨hW.choose, hW.choose_spec⟩
   let n₀ : GMColumn N := ⟨N + 1, by
     simp only [dyadicInterval, Finset.mem_Ioc]
     omega⟩
-  let : Nonempty (GMRow W) := ⟨t₀⟩
-  let : Nonempty (GMColumn N) := ⟨n₀⟩
+  
+  
   let a : ℝ := gmCutoffColumnMass cutoff N
   let b : ℝ := (N : ℝ) * gmCutoffL2Sq cutoff
   have ha0 : 0 ≤ a := by
@@ -265,7 +265,7 @@ theorem gmCubicDiagonalMain_sub_spectralAverage_bounded
     _ ≤ (K₀ / (N : ℝ) ^ 2) * (3 * ((N : ℝ) * L) ^ 2) :=
       mul_le_mul_of_nonneg_right hTraceDiff (by positivity)
     _ = 3 * K₀ * L ^ 2 := by field_simp
-    _ ≤ K := by dsimp only [K]; linarith
+    _ ≤ K := by linarith
 
 /-- The `gmCutoffCoeffs` definition used by the source-facing construction in `LargeValuesFinal`. -/
 noncomputable def gmCutoffCoeffs (cutoff : GMSmoothCutoff) (N : ℕ)
@@ -276,10 +276,7 @@ theorem sourceDirichletPoly_gmCutoffCoeffs
     (cutoff : GMSmoothCutoff) (N : ℕ) (b : ℕ → ℂ) (t : ℝ) :
     sourceDirichletPoly N (gmCutoffCoeffs cutoff N b) t =
       gmSmoothDirichletPoly cutoff N b t := by
-  unfold sourceDirichletPoly gmSmoothDirichletPoly gmCutoffCoeffs
-  apply Finset.sum_congr rfl
-  intro n hn
-  ring
+  rfl
 
 theorem norm_gmCutoffCoeffs_le_one
     (cutoff : GMSmoothCutoff) (N : ℕ) (b : ℕ → ℂ)
@@ -297,7 +294,7 @@ theorem rpow_log_div_log
     {x y : ℝ} (hx : 1 < x) (hy : 0 < y) :
     x ^ (Real.log y / Real.log x) = y := by
   rw [Real.rpow_def_of_pos (zero_lt_one.trans hx)]
-  have hlog : Real.log x ≠ 0 := (Real.log_pos hx).ne'
+  have hlog  := (Real.log_pos hx).ne'
   rw [show Real.log x * (Real.log y / Real.log x) = Real.log y by
     field_simp]
   exact Real.exp_log hy
@@ -306,9 +303,9 @@ theorem rpow_three_sub_two_log_ratio
     {x y : ℝ} (hx : 1 < x) (hy : 0 < y) :
     x ^ (3 - 2 * (Real.log y / Real.log x)) = x ^ 3 * y ^ (-2 : ℝ) := by
   let ρ := Real.log y / Real.log x
-  have hxy : x ^ ρ = y := rpow_log_div_log hx hy
-  have hxpos : 0 < x := zero_lt_one.trans hx
-  have hx0 : 0 ≤ x := hxpos.le
+  have hxy  := rpow_log_div_log hx hy
+  have hxpos  := zero_lt_one.trans hx
+  have hx0  := hxpos.le
   calc
     x ^ (3 - 2 * ρ) = x ^ (3 : ℝ) / x ^ (2 * ρ) := by
       rw [Real.rpow_sub hxpos]
@@ -318,16 +315,15 @@ theorem rpow_three_sub_two_log_ratio
     _ = x ^ (3 : ℝ) * y ^ (-2 : ℝ) := by
       rw [Real.rpow_neg hy.le]
       ring
-    _ = x ^ 3 * y ^ (-2 : ℝ) := by norm_num [Real.rpow_natCast]
+    _ = x ^ 3 * y ^ (-2 : ℝ) := by simp
 
 theorem rpow_three_halves_sub_log_ratio
     {x y : ℝ} (hx : 1 < x) (hy : 0 < y) :
     x ^ (3 / 2 - Real.log y / Real.log x) =
       x ^ (3 / 2 : ℝ) * y ^ (-1 : ℝ) := by
   let ρ := Real.log y / Real.log x
-  have hxy : x ^ ρ = y := rpow_log_div_log hx hy
-  have hxpos : 0 < x := zero_lt_one.trans hx
-  have hx0 : 0 ≤ x := hxpos.le
+  have hxy  := rpow_log_div_log hx hy
+  have hxpos  := zero_lt_one.trans hx
   calc
     x ^ (3 / 2 - ρ) = x ^ (3 / 2 : ℝ) / x ^ ρ := by
       rw [Real.rpow_sub hxpos]
@@ -361,10 +357,10 @@ theorem gmCubicS3_prop11_2_smooth
     gmCubicS3_prop11_2_native cutoff ε hε
   refine ⟨C, T₀, hC, hT₀, ?_⟩
   intro N T V W b hN hT hNT hNscale hSep hBase hb hV hLarge
-  have hNnat : 0 < N := Nat.zero_lt_of_lt hN
+  have hNnat  := Nat.zero_lt_of_lt hN
   have hNr : (1 : ℝ) < N := by exact_mod_cast hN
   let ρ : ℝ := Real.log V / Real.log (N : ℝ)
-  let c : ℕ → ℂ := gmCutoffCoeffs cutoff N b
+  let c  := gmCutoffCoeffs cutoff N b
   have hCoeff : ∀ n ∈ dyadicInterval N, ‖c n‖ ≤ 1 := by
     dsimp only [c]
     exact norm_gmCutoffCoeffs_le_one cutoff N b hb
@@ -395,18 +391,16 @@ theorem gm_largeValues_raw_dispersion
     (W.card : ℝ) ^ 3 * V ^ 6 / (N : ℝ) ^ 3 ≤
       4 * gmCubicSpectralDispersion cutoff N W + 8 * (N : ℝ) ^ 3 := by
   have hn : (0 : ℝ) < N := by exact_mod_cast hN
-  have hwNat : 0 < W.card := hW.card_pos
+  have hwNat  := hW.card_pos
   have hw : (0 : ℝ) < W.card := by exact_mod_cast hwNat
-  have hwne : (W.card : ℝ) ≠ 0 := hw.ne'
+  have hwne  := hw.ne'
   have hCard := gm_largeValues_card_le_operatorNorm cutoff N W b V hV hb hLarge
   obtain ⟨j, hj⟩ := exists_gmMatrixOperatorNorm_le_singularValue cutoff N W hW
   have hOp0 : 0 ≤ gmMatrixOperatorNorm cutoff N W := by
     change 0 ≤ ‖gmMatrix cutoff N W‖
     exact norm_nonneg (gmMatrix cutoff N W)
-  have hSing0 : 0 ≤ gmMatrixSingularValue cutoff N W j :=
-    gmMatrixSingularValue_nonneg cutoff N W j
-  have hCardCube : (W.card : ℝ) ^ 3 ≤
-      ((N : ℝ) * gmMatrixOperatorNorm cutoff N W ^ 2 / V ^ 2) ^ 3 :=
+  
+  have hCardCube  :=
     pow_le_pow_left₀ (Nat.cast_nonneg W.card) hCard 3
   have hToOp : (W.card : ℝ) ^ 3 * V ^ 6 / (N : ℝ) ^ 3 ≤
       gmMatrixOperatorNorm cutoff N W ^ 6 := by
@@ -416,9 +410,8 @@ theorem gm_largeValues_raw_dispersion
             V ^ 6 / (N : ℝ) ^ 3 := by
         gcongr
       _ = gmMatrixOperatorNorm cutoff N W ^ 6 := by
-        field_simp [hn.ne', hV.ne']
-  have hOpSing : gmMatrixOperatorNorm cutoff N W ^ 6 ≤
-      gmMatrixSingularValue cutoff N W j ^ 6 :=
+        field_simp <;> ring
+  have hOpSing  :=
     pow_le_pow_left₀ hOp0 hj 6
   have hDisp := gmMatrix_singularValue_sixth_le_dispersion_max cutoff N W j
   have hAverage :
@@ -441,8 +434,7 @@ theorem gm_largeValues_raw_dispersion
       simpa only [gmCubicSpectralDispersion] using hDisp
     _ ≤ 4 * gmCubicSpectralDispersion cutoff N W + 8 * (N : ℝ) ^ 3 := by
       apply max_le
-      · exact le_add_of_nonneg_right
-          (mul_nonneg (show (0 : ℝ) ≤ 8 by norm_num) (by positivity))
+      · bound
       · calc
           8 * (∑ i : GMRow W,
               (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i) ^ 3 /
@@ -479,7 +471,6 @@ theorem gmS3PhysicalShape_nonneg
 theorem gmSection12RawShape_nonneg
     {N : ℕ} {T V : ℝ} {W : Finset ℝ} (hT : 0 ≤ T) (hV : 0 ≤ V) :
     0 ≤ gmSection12RawShape N T V W := by
-  unfold gmSection12RawShape
   exact add_nonneg (add_nonneg (by positivity) (gmS2PaperShape_nonneg hT))
     (gmS3PhysicalShape_nonneg hT hV)
 
@@ -509,20 +500,20 @@ theorem gmSection12_raw_smooth
   let T₀ := max Ttwo Tthree
   let Ksum := Kzero + Kone + Ctwo + 2 * Cthree + Kdiag
   let C := 4 * Ksum + 8 + 1
-  have hKsum : 0 < Ksum := by dsimp only [Ksum]; positivity
+  
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, T₀, hC, ?_, ?_⟩
   · exact hTthree.trans (le_max_right _ _)
   intro N T V W b hN hT hNT hTN hNscale hSep hBase hb hV hLarge
-  have hNnat : 0 < N := Nat.zero_lt_of_lt hN
+  have hNnat  := Nat.zero_lt_of_lt hN
   have hnTwo : (2 : ℝ) ≤ N := by exact_mod_cast hN
-  have hnOne : (1 : ℝ) ≤ N := one_le_two.trans hnTwo
-  have hTtwoAt : Ttwo ≤ T := (le_max_left _ _).trans hT
-  have hTthreeAt : Tthree ≤ T := (le_max_right _ _).trans hT
-  have hTone : (1 : ℝ) ≤ T := hnOne.trans hNT
-  have hTpos : 0 < T := zero_lt_one.trans_le hTone
-  have hTε : 1 ≤ T ^ ε := Real.one_le_rpow hTone hε.le
-  have hTε0 : 0 ≤ T ^ ε := (zero_le_one.trans hTε)
+  have hnOne  := one_le_two.trans hnTwo
+  have hTtwoAt  := (le_max_left _ _).trans hT
+  have hTthreeAt  := (le_max_right _ _).trans hT
+  have hTone  := hnOne.trans hNT
+  have hTpos  := zero_lt_one.trans_le hTone
+  have hTε  := Real.one_le_rpow hTone hε.le
+  have hTε0  := (zero_le_one.trans hTε)
   have hSepOne : IsSeparated 1 W := by
     intro x hx y hy hxy
     exact hTε.trans (hSep x hx y hy hxy)
@@ -531,7 +522,7 @@ theorem gmSection12_raw_smooth
     simp [gmSection12RawShape, gmS2PaperShape, gmS2TracePaperShape,
       gmS3PhysicalShape]
     positivity
-  have hW : W.Nonempty := Finset.nonempty_iff_ne_empty.mpr hWempty
+  have hW  := Finset.nonempty_iff_ne_empty.mpr hWempty
   have hCardTwoT := gmSeparated_card_le_two_height hTone hSepOne hBase
   have hCardCube : (W.card : ℝ) ≤ (N : ℝ) ^ 3 := by
     calc
@@ -576,19 +567,16 @@ theorem gmSection12_raw_smooth
     calc
       K / T ^ q ≤ K := hdiv
       _ ≤ K * T ^ ε * R := by
-        have hTRone : 1 ≤ T ^ ε * R :=
+        have hTRone  :=
           one_le_mul_of_one_le_of_one_le hTε hRone
         calc
           K = K * 1 := by ring
           _ ≤ K * (T ^ ε * R) := mul_le_mul_of_nonneg_left hTRone hK
           _ = K * T ^ ε * R := by ring
-  have hzeroR :
-      ‖gmCubicZeroMode cutoff N W - gmCubicDiagonalMain cutoff N W‖ ≤
-        Kzero * T ^ ε * R := hzero.trans (hSmall Kzero hKzero.le)
-  have honeR : ‖gmCubicS1 cutoff N W‖ ≤ Kone * T ^ ε * R :=
+  have hzeroR  := hzero.trans (hSmall Kzero hKzero.le)
+  have honeR  :=
     hone.trans (hSmall Kone hKone.le)
-  have htwoR : ‖gmCubicS2 cutoff N W‖ ≤ Ctwo * T ^ ε * R := by
-    exact htwo.trans (mul_le_mul_of_nonneg_left hS2R (by positivity))
+  have htwoR := htwo.trans (mul_le_mul_of_nonneg_left hS2R (by positivity))
   have hthreeR : ‖gmCubicS3 cutoff N W‖ ≤ 2 * Cthree * T ^ ε * R := by
     have htailR : Cthree / T ^ 90 ≤ Cthree * T ^ ε * R :=
       hSmall Cthree hCthree.le
@@ -603,12 +591,7 @@ theorem gmSection12_raw_smooth
       _ ≤ Cthree * T ^ ε * R + Cthree * T ^ ε * R :=
         add_le_add hmainR htailR
       _ = 2 * Cthree * T ^ ε * R := by ring
-  have hdiagR :
-      ‖gmCubicDiagonalMain cutoff N W -
-        (((∑ i : GMRow W,
-          (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i) ^ 3 /
-            (W.card : ℝ) ^ 2 : ℝ) : ℂ)‖ ≤ Kdiag * T ^ ε * R := by
-    exact hdiag.trans (by
+  have hdiagR := hdiag.trans (by
       have hKR : 1 ≤ T ^ ε * R := one_le_mul_of_one_le_of_one_le hTε hRone
       calc
         Kdiag = Kdiag * 1 := by ring
@@ -627,7 +610,7 @@ theorem gmSection12_raw_smooth
       _ ≤ Kzero * T ^ ε * R + Kone * T ^ ε * R +
           Ctwo * T ^ ε * R + 2 * Cthree * T ^ ε * R +
           Kdiag * T ^ ε * R := by linarith
-      _ = Ksum * T ^ ε * R := by dsimp only [Ksum]; ring
+      _ = Ksum * T ^ ε * R := by ring
   calc
     (W.card : ℝ) ^ 3 * V ^ 6 / (N : ℝ) ^ 3 ≤
         4 * gmCubicSpectralDispersion cutoff N W + 8 * (N : ℝ) ^ 3 := hRaw
@@ -659,8 +642,8 @@ theorem gm_rpow_root_bound
     x ≤ B ^ (1 / d) := by
   have hpow := Real.rpow_le_rpow (Real.rpow_nonneg hx.le d) h (by positivity : 0 ≤ 1 / d)
   calc
-    x = x ^ (1 : ℝ) := by rw [Real.rpow_one]
-    _ = x ^ (d * (1 / d)) := by rw [show d * (1 / d) = 1 by field_simp]
+    x = x ^ (1 : ℝ) := by simp
+    _ = x ^ (d * (1 / d)) := by field_simp <;> ring
     _ = (x ^ d) ^ (1 / d) := Real.rpow_mul hx.le d (1 / d)
     _ ≤ B ^ (1 / d) := hpow
 
@@ -671,13 +654,13 @@ theorem gm_solve_monomial
     (hx : 0 < x) (hD : 0 < D) (hpq : 0 < p - q)
     (h : x ^ p * D ≤ A * (x ^ q * E)) :
     x ≤ (A * E / D) ^ (1 / (p - q)) := by
-  have hxq : 0 < x ^ q := Real.rpow_pos_of_pos hx q
-  have hp : x ^ p ≤ A * (x ^ q * E) / D := (le_div_iff₀ hD).2 h
+  have hxq  := Real.rpow_pos_of_pos hx q
+  have hp  := (le_div_iff₀ hD).2 h
   have hquot : x ^ p / x ^ q ≤ (A * E / D) := by
     calc
       x ^ p / x ^ q ≤ (A * (x ^ q * E) / D) / x ^ q :=
         (div_le_div_iff_of_pos_right hxq).2 hp
-      _ = A * E / D := by field_simp [hxq.ne']
+      _ = A * E / D := by field_simp <;> ring
   apply gm_rpow_root_bound hx hpq
   simpa only [Real.rpow_sub hx p q] using hquot
 
@@ -688,10 +671,7 @@ theorem gm_le_one_of_eight_terms
     L ≤ 8 * A * a₁ ∨ L ≤ 8 * A * a₂ ∨ L ≤ 8 * A * a₃ ∨
       L ≤ 8 * A * a₄ ∨ L ≤ 8 * A * a₅ ∨ L ≤ 8 * A * a₆ ∨
       L ≤ 8 * A * a₇ ∨ L ≤ 8 * A * a₈ := by
-  by_contra hn
-  push Not at hn
-  rcases hn with ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩
-  nlinarith
+  grind
 
 theorem gm_each_le_eight_sum
     {a₁ a₂ a₃ a₄ a₅ a₆ a₇ a₈ : ℝ}
@@ -705,19 +685,7 @@ theorem gm_each_le_eight_sum
     a₆ ≤ a₁ + a₂ + a₃ + a₄ + a₅ + a₆ + a₇ + a₈ ∧
     a₇ ≤ a₁ + a₂ + a₃ + a₄ + a₅ + a₆ + a₇ + a₈ ∧
     a₈ ≤ a₁ + a₂ + a₃ + a₄ + a₅ + a₆ + a₇ + a₈ := by
-  constructor
-  · nlinarith
-  constructor
-  · nlinarith
-  constructor
-  · nlinarith
-  constructor
-  · nlinarith
-  constructor
-  · nlinarith
-  constructor
-  · nlinarith
-  constructor <;> nlinarith
+  grind
 
 theorem gmSection12RawShape_eq_eight
     (N : ℕ) (T V : ℝ) (W : Finset ℝ) :
@@ -761,7 +729,7 @@ theorem gmSection12_eq12_1_roots
   have hn : (0 : ℝ) < N := by exact_mod_cast hN
   have hw : (0 : ℝ) < W.card := by exact_mod_cast hW.card_pos
   let D : ℝ := V ^ 6 / (N : ℝ) ^ 3
-  have hD : 0 < D := div_pos (pow_pos hV 6) (pow_pos hn 3)
+  have hD  := div_pos (pow_pos hV 6) (pow_pos hn 3)
   let r₁ := ((8 * A) * (N : ℝ) ^ 3 / D) ^ (1 / 3 : ℝ)
   let r₂ := ((8 * A) * (N : ℝ) ^ 2 / D)
   let r₃ := ((8 * A) * (T * (N : ℝ)) / D) ^ (4 / 5 : ℝ)
@@ -797,69 +765,59 @@ theorem gmSection12_eq12_1_roots
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 0)
         (p := 3) (q := 0) (A := 8 * A) (E := (N : ℝ) ^ 3) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-            exact Real.rpow_natCast _ 3]
+            simp]
           rw [Real.rpow_zero, one_mul]
           exact h₁)
     norm_num at hb
-    change (W.card : ℝ) ≤ r₁ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 2)
         (p := 3) (q := 2) (A := 8 * A) (E := (N : ℝ) ^ 2) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-            exact Real.rpow_natCast _ 3,
+            simp,
             show (W.card : ℝ) ^ (2 : ℝ) = (W.card : ℝ) ^ 2 by
-              exact Real.rpow_natCast _ 2]
+              simp]
           calc
             (W.card : ℝ) ^ 3 * D ≤ 8 * A * ((N : ℝ) ^ 2 * (W.card : ℝ) ^ 2) := h₂
             _ = (8 * A) * ((W.card : ℝ) ^ 2 * (N : ℝ) ^ 2) := by ring)
     norm_num at hb
-    change (W.card : ℝ) ≤ r₂ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 7 / 4)
         (p := 3) (q := 7 / 4) (A := 8 * A) (E := T * (N : ℝ)) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-            exact Real.rpow_natCast _ 3]
+            simp]
           calc
             (W.card : ℝ) ^ 3 * D ≤
                 8 * A * (T * (N : ℝ) * (W.card : ℝ) ^ (7 / 4 : ℝ)) := h₃
             _ = (8 * A) * ((W.card : ℝ) ^ (7 / 4 : ℝ) * (T * (N : ℝ))) := by ring)
     norm_num at hb
-    change (W.card : ℝ) ≤ r₃ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 29 / 16)
         (p := 3) (q := 29 / 16) (A := 8 * A)
         (E := (N : ℝ) ^ 2 * T ^ (1 / 8 : ℝ)) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-            exact Real.rpow_natCast _ 3]
+            simp]
           calc
             (W.card : ℝ) ^ 3 * D ≤ 8 * A *
                 ((N : ℝ) ^ 2 * (W.card : ℝ) ^ (29 / 16 : ℝ) * T ^ (1 / 8 : ℝ)) := h₄
             _ = (8 * A) * ((W.card : ℝ) ^ (29 / 16 : ℝ) *
                 ((N : ℝ) ^ 2 * T ^ (1 / 8 : ℝ))) := by ring)
     norm_num at hb
-    change (W.card : ℝ) ≤ r₄ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 3 / 2)
         (p := 3) (q := 3 / 2) (A := 8 * A) (E := T ^ 2) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-            exact Real.rpow_natCast _ 3]
+            simp]
           calc
             (W.card : ℝ) ^ 3 * D ≤ 8 * A *
                 (T ^ 2 * (W.card : ℝ) ^ (3 / 2 : ℝ)) := h₅
             _ = (8 * A) * ((W.card : ℝ) ^ (3 / 2 : ℝ) * T ^ 2) := by ring)
     norm_num at hb
-    change (W.card : ℝ) ≤ r₅ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 1)
         (p := 3) (q := 1) (A := 8 * A)
         (E := T * (N : ℝ) ^ 3 * V ^ (-2 : ℝ)) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-            exact Real.rpow_natCast _ 3]
+            simp]
           calc
             (W.card : ℝ) ^ 3 * D ≤ 8 * A *
                 (T * (W.card : ℝ) ^ (1 : ℝ) * (N : ℝ) ^ 3 * V ^ (-2 : ℝ)) := h₆
@@ -867,30 +825,27 @@ theorem gmSection12_eq12_1_roots
                 (T * (N : ℝ) ^ 3 * V ^ (-2 : ℝ))) := by ring)
     rw [show (1 : ℝ) / (3 - 1) = 1 / 2 by norm_num] at hb
     have hb' : (W.card : ℝ) ≤ r₆ := by simpa only [r₆] using hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb'.trans hrs.2.2.2.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 2)
         (p := 3) (q := 2) (A := 8 * A)
         (E := T * (N : ℝ) ^ (3 / 2 : ℝ) * V ^ (-1 : ℝ)) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-            exact Real.rpow_natCast _ 3,
+            simp,
             show (W.card : ℝ) ^ (2 : ℝ) = (W.card : ℝ) ^ 2 by
-              exact Real.rpow_natCast _ 2]
+              simp]
           calc
             (W.card : ℝ) ^ 3 * D ≤ 8 * A *
                 (T * (W.card : ℝ) ^ 2 * (N : ℝ) ^ (3 / 2 : ℝ) * V ^ (-1 : ℝ)) := h₇
             _ = (8 * A) * ((W.card : ℝ) ^ 2 *
                 (T * (N : ℝ) ^ (3 / 2 : ℝ) * V ^ (-1 : ℝ))) := by ring)
     norm_num at hb
-    change (W.card : ℝ) ≤ r₇ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.2.2.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 29 / 16)
         (p := 3) (q := 29 / 16) (A := 8 * A)
         (E := T ^ (9 / 8 : ℝ) * (N : ℝ) ^ (3 / 2 : ℝ) *
           V ^ (-1 : ℝ)) (by
             rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-              exact Real.rpow_natCast _ 3]
+              simp]
             calc
               (W.card : ℝ) ^ 3 * D ≤ 8 * A *
                   (T ^ (9 / 8 : ℝ) * (W.card : ℝ) ^ (29 / 16 : ℝ) *
@@ -899,8 +854,6 @@ theorem gmSection12_eq12_1_roots
                   (T ^ (9 / 8 : ℝ) * (N : ℝ) ^ (3 / 2 : ℝ) *
                     V ^ (-1 : ℝ))) := by ring)
     norm_num at hb
-    change (W.card : ℝ) ≤ r₈ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.2.2.2.2.2
 
 /-- The eight physical roots in equation (12.1), with the common analytic
@@ -934,7 +887,7 @@ theorem gmSection12RootShape_le_physical
       8 * A * gmEquation12PhysicalRootShape N T V := by
   have hn : (0 : ℝ) < N := by exact_mod_cast hN
   let D : ℝ := V ^ 6 / (N : ℝ) ^ 3
-  have hD : 0 < D := div_pos (pow_pos hV 6) (pow_pos hn 3)
+  
   have hB : 1 ≤ 8 * A := by nlinarith
   let q₁ := (N : ℝ) ^ 3 / D
   let q₂ := (N : ℝ) ^ 2 / D
@@ -946,16 +899,16 @@ theorem gmSection12RootShape_le_physical
   let q₈ := (T ^ (9 / 8 : ℝ) * (N : ℝ) ^ (3 / 2 : ℝ) *
     V ^ (-1 : ℝ)) / D
   have hq₁ : 0 ≤ q₁ := by dsimp only [q₁]; positivity
-  have hq₂ : 0 ≤ q₂ := by dsimp only [q₂]; positivity
+  
   have hq₃ : 0 ≤ q₃ := by dsimp only [q₃]; positivity
   have hq₄ : 0 ≤ q₄ := by dsimp only [q₄]; positivity
   have hq₅ : 0 ≤ q₅ := by dsimp only [q₅]; positivity
   have hq₆ : 0 ≤ q₆ := by dsimp only [q₆]; positivity
-  have hq₇ : 0 ≤ q₇ := by dsimp only [q₇]; positivity
+  
   have hq₈ : 0 ≤ q₈ := by dsimp only [q₈]; positivity
   have e₁ : ((8 * A) * (N : ℝ) ^ 3 / D) ^ (1 / 3 : ℝ) ≤
       8 * A * q₁ ^ (1 / 3 : ℝ) := by
-    rw [show (8 * A) * (N : ℝ) ^ 3 / D = (8 * A) * q₁ by dsimp [q₁]; ring]
+    rw [show (8 * A) * (N : ℝ) ^ 3 / D = (8 * A) * q₁ by ring]
     exact gm_mul_rpow_le_mul hB hq₁ (by norm_num)
   have e₂ : (8 * A) * (N : ℝ) ^ 2 / D ≤ 8 * A * q₂ := by
     dsimp only [q₂]
@@ -963,21 +916,21 @@ theorem gmSection12RootShape_le_physical
     exact le_rfl
   have e₃ : ((8 * A) * (T * (N : ℝ)) / D) ^ (4 / 5 : ℝ) ≤
       8 * A * q₃ ^ (4 / 5 : ℝ) := by
-    rw [show (8 * A) * (T * (N : ℝ)) / D = (8 * A) * q₃ by dsimp [q₃]; ring]
+    rw [show (8 * A) * (T * (N : ℝ)) / D = (8 * A) * q₃ by ring]
     exact gm_mul_rpow_le_mul hB hq₃ (by norm_num)
   have e₄ : ((8 * A) * ((N : ℝ) ^ 2 * T ^ (1 / 8 : ℝ)) / D) ^
       (16 / 19 : ℝ) ≤ 8 * A * q₄ ^ (16 / 19 : ℝ) := by
     rw [show (8 * A) * ((N : ℝ) ^ 2 * T ^ (1 / 8 : ℝ)) / D =
-      (8 * A) * q₄ by dsimp [q₄]; ring]
+      (8 * A) * q₄ by ring]
     exact gm_mul_rpow_le_mul hB hq₄ (by norm_num)
   have e₅ : ((8 * A) * T ^ 2 / D) ^ (2 / 3 : ℝ) ≤
       8 * A * q₅ ^ (2 / 3 : ℝ) := by
-    rw [show (8 * A) * T ^ 2 / D = (8 * A) * q₅ by dsimp [q₅]; ring]
+    rw [show (8 * A) * T ^ 2 / D = (8 * A) * q₅ by ring]
     exact gm_mul_rpow_le_mul hB hq₅ (by norm_num)
   have e₆ : ((8 * A) * (T * (N : ℝ) ^ 3 * V ^ (-2 : ℝ)) / D) ^
       (1 / 2 : ℝ) ≤ 8 * A * q₆ ^ (1 / 2 : ℝ) := by
     rw [show (8 * A) * (T * (N : ℝ) ^ 3 * V ^ (-2 : ℝ)) / D =
-      (8 * A) * q₆ by dsimp [q₆]; ring]
+      (8 * A) * q₆ by ring]
     exact gm_mul_rpow_le_mul hB hq₆ (by norm_num)
   have e₇ : (8 * A) * (T * (N : ℝ) ^ (3 / 2 : ℝ) * V ^ (-1 : ℝ)) / D ≤
       8 * A * q₇ := by
@@ -988,21 +941,10 @@ theorem gmSection12RootShape_le_physical
       V ^ (-1 : ℝ)) / D) ^ (16 / 19 : ℝ) ≤
       8 * A * q₈ ^ (16 / 19 : ℝ) := by
     rw [show (8 * A) * (T ^ (9 / 8 : ℝ) * (N : ℝ) ^ (3 / 2 : ℝ) *
-      V ^ (-1 : ℝ)) / D = (8 * A) * q₈ by dsimp [q₈]; ring]
+      V ^ (-1 : ℝ)) / D = (8 * A) * q₈ by ring]
     exact gm_mul_rpow_le_mul hB hq₈ (by norm_num)
   dsimp only [gmSection12RootShape, gmEquation12PhysicalRootShape, D]
-  dsimp only [q₁, q₂, q₃, q₄, q₅, q₆, q₇, q₈] at e₁ e₂ e₃ e₄ e₅ e₆ e₇ e₈
-  calc
-    _ ≤ 8 * A * ((N : ℝ) ^ 3 / D) ^ (1 / 3 : ℝ) +
-        8 * A * ((N : ℝ) ^ 2 / D) +
-        8 * A * ((T * (N : ℝ)) / D) ^ (4 / 5 : ℝ) +
-        8 * A * (((N : ℝ) ^ 2 * T ^ (1 / 8 : ℝ)) / D) ^ (16 / 19 : ℝ) +
-        8 * A * (T ^ 2 / D) ^ (2 / 3 : ℝ) +
-        8 * A * ((T * (N : ℝ) ^ 3 * V ^ (-2 : ℝ)) / D) ^ (1 / 2 : ℝ) +
-        8 * A * ((T * (N : ℝ) ^ (3 / 2 : ℝ) * V ^ (-1 : ℝ)) / D) +
-        8 * A * ((T ^ (9 / 8 : ℝ) * (N : ℝ) ^ (3 / 2 : ℝ) *
-          V ^ (-1 : ℝ)) / D) ^ (16 / 19 : ℝ) := by gcongr
-    _ = _ := by ring
+  grind
 
 set_option maxHeartbeats 1000000 in
 /-- Guth--Maynard equation (12.1) in its exact eight-root physical form.  This
@@ -1019,19 +961,19 @@ theorem gmSection12_equation12_1_smooth
       (W.card : ℝ) ≤ C * T ^ ε * gmEquation12PhysicalRootShape N T V := by
   obtain ⟨C₀, T₀, hC₀, hT₀, hraw⟩ := gmSection12_raw_smooth cutoff ε hε
   let C := 8 * (C₀ + 1)
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  refine ⟨C, T₀, by positivity, hT₀, ?_⟩
   intro N T V W b hN hT hNT hTN hScale hSep hBase hb hV hLarge
-  have hNnat : 0 < N := Nat.zero_lt_of_lt hN
+  have hNnat  := Nat.zero_lt_of_lt hN
   have hnOne : (1 : ℝ) ≤ N := by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr hNnat.ne')
-  have hTone : (1 : ℝ) ≤ T := hnOne.trans hNT
-  have hTpos : 0 < T := zero_lt_one.trans_le hTone
-  have hTε : 1 ≤ T ^ ε := Real.one_le_rpow hTone hε.le
+  have hTone  := hnOne.trans hNT
+  have hTpos  := zero_lt_one.trans_le hTone
+  have hTε  := Real.one_le_rpow hTone hε.le
   by_cases hWe : W = ∅
   · subst W
     simp
     exact mul_nonneg (mul_nonneg (by positivity) (Real.rpow_nonneg hTpos.le ε))
       (by unfold gmEquation12PhysicalRootShape; positivity)
-  have hW : W.Nonempty := Finset.nonempty_iff_ne_empty.mpr hWe
+  have hW  := Finset.nonempty_iff_ne_empty.mpr hWe
   have hraw₀ := hraw N T V W b hN hT hNT hTN hScale hSep hBase hb hV hLarge
   let A := (C₀ + 1) * T ^ ε
   have hAone : 1 ≤ A := by
@@ -1045,17 +987,13 @@ theorem gmSection12_equation12_1_smooth
     calc
       _ ≤ C₀ * T ^ ε * gmSection12RawShape N T V W := hraw₀
       _ ≤ A * gmSection12RawShape N T V W := by
-        apply mul_le_mul_of_nonneg_right _ hshape₀
-        dsimp only [A]
-        have hTε0 : 0 ≤ T ^ ε := Real.rpow_nonneg hTpos.le ε
-        nlinarith
+        bound
   have hroot := gmSection12_eq12_1_roots (zero_lt_one.trans_le hAone) hNnat hTpos hV hW hrawA
   have hphysical := gmSection12RootShape_le_physical hAone hNnat hTpos hV
   calc
     (W.card : ℝ) ≤ gmSection12RootShape A N T V := hroot
     _ ≤ 8 * A * gmEquation12PhysicalRootShape N T V := hphysical
     _ = C * T ^ ε * gmEquation12PhysicalRootShape N T V := by
-      dsimp only [A, C]
       ring
 
 theorem gm_rpow_div_root
@@ -1085,14 +1023,13 @@ theorem gmEquation12PhysicalRootShape_specialize
     rw [← Real.rpow_natCast x 3, ← Real.rpow_sub hx]
     congr 1
     ring
-  have hp3 : x ^ 3 = x ^ (3 : ℝ) := (Real.rpow_natCast x 3).symm
-  have hp2 : x ^ 2 = x ^ (2 : ℝ) := (Real.rpow_natCast x 2).symm
+  have hp3  := (Real.rpow_natCast x 3).symm
+  have hp2  := (Real.rpow_natCast x 2).symm
   have hn3 : x ^ (6 / 5 : ℝ) * x = x ^ (11 / 5 : ℝ) := by
     calc
-      x ^ (6 / 5 : ℝ) * x = x ^ (6 / 5 : ℝ) * x ^ (1 : ℝ) := by rw [Real.rpow_one]
+      x ^ (6 / 5 : ℝ) * x = x ^ (6 / 5 : ℝ) * x ^ (1 : ℝ) := by simp
       _ = x ^ ((6 / 5 : ℝ) + 1) := (Real.rpow_add hx _ _).symm
       _ = x ^ (11 / 5 : ℝ) := by
-        congr 1
         ring
   have hn4 : x ^ 2 * (x ^ (6 / 5 : ℝ)) ^ (1 / 8 : ℝ) =
       x ^ (43 / 20 : ℝ) := by
@@ -1182,14 +1119,14 @@ theorem gmProposition3_1_smooth
           ((N : ℝ) ^ (6 / 5 : ℝ) * (N : ℝ) ^ ((12 - 20 * σ) / 5)) := by
   obtain ⟨C₀, T₀, hC₀, hT₀, hEq⟩ := gmSection12_equation12_1_smooth cutoff ε hε
   let C := 8 * C₀
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  refine ⟨C, T₀, by positivity, hT₀, ?_⟩
   intro N σ W b hN hT hσL hσU hSep hBase hb hLarge
-  have hNnat : 0 < N := Nat.zero_lt_of_lt hN
+  have hNnat  := Nat.zero_lt_of_lt hN
   have hn : (1 : ℝ) ≤ N := by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr hNnat.ne')
-  have hnpos : (0 : ℝ) < N := zero_lt_one.trans_le hn
+  have hnpos  := zero_lt_one.trans_le hn
   let T : ℝ := (N : ℝ) ^ (6 / 5 : ℝ)
   let V : ℝ := (N : ℝ) ^ σ
-  have hTpos : 0 < T := Real.rpow_pos_of_pos hnpos _
+  
   have hVpos : 0 < V := Real.rpow_pos_of_pos hnpos _
   have hNT : (N : ℝ) ≤ T := by
     dsimp only [T]
@@ -1312,17 +1249,12 @@ theorem gmScaleSet_unit_bin_card_le
     refine ⟨hxW, ?_⟩
     rw [abs_le]
     constructor
-    · have hleft := huBin.1
-      rw [le_div_iff₀ hδ] at hleft
-      nlinarith
-    · have hright := huBin.2
-      rw [div_lt_iff₀ hδ] at hright
-      nlinarith
+    · nlinarith
+    · nlinarith
   have hpack : G.card ≤ 2 * Nat.ceil (δ / 1) + 1 := by
     apply card_filter_abs_sub_le_two_mul_ceil_add_one W (δ := 1)
       (by norm_num : (0 : ℝ) < 1) (center := δ * (z : ℝ)) (r := δ)
-    · intro x hx y hy hxy
-      simpa only [Real.dist_eq] using hSep x hx y hy hxy
+    · solve_by_elim
     · exact hδ.le
   change F.card ≤ _
   rw [← himageCard]
@@ -1336,8 +1268,7 @@ theorem exists_dilated_separated_subset
       W.card ≤ 2 * (2 * Nat.ceil δ + 1) * W'.card := by
   let S := gmScaleSet δ W
   obtain ⟨U, hUS, hUsep, hcardU⟩ := separated_selection S (2 * Nat.ceil δ + 1) (by
-    intro z
-    exact gmScaleSet_unit_bin_card_le hδ hSep z)
+    apply gmScaleSet_unit_bin_card_le <;> assumption)
   let W' := U.image fun u => u * δ
   have hUcard : W'.card = U.card := by
     dsimp only [W']
@@ -1350,11 +1281,10 @@ theorem exists_dilated_separated_subset
     dsimp only [W'] at hx
     rw [Finset.mem_image] at hx
     obtain ⟨u, huU, rfl⟩ := hx
-    have huS : u ∈ S := hUS huU
+    have huS  := hUS huU
     dsimp only [S] at huS
     rw [gmScaleSet, Finset.mem_image] at huS
-    obtain ⟨t, htW, rfl⟩ := huS
-    simpa only [div_mul_cancel₀ t hδ.ne'] using htW
+    grind
   · intro x hx y hy hxy
     dsimp only [W'] at hx hy
     rw [Finset.mem_image] at hx hy
@@ -1393,7 +1323,7 @@ theorem gmProposition3_1_smooth_oneSeparated
   obtain ⟨C₀, T₀, hC₀, hT₀, hProp⟩ :=
     gmProposition3_1_smooth_physical cutoff η hη
   let C := 10 * C₀
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  refine ⟨C, T₀, by positivity, hT₀, ?_⟩
   intro N V W b hN hT hV hVL hVU hSep hBase hb hLarge
   let L : ℝ := (N : ℝ) ^ (6 / 5 : ℝ)
   let δ : ℝ := L ^ η
@@ -1404,12 +1334,12 @@ theorem gmProposition3_1_smooth_oneSeparated
     dsimp only [L]
     exact Real.one_le_rpow hNone (by norm_num)
   have hδpos : 0 < δ := Real.rpow_pos_of_pos hLpos _
-  have hδone : 1 ≤ δ := Real.one_le_rpow hLone hη.le
+  have hδone  := Real.one_le_rpow hLone hη.le
   obtain ⟨W', hsub, hSep', hcardNat⟩ := exists_dilated_separated_subset hδpos hSep
   have hcardReal : (W.card : ℝ) ≤
       (2 * (2 * Nat.ceil δ + 1) : ℕ) * (W'.card : ℝ) := by
     exact_mod_cast hcardNat
-  have hceil : (Nat.ceil δ : ℝ) < δ + 1 := Nat.ceil_lt_add_one hδpos.le
+  have hceil  := Nat.ceil_lt_add_one hδpos.le
   have hpacking : ((2 * (2 * Nat.ceil δ + 1) : ℕ) : ℝ) ≤ 10 * δ := by
     push_cast
     nlinarith
@@ -1421,8 +1351,7 @@ theorem gmProposition3_1_smooth_oneSeparated
     exact hLarge t (hsub ht)
   have hselected := hProp N V W' b hN hT hV hVL hVU hSep'
     (by simpa only [L] using hBase') hb hLarge'
-  have hcore : 0 ≤ L * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ) := by
-    positivity
+  
   have hδsq : δ * L ^ η = L ^ ε := by
     dsimp only [δ, η]
     rw [← Real.rpow_add hLpos]
@@ -1433,7 +1362,7 @@ theorem gmProposition3_1_smooth_oneSeparated
     _ ≤ (10 * δ) * W'.card := by gcongr
     _ ≤ (10 * δ) *
         (C₀ * L ^ η * (L * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ))) := by
-      exact mul_le_mul_of_nonneg_left (by simpa only [L] using hselected) (by positivity)
+      gcongr
     _ = C * L ^ ε *
         (L * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := by
       rw [← hδsq]
@@ -1441,7 +1370,7 @@ theorem gmProposition3_1_smooth_oneSeparated
       ring
     _ = C * ((N : ℝ) ^ (6 / 5 : ℝ)) ^ ε *
         ((N : ℝ) ^ (6 / 5 : ℝ) * (N : ℝ) ^ (12 / 5 : ℝ) *
-          V ^ (-4 : ℝ)) := by rfl
+          V ^ (-4 : ℝ)) := rfl
 
 /-- The `gmShiftCoeffs` definition used by the source-facing construction in `LargeValuesFinal`. -/
 noncomputable def gmShiftCoeffs (s : ℝ) (b : ℕ → ℂ) (n : ℕ) : ℂ :=
@@ -1455,7 +1384,7 @@ theorem gmSmoothDirichletPoly_shift_eq
   unfold gmSmoothDirichletPoly gmShiftCoeffs
   apply Finset.sum_congr rfl
   intro n hn
-  have hnpos : 0 < n := hN.trans (Finset.mem_Ioc.mp hn).1
+  have hnpos  := hN.trans (Finset.mem_Ioc.mp hn).1
   have hnne : (n : ℂ) ≠ 0 := by exact_mod_cast hnpos.ne'
   calc
     _ = cutoff ((n : ℝ) / N) * b n *
@@ -1473,7 +1402,7 @@ theorem norm_gmShiftCoeffs_le_one
     (hb : ∀ n ∈ dyadicInterval N, ‖b n‖ ≤ 1) :
     ∀ n ∈ dyadicInterval N, ‖gmShiftCoeffs s b n‖ ≤ 1 := by
   intro n hn
-  have hnpos : 0 < n := hN.trans (Finset.mem_Ioc.mp hn).1
+  have hnpos  := hN.trans (Finset.mem_Ioc.mp hn).1
   rw [gmShiftCoeffs, norm_mul, Complex.norm_natCast_cpow_of_pos hnpos]
   simpa using hb n hn
 
@@ -1501,7 +1430,7 @@ theorem gmProposition3_1_smooth_interval
   intro N V a W b hN hT hV hVL hVU hSep hInterval hb hLarge
   let W' := translateSet a W
   let b' := gmShiftCoeffs a b
-  have hNpos : 0 < N := Nat.zero_lt_of_lt hN
+  have hNpos  := Nat.zero_lt_of_lt hN
   have hSep' : IsSeparated 1 W' := by
     dsimp only [W']
     exact isSeparated_translate 1 a W hSep
@@ -1551,12 +1480,12 @@ theorem gmProposition3_1_smooth_fullHeight
   refine ⟨C₀, T₀, hC₀, hT₀, ?_⟩
   intro N V T W b hN hT₀N hNT hV hVL hVU hSep hBase hb hLarge
   let L : ℝ := (N : ℝ) ^ (6 / 5 : ℝ)
-  let bin : ℝ → ℕ := fun t => Nat.floor (t / L)
+  let bin  := fun t => Nat.floor (t / L)
   let K : ℕ := Nat.floor (T / L) + 1
   have hNpos : (0 : ℝ) < N := by exact_mod_cast (Nat.zero_lt_of_lt hN)
   have hNone : (1 : ℝ) ≤ N := by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Nat.zero_lt_of_lt hN).ne')
   have hLpos : 0 < L := Real.rpow_pos_of_pos hNpos _
-  have hTpos : 0 < T := hNpos.trans_le hNT
+  have hTpos  := hNpos.trans_le hNT
   have hmaps : ∀ t ∈ W, bin t ∈ Finset.range K := by
     intro t ht
     have htBase := hBase t ht
@@ -1592,9 +1521,9 @@ theorem gmProposition3_1_smooth_fullHeight
       exact hLarge t (Finset.mem_filter.mp ht).1
     change (Wk.card : ℝ) ≤ _
     simpa only [L] using hInterval N V ((k : ℝ) * L) Wk b hN hT₀N hV hVL hVU
-      hWkSep (by simpa only [add_comm, add_left_comm, add_assoc, L] using hWkInterval)
+      hWkSep (by solve_by_elim)
       hb hWkLarge
-  have hcard : W.card = ∑ k ∈ Finset.range K, ({t ∈ W | bin t = k}).card :=
+  have hcard  :=
     Finset.card_eq_sum_card_fiberwise hmaps
   have hsum : (W.card : ℝ) ≤
       (K : ℝ) *
@@ -1603,12 +1532,11 @@ theorem gmProposition3_1_smooth_fullHeight
       (W.card : ℝ) = ∑ k ∈ Finset.range K,
           (({t ∈ W | bin t = k}).card : ℝ) := by exact_mod_cast hcard
       _ ≤ ∑ _k ∈ Finset.range K,
-          (C₀ * L ^ η * (L * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ))) := by
-        exact Finset.sum_le_sum hfiber
+          (C₀ * L ^ η * (L * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ))) := Finset.sum_le_sum hfiber
       _ = (K : ℝ) *
           (C₀ * L ^ η * (L * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ))) := by
-        simp only [sum_const, card_range, nsmul_eq_mul]
-  have hqNonneg : 0 ≤ T / L := div_nonneg hTpos.le hLpos.le
+        simp
+  have hqNonneg  := div_nonneg hTpos.le hLpos.le
   have hK : (K : ℝ) ≤ T / L + 1 := by
     dsimp only [K]
     have hf := Nat.floor_le hqNonneg
@@ -1621,7 +1549,6 @@ theorem gmProposition3_1_smooth_fullHeight
       linarith
     calc
       L ^ η = (N : ℝ) ^ ((6 / 5 : ℝ) * η) := by
-        dsimp only [L]
         rw [Real.rpow_mul hNpos.le]
       _ ≤ (N : ℝ) ^ ε := hNexp
       _ ≤ T ^ ε := Real.rpow_le_rpow hNpos.le hNT hε.le
@@ -1631,8 +1558,7 @@ theorem gmProposition3_1_smooth_fullHeight
     rw [← Real.rpow_add hNpos]
     congr 1
     ring
-  have hcore : 0 ≤ (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ) := by
-    positivity
+  
   calc
     (W.card : ℝ) ≤ (K : ℝ) *
         (C₀ * L ^ η * (L * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ))) := hsum
@@ -1645,20 +1571,17 @@ theorem gmProposition3_1_smooth_fullHeight
     _ = C₀ * T ^ ε *
         ((N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ) +
           T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := by
-      rw [← hLscale]
-      field_simp [hLpos.ne']
-      ring
+      grind
 
 /-! ### Classical complementary ranges in the source sign convention -/
 
 theorem gm_inv_rpow_two {V : ℝ} (hV : 0 < V) :
     V ^ (-2 : ℝ) = 1 / V ^ 2 := by
-  rw [Real.rpow_neg hV.le, Real.rpow_two, inv_eq_one_div]
+  simp
 
 theorem gm_inv_rpow_four {V : ℝ} (hV : 0 < V) :
     V ^ (-4 : ℝ) = 1 / V ^ 4 := by
-  rw [Real.rpow_neg hV.le, ← Real.rpow_natCast]
-  norm_num
+  simp
 
 theorem gm_classical_min_low
     {N : ℕ} {V B : ℝ} (hN : 0 < N) (hV : 0 < V)
@@ -1682,10 +1605,9 @@ theorem gm_classical_min_low
     calc
       (N : ℝ) * (N : ℝ) ^ (7 / 5 : ℝ) =
           (N : ℝ) ^ (1 : ℝ) * (N : ℝ) ^ (7 / 5 : ℝ) := by
-            rw [Real.rpow_one]
+            simp
       _ = (N : ℝ) ^ ((1 : ℝ) + 7 / 5) := (Real.rpow_add hn _ _).symm
       _ = (N : ℝ) ^ (12 / 5 : ℝ) := by
-        congr 1
         ring
   have hnum : (N : ℝ) * V ^ 2 ≤ B ^ 2 * (N : ℝ) ^ (12 / 5 : ℝ) := by
     calc
@@ -1698,7 +1620,7 @@ theorem gm_classical_min_low
     min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6) ≤ (N : ℝ) / V ^ 2 := min_le_left _ _
     _ ≤ B ^ 2 * (N : ℝ) ^ (12 / 5 : ℝ) / V ^ 4 := by
       rw [show (N : ℝ) / V ^ 2 = ((N : ℝ) * V ^ 2) / V ^ 4 by
-        field_simp [hV.ne']]
+        field_simp <;> ring]
       apply (div_le_div_iff_of_pos_right (pow_pos hV 4)).2
       exact hnum
     _ = B ^ 2 * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ) := by
@@ -1759,7 +1681,7 @@ theorem gm_classical_source_low
           T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := by
   obtain ⟨C₀, hC₀, hMHH⟩ := classical_montgomery_halasz_huxley_native ε hε
   let C := C₀ * (1 + B ^ 2)
-  refine ⟨C, by dsimp only [C]; positivity, ?_⟩
+  refine ⟨C, by positivity, ?_⟩
   intro N V T b W hN hT hNT hV hLow hb hSep hBase hLarge
   have hb' : ∀ n ∈ dyadicInterval N, ‖conjugateCoeffs b n‖ ≤ 1 := by
     intro n hn
@@ -1771,7 +1693,7 @@ theorem gm_classical_source_low
     exact hLarge t ht
   have hraw := hMHH N T V W (conjugateCoeffs b) hN hT hNT hV hb' hSep hBase hLarge'
   have hmin := gm_classical_min_low hN hV hLow
-  have hBsq : 0 ≤ B ^ 2 := sq_nonneg B
+  have hBsq  := sq_nonneg B
   have hfirst : (N : ℝ) ^ 2 / V ^ 2 = (N : ℝ) ^ 2 * V ^ (-2 : ℝ) := by
     rw [gm_inv_rpow_two hV]
     ring
@@ -1821,7 +1743,7 @@ theorem gm_classical_source_high
           T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := by
   obtain ⟨C₀, hC₀, hMHH⟩ := classical_montgomery_halasz_huxley_native ε hε
   let C := 5 * C₀
-  refine ⟨C, by dsimp only [C]; positivity, ?_⟩
+  refine ⟨C, by positivity, ?_⟩
   intro N V T b W hN hT hNT hV hHigh hb hSep hBase hLarge
   have hb' : ∀ n ∈ dyadicInterval N, ‖conjugateCoeffs b n‖ ≤ 1 := by
     intro n hn
@@ -1864,7 +1786,7 @@ theorem gm_classical_source_high
     _ = C * T ^ ε *
         ((N : ℝ) ^ 2 * V ^ (-2 : ℝ) +
           (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ) +
-          T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := by rfl
+          T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := rfl
 
 set_option maxHeartbeats 1000000 in
 theorem gm_classical_source_near_height
@@ -1880,7 +1802,7 @@ theorem gm_classical_source_near_height
           T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := by
   obtain ⟨C₀, hC₀, hSecond⟩ := classical_large_values_second_branch_unrestricted
   let C := 3 * C₀
-  refine ⟨C, by dsimp only [C]; positivity, ?_⟩
+  refine ⟨C, by positivity, ?_⟩
   intro N V T b W hN hT hTN hV hb hSep hBase hLarge
   have hb' : ∀ n ∈ dyadicInterval N, ‖conjugateCoeffs b n‖ ≤ 1 := by
     intro n hn
@@ -1901,7 +1823,7 @@ theorem gm_classical_source_near_height
     have hmul := mul_le_mul_of_nonneg_right hTN hn.le
     field_simp [hV.ne']
     nlinarith
-  have hTone : 1 ≤ T ^ ε := Real.one_le_rpow hT hε.le
+  have hTone  := Real.one_le_rpow hT hε.le
   let X : ℝ := (N : ℝ) ^ 2 * V ^ (-2 : ℝ)
   let Y : ℝ := (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ)
   let Z : ℝ := T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)
@@ -1923,7 +1845,7 @@ theorem gm_classical_source_near_height
     _ = C * T ^ ε *
         ((N : ℝ) ^ 2 * V ^ (-2 : ℝ) +
           (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ) +
-          T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := by rfl
+          T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)) := rfl
 
 theorem gm_source_scale_bounds
     {N Q : ℕ} (hN : 30 ≤ N)
@@ -1933,8 +1855,7 @@ theorem gm_source_scale_bounds
   · subst Q
     dsimp only [gmSourceLeftScale]
     omega
-  · subst Q
-    omega
+  · omega
   · subst Q
     dsimp only [gmSourceRightScale]
     omega
@@ -1959,8 +1880,7 @@ theorem gm_rpow_scale_le_sixteen
     _ ≤ 16 * (N : ℝ) ^ (18 / 5 : ℝ) := by
       have hpow : (2 : ℝ) ^ (18 / 5 : ℝ) ≤ (2 : ℝ) ^ (4 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      have hpow' : (2 : ℝ) ^ (18 / 5 : ℝ) ≤ 16 := hpow.trans_eq (by norm_num)
-      exact mul_le_mul_of_nonneg_right hpow' (Real.rpow_nonneg hn _)
+      apply mul_le_mul_of_nonneg_right <;> first | assumption | positivity | linarith
 
 theorem gm_rpow_scale_le_eight
     {N Q : ℕ} (hQ : Q ≤ 2 * N) :
@@ -1975,8 +1895,7 @@ theorem gm_rpow_scale_le_eight
     _ ≤ 8 * (N : ℝ) ^ (12 / 5 : ℝ) := by
       have hpow : (2 : ℝ) ^ (12 / 5 : ℝ) ≤ (2 : ℝ) ^ (3 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      have hpow' : (2 : ℝ) ^ (12 / 5 : ℝ) ≤ 8 := hpow.trans_eq (by norm_num)
-      exact mul_le_mul_of_nonneg_right hpow' (Real.rpow_nonneg hn _)
+      apply mul_le_mul_of_nonneg_right <;> first | assumption | positivity | linarith
 
 theorem gm_source_scale_critical_lower
     {N Q : ℕ} {V : ℝ} (hQ : Q ≤ 2 * N)
@@ -1991,8 +1910,7 @@ theorem gm_source_scale_critical_lower
       (2 : ℝ) ^ (7 / 10 : ℝ) ≤ (2 : ℝ) ^ (1 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
       _ = 2 := Real.rpow_one _
-  have hmid : (Q : ℝ) ^ (7 / 10 : ℝ) ≤
-      2 * (N : ℝ) ^ (7 / 10 : ℝ) :=
+  have hmid  :=
     hq.trans (mul_le_mul_of_nonneg_right htwo (Real.rpow_nonneg hn _))
   linarith
 
@@ -2009,8 +1927,7 @@ theorem gm_source_scale_critical_upper
       (2 : ℝ) ^ (4 / 5 : ℝ) ≤ (2 : ℝ) ^ (1 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
       _ = 2 := Real.rpow_one _
-  have hmid : (N : ℝ) ^ (4 / 5 : ℝ) ≤
-      2 * (Q : ℝ) ^ (4 / 5 : ℝ) :=
+  have hmid  :=
     hnq.trans (mul_le_mul_of_nonneg_right htwo (Real.rpow_nonneg hq0 _))
   linarith [Real.rpow_nonneg hq0 (4 / 5 : ℝ)]
 
@@ -2039,9 +1956,9 @@ theorem gm_source_large_values_critical
   obtain ⟨C₀, T₀, hC₀, hT₀, hFull⟩ :=
     gmProposition3_1_smooth_fullHeight cutoff ε hε
   let C := 3888 * C₀
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  refine ⟨C, T₀, by positivity, hT₀, ?_⟩
   intro N V T b W hN hNlarge hNT hV hLow hHigh hb hSep hBase hLarge
-  have hNpos : 0 < N := by omega
+  
   have hbDyadic : ∀ n ∈ dyadicInterval N, ‖b n‖ ≤ 1 := by
     intro n hn
     exact hb n
@@ -2053,7 +1970,7 @@ theorem gm_source_large_values_critical
     · exact Or.inr (Or.inl hQ)
     · exact Or.inr (Or.inr hQ)
   have hQB := gm_source_scale_bounds hN hQcase
-  have hQgt : 1 < Q := gm_source_scale_gt_one hN hQcase
+  have hQgt  := gm_source_scale_gt_one hN hQcase
   have hQpos : (0 : ℝ) < Q := by exact_mod_cast (Nat.zero_lt_of_lt hQgt)
   have hQone : (1 : ℝ) ≤ Q := by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Nat.zero_lt_of_lt hQgt).ne')
   have hT₀Q : T₀ ≤ (Q : ℝ) ^ (6 / 5 : ℝ) := by
@@ -2065,9 +1982,9 @@ theorem gm_source_large_values_critical
   have hQT : (Q : ℝ) ≤ T := by
     have hQN : (Q : ℝ) ≤ 2 * N := by exact_mod_cast hQB.2
     exact hQN.trans hNT
-  have hVL : (Q : ℝ) ^ (7 / 10 : ℝ) ≤ V / 3 :=
+  have hVL  :=
     gm_source_scale_critical_lower hQB.2 hLow
-  have hVU : V / 3 ≤ (Q : ℝ) ^ (4 / 5 : ℝ) :=
+  have hVU  :=
     gm_source_scale_critical_upper hQB.1 hHigh
   have hSep' : IsSeparated 1 W' := by
     intro x hx y hy hxy
@@ -2080,7 +1997,7 @@ theorem gm_source_large_values_critical
   have hcardReal : (W.card : ℝ) ≤ 3 * (W'.card : ℝ) := by exact_mod_cast hcardNat
   have hQ18 := gm_rpow_scale_le_sixteen hQB.2
   have hQ12 := gm_rpow_scale_le_eight hQB.2
-  have htail : 0 ≤ T := hQpos.le.trans hQT
+  have htail  := hQpos.le.trans hQT
   have hshape :
       (Q : ℝ) ^ (18 / 5 : ℝ) * (V / 3) ^ (-4 : ℝ) +
           T * (Q : ℝ) ^ (12 / 5 : ℝ) * (V / 3) ^ (-4 : ℝ) ≤
@@ -2120,7 +2037,7 @@ range discharged.  The proof uses the native Section 12 theorem in the
 central range and the native Montgomery--Halasz--Huxley estimates elsewhere. -/
 theorem guthMaynardLargeValues_native : GuthMaynardLargeValues := by
   intro ε hε
-  let cutoff : GMSmoothCutoff := Classical.choice exists_gmSmoothCutoff
+  let cutoff  := Classical.choice exists_gmSmoothCutoff
   obtain ⟨Ccrit, Tcrit, hCcrit, hTcrit, hCrit⟩ :=
     gm_source_large_values_critical cutoff ε hε
   let B : ℝ := 2 * Tcrit + 30
@@ -2128,9 +2045,9 @@ theorem guthMaynardLargeValues_native : GuthMaynardLargeValues := by
   obtain ⟨Chigh, hChigh, hHighBound⟩ := gm_classical_source_high ε hε
   obtain ⟨Cnear, hCnear, hNearBound⟩ := gm_classical_source_near_height ε hε
   let C : ℝ := Ccrit + Clow + Chigh + Cnear
-  refine ⟨C, 1, by dsimp only [C]; positivity, le_rfl, ?_⟩
+  refine ⟨C, 1, by positivity, le_rfl, ?_⟩
   intro N V T b W hN hT hV hb hSep hBase hLarge
-  have hTnonneg : 0 ≤ T := zero_le_one.trans hT
+  have hTnonneg  := zero_le_one.trans hT
   have hTpow : 0 ≤ T ^ ε := Real.rpow_nonneg hTnonneg _
   let S : ℝ :=
     (N : ℝ) ^ 2 * V ^ (-2 : ℝ) +
@@ -2143,37 +2060,33 @@ theorem guthMaynardLargeValues_native : GuthMaynardLargeValues := by
   have hCnearC : Cnear ≤ C := by dsimp only [C]; linarith
   by_cases hNear : T ≤ 2 * (N : ℝ)
   · have hbound := hNearBound N V T b W hN hT hNear hV hb hSep hBase hLarge
-    have hcoef : Cnear * T ^ ε ≤ C * T ^ ε :=
+    have hcoef  :=
       mul_le_mul_of_nonneg_right hCnearC hTpow
     exact hbound.trans (by
-      dsimp only [S] at hS ⊢
       exact mul_le_mul_of_nonneg_right hcoef hS)
-  have hTwoNT : 2 * (N : ℝ) ≤ T := (le_of_not_ge hNear)
+  have hTwoNT  := (le_of_not_ge hNear)
   have hNT : (N : ℝ) ≤ T := by
     have hn : (0 : ℝ) ≤ N := Nat.cast_nonneg N
     linarith
   by_cases hHigh : (1 / 2 : ℝ) * (N : ℝ) ^ (4 / 5 : ℝ) ≤ V
   · have hbound := hHighBound N V T b W hN hT hNT hV hHigh hb hSep hBase hLarge
-    have hcoef : Chigh * T ^ ε ≤ C * T ^ ε :=
+    have hcoef  :=
       mul_le_mul_of_nonneg_right hChighC hTpow
     exact hbound.trans (by
-      dsimp only [S] at hS ⊢
       exact mul_le_mul_of_nonneg_right hcoef hS)
-  have hNotHigh : V < (1 / 2 : ℝ) * (N : ℝ) ^ (4 / 5 : ℝ) := lt_of_not_ge hHigh
+  have hNotHigh  := lt_of_not_ge hHigh
   by_cases hLow : V ≤ 6 * (N : ℝ) ^ (7 / 10 : ℝ)
   · have hBle : (6 : ℝ) ≤ B := by
       dsimp only [B]
       linarith [hTcrit]
-    have hLowB : V ≤ B * (N : ℝ) ^ (7 / 10 : ℝ) := by
-      exact hLow.trans (mul_le_mul_of_nonneg_right hBle
+    have hLowB := hLow.trans (mul_le_mul_of_nonneg_right hBle
         (Real.rpow_nonneg (Nat.cast_nonneg N) _))
     have hbound := hLowBound N V T b W hN hT hNT hV hLowB hb hSep hBase hLarge
-    have hcoef : Clow * T ^ ε ≤ C * T ^ ε :=
+    have hcoef  :=
       mul_le_mul_of_nonneg_right hClowC hTpow
     exact hbound.trans (by
-      dsimp only [S] at hS ⊢
       exact mul_le_mul_of_nonneg_right hcoef hS)
-  have hCentralLow : 6 * (N : ℝ) ^ (7 / 10 : ℝ) ≤ V := le_of_not_ge hLow
+  have hCentralLow  := le_of_not_ge hLow
   by_cases hN30 : 30 ≤ N
   · by_cases hNlarge : 2 * Tcrit ≤ (N : ℝ)
     · have hbound := hCrit N V T b W hN30 hNlarge hTwoNT hV hCentralLow
@@ -2184,10 +2097,10 @@ theorem guthMaynardLargeValues_native : GuthMaynardLargeValues := by
         dsimp only [S]
         have hfirst : 0 ≤ (N : ℝ) ^ 2 * V ^ (-2 : ℝ) := by positivity
         linarith
-      have hbound' : (W.card : ℝ) ≤ Ccrit * T ^ ε * S :=
+      have hbound'  :=
         hbound.trans (mul_le_mul_of_nonneg_left hcriticalShape
           (mul_nonneg hCcrit.le hTpow))
-      have hcoef : Ccrit * T ^ ε ≤ C * T ^ ε :=
+      have hcoef  :=
         mul_le_mul_of_nonneg_right hCcritC hTpow
       exact hbound'.trans (mul_le_mul_of_nonneg_right hcoef hS)
     · have hNltB : (N : ℝ) < B := by
@@ -2203,10 +2116,9 @@ theorem guthMaynardLargeValues_native : GuthMaynardLargeValues := by
         have hBpos : 0 < B := by dsimp only [B]; linarith [hTcrit]
         nlinarith [mul_le_mul_of_nonneg_left hpowOne hBpos.le]
       have hbound := hLowBound N V T b W hN hT hNT hV hLowB hb hSep hBase hLarge
-      have hcoef : Clow * T ^ ε ≤ C * T ^ ε :=
+      have hcoef  :=
         mul_le_mul_of_nonneg_right hClowC hTpow
       exact hbound.trans (by
-        dsimp only [S] at hS ⊢
         exact mul_le_mul_of_nonneg_right hcoef hS)
   · have hNltB : (N : ℝ) < B := by
       have hNlt : N < 30 := lt_of_not_ge hN30
@@ -2223,10 +2135,9 @@ theorem guthMaynardLargeValues_native : GuthMaynardLargeValues := by
       have hBpos : 0 < B := by dsimp only [B]; linarith [hTcrit]
       nlinarith [mul_le_mul_of_nonneg_left hpowOne hBpos.le]
     have hbound := hLowBound N V T b W hN hT hNT hV hLowB hb hSep hBase hLarge
-    have hcoef : Clow * T ^ ε ≤ C * T ^ ε :=
+    have hcoef  :=
       mul_le_mul_of_nonneg_right hClowC hTpow
     exact hbound.trans (by
-      dsimp only [S] at hS ⊢
       exact mul_le_mul_of_nonneg_right hcoef hS)
 
 end GuthMaynard.NativeMoment

@@ -81,10 +81,7 @@ theorem sum_extend_zero {ι κ M : Type*} [Fintype ι] [Fintype κ]
       intro j _ hj
       rw [Function.extend_apply' c (fun _ => 0) j (by simpa using hj), hF]
     _ = _ := by
-      rw [sum_image (fun i _ j _ h => hv h)]
-      apply sum_congr rfl
-      intro i _
-      rw [hv.extend_apply]
+      simp [*]
 
 /-- Restriction to any finite subset of frequencies preserves the contraction. -/
 theorem restrict_fourth_bound {ι κ τ : Type*} [Fintype ι] [Fintype κ] [Fintype τ]

@@ -21,8 +21,7 @@ theorem clippedRadicalTail_mono {R K K' A B s : ℝ}
     (hK : K ≤ K') (hB : 0 ≤ B) :
     clippedRadicalTail R K A B s ≤ clippedRadicalTail R K' A B s := by
   apply min_le_min_left
-  apply Real.sqrt_le_sqrt
-  exact mul_le_mul_of_nonneg_right hK (by positivity)
+  gcongr
 
 theorem clippedRadicalTail_integrable (R K A B Y : ℝ) :
     IntegrableOn (clippedRadicalTail R K A B) (Ioc 0 Y) := by
@@ -44,13 +43,13 @@ theorem radical_tail_le_rational {K A B s : ℝ}
       Real.sqrt K * (A * s⁻¹ + Real.sqrt B * (s⁻¹) ^ 2) := by
   have hKs := Real.sq_sqrt hK
   have hBs := Real.sq_sqrt hB
-  have hK0 := Real.sqrt_nonneg K
-  have hB0 := Real.sqrt_nonneg B
-  have hsInv : 0 ≤ s⁻¹ := inv_nonneg.mpr hs.le
+  
+  
+  
   have hRight : 0 ≤ Real.sqrt K * (A * s⁻¹ + Real.sqrt B * (s⁻¹) ^ 2) := by positivity
   have hInside : 0 ≤ K * (A ^ 2 / s ^ 2 + B / s ^ 4) := by positivity
   have hLeft := Real.sq_sqrt hInside
-  have hLeft0 := Real.sqrt_nonneg (K * (A ^ 2 / s ^ 2 + B / s ^ 4))
+  
   have hCross : 0 ≤ 2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by positivity
   have hSq : (Real.sqrt K * (A * s⁻¹ + Real.sqrt B * s⁻¹ ^ 2)) ^ 2 =
       K * (A ^ 2 / s ^ 2 + B / s ^ 4) +
@@ -78,8 +77,8 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
     (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤
       R ^ 2 * x + Real.sqrt K *
         (A * Real.log (Y / x) + Real.sqrt B / x) := by
-  have hY : 0 < Y := hx.trans_le hxY
-  have hWhole : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
+  have hY  := hx.trans_le hxY
+  have hWhole  :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le hY.le).mpr
       (clippedRadicalTail_integrable R K A B Y)
   have hLow : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 x := by
@@ -98,8 +97,7 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
     hInvCont.intervalIntegrable_of_Icc hxY
   have hInvSq : IntervalIntegrable (fun s : ℝ => (s⁻¹) ^ 2) volume x Y :=
     (hInvCont.pow 2).intervalIntegrable_of_Icc hxY
-  have hMajor : IntervalIntegrable (fun s : ℝ =>
-      Real.sqrt K * (A * s⁻¹ + Real.sqrt B * (s⁻¹) ^ 2)) volume x Y :=
+  have hMajor  :=
     ((hInv.const_mul A).add (hInvSq.const_mul (Real.sqrt B))).const_mul (Real.sqrt K)
   have hLowBound : (∫ s in 0..x, clippedRadicalTail R K A B s) ≤ R ^ 2 * x := by
     have h := intervalIntegral.integral_mono_on hx.le hLow intervalIntegrable_const
@@ -122,7 +120,7 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
 
 theorem clipped_radical_integral_cap {R K A B Y : ℝ} (hY : 0 ≤ Y) :
     (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤ R ^ 2 * Y := by
-  have hInt : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
+  have hInt  :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le hY).mpr
       (clippedRadicalTail_integrable R K A B Y)
   rw [← intervalIntegral.integral_of_le hY]
@@ -139,12 +137,12 @@ theorem clipped_radical_integral_optimized {R K A B Y : ℝ}
   let Q := Real.sqrt (Real.sqrt K * Real.sqrt B)
   change (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤
     2 * R * Q + Real.sqrt K * A * max 0 (Real.log (Y * R / Q))
-  have hQ : 0 < Q := Real.sqrt_pos.mpr
+  have hQ  := Real.sqrt_pos.mpr
     (mul_pos (Real.sqrt_pos.mpr hK) (Real.sqrt_pos.mpr hB))
   have hQsq : Q ^ 2 = Real.sqrt K * Real.sqrt B :=
     Real.sq_sqrt (by positivity)
   let x := Q / R
-  have hx : 0 < x := div_pos hQ hR
+  have hx  := div_pos hQ hR
   have hScale : R ^ 2 * x = R * Q := by dsimp only [x]; field_simp
   have hLog : 0 ≤ Real.sqrt K * A * max 0 (Real.log (Y * R / Q)) := by positivity
   by_cases hxY : x ≤ Y
@@ -165,7 +163,7 @@ theorem clipped_radical_integral_optimized {R K A B Y : ℝ}
     have hLow : R ^ 2 * Y ≤ R * Q := by
       rw [← hScale]
       exact mul_le_mul_of_nonneg_left (le_of_not_ge hxY) (sq_nonneg R)
-    have hRQ : 0 ≤ R * Q := mul_nonneg hR.le hQ.le
+    have hRQ  := mul_nonneg hR.le hQ.le
     linarith
 
 theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
@@ -185,7 +183,7 @@ theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
     have hprod : 1 ≤ Real.sqrt K * Real.sqrt B := by nlinarith
     simpa only [Real.sqrt_one] using Real.sqrt_le_sqrt hprod
   have hQpos : 0 < Q := by linarith
-  have hArgPos : 0 < Y * R / Q := div_pos (mul_pos hY hR) hQpos
+  have hArgPos  := div_pos (mul_pos hY hR) hQpos
   have hArg : Y * R / Q ≤ T ^ 3 := by
     apply (div_le_iff₀ hQpos).mpr
     have hprod : Y * R ≤ T * (2 * T) :=
@@ -196,11 +194,8 @@ theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
   have hLog : Real.log (Y * R / Q) ≤ 3 * Real.log T := by
     have h := Real.log_le_log hArgPos hArg
     simpa only [Real.log_pow, Nat.cast_ofNat] using h
-  have hLogMax : max 0 (Real.log (Y * R / Q)) ≤ 3 * Real.log T := by
-    exact max_le (mul_nonneg (by norm_num) (Real.log_nonneg (by linarith))) hLog
+  have hLogMax := max_le (mul_nonneg (by norm_num) (Real.log_nonneg (by linarith))) hLog
   have h := clipped_radical_integral_optimized hR hKpos hA hBpos hY.le
-  change (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤
-    2 * R * Q + Real.sqrt K * A * max 0 (Real.log (Y * R / Q)) at h
   calc
     _ ≤ 2 * R * Q + Real.sqrt K * A * max 0 (Real.log (Y * R / Q)) := h
     _ ≤ 2 * R * Q + Real.sqrt K * A * (3 * Real.log T) := by gcongr

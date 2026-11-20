@@ -23,8 +23,8 @@ theorem atkinsonSaddleRoot_small_frequency {T b : ℝ} (hT : 0 < T)
       atkinsonSaddleRoot (T / (2 * Real.pi)) b ≤ Real.sqrt T / 2 := by
   let r := atkinsonSaddleRoot (T / (2 * Real.pi)) b
   let S := Real.sqrt T
-  have hS : 0 < S := Real.sqrt_pos.2 hT
-  have hSsq : S ^ 2 = T := Real.sq_sqrt hT.le
+  have hS  := Real.sqrt_pos.2 hT
+  have hSsq  := Real.sq_sqrt hT.le
   have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
   have hrb : 0 < r - b := atkinsonSaddleRoot_sub_pos (by positivity) b
   have he : r ^ 2 - b * r = T / (2 * Real.pi) := atkinsonSaddleRoot_equation (by positivity) b
@@ -117,7 +117,7 @@ theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
   have hp := atkinsonSaddleRoot_small_frequency hT hb
   have hm := atkinsonSaddleRoot_small_frequency hT (b := -Real.sqrt ((m+i:ℕ):ℝ))
     (by simpa only [abs_neg] using hb)
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  have hs  := Real.sqrt_pos.2 hT
   constructor
   · constructor
     · apply (le_div_iff₀ hs).2

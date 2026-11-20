@@ -97,7 +97,7 @@ theorem exists_tsum_norm_source_divisor_weight_le (ε : ℝ) (hε : 0 < ε) :
   have hθ1 : θ ≤ 1 := by dsimp [θ]; linarith [min_le_right (ε / 2) (1 / 4)]
   have hθε : θ ≤ 1 / 2 + ε := by dsimp [θ]; linarith [min_le_left (ε / 2) (1 / 4)]
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm ((1 / 2 + θ : ℝ) : ℂ) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
+  
   refine ⟨1 + C * S, by positivity, ?_⟩
   intro T hT t
   have hT0 : 0 < T := by linarith

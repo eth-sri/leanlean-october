@@ -53,8 +53,7 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
       C * (p : ℝ) ^ (k ^ 2 * nu) *
         wooleySourcePolynomialMixedMean phi s r p B
           (wooleySection7NextB k r b) b nu gamma := by
-  have haNext : a ≤ wooleySection7NextB k r b := by
-    exact (wooley_section7_a_add_HPrime_le_nextB hr
+  have haNext := (wooley_section7_a_add_HPrime_le_nextB hr
       (hBPrime 0 (by omega))).trans' (Nat.le_add_right a _)
   apply wooley_equation_7_24_of_local phi gamma hnua haNext
     (C * (p : ℝ) ^ (k ^ 2 * nu)) (by positivity)
@@ -141,13 +140,7 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
       (wooleySourceResidueMassSq_nonneg gamma _ _)
       (wooleySourcePolynomialMixedResidueMoment_nonneg
         phi s r p B (wooleySection7NextB k r b) b gamma _ eta)
-  have hcoeff :
-      C * ((p ^ wooleySection7BPrimeNat k r a b 0 : ℝ) ^
-          (epsilon ^ 2) *
-        (p ^ (wooleySection7NextB k r b -
-          (a + wooleySection7HPrime k r a b gammaVal)) : ℝ) ^
-            wooleyTriangular r) ≤
-        C * (p : ℝ) ^ (k ^ 2 * nu) :=
+  have hcoeff  :=
     mul_le_mul_of_nonneg_left hpower hC.le
   have hscaled := mul_le_mul_of_nonneg_right hcoeff hsum
   calc
@@ -159,9 +152,9 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
         (p ^ (wooleySection7NextB k r b -
           (a + wooleySection7HPrime k r a b gammaVal)) : ℝ) ^
             wooleyTriangular r * fiberSum := by
-      simpa only [fiberSum] using hlocal
+      linarith
     _ ≤ (C * (p : ℝ) ^ (k ^ 2 * nu)) * fiberSum := by
-      simpa only [mul_assoc] using hscaled
+      linarith
 
 end
 

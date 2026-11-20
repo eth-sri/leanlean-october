@@ -31,7 +31,7 @@ theorem logCutoff_contDiff {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   · subst x
     apply contDiffAt_const.congr_of_eventuallyEq (f := fun _ : ℝ => (0 : ℂ))
     filter_upwards [Iio_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)] with y hy
-    have hnot : y ∉ tsupport w := fun hh => (not_le.mpr hy) (hws hh).1
+    have hnot  := fun hh => (not_le.mpr hy) (hws hh).1
     simp only [logCutoff, image_eq_zero_of_notMem_tsupport hnot, zero_mul]
   · unfold logCutoff dirichletPhase
     apply hw.contDiffAt.mul
@@ -77,7 +77,7 @@ theorem integrable_mellin_line_one {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     Integrable (fun r : ℝ => mellin w ((1 : ℂ) + r * Complex.I)) := by
   have hs : ∀ x, x ∉ Icc (1 / 2 : ℝ) 5 → w x = 0 :=
     fun x hx => image_eq_zero_of_notMem_tsupport (fun hh => hx (hws hh))
-  let psi : 𝓢(ℝ, ℂ) := Transforms.mellinLogLiftSchwartz w
+  let psi  := Transforms.mellinLogLiftSchwartz w
     (Transforms.mellinLogLift_hasCompactSupport (by norm_num) (by norm_num) hs)
     (Transforms.mellinLogLift_contDiff hw)
   have hh := (𝓕 psi : 𝓢(ℝ, ℂ)).integrable.comp_div (by positivity : 2 * Real.pi ≠ 0)
@@ -99,11 +99,11 @@ theorem cutoff_mellin_inversion {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
 theorem summable_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {L : ℝ} (hL : 0 < L) (v : ℝ) :
     Summable (fun m : ℤ => modeIntegral w v ((m : ℝ) * L)) := by
-  let psi : 𝓢(ℝ, ℂ) := (logCutoff_hasCompactSupport hws v).toSchwartzMap
+  let psi  := (logCutoff_hasCompactSupport hws v).toSchwartzMap
     (logCutoff_contDiff hw hws v)
-  let g : 𝓢(ℝ, ℂ) := SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
+  let g  := SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
     (ContinuousLinearEquiv.unitsEquivAut ℝ (Units.mk0 L hL.ne')) (𝓕 psi)
-  have hh : Summable (fun m : ℤ => g (m : ℝ)) := summable_of_isBigO
+  have hh  := summable_of_isBigO
     (Real.summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2))
     ((g.isBigO_cocompact_rpow (-2)).comp_tendsto Int.tendsto_coe_cofinite)
   convert hh using 1
@@ -116,8 +116,8 @@ theorem summable_nat_logCutoff {w : ℝ → ℂ}
   apply summable_of_ne_finset_zero (s := Finset.range (⌈5 * L⌉₊ + 1))
   intro n hn
   have hn' : ⌈5 * L⌉₊ < n := by simpa using hn
-  have hbig : 5 < (n : ℝ) / L := (lt_div_iff₀ hL).2 (Nat.lt_of_ceil_lt hn')
-  have hnot : (n : ℝ) / L ∉ tsupport w := fun hh => (not_le.mpr hbig) (hws hh).2
+  have hbig  := (lt_div_iff₀ hL).2 (Nat.lt_of_ceil_lt hn')
+  have hnot  := fun hh => (not_le.mpr hbig) (hws hh).2
   simp only [logCutoff, image_eq_zero_of_notMem_tsupport hnot, zero_mul]
 
 set_option maxHeartbeats 800000 in
@@ -157,8 +157,7 @@ theorem poisson_nonzero_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   simp only [nonzeroMode, mul_add, add_sub_cancel_left]
 
 theorem ReflectionCutoff.complex_smooth (w : ReflectionCutoff) :
-    ContDiff ℝ ∞ (fun x : ℝ => (w x : ℂ)) := by
-  exact Complex.ofRealCLM.contDiff.comp w.smooth
+    ContDiff ℝ ∞ (fun x : ℝ => (w x : ℂ)) := Complex.ofRealCLM.contDiff.comp w.smooth
 
 theorem ReflectionCutoff.complex_support (w : ReflectionCutoff) :
     tsupport (fun x : ℝ => (w x : ℂ)) ⊆ Icc (1 / 2 : ℝ) 5 :=

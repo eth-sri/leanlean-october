@@ -27,8 +27,7 @@ noncomputable def heathBrownTaylorDerivativePolynomial
 
 theorem iteratedDeriv_deriv_eq_succ
     (j : ℕ) (f : ℝ → ℝ) :
-    iteratedDeriv j (deriv f) = iteratedDeriv (j + 1) f := by
-  exact (iteratedDeriv_succ' (n := j) (f := f)).symm
+    iteratedDeriv j (deriv f) = iteratedDeriv (j + 1) f := (iteratedDeriv_succ' (n := j) (f := f)).symm
 
 /-- The literal finite sum in the source is Mathlib's ordinary Taylor
 polynomial evaluated at the shifted point. -/
@@ -61,7 +60,7 @@ theorem taylorWithinEval_deriv_eq_heathBrownTaylorDerivativePolynomial
   have hn : n ∈ Set.Icc n (n + x) := ⟨le_rfl, by linarith⟩
   have hud : UniqueDiffOn ℝ (Set.Icc n (n + x)) := by
     exact uniqueDiffOn_Icc (by linarith)
-  have hjlt : j < k - 1 := Finset.mem_range.mp hj
+  have hjlt  := Finset.mem_range.mp hj
   have hjle : j ≤ k - 2 := by omega
   have hfj : ContDiffAt ℝ (j : ℕ) (deriv f) n := by
     apply hf.of_le

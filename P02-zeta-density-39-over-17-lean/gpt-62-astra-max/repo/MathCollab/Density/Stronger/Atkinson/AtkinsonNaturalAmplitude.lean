@@ -31,8 +31,7 @@ theorem exists_intervalC2Bound_atkinsonPowerWeight_normalized_natural (α : ℝ)
   refine ⟨256 * A * B * K ^ 2 * D, by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth
   have hG0 : 0 < G := by linarith
-  have hc : IntervalC2Bound (fun u => (zetaDivisorBandCutoff T G L (T * u ^ 2) : ℂ))
-      (1 / 4) 1 (B * K ^ 2) G :=
+  have hc  :=
     (hcutoff T G L hT hG0 hL hwidth).absorb_scale hK hG0.le
   have ht : IntervalC2Bound (fun _ : ℝ => ((T ^ (-α) : ℝ) : ℂ))
       (1 / 4) 1 (T ^ (-α)) G := by
@@ -61,7 +60,7 @@ theorem exists_intervalC2Bound_atkinsonPowerWeight_root_natural (α : ℝ) :
   obtain ⟨C, hC, hbound⟩ := exists_intervalC2Bound_atkinsonPowerWeight_normalized_natural α
   refine ⟨C, hC, ?_⟩
   intro T G L hT hG hGT hL hwidth
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  have hs  := Real.sqrt_pos.2 hT
   have h := (hbound T G L hT hG hGT hL hwidth).comp_div hs
   have he : (fun y => atkinsonPowerWeight T G L α (T * (y / Real.sqrt T) ^ 2)) =
       fun y => atkinsonPowerWeight T G L α (y ^ 2) := by

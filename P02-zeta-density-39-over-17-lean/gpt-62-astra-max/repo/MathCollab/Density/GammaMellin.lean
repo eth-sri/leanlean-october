@@ -63,8 +63,7 @@ theorem im_sq_mul_norm_Gamma_vertical_le
       _ = (z + 1) * Complex.Gamma (z + 1) :=
         Complex.Gamma_add_one (z + 1) hzadd
       _ = (z + 1) * z * Complex.Gamma z := by
-        rw [Complex.Gamma_add_one z hz]
-        simp only [mul_assoc]
+        grind
   have hproduct :
       ‖z + 1‖ * ‖z‖ * ‖Complex.Gamma z‖ ≤
         Real.Gamma (sigma + 2) := by
@@ -107,7 +106,7 @@ Mathlib does not currently expose this specialization directly. -/
 theorem verticalIntegrable_Gamma {sigma : ℝ} (hsigma : 0 < sigma) :
     Complex.VerticalIntegrable Complex.Gamma sigma := by
   let C : ℝ := Real.Gamma sigma + Real.Gamma (sigma + 2)
-  have hmajor : Integrable (fun t : ℝ => C * (1 + t ^ 2)⁻¹) :=
+  have hmajor  :=
     integrable_inv_one_add_sq.const_mul C
   have hcontinuous : Continuous (fun t : ℝ =>
       Complex.Gamma ((sigma : ℂ) + t * Complex.I)) := by
@@ -127,7 +126,7 @@ theorem verticalIntegrable_Gamma {sigma : ℝ} (hsigma : 0 < sigma) :
 strip. -/
 theorem mellinConvergent_exp_neg {sigma : ℝ} (hsigma : 0 < sigma) :
     MellinConvergent (fun x : ℝ => (Real.exp (-x) : ℂ)) (sigma : ℂ) := by
-  have h := Complex.GammaIntegral_convergent (s := (sigma : ℂ)) (by simpa using hsigma)
+  have h := Complex.GammaIntegral_convergent (s := (sigma : ℂ)) (by positivity)
   simpa only [MellinConvergent, smul_eq_mul, mul_comm] using h
 
 /-- The Mellin transform of `exp(-x)` is vertically integrable on a positive
@@ -193,7 +192,7 @@ into the positive exponent used in Appendix (A.4). -/
 theorem cpow_neg_div_eq_reverse_cpow
     {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) (z : ℂ) :
     ((x / Y : ℝ) : ℂ) ^ (-z) = ((Y / x : ℝ) : ℂ) ^ z := by
-  have hxy : 0 < x / Y := div_pos hx hY
+  have hxy  := div_pos hx hY
   have harg : (((x / Y : ℝ) : ℂ)).arg ≠ Real.pi := by
     rw [Complex.arg_ofReal_of_nonneg hxy.le]
     exact ne_of_lt Real.pi_pos

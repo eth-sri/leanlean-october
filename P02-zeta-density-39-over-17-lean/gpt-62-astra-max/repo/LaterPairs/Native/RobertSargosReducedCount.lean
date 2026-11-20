@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosGcdProjection
 public import LaterPairs.Native.RobertSargosGcdSums
 public import LaterPairs.Native.RobertSargosWeightedGcdFibers

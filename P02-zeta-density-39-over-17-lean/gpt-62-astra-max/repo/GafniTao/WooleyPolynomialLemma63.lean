@@ -60,10 +60,7 @@ theorem wooleyPolynomial_mixed_one_point_refinement
   have hD : D ≤ (p ^ (theta - nu) : ℝ) ^ (s - 1) * DR := by
     simpa only [D, DR] using
       (wooleyPolynomial_lemma_6_2 (w := s - 1) phi hnu hs1 gamma alpha eta)
-  have hAnonneg : 0 ≤ A := by
-    dsimp [A]
-    exact mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma xi)
-      (sq_nonneg _)
+  
   have hDnonneg : 0 ≤ D := by
     dsimp [D]
     exact mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta)
@@ -73,14 +70,8 @@ theorem wooleyPolynomial_mixed_one_point_refinement
     exact Finset.sum_nonneg fun xi' hxi' =>
       mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma xi')
         (sq_nonneg _)
-  have hDRnonneg : 0 ≤ DR := by
-    dsimp [DR]
-    exact Finset.sum_nonneg fun eta' heta' =>
-      mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta')
-        (pow_nonneg (norm_nonneg _) _)
-  have hmul : A * D ≤
-      ((p ^ (theta - nu) : ℝ) * AR) *
-        ((p ^ (theta - nu) : ℝ) ^ (s - 1) * DR) :=
+  
+  have hmul  :=
     mul_le_mul hA hD hDnonneg (mul_nonneg (by positivity) hARnonneg)
   dsimp [A, D, AR, DR] at hmul
   have hpow :
@@ -263,10 +254,7 @@ theorem wooleyPolynomial_mixed_one_refinement
   split_ifs with hmass
   · simp
   · rw [haggregate nu, haggregate theta]
-    have hscale : 0 ≤ gridScale := by
-      dsimp [gridScale]
-      positivity
-    have hinv : 0 ≤ (wooleyWeightedMassSq gamma)⁻¹ ^ 2 := sq_nonneg _
+    
     calc
       (wooleyWeightedMassSq gamma)⁻¹ ^ 2 * (gridScale * P nu) ≤
           (wooleyWeightedMassSq gamma)⁻¹ ^ 2 *
@@ -293,24 +281,7 @@ theorem wooleyPolynomial_lemma_6_3_of_initial_conditioning
   have hrefine := wooleyPolynomial_mixed_one_refinement
     (Q := Q) (p := p) (nu := nu) (theta := theta)
       (B := B) (k := k) (s := s) phi hnu hs gamma
-  have hpolyNonneg : 0 ≤ wooleyPolynomialMixedGridMean
-      phi s 1 p B theta theta nu gamma := by
-    unfold wooleyPolynomialMixedGridMean
-    split_ifs
-    · simp
-    · apply mul_nonneg (sq_nonneg _)
-      apply Finset.sum_nonneg
-      intro xi hxi
-      apply Finset.sum_nonneg
-      intro eta heta
-      apply mul_nonneg
-      · exact mul_nonneg
-          (wooleyWeightedResidueMassSq_nonneg gamma xi)
-          (wooleyWeightedResidueMassSq_nonneg gamma eta)
-      · unfold wooleyPolynomialMixedResidueGridMoment
-        apply mul_nonneg (by positivity)
-        exact Finset.sum_nonneg fun alpha halpha =>
-          mul_nonneg (by positivity) (by positivity)
+  
   calc
     wooleyPolynomialWeightedGridMean phi s (p ^ B) gamma ≤
         C * (p ^ nu : ℝ) ^ s *
@@ -333,7 +304,7 @@ theorem wooleyPolynomial_lemma_6_3_of_initial_conditioning
           C * (((p : ℝ) ^ nu) *
             ((p : ℝ) ^ (theta - nu))) ^ s *
               wooleyPolynomialMixedGridMean
-                phi s 1 p B theta theta nu gamma := by rw [mul_pow]; ring
+                phi s 1 p B theta theta nu gamma := by ring
         _ = _ := by rw [hpowers]
 
 end

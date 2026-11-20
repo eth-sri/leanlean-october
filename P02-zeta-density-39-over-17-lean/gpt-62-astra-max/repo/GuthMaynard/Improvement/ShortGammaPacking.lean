@@ -10,16 +10,19 @@ open scoped Topology
 namespace GuthMaynard.Improvement
 
 /-- One polynomial-decay envelope works for every beta in the short strip. -/
-theorem short_gamma_decay :
-    ∃ K : ℝ, 0 < K ∧ ∀ β t : ℝ, 9/13 ≤ β → β ≤ 1 →
+theorem short_gamma_decay {s : ℝ} (hs : 1/2 < s) :
+    ∃ K : ℝ, 0 < K ∧ ∀ β t : ℝ, s ≤ β → β ≤ 1 →
       ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖ ≤ K/(1+|t|)^2 := by
-  refine ⟨576*Real.exp 1,by positivity,?_⟩
+  let A := 12/(s-1/2)
+  have : 0 < s-1/2 := by linarith
+  have hA : 0 < A := by dsimp [A]; positivity
+  refine ⟨A*6*Real.exp 1,by positivity,?_⟩
   intro β t hβ hβ'
   have ha : 0 < β-1/2 := by linarith
-  have hg := short_detector_gamma_bound ha (show β-1/2 ≤ 1/2 by linarith) t
+  have hg := norm_Gamma_negative_strip ha (show β-1/2 ≤ 1/2 by linarith) t
   rw [show -(β-1/2)=1/2-β by ring] at hg
-  have hc : 12/(β-1/2) ≤ 96 := (div_le_iff₀ ha).mpr (by linarith)
-  have hgamma : ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖ ≤ 96*(1+|t|)*Real.exp (-|t|) :=
+  have hc : 12/(β-1/2) ≤ A := div_le_div_of_nonneg_left (by norm_num) (by linarith) (by linarith)
+  have hgamma : ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖ ≤ A*(1+|t|)*Real.exp (-|t|) :=
     hg.trans (by gcongr)
   have hp := Real.pow_div_factorial_le_exp (1+|t|) (show 0 ≤ 1+|t| by positivity) 3
   norm_num at hp
@@ -32,9 +35,9 @@ theorem short_gamma_decay :
       _ = _ := by rw [mul_assoc,he]
   apply (le_div_iff₀ (by positivity : 0 < (1+|t|)^2)).mpr
   calc
-    _ ≤ (96*(1+|t|)*Real.exp (-|t|))*(1+|t|)^2 := mul_le_mul_of_nonneg_right hgamma (by positivity)
-    _ = 96*((1+|t|)^3*Real.exp (-|t|)) := by ring
-    _ ≤ _ := by nlinarith
+    _ ≤ (A*(1+|t|)*Real.exp (-|t|))*(1+|t|)^2 := mul_le_mul_of_nonneg_right hgamma (by positivity)
+    _ = A*((1+|t|)^3*Real.exp (-|t|)) := by ring
+    _ ≤ _ := by nlinarith only [mul_le_mul_of_nonneg_left hprod hA.le]
 
 /-- Restricted weighted fourth Hölder, with all compact-window integrability
 proved from continuity. The proof is the two-Cauchy--Schwarz local analogue. -/
@@ -59,18 +62,18 @@ theorem short_window_fourth_holder {g F : ℝ → ℝ} (hg0 : ∀ t, 0 ≤ g t)
   simpa only [k,integral_indicator measurableSet_Icc] using hh
 
 /-- The short-strip Gamma L1 constant precedes all window and source choices. -/
-theorem short_gamma_window_holder :
-    ∃ G : ℝ, 0 < G ∧ ∀ β H u R : ℝ, 9/13 ≤ β → β ≤ 1 →
+theorem short_gamma_window_holder {s : ℝ} (hs : 1/2 < s) :
+    ∃ G : ℝ, 0 < G ∧ ∀ β H u R : ℝ, s ≤ β → β ≤ 1 →
       (∫ t in Icc (-R) R, ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖*
-        shortTwistedNorm H (u+t))^4 ≤ G^3*
+        mollifiedNorm H (u+t))^4 ≤ G^3*
       (∫ t in Icc (-R) R, ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖*
-        (shortTwistedNorm H (u+t))^4) := by
-  obtain ⟨G,hG,hmass⟩ := short_uniform_detector_gamma_mass
+        (mollifiedNorm H (u+t))^4) := by
+  obtain ⟨G,hG,hmass⟩ := uniform_detector_gamma_mass hs
   refine ⟨G,hG,?_⟩
   intro β H u R hβ hβ'
   let g := fun t : ℝ => ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖
-  have hg : Continuous g := (short_continuous_Gamma_detector_strip (by linarith) (by linarith)).norm
-  have hf : Continuous (fun t => shortTwistedNorm H (u+t)) := (shortTwistedNorm_continuous H).comp (by fun_prop)
+  have hg : Continuous g := (continuous_Gamma_detector_strip (by linarith) (by linarith)).norm
+  have hf : Continuous (fun t => mollifiedNorm H (u+t)) := (mollifiedNorm_continuous H).comp (by fun_prop)
   have hh := short_window_fourth_holder (fun t => norm_nonneg _) hg hf (-R) R
   have hi := (hmass β hβ hβ').1.norm
   have hgi : (∫ t,g t) ≤ G := by

@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairOptimizationScale
 
 @[expose] public section
@@ -17,8 +14,8 @@ namespace TaoTrudgianYang2025
 
 theorem aProcess_first_exponent_loss {k ε : ℝ} (hk : 0 ≤ k) (hε : 0 ≤ ε) :
     (k+ε)/(k+ε+1) ≤ k/(k+1)+ε := by
-  have hd₁ : 0 < k+1 := by linarith
-  have hd₂ : 0 < k+ε+1 := by linarith
+  
+  
   have hprod : 1 ≤ (k+1)*(k+ε+1) := by nlinarith
   have heq : (k+ε)/(k+ε+1) = k/(k+1)+ε/((k+1)*(k+ε+1)) := by
     field_simp

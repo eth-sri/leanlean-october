@@ -48,7 +48,7 @@ def wooleyMixedRadixEquiv (q₁ q₂ : ℕ) [NeZero q₁] [NeZero q₂] :
     ξ.val + q₁ * η.val < q₁ + q₁ * η.val :=
       Nat.add_lt_add_right ξ.val_lt _
     _ = q₁ * (η.val + 1) := by
-      rw [Nat.mul_add, Nat.mul_one, Nat.add_comm]
+      ring
     _ ≤ q₁ * q₂ := Nat.mul_le_mul_left q₁ (Nat.succ_le_iff.mpr η.val_lt)
     _ = q₂ * q₁ := Nat.mul_comm _ _
 

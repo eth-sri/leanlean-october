@@ -102,7 +102,7 @@ theorem centered_atomic_cubic_approximation (w : MathCollab.Density.ReflectionCu
   have he (s : ℝ) (hst : |s| ≤ T) : ‖K s-J s‖ ≤ E*T^(-200:ℝ) := by
     dsimp only [J,K]
     rw [retainedPoissonKernel_fourier w.complex_smooth.continuous.measurable hb hs]
-    exact herr T L s hT hL hLT (by simpa only [one_mul] using hst)
+    exact herr T L s hT hL hLT (by linarith)
   have hd (s : ℝ) (_hst : |s| ≤ T) : ‖K s‖ ≤ (D+E)*L :=
     (hbound L s hL).trans (by nlinarith)
   have hj (s : ℝ) (hst : |s| ≤ T) : ‖J s‖ ≤ (D+E)*L := by

@@ -49,16 +49,14 @@ theorem norm_exponentialSumAt_le_one_add_heathBrownTail
     (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) :
     ‖exponentialSumAt F T N a (a+L)‖ ≤ 1+‖heathBrownSourceTail F T N a L‖ := by
   rw [exponentialSumAt_first_add_heathBrownTail]
-  exact (norm_add_le _ _).trans_eq (by rw [norm_oscillatory])
+  exact (norm_add_le _ _).trans_eq (by simp)
 
 theorem heathBrownCharacterSum_neg (L : ℕ) (f : ℝ → ℝ) :
     heathBrownCharacterSum L (fun x => -f x) =
       starRingEnd ℂ (heathBrownCharacterSum L f) := by
   unfold heathBrownCharacterSum
   rw [map_sum]
-  apply Finset.sum_congr rfl
-  intro n _
-  rw [AddChar.map_neg_eq_inv,Circle.coe_inv_eq_conj]
+  simp
 
 theorem norm_heathBrownSourceTail_eq_signed_characterSum
     (F : ℝ → ℝ) (T N σ : ℝ) (a L p : ℕ) :

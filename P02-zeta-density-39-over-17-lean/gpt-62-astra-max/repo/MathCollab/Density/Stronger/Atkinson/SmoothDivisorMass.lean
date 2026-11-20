@@ -42,8 +42,7 @@ theorem exists_norm_zetaShortDivisorTestFunction_le :
   unfold zetaShortDivisorTestFunction
   rw [norm_mul, norm_mul, norm_mul, norm_zetaSquareReflectedGammaPhase, mul_one]
   calc
-    _ ≤ 1 * C * (Real.sqrt Real.pi * G) := by
-      exact mul_le_mul (mul_le_mul hp hw (norm_nonneg _) (by norm_num))
+    _ ≤ 1 * C * (Real.sqrt Real.pi * G) := mul_le_mul (mul_le_mul hp hw (norm_nonneg _) (by norm_num))
         (norm_zetaGaussianQuadraticIntegral_le_mass hT hG hGT _) (norm_nonneg _) (by positivity)
     _ = _ := by ring
 

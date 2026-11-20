@@ -1,5 +1,6 @@
 module
-public import GafniTao.HeathBrownShiftAverage
+public import GafniTao.HeathBrownKthDerivativeSetup
+public import Mathlib.Algebra.Order.Interval.Finset.SuccPred
 
 @[expose] public section
 
@@ -39,20 +40,15 @@ theorem heathBrownSourceShiftSum_eq_interval
 theorem heathBrown_source_shift_interval_subset
     {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H) :
     Finset.Icc (1 + h) (N - H + h) ⊆ Finset.Icc 1 N := by
-  intro m hm
-  simp only [Finset.mem_Icc] at hm ⊢
-  constructor
-  · omega
-  · omega
+  grind
 
 theorem heathBrown_source_shift_omitted_card
     {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H) :
     (Finset.Icc 1 N \ Finset.Icc (1 + h) (N - H + h)).card = H := by
   let S := Finset.Icc 1 N
   let T := Finset.Icc (1 + h) (N - H + h)
-  have hTS : T ⊆ S := by
-    exact heathBrown_source_shift_interval_subset hHN hh
-  have hinter : T ∩ S = T := Finset.inter_eq_left.mpr hTS
+  have hTS := heathBrown_source_shift_interval_subset hHN hh
+  have hinter  := Finset.inter_eq_left.mpr hTS
   have hcardS : S.card = N := by
     dsimp only [S]
     simp [Nat.card_Icc]
@@ -72,7 +68,7 @@ theorem norm_heathBrownExponentialSum_sub_sourceShift_le
   let S := Finset.Icc 1 N
   let T := Finset.Icc (1 + h) (N - H + h)
   let a : ℕ → ℂ := fun m => heathBrownPhase (f (m : ℝ))
-  have hTS : T ⊆ S := heathBrown_source_shift_interval_subset hHN hh
+  have hTS  := heathBrown_source_shift_interval_subset hHN hh
   have hsplit := Finset.sum_sdiff hTS (f := a)
   have hdiff :
       (∑ m ∈ S, a m) - (∑ m ∈ T, a m) = ∑ m ∈ S \ T, a m := by
@@ -96,10 +92,7 @@ theorem heathBrown_source_average_sub_eq
       ∑ h ∈ Finset.Icc 1 H,
         (heathBrownExponentialSum N f -
           heathBrownSourceShiftSum N H f h) := by
-  rw [Finset.sum_sub_distrib]
-  have hcard : (Finset.Icc 1 H).card = H := by
-    simp [Nat.card_Icc]
-  rw [Finset.sum_const, nsmul_eq_mul, hcard]
+  simp
 
 /-- Heath-Brown equation `(Σ1)` before division by `H`, with the complete
 endpoint error and no unspecified big-O constant. -/
@@ -121,7 +114,6 @@ theorem norm_heathBrown_source_average_sub_le
       exact norm_heathBrownExponentialSum_sub_sourceShift_le hHN
         (Finset.mem_Icc.mp hh).2 f
     _ = (H : ℝ) ^ 2 := by
-      rw [Finset.sum_const, nsmul_eq_mul]
       simp [Nat.card_Icc, pow_two]
 
 

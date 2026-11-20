@@ -36,7 +36,7 @@ theorem divisor_index_bounds_of_frequency {T G L : ℝ} (hT : 0 < T) (hG : 0 < G
   have ha : 0 < T / (2 * Real.pi) := by positivity
   have hn0 : (0 : ℝ) < n := by exact_mod_cast hn
   have habs : |Real.log (n : ℝ) - Real.log (T / (2 * Real.pi))| ≤ L / G :=
-    (le_div_iff₀ hG).mpr (by simpa only [mul_comm] using hfreq)
+    (le_div_iff₀ hG).mpr (by linarith)
   have hlog := abs_le.mp habs
   constructor
   · have h := Real.exp_le_exp.mpr (show Real.log (T / (2 * Real.pi)) + -L / G ≤

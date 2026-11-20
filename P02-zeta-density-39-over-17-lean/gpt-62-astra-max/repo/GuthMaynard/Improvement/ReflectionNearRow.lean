@@ -109,7 +109,7 @@ theorem centered_near_row_bound (w : MathCollab.Density.ReflectionCutoff) :
     _ ≤ (4*K^2)*L*N*T := by
       have hNLsq : N^2 ≤ L^2 := by nlinarith
       have hLN : 1 ≤ L*N := by nlinarith
-      have hdiv : N^2/L^2 ≤ 1 := (div_le_one (sq_pos_of_pos hL)).mpr hNLsq
+      have hdiv  := (div_le_one (sq_pos_of_pos hL)).mpr hNLsq
       have he : (K/L)^2*(4*N^2*T) = (4*K^2*T)*(N^2/L^2) := by field_simp
       rw [he]
       calc

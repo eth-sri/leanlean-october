@@ -8,6 +8,8 @@ public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointSlab
 open Complex Finset Filter FourierTransform MeasureTheory Real Set
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 
+open RiemannZeta.GuthMaynard
+
 namespace GuthMaynard.NativeMoment
 
 /-!
@@ -159,7 +161,7 @@ theorem gmAffineLocalBumpSchwartz_one_on_dyadicLog
   have habs : |Real.log (n : ℝ) - Real.log (M : ℝ)| ≤ 1 := by
     rw [abs_of_nonneg (sub_nonneg.mpr hlogLower)]
     linarith [Real.log_two_lt_d9]
-  rw [gmAffineLocalBumpSchwartz_apply, gmCubicLocalBump_one habs]
+  rw [gmAffineLocalBumpSchwartz_apply, RiemannZeta.GuthMaynard.gmCubicLocalBump_one habs]
   norm_num
 
 /-- Exact band-limited reproducing formula for the actual source polynomial.
@@ -3476,7 +3478,7 @@ theorem finiteExpSum_fourier_reproduction
     have habs : |freq a / (B * T)| ≤ 1 := by
       rw [abs_div, abs_of_pos hBT]
       exact (div_le_one hBT).2 (hfreq a ha)
-    rw [gmCubicLocalBump_one habs]
+    rw [RiemannZeta.GuthMaynard.gmCubicLocalBump_one habs]
     norm_num
   have hInt (a : α) : Integrable (fun ξ : ℝ =>
       c a * Complex.exp ((((freq a) * x : ℝ) : ℂ) * I) *

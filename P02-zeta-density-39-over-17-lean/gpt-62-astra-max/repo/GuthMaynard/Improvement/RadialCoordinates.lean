@@ -33,7 +33,7 @@ theorem spatialCubicMode_radial {a : ℝ → ℂ} (ha : ∀ x, x ≤ 0 → a x =
   · simp [spatialCubicMode,radialAmplitude,mul_comm v r,hv]
   by_cases hy : a (r*y) = 0
   · simp [spatialCubicMode,radialAmplitude,mul_comm y r,hy]
-  have hrp : 0 < r := lt_of_not_ge (fun h => hr (ha r h))
+  have hrp  := lt_of_not_ge (fun h => hr (ha r h))
   have hvp : 0 < v := by
     by_contra hn
     exact hv (ha _ (mul_nonpos_of_nonneg_of_nonpos hrp.le (le_of_not_gt hn)))
@@ -66,7 +66,7 @@ theorem two_coordinate_scaling (f : ℝ → ℝ → ℂ) {r : ℝ} (hr : r ≠ 0
     have hh : r^2*(|r|⁻¹)^2 = 1 := by
       rw [← sq_abs r]
       field_simp
-    exact_mod_cast (by nlinarith only [hh] : r^2*|r|⁻¹*|r|⁻¹ = 1)
+    exact_mod_cast (by linarith : r^2*|r|⁻¹*|r|⁻¹ = 1)
   calc
     _ = ((r:ℂ)^2*((|r|⁻¹:ℝ):ℂ)*((|r|⁻¹:ℝ):ℂ))*(∫ x₁, ∫ x₂, f x₁ x₂) := by ring
     _ = _ := by rw [hc,one_mul]

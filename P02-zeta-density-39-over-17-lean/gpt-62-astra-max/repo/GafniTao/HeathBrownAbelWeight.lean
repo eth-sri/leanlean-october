@@ -46,8 +46,7 @@ theorem norm_heathBrownPhase_sub_le (a b : ℝ) :
     ‖Complex.exp (Complex.I * (2 * Real.pi * (a - b) : ℝ)) - 1‖ ≤
         ‖(2 * Real.pi * (a - b) : ℝ)‖ := h
     _ = 2 * Real.pi * |a - b| := by
-      rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg (by positivity : 0 ≤ (2 : ℝ)),
-        abs_of_nonneg Real.pi_pos.le]
+      simp
 
 /-- Mean-value estimate in the exact form used between consecutive integer
 arguments of the Abel weight. -/
@@ -76,7 +75,7 @@ theorem norm_heathBrownTaylorError_phase_succ_sub_le
   have hgdiff := norm_image_sub_le_of_hasDerivAt_bound
     (g := fun y => heathBrownTaylorError k f n y)
     (a := (j : ℝ)) (b := (j + 1 : ℝ)) (C := C)
-      (by exact_mod_cast Nat.le_succ j) hg hbound
+      (by linarith) hg hbound
   have hphase := norm_heathBrownPhase_sub_le
     (heathBrownTaylorError k f n ((j + 1 : ℕ) : ℝ))
     (heathBrownTaylorError k f n j)
@@ -88,7 +87,7 @@ theorem norm_heathBrownTaylorError_phase_succ_sub_le
           heathBrownTaylorError k f n j| := hphase
     _ = 2 * Real.pi *
         ‖heathBrownTaylorError k f n ((j + 1 : ℕ) : ℝ) -
-          heathBrownTaylorError k f n j‖ := by rw [Real.norm_eq_abs]
+          heathBrownTaylorError k f n j‖ := by rfl
     _ ≤ 2 * Real.pi * C := by
       gcongr
       simpa using hgdiff

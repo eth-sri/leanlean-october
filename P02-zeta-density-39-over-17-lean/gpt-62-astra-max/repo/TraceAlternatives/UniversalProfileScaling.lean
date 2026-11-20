@@ -11,7 +11,7 @@ theorem universalShortProfile_mono {T T' M M' R E : ℝ}
     (hT : 0≤T) (hTT : T≤T') (hM : 0≤M) (hMM : M≤M')
     (hR : 0≤R) (hE : 0≤E) :
     universalShortProfile T M R E ≤ universalShortProfile T' M' R E := by
-  have hTnon : 0≤T' := hT.trans hTT
+  have hTnon  := hT.trans hTT
   unfold universalShortProfile universalShortSublinearProfile
   gcongr
 

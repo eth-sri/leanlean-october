@@ -20,7 +20,7 @@ def cubicDyadicClasses (U : ℝ) : Finset (ℕ × (ℕ × ℕ)) :=
 theorem integer_dyadic_bounds {m : ℤ} (hm : m ≠ 0) :
     (2:ℝ)^(integerDyadicIndex m) ≤ |(m:ℝ)| ∧
       |(m:ℝ)| < 2*(2:ℝ)^(integerDyadicIndex m) := by
-  have hp : 0 < m.natAbs := Int.natAbs_pos.mpr hm
+  have hp  := Int.natAbs_pos.mpr hm
   have hh := MathCollab.Density.log2_block_bounds hp
   have he : (m.natAbs:ℝ) = |(m:ℝ)| := by rw [Nat.cast_natAbs,Int.cast_abs]
   rw [← he]
@@ -50,14 +50,14 @@ theorem cubicDyadicClass_mem {U : ℝ} (hU : 1 ≤ U) {m : ℤ × (ℤ × ℤ)}
 theorem cubicDyadicClasses_card {U : ℝ} (hU : 1 ≤ U) :
     ((cubicDyadicClasses U).card:ℝ) ≤ (Real.log (2*U)/Real.log 2)^3 := by
   have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hp : 0 < ⌊U⌋₊ := (Nat.one_le_floor_iff U).mpr hU
+  have hp  := (Nat.one_le_floor_iff U).mpr hU
   have hpow : (2:ℝ)^⌊U⌋₊.log2 ≤ U := by
     have hh : (2:ℝ)^⌊U⌋₊.log2 ≤ (⌊U⌋₊:ℝ) := by exact_mod_cast (MathCollab.Density.log2_block_bounds hp).1
     exact hh.trans (Nat.floor_le (by linarith))
   have he : (2:ℝ)^(⌊U⌋₊.log2+1) ≤ 2*U := by rw [pow_succ]; nlinarith
   have hh := Real.log_le_log (by positivity : (0:ℝ) < (2:ℝ)^(⌊U⌋₊.log2+1)) he
   rw [Real.log_pow] at hh
-  have hb : ((⌊U⌋₊.log2+1:ℕ):ℝ) ≤ Real.log (2*U)/Real.log 2 :=
+  have hb  :=
     (le_div_iff₀ hlog).mpr hh
   unfold cubicDyadicClasses
   simp only [Finset.card_product,Finset.card_range,Nat.cast_mul]
@@ -70,8 +70,7 @@ are hidden in the dyadic decomposition. -/
 theorem cubic_dyadic_sum_partition {M : Type*} [AddCommMonoid M]
     {U : ℝ} (hU : 1 ≤ U) (S : Finset (ℤ × (ℤ × ℤ))) (f : (ℤ × (ℤ × ℤ)) → M)
     (hS : ∀ m ∈ S, m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U) :
-    (∑ k ∈ cubicDyadicClasses U, ∑ m ∈ S with cubicDyadicClass m = k, f m) = ∑ m ∈ S, f m := by
-  exact Finset.sum_fiberwise_of_maps_to (fun m hm => cubicDyadicClass_mem hU (hS m hm)) f
+    (∑ k ∈ cubicDyadicClasses U, ∑ m ∈ S with cubicDyadicClass m = k, f m) = ∑ m ∈ S, f m := Finset.sum_fiberwise_of_maps_to (fun m hm => cubicDyadicClass_mem hU (hS m hm)) f
 
 /-- All dyadic triples cost an arbitrarily small power, with the constant
 fixed before the real truncation scale. -/
@@ -81,11 +80,11 @@ theorem cubicDyadicClasses_subpower {ε : ℝ} (hε : 0 < ε) :
   have he : 0 < ε/3 := by positivity
   have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
   let D := (Real.log 2+1/(ε/3))/Real.log 2
-  have hD : 0 < D := by dsimp [D]; positivity
+  
   refine ⟨D^3,by positivity,?_⟩
   intro U hU
   have hUp : 0 < U := by linarith
-  have hp : 1 ≤ U^(ε/3) := Real.one_le_rpow hU he.le
+  have hp  := Real.one_le_rpow hU he.le
   have hb : Real.log (2*U)/Real.log 2 ≤ D*U^(ε/3) := by
     apply (div_le_iff₀ hlog).mpr
     rw [Real.log_mul (by norm_num : (2:ℝ) ≠ 0) hUp.ne']

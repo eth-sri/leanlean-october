@@ -22,10 +22,9 @@ theorem amplifier_range_witness
   classical
   let W := LinearMap.range (B.comp A).toLinearMap
   let b := stdOrthonormalBasis ℂ W
-  let v : Fin (Module.finrank ℂ W) → E := fun j => (b j : E)
-  have hv : Orthonormal ℂ v := b.orthonormal.comp_linearIsometry W.subtypeₗᵢ
-  have hr : Module.finrank ℂ W ≤ Fintype.card ι := by
-    exact (B.comp A).toLinearMap.finrank_range_le.trans_eq finrank_euclideanSpace
+  let v  := fun j => (b j : E)
+  have hv  := b.orthonormal.comp_linearIsometry W.subtypeₗᵢ
+  have hr := (B.comp A).toLinearMap.finrank_range_le.trans_eq finrank_euclideanSpace
   refine ⟨Module.finrank ℂ W,hr,v,hv,?_⟩
   have hp (q : ι) : ‖B (A (EuclideanSpace.basisFun ι ℂ q))‖^2 =
       ∑ j, ‖inner ℂ (v j) (B (A (EuclideanSpace.basisFun ι ℂ q)))‖^2 := by

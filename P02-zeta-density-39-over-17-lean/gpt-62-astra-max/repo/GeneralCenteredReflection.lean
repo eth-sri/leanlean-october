@@ -145,7 +145,7 @@ theorem centered_shell_general (w : MathCollab.Density.ReflectionCutoff)
   obtain ⟨C,hC,hbound⟩ := reflection_local_energy_general hK hη
   obtain ⟨B,hB,href⟩ := MathCollab.Density.uniform_reflection w hA
   let F : ℝ := (20000/Real.pi^2)*(MathCollab.Density.mellinMass w)^2
-  have hF : 0 ≤ F := by dsimp [F]; positivity
+  
   refine ⟨1+2*F*C,4*B^2,by positivity,by positivity,?_⟩
   intro T t₀ L H hT hL hH hHT W hW hsep
   have hLp : 0 < L := by linarith

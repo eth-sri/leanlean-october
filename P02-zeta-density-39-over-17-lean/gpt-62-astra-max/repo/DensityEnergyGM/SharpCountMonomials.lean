@@ -59,8 +59,7 @@ theorem gmExpandedTerm_budget {T R σ a x δ ell : ℝ}
   have h := mul_le_mul_of_nonneg_right hrpow
     (Real.rpow_nonneg hR.le (gmTraceG j+gmTraceD j*gmEnergyR i))
   convert h using 1
-  · congr 2
-    ring
+  · ring
   · rw [← Real.rpow_mul hTp.le,← Real.rpow_mul_natCast hTp.le]
     repeat rw [← Real.rpow_add hTp]
     norm_num

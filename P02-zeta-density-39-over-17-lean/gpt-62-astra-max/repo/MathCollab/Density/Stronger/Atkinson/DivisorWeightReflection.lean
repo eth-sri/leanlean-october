@@ -71,7 +71,7 @@ theorem norm_zetaDivisorWeightKernel_horizontal_le (q : ℂ)
   have hqx : -q.re * x ≤ |q.re| := by
     calc
       _ ≤ |-q.re * x| := le_abs_self _
-      _ = |q.re| * |x| := by rw [abs_mul, abs_neg]
+      _ = |q.re| * |x| := by simp
       _ ≤ _ := by nlinarith [abs_nonneg q.re]
   have he : (100 * w ^ 2).re + (-q * w).re ≤
       (100 + |q.re| + q.im ^ 2 / 2) - 99 * H ^ 2 := by
@@ -95,8 +95,8 @@ theorem norm_zetaDivisorWeightKernel_horizontal_le (q : ℂ)
 theorem tendsto_zetaDivisorWeight_horizontal_zero (q : ℂ) :
     Tendsto (fun H : ℝ => HIntegral' (zetaDivisorWeightKernel q) (-1) 1 H) atTop (𝓝 0) := by
   let C : ℝ := 625 * Real.exp (100 + |q.re| + q.im ^ 2 / 2)
-  have hC : 0 < C := by dsimp [C]; positivity
-  have hExp : Tendsto (fun H : ℝ => Real.exp (-(1 / 2 : ℝ) * H)) atTop (𝓝 0) :=
+  
+  have hExp  :=
     Real.tendsto_exp_atBot.comp
       (tendsto_id.const_mul_atTop_of_neg (by norm_num : (-(1 / 2 : ℝ)) < 0))
   have hbase : Tendsto (fun H : ℝ => H ^ 8 * Real.exp (-99 * H ^ 2)) atTop (𝓝 0) := by
@@ -128,7 +128,6 @@ theorem tendsto_zetaDivisorWeight_horizontal_zero (q : ℂ) :
               gcongr
               linarith
             _ = _ := by ring
-        apply hi.trans
         nlinarith [mul_le_mul_of_nonneg_left hp (show 0 ≤ C * Real.exp (-99 * H ^ 2) by positivity)])
     simpa only [mul_zero] using hbase.const_mul (512 * C)
   unfold HIntegral'
@@ -165,8 +164,7 @@ theorem vIntegral_zetaDivisorWeight_left (q : ℂ) (H : ℝ) :
       -(∫ y in -H..H, zetaDivisorWeightKernel (-q) (1 + (y : ℂ) * I)) := by
     calc
       _ = -∫ y in -H..H, zetaDivisorWeightKernel (-q) (1 + ((-y : ℝ) : ℂ) * I) := by
-        rw [← intervalIntegral.integral_neg]
-        exact intervalIntegral.integral_congr (fun y _ => hpoint y)
+        simp [*]
       _ = _ := by
         have h := intervalIntegral.integral_comp_neg
           (f := fun y : ℝ => zetaDivisorWeightKernel (-q) (1 + (y : ℂ) * I)) (a := -H) (b := H)
@@ -234,7 +232,7 @@ theorem exists_norm_zetaDivisorWeight_min_le {B : ℝ} (hB : 0 ≤ B) :
   · rw [min_eq_right (Real.exp_le_one_iff.mpr (by linarith))]
     apply (hbound q hq).trans
     nlinarith [Real.exp_pos (-q.re)]
-  · have hqr' : q.re ≤ 0 := le_of_not_ge hqr
+  · have hqr'  := le_of_not_ge hqr
     rw [min_eq_left (Real.one_le_exp (by linarith)), mul_one]
     have heq : zetaDivisorWeight q = 1 - zetaDivisorWeight (-q) := by
       linear_combination zetaDivisorWeight_add_neg q

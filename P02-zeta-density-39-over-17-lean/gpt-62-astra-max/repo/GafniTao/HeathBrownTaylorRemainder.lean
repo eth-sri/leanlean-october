@@ -48,7 +48,7 @@ theorem exists_heathBrown_deriv_taylor_remainder
     simpa only [horder] using hf
   obtain ⟨ξ, hξ, hrem⟩ :=
     taylor_mean_remainder_lagrange_iteratedDeriv
-      (f := deriv f) (n := k - 2) hne (by simpa only [huIcc, Nat.cast_add, Nat.cast_one] using hf')
+      (f := deriv f) (n := k - 2) hne (by grind)
   refine ⟨ξ, ?_, ?_⟩
   · simpa [huIoo] using hξ
   · rw [huIcc] at hrem
@@ -89,10 +89,10 @@ theorem norm_heathBrown_deriv_taylor_remainder_le_scale
     ‖deriv f (n + x) -
         taylorWithinEval (deriv f) (k - 2) (Set.Icc n (n + x)) n (n + x)‖ ≤
       A * lambda * H ^ (k - 1) := by
-  have hH : 0 ≤ H := hx.le.trans hxH
+  
   have hmid : n < n + x / 2 := by linarith
   have hmid' : n + x / 2 < n + x := by linarith
-  have hAlambda : 0 ≤ A * lambda :=
+  have hAlambda  :=
     (norm_nonneg (iteratedDeriv k f (n + x / 2))).trans
       (hderiv (n + x / 2) ⟨hmid, hmid'⟩)
   have hraw := norm_heathBrown_deriv_taylor_remainder_le

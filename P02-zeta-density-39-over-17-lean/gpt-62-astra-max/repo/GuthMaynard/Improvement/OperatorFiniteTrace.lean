@@ -50,8 +50,7 @@ theorem operator_subspace_lift_mul (U : Submodule ℂ E) [U.HasOrthogonalProject
 /-- A lifted compressed operator is the literal ambient sandwich PTP. -/
 theorem operator_subspace_lift_compression (U : Submodule ℂ E) [U.HasOrthogonalProjection]
     (T : E →L[ℂ] E) :
-    operatorSubspaceLift U (operatorSubspaceCompression U T) = U.starProjection*T*U.starProjection := by
-  rfl
+    operatorSubspaceLift U (operatorSubspaceCompression U T) = U.starProjection*T*U.starProjection := rfl
 
 /-- Cubic ambient trace is the finite cubic trace, in any finite orthonormal basis. -/
 theorem operator_subspace_cubic_trace (b : HilbertBasis ι ℂ E)
@@ -83,8 +82,6 @@ theorem operator_subspace_compression_positive (U : Submodule ℂ E) [U.HasOrtho
 theorem operator_subspace_compression_sub (U : Submodule ℂ E) [U.HasOrthogonalProjection]
     (G C : E →L[ℂ] E) : operatorSubspaceCompression U (G-C) =
       operatorSubspaceCompression U G - operatorSubspaceCompression U C := by
-  apply ContinuousLinearMap.ext
-  intro v
   simp [operatorSubspaceCompression]
 
 /-- Quadratic forms on witnesses lying in U are unchanged by compression. -/

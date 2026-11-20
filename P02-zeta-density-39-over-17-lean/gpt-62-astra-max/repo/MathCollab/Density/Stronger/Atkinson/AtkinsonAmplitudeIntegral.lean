@@ -65,8 +65,8 @@ theorem IntervalC1Bound.atkinsonRoot_of_primitive_bound {f : ℝ → ℂ} {a c M
     (hf : IntervalC1Bound f a c M) (b : ℝ) (ha : 0 < a) (hac : a ≤ c)
     (hprimitive : ∀ x ∈ Icc a c, ‖∫ y in a..x, atkinsonRootKernel T b y‖ ≤ B) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤ 2 * B * M := by
-  have hB : 0 ≤ B := (norm_nonneg _).trans (hprimitive a ⟨le_rfl, hac⟩)
-  let F : ℝ → ℂ := fun x => ∫ y in a..x, atkinsonRootKernel T b y
+  have hB  := (norm_nonneg _).trans (hprimitive a ⟨le_rfl, hac⟩)
+  let F  := fun x => ∫ y in a..x, atkinsonRootKernel T b y
   have hk : ContinuousOn (atkinsonRootKernel T b) (Ioi 0) :=
     fun x hx => (continuousAt_atkinsonRootKernel T b hx).continuousWithinAt
   have hd (x : ℝ) (hx : x ∈ Icc a c) :
@@ -100,7 +100,7 @@ theorem IntervalC1Bound.atkinsonRoot_of_primitive_bound {f : ℝ → ℂ} {a c M
         · intro y hy
           rw [norm_mul]
           exact mul_le_mul_of_nonneg_left (hFb y hy) (norm_nonneg _)
-      _ = (∫ y in a..c, ‖deriv f y‖) * B := by rw [intervalIntegral.integral_mul_const]
+      _ = (∫ y in a..c, ‖deriv f y‖) * B := by simp
       _ ≤ B * M := by nlinarith [hf.variation_le]
   rw [hparts, hFA, mul_zero, sub_zero]
   apply (norm_sub_le _ _).trans

@@ -39,22 +39,19 @@ theorem DFIVoronoiTestFunction.eventuallyEq_zero_atZero
 
 theorem DFIVoronoiTestFunction.isBigO_atTop
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (a : ℝ) :
-    g =O[atTop] (fun x : ℝ => x ^ (-a)) := by
-  exact (Asymptotics.isBigO_zero (fun x : ℝ => x ^ (-a)) atTop).congr'
+    g =O[atTop] (fun x : ℝ => x ^ (-a)) := (Asymptotics.isBigO_zero (fun x : ℝ => x ^ (-a)) atTop).congr'
     hg.eventuallyEq_zero_atTop.symm EventuallyEq.rfl
 
 theorem DFIVoronoiTestFunction.isBigO_atZero
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (b : ℝ) :
     Asymptotics.IsBigO (nhdsWithin (0 : ℝ) (Set.Ioi 0)) g
-      (fun x : ℝ => x ^ (-b)) := by
-  exact (Asymptotics.isBigO_zero (fun x : ℝ => x ^ (-b))
+      (fun x : ℝ => x ^ (-b)) := (Asymptotics.isBigO_zero (fun x : ℝ => x ^ (-b))
     (nhdsWithin (0 : ℝ) (Set.Ioi 0))).congr'
     hg.eventuallyEq_zero_atZero.symm EventuallyEq.rfl
 
 theorem DFIVoronoiTestFunction.mellinConvergent
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
-    MellinConvergent g (σ : ℂ) := by
-  exact mellinConvergent_of_isBigO_rpow
+    MellinConvergent g (σ : ℂ) := mellinConvergent_of_isBigO_rpow
     (hg.continuous.locallyIntegrable.locallyIntegrableOn (Set.Ioi 0))
     (hg.isBigO_atTop (σ + 1)) (by simp)
     (hg.isBigO_atZero (σ - 1)) (by simp)
@@ -64,8 +61,7 @@ all convergence and vertical-integrability hypotheses discharged. -/
 theorem DFIVoronoiTestFunction.mellinInversion
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ)
     {x : ℝ} (hx : 0 < x) :
-    mellinInv σ (mellin g) x = g x := by
-  exact mellinInv_mellin_eq σ g hx (hg.mellinConvergent σ)
+    mellinInv σ (mellin g) x = g x := mellinInv_mellin_eq σ g hx (hg.mellinConvergent σ)
     (hg.verticalIntegrable_mellin σ) hg.continuous.continuousAt
 
 
@@ -73,8 +69,7 @@ theorem DFIVoronoiTestFunction.mellinInversion
 remaining convergence premise. -/
 theorem DFIVoronoiTestFunction.mellin_hasDerivAt_one
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
-    HasDerivAt (mellin g) (mellin (fun x : ℝ => Real.log x • g x) 1) 1 := by
-  exact (mellin_hasDerivAt_of_isBigO_rpow (s := (1 : ℂ)) (a := (2 : ℝ))
+    HasDerivAt (mellin g) (mellin (fun x : ℝ => Real.log x • g x) 1) 1 := (mellin_hasDerivAt_of_isBigO_rpow (s := (1 : ℂ)) (a := (2 : ℝ))
     (b := (0 : ℝ))
     (hg.continuous.locallyIntegrable.locallyIntegrableOn (Set.Ioi 0))
     (hg.isBigO_atTop (2 : ℝ)) (by norm_num)

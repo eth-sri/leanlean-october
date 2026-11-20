@@ -30,7 +30,7 @@ theorem finite_quadratic_large_value_sharp (w : MathCollab.Density.ComparisonCut
   intro T t₀ N L hT hN hNL hLs hLT a ha W V hV hW hlarge hsep
   have hTp : 0 < T := by linarith
   have hNp : 0 < N := by linarith
-  have hLp : 0 < L := hNp.trans_le hNL
+  have hLp  := hNp.trans_le hNL
   have hb := sharpCenteredBudget_nonneg hTp.le hLp.le (Nat.cast_nonneg W.card) (Nat.cast_nonneg (discreteAdditiveEnergy W))
   have hamp' := hamp T N L (by linarith) hN hNL hLT a ha W V hV hlarge hsep
   have ht := htrace T t₀ L hT hLs W hW hsep
@@ -52,7 +52,7 @@ theorem finite_quadratic_large_value_sharp (w : MathCollab.Density.ComparisonCut
         have h1 : 0 ≤ (N*L)^2 := sq_nonneg _
         have h2 : 0 ≤ (N^3/L)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) := by positivity
         have hh1 := mul_nonneg hB.le h1
-        have hh2 := mul_nonneg (show 0 ≤ 1+B by positivity) h2
+        
         have hi : (N*L)^2+B*((N^3/L)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)) ≤ (1+B)*X := by
           dsimp [X]
           nlinarith only [hh1,h2]
@@ -82,7 +82,7 @@ theorem finite_quadratic_large_value_sharp_native
     MathCollab.Density.comparisonCutoff hη
   refine ⟨C,hC,?_⟩
   intro T t₀ N L hT hN hNL hLs hLT a ha W V hV hW hLarge hSep
-  have hLp : 0 < L := (show 0 < N by linarith).trans_le hNL
+  have hLp  := (show 0 < N by linarith).trans_le hNL
   have h := hBound T t₀ N L hT hN hNL hLs hLT a ha W V hV hW hLarge hSep
   have hFour : L^(1/5:ℝ)/L=L^(-4/5:ℝ) := by
     have h := (Real.rpow_sub hLp (1/5:ℝ) 1).symm

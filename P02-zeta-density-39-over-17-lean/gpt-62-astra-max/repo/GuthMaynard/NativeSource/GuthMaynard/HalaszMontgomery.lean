@@ -40,18 +40,13 @@ theorem halasz_montgomery_lemma_of_mean_value
     nlinarith
   have h_sum_V2 : (W.card : ℝ) * V^2 ≤ ∑ t ∈ W, ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 := by
     calc (W.card : ℝ) * V^2 = ∑ t ∈ W, V^2 := by
-          simp only [sum_const, nsmul_eq_mul]
+          simp
       _ ≤ ∑ t ∈ W, ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 := sum_le_sum h_bound_sq
-  have h_combined :
-      (W.card : ℝ) * V^2 ≤
-        C * (T + (N : ℝ)) * ∑ n ∈ Ioc N (2 * N), ‖a n‖^2 :=
+  have h_combined  :=
     le_trans h_sum_V2 h_mean
   have h_V2_inv_pos : 0 < V^(-2 : ℝ) := by
     apply Real.rpow_pos_of_pos hV
-  have h_final :
-      (W.card : ℝ) * V^2 * V^(-2 : ℝ) ≤
-        (C * (T + (N : ℝ)) * (∑ n ∈ Ioc N (2 * N), ‖a n‖^2)) * V^(-2 : ℝ) := by
-    exact mul_le_mul_of_nonneg_right h_combined (le_of_lt h_V2_inv_pos)
+  have h_final := mul_le_mul_of_nonneg_right h_combined (le_of_lt h_V2_inv_pos)
   have h_V2_cancel : V^2 * V^(-2 : ℝ) = 1 := by
     rw [← Real.rpow_two, ← Real.rpow_add hV]
     norm_num

@@ -1,8 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.SargosDualTentWindow
 public import LaterPairs.Native.SargosInitialInterval
 public import LaterPairs.Native.SargosSymmetricAveraging
 

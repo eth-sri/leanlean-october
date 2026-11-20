@@ -37,7 +37,7 @@ theorem heathBrown_equation44_of_lemmaThree
   refine ⟨C, hC, ?_⟩
   intro T V center G L W hT hV hG hL hSep hRange hLow hHigh
     hLogRadius hFit hLarge
-  let q : ℝ → ℝ := fun t ↦
+  let q  := fun t ↦
     ∫ u in t - L..t + L,
       Real.exp (-|t - u|) * zetaMomentCriticalNorm u ^ (2 : ℕ)
   have hPer : ∀ t ∈ W,
@@ -67,18 +67,12 @@ theorem heathBrown_equation44_of_lemmaThree
       _ ≤ C * Real.log t *
           (1 + heathBrownLemmaThreeMoment t (Real.log t ^ (2 : ℕ))) := hSource
       _ ≤ C * Real.log t * (1 + q t) := by
-        exact mul_le_mul_of_nonneg_left (add_le_add_right hMoment 1)
-          (mul_nonneg hC.le hlogt)
+        gcongr
       _ ≤ C * Real.log T * (1 + q t) := by
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left hlogMono hC.le) (by linarith)
-  have hSummed :
-      ∑ t ∈ W, V ^ (2 : ℕ) ≤
-        ∑ t ∈ W, C * Real.log T * (1 + q t) :=
+        gcongr
+  have hSummed  :=
     Finset.sum_le_sum fun t ht ↦ hPer t ht
-  have hOverlap : ∑ t ∈ W, q t ≤
-      4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ)) := by
-    exact sum_truncated_exp_kernel_zeta_sq_le_localSecondMoment
+  have hOverlap := sum_truncated_exp_kernel_zeta_sq_le_localSecondMoment
       W center G L hG hL hRange hFit hSep
   have hCoeff : 0 ≤ C * Real.log T := by
     exact mul_nonneg hC.le (Real.log_nonneg (by linarith))
@@ -92,8 +86,7 @@ theorem heathBrown_equation44_of_lemmaThree
       ring
     _ ≤ C * Real.log T *
         ((W.card : ℝ) + 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ))) := by
-      exact mul_le_mul_of_nonneg_left
-        (add_le_add_right hOverlap (W.card : ℝ)) hCoeff
+      gcongr
 
 
 /-- Heath--Brown (1978), equation (44), obtained from the proved contour,

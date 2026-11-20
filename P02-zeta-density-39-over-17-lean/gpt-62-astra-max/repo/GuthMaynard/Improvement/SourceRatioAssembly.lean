@@ -184,8 +184,8 @@ theorem source_ratio_log_band {N : ℝ} (hN : 0 ≤ N) {n m : ℕ}
     |Real.log ((n:ℝ)/m)| ≤ Real.log 2 := by
   obtain ⟨hn,hn'⟩ := (sourceRatioIndices_mem hN n).mp hn
   obtain ⟨hm,hm'⟩ := (sourceRatioIndices_mem hN m).mp hm
-  have hn0 : (0:ℝ) < n := hN.trans_lt hn
-  have hm0 : (0:ℝ) < m := hN.trans_lt hm
+  have hn0  := hN.trans_lt hn
+  have hm0  := hN.trans_lt hm
   have hnm : (n:ℝ)/m ≤ 2 := (div_le_iff₀ hm0).mpr (by linarith)
   have hmn : (m:ℝ)/n ≤ 2 := (div_le_iff₀ hn0).mpr (by linarith)
   apply abs_le.mpr

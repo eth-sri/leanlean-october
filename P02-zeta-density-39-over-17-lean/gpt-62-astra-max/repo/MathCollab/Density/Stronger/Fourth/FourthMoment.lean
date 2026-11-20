@@ -40,18 +40,18 @@ theorem zeta_fourth_dyadic :
   obtain ⟨Db,hDb,hbudget⟩ := exists_fourth_dyadic_budget hq hq1
   refine ⟨8*Kg*Dp*Db+8*Kt^2,max Ht (4*q),by positivity,?_⟩
   intro H hH hH0
-  have hHHt : Ht ≤ H := (le_max_left _ _).trans hH
-  have hHq : 4*q ≤ H := (le_max_right _ _).trans hH
-  have hH4 : 4 ≤ H := hHt.trans hHHt
+  have hHHt  := (le_max_left _ _).trans hH
+  have hHq  := (le_max_right _ _).trans hH
+  have hH4  := hHt.trans hHHt
   have hH1 : 1 ≤ H := by linarith
   obtain ⟨M,hNlower,hNupper⟩ := exists_dyadic_cutoff
     (Real.one_le_rpow hH1 (by positivity : 0 ≤ 1+q))
   have hNlowerNat : H^(1+q) ≤ ((2^M:ℕ):ℝ) := by exact_mod_cast hNlower
-  let F : ℝ → ℝ := fun t =>
+  let F  := fun t =>
     ∫ u : ℝ, Real.exp (-98*u^2)*
       ‖dirichletPrefix (2^M) (zetaFourthCoeff q) (u-t)‖^2
   have hFnonneg (t : ℝ) : 0 ≤ F t := integral_nonneg (fun _ => by positivity)
-  have hFi : IntervalIntegrable F volume H (2*H) :=
+  have hFi  :=
     intervalIntegrable_gaussianPrefixMean (by norm_num : (0:ℝ)<98)
       (2^M) (zetaFourthCoeff q) H (2*H)
   have hpoint : ∀ t ∈ Icc H (2*H), zetaMomentCriticalNorm t^4 ≤
@@ -77,11 +77,9 @@ theorem zeta_fourth_dyadic :
       hPg.trans (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hpower hKg.le) (hFnonneg t))
     nlinarith
-  have hFmean : (∫ t in H..2*H, F t) ≤
-      Dp*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q :=
+  have hFmean  :=
     hmean q hq.le M H hH0.le
-  have hmain : (2*H)^(2*q)*((M:ℝ)+1)^2*
-      (H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q ≤ Db*H^(1+7*q) :=
+  have hmain  :=
     hbudget H hH1 M hNupper
   have hlast : H^(1+7*q) ≤ H^(1+η) :=
     Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)

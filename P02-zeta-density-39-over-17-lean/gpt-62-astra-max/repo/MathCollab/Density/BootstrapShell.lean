@@ -27,8 +27,8 @@ theorem local_comparison_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d : La
         (localSet U H j).card * ((d.N : ℝ)^2*(M : ℝ)^2+4*(d.N : ℝ)*H) := by
   have hHp : 0 < H := by linarith
   have hNp : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
-  have hLp : 0 < L := hNp.trans_le hL
-  have hscale := reflection_recursive_scale d.N_pos (by linarith [d.T_ge_two]) hL hHp hHT hM
+  have hLp  := hNp.trans_le hL
+  have hscale := reflection_recursive_scale d.N_pos (by linarith) hL hHp hHT hM
   have hMp := (reflectionBlock_scale_bounds hLp hHp hM).1
   have hUW := localSet_subset_original hU H j
   by_cases hne : (localSet U H j).Nonempty
@@ -80,11 +80,11 @@ theorem localReflectionEnergy_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d
   let C := comparisonConstant w
   let F := 16*C*b*(d.N : ℝ)*H+B*b^3*(16*(d.N : ℝ)^2*H+4*(d.N : ℝ)*L^2)
   have hHp : 0 < H := by linarith
-  have hLp : 0 < L := (by exact_mod_cast d.N_pos : (0 : ℝ) < d.N).trans_le hL
-  have hb : 0 ≤ b := bootstrapScalar_nonneg d.T d.V d.N
-  have hB : 0 ≤ B := bootstrapBound_nonneg w.toReflectionCutoff d hW
-  have hC : 0 ≤ C := comparisonConstant_nonneg w
-  have hF : 0 ≤ F := by dsimp [F]; positivity
+  have hLp  := (by exact_mod_cast d.N_pos : (0 : ℝ) < d.N).trans_le hL
+  have hb  := bootstrapScalar_nonneg d.T d.V d.N
+  have hB  := bootstrapBound_nonneg w.toReflectionCutoff d hW
+  have hC  := comparisonConstant_nonneg w
+  
   have hblock (M : ℕ) (hM : M ∈ reflectionBlocks L H) (j : ℤ) :
       (L^2/H)*completePairEnergy M (localSet U H j) ≤ F*(localSet U H j).card := by
     have hs := mul_le_mul_of_nonneg_left
@@ -112,7 +112,7 @@ theorem localReflectionEnergy_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d
       ring
     _ ≤ 10*(F*(3*(U.card : ℝ))) :=
       mul_le_mul_of_nonneg_right (by exact_mod_cast reflectionBlocks_card_le hLp hHp) (by positivity)
-    _ = _ := by dsimp [F, C, b, B]; ring
+    _ = _ := by ring
 
 /-- Actual reflection and comparison feed the actual finite supremum; neither is a premise. -/
 theorem bootstrap_one_shell (w : ComparisonCutoff) :
@@ -125,7 +125,7 @@ theorem bootstrap_one_shell (w : ComparisonCutoff) :
   let R := (20000/Real.pi^2)*(mellinMass w.toReflectionCutoff)^2
   let C₀ := comparisonConstant w
   have hR : 0 ≤ R := by dsimp [R]; positivity
-  have hC₀ : 0 ≤ C₀ := comparisonConstant_nonneg w
+  have hC₀  := comparisonConstant_nonneg w
   obtain ⟨E, hE, hrefl⟩ := uniform_reflection_application w.toReflectionCutoff
   refine ⟨480*R*(C₀+1), E, by positivity, hE, ?_⟩
   intro κ d hW U L H hU hL hH hHT

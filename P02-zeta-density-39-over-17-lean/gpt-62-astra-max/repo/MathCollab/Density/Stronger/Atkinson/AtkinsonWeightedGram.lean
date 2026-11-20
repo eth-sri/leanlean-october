@@ -24,7 +24,6 @@ def atkinsonPhaseBlockMax (T : ℝ) (m N : ℕ) : ℝ :=
 
 theorem norm_atkinsonPhaseBlockSum_le_max (T : ℝ) (m N j : ℕ) (hj : j ≤ N) :
     ‖atkinsonPhaseBlockSum T m j‖ ≤ atkinsonPhaseBlockMax T m N := by
-  unfold atkinsonPhaseBlockMax
   exact Finset.le_sup' (fun k => ‖atkinsonPhaseBlockSum T m k‖)
     (Finset.mem_range.mpr (Nat.lt_succ_of_le hj))
 

@@ -46,12 +46,12 @@ theorem rational_energy_adjacent_second {η : ℝ} (hη : 0 < η) :
   obtain ⟨C₃,hC₃,hm₃⟩ := rational_dual_moment (k:=3) (by norm_num) hη
   obtain ⟨C₄,hC₄,hm₄⟩ := rational_dual_moment (k:=4) (by norm_num) hη
   let D : ℝ := 1+C₂+C₃+C₄
-  have hD : 1 ≤ D := by dsimp [D]; linarith
+  
   let C : ℝ := C₀+2*D*2^η
-  refine ⟨C,by dsimp [C]; positivity,?_⟩
+  refine ⟨C,by positivity,?_⟩
   intro T t₀ hT H hH hHT A hA W hR hRT hW hsep
   have ht : 0 < T := by linarith
-  have ht1 : 1 ≤ T := hT.le
+  have ht1  := hT.le
   have hHr : (0:ℝ) ≤ H := Nat.cast_nonneg _
   have hRr : (0:ℝ) ≤ W.card := Nat.cast_nonneg _
   have hE : 0 ≤ rationalEnergy A W := sum_nonneg (fun _ _ => sq_nonneg _)
@@ -87,13 +87,13 @@ theorem rational_energy_adjacent_second {η : ℝ} (hη : 0 < η) :
       exact mul_le_mul hB (Real.rpow_le_rpow hHr hHT hη.le)
         (Real.rpow_nonneg hHr _) (by linarith)
     have h2 := adjacent_scaled_dual (by norm_num : 1 ≤ (2:ℕ)) hE hRr ht.le hHr hZ
-      hC₂.le (hc C₂ (by dsimp [D]; linarith) hC₂.le)
+      hC₂.le (hc C₂ (by linarith) hC₂.le)
       (hm₂ H hH T t₀ ht.le A hA W hW hsep)
     have h3 := adjacent_scaled_dual (by norm_num : 1 ≤ (3:ℕ)) hE hRr ht.le hHr hZ
-      hC₃.le (hc C₃ (by dsimp [D]; linarith) hC₃.le)
+      hC₃.le (hc C₃ (by linarith) hC₃.le)
       (hm₃ H hH T t₀ ht.le A hA W hW hsep)
     have h4 := adjacent_scaled_dual (by norm_num : 1 ≤ (4:ℕ)) hE hRr ht.le hHr hZ
-      hC₄.le (hc C₄ (by dsimp [D]; linarith) hC₄.le)
+      hC₄.le (hc C₄ (by linarith) hC₄.le)
       (hm₄ H hH T t₀ ht.le A hA W hW hsep)
     norm_num at h2 h3 h4
     have hr2 : T ≤ (W.card:ℝ)^2 := by

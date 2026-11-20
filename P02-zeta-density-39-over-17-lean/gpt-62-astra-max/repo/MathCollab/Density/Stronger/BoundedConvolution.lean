@@ -50,7 +50,7 @@ theorem bounded_convolution_eventually_le {η B : ℝ}
   · subst n
     simp only [ArithmeticFunction.map_zero, norm_zero]
     positivity
-  have hnpos : 0 < n := Nat.pos_of_ne_zero hn0
+  have hnpos  := Nat.pos_of_ne_zero hn0
   have hTpos : 0 < T := by linarith
   calc
     _ ≤ A*(n : ℝ)^(η/(2*B)) := ha f hf k n hk hnpos

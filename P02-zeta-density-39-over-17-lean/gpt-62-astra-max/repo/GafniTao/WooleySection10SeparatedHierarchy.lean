@@ -41,14 +41,14 @@ theorem wooley_section10_separatedHierarchy_exists
     hcurrentCap, hsecondCap, hetaSlope, hhierarchySlope⟩ :=
       wooley_section10_slopeHierarchy_exists (N := N) hk hLambda
   let tau : ℝ := min tauCap (tau0 / 2)
-  have htauCap : 0 < tauCap := lt_trans heta hetaTauCap
+  have htauCap  := lt_trans heta hetaTauCap
   have htau : 0 < tau := by dsimp [tau]; positivity
   have htauLeCap : tau ≤ tauCap := by dsimp [tau]; exact min_le_left _ _
   have htauLeTau0 : tau ≤ tau0 := by
     dsimp [tau]
     exact (min_le_right _ _).trans (by linarith)
-  have htauDelta : tau < delta := htauLeCap.trans_lt htauCapDelta
-  have hmu : 0 < mu := (htauDelta.trans hdeltaMu).trans' htau
+  have htauDelta  := htauLeCap.trans_lt htauCapDelta
+  have hmu  := (htauDelta.trans hdeltaMu).trans' htau
   have hetaLambda : eta < Lambda := by
     have hraw : 4 * eta / Lambda < 1 := hnuThetaSlope.trans hmuOne
     rw [div_lt_one hLambda] at hraw
@@ -83,10 +83,10 @@ theorem wooley_section10_separatedHierarchy_exists
   have hepsilonCap : 0 < epsilonCap := by dsimp [epsilonCap]; positivity
   have hepsilon : 0 < epsilon := by dsimp [epsilon]; linarith
   have hepsilonLtCap : epsilon < epsilonCap := by dsimp [epsilon]; linarith
-  have hepsilonEta : epsilon ≤ eta :=
-    hepsilonLtCap.le.trans (by dsimp [epsilonCap]; exact min_le_left _ _)
-  have hepsilonTau : epsilon < tau :=
-    hepsilonLtCap.trans_le (by dsimp [epsilonCap]; exact min_le_right _ _)
+  have hepsilonEta  :=
+    hepsilonLtCap.le.trans (by exact min_le_left _ _)
+  have hepsilonTau  :=
+    hepsilonLtCap.trans_le (by exact min_le_right _ _)
   obtain ⟨H0, hglobalEta⟩ := wooley_section10_globalHierarchy_eventually
     hk hLambda
     (lt_trans (lt_trans htau htauDelta) hdeltaMu)
@@ -108,7 +108,7 @@ theorem wooley_initialNu_twoLoss_lower
     (hepsilonEta : epsilon ≤ eta) :
     2 * (eta + epsilon) * (H : ℝ) / Lambda ≤
       (wooleyInitialNu eta Lambda H : ℝ) := by
-  have heta0 : 0 ≤ eta := hepsilon.trans hepsilonEta
+  
   have hfour := wooley_initialNu_lower
     (epsilon := eta) (Lambda := Lambda) (H := H)
   have htwo : 2 * (eta + epsilon) * (H : ℝ) / Lambda ≤

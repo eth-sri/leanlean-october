@@ -36,10 +36,7 @@ theorem heathBrownShiftBound_cast_le
 theorem inv_pow_succ_le_inv_pow
     {H r : ℕ} (hH : 1 ≤ H) :
     (((H : ℝ) ^ (r + 1))⁻¹) ≤ (((H : ℝ) ^ r)⁻¹) := by
-  have hbase : (1 : ℝ) ≤ H := by exact_mod_cast hH
-  have hpow : (H : ℝ) ^ r ≤ (H : ℝ) ^ (r + 1) :=
-    pow_le_pow_right₀ hbase (Nat.le_succ r)
-  exact inv_anti₀ (by positivity) hpow
+  bound
 
 theorem heathBrownShiftBound_cast_le_previous_power
     {N k H : ℕ} {lambda : ℝ}

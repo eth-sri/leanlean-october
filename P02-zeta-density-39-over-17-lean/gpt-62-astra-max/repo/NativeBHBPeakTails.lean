@@ -1,7 +1,6 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import TaoTrudgianYang2025.ExponentPairBProcess
-public import GenericRestrictedPeakTail
+public import GenericPeakWidth
+public import TaoTrudgianYang2025.AtkinsonPairNativePacket
 
 @[expose] public section
 set_option autoImplicit false

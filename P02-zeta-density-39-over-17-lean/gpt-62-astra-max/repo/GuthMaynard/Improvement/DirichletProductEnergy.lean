@@ -54,7 +54,7 @@ theorem dirichlet_product_energy_raw {N : ℝ} (hN : 0 ≤ N) (X : ℕ)
     by_cases hh : (dirichletProductFiber N X k).Nonempty
     · obtain ⟨p,hp⟩ := hh
       obtain ⟨hp,hprod⟩ := mem_filter.mp hp
-      have hk : 0 < k := hprod ▸ (dirichlet_product_pair_bounds hN hp).1
+      have hk  := hprod ▸ (dirichlet_product_pair_bounds hN hp).1
       exact (product_fiber_card_le_divisors _ hk.ne' (fun q hq => (mem_filter.mp hq).2)).trans
         (Finset.le_sup (f := fun k : ℕ => k.divisors.card) (mem_image.mpr ⟨p,hp,hprod⟩))
     · rw [Finset.not_nonempty_iff_eq_empty.mp hh]
@@ -90,7 +90,7 @@ theorem dirichlet_product_energy_subpower {η : ℝ} (hη : 0 < η) :
       change (D:ℝ) ≤ _
       rw [show D=(p.1*p.2).divisors.card from hke]
       exact (hd _ hsize.1).trans (mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (by positivity) (by linarith [hsize.2.2]) hη.le) (by linarith))
+        (Real.rpow_le_rpow (by positivity) (by linarith) hη.le) (by linarith))
     · have hempty := Finset.not_nonempty_iff_eq_empty.mp he
       simp only [D,hempty,Finset.sup_empty,bot_eq_zero,Nat.cast_zero]
       positivity
@@ -102,8 +102,7 @@ theorem dirichlet_product_energy_subpower {η : ℝ} (hη : 0 < η) :
         intro p hp
         obtain ⟨hn,hm⟩ := mem_product.mp hp
         rw [norm_mul]
-        have hh : ‖a p.1‖*‖b p.2‖ ≤ 1 := by nlinarith [ha p.1 hn,hb p.2 hm,norm_nonneg (a p.1),norm_nonneg (b p.2)]
-        nlinarith [mul_nonneg (norm_nonneg (a p.1)) (norm_nonneg (b p.2))]
+        bound
       _ = _ := by simp [dirichletProductPairs]
   have hsource : ((sourceRatioIndices N).card:ℝ) ≤ N+1 := by
     have hf : ⌊N⌋₊ ≤ ⌊2*N⌋₊ := Nat.floor_mono (by linarith)
@@ -159,7 +158,7 @@ theorem dirichlet_product_polynomial {N : ℝ} (hN : 0 ≤ N) (X : ℕ)
   apply sum_congr rfl
   intro m hm
   have hn0 : 0 < n := by exact_mod_cast hN.trans_lt ((sourceRatioIndices_mem hN n).mp hn).1
-  have hm0 : 0 < m := (mem_Icc.mp hm).1
+  have hm0  := (mem_Icc.mp hm).1
   rw [← dirichlet_phase_product hn0 hm0]
   ring
 

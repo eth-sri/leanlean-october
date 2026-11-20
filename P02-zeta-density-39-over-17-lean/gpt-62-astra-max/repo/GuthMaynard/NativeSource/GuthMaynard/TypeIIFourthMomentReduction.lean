@@ -1,8 +1,12 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDensity
-public import GuthMaynard.NativeSource.GuthMaynard.ExtractSeparated
-public import GuthMaynard.NativeSource.GuthMaynard.ScaledSeparated
-public import GuthMaynard.NativeSource.GuthMaynard.TypeIIContour
+public import Mathlib.Data.Finset.Max
+public import Mathlib.Data.Int.Interval
+public import GuthMaynard.NativeSource.GuthMaynard.Pigeonhole
+public import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
+public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+public import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 
 @[expose] public section
 
@@ -26,7 +30,7 @@ set_option maxHeartbeats 800000 in
 theorem integral_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
     ∫ u : ℝ in (Set.Icc (-H) H)ᶜ, |u| ^ a =
       -2 * H ^ (a + 1) / (a + 1) := by
-  have hPosInt : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi H) :=
+  have hPosInt  :=
     integrableOn_Ioi_rpow_of_lt ha hH
   have hNegInt : IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Iio (-H)) := by
     have hPosInt' : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi (-(-H))) := by
@@ -54,10 +58,7 @@ theorem integral_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
     ext u
     simp only [Set.mem_compl_iff, Set.mem_Icc, Set.mem_union, Set.mem_Iio, Set.mem_Ioi]
     constructor
-    · intro h
-      by_cases hu : u < -H
-      · exact Or.inl hu
-      · exact Or.inr (lt_of_not_ge fun huH => h ⟨le_of_not_gt hu, huH⟩)
+    · grind
     · intro h hu
       rcases h with h | h <;> linarith
   rw [hCompl, setIntegral_union hDisjoint measurableSet_Ioi hNegInt hPosAbs]
@@ -80,7 +81,7 @@ theorem integral_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
 
 theorem integrableOn_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
     IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Icc (-H) H)ᶜ := by
-  have hPosInt : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi H) :=
+  have hPosInt  :=
     integrableOn_Ioi_rpow_of_lt ha hH
   have hPosAbs : IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Ioi H) := by
     apply hPosInt.congr_fun
@@ -102,10 +103,7 @@ theorem integrableOn_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
     ext u
     simp only [Set.mem_compl_iff, Set.mem_Icc, Set.mem_union, Set.mem_Iio, Set.mem_Ioi]
     constructor
-    · intro h
-      by_cases hu : u < -H
-      · exact Or.inl hu
-      · exact Or.inr (lt_of_not_ge fun huH => h ⟨le_of_not_gt hu, huH⟩)
+    · grind
     · intro h hu
       rcases h with h | h <;> linarith
   rw [hCompl]

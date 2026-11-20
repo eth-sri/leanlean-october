@@ -31,10 +31,7 @@ theorem contDiffAt_atkinsonGapSlopeProfile_jet (n : ℕ)
       contDiffAt_atkinsonGapSlopeProfile hr hx hqr hqx
   | succ n ih =>
     have hj := ih hr hx hqr hqx
-    have hinner : ContDiffAt ℝ ∞
-        (fun z : (ℝ × ℝ × ℝ) × ℝ =>
-          iteratedDeriv n (atkinsonGapSlopeProfile z.1.1 z.1.2.1) z.2)
-        ((q,r,x),x) :=
+    have hinner  :=
       hj.comp ((q,r,x),x)
         (f := fun z : (ℝ × ℝ × ℝ) × ℝ => (z.1.1,z.1.2.1,z.2))
         (by fun_prop)

@@ -14,7 +14,7 @@ L1 Fourier integral has the expected convolution transform, pointwise. -/
 theorem source_cutoff_fourier_convolution {χ f : ℝ → ℂ}
     (hχ : Integrable χ) (hf : Integrable f) (ξ : ℝ) :
     𝓕 (fun t => χ t * 𝓕⁻ f t) ξ = ∫ η, f η * 𝓕 χ (ξ-η) := by
-  let q : ℝ → ℂ := fun t => phase (-ξ*t)*χ t
+  let q  := fun t => phase (-ξ*t)*χ t
   have hq : Integrable q := by
     apply hχ.norm.mono' ((show Continuous (fun t : ℝ => phase (-ξ*t)) by
       unfold phase; fun_prop).aestronglyMeasurable.mul hχ.aestronglyMeasurable)

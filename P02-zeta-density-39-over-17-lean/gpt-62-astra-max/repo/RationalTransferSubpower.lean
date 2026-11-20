@@ -24,7 +24,7 @@ theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη :
   let D := J + 2*(k : ℝ)/η
   have hlogk : 0 ≤ Real.log (2*(k : ℝ)) := Real.log_nonneg (by linarith)
   have hJ : 0 < J := by dsimp [J]; positivity
-  have hD : 0 < D := by dsimp [D]; positivity
+  
   refine ⟨(2+(k : ℝ)^2)*(1+4*Real.exp (k : ℝ)*D), by positivity, ?_⟩
   intro H hH T hT
   have hHR : (1 : ℝ) ≤ H := by exact_mod_cast hH
@@ -32,8 +32,8 @@ theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη :
   let P := (H : ℝ)^(2*k)
   let Z := (H : ℝ)^η
   have hP : 1 ≤ P := one_le_pow₀ hHR
-  have hZ : 1 ≤ Z := Real.one_le_rpow hHR hη.le
-  have he : 1 ≤ Real.exp (k : ℝ) := Real.one_le_exp_iff.mpr hkpos.le
+  have hZ  := Real.one_le_rpow hHR hη.le
+  have he  := Real.one_le_exp_iff.mpr hkpos.le
   let X := 2*(k : ℝ)*Real.exp (k : ℝ)*P
   have hX1 : 1 ≤ X := by
     have hke : 1 ≤ 2*(k : ℝ)*Real.exp (k : ℝ) := by
@@ -43,7 +43,7 @@ theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη :
   have hfloor : (1 : ℝ) ≤ ⌊X⌋₊ := by
     have hn : 1 ≤ ⌊X⌋₊ := Nat.le_floor (by simpa using hX1)
     exact_mod_cast hn
-  have hlogX : Real.log ⌊X⌋₊ ≤ Real.log X :=
+  have hlogX  :=
     Real.log_le_log (by linarith) (Nat.floor_le (by linarith))
   have hlogeq : Real.log X = Real.log (2*(k : ℝ)) + (k : ℝ) +
       (2*(k : ℝ))*Real.log (H : ℝ) := by

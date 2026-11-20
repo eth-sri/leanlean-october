@@ -106,7 +106,7 @@ theorem norm_zetaGammaShiftAmplitude_sub_one_le {t : ℝ} (ht : 4 ≤ t)
   have h := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
     (fun v hv => (hasDerivAt_zetaGammaShiftAmplitude t hwre hv.1).hasDerivWithinAt)
     hbound (convex_Icc (0 : ℝ) 1)
-    (x := 0) (y := 1) (by constructor <;> norm_num) (by constructor <;> norm_num)
+    (x := 0) (y := 1) (by norm_num) (by norm_num)
   simpa [zetaGammaShiftAmplitude_zero] using h
 
 /-- Absolute error for the actual squared Gamma ratio. The leading
@@ -137,7 +137,7 @@ theorem norm_gammaReal_shift_sq_le_exp {t : ℝ} (ht : 4 ≤ t)
       Real.exp (zetaGammaShiftError t w) *
         Real.exp ((w*zetaGammaLeadingLog t).re) := by
   have h := norm_zetaGammaShiftAmplitude_le ht hwre hw (v := 1)
-    (by constructor <;> norm_num)
+    (by norm_num)
   have he : (Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
         Complex.Gammaℝ (afeCriticalPoint (-t)))^2 =
       zetaGammaShiftAmplitude t w 1 * Complex.exp (w*zetaGammaLeadingLog t) := by

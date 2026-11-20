@@ -43,40 +43,12 @@ theorem unitaryPhase_sub (x y : ℝ) :
   congr 1
   simp
 
-/-- A finite exponential sum on the half-open integer interval `[A, B)`. -/
-noncomputable def phaseSum (f : ℝ → ℝ) (A B : ℕ) : ℂ :=
-  ∑ n ∈ Ico A B, unitaryPhase (f n)
 
-/-- The logarithmic phase occurring in `n ^ (-it)`. -/
-noncomputable def logarithmicPhase (t x : ℝ) : ℝ := -t * Real.log x
 
-/-- The unweighted logarithmic exponential sum on `[A, B)`. -/
-noncomputable def logarithmicSum (t : ℝ) (A B : ℕ) : ℂ :=
-  phaseSum (logarithmicPhase t) A B
 
-theorem unitaryPhase_logarithmicPhase_eq_cpow (t : ℝ) (n : ℕ) (hn : 0 < n) :
-    unitaryPhase (logarithmicPhase t n) = (n : ℂ) ^ (-(t : ℂ) * I) := by
-  rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast Nat.ne_of_gt hn)]
-  simp only [unitaryPhase, logarithmicPhase, Complex.natCast_log, ofReal_neg,
-    ofReal_mul]
-  congr 1
-  ring
 
-theorem norm_phaseSum_le_card (f : ℝ → ℝ) (A B : ℕ) :
-    ‖phaseSum f A B‖ ≤ (Finset.Ico A B).card := by
-  calc
-    ‖phaseSum f A B‖ ≤ ∑ n ∈ Finset.Ico A B, ‖unitaryPhase (f n)‖ := norm_sum_le _ _
-    _ = (Finset.Ico A B).card := by simp
 
-theorem norm_logarithmicSum_le_length (t : ℝ) (A B : ℕ) :
-    ‖logarithmicSum t A B‖ ≤ ((B - A : ℕ) : ℝ) := by
-  simpa [logarithmicSum, Nat.card_Ico] using norm_phaseSum_le_card (logarithmicPhase t) A B
 
-/-- First derivative of the logarithmic phase. -/
-theorem hasDerivAt_logarithmicPhase (t : ℝ) {x : ℝ} (hx : x ≠ 0) :
-    HasDerivAt (logarithmicPhase t) (-t / x) x := by
-  change HasDerivAt (fun y => -t * Real.log y) (-t / x) x
-  simpa only [neg_mul, div_eq_mul_inv] using (Real.hasDerivAt_log hx).const_mul (-t)
 
 /-! ## Kusmin--Landau cancellation -/
 
@@ -108,7 +80,7 @@ theorem phaseResolvent_eq (x : ℝ) (hs : Real.sin (x / 2) ≠ 0) :
 /-- Derivative of real cotangent on its fundamental open interval. -/
 theorem hasDerivAt_real_cot {x : ℝ} (hx : x ∈ Set.Ioo 0 Real.pi) :
     HasDerivAt Real.cot (-(1 / Real.sin x ^ 2)) x := by
-  have hsin : Real.sin x ≠ 0 := (Real.sin_pos_of_pos_of_lt_pi hx.1 hx.2).ne'
+  have hsin  := (Real.sin_pos_of_pos_of_lt_pi hx.1 hx.2).ne'
   have hquot := (Real.hasDerivAt_cos x).div (Real.hasDerivAt_sin x) hsin
   convert hquot using 1
   · funext y
@@ -124,7 +96,7 @@ theorem strictAntiOn_real_cot : StrictAntiOn Real.cot (Set.Ioo 0 Real.pi) := by
   · intro x hx
     rw [interior_Ioo] at hx
     rw [(hasDerivAt_real_cot hx).deriv]
-    have hs : 0 < Real.sin x := Real.sin_pos_of_pos_of_lt_pi hx.1 hx.2
+    have hs  := Real.sin_pos_of_pos_of_lt_pi hx.1 hx.2
     have : 0 < 1 / Real.sin x ^ 2 := by positivity
     linarith
 
@@ -142,7 +114,7 @@ theorem sin_half_lower {δ θ : ℝ} (hδ : 0 ≤ δ) (hθlow : δ ≤ θ)
         (div_le_div_iff_of_pos_right Real.pi_pos).mpr hθlow
       _ = 2 / Real.pi * (θ / 2) := by ring_nf
       _ ≤ Real.sin (θ / 2) := hJ
-  · have hθpi : Real.pi ≤ θ := le_of_not_ge hθ
+  · have hθpi  := le_of_not_ge hθ
     have harg0 : 0 ≤ Real.pi - θ / 2 := by linarith
     have harg1 : Real.pi - θ / 2 ≤ Real.pi / 2 := by linarith
     have hJ := Real.mul_le_sin harg0 harg1
@@ -159,7 +131,7 @@ theorem norm_phaseResolvent_le {δ θ : ℝ} (hδ : 0 < δ) (hθlow : δ ≤ θ)
     (hθhigh : θ ≤ 2 * Real.pi - δ) :
     ‖phaseResolvent θ‖ ≤ Real.pi / (2 * δ) := by
   have hsin := sin_half_lower hδ.le hθlow hθhigh
-  have hsinPos : 0 < Real.sin (θ / 2) := lt_of_lt_of_le (div_pos hδ Real.pi_pos) hsin
+  have hsinPos  := lt_of_lt_of_le (div_pos hδ Real.pi_pos) hsin
   have hden : 2 * δ / Real.pi ≤ ‖(1 - unitaryPhase θ : ℂ)‖ := by
     rw [← norm_neg, neg_sub, unitaryPhase,
       Complex.norm_exp_I_mul_ofReal_sub_one, Real.norm_eq_abs,
@@ -179,11 +151,11 @@ theorem norm_phaseResolvent_sub_eq {x y : ℝ}
       (Real.cot (x / 2) - Real.cot (y / 2)) / 2 := by
   have hxmem : x / 2 ∈ Set.Ioo (0 : ℝ) Real.pi := by constructor <;> linarith
   have hymem : y / 2 ∈ Set.Ioo (0 : ℝ) Real.pi := by constructor <;> linarith
-  have hsinx : Real.sin (x / 2) ≠ 0 :=
+  have hsinx  :=
     (Real.sin_pos_of_pos_of_lt_pi hxmem.1 hxmem.2).ne'
-  have hsiny : Real.sin (y / 2) ≠ 0 :=
+  have hsiny  :=
     (Real.sin_pos_of_pos_of_lt_pi hymem.1 hymem.2).ne'
-  have hcot : Real.cot (y / 2) ≤ Real.cot (x / 2) :=
+  have hcot  :=
     strictAntiOn_real_cot.antitoneOn hxmem hymem (by linarith)
   rw [phaseResolvent_eq y hsiny, phaseResolvent_eq x hsinx]
   have heq :
@@ -223,7 +195,7 @@ theorem abs_cot_half_le_norm_phaseResolvent {θ : ℝ}
     (hθ0 : 0 < θ) (hθ2pi : θ < 2 * Real.pi) :
     |Real.cot (θ / 2) / 2| ≤ ‖phaseResolvent θ‖ := by
   have hmem : θ / 2 ∈ Set.Ioo (0 : ℝ) Real.pi := by constructor <;> linarith
-  have hsin : Real.sin (θ / 2) ≠ 0 :=
+  have hsin  :=
     (Real.sin_pos_of_pos_of_lt_pi hmem.1 hmem.2).ne'
   rw [phaseResolvent_eq θ hsin]
   let z : ℂ := (1 : ℂ) / 2 + Complex.I * (Real.cot (θ / 2) / 2 : ℝ)
@@ -301,8 +273,7 @@ theorem norm_sum_le_resolvent_variation (z q : ℕ → ℂ) (N : ℕ)
       rw [hz 0 (by omega), hz (N + 1) (by omega), mul_one, mul_one]
       congr 1
       apply Finset.sum_congr rfl
-      intro n hn
-      rw [hz (n + 1) (by have := Finset.mem_range.mp hn; omega), mul_one]
+      grind
 
 /-- Kusmin--Landau cancellation while all phase increments remain in one
 period and a fixed positive distance from its endpoints. -/
@@ -313,15 +284,14 @@ theorem kusminLandau_one_period (f : ℕ → ℝ) (N : ℕ) (δ : ℝ)
     (hmono : ∀ n < N, f (n + 1) - f n ≤ f (n + 2) - f (n + 1)) :
     ‖∑ n ∈ Finset.range (N + 1), unitaryPhase (f n)‖ ≤
       2 * Real.pi / δ := by
-  let θ : ℕ → ℝ := fun n => f (n + 1) - f n
-  have hθlow : ∀ n ≤ N, δ ≤ θ n := hlow
-  have hθhigh : ∀ n ≤ N, θ n ≤ 2 * Real.pi - δ := hhigh
-  have hθmono : ∀ n < N, θ n ≤ θ (n + 1) := hmono
-  have hθpos : ∀ n ≤ N, 0 < θ n := fun n hn => hδ.trans_le (hθlow n hn)
+  let θ  := fun n => f (n + 1) - f n
+  have hθlow  := hlow
+  have hθhigh  := hhigh
+  have hθmono  := hmono
+  have hθpos  := fun n hn => hδ.trans_le (hθlow n hn)
   have hθlt : ∀ n ≤ N, θ n < 2 * Real.pi := fun n hn => by
     linarith [hθhigh n hn]
-  have hsin : ∀ n ≤ N, Real.sin (θ n / 2) ≠ 0 := fun n hn => by
-    exact (Real.sin_pos_of_pos_of_lt_pi (by linarith [hθpos n hn])
+  have hsin : ∀ n ≤ N, Real.sin (θ n / 2) ≠ 0 := fun n hn => (Real.sin_pos_of_pos_of_lt_pi (by linarith [hθpos n hn])
       (by linarith [hθlt n hn])).ne'
   have hbase := norm_sum_le_resolvent_variation
     (fun n => unitaryPhase (f n)) (fun n => phaseResolvent (θ n)) N
@@ -350,8 +320,7 @@ theorem kusminLandau_one_period (f : ℕ → ℝ) (N : ℕ) (δ : ℝ)
         2 * (‖phaseResolvent (θ 0)‖ + ‖phaseResolvent (θ N)‖) ≤
             2 * (Real.pi / (2 * δ) + Real.pi / (2 * δ)) := by gcongr
         _ = 2 * Real.pi / δ := by
-          field_simp
-          norm_num
+          ring
 
 /-- A phase is unchanged by adding an integral multiple of its full period. -/
 theorem unitaryPhase_int_mul_two_pi (k : ℤ) :
@@ -367,40 +336,6 @@ theorem unitaryPhase_sub_int_mul_two_pi (x : ℝ) (k : ℤ) :
   rw [unitaryPhase_sub, unitaryPhase_int_mul_two_pi]
   simp
 
-/-- Decreasing-increment form of one-period Kusmin--Landau cancellation. -/
-theorem kusminLandau_one_period_decreasing (f : ℕ → ℝ) (N : ℕ) (δ : ℝ)
-    (hδ : 0 < δ)
-    (hlow : ∀ n ≤ N, δ ≤ f (n + 1) - f n)
-    (hhigh : ∀ n ≤ N, f (n + 1) - f n ≤ 2 * Real.pi - δ)
-    (hmono : ∀ n < N, f (n + 2) - f (n + 1) ≤ f (n + 1) - f n) :
-    ‖∑ n ∈ Finset.range (N + 1), unitaryPhase (f n)‖ ≤
-      2 * Real.pi / δ := by
-  let g : ℕ → ℝ := fun n => -f n + (n : ℝ) * (2 * Real.pi)
-  have hdiff (n : ℕ) :
-      g (n + 1) - g n = 2 * Real.pi - (f (n + 1) - f n) := by
-    dsimp only [g]
-    push_cast
-    ring_nf
-  have hphase (n : ℕ) :
-      unitaryPhase (g n) = starRingEnd ℂ (unitaryPhase (f n)) := by
-    rw [show g n = (n : ℝ) * (2 * Real.pi) - f n by dsimp only [g]; ring_nf]
-    rw [unitaryPhase_sub]
-    rw [show unitaryPhase ((n : ℝ) * (2 * Real.pi)) = 1 by
-      simpa only [Int.cast_natCast] using unitaryPhase_int_mul_two_pi (n : ℤ)]
-    simp
-  have hKL := kusminLandau_one_period g N δ hδ
-    (fun n hn => by rw [hdiff]; linarith [hhigh n hn])
-    (fun n hn => by rw [hdiff]; linarith [hlow n hn])
-    (fun n hn => by rw [hdiff, hdiff]; linarith [hmono n hn])
-  have hsum :
-      (∑ n ∈ Finset.range (N + 1), unitaryPhase (g n)) =
-        starRingEnd ℂ (∑ n ∈ Finset.range (N + 1), unitaryPhase (f n)) := by
-    simp_rw [hphase]
-    exact (map_sum (starRingEnd ℂ) _ _).symm
-  rw [hsum] at hKL
-  change ‖star (∑ n ∈ Finset.range (N + 1), unitaryPhase (f n))‖ ≤ _ at hKL
-  rw [norm_star] at hKL
-  exact hKL
 
 /-- Shifted-index and shifted-period form of Kusmin--Landau cancellation. -/
 theorem kusminLandau_interval (f : ℕ → ℝ) (A N : ℕ) (k : ℤ) (δ : ℝ)
@@ -414,7 +349,7 @@ theorem kusminLandau_interval (f : ℕ → ℝ) (A N : ℕ) (k : ℤ) (δ : ℝ)
       f (A + n + 1) - f (A + n) ≤ f (A + n + 2) - f (A + n + 1)) :
     ‖∑ n ∈ Finset.range (N + 1), unitaryPhase (f (A + n))‖ ≤
       2 * Real.pi / δ := by
-  let g : ℕ → ℝ := fun n =>
+  let g  := fun n =>
     f (A + n) - (((k * (n : ℤ) : ℤ) : ℝ) * (2 * Real.pi))
   have hdiff (n : ℕ) :
       g (n + 1) - g n =
@@ -431,9 +366,7 @@ theorem kusminLandau_interval (f : ℕ → ℝ) (A N : ℕ) (k : ℤ) (δ : ℝ)
     (fun n hn => by rw [hdiff]; exact hlow n hn)
     (fun n hn => by rw [hdiff]; exact hhigh n hn)
     (fun n hn => by
-      rw [hdiff, hdiff]
-      simpa only [Nat.add_assoc] using
-        sub_le_sub_right (hmono n hn) ((k : ℝ) * (2 * Real.pi)))
+      grind)
   simpa only [hphase] using hKL
 
 /-! ## Finite Weyl differencing -/
@@ -447,82 +380,8 @@ theorem norm_sum_sq_le_card_mul_sum_norm_sq {ι : Type*} [DecidableEq ι]
     ‖∑ i ∈ s, a i‖ ^ 2 ≤ (∑ i ∈ s, ‖a i‖) ^ 2 := by
       gcongr
       exact norm_sum_le _ _
-    _ ≤ (s.card : ℝ) * ∑ i ∈ s, ‖a i‖ ^ 2 := by
-      exact sq_sum_le_card_mul_sum_sq
+    _ ≤ (s.card : ℝ) * ∑ i ∈ s, ‖a i‖ ^ 2 := sq_sum_le_card_mul_sum_sq
 
-/-- The algebraic core of van der Corput's A-process.
-
-Each column of `b` is an exact shifted representation of the same sum `S`.
-The diagonal energy is at most `A`, while every distinct pair of columns has
-correlation at most `B`.  The conclusion is the finite Weyl-differencing
-inequality before the shift length is optimized. -/
-theorem finite_weyl_differencing
-    {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (s : Finset ι) (r : Finset κ) (b : ι → κ → ℂ) (S : ℂ) (A B : ℝ)
-    (hB : 0 ≤ B)
-    (hshift : ∀ h ∈ r, ∑ n ∈ s, b n h = S)
-    (hdiag : ∀ h ∈ r, ∑ n ∈ s, ‖b n h‖ ^ 2 ≤ A)
-    (hcorr : ∀ h ∈ r, ∀ k ∈ r, h ≠ k →
-      abs (∑ n ∈ s, ⟪b n h, b n k⟫_ℝ) ≤ B) :
-    (r.card : ℝ) ^ 2 * ‖S‖ ^ 2 ≤
-      (s.card : ℝ) * ((r.card : ℝ) * A + (r.card : ℝ) ^ 2 * B) := by
-  let u : ι → ℂ := fun n => ∑ h ∈ r, b n h
-  have hsum : ∑ n ∈ s, u n = r.card • S := by
-    calc
-      ∑ n ∈ s, u n = ∑ h ∈ r, ∑ n ∈ s, b n h := by
-        simp only [u]
-        rw [sum_comm]
-      _ = ∑ _h ∈ r, S := by
-        apply Finset.sum_congr rfl
-        intro h hh
-        exact hshift h hh
-      _ = r.card • S := by simp
-  have hcs := norm_sum_sq_le_card_mul_sum_norm_sq s u
-  have hexpand :
-      ∑ n ∈ s, ‖u n‖ ^ 2 =
-        ∑ h ∈ r, ∑ k ∈ r, ∑ n ∈ s, ⟪b n h, b n k⟫_ℝ := by
-    simp only [u, ← real_inner_self_eq_norm_sq, sum_inner, inner_sum]
-    rw [sum_comm]
-    apply Finset.sum_congr rfl
-    intro h _hh
-    rw [sum_comm]
-    apply Finset.sum_congr rfl
-    intro k _hk
-    apply Finset.sum_congr rfl
-    intro n _hn
-    exact real_inner_comm _ _
-  have hpair : ∀ h ∈ r, ∀ k ∈ r,
-      ∑ n ∈ s, ⟪b n h, b n k⟫_ℝ ≤ (if h = k then A else 0) + B := by
-    intro h hh k hk
-    by_cases heq : h = k
-    · subst k
-      simp only [ite_eq_left]
-      calc
-        ∑ n ∈ s, ⟪b n h, b n h⟫_ℝ = ∑ n ∈ s, ‖b n h‖ ^ 2 := by
-          apply Finset.sum_congr rfl
-          intro n _hn
-          exact real_inner_self_eq_norm_sq (b n h)
-        _ ≤ A := hdiag h hh
-        _ ≤ A + B := le_add_of_nonneg_right hB
-    · simp only [ite_eq_right heq, zero_add]
-      exact (le_abs_self _).trans (hcorr h hh k hk heq)
-  have hcorrelation :
-      ∑ h ∈ r, ∑ k ∈ r, ∑ n ∈ s, ⟪b n h, b n k⟫_ℝ ≤
-        (r.card : ℝ) * A + (r.card : ℝ) ^ 2 * B := by
-    calc
-      ∑ h ∈ r, ∑ k ∈ r, ∑ n ∈ s, ⟪b n h, b n k⟫_ℝ ≤
-          ∑ h ∈ r, ∑ k ∈ r, ((if h = k then A else 0) + B) := by
-        exact Finset.sum_le_sum fun h hh => Finset.sum_le_sum fun k hk => hpair h hh k hk
-      _ = (r.card : ℝ) * A + (r.card : ℝ) ^ 2 * B := by
-        simp [Finset.sum_add_distrib, pow_two]
-        ring
-  rw [hsum, RCLike.norm_nsmul ℂ, nsmul_eq_mul, hexpand] at hcs
-  calc
-    (r.card : ℝ) ^ 2 * ‖S‖ ^ 2 = ((r.card : ℝ) * ‖S‖) ^ 2 := by ring
-    _ ≤ (s.card : ℝ) *
-        (∑ h ∈ r, ∑ k ∈ r, ∑ n ∈ s, ⟪b n h, b n k⟫_ℝ) := hcs
-    _ ≤ (s.card : ℝ) * ((r.card : ℝ) * A + (r.card : ℝ) ^ 2 * B) := by
-      exact mul_le_mul_of_nonneg_left hcorrelation (Nat.cast_nonneg s.card)
 
 /-- A zero-padded translate of an integer-indexed sequence. -/
 noncomputable def paddedShift (a : ℤ → ℂ) (N : ℕ) (n : ℤ) (h : ℕ) : ℂ :=
@@ -543,16 +402,13 @@ theorem sum_paddedShift_eq (a : ℤ → ℂ) (N H h : ℕ) (hh : h < H) :
     intro n hn
     rfl
   case i_inj =>
-    intro n₁ _hn₁ n₂ _hn₂ heq
     omega
   case i_surj =>
     intro m hm
     refine ⟨m - h, ?_, by omega⟩
     apply Finset.mem_filter.mpr
     constructor
-    · apply Finset.mem_Ico.mpr
-      have hmData := Finset.mem_Ico.mp hm
-      constructor <;> omega
+    · grind
     · simpa using hm
 
 /-- The diagonal energy of a padded translate is independent of the shift. -/
@@ -570,46 +426,11 @@ theorem sum_norm_sq_paddedShift_eq (a : ℤ → ℂ) (N H h : ℕ) (hh : h < H) 
       intro n _hn
       unfold paddedShift
       split
-      · change ‖a (n + h)‖ ^ 2 = ‖a (n + h)‖ ^ 2
-        rfl
+      · rfl
       · simp
     _ = ∑ m ∈ Finset.Ico (0 : ℤ) N, (q m).re := hre
     _ = ∑ m ∈ Finset.Ico (0 : ℤ) N, ‖a m‖ ^ 2 := by
-      apply Finset.sum_congr rfl
-      intro m _hm
-      change ‖a m‖ ^ 2 = ‖a m‖ ^ 2
       rfl
 
-/-- Interval form of Weyl differencing.  Its only analytic input is a uniform
-bound for the correlations of two distinct zero-padded shifts. -/
-theorem interval_weyl_differencing
-    (a : ℤ → ℂ) (N H : ℕ) (C : ℝ)
-    (ha : ∀ n ∈ Finset.Ico (0 : ℤ) N, ‖a n‖ ≤ 1)
-    (hC : 0 ≤ C)
-    (hcorr : ∀ h ∈ Finset.range H, ∀ k ∈ Finset.range H, h ≠ k →
-      abs (∑ n ∈ Finset.Ico (-(H : ℤ)) N,
-        ⟪paddedShift a N n h, paddedShift a N n k⟫_ℝ) ≤ C) :
-    (H : ℝ) ^ 2 * ‖∑ n ∈ Finset.Ico (0 : ℤ) N, a n‖ ^ 2 ≤
-      ((N + H : ℕ) : ℝ) * ((H : ℝ) * N + (H : ℝ) ^ 2 * C) := by
-  have hdiag : ∀ h ∈ Finset.range H,
-      ∑ n ∈ Finset.Ico (-(H : ℤ)) N, ‖paddedShift a N n h‖ ^ 2 ≤ (N : ℝ) := by
-    intro h hh
-    rw [sum_norm_sq_paddedShift_eq a N H h (Finset.mem_range.mp hh)]
-    calc
-      ∑ m ∈ Finset.Ico (0 : ℤ) N, ‖a m‖ ^ 2 ≤
-          ∑ _m ∈ Finset.Ico (0 : ℤ) N, (1 : ℝ) := by
-        apply Finset.sum_le_sum
-        intro m hm
-        nlinarith [norm_nonneg (a m), ha m hm]
-      _ = (N : ℝ) := by simp [Int.card_Ico]
-  have hraw := finite_weyl_differencing
-    (Finset.Ico (-(H : ℤ)) (N : ℤ)) (Finset.range H)
-    (fun n h => paddedShift a N n h)
-    (∑ n ∈ Finset.Ico (0 : ℤ) N, a n) (N : ℝ) C hC
-    (fun h hh => sum_paddedShift_eq a N H h (Finset.mem_range.mp hh)) hdiag hcorr
-  have hcard : ((Finset.Ico (-(H : ℤ)) (N : ℤ)).card : ℝ) = N + H := by
-    norm_num [Int.card_Ico]
-    norm_cast
-  simpa only [Finset.card_range, Nat.cast_add, hcard] using hraw
 
 end RiemannZeta.GuthMaynard

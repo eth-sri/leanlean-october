@@ -26,7 +26,7 @@ theorem large_gcd_adjacent_general {η : ℝ} (hη : 0 < η) :
           T^((1:ℝ)/4)*(W.card:ℝ)^((19:ℝ)/12)) := by
   obtain ⟨C,hC,hb⟩ := coprime_dyadic_adjacent_general (K:=2) (by norm_num) (show 0 < η/2 by positivity) (B:=1) (by norm_num)
   let L : ℝ := 1+4^(η/2)/(η/2)
-  have hL : 0 < L := by dsimp [L]; positivity
+  
   refine ⟨C*L,by positivity,?_⟩
   intro T t₀ X hT hX hXT P hP W hW hsep
   have ht : 0 < T := by linarith

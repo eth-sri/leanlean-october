@@ -1,7 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorGlobal
-public import Mathlib.Analysis.Calculus.Taylor
 
 @[expose] public section
 

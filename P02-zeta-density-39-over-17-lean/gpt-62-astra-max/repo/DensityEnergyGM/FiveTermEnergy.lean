@@ -28,15 +28,15 @@ theorem discrete_energy_five_term_base_eventual (ε : ℝ) (hε : 0 < ε) :
             N ^ (40 / 31 : ℝ) * T ^ (9 / 31 : ℝ) * V ^ (-80 / 31 : ℝ) * (W.card : ℝ) ^ (84 / 31 : ℝ) +
             N ^ (40 / 19 : ℝ) * T ^ (17 / 19 : ℝ) * V ^ (-80 / 19 : ℝ) * (W.card : ℝ) ^ (36 / 19 : ℝ)) := by
   let δ : ℝ := ε / 4
-  obtain ⟨C₀, T₀, hC₀, hT₀, hNative⟩ := discrete_energy_sublinear_native δ (by dsimp only [δ]; positivity)
+  obtain ⟨C₀, T₀, hC₀, hT₀, hNative⟩ := discrete_energy_sublinear_native δ (by positivity)
   let B : ℝ := 2 * C₀ + 1
   let K : ℝ := 5 * B
-  have hB : 0 < B := by dsimp only [B]; positivity
+  
   have hK : 0 < K := by dsimp only [K]; positivity
   have hKone : 1 ≤ K := by dsimp only [K, B]; linarith
   refine ⟨K ^ 4, T₀, by positivity, hT₀, ?_⟩
   intro T N a W V hT hN hTN hNT ha hV hValues hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
+  have hTtwo  := hT₀.trans hT
   have hTone : 1 ≤ T := by linarith
   have hTpos : 0 < T := by linarith
   let E : ℝ := discreteAdditiveEnergy W

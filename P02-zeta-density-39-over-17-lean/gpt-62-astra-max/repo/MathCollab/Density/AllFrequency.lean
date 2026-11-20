@@ -11,8 +11,7 @@ namespace MathCollab.Density
 theorem gmReflectionIntegral_add {tau a b c : ℝ}
     (ha : 0 < a) (hab : a ≤ b) (hbc : b ≤ c) :
     gmReflectionIntegral tau a b + gmReflectionIntegral tau b c =
-      gmReflectionIntegral tau a c := by
-  exact intervalIntegral.integral_add_adjacent_intervals
+      gmReflectionIntegral tau a c := intervalIntegral.integral_add_adjacent_intervals
     (intervalIntegrable_gmReflectionIntegrand hab ha)
     (intervalIntegrable_gmReflectionIntegrand hbc (ha.trans_le hab))
 

@@ -105,8 +105,7 @@ needed by this theorem. -/
 theorem squareSmoothing_integrable {κ r : ℝ → ℝ} {B : ℝ}
     (hκ : Measurable κ) (hb : ∀ y, ‖κ y‖ ≤ B)
     (hr : Integrable (fun y => r y ^ 2)) (z : ℝ) :
-    Integrable (fun y => κ (z - y) * r y ^ 2) := by
-  exact hr.bdd_mul (hκ.comp (measurable_const.sub measurable_id)).aestronglyMeasurable
+    Integrable (fun y => κ (z - y) * r y ^ 2) := hr.bdd_mul (hκ.comp (measurable_const.sub measurable_id)).aestronglyMeasurable
     (Filter.Eventually.of_forall (fun y => hb (z - y)))
 
 /-- A change of variables contributes exactly v in the second square mass.
@@ -121,15 +120,15 @@ theorem transverse_of_kernel_bounds {κ r : ℝ → ℝ} {s : Set ℝ} {B D v z 
     (hlower' : ∀ y ∈ s, 1 ≤ D * κ (z / v - y / v)) :
     (∫ y in s, r y * r (y / v)) ≤
       D * Real.sqrt v * Real.sqrt (squareSmoothing κ r z * squareSmoothing κ r (z / v)) := by
-  have hmem : MemLp r 2 volume :=
+  have hmem  :=
     (memLp_two_iff_integrable_sq hr.aestronglyMeasurable).2 hr2
-  have hdiv2 : Integrable (fun y => r (y / v) ^ 2) := hr2.comp_div hv.ne'
-  have hdivmem : MemLp (fun y => r (y / v)) 2 volume :=
+  have hdiv2  := hr2.comp_div hv.ne'
+  have hdivmem  :=
     (memLp_two_iff_integrable_sq
       (hr.comp (measurable_id.div_const v)).aestronglyMeasurable).2 hdiv2
   have hkz := squareSmoothing_integrable hκ hb hr2 z
   have hkzv := squareSmoothing_integrable hκ hb hr2 (z / v)
-  have hkdiv : Integrable (fun y => κ (z / v - y / v) * r (y / v) ^ 2) :=
+  have hkdiv  :=
     hkzv.comp_div hv.ne'
   have hchange : (∫ y, κ (z / v - y / v) * r (y / v) ^ 2) =
       v * squareSmoothing κ r (z / v) := by
@@ -169,7 +168,7 @@ theorem transverse_smoothing_uniform {κ r : ℝ → ℝ} {B C δ a b v z : ℝ}
     (∫ y in {y | |y - z| ≤ δ}, r y * r (y / v)) ≤
       (C * δ) * Real.sqrt b *
         Real.sqrt (squareSmoothing κ r z * squareSmoothing κ r (z / v)) := by
-  have hv : 0 < v := ha.trans_le hav
+  have hv  := ha.trans_le hav
   have hs : MeasurableSet {y : ℝ | |y - z| ≤ δ} :=
     measurableSet_le (measurable_id.sub_const z).abs measurable_const
   have hfirst : ∀ y ∈ {y : ℝ | |y - z| ≤ δ}, 1 ≤ (C * δ) * κ (z - y) := by

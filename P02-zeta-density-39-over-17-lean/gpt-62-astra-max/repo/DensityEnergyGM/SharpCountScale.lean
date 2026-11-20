@@ -24,10 +24,10 @@ theorem gm_detecting_scale {σ a δ T N : ℝ}
       Real.sqrt T ≤ T^ell ∧ 3*a*(1-σ)+(2*σ-1)*x ≤ ell ∧
       (N*T^ell)^2 ≤ T^(10*δ)*(T^(3*a*(1-σ)))^2*(N^σ*T^(-2*δ))^4 := by
   have hTp : 0 < T := by linarith
-  have hNp : 0 < N := (Real.rpow_pos_of_pos hTp a).trans_le hlo
-  have ht : 0 < Real.log T := Real.log_pos hT
+  have hNp  := (Real.rpow_pos_of_pos hTp a).trans_le hlo
+  have ht  := Real.log_pos hT
   let x := Real.logb T N
-  have hNx : T^x=N := Real.rpow_logb hTp (by linarith) hNp
+  have hNx  := Real.rpow_logb hTp (by linarith) hNp
   have hxa : a ≤ x := by
     have hh := Real.log_le_log (Real.rpow_pos_of_pos hTp a) hlo
     rw [Real.log_rpow hTp] at hh

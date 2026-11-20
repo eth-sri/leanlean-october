@@ -1,13 +1,23 @@
 module
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
-public import DensityEnergyGM.LargeValuesAffineHeight
+public import GuthMaynard.AffineSource.LargeValuesAffineHeight
+public import DensityEnergyGM.LargeValuesS3
 
 @[expose] public section
 
 open Complex Finset Filter FourierTransform MeasureTheory Real Set
 open scoped ContDiff FourierTransform Topology
 
+open RiemannZeta.GuthMaynard
+
 namespace GuthMaynard.NativeMoment
+
+private theorem localBumps_eq : RiemannZeta.GuthMaynard.gmCubicLocalBump = gmCubicLocalBump := rfl
+
+private theorem affineJ_nonneg (f : ℝ → ℝ) {M : ℕ} (hM : 0 < M) : 0 ≤ gmAffineJ f M := by
+  obtain ⟨_, _, _, _, h⟩ := exists_gmAffineTransformIntegral_eq_J f hM
+  exact h ▸ integral_nonneg fun _ => sq_nonneg _
+
 
 /-!
 # Guth--Maynard Section 10: the refined three-frequency estimate
@@ -105,7 +115,7 @@ theorem gmCubicSmoothedRSqSchwartz_apply
   by_cases hu : u ∈ Set.Icc (1 / 8 : ℝ) (33 / 8)
   · have hupos : 0 < u := lt_of_lt_of_le (by norm_num) hu.1
     rw [gmCubicRWeightSchwartz_apply, gmCubicRWeightFunction_eq W hupos]
-    ring
+    rw [localBumps_eq]; ring
   · rw [gmCubicRWeightSchwartz_apply]
     simp only [gmCubicRWeightFunction,
       gmCubicRatioBump_eq_zero_of_not_mem_Icc hu, zero_mul, mul_zero]
@@ -119,58 +129,11 @@ would silently discard endpoint neighbourhoods. -/
 noncomputable def gmCubicAffineWindow : ContDiffBump (5 / 4 : ℝ) :=
   ⟨3 / 4, 1, by norm_num, by norm_num⟩
 
-theorem gmCubicAffineWindow_eq_zero_of_not_mem_Icc
-    {u : ℝ} (hu : u ∉ Set.Icc (1 / 4 : ℝ) (9 / 4)) :
-    gmCubicAffineWindow u = 0 := by
-  by_contra hne
-  have hsupp : u ∈ Function.support gmCubicAffineWindow := hne
-  rw [gmCubicAffineWindow.support_eq, Metric.mem_ball, Real.dist_eq] at hsupp
-  change |u - 5 / 4| < 1 at hsupp
-  apply hu
-  rw [Set.mem_Icc]
-  rcases abs_lt.mp hsupp with ⟨hleft, hright⟩
-  constructor <;> linarith
 
-/-- The actual Proposition 10.1 affine input
-`ψ₁(v) |R_tilde(v)|²`, constructed from the literal equation-(7.5)
-smoother. -/
-noncomputable def gmCubicAffineSourceFunction
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) (u : ℝ) : ℝ :=
-  gmCubicAffineWindow u * gmCubicSmoothedRSqSchwartz η T N M W hB u
 
-theorem contDiff_gmCubicAffineSourceFunction
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) :
-    ContDiff ℝ ∞ (gmCubicAffineSourceFunction η T N M W hB) := by
-  exact gmCubicAffineWindow.contDiff.mul
-    ((gmCubicSmoothedRSqSchwartz η T N M W hB).smooth ⊤)
 
-theorem hasCompactSupport_gmCubicAffineSourceFunction
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) :
-    HasCompactSupport (gmCubicAffineSourceFunction η T N M W hB) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (1 / 4 : ℝ) (9 / 4)))
-  intro u hu
-  simp only [gmCubicAffineSourceFunction,
-    gmCubicAffineWindow_eq_zero_of_not_mem_Icc hu, zero_mul]
 
-/-- Schwartz realization of the exact Section 10 affine input. -/
-noncomputable def gmCubicAffineSourceSchwartz
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) : SchwartzMap ℝ ℝ :=
-  (hasCompactSupport_gmCubicAffineSourceFunction η T N M W hB).toSchwartzMap
-    (contDiff_gmCubicAffineSourceFunction η T N M W hB)
 
-@[simp]
-theorem gmCubicAffineSourceSchwartz_apply
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) (u : ℝ) :
-    gmCubicAffineSourceSchwartz η T N M W hB u =
-      gmCubicAffineWindow u * gmCubicSmoothedRSq η T N M W u := by
-  change gmCubicAffineSourceFunction η T N M W hB u = _
-  rw [gmCubicAffineSourceFunction, gmCubicSmoothedRSqSchwartz_apply]
 
 /-! ## The height-uniform Lemma 8.4 profile -/
 
@@ -382,9 +345,6 @@ noncomputable def gmCubicRatioBumpComplexSchwartz : SchwartzMap ℝ ℂ :=
   hasCompactSupport_gmCubicRatioBumpComplexFunction.toSchwartzMap
     contDiff_gmCubicRatioBumpComplexFunction
 
-@[simp]
-theorem gmCubicRatioBumpComplexSchwartz_apply (u : ℝ) :
-    gmCubicRatioBumpComplexSchwartz u = gmCubicRatioBump u := rfl
 
 /-- The `gmCubicPairMellinAtom` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
 noncomputable def gmCubicPairMellinAtom (d u : ℝ) : ℂ :=
@@ -869,105 +829,21 @@ theorem card_sq_le_sixteen_mul_T_mul_integral_gmCubicRWeightSchwartz
 
 /-! ### The source-faithful pre-smoothing support truncation -/
 
-/-- Fixed Section 10 truncation.  It equals one on `[13/32,67/32]`
-and is supported on `[3/8,17/8]`, leaving a `1/16` convolution margin
-inside Proposition 9.1's admissible interval `[1/4,9/4]`. -/
-noncomputable def gmCubicPreSmoothingWindow : ContDiffBump (5 / 4 : ℝ) :=
-  ⟨27 / 32, 7 / 8, by norm_num, by norm_num⟩
 
-theorem gmCubicPreSmoothingWindow_eq_zero_of_not_mem_Icc
-    {u : ℝ} (hu : u ∉ Set.Icc (3 / 8 : ℝ) (17 / 8)) :
-    gmCubicPreSmoothingWindow u = 0 := by
-  by_contra hne
-  have hsupp : u ∈ Function.support gmCubicPreSmoothingWindow := hne
-  rw [gmCubicPreSmoothingWindow.support_eq, Metric.mem_ball,
-    Real.dist_eq] at hsupp
-  change |u - 5 / 4| < 7 / 8 at hsupp
-  apply hu
-  rw [Set.mem_Icc]
-  rcases abs_lt.mp hsupp with ⟨hleft, hright⟩
-  constructor <;> linarith
 
-/-- The `gmCubicPreSmoothingWindowComplexFunction` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicPreSmoothingWindowComplexFunction (u : ℝ) : ℂ :=
-  gmCubicPreSmoothingWindow u
 
-theorem contDiff_gmCubicPreSmoothingWindowComplexFunction :
-    ContDiff ℝ ∞ gmCubicPreSmoothingWindowComplexFunction := by
-  exact Complex.ofRealCLM.contDiff.comp gmCubicPreSmoothingWindow.contDiff
 
-theorem hasCompactSupport_gmCubicPreSmoothingWindowComplexFunction :
-    HasCompactSupport gmCubicPreSmoothingWindowComplexFunction := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (3 / 8 : ℝ) (17 / 8)))
-  intro u hu
-  simp [gmCubicPreSmoothingWindowComplexFunction,
-    gmCubicPreSmoothingWindow_eq_zero_of_not_mem_Icc hu]
 
-/-- The `gmCubicPreSmoothingWindowComplexSchwartz` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicPreSmoothingWindowComplexSchwartz : SchwartzMap ℝ ℂ :=
-  hasCompactSupport_gmCubicPreSmoothingWindowComplexFunction.toSchwartzMap
-    contDiff_gmCubicPreSmoothingWindowComplexFunction
 
-@[simp]
-theorem gmCubicPreSmoothingWindowComplexSchwartz_apply (u : ℝ) :
-    gmCubicPreSmoothingWindowComplexSchwartz u =
-      gmCubicPreSmoothingWindow u := rfl
 
-/-- The `gmCubicTruncatedRWeightFunction` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicTruncatedRWeightFunction
-    (W : Finset ℝ) (u : ℝ) : ℝ :=
-  gmCubicPreSmoothingWindow u * gmCubicRWeightSchwartz W u
 
-theorem contDiff_gmCubicTruncatedRWeightFunction (W : Finset ℝ) :
-    ContDiff ℝ ∞ (gmCubicTruncatedRWeightFunction W) := by
-  exact gmCubicPreSmoothingWindow.contDiff.mul
-    ((gmCubicRWeightSchwartz W).smooth ⊤)
 
-theorem hasCompactSupport_gmCubicTruncatedRWeightFunction (W : Finset ℝ) :
-    HasCompactSupport (gmCubicTruncatedRWeightFunction W) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (3 / 8 : ℝ) (17 / 8)))
-  intro u hu
-  simp [gmCubicTruncatedRWeightFunction,
-    gmCubicPreSmoothingWindow_eq_zero_of_not_mem_Icc hu]
 
-/-- The `gmCubicTruncatedRWeightSchwartz` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicTruncatedRWeightSchwartz
-    (W : Finset ℝ) : SchwartzMap ℝ ℝ :=
-  (hasCompactSupport_gmCubicTruncatedRWeightFunction W).toSchwartzMap
-    (contDiff_gmCubicTruncatedRWeightFunction W)
 
-@[simp]
-theorem gmCubicTruncatedRWeightSchwartz_apply (W : Finset ℝ) (u : ℝ) :
-    gmCubicTruncatedRWeightSchwartz W u =
-      gmCubicPreSmoothingWindow u * gmCubicRWeightSchwartz W u := rfl
 
-/-- The `gmCubicTruncatedRWeightDerivativeConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicTruncatedRWeightDerivativeConstant (n : ℕ) : ℝ :=
-  ∑ i ∈ Finset.range (n + 1),
-    (n.choose i : ℝ) *
-      SchwartzMap.seminorm ℝ 0 i gmCubicPreSmoothingWindowComplexSchwartz *
-      gmCubicPairMellinDerivativeConstant (n - i)
 
-/-- The `gmCubicTruncatedRWeightFourierConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicTruncatedRWeightFourierConstant (n : ℕ) : ℝ :=
-  2 ^ n * ∑ p ∈ Finset.range (n + 1),
-    2 * gmCubicTruncatedRWeightDerivativeConstant p * 2 ^ p
 
-/-- The `gmCubicTruncatedHeightProfileConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
--- The parameter records the source-domain or uniformity contract even though the body is independent of it.
-@[nolint unusedArguments]
-noncomputable def gmCubicTruncatedHeightProfileConstant
-    (_epsilon : ℝ) (n : ℕ) : ℝ :=
-  16 * gmCubicTruncatedRWeightFourierConstant n
 
-/-- The `gmCubicNativeHeightProfileConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
--- The parameter records the source-domain or uniformity contract even though the body is independent of it.
-@[nolint unusedArguments]
-noncomputable def gmCubicNativeHeightProfileConstant
-    (_epsilon : ℝ) (n : ℕ) : ℝ :=
-  32 * gmCubicTruncatedRWeightFourierConstant n
 
 /-! ### A source normalization covering the complete ratio range -/
 
@@ -1571,7 +1447,7 @@ theorem gmCubicNormalizedAffineSource_eq_original
         B * ((3 * u - 11 / 16) - (3 * z - 11 / 16)) := by ring
     rw [harg]
     ring
-  simp_rw [hpoint]
+  simp_rw [localBumps_eq,hpoint]
   rw [MeasureTheory.integral_const_mul]
   have hchange : (∫ z : ℝ, q (3 * z - 11 / 16)) =
       (1 / 3 : ℝ) * ∫ x : ℝ, q x := by
@@ -2873,7 +2749,7 @@ theorem setIntegral_gmCubicSelectedSmoothedBlock_le_six
   have hD : Dv ≤ J := by
     exact setIntegral_sq_gmCubicDirectAffineTransform_le_J f hrs
   have hJ0 : 0 ≤ J := by
-    apply gmAffineJ_nonneg
+    apply affineJ_nonneg
     unfold gmCubicAffineTerminalScale
     positivity
   have hL0 : 0 ≤ L := by

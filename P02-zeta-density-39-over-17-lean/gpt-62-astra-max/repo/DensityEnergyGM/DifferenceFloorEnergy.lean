@@ -58,10 +58,7 @@ theorem sum_differenceFloorCount_sq (W : Finset ℝ) :
       (((differenceOrdinatePairs W).filter fun p => differenceFloor p = j) ×ˢ
         ((differenceOrdinatePairs W).filter fun p => differenceFloor p = j))
     rw [Finset.disjoint_left]
-    intro q hqi hqj
-    have hiq := Finset.mem_filter.mp (Finset.mem_product.mp hqi).1 |>.2
-    have hjq := Finset.mem_filter.mp (Finset.mem_product.mp hqj).1 |>.2
-    exact hij (hiq.symm.trans hjq)
+    grind
 
 
 /-- Equal difference floors force the corresponding additive defect below
@@ -121,7 +118,6 @@ theorem differenceFloor_subset_mass_sq (W : Finset ℝ) (J : Finset ℤ)
     have hNat := hsub.trans (differenceFloor_energy_le W)
     exact_mod_cast hNat
   have hcard : 0 ≤ (J.card : ℝ) := Nat.cast_nonneg _
-  have h := mul_le_mul_of_nonneg_left hEnergy hcard
   exact hCS.trans (by nlinarith)
 
 /-- Unit difference cells retain exactly all ordered pairs. -/

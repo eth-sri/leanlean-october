@@ -21,11 +21,11 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem intervalC1Bound_zetaBandCutoff {a b c d A B : ℝ}
     (hab : a < b) (hcd : c < d) (hAB : A ≤ B) :
     IntervalC1Bound (fun x => (zetaBandCutoff a b c d x : ℂ)) A B 2 := by
-  let u : ℝ → ℝ := fun x => Real.smoothTransition ((x - a) / (b - a))
-  let v : ℝ → ℝ := fun x => Real.smoothTransition ((d - x) / (d - c))
-  have hu : Monotone u := Real.smoothTransition.monotone.comp
+  let u  := fun x => Real.smoothTransition ((x - a) / (b - a))
+  let v  := fun x => Real.smoothTransition ((d - x) / (d - c))
+  have hu  := Real.smoothTransition.monotone.comp
     (fun x y hxy => div_le_div_of_nonneg_right (sub_le_sub_right hxy a) (sub_pos.mpr hab).le)
-  have hv : Antitone v := Real.smoothTransition.monotone.comp_antitone
+  have hv  := Real.smoothTransition.monotone.comp_antitone
     (fun x y hxy => div_le_div_of_nonneg_right (sub_le_sub_left hxy d) (sub_pos.mpr hcd).le)
   have hsu : ContDiff ℝ 1 u := Real.smoothTransition.contDiff.comp (by fun_prop)
   have hsv : ContDiff ℝ 1 v := Real.smoothTransition.contDiff.comp (by fun_prop)
@@ -49,8 +49,8 @@ theorem finiteVariationBound_zetaBandCutoff_sample {a b c d : ℝ}
     (hab : a < b) (hcd : c < d) (u : ℕ → ℝ) (N : ℕ)
     (hu : MonotoneOn u (Iic N) ∨ AntitoneOn u (Iic N)) :
     FiniteVariationBound (fun i => (zetaBandCutoff a b c d (u i) : ℂ)) N 2 := by
-  let p : ℝ → ℝ := fun x => Real.smoothTransition ((x-a)/(b-a))
-  let q : ℝ → ℝ := fun x => Real.smoothTransition ((d-x)/(d-c))
+  let p  := fun x => Real.smoothTransition ((x-a)/(b-a))
+  let q  := fun x => Real.smoothTransition ((d-x)/(d-c))
   have hp : Monotone p := fun x y hxy =>
     Real.smoothTransition.monotone (div_le_div_of_nonneg_right (sub_le_sub_right hxy a) (sub_pos.mpr hab).le)
   have hq : Antitone q := fun x y hxy =>

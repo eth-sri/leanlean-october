@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQParameters
 public import LaterPairs.Native.RobertSargosZeroQSource
 
@@ -27,7 +24,7 @@ theorem robertSargos_zero_q_mixed_correlation_bound
     (hhi : ∀ x ∈ Icc (1:ℝ) M, iteratedDeriv 4 f x ≤ C*lam) :
     ‖robertSargosMixedCorrelation f M H 0 r‖ ≤
       (H:ℝ)*(1+120*C*(1+2*Real.pi*C)*M*(2*|(r:ℝ)| *lam)^((1:ℝ)/12)) := by
-  have hCp : 0 ≤ C := zero_le_one.trans hC
+  have hCp  := zero_le_one.trans hC
   have hlam1 : lam ≤ 1 := by linarith
   have hr1 : (1:ℝ) ≤ |(r:ℝ)| := by exact_mod_cast Int.one_le_abs hr
   have hc (h : ℤ) (hh : h ∈ robertSargosHOverlap H r) :
@@ -41,7 +38,7 @@ theorem robertSargos_zero_q_mixed_correlation_bound
     have hhR : (h:ℝ) < 2*H := by exact_mod_cast h₁.2
     have hhrR : (h:ℝ)+r < 2*H := by exact_mod_cast h₂.2
     have hslow := robertSargos_zero_q_slow_scale hCp hlam hlam1
-      (show (0:ℝ) ≤ h by exact_mod_cast hh0)
+      (show (0:ℝ) ≤ h by positivity)
       (show 0 ≤ (h:ℝ)+r by exact_mod_cast hhr0)
       (show (h:ℝ) ≤ lam^(-(2:ℝ)/13) by linarith)
       (show (h:ℝ)+r ≤ lam^(-(2:ℝ)/13) by linarith) hr1
@@ -76,7 +73,6 @@ theorem robertSargos_zero_q_trimmed_correlation_bound
   calc
     _ = ‖robertSargosMixedCorrelation f M H 0 r -
         (robertSargosMixedCorrelation f M H 0 r-robertSargosTrimmedCorrelation f M H 0 r)‖ := by
-      congr 1
       abel
     _ ≤ ‖robertSargosMixedCorrelation f M H 0 r‖+
         ‖robertSargosMixedCorrelation f M H 0 r-robertSargosTrimmedCorrelation f M H 0 r‖ :=

@@ -31,13 +31,13 @@ theorem quadratic_polynomial_count_loss {σ a δ : ℝ}
     with T hT hsink
   intro N t₀ hlo hhi b hb W hW hsep hlarge
   have hTp : 0 < T := by linarith
-  have hN1 : 1 ≤ N := (Real.one_le_rpow hT.le (show 0 ≤ a by linarith [hw.a_low])).trans hlo
+  have hN1  := (Real.one_le_rpow hT.le (show 0 ≤ a by linarith [hw.a_low])).trans hlo
   have hNp : 0 < N := by linarith
   have hV : 0 < N^σ*T^(-2*δ) := by positivity
   let p := 3*a*(1-σ)
   have hP : 0 < T^p := by positivity
   obtain ⟨L,hNL,hLT,hbase,hfirst,hsecond⟩ := quadratic_monomial_budgets hw hδ.le hδ' hT hNp hlo hhi
-  have hLp : 0 < L := hNp.trans_le hNL
+  have hLp  := hNp.trans_le hNL
   by_cases hR : (W.card:ℝ) ≤ T^p
   · have hp : T^p ≤ T^(p+51*δ) := Real.rpow_le_rpow_of_exponent_le hT.le (by linarith)
     exact (hR.trans hp).trans (by
@@ -45,7 +45,7 @@ theorem quadratic_polynomial_count_loss {σ a δ : ℝ}
         have hh : 0 ≤ (1+6*A)^3 := by positivity
         linarith only [hh]
       simpa only [one_mul] using mul_le_mul_of_nonneg_right hC (by positivity : 0 ≤ T^(p+51*δ)))
-  · have hs : T^p ≤ (W.card:ℝ) := (le_of_not_ge hR)
+  · have hs  := (le_of_not_ge hR)
     have hquad := hbound T t₀ N L hT hN1 hNL hLT b hb W (N^σ*T^(-2*δ)) hV.le hW hlarge hsep
     have hh := quadratic_scalar_absorption hNp hLp hTp hV hP hs
       (Real.one_le_rpow hT.le (show 0 ≤ 16*δ by positivity))

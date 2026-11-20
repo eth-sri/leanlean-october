@@ -26,7 +26,6 @@ def operatorCenteredFrequency (x : ℝ) : ℝ := mellinFrequency |x|
 
 theorem operator_centered_amplitude_measurable {a : ℝ → ℝ}
     (ha : Measurable a) (L : ℝ) : Measurable (operatorCenteredAmplitude a L) := by
-  unfold operatorCenteredAmplitude
   apply Measurable.ite (measurableSet_lt measurable_id measurable_const) <;> fun_prop
 
 theorem operator_centered_frequency_measurable : Measurable operatorCenteredFrequency := by
@@ -59,7 +58,7 @@ theorem operator_centered_measure_integral {E : Type*} [NormedAddCommGroup E]
 
 theorem operator_centered_sample_pos {l u L : ℝ} (hl : 0 < l) (hL : 0 < L)
     {m : ℤ} (hm : m ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋) : 0 < (m:ℝ)/L := by
-  have hh : l*L ≤ (m:ℝ) := Int.ceil_le.mp (Finset.mem_Icc.mp hm).1
+  have hh  := Int.ceil_le.mp (Finset.mem_Icc.mp hm).1
   exact div_pos ((mul_pos hl hL).trans_le hh) hL
 
 /-- The scalar kernel of the signed-amplitude positive-measure presentation
@@ -69,7 +68,7 @@ theorem operator_centered_frequencyKernel {a : ℝ → ℝ} (ha : Measurable a)
     (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
     frequencyKernel (operatorCenteredMeasure l u L) (operatorCenteredAmplitude a L)
       operatorCenteredFrequency s = centeredKernel (fun x => (a x:ℂ)) l u L s := by
-  let F : ℝ → ℂ := fun x => operatorCenteredAmplitude a L x*phase (s*operatorCenteredFrequency x)
+  let F  := fun x => operatorCenteredAmplitude a L x*phase (s*operatorCenteredFrequency x)
   have hj : Integrable (fun x => ((L*a x:ℝ):ℂ)*phase (s*mellinFrequency x)) := by
     apply ((hi.const_mul L).norm).mono'
     · have hp := phase_measurable
@@ -82,7 +81,7 @@ theorem operator_centered_frequencyKernel {a : ℝ → ℝ} (ha : Measurable a)
   have he (x : ℝ) (hx : x ∈ Icc l u) : F x = -(((L*a x:ℝ):ℂ)*phase (s*mellinFrequency x)) := by
     have hx0 : 0 < x := hl.trans_le hx.1
     simp [F,operatorCenteredAmplitude,operatorCenteredFrequency,not_lt.mpr hx0.le,abs_of_pos hx0]
-  have hFi : IntegrableOn F (Icc l u) := hj.neg.integrableOn.congr (by
+  have hFi  := hj.neg.integrableOn.congr (by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
     exact (he x hx).symm)
   change (∫ x, F x ∂operatorCenteredMeasure l u L) = _
@@ -119,14 +118,14 @@ theorem operator_centered_eq (μ : Measure ℝ) [IsFiniteMeasure μ]
     (operatorPhase μ (operatorCenteredFrequency x))
   let J := fun x => rankOne ℂ (((L*a x:ℝ):ℂ) • operatorPhase μ (mellinFrequency x))
     (operatorPhase μ (mellinFrequency x))
-  have hj : Integrable J := operator_continuous_integrable μ hi L
+  have hj  := operator_continuous_integrable μ hi L
   have he (x : ℝ) (hx : x ∈ Icc l u) : F x = -J x := by
     have hx0 : 0 < x := hl.trans_le hx.1
     apply ContinuousLinearMap.ext
     intro v
     simp [F,J,operatorCenteredAmplitude,operatorCenteredFrequency,
       not_lt.mpr hx0.le,abs_of_pos hx0,rankOne_apply,smul_smul]
-  have hFi : IntegrableOn F (Icc l u) := hj.neg.integrableOn.congr (by
+  have hFi  := hj.neg.integrableOn.congr (by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
     exact (he x hx).symm)
   change (∫ x, F x ∂operatorCenteredMeasure l u L) = _

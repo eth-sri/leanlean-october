@@ -19,7 +19,7 @@ theorem sum_inv_sqrt_le (N : ℕ) :
     have hp : 0 < Real.sqrt (N+1 : ℝ) := Real.sqrt_pos.2 (by positivity)
     have hs := Real.sq_sqrt (show 0 ≤ (N : ℝ) by positivity)
     have hs' := Real.sq_sqrt (show 0 ≤ (N+1 : ℝ) by positivity)
-    have hm : Real.sqrt (N : ℝ) ≤ Real.sqrt (N+1 : ℝ) := Real.sqrt_le_sqrt (by linarith)
+    
     have hd : 1 / Real.sqrt (N+1 : ℝ) ≤
         2*(Real.sqrt (N+1 : ℝ)-Real.sqrt (N : ℝ)) := by
       apply (div_le_iff₀ hp).2
@@ -37,7 +37,7 @@ theorem norm_zetaMollifier_le_two_sqrt {X : ℝ} {s : ℂ}
     _ ≤ ∑ d ∈ Finset.Icc 1 ⌊X⌋₊, (1 / Real.sqrt (d : ℝ)) := by
       apply Finset.sum_le_sum
       intro d hd
-      have hdpos : 0 < d := (Finset.mem_Icc.mp hd).1
+      have hdpos  := (Finset.mem_Icc.mp hd).1
       have hdreal : (1 : ℝ) ≤ d := by exact_mod_cast hdpos
       have hm : ‖(ArithmeticFunction.moebius d : ℂ)‖ ≤ 1 := by
         rw [Complex.norm_intCast]

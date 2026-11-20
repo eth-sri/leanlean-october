@@ -55,7 +55,6 @@ theorem ExponentPair.atkinson_pair_nominal_gram {k l ε : ℝ}
     _ = H^(2*ε)*((M : ℝ)^(1/2:ℝ)*
         ((W.card : ℝ)*(M : ℝ)+C*(W.card : ℝ)^2*X+B)) := by ring
     _ = _ := by
-      dsimp [X,B]
       rw [atkinson_pair_power_term_eq hH0 hM hL.le]
 
 theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
@@ -116,10 +115,7 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
           (mul_le_mul_of_nonneg_left he (sq_nonneg _)) hS
       _ = D*(M : ℝ)^ε*((M : ℝ)^(1/2:ℝ)*
           (∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax M M t u)) := by
-        calc
-          _ = D*(((M : ℝ)^(-(1/4:ℝ)))^2*(M : ℝ)^(1+ε))*
-              (∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax M M t u) := by ring
-          _ = _ := by rw [hm]; ring
+        grind
       _ ≤ D*(M : ℝ)^ε*(H^(2*ε)*atkinsonPairPowerTerm C k l H G L M W.card) :=
         mul_le_mul_of_nonneg_left hg (by positivity)
       _ ≤ D*H^ε*(H^(2*ε)*atkinsonPairPowerTerm C k l H G L N W.card) :=

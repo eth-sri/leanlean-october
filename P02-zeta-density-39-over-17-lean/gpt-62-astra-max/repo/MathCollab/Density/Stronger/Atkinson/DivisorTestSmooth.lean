@@ -46,7 +46,7 @@ theorem contDiffAt_zetaShortDivisorTestFunction (T : ℝ) {G x : ℝ}
     ContDiffAt ℝ ∞ (zetaShortDivisorTestFunction T G) x := by
   have hlog : ContDiffAt ℝ ∞ Real.log x := Real.contDiffAt_log.mpr hx.ne'
   have hpow := contDiffAt_ofReal_cpow_positive ((-1 / 2 : ℂ) + (T : ℂ) * I) hx
-  have hcastlog : ContDiffAt ℝ ∞ (fun y : ℝ => (Real.log y : ℂ)) x :=
+  have hcastlog  :=
     Complex.ofRealCLM.contDiff.contDiffAt.comp x hlog
   have hweight : ContDiffAt ℝ ∞
       (fun y : ℝ => zetaDivisorWeight ((Real.log y : ℂ) - zetaGammaLeadingLog T)) x :=

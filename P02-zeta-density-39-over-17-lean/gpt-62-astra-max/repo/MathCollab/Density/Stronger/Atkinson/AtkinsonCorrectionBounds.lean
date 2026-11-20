@@ -35,7 +35,7 @@ theorem exists_norm_atkinsonPowerPair_far_le (α : ℝ) (c d : ℂ) :
   obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonPowerIntegral_far_le α
   refine ⟨(1 + ‖c‖ + ‖d‖) * C, by positivity, ?_⟩
   intro T G L b hT hG hGT hL hwidth hb
-  have hb0 : 0 < b := (by positivity : 0 < 8 * Real.sqrt T).trans_le hb
+  have hb0  := (by positivity : 0 < 8 * Real.sqrt T).trans_le hb
   have h := hbound T G L b hT hG hGT hL hwidth hb
   apply (norm_add_le _ _).trans
   rw [norm_mul, norm_mul]
@@ -68,7 +68,7 @@ theorem exists_norm_atkinsonCorrectionPair_le :
   intro T G L hT hG hGT hL hwidth n hn
   have hT0 : 0 < T := by linarith
   have hn0 : (0 : ℝ) < n := by exact_mod_cast hn
-  have hsn : 0 < Real.sqrt (n : ℝ) := Real.sqrt_pos.2 hn0
+  have hsn  := Real.sqrt_pos.2 hn0
   by_cases hb : 8 * Real.sqrt T ≤ Real.sqrt (n : ℝ)
   · apply (hfar T G L (Real.sqrt n) hT0 hG hGT hL hwidth hb).trans
     apply div_le_div_of_nonneg_right _ hsn.le

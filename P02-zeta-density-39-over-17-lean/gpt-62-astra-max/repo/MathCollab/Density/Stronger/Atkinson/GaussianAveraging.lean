@@ -6,7 +6,8 @@ Adapted from source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
 Only the listed proof slices are retained. Mathlib retains Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
-public import MathCollab.Density.Stronger.Atkinson.LocalDivisorMean
+public import MathCollab.Density.Stronger.Atkinson.GaussianPolynomial
+public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 

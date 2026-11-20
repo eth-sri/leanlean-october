@@ -5,7 +5,11 @@ Ported from McColm 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
 Narrow extraction only; see third_party/twelfth/ATKINSON_AMPLITUDE_MANIFEST.json for source and receiver hashes.
 The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
-public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryReduction
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonQuadraticKernel
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryTails
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonNaturalAmplitude
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerIntegral
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerWeightRoot
 
 @[expose] public section
 

@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedKernelJets
 public import TaoTrudgianYang2025.FourierDecayCore
 
@@ -53,8 +52,7 @@ theorem modelPhaseBufferedFourierMode_uniform_decay
   have hsupport : Function.support f ⊆ Icc (1 : ℝ) 2 := by
     intro u hu
     by_contra hn
-    exact hu (by
-      exact modelPhaseWeightedKernel_zero_of_not_mem hs (by norm_num)
+    exact hu (modelPhaseWeightedKernel_zero_of_not_mem hs (by norm_num)
         (by simpa only [mul_one] using hn) T)
   have hb₀ : ∀ u, ‖iteratedDeriv 0 f u‖ ≤ 1 := by
     intro u
@@ -63,10 +61,10 @@ theorem modelPhaseBufferedFourierMode_uniform_decay
   have h := RiemannZeta.GuthMaynard.one_add_abs_fourier_decay_of_support_of_bounds_order 2
     hf (by norm_num : (1 : ℝ) ≤ 2) hsupport (by norm_num)
     (by positivity : 0 ≤ C*(η⁻¹)^2*(1+|T|)^2) hb₀ hb₂ (q*N)
-  have hA : 1 ≤ η⁻¹ := (one_le_inv₀ hη).mpr hη₁
+  have hA  := (one_le_inv₀ hη).mpr hη₁
   have hA₂ : 1 ≤ (η⁻¹)^2 := one_le_pow₀ hA
   have hU₂ : 1 ≤ (1+|T|)^2 := one_le_pow₀ (by linarith [abs_nonneg T])
-  have hbig : 1 ≤ C*(η⁻¹)^2*(1+|T|)^2 :=
+  have hbig  :=
     one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hC hA₂) hU₂
   have hfbound : (1+|q*N|)^2 * ‖𝓕 f (q*N)‖ ≤
       8*C*(η⁻¹)^2*(1+|T|)^2 := by

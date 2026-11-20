@@ -26,12 +26,12 @@ theorem finite_rational_prime_model (A : Finset ℚ) :
     have hm : q ∈ P := mem_biUnion.mpr ⟨r, hr, hq⟩
     simpa only [p, image_orderEmbOfFin_univ] using hm
   · intro r hr j
-    have h1 : (rationalExponent r (p j)).natAbs ≤ B :=
+    have h1  :=
       (le_sup (f := fun j => (rationalExponent r (p j)).natAbs) (mem_univ j)).trans
         (le_sup (f := fun r => univ.sup (fun j => (rationalExponent r (p j)).natAbs)) hr)
     omega
   · intro r hr s hs j
-    have h1 : (rationalExponent r (p j)-rationalExponent s (p j)).natAbs ≤ D :=
+    have h1  :=
       (le_sup (f := fun j => (rationalExponent r (p j)-rationalExponent s (p j)).natAbs)
         (mem_univ j)).trans ((le_sup
         (f := fun s => univ.sup (fun j => (rationalExponent r (p j)-rationalExponent s (p j)).natAbs)) hs).trans
@@ -64,10 +64,10 @@ theorem rational_divisor_weight_subpower {η : ℝ} (hη : 0 < η) :
   obtain ⟨D, hD, hd⟩ := MathCollab.Density.divisor_card_subpower (show 0 < η/12 by positivity)
   refine ⟨D^12, one_le_pow₀ hD, ?_⟩
   intro H hH r hr hnum hden
-  have ha : (r.num.natAbs.divisors.card : ℝ) ≤ D*H^(η/12) :=
+  have ha  :=
     (hd _ (Int.natAbs_pos.mpr (Rat.num_ne_zero.mpr hr.ne'))).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) hnum (by positivity)) (by linarith))
-  have hb : (r.den.divisors.card : ℝ) ≤ D*H^(η/12) :=
+  have hb  :=
     (hd _ r.pos).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) hden (by positivity)) (by linarith))
   have hm := mul_le_mul ha hb (Nat.cast_nonneg _) (by positivity)

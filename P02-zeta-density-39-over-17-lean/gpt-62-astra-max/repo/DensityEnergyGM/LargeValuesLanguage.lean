@@ -94,8 +94,8 @@ theorem approxAddEnergy_translate (η c : ℝ) (W : Finset ℝ) :
       rcases q with ⟨⟨a,b⟩,⟨d,e⟩⟩
       rcases q' with ⟨⟨a',b'⟩,⟨d',e'⟩⟩
       simp only [mapAdditiveQuadruple, Prod.mk.injEq] at heq ⊢
-      exact ⟨⟨by linarith [heq.1.1], by linarith [heq.1.2]⟩,
-        by linarith [heq.2.1], by linarith [heq.2.2]⟩
+      exact ⟨⟨by linarith, by linarith⟩,
+        by linarith, by linarith⟩
   · unfold ApproxAddEnergy
     apply Finset.card_le_card_of_injOn
       (mapAdditiveQuadruple fun x => x + c)
@@ -104,8 +104,8 @@ theorem approxAddEnergy_translate (η c : ℝ) (W : Finset ℝ) :
       rcases q with ⟨⟨a,b⟩,⟨d,e⟩⟩
       rcases q' with ⟨⟨a',b'⟩,⟨d',e'⟩⟩
       simp only [mapAdditiveQuadruple, Prod.mk.injEq] at heq ⊢
-      exact ⟨⟨by linarith [heq.1.1], by linarith [heq.1.2]⟩,
-        by linarith [heq.2.1], by linarith [heq.2.2]⟩
+      exact ⟨⟨by linarith, by linarith⟩,
+        by linarith, by linarith⟩
 
 /-- Image of the ordinate set under the integer floor map. -/
 noncomputable def floorImage (W : Finset ℝ) : Finset ℤ :=
@@ -125,9 +125,6 @@ theorem floor_injective_on_of_separated (W : Finset ℝ)
   have hxylt : x - y < 1 := by
     rw [hfloor] at hxupper
     linarith
-  have hyxlt : -(1 : ℝ) < x - y := by
-    rw [← hfloor] at hyupper
-    linarith
-  exact (not_lt_of_ge hsep) (abs_lt.mpr ⟨hyxlt, hxylt⟩)
+  grind
 
 end GuthMaynard.NativeMoment

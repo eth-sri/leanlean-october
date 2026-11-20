@@ -35,7 +35,7 @@ theorem integral_weighted_sq_le
       (fun x : ℝ => g x*(f x)^2 - (2*r)*(g x*f x) + r^2*g x) := by
     funext x
     ring
-  have hlin : Integrable (fun x : ℝ => (2*r)*(g x*f x)) := hgf.const_mul (2*r)
+  have hlin  := hgf.const_mul (2*r)
   have hsub : Integrable (fun x : ℝ => g x*(f x)^2-(2*r)*(g x*f x)) :=
     hgf2.sub hlin
   rw [heq,integral_add hsub (hgi.const_mul (r^2)),

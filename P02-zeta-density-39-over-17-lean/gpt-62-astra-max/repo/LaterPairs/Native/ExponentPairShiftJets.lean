@@ -1,8 +1,5 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import TaoTrudgianYang2025.ModelEndpointEntry
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftPhase
 
 @[expose] public section

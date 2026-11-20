@@ -32,13 +32,7 @@ theorem finite_cubic_le_sqrt_second_fourth {ι : Type*} (Q : Finset ι) (f : ι 
     apply Finset.sum_congr rfl
     intro q hq
     ring
-  rw [hFour] at h
-  calc
-    _ = ∑ q ∈ Q, f q * f q ^ 2 := by
-      apply Finset.sum_congr rfl
-      intro q hq
-      ring
-    _ ≤ _ := h
+  grind
 
 /-- Unconditional reduced cubic bound at every exact short real scale.
 The scale dependence is exactly M, permitting a harmonic gcd sum. -/
@@ -54,14 +48,14 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C₂, T₂, hC₂, hT₂, hSecond⟩ := real_scale_ratio_second_sharp_native ε hε
   obtain ⟨C₄, T₄, hC₄, hT₄, hFourth⟩ := real_scale_coprime_fourth_min_native ε hε
   let C : ℝ := Real.sqrt (C₂ * C₄)
-  have hC : 0 < C := Real.sqrt_pos.mpr (mul_pos hC₂ hC₄)
+  have hC  := Real.sqrt_pos.mpr (mul_pos hC₂ hC₄)
   refine ⟨C, max T₂ T₄, hC, hT₂.trans (le_max_left _ _), ?_⟩
   intro M T Q W hM hT hMT hQ hSep hBase
-  have hTtwo : 2 ≤ T := hT₂.trans ((le_max_left _ _).trans hT)
+  have hTtwo  := hT₂.trans ((le_max_left _ _).trans hT)
   have hTpos : 0 < T := by linarith
   by_cases hW : W.Nonempty
   swap
-  · have he : W = ∅ := Finset.not_nonempty_iff_eq_empty.mp hW
+  · have he  := Finset.not_nonempty_iff_eq_empty.mp hW
     subst W
     simp only [gmR, Finset.sum_empty, norm_zero, zero_pow (by omega : 3 ≠ 0),
       Finset.sum_const_zero]
@@ -80,9 +74,9 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
     have hRdiag : R ^ 2 ≤ E := by dsimp only [R, E]; exact_mod_cast h
     nlinarith
   have hK : 0 < K := by dsimp only [K]; positivity
-  have hH : 0 < H := mul_pos hTpos hE
-  have hD : 0 ≤ D := by dsimp only [D]; positivity
-  have hS : 0 ≤ S := by dsimp only [S]; positivity
+  have hH  := mul_pos hTpos hE
+  
+  
   let f : ℕ × ℕ → ℝ := fun q => ‖gmR W ((q.1 : ℝ) / q.2)‖
   have hQsub : Q ⊆ (sourceRatioIndices M) ×ˢ (sourceRatioIndices M) := by
     intro q hq
@@ -95,7 +89,7 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
       simpa only [finiteRatioSecond, Finset.sum_product] using
         (Finset.sum_le_sum_of_subset_of_nonneg hQsub (fun q hq hnot => sq_nonneg (f q)))
     exact hSub.trans (hSecond M T W hM ((le_max_left _ _).trans hT) hMT hSep hBase)
-  have hFourthQ : (∑ q ∈ Q, f q ^ 4) ≤ C₄ * T ^ ε * D :=
+  have hFourthQ  :=
     hFourth M T Q W hM ((le_max_right _ _).trans hT) hMT hQ hSep hBase
   have hCS : (∑ q ∈ Q, f q ^ 3) ≤
       Real.sqrt ((C₂ * T ^ ε * S) * (C₄ * T ^ ε * D)) := by
@@ -110,9 +104,7 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
       rw [mul_pow, show C ^ 2 = C₂ * C₄ from Real.sq_sqrt (by positivity)]
       ring
     rw [hShape, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq (by positivity)]
-  have hOptimized : Real.sqrt (S * D) ≤ M * sharpCubicProfile T W := by
-    exact sharp_second_shape_sqrt_min hM hTpos.le hR.le hE.le hH hK
-  change (∑ q ∈ Q, f q ^ 3) ≤ C * T ^ ε * M * sharpCubicProfile T W
+  have hOptimized := sharp_second_shape_sqrt_min hM hTpos.le hR.le hE.le hH hK
   calc
     _ ≤ C * T ^ ε * Real.sqrt (S * D) := hCS.trans_eq hFactor
     _ ≤ C * T ^ ε * (M * sharpCubicProfile T W) :=

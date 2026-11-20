@@ -30,11 +30,7 @@ theorem heathBrownThirdTerm_le_threeTerm
     heathBrownThirdTerm N k lambda ≤ heathBrownThreeTerm N k lambda := by
   unfold heathBrownThirdTerm heathBrownThreeTerm
   dsimp only
-  have hfirst : 0 ≤
-      (N : ℝ) ^ (1 - heathBrownCriticalReciprocal k) := by positivity
-  have hmiddle : 0 ≤
-      (N : ℝ) * lambda ^ heathBrownCriticalReciprocal k := by positivity
-  linarith
+  bound
 
 theorem heathBrownFourTerm_le_two_threeTerm
     {N k : ℕ} (hN : 1 ≤ N) (hk : 3 ≤ k)
@@ -45,8 +41,7 @@ theorem heathBrownFourTerm_le_two_threeTerm
   have hlambdaTerm := heathBrown_lambda_term_le_third_of_third_le_N
     hN hk hlambda (by simpa only [heathBrownThirdTerm] using hthird)
   have hthirdThree := heathBrownThirdTerm_le_threeTerm (k := k) hN hlambda
-  have hlambdaThree : lambda ^ (-(1 / (k : ℝ))) ≤
-      heathBrownThreeTerm N k lambda :=
+  have hlambdaThree  :=
     hlambdaTerm.trans (by
       simpa only [heathBrownThirdTerm] using hthirdThree)
   unfold heathBrownFourTerm
@@ -87,8 +82,7 @@ theorem norm_heathBrownExponentialSum_le_factor_good_of_vmvt
       hk hN hA hlambda hlambdaOne hepsilon hsmall hlargeH hHN hf hkBounds hC hVMVT
     have hfourTerms := heathBrownFourTerm_le_two_threeTerm
       hNOne hk hlambda hthird
-    have hCfour0 : 0 ≤
-        heathBrownLemmaOneFourTermConstant k A C epsilon :=
+    have hCfour0  :=
       (heathBrownLemmaOneFourTermConstant_pos hk hA hC hepsilon).le
     have hproduct0 : 0 ≤
         (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda :=
@@ -114,7 +108,7 @@ theorem norm_heathBrownExponentialSum_le_factor_good_of_vmvt
               heathBrownKthDerivativeFactor k N lambda := by
         rw [hscaleIdentity]
         ring
-  · have hthirdStrict : (N : ℝ) < heathBrownThirdTerm N k lambda :=
+  · have hthirdStrict  :=
       lt_of_not_ge hthird
     have htrivial := norm_heathBrownExponentialSum_le N f
     have hthree := heathBrownThirdTerm_le_threeTerm (k := k) hNOne hlambda

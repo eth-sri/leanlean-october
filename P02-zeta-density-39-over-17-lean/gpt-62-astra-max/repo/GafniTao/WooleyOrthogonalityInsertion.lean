@@ -28,9 +28,7 @@ theorem wooley_normalized_grid_character
       if d = 0 then 1 else 0 := by
   rw [wooley_sum_grid_character]
   split_ifs with hd
-  · have hq : (((q ^ k : ℕ) : ℂ)) ≠ 0 := by
-      exact_mod_cast pow_ne_zero k (NeZero.ne q)
-    field_simp
+  · simp
   · simp
 
 private theorem finite_weighted_filter
@@ -70,9 +68,7 @@ private theorem finite_insert_redundant_average
     A * ∑ i : I, ∑ omega : Ω, weight omega * first i omega =
       A * (E * ∑ i : I, ∑ j : J, ∑ omega : Ω,
         weight omega * first i omega * second j omega) := by
-  have hleft :
-      A * ∑ i : I, ∑ omega : Ω, weight omega * first i omega =
-        ∑ omega : Ω, if P omega then weight omega else 0 :=
+  have hleft  :=
     finite_weighted_filter A weight first P hfirst
   have hinner (i : I) :
       E * ∑ j : J, ∑ omega : Ω,
@@ -94,20 +90,10 @@ private theorem finite_insert_redundant_average
             rw [Finset.mul_sum]
       _ = A * ∑ i : I, ∑ omega : Ω,
           if Q omega then weight omega * first i omega else 0 := by
-            apply congrArg (A * ·)
-            apply Finset.sum_congr rfl
-            intro i hi
-            exact hinner i
+            simp [*]
       _ = A * ∑ i : I, ∑ omega : Ω,
           (if Q omega then weight omega else 0) * first i omega := by
-            apply congrArg (A * ·)
-            apply Finset.sum_congr rfl
-            intro i hi
-            apply Finset.sum_congr rfl
-            intro omega homega
-            by_cases hQ : Q omega
-            · simp only [ite_eq_left hQ]
-            · simp only [ite_eq_right hQ, zero_mul]
+            simp
       _ = ∑ omega : Ω,
           if P omega then (if Q omega then weight omega else 0) else 0 :=
             finite_weighted_filter A
@@ -118,11 +104,7 @@ private theorem finite_insert_redundant_average
         ∑ omega : Ω, if P omega then weight omega else 0 := hleft
     _ = ∑ omega : Ω,
         if P omega then (if Q omega then weight omega else 0) else 0 := by
-          apply Finset.sum_congr rfl
-          intro omega homega
-          by_cases hP : P omega
-          · rw [ite_eq_left hP, ite_eq_left hP, ite_eq_left (hforced omega hP)]
-          · rw [ite_eq_right hP, ite_eq_right hP]
+          grind
     _ = A * (E * ∑ i : I, ∑ j : J, ∑ omega : Ω,
         weight omega * first i omega * second j omega) := hright.symm
 

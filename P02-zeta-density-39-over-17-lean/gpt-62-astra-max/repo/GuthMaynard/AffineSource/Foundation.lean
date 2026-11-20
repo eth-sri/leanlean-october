@@ -67,8 +67,7 @@ theorem norm_sum_sq_le_card_mul_sum_norm_sq {ι : Type*} [DecidableEq ι]
     ‖∑ i ∈ s, a i‖ ^ 2 ≤ (∑ i ∈ s, ‖a i‖) ^ 2 := by
       gcongr
       exact norm_sum_le _ _
-    _ ≤ (s.card : ℝ) * ∑ i ∈ s, ‖a i‖ ^ 2 := by
-      exact sq_sum_le_card_mul_sum_sq
+    _ ≤ (s.card : ℝ) * ∑ i ∈ s, ‖a i‖ ^ 2 := sq_sum_le_card_mul_sum_sq
 
 def DivisorCountBoundProp : Prop :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧

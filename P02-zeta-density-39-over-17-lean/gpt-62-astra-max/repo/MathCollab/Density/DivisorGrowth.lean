@@ -19,7 +19,7 @@ theorem exponent_linear_le_geometric {η : ℝ} (hη : 0 < η) :
   let r := ((2 : ℝ)^η)⁻¹
   have hp : 1 < (2 : ℝ)^η := Real.one_lt_rpow (by norm_num) hη
   have hr : 0 < r := by dsimp [r]; positivity
-  have hr1 : r < 1 := inv_lt_one_of_one_lt₀ hp
+  have hr1  := inv_lt_one_of_one_lt₀ hp
   have hrn : ‖r‖ < 1 := by rwa [Real.norm_eq_abs, abs_of_pos hr]
   have hs : Summable (fun e : ℕ => ((e : ℝ)+1)*r^e) := by
     have hh := (summable_pow_mul_geometric_of_norm_lt_one 1 hrn).add
@@ -39,7 +39,7 @@ theorem exponent_linear_le_two_pow (e : ℕ) : (e : ℝ)+1 ≤ (2 : ℝ)^e := by
   induction e with
   | zero => norm_num
   | succ e ih =>
-    have hh : (1 : ℝ) ≤ (2 : ℝ)^e := one_le_pow₀ (by norm_num)
+    
     push_cast
     rw [pow_succ]
     linarith

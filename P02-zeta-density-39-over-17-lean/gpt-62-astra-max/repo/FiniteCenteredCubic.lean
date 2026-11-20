@@ -34,7 +34,7 @@ theorem card_le_card_sqrt (W : Finset ℝ) : (W.card:ℝ) ≤ (W.card:ℝ)*Real.
   by_cases hz : W.card=0
   · simp [hz]
   have hR : (1:ℝ) ≤ W.card := by exact_mod_cast (show 1 ≤ W.card by omega)
-  have hs : 1 ≤ Real.sqrt (W.card:ℝ) := (Real.one_le_sqrt).mpr hR
+  have hs  := (Real.one_le_sqrt).mpr hR
   nlinarith [mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg W.card)]
 
 /-- Full finite-set centered cubic, with fixed cutoff support [1/2,5].
@@ -65,20 +65,20 @@ theorem finite_centered_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
   let X := T^2*R*Real.sqrt R+T*L*Real.sqrt R*Real.sqrt E
   have hT1 : 1 ≤ T := by linarith
   have hTp : 0 < T := by linarith
-  have hL1 : 1 ≤ L := (Real.one_le_rpow hT1 (by norm_num : (0:ℝ)≤4/5)).trans hLl
+  have hL1  := (Real.one_le_rpow hT1 (by norm_num : (0:ℝ)≤4/5)).trans hLl
   have hLp : 0 < L := by linarith
   have hLT2 : L ≤ T^2 := hLu.trans (by nlinarith)
   have hR : 0 ≤ R := Nat.cast_nonneg _
-  have hE : 0 ≤ E := Nat.cast_nonneg _
-  have hRcard : R ≤ T+1 := separated_interval_card hTp.le W hW hsep
+  
+  have hRcard  := separated_interval_card hTp.le W hW hsep
   have hR2 : R^2 ≤ 4*T^2 := by
     have hh := pow_le_pow_left₀ hR (show R ≤ 2*T by linarith) 2
     nlinarith
-  have hsqrt : R ≤ R*Real.sqrt R := card_le_card_sqrt W
+  have hsqrt  := card_le_card_sqrt W
   have hX : 0 ≤ X := by dsimp [X]; positivity
   have hbase : T^2*R*Real.sqrt R ≤ X := by
     exact le_add_of_nonneg_right (by positivity)
-  have hTe : 1 ≤ T^ε := Real.one_le_rpow hT1 hε.le
+  have hTe  := Real.one_le_rpow hT1 hε.le
   have hpowX : X ≤ T^ε*X := by nlinarith
   have hR3 : R^3 ≤ 4*X := by
     have hh := mul_le_mul_of_nonneg_right hR2 hR
@@ -92,18 +92,17 @@ theorem finite_centered_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
   · let J := kernelCubic (finiteTimeMeasure W)
       (retainedPoissonKernel (volume.restrict (Icc (1/2:ℝ) 5)) (fun x => (w x:ℂ)) L
         (poissonModes (T^(1+η)/L)))
-    have hj : ‖J‖ ≤ C*(T^ε*X+T^(-100:ℝ)*R^3) := hret T L hbig hLl hLu W hsep
-    have hd : ‖finiteCubic W (MathCollab.Density.hKernel w L)-J‖ ≤ A*T^(-190:ℝ)*R^3 :=
+    have hj  := hret T L hbig hLl hLu W hsep
+    have hd  :=
       happrox T L t₀ hT1 hL1 hLT2 W hW
     calc
       _ = ‖J+(finiteCubic W (MathCollab.Density.hKernel w L)-J)‖ := by congr 1; ring
       _ ≤ ‖J‖+‖finiteCubic W (MathCollab.Density.hKernel w L)-J‖ := norm_add_le _ _
       _ ≤ C*(T^ε*X+T^(-100:ℝ)*R^3)+A*T^(-190:ℝ)*R^3 := add_le_add hj hd
-      _ ≤ C*(T^ε*X+4*T^ε*X)+A*(4*T^ε*X) := by
-        exact add_le_add (mul_le_mul_of_nonneg_left (add_le_add le_rfl (hErr (-100) (by norm_num))) hC.le)
+      _ ≤ C*(T^ε*X+4*T^ε*X)+A*(4*T^ε*X) := add_le_add (mul_le_mul_of_nonneg_left (add_le_add le_rfl (hErr (-100) (by norm_num))) hC.le)
           (by convert mul_le_mul_of_nonneg_left (hErr (-190) (by norm_num)) hA using 1; ring)
       _ ≤ (5*C+4*A+B)*T^ε*X := by nlinarith only [mul_nonneg hB (show 0 ≤ T^ε*X by positivity)]
-  · have hTT : T ≤ T₀ := le_of_not_ge hbig
+  · have hTT  := le_of_not_ge hbig
     have hRR : R ≤ T₀+1 := hRcard.trans (by linarith)
     have hRsmall : R^3 ≤ (T₀+1)^2*(R*Real.sqrt R) := by
       have hp := pow_le_pow_left₀ hR hRR 2
@@ -123,7 +122,7 @@ theorem finite_centered_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
       _ ≤ (D*T₀)^3*((T₀+1)^2*(R*Real.sqrt R))  := by
         gcongr
         exact hLu.trans hTT
-      _ = B*(R*Real.sqrt R) := by dsimp [B]; ring
+      _ = B*(R*Real.sqrt R) := by ring
       _ ≤ B*(T^ε*X) := mul_le_mul_of_nonneg_left (hrootbase.trans hpowX) hB
       _ ≤ (5*C+4*A+B)*T^ε*X := by
         nlinarith only [mul_nonneg (show 0 ≤ 5*C+4*A by positivity) (show 0 ≤ T^ε*X by positivity)]

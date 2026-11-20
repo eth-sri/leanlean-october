@@ -32,8 +32,6 @@ theorem heathBrownWeylSum_eq_natural_sum
   rw [ford_sum_Icc_one_eq_fin]
   apply Finset.sum_congr rfl
   intro h hh
-  unfold heathBrownNaturalMonomial fordVinogradovMonomial
-    fordVinogradovExponent
   congr 2
 
 theorem heathBrownNaturalMonomial_eq_center_mul_displacementPhase

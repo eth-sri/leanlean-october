@@ -72,8 +72,7 @@ theorem sum_nat_occupancy_le_of_superlevels
   calc
     _ ≤ ∑ m ∈ Finset.Icc 1 M, B / (m : ℝ)^2 := by
       apply Finset.sum_le_sum
-      intro m hm
-      exact hcount m (by have := (Finset.mem_Icc.mp hm).1; omega)
+      grind
     _ = B * ∑ m ∈ Finset.Icc 1 M, ((m : ℝ)^2)⁻¹ := by
       simp only [div_eq_mul_inv, Finset.mul_sum]
     _ ≤ B*2 := mul_le_mul_of_nonneg_left (sum_pos_nat_inv_sq_le_two M) hB

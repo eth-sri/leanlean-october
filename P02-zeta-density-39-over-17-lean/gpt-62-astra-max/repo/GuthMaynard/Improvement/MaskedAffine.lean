@@ -51,13 +51,13 @@ theorem compact_smoothed_full_input (a b : ℝ) (hab : a ≤ b) :
     exact (le_abs_self _).trans (by
       simpa only [gmAffineComplexify_apply, Complex.norm_real, Real.norm_eq_abs] using
         SchwartzMap.norm_le_seminorm (𝕜 := ℝ) (gmAffineComplexify f) x)
-  have hU : 0 ≤ sourceSup f := (smooth_nonneg
+  have hU  := (smooth_nonneg
     (scaledKernel_nonneg compactKernel_nonneg hδ) hg0 0).trans (hsup 0)
   intro β hβ n ξ hξ
   have hh := h n δ hδ hδ1 g hg hg0 hs (sourceSup f) hsup ξ
   have ht : 1 ≤ T^β := Real.one_le_rpow (by linarith) hβ.le
-  have hpow : δ⁻¹^n ≤ T^n := pow_le_pow_left₀ (by positivity) hδT n
-  have hξp : 0 < |ξ|^n := pow_pos (abs_pos.mpr hξ) n
+  have hpow  := pow_le_pow_left₀ (by positivity) hδT n
+  have hξp  := pow_pos (abs_pos.mpr hξ) n
   have hnum : |ξ|^n * ‖𝓕 (fun x => (smooth (scaledKernel compactKernel δ) g x : ℂ)) ξ‖ ≤
       C n*T^β*T^n*sourceSup f := hh.trans (by
     calc
@@ -67,7 +67,7 @@ theorem compact_smoothed_full_input (a b : ℝ) (hab : a ≤ b) :
   rw [← hf] at hnum ⊢
   calc
     _ ≤ (C n*T^β*T^n*sourceSup f) / |ξ|^n :=
-      (le_div_iff₀ hξp).mpr (by simpa only [mul_comm] using hnum)
-    _ = _ := by rw [div_pow]; ring
+      (le_div_iff₀ hξp).mpr (by linarith)
+    _ = _ := by ring
 
 end GuthMaynard.Improvement

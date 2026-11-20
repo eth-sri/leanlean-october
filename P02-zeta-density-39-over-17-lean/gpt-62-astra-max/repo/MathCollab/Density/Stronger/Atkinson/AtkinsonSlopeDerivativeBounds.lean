@@ -59,7 +59,7 @@ theorem atkinsonRootSlope_derivative_bounds {T y : ℝ} (hT : 0 < T)
     (hy : Real.sqrt T / 4 ≤ y) (b : ℝ) :
     |deriv (atkinsonRootSlope T b) y| ≤ 8 ∧
       |iteratedDeriv 2 (atkinsonRootSlope T b) y| ≤ 64 / Real.sqrt T := by
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  have hS  := Real.sqrt_pos.2 hT
   have hy0 : 0 < y := by linarith
   have hT16 : T ≤ 16 * y ^ 2 := by nlinarith [Real.sq_sqrt hT.le]
   have hfrac : T / (Real.pi * y ^ 2) ≤ 6 := by
@@ -76,9 +76,6 @@ theorem atkinsonRootSlope_derivative_bounds {T y : ℝ} (hT : 0 < T)
   · rw [iteratedDeriv_two_atkinsonRootSlope T b hy0,
       abs_of_pos (by positivity : 0 < 2 * T / (Real.pi * y ^ 3))]
     apply (div_le_div_iff₀ (by positivity : 0 < Real.pi * y ^ 3) hS).2
-    have h1 := mul_le_mul_of_nonneg_right hT16 hS.le
-    have h2 := mul_le_mul_of_nonneg_left (show Real.sqrt T ≤ 4 * y by linarith)
-      (show 0 ≤ 16 * y ^ 2 by positivity)
     nlinarith [mul_nonneg (show 0 ≤ 64 * Real.pi - 128 by linarith [Real.pi_gt_three])
       (show 0 ≤ y ^ 3 by positivity)]
 
@@ -92,8 +89,8 @@ theorem intervalC2Bound_atkinsonSlope_reciprocal_band {T G L B : ℝ}
         (3 / B) (32 * (G / Real.sqrt T)) := by
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hB0 : 0 < B := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hB
+  have hS  := Real.sqrt_pos.2 hT
+  have hB0  := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hB
   have hBG : 6 * L ≤ B * (G / Real.sqrt T) := by
     calc
       _ = (6 * Real.sqrt T * (L / G)) * (G / Real.sqrt T) := by field_simp

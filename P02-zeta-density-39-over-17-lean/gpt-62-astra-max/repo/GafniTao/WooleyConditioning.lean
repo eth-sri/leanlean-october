@@ -57,10 +57,10 @@ theorem wooley_sourceValue_cast_injective
     Function.Injective
       (fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod q))) := by
   intro m n hmn
-  have hmQ : (m : ℕ) + 1 ≤ Q := Nat.succ_le_iff.mpr m.isLt
-  have hnQ : (n : ℕ) + 1 ≤ Q := Nat.succ_le_iff.mpr n.isLt
-  have hm : (m : ℕ) + 1 < q := lt_of_le_of_lt hmQ hQq
-  have hn : (n : ℕ) + 1 < q := lt_of_le_of_lt hnQ hQq
+  have hmQ  := Nat.succ_le_iff.mpr m.isLt
+  have hnQ  := Nat.succ_le_iff.mpr n.isLt
+  have hm  := lt_of_le_of_lt hmQ hQq
+  have hn  := lt_of_le_of_lt hnQ hQq
   have hval := congrArg ZMod.val hmn
   rw [ZMod.val_natCast_of_lt hm, ZMod.val_natCast_of_lt hn] at hval
   exact Fin.ext (by omega)
@@ -114,7 +114,7 @@ theorem wooley_conditioned_grid_mean_eq_one
     wooleyConditionedGridMean s k Q qB qH = 1 := by
   rw [wooleyConditionedGridMean]
   simp_rw [wooleyResidueRawMoment_eq_modulusPow_mul_mass hs hQqH]
-  have hqB : 0 < qB := NeZero.pos qB
+  have hqB  := NeZero.pos qB
   have hqpow : (((qB ^ k : ℕ) : ℝ)) ≠ 0 := by positivity
   have hmassSquare (xi : ZMod qH) :
       (wooleyResidueMassSq Q qH xi : ℝ) ^ 2 =

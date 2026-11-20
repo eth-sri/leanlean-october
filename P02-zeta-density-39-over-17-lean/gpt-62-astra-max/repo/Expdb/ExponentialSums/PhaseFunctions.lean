@@ -57,7 +57,7 @@ def modelPhaseError
 
 /-- The phase interval has unique derivatives. -/
 theorem uniqueDiffOn_phaseInterval : UniqueDiffOn ℝ phaseInterval :=
-  uniqueDiffOn_Icc (by norm_num [phaseInterval])
+  uniqueDiffOn_Icc (by norm_num)
 
 /-- Every reference model phase is smooth on the phase interval. -/
 theorem contDiffOn_modelPhase (σ : ℝ) :
@@ -72,7 +72,7 @@ theorem iteratedDerivWithin_modelPhase (σ : ℝ) (p : ℕ) {u : ℝ}
     (hu : u ∈ phaseInterval) :
     iteratedDerivWithin p (modelPhase σ) phaseInterval u =
       (descPochhammer ℝ p).eval (-σ) * u ^ (-σ - p) := by
-  have hu0 : u ≠ 0 := ne_of_gt (zero_lt_one.trans_le hu.1)
+  have hu0  := ne_of_gt (zero_lt_one.trans_le hu.1)
   have hsmooth : ContDiffAt ℝ p (modelPhase σ) u := by
     change ContDiffAt ℝ p (fun x : ℝ ↦ x ^ (-σ)) u
     exact Real.contDiffAt_rpow_const_of_ne hu0
@@ -90,7 +90,6 @@ theorem norm_iteratedDerivWithin_modelPhase_le {σ : ℝ} (hσ : 0 ≤ σ) (p : 
     Real.norm_of_nonneg (Real.rpow_nonneg (zero_le_one.trans hu.1) _)]
   simpa only [mul_one] using mul_le_mul_of_nonneg_left
     (Real.rpow_le_one_of_one_le_of_nonpos hu.1 (by
-      have hp : 0 ≤ (p : ℝ) := Nat.cast_nonneg p
       linarith))
     (norm_nonneg ((descPochhammer ℝ p).eval (-σ)))
 
@@ -108,16 +107,7 @@ def IsApproximateModelPhaseFunction
     ∀ p : ℕ, p ≤ P → ∀ u : phaseInterval,
       ‖modelPhaseErrorAt F σ p u‖ ≤ δ
 
-/-- The derivatives of orders `1, …, n` of `F` are bounded by `K` on the phase interval. -/
-def HasPhaseDerivBound (F : ℝ → ℝ) (n : ℕ) (K : ℝ) : Prop :=
-  ∀ k : ℕ, 1 ≤ k → k ≤ n → ∀ u ∈ phaseInterval,
-    ‖iteratedDerivWithin k F phaseInterval u‖ ≤ K
 
-/-- A derivative bound may be restricted to a smaller order. -/
-theorem HasPhaseDerivBound.of_le {F : ℝ → ℝ} {m n : ℕ} {K : ℝ}
-    (hF : HasPhaseDerivBound F n K) (hmn : m ≤ n) :
-    HasPhaseDerivBound F m K :=
-  fun k hk hkm u hu ↦ hF k hk (hkm.trans hmn) u hu
 
 /-- The data defining a model phase when its reference exponent `σ` has already been fixed. -/
 structure IsModelPhaseFunctionWith
@@ -150,9 +140,7 @@ theorem IsModelPhaseFunctionWith.eventually_isApproximate
         (fun _ ↦ ⟨1, by simp [phaseInterval]⟩)
         (modelPhaseError F σ p)).1
         (hF.error_isChoicewiseInfinitesimal p) δ hδ
-  have hall :
-      ∀ᶠ i in atTop, ∀ p ∈ Finset.range (P + 1),
-        ∀ u : phaseInterval, ‖modelPhaseError F σ p i u‖ < δ :=
+  have hall  :=
     (Finset.range (P + 1)).eventually_all.mpr hp
   filter_upwards [hall] with i hi
   refine ⟨hF.isPhaseFunction i, ?_⟩

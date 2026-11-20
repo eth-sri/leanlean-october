@@ -38,10 +38,10 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
   have hT₀ : 2 ≤ T₀ := le_max_left _ _
   refine ⟨1+B^8,T₀,by positivity,hT₀,?_⟩
   intro T t₀ N hTall hlo hhi b hb W hW hSep hLarge
-  have hT : 2 ≤ T := hT₀.trans hTall
+  have hT  := hT₀.trans hTall
   have hTp : 0 < T := by linarith
   have hT1 : 1 ≤ T := by linarith
-  have hN1 : 1 ≤ N := (Real.one_le_rpow hT1 (show 0 ≤ a by linarith)).trans hlo
+  have hN1  := (Real.one_le_rpow hT1 (show 0 ≤ a by linarith)).trans hlo
   have hNp : 0 < N := by linarith
   obtain ⟨x,ell,hNx,hxa,hNL,hLT,hLs,hEll,hBase⟩ :=
     gm_detecting_scale hσ hσ1 ha ha1 hδ.le hδa (by linarith) hlo hhi
@@ -59,7 +59,7 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
   let R : ℝ := W.card
   have hVp : 0 < V := by dsimp [V]; positivity
   have hSp : 0 < S := by dsimp [S]; positivity
-  have hpδ : 1 ≤ T^δ := Real.one_le_rpow hT1 hδ.le
+  have hpδ  := Real.one_le_rpow hT1 hδ.le
   have hOut : 1 ≤ 1+B^8 := by linarith [pow_nonneg hB.le 8]
   by_cases hRsmall : R ≤ S
   · have hPow : S ≤ T^(3*a*(1-σ)+144*δ) :=
@@ -67,8 +67,8 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
     exact (hRsmall.trans hPow).trans (by
       simpa only [one_mul] using mul_le_mul_of_nonneg_right hOut
         (by positivity : 0 ≤ T^(3*a*(1-σ)+144*δ)))
-  have hSR : S ≤ R := le_of_not_ge hRsmall
-  have hRp : 0 < R := hSp.trans_le hSR
+  have hSR  := le_of_not_ge hRsmall
+  have hRp  := hSp.trans_le hSR
   have he := hEnergy T t₀ N b W V hT hNp hTN (hNL.trans hLT) hb hVp hLarge hSep hW
   have hq := hQuad T t₀ N (T^ell) hT hN1 hNL hLs hLT b hb W V hVp.le hW hLarge hSep
   have hTrace := universalTraceEnergy_common_bound hT1 hC.le (Nat.cast_nonneg (discreteAdditiveEnergy W))
@@ -76,18 +76,18 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
       rw [← gm_amplitude_log_identity hTp,hNx]
       exact he)
   let X := S^(1/8:ℝ)*R^(15/8:ℝ)*V^4
-  have hX : 0 < X := by dsimp [X]; positivity
+  
   have hTrace' : (∑ j : Fin 3, N^3*T^(universalTraceA j)*(T^ell)^(universalTraceB j)*
       R^(universalTraceG j)*(discreteAdditiveEnergy W:ℝ)^(universalTraceD j)) ≤
       15*(1+C)*T^δ*(T^(16*δ)*X) := by
     rw [← gm_amplitude_log_identity hTp,hNx] at hTrace
-    exact hTrace.trans_eq (by dsimp [X,S,V,R]; ring)
+    exact hTrace.trans_eq (by ring)
   have hLow0 : T^δ*N^3*T^(1/2:ℝ)*(T^ell)^(-1/2:ℝ) ≤
       T^(-1/200:ℝ)*V^4 := by
     dsimp only [V]
     rw [← hNx]
     exact universal_low_trace_budget hT1 hδsmall hEll (hLowMargin x hxa)
-  have hCoeff : A*T^(-1/200:ℝ) ≤ 1/2 :=
+  have hCoeff  :=
     universal_low_coefficient_small hA hT ((le_max_right _ _).trans hTall)
   have hLow : A*T^δ*(N^3*T^(1/2:ℝ)*(T^ell)^(-1/2:ℝ)*R^2) ≤ (1/2)*(R^2*V^4) := by
     calc
@@ -115,7 +115,7 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
         apply mul_le_mul_of_nonneg_right _ (by positivity)
         exact mul_le_mul (Real.rpow_le_rpow_of_exponent_le hT1 (by linarith)) hS2
           (sq_nonneg S) (by positivity)
-      _ = _ := by dsimp [X]; ring
+      _ = _ := by ring
   have hPow : T^δ*T^δ*T^(16*δ)=T^(18*δ) := by
     rw [← Real.rpow_add hTp,← Real.rpow_add hTp]
     congr 1

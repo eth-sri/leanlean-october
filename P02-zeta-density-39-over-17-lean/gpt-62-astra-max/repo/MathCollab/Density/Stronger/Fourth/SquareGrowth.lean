@@ -35,7 +35,6 @@ theorem norm_Gamma_le_realGamma_re {s : ℂ} (hs : 0 < s.re) :
       apply MeasureTheory.integral_congr_ae
       filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with x hx
       rw [norm_mul, Complex.norm_real, Complex.norm_cpow_eq_rpow_re_of_pos hx]
-      simp only [Complex.sub_re, Complex.one_re]
       simp [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
 
 /-- Height-uniform majorant for Deligne's real Gamma factor on a positive
@@ -60,13 +59,13 @@ theorem norm_GammaR_le_realGamma_re {s : ℂ} (hs : 0 < s.re) :
 /-- GammaR is uniformly bounded on every compact positive real-part strip. -/
 theorem exists_norm_GammaR_strip_le {a b : ℝ} (ha : 0 < a) :
     ∃ G : ℝ, 0 < G ∧ ∀ s : ℂ, s.re ∈ Icc a b → ‖Gammaℝ s‖ ≤ G := by
-  let major : ℝ → ℝ := fun x => Real.pi ^ (-x/2) * Real.Gamma (x/2)
+  let major  := fun x => Real.pi ^ (-x/2) * Real.Gamma (x/2)
   have hgamma : ContinuousOn (fun x : ℝ => Real.Gamma (x/2)) (Icc a b) :=
     Real.differentiableOn_Gamma_Ioi.continuousOn.comp (by fun_prop)
       (fun x hx => by change 0 < x/2; linarith [hx.1])
   have hpow : Continuous (fun x : ℝ => Real.pi ^ (-x/2)) :=
     (Real.continuous_const_rpow Real.pi_ne_zero).comp (by fun_prop)
-  have hcont : ContinuousOn major (Icc a b) := hpow.continuousOn.mul hgamma
+  have hcont  := hpow.continuousOn.mul hgamma
   obtain ⟨G, hG⟩ := isCompact_Icc.bddAbove_image hcont
   refine ⟨max 1 G, lt_max_of_lt_left zero_lt_one, ?_⟩
   intro s hs
@@ -137,7 +136,7 @@ theorem exists_completedXiNumerator_strip_cubic {c : ℝ} (hc : 0 ≤ c) :
     have habs : |s.re| ≤ c+1/2 := abs_le.mpr ⟨by linarith [hre.1], by linarith [hre.2]⟩
     have hn : ‖s‖ ≤ c+2 := (Complex.norm_le_abs_re_add_abs_im s).trans (by linarith)
     have hball : s ∈ Metric.closedBall (0 : ℂ) (c+2) := by simpa using hn
-    have hb : ‖completedXiNumerator s‖ ≤ D := hD ⟨s, hball, rfl⟩
+    have hb  := hD ⟨s, hball, rfl⟩
     have hp : 1 ≤ (1+‖s‖)^3 := one_le_pow₀ (by linarith [norm_nonneg s])
     exact hb.trans ((le_max_right C D).trans (le_mul_of_one_le_right
       (le_trans hC.le (le_max_left _ _)) hp))

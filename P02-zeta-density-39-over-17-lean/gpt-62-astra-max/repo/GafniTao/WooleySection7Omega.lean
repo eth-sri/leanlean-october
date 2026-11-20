@@ -55,8 +55,7 @@ theorem wooleySection7OmegaEntry_spec
           (wooleySection7OmegaEntry (p := p) (c := c) hrk h hh psi i l : ℚ) ∧
     Int.ModEq ((p : ℤ) ^ c)
       (wooleySection7OmegaEntry (p := p) (c := c) hrk h hh psi i l)
-      (Nat.choose j degree : ℤ) := by
-  exact Classical.choose_spec
+      (Nat.choose j degree : ℤ) := Classical.choose_spec
     (wooley_taylorCoefficient_exists_laurent_omega
       (p := p) (c := c) (i := (i : ℕ) + 1)
       (j := wooleySection7Node k r l + 1) (k := k)
@@ -67,8 +66,7 @@ theorem wooleySection7OmegaMatrix_mod_prime
     (h : ℤ) (hh : h ≠ 0) (psi : Fin r → Polynomial ℤ)
     (i l : Fin r) :
     ((wooleySection7OmegaMatrix (p := p) (c := c) hrk h hh psi i l : ℤ) : ZMod p) =
-      (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) : ZMod p) := by
-  exact wooley_taylorOmega_mod_prime hc
+      (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) : ZMod p) := wooley_taylorOmega_mod_prime hc
     (wooleySection7OmegaEntry_spec (p := p) (c := c) hrk h hh psi i l).2
 
 end

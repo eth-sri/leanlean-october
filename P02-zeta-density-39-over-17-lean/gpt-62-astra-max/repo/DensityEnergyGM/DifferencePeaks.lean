@@ -27,7 +27,7 @@ theorem exists_difference_peak_representatives (W : Finset ℝ) (f : ℝ → ℝ
           f (q.1 - q.2) ≤ f (p.1 - p.2) := by
     intro j hj
     exact Finset.exists_max_image _ (fun q => f (q.1 - q.2)) (hnonempty j hj)
-  let p : ℤ → ℝ × ℝ := fun j => if hj : j ∈ differenceFloorSupport W then
+  let p  := fun j => if hj : j ∈ differenceFloorSupport W then
     Classical.choose (hmax j hj) else (0, 0)
   refine ⟨p, ?_⟩
   intro j hj

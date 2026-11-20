@@ -25,7 +25,7 @@ theorem differentiableAt_dfiVoronoiMinusIntegrand (q : ℕ) [NeZero q]
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
     {z : ℂ} (hz : z.re < 1) :
     DifferentiableAt ℂ (dfiVoronoiMinusIntegrand q g n) z := by
-  have hc : DifferentiableAt ℂ (fun w : ℂ => (n:ℂ)^(-(1-w))) z :=
+  have hc  :=
     (by fun_prop : DifferentiableAt ℂ (fun w : ℂ => -(1-w)) z).const_cpow
       (Or.inl (Nat.cast_ne_zero.mpr hn.ne'))
   exact (hc.mul (differentiableAt_dfiVoronoiMinusMultiplier_of_re_lt_one q hz)).mul
@@ -49,7 +49,7 @@ theorem DFIVoronoiTestFunction.exists_minusIntegrand_strip_decay (q : ℕ) [NeZe
   let z : ℂ := (σ:ℂ)+(u:ℂ)*I
   have hzre : z.re = σ := by simp [z]
   have hzim : z.im = u := by simp [z]
-  have hp := norm_voronoiNatPower_le_one hn (z := z) (by rw [hzre]; linarith)
+  have hp := norm_voronoiNatPower_le_one hn (z := z) (by linarith)
   have hmul := norm_dfiVoronoiMinusMultiplier_strip_le q
     (z := z) (by simpa only [hzre]) (by simpa only [hzre])
   rw [hzim] at hmul
@@ -86,7 +86,7 @@ theorem DFIVoronoiTestFunction.integrable_minusIntegrand_vertical (q : ℕ) [NeZ
     _ ≤ C/(1+|u|)^2 := hb n hn σ hσ hσ' u
     _ ≤ C/(1+u^2) := div_le_div_of_nonneg_left hC (by positivity)
       (by nlinarith [sq_abs u, abs_nonneg u])
-    _ = _ := by rw [div_eq_mul_inv]
+    _ = _ := by rfl
 
 theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits (q : ℕ) [NeZero q]
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n) :
@@ -102,9 +102,7 @@ theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits (q : ℕ) [NeZer
       (a := -(1/2 : ℝ)) (b := (13/16 : ℝ))
       (f := fun x : ℝ => dfiVoronoiMinusIntegrand q g n ((x:ℂ)+(H:ℂ)*I))
       (C := C/(1+|H|)^2) (fun x hx => by
-        have hx' := Set.uIoc_subset_uIcc hx
-        rw [Set.uIcc_of_le (by norm_num : -(1/2 : ℝ) ≤ 13/16)] at hx'
-        exact hdecay n hn x hx'.1 hx'.2 H)
+        grind)
     convert hInt using 1 <;> norm_num [HIntegral]
   have hEnv : Tendsto (fun H : ℝ => C/(1+|H|)^2*(21/16)) atTop (𝓝 0) := by
     have ha : Tendsto (fun H : ℝ => |H|) atTop atTop :=

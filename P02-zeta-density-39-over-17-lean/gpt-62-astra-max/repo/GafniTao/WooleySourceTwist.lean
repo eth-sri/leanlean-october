@@ -24,16 +24,12 @@ The support certificate records that multiplication cannot create support. -/
 def wooleySourceTwist (gamma : WooleySourceSequence) (phase : ℤ → ℂ) :
     WooleySourceSequence :=
   Finsupp.onFinset gamma.support (fun n => gamma n * phase n) (by
-    intro n hn
-    by_contra hmem
-    have hzero : gamma n = 0 := by
-      simpa only [Finsupp.mem_support_iff, not_not] using hmem
-    simp [hzero] at hn)
+    grind)
 
 @[simp] theorem wooleySourceTwist_apply
     (gamma : WooleySourceSequence) (phase : ℤ → ℂ) (n : ℤ) :
     wooleySourceTwist gamma phase n = gamma n * phase n := by
-  simp [wooleySourceTwist]
+  rfl
 
 /-- A nowhere-zero phase preserves the support literally. -/
 theorem wooleySourceTwist_support
@@ -41,8 +37,7 @@ theorem wooleySourceTwist_support
     (hphase : ∀ n, phase n ≠ 0) :
     (wooleySourceTwist gamma phase).support = gamma.support := by
   ext n
-  simp only [Finsupp.mem_support_iff, wooleySourceTwist_apply]
-  exact mul_ne_zero_iff_right (hphase n)
+  simp [*]
 
 /-- Unit-modulus twisting preserves total coefficient mass. -/
 theorem wooleySourceMassSq_twist
@@ -50,7 +45,7 @@ theorem wooleySourceMassSq_twist
     (hphase : ∀ n, ‖phase n‖ = 1) :
     wooleySourceMassSq (wooleySourceTwist gamma phase) =
       wooleySourceMassSq gamma := by
-  have hne : ∀ n, phase n ≠ 0 := fun n => norm_ne_zero_iff.mp (by
+  have hne  := fun n => norm_ne_zero_iff.mp (by
     rw [hphase n]
     norm_num)
   unfold wooleySourceMassSq
@@ -66,7 +61,7 @@ theorem wooleySourceResidueMassSq_twist
     (hphase : ∀ n, ‖phase n‖ = 1) (q : ℕ) (xi : ZMod q) :
     wooleySourceResidueMassSq (wooleySourceTwist gamma phase) q xi =
       wooleySourceResidueMassSq gamma q xi := by
-  have hne : ∀ n, phase n ≠ 0 := fun n => norm_ne_zero_iff.mp (by
+  have hne  := fun n => norm_ne_zero_iff.mp (by
     rw [hphase n]
     norm_num)
   unfold wooleySourceResidueMassSq

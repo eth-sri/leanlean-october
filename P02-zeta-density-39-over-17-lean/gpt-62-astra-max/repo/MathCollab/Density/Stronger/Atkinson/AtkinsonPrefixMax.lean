@@ -19,7 +19,6 @@ def atkinsonPrefixGramMax (m N : ℕ) (t u : ℝ) : ℝ :=
 
 theorem norm_atkinsonPrefixGram_le_max (m N j : ℕ) (hj : j ≤ N) (t u : ℝ) :
     ‖atkinsonPrefixGram m j t u‖ ≤ atkinsonPrefixGramMax m N t u := by
-  unfold atkinsonPrefixGramMax
   exact Finset.le_sup' (fun k => ‖atkinsonPrefixGram m k t u‖)
     (Finset.mem_range.mpr (Nat.lt_succ_of_le hj))
 

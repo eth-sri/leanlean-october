@@ -51,7 +51,7 @@ theorem LargeValueData.normalization_lower {κ : ℝ} (d : LargeValueData κ)
   have hr : (1 : ℝ) ≤ U.card := by exact_mod_cast Finset.card_pos.mpr hUn
   have hd := localDiameter_ge_one U
   have hbr : bootstrapScalar d.T d.N d.V ≤ bootstrapScalar d.T d.N d.V*U.card := by nlinarith
-  have hL : 0 ≤ L := hN.le.trans hNL
+  
   have hnle : (d.N : ℝ)^2 ≤ L^2+(d.N : ℝ)*localDiameter U := by nlinarith
   calc
     _ = (1/(d.N : ℝ))*(d.N : ℝ)^2 := by field_simp

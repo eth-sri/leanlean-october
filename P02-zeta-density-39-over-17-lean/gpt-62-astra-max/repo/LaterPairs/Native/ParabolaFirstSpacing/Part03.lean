@@ -1341,7 +1341,7 @@ private theorem exists_bourgainShift_weighted_large_plane {ε : ℝ} (hε : 0<ε
     (y 0*(w i)^2+y 1*bourgainShiftCubic α (w i)+y 2*bourgainShiftQuartic α (w i))
   let cy := fun (y : Fin 3 → ℝ) i => c i*fordAdditiveCharacter
     (y 0*(v i)^2+y 1*bourgainShiftCubic α (v i)+y 2*bourgainShiftQuartic α (v i))
-  have hK : 0<K := hT.trans_le hTK
+  have hK  := hT.trans_le hTK
   have hpoint (p : (Fin 3 → ℝ) × (Fin 3 → ℝ)) : J p≤M := by
     have hzy (k : ℤ) : (∑ i∈S.filter (fun i => m i=k),‖zy p.1 i‖)≤B := by
       simpa only [zy,norm_mul,sargos_character_norm,mul_one] using hz k
@@ -1370,14 +1370,14 @@ private theorem exists_bourgainShift_weighted_large_plane {ε : ℝ} (hε : 0<ε
       hSm hVn hzy hcy
     simp_rw [heS,heV] at hh
     exact hh
-  have hW : Integrable W :=
+  have hW  :=
     Integrable.fintype_prod (fun _ : Fin 3 => integrable_inv_one_add_sq.comp_div hK.ne')
   have hiJ : Integrable (fun p : (Fin 3 → ℝ) × (Fin 3 → ℝ) => W p.1*W p.2*J p) := by
     have hh := (bourgainShift_radial_pair_period_entry (R:=2*T^2)
       S V z c m n α hT hTK 0 0).1
     simpa only [W,J,L,w,v,neg_mul] using hh
   have hmajor := integral_mono hiJ ((hW.mul_prod hW).mul_const M)
-    (fun p => mul_le_mul_of_nonneg_left (hpoint p) (by dsimp [W]; positivity))
+    (fun p => mul_le_mul_of_nonneg_left (hpoint p) (by positivity))
   have hmass₁ : (∫ x : ℝ,(1+(x/K)^2)⁻¹)=K*Real.pi := by
     have hh := Measure.integral_comp_div (fun x : ℝ => (1+x^2)⁻¹) K
     simpa only [integral_univ_inv_one_add_sq,abs_of_pos hK,smul_eq_mul] using hh
@@ -1398,7 +1398,7 @@ private theorem exists_bourgainShift_weighted_large_plane {ε : ℝ} (hε : 0<ε
     _ = ∫ p : (Fin 3 → ℝ) × (Fin 3 → ℝ),W p.1*W p.2*J p := by
       simpa only [W,J,L,w,v,neg_mul] using hf
     _ ≤ ((K*Real.pi)^3*(K*Real.pi)^3)*M := hmajor
-    _ = _ := by dsimp [M]; ring
+    _ = _ := by ring
 
 end TaoTrudgianYang2025
 
@@ -1429,7 +1429,7 @@ private theorem bourgainShift_fine_dyadic_physics {j : ℕ} (hj : 4≤j) :
   let F := (2:ℝ)^(j+3)
   let h := 5/(2*N*F)
   let hOld := 2/(N*(2:ℝ)^(j+2))
-  have hN : 0<N := by dsimp [N]; positivity
+  
   have hF : 0<F := by dsimp [F]; positivity
   have hF₁ : 1≤F := by dsimp [F]; exact one_le_pow₀ (by norm_num)
   have hOld₀ : 0<hOld := by dsimp [hOld]; positivity
@@ -1453,13 +1453,13 @@ private theorem bourgainShift_fine_dyadic_physics {j : ℕ} (hj : 4≤j) :
     apply (div_le_iff₀ hF).mpr
     have hh := mul_le_mul_of_nonneg_left hF₁ (show 0≤5/(2*N) by positivity)
     simpa only [mul_one] using hh
-  have hsmall : h≤(1/100:ℝ) :=
+  have hsmall  :=
     hcoarse.trans (bourgainShift_anisotropic_dyadic_scales j hj).1.2
-  have hscale : (2*T^2)*h^3≤32 :=
+  have hscale  :=
     (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hpos.le hle 3)
       (by positivity)).trans hp.2.1
-  have hperiod : T*h≤((2^(j-1):ℕ):ℝ) :=
-    (mul_le_mul_of_nonneg_left hle (by dsimp [T]; positivity)).trans_eq hp.2.2.2.1
+  have hperiod  :=
+    (mul_le_mul_of_nonneg_left hle (by positivity)).trans_eq hp.2.2.2.1
   exact ⟨⟨hpos,hsmall⟩,hscale,hperiod,hp.2.2.2.2.1,hp.2.2.2.2.2.1,
     (by linarith [hp.2.2.2.2.2.2])⟩
 
@@ -1502,14 +1502,14 @@ private theorem bourgainShift_canonical_fine_cell_mem {j : ℕ} {α : ℝ}
     ((((bourgainClosedFineCell (j+3) ((w-b)/η):ℕ):ℝ)+1)/((2^(j+3):ℕ):ℝ)) at hcell
   change bourgainClosedFineCell (j+3) ((w-b)/η)=k at hk
   rw [hk] at hcell
-  have ha := bourgain_affine_fine_cell (by dsimp [η]; positivity) (j+3) k hcell
+  have ha := bourgain_affine_fine_cell (by positivity) (j+3) k hcell
   have heh : η/((2^(j+3):ℕ):ℝ)=h := by
     simp only [Nat.cast_pow,Nat.cast_ofNat]
     dsimp [η,h]
     ring
   rw [heh] at ha
   have hbase : 0≤b+h*((k:ℕ):ℝ) :=
-    add_nonneg hb.1 (by dsimp [h]; positivity)
+    add_nonneg hb.1 (by positivity)
   exact ⟨⟨hbase,ha.1.trans hw.2⟩,ha⟩
 
 end TaoTrudgianYang2025
@@ -1627,12 +1627,12 @@ private theorem exists_bourgainShift_canonical_fine_pair_bound {ε : ℝ} (hε :
         ι κ Sc Vc z c m n (⌊T*b⌋-1) (⌊T*d⌋-1) B H hB hH
         (fun a ha => (hSc a ha).2) (fun a ha => (hVc a ha).2) hSm hVn hz' hc'
       exact hh.trans_eq (by ring)
-    · have he : Vc=∅ := Finset.not_nonempty_iff_eq_empty.mp hVe
+    · have he  := Finset.not_nonempty_iff_eq_empty.mp hVe
       rw [he]
       simp only [bourgainShiftShiftedPeriod,bourgainShiftPeriod,bourgainShiftSixMoment,
         Finset.sum_empty,norm_zero,zero_pow (by decide : (6:ℕ)≠0),mul_zero,integral_zero]
       positivity
-  · have he : Sc=∅ := Finset.not_nonempty_iff_eq_empty.mp hSe
+  · have he  := Finset.not_nonempty_iff_eq_empty.mp hSe
     rw [he]
     simp only [bourgainShiftShiftedPeriod,bourgainShiftPeriod,bourgainShiftSixMoment,
       Finset.sum_empty,norm_zero,zero_pow (by decide : (6:ℕ)≠0),mul_zero,zero_mul,integral_zero]
@@ -1659,7 +1659,7 @@ private theorem continuous_bourgainShift_weighted_period {ι : Type*}
     · intro y
       positivity
   have hW₀ (y : Fin 3 → ℝ) : 0≤W y := by dsimp [W]; positivity
-  have hiW : Integrable W :=
+  have hiW  :=
     Integrable.fintype_prod (fun _ : Fin 3 => integrable_inv_one_add_sq.comp_div hK.ne')
   have hc := continuous_bourgainShiftShiftedPeriod S z w α T
   apply continuous_of_dominated (bound:=fun y : Fin 3 → ℝ => W y*(∑ i∈S,‖z i‖)^6)
@@ -1800,8 +1800,8 @@ private theorem exists_bourgainShift_large_anisotropic_original
     z i*fordAdditiveCharacter (p 0*(w i)^2+p 1*bourgainShiftCubic α (w i))
   let cp := fun (p : Fin 2 → ℝ) i =>
     c i*fordAdditiveCharacter (p 0*(v i)^2+p 1*bourgainShiftCubic α (v i))
-  have hN : 0<N := by dsimp [N]; positivity
-  have hT : 0<T := by dsimp [T]; positivity
+  
+  
   have hK : 0<320*T := by positivity
   have hLS (a : I) : Continuous (LS a) :=
     (continuous_bourgainShift_weighted_period (Sc a) z w α T (320*T) hK).comp (by fun_prop)
@@ -1813,13 +1813,13 @@ private theorem exists_bourgainShift_large_anisotropic_original
     apply mul_nonneg
     · apply Finset.sum_nonneg
       intro a ha
-      exact integral_nonneg (fun y => mul_nonneg (by dsimp [W]; positivity)
+      exact integral_nonneg (fun y => mul_nonneg (by positivity)
         (bourgainShiftShiftedPeriod_nonneg _ _ _ _ _ _ _))
     · apply Finset.sum_nonneg
       intro a ha
-      exact integral_nonneg (fun y => mul_nonneg (by dsimp [W]; positivity)
+      exact integral_nonneg (fun y => mul_nonneg (by positivity)
         (bourgainShiftShiftedPeriod_nonneg _ _ _ _ _ _ _))
-  have hFc : Continuous F :=
+  have hFc  :=
     (continuous_bourgainShiftSixMoment S z w α).mul (continuous_bourgainShiftSixMoment V c v α)
   have hF₀ (x : Fin 4 → ℝ) : 0≤F x :=
     mul_nonneg (bourgainShiftSixMoment_nonneg _ _ _ _ _) (bourgainShiftSixMoment_nonneg _ _ _ _ _)
@@ -1850,7 +1850,7 @@ private theorem exists_bourgainShift_large_anisotropic_original
     have hN₁ : 1≤N := one_le_pow₀ (by norm_num)
     calc
       N^3 ≤ N^4 := pow_le_pow_right₀ hN₁ (by decide : 3≤4)
-      _ = T^2 := by dsimp only [T]; ring
+      _ = T^2 := by ring
   have hPL : P⊆L := by
     intro p hp
     constructor
@@ -1901,16 +1901,14 @@ private theorem exists_bourgainShift_large_anisotropic_original
   calc
     _ ≤ C₀*(∫ p : Fin 2 → ℝ in P,G p) := havg.trans hmain
     _ ≤ C₀*(((((2^(2*j):ℕ):ℝ)*((2^(j+3):ℕ):ℝ))^2)*M) :=
-      mul_le_mul_of_nonneg_left (hmono.trans hcells) (by dsimp [C₀]; positivity)
+      mul_le_mul_of_nonneg_left (hmono.trans hcells) (by positivity)
     _ = C₀*((D/ν)*T^10*B^6*H^6)*
         (((((2^(2*j):ℕ):ℝ)*((2^(j+3):ℕ):ℝ))^2)*((Q:ℝ)^((3:ℝ)+ε/4))^2) := by
-      dsimp [M]
       ring
     _ ≤ C₀*((D/ν)*T^10*B^6*H^6)*(64*N^6*(2:ℝ)^((ε/2)*j)) :=
-      mul_le_mul_of_nonneg_left hcoef (by dsimp [C₀]; positivity)
+      mul_le_mul_of_nonneg_left hcoef (by positivity)
     _ = (2*N^3)^2*((16*A*D/ν)*
         ((2:ℝ)^((ε/2)*j)*(2:ℝ)^((ε/2)*j))*T^12*B^6*H^6) := by
-      dsimp [C₀,T]
       ring
     _ = _ := by rw [hpow]
 
@@ -1984,11 +1982,9 @@ private theorem bourgain_shift_dilation_geometry {c : ℝ} (hc : c∈Icc (1/2:�
       exact ⟨by linarith [hc.1],hc.2⟩
     · change (1/16:ℝ)≤c^2 ∧ c^2≤1
       have hh := hp 2
-      norm_num only [show (1/2:ℝ)^2=1/4 by norm_num] at hh
       exact ⟨by linarith [hh.1],hh.2⟩
     · change (1/16:ℝ)≤c^3 ∧ c^3≤1
       have hh := hp 3
-      norm_num only [show (1/2:ℝ)^3=1/8 by norm_num] at hh
       exact ⟨by linarith [hh.1],hh.2⟩
     · change (1/16:ℝ)≤c^4 ∧ c^4≤1
       simpa only [show (1/2:ℝ)^4=1/16 by norm_num] using hp 4
@@ -2011,17 +2007,17 @@ private theorem bourgainShift_large_rectangle_dilate {ι κ : Type*}
     ∫ x : Fin 4 → ℝ in Icc (-![R,R^2,R^2,R]) ![R,R^2,R^2,R],
       bourgainShiftSixMoment S z (fun i => α*w i) (δ/α) x*
       bourgainShiftSixMoment V c (fun i => α*v i) (δ/α) x := by
-  let D : Fin 4 → ℝ := ![α,α^2,α^3,α^4]
-  let U : Fin 4 → ℝ := ![T,T^2,T^2,T]
-  let W : Fin 4 → ℝ := ![R,R^2,R^2,R]
+  let D  := ![α,α^2,α^3,α^4]
+  let U  := ![T,T^2,T^2,T]
+  let W  := ![R,R^2,R^2,R]
   let F := fun x : Fin 4 → ℝ =>
     bourgainShiftSixMoment S z w δ x*bourgainShiftSixMoment V c v δ x
   have hd := bourgain_shift_dilation_geometry hα
   change (∀ i,(1/16:ℝ)≤D i ∧ D i≤1) ∧ 0<(∏ i,D i) ∧ (∏ i,D i)≤1 at hd
   have hα₀ : 0<α := by linarith [hα.1]
-  have hR : 0<R := by linarith
+  
   have hD (i : Fin 4) : 0<D i := lt_of_lt_of_le (by norm_num) (hd.1 i).1
-  have hFc : Continuous F :=
+  have hFc  :=
     (continuous_bourgainShiftSixMoment S z w δ).mul (continuous_bourgainShiftSixMoment V c v δ)
   have hF₀ (x : Fin 4 → ℝ) : 0≤F x := by dsimp [F,bourgainShiftSixMoment]; positivity
   have hwidth (i : Fin 4) : U i≤D i*W i := by
@@ -2179,7 +2175,7 @@ private theorem bourgain_anisotropic_rectangle_of_translate_bound
     (∏ i,2*K i)*(∫ x in Icc (-Q) Q,f x)≤(∏ i,2*(Q i+K i))*A := by
   have hh := bourgain_anisotropic_rectangle_average K hK Q f hfc hf₀
   let V := Icc (fun i => -(Q i+K i)) (fun i => Q i+K i)
-  have hc : Continuous (fun p : (Fin 4 → ℝ) × (Fin 4 → ℝ) => f (p.1+p.2)) :=
+  have hc  :=
     hfc.comp (continuous_fst.add continuous_snd)
   have hg := continuous_parametric_integral_of_continuous (μ:=volume)
     (f:=fun (q y : Fin 4 → ℝ) => f (q+y)) hc
@@ -2232,12 +2228,12 @@ private theorem exists_bourgainShift_physical_window {ε ν : ℝ} (hε : 0<ε) 
   let v := fun i => (n i:ℝ)/T
   let F := fun x : Fin 4 → ℝ =>
     bourgainShiftSixMoment S z w δ x*bourgainShiftSixMoment V c v δ x
-  let K : Fin 4 → ℝ := ![T,T^2,T^2,T]
-  let Q : Fin 4 → ℝ := ![T,T^2,A,D]
+  let K  := ![T,T^2,T^2,T]
+  let Q  := ![T,T^2,A,D]
   have hT₀ : 0<T := by linarith
   have hK (i : Fin 4) : 0<K i := by fin_cases i <;> dsimp [K] <;> positivity
   have hQ (i : Fin 4) : 0<Q i := by fin_cases i <;> dsimp [Q] <;> positivity
-  have hFc : Continuous F :=
+  have hFc  :=
     (continuous_bourgainShiftSixMoment S z w δ).mul (continuous_bourgainShiftSixMoment V c v δ)
   have hF₀ (x : Fin 4 → ℝ) : 0≤F x := by dsimp [F,bourgainShiftSixMoment]; positivity
   have hshift (q : Fin 4 → ℝ) :
@@ -2306,8 +2302,8 @@ private theorem bourgain_local_window_scale_loss {ε N N₀ M : ℝ}
   have hM₀ : 0<M := by linarith
   have hN₀ : 0<N₀ := by linarith
   have hNpos : 0<N := by linarith
-  have hs : 0<Real.sqrt N := Real.sqrt_pos.2 hNpos
-  have hMN' : M≤N := hMN.trans hN
+  
+  have hMN'  := hMN.trans hN
   have hhalf (k : ℕ) : N^((k:ℝ)+(1:ℝ)/2)=N^k*Real.sqrt N := by
     rw [Real.rpow_add hNpos,Real.rpow_natCast,←Real.sqrt_eq_rpow]
   have hp₃ : N₀^((3:ℝ)/2)≤N*Real.sqrt N := by
@@ -2343,7 +2339,7 @@ private theorem bourgain_local_window_scale_loss {ε N N₀ M : ℝ}
     calc
       _ ≤ N^3/M^3+N^3/M^3 := add_le_add hh hr₇
       _ = _ := by ring
-  have hMeps : M^ε≤N^ε := Real.rpow_le_rpow hM₀.le hMN' hε.le
+  have hMeps  := Real.rpow_le_rpow hM₀.le hMN' hε.le
   have heM : M^((6:ℝ)+ε)=M^6*M^ε := by rw [Real.rpow_add hM₀,Real.rpow_ofNat]
   have heN : N^((4:ℝ)+ε)=N^4*N^ε := by rw [Real.rpow_add hNpos,Real.rpow_ofNat]
   calc
@@ -2809,8 +2805,8 @@ private theorem exists_bourgainSource_original_local_moment {ε ν : ℝ}
   have hM₀ : 0<M := by linarith
   have hN₀ : 0<N₀ := by linarith
   have hNpos : 0<N := by linarith
-  have ha₀ : 0<a := (Real.sqrt_pos.2 hNpos).trans_le ha
-  have hq : 0<Real.sqrt N₀ := Real.sqrt_pos.2 hN₀
+  have ha₀  := (Real.sqrt_pos.2 hNpos).trans_le ha
+  have hq  := Real.sqrt_pos.2 hN₀
   let A := a*M^3/N₀^((3:ℝ)/2)
   let D := a*M^4/N₀^((7:ℝ)/2)
   have hA : 0<A := by dsimp [A]; positivity
@@ -2840,7 +2836,7 @@ private theorem exists_bourgainSource_original_local_moment {ε ν : ℝ}
   have hpre := hentry.le.trans (by simpa [F,A,D,he] using hshear)
   have hδ : M/N₀∈Icc (0:ℝ) (1/100) := by
     constructor
-    · exact div_nonneg hM₀.le hN₀.le
+    · positivity
     · apply (div_le_iff₀ hN₀).mpr
       linarith
   have hm' (i : ι) (hi : i∈S) : (m i:ℝ)/M∈Icc (0:ℝ) 1 :=
@@ -2923,8 +2919,8 @@ private theorem bourgain_twelfth_bilinear_reduction_pointwise (J : Finset ℤ) (
   have hM : 0 ≤ M := norm_nonneg _
   have hA : 0 ≤ A := Finset.sum_nonneg fun _ _ => norm_nonneg _
   have hB : 0 ≤ B := Finset.sum_nonneg fun _ _ => norm_nonneg _
-  have hn : 0 ≤ n := Nat.cast_nonneg _
-  have hK : (K.card:ℝ) ≤ 7 := parabola_near_card J i
+  
+  have hK  := parabola_near_card J i
   have hL : (L.card:ℝ) ≤ n := by
     dsimp only [L,n]
     exact_mod_cast Finset.card_le_card (Finset.filter_subset (fun j => 3 < |i-j|) J)
@@ -3001,7 +2997,7 @@ private theorem bourgain_integer_cell_separation {h : ℕ} (hh : 0 < h)
   obtain ⟨hnl,hnu⟩ := bourgain_integer_cell_bounds hh n
   rw [hi] at hml hmu
   rw [hj] at hnl hnu
-  have hp : (0:ℤ) < h := by exact_mod_cast hh
+  
   have hsep : (h:ℤ) ≤ |m-n| := by
     rcases lt_abs.mp hs with hs | hs
     · apply (le_abs_self (m-n)).trans'
@@ -3092,9 +3088,7 @@ private theorem bourgain_fiber_bound_subset_shift {ι : Type*}
   intro q
   apply le_trans _ (hz (q+b))
   apply Finset.sum_le_sum_of_subset_of_nonneg
-  · intro i hi
-    obtain ⟨hi,he⟩ := Finset.mem_filter.mp hi
-    exact Finset.mem_filter.mpr ⟨hV hi,by omega⟩
+  · grind
   · intro i hi hni
     exact norm_nonneg _
 
@@ -3110,7 +3104,7 @@ private theorem bourgain_integer_fiber_mass {ι : Type*}
   rw [←he]
   calc
     _ ≤ ∑ q∈Finset.Icc (0:ℤ) (M:ℤ), B := Finset.sum_le_sum (fun q hq => hz q)
-    _ = _ := by simp [Int.card_Icc]
+    _ = _ := by simp
 
 end TaoTrudgianYang2025
 
@@ -3165,8 +3159,7 @@ private theorem bourgain_integer_partition_count {ι : Type*}
     constructor
     · exact Int.ediv_nonneg (hm i hi).1 (by positivity)
     · apply (Int.ediv_lt_iff_lt_mul (by exact_mod_cast hh : (0:ℤ)<h)).mpr
-      have hs : (M:ℤ)<(K:ℤ)*(h:ℤ) := by exact_mod_cast (by nlinarith : M<K*h)
-      exact (hm i hi).2.trans_lt hs
+      apply (hm i hi).2.trans_lt <;> first | assumption | positivity | linarith
   have hc := Finset.card_le_card hsub
   simpa only [Int.card_Ico,sub_zero,Int.toNat_natCast] using hc
 
@@ -3276,7 +3269,7 @@ private theorem exists_bourgainSource_annular_step {ε : ℝ} (hε : 0<ε)
     calc
       _ ≤ 4096*(J.card:ℝ)^11*((K:ℝ)^2*D) := by gcongr
       _ ≤ 4096*(K:ℝ)^11*((K:ℝ)^2*D) := by gcongr
-      _ = _ := by dsimp [D]; ring
+      _ = _ := by ring
   have hp := bourgainSource_twelfth_partition S z (fun i => L+(m i:ℝ)) g a
   exact hp.trans (add_le_add le_rfl htail)
 
@@ -3304,7 +3297,7 @@ private theorem exists_bourgainSource_annular_linear {ε : ℝ} (hε : 0<ε) :
   let A : ℝ := 4096*7^12
   have hA : 0<A := by norm_num [A]
   obtain ⟨K,hKbig⟩ := exists_nat_gt (8*A+3)
-  have hKr : (0:ℝ)<K := by linarith
+  
   have hK : 3 ≤ K := by
     have hh : (3:ℝ)<K := by linarith
     exact_mod_cast hh.le
@@ -3623,11 +3616,6 @@ namespace TaoTrudgianYang2025
 
 private theorem bourgain_first_spacing_prefix_scale {N : ℕ} (hN : 6400 ≤ N) :
     1 ≤ 100*(N/6400+1) ∧ 16*(100*(N/6400+1)) ≤ N ∧ 100*(N/6400+1)<N := by
-  have hq := Nat.div_mul_le_self N 6400
-  constructor
-  · omega
-  constructor
-  · omega
   · omega
 
 end TaoTrudgianYang2025
@@ -3807,8 +3795,8 @@ private theorem bourgain_first_spacing_anisotropic_phase {N t δ Δ : ℝ}
       (Real.sqrt N*((1/(Δ*N))*x 3))*Real.sqrt t =
     x 0*t+x 1*t^2+(1/δ)*(t/N)^((3:ℝ)/2)*x 2+
       (1/Δ)*Real.sqrt (t/N)*x 3 := by
-  have hs : 0<Real.sqrt N := Real.sqrt_pos.2 hN
-  have hr : 0<N^((3:ℝ)/2) := Real.rpow_pos_of_pos hN _
+  
+  
   have hp : Real.sqrt N*N^((3:ℝ)/2)=N^2 := by
     rw [Real.sqrt_eq_rpow,←Real.rpow_add hN]
     norm_num
@@ -3853,8 +3841,8 @@ private theorem exists_bourgainSource_anisotropic_first_spacing {ε : ℝ} (hε 
   refine ⟨C,hC,?_⟩
   intro N hN δ Δ hδ hΔ ι S z m B hB hm hz
   have hNpos : (0:ℝ)<N := by exact_mod_cast (by omega : 0<N)
-  have hδpos : 0<δ := lt_of_lt_of_le (by positivity) hδ
-  have hΔpos : 0<Δ := lt_of_lt_of_le (by positivity) hΔ
+  have hδpos  := lt_of_lt_of_le (by positivity) hδ
+  have hΔpos  := lt_of_lt_of_le (by positivity) hΔ
   let u := 1/(δ*(N:ℝ)^2)
   let v := 1/(Δ*(N:ℝ))
   have hu : 0<u := by dsimp [u]; positivity
@@ -3865,7 +3853,7 @@ private theorem exists_bourgainSource_anisotropic_first_spacing {ε : ℝ} (hε 
   have hv₁ : v ≤ 1 := by
     apply (div_le_one (by positivity : (0:ℝ)<Δ*(N:ℝ))).mpr
     exact (div_le_iff₀ hNpos).mp hΔ
-  let D : Fin 4 → ℝ := ![1,1,u,v]
+  let D  := ![1,1,u,v]
   let lo : Fin 4 → ℝ := ![0,0,-1,-1]
   let hi : Fin 4 → ℝ := fun _ => 1
   let F := fun x : Fin 4 → ℝ =>
@@ -3903,8 +3891,7 @@ private theorem exists_bourgainSource_anisotropic_first_spacing {ε : ℝ} (hε 
   have hprod : (∏ i,D i)=u*v := by simp [D,Fin.prod_univ_four]
   rw [hprod] at hj
   have hglobal := hmain N hN ι S z m B hB hm hz
-  have hbound : (u*v)*(∫ x : Fin 4 → ℝ in Icc lo hi,F (fun i => D i*x i)) ≤
-      C*(N:ℝ)^((6:ℝ)+ε)*B^12 := hj.symm.le.trans (hcompare.trans hglobal)
+  have hbound  := hj.symm.le.trans (hcompare.trans hglobal)
   have hdiv : (∫ x : Fin 4 → ℝ in Icc lo hi,F (fun i => D i*x i)) ≤
       (C*(N:ℝ)^((6:ℝ)+ε)*B^12)/(u*v) := by
     apply (le_div_iff₀ (mul_pos hu hv)).mpr

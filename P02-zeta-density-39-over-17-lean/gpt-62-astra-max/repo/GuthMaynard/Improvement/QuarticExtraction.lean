@@ -32,7 +32,7 @@ theorem quartic_extraction {ε : ℝ} (hε : 0 < ε) (q : ℕ) :
   refine ⟨C,hC,?_⟩
   intro N T R U V M hN hNT hTN hR hRT hU hV hsmall a W ha hsep hw hv hM
   have hT : 0 < T := by linarith
-  have hm : 0 ≤ M := (integral_nonneg (fun t => sq_nonneg
+  have hm  := (integral_nonneg (fun t => sq_nonneg
     (sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U t))).trans hM
   have hsmallB : B*N^4/R^q ≤ V^4/2 := by
     apply le_trans _ hsmall

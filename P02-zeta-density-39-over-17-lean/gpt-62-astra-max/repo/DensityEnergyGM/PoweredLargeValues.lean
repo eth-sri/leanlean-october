@@ -29,7 +29,7 @@ theorem guthMaynardLargeValues_support_native
     guthMaynardLargeValues_neg guthMaynardLargeValues_native ε hε
   refine ⟨C, T₀, hC, hT₀, ?_⟩
   intro N V T b W hN hT hV hb hSep hBase hLarge
-  let c : ℕ → ℂ := fun n => if n ∈ dyadicInterval N then b n else 0
+  let c  := fun n => if n ∈ dyadicInterval N then b n else 0
   have hc : ∀ n, ‖c n‖ ≤ 1 := by
     intro n
     by_cases hn : n ∈ dyadicInterval N
@@ -72,7 +72,7 @@ theorem powered_unit_block_gm_large_values_native
   intro N a T L W hN hk hT hL ha hSep hBase hLarge
   have hDenom : 0 < A * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
     have hUpper : 0 < 2 ^ k * N ^ k := by positivity
-    exact mul_pos hA (Real.rpow_pos_of_pos (by exact_mod_cast hUpper) _)
+    exact mul_pos hA (Real.rpow_pos_of_pos (by positivity) _)
   obtain ⟨r, hr, W', hsub, hcard, hlarge⟩ :=
     extract_normalized_finite_powered_block N k a 0 A η L W hN hk hL.le hDenom
       (by
@@ -106,9 +106,9 @@ theorem powered_unit_block_gm_large_values_native
       hN le_rfl hA hη hmem (hCoeff N a ha m (by
         have := (Finset.mem_Ioc.mp hmem).1
         omega))
-  have hSep' : IsSeparated 1 W' := fun x hx y hy hxy =>
+  have hSep'  := fun x hx y hy hxy =>
     hSep x (hsub hx) y (hsub hy) hxy
-  have hBase' : InBaseInterval T W' := fun x hx => hBase x (hsub hx)
+  have hBase'  := fun x hx => hBase x (hsub hx)
   have hbound := hGM Q V T (normalizedFinitePoweredCoeffs N k a 0 A η) W'
     hQ hT hV hNorm hSep' hBase' (by
       intro t ht

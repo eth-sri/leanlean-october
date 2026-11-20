@@ -58,9 +58,7 @@ theorem wooley_taylorCoefficient_exists_omega
         C ((p : ℤ) ^ c) * X ^ (k + 1) * psi =
           ((p : ℤ) ^ c) • (X ^ (k + 1) * psi) := by
       rw [mul_assoc, Polynomial.C_mul']
-    have hderivScalar :
-        hasseDeriv i (((p : ℤ) ^ c) • (X ^ (k + 1) * psi)) =
-          ((p : ℤ) ^ c) • hasseDeriv i (X ^ (k + 1) * psi) :=
+    have hderivScalar  :=
       (hasseDeriv i).map_smul ((p : ℤ) ^ c) (X ^ (k + 1) * psi)
     rw [map_add, hmono, hscalar, hderivScalar, hq]
     simp [Polynomial.eval_mul, Polynomial.eval_pow]
@@ -90,9 +88,7 @@ theorem wooley_taylorCoefficient_eq_monomial_add_spacing
       C ((p : ℤ) ^ c) * X ^ (k + 1) * psi =
         ((p : ℤ) ^ c) • (X ^ (k + 1) * psi) := by
     rw [mul_assoc, Polynomial.C_mul']
-  have hderivScalar :
-      hasseDeriv i (((p : ℤ) ^ c) • (X ^ (k + 1) * psi)) =
-        ((p : ℤ) ^ c) • hasseDeriv i (X ^ (k + 1) * psi) :=
+  have hderivScalar  :=
     (hasseDeriv i).map_smul ((p : ℤ) ^ c) (X ^ (k + 1) * psi)
   rw [map_add, hmono, hscalar, hderivScalar]
   simp [Polynomial.eval_mul, Polynomial.eval_pow]
@@ -117,7 +113,7 @@ theorem wooley_taylorCoefficient_exists_laurent_omega
     rw [hcoeff, Int.cast_mul, Int.cast_pow]
     have hexp : ((j - i : ℕ) : ℤ) = (j : ℤ) - (i : ℤ) := by omega
     rw [← zpow_natCast, hexp]
-  · have hji : j < i := Nat.lt_of_not_ge hij
+  · have hji  := Nat.lt_of_not_ge hij
     obtain ⟨z, hcoeff⟩ :=
       wooley_taylorCoefficient_eq_monomial_add_spacing
         (p := p) (c := c) (i := i) (j := j) (k := k) h psi
@@ -141,7 +137,7 @@ theorem wooley_taylorCoefficient_exists_laurent_omega
         _ = (a : ℚ) := by
           rw [← zpow_add₀ hhq]
           norm_num
-    · have hchoose : Nat.choose j i = 0 := Nat.choose_eq_zero_of_lt hji
+    · have hchoose  := Nat.choose_eq_zero_of_lt hji
       rw [hchoose, Int.natCast_zero, Int.modEq_iff_dvd]
       have ha : a = (p : ℤ) ^ c * z := by
         dsimp [a]

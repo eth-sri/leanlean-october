@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaCanonicalTaylorLegendre
 
 @[expose] public section
@@ -23,8 +22,7 @@ def modelPhaseTaylorWidth (σ η : ℝ) : ℝ :=
   min (modelPhaseCurvatureLower σ) 1*η/4
 
 theorem modelPhaseTaylorWidth_pos {σ η : ℝ} (hσ : 0 < σ) (hη : 0 < η) :
-    0 < modelPhaseTaylorWidth σ η := by
-  exact div_pos (mul_pos (lt_min (modelPhaseCurvatureLower_pos hσ) zero_lt_one) hη)
+    0 < modelPhaseTaylorWidth σ η := div_pos (mul_pos (lt_min (modelPhaseCurvatureLower_pos hσ) zero_lt_one) hη)
     (by norm_num)
 
 theorem modelPhaseTaylorWidth_le_one {σ η : ℝ} (hη : 0 ≤ η) (hη₁ : η ≤ 1) :
@@ -62,12 +60,10 @@ theorem modelPhaseSharpStationarySet_taylor_plateau
   have hη : 0 < (Real.sqrt T)⁻¹ := by positivity
   have hc := modelPhaseCurvatureLower_pos hσ
   have hd : 0 ≤ N/(T*(σ+1)) := by positivity
-  have ha' : 1 ≤ (a : ℝ)/N := (one_le_div hN).mpr ha
-  have hb' : (b : ℝ)/N ≤ 2 := (div_le_iff₀ hN).mpr hb
-  have huL : 1+2*(Real.sqrt T)⁻¹ ≤ modelPhaseInverseSlope F ((q : ℝ)*N/T) := by
-    linarith [hg.2.1]
-  have huR : modelPhaseInverseSlope F ((q : ℝ)*N/T) ≤ 2-2*(Real.sqrt T)⁻¹ := by
-    linarith [hg.2.2]
+  have ha'  := (one_le_div hN).mpr ha
+  have hb'  := (div_le_iff₀ hN).mpr hb
+  
+  
   have hdropL := modelPhaseClosedSlope_drop hσ hδ hF
     ⟨hu.1.le,hu.2.le⟩ (by norm_num : (2 : ℝ) ∈ Icc 1 2) hu.2.le
   have hdropR := modelPhaseClosedSlope_drop hσ hδ hF
@@ -88,8 +84,8 @@ theorem modelPhaseTaylorWidth_source_admissible
       modelPhaseClosedSlope F 2+4*modelPhaseTaylorWidth σ ((Real.sqrt T)⁻¹) <
         modelPhaseClosedSlope F 1 := by
   have hη : 0 < (Real.sqrt T)⁻¹ := by positivity
-  have ha' : 1 ≤ (a : ℝ)/N := (one_le_div hN).mpr ha
-  have hb' : (b : ℝ)/N ≤ 2 := (div_le_iff₀ hN).mpr hb
+  have ha'  := (one_le_div hN).mpr ha
+  have hb'  := (div_le_iff₀ hN).mpr hb
   have hη₁ : (Real.sqrt T)⁻¹ < 1 := by linarith
   exact modelPhaseTaylorWidth_admissible hσ hδ hF hη hη₁
 

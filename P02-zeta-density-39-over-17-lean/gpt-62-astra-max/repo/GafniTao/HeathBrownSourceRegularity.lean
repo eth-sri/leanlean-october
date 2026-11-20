@@ -95,7 +95,7 @@ theorem heathBrown_local_data_of_source
         ‖iteratedDeriv k f ξ‖ ≤ A * lambda) := by
   intro n hn
   have hnmem := Finset.mem_Icc.mp hn
-  have hnN : n ≤ N := hnmem.2.trans (Nat.sub_le N H)
+  have hnN  := hnmem.2.trans (Nat.sub_le N H)
   have hnU : (n : ℝ) ∈ U := hsub ⟨by positivity,
     by exact_mod_cast hnN⟩
   have hderivSource : ContDiffOn ℝ (k - 1 : ℕ) (deriv f) U := by
@@ -114,8 +114,8 @@ theorem heathBrown_local_data_of_source
         (n : ℝ) + x ≤ (N - H : ℝ) + H := add_le_add hcast hx.2
         _ = N := by ring
     have hnpos : (0 : ℝ) < n := by exact_mod_cast hnmem.1
-    have hnxU : (n : ℝ) + x ∈ U := hsub ⟨by linarith [hx.1], hnxN⟩
-    exact (hf.differentiableOn (by exact_mod_cast (by omega : k ≠ 0))
+    have hnxU  := hsub ⟨by linarith [hx.1], hnxN⟩
+    exact (hf.differentiableOn (by positivity)
       ((n : ℝ) + x) hnxU).differentiableAt
       (hU.mem_nhds hnxU) |>.hasDerivAt
   · intro x hx
@@ -142,7 +142,7 @@ theorem heathBrown_local_data_of_source
       calc
         (n : ℝ) + x ≤ (N - H : ℝ) + H := add_le_add hcast hx.2
         _ = N := by ring
-    have hξU : ξ ∈ U := hsub ⟨(by positivity : (0 : ℝ) ≤ n).trans hξ.1.le,
+    have hξU  := hsub ⟨(by positivity : (0 : ℝ) ≤ n).trans hξ.1.le,
       hξ.2.le.trans hnxN⟩
     rw [Real.norm_eq_abs, abs_of_nonneg (hkBounds ξ hξU).1]
     exact (hkBounds ξ hξU).2

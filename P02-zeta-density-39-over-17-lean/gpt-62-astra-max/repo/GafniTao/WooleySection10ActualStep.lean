@@ -33,7 +33,7 @@ theorem wooley_section10_first_loss_from_global
       Nat.mul_le_mul_right (k ^ 2 * nu) hrTop
     calc
       k * ((r + 1) * k ^ 2 * nu) ≤ k * (k * (k ^ 2 * nu)) :=
-        Nat.mul_le_mul_left k (by simpa [mul_assoc] using hfirst)
+        Nat.mul_le_mul_left k (by linarith)
       _ = k ^ 4 * nu := by ring
       _ ≤ k ^ 5 * nu := by
         rw [show k ^ 5 * nu = (k ^ 4 * nu) * k by ring]
@@ -66,7 +66,7 @@ theorem wooley_section10_second_loss_from_global
     calc
       k ^ 2 * ((k - rOne + 1) * k ^ 2 * nu) ≤
           k ^ 2 * (k * (k ^ 2 * nu)) :=
-        Nat.mul_le_mul_left (k ^ 2) (by simpa [mul_assoc] using hfirst)
+        Nat.mul_le_mul_left (k ^ 2) (by linarith)
       _ = k ^ 5 * nu := by ring
   have hcast : (k : ℝ) ^ 2 *
         ((((k - rOne) + 1) * k ^ 2 * nu : ℕ) : ℝ) ≤
@@ -75,22 +75,10 @@ theorem wooley_section10_second_loss_from_global
   have hpre : 2 * (k : ℝ) ^ 2 *
         ((((k - rOne) + 1) * k ^ 2 * nu : ℕ) : ℝ) ≤
       (b : ℝ) * Lambda := by nlinarith
-  have hbnext : (b : ℝ) * Lambda ≤
-      ((k : ℝ) * (wooleyNextB k rOne b : ℝ)) * Lambda :=
+  have hbnext  :=
     mul_le_mul_of_nonneg_right hdivR hLambda.le
-  have hcombined := hpre.trans hbnext
-  have hcancel : (k : ℝ) *
-      (2 * ((((k - rOne) + 1) * k ^ 2 * nu : ℕ) : ℝ) * (k : ℝ)) ≤
-      (k : ℝ) * ((wooleyNextB k rOne b : ℝ) * Lambda) := by
-    calc
-    (k : ℝ) *
-        (2 * ((((k - rOne) + 1) * k ^ 2 * nu : ℕ) : ℝ) * (k : ℝ)) =
-      2 * (k : ℝ) ^ 2 *
-        ((((k - rOne) + 1) * k ^ 2 * nu : ℕ) : ℝ) := by ring
-    _ ≤ (b : ℝ) * Lambda := hpre
-    _ ≤ ((k : ℝ) * (wooleyNextB k rOne b : ℝ)) * Lambda := hbnext
-    _ = (k : ℝ) *
-        ((wooleyNextB k rOne b : ℝ) * Lambda) := by ring
+  
+  
   nlinarith
 
 set_option maxHeartbeats 800000 in
@@ -158,7 +146,7 @@ theorem wooleySourcePolynomial_iterationStep_of_scale_hierarchy
       have hkSq : k ≤ k ^ 2 := by nlinarith
       exact Nat.mul_le_mul_right b hkSq
     exact hsmall.trans hscaleB
-  have hbH : b ≤ H :=
+  have hbH  :=
     (Nat.le_mul_of_pos_left b (by omega)).trans hscaleH
   have hepsilonCurrent : ((k * b : ℕ) : ℝ) * epsilon ^ 2 < (nu : ℝ) := by
     have hkb : k * b ≤ k ^ 2 * b := by
@@ -182,12 +170,12 @@ theorem wooleySourcePolynomial_iterationStep_of_scale_hierarchy
             exact this.trans hscaleNuCurrent)
         nlinarith [mul_nonneg htau (show (0 : ℝ) ≤ (k * b : ℕ) by positivity)]
       exact_mod_cast (show ((k * nu : ℕ) : ℝ) ≤ (a : ℝ) by
-        exact hknuR.trans hstateA)
+        linarith)
     · exact hstateRel
     · have hcoeff : k - r + 1 ≤ k := by omega
       exact (Nat.mul_le_mul_right b hcoeff).trans hscaleBCurrent
     · exact htau
-    · exact hcurrentMargin.trans hstateA
+    · linarith
     · exact hepsilonCurrent
   have hloss (h : ℕ) : epsilon * ((H - h : ℕ) : ℝ) ≤
       (wooleyTriangular k : ℝ) * (nu : ℝ) := by
@@ -201,8 +189,7 @@ theorem wooleySourcePolynomial_iterationStep_of_scale_hierarchy
   have h91First := wooleySourcePolynomial_lemma_9_1_of_scale_hierarchy
     phi gamma C Lambda tau epsilon hpPrime.two_le hk hC hnu hB0nu
       hscaleNuCurrent hscaleBCurrent hbH htau htauSmall hepsilonCurrent
-      hphi hc hgamma hscale (hupperAll b (by
-        exact Nat.le_mul_of_pos_left b (by omega))) (hloss b) hsection7
+      hphi hc hgamma hscale (hupperAll b (Nat.le_mul_of_pos_left b (by omega))) (hloss b) hsection7
       hr hrk' hadmFirst
   have hhFirst := wooley_section10_first_loss_from_global
     hk hrk hhierarchy
@@ -355,10 +342,10 @@ theorem wooleySection10NodeHierarchy_of_global
       ((k : ℝ) ^ 2 * (delta * (thetaNat : ℝ))) * Lambda) :
     WooleySection10NodeHierarchy k B H nu thetaNat m b
       Lambda delta tau epsilon := by
-  have hmle : m ≤ N := hmN.le
+  
   have hpow : k ^ (2 * m) ≤ k ^ (2 * N) :=
     Nat.pow_le_pow_right (by omega : 1 ≤ k) (by omega)
-  have hbCap : b ≤ k ^ (2 * N) * thetaNat :=
+  have hbCap  :=
     hbUpper.trans (Nat.mul_le_mul_right thetaNat hpow)
   have hscaleNu : 4 * k ^ 3 * nu ≤ b := by
     exact_mod_cast hnuScale.trans hstateB
@@ -367,7 +354,6 @@ theorem wooleySection10NodeHierarchy_of_global
       k ^ 2 * b ≤ k ^ 2 * (k ^ (2 * N) * thetaNat) :=
         Nat.mul_le_mul_left (k ^ 2) hbCap
       _ = k ^ (2 * N + 2) * thetaNat := by
-        rw [pow_add]
         ring
       _ ≤ B := hBScale
   have hscaleH : k * b ≤ H := by
@@ -375,7 +361,6 @@ theorem wooleySection10NodeHierarchy_of_global
       k * b ≤ k * (k ^ (2 * N) * thetaNat) :=
         Nat.mul_le_mul_left k hbCap
       _ = k ^ (2 * N + 1) * thetaNat := by
-        rw [pow_succ']
         ring
       _ ≤ H := hHScale
   have hcurrent : tau * ((k * b : ℕ) : ℝ) +
@@ -404,8 +389,7 @@ theorem wooleySection10NodeHierarchy_of_global
     exact lt_of_le_of_lt
       (mul_le_mul_of_nonneg_right (by exact_mod_cast hnat) (sq_nonneg epsilon))
       hepsilonSmall
-  have hh : 2 * ((k ^ 5 * nu : ℕ) : ℝ) ≤ (b : ℝ) * Lambda := by
-    exact hhierarchy.trans
+  have hh := hhierarchy.trans
       (mul_le_mul_of_nonneg_right hstateB hLambda.le)
   exact ⟨hbUpper, hscaleNu, hscaleB, hscaleH, hcurrent, hsecond, heps, hh⟩
 
@@ -463,7 +447,7 @@ theorem wooleySourcePolynomial_iterationChain_of_hierarchy_ledger
     apply wooleySourcePolynomial_iterationStep_of_scale_hierarchy
       phi gamma C Lambda delta (thetaNat : ℝ) tau epsilon
       hpPrime hk hC hLambda hr hrk
-    · exact mul_nonneg hdelta (by positivity)
+    · positivity
     · exact hstateA
     · exact hstateB
     · exact hstateRel
@@ -489,29 +473,25 @@ theorem wooleySourcePolynomial_iterationChain_of_hierarchy_ledger
         _ ≤ k * (k ^ (2 * m) * thetaNat) :=
           Nat.mul_le_mul_left k hbUpper
         _ = k ^ (2 * m + 1) * thetaNat := by
-          rw [pow_succ']
           ring
         _ ≤ k ^ (2 * N + 1) * thetaNat := by
-          exact Nat.mul_le_mul_right thetaNat
-            (Nat.pow_le_pow_right (by omega : 1 ≤ k) (by omega))
+          gcongr
     · exact hsection7
     · exact hhierarchy
   · simp
   · have hkR : (1 : ℝ) ≤ k := by exact_mod_cast (show 1 ≤ k by omega)
     have hkSq : (1 : ℝ) ≤ (k : ℝ) ^ 2 := by nlinarith
-    have hdeltaLe : delta ≤ 1 :=
+    have hdeltaLe  :=
       (show delta ≤ (k : ℝ) ^ 2 * delta by
         simpa only [one_mul] using mul_le_mul_of_nonneg_right hkSq hdelta).trans
           hdeltaOne
-    have hscaled : delta * (thetaNat : ℝ) ≤
-        1 * (thetaNat : ℝ) :=
+    have hscaled  :=
       mul_le_mul_of_nonneg_right hdeltaLe (Nat.cast_nonneg thetaNat)
     simpa only [one_mul] using hscaled
   · simpa [mul_assoc] using
       mul_le_mul_of_nonneg_right hdeltaOne
         (show (0 : ℝ) ≤ (thetaNat : ℝ) by positivity)
-  · simp only [one_mul, show k - 1 + 1 = k by omega]
-    exact Nat.le_mul_of_pos_left thetaNat (by omega)
+  · bound
   · omega
   · omega
 

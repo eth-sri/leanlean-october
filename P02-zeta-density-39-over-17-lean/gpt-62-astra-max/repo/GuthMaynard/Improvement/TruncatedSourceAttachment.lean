@@ -15,11 +15,11 @@ theorem source_truncated_domination {β : ℝ → ℝ} {D : ℝ → ℂ}
     (hβ1 : ∀ t, β t ≤ 1) (U t : ℝ) :
     sourceTruncatedDensity β D U t ≤ min (‖D t‖^2) (U^2) := by
   by_cases ht : t ∈ {t | ‖D t‖ ≤ U}
-  · have hU : 0 ≤ U := (norm_nonneg _).trans ht
+  · have hU  := (norm_nonneg _).trans ht
     simp only [sourceTruncatedDensity, indicator_of_mem ht]
     apply le_min
     · nlinarith [sq_nonneg ‖D t‖,hβ1 t]
-    · have hh : ‖D t‖^2 ≤ U^2 := pow_le_pow_left₀ (norm_nonneg _) ht 2
+    · have hh  := pow_le_pow_left₀ (norm_nonneg _) ht 2
       nlinarith [sq_nonneg ‖D t‖,hβ1 t]
   · simp only [sourceTruncatedDensity, indicator_of_notMem ht]
     exact le_min (sq_nonneg _) (sq_nonneg _)
@@ -47,7 +47,7 @@ theorem fixed_truncated_source_regular {N T : ℝ} (hN : 2 ≤ N) (hT : 0 < T)
     Measurable μ ∧ Integrable μ ∧ Integrable (fun t => μ t^2) ∧
       (∀ t, 0 ≤ μ t) ∧ Function.support μ ⊆ Icc (-2*T) (3*T) ∧
       (∀ t, μ t ≤ min (‖boundedPolynomial N a t‖^2) (U^2)) := by
-  have hm : Measurable (fun t => fixedTimeCutoff (t/T)) :=
+  have hm  :=
     (fixedTimeCutoff_smooth.continuous.comp (continuous_id.div_const T)).measurable
   have hi : Integrable (fun t => fixedTimeCutoff (t/T)) := by
     simpa [div_eq_mul_inv,mul_comm] using

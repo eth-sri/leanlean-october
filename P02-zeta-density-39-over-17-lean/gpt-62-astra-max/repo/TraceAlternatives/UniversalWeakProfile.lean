@@ -99,9 +99,6 @@ theorem universal_weak_level_profile {T M R E K U mass : ℝ}
   · exact hCase1 h1
   by_cases h2 : mass^2 ≤ 3*E*K*B2
   · exact hCase2 h2
-  have h3 : mass^2 ≤ 3*E*K*B3 := by
-    change mass^2 ≤ E*K*(B1+B2+B3) at hSq
-    nlinarith only [hSq,lt_of_not_ge h1,lt_of_not_ge h2]
-  exact hCase3 h3
+  grind
 
 end Montgomery.RationalMoment

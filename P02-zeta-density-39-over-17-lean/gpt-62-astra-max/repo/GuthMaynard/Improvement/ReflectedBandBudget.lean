@@ -70,13 +70,13 @@ theorem reflected_band_raw_budget {ε A p : ℝ} (hε : 0 < ε) (hA : 1 ≤ A) (
   have hη : 0 < η := by dsimp [η]; positivity
   have hlogA : 0 ≤ Real.log (4*A) := Real.log_nonneg (by linarith)
   have hB : 0 < B := by dsimp [B]; positivity
-  refine ⟨η,C,hη,by dsimp [C]; positivity,?_⟩
+  refine ⟨η,C,hη,by positivity,?_⟩
   intro N L H hN hNL hH hupper
   dsimp only
   let X := reflectedBandLength L H
   let Y := ⌊2*N⌋₊*X
   have hN0 : 0 < N := by linarith
-  have hL : 0 < L := hN0.trans_le hNL
+  have hL  := hN0.trans_le hNL
   obtain ⟨hx,hnx,hy⟩ := reflected_band_length_bounds hN hNL hH
   have hlog := reflected_band_log_budget hA hp hδ hN hH.le hupper Y hy
   have hNp : 1 ≤ N^p := Real.one_le_rpow (by linarith) hp.le
@@ -85,18 +85,14 @@ theorem reflected_band_raw_budget {ε A p : ℝ} (hε : 0 < ε) (hA : 1 ≤ A) (
     calc
       _ ≤ (5*A*N^p)^η := Real.rpow_le_rpow (by positivity) hbase hη.le
       _ = _ := by rw [Real.mul_rpow (by positivity) (by positivity),← Real.rpow_mul hN0.le]
-  have hxdiv : (X:ℝ) ≤ 2*H/L := (le_div_iff₀ hL).mpr hx
+  have hxdiv  := (le_div_iff₀ hL).mpr hx
   have hNplus : N+1 ≤ 2*N := by linarith
   have he : δ+p*η=ε := by dsimp [δ,η]; field_simp; ring
   calc
     _ ≤ (L^2/H)*(B*H*N^δ)*((5*A)^η*N^(p*η))*(2*N)*(2*H/L) := by
       apply mul_le_mul
       · apply mul_le_mul
-        · apply mul_le_mul
-          · exact mul_le_mul_of_nonneg_left hlog (by positivity)
-          · exact hpower
-          · positivity
-          · positivity
+        · gcongr
         · exact hNplus
         · positivity
         · positivity

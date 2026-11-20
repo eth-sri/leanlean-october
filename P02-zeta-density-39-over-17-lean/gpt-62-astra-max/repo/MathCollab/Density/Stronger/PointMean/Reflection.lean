@@ -27,8 +27,7 @@ theorem norm_GammaR_real_im (r t : ℝ) :
   rw [Complex.Gammaℝ_def, norm_mul,
     Complex.norm_cpow_eq_rpow_re_of_pos Real.pi_pos]
   congr 1
-  · congr 1
-    simp
+  · simp
   · congr 2
     push_cast
     ring
@@ -70,10 +69,8 @@ theorem heathBrown_zeta_displaced_reflection
   have hFE := completedRiemannZeta_one_sub sL
   rw [hOneSub, completedRiemannZeta_eq_zeta_mul_GammaR hsRRe,
     completedRiemannZeta_eq_zeta_mul_GammaR hsLRe] at hFE
-  have hGammaL : Complex.Gammaℝ sL ≠ 0 :=
+  have hGammaL  :=
     Complex.Gammaℝ_ne_zero_of_re_pos hsLRe
-  change riemannZeta sL =
-    (Complex.Gammaℝ sR / Complex.Gammaℝ sL) * riemannZeta sR
   calc
     riemannZeta sL =
         (riemannZeta sL * Complex.Gammaℝ sL) / Complex.Gammaℝ sL := by
@@ -104,7 +101,7 @@ theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
     simp [z, abs_of_nonneg (by linarith : 0 ≤ t / 2)]
   have hzLower : (1 / 8 : ℝ) ≤ z.re := by rw [hzRe]; linarith
   have hzUpper : z.re + delta ≤ 1 := by rw [hzRe]; linarith
-  have hGamma := hShift z delta hzLower hzUpper hdelta.le (by rw [hzIm]; linarith)
+  have hGamma := hShift z delta hzLower hzUpper hdelta.le (by linarith)
   have hzAdd : z + (delta : ℂ) =
       (((1 / 2 + delta) / 2 : ℝ) : ℂ) + ((t / 2 : ℝ) : ℂ) * I := by
     apply Complex.ext <;> simp [z]
@@ -112,7 +109,7 @@ theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
   rw [hzAdd, hzIm] at hGamma
   have hGammaZ : 0 < ‖Complex.Gamma z‖ := by
     rw [norm_pos_iff]
-    exact Complex.Gamma_ne_zero_of_re_pos (by rw [hzRe]; linarith)
+    exact Complex.Gamma_ne_zero_of_re_pos (by linarith)
   have hGammaRatio :
       ‖Complex.Gamma
           ((((1 / 2 + delta) / 2 : ℝ) : ℂ) +
@@ -125,7 +122,7 @@ theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
         (((1 / 2 - delta) / 2 : ℝ) : ℂ) +
           ((t / 2 : ℝ) : ℂ) * I := rfl
     rw [← hzEq]
-    exact (div_le_iff₀ hGammaZ).2 (by simpa [mul_comm] using hGamma)
+    exact (div_le_iff₀ hGammaZ).2 (by linarith)
   have hPiPow : Real.pi ^ (-delta) ≤ 1 := by
     exact Real.rpow_le_one_of_one_le_of_nonpos
       (by linarith [Real.pi_gt_three]) (by linarith)
@@ -161,10 +158,9 @@ theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
           ‖Complex.Gamma
             ((((1 / 2 - delta) / 2 : ℝ) : ℂ) +
               ((t / 2 : ℝ) : ℂ) * I)‖) := by
-        rw [← hPiRatio]
-        field_simp [ne_of_gt hPiDen, ne_of_gt hGammaDen]
+        grind
     _ ≤ 1 * Real.exp ((Real.log (t / 2 + 2) + D) * delta) := by
-      exact mul_le_mul hPiPow hGammaRatio (by positivity) (by positivity)
+      gcongr
     _ = Real.exp ((Real.log (t / 2 + 2) + D) * delta) := by ring
 
 theorem exists_heathBrown_offCritical_minus_strong_le :
@@ -194,7 +190,7 @@ theorem exists_heathBrown_offCritical_minus_strong_le :
   have hqSq : ‖q‖ ^ (2 : ℕ) ≤
       Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) := by
     have hp := pow_le_pow_left₀ (norm_nonneg q)
-      (by simpa only [q, sR, sL] using hq) 2
+      (by linarith) 2
     calc
       ‖q‖ ^ (2 : ℕ) ≤
           Real.exp ((Real.log (t / 2 + 2) + D) * delta) ^ (2 : ℕ) := hp
@@ -209,8 +205,7 @@ theorem exists_heathBrown_offCritical_minus_strong_le :
     ‖q‖ ^ (2 : ℕ) * ‖riemannZeta sP‖ ^ (2 : ℕ) ≤
         Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) *
           (P * (1 + heathBrownStrongMellinCriticalMoment delta t)) := by
-      exact mul_le_mul hqSq (by simpa only [sP] using hplus)
-        (by positivity) (by positivity)
+      gcongr
     _ = P * Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) *
           (1 + heathBrownStrongMellinCriticalMoment delta t) := by ring
 

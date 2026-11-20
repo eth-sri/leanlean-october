@@ -34,10 +34,10 @@ instance {p a b nu : ℕ} :
     (wooleyResiduesSeparated nu xi eta)
 
 theorem wooleyTriangular_zero : wooleyTriangular 0 = 0 := by
-  simp [wooleyTriangular]
+  rfl
 
 theorem wooleyTriangular_one : wooleyTriangular 1 = 1 := by
-  norm_num [wooleyTriangular]
+  rfl
 
 end
 

@@ -18,9 +18,9 @@ theorem second_order_mean_value
       F'' xi = F (x + 2) - 2 * F (x + 1) + F x := by
   let a := F (x + 1) - F x
   let D := F (x + 2) - 2 * F (x + 1) + F x
-  let q : Real -> Real := fun y =>
+  let q  := fun y =>
     F y - F x - a * (y - x) - D / 2 * (y - x) * (y - x - 1)
-  let q' : Real -> Real := fun y =>
+  let q'  := fun y =>
     F' y - a - D / 2 * ((y - x) + (y - x - 1))
   have hq (y : Real) (hy : y ∈ Set.Icc x (x + 2)) : HasDerivAt q (q' y) y := by
     dsimp only [q, q', a, D]
@@ -40,9 +40,7 @@ theorem second_order_mean_value
     convert (((hF' y hy).sub_const a).sub
       ((((hasDerivAt_id y).sub_const x).add
         (((hasDerivAt_id y).sub_const x).sub_const 1)).const_mul (D / 2))) using 1
-    · funext z
-      simp only [Pi.sub_apply, Pi.add_apply]
-      dsimp only [a, id_eq]
+    · rfl
     · ring
   have hq0 : q x = 0 := by dsimp only [q]; ring
   have hq1 : q (x + 1) = 0 := by dsimp only [q, a]; ring
@@ -55,7 +53,7 @@ theorem second_order_mean_value
     (fun y hy => (hq y ⟨(by linarith [hy.1]), hy.2⟩).continuousAt.continuousWithinAt)
     (hq1.trans hq2.symm)
     (fun y hy => hq y ⟨(by linarith [hy.1]), hy.2.le⟩)
-  have hc12 : c₁ < c₂ := lt_trans hc₁.2 hc₂.1
+  have hc12  := lt_trans hc₁.2 hc₂.1
   obtain ⟨xi, hxi, hxizero⟩ := exists_hasDerivAt_eq_zero hc12
     (fun y hy => (hq' y ⟨(by linarith [hc₁.1, hy.1]),
       (by linarith [hc₂.2, hy.2])⟩).continuousAt.continuousWithinAt)

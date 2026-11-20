@@ -21,7 +21,6 @@ namespace MathCollab.Density.Stronger.Atkinson
 noncomputable def phaseAlign (z : ℂ) : ℂ := if z = 0 then 1 else conj z / ‖z‖
 
 theorem norm_conj_eq (z : ℂ) : ‖conj z‖ = ‖z‖ := by
-  change ‖star z‖ = ‖z‖
   exact norm_star z
 
 theorem norm_phaseAlign_le_one (z : ℂ) : ‖phaseAlign z‖ ≤ 1 := by
@@ -29,7 +28,7 @@ theorem norm_phaseAlign_le_one (z : ℂ) : ‖phaseAlign z‖ ≤ 1 := by
   · simp [phaseAlign, hz]
   · rw [phaseAlign, ite_eq_right hz, norm_div]
     rw [norm_conj_eq, norm_real]
-    have hzNorm : ‖z‖ ≠ 0 := norm_ne_zero_iff.mpr hz
+    have hzNorm  := norm_ne_zero_iff.mpr hz
     simp [hzNorm]
 
 theorem phaseAlign_mul (z : ℂ) : phaseAlign z * z = (‖z‖ : ℂ) := by
@@ -42,7 +41,7 @@ theorem phaseAlign_mul (z : ℂ) : phaseAlign z * z = (‖z‖ : ℂ) := by
         rw [← Complex.normSq_eq_norm_sq, Complex.normSq_eq_conj_mul_self]
       _ = (‖z‖ : ℂ) := by
         push_cast
-        have hzNorm : ‖z‖ ≠ 0 := norm_ne_zero_iff.mpr hz
+        
         field_simp
 
 /-- Coordinate Cauchy--Schwarz for a finite complex sum. -/
@@ -100,8 +99,7 @@ theorem sum_norm_sq_sum_le_gram {ι κ : Type*} [DecidableEq ι] [DecidableEq κ
           conj (c t) * c u * (∑ n ∈ s, conj (y t n) * y u n)‖ :=
       Complex.re_le_norm _
     _ ≤ ∑ t ∈ W, ∑ u ∈ W,
-        ‖conj (c t) * c u * (∑ n ∈ s, conj (y t n) * y u n)‖ := by
-      exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun t ht => norm_sum_le _ _)
+        ‖conj (c t) * c u * (∑ n ∈ s, conj (y t n) * y u n)‖ := (norm_sum_le _ _).trans (Finset.sum_le_sum fun t ht => norm_sum_le _ _)
     _ ≤ ∑ t ∈ W, ∑ u ∈ W,
         ‖∑ n ∈ s, conj (y t n) * y u n‖ := by
       apply Finset.sum_le_sum
@@ -126,8 +124,8 @@ theorem sum_norm_coefficient_vector_sq_le_gram
     (∑ t ∈ W, ‖∑ n ∈ s, d n*e t n‖)^2 ≤
       (∑ n ∈ s, ‖d n‖^2)*
         ∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ s, conj (e t n)*e u n‖ := by
-  let D : κ → ℂ := fun t => ∑ n ∈ s, d n*e t n
-  let c : κ → ℂ := fun t => phaseAlign (D t)
+  let D  := fun t => ∑ n ∈ s, d n*e t n
+  let c  := fun t => phaseAlign (D t)
   have hc : ∀ t ∈ W, ‖c t‖ ≤ 1 := fun t _ => norm_phaseAlign_le_one (D t)
   have halign : ‖∑ t ∈ W, c t*D t‖ = ∑ t ∈ W, ‖D t‖ := by
     have he : (∑ t ∈ W, c t*D t) = ((∑ t ∈ W, ‖D t‖ : ℝ) : ℂ) := by

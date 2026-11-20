@@ -28,7 +28,7 @@ theorem differentiableAt_dfiPeriodicArchimedeanFactor_of_re_pos
   have hq : (q : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne q)
   have hpi : (2 * Real.pi : ℂ) ≠ 0 :=
     mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
-  have hGamma : DifferentiableAt ℂ Gamma s :=
+  have hGamma  :=
     Complex.differentiableAt_Gamma s (fun m hm => by
       have hre := congrArg Complex.re hm
       norm_num at hre
@@ -54,7 +54,6 @@ theorem differentiableAt_dfiVoronoiMinusMultiplier_of_re_lt_one
   have hinner : DifferentiableAt ℂ (fun w : ℂ => 1 - w) z := by fun_prop
   have hfactor := (differentiableAt_dfiPeriodicArchimedeanFactor_of_re_pos q
     (s := 1 - z) (by simpa using sub_pos.mpr hz)).comp z hinner
-  unfold dfiVoronoiMinusMultiplier
   exact ((differentiableAt_const (c := (q : ℂ))).mul (hfactor.pow 2)).mul
     ((Complex.differentiableAt_exp.comp z (by fun_prop)).add
       (Complex.differentiableAt_exp.comp z (by fun_prop)))
@@ -65,7 +64,6 @@ theorem differentiableAt_dfiVoronoiPlusMultiplier_of_re_lt_one
   have hinner : DifferentiableAt ℂ (fun w : ℂ => 1 - w) z := by fun_prop
   have hfactor := (differentiableAt_dfiPeriodicArchimedeanFactor_of_re_pos q
     (s := 1 - z) (by simpa using sub_pos.mpr hz)).comp z hinner
-  unfold dfiVoronoiPlusMultiplier
   exact ((differentiableAt_const (c := (2 : ℂ))).mul
     (differentiableAt_const (c := (q : ℂ)))).mul (hfactor.pow 2)
 

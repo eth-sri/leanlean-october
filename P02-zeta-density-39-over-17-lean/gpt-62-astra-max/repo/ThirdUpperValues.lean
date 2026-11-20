@@ -65,7 +65,7 @@ theorem third_upper_large_values {σ a p α δ : ℝ}
         102*(N*(H+N*Real.log (2*N))/(N^σ*H^(-2*δ))^2) := by ring
     rw [he,hdivM] at hh
     exact hh
-  have hlog : Real.log (2*N) ≤ D*H^(2*δ) :=
+  have hlog  :=
     (classical_log_budget (by linarith : 1 ≤ N) hδ).trans
       (mul_le_mul_of_nonneg_left hsmall hD.le)
   have hmean2 : N^(2-2*σ)*Real.log (2*N) ≤ D*H^(p+4*δ) := by

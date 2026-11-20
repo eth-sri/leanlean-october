@@ -54,7 +54,7 @@ theorem actual_second_moment_universal_native (ε : ℝ) (hε : 0<ε) :
   have hTp : 0<T := by linarith
   have hT1 : 1≤T := by linarith
   have hM1 : (1:ℝ)≤M := by exact_mod_cast hM
-  have hTδ : 1≤T^δ := Real.one_le_rpow hT1 hδ.le
+  have hTδ  := Real.one_le_rpow hT1 hδ.le
   let F : ℝ := universalShortProfile T M W.card (discreteAdditiveEnergy W)
   have hF : 0≤F := universalShortProfile_nonneg hTp.le
     (Nat.cast_nonneg _) (Nat.cast_nonneg _) (Nat.cast_nonneg _)
@@ -73,14 +73,14 @@ theorem actual_second_moment_universal_native (ε : ℝ) (hε : 0<ε) :
         rw [Real.mul_rpow (by norm_num) hTp.le]
         gcongr
       _ ≤ T^δ*F+4*K*((2:ℝ)^δ*T^δ)*(2*F) := by gcongr; exact le_mul_of_one_le_left hF hTδ
-      _ = _ := by dsimp only [A]; ring
+      _ = _ := by ring
   have hLog : 2+Real.logb 2 T ≤ L*T^δ := by
     have hh := Real.log_le_rpow_div hTp.le hδ
     have hDiv := div_le_div_of_nonneg_right hh hLog2.le
     unfold Real.logb
     calc
       _ ≤ 2*T^δ+(T^δ/δ)/Real.log 2 := add_le_add (by nlinarith) hDiv
-      _ = _ := by dsimp only [L]; field_simp
+      _ = _ := by ring
   have hInner0 : 0≤(W.card:ℝ)^2+4*K*(2*T)^δ*
       universalShortProfile (2*T) M W.card (discreteAdditiveEnergy W) := by
     have hh := universalShortProfile_nonneg (by positivity : (0:ℝ)≤2*T)
@@ -92,6 +92,6 @@ theorem actual_second_moment_universal_native (ε : ℝ) (hε : 0<ε) :
       hInner0 (by positivity))
     _ = (A*L)*T^ε*F := by
       rw [show (L*T^δ)*(A*T^δ*F) = (A*L)*(T^δ*T^δ)*F by ring,
-        ← Real.rpow_add hTp,show δ+δ=ε by dsimp only [δ]; ring]
+        ← Real.rpow_add hTp,show δ+δ=ε by ring]
 
 end Montgomery.RationalMoment

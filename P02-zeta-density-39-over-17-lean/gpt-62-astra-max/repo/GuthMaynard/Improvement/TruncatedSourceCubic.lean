@@ -45,7 +45,7 @@ theorem fixed_truncated_source_cubic {ε : ℝ} (hε : 0 < ε) :
   let M := ∫ t, μ t^2
   have hT : 0 < T := by linarith
   have hlog : 0 ≤ Real.log (2*N) := Real.log_nonneg (by linarith)
-  have hL : 0 < L := (Real.rpow_pos_of_pos (by positivity : 0 < 5*T) _).trans_le hLl
+  have hL  := (Real.rpow_pos_of_pos (by positivity : 0 < 5*T) _).trans_le hLl
   obtain ⟨hm,hi,h2,h0,hμs,_⟩ := fixed_truncated_source_regular hN hT a ha U
   have hH : 0 ≤ H := by
     apply integral_nonneg
@@ -59,8 +59,7 @@ theorem fixed_truncated_source_cubic {ε : ℝ} (hε : 0 < ε) :
   have hp := fixed_truncated_source_mass hN hNT a ha U
   have hA : 0 ≤ sourceFourierMass μ (D*(N^2+H)) :=
     integral_nonneg (fun _ => sq_nonneg _)
-  have hprod : (∫ t, μ t)*sourceFourierMass μ (D*(N^2+H)) ≤
-      (612*T*N*Real.log (2*N))*(D*N^2*T*Real.log (2*N)) :=
+  have hprod  :=
     mul_le_mul hp ht hA (by positivity)
   change ‖kernelCubic (timeMeasure μ) (centeredKernel
     (fun x => ((MathCollab.Density.comparisonCutoff x^2:ℝ):ℂ)) (1/2) 5 L)‖ ≤ _

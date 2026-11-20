@@ -17,7 +17,7 @@ theorem square_level_monomial_le {q M T U D P s v r : ℝ}
     (hr : 0 ≤ r) (hr10 : r ≤ 10) :
     q^s*(2*T)^v*(U^2/D)^(-r) ≤
       512*P^10*T^v*M^(2*s)*U^(-2*r) := by
-  have hPp : 0 < P := by linarith
+  
   have hqPow : q^s ≤ 256*M^(2*s) := by
     calc
       _ ≤ (2*M^2)^s := Real.rpow_le_rpow hq hqM hs
@@ -35,8 +35,7 @@ theorem square_level_monomial_le {q M T U D P s v r : ℝ}
     have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2) hv1
     norm_num at hh
     exact hh
-  have hDPow : D^r ≤ P^10 := by
-    exact (Real.rpow_le_rpow hD.le hDP hr).trans
+  have hDPow := (Real.rpow_le_rpow hD.le hDP hr).trans
       (by simpa only [Real.rpow_ofNat] using Real.rpow_le_rpow_of_exponent_le hP hr10)
   have hInv : (U^2/D)^(-r) = D^r*U^(-2*r) := by
     rw [Real.div_rpow (sq_nonneg U) hD.le,

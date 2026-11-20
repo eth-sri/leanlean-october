@@ -82,8 +82,7 @@ lemma ZetaSum_aux1₁ {a b : ℕ} {s : ℂ} (s_ne_one : s ≠ 1) (ha : a ∈ Ioo
     exact fun hx ↦ (lt_self_iff_false 0).mp <| xpos_of_uIcc ha hx
 
 lemma ZetaSum_aux1φDiff {s : ℂ} {x : ℝ} (xpos : 0 < x) :
-    HasDerivAt (fun (t : ℝ) ↦ 1 / (t : ℂ) ^ s) (deriv (fun (t : ℝ) ↦ 1 / (t : ℂ) ^ s) x) x := by
-  exact hasDerivAt_deriv_iff.mpr <|
+    HasDerivAt (fun (t : ℝ) ↦ 1 / (t : ℂ) ^ s) (deriv (fun (t : ℝ) ↦ 1 / (t : ℂ) ^ s) x) x := hasDerivAt_deriv_iff.mpr <|
     DifferentiableAt.div (differentiableAt_const _)
       (Real.differentiableAt_cpow_const_of_ne s xpos) (by simp [cpow_eq_zero_iff, xpos.ne'])
 
@@ -151,7 +150,7 @@ lemma ZetaSum_aux1_2 {a b : ℝ} {c : ℝ} (apos : 0 < a) (a_lt_b : a < b)
   rw [← this]
   apply intervalIntegral.integral_congr
   intro x hx
-  have : 0 ≤ x := (ZetaSum_aux1_1 apos a_lt_b hx).le
+  have  := (ZetaSum_aux1_1 apos a_lt_b hx).le
   simp [div_rpow_eq_rpow_neg _ _ _ this, sub_eq_add_neg, add_comm]
 
 lemma ZetaSum_aux1_3 (x : ℝ) : ‖(⌊x⌋ + 1/2 - x)‖ ≤ 1/2 :=
@@ -183,8 +182,7 @@ lemma ZetaSum_aux1_5b {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σp
 
 open MeasureTheory in
 lemma measurable_floor_add_half_sub : Measurable fun (u : ℝ) ↦ ↑⌊u⌋ + 1 / 2 - u := by
-  refine Measurable.add ?_ measurable_const |>.sub measurable_id
-  exact Measurable.comp (by exact fun _ _ ↦ trivial) Int.measurable_floor
+  fun_prop
 
 open MeasureTheory in
 lemma ZetaSum_aux1_5c {a b : ℝ} {s : ℂ} :
@@ -224,7 +222,7 @@ lemma ZetaBnd_aux1a {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σpos
   exact fun h ↦ (lt_self_iff_false 0).mp <| ZetaSum_aux1_1 apos a_lt_b h
 
 lemma Finset.Ioc_eq_Ico (M N : ℕ) : Finset.Ioc N M = Finset.Ico (N + 1) (M + 1) := by
-  ext a; simp only [Finset.mem_Ioc, Finset.mem_Ico]; constructor <;> intro ⟨h₁, h₂⟩ <;> omega
+  grind
 
 lemma finsetSum_tendsto_tsum {N : ℕ} {f : ℕ → ℂ} (hf : Summable f) :
     Tendsto (fun (k : ℕ) ↦ ∑ n ∈ Finset.Ico N k, f n) atTop (𝓝 (∑' (n : ℕ), f (n + N))) := by
@@ -243,7 +241,7 @@ lemma Complex.cpow_tendsto {s : ℂ} (s_re_gt : 1 < s.re) :
   have one_sub_s_re_ne : (1 - s).re ≠ 0 := by simp only [sub_re, one_re]; linarith
   rw [tendsto_zero_iff_norm_tendsto_zero]
   simp_rw [Complex.norm_natCast_cpow_of_re_ne_zero _ (one_sub_s_re_ne)]
-  rw [(by simp only [sub_re, one_re, neg_sub] : (1 - s).re = - (s - 1).re)]
+  rw [(by simp : (1 - s).re = - (s - 1).re)]
   apply (tendsto_rpow_neg_atTop _).comp tendsto_natCast_atTop_atTop; simp [s_re_gt]
 
 lemma Complex.cpow_inv_tendsto {s : ℂ} (hs : 0 < s.re) :
@@ -265,7 +263,7 @@ lemma ZetaSum_aux3 {N : ℕ} {s : ℂ} (s_re_gt : 1 < s.re) :
   convert finsetSum_tendsto_tsum (f := fun n ↦ f (n + 1)) (N := N) ?_ using 1
   · ext k
     rw [Finset.sum_Ico_add']
-  · congr; ext n; simp only [one_div, Nat.cast_add, Nat.cast_one, f]
+  · simp only [one_div, Nat.cast_add, Nat.cast_one, f]
   · rwa [summable_nat_add_iff (k := 1)]
 
 lemma integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 0 < s.re) :
@@ -276,8 +274,7 @@ lemma integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 0
   · apply MeasureTheory.ae_of_all
     convert hc; simp only [← Complex.norm_real]; simp
   · apply integrableOn_Ioi_cpow_iff (by positivity) |>.mpr (by simp [s_re_gt])
-  · refine Measurable.add ?_ measurable_const |>.sub (by fun_prop) |>.aestronglyMeasurable
-    exact Measurable.comp (by exact fun _ _ ↦ trivial) Int.measurable_floor
+  · fun_prop
 
 lemma ZetaSum_aux2 {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 1 < s.re) :
     ∑' (n : ℕ), 1 / (n + N + 1 : ℂ) ^ s =
@@ -387,7 +384,7 @@ lemma integrableOn_of_Zeta0_fun_log {N : ℕ} (Npos : 0 < N) {s : ℂ} (s_re_gt 
     · apply ContinuousOn.mul ?_ ?_ |>.aestronglyMeasurable (by simp)
       · intro x hx
         apply ContinuousWithinAt.cpow ?_ continuous_const.continuousWithinAt ?_
-        · exact RCLike.continuous_ofReal.continuousWithinAt
+        · fun_prop
         · simp only [ofReal_mem_slitPlane]; linarith [mem_Ioi.mp hx]
       · apply RCLike.continuous_ofReal.continuousOn.comp ?_ (mapsTo_image _ _)
         refine continuous_id.continuousOn.log ?_
@@ -401,8 +398,7 @@ lemma integrableOn_of_Zeta0_fun_log {N : ℕ} (Npos : 0 < N) {s : ℂ} (s_re_gt 
       have xpos : 0 < x := by linarith [mem_Ioi.mp hx]
       simp [norm_cpow_eq_rpow_re_of_pos xpos, Real.abs_rpow_of_nonneg xpos.le,
         abs_eq_self.mpr xpos.le]
-  · apply Measurable.add ?_ measurable_const |>.sub (by fun_prop) |>.aestronglyMeasurable
-    exact Measurable.comp (fun _ _ ↦ trivial) Int.measurable_floor
+  · fun_prop
   · apply MeasureTheory.ae_of_all
     convert hc with _ x; simp only [← Complex.norm_real]; simp
 
@@ -417,7 +413,7 @@ lemma hasDerivAt_Zeta0Integral {N : ℕ} (Npos : 0 < N) {s : ℂ} (hs : s ∈ {s
   set ε := s.re / 2
   have ε_pos : 0 < ε := by aesop
   set bound : ℝ → ℝ := fun x ↦ |x ^ (- s.re / 2 - 1)| * |Real.log x|
-  let μ : Measure ℝ := volume.restrict (Ioi (N : ℝ))
+  let μ  := volume.restrict (Ioi (N : ℝ))
   have hF_meas : ∀ᶠ (z : ℂ) in 𝓝 s, AEStronglyMeasurable (F z) μ := by
     have : {z : ℂ | 0 < z.re} ∈ 𝓝 s := by
       rw [mem_nhds_iff]
@@ -464,8 +460,7 @@ lemma hasDerivAt_Zeta0Integral {N : ℕ} (Npos : 0 < N) {s : ℂ} (hs : s ∈ {s
   have h_bound : ∀ᵐ x ∂μ, ∀ z ∈ Metric.ball s ε, ‖F' z x‖ ≤ bound x := by
     apply ae_restrict_of_ae_restrict_of_subset IoiSubIoi1
     exact h_bound1
-  have bound_integrable : Integrable bound μ := by
-    exact integrable_log_over_pow (r := -s.re / 2) (by linarith) Npos
+  have bound_integrable := integrable_log_over_pow (r := -s.re / 2) (by linarith) Npos
   have h_diff : ∀ᵐ x ∂μ, ∀ z ∈ Metric.ball s ε, HasDerivAt (fun w ↦ F w x) (F' z x) z := by
     simp only [F, F', f]
     apply ae_restrict_of_ae_restrict_of_subset IoiSubIoi1
@@ -494,7 +489,7 @@ lemma hasDerivAt_Zeta0Integral {N : ℕ} (Npos : 0 < N) {s : ℂ} (hs : s ∈ {s
     (s := Metric.ball s ε) (bound := bound) (μ := μ) (Metric.ball_mem_nhds s ε_pos)
     hF_meas hF_int hF'_meas h_bound bound_integrable h_diff).2 using 3
   · ext a; simp only [one_div, F, f]; ring_nf
-  · simp only [one_div, mul_neg, neg_mul, neg_inj, F', f]; ring_nf
+  · ring
 
 /-- The `ζ₀'` definition used by the source-facing construction in `ZetaBoundsUpstream`. -/
 noncomputable def ζ₀' (N : ℕ) (s : ℂ) : ℂ :=
@@ -516,8 +511,7 @@ lemma HasDerivAt_cpow_over_var (N : ℕ) {z : ℂ} (z_ne_zero : z ≠ 0) :
   convert HasDerivAt.mul (c := fun z ↦ - (N : ℂ) ^ z) (d := fun z ↦ z⁻¹)
     (c' := - (N : ℂ) ^ z * Real.log N)
     (d' := - (z ^ 2)⁻¹) ?_ ?_ using 1
-  · simp only [natCast_log, neg_mul, mul_neg, neg_neg]
-    ring_nf
+  · ring
   · simp only [natCast_log, neg_mul]
     apply HasDerivAt.neg
     convert HasDerivAt.const_cpow (c := (N : ℂ)) (f := id) (f' := 1) (x := z) (hasDerivAt_id z)
@@ -533,7 +527,7 @@ lemma HasDerivAtZeta0 {N : ℕ} (Npos : 0 < N) {s : ℂ} (reS_pos : 0 < s.re) (s
     convert hasDerivAt_neg' s |>.const_cpow (c := n) (by aesop) using 1
     all_goals (ring_nf; simp [cpow_neg])
   · have houter := HasDerivAt_cpow_over_var N (z := 1 - s)
-      (by rw [sub_ne_zero]; exact s_ne_one.symm)
+      (by positivity)
     have hinner : HasDerivAt (fun z : ℂ => 1 - z) (-1) s := by
       simpa only [zero_sub, id_eq] using (hasDerivAt_const s (1 : ℂ)).fun_sub (hasDerivAt_id s)
     convert houter.comp s hinner using 1
@@ -551,7 +545,6 @@ lemma HolomorphicOn_riemannZeta0 {N : ℕ} (N_pos : 0 < N) :
 lemma HolomorphicOn_riemannZeta :
     DifferentiableOn ℂ ζ {s : ℂ | s ≠ 1} := by
   intro z hz
-  simp only [mem_ofPred_eq] at hz
   exact (differentiableAt_riemannZeta hz).differentiableWithinAt
 
 lemma isPathConnected_aux : IsPathConnected {z : ℂ | z ≠ 1 ∧ 0 < z.re} := by
@@ -587,7 +580,7 @@ lemma isPathConnected_aux : IsPathConnected {z : ℂ | z ≠ 1 ∧ 0 < z.re} := 
         rw [Complex.ext_iff, one_re, one_im]; exact ⟨by simpa [this, w_im] using h, w_im⟩
       · by_cases hxx : x = 0
         · simp only [hxx]; linarith
-        · have : 0 < x := lt_of_le_of_ne hx.1 (Ne.symm hxx)
+        · have  := lt_of_le_of_ne hx.1 (Ne.symm hxx)
           have : 0 ≤ 1 - x := by linarith
           have := hw.2
           positivity
@@ -604,7 +597,7 @@ lemma isPathConnected_aux : IsPathConnected {z : ℂ | z ≠ 1 ∧ 0 < z.re} := 
       simp [(by apply And.right; simpa [w_im] using h : x = 0)] at h
     · by_cases hxx : x = 0
       · simp only [hxx]; linarith
-      · have : 0 < x := lt_of_le_of_ne hx.1 (Ne.symm hxx)
+      · have  := lt_of_le_of_ne hx.1 (Ne.symm hxx)
         have : 0 ≤ 1 - x := by linarith
         have := hw.2
         positivity
@@ -618,7 +611,7 @@ lemma Zeta0EqZeta {N : ℕ} (N_pos : 0 < N) {s : ℂ} (reS_pos : 0 < s.re) (s_ne
     apply (HolomorphicOn_riemannZeta.analyticOnNhd isOpen_ne).mono
     simp only [ne_eq, ofPred_subset_ofPred, and_imp, U]
     exact fun a ha _ ↦ ha
-  have g_an : AnalyticOnNhd ℂ g U := (HolomorphicOn_riemannZeta0 N_pos).analyticOnNhd isOpen_aux
+  have g_an  := (HolomorphicOn_riemannZeta0 N_pos).analyticOnNhd isOpen_aux
   have preconU : IsPreconnected U := by
     apply IsConnected.isPreconnected
     apply (IsOpen.isConnected_iff_isPathConnected isOpen_aux).mpr isPathConnected_aux

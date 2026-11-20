@@ -25,7 +25,7 @@ theorem centered_energy_universal (w : MathCollab.Density.ReflectionCutoff)
   have hD : 0 < D := by dsimp [D]; positivity
   refine ⟨1+2*B₀^2+D*(C+2*B),by positivity,?_⟩
   intro T t₀ L hT hLs W hW hsep
-  have hL : 1 ≤ L := (Real.one_le_sqrt.mpr (by linarith)).trans hLs
+  have hL  := (Real.one_le_sqrt.mpr (by linarith)).trans hLs
   have hTp : 0 < T := by linarith
   have hLp : 0 < L := by linarith
   let Y : ℝ := Real.pi*L/8
@@ -100,11 +100,10 @@ theorem centered_energy_universal (w : MathCollab.Density.ReflectionCutoff)
             B*(W.card:ℝ)^2*L^(2-2*(2:ℝ)) := hh
         _ ≤ C*T^(η/2)*universalCenteredBudget T L W.card (discreteAdditiveEnergy W)+
             B*(W.card:ℝ)^2 := by
-          exact add_le_add le_rfl
-            ((mul_le_mul_of_nonneg_left her (by positivity : 0 ≤ B * (W.card : ℝ) ^ 2)).trans_eq (mul_one _))
+          bound
         _ ≤ C*T^(η/2)*universalCenteredBudget T L W.card (discreteAdditiveEnergy W)+
             B*(2*universalCenteredBudget T L W.card (discreteAdditiveEnergy W)) := by
-          exact add_le_add le_rfl (mul_le_mul_of_nonneg_left hQuad hB)
+          gcongr
         _ ≤ _ := by nlinarith [mul_le_mul_of_nonneg_left hd1 (mul_nonneg hB hX)]
     have hJD : (J:ℝ) ≤ D*T^(η/2) := by
       calc
@@ -112,7 +111,7 @@ theorem centered_energy_universal (w : MathCollab.Density.ReflectionCutoff)
         _ ≤ 4*T^(η/2)+(T^(η/2)/(η/2))/Real.log 2 := by
           apply add_le_add (by linarith)
           exact div_le_div_of_nonneg_right (Real.log_le_rpow_div hTp.le hδ) htwo.le
-        _ = _ := by dsimp [D]; field_simp
+        _ = _ := by ring
     calc
       _ = ∑ p ∈ W ×ˢ W, ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2 := (sum_product _ _ _).symm
       _ = _ := he

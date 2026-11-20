@@ -29,7 +29,7 @@ theorem modelPhaseClosedSlope_positive_bounds {σ δ : ℝ} {P : ℕ} {F : ℝ �
     (neg_nonpos.mpr hσ.le)
   have hhi := Real.rpow_le_one_of_one_le_of_nonpos hu.1 (neg_nonpos.mpr hσ.le)
   have hd₀ := hδ.trans (min_le_left _ _)
-  have hd₁ := hδ.trans (min_le_right _ _)
+  
   constructor <;> linarith
 
 theorem betaModelSample_firstDifference_bounds

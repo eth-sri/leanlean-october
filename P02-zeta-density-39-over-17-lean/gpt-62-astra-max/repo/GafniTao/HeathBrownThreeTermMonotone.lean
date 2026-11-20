@@ -21,16 +21,14 @@ theorem heathBrownThreeTerm_mono
     heathBrownThreeTerm M k lambda ≤
       heathBrownThreeTerm N k lambda := by
   let r := heathBrownCriticalReciprocal k
-  have hr0 : 0 ≤ r :=
-    (heathBrownCriticalReciprocal_pos hk).le
-  have hrHalf : r ≤ 1 / 2 :=
+  
+  have hrHalf  :=
     heathBrownCriticalReciprocal_le_half hk
   have hM0 : (0 : ℝ) ≤ M := by positivity
   have hMNReal : (M : ℝ) ≤ N := by exact_mod_cast hMN
   have hFirstExp : 0 ≤ 1 - r := by linarith
   have hLastExp : 0 ≤ 1 - 2 * r := by linarith
-  have hfirst :
-      (M : ℝ) ^ (1 - r) ≤ (N : ℝ) ^ (1 - r) :=
+  have hfirst  :=
     Real.rpow_le_rpow hM0 hMNReal hFirstExp
   have hmiddle :
       (M : ℝ) * lambda ^ r ≤ (N : ℝ) * lambda ^ r :=
@@ -60,7 +58,7 @@ theorem heathBrown_sourceScale_main_mono
   have hpow := Real.rpow_le_rpow hM0 hMNReal hepsilon.le
   have hthree := heathBrownThreeTerm_mono hM hMN
     (by omega : 2 ≤ k) hlambda
-  have hthreeM0 : 0 ≤ heathBrownThreeTerm M k lambda :=
+  have hthreeM0  :=
     (heathBrownThreeTerm_pos (k := k) hM hlambda).le
   simpa only [mul_assoc] using
     (mul_le_mul_of_nonneg_left

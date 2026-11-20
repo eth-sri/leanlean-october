@@ -31,9 +31,9 @@ theorem gmTraceEnergy_common_bound {T R E C σ a x δ ell η : ℝ}
         R^(7/4:ℝ)*(T^(σ*x-2*δ))^4) := by
   have hTp : 0 < T := by linarith
   have hS : 0 < T^(3*a*(1-σ)) := by positivity
-  have hR : 0 < R := hS.trans_le hSR
+  have hR  := hS.trans_le hSR
   let M := T^(16*δ)*(T^(3*a*(1-σ)))^(1/4:ℝ)*R^(7/4:ℝ)*(T^(σ*x-2*δ))^4
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+  
   have hj (j : Fin 3) : (T^x)^3*T^(gmTraceA j)*(T^ell)^(gmTraceB j)*
       R^(gmTraceG j)*E^(gmTraceD j) ≤ (1+C)*T^η*(5*M) := by
     have hd : 0 < gmTraceD j := by fin_cases j <;> norm_num [gmTraceD]
@@ -57,9 +57,9 @@ theorem gmTraceEnergy_common_bound {T R E C σ a x δ ell η : ℝ}
       have hId : 2-gmTraceG j-gmTraceD j*gmEnergyR i =
           2-(gmTraceG j+gmTraceD j*gmEnergyR i) := by ring
       rw [hId] at hMono
-      exact hMono.trans (by dsimp [M]; nlinarith only [hDom'])
+      exact hMono.trans (by nlinarith only [hDom'])
     calc
-      _ = F*E^(gmTraceD j) := by rfl
+      _ = F*E^(gmTraceD j) := rfl
       _ ≤ F*(C^(gmTraceD j)*T^(η*gmTraceD j)*
           ∑ i : Fin 5, (gmEnergyTerm T (T^x) (T^(σ*x-2*δ)) R i)^(gmTraceD j)) :=
         mul_le_mul_of_nonneg_left hExp hF

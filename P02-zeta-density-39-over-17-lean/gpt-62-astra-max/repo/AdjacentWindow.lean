@@ -36,8 +36,8 @@ theorem adjacent_amplifier_budgets {σ a p α T N : ℝ}
   have he : 0 ≤ 6*σ-4 := by linarith [hw.sigma_low]
   have hnexp : 0 ≤ 5-6*σ := by linarith [hw.sigma_high]
   have ha : 0 ≤ a := by linarith [hw.a_low]
-  have hp : 0 ≤ p := by linarith [hw.p_low]
-  have hN1 : 1 ≤ N := (Real.one_le_rpow hT ha).trans hlo
+  
+  
   have hpow (q : ℝ) : (T^a)^q = T^(a*q) := (Real.rpow_mul hTp.le a q).symm
   have hpow' (q : ℝ) : (T^α)^q = T^(α*q) := (Real.rpow_mul hTp.le α q).symm
   have hlower : N^(5-6*σ) ≤ T^p := by
@@ -64,7 +64,7 @@ theorem adjacent_amplifier_budgets {σ a p α T N : ℝ}
         _ = T^p*(T^a)^(6*σ-4) := by rw [hpow,← Real.rpow_add hTp]
         _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hlo he) (by positivity)
     have hlp : 0 < twoTermAmplifier T N σ p := by unfold twoTermAmplifier; positivity
-    have hdiv : T/twoTermAmplifier T N σ p ≤ T/(T^(1-p/4)) :=
+    have hdiv  :=
       div_le_div_of_nonneg_left hTp.le (by positivity) hl
     calc
       _ ≤ (T/(T^(1-p/4)))^4 := pow_le_pow_left₀ (div_nonneg hTp.le hlp.le) hdiv 4

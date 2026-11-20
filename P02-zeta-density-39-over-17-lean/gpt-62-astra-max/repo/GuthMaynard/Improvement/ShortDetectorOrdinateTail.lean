@@ -29,70 +29,71 @@ theorem short_exponential_tail_domination {R t : ℝ} (ht : R ≤ |t|) :
   simpa only [neg_div,mul_assoc] using hh
 
 /-- Uniform coarse kernel bound down to9/13; independent Y≥1 only improves it. -/
-theorem short_detector_kernel_coarse {ρ : ℂ} {Y : ℝ} (hY : 1 ≤ Y)
-    (hβ : 9/13 ≤ ρ.re) (hβ' : ρ.re ≤ 1) (H t : ℝ) :
-    ‖detectorKernel ρ (2*H^((1:ℝ)/100)) Y (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖ ≤
-      384*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)*(1+|t|)^2*Real.exp (-|t|) := by
+theorem short_detector_kernel_coarse {s : ℝ} (hs : 1/2 < s) {ρ : ℂ} {Y : ℝ} (hY : 1 ≤ Y)
+    (hβ : s ≤ ρ.re) (hβ' : ρ.re ≤ 1) (X t : ℝ) :
+    ‖detectorKernel ρ X Y (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖ ≤
+      (4*(12/(s-1/2)))*(⌊X⌋₊:ℝ)*(1+|ρ.im|)*(1+|t|)^2*Real.exp (-|t|) := by
   have hYpos : 0 < Y := by linarith
   rw [short_detector_kernel_norm hYpos]
   have ha : 0 < ρ.re-1/2 := by linarith
-  have hg := short_detector_gamma_bound ha (show ρ.re-1/2 ≤ 1/2 by linarith) t
+  have hg := norm_Gamma_negative_strip ha (show ρ.re-1/2 ≤ 1/2 by linarith) t
   rw [show -(ρ.re-1/2)=1/2-ρ.re by ring] at hg
-  have hc : 12/(ρ.re-1/2) ≤ 96 := (div_le_iff₀ ha).mpr (by linarith)
+  have hc : 12/(ρ.re-1/2) ≤ 12/(s-1/2) := div_le_div_of_nonneg_left (by norm_num) (by linarith) (by linarith)
   have hg' : ‖Complex.Gamma (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖ ≤
-      96*(1+|t|)*Real.exp (-|t|) := hg.trans (by gcongr)
-  have hshift : shortTwistedNorm H (ρ.im+t) ≤
-      4*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)*(1+|t|) := by
-    apply (shortTwistedNorm_bound H (ρ.im+t)).trans
+      (12/(s-1/2))*(1+|t|)*Real.exp (-|t|) := hg.trans (by gcongr)
+  have hshift : mollifiedNorm X (ρ.im+t) ≤
+      4*(⌊X⌋₊:ℝ)*(1+|ρ.im|)*(1+|t|) := by
+    apply (mollifiedNorm_bound X (ρ.im+t)).trans
     have hh : 1+|ρ.im+t| ≤ (1+|ρ.im|)*(1+|t|) := by
       nlinarith [abs_add_le ρ.im t,mul_nonneg (abs_nonneg ρ.im) (abs_nonneg t)]
-    convert mul_le_mul_of_nonneg_left hh (show 0 ≤ 4*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ) by positivity) using 1; ring
+    convert mul_le_mul_of_nonneg_left hh (show 0 ≤ 4*(⌊X⌋₊:ℝ) by positivity) using 1; ring
   have hy : Y^(1/2-ρ.re) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hY (by linarith)
   calc
-    _ ≤ 1*(96*(1+|t|)*Real.exp (-|t|))*(4*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)*(1+|t|)) := by
+    _ ≤ 1*((12/(s-1/2))*(1+|t|)*Real.exp (-|t|))*(4*(⌊X⌋₊:ℝ)*(1+|ρ.im|)*(1+|t|)) := by
       apply mul_le_mul (mul_le_mul hy hg' (norm_nonneg _) (by norm_num)) hshift (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
 /-- Actual critical-ordinate tail with a uniform exponential rate. -/
-theorem short_detector_ordinate_tail :
-    ∃ C : ℝ, 0 < C ∧ ∀ H Y R : ℝ, ∀ ρ : ℂ,
-      1 ≤ Y → 9/13 ≤ ρ.re → ρ.re ≤ 1 →
+theorem short_detector_ordinate_tail {s : ℝ} (hs : 1/2 < s) :
+    ∃ C : ℝ, 0 < C ∧ ∀ X Y R : ℝ, ∀ ρ : ℂ,
+      1 ≤ Y → s ≤ ρ.re → ρ.re ≤ 1 →
       (∫ t in {t : ℝ | R < |t|},
-        ‖detectorKernel ρ (2*H^((1:ℝ)/100)) Y (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖) ≤
-        C*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)*Real.exp (-R/2) := by
+        ‖detectorKernel ρ X Y (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖) ≤
+        C*(⌊X⌋₊:ℝ)*(1+|ρ.im|)*Real.exp (-R/2) := by
   let J := ∫ t : ℝ, detectorGammaMajorant (t/2)
   have hJ : 0 ≤ J := integral_nonneg (fun t => by unfold detectorGammaMajorant; positivity)
-  refine ⟨384*(J+1),by positivity,?_⟩
-  intro H Y R ρ hY hβ hβ'
-  let B := 384*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)
+  have hsp : 0 < s-1/2 := by linarith
+  refine ⟨(4*(12/(s-1/2)))*(J+1),by positivity,?_⟩
+  intro X Y R ρ hY hβ hβ'
+  let B := (4*(12/(s-1/2)))*(⌊X⌋₊:ℝ)*(1+|ρ.im|)
   have hB : 0 ≤ B := by dsimp [B]; positivity
-  have hi := (short_integrable_detectorKernel_left (X := 2*H^((1:ℝ)/100))
-    (show 0 < Y by linarith) hβ hβ').norm
+  have hi := (integrable_detectorKernel_left (u:=1/2) (X := X)
+    (show 0 < Y by linarith) (by linarith) hβ').norm
   have hm := (short_scaled_majorant_integrable.const_mul (B*Real.exp (-R/2)))
   calc
     _ ≤ ∫ t in {t : ℝ | R < |t|}, (B*Real.exp (-R/2))*detectorGammaMajorant (t/2) := by
       apply setIntegral_mono_on hi.integrableOn hm.integrableOn (by measurability)
       intro t ht
       have hh := mul_le_mul_of_nonneg_left (short_exponential_tail_domination ht.le) hB
-      apply (short_detector_kernel_coarse hY hβ hβ' H t).trans
+      apply (short_detector_kernel_coarse hs hY hβ hβ' X t).trans
       convert hh using 1 <;> dsimp [B] <;> ring
     _ ≤ ∫ t : ℝ, (B*Real.exp (-R/2))*detectorGammaMajorant (t/2) :=
       setIntegral_le_integral hm (Filter.Eventually.of_forall (fun t => by unfold detectorGammaMajorant; positivity))
     _ = (B*Real.exp (-R/2))*J := integral_const_mul _ _
     _ ≤ _ := by
-      have hh : 0 ≤ (⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)*Real.exp (-R/2) := by positivity
+      have hh : 0 ≤ (⌊X⌋₊:ℝ)*(1+|ρ.im|)*Real.exp (-R/2) := by positivity
       dsimp [B]
-      nlinarith
+      nlinarith only [mul_nonneg (show 0 ≤ 12/(s-1/2) by positivity) hh]
 
 /-- A single height threshold controls the actual discarded ordinate integral
 for every beta and every ordinate in the slab, independently of a zero set. -/
-theorem short_detector_ordinate_tail_eventually_small {δ : ℝ} (hδ : 0 < δ) :
-    ∀ᶠ H : ℝ in atTop, ∀ ρ : ℂ,
-      9/13 ≤ ρ.re → ρ.re ≤ 1 → |ρ.im| ≤ 2*H →
+theorem short_detector_ordinate_tail_eventually_small {s δ : ℝ} (hs : 1/2 < s) (hδ : 0 < δ) :
+    ∀ᶠ H : ℝ in atTop, ∀ X Y : ℝ, 0 ≤ X → X ≤ 2*H → 1 ≤ Y → ∀ ρ : ℂ,
+      s ≤ ρ.re → ρ.re ≤ 1 → |ρ.im| ≤ 2*H →
       (∫ t in {t : ℝ | H/2 < |t|},
-        ‖detectorKernel ρ (2*H^((1:ℝ)/100)) (H^((1:ℝ)/2))
+        ‖detectorKernel ρ X Y
           (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖) < δ := by
-  obtain ⟨C,hC,hbound⟩ := short_detector_ordinate_tail
+  obtain ⟨C,hC,hbound⟩ := short_detector_ordinate_tail hs
   have hlim : Tendsto (fun H : ℝ => 6*C*H^2*Real.exp (-H/4)) atTop (𝓝 0) := by
     have hd : Tendsto (fun H : ℝ => H/4) atTop atTop :=
       Filter.Tendsto.atTop_div_const (by norm_num) tendsto_id
@@ -105,14 +106,10 @@ theorem short_detector_ordinate_tail_eventually_small {δ : ℝ} (hδ : 0 < δ) 
     · simp
   have hs := hlim.eventually (gt_mem_nhds hδ)
   filter_upwards [eventually_ge_atTop (1:ℝ),hs] with H hH hsmall
-  intro ρ hβ hβ' hγ
+  intro X Y hx0 hxH hy ρ hβ hβ' hγ
   have hn : 0 < H := by linarith
-  have hy : 1 ≤ H^((1:ℝ)/2) := Real.one_le_rpow hH (by norm_num)
-  have hx : (⌊2*H^((1:ℝ)/100)⌋₊:ℝ) ≤ 2*H := by
-    apply (Nat.floor_le (by positivity : 0 ≤ 2*H^((1:ℝ)/100))).trans
-    have hh := Real.rpow_le_rpow_of_exponent_le hH (by norm_num : (1/100:ℝ) ≤ 1)
-    simpa using mul_le_mul_of_nonneg_left hh (by norm_num : (0:ℝ) ≤ 2)
-  have hh := hbound H (H^((1:ℝ)/2)) (H/2) ρ hy hβ hβ'
+  have hx := (Nat.floor_le hx0).trans hxH
+  have hh := hbound X Y (H/2) ρ hy hβ hβ'
   have he : -(H/2)/2 = -H/4 := by ring
   rw [he] at hh
   apply (hh.trans _).trans_lt hsmall

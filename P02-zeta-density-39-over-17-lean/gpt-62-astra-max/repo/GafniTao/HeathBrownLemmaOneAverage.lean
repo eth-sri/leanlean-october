@@ -103,11 +103,11 @@ theorem heathBrown_source_shift_double_sum_preVMVT
         (1 + ENNReal.ofReal
           (2 * Real.pi * ((k : ℝ) ^ 2 / H)) * H) *
         heathBrownIntegratedMajorant N k H s f := by
-  let V : ENNReal := ENNReal.ofReal
+  let V  := ENNReal.ofReal
     ((2 : ℝ) ^ (k - 1) *
       (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))
   let c₁ : ℝ := 2 * Real.pi * (A * lambda * (H : ℝ) ^ (k - 1))
-  let B : ENNReal := heathBrownIntegratedMajorant N k H s f
+  let B  := heathBrownIntegratedMajorant N k H s f
   have hc₁ : 0 ≤ c₁ := by dsimp only [c₁]; positivity
   have hsource := ENNReal.ofReal_le_ofReal
     (norm_heathBrown_source_shift_double_sum_le
@@ -161,7 +161,7 @@ theorem heathBrown_source_shift_double_sum_preVMVT
       _ = (Finset.Ico 1 H).card *
           ((1 + ENNReal.ofReal
             (2 * Real.pi * ((k : ℝ) ^ 2 / H)) * H) * B) := by
-        rw [Finset.sum_const, nsmul_eq_mul]
+        simp
       _ ≤ H * ((1 + ENNReal.ofReal
             (2 * Real.pi * ((k : ℝ) ^ 2 / H)) * H) * B) := by
         gcongr
@@ -196,7 +196,7 @@ theorem heathBrown_source_shift_double_sum_preVMVT
     _ = (1 + ENNReal.ofReal c₁ * H) *
         (1 + ENNReal.ofReal
           (2 * Real.pi * ((k : ℝ) ^ 2 / H)) * H) * B := by ring
-    _ = _ := by rfl
+    _ = _ := rfl
 
 
 end

@@ -42,7 +42,7 @@ theorem abs_log_shift_sub_linear_le {T x : ℝ} (hT : 0 < T) (hx : |x| ≤ T / 2
   rw [hmain]
   refine h.trans ?_
   apply (div_le_iff₀ hden).mpr
-  have hsmall : |x| / T ≤ 1 / 2 := by rw [← habs]; exact hu
+  
   rw [div_pow, sq_abs]
   calc
     x ^ 2 / T ^ 2 = (x ^ 2 / T ^ 2) * 1 := by ring
@@ -59,15 +59,14 @@ theorem hasDerivAt_zetaSquareGammaQuadraticAngle {T : ℝ} (hT : T ≠ 0) (x : �
   convert ((hasDerivAt_id x).mul_const (Real.log (T / (2 * Real.pi)))).add
     ((hasDerivAt_pow 2 x).div_const (2 * T)) using 1
   · rfl
-  · norm_num
-    field_simp
+  · ring
 
 theorem abs_zetaSquareGammaFrequency_linear_error_le {T r x : ℝ}
     (hT : 4 ≤ T) (hr : r ≤ T / 2) (hx : |x| ≤ r) :
     |zetaSquareGammaFrequency (T + x) + Real.log (T / (2 * Real.pi)) + x / T| ≤
       18 / T + 2 * r ^ 2 / T ^ 2 := by
   have hT0 : 0 < T := by linarith
-  have hxT : |x| ≤ T / 2 := hx.trans hr
+  have hxT  := hx.trans hr
   have ht : 2 ≤ T + x := by have := (abs_le.mp hxT).1; linarith
   have ht0 : 0 < T + x := by linarith
   have hfreq := abs_zetaSquareGammaFrequency_add_log_le ht
@@ -115,7 +114,7 @@ theorem norm_zetaSquareReflectedGammaPhase_sub_quadratic_le {T r x : ℝ}
         Complex.exp (-I * (zetaSquareGammaQuadraticAngle T x : ℂ))‖ ≤
       (18 / T + 2 * r ^ 2 / T ^ 2) * |x| := by
   have hT0 : 0 < T := by linarith
-  have hr0 : 0 ≤ r := (abs_nonneg x).trans hx
+  have hr0  := (abs_nonneg x).trans hx
   have hnorm (u : ℝ) : ‖demodulatedGammaPhase T u‖ = 1 := by
     simp [demodulatedGammaPhase, norm_zetaSquareReflectedGammaPhase,
       Complex.norm_exp]
@@ -171,9 +170,9 @@ theorem norm_integral_zetaSquareGammaPhase_sub_quadratic_le {T r G : ℝ}
           Complex.exp (-zetaGaussianQuadraticCoefficient T G * (x : ℂ) ^ 2)‖ ≤
       2 * r ^ 2 * (18 / T + 2 * r ^ 2 / T ^ 2) := by
   let C : ℝ := 18 / T + 2 * r ^ 2 / T ^ 2
-  have hT0 : 0 < T := by linarith
+  
   have hC : 0 ≤ C := by dsimp [C]; positivity
-  have hphase : Continuous zetaSquareReflectedGammaPhase :=
+  have hphase  :=
     continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
   have hleft : Continuous (fun x : ℝ => zetaSquareReflectedGammaPhase (T + x) *
       Complex.exp (I * (v : ℂ) * x) * ((Real.exp (-(x / G) ^ 2) : ℝ) : ℂ)) := by
@@ -209,7 +208,7 @@ theorem norm_integral_zetaSquareGammaPhase_sub_quadratic_le {T r G : ℝ}
     ring
   intro x hx
   rw [uIoc_of_le (by linarith : -r ≤ r)] at hx
-  have hxr : |x| ≤ r := abs_le.mpr ⟨hx.1.le, hx.2⟩
+  have hxr  := abs_le.mpr ⟨hx.1.le, hx.2⟩
   have hp := norm_zetaSquareReflectedGammaPhase_sub_quadratic_le hT hr hxr
   have he : ‖Complex.exp (I * (v : ℂ) * (x : ℂ))‖ = 1 := by simp [Complex.norm_exp]
   have hw : ‖((Real.exp (-(x / G) ^ 2) : ℝ) : ℂ)‖ ≤ 1 := by

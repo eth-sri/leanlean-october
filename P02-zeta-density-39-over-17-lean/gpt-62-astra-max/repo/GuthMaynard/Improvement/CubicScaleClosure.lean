@@ -17,8 +17,8 @@ theorem cubic_smoothing_width_bounds {T η L K R q : ℝ}
     (cubicSmoothingWidth q T η L K)⁻¹ ≤ T ∧
     cubicSmoothingWidth q T η L K ≤ q*T^(η-(4:ℝ)/5) := by
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLlow
-  have hKp : 0 < K := by linarith
+  have hLp  := (Real.rpow_pos_of_pos hTp _).trans_le hLlow
+  
   have hqp : 0 < q := by linarith
   have hH : 0 < T^η := Real.rpow_pos_of_pos hTp _
   have hLK : L*K ≤ T^(1+η) := by
@@ -32,8 +32,7 @@ theorem cubic_smoothing_width_bounds {T η L K R q : ℝ}
     apply (div_le_iff₀ (mul_pos hqp hH)).mpr
     rw [hid] at hLK
     exact hLK.trans (mul_le_mul_of_nonneg_left (by nlinarith : T^η ≤ q*T^η) hTp.le)
-  · unfold cubicSmoothingWidth
-    calc
+  · calc
       _ ≤ q*T^η/T^((4:ℝ)/5) :=
         div_le_div_of_nonneg_left (by positivity) (Real.rpow_pos_of_pos hTp _) hbase
       _ = _ := by rw [Real.rpow_sub hTp]; ring
@@ -50,7 +49,7 @@ theorem cubic_smoothing_width_eventually {η q δ : ℝ}
     have hm : Tendsto (fun T : ℝ => q*T^(-((4:ℝ)/5-η))) atTop (nhds (q*0)) :=
       tendsto_const_nhds.mul hh
     simpa only [neg_sub,mul_zero] using hm
-  have he : ∀ᶠ T : ℝ in atTop, q*T^(η-(4:ℝ)/5) < δ :=
+  have he  :=
     (tendsto_order.mp ht).2 δ hδ
   obtain ⟨T₀,h⟩ := eventually_atTop.mp he
   refine ⟨max 1 T₀,le_max_left _ _,?_⟩
@@ -76,9 +75,9 @@ theorem cubic_shell_sqrt_normalization {U K M E : ℝ}
     (hK : 1 ≤ K) (hKU : K ≤ U) (hM : 0 ≤ M) (hE : 0 ≤ E) :
     Real.sqrt (U^2*K^4*M^2+U*K^3*E) ≤ K*(U^2*M+U*Real.sqrt E) := by
   have hK0 : 0 ≤ K := by linarith
-  have hU0 : 0 ≤ U := hK0.trans hKU
+  have hU0  := hK0.trans hKU
   have hUK : U*K ≤ U^2 := by nlinarith
-  have hroot : Real.sqrt (U*K) ≤ U := (Real.sqrt_le_iff).mpr ⟨hU0,hUK⟩
+  have hroot  := (Real.sqrt_le_iff).mpr ⟨hU0,hUK⟩
   exact (cubic_box_sqrt_polynomial hU0 hK0 hM hE).trans (by gcongr)
 
 /-- Exact affine half-exponent and dyadic exponent absorption, preserving
@@ -104,8 +103,8 @@ theorem cubic_box_epsilon_absorption {T η α δ ε M E A L : ℝ}
 theorem cubic_scale_choose_exponents {ε : ℝ} (hε : 0 < ε) :
     ∃ η α δ : ℝ, 0 < η ∧ η < (4:ℝ)/5 ∧ 0 < α ∧ 0 < δ ∧ δ+α/2+3*η ≤ ε := by
   refine ⟨min (ε/12) (1/10),ε/4,ε/4,?_,?_,by positivity,by positivity,?_⟩
-  · exact lt_min (by positivity) (by norm_num)
-  · exact (min_le_right _ _).trans_lt (by norm_num)
+  · positivity
+  · norm_num
   · have hh := min_le_left (ε/12) (1/10)
     linarith
 

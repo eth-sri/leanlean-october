@@ -53,9 +53,6 @@ theorem sixthMoment_tail_lower {ι : Type*} [DecidableEq ι]
         ≤ ((s.erase j).card : ℝ) ^ 2 *
           ∑ i ∈ s.erase j, (x i ^ 2) ^ 3 := hJensen
     _ = ((s.erase j).card : ℝ) ^ 2 * ∑ i ∈ s.erase j, x i ^ 6 := by
-      congr 1
-      apply Finset.sum_congr rfl
-      intro i hi
       ring
     _ ≤ (s.card : ℝ) ^ 2 * ∑ i ∈ s.erase j, x i ^ 6 :=
       mul_le_mul_of_nonneg_right hcard hsum
@@ -84,10 +81,8 @@ theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
   have hS : 0 ≤ S := by dsimp [S]; positivity
   have hy : 0 ≤ y := by dsimp [y]; positivity
   have hB : 0 ≤ B := by dsimp [B]; positivity
-  have hR : 0 ≤ R := by dsimp [R]; positivity
-  have hA : 0 ≤ A := by
-    dsimp [A, Q, S, K]
-    exact sixthMoment_dispersion_nonneg s x hs
+  
+  
   have hsumTwo : B + y = S := by
     dsimp [B, y, S]
     exact Finset.sum_erase_add s (fun i => x i ^ 2) hj
@@ -105,19 +100,19 @@ theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
         y ^ 3 ≤ (2 * S / K) ^ 3 := hcube
         _ = 8 * S ^ 3 / K ^ 3 := by ring
     exact hbranch.trans (le_max_right _ _)
-  · have hdiv : 2 * S / K < y := lt_of_not_ge hAverage
-    have hmul : 2 * S < y * K := (div_lt_iff₀ hK).mp hdiv
+  · have hdiv  := lt_of_not_ge hAverage
+    have hmul  := (div_lt_iff₀ hK).mp hdiv
     have hyPos : 0 < y := by
       by_contra hyNot
       have hyZero : y = 0 := le_antisymm (le_of_not_gt hyNot) hy
       rw [hyZero] at hmul
       nlinarith
-    have hsquare : (2 * S) ^ 2 < (y * K) ^ 2 :=
+    have hsquare  :=
       (sq_lt_sq₀ (by positivity) (by positivity)).2 hmul
     have hstrong : 4 * S ^ 2 * y < K ^ 2 * y ^ 3 := by
       have hmulY := mul_lt_mul_of_pos_right hsquare hyPos
       nlinarith
-    have hyS : y ≤ S := by nlinarith [hB]
+    
     have hrem : 0 ≤ y ^ 2 * (3 * S - y) := by
       exact mul_nonneg (sq_nonneg y) (by linarith)
     have hdiff : S ^ 3 - B ^ 3 ≤ 3 * S ^ 2 * y := by
@@ -136,8 +131,7 @@ theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
       calc
         K ^ 2 * y ^ 3 ≤ 4 * (K ^ 2 * Q - S ^ 3) := hscaled
         _ = K ^ 2 * (4 * A) := by rw [← hAeq]; ring
-    have hbranch : x j ^ 6 ≤ 4 * A := by simpa only [hyCube] using hbranchY
-    exact hbranch.trans (le_max_left _ _)
+    grind
 
 /-- Sampling-matrix specialization of the sixth-power form of
 Guth--Maynard Lemma 4.2.  The two sums are respectively the first and cubic
@@ -155,8 +149,8 @@ theorem gmMatrix_singularValue_sixth_le_dispersion_max
             (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i) ^ 3 /
             (W.card : ℝ) ^ 3) := by
   let s : Finset (GMRow W) := Finset.univ
-  let x : GMRow W → ℝ := gmMatrixSingularValue cutoff N W
-  have hj : j ∈ s := Finset.mem_univ j
+  let x  := gmMatrixSingularValue cutoff N W
+  have hj  := Finset.mem_univ j
   have hbound := coordinate_sixth_le_trace_dispersion_max s x j hj
   have hsquare : ∀ i : GMRow W, x i ^ 2 =
       (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := by

@@ -24,7 +24,7 @@ theorem DFIVoronoiTestFunction.mellin_polynomial_decay
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ℝ,
       |u| ^ n * ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C := by
-  let F : SchwartzMap ℝ ℂ :=
+  let F  :=
     SchwartzMap.fourierTransformCLM ℂ (dfiVoronoiMellinKernelSchwartz hg σ)
   let C : ℝ := (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F
   have hC : 0 ≤ C := by
@@ -35,8 +35,7 @@ theorem DFIVoronoiTestFunction.mellin_polynomial_decay
   have hSem := SchwartzMap.le_seminorm' (𝕜 := ℝ) n 0 F
     (u / (2 * Real.pi))
   rw [iteratedDeriv_zero] at hSem
-  have hSem' : ‖u / (2 * Real.pi)‖ ^ n *
-      ‖F (u / (2 * Real.pi))‖ ≤ SchwartzMap.seminorm ℝ n 0 F := hSem
+  have hSem'  := hSem
   rw [hg.mellin_eq_fourier_mellinKernel σ u]
   change |u| ^ n * ‖F (u / (2 * Real.pi))‖ ≤ C
   have hpi : 0 < 2 * Real.pi := by positivity
@@ -44,7 +43,6 @@ theorem DFIVoronoiTestFunction.mellin_polynomial_decay
     rw [Real.norm_eq_abs, abs_div, abs_of_pos hpi]
     field_simp [hpi.ne']
   rw [hAbs, mul_pow]
-  dsimp only [C]
   calc
     (2 * Real.pi) ^ n * ‖u / (2 * Real.pi)‖ ^ n *
           ‖F (u / (2 * Real.pi))‖ =
@@ -61,9 +59,9 @@ theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
     (c d : ℝ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (σ : ℝ), c ≤ σ → σ ≤ d → ∀ u : ℝ,
       ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C := by
-  let Fleft : SchwartzMap ℝ ℂ :=
+  let Fleft  :=
     dfiVoronoiMellinKernelSchwartz hg c
-  let Fright : SchwartzMap ℝ ℂ :=
+  let Fright  :=
     dfiVoronoiMellinKernelSchwartz hg d
   let C : ℝ := (∫ v : ℝ, ‖Fleft v‖) + ∫ v : ℝ, ‖Fright v‖
   have hLeftInt : Integrable (fun v : ℝ ↦ ‖Fleft v‖) := Fleft.integrable.norm
@@ -74,7 +72,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
       (integral_nonneg fun _ ↦ norm_nonneg _)
   refine ⟨C, hC, ?_⟩
   intro σ hσLower hσUpper u
-  let Fσ : SchwartzMap ℝ ℂ := dfiVoronoiMellinKernelSchwartz hg σ
+  let Fσ  := dfiVoronoiMellinKernelSchwartz hg σ
   have hPoint : ∀ v : ℝ, ‖Fσ v‖ ≤ ‖Fleft v‖ + ‖Fright v‖ := by
     intro v
     have hExp : Real.exp (-σ * v) ≤
@@ -83,7 +81,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
       · have hlin : -σ * v ≤ -c * v := by nlinarith
         exact (Real.exp_le_exp.mpr hlin).trans
           (le_add_of_nonneg_right (Real.exp_pos _).le)
-      · have hv' : v < 0 := lt_of_not_ge hv
+      · have hv'  := lt_of_not_ge hv
         have hlin : -σ * v ≤ -d * v := by nlinarith
         exact (Real.exp_le_exp.mpr hlin).trans
           (le_add_of_nonneg_left (Real.exp_pos _).le)
@@ -97,8 +95,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
     rw [SchwartzMap.norm_toLp_one]
     calc
       (∫ v : ℝ, ‖Fσ v‖) ≤
-          ∫ v : ℝ, (‖Fleft v‖ + ‖Fright v‖) := by
-        exact integral_mono Fσ.integrable.norm
+          ∫ v : ℝ, (‖Fleft v‖ + ‖Fright v‖) := integral_mono Fσ.integrable.norm
           (hLeftInt.add hRightInt) hPoint
       _ = C := by
         rw [integral_add hLeftInt hRightInt]
@@ -150,8 +147,8 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_boundary_bound
     simpa [mul_pow] using pow_le_pow_left₀ (norm_nonneg (s - 3)) hsNorm j
   have hBinom : (1 + |u|) ^ j ≤ 2 ^ (j - 1) * (1 + |u| ^ j) := by
     simpa using add_pow_le (show (0 : ℝ) ≤ 1 by norm_num) (abs_nonneg u) j
-  have hMu : ‖mellin g s‖ ≤ M := hMellin σ hσLower hσUpper u
-  have hDu : |u| ^ j * ‖mellin g s‖ ≤ D := hDecay u
+  have hMu  := hMellin σ hσLower hσUpper u
+  have hDu  := hDecay u
   have hCombined : (1 + |u| ^ j) * ‖mellin g s‖ ≤ M + D := by
     calc
       (1 + |u| ^ j) * ‖mellin g s‖ =
@@ -181,9 +178,9 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound
   obtain ⟨Cb, hCb, hBoundB⟩ :=
     hg.exists_mellin_pow_boundary_bound j (3 / 2 : ℝ) (by norm_num) (by norm_num)
   obtain ⟨M, hM, hMellin⟩ := hg.exists_mellin_strip_bound
-  let f : ℂ → ℂ := fun s ↦ (s - 3) ^ j * mellin g s
-  let strip : Set ℂ := Complex.re ⁻¹' Ioo (-(1 / 2 : ℝ)) (3 / 2 : ℝ)
-  let l : Filter ℂ := comap (abs ∘ Complex.im) atTop ⊓ Filter.principal strip
+  let f  := fun s ↦ (s - 3) ^ j * mellin g s
+  let strip  := Complex.re ⁻¹' Ioo (-(1 / 2 : ℝ)) (3 / 2 : ℝ)
+  let l  := comap (abs ∘ Complex.im) atTop ⊓ Filter.principal strip
   have hDiff : Differentiable ℂ f := by
     dsimp [f]
     exact ((differentiable_id.sub_const 3).pow j).mul hg.differentiable_mellin

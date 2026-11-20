@@ -41,7 +41,6 @@ theorem norm_Gamma_voronoi_strip_sharp {a t : ℝ}
     rw [hrec, norm_mul]
     exact mul_le_mul hn hhalf (norm_nonneg _) (by positivity)
   have hs := norm_Gamma_stripPoint_le_four_upper (t := t) ha ha'
-  change ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * I)‖ ≤ _ at hs
   calc
     _ ≤ 4 * ‖Complex.Gamma (stripPoint (3/2) t)‖ := hs
     _ ≤ 4 * ((1 + |t|) * (3 * Real.exp (-(Real.pi * |t|) / 2))) := by gcongr
@@ -109,7 +108,6 @@ theorem norm_riemannZeta_voronoi_strip {σ u : ℝ}
       have h := Complex.norm_le_abs_re_add_abs_im z
       rw [hre, him, abs_of_nonneg (by linarith : 0 ≤ σ)] at h
       nlinarith [abs_nonneg u]
-    change ‖riemannZeta z‖ ≤ _
     nlinarith [sq_nonneg (1 + |u|), abs_nonneg u]
   · have hz0 : z ≠ 0 := by
       intro h

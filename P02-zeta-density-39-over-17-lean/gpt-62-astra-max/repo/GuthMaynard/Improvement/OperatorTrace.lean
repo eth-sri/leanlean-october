@@ -61,13 +61,13 @@ theorem operatorIntegral_hasSum [Countable ι] (b : HilbertBasis ι ℂ E)
     (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν) :
     HasSum (fun i => ⟪b i, operatorIntegral ν x y (b i)⟫_ℂ)
       (∫ a, ⟪y a, x a⟫_ℂ ∂ν) := by
-  let F : ι → α → ℂ := fun i a => ⟪b i, rankOne ℂ (x a) (y a) (b i)⟫_ℂ
+  let F  := fun i a => ⟪b i, rankOne ℂ (x a) (y a) (b i)⟫_ℂ
   have hF : ∀ i, AEStronglyMeasurable (F i) ν := by
     intro i
     dsimp [F]
     simp only [inner_smul_right]
     exact (hy.inner aestronglyMeasurable_const).mul (aestronglyMeasurable_const.inner hx)
-  have hs : ∀ a, Summable (fun i => ‖F i a‖) := fun a =>
+  have hs  := fun a =>
     summable_of_sum_le (fun i => norm_nonneg _) (operator_rankOne_diagonal_bound b (x a) (y a))
   have hb : Integrable (fun a => ∑' i, ‖F i a‖) ν := by
     apply hxy.mono' (AEStronglyMeasurable.tsum (fun i => (hF i).norm))
@@ -80,7 +80,7 @@ theorem operatorIntegral_hasSum [Countable ι] (b : HilbertBasis ι ℂ E)
     (Filter.Eventually.of_forall (fun a => operator_rankOne_hasSum b (x a) (y a)))
   convert hh using 1
   ext i
-  let ev : (E →L[ℂ] E) →L[ℂ] ℂ := (innerSL ℂ (b i)).comp (ContinuousLinearMap.apply ℂ E (b i))
+  let ev  := (innerSL ℂ (b i)).comp (ContinuousLinearMap.apply ℂ E (b i))
   exact (ev.integral_comp_comm (operatorIntegral_integrable ν hx hy hxy)).symm
 
 /-- The diagonal trace is therefore the nuclear integral, not its definition. -/
@@ -95,7 +95,7 @@ theorem operatorIntegral_comp_left (S : E →L[ℂ] E)
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
     (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν) :
     S * operatorIntegral ν x y = operatorIntegral ν (fun a => S (x a)) y := by
-  let comp : (E →L[ℂ] E) →L[ℂ] (E →L[ℂ] E) := ContinuousLinearMap.compL ℂ E E E S
+  let comp  := ContinuousLinearMap.compL ℂ E E E S
   have hh := comp.integral_comp_comm (operatorIntegral_integrable ν hx hy hxy)
   simpa only [operatorIntegral, comp, ContinuousLinearMap.compL_apply,
     comp_rankOne, ContinuousLinearMap.mul_def] using hh.symm
@@ -132,7 +132,7 @@ theorem operatorIntegral_pairing {x y : α → E}
     (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν) (z w : E) :
     ⟪z, operatorIntegral ν x y w⟫_ℂ =
       ∫ a, ⟪z, x a⟫_ℂ * ⟪y a, w⟫_ℂ ∂ν := by
-  let ev : (E →L[ℂ] E) →L[ℂ] ℂ := (innerSL ℂ z).comp (ContinuousLinearMap.apply ℂ E w)
+  let ev  := (innerSL ℂ z).comp (ContinuousLinearMap.apply ℂ E w)
   have hh := ev.integral_comp_comm (operatorIntegral_integrable ν hx hy hxy)
   simpa only [ev, ContinuousLinearMap.comp_apply, ContinuousLinearMap.apply_apply,
     innerSL_apply_apply, inner_right_rankOne_apply, operatorIntegral] using hh.symm

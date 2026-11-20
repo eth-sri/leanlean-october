@@ -49,7 +49,6 @@ theorem heathBrownCellIndicator_nonneg
 theorem heathBrownNu_nonneg
     (N k H : ℕ) (f : ℝ → ℝ) (α : HeathBrownCoefficientTorus k) :
     0 ≤ heathBrownNu N k H f α := by
-  unfold heathBrownNu
   exact Finset.sum_nonneg fun n hn => heathBrownCellIndicator_nonneg k H n f α
 
 theorem integrable_heathBrownCellIndicator
@@ -64,7 +63,6 @@ theorem integrable_heathBrownNu
     (N k H : ℕ) (f : ℝ → ℝ) :
     Integrable (heathBrownNu N k H f)
       (heathBrownCoefficientMeasure k) := by
-  unfold heathBrownNu
   exact integrable_finsetSum _ fun n hn =>
     integrable_heathBrownCellIndicator k H n f
 
@@ -74,7 +72,6 @@ theorem integral_heathBrownCellIndicator
         ∂(heathBrownCoefficientMeasure k) =
       (heathBrownCoefficientMeasure k).real
         (heathBrownCoefficientCell k H f n) := by
-  unfold heathBrownCellIndicator
   exact integral_indicator_one
     (measurableSet_heathBrownCoefficientCell k H f n)
 

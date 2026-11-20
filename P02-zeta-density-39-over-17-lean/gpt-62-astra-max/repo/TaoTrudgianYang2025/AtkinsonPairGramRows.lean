@@ -49,8 +49,7 @@ theorem ExponentPair.atkinson_pair_gram_row {k l ε : ℝ}
       _ ≤ C*(X+Real.sqrt (H*(M : ℝ))/|t-u|) :=
         hb.trans (mul_le_mul_of_nonneg_left (add_le_add hp le_rfl) (by linarith))
       _ = _ := by rw [abs_sub_comm t u]; ring
-  have hrecip : (∑ u ∈ S, 1/|u-t|) ≤
-      (2/G)*(harmonic (Nat.ceil (L/G)) : ℝ) :=
+  have hrecip  :=
     atkinson_sum_inv_gap_le_harmonic_ceil hG hsep ht hSW
       (fun u hu => ⟨(Finset.mem_erase.mp hu).1,hdiam u (hSW hu)⟩)
   have hcard : (S.card : ℝ) ≤ W.card := by exact_mod_cast Finset.card_le_card hSW
@@ -63,7 +62,7 @@ theorem ExponentPair.atkinson_pair_gram_row {k l ε : ℝ}
       simp only [Finset.sum_add_distrib,Finset.sum_const,nsmul_eq_mul,Finset.mul_sum]
     _ ≤ (W.card : ℝ)*(C*X)+(C*Real.sqrt (H*(M : ℝ)))*
         ((2/G)*(harmonic (Nat.ceil (L/G)) : ℝ)) :=
-      add_le_add (mul_le_mul_of_nonneg_right hcard (by dsimp [X]; positivity))
+      add_le_add (mul_le_mul_of_nonneg_right hcard (by positivity))
         (mul_le_mul_of_nonneg_left hrecip (by positivity))
     _ = _ := by ring
   rw [← Finset.sum_erase_add _ _ ht,atkinsonPrefixGramMax_self]

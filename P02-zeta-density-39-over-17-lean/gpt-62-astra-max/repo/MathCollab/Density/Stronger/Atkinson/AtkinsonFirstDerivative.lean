@@ -59,7 +59,7 @@ theorem norm_phaseIntegral_le_of_negative_slope {φ : ℝ → ℝ} {a b lam : �
     rw [intervalIntegral.integral_of_le hab, ← integral_Icc_eq_integral_Ioc]
     simpa only [Complex.ofReal_one, one_mul] using h
   apply hi.trans
-  have ha : deriv φ a ≤ -lam := hslope a ⟨le_rfl, hab⟩
+  have ha  := hslope a ⟨le_rfl, hab⟩
   rw [abs_div, abs_one, abs_of_neg (by linarith : deriv φ a < 0)]
   have hrec := one_div_le_one_div_of_le hlam (show lam ≤ -deriv φ a by linarith)
   have hfin := div_le_div_of_nonneg_right hrec Real.pi_pos.le

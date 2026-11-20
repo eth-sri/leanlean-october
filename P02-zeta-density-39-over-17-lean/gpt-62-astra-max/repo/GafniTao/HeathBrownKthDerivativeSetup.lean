@@ -83,8 +83,7 @@ theorem heathBrownCriticalMoment_lambda
 theorem HeathBrownVMVTMainConjecture.critical
     (hvmvt : HeathBrownVMVTMainConjecture)
     {k : ℕ} (hk : 2 ≤ k) {epsilon : ℝ} (hepsilon : 0 < epsilon) :
-    HeathBrownCriticalVMVT k epsilon := by
-  exact hvmvt (k - 1) (heathBrownCriticalMoment k) epsilon (by omega)
+    HeathBrownCriticalVMVT k epsilon := hvmvt (k - 1) (heathBrownCriticalMoment k) epsilon (by omega)
     (by rw [heathBrownCriticalMoment_degree_identity (by omega)]) hepsilon
 
 /-- The three terms in Heath-Brown Theorem 1, before multiplication by
@@ -158,7 +157,6 @@ theorem heathBrown_upper_slope
 proof.  It is deliberately recorded separately from Theorem 1. -/
 theorem norm_heathBrownExponentialSum_le (N : ℕ) (f : ℝ → ℝ) :
     ‖heathBrownExponentialSum N f‖ ≤ N := by
-  unfold heathBrownExponentialSum
   calc
     ‖∑ n ∈ Finset.Icc 1 N, heathBrownPhase (f n)‖ ≤
         ∑ n ∈ Finset.Icc 1 N, ‖heathBrownPhase (f n)‖ :=

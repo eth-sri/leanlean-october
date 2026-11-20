@@ -37,8 +37,7 @@ theorem exists_heathBrown_Gamma_shift_kernel_bound :
   exact ⟨h.1.trans he, h.2.trans he⟩
 
 private theorem integrable_Gamma_two_vertical_for_zetaSquare :
-    Integrable (fun t : ℝ => Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)) := by
-  exact GammaMellin.verticalIntegrable_Gamma (by norm_num : (0 : ℝ) < 2)
+    Integrable (fun t : ℝ => Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)) := GammaMellin.verticalIntegrable_Gamma (by norm_num : (0 : ℝ) < 2)
 
 theorem ford_norm_eq_re_of_nonneg {z : ℂ} (hz : 0 ≤ z) :
     ‖z‖ = z.re := by
@@ -53,7 +52,7 @@ theorem ford_norm_riemannZeta_le_real
       ‖riemannZeta (sigma : ℂ)‖ := by
   let s : ℂ := (sigma : ℂ) + Complex.I * t
   have hs : 1 < s.re := by simp [s, hsigma]
-  have hsumS : LSeriesSummable (1 : ℕ → ℂ) s :=
+  have hsumS  :=
     LSeriesSummable_one_iff.mpr hs
   have hsumSigma : LSeriesSummable (1 : ℕ → ℂ) (sigma : ℂ) :=
     LSeriesSummable_one_iff.mpr hsigma
@@ -102,8 +101,7 @@ theorem continuous_heathBrownZetaSquareMellinIntegrand_vertical
       linarith
   have hGammaAt :=
     (Complex.differentiableAt_Gamma _ hwNoPole).continuousAt
-  have hGamma : ContinuousAt
-      (fun u : ℝ => Complex.Gamma ((a : ℂ) + (u : ℂ) * I)) v :=
+  have hGamma  :=
     ContinuousAt.comp (g := Complex.Gamma)
       (f := fun u : ℝ => (a : ℂ) + (u : ℂ) * I)
       hGammaAt (by fun_prop)
@@ -115,9 +113,7 @@ theorem continuous_heathBrownZetaSquareMellinIntegrand_vertical
     exact hpole hre
   have hZetaAt :=
     (differentiableAt_riemannZeta hzetaPoint).continuousAt
-  have hZeta : ContinuousAt
-      (fun u : ℝ => riemannZeta
-        (s + ((a : ℂ) + (u : ℂ) * I))) v :=
+  have hZeta  :=
     ContinuousAt.comp (g := riemannZeta)
       (f := fun u : ℝ => s + ((a : ℂ) + (u : ℂ) * I))
       hZetaAt (by fun_prop)
@@ -126,9 +122,7 @@ theorem continuous_heathBrownZetaSquareMellinIntegrand_vertical
 /-- A full-line exponential moment used for the two shifted contours. -/
 theorem integrable_abs_sq_mul_exp_neg_abs :
     Integrable (fun v : ℝ => |v| ^ 2 * Real.exp (-|v|)) := by
-  have hposRaw : IntegrableOn
-      (fun x : ℝ => x ^ (2 : ℝ) * Real.exp (-(1 : ℝ) * x ^ (1 : ℝ)))
-      (Ioi 0) :=
+  have hposRaw  :=
     integrableOn_rpow_mul_exp_neg_mul_rpow
       (s := (2 : ℝ)) (p := (1 : ℝ)) (b := (1 : ℝ))
       (by norm_num) (by norm_num) (by norm_num)
@@ -144,8 +138,7 @@ theorem integrable_abs_sq_mul_exp_neg_abs :
   have hneg : IntegrableOn
       (fun x : ℝ => |x| ^ 2 * Real.exp (-|x|)) (Iio 0) := by
     simpa [Set.neg_Ioi, abs_neg] using hnegRaw
-  have hleft : IntegrableOn
-      (fun x : ℝ => |x| ^ 2 * Real.exp (-|x|)) (Iic 0) :=
+  have hleft  :=
     (integrableOn_Iic_iff_integrableOn_Iio).2 hneg
   have hall := hleft.union hpos
   rw [Iic_union_Ioi] at hall
@@ -166,16 +159,16 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
       ((a : ℂ) + (v : ℂ) * I)
   let B : ℝ := |s.re + a| + |s.im| + 2
   let M : ℝ := 100 * G
-  let g : ℝ → ℝ := fun v => M * (|v| ^ 2 * Real.exp (-|v|))
+  let g  := fun v => M * (|v| ^ 2 * Real.exp (-|v|))
   have hBone : 1 ≤ B := by
     dsimp only [B]
     linarith [abs_nonneg (s.re + a), abs_nonneg s.im]
-  have hBpos : 0 < B := zero_lt_one.trans_le hBone
+  have hBpos  := zero_lt_one.trans_le hBone
   have hCont : Continuous f := by
     simpa [f] using
       continuous_heathBrownZetaSquareMellinIntegrand_vertical
         haLower ha0 hpole
-  have hg : Integrable g := integrable_abs_sq_mul_exp_neg_abs.const_mul M
+  have hg  := integrable_abs_sq_mul_exp_neg_abs.const_mul M
   have hPos : IntegrableOn f (Ioi B) := by
     apply hg.integrableOn.mono' hCont.aestronglyMeasurable
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
@@ -219,9 +212,7 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
       ‖Complex.Gamma ((a : ℂ) + (v : ℂ) * I)‖ *
           ‖riemannZeta (s + ((a : ℂ) + (v : ℂ) * I))‖ ^ 2 ≤
         (G * Real.exp (-|v|)) * (5 * (2 * |v|)) ^ 2 := by
-          exact mul_le_mul (hGamma v)
-            (pow_le_pow_left₀ (norm_nonneg _) hzeta' 2)
-            (by positivity) (by positivity)
+          bound
       _ = 100 * G * (|v| ^ 2 * Real.exp (-|v|)) := by ring
   have hNeg : IntegrableOn f (Iio (-B)) := by
     apply hg.integrableOn.mono' hCont.aestronglyMeasurable
@@ -268,13 +259,11 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
       ‖Complex.Gamma ((a : ℂ) + (v : ℂ) * I)‖ *
           ‖riemannZeta (s + ((a : ℂ) + (v : ℂ) * I))‖ ^ 2 ≤
         (G * Real.exp (-|v|)) * (5 * (2 * |v|)) ^ 2 := by
-          exact mul_le_mul (hGamma v)
-            (pow_le_pow_left₀ (norm_nonneg _) hzeta' 2)
-            (by positivity) (by positivity)
+          bound
       _ = 100 * G * (|v| ^ 2 * Real.exp (-|v|)) := by ring
   have hMid : IntegrableOn f (Icc (-B) B) :=
     hCont.continuousOn.integrableOn_Icc
-  have hNegClosed : IntegrableOn f (Iic (-B)) :=
+  have hNegClosed  :=
     (integrableOn_Iic_iff_integrableOn_Iio).2 hNeg
   have hLeft := hNegClosed.union hMid
   have hLeftSet : Iic (-B) ∪ Icc (-B) B = Iic B := by
@@ -282,10 +271,7 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     simp only [mem_union, mem_Iic, mem_Icc]
     constructor
     · rintro (h | h) <;> linarith
-    · intro h
-      by_cases hv : v ≤ -B
-      · exact Or.inl hv
-      · exact Or.inr ⟨by linarith, h⟩
+    · grind
   rw [hLeftSet] at hLeft
   rw [← integrableOn_univ]
   have hAll := hLeft.union hPos
@@ -319,8 +305,7 @@ theorem integrable_heathBrownZetaSquareMellinIntegrand_plus
       _ ≤
           (delta + |v|) * ‖Complex.Gamma
             ((delta : ℂ) + (v : ℂ) * I)‖ := by
-        exact mul_le_mul_of_nonneg_right
-          (by linarith [abs_nonneg v]) (norm_nonneg _)
+        bound
       _ ≤ C * Real.exp (-|v|) := hk
   apply integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     (s := s) (a := delta) (G := G) (by linarith) hdelta.ne'
@@ -350,12 +335,11 @@ theorem integrable_heathBrownZetaSquareMellinIntegrand_minus
       _ ≤
           (delta + |v|) * ‖Complex.Gamma
             (((-delta : ℝ) : ℂ) + (v : ℂ) * I)‖ := by
-        exact mul_le_mul_of_nonneg_right
-          (by linarith [abs_nonneg v]) (norm_nonneg _)
+        bound
       _ ≤ C * Real.exp (-|v|) := hk
   apply integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     (s := s) (a := -delta) (G := G) (by linarith) (by linarith)
-    (by simpa [sub_eq_add_neg] using hsRe)
+    (by linarith)
     (by simpa [sub_eq_add_neg] using hpole) hG hGamma
 
 theorem integrable_heathBrownZetaSquareMellinIntegrand_right

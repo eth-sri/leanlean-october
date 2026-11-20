@@ -34,7 +34,7 @@ theorem wooley_initial_conditioning_exponent_twoLoss
       Lambda * (nu : ℝ) := by
     rw [div_le_iff₀ hLambda] at hnu
     simpa only [mul_assoc, mul_comm, mul_left_comm] using hnu
-  have hnuNonneg : (0 : ℝ) ≤ nu := by positivity
+  
   nlinarith
 
 /-- Polynomial-system conditioned mean decay with distinct lower and upper
@@ -74,8 +74,7 @@ theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss {Q k : ℕ}
         apply mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma xi)
         apply mul_nonneg
         · positivity
-        · exact Finset.sum_nonneg fun alpha halpha =>
-            pow_nonneg (norm_nonneg _) _
+        · positivity
   have hpReal : (1 : ℝ) ≤ p := by exact_mod_cast (by omega : 1 ≤ p)
   have hexp := wooley_initial_conditioning_exponent_twoLoss
     hepsilon hLambda hnuH hnu
@@ -273,8 +272,7 @@ theorem wooleySourceNormalizedMixedMean_initial_twoLoss
   let Z := wooleySourcePolynomialConditionedMean s (p ^ B) (p ^ H) phi gamma
   let K := wooleySourcePolynomialMixedMean phi s 1 p B theta theta nu gamma
   let C : ℝ := 2 * 2 ^ (s - 1)
-  have hs : 2 ≤ s := by
-    exact (show 2 ≤ wooleyTriangular 2 by norm_num [wooleyTriangular]).trans
+  have hs := (show 2 ≤ wooleyTriangular 2 by norm_num [wooleyTriangular]).trans
       (wooleyTriangular_mono hk)
   have hpPow : NeZero (p ^ B) := ⟨pow_ne_zero _ (NeZero.ne p)⟩
   have hpNu : NeZero (p ^ nu) := ⟨pow_ne_zero _ (NeZero.ne p)⟩
@@ -285,8 +283,7 @@ theorem wooleySourceNormalizedMixedMean_initial_twoLoss
     exact mul_nonneg (Real.rpow_nonneg (by positivity) _)
       (wooleySourcePolynomialConditionedMean_nonneg phi s (p ^ B)
         (p ^ H) gamma)
-  have hUpos : 0 < U := by
-    exact lt_of_le_of_lt hleft0 (by simpa only [H, s, U, Z] using hcounter)
+  
   have hZpos : 0 < Z := by
     have h310' : U ≤ ((p ^ H : ℕ) : ℝ) ^ s * Z := by
       simpa only [H, s, U, Z] using h310
@@ -299,15 +296,15 @@ theorem wooleySourceNormalizedMixedMean_initial_twoLoss
     phi p B nu theta H s gamma hp hs hepsilon hLambda
       (by simpa only [H] using hnuH) hnuTheta
       (by simpa only [H] using hnu)
-      (by simpa only [H, s, U, Z] using hcounter.le)
-      (by simpa only [H, s, Z] using hupper)
-      (by simpa only [H, s] using hlarge)
+      (by linarith)
+      (by linarith)
+      (by linarith)
   have halgebra := wooley_initial_normalization_algebra
     (p := p) (H := H) (theta := theta) (s := s)
     (Lambda := Lambda) (epsilon := eta) (C := C)
-    (U := U) (K := K) (Z := Z) (by omega) (by dsimp [C]; positivity)
-    hZpos (by simpa only [H, s, U, Z] using hcounter.le)
-    (by simpa only [C, H, s, U, K] using h63)
+    (U := U) (K := K) (Z := Z) (by omega) (by positivity)
+    hZpos (by linarith)
+    (by linarith)
   rw [wooleySourceNormalizedMixedMean, wooleyNormalizationExponent_one hk]
   simp only [Real.rpow_one]
   simpa only [C, H, s, K, Z, wooleySourceNormalizationScale,

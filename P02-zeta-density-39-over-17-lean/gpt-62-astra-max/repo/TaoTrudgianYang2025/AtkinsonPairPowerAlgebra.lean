@@ -107,13 +107,7 @@ theorem atkinsonPairPowerTerm_mono_index {C H G L k l : ℝ} {M N : ℕ}
       atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
   unfold atkinsonPairPowerTerm
   apply add_le_add
-  · apply add_le_add
-    · exact mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (Nat.cast_nonneg M) hMN0 (by norm_num))
-        (Nat.cast_nonneg R)
-    · exact mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (Nat.cast_nonneg M) hMN0 hp) (by positivity)
-  · exact mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hMN0 (by positivity)) hh
+  · gcongr
+  · gcongr
 
 end TaoTrudgianYang2025

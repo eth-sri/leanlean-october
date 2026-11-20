@@ -1,5 +1,6 @@
 module
-public import TaoTrudgianYang2025.AsymptoticBridge
+public import Expdb.ExponentialSums.ExponentSumGrowthNonAsymptotic
+public import Expdb.Basic.AutomaticUniformity
 
 @[expose] public section
 
@@ -88,7 +89,6 @@ private theorem isModelPhaseFunction_of_approximations
   filter_upwards [hP p, hδsmall] with i hip hiδ
   intro u
   have herror := (happrox i).2 p hip u
-  rw [Real.norm_eq_abs] at hiδ
   exact lt_of_le_of_lt herror ((le_abs_self (δ i)).trans_lt hiδ)
 
 private theorem isExponentPairEstimate_of_nonAsymptotic
@@ -108,7 +108,7 @@ private theorem isExponentPairEstimate_of_nonAsymptotic
     (IsModelPhaseFunctionWith.mk hphase herror).eventually_isApproximate P hδ
   refine Asymptotics.IsBigO.of_bound C ?_
   filter_upwards [hTC, happrox, hNT] with i hiT hiF hiNT
-  have hratioNonneg : 0 ≤ T i / N i :=
+  have hratioNonneg  :=
     div_nonneg (zero_le_one.trans ((hN i).trans hiNT))
       (zero_le_one.trans (hN i))
   simpa only [exponentialSum_apply, Real.norm_eq_abs, mul_assoc,
@@ -124,38 +124,32 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
   by_contra hfailure
   push Not at hfailure
   let δ : VariableObject ℝ := fun i ↦ 1 / ((i : ℝ) + 1)
-  let P : VariableObject ℕ := fun i ↦ i + 1
+  let P  := fun i ↦ i + 1
   let C : VariableObject ℝ := fun i ↦ (i : ℝ) + 3
   have hδpos : ∀ i, 0 < δ i := fun i ↦ by
-    dsimp [δ]
     positivity
   have hPone : ∀ i, 1 ≤ P i := fun i ↦ by
     dsimp [P]
     omega
   have hCone : ∀ i, 1 ≤ C i := fun i ↦ by
-    dsimp [C]
-    have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
-    linarith
+    grind
   choose T N F a b hdata using fun i ↦
     hfailure (δ i) (hδpos i) (P i) (hPone i) (C i) (hCone i)
-  have hCT : ∀ i, C i ≤ T i :=
+  have hCT  :=
     fun i ↦ (hdata i).1.threshold_le_param
-  have hNone : ∀ i, 1 ≤ N i :=
+  have hNone  :=
     fun i ↦ (hdata i).1.one_le_scale
-  have hNT : ∀ i, N i ≤ T i :=
+  have hNT  :=
     fun i ↦ (hdata i).1.scale_le_param
-  have happrox : ∀ i,
-      IsApproximateModelPhaseFunction (F i) σ (P i) (δ i) :=
+  have happrox  :=
     fun i ↦ (hdata i).1.isApproximateModelPhase
-  have ha : ∀ i, N i ≤ (a i : ℝ) :=
+  have ha  :=
     fun i ↦ (hdata i).1.scale_le_start
-  have hb : ∀ i, (b i : ℝ) ≤ 2 * N i :=
+  have hb  :=
     fun i ↦ (hdata i).1.end_le_two_mul_scale
-  have hviolate : ∀ i,
-      C i * (T i / N i) ^ (k + ε) * N i ^ (l + ε) <
-        ‖exponentialSumAt (F i) (T i) (N i) (a i) (b i)‖ :=
+  have hviolate  :=
     fun i ↦ (hdata i).2
-  have hTone : ∀ i, 1 ≤ T i :=
+  have hTone  :=
     fun i ↦ (hNone i).trans (hNT i)
   have hTunbounded : VariableObject.IsUnbounded T := by
     apply (VariableObject.isUnbounded_iff_forall_eventually_norm_ge T).2
@@ -166,7 +160,7 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
     calc
       D ≤ (j : ℝ) := hj
       _ ≤ (i : ℝ) := by exact_mod_cast hi
-      _ ≤ C i := by dsimp [C]; linarith
+      _ ≤ C i := by linarith
       _ ≤ T i := hCT i
   have hδinfinitesimal : δ.IsInfinitesimal := by
     rw [VariableObject.IsInfinitesimal]
@@ -181,7 +175,7 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
     filter_upwards [eventually_ge_atTop p] with i hi
     dsimp [P]
     omega
-  have hF : IsModelPhaseFunction F :=
+  have hF  :=
     isModelPhaseFunction_of_approximations hσ hPtop
       hδinfinitesimal happrox
   have hasymptotic :=
@@ -194,11 +188,11 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
     calc
       K ≤ (j : ℝ) := hj
       _ ≤ (i : ℝ) := by exact_mod_cast hi
-      _ ≤ C i := by dsimp [C]; linarith
+      _ ≤ C i := by linarith
   obtain ⟨i, hiK, hiCK⟩ := (hK.and hCK).exists
   have hratioOne : 1 ≤ T i / N i := by
     exact (le_div_iff₀ (zero_lt_one.trans_le (hNone i))).2 (by simpa using hNT i)
-  have hratioNonneg : 0 ≤ T i / N i := zero_le_one.trans hratioOne
+  have hratioNonneg  := zero_le_one.trans hratioOne
   have hnorm :
       ‖exponentialSumAt (F i) (T i) (N i) (a i) (b i)‖ ≤
         K * ((T i / N i) ^ (k + ε / 2) * N i ^ (l + ε / 2)) := by
@@ -212,8 +206,7 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
       _ ≤ K * ((T i / N i) ^ (k + ε / 2) *
           N i ^ (l + ε / 2)) := hnorm
       _ ≤ C i * ((T i / N i) ^ (k + ε / 2) *
-          N i ^ (l + ε / 2)) := by
-        exact mul_le_mul_of_nonneg_right hiCK
+          N i ^ (l + ε / 2)) := mul_le_mul_of_nonneg_right hiCK
           (mul_nonneg (Real.rpow_nonneg hratioNonneg _)
             (Real.rpow_nonneg (zero_le_one.trans (hNone i)) _))
       _ ≤ C i * ((T i / N i) ^ (k + ε) * N i ^ (l + ε)) := by
@@ -222,7 +215,7 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
         · exact Real.rpow_le_rpow_of_exponent_le hratioOne (by linarith)
         · exact Real.rpow_le_rpow_of_exponent_le (hNone i) (by linarith)
         · exact Real.rpow_nonneg (zero_le_one.trans (hNone i)) _
-        · exact Real.rpow_nonneg hratioNonneg _
+        · positivity
       _ = C i * (T i / N i) ^ (k + ε) * N i ^ (l + ε) := by ring
   exact (not_lt_of_ge hdominated) (hviolate i)
 

@@ -33,12 +33,11 @@ theorem exists_zetaMomentCriticalNorm_linear_bound :
     have h := hD t (abs_le.mp ht)
     rw [Real.norm_of_nonneg hz0] at h
     nlinarith [abs_nonneg t]
-  · have hfar : 1 ≤ |t| := (lt_of_not_ge ht).le
+  · have hfar  := (lt_of_not_ge ht).le
     have hζ := norm_riemannZeta_le_five_mul_norm
       (s := ((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I) (by norm_num) (by simpa using hfar)
     have hs : ‖((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I‖ ≤ 1 / 2 + |t| := by
       simpa [Real.norm_eq_abs] using norm_add_le ((1 / 2 : ℝ) : ℂ) ((t : ℂ) * I)
-    change zetaMomentCriticalNorm t ≤ _ at hζ
     calc
       _ ≤ 5 * (1 / 2 + |t|) := hζ.trans (mul_le_mul_of_nonneg_left hs (by norm_num))
       _ ≤ C * (1 + |t|) := by nlinarith [abs_nonneg t]
@@ -126,7 +125,7 @@ theorem exists_zetaSquareGaussian_tail_bound :
       zetaSquareGaussianMean T G - zetaSquareGaussianWindow T G L ≤
         C * G * (1 + |T| + G) ^ 2 * Real.exp (-L ^ 2 / 2) := by
   obtain ⟨C₀, hC₀, hbound⟩ := exists_zetaMomentCriticalNorm_linear_bound
-  let K : ℝ → ℝ := fun x => Real.exp (-x ^ 2 / 2) * (1 + |x|) ^ 2
+  let K  := fun x => Real.exp (-x ^ 2 / 2) * (1 + |x|) ^ 2
   have hK0 : ∀ x, 0 ≤ K x := by intro x; dsimp [K]; positivity
   have hK : Integrable K := by
     convert integrable_exp_sub_mul_sq_mul_add_abs_pow (C := 1) 0
@@ -178,10 +177,10 @@ theorem exists_zetaSquareGaussian_log_tail_bound (A : ℝ) :
   let T₀ := max 1 (max (9 * C) (Real.exp (2 * (A + 3))))
   refine ⟨T₀, le_max_left _ _, ?_⟩
   intro T G hT₀ hG hGT
-  have hT1 : 1 ≤ T := (le_max_left _ _).trans hT₀
+  have hT1  := (le_max_left _ _).trans hT₀
   have hT : 0 < T := by linarith
-  have hTC : 9 * C ≤ T := (le_max_left _ _).trans ((le_max_right _ _).trans hT₀)
-  have hTexp : Real.exp (2 * (A + 3)) ≤ T :=
+  have hTC  := (le_max_left _ _).trans ((le_max_right _ _).trans hT₀)
+  have hTexp  :=
     (le_max_right _ _).trans ((le_max_right _ _).trans hT₀)
   have hlog0 := Real.log_nonneg hT1
   have hlog : 2 * (A + 3) ≤ Real.log T := by

@@ -27,8 +27,7 @@ def wooleyMonogradeProduct (k r : ℕ) (X : ℕ → ℝ) : ℝ :=
 theorem wooleyMonogradeProduct_nonneg
     {k r : ℕ} {X : ℕ → ℝ}
     (hX : ∀ j ∈ wooleyGradeRange r, 0 ≤ X j) :
-    0 ≤ wooleyMonogradeProduct k r X := by
-  exact Finset.prod_nonneg fun j hj => Real.rpow_nonneg (hX j hj) _
+    0 ≤ wooleyMonogradeProduct k r X := Finset.prod_nonneg fun j hj => Real.rpow_nonneg (hX j hj) _
 
 theorem wooleyMonogradeProduct_one
     {k : ℕ} (X : ℕ → ℝ) :
@@ -45,7 +44,7 @@ theorem wooleyMonogradeProduct_step
           (1 - 1 / (r : ℝ)) := by
   have hrOne : 1 ≤ r := by omega
   have hrPred : 1 ≤ r - 1 := by omega
-  have hrR : (0 : ℝ) < r := by positivity
+  
   have hrPredR : (0 : ℝ) < (r - 1 : ℕ) := by
     exact_mod_cast (show 0 < r - 1 by omega)
   have hRange :
@@ -63,8 +62,7 @@ theorem wooleyMonogradeProduct_step
   rw [wooleyMonogradeProduct, hRange, Finset.prod_insert hrNotMem]
   congr 1
   rw [wooleyMonogradeProduct]
-  have hprodNonneg :
-      ∀ j ∈ wooleyGradeRange (r - 1), 0 ≤ X j :=
+  have hprodNonneg  :=
     fun j hj => hX j (hsubset hj)
   rw [← Real.finsetProd_rpow
     (wooleyGradeRange (r - 1))
@@ -99,18 +97,12 @@ theorem wooley_monograde_envelope_step
         (X ^ (1 / (r : ℝ)) *
           P ^ (1 - 1 / (r : ℝ))) := by
   have hA0 : 0 ≤ A := hA.trans' (by norm_num)
-  have hq0 : 0 ≤ q := hq.le
+  have hq0  := hq.le
   have hrR : (0 : ℝ) < r := by positivity
   have hrPredR : (0 : ℝ) < ((r - 1 : ℕ) : ℝ) := by
     exact_mod_cast (show 0 < r - 1 by omega)
   let v : ℝ := 1 - 1 / (r : ℝ)
-  have hv : 0 ≤ v := by
-    dsimp [v]
-    have hrTwo : (2 : ℝ) ≤ r := by exact_mod_cast hr
-    have : 1 / (r : ℝ) ≤ 1 := by
-      rw [div_le_one hrR]
-      linarith
-    linarith
+  
   have hvId : v = ((r - 1 : ℕ) : ℝ) / (r : ℝ) := by
     dsimp [v]
     rw [Nat.cast_sub (by omega : 1 ≤ r)]
@@ -205,13 +197,10 @@ theorem wooley_multigrade_to_monograde
           have hrPos : (0 : ℝ) < r := by positivity
           rw [sub_nonneg, div_le_one hrPos]
           linarith
-        have hpow :
-            (K (r - 1) (wooleyNextB k r b)) ^ v ≤
-              (A ^ ((r - 1 + 1 : ℕ) : ℝ) *
-                  q ^ (-c / ((r - 1 : ℕ) : ℝ)) * P) ^ v :=
+        have hpow  :=
           Real.rpow_le_rpow
             (hK (r - 1) (wooleyNextB k r b)) hih hv
-        have hXr : 0 ≤ X r := hX r hr hrk
+        have hXr  := hX r hr hrk
         have hlead :
             0 ≤ A * (X r) ^ (wooleyRho k r / (r : ℝ)) :=
           mul_nonneg (hA.trans' (by norm_num)) (Real.rpow_nonneg hXr _)

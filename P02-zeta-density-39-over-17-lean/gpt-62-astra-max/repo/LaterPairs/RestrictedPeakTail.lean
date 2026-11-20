@@ -40,7 +40,7 @@ theorem restricted_peak_tail_of_count_log_cap {a g b η ε : ℝ} (m : ℕ)
   rcases W.eq_empty_or_nonempty with rfl | ⟨t,ht⟩
   · simp only [Finset.card_empty,Nat.cast_zero]
     positivity
-  have hVgrowth : V ≤ H^(1/6+κ) :=
+  have hVgrowth  :=
     (hlarge t ht).trans (hg t (by
       rw [abs_of_nonneg (by linarith [(hrange t ht).1] : 0 ≤ t)]
       exact (hrange t ht).2)).le
@@ -50,9 +50,9 @@ theorem restricted_peak_tail_of_count_log_cap {a g b η ε : ℝ} (m : ℕ)
   have hVupper := pow_le_pow_left₀ hV.le hVgrowth 2
   have hc := hcount H V W hH hV (hl.trans hVsq) (hVupper.trans hu.2)
     hsep hrange hlarge
-  have hL1 : 1 ≤ Real.log (3*H) := hlog.2.1
-  have hL0 : 0 ≤ Real.log (3*H) := by linarith
-  have h4 : (Real.log (3*H))^4 ≤ (Real.log (3*H))^m :=
+  have hL1  := hlog.2.1
+  
+  have h4  :=
     pow_le_pow_right₀ hL1 hm
   have hr : (Real.log (3*H))^(2*g+b) ≤ (Real.log (3*H))^m := by
     rw [← Real.rpow_natCast]
@@ -74,7 +74,7 @@ theorem restricted_peak_tail_of_count_general {a g b η ε : ℝ}
         (∀ t ∈ W, V ≤ zetaMomentCriticalNorm t) →
         (W.card:ℝ) ≤ H^ε*(H/V^6+H^a/V^(2*g+2*b)) := by
   obtain ⟨m, hm⟩ := exists_nat_ge (max (4:ℝ) (2*g+b))
-  have hm4 : (4:ℝ) ≤ (m:ℝ) := (le_max_left _ _).trans hm
+  have hm4  := (le_max_left _ _).trans hm
   exact restricted_peak_tail_of_count_log_cap m (by exact_mod_cast hm4) hb
     ((le_max_right _ _).trans hm) hCount hη hε
 end Montgomery.CriticalPeak

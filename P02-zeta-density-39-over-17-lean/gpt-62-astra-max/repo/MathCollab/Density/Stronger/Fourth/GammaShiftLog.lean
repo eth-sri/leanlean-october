@@ -79,7 +79,7 @@ theorem norm_log_sub_le_of_im_le_neg {a b : ℂ} {Y : ℝ} (hY : 0 < Y)
     exact mul_le_mul_of_nonneg_right (inv_anti₀ hY hnorm) (norm_nonneg _)
   have h := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
     (fun v hv => (hd v hv).hasDerivWithinAt) hbound (convex_Icc (0 : ℝ) 1)
-    (x := 0) (y := 1) (by constructor <;> norm_num) (by constructor <;> norm_num)
+    (x := 0) (y := 1) (by norm_num) (by norm_num)
   simpa [p] using h
 
 def zetaGammaLeadingLog (t : ℝ) : ℂ :=
@@ -97,7 +97,7 @@ theorem zetaGammaHalfShift_re_pos (t : ℝ) {w : ℂ} (hw : 0 ≤ w.re)
 
 theorem zetaGammaHalfShift_im_le {t : ℝ} (ht : 0 < t) {w : ℂ} (hw : ‖w‖ ≤ t / 2)
     {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) : (zetaGammaHalfShift t w v).im ≤ -t / 4 := by
-  have hwi : w.im ≤ t / 2 := (Complex.im_le_norm w).trans hw
+  have hwi  := (Complex.im_le_norm w).trans hw
   have hvwi : v * w.im ≤ t / 2 := by
     have h := mul_le_mul_of_nonneg_left hwi hv.1
     nlinarith [hv.2]
@@ -146,7 +146,7 @@ theorem norm_zetaGammaHalfShift_digamma_sub_le {t : ℝ} (ht : 4 ≤ t)
     (show 1 ≤ |(zetaGammaHalfShift t w v).im| by linarith)
   have hl := norm_log_sub_le_of_im_le_neg (Y := t / 4) (a := -((t / 2 : ℝ) : ℂ) * I)
     (b := zetaGammaHalfShift t w v) (by positivity) (by simp; linarith)
-    (by simpa only [neg_div] using him)
+    (by linarith)
   have hd' : 4 / |(zetaGammaHalfShift t w v).im| ≤ 16 / t := by
     apply (div_le_div_iff₀ (by linarith) ht0).mpr
     linarith
@@ -156,7 +156,7 @@ theorem norm_zetaGammaHalfShift_digamma_sub_le {t : ℝ} (ht : 4 ≤ t)
   refine (norm_sub_le_norm_sub_add_norm_sub _ (Complex.log (zetaGammaHalfShift t w v)) _).trans ?_
   calc
     _ ≤ 16 / t + (1 / 4 + ‖w‖ / 2) / (t / 4) := add_le_add (hd.trans hd') (hl.trans hl')
-    _ = _ := by field_simp; ring
+    _ = _ := by ring
 
 
 end MathCollab.Density.Stronger.Fourth

@@ -74,7 +74,6 @@ theorem zetaDivisorBandEdge_pos {T : ℝ} (hT : 0 < T) (G v : ℝ) :
 theorem zetaDivisorBandEdge_strictMono {T G : ℝ} (hT : 0 < T) (hG : 0 < G) :
     StrictMono (zetaDivisorBandEdge T G) := by
   intro v w hvw
-  unfold zetaDivisorBandEdge
   exact mul_lt_mul_of_pos_left (Real.exp_lt_exp.mpr ((div_lt_div_iff_of_pos_right hG).mpr hvw))
     (by positivity)
 

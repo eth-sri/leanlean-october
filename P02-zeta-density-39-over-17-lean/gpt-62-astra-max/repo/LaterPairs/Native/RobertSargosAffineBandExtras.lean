@@ -19,16 +19,16 @@ theorem robertSargos_affine_band_of_displacement {r q₁ q₂ h₁ h₂ d R D H 
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
     (hnear : |robertSargosReduced r q₁ q₂ h₁ h₂ d| ≤ δ*H*Q^2) :
     |2*d+q₁-q₂| ≤ δ*Q+R*D*(2*Q+D)/(H*Q) := by
-  have hR : 0 ≤ R := (abs_nonneg r).trans hr
-  have hD : 0 ≤ D := (abs_nonneg d).trans hd
+  have hR  := (abs_nonneg r).trans hr
+  have hD  := (abs_nonneg d).trans hd
   have hh₂p := hH.trans_le hh₂
-  have hsum : |q₁+d| ≤ 2*Q+D :=
+  have hsum  :=
     (abs_add_le q₁ d).trans (add_le_add hq₁ hd)
   have hprod : |r*d*(q₁+d)| ≤ R*D*(2*Q+D) := by
     rw [abs_mul,abs_mul]
     exact mul_le_mul (mul_le_mul hr hd (abs_nonneg d) hR) hsum
       (abs_nonneg (q₁+d)) (mul_nonneg hR hD)
-  have hden : H*Q ≤ h₂*|q₂| := mul_le_mul hh₂ hq₂ hQ.le hh₂p.le
+  have hden  := mul_le_mul hh₂ hq₂ hQ.le hh₂p.le
   have hbound : H*Q*|2*d+q₁-q₂| ≤ δ*H*Q^2+R*D*(2*Q+D) := by
     calc
       _ ≤ h₂*|q₂| * |2*d+q₁-q₂| :=

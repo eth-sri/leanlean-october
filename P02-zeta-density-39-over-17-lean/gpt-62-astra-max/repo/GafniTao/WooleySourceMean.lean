@@ -129,13 +129,11 @@ def WooleyPolynomialCorollary32 : Prop :=
     @WooleyPolynomialCorollary32At k p ⟨hp.ne_zero⟩
 
 theorem wooleySourceMassSq_nonneg (gamma : WooleySourceSequence) :
-    0 ≤ wooleySourceMassSq gamma := by
-  exact Finset.sum_nonneg fun _ _ => sq_nonneg _
+    0 ≤ wooleySourceMassSq gamma := Finset.sum_nonneg fun _ _ => sq_nonneg _
 
 theorem wooleySourceResidueMassSq_nonneg (gamma : WooleySourceSequence)
     (q : ℕ) (xi : ZMod q) :
-    0 ≤ wooleySourceResidueMassSq gamma q xi := by
-  exact Finset.sum_nonneg fun _ _ => sq_nonneg _
+    0 ≤ wooleySourceResidueMassSq gamma q xi := Finset.sum_nonneg fun _ _ => sq_nonneg _
 
 /-- Residue classes partition the source sequence's `L²` mass exactly. -/
 theorem wooleySource_sum_residueMassSq (gamma : WooleySourceSequence)

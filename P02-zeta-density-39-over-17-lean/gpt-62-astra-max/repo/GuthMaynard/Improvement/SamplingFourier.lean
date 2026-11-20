@@ -46,8 +46,7 @@ theorem sampling_fourier_square {ι : Type*} [Fintype ι]
   obtain ⟨hd,hG,hGb⟩ := source_fourier_derivative_l2 h1 h2 hR hs
   obtain ⟨hi,hb⟩ := sampling_square_variation hF hG
   have hqi := (memLp_two_iff_integrable_sq_norm hF.aestronglyMeasurable).mp hF
-  have hqd : ∀ t, HasDerivAt (fun ξ => ‖𝓕 f ξ‖^2)
-      (2*inner ℝ (𝓕 f t) (deriv (𝓕 f) t)) t := fun t => (hd t).hasDerivAt.norm_sq
+  have hqd  := fun t => (hd t).hasDerivAt.norm_sq
   have hh := sampling_separated_norm x hδ hqd hsep
     (A := univ) (fun _ => subset_univ _) (by simpa using hqi) (by simpa using hi)
   simp only [Real.norm_eq_abs,abs_pow,abs_norm,setIntegral_univ] at hh
@@ -86,8 +85,6 @@ theorem sampling_fourier_first_variation {ι : Type*} [Fintype ι]
   have hFi := (source_l2_interval_l1 (ordinary_fourier_memLp h1 h2)).1
   obtain ⟨hGi,hGb⟩ := source_fourier_derivative_interval_l1 h1 h2 hR hs
   have hh := sampling_separated_norm x hδ (fun ξ => (hd ξ).hasDerivAt) hsep hband hFi hGi
-  have hb : (∫ ξ in Icc (-2:ℝ) 2, ‖deriv (𝓕 f) ξ‖) ≤
-      4*Real.pi*R*Real.sqrt (∫ t, ‖f t‖^2) := by convert hGb using 1; ring
-  exact hh.trans (add_le_add le_rfl hb)
+  apply hh.trans <;> first | assumption | positivity | linarith
 
 end GuthMaynard.Improvement

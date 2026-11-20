@@ -42,7 +42,7 @@ theorem discrete_additive_energy_two_term {K : ℕ} (hK : 1 ≤ K)
   obtain ⟨C₁,hC₁,hsmall⟩ := small_gcd_cubic_sum
   refine ⟨(C₀*C₁)^2+2*C₀,by positivity,?_⟩
   intro T t₀ N hT hN hNT a W V hR hNR ha hV hlarge hW hsep
-  have hTp : 0 < T := by linarith
+  
   have hr := hreduction T t₀ N hT hN hNT a W V hR hNR ha hV.le hlarge hW hsep
   have hs := hsmall T t₀ N hT hN W hW hsep
   have hh : (discreteAdditiveEnergy W:ℝ)*V^2 ≤
@@ -55,7 +55,7 @@ theorem discrete_additive_energy_two_term {K : ℕ} (hK : 1 ≤ K)
     rw [mul_pow,mul_pow,Real.sq_sqrt (Nat.cast_nonneg W.card)]
     ring
   rw [hid] at hb
-  have hpow : 1 ≤ T^η := Real.one_le_rpow hT.le hη.le
+  have hpow  := Real.one_le_rpow hT.le hη.le
   calc
     _ ≤ (C₀*C₁)^2*N^4*(W.card:ℝ)/V^4+2*(C₀*T^η*N*(W.card:ℝ)^3)/V^2 := hb
     _ ≤ (C₀*C₁)^2*T^η*N^4*(W.card:ℝ)/V^4+2*(C₀*T^η*N*(W.card:ℝ)^3)/V^2 := by

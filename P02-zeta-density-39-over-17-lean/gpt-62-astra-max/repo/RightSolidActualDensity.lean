@@ -19,8 +19,8 @@ theorem rightSolid_native_pair (σ : ℝ) :
   · exact exponentPair_BHB7
 
 theorem rightSolid_pair_parameters (σ : ℝ) :
-    0 < rightSolidTailK σ ∧ 2+4*rightSolidTailL σ/rightSolidTailK σ ≤ 7 := by
-  unfold rightSolidTailK rightSolidTailL
+    0 < rightSolidTailK σ := by
+  unfold rightSolidTailK
   split_ifs <;> norm_num
 
 /-- All five solid right-hand bounds for actual zeta zeros with multiplicity.
@@ -33,8 +33,8 @@ theorem density_right_solid {σ ε : ℝ}
   have hparams := rightSolid_pair_parameters σ
   have hbudgets := rightSolid_tail_budgets hl hr
   have hθ := rightSolid_detector_exponent_lower hl hr
-  exact density_of_pair_tail_window (rightSolid_native_pair σ) hparams.1 hparams.2
-    hw hl (by norm_num at hθ ⊢; linarith) hbudgets.1 hbudgets.2 hε
+  exact density_of_pair_tail_window (rightSolid_native_pair σ) hparams
+    hw (by norm_num at hθ ⊢; linarith) hbudgets.1 hbudgets.2 hε
 
 theorem density_right_solid_first {σ ε : ℝ}
     (hl : 7/9 ≤ σ) (hr : σ ≤ 29359/37574) (hε : 0 < ε) :
@@ -54,12 +54,10 @@ theorem density_right_solid_second {σ ε : ℝ}
     unfold rightSolidLengthExponent
     simp only [ite_eq_left hr]
     split_ifs with h₁
-    · have hσ : σ=29359/37574 := le_antisymm h₁ hl
+    · have hσ  := le_antisymm h₁ hl
       rw [hσ]
       norm_num
-    · rw [show 14610*σ-3849=3*(4870*σ-1283) by ring]
-      simp only [div_eq_mul_inv,mul_inv_rev]
-      ring
+    · grind
   simpa only [he] using hh
 
 theorem density_right_solid_third {σ ε : ℝ}
@@ -74,12 +72,10 @@ theorem density_right_solid_third {σ ε : ℝ}
     rw [ite_eq_right h₁]
     simp only [ite_eq_left hr]
     split_ifs with h₂
-    · have hσ : σ=1015/1294 := le_antisymm h₂ hl
+    · have hσ  := le_antisymm h₂ hl
       rw [hσ]
       norm_num
-    · rw [show 19062*σ-5079=3*(6354*σ-1693) by ring]
-      simp only [div_eq_mul_inv,mul_inv_rev]
-      ring
+    · grind
   simpa only [he] using hh
 
 theorem density_right_solid_fourth {σ ε : ℝ}
@@ -95,12 +91,10 @@ theorem density_right_solid_fourth {σ ε : ℝ}
     rw [ite_eq_right h₁,ite_eq_right h₂]
     simp only [ite_eq_left hr]
     split_ifs with h₃
-    · have hσ : σ=353/447 := le_antisymm h₃ hl
+    · have hσ  := le_antisymm h₃ hl
       rw [hσ]
       norm_num
-    · rw [show 11808*σ-3195=3*(3936*σ-1065) by ring]
-      simp only [div_eq_mul_inv,mul_inv_rev]
-      ring
+    · grind
   simpa only [he] using hh
 
 theorem density_right_solid_fifth {σ ε : ℝ}
@@ -115,11 +109,9 @@ theorem density_right_solid_fifth {σ ε : ℝ}
     unfold rightSolidLengthExponent
     rw [ite_eq_right h₁,ite_eq_right h₂,ite_eq_right h₃]
     split_ifs with h₄
-    · have hσ : σ=467/586 := le_antisymm h₄ hl
+    · have hσ  := le_antisymm h₄ hl
       rw [hσ]
       norm_num
-    · rw [show 6846*σ-1893=3*(2282*σ-631) by ring]
-      simp only [div_eq_mul_inv,mul_inv_rev]
-      ring
+    · grind
   simpa only [he] using hh
 end Montgomery.RationalMoment.RightDetector

@@ -34,7 +34,7 @@ theorem wooleySourcePolynomial_section7_easy
       (p : ℝ) ^ (k ^ 2 * nu) *
         wooleySourcePolynomialMixedMean phi s r p B
           (wooleySection7NextB k r b) b nu gamma := by
-  have hnuNext : nu ≤ wooleySection7NextB k r b := hnua.trans haa'
+  have hnuNext  := hnua.trans haa'
   let phiBox := wooleyBoxedPolynomialSystem phi gamma
   let gammaBox := wooleySourceBoxCoefficients gamma
   have hfinite := wooleyPolynomial_section7_easy

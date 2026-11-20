@@ -53,7 +53,7 @@ theorem atkinsonSymmetricRadiusScale_balance {T G : ℝ} (hT : 1 ≤ T)
       G*(atkinsonSymmetricRadiusScale T G)^2 ≤ Real.sqrt T ∧
       (atkinsonSymmetricRadiusScale T G)^4 ≤ Real.sqrt T := by
   have hT0 : 0 < T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
+  have hG  := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
   have hs := Real.sqrt_nonneg T
   have hX := atkinsonSymmetricRadiusScale_pos hT0 hG
   have hXsq := atkinsonSymmetricRadiusScale_sq hT0 hG
@@ -85,8 +85,8 @@ theorem exists_atkinsonPowerIntegral_fourthRoot_width (α : ℝ) :
   refine ⟨C,hC,?_⟩
   intro T G L b hT hlower hupper hL hwidth hb
   have hT0 : 0 < T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
-  have hG1 : 1 ≤ G := (Real.one_le_rpow hT (by norm_num : (0:ℝ) ≤ 1/4)).trans hlower
+  have hG  := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
+  have hG1  := (Real.one_le_rpow hT (by norm_num : (0:ℝ) ≤ 1/4)).trans hlower
   have hGT : G^2 ≤ 2*T := by nlinarith [Real.sq_sqrt hT0.le]
   obtain ⟨hX,hGX,hXS⟩ := atkinsonSymmetricRadiusScale_balance hT hlower hupper
   have h := hbound T G L b (atkinsonSymmetricRadiusScale T G) hT hG1 hGT hL hwidth

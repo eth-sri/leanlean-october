@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedVariation
 public import TaoTrudgianYang2025.BetaWeightedPhase
 public import TaoTrudgianYang2025.BetaFourierModes

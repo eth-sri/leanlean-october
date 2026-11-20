@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedSharpCore
 
 @[expose] public section
@@ -67,17 +66,12 @@ theorem modelPhase_buffered_source_sharp_expansion
 theorem bufferedTransitionCost_eq {T N : ℝ} (hN : 0 < N) (σ D η : ℝ) :
     (2*(T/N)*(σ+1)*η+6)*D*N/Real.sqrt T =
       2*D*(σ+1)*η*Real.sqrt T+6*D*N/Real.sqrt T := by
-  calc
-    _ = 2*D*(σ+1)*η*(T/Real.sqrt T)+6*D*N/Real.sqrt T := by
-      field_simp
-    _ = _ := by rw [Real.div_sqrt]
+  grind
 
 theorem bufferedTransitionCost_inverse_sqrt {T N : ℝ} (hT : 0 < T) (hN : 0 < N) (σ D : ℝ) :
     (2*(T/N)*(σ+1)*(Real.sqrt T)⁻¹+6)*D*N/Real.sqrt T =
       2*D*(σ+1)+6*D*N/Real.sqrt T := by
-  rw [bufferedTransitionCost_eq hN]
-  have hs : Real.sqrt T ≠ 0 := (Real.sqrt_pos.mpr hT).ne'
-  field_simp
+  grind
 
 theorem modelPhase_buffered_source_inverse_sqrt_expansion
     {σ : ℝ} (hσ : 0 < σ) :
@@ -106,11 +100,11 @@ theorem modelPhase_buffered_source_inverse_sqrt_expansion
   obtain ⟨C,hC,D,hD,E,hE,hsource⟩ := modelPhase_buffered_source_sharp_expansion hσ
   refine ⟨C,hC,D,hD,E,hE,?_⟩
   intro N T a b hN hT ha hb hflat F δ hδ hF η A B L U P Q R
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hTpos
+  have hTpos  := zero_lt_one.trans_le hT
+  have hs  := Real.sqrt_pos.mpr hTpos
   have hs₁ : 1 ≤ Real.sqrt T := by simpa only [Real.sqrt_one] using Real.sqrt_le_sqrt hT
-  have hη : 0 < (Real.sqrt T)⁻¹ := inv_pos.mpr hs
-  have hη₁ : (Real.sqrt T)⁻¹ ≤ 1 := (inv_le_one₀ hs).mpr hs₁
+  have hη  := inv_pos.mpr hs
+  have hη₁  := (inv_le_one₀ hs).mpr hs₁
   have h := hsource N ((Real.sqrt T)⁻¹) a b hN hη hη₁ ha hb hflat
     F δ T 1 hδ hF hTpos (by norm_num)
   dsimp only at h

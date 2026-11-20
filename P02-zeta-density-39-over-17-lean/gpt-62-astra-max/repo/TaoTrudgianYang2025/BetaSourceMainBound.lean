@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaSourceChartPhysical
 
 @[expose] public section
@@ -57,22 +56,22 @@ theorem sourceStationaryMain_physical_bound
   let Pall := J.attach.sup P
   let Cmax := J.attach.sup' hne C
   let K := max Cmax ((J.card : ℝ)*Cmax)
-  have hδ : 0 < δ := (Finset.lt_inf'_iff hne).mpr (fun i _ => hd i)
+  have hδ  := (Finset.lt_inf'_iff hne).mpr (fun i _ => hd i)
   have hδi (i : {j : ℕ // j ∈ J}) : δ ≤ d i :=
     Finset.inf'_le d (Finset.mem_attach _ _)
   have hPi (i : {j : ℕ // j ∈ J}) : P i ≤ Pall :=
     Finset.le_sup (Finset.mem_attach _ _)
   have hCi (i : {j : ℕ // j ∈ J}) : C i ≤ Cmax :=
     Finset.le_sup' C (Finset.mem_attach _ _)
-  have hPall : 2 ≤ Pall := (hP i₀).trans (hPi i₀)
-  have hCmax : 1 ≤ Cmax := (hC i₀).trans (hCi i₀)
+  have hPall  := (hP i₀).trans (hPi i₀)
+  have hCmax  := (hC i₀).trans (hCi i₀)
   have hK : 1 ≤ K := hCmax.trans (le_max_left _ _)
   have hδsmall := (hδi i₀).trans (hsmall i₀)
   have hδpos := (hδi i₀).trans (hpos i₀)
   refine ⟨δ,hδ,hδsmall,hδpos,Pall,hPall,K,hK,?_⟩
   intro T N F a b hTK hN ha hb hlow hhigh hlong hF
-  have hT₁ : 1 ≤ T := hK.trans hTK
-  have hT : 0 < T := zero_lt_one.trans_le hT₁
+  have hT₁  := hK.trans hTK
+  have hT  := zero_lt_one.trans_le hT₁
   have hF₁ : IsApproximateModelPhaseFunction F σ 1 δ :=
     approximateModelPhase_mono hF (le_trans (by norm_num) hPall) le_rfl
   have hchart : ∀ j ∈ J,

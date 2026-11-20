@@ -28,7 +28,7 @@ theorem zetaSlab_extend_power_bound {σ p C : ℝ} (hp : 0 < p) (hC : 0 < C)
   · have hsmall : (zetaSlabCount σ T (2*T) : ℝ) ≤ Q := by
       dsimp [Q]
       exact_mod_cast zetaSlabCount_mono (σ := σ) (σ' := σ) (a := T) (a' := 0)
-        (b := 2*T) (b' := 2*R) le_rfl (by linarith) (by linarith [not_le.mp hRT])
+        (b := 2*T) (b' := 2*R) le_rfl (by linarith) (by linarith)
     have hpow := Real.one_le_rpow hT hp.le
     exact hsmall.trans (by nlinarith)
 

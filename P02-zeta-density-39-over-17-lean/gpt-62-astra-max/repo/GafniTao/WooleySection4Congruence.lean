@@ -84,17 +84,13 @@ theorem wooleySection4_exists_dilated_system
   refine ⟨Psi, wooleySection4DilatedSystem_spaced k p c h psi, ?_⟩
   intro I R point xy hsource i
   let theta := wooleyAffinePolynomialSystem phi 1 xi
-  let dilatedPoint : I → ℤ := fun x => (p : ℤ) ^ h * point x
+  let dilatedPoint  := fun x => (p : ℤ) ^ h * point x
   have htheta (j : Fin k) : (p : ℤ) ^ B ∣
       wooleyIntegerTupleDisplacement R
         (fun x => (theta j).eval (dilatedPoint x)) xy := by
     simpa only [theta, dilatedPoint, wooleyAffinePolynomialSystem_eval,
       Nat.cast_one, one_mul] using hsource j
-  have hcomb : (p : ℤ) ^ B ∣
-      wooleyIntegerTupleDisplacement R
-        (fun x =>
-          (wooleyNormalFormCombination theta (p ^ B) G i).eval
-            (dilatedPoint x)) xy :=
+  have hcomb  :=
     wooleyNormalFormCombination_displacement_dvd
       theta G i dilatedPoint xy ((p : ℤ) ^ B) htheta
   have hdisp :
@@ -142,9 +138,8 @@ theorem wooleySection4_exists_dilated_system
     exact wooleyIntegerTupleDisplacement_smul R
       ((p : ℤ) ^ (h * ((i : ℕ) + 1)))
       (fun x => (Psi i).eval (point x)) xy
-  have hi : (i : ℕ) + 1 ≤ k := i.isLt
-  have hiB : ((i : ℕ) + 1) * h ≤ B := by
-    exact (Nat.mul_le_mul_right h hi).trans hkhB
+  have hi  := i.isLt
+  have hiB := (Nat.mul_le_mul_right h hi).trans hkhB
   have hcancel : (p : ℤ) ^ (B - ((i : ℕ) + 1) * h) ∣
       wooleyIntegerTupleDisplacement R
         (fun x => (Psi i).eval (point x)) xy := by

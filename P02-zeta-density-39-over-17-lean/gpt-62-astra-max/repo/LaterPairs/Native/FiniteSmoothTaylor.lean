@@ -1,7 +1,5 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 
 @[expose] public section
 set_option autoImplicit false
@@ -20,7 +18,7 @@ theorem contDiffAt_iteratedDeriv_finite {f : ℝ → ℝ} {x : ℝ} {n j : ℕ}
     (hf : ContDiffAt ℝ (n+j) f x) :
     ContDiffAt ℝ n (iteratedDeriv j f) x := by
   induction j generalizing n with
-  | zero => simpa only [Nat.cast_zero,add_zero,iteratedDeriv_zero] using hf
+  | zero => solve_by_elim
   | succ j ih =>
       rw [iteratedDeriv_succ]
       have hh : ContDiffAt ℝ ((n+1)+j) f x := by
@@ -33,9 +31,7 @@ theorem taylorWithinEval_uIcc_eq_finiteTaylorPolynomial_finite
     (hf : ContDiffAt ℝ n f a) :
     taylorWithinEval f n (uIcc a x) a x = finiteTaylorPolynomial f n a x := by
   have hu : UniqueDiffOn ℝ (uIcc a x) := uniqueDiffOn_Icc (by
-    rcases lt_or_gt_of_ne hax with h | h
-    · simpa only [min_eq_left h.le,max_eq_right h.le] using h
-    · simpa only [min_eq_right h.le,max_eq_left h.le] using h)
+    grind)
   rw [taylor_within_apply,finiteTaylorPolynomial,taylor_within_apply]
   apply Finset.sum_congr rfl
   intro j hj
@@ -69,9 +65,9 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le_finite
     (hb : ∀ y ∈ uIcc a x, |iteratedDeriv (Q+1) f y| ≤ M) :
     |iteratedDeriv j (fun y => f y-finiteTaylorPolynomial f Q a y) x| ≤
       M*|x-a|^(Q+1-j) := by
-  have hM : 0 ≤ M := (abs_nonneg _).trans (hb a left_mem_uIcc)
+  have hM  := (abs_nonneg _).trans (hb a left_mem_uIcc)
   have hjQ : (j : WithTop ℕ∞) ≤ Q+1 := by exact_mod_cast (by omega : j ≤ Q+1)
-  have hjtop : (j : WithTop ℕ∞) ≤ ∞ :=
+  have hjtop  :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl j
   rw [iteratedDeriv_fun_sub ((hf x right_mem_uIcc).of_le hjQ)
     ((finiteTaylorPolynomial_contDiff f Q a).contDiffAt.of_le hjtop),

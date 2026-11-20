@@ -27,8 +27,8 @@ theorem coprime_dyadic_adjacent_second {η : ℝ} (hη : 0 < η) :
   by_cases he : Q.Nonempty
   · obtain ⟨q,hq⟩ := he
     have h2M : 0 ≤ 2*M := by positivity
-    have hf : (⌊2*M⌋₊:ℝ) ≤ 2*M := Nat.floor_le h2M
-    have hH : 1 ≤ ⌊2*M⌋₊ :=
+    have hf  := Nat.floor_le h2M
+    have hH  :=
       (show 1 ≤ q.2 from (hQ q hq).2.1).trans
         ((Nat.le_floor_iff h2M).mpr (hQ q hq).2.2.2.2.2.2)
     have hrat : ∀ r ∈ Q.image pairRatio,
@@ -36,7 +36,7 @@ theorem coprime_dyadic_adjacent_second {η : ℝ} (hη : 0 < η) :
       intro r hr
       obtain ⟨p,hp,rfl⟩ := mem_image.mp hr
       obtain ⟨hp1,hp2,hcop,hl1,hu1,hl2,hu2⟩ := hQ p hp
-      refine ⟨div_pos (by exact_mod_cast hp1) (by exact_mod_cast hp2),?_,
+      refine ⟨div_pos (by positivity) (by positivity),?_,
         dyadic_pair_log hp1 hp2 hl1 hu1 hl2 hu2⟩
       rw [coprime_pair_den hp2 hcop]
       exact (Nat.le_floor_iff h2M).mpr hu2
@@ -76,7 +76,7 @@ theorem large_gcd_adjacent_pair {η : ℝ} (hη : 0 < η) :
           T^((1:ℝ)/4)*(W.card:ℝ)^((19:ℝ)/12)) := by
   obtain ⟨C,hC,hb⟩ := coprime_dyadic_adjacent_second (show 0 < η/2 by positivity)
   let L : ℝ := 1+4^(η/2)/(η/2)
-  have hL : 0 < L := by dsimp [L]; positivity
+  
   refine ⟨C*L,by positivity,?_⟩
   intro T t₀ X hT hX hXT P hP W hR hRT hW hsep
   have ht : 0 < T := by linarith

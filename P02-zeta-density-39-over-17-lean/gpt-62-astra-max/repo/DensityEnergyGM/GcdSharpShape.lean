@@ -89,8 +89,6 @@ theorem sharp_second_shape_sqrt_min {M T R E H K : ℝ}
     _ ≤ (Real.sqrt X + Real.sqrt Y) + Real.sqrt Z := by
       linarith [sqrt_add_le_sum hX hY]
     _ ≤ _ := by
-      simpa! only [X, Y, Z, D, Real.rpow_two, mul_add, add_mul, add_assoc, add_comm,
-        add_left_comm, mul_assoc, mul_comm, mul_left_comm] using
-        add_le_add (add_le_add hFirst hSecond) hThird
+      grind
 
 end Montgomery.RationalMoment

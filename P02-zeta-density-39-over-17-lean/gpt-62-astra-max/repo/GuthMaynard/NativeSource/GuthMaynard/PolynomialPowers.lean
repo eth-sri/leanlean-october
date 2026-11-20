@@ -37,12 +37,8 @@ lemma pow_coeff_subset (N k m : ℕ) (hm : 0 < m) :
   rw [mem_Ioc] at hpx ⊢
   rcases hpx with ⟨hpx1, hpx2⟩
   constructor
-  · by_cases hN : N = 0
-    · rw [hN] at hpx1 hpx2
-      linarith
-    · have hN_pos : N ≥ 1 := Nat.pos_of_ne_zero hN
-      linarith
-  · have hdvd : p x ∣ ∏ y : Fin k, p y := dvd_prod_of_mem (fun y => p y) (mem_univ x)
+  · linarith
+  · have hdvd  := dvd_prod_of_mem (fun y => p y) (mem_univ x)
     rw [hp_prod] at hdvd
     exact Nat.le_of_dvd hm hdvd
 
@@ -94,13 +90,12 @@ theorem wideDirichletPoly_eq_sum_blocks (Q k : ℕ) (a : ℕ → ℂ) (t : ℝ) 
   | zero => simp [wideDirichletPoly]
   | succ k ih =>
       rw [wideDirichletPoly]
-      have hQ : Q ≤ 2 ^ k * Q := by
-        exact Nat.le_mul_of_pos_left Q (pow_pos (by omega : 0 < 2) k)
+      have hQ := Nat.le_mul_of_pos_left Q (pow_pos (by omega : 0 < 2) k)
       have hBlock : 2 ^ k * Q ≤ 2 ^ (k + 1) * Q := by
         calc
           2 ^ k * Q ≤ 2 * (2 ^ k * Q) :=
             Nat.le_mul_of_pos_left (2 ^ k * Q) (by omega)
-          _ = 2 ^ (k + 1) * Q := by rw [pow_succ]; ring
+          _ = 2 ^ (k + 1) * Q := by ring
       rw [← Finset.Ioc_union_Ioc_eq_Ioc hQ hBlock,
         Finset.sum_union (Finset.Ioc_disjoint_Ioc_of_le le_rfl)]
       change wideDirichletPoly Q k a t + _ = _
@@ -148,9 +143,7 @@ theorem exists_dyadic_block_and_subset
     intro t ht
     simp only [index, dite_eq_left ht]
     exact (Classical.choose_spec (hEach t ht)).2
-  have hCard : W.card = ∑ r ∈ Finset.range k,
-      (W.filter fun t => index t = r).card := by
-    exact Finset.card_eq_sum_card_fiberwise hIndexMem
+  have hCard := Finset.card_eq_sum_card_fiberwise hIndexMem
   have hCardReal : (W.card : ℝ) = ∑ r ∈ Finset.range k,
       ((W.filter fun t => index t = r).card : ℝ) := by
     exact_mod_cast hCard
@@ -162,8 +155,6 @@ theorem exists_dyadic_block_and_subset
     calc
       (W.card : ℝ) = k * ((W.card : ℝ) / k) := by field_simp
       _ ≤ k * ((W.filter fun t => index t = r).card : ℝ) := by gcongr
-  · intro t ht
-    rw [Finset.mem_filter] at ht
-    simpa [ht.2] using hIndexLarge t ht.1
+  · grind
 
 end GuthMaynard.NativeMoment

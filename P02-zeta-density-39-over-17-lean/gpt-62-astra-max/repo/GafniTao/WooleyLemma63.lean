@@ -28,11 +28,9 @@ theorem wooley_refinement_val_mod
     {z : ZMod (p ^ theta)}
     (hz : z ∈ wooleyResidueRefinementFiber p nu theta hnu xi) :
     z.val % (p ^ nu) = xi.val := by
-  have hcast :
-      ZMod.castHom (pow_dvd_pow p hnu) (ZMod (p ^ nu)) z = xi := by
-    exact (Finset.mem_filter.mp hz).2
-  have hpnu : 0 < p ^ nu := pow_pos (NeZero.pos p) nu
-  have hxiVal : xi.val < p ^ nu := ZMod.val_lt xi
+  have hcast := (Finset.mem_filter.mp hz).2
+  
+  
   have hzval :
       (z.val : ZMod (p ^ nu)) = xi := by
     simpa only [ZMod.castHom_apply, ZMod.cast_eq_val] using hcast
@@ -110,15 +108,8 @@ theorem wooley_sum_refinement_pairs
     simp only [Finset.mem_filter, Finset.mem_product, Finset.mem_univ,
       true_and]
     constructor
-    · rintro ⟨hfine, hred⟩
-      have hz : red zw.1 = xy.1 := congrArg Prod.fst hred
-      have hw : red zw.2 = xy.2 := congrArg Prod.snd hred
-      exact ⟨(href zw.1 xy.1).2 hz, (href zw.2 xy.2).2 hw⟩
-    · rintro ⟨hz, hw⟩
-      have hzred := (href zw.1 xy.1).1 hz
-      have hwred := (href zw.2 xy.2).1 hw
-      exact ⟨wooley_refinements_separated hnu hxy hz hw,
-        Prod.ext hzred hwred⟩
+    · grind
+    · grind
   have hfiber_empty (xy : ZMod (p ^ nu) × ZMod (p ^ nu))
       (hxy : ¬ wooleyResiduesSeparated nu xy.1 xy.2) :
       finePairs.filter (fun zw => redPair zw = xy) = ∅ := by
@@ -131,13 +122,7 @@ theorem wooley_sum_refinement_pairs
         (ZMod (p ^ theta) × ZMod (p ^ theta))) ↔ False := by simp
     rw [hempty]
     constructor
-    · rintro ⟨hfine, hred⟩
-      have hz : red zw.1 = xy.1 := congrArg Prod.fst hred
-      have hw : red zw.2 = xy.2 := congrArg Prod.snd hred
-      apply hxy
-      have : wooleyResiduesSeparated nu (red zw.1) (red zw.2) :=
-        (hsep zw.1 zw.2).2 hfine
-      simpa [hz, hw] using this
+    · grind
     · exact False.elim
   have hinter (xy : ZMod (p ^ nu) × ZMod (p ^ nu)) :
       ∑ zw ∈ finePairs with redPair zw = xy, F zw.1 zw.2 =
@@ -146,8 +131,7 @@ theorem wooley_sum_refinement_pairs
         else 0 := by
     by_cases hxy : wooleyResiduesSeparated nu xy.1 xy.2
     · rw [ite_eq_left hxy, hfiber xy hxy]
-    · rw [ite_eq_right hxy, hfiber_empty xy hxy]
-      simp
+    · simp [*]
   have hgroup := Finset.sum_fiberwise finePairs redPair
     (fun zw => F zw.1 zw.2)
   have hflat :
@@ -166,7 +150,6 @@ theorem wooley_sum_refinement_pairs
         ∑ xy ∈ coarsePairs,
           ∑ zw ∈ pairFiber xy, F zw.1 zw.2 := by
       simp only [coarsePairs, pairFiber, Finset.sum_filter]
-      simp
       simpa [Finset.sum_product] using (Finset.sum_product
         (Finset.univ : Finset (ZMod (p ^ nu)))
         (Finset.univ : Finset (ZMod (p ^ nu)))
@@ -180,7 +163,6 @@ theorem wooley_sum_refinement_pairs
         ∑ eta' : ZMod (p ^ theta) with
           wooleyResiduesSeparated nu xi' eta', F xi' eta' := by
       simp only [finePairs, Finset.sum_filter]
-      simp
       simpa using Finset.sum_product
         (Finset.univ : Finset (ZMod (p ^ theta)))
         (Finset.univ : Finset (ZMod (p ^ theta)))

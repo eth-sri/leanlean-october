@@ -35,8 +35,7 @@ theorem finiteBlock_pow_lower {f : ArithmeticFunction ℂ} {N : ℕ} (hN : 0 < N
     (k n : ℕ) (hn : (f^(k+1)) n ≠ 0) : N^(k+1) < n := by
   induction k generalizing n with
   | zero =>
-    simp only [zero_add, pow_one] at hn ⊢
-    exact (Finset.mem_Ioc.mp (hs n hn)).1
+    grind
   | succ k ih =>
     rw [pow_succ, ArithmeticFunction.mul_apply] at hn
     obtain ⟨p, hp, hmul⟩ := Finset.exists_ne_zero_of_sum_ne_zero hn
@@ -72,7 +71,7 @@ theorem finiteBlock_LSeries_pow {f : ArithmeticFunction ℂ} {N : ℕ}
   | zero =>
     simp only [pow_zero]
     rw [LSeries, tsum_eq_single 1]
-    · simp [ArithmeticFunction.one_apply]
+    · simp
     · intro n hn
       simp [LSeries.term_def, ArithmeticFunction.one_apply, hn]
   | succ k ih =>

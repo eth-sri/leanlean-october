@@ -20,9 +20,6 @@ theorem atkinsonPhysical_pair_scale_identity {H G ℓ L : ℝ}
   have he : (-k/2)+(l+1/2-k/2-1/2) = l-k := by ring
   have hh : H^(-k/2)*H^(l+1/2-k/2-1/2) = H^(l-k) := by
     rw [← Real.rpow_add hH,he]
-  have hℓe : 2*(l+1/2-k/2) = 2*l+1-k := by ring
-  have hGe : 2-2*(l+1/2-k/2) = 1+k-2*l := by ring
-  rw [hGe,hℓe]
   calc
     _ = (74:ℝ)^(l+1/2-k/2)*ℓ^(2*l+1-k)*
         (L^k*(H^(-k/2)*H^(l+1/2-k/2-1/2))*G^(1+k-2*l)) := by ring
@@ -63,7 +60,7 @@ theorem atkinson_pair_harmonic_le_height_log {H G L : ℝ}
   have hc : (Nat.ceil H:ℝ) ≤ 2*H := by
     have hh := Nat.ceil_lt_add_one hH0.le
     linarith
-  have hc0 : (0:ℝ) < Nat.ceil H := hH0.trans_le (Nat.le_ceil H)
+  have hc0  := hH0.trans_le (Nat.le_ceil H)
   have hl := Real.log_le_log hc0 hc
   have hb := harmonic_le_one_add_log (Nat.ceil H)
   linarith

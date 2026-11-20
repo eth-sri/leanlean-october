@@ -110,8 +110,8 @@ theorem wooleySection7_top_implies_normalized_column
     rw [hfactor]
     exact wooleyIntegerTupleDisplacement_polynomial_C_mul
       R ((p : ℤ) ^ (gamma * j)) qpoly point xy
-  have hjk : j ≤ k := wooleySection7Node_succ_le hrk l
-  have he : gamma * j ≤ gamma * k := Nat.mul_le_mul_left gamma hjk
+  have hjk  := wooleySection7Node_succ_le hrk l
+  have he  := Nat.mul_le_mul_left gamma hjk
   have hdiv : (p : ℤ) ^ M ∣
       (p : ℤ) ^ (gamma * j) * 1 *
         wooleyIntegerTupleDisplacement R
@@ -218,7 +218,7 @@ theorem wooleySection7_transformed_implies_lower_displacement
     have hsub := dvd_sub hWdiv hErrorDiv
     rw [hdisp] at hsub
     simpa only [add_sub_cancel_right] using hsub
-  have hi : (i : ℕ) + 1 ≤ r := i.isLt
+  have hi  := i.isLt
   have he : (a - gamma) * ((i : ℕ) + 1) ≤
       r * (a - gamma) := by
     simpa [Nat.mul_comm] using Nat.mul_le_mul_left (a - gamma) hi
@@ -281,11 +281,10 @@ theorem wooleySection7_top_congruences_exist_lower_system
     wooleySection7TransformedPolynomial_exists_lower_equation
       (L := L) hpPrime.ne_zero hrk hgamma hgammaK
         omega h omegaInv homega hsep hh psi G hG' hInv i
-  let Psi : WooleyPolynomialSystem r :=
+  let Psi  :=
     wooleySection7LowerSystem r p (a - (k - r) * gamma) Xi
   refine ⟨Psi, ?_, ?_⟩
-  · exact wooleySection7LowerSystem_spaced
-      r p (a - (k - r) * gamma) Xi
+  · solve_by_elim
   · intro I R point xy htop i
     have hcols : ∀ l : Fin r, (p : ℤ) ^ L ∣
         wooleyIntegerTupleDisplacement R
@@ -307,7 +306,7 @@ theorem wooleySection7_top_congruences_exist_lower_system
             C ((p : ℤ) ^ L) * Error i := by
       simpa only [Psi, wooleySection7LowerSystem] using hrow i
     have hresult := wooleySection7_transformed_implies_lower_displacement
-      hpPrime.ne_zero (by simpa only [L] using hcommon)
+      hpPrime.ne_zero (by linarith)
       i (wooleySection7TransformedPolynomial
           k r p c a gamma L omega h omegaInv psi G i)
         (Psi i) (Error i) point xy hrow' hWdiv
@@ -339,10 +338,7 @@ theorem wooley_section7_common_depth_eq_BPrimeNat
       M = bp + r * a + (k - r) * gamma := hsum.symm
       _ = gamma * (k - r) + gamma * r +
           r * (a - gamma) + bp := by
-        rw [Nat.mul_comm (k - r) gamma]
-        have hgammaR' : gamma * r + r * (a - gamma) = r * a := by
-          simpa [Nat.mul_comm] using hgammaR
-        omega
+        grind
   dsimp only [M, bp] at hdecomp ⊢
   rw [hdecomp]
   omega

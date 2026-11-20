@@ -1,6 +1,8 @@
 module
-public import GuthMaynard.NativeSource.GuthMaynard.ExponentArithmetic
-public import Mathlib.Analysis.SpecialFunctions.Log.Base
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+public import GuthMaynard.NativeSource.GuthMaynard.ZeroDetector
 
 @[expose] public section
 

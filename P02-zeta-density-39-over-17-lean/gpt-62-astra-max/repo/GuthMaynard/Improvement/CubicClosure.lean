@@ -60,7 +60,7 @@ theorem restricted_cubic_of_masked {H Q T L M M₁ A E E₀ Λ c : ℝ}
     rw [← Real.sqrt_mul hc0]
     exact Real.sqrt_le_sqrt hAM
   have hsc := Real.sq_sqrt hc0
-  have hsc0 := Real.sqrt_nonneg c
+  
   have he0 : Real.sqrt E₀ ≤ Real.sqrt c*Λ*Real.sqrt M := by
     apply (Real.sqrt_le_left (by positivity)).mpr
     calc

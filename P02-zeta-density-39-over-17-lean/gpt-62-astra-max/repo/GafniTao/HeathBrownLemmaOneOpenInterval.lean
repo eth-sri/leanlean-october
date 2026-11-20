@@ -56,15 +56,10 @@ theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
     (by simpa only [M] using hHN) hShiftDiff hCompact hShiftBounds hC hVMVT
   have hEndpoint := norm_heathBrownExponentialSum_le_interior_add_two
     (by omega : 2 ≤ N) f
-  have hConstant0 : 0 ≤
-      heathBrownLemmaOneSourceConstant k A C epsilon :=
+  have hConstant0  :=
     (heathBrownLemmaOneSourceConstant_pos hk hA hC hepsilon).le
   have hMainMono := heathBrown_sourceScale_main_mono
     hM hMN hk hlambda hepsilon hConstant0
-  change heathBrownLemmaOneSourceConstant k A C epsilon *
-      (M : ℝ) ^ epsilon * heathBrownThreeTerm M k lambda ≤
-    heathBrownLemmaOneSourceConstant k A C epsilon *
-      (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda at hMainMono
   calc
     ‖heathBrownExponentialSum N f‖ ≤
         ‖heathBrownExponentialSum M (heathBrownInteriorShift f)‖ + 2 := by

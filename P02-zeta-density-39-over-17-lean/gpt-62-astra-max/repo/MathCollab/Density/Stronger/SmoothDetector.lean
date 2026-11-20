@@ -1,9 +1,7 @@
 module
 public import MathCollab.Density.Stronger.SmoothExpansion
 public import MathCollab.Density.Stronger.InitialDetector
-public import MathCollab.Density.Stronger.DampedCutoff
-public import MathCollab.Density.Stronger.SmoothMellinIdentity
-public import Mathlib.Analysis.Complex.ExponentialBounds
+public import Mathlib.Analysis.Calculus.IteratedDeriv.FaaDiBruno
 
 @[expose] public section
 
@@ -294,39 +292,21 @@ theorem log_sq_eventually_le_height :
   have hh := (div_lt_iff₀ hT).mp hlog
   linarith
 
-/-- All-zero smooth dyadic detection for the stronger parameters, with no
-Weyl or moment premise. The finite list is chosen before rho varies. -/
-theorem smoothDetector_eventually_large {σ δ : ℝ}
-    (hσ : 3/4 < σ) (hδ : 0 ≤ δ) (hδ' : δ ≤ 1/8) :
-    ∀ᶠ T : ℝ in atTop, ∀ ρ : ℂ,
-      σ ≤ ρ.re → ρ.re < 1 → T ≤ |ρ.im| → |ρ.im| ≤ 2*T →
-      riemannZeta ρ = 0 →
-      ∃ j ∈ smoothScaleIndices (detectorY σ T*(Real.log T)^2),
-        detectorX δ T/2 < (2 : ℝ)^j ∧
-        (1/(24*Real.log T) : ℝ) ≤
-          ‖smoothDetectorBlock ρ (detectorX δ T) (detectorY σ T) j‖ := by
-  filter_upwards [eventually_ge_atTop (4 : ℝ),
-    Real.tendsto_log_atTop.eventually_ge_atTop 16,
-    log_sq_eventually_le_height, detectorTail_eventually_large hσ hδ hδ']
-    with T hT hlog hlogSq hdetect
-  intro ρ hβ hβ' hγ hγ' hzero
-  have hTpos : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
-  have hX : 0 ≤ detectorX δ T := Real.rpow_nonneg hTpos.le _
-  have hXT : detectorX δ T ≤ T := by
-    simpa only [detectorX, Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT1 (show δ ≤ 1 by linarith)
-  have hY : 1 ≤ detectorY σ T := Real.one_le_rpow hT1 (smoothingExponent_pos hσ).le
-  have hYT : detectorY σ T ≤ T := by
-    simpa only [detectorY, Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT1 (smoothingExponent_lt_one hσ).le
-  have hR : 1 ≤ detectorY σ T*(Real.log T)^2 := by nlinarith
-  have hRT : detectorY σ T*(Real.log T)^2 ≤ T^2 := by
-    calc
-      _ ≤ T*T := mul_le_mul hYT hlogSq (sq_nonneg _) hTpos.le
-      _ = _ := by ring
+/-- Block extraction only uses a lower bound for the detector tail. The
+  smoothing and mollifier lengths need not be coupled to sigma. -/
+theorem large_block_of_tail : ∀ᶠ T : ℝ in atTop, ∀ {ρ : ℂ} {X Y : ℝ},
+    0 ≤ X → X ≤ T → 1 ≤ Y → Y ≤ T → 0 ≤ ρ.re → 1/2 ≤ ‖detectorTail ρ X Y‖ →
+    ∃ j ∈ smoothScaleIndices (Y*(Real.log T)^2), X/2 < (2:ℝ)^j ∧
+      1/(24*Real.log T) ≤ ‖smoothDetectorBlock ρ X Y j‖ := by
+  filter_upwards [eventually_ge_atTop (4:ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 16,
+    log_sq_eventually_le_height] with T hT hlog hsq
+  intro ρ X Y hX hXT hY hYT hβ hdet
+  have hTpos : 0<T := by linarith
+  have hT1 : 1≤T := by linarith
+  have hR : 1 ≤ Y*(Real.log T)^2 := by nlinarith
+  have hRT : Y*(Real.log T)^2 ≤ T^2 := (mul_le_mul hYT hsq (sq_nonneg _) hTpos.le).trans_eq (sq T).symm
   have htail := smoothDetectorBlock_scale_tail_le_two_rpow hT1 hlog hX hXT hY hYT
-    (show 0 ≤ ρ.re by linarith)
+    hβ
   have hsmall : 2*T^(-2 : ℝ) ≤ (1/4 : ℝ) := by
     have he : 2*T^(-2 : ℝ) = 2/T^2 := by
       rw [Real.rpow_neg hTpos.le, Real.rpow_two]
@@ -335,57 +315,20 @@ theorem smoothDetector_eventually_large {σ δ : ℝ}
     apply (div_le_iff₀ (sq_pos_of_pos hTpos)).mpr
     nlinarith
   obtain ⟨j, hj, hscale, hheight⟩ := exists_smoothDetectorBlock
-    (show 0 < detectorY σ T by linarith) (show 0 ≤ ρ.re by linarith) hR
-    (by norm_num : (0 : ℝ) < 1/2) (hdetect ρ hβ hβ' hγ hγ' hzero)
+    (show 0 < Y by linarith) hβ hR
+    (by norm_num : (0 : ℝ) < 1/2) hdet
     (by simpa only [show (1/2 : ℝ)/2 = 1/4 by norm_num] using htail.trans hsmall)
   refine ⟨j, hj, hscale, ?_⟩
   have hcard := smoothScaleIndices_card_le_log hT1 (by linarith) hR hRT
-  have hcpos : (0 : ℝ) < (smoothScaleIndices (detectorY σ T*(Real.log T)^2)).card := by
+  have hcpos : (0 : ℝ) < (smoothScaleIndices (Y*(Real.log T)^2)).card := by
     exact_mod_cast Finset.card_pos.mpr (smoothScaleIndices_nonempty hR)
   calc
     (1/(24*Real.log T) : ℝ) ≤
-        (1/2)/(2*(smoothScaleIndices (detectorY σ T*(Real.log T)^2)).card) := by
+        (1/2)/(2*(smoothScaleIndices (Y*(Real.log T)^2)).card) := by
       apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
       linarith
     _ ≤ _ := hheight
 
-/-- On scales at least two, the removed n=1 term already vanishes in the
-cutoff. Thus the detecting block is exactly the full block used in Mellin
-inversion, with the original coefficients and q=N/Y. -/
-theorem smoothDetectorBlock_eq_smoothMollifierBlock {ρ : ℂ} (X : ℝ) {Y : ℝ} {j : ℤ}
-    (hY : 0 < Y) (hρ : 0 ≤ ρ.re) (hN : 2 ≤ (2 : ℝ)^j) :
-    smoothDetectorBlock ρ X Y j =
-      smoothMollifierBlock smoothDyadicWeight ρ X ((2 : ℝ)^j) ((2 : ℝ)^j/Y) := by
-  let N : ℝ := (2 : ℝ)^j
-  let f : ℕ → ℂ := fun n =>
-    detectorTerm ρ X Y n * (smoothDyadicWeight ((n : ℝ)/N) : ℂ)
-  have hNpos : 0 < N := zpow_pos (by norm_num) _
-  have hfn : Summable (fun n : ℕ => ‖f n‖) := by
-    apply (summable_norm_detectorTerm X hY hρ).of_nonneg_of_le (fun n => norm_nonneg _) (fun n => ?_)
-    dsimp [f]
-    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg (smoothDyadicWeight_bounds _).1]
-    exact mul_le_of_le_one_right (norm_nonneg _) (smoothDyadicWeight_bounds _).2
-  have hf : Summable f := hfn.of_norm
-  have hf0 : f 0 = 0 := by simp [f, detectorTerm, mollifierCoefficient]
-  have hf1 : f 1 = 0 := by
-    have hr : (1 : ℝ)/N ≤ 5/8 := (div_le_iff₀ hNpos).mpr (by dsimp [N]; nlinarith)
-    simp only [f, Nat.cast_one, smoothDyadicWeight_zero_of_le hr, Complex.ofReal_zero, mul_zero]
-  have hprefix : (∑ n ∈ Finset.range 2, f n) = 0 := by
-    simp only [Finset.sum_range_succ, Finset.sum_range_zero, hf0, hf1, add_zero]
-  have hseq : smoothDetectorBlock ρ X Y j = ∑' n : ℕ, f n := by
-    have he := hf.sum_add_tsum_nat_add 2
-    simpa only [hprefix, zero_add, smoothDetectorBlock, smoothDyadicBlock,
-      smoothDyadicTerm, f, N] using he
-  rw [hseq, smoothMollifierBlock]
-  apply tsum_congr
-  intro n
-  rw [LSeries.term_def₀ (mollifierDirichletCoeff_zero X)]
-  dsimp [f, detectorTerm, mollifierDirichletCoeff, dampedCutoff]
-  have he : -((2 : ℝ)^j/Y)*((n : ℝ)/(2 : ℝ)^j) = -(n : ℝ)/Y := by
-    field_simp [hNpos.ne']
-  rw [he, Complex.ofReal_mul]
-  dsimp [N]
-  ring
+
 
 end MathCollab.Density.Stronger

@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairOptimizedSource
 
 @[expose] public section
@@ -66,13 +63,13 @@ theorem isExponentPairEstimateNonAsymptotic_aProcess
   by_cases hab : a ≤ b
   · by_cases hN₂ : 2 ≤ N
     · obtain ⟨L,hL⟩ := Nat.exists_eq_add_of_le hab
-      have hb : b = a+L := hL
+      have hb  := hL
       have hs := hbound F T N a L hN₂ hNT hsetup.scale_le_start
         (by rw [← hb]; exact hsetup.end_le_two_mul_scale) hsetup.isApproximateModelPhase
       rw [← hb] at hs
       change ‖exponentialSumAt F T N a b‖^2 ≤ D*Y^2 at hs
-      have hsq := mul_le_mul_of_nonneg_right hCD (sq_nonneg Y)
-      have hpositive : 0 ≤ C*Y := mul_nonneg (zero_le_one.trans hC) (zero_le_one.trans hY)
+      
+      have hpositive  := mul_nonneg (zero_le_one.trans hC) (zero_le_one.trans hY)
       nlinarith
     · have hc := norm_exponentialSumAt_le_add_one F T N a b
       have hb := hsetup.end_le_two_mul_scale

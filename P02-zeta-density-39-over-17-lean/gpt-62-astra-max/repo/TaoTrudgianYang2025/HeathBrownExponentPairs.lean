@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.HeathBrownPairLocalBound
 public import TaoTrudgianYang2025.HeathBrownPairTriangle
 public import TaoTrudgianYang2025.BetaHalfDuality

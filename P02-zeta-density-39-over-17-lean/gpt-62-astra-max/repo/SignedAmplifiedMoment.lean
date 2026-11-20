@@ -26,12 +26,12 @@ theorem finite_signed_amplified_moment (w : MathCollab.Density.ComparisonCutoff)
   have hδ : 0 < η/3 := by positivity
   obtain ⟨A,D,hA,hD,h⟩ := finite_signed_large_value_comparison w hδ
   let C₀ := (2*A*2^(η/3))^3
-  have hC₀ : 0 < C₀ := by dsimp [C₀]; positivity
+  
   refine ⟨4*C₀*(D^3+2),by positivity,?_⟩
   intro T N L hT hN hNL hLT a ha W V hV hlarge hsep
   have hTp : 0 < T := by linarith
   have hNp : 0 < N := by linarith
-  have hLp : 0 < L := hNp.trans_le hNL
+  have hLp  := hNp.trans_le hNL
   let P := A*(1+L)^(η/3)*(N+1)
   let Z := (Matrix.trace (cutoffCenteredMatrix w.toReflectionCutoff L W^3)).re+
     (Matrix.trace (cutoffContinuousMatrix w.toReflectionCutoff L W*
@@ -39,7 +39,7 @@ theorem finite_signed_amplified_moment (w : MathCollab.Density.ComparisonCutoff)
   have hP : 0 < P := by dsimp [P]; positivity
   have hgate := h N L hNp hNL a ha W V hV hlarge hsep
   change (L/(2*N))*(max (((W.card:ℝ)*V^2)/P-D*L) 0)^3 ≤ Z at hgate
-  have hZ : 0 ≤ Z := le_trans (by positivity) hgate
+  have hZ  := le_trans (by positivity) hgate
   have hmass := spectral_mass_scalar (show 0 ≤ (W.card:ℝ)*V^2 by positivity) hP
     (show 0 ≤ D*L by positivity) (show 0 < L/(2*N) by positivity) hgate
   have hpcube : P^3 ≤ C₀*T^η*N^3 := by
@@ -50,12 +50,7 @@ theorem finite_signed_amplified_moment (w : MathCollab.Density.ComparisonCutoff)
     have hp : P ≤ (2*A*2^(η/3))*T^(η/3)*N := by
       calc
         _ ≤ A*(2^(η/3)*T^(η/3))*(2*N) := by
-          dsimp [P]
-          apply mul_le_mul
-          · exact mul_le_mul_of_nonneg_left hb hA.le
-          · linarith
-          · positivity
-          · positivity
+          bound
         _ = _ := by ring
     have he : (T^(η/3))^3 = T^η := by
       rw [← Real.rpow_natCast (T^(η/3)) 3,← Real.rpow_mul hTp.le]
@@ -76,6 +71,6 @@ theorem finite_signed_amplified_moment (w : MathCollab.Density.ComparisonCutoff)
   calc
     _ = ((W.card:ℝ)*V^2)^3 := by ring
     _ ≤ _ := hfinal
-    _ = (4*C₀*(D^3+2))*T^η*((N*L)^3+(N^4/L)*Z) := by rw [← he]; ring
+    _ = (4*C₀*(D^3+2))*T^η*((N*L)^3+(N^4/L)*Z) := by ring
 
 end Montgomery.RationalMoment

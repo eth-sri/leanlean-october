@@ -23,8 +23,7 @@ theorem finite_time_integral {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
 
 theorem finite_time_fourier (W : Finset ℝ) (ξ : ℝ) :
     measureFourier (finiteTimeMeasure W) ξ =
-      ∑ t ∈ W, GuthMaynard.Improvement.phase (-ξ*t) := by
-  exact finite_time_integral W _
+      ∑ t ∈ W, GuthMaynard.Improvement.phase (-ξ*t) := finite_time_integral W _
 
 def finiteCubic (W : Finset ℝ) (K : ℝ → ℂ) : ℂ :=
   ∑ t ∈ W, ∑ u ∈ W, ∑ v ∈ W, K (t-u)*K (u-v)*K (v-t)

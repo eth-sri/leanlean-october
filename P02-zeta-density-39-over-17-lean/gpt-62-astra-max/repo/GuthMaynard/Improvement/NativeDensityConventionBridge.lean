@@ -1,5 +1,6 @@
 module
-public import GuthMaynard.Improvement.GlobalDensityConditional
+public import MathCollab.Density.ZetaCounting
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.Asymptotics.Basic
 
 @[expose] public section

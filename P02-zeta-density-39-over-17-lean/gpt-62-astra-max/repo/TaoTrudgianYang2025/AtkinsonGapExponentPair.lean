@@ -43,7 +43,6 @@ theorem atkinsonGap_exponentialSum_identity {M t u : ℝ}
       (atkinsonGapFrequency M t u/(2*Real.pi)) M a b =
       ∑ n ∈ Finset.Icc a b,
         unitaryPhase (atkinsonSourcePhase t n-atkinsonSourcePhase u n) := by
-  unfold exponentialSumAt
   exact Finset.sum_congr rfl (fun n _ => atkinsonGap_oscillatory_identity hM hu htu n)
 
 theorem ExponentPair.atkinson_gap_sum_bound {k l ε : ℝ}
@@ -60,7 +59,7 @@ theorem ExponentPair.atkinson_gap_sum_bound {k l ε : ℝ}
   obtain ⟨η,hη,hmodel⟩ := atkinsonNormalizedGapPhase_approximate P hδ
   refine ⟨η,hη,C,hC,?_⟩
   intro M t u a b hM hu htu ht2 hsmall ha hb
-  have hMp : 0 < M := zero_lt_one.trans_le hM
+  have hMp  := zero_lt_one.trans_le hM
   have hf := atkinsonGapFrequency_pos hMp hu htu
   have h := hbound (atkinsonGapFrequency M t u/(2*Real.pi)) M
     (atkinsonNormalizedGapPhase M t u) a b (by positivity) hM ha hb

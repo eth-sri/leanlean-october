@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftJets
 
 @[expose] public section
@@ -35,7 +32,7 @@ theorem modelPhase_jet_difference_error
       σ*(w-v)*iteratedDeriv p (modelPhase (σ+1)) u| ≤
       (δ+σ*modelPhaseJetCoefficient (σ+1) (p+1)*η)*(w-v) := by
   let R := iteratedDeriv p (modelPhase (σ+1)) u
-  let f : ℝ → ℝ := fun x => iteratedDeriv (p+1) F x+σ*x*R
+  let f  := fun x => iteratedDeriv (p+1) F x+σ*x*R
   have hxI {x : ℝ} (hx : x ∈ Icc v w) : x ∈ Ioo (1 : ℝ) 2 :=
     ⟨hv.1.trans_le hx.1,hx.2.trans_lt hw.2⟩
   have hxU {x : ℝ} (hx : x ∈ Icc v w) : |x-u| ≤ η := by

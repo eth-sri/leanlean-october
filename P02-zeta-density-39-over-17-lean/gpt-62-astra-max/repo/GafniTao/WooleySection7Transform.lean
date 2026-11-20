@@ -54,8 +54,7 @@ theorem wooleySection7_column_exponent_add
         (c + gamma * (k + 1) -
           gamma * (wooleySection7Node k r l + 1)) =
       c + gamma * (k + 1) := by
-  have hj : wooleySection7Node k r l + 1 ≤ k + 1 := by
-    exact (wooleySection7Node_succ_le hrk l).trans (Nat.le_succ k)
+  have hj := (wooleySection7Node_succ_le hrk l).trans (Nat.le_succ k)
   have hmul :
       gamma * (wooleySection7Node k r l + 1) ≤
         c + gamma * (k + 1) :=
@@ -75,10 +74,8 @@ theorem wooleySection7TranslatedTop_eq_columnFactor_mul
           k r p c a gamma omega h psi l := by
   let j := wooleySection7Node k r l + 1
   let g := wooleySection7AffineCore p a gamma omega
-  have hjk : j ≤ k := wooleySection7Node_succ_le hrk l
-  have haffine :
-      C ((p : ℤ) ^ gamma) * g = C ((p : ℤ) ^ a) * X + C h := by
-    exact wooleySection7_primePower_mul_affineCore hgamma omega h hsep
+  
+  have haffine := wooleySection7_primePower_mul_affineCore hgamma omega h hsep
   have hhpow : h = (p : ℤ) ^ gamma * omega := by
     rw [hsep, mul_comm]
   have hexp :
@@ -167,8 +164,8 @@ theorem wooleySection7ColumnNormalizedPolynomial_coeff
           (p : ℚ) ^ (a * d) := by
     rw [← htop]
     exact_mod_cast hfactor'
-  have hpq : (p : ℚ) ≠ 0 := by exact_mod_cast hp
-  have homegaq : (omega : ℚ) ≠ 0 := by exact_mod_cast homega
+  
+  
   have hhq : (h : ℚ) ≠ 0 := by exact_mod_cast hh
   have hhqeq : (h : ℚ) = (omega : ℚ) * (p : ℚ) ^ gamma := by
     exact_mod_cast hsep
@@ -223,14 +220,13 @@ theorem wooleySection7ColumnNormalizedPolynomial_high_coeff_dvd
       (wooleySection7ColumnNormalizedPolynomial
         k r p c a gamma omega h psi l).coeff n := by
   let j := wooleySection7Node k r l + 1
-  have hjk : j ≤ k := wooleySection7Node_succ_le hrk l
+  have hjk  := wooleySection7Node_succ_le hrk l
   have hcol : gamma * j ≤ a * (r + 1) := by
     calc
       gamma * j ≤ gamma * k := Nat.mul_le_mul_left gamma hjk
       _ ≤ a := hgammaK
-      _ ≤ a * (r + 1) := by
-        exact Nat.le_mul_of_pos_right a (Nat.zero_lt_succ r)
-  have hnpos : 0 < n := (Nat.zero_lt_succ r).trans_le hn
+      _ ≤ a * (r + 1) := Nat.le_mul_of_pos_right a (Nat.zero_lt_succ r)
+  have hnpos  := (Nat.zero_lt_succ r).trans_le hn
   obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hnpos.ne'
   have hfactor := congrArg (fun f : Polynomial ℤ => f.coeff (m + 1))
     (wooleySection7TranslatedTop_eq_columnFactor_mul
@@ -244,7 +240,7 @@ theorem wooleySection7ColumnNormalizedPolynomial_high_coeff_dvd
           (wooleySection7TopSystem k r p c psi l)).coeff (m + 1) := by
     simpa only [coeff_C_mul] using hfactor.symm
   rw [wooleySection7TranslatedDilatedPolynomial_coeff_succ] at hfactor'
-  have hdegree : a * (r + 1) ≤ a * (m + 1) :=
+  have hdegree  :=
     Nat.mul_le_mul_left a hn
   have htailDiv :
       (p : ℤ) ^ (a * (r + 1)) ∣
@@ -252,8 +248,7 @@ theorem wooleySection7ColumnNormalizedPolynomial_high_coeff_dvd
           (p : ℤ) ^ (a * (m + 1)) := by
     exact dvd_mul_of_dvd_right (pow_dvd_pow (p : ℤ) hdegree) _
   rw [← hfactor'] at htailDiv
-  have hexp :
-      gamma * j + (a * (r + 1) - gamma * j) = a * (r + 1) :=
+  have hexp  :=
     Nat.add_sub_of_le hcol
   rw [← hexp, pow_add, Int.mul_dvd_mul_iff_left
     (pow_ne_zero _ (by exact_mod_cast hp))] at htailDiv
@@ -269,7 +264,7 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalarTail
     ∃ Xi : Polynomial ℤ,
       f = (∑ i : Fin r, C (f.coeff ((i : ℕ) + 1)) *
               X ^ ((i : ℕ) + 1)) + C z * Xi := by
-  let low : Polynomial ℤ :=
+  let low  :=
     ∑ i : Fin r, C (f.coeff ((i : ℕ) + 1)) * X ^ ((i : ℕ) + 1)
   have hlowCoeff (n : ℕ) :
       low.coeff n =
@@ -287,7 +282,7 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalarTail
       rw [hlowCoeff]
       simp [hzero]
     by_cases hnr : n ≤ r
-    · have hnpos : 0 < n := Nat.pos_of_ne_zero hn0
+    · have hnpos  := Nat.pos_of_ne_zero hn0
       let i : Fin r := ⟨n - 1, by omega⟩
       have hi : (i : ℕ) + 1 = n := by
         dsimp [i]
@@ -297,17 +292,11 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalarTail
         simp only [coeff_C_mul, coeff_X_pow]
         rw [Finset.sum_eq_single i]
         · simp [hi]
-        · intro b hb hbi
-          have hne : (b : ℕ) + 1 ≠ n := by
-            intro heq
-            apply hbi
-            apply Fin.ext
-            omega
-          simp [Ne.symm hne]
+        · grind
         · simp
       rw [hsum, sub_self]
       exact dvd_zero z
-    · have hlt : r < n := Nat.lt_of_not_ge hnr
+    · have hlt  := Nat.lt_of_not_ge hnr
       have hsum : low.coeff n = 0 := by
         rw [hlowCoeff]
         simp only [coeff_C_mul, coeff_X_pow]
@@ -424,7 +413,6 @@ theorem wooleySection7_inverse_combination_low_coefficient
       (d := (d : ℕ) + 1)
       (j := wooleySection7Node k r l + 1)
       hInv (by
-        dsimp only [Omega]
         simpa only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
           mul_assoc] using hcoeffMod)
     simpa only [mul_assoc] using ht
@@ -521,7 +509,6 @@ theorem wooleySection7TransformedPolynomial_coeff_zero
   simp only [lcoeff_apply]
   apply Finset.sum_eq_zero
   intro l hl
-  simp only [coeff_C_mul]
   simp [wooleySection7ColumnNormalizedPolynomial_coeff_zero
     hp hrk hgamma omega h hsep psi l]
 
@@ -543,7 +530,7 @@ theorem wooleySection7TransformedPolynomial_high_coeff_dvd
   apply dvd_sum
   intro l hl
   simp only [coeff_C_mul]
-  have hjk : wooleySection7Node k r l + 1 ≤ k :=
+  have hjk  :=
     wooleySection7Node_succ_le hrk l
   have hle :
       a * (r + 1) - gamma * k ≤
@@ -569,10 +556,8 @@ theorem wooleySection7TransformedPolynomial_exists_commonTail
               ((d : ℕ) + 1)) * X ^ ((d : ℕ) + 1)) +
           C ((p : ℤ) ^ (a * (r + 1) - gamma * k)) * Theta := by
   apply wooleyPolynomial_exists_positiveLow_add_scalarTail
-  · exact wooleySection7TransformedPolynomial_coeff_zero
-      hp hrk hgamma omega h omegaInv hsep psi G i
-  · exact wooleySection7TransformedPolynomial_high_coeff_dvd
-      hp hrk hgamma hgammaK omega h omegaInv hsep psi G i
+  · apply wooleySection7TransformedPolynomial_coeff_zero <;> assumption
+  · apply wooleySection7TransformedPolynomial_high_coeff_dvd <;> assumption
 
 /-- The positive-degree truncation used to separate the modular inverse
 errors from the genuinely high-degree tail. -/
@@ -677,7 +662,7 @@ theorem wooleySection7TransformedLow_exists_modulus_error
           C ((p : ℤ) ^ L) * Error := by
   let low := wooleySection7TransformedLow
     k r p c a gamma L omega h omegaInv psi G i
-  let mono : Polynomial ℤ :=
+  let mono  :=
     C ((p : ℤ) ^ ((a - gamma) * ((i : ℕ) + 1))) *
       X ^ ((i : ℕ) + 1)
   have hmapLow := wooleySection7TransformedLow_map_eq_monomial
@@ -714,22 +699,21 @@ theorem wooleySection7_tail_exponent_eq
       (a - gamma) * ((i : ℕ) + 1) +
         (a - (k - r) * gamma) +
         (r - ((i : ℕ) + 1)) * (a - gamma) := by
-  have hi : (i : ℕ) + 1 ≤ r := i.isLt
-  have hkr : k - r + r = k := Nat.sub_add_cancel hrk
+  have hi  := i.isLt
+  have hkr  := Nat.sub_add_cancel hrk
   have hkgamma : (k - r) * gamma ≤ a := by
     have : (k - r) * gamma ≤ k * gamma :=
       Nat.mul_le_mul_right gamma (Nat.sub_le k r)
-    exact this.trans (by simpa [Nat.mul_comm] using hgammaK)
-  have hA : gamma + (a - gamma) = a := Nat.add_sub_of_le hgamma
-  have hS : (k - r) * gamma + (a - (k - r) * gamma) = a :=
+    exact this.trans (by linarith)
+  have hA  := Nat.add_sub_of_le hgamma
+  have hS  :=
     Nat.add_sub_of_le hkgamma
   have hS' : gamma * (k - r) + (a - (k - r) * gamma) = a := by
     simpa [Nat.mul_comm] using hS
   have hD : gamma * k + (a * (r + 1) - gamma * k) = a * (r + 1) := by
     apply Nat.add_sub_of_le
     exact hgammaK.trans (by
-      have hrPos : 1 ≤ r + 1 := Nat.succ_le_succ (Nat.zero_le r)
-      simpa only [Nat.mul_one] using Nat.mul_le_mul_left a hrPos)
+      bound)
   have hsplitK : gamma * k = gamma * (k - r) + gamma * r := by
     calc
       gamma * k = gamma * ((k - r) + r) := by rw [hkr]
@@ -747,33 +731,11 @@ theorem wooleySection7_tail_exponent_eq
       _ = (a - gamma) * ((i : ℕ) + 1) +
           (a - gamma) * (r - ((i : ℕ) + 1)) := by
             rw [Nat.mul_add]
-      _ = _ := by rw [Nat.mul_comm (a - gamma)
-        (r - ((i : ℕ) + 1))]
-  have hAR : a * (r + 1) = a * r + a := by ring
+      _ = _ := by ring
+  
   have hpair : gamma * r + (a - gamma) * r = a * r := by
     rw [← Nat.add_mul, hA]
-  have htotal :
-      gamma * k +
-          ((a - gamma) * ((i : ℕ) + 1) +
-            (a - (k - r) * gamma) +
-            (r - ((i : ℕ) + 1)) * (a - gamma)) =
-        a * (r + 1) := by
-    calc
-      gamma * k +
-          ((a - gamma) * ((i : ℕ) + 1) +
-            (a - (k - r) * gamma) +
-            (r - ((i : ℕ) + 1)) * (a - gamma)) =
-        (gamma * (k - r) + (a - (k - r) * gamma)) +
-          (gamma * r +
-            ((a - gamma) * ((i : ℕ) + 1) +
-              (r - ((i : ℕ) + 1)) * (a - gamma))) := by
-          rw [hsplitK]
-          ring
-      _ = a + (gamma * r + (a - gamma) * r) := by
-        rw [hsplitR, hS']
-      _ = a + a * r := by rw [hpair]
-      _ = a * (r + 1) := by ring
-  exact Nat.add_left_cancel (hD.trans htotal.symm)
+  grind
 
 /-- The transformed row is a row factor times a genuinely spaced lower
 equation, up to the explicit `p^L` error caused by choosing integral lifts of

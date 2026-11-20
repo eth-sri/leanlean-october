@@ -33,7 +33,6 @@ theorem summable_heathBrownSmoothedDivisorMajorant :
 
 theorem heathBrownSmoothedDivisorMajorant_nonneg :
     0 ≤ heathBrownSmoothedDivisorMajorant := by
-  unfold heathBrownSmoothedDivisorMajorant
   exact tsum_nonneg fun n => mul_nonneg (Nat.cast_nonneg' n) (Real.exp_pos _).le
 
 theorem norm_heathBrownSmoothedDivisorTerm_le
@@ -43,7 +42,7 @@ theorem norm_heathBrownSmoothedDivisorTerm_le
   by_cases hn : n = 0
   · subst n
     simp [heathBrownSmoothedDivisorTerm]
-  · have hnNatPos : 0 < n := Nat.pos_of_ne_zero hn
+  · have hnNatPos  := Nat.pos_of_ne_zero hn
     have hnPos : (0 : ℝ) < n := by exact_mod_cast hnNatPos
     have hnOne : (1 : ℝ) ≤ n := by exact_mod_cast hnNatPos
     have hCard : (n.divisors.card : ℝ) ≤ n := by
@@ -58,8 +57,7 @@ theorem norm_heathBrownSmoothedDivisorTerm_le
     rw [ite_eq_right hn, norm_mul, norm_mul, Complex.norm_natCast, hPow]
     simp only [Complex.norm_real, Real.norm_eq_abs,
       abs_of_pos (Real.exp_pos _)]
-    have hCardNonneg : 0 ≤ (n.divisors.card : ℝ) := by positivity
-    have hExpNonneg : 0 ≤ Real.exp (-(n : ℝ)) := (Real.exp_pos _).le
+    
     calc
       (n.divisors.card : ℝ) * (n : ℝ) ^ (-s.re) *
           Real.exp (-(n : ℝ)) ≤
@@ -77,7 +75,6 @@ theorem norm_heathBrownSmoothedDivisorSeries_le
     {s : ℂ} (hs : 0 ≤ s.re) :
     ‖heathBrownSmoothedDivisorSeries s‖ ≤
       heathBrownSmoothedDivisorMajorant := by
-  unfold heathBrownSmoothedDivisorSeries heathBrownSmoothedDivisorMajorant
   calc
     ‖∑' n : ℕ, heathBrownSmoothedDivisorTerm s n‖ ≤
         ∑' n : ℕ, ‖heathBrownSmoothedDivisorTerm s n‖ :=
@@ -107,7 +104,7 @@ theorem exists_norm_Gamma_heathBrown_movingPole_le :
   obtain ⟨B, hB, hStrip⟩ :=
     exists_norm_Gamma_heathBrown_residue_strip_le
   let C : ℝ := 4 * B
-  refine ⟨C, by dsimp only [C]; positivity, ?_⟩
+  refine ⟨C, by positivity, ?_⟩
   intro delta v hdelta hdeltaUpper
   let p : ℂ := ((1 / 2 - delta : ℝ) : ℂ) + (v : ℂ) * I
   have hpRe : p.re = 1 / 2 - delta := by simp [p]
@@ -143,7 +140,7 @@ theorem exists_norm_Gamma_heathBrown_movingPole_le :
 theorem norm_digamma_small_strip_le_linear {z : ℂ}
     (hz : 0 < z.re) (hz' : z.re ≤ 1 / 2) (hy : 1 ≤ |z.im|) :
     ‖Complex.digamma z‖ ≤ |z.im| + 8 := by
-  have hn : 1 ≤ ‖z‖ := hy.trans (Complex.abs_im_le_norm z)
+  have hn  := hy.trans (Complex.abs_im_le_norm z)
   have hlog : Real.log ‖z‖ ≤ |z.im| := by
     have h := Real.log_le_sub_one_of_pos (by linarith : 0 < ‖z‖)
     have hnorm := Complex.norm_le_abs_re_add_abs_im z
@@ -161,7 +158,7 @@ theorem norm_digamma_small_strip_le_linear {z : ℂ}
   have he : 4 / |z.im| ≤ (4 : ℝ) :=
     (div_le_iff₀ (zero_lt_one.trans_le hy)).2 (by linarith)
   calc
-    _ = ‖(Complex.digamma z - Complex.log z) + Complex.log z‖ := by rw [sub_add_cancel]
+    _ = ‖(Complex.digamma z - Complex.log z) + Complex.log z‖ := by simp
     _ ≤ ‖Complex.digamma z - Complex.log z‖ + ‖Complex.log z‖ := norm_add_le _ _
     _ ≤ |z.im| + 8 := by linarith
 
@@ -174,7 +171,7 @@ theorem exists_norm_heathBrownMovingPoleResidue_le :
   obtain ⟨B, hB, hGamma⟩ := exists_norm_Gamma_heathBrown_movingPole_le
   let R : ℝ := ‖deriv riemannZetaPoleRemoved 0‖
   let C : ℝ := B * (10 + 2 * R)
-  refine ⟨C, by dsimp [C, R]; positivity, ?_⟩
+  refine ⟨C, by positivity, ?_⟩
   intro delta t hdelta hdeltaUpper ht
   let s : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
   let p : ℂ := heathBrownMovingPole s
@@ -190,7 +187,7 @@ theorem exists_norm_heathBrownMovingPoleResidue_le :
       hGamma delta (-t) hdelta hdeltaUpper
   have hDigammaP : ‖Complex.digamma p‖ ≤ t + 8 := by
     simpa only [hpIm] using norm_digamma_small_strip_le_linear hpPos
-      (by rw [hpRe]; linarith) (by rw [hpIm]; linarith)
+      (by linarith) (by linarith)
   have hExp : Real.exp (-t) ≤ 1 := Real.exp_le_one_iff.mpr (by linarith)
   have hTExp : t * Real.exp (-t) ≤ 1 := by
     have h := Real.mul_exp_neg_le_exp_neg_one t
@@ -209,10 +206,8 @@ theorem exists_norm_heathBrownMovingPoleResidue_le :
       gcongr
     _ = B * (t * Real.exp (-t) + 8 * Real.exp (-t) + 2 * R * Real.exp (-t)) := by ring
     _ ≤ B * (1 + 8 + 2 * R * 1) := by
-      have hR : 0 ≤ R := norm_nonneg _
-      apply mul_le_mul_of_nonneg_left _ hB.le
-      nlinarith [mul_le_mul_of_nonneg_left hExp (by positivity : 0 ≤ 2 * R)]
-    _ ≤ C := by dsimp only [C]; nlinarith
+      bound
+    _ ≤ C := by linarith
 
 
 end MathCollab.Density.Stronger.PointMean

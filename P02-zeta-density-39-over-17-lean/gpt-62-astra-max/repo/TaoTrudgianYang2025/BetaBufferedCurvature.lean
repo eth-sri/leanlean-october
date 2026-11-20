@@ -1,8 +1,6 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.PhaseWeightedCurvature
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
-public import TaoTrudgianYang2025.BetaStationaryPoint
 
 @[expose] public section
 
@@ -30,7 +28,7 @@ theorem norm_modelPhaseBufferedNormalizedMode_curvature
     ‖modelPhaseNormalizedMode (modelPhaseBufferedCutoff l r η) F T q‖ ≤
       4*(2/Real.pi+2)/Real.sqrt (T*modelPhaseCurvatureLower σ) := by
   by_cases hab : l+η ≤ r-η
-  · let φ : ℝ → ℝ := modelPhaseFrequencyPhase F T 1 q
+  · let φ  := modelPhaseFrequencyPhase F T 1 q
     have hφ : ∀ u ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ 2 φ u := by
       intro u hu
       have hc := (approximateModelPhase_contDiffAt hF hu).of_le
@@ -102,6 +100,6 @@ theorem modelPhaseBufferedFourierMode_uniform_curvature {σ : ℝ} (hσ : 0 < σ
   have h := norm_modelPhaseBufferedFourierMode_curvature
     (q := q) hσ hδ hF hT hN hη hl hr
   rw [Real.sqrt_mul hT.le] at h
-  exact h.trans_eq (by dsimp [C]; ring)
+  exact h.trans_eq (by ring)
 
 end TaoTrudgianYang2025

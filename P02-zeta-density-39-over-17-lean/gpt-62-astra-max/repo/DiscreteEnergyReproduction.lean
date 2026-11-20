@@ -49,9 +49,7 @@ theorem energy_nearby_card_le (W : Finset ℝ)
   have hh := separated_interval_card (T := 2) (t₀ := s-1) (by norm_num)
     (W.filter (fun t => |s-t| ≤ 1))
     (by
-      intro t ht
-      have hp := abs_le.mp (mem_filter.mp ht).2
-      constructor <;> linarith)
+      grind)
     (by
       intro t ht u hu hne
       exact hsep t (mem_filter.mp ht).1 u (mem_filter.mp hu).1 hne)
@@ -146,7 +144,7 @@ theorem energy_triple_fourier (W : Finset ℝ) (ξ : ℝ) :
       ((∑ t ∈ W, GuthMaynard.Improvement.phase (-ξ*t))^2 *
         star (∑ t ∈ W, GuthMaynard.Improvement.phase (-ξ*t))) *
         𝓕 (fun t => (energyReproducingWeight t:ℂ)) ξ := by
-  let κ : ℝ → ℂ := fun t => (energyReproducingWeight t:ℂ)
+  let κ  := fun t => (energyReproducingWeight t:ℂ)
   have hi (s : ℝ) : Integrable (fun t => GuthMaynard.Improvement.phase (-ξ*t)*κ (t-s)) :=
     GuthMaynard.Improvement.integrable_phase_mul (energy_weight_integrable.ofReal.comp_sub_right s) ξ
   have ht (s : ℝ) : (∫ t, GuthMaynard.Improvement.phase (-ξ*t)*κ (t-s)) =
@@ -156,9 +154,7 @@ theorem energy_triple_fourier (W : Finset ℝ) (ξ : ℝ) :
     · apply integral_congr_ae
       filter_upwards with t
       ring
-    · simp only [neg_neg]
-      congr 1
-      ring
+    · ring
   have hp (a b c : ℝ) : GuthMaynard.Improvement.phase (-ξ*(a+b-c)) =
       GuthMaynard.Improvement.phase (-ξ*a)*GuthMaynard.Improvement.phase (-ξ*b)*
         star (GuthMaynard.Improvement.phase (-ξ*c)) := by

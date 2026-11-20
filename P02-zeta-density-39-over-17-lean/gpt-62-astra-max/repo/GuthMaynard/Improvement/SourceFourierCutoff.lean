@@ -19,7 +19,7 @@ def sourceFourierSignal (μ : ℝ → ℝ) (Λ : ℝ) : ℝ → ℂ := 𝓕⁻ (
 
 theorem sourceFourierSet_measurable {μ : ℝ → ℝ} (h1 : Integrable μ) (Λ : ℝ) :
     MeasurableSet (sourceFourierSet μ Λ) := by
-  have hc : Continuous (𝓕 (fun t => (μ t:ℂ))) := VectorFourier.fourierIntegral_continuous
+  have hc  := VectorFourier.fourierIntegral_continuous
     Real.continuous_fourierChar (innerSL ℝ).continuous₂ (Complex.ofRealCLM.integrable_comp h1)
   exact measurableSet_lt measurable_const hc.measurable.norm
 
@@ -35,9 +35,9 @@ theorem sourceFourierCut_integrability {μ : ℝ → ℝ} (h1 : Integrable μ)
     Integrable (sourceFourierCut μ Λ) ∧ MemLp (sourceFourierCut μ Λ) 2 ∧
       (∫ ξ, ‖sourceFourierCut μ Λ ξ‖) ≤ sourceFourierMass μ Λ/Λ := by
   have hA := sourceFourierSet_measurable h1 Λ
-  have hc : Continuous (𝓕 (fun t => (μ t:ℂ))) := VectorFourier.fourierIntegral_continuous
+  have hc  := VectorFourier.fourierIntegral_continuous
     Real.continuous_fourierChar (innerSL ℝ).continuous₂ (Complex.ofRealCLM.integrable_comp h1)
-  have hm : Measurable (sourceFourierCut μ Λ) := hc.measurable.indicator hA
+  have hm  := hc.measurable.indicator hA
   have hi2 : Integrable (fun ξ => ‖sourceFourierCut μ Λ ξ‖^2) := by
     rw [sourceFourierCut_square]
     exact (ordinary_real_fourier_square_integrable h1 h2).indicator hA
@@ -68,7 +68,7 @@ theorem ordinary_inverse_fourier_l2 {f : ℝ → ℂ} (h1 : Integrable f) (h2 : 
   have hn2i : Integrable (fun x => ‖f (-x)‖^2) := by
     have hi := (memLp_two_iff_integrable_sq_norm h2.aestronglyMeasurable).mp h2
     simpa using (integrable_comp_mul_left_iff _ (by norm_num : (-1:ℝ) ≠ 0)).mpr hi
-  have hn2 : MemLp (fun x => f (-x)) 2 := (memLp_two_iff_integrable_sq_norm hn1.aestronglyMeasurable).mpr hn2i
+  have hn2  := (memLp_two_iff_integrable_sq_norm hn1.aestronglyMeasurable).mpr hn2i
   rw [Real.fourierInv_eq_fourier_comp_neg]
   refine ⟨ordinary_fourier_memLp hn1 hn2,?_⟩
   rw [ordinary_fourier_integral_sq hn1 hn2]

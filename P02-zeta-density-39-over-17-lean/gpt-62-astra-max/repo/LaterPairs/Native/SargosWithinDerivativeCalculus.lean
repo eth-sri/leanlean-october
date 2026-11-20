@@ -1,11 +1,5 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
-public import LaterPairs.Native.SargosDualTentWindow
-public import LaterPairs.Native.SargosInitialInterval
 public import LaterPairs.Native.SargosLocalAffineJets
-public import LaterPairs.Native.SargosSourceDifferencing
 
 @[expose] public section
 set_option autoImplicit false

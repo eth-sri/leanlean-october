@@ -28,7 +28,7 @@ theorem operator_source_mixed (w : MathCollab.Density.ReflectionCutoff)
   obtain ⟨R,hR,hrow⟩ := centered_source_row w hε hA hp
   refine ⟨D*R,mul_pos hD hR,?_⟩
   intro N L T t₀ hN hNL hT hupper a μ ha hm hi h2 h0 hs hμ
-  let _ : IsFiniteMeasure (timeMeasure μ) := timeMeasure_finite hi
+  let _  := timeMeasure_finite hi
   dsimp only
   intro ι _ b
   have hL : 1 ≤ L := by linarith

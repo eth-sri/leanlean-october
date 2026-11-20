@@ -30,8 +30,7 @@ def fordTentCircle (w : ℝ) : C(UnitAddCircle, ℂ) where
 
 @[simp]
 theorem fordTentCircle_coe (x w : ℝ) :
-    fordTentCircle w (x : UnitAddCircle) = (fordTent x w : ℂ) := by
-  rfl
+    fordTentCircle w (x : UnitAddCircle) = (fordTent x w : ℂ) := rfl
 
 /-- The exact Fourier coefficient occurring in Ford's tent expansion. -/
 def fordTentFourierCoefficient (w : ℝ) (n : ℤ) : ℂ :=
@@ -48,7 +47,7 @@ theorem fordTentFourierCoefficient_of_ne_zero
       (((Real.sin (Real.pi * (n : ℝ) * w)) ^ 2 /
         (Real.pi ^ 2 * w * (n : ℝ) ^ 2) : ℝ) : ℂ) := by
   have hnR : (n : ℝ) ≠ 0 := by exact_mod_cast hn
-  have harg : Real.pi * (n : ℝ) * w ≠ 0 :=
+  have harg  :=
     mul_ne_zero (mul_ne_zero Real.pi_ne_zero hnR) hw
   simp only [fordTentFourierCoefficient, Real.sinc_of_ne_zero harg]
   norm_cast
@@ -59,10 +58,8 @@ theorem fordTentFourierCoefficient_of_ne_zero
 theorem summable_fordTentFourierCoefficient {w : ℝ} (hw : 0 < w) :
     Summable (fordTentFourierCoefficient w) := by
   let C : ℝ := 1 / (Real.pi ^ 2 * w)
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    positivity
-  have hmajor : Summable (fun n : ℤ => C * (1 / (n : ℝ) ^ 2)) :=
+  
+  have hmajor  :=
     (Real.summable_one_div_int_pow.mpr (by norm_num : 1 < 2)).mul_left C
   refine hmajor.of_norm_bounded_eventually ?_
   filter_upwards [Filter.eventually_cofinite_ne (0 : ℤ)] with n hn
@@ -93,7 +90,7 @@ theorem ford_integral_linear_tent_cos
     {w a : ℝ} (hw : w ≠ 0) (ha : a ≠ 0) :
     (∫ x in (0 : ℝ)..w, (1 - x / w) * Real.cos (a * x)) =
       (1 - Real.cos (a * w)) / (w * a ^ 2) := by
-  let F : ℝ → ℝ := fun x =>
+  let F  := fun x =>
     (1 - x / w) * Real.sin (a * x) / a -
       Real.cos (a * x) / (w * a ^ 2)
   have hF : ∀ x : ℝ,
@@ -114,8 +111,7 @@ theorem ford_integral_linear_tent_cos
     convert ((hlin.mul hsin).div_const a).sub
       (hcos.div_const (w * a ^ 2)) using 1
     all_goals
-      field_simp [hw, ha]
-      ring
+      field_simp <;> ring
   rw [intervalIntegral.integral_deriv_eq_sub' F
     (funext fun x => (hF x).deriv) (fun x _ => (hF x).differentiableAt)]
   · dsimp [F]
@@ -150,7 +146,7 @@ theorem ford_integral_symmetric_tent_character
           fordAdditiveCharacter (-((n : ℝ) * x))) =
       ((2 * ∫ x in (0 : ℝ)..w,
           (1 - x / w) * Real.cos (2 * Real.pi * (n : ℝ) * x) : ℝ) : ℂ) := by
-  let f : ℝ → ℂ := fun x =>
+  let f  := fun x =>
     ((1 - |x| / w : ℝ) : ℂ) * fordAdditiveCharacter (-((n : ℝ) * x))
   have hchar : Continuous fordAdditiveCharacter := by
     unfold fordAdditiveCharacter
@@ -193,7 +189,7 @@ theorem ford_integral_symmetric_tent_character
       intervalIntegral.integral_ofReal
     _ = ((2 * ∫ x in (0 : ℝ)..w,
           (1 - x / w) * Real.cos (2 * Real.pi * (n : ℝ) * x) : ℝ) : ℂ) := by
-      rw [intervalIntegral.integral_const_mul]
+      simp
 
 /-- The exact compactly supported Fourier transform of the tent, with the
 removable zero frequency included. -/
@@ -252,10 +248,8 @@ private theorem support_fordTentCharacterIntegrand_subset
     {w : ℝ} (hw : 0 < w) (n : ℤ) :
     Function.support (fordTentCharacterIntegrand w n) ⊆ Set.Ioc (-w) w := by
   intro x hx
-  have hmul :
-      ((max 0 (1 - |x| / w) : ℝ) : ℂ) *
-          fordAdditiveCharacter (-((n : ℝ) * x)) ≠ 0 := hx
-  have htentC : ((max 0 (1 - |x| / w) : ℝ) : ℂ) ≠ 0 :=
+  have hmul  := hx
+  have htentC  :=
     (mul_ne_zero_iff.mp hmul).1
   have htent : max 0 (1 - |x| / w) ≠ 0 := by exact_mod_cast htentC
   have hlinear : 0 < 1 - |x| / w := by
@@ -264,7 +258,7 @@ private theorem support_fordTentCharacterIntegrand_subset
     apply htent
     exact max_eq_left hle
   have habsdiv : |x| / w < 1 := by linarith
-  have habs : |x| < w := (div_lt_one hw).mp habsdiv
+  have habs  := (div_lt_one hw).mp habsdiv
   exact ⟨(abs_lt.mp habs).1, (abs_lt.mp habs).2.le⟩
 
 private theorem ford_fourier_coe_eq_character (n : ℤ) (x : ℝ) :
@@ -305,11 +299,9 @@ theorem fourierCoeff_fordTentCircle
       intro x hx
       have hxabs : |x| ≤ (1 : ℝ) / 2 := by
         rcases Set.mem_uIcc.mp hx with h | h
-        · apply abs_le.mpr
-          constructor <;> linarith
-        · exfalso
-          linarith
-      have hnorm : ‖(x : UnitAddCircle)‖ = |x| :=
+        · grind
+        · linarith
+      have hnorm  :=
         (AddCircle.norm_coe_eq_abs_iff (p := (1 : ℝ))
           (by norm_num : (1 : ℝ) ≠ 0)).2 (by simpa using hxabs)
       simp only [fordTentCircle_coe]
@@ -354,7 +346,7 @@ theorem hasSum_fordTentFourierSeries
     congr 2
     push_cast
     ring
-  · exact (fordTentCircle_coe y w).symm
+  · rfl
 
 end
 

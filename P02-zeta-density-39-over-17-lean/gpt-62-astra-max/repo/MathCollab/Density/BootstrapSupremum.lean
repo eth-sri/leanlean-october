@@ -21,7 +21,7 @@ theorem crude_kernel_bound (w : ReflectionCutoff) {B : ℝ} (hB : 0 < B) :
   obtain ⟨C₁, hC₁, hI⟩ := cutoffIntegral_quadratic_decay w
   refine ⟨(⌈5*B⌉₊+1 : ℕ)*C₀+B*C₁, by positivity, ?_⟩
   intro L hL hLB v
-  have hIv : ‖cutoffIntegral w v‖ ≤ C₁ := (hI v).trans
+  have hIv  := (hI v).trans
     (div_le_self hC₁ (by nlinarith [abs_nonneg v]))
   have he : hKernel w L v =
       (∑ n ∈ Finset.range (⌈5*L⌉₊+1), (w ((n : ℝ)/L) : ℂ)*dirichletPhase ((n : ℝ)/L) v) -
@@ -67,10 +67,10 @@ theorem bootstrapValues_bddAbove (w : ReflectionCutoff) {κ : ℝ} (d : LargeVal
   refine ⟨(d.W.card : ℝ)^2*K^2, ?_⟩
   rintro x ⟨U, hU, L, hL, rfl⟩
   have hN : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
-  have hLp : 0 < L := hN.trans_le hL.1
+  have hLp  := hN.trans_le hL.1
   have hn := d.normalization_lower hU hL.1
   have hN1 : (1 : ℝ) ≤ d.N := by exact_mod_cast d.N_pos
-  have hden : 1 ≤ bootstrapScalar d.T d.N d.V * U.card * (L^2+(d.N : ℝ)*localDiameter U) := hN1.trans hn
+  have hden  := hN1.trans hn
   have hc : (U.card : ℝ) ≤ d.W.card := by
     exact_mod_cast Finset.card_le_card (mem_bootstrapFamily.mp hU).1
   calc
@@ -93,7 +93,7 @@ theorem bootstrapBound_nonneg (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueD
   obtain ⟨U, hU, L, hL, rfl⟩ := hx
   have hn := d.normalization_lower hU hL.1
   exact (div_nonneg (kernelEnergy_nonneg w L U)
-    ((by exact_mod_cast d.N_pos.le : (0 : ℝ) ≤ d.N).trans hn)).trans hle
+    ((by positivity : (0 : ℝ) ≤ d.N).trans hn)).trans hle
 
 /-- The finite supremum bounds each descendant without assuming a kernel estimate. -/
 theorem kernelEnergy_le_bootstrapBound (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueData κ)
@@ -101,7 +101,7 @@ theorem kernelEnergy_le_bootstrapBound (w : ReflectionCutoff) {κ : ℝ} (d : La
     (hL : L ∈ Icc (d.N : ℝ) (8*(d.T+1))) :
     kernelEnergy w L U ≤ bootstrapBound w d * bootstrapScalar d.T d.N d.V * U.card *
       (L^2+(d.N : ℝ)*localDiameter U) := by
-  have hpos : 0 < bootstrapScalar d.T d.N d.V * U.card * (L^2+(d.N : ℝ)*localDiameter U) :=
+  have hpos  :=
     (by exact_mod_cast d.N_pos : (0 : ℝ) < d.N).trans_le (d.normalization_lower hU hL.1)
   have hh := le_csSup (bootstrapValues_bddAbove w d) (show
       kernelEnergy w L U /

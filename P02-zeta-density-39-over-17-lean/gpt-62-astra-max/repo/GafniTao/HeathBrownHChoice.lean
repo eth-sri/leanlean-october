@@ -27,15 +27,13 @@ theorem heathBrownHChoice_rpow_one_le
   apply Real.one_le_rpow_of_pos_of_le_one_of_nonpos
   · positivity
   · linarith
-  · have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
-    exact neg_nonpos.mpr (by positivity)
+  · exact neg_nonpos.mpr (by positivity)
 
 theorem heathBrownHChoice_pos
     {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     0 < heathBrownHChoice k A lambda := by
-  unfold heathBrownHChoice
   exact Nat.floor_pos.mpr
     (heathBrownHChoice_rpow_one_le hk hA hlambda hsmall)
 
@@ -44,7 +42,6 @@ theorem heathBrownHChoice_cast_le_rpow
     (hA : 0 < A) (hlambda : 0 < lambda) :
     (heathBrownHChoice k A lambda : ℝ) ≤
       (A * lambda) ^ (-(1 / (k : ℝ))) := by
-  unfold heathBrownHChoice
   exact Nat.floor_le (Real.rpow_nonneg (mul_pos hA hlambda).le _)
 
 theorem heathBrownHChoice_rpow_lt_cast_add_one
@@ -73,7 +70,7 @@ theorem heathBrownHChoice_rpow_pow_k
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
     ((A * lambda) ^ (-(1 / (k : ℝ)))) ^ k =
       (A * lambda)⁻¹ := by
-  have hp : 0 < A * lambda := mul_pos hA hlambda
+  have hp  := mul_pos hA hlambda
   have hkReal : (k : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hk)
   rw [← Real.rpow_natCast, ← Real.rpow_mul hp.le]
   rw [show -(1 / (k : ℝ)) * k = (-1 : ℝ) by field_simp,
@@ -83,7 +80,7 @@ theorem heathBrownHChoice_scale_pow_le_one
     {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
     A * lambda * (heathBrownHChoice k A lambda : ℝ) ^ k ≤ 1 := by
-  have hp : 0 < A * lambda := mul_pos hA hlambda
+  have hp  := mul_pos hA hlambda
   have hHnonneg : (0 : ℝ) ≤ heathBrownHChoice k A lambda := by positivity
   have hpow := pow_le_pow_left₀ hHnonneg
     (heathBrownHChoice_cast_le_rpow hA hlambda) k
@@ -126,7 +123,7 @@ theorem heathBrownHChoice_half_rpow_neg_eq
     (((A * lambda) ^ (-(1 / (k : ℝ))) / 2) ^ (-(r : ℝ))) =
       (2 : ℝ) ^ r *
         (A * lambda) ^ ((r : ℝ) / k) := by
-  have hp : 0 < A * lambda := mul_pos hA hlambda
+  have hp  := mul_pos hA hlambda
   have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hk)
   have hq : 0 ≤ (A * lambda) ^ (-(1 / (k : ℝ))) :=
     Real.rpow_nonneg hp.le _

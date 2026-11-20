@@ -30,15 +30,15 @@ theorem finite_quadratic_large_value_general (w : MathCollab.Density.ComparisonC
   intro T t₀ N L hT hN hNL hLT a ha W V hV hW hlarge hsep
   have hTp : 0 < T := by linarith
   have hNp : 0 < N := by linarith
-  have hLp : 0 < L := hNp.trans_le hNL
-  have hL1 : 1 ≤ L := hN.trans hNL
+  have hLp  := hNp.trans_le hNL
+  have hL1  := hN.trans hNL
   have hb := adjacentCenteredBudget_nonneg K hTp.le hLp.le (Nat.cast_nonneg W.card)
   have hamp' := hamp T N L hT hN hNL hLT a ha W V hV hlarge hsep
   have ht := htrace T t₀ L hT hL1 W hW hsep
   have ht' : (Matrix.trace (cutoffCenteredMatrix w.toReflectionCutoff L W^2)).re ≤
       B*T^(η/2)*adjacentCenteredBudget K T L W.card := by
     exact (Complex.re_le_norm _).trans (by simpa only [pow_two] using ht)
-  have hp : 1 ≤ T^(η/2) := Real.one_le_rpow hT.le hδ.le
+  have hp  := Real.one_le_rpow hT.le hδ.le
   have he : T^(η/2)*T^(η/2)=T^η := by rw [← Real.rpow_add hTp]; congr 1; ring
   let X := (N*L)^2+(N^3/L)*adjacentCenteredBudget K T L W.card
   have hbudget : (N*L)^2+(N^3/L)*
@@ -53,7 +53,7 @@ theorem finite_quadratic_large_value_general (w : MathCollab.Density.ComparisonC
         have h1 : 0 ≤ (N*L)^2 := sq_nonneg _
         have h2 : 0 ≤ (N^3/L)*adjacentCenteredBudget K T L W.card := by positivity
         have hh1 := mul_nonneg hB.le h1
-        have hh2 := mul_nonneg (show 0 ≤ 1+B by positivity) h2
+        
         have hi : (N*L)^2+B*((N^3/L)*adjacentCenteredBudget K T L W.card) ≤ (1+B)*X := by
           dsimp [X]
           nlinarith only [hh1,h2]
@@ -81,7 +81,7 @@ theorem finite_quadratic_large_value_second (w : MathCollab.Density.ComparisonCu
   obtain ⟨C,hC,hb⟩ := finite_quadratic_large_value_general w (K:=2) (by norm_num) hη
   refine ⟨C,hC,?_⟩
   intro T t₀ N L hT hN hNL hLT a ha W V hV hW hlarge hsep
-  have hLp : 0 < L := (show 0 < N by linarith).trans_le hNL
+  have hLp  := (show 0 < N by linarith).trans_le hNL
   have hh := hb T t₀ N L hT hN hNL hLT a ha W V hV hW hlarge hsep
   norm_num [adjacentCenteredBudget] at hh
   convert hh using 1; field_simp; ring

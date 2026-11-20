@@ -60,10 +60,10 @@ theorem boundedPolynomial_source_tail {χ : ℝ → ℝ} (hχd : ContDiff ℝ �
     apply integral_nonneg
     intro t
     exact indicator_nonneg (fun x _ => mul_nonneg (hχ0 (x/T)) (sq_nonneg _)) t
-  have hNp : 0 < N := by linarith
+  
   have hTp : 0 < T := by linarith
   have hlog : 0 ≤ Real.log (2*N) := Real.log_nonneg (by linarith)
-  have hΛp : 0 < Λ := (mul_pos hC (by positivity : 0 < N^2+H)).trans_le hΛ
+  have hΛp  := (mul_pos hC (by positivity : 0 < N^2+H)).trans_le hΛ
   have hc1 : 2*(D*J) ≤ C := by dsimp [C]; nlinarith [sq_nonneg D]
   have hc2 : 2 ≤ C := by dsimp [C]; nlinarith [sq_nonneg D,mul_nonneg hD.le hJ]
   have hth : 2*((D*N^2)*J+H) ≤ Λ := by

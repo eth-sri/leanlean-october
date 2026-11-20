@@ -28,7 +28,7 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   obtain ⟨n, hn⟩ := exists_nat_mul_ge_of_pos (eta := gmAffineIterationEta δ) (A := 31) hη
   have hnreal : (31:ℝ) ≤ n := hn.trans (by
     have hu := gmAffineIterationEta_le_one δ
-    have hn0 : (0:ℝ) ≤ n := by positivity
+    
     nlinarith)
   have hn1 : 1 ≤ n := by exact_mod_cast (show (1:ℝ) ≤ n by linarith)
   have hn20 : 20 ≤ n := by exact_mod_cast (show (20:ℝ) ≤ n by linarith)
@@ -39,14 +39,14 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   let c := gmAffineRegionIITailMassConstant n Cdiv d+
     2*(16*(2:ℝ)^n*d*gmAffineRegionIIIKernelConstant n)^2
   have ha : 0 ≤ a := by dsimp only [a]; positivity
-  have hb : 0 ≤ b := mul_nonneg hCdiv.le gmAffineRegionIICoreConstant_nonneg
+  have hb  := mul_nonneg hCdiv.le gmAffineRegionIICoreConstant_nonneg
   have hc : 0 ≤ c := add_nonneg (gmAffineRegionIITailMassConstant_nonneg n hCdiv.le) (by positivity)
   refine ⟨a+b+c+1,by positivity,?_⟩
   intro T hT f R K M₁ M₂ M₃ hf hs hp hK hKR hRT h₁ h₂ h₃ h₁R h₂K h₃R
   have hTp : 0 < T := by linarith
   have hTone : 1 ≤ T := by linarith
-  have hR : 0 < R := hK.trans_le hKR
-  have hQ : 1 ≤ T ^ gmAffineIterationEta δ := one_le_rpow_gmAffineIterationEta hδ hTone
+  have hR  := hK.trans_le hKR
+  have hQ  := one_le_rpow_gmAffineIterationEta hδ hTone
   have hY : 0 < T ^ (6:ℕ) := by positivity
   have hQM := gmAffineIterationQ_mul_M_le_four_Y (delta := δ) hTone hRT
   have hXY := gmAffineFirstPoissonRadius_le_of_scale h₁R h₃
@@ -76,7 +76,7 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
     have hk4 : (1:ℝ) ≤ (K:ℝ)^4 := one_le_pow₀ hk1
     have hprod1 : (1:ℝ) ≤ (R:ℝ)^2*(K:ℝ)^4 := one_le_mul_of_one_le_of_one_le hr2 hk4
     exact (le_mul_of_one_le_left (sq_nonneg _) hprod1)
-  have hTδ : 1 ≤ T^δ := Real.one_le_rpow hTone hδ.le
+  have hTδ  := Real.one_le_rpow hTone hδ.le
   have hbound : gmAffineTransformIntegral f M₁ M₂ M₃ ≤
       a*T^δ*X+b*T^δ*Z+c*(∫ x, f x)^2 := by
     apply hr.trans
@@ -97,7 +97,7 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
         (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
           (show a+c ≤ a+b+c+1 by linarith only [hb]) (by positivity)) hX)
         (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-          (show b ≤ a+b+c+1 by linarith only [ha,hc]) (by positivity)) hZ)
+          (show b ≤ a+b+c+1 by linarith) (by positivity)) hZ)
     _ = _ := by ring
 
 end GuthMaynard.Improvement

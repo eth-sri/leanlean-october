@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorPastedExtension
 public import TaoTrudgianYang2025.BetaTaylorPolynomialBudget
 
@@ -29,7 +28,7 @@ theorem taylorPastedExtension_left_transition_bound (Q : ℕ) :
       x ∈ Icc (l+h) (l+2*h) → ∀ n ≤ Q,
         |iteratedDeriv n (taylorPastedExtension f Q l r h) x| ≤ C*M := by
   obtain ⟨B,hB,htr⟩ := smoothTransition_taylor_remainder_uniform_jets Q
-  refine ⟨(Q+1 : ℕ)+B,by linarith [Nat.cast_nonneg (α := ℝ) (Q+1)],?_⟩
+  refine ⟨(Q+1 : ℕ)+B,by linarith,?_⟩
   intro f l r h x M hh hh₁ hgap hf hb hx n hn
   have ha : l+2*h ∈ Ioo l r := by constructor <;> linarith
   have hxI : x ∈ Ioo l r := by constructor <;> linarith [hx.1,hx.2]
@@ -50,7 +49,7 @@ theorem taylorPastedExtension_left_transition_bound (Q : ℕ) :
     simpa only [one_pow,mul_one] using abs_iteratedDeriv_finiteTaylorPolynomial_le hn
       (D := 1) le_rfl (hdist.trans hh₁) (fun j hj => hb _ ha j (by omega))
   have hlocal : x < r-2*h := by linarith [hx.1,hx.2]
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+  have hN  :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   have hp : ContDiffAt ℝ ∞ (finiteTaylorPolynomial f Q (l+2*h)) x :=
     (finiteTaylorPolynomial_contDiff f Q (l+2*h)).contDiffAt
@@ -68,7 +67,7 @@ theorem taylorPastedExtension_right_transition_bound (Q : ℕ) :
       x ∈ Icc (r-2*h) (r-h) → ∀ n ≤ Q,
         |iteratedDeriv n (taylorPastedExtension f Q l r h) x| ≤ C*M := by
   obtain ⟨B,hB,htr⟩ := smoothTransition_taylor_remainder_uniform_jets Q
-  refine ⟨(Q+1 : ℕ)+B,by linarith [Nat.cast_nonneg (α := ℝ) (Q+1)],?_⟩
+  refine ⟨(Q+1 : ℕ)+B,by linarith,?_⟩
   intro f l r h x M hh hh₁ hgap hf hb hx n hn
   have ha : r-2*h ∈ Ioo l r := by constructor <;> linarith
   have hxI : x ∈ Ioo l r := by constructor <;> linarith [hx.1,hx.2]
@@ -89,7 +88,7 @@ theorem taylorPastedExtension_right_transition_bound (Q : ℕ) :
     simpa only [one_pow,mul_one] using abs_iteratedDeriv_finiteTaylorPolynomial_le hn
       (D := 1) le_rfl (hdist.trans hh₁) (fun j hj => hb _ ha j (by omega))
   have hlocal : l+2*h < x := by linarith [hx.1,hx.2]
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+  have hN  :=
     ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   have hp : ContDiffAt ℝ ∞ (finiteTaylorPolynomial f Q (r-2*h)) x :=
     (finiteTaylorPolynomial_contDiff f Q (r-2*h)).contDiffAt

@@ -64,7 +64,7 @@ private theorem hasDerivAt_gammaCritical (t : ℝ) :
         ((-Complex.log (Real.pi : ℂ) + Complex.digamma (afeCriticalPoint t / 2)) / 2) * I) t := by
   have hinner : HasDerivAt (fun z : ℂ => (1 / 2 : ℂ) + z * I) I (t : ℂ) := by
     simpa using ((hasDerivAt_id (t : ℂ)).mul_const I).const_add (1 / 2 : ℂ)
-  exact ((hasDerivAt_gammaReal (by norm_num [afeCriticalPoint])).comp (t : ℂ) hinner).comp_ofReal
+  exact ((hasDerivAt_gammaReal (by norm_num)).comp (t : ℂ) hinner).comp_ofReal
 
 /-- Exact phase differential equation, with a real-valued frequency. -/
 theorem hasDerivAt_zetaSquareReflectedGammaPhase (t : ℝ) :
@@ -90,8 +90,7 @@ theorem hasDerivAt_zetaSquareReflectedGammaPhase (t : ℝ) :
   · unfold zetaSquareGammaFrequency zetaSquareReflectedGammaPhase
     simp only [Function.comp_apply, neg_smul, one_smul]
     rw [Complex.ofReal_sub, Complex.ofReal_log Real.pi_pos.le]
-    field_simp
-    linear_combination Complex.Gammaℝ (afeCriticalPoint (-t)) * hsum
+    grind
 
 /-- Sharp leading frequency, derived from the actual digamma function. -/
 theorem abs_zetaSquareGammaFrequency_add_log_le {t : ℝ} (ht : 2 ≤ t) :
@@ -100,7 +99,7 @@ theorem abs_zetaSquareGammaFrequency_add_log_le {t : ℝ} (ht : 2 ≤ t) :
   have heq : (afeCriticalPoint t / 2).im = t / 2 := by simp [afeCriticalPoint]
   have hre : (afeCriticalPoint t / 2).re = 1 / 4 := by norm_num [afeCriticalPoint]
   have h := abs_re_digamma_sub_log_im_le (z := afeCriticalPoint t / 2)
-    (by rw [hre]; norm_num) (by rw [heq, abs_of_pos (div_pos ht0 two_pos)]; linarith)
+    (by positivity) (by rw [heq, abs_of_pos (div_pos ht0 two_pos)]; linarith)
   rw [heq, hre, abs_of_pos (div_pos ht0 two_pos)] at h
   have hlogs : Real.log (t / (2 * Real.pi)) = Real.log (t / 2) - Real.log Real.pi := by
     rw [← div_div, Real.log_div (ne_of_gt (div_pos ht0 two_pos)) Real.pi_ne_zero]

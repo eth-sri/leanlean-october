@@ -44,8 +44,7 @@ theorem fourier_sup_family_seminorm (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 
   apply SchwartzMap.seminorm_le_bound' (𝕜 := ℝ) n 0 _ (by
     have hd := hD β n
     positivity)
-  intro ξ
-  simpa only [iteratedDeriv_zero,Real.norm_eq_abs,F,C] using hall ξ
+  solve_by_elim
 
 /-- Fourier inversion bounds the source supremum by the Fourier L1 norm. -/
 theorem source_sup_le_fourier_l1 (f : 𝓢(ℝ, ℝ)) :
@@ -83,7 +82,7 @@ theorem fourier_l1_le_mass_and_tail (f : 𝓢(ℝ, ℝ)) (hf : ∀ x, 0 ≤ f x)
     rw [Real.norm_of_nonneg (integral_nonneg (fun _ => norm_nonneg _)),
       volume_real_gmAffineLowFrequencyRegion hU.le] at hnorm
     simpa only [mul_comm] using hnorm
-  have hi : IntegrableOn (fun ξ : ℝ => B*|ξ|^(-2:ℝ)) (gmAffineHighFrequencyRegion U) :=
+  have hi  :=
     (integrableOn_gmAffineHighFrequencyRegion_abs_rpow (by norm_num : (-2:ℝ) < -1) hU).const_mul B
   have hhi : (∫ ξ in gmAffineHighFrequencyRegion U, ‖F ξ‖) ≤ 2*B/U := by
     calc
@@ -121,13 +120,13 @@ theorem fourier_sup_le_height_mass (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 �
   let A := (D β 2+1)*T^β*T^2
   have hD2 := hD β 2
   have hA : 0 < A := by dsimp only [A]; positivity
-  have hS : 0 ≤ S := by dsimp only [S]; positivity
+  
   have hdec : ∀ ξ : ℝ, ξ ≠ 0 → ‖𝓕 (gmAffineComplexify f) ξ‖ ≤ (A*S)/|ξ|^2 := by
     intro ξ hξ
     calc
       _ ≤ D β 2*T^β*(T/|ξ|)^2*S := hp β hβ 2 ξ hξ
       _ ≤ (D β 2+1)*T^β*(T/|ξ|)^2*S := by gcongr; linarith
-      _ = _ := by dsimp only [A]; rw [div_pow]; ring
+      _ = _ := by ring
   have hbound := (source_sup_le_fourier_l1 f).trans
     (fourier_l1_le_mass_and_tail f hf (U := 4*A) (by positivity) hdec)
   have hcancel : 2*(A*S)/(4*A) = S/2 := by field_simp [hA.ne']; ring

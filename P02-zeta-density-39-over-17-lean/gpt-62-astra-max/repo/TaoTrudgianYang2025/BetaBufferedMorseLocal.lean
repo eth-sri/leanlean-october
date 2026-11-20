@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaMorseWeightJets
 public import TaoTrudgianYang2025.BetaBufferedCutoff
 public import TaoTrudgianYang2025.BetaQuadraticLocalRemainder
@@ -34,9 +33,9 @@ theorem modelPhaseMorseWindow_mem_and_inverse
     z ∈ modelPhaseMorseRange F v ∧
       |modelPhaseMorseInverse F v z-modelPhaseInverseSlope F v| < d := by
   let u₀ := modelPhaseInverseSlope F v
-  have hu₀ : u₀ ∈ Ioo (1 : ℝ) 2 := modelPhaseInverseSlope_mem hv
-  have ha : u₀-d ∈ Ioo (1 : ℝ) 2 := ⟨hl,by dsimp [u₀]; linarith⟩
-  have hb : u₀+d ∈ Ioo (1 : ℝ) 2 := ⟨by dsimp [u₀]; linarith,hr⟩
+  have hu₀  := modelPhaseInverseSlope_mem hv
+  have ha : u₀-d ∈ Ioo (1 : ℝ) 2 := ⟨hl,by linarith⟩
+  have hb : u₀+d ∈ Ioo (1 : ℝ) 2 := ⟨by linarith,hr⟩
   have hs : Icc (u₀-d) (u₀+d) ⊆ Ioo (1 : ℝ) 2 := by
     intro u hu
     exact ⟨ha.1.trans_le hu.1,hu.2.trans_lt hb.2⟩
@@ -65,7 +64,7 @@ theorem modelPhaseMorseWindow_mem_and_inverse
     (modelPhaseMorseInverse_mem hz')).1
   rw [modelPhaseMorseCoordinate_inverse hz'] at hb'
   have hcpos := Real.sqrt_pos.mpr (modelPhaseCurvatureLower_pos hσ)
-  have habs : |z| ≤ H := abs_le.mpr hz
+  have habs  := abs_le.mpr hz
   nlinarith
 
 theorem iteratedDeriv_bufferedMorseWeight_of_flat
@@ -81,7 +80,7 @@ theorem iteratedDeriv_bufferedMorseWeight_of_flat
   rw [iteratedDeriv_modelPhaseMorseWeight_eq hσ hδ hF hv hz,iteratedDeriv_succ']
   apply Filter.EventuallyEq.iteratedDeriv_eq
   have hi := (modelPhaseMorseInverse_contDiffAt hσ hδ hF hv hz).continuousAt
-  have hn : ∀ᶠ x in 𝓝 z, modelPhaseMorseInverse F v x ∈ Ioo (l+2*η) (r-2*η) :=
+  have hn  :=
     hi (isOpen_Ioo.mem_nhds ⟨hl,hr⟩)
   filter_upwards [hn] with x hx
   simp only [modelPhaseMorseAmplitude,modelPhaseBufferedCutoff_one hη hx.1.le hx.2.le,one_mul]

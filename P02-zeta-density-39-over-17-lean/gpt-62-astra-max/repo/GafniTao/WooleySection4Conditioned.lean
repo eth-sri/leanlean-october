@@ -80,10 +80,7 @@ theorem wooleySection4ConditionedInsertedAverage_expand
                 (wooleySourceTwist
                   (wooleySourceResidueSequence gamma qH zeta)
                   (fun n => wooleySourcePolynomialPhase theta alpha n)) := by
-      apply congrArg (fun x : ℝ => ((q ^ k : ℕ) : ℝ)⁻¹ * x)
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      exact hexpand alpha
+      simp [*]
     _ = _ := by
       rw [Finset.sum_comm]
       simp_rw [Finset.mul_sum]
@@ -184,15 +181,7 @@ theorem wooleySection4_conditionedInsertedAverage_eq_of_equation_4_12
       simp [wooleySourceTwist_apply, hzeroPhase]
     simp_rw [htwist] at hconditioned
     rw [htwistOuter] at hconditioned
-    have hmul : wooleySourceMassSq gamma *
-        wooleySection4ConditionedInsertedAverage
-          theta Psi (p ^ B) (p ^ (B - k * h)) (p ^ (H - h)) s gamma =
-        wooleySourceMassSq gamma *
-          wooleySourcePolynomialConditionedMean s (p ^ B)
-            (p ^ (H - h)) theta gamma := by
-      rw [hexpand']
-      exact hconditioned.symm
-    exact (mul_left_cancel₀ hmass hmul)
+    apply mul_left_cancel₀ <;> first | assumption | positivity | linarith
 
 end
 

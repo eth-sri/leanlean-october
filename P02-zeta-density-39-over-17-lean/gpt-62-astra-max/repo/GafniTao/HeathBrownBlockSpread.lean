@@ -34,7 +34,7 @@ theorem heathBrown_actualBlock_last_coordinate_spread
       (heathBrownBlockParameter A lambda N) f) :
     |heathBrownDerivativeCoordinate f (k - 1) m -
         heathBrownDerivativeCoordinate f (k - 1) n| ≤ 1 / 2 := by
-  let F : ℝ → ℝ := fun x => heathBrownDerivativeCoordinate f (k - 1) x
+  let F  := fun x => heathBrownDerivativeCoordinate f (k - 1) x
   let M : ℝ := A * lambda / ((k - 1).factorial : ℝ)
   have hMnonneg : 0 ≤ M := by
     dsimp [M]
@@ -53,8 +53,8 @@ theorem heathBrown_actualBlock_last_coordinate_spread
   have hvariation := heathBrown_abs_difference_le_deriv_bound
     (g := F) (M := M) hg hgd hderivLower hderivUpper
     (m := m) (n := n)
-    (by exact (mem_heathBrownPairCountTwo.mp hp).2.1)
-    (by exact (mem_heathBrownPairCountTwo.mp hp).2.2.2.1)
+    ((mem_heathBrownPairCountTwo.mp hp).2.1)
+    ((mem_heathBrownPairCountTwo.mp hp).2.2.2.1)
   have hfact : (1 : ℝ) ≤ ((k - 1).factorial : ℝ) := by
     exact_mod_cast Nat.factorial_pos (k - 1)
   have hMle : M ≤ A * lambda := by

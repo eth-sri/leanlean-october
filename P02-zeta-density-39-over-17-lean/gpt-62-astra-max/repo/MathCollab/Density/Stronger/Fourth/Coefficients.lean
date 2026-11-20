@@ -54,7 +54,7 @@ def zetaFourthCoeff (c : ℝ) (n : ℕ) : ℂ :=
   divisorDirichletTerm ((1/2+c:ℝ):ℂ) n
 
 theorem zetaFourthCoeff_zero (c : ℝ) : zetaFourthCoeff c 0 = 0 := by
-  simp [zetaFourthCoeff,divisorDirichletTerm]
+  rfl
 
 theorem zetaFourthCoeff_one (c : ℝ) : zetaFourthCoeff c 1 = 1 := by
   simp [zetaFourthCoeff,divisorDirichletTerm_eq_divisorWeight_mul_cpow,divisorWeight]
@@ -68,7 +68,7 @@ theorem exists_norm_sq_zetaFourthCoeff_le {ε : ℝ} (hε : 0 < ε) :
     ∃ D : ℝ, 0 < D ∧ ∀ c : ℝ, 0 ≤ c → ∀ n : ℕ, 0 < n →
       ‖zetaFourthCoeff c n‖^2 ≤ D*(n:ℝ)^(ε-1) := by
   obtain ⟨C,hC₁,hdiv⟩ := MathCollab.Density.divisor_card_subpower (show 0 < ε/2 by positivity)
-  have hC : 0 < C := zero_lt_one.trans_le hC₁
+  have hC  := zero_lt_one.trans_le hC₁
   refine ⟨C^2,pow_pos hC 2,?_⟩
   intro c hc n hn
   have hn0 : (0:ℝ) < n := by exact_mod_cast hn

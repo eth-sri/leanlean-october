@@ -67,11 +67,11 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
       _ ≤ (3*T^η*(H:ℝ))*(W.card:ℝ)^2 := by gcongr; exact hs.trans hTp
       _ = 3*T^η*((H:ℝ)*(W.card:ℝ)^2) := by ring
       _ ≤ F*T^η*((H:ℝ)*(W.card:ℝ)^2) := by gcongr
-      _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith only [hnonneg₁,hnonneg₂]) (by positivity)
+      _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
   · by_cases he : rationalEnergy A W = 0
     · rw [he]
       positivity
-    have hep : 0 < rationalEnergy A W := lt_of_le_of_ne he0 (Ne.symm he)
+    have hep  := lt_of_le_of_ne he0 (Ne.symm he)
     have hr1 : (1:ℝ) ≤ W.card := by
       by_cases hwe : W=∅
       · simp [hwe,rationalEnergy] at hep
@@ -84,7 +84,7 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
       nlinarith
     have hzp : 0 < Z := by linarith
     let U := rationalEnergy A W/Z
-    have hup : 0 < U := div_pos hep hzp
+    have hup  := div_pos hep hzp
     have hscaled (k : ℕ) (hk : 1 ≤ k) (hc : C (k-1) ≤ D) :
         U^k ≤ (T+(H:ℝ)^(2*k))*(W.card:ℝ)^(2*k-1) := by
       have hm := hb (k-1) H hH T t₀ ht.le A hA W hW hsep
@@ -104,13 +104,13 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
             (W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1))) := by positivity
         linarith only [hh',h0,h1]
       · let m : ℝ := Real.log H/Real.log T
-        have hlog : 0 < Real.log T := Real.log_pos hT
-        have hHm : T^m=(H:ℝ) := rpow_log_quotient hT hh
+        have hlog  := Real.log_pos hT
+        have hHm  := rpow_log_quotient hT hh
         have hδm : η/2 ≤ m := by
           have hl := Real.log_le_log (Real.rpow_pos_of_pos ht _) (le_of_not_ge hs)
           rw [Real.log_rpow ht] at hl
           exact (le_div_iff₀ hlog).mpr hl
-        have hkp : (0:ℝ) < K := by exact_mod_cast (show 0 < K by omega)
+        
         have hpow (n : ℕ) : (H:ℝ)^n=T^((n:ℝ)*m) := by
           rw [← hHm,adjacent_rpow_nat ht.le]
           congr 1
@@ -122,9 +122,9 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
             rw [hpow]
             norm_num
           have hx := (Real.rpow_le_rpow_left_iff hT).mp hp
-          exact (le_div_iff₀ (by positivity : 0 < 2*(K:ℝ))).mpr (by nlinarith only [hx])
+          exact (le_div_iff₀ (by positivity : 0 < 2*(K:ℝ))).mpr (by linarith)
         obtain ⟨j,hKj,hjJ,hlo,hhi⟩ := adjacent_finite_height_cover hK hδ hδm hm
-        have hj : 1 ≤ j := hK.trans hKj
+        have hj  := hK.trans hKj
         have hlop : (H:ℝ)^(2*j) ≤ T := by
           rw [hpow]
           calc

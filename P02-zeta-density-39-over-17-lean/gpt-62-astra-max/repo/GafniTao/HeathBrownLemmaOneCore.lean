@@ -57,8 +57,6 @@ theorem heathBrown_second_Abel_factor_eq
         heathBrownHChoice k A lambda =
       1 + 2 * Real.pi * (k : ℝ) ^ 2 := by
   have hHnat := heathBrownHChoice_pos hk hA hlambda hsmall
-  have hH : (heathBrownHChoice k A lambda : ℝ) ≠ 0 := by
-    exact_mod_cast hHnat.ne'
   field_simp
 
 theorem heathBrownLemmaOneCoreConstant_pos
@@ -96,19 +94,8 @@ theorem heathBrownLemmaOneNormalized_le_core
         2 = 2 * 1 := by omega
         _ ≤ k * (k - 1) := Nat.mul_le_mul (by omega) (by omega)
     exact Nat.div_pos hprod (by omega)
-  have hsReal : (0 : ℝ) < heathBrownCriticalMoment k := by exact_mod_cast hs
-  have hnonneg : 0 ≤
-      C ^ (1 / (2 * (heathBrownCriticalMoment k : ℝ))) *
-        (heathBrownLemmaTwoConstant k A *
-          (N + lambda * N ^ 2 + lambda ^ (-(2 / (k : ℝ)))) *
-          (1 + Real.log N)) ^
-            (1 / (2 * (heathBrownCriticalMoment k : ℝ))) *
-        (N : ℝ) ^ (1 - 1 / (heathBrownCriticalMoment k : ℝ)) *
-        ((2 : ℝ) ^ (k - 1)) ^
-          (-(1 / (2 * (heathBrownCriticalMoment k : ℝ)))) *
-        (heathBrownHChoice k A lambda : ℝ) ^
-          (epsilon * (1 / (2 * (heathBrownCriticalMoment k : ℝ)))) := by
-    positivity
+  
+  
   unfold heathBrownLemmaOneNormalizedRealBound
     heathBrownLemmaOneCoreConstant
   dsimp only

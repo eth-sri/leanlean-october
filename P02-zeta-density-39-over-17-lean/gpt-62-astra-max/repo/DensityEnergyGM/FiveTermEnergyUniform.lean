@@ -69,12 +69,10 @@ theorem discrete_energy_five_term_base (ε : ℝ) (hε : 0 < ε) :
   intro T N a W V hT hN hTN hNT ha hV hValues hSep hBase
   have hTpos : 0 < T := by linarith
   have hR0 : (0 : ℝ) ≤ W.card := Nat.cast_nonneg _
-  have hExpr : 0 ≤ fiveTermEnergyExpression T N V (W.card : ℝ) :=
+  have hExpr  :=
     fiveTermEnergyExpression_nonneg hTpos.le hN.le hV.le hR0
   by_cases hHeight : T₀ ≤ T
   · have h := hEventual T N a W V hHeight hN hTN hNT ha hV hValues hSep hBase
-    change (discreteAdditiveEnergy W : ℝ) ≤ C₀ * T ^ ε *
-      fiveTermEnergyExpression T N V (W.card : ℝ) at h
     exact h.trans (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (show C₀ ≤ C by
         have hp : 0 ≤ 128 * T₀ ^ 3 := by positivity
@@ -83,7 +81,7 @@ theorem discrete_energy_five_term_base (ε : ℝ) (hε : 0 < ε) :
         (Real.rpow_nonneg hTpos.le ε)) hExpr)
   · by_cases hW : W.Nonempty
     swap
-    · have he : W = ∅ := Finset.not_nonempty_iff_eq_empty.mp hW
+    · have he  := Finset.not_nonempty_iff_eq_empty.mp hW
       subst W
       simp only [discreteAdditiveEnergy, Finset.product_empty,
         Finset.filter_empty, Finset.card_empty, Nat.cast_zero]
@@ -91,7 +89,7 @@ theorem discrete_energy_five_term_base (ε : ℝ) (hε : 0 < ε) :
         simpa only [Finset.card_empty, Nat.cast_zero] using hExpr)
     have hNOne : 1 ≤ N := by nlinarith
     obtain ⟨t, ht⟩ := hW
-    have hVUpper : V ≤ 2 * N := (hValues t ht).trans
+    have hVUpper  := (hValues t ht).trans
       (bounded_polynomial_norm_le_two_scale hNOne a ha t)
     have hRUpper : (W.card : ℝ) ≤ 2 * T₀ :=
       (gmSeparated_card_le_two_height (by linarith) hSep hBase).trans (by linarith)
@@ -99,7 +97,7 @@ theorem discrete_energy_five_term_base (ε : ℝ) (hε : 0 < ε) :
       have h := approxAddEnergy_le_card_pow_four 1 W
       rw [native_approx_energy_eq] at h
       exact_mod_cast h
-    have hRcube : (W.card : ℝ) ^ 3 ≤ (2 * T₀) ^ 3 :=
+    have hRcube  :=
       pow_le_pow_left₀ hR0 hRUpper 3
     have hEnergyPrefix : (discreteAdditiveEnergy W : ℝ) ≤ (2 * T₀) ^ 3 * (W.card : ℝ) := by
       have h := mul_le_mul_of_nonneg_right hRcube hR0

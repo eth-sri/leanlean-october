@@ -21,7 +21,7 @@ theorem operator_L2_integral_sq (ν : Measure ℝ) (f : Lp ℂ 2 ν) :
 theorem operator_density_vector_integrable {μ : ℝ → ℝ}
     [IsFiniteMeasure (timeMeasure μ)] (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t)
     (f : Lp ℂ 2 (timeMeasure μ)) : Integrable (fun t => (μ t:ℂ)*f t) := by
-  have hi : Integrable (fun t => f t) (timeMeasure μ) := (Lp.memLp f).integrable (by norm_num)
+  have hi  := (Lp.memLp f).integrable (by norm_num)
   have hh := (integrable_withDensity_iff_integrable_smul' hm.ennreal_ofReal
     (Filter.Eventually.of_forall fun t => ENNReal.ofReal_lt_top)).mp hi
   simpa only [ENNReal.toReal_ofReal (h0 _), Complex.real_smul] using hh
@@ -33,7 +33,7 @@ theorem operator_density_vector_L2 {μ : ℝ → ℝ}
     MemLp (fun t => (μ t:ℂ)*f t) 2 ∧
       (∫ t, ‖(μ t:ℂ)*f t‖^2) ≤ B*‖f‖^2 := by
   have hi := operator_density_vector_integrable hm h0 f
-  have hs : Integrable (fun t => ‖f t‖^2) (timeMeasure μ) :=
+  have hs  :=
     (memLp_two_iff_integrable_sq_norm (Lp.aestronglyMeasurable f)).mp (Lp.memLp f)
   have hw : Integrable (fun t => μ t*‖f t‖^2) := by
     have hh := (integrable_withDensity_iff_integrable_smul' hm.ennreal_ofReal

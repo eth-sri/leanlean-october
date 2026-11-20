@@ -117,7 +117,7 @@ theorem reflection_square_integrable (w : MathCollab.Density.ReflectionCutoff) :
   apply (w.smooth.continuous.pow 2).integrable_of_hasCompactSupport
   apply HasCompactSupport.intro isCompact_Icc
   intro x hx
-  have hz : w x=0 := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
+  have hz  := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
   simp [hz]
 
 /-- Whole-space and positive-half-line cutoff normalizations agree exactly. -/

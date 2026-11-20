@@ -1,6 +1,7 @@
 module
 
-public import Mathlib.NumberTheory.LSeries.ZetaZeros
+public import MathCollab.Density.ZetaCounting
+public import GuthMaynard.Improvement.CurveUniformization
 public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Tactic
@@ -24,55 +25,70 @@ noncomputable def zeroWeight (σ T : ℝ) (ρ : ℂ) : ℝ≥0∞ := by
 of the ordinate. This is a genuine nonnegative extended-real sum. -/
 noncomputable def zeroCount (σ T : ℝ) : ℝ≥0∞ := ∑' ρ : ℂ, zeroWeight σ T ρ
 
-/-- An exact enumeration gives exactly the same multiplicity count. -/
-theorem zeroCount_eq_finset (σ T : ℝ) (F : Finset ℂ)
-    (hF : ∀ ρ : ℂ, ρ ∈ F ↔ riemannZeta ρ = 0 ∧ 0 < ρ.re ∧ ρ.re < 1 ∧
-      σ ≤ ρ.re ∧ |ρ.im| ≤ T) :
-    zeroCount σ T = ((∑ ρ ∈ F, analyticOrderNatAt riemannZeta ρ : ℕ) : ℝ≥0∞) := by
-  classical
-  calc
-    zeroCount σ T = ∑ ρ ∈ F, zeroWeight σ T ρ := by
-      apply tsum_eq_sum
-      intro ρ hρ
-      simp only [zeroWeight, ite_eq_right (mt (hF ρ).mpr hρ)]
-    _ = ∑ ρ ∈ F, (analyticOrderNatAt riemannZeta ρ : ℝ≥0∞) := by
-      apply Finset.sum_congr rfl
-      intro ρ hρ
-      simp only [zeroWeight, ite_eq_left ((hF ρ).mp hρ)]
-    _ = ((∑ ρ ∈ F, analyticOrderNatAt riemannZeta ρ : ℕ) : ℝ≥0∞) := by simp
+open MathCollab.Density
 
-/-- Such an enumeration exists without any analytic or finiteness hypothesis. -/
-theorem exact_zero_set_exists (σ T : ℝ) : ∃ F : Finset ℂ,
-    ∀ ρ : ℂ, ρ ∈ F ↔ riemannZeta ρ = 0 ∧ 0 < ρ.re ∧ ρ.re < 1 ∧
-      σ ≤ ρ.re ∧ |ρ.im| ≤ T := by
+/-- Evaluate the infinite sum on its exact finite support. -/
+theorem zeroCount_eq (σ T : ℝ) : zeroCount σ T = (zetaDensityCount σ T : ℝ≥0∞) := by
   classical
-  have hfin : {ρ : ℂ | riemannZeta ρ = 0 ∧ 0 < ρ.re ∧ ρ.re < 1 ∧
-      σ ≤ ρ.re ∧ |ρ.im| ≤ T}.Finite := by
-    apply ((isCompact_closedBall (0 : ℂ) (1 + |T|)).inter_riemannZetaZeros_finite).subset
-    intro ρ hρ
-    refine ⟨?_, hρ.1⟩
-    rw [Metric.mem_closedBall, dist_zero_right]
-    calc
-      ‖ρ‖ ≤ |ρ.re| + |ρ.im| := Complex.norm_le_abs_re_add_abs_im ρ
-      _ ≤ 1 + |T| := by
-        rw [abs_of_pos hρ.2.1]
-        linarith [hρ.2.2.1, hρ.2.2.2.2, le_abs_self T]
-  exact ⟨hfin.toFinset, fun ρ => Set.Finite.mem_toFinset hfin⟩
+  let F := zetaZeroFinset σ (-T) T
+  have hF (ρ : ℂ) : ρ ∈ F ↔ riemannZeta ρ = 0 ∧ 0 < ρ.re ∧ ρ.re < 1 ∧ σ ≤ ρ.re ∧ |ρ.im| ≤ T := by
+    simpa only [IsNontrivialZetaZero,and_assoc] using mem_zetaDensityFinset (σ:=σ) (T:=T) (ρ:=ρ)
+  rw [zeroCount, tsum_eq_sum (s := F)]
+  · unfold zetaDensityCount zetaSlabCount
+    push_cast
+    apply Finset.sum_congr rfl
+    intro ρ h
+    simp only [zeroWeight,if_pos ((hF ρ).mp h),zetaMultiplicity]
+  · intro ρ h
+    exact if_neg (mt (hF ρ).mpr h)
 
-/-- Transfer a real-valued full enumeration bound without changing any
-quantifier or discarding any possible infinite count. -/
-theorem bound_of_literal {σ p ε : ℝ}
-    (h : ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T → ∀ F : Finset ℂ,
-      (∀ ρ : ℂ, ρ ∈ F ↔ riemannZeta ρ = 0 ∧ 0 < ρ.re ∧ ρ.re < 1 ∧
-        σ ≤ ρ.re ∧ |ρ.im| ≤ T) →
-      ((∑ ρ ∈ F, analyticOrderNatAt riemannZeta ρ : ℕ) : ℝ) ≤ C * T ^ (p + ε)) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
-      zeroCount σ T ≤ ENNReal.ofReal (C * T ^ (p + ε)) := by
-  obtain ⟨C, hC, hb⟩ := h
-  refine ⟨C, hC, ?_⟩
-  intro T hT
-  obtain ⟨F, hF⟩ := exact_zero_set_exists σ T
-  rw [zeroCount_eq_finset σ T F hF, ← ENNReal.ofReal_natCast]
-  exact ENNReal.ofReal_le_ofReal (hb T hT F hF)
+abbrev Estimate (σ p ε : ℝ) := ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
+  zeroCount σ T ≤ ENNReal.ofReal (C*T^(p+ε))
+
+abbrev Curve (lo hi : ℝ → Prop) (A : ℝ → ℝ) := ∀ {σ ε : ℝ},
+  lo σ → hi σ → 0 < ε → Estimate σ (A σ*(1-σ)) ε
+abbrev Closed (l u : ℝ) := Curve (l ≤ ·) (· ≤ u)
+abbrev Uniform (l u : ℝ) (p : ℝ → ℝ) (ε : ℝ) := ∃ C : ℝ, 0 < C ∧ ∀ σ T : ℝ,
+  l ≤ σ → σ ≤ u → 2 ≤ T → zeroCount σ T ≤ ENNReal.ofReal (C*T^(p σ+ε))
+
+private theorem count_le {σ T b : ℝ} (hb : 0 ≤ b) : zeroCount σ T ≤ ENNReal.ofReal b ↔ (zetaDensityCount σ T:ℝ) ≤ b := by
+  rw [zeroCount_eq, ← ENNReal.ofReal_natCast, ENNReal.ofReal_le_ofReal_iff hb]
+
+theorem estimate_iff {σ p ε : ℝ} : Estimate σ p ε ↔ ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
+    (zetaDensityCount σ T:ℝ) ≤ C*T^(p+ε) := by
+  unfold Estimate
+  apply exists_congr; intro C
+  apply and_congr_right; intro hc
+  apply forall_congr'; intro T
+  apply forall_congr'; intro ht
+  have : 0<T := by linarith
+  exact count_le (by positivity)
+
+theorem Estimate.weaken {σ p q e : ℝ} (h : Estimate σ p e) (hpq : p ≤ q) : Estimate σ q e := by
+  obtain ⟨C,hC,h⟩ := h
+  refine ⟨C,hC,fun T ht => (h T ht).trans (ENNReal.ofReal_le_ofReal ?_)⟩
+  have : 1 ≤ T := by linarith
+  gcongr
+
+/-- Uniformize a rational power curve on a closed interval. After clearing
+the denominators, its one-sided modulus just involves their product. -/
+theorem uniform_fraction {l u n q c ε : ℝ} (hlu : l < u) (hε : 0 < ε)
+    (hK : 0 ≤ n*(q+c)) (hd : ∀ s, l ≤ s → s ≤ u → 1 ≤ q*s+c)
+    (h : Closed l u (fun s => n/(q*s+c))) : Uniform l u (fun s => n/(q*s+c)*(1-s)) ε := by
+  have hmod (x y : ℝ) (hx : l≤x) (h : x≤y) (hy : y≤u) :
+      n/(q*x+c)*(1-x) ≤ n/(q*y+c)*(1-y)+(n*(q+c)+1)*(y-x) := by
+    have h1 := hd x hx (h.trans hy)
+    have h2 := hd y (hx.trans h) hy
+    have hp : 1 ≤ (q*x+c)*(q*y+c) := one_le_mul_of_one_le_of_one_le h1 h2
+    have he : n/(q*x+c)*(1-x)-n/(q*y+c)*(1-y) = n*(q+c)*(y-x)/((q*x+c)*(q*y+c)) := by
+      field_simp; ring
+    have hh := div_le_self (mul_nonneg hK (sub_nonneg.mpr h)) hp
+    rw [← he] at hh
+    linarith only [h,hh]
+  obtain ⟨C,hC,hb⟩ := GuthMaynard.Improvement.density_curve_uniform_on_interval hlu
+    (by linarith : 0 < n*(q+c)+1) hmod (fun _ hl hr _ he => estimate_iff.mp (h hl hr he)) hε
+  refine ⟨C,hC,fun σ T hl hr ht => (count_le ?_).mpr (hb σ T hl hr ht)⟩
+  have : 0<T := by linarith
+  positivity
 
 end LewkoDensityPalomar

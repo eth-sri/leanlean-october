@@ -37,8 +37,8 @@ theorem wooleySourceNormalizedMixedMean_terminal
   let e := wooleyNormalizationExponent k r
   let K := wooleySourcePolynomialMixedMean phi s r p B a b nu gamma
   let Z := wooleySourcePolynomialConditionedMean s (p ^ B) (p ^ H) phi gamma
-  have he0 : 0 ≤ e := (wooleyNormalizationExponent_pos hr hrk).le
-  have he1 : e ≤ 1 := wooleyNormalizationExponent_le_one hr hrk
+  
+  have he1  := wooleyNormalizationExponent_le_one hr hrk
   have hK0 : 0 ≤ K := by
     dsimp [K]
     exact wooleySourcePolynomialMixedMean_nonneg phi s r p B a b nu gamma
@@ -54,7 +54,7 @@ theorem wooleySourceNormalizedMixedMean_terminal
       mul_zero, div_zero, Real.zero_rpow
         (ne_of_gt (wooleyNormalizationExponent_pos hr hrk))]
     exact mul_nonneg hD (Real.rpow_nonneg (by positivity) _)
-  have hZpos : 0 < Z := lt_of_le_of_ne hZ0 (Ne.symm hZzero)
+  have hZpos  := lt_of_le_of_ne hZ0 (Ne.symm hZzero)
   have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
   let P : ℝ := (p : ℝ) ^ (Lambda * (H : ℝ))
   have hPpos : 0 < P := Real.rpow_pos_of_pos hpR _
@@ -95,7 +95,7 @@ theorem wooleySourceNormalizedMixedMean_terminal
   rw [hexact]
   have hHepsilon : 0 ≤ (H : ℝ) * epsilon :=
     mul_nonneg (Nat.cast_nonneg _) hepsilon
-  have hexponent : ((H : ℝ) * epsilon) * e ≤ (H : ℝ) * epsilon :=
+  have hexponent  :=
     mul_le_of_le_one_right hHepsilon he1
   exact mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow_of_exponent_le

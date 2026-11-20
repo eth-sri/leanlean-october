@@ -28,13 +28,8 @@ theorem heathBrownKthDerivativeFactor_eq_critical
   have hk0 : (k : ℝ) ≠ 0 := by linarith
   have hkm10 : (k : ℝ) - 1 ≠ 0 := by linarith
   congr 1
-  · congr 1
-    field_simp
-  · congr 1
-    · congr 1
-      field_simp
-    · congr 1
-      field_simp
+  · ring
+  · grind
 
 theorem heathBrownThreeTerm_scaled_identity
     {N k : ℕ} (hN : 1 ≤ N) (hk : 2 ≤ k)
@@ -97,7 +92,7 @@ theorem heathBrown_lambda_power_identity
     (lambda ^ (-(1 / (k : ℝ)))) ^ (2 * r) =
       lambda ^ (-2 * r / (k : ℝ)) := by
   dsimp only
-  let r := heathBrownCriticalReciprocal k
+  
   have hk0 : (k : ℝ) ≠ 0 := by positivity
   rw [← Real.rpow_mul hlambda.le]
   congr 1
@@ -117,8 +112,8 @@ theorem heathBrown_lambda_term_le_third_of_third_le_N
         lambda ^ (-2 * heathBrownCriticalReciprocal k / (k : ℝ)) := by
   let r := heathBrownCriticalReciprocal k
   let L := lambda ^ (-(1 / (k : ℝ)))
-  have hr : 0 < r := heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)
-  have hrHalf : r ≤ 1 / 2 :=
+  have hr  := heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)
+  have hrHalf  :=
     heathBrownCriticalReciprocal_le_half (by omega : 2 ≤ k)
   have hq : 0 ≤ 1 - 2 * r := by linarith
   have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
@@ -141,11 +136,8 @@ theorem heathBrown_lambda_term_le_third_of_third_le_N
     have hfactorPos : 0 < (N : ℝ) ^ (1 - 2 * r) :=
       Real.rpow_pos_of_pos hNpos _
     nlinarith
-  have hLN : L ≤ (N : ℝ) :=
+  have hLN  :=
     (Real.rpow_le_rpow_iff hLpos.le hNpos.le (by positivity : 0 < 2 * r)).mp hpower
-  have hbasePower : L ^ (1 - 2 * r) ≤
-      (N : ℝ) ^ (1 - 2 * r) :=
-    Real.rpow_le_rpow hLpos.le hLN hq
   calc
     lambda ^ (-(1 / (k : ℝ))) = L := rfl
     _ = L ^ (1 - 2 * r) * L ^ (2 * r) := by

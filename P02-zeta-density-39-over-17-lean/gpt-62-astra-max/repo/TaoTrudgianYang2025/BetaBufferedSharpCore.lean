@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedTransitionBands
 public import TaoTrudgianYang2025.BetaEndpointCore
 
@@ -84,8 +83,8 @@ theorem modelPhaseBufferedSupportCore_error {σ : ℝ} (hσ : 0 < σ) :
   intro l r η hl hr hη hflat F δ T N hδ hF hT hN L U A B
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have he := modelPhaseBufferedBand_endpoints hσ hδ hF₁ hT hN hη hl hr hflat
-  have hLA : L ≤ A := he.1
-  have hBU : B ≤ U := he.2.2.2
+  
+  
   have hs : Finset.Ioo A B ⊆ Finset.Icc L U := by
     intro q hq
     simp only [Finset.mem_Ioo,Finset.mem_Icc] at hq ⊢
@@ -127,9 +126,9 @@ theorem modelPhaseBufferedSharpCore_error {σ : ℝ} (hσ : 0 < σ) :
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have hi := modelPhaseBufferedSupport_inside_core hσ hδ hF₁ hT hN hη hl hr hflat
   have he := modelPhaseBufferedBand_endpoints hσ hδ hF₁ hT hN hη hl hr hflat
-  have hAL : A ≤ L := hi.1
-  have hUB : U ≤ B := hi.2
-  have hLU : L ≤ U := he.1.trans he.2.1
+  have hAL  := hi.1
+  have hUB  := hi.2
+  have hLU  := he.1.trans he.2.1
   let f : ℤ → ℂ := fun q => modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q
   let main := ∑ q ∈ Finset.Ioo P Q, modelPhaseStationaryMainTerm F T N q
   have hsplit := sum_int_interval_three_parts f hAL hLU hUB

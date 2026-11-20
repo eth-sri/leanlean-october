@@ -12,31 +12,23 @@ open MeasureTheory Set MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval
 namespace GuthMaynard.Improvement
 
-theorem shortTwistedNorm_fourth_le {H : ℝ} (hH : 0 ≤ H) (t : ℝ) :
-    (shortTwistedNorm H t)^4 ≤
-      16*H^((1:ℝ)/25)*(zetaMomentCriticalNorm t)^4 := by
-  have hm := (norm_zetaMollifier_le_cutoff (2*H^((1:ℝ)/100))
-    (s := (1/2:ℂ)+(t:ℂ)*Complex.I) (by norm_num)).trans
-    (Nat.floor_le (by positivity))
-  have hp : shortTwistedNorm H t ≤ zetaMomentCriticalNorm t*(2*H^((1:ℝ)/100)) := by
-    unfold shortTwistedNorm zetaMomentCriticalNorm
-    rw [norm_mul]
-    simpa only [Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] using
-      mul_le_mul_of_nonneg_left hm (norm_nonneg (riemannZeta ((1/2:ℂ)+(t:ℂ)*Complex.I)))
-  have hh := pow_le_pow_left₀ (show 0 ≤ shortTwistedNorm H t by unfold shortTwistedNorm; positivity) hp 4
-  have he : (H^((1:ℝ)/100))^4 = H^((1:ℝ)/25) := by
-    rw [← Real.rpow_natCast,← Real.rpow_mul hH]; norm_num
-  simp only [mul_pow,he] at hh
-  nlinarith [hh]
+theorem mollifiedNorm_fourth_le {X : ℝ} (hX : 0 ≤ X) (t : ℝ) :
+    (mollifiedNorm X t)^4 ≤ X^4*(zetaMomentCriticalNorm t)^4 := by
+  have hm := (norm_zetaMollifier_le_cutoff X (s := (1/2:ℂ)+(t:ℂ)*Complex.I) (by norm_num)).trans (Nat.floor_le hX)
+  unfold mollifiedNorm zetaMomentCriticalNorm
+  rw [norm_mul, mul_pow, mul_comm (X^4)]
+  push_cast
+  gcongr
 
-/-- Constants precede height; the norm and integration interval are literal. -/
+/-- Widen the dyadic fourth-moment interval and apply the cutoff bound for
+an independent mollifier length. -/
 theorem weak_short_moment {ε : ℝ} (hε : 0 < ε) :
-    ∃ C H0 : ℝ, 0 < C ∧ 2 ≤ H0 ∧ ∀ H : ℝ, H0 ≤ H →
-      (∫ t in Icc (H/2) (3*H), (shortTwistedNorm H t)^4) ≤
-        C*H^(1+(1:ℝ)/25+ε) := by
+    ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in Filter.atTop, ∀ X : ℝ, 0 ≤ X →
+      (∫ t in Icc (H/2) (3*H), (mollifiedNorm X t)^4) ≤ C*X^4*H^(1+ε) := by
   obtain ⟨B,Hb,hB,hb⟩ := Fourth.zeta_fourth_dyadic ε hε
-  refine ⟨48*(B+1)*2^(1+ε),max 2 (2*Hb),by positivity,le_max_left _ _,?_⟩
-  intro H hH
+  refine ⟨3*(B+1)*2^(1+ε),by positivity,?_⟩
+  filter_upwards [Filter.eventually_ge_atTop (max 2 (2*Hb))] with H hH
+  intro X hX
   have hH2 : 2 ≤ H := (le_max_left _ _).trans hH
   have hHb : 2*Hb ≤ H := (le_max_right _ _).trans hH
   have hpos : 0 < H := by linarith
@@ -68,19 +60,13 @@ theorem weak_short_moment {ε : ℝ} (hε : 0 < ε) :
     exact (intervalIntegral.integral_mono_interval le_rfl (by linarith) (by linarith)
       (Filter.Eventually.of_forall hf0) (hc.intervalIntegrable (μ := volume) (a := H/2) (b := 4*H))).trans hs
   calc
-    _ ≤ ∫ t in Icc (H/2) (3*H),16*H^((1:ℝ)/25)*f t := by
-      apply integral_mono ((shortTwistedNorm_continuous H).pow 4).integrableOn_Icc
+    _ ≤ ∫ t in Icc (H/2) (3*H),X^4*f t := by
+      apply integral_mono ((mollifiedNorm_continuous X).pow 4).integrableOn_Icc
         (hc.const_mul _).integrableOn_Icc
-      exact fun t => shortTwistedNorm_fourth_le hpos.le t
-    _ = (16*H^((1:ℝ)/25))*(∫ t in Icc (H/2) (3*H),f t) := integral_const_mul _ _
-    _ ≤ (16*H^((1:ℝ)/25))*(3*(B+1)*(2*H)^(1+ε)) :=
+      exact fun t => mollifiedNorm_fourth_le hX t
+    _ = (X^4)*(∫ t in Icc (H/2) (3*H),f t) := integral_const_mul _ _
+    _ ≤ (X^4)*(3*(B+1)*(2*H)^(1+ε)) :=
       mul_le_mul_of_nonneg_left hi (by positivity)
-    _ = _ := by
-      rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hpos.le]
-      have he : H^((1:ℝ)/25)*H^(1+ε)=H^(1+1/25+ε) := by
-        rw [← Real.rpow_add hpos]; congr 1; ring
-      calc
-        _ = (48*(B+1)*2^(1+ε))*(H^((1:ℝ)/25)*H^(1+ε)) := by ring
-        _ = _ := by rw [he]
+    _ = _ := by rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hpos.le]; ring
 
 end GuthMaynard.Improvement

@@ -25,19 +25,16 @@ theorem level_volume_of_separated_bound {S : Set ℝ} {a b B : ℝ}
   have hex : ∀ k : ℤ, ∃ x : ℝ, k ∈ K → x ∈ S ∧ ⌊x⌋ = k := by
     intro k
     by_cases hk : k ∈ K
-    · obtain ⟨x,hx,he⟩ := (Finset.mem_filter.mp hk).2
-      exact ⟨x,fun _ => ⟨hx,he⟩⟩
+    · grind
     · exact ⟨0,fun h => (hk h).elim⟩
   choose f hf using hex
   obtain ⟨J,hJK,hcount,hpar⟩ := MathCollab.Density.occupied_bins_parity K
-  have hfJ : ∀ k ∈ J, f k ∈ S ∧ ⌊f k⌋ = k := fun k hk => hf k (hJK hk)
+  have hfJ  := fun k hk => hf k (hJK hk)
   have hinj : Set.InjOn f (J : Set ℤ) := by
     intro k hk l hl he
     rw [← (hfJ k hk).2, ← (hfJ l hl).2,he]
   have hb := hcard (J.image f) (by
-    intro x hx
-    obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-    exact (hfJ k hk).1) (by
+    grind) (by
     intro x hx y hy hxy
     obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
     obtain ⟨l,hl,rfl⟩ := Finset.mem_image.mp hy

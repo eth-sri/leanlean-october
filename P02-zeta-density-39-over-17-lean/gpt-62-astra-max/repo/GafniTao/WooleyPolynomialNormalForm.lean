@@ -32,8 +32,7 @@ def wooleyPolynomialTail (d : ℕ) (f : Polynomial ℤ) : Polynomial ℤ :=
 theorem wooleyPolynomial_low_add_tail
     (d : ℕ) (f : Polynomial ℤ) :
     wooleyPolynomialLowPart d f +
-        X ^ d * wooleyPolynomialTail d f = f := by
-  exact modByMonic_add_div f (X ^ d)
+        X ^ d * wooleyPolynomialTail d f = f := modByMonic_add_div f (X ^ d)
 
 /-- Division by `X^d` does not alter a coefficient below degree `d`. -/
 theorem wooleyPolynomialLowPart_coeff

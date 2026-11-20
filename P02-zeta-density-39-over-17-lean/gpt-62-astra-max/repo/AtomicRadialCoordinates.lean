@@ -44,7 +44,7 @@ theorem spatialCubicMode_radial {a : ℝ → ℂ} (ha : ∀ x, x ≤ 0 → a x =
   · simp [spatialCubicMode,radialAmplitude,mul_comm v r,hv]
   by_cases hy : a (r*y) = 0
   · simp [spatialCubicMode,radialAmplitude,mul_comm y r,hy]
-  have hrp : 0 < r := lt_of_not_ge (fun h => hr (ha r h))
+  have hrp  := lt_of_not_ge (fun h => hr (ha r h))
   have hvp : 0 < v := by
     by_contra hn
     exact hv (ha _ (mul_nonpos_of_nonneg_of_nonpos hrp.le (le_of_not_gt hn)))

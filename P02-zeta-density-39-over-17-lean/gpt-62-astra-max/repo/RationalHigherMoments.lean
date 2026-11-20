@@ -24,13 +24,13 @@ theorem rational_energy_bound_one : RationalEnergyBound 1 := by
 theorem rational_energy_bound_double {k : ℕ} (hk : 0 < k)
     (hbound : RationalEnergyBound k) : RationalEnergyBound (2*k) := by
   intro η hη
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
+  
   obtain ⟨C, hC, htwo⟩ := rational_coefficient_energy_two_subpower (show 0 < η/(2*k) by positivity)
   obtain ⟨D, hD, hkbound⟩ := hbound (η/4) (by positivity)
   refine ⟨C*D^2, by positivity, ?_⟩
   intro H hH A hA c
   let S : ℝ := ∑ r ∈ A, ‖c r‖^2
-  have hS : 0 ≤ S := sum_nonneg (fun _ _ => sq_nonneg _)
+  
   have hH0 : 0 < H := by linarith
   have he := htwo (H^k) (one_le_pow₀ hH) (rationalProducts A k)
     (rational_product_height A k hA) (rationalPowerCoefficient A k c)
@@ -51,7 +51,6 @@ theorem rational_energy_bound_double {k : ℕ} (hk : 0 < k)
     _ ≤ C*(H^k)^(η/(2*k))*(D*H^(η/4)*S^k)^2 :=
       mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hE hb 2) (by positivity)
     _ = (C*D^2)*((H^k)^(η/(2*k))*(H^(η/4))^2)*S^(2*k) := by
-      rw [show S^(2*k) = (S^k)^2 by rw [← pow_mul, Nat.mul_comm]]
       ring
     _ = _ := by rw [hpow]
 
@@ -73,9 +72,9 @@ theorem rational_energy_bound_downward {k m : ℕ} (hk : 0 < k) (hkm : k ≤ m)
   by_cases hSzero : S = 0
   · rw [rational_coefficient_energy_zero A hk (fun r hr => (hA r hr).1) c hSzero]
     positivity
-  have hSp : 0 < S := lt_of_le_of_ne hS (Ne.symm hSzero)
+  have hSp  := lt_of_le_of_ne hS (Ne.symm hSzero)
   let a : ℂ := (Real.sqrt S : ℝ)
-  let b : ℚ → ℂ := fun r => a⁻¹*c r
+  let b  := fun r => a⁻¹*c r
   have ha : a ≠ 0 := by dsimp [a]; exact_mod_cast (Real.sqrt_pos.mpr hSp).ne'
   have hanorm : ‖a‖^2 = S := by
     simp only [a, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _), Real.sq_sqrt hS]
@@ -86,7 +85,7 @@ theorem rational_energy_bound_downward {k m : ℕ} (hk : 0 < k) (hkm : k ≤ m)
   have hlow := rational_coefficient_energy_le_one_add A k m hkm (fun r hr => (hA r hr).1) b
   have hhigh := hd H hH A hA b
   rw [hb, one_pow, mul_one] at hhigh
-  have hHpow : 1 ≤ H^η := Real.one_le_rpow hH hη.le
+  have hHpow  := Real.one_le_rpow hH hη.le
   have hnormbound : rationalCoefficientEnergy A k b ≤ (1+D)*H^η := by
     nlinarith
   have hc : c = fun r => a*b r := by

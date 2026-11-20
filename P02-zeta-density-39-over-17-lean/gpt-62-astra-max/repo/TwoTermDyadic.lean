@@ -18,7 +18,7 @@ theorem integral_zero_le_of_two_dyadic_powers (f : ℝ → ℝ) (hf : Continuous
       (∫ t in H..2*H,f t) ≤ A*H^p+D*H^r) :
     (∫ t in 0..T,f t) ≤ A*(2:ℝ)^p*T^p+D*(2:ℝ)^r*T^r := by
   have hBp : 0 < B := by linarith
-  have hTp : 0 < T := hBp.trans_le hT
+  have hTp  := hBp.trans_le hT
   have htwoP : (2:ℝ) ≤ (2:ℝ)^p := by
     simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ) ≤ 2) hp
   have htwoR : (2:ℝ) ≤ (2:ℝ)^r := by
@@ -56,7 +56,7 @@ theorem integral_zero_le_of_two_dyadic_powers (f : ℝ → ℝ) (hf : Continuous
             Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hX]
           ring
   obtain ⟨m,hlo,hhi⟩ := exists_dyadic_cutoff ((le_div_iff₀ hBp).mpr (by simpa using hT))
-  have hlo' : T ≤ (2:ℝ)^m*B := (div_le_iff₀ hBp).mp hlo
+  have hlo'  := (div_le_iff₀ hBp).mp hlo
   have hhi' : (2:ℝ)^m*B ≤ 2*T := by
     have hh := (mul_le_mul_iff_left₀ hBp).mpr hhi
     field_simp at hh

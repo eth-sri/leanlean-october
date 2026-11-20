@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaStationaryDeficit
 public import Mathlib.Analysis.Calculus.Deriv.Slope
 
@@ -82,11 +81,7 @@ theorem modelPhaseMorseCoordinate_slope (F : ℝ → ℝ) (v u : ℝ) :
   rw [slope,modelPhaseMorseCoordinate_at_inverse,vsub_eq_sub,sub_zero,smul_eq_mul,
     Real.sqrt_div' _ (sq_nonneg _),Real.sqrt_sq_eq_abs]
   unfold modelPhaseMorseCoordinate
-  split_ifs with h
-  · rw [abs_of_neg (sub_neg.mpr h)]
-    field_simp
-  · rw [abs_of_nonneg (sub_nonneg.mpr (le_of_not_gt h))]
-    ring
+  grind
 
 theorem modelPhaseMorseCoordinate_hasDerivAt_inverse
     {F : ℝ → ℝ} {σ δ v : ℝ} {P : ℕ}

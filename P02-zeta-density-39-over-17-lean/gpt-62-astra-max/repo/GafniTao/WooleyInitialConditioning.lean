@@ -28,8 +28,7 @@ theorem wooley_critical_interpolation_term
         (w * u ^ 2 * v ^ (2 * (s - 1))) ^ (1 / (s : ℝ)) *
           (w * v ^ 2 * u ^ (2 * (s - 1))) ^ (1 / (s : ℝ)) =
       w * (u * u) * (v * v) := by
-  have hsReal : (0 : ℝ) < s := by
-    exact_mod_cast (by omega : 0 < s)
+  
   have hroot : 0 < 1 / (s : ℝ) := by positivity
   by_cases hw0 : w = 0
   · calc
@@ -58,9 +57,9 @@ theorem wooley_critical_interpolation_term
           Real.zero_rpow hroot.ne']
         ring
       _ = w * (u * u) * (v * v) := by simp [hv0]
-  have hwpos : 0 < w := lt_of_le_of_ne hw (Ne.symm hw0)
-  have hupos : 0 < u := lt_of_le_of_ne hu (Ne.symm hu0)
-  have hvpos : 0 < v := lt_of_le_of_ne hv (Ne.symm hv0)
+  have hwpos  := lt_of_le_of_ne hw (Ne.symm hw0)
+  have hupos  := lt_of_le_of_ne hu (Ne.symm hu0)
+  have hvpos  := lt_of_le_of_ne hv (Ne.symm hv0)
   rw [Real.mul_rpow (mul_nonneg hw (sq_nonneg u))
       (pow_nonneg hv _),
     Real.mul_rpow hw (sq_nonneg u),
@@ -125,10 +124,10 @@ theorem wooley_pair_mixed_holder
       (∑ i ∈ t, w i) ^ (s - 2) *
         (∑ i ∈ t, w i * u i ^ 2 * v i ^ (2 * (s - 1))) *
           (∑ i ∈ t, w i * v i ^ 2 * u i ^ (2 * (s - 1))) := by
-  let f₀ : ι → ℝ := w
-  let f₁ : ι → ℝ := fun i =>
+  let f₀  := w
+  let f₁  := fun i =>
     w i * u i ^ 2 * v i ^ (2 * (s - 1))
-  let f₂ : ι → ℝ := fun i =>
+  let f₂  := fun i =>
     w i * v i ^ 2 * u i ^ (2 * (s - 1))
   have hf₀ : ∀ i ∈ t, 0 ≤ f₀ i := by
     intro i hi
@@ -172,7 +171,6 @@ theorem wooley_pair_mixed_holder
     _ = (∑ i ∈ t, w i) ^ (s - 2) *
         (∑ i ∈ t, w i * u i ^ 2 * v i ^ (2 * (s - 1))) *
           (∑ i ∈ t, w i * v i ^ 2 * u i ^ (2 * (s - 1))) := by
-      dsimp [f₀, f₁, f₂]
       rw [hsub, Real.rpow_natCast]
 
 /-- For residues at depth `nu`, Wooley's separation predicate is precisely
@@ -229,7 +227,6 @@ theorem wooleySeparatedResiduePairs_card_le (p nu : ℕ) [NeZero p] :
     #(wooleySeparatedResiduePairs p nu) ≤
         #((Finset.univ : Finset (ZMod (p ^ nu))).product Finset.univ) :=
       by
-        unfold wooleySeparatedResiduePairs
         exact Finset.card_le_card (Finset.filter_subset _ _)
     _ = (p ^ nu) ^ 2 := by
       simp [pow_two]
@@ -266,10 +263,7 @@ theorem wooley_cauchy_three_factor_symmetric
   have hW : 0 ≤ W := by
     dsimp [W]
     exact Finset.sum_nonneg fun i hi => hw i hi
-  have hA : 0 ≤ A := by
-    dsimp [A]
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _)) (sq_nonneg _)
+  
   have hF : 0 ≤ F := by
     dsimp [F]
     exact Finset.sum_nonneg fun i hi =>
@@ -302,18 +296,15 @@ theorem wooley_cauchy_three_factor_symmetric
     simpa only [A, W, F, G] using
       (wooley_pair_mixed_holder t w u v hw hu hv hs)
   have hRaised := pow_le_pow_left₀ (sq_nonneg S) hCauchy s
-  have hcardPow : (#t : ℝ) ^ s ≤ (q ^ 2) ^ s :=
+  have hcardPow  :=
     pow_le_pow_left₀ (Nat.cast_nonneg _) hcard s
-  have hmassPow : W ^ (s - 2) ≤ (M ^ 2) ^ (s - 2) :=
+  have hmassPow  :=
     pow_le_pow_left₀ hW hmass (s - 2)
   have hSquare : (S ^ s) ^ 2 ≤
       (q ^ s * M ^ (s - 2) * F) ^ 2 := by
     calc
       (S ^ s) ^ 2 = (S ^ 2) ^ s := by
-        calc
-          (S ^ s) ^ 2 = S ^ (s * 2) := (pow_mul S s 2).symm
-          _ = S ^ (2 * s) := by rw [Nat.mul_comm]
-          _ = (S ^ 2) ^ s := pow_mul S 2 s
+        ring
       _ ≤ ((#t : ℝ) * A) ^ s := hRaised
       _ = (#t : ℝ) ^ s * A ^ s := by rw [mul_pow]
       _ ≤ (#t : ℝ) ^ s * (W ^ (s - 2) * F * G) := by
@@ -323,19 +314,6 @@ theorem wooley_cauchy_three_factor_symmetric
       _ = (q ^ 2) ^ s * ((M ^ 2) ^ (s - 2) * F * F) := by
         rw [show G = F by simpa [G, F] using hsymmetry]
       _ = (q ^ s * M ^ (s - 2) * F) ^ 2 := by
-        have hqpow : (q ^ 2) ^ s = (q ^ s) ^ 2 := by
-          calc
-            (q ^ 2) ^ s = q ^ (2 * s) := (pow_mul q 2 s).symm
-            _ = q ^ (s * 2) := by rw [Nat.mul_comm]
-            _ = (q ^ s) ^ 2 := pow_mul q s 2
-        have hMpow : (M ^ 2) ^ (s - 2) =
-            (M ^ (s - 2)) ^ 2 := by
-          calc
-            (M ^ 2) ^ (s - 2) = M ^ (2 * (s - 2)) :=
-              (pow_mul M 2 (s - 2)).symm
-            _ = M ^ ((s - 2) * 2) := by rw [Nat.mul_comm]
-            _ = (M ^ (s - 2)) ^ 2 := pow_mul M (s - 2) 2
-        rw [hqpow, hMpow, mul_pow, mul_pow]
         ring
   have hRight : 0 ≤ q ^ s * M ^ (s - 2) * F :=
     mul_nonneg (mul_nonneg (pow_nonneg hq _) (pow_nonneg hM _)) hF
@@ -350,8 +328,7 @@ theorem wooley_norm_sum_sq_le_diagonal_add_offDiagonal
         ∑ i ∈ t, ∑ j ∈ t with j ≠ i, ‖z i‖ * ‖z j‖ := by
   have hnorm : ‖∑ i ∈ t, z i‖ ≤ ∑ i ∈ t, ‖z i‖ :=
     norm_sum_le _ _
-  have hnonneg : 0 ≤ ∑ i ∈ t, ‖z i‖ :=
-    Finset.sum_nonneg fun _ _ => norm_nonneg _
+  
   have hsq := pow_le_pow_left₀ (norm_nonneg _) hnorm 2
   calc
     ‖∑ i ∈ t, z i‖ ^ 2 ≤ (∑ i ∈ t, ‖z i‖) ^ 2 := hsq
@@ -463,8 +440,7 @@ def wooleyInitialNu (epsilon Lambda : ℝ) (H : ℕ) : ℕ :=
 theorem wooley_initialNu_lower
     {epsilon Lambda : ℝ} {H : ℕ} :
     4 * epsilon * (H : ℝ) / Lambda ≤
-      (wooleyInitialNu epsilon Lambda H : ℝ) := by
-  exact Nat.le_ceil _
+      (wooleyInitialNu epsilon Lambda H : ℝ) := Nat.le_ceil _
 
 /-- Quantitative absorption of the contracted copy of `U`. -/
 theorem wooley_absorb_contraction
@@ -472,13 +448,6 @@ theorem wooley_absorb_contraction
     (hmain : U ≤ c * (a * U + K))
     (hsmall : 2 * c * a ≤ 1) :
     U ≤ 2 * c * K := by
-  have hca : c * a ≤ (1 : ℝ) / 2 := by nlinarith
-  have hcontract : c * a * U ≤ ((1 : ℝ) / 2) * U :=
-    mul_le_mul_of_nonneg_right hca hU
-  have hmain' : U ≤ c * a * U + c * K := by
-    calc
-      U ≤ c * (a * U + K) := hmain
-      _ = c * a * U + c * K := by ring
   nlinarith
 
 end

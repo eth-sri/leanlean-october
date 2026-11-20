@@ -22,7 +22,7 @@ theorem sqrt_add_div_sqrt_le_transition {T N : ℝ}
   have ht2 := Real.sq_sqrt hT.le
   have hn2 := Real.sq_sqrt hN.le
   have hlow : Real.sqrt N ≤ 2*Real.sqrt T := by nlinarith
-  have hu : Real.sqrt T ≤ Real.sqrt N := Real.sqrt_le_sqrt hhi
+  have hu  := Real.sqrt_le_sqrt hhi
   have hd : N/Real.sqrt T ≤ 2*Real.sqrt N := by
     apply (div_le_iff₀ ht).mpr
     nlinarith

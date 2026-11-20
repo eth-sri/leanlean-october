@@ -30,7 +30,7 @@ theorem discrete_energy_sharp_profile_native (ε : ℝ) (hε : 0 < ε) :
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, T₀, hC, hT₀, ?_⟩
   intro T N a W V hT hN hTN hNT ha hV hValues hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
+  have hTtwo  := hT₀.trans hT
   have hTpos : 0 < T := by linarith
   have hPow : 1 ≤ T ^ ε := Real.one_le_rpow (by linarith) hε.le
   have hAbsSep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t - u| := by
@@ -38,13 +38,13 @@ theorem discrete_energy_sharp_profile_native (ε : ℝ) (hε : 0 < ε) :
     simpa only [Real.dist_eq] using hSep t ht u hu hne
   let A := sourceRatioIndices N
   let P := A ×ˢ A
-  let F : ℕ × ℕ → ℝ := fun p => ‖∑ t ∈ W, phase (pairRatio p) t‖ ^ 3
+  let F  := fun p => ‖∑ t ∈ W, phase (pairRatio p) t‖ ^ 3
   let Psmall := P.filter (fun p => (pairGcd p : ℝ) < N ^ 2 / T)
   let Plarge := P.filter (fun p => N ^ 2 / T ≤ (pairGcd p : ℝ))
   let S : ℝ := N ^ 2 * Real.sqrt (W.card : ℝ) * Real.sqrt (discreteAdditiveEnergy W : ℝ)
   let B : ℝ := N * sharpCubicProfile T W
   have hS : 0 ≤ S := by dsimp only [S]; positivity
-  have hB : 0 ≤ B := mul_nonneg hN.le (sharpCubicProfile_nonneg hTpos.le W)
+  have hB  := mul_nonneg hN.le (sharpCubicProfile_nonneg hTpos.le W)
   have hGeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
       N < p.1 ∧ (p.1 : ℝ) ≤ 2 * N ∧ N < p.2 ∧ (p.2 : ℝ) ≤ 2 * N := by
     intro p hp
@@ -60,14 +60,14 @@ theorem discrete_energy_sharp_profile_native (ε : ℝ) (hε : 0 < ε) :
       obtain ⟨h1, h2, hl1, hu1, hl2, hu2⟩ := hGeom p hp
       exact ⟨h1, h2, hl1, hu1, hl2, hu2, hd⟩) W
         (by intro t ht; simpa only [zero_add] using hBase t ht) hAbsSep
-    exact h.trans_eq (by dsimp only [S]; ring)
+    exact h.trans_eq (by ring)
   have hLargeBound : (∑ p ∈ Plarge, F p) ≤ C₂ * T ^ ε * B := by
     have h := hLarge T N Plarge W hT hN hTN hNT (by
       intro p hp
       obtain ⟨hp, hd⟩ := Finset.mem_filter.mp hp
       obtain ⟨h1, h2, hl1, hu1, hl2, hu2⟩ := hGeom p hp
       exact ⟨h1, h2, hl1, hu1, hl2, hu2, hd⟩) hSep hBase
-    exact h.trans_eq (by dsimp only [B]; ring)
+    exact h.trans_eq (by ring)
   have hPartition : (∑ p ∈ P, F p) =
       (∑ p ∈ Psmall, F p) + ∑ p ∈ Plarge, F p := by
     simpa only [Psmall, Plarge, not_lt] using
@@ -80,7 +80,7 @@ theorem discrete_energy_sharp_profile_native (ε : ℝ) (hε : 0 < ε) :
   have hC₁le : C₀ * C₁ ≤ C := by dsimp only [C]; nlinarith
   have hC₂le : C₀ * C₂ ≤ C := by dsimp only [C]; nlinarith
   have hCpow : C ≤ C * T ^ ε := by nlinarith
-  have hCoeffSmall : C₀ * C₁ * S ≤ C * T ^ ε * S :=
+  have hCoeffSmall  :=
     mul_le_mul_of_nonneg_right (hC₁le.trans hCpow) hS
   have hCoeffLarge : C₀ * C₂ * T ^ ε * B ≤ C * T ^ ε * B := by gcongr
   calc

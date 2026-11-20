@@ -1,8 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorGlobal
-public import TaoTrudgianYang2025.FresnelEvaluation
-public import Mathlib.Analysis.Fourier.FourierTransformDeriv
 
 @[expose] public section
 

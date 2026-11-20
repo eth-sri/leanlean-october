@@ -54,8 +54,7 @@ theorem matrix_mixed_trace_schur {ι : Type*} [Fintype ι] [DecidableEq ι]
       simp only [norm_mul]
       nlinarith [mul_nonneg (norm_nonneg (C i j)) (sq_nonneg (‖H j k‖-‖H k i‖))]
     _ = ((∑ i, ∑ j, ∑ k, ‖C i j‖*‖H j k‖^2)+
-        (∑ i, ∑ j, ∑ k, ‖C i j‖*‖H k i‖^2))/2 := by
-      exact hsum _ _
+        (∑ i, ∑ j, ∑ k, ‖C i j‖*‖H k i‖^2))/2 := hsum _ _
     _ ≤ _ := by linarith
 
 /-- The actual continuous Gram term has a uniform row and column bound

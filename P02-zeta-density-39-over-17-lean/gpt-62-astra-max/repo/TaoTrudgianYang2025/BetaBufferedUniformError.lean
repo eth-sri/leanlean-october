@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedLogBudget
 
 @[expose] public section
@@ -46,9 +45,9 @@ theorem modelPhase_buffered_source_uniform_error
   have hMF : 3*F₀ ≤ M := (le_max_right _ _).trans ((le_max_right _ _).trans (le_max_right _ _))
   refine ⟨M,hM₁,?_⟩
   intro N T a b hN hT ha hb hflat F δ hδ hF
-  have hNpos : 0 < N := zero_lt_one.trans_le hN
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hη : 0 < (Real.sqrt T)⁻¹ := inv_pos.mpr (Real.sqrt_pos.mpr hTpos)
+  have hNpos  := zero_lt_one.trans_le hN
+  have hTpos  := zero_lt_one.trans_le hT
+  have hη  := inv_pos.mpr (Real.sqrt_pos.mpr hTpos)
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have hs := hsource N T a b hNpos hT ha hb hflat F δ hδ hF
   let A := modelPhaseCoreLower σ δ T N
@@ -66,15 +65,15 @@ theorem modelPhase_buffered_source_uniform_error
   have hinner := modelPhaseBufferedInnerLengths_le hσ hδ hF₁ hTpos hNpos hη
     ((one_le_div hNpos).mpr ha) ((div_le_iff₀ hNpos).mpr hb) hflat
   have hscale := three_scale_le_polynomial_budget (zero_le_one.trans hC) hTpos.le hN
-  have hlogA : Real.log ((A+(R : ℤ)).toNat : ℝ) ≤ G :=
+  have hlogA  :=
     log_nat_le_polynomial_budget hK hTpos.le hfar.1
-  have hlogB : Real.log (((R : ℤ)-B).toNat : ℝ) ≤ G :=
+  have hlogB  :=
     log_nat_le_polynomial_budget hK hTpos.le hfar.2
-  have hlogL : Real.log ((L-A).toNat : ℝ) ≤ G :=
+  have hlogL  :=
     log_nat_le_polynomial_budget hK hTpos.le (hinner.1.trans hscale)
-  have hlogU : Real.log ((B-U).toNat : ℝ) ≤ G :=
+  have hlogU  :=
     log_nat_le_polynomial_budget hK hTpos.le (hinner.2.1.trans hscale)
-  have hlogI : Real.log ((Q-P-1).toNat : ℝ) ≤ G :=
+  have hlogI  :=
     log_nat_le_polynomial_budget hK hTpos.le (hinner.2.2.trans hscale)
   have hfarlog : (4/Real.pi)*(2+Real.log ((A+(R : ℤ)).toNat : ℝ)+
       Real.log (((R : ℤ)-B).toNat : ℝ)) ≤ (8/Real.pi)*(1+G) := by

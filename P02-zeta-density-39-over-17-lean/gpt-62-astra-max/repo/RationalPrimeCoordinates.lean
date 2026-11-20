@@ -31,8 +31,8 @@ theorem rationalExponent_mul {r s : ℚ} (hr : r ≠ 0) (hs : s ≠ 0) (p : ℕ)
 /-- Positive rationals are determined by all their signed prime exponents. -/
 theorem rationalExponent_injective {r s : ℚ} (hr : 0 < r) (hs : 0 < s)
     (h : ∀ p, rationalExponent r p = rationalExponent s p) : r = s := by
-  have hrn : r.num.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr (Rat.num_ne_zero.mpr hr.ne')
-  have hsn : s.num.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr (Rat.num_ne_zero.mpr hs.ne')
+  have hrn  := Int.natAbs_ne_zero.mpr (Rat.num_ne_zero.mpr hr.ne')
+  have hsn  := Int.natAbs_ne_zero.mpr (Rat.num_ne_zero.mpr hs.ne')
   have hc : r.num.natAbs*s.den = s.num.natAbs*r.den := by
     apply Nat.eq_of_factorization_eq (mul_ne_zero hrn s.den_nz) (mul_ne_zero hsn r.den_nz)
     intro p
@@ -75,7 +75,6 @@ theorem integerFourthWeight_le (n : ℤ) :
   have h2 : (16 : ℝ) ≤ ((n.natAbs : ℝ)+1)^4 := by
     have hh := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) (by linarith : (2 : ℝ) ≤ n.natAbs+1) 4
     exact (by norm_num : (16 : ℝ) = 2^4).le.trans hh
-  have hh := mul_le_mul h2 h1 (sq_nonneg _) (by positivity)
   nlinarith [show (((n.natAbs : ℝ)+1)^4)*(((n.natAbs : ℝ)+1)^2) =
     ((n.natAbs : ℝ)+1)^6 by ring]
 

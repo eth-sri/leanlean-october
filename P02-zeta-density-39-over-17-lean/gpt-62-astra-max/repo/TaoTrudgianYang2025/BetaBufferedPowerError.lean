@@ -1,5 +1,4 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedUniformError
 
 @[expose] public section
@@ -23,8 +22,8 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 theorem one_add_log_add_one_le_rpow {T ε : ℝ} (hT : 1 ≤ T) (hε : 0 < ε) :
     1+Real.log (T+1) ≤ (1+(2 : ℝ)^ε/ε)*T^ε := by
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hp : 1 ≤ T^ε := Real.one_le_rpow hT hε.le
+  have hTpos  := zero_lt_one.trans_le hT
+  have hp  := Real.one_le_rpow hT hε.le
   have hlog := Real.log_le_rpow_div (show 0 ≤ T+1 by linarith) hε
   have hpow := Real.rpow_le_rpow (show 0 ≤ T+1 by linarith)
     (show T+1 ≤ 2*T by linarith) hε.le
@@ -105,10 +104,10 @@ theorem modelPhase_source_sharp_comparison
   obtain ⟨M,hM,hsource⟩ := modelPhase_buffered_source_power_error hσ hε
   refine ⟨max M 5,hM.trans (le_max_left _ _),?_⟩
   intro N T a b hN hT ha hb F δ hδ hF
-  have hNpos : 0 < N := zero_lt_one.trans_le hN
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
+  have hNpos  := zero_lt_one.trans_le hN
+  
   have hx : 0 ≤ N/Real.sqrt T := by positivity
-  have hp : 1 ≤ T^ε := Real.one_le_rpow hT hε.le
+  have hp  := Real.one_le_rpow hT hε.le
   by_cases hlong : (a : ℝ)/N+4*(Real.sqrt T)⁻¹ < (b : ℝ)/N
   · rw [modelPhaseSharpStationarySet_of_long hlong]
     exact (hsource N T a b hN hT ha hb hlong F δ hδ hF).trans

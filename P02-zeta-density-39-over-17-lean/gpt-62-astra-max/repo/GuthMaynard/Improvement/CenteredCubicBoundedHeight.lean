@@ -27,7 +27,7 @@ theorem centered_cubic_mass_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   let := timeMeasure_finite hi
   let : IsFiniteMeasure (tripleMeasure (timeMeasure μ)) := by unfold tripleMeasure; infer_instance
   have hLp : 0 < L := by linarith
-  have hDL : 0 ≤ D*L := mul_nonneg hD hLp.le
+  have hDL  := mul_nonneg hD hLp.le
   refine ⟨kernelCubic_integrable (timeMeasure μ)
     (centeredKernel_measurable ha.continuous.measurable l u L) hDL
     (fun s => hbound L s hL),?_⟩
@@ -60,7 +60,7 @@ theorem centered_cubic_bounded_height {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
   refine ⟨D*T₀^4,by positivity,?_⟩
   intro T L t₀ t₁ μ hT hTT₀ hL hLT ht hlen hm h0 hi h2 hsup
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := by linarith
+  
   have hsqrt : Real.sqrt (t₁-t₀) ≤ T := (Real.sqrt_le_iff).mpr ⟨hTp.le,by nlinarith⟩
   have hmass : (∫ t, μ t) ≤ T*Real.sqrt (∫ t, μ t^2) :=
     (compact_time_mass_bound ht hm h0 h2 hsup).trans (by gcongr)

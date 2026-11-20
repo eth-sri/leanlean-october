@@ -35,7 +35,7 @@ theorem approximateModelPhase_curvature_bounds {σ δ : ℝ} {F : ℝ → ℝ}
   rw [modelPhaseErrorAt, iteratedDerivWithin_modelPhase σ 1 hu] at he
   norm_num at he
   rw [abs_le] at he
-  have huPos : 0 < u := zero_lt_one.trans_le hu.1
+  have huPos  := zero_lt_one.trans_le hu.1
   have hlow : (2 : ℝ)^(-σ-1) ≤ u^(-σ-1) :=
     Real.rpow_le_rpow_of_nonpos huPos hu.2 (by linarith)
   have hhigh : u^(-σ-1) ≤ 1 :=
@@ -53,7 +53,7 @@ theorem approximateModelPhase_curvature_deriv_bounds {σ δ : ℝ} {F : ℝ → 
     modelPhaseCurvatureLower σ ≤ -deriv (deriv F) u ∧
       -deriv (deriv F) u ≤ σ+1 := by
   have huClosed : u ∈ phaseInterval := ⟨hu.1.le,hu.2.le⟩
-  have hcont : ContDiffAt ℝ 2 F u :=
+  have hcont  :=
     (hF.1.contDiffAt (Icc_mem_nhds hu.1 hu.2)).of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2)
   have h := approximateModelPhase_curvature_bounds hσ hδ hF huClosed
   rw [iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval hcont huClosed] at h

@@ -36,9 +36,7 @@ theorem ibpAmplitude_contDiffAt {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   induction n generalizing p x with
   | zero => exact hw.contDiffAt.comp _ contDiffAt_snd
   | succ n ih =>
-    have hg : ContDiffAt ℝ ∞
-        (fun z : (ℝ × ℝ) × ℝ => ibpAmplitude w n z.1 z.2 * phaseQuotient z.1 z.2)
-        (p, x) := (ih h).mul (phaseQuotient_contDiffAt h)
+    have hg  := (ih h).mul (phaseQuotient_contDiffAt h)
     have hf : ContDiffAt ℝ ∞
         (Function.uncurry (fun z : (ℝ × ℝ) × ℝ =>
           fun y : ℝ => ibpAmplitude w n z.1 y * phaseQuotient z.1 y))
@@ -113,7 +111,7 @@ theorem offBand_denominator_gap {H v k x : ℝ} (hH : 0 < H)
     (H + |k|) / 300 ≤ |v - 2 * Real.pi * k * x| := by
   have hp := Real.pi_gt_three
   have hp4 := Real.pi_lt_four
-  have hx0 : 0 ≤ x := by linarith [hx.1]
+  
   by_cases hk0 : k ≤ 0
   · rw [abs_of_nonpos hk0]
     have hprod : 2 * Real.pi * (-k) * (1 / 3) ≤ 2 * Real.pi * (-k) * x :=
@@ -123,24 +121,21 @@ theorem offBand_denominator_gap {H v k x : ℝ} (hH : 0 < H)
     have hsign : 0 ≤ v - 2 * Real.pi * k * x := by nlinarith
     rw [abs_of_nonneg hsign]
     nlinarith
-  · have hkpos : 0 < k := lt_of_not_ge hk0
+  · have hkpos  := lt_of_not_ge hk0
     rw [abs_of_pos hkpos]
     rcases hk with hlo | hhi
-    · have hsmall : k * (20 * Real.pi) < H := (lt_div_iff₀ (by positivity)).1 hlo
+    · have hsmall  := (lt_div_iff₀ (by positivity)).1 hlo
       have hprod : 2 * Real.pi * k * x ≤ 2 * Real.pi * k * 6 :=
         mul_le_mul_of_nonneg_left hx.2 (by positivity)
-      have hpk : 3 * k ≤ Real.pi * k := mul_le_mul_of_nonneg_right hp.le hkpos.le
+      have hpk  := mul_le_mul_of_nonneg_right hp.le hkpos.le
       have hsign : 0 ≤ v - 2 * Real.pi * k * x := by nlinarith
       rw [abs_of_nonneg hsign]
       nlinarith
-    · have hlarge : 4 * H < k * Real.pi := (div_lt_iff₀ Real.pi_pos).1 hhi
+    · have hlarge  := (div_lt_iff₀ Real.pi_pos).1 hhi
       have hprod : 2 * Real.pi * k * (1 / 3) ≤ 2 * Real.pi * k * x :=
         mul_le_mul_of_nonneg_left hx.1 (by positivity)
-      have hpk : 3 * k ≤ Real.pi * k := mul_le_mul_of_nonneg_right hp.le hkpos.le
-      have hpk4 : Real.pi * k ≤ 4 * k := mul_le_mul_of_nonneg_right hp4.le hkpos.le
-      have hsign : v - 2 * Real.pi * k * x ≤ 0 := by nlinarith
-      rw [abs_of_nonpos hsign]
-      nlinarith
+      have hpk  := mul_le_mul_of_nonneg_right hp.le hkpos.le
+      grind
 
 /-- The normalized parameters lie in one compact set, independently of all scales. -/
 theorem normalized_offBand_mem {H v k : ℝ} (hH : 0 < H)
@@ -178,7 +173,7 @@ theorem hasDerivAt_logOscillation (R : ℝ) (p : ℝ × ℝ) {x : ℝ} (hx : x �
     convert (((Real.hasDerivAt_log hx).const_mul p.1).sub
       ((hasDerivAt_id x).const_mul p.2)).const_mul R using 1
     · rfl
-    · simp only [div_eq_mul_inv, mul_one]
+    · ring
   convert (hr.ofReal_comp.mul_const Complex.I).cexp using 1
   · rfl
   · dsimp [logOscillation]
@@ -212,7 +207,7 @@ theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
     {p : ℝ × ℝ} (hp : p ∈ offBandParameters) (R : ℝ) (n : ℕ) :
     ((R : ℂ) * Complex.I) * ibpIntegral w R p n = -ibpIntegral w R p (n + 1) := by
-  let g : ℝ → ℂ := fun x => ibpAmplitude w n p x * phaseQuotient p x
+  let g  := fun x => ibpAmplitude w n p x * phaseQuotient p x
   have hg : ∀ x ∈ uIcc (1 / 3 : ℝ) 6,
       HasDerivAt g (ibpAmplitude w (n + 1) p x) x := by
     intro x hx
@@ -258,7 +253,7 @@ theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
       apply intervalIntegral.integral_congr
       intro x hx
       have hx' : x ∈ Icc (1 / 3 : ℝ) 6 := by simpa only [uIcc_of_le (by norm_num : (1 / 3 : ℝ) ≤ 6)] using hx
-      have hx0 : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (by linarith [hx'.1])
+      have hx0  := Complex.ofReal_ne_zero.mpr (by linarith [hx'.1])
       have hd : (p.1 : ℂ) - (p.2 : ℂ) * (x : ℂ) ≠ 0 := by
         exact_mod_cast offBandParameters_ne hp hx'
       have hd' : (p.1 : ℂ) - (x : ℂ) * (p.2 : ℂ) ≠ 0 := by

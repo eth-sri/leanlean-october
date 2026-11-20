@@ -46,7 +46,7 @@ private theorem hIntegral_const_div_sq (C p : ℂ) (x₁ x₂ y : ℝ)
       ring
     convert (hasDerivAt_const x (-C)).div hg (hne x) using 1
     ring
-  have hd : deriv F = F' := funext fun x => (hhas x).deriv
+  have hd  := funext fun x => (hhas x).deriv
   have hdiff : ∀ x ∈ Set.uIcc x₁ x₂, DifferentiableAt ℝ F x :=
     fun x _ => (hhas x).differentiableAt
   have hcont : Continuous F' := by
@@ -82,7 +82,7 @@ private theorem vIntegral_const_div_sq (C p : ℂ) (x y₁ y₂ : ℝ)
       · simp
     convert (hasDerivAt_const y (-C)).div hg (hne y) using 1
     ring
-  have hd : deriv F = F' := funext fun y => (hhas y).deriv
+  have hd  := funext fun y => (hhas y).deriv
   have hdiff : ∀ y ∈ Set.uIcc y₁ y₂, DifferentiableAt ℝ F y :=
     fun y _ => (hhas y).differentiableAt
   have hcont : Continuous F' := by
@@ -97,7 +97,6 @@ private theorem vIntegral_const_div_sq (C p : ℂ) (x y₁ y₂ : ℝ)
     funext y
     dsimp [F']
     ring] at hFTC
-  rw [intervalIntegral.integral_const_mul] at hFTC
   simpa [VIntegral, F, smul_eq_mul] using hFTC
 
 /-- The double-pole term has zero integral around every rectangle whose
@@ -132,12 +131,12 @@ theorem rectangleIntegral'_div_sq_eq_deriv
     (hN : DifferentiableOn ℂ N (Rectangle z w)) :
     RectangleIntegral' (fun u : ℂ => N u / (u - p) ^ 2) z w =
       deriv N p := by
-  let D : ℂ → ℂ := dslope N p
-  let R : ℂ → ℂ := dslope D p
+  let D  := dslope N p
+  let R  := dslope D p
   let C : ℂ := N p
   let A : ℂ := D p
-  let f : ℂ → ℂ := fun u => N u / (u - p) ^ 2
-  let f₁ : ℂ → ℂ := fun u => f u - C / (u - p) ^ 2
+  let f  := fun u => N u / (u - p) ^ 2
+  let f₁  := fun u => f u - C / (u - p) ^ 2
   have hD : HolomorphicOn D (Rectangle z w) := by
     change DifferentiableOn ℂ D (Rectangle z w)
     dsimp only [D]
@@ -192,10 +191,9 @@ theorem rectangleIntegral'_div_sq_eq_deriv
     exact differentiableAt_const C |>.div
       ((differentiableAt_id.sub_const p).pow 2)
       (pow_ne_zero 2 (sub_ne_zero.mpr hu.2))
-  have hf₁Int : RectangleBorderIntegrable f₁ z w :=
+  have hf₁Int  :=
     HolomorphicOn.rectangleBorderIntegrable' hf₁Holo hp
-  have hDoubleInt : RectangleBorderIntegrable
-      (fun u : ℂ => C / (u - p) ^ 2) z w :=
+  have hDoubleInt  :=
     HolomorphicOn.rectangleBorderIntegrable' hDoubleHolo hp
   have hPoint : f = f₁ + fun u : ℂ => C / (u - p) ^ 2 := by
     funext u

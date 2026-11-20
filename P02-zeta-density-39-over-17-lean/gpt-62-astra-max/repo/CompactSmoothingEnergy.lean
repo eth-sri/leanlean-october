@@ -43,7 +43,7 @@ theorem finite_smooth_l2_energy {ι : Type*} [DecidableEq ι]
     (∫ t, ‖finiteSmooth S c f t‖^2) ≤
       (2*a*B^2)*(∑ i ∈ S, ∑ j ∈ S, if |c i-c j| ≤ 2*a then (1:ℝ) else 0) := by
   classical
-  let bound : ι → ι → ℝ → ℝ := fun i j t =>
+  let bound  := fun i j t =>
     if |c i-c j| ≤ 2*a then
       (Icc (c i-a) (c i+a)).indicator (fun _ => B^2) t else 0
   have hbi (i j : ι) : Integrable (bound i j) := by

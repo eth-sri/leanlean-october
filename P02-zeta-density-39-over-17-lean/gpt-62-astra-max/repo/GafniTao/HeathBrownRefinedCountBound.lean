@@ -80,9 +80,7 @@ theorem heathBrownPairCount_card_cast_le_refined_raw
   have hfactor : 0 ≤ ((D : ℝ) + c) * (b + a * D) := by
     dsimp only [a, b, c]
     positivity
-  have hreplace :
-      ((D : ℝ) + c) * (b + a * D) * (harmonic D : ℝ) ≤
-        ((D : ℝ) + c) * (b + a * D) * (1 + Real.log N) :=
+  have hreplace  :=
     mul_le_mul_of_nonneg_left hharm hfactor
   have htwo' :
       ((heathBrownPairCountTwo N k H K f).card : ℝ) ≤
@@ -91,7 +89,7 @@ theorem heathBrownPairCount_card_cast_le_refined_raw
     calc
       ((heathBrownPairCountTwo N k H K f).card : ℝ) ≤
           N + 2 * (((D : ℝ) + c) * (b + a * D) *
-            (harmonic D : ℝ)) := by simpa only [K, D, c, b, a] using htwo
+            (harmonic D : ℝ)) := by linarith
       _ ≤ N + 2 * (((D : ℝ) + c) * (b + a * D) *
           (1 + Real.log N)) := by gcongr
   exact hpair.trans (hlocal.trans

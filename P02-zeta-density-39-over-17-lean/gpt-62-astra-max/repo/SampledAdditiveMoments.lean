@@ -65,12 +65,7 @@ theorem point_smoothing_energy (W : Finset ℝ) (t₀ : ℝ)
         intro t ht
         rw [sum_eq_single t]
         · simp
-        · intro u hu hne
-          have hdist := hsep t ht u hu hne.symm
-          have hn : ¬ |(t-t₀)-(u-t₀)| ≤ 2*(1/64:ℝ) := by
-            rw [sub_sub_sub_cancel_right]
-            linarith
-          exact ite_eq_right hn
+        · grind
         · exact fun hn => False.elim (hn ht)
       _ = _ := by simp
   rw [he,show (2:ℝ)*(1/64)*32^2=32 by norm_num] at hh
@@ -101,14 +96,9 @@ theorem pair_smoothing_energy (W : Finset ℝ) (t₀ : ℝ) :
     apply sum_le_sum
     intro w _
     by_cases h : |(t+u-2*t₀)-(v+w-2*t₀)| ≤ 2*(1/32:ℝ)
-    · have heq : (t+u-2*t₀)-(v+w-2*t₀)=t+u-v-w := by ring
-      rw [heq] at h
-      have h1 : |t+u-v-w| ≤ 1 := by linarith
-      rw [heq,ite_eq_left h,ite_eq_left h1]
-    · simp only [ite_eq_right h]
-      split_ifs <;> norm_num
-  rw [show (2:ℝ)*(1/32)*32^2=64 by norm_num] at hh
-  exact hh.trans (mul_le_mul_of_nonneg_left hc (by norm_num))
+    · grind
+    · split_ifs <;> norm_num
+  apply hh.trans <;> first | assumption | positivity | linarith
 
 /-- Sampled second moment from the existing Fourier-square sampling theorem. -/
 theorem sampled_character_second {ι : Type*} [Fintype ι]

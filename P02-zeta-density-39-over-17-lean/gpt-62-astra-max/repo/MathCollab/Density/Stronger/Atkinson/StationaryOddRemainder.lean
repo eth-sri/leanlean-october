@@ -5,7 +5,10 @@ Selected proof slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
 Narrow stationary refinement; see third_party/twelfth/ATKINSON_SYMMETRIC_MANIFEST.json.
 Mathlib and previously ported PNT foundations retain Apache-2.0 attribution.
 -/
-public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalStationary
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonQuadraticKernel
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryTails
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonNaturalAmplitude
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerIntegral
 
 @[expose] public section
 
@@ -46,7 +49,7 @@ theorem IntervalC2Bound.norm_sub_linear_le {f : ℝ → ℂ} {a b M R r H y : �
   have hr : r ∈ Icc (r - H) (r + H) := ⟨by linarith, by linarith⟩
   have hym : y ∈ Icc (r - H) (r + H) := by
     constructor <;> linarith [(abs_le.mp hy).1, (abs_le.mp hy).2]
-  let F : ℝ → ℂ := fun z => f z - ((z - r : ℝ) : ℂ) * deriv f r
+  let F  := fun z => f z - ((z - r : ℝ) : ℂ) * deriv f r
   have hF (z : ℝ) (hz : z ∈ Icc (r - H) (r + H)) :
       HasDerivAt F (deriv f z - deriv f r) z := by
     have h := (((hasDerivAt_id z).sub_const r).ofReal_comp.mul_const (deriv f r))
@@ -81,8 +84,8 @@ theorem norm_exp_real_phase_sub_linear_le (x : ℝ) :
     have h := (norm_sub_le (Complex.exp ((x : ℂ) * I) - 1) ((x : ℂ) * I)).trans
       (add_le_add (norm_sub_le _ _) le_rfl)
     rw [hnorm, norm_one, hxnorm] at h
-    have hx1 : 1 < |x| := lt_of_not_ge hx
-    have hx2 : |x| ^ 2 = x ^ 2 := sq_abs x
+    
+    have hx2  := sq_abs x
     nlinarith [sq_nonneg (|x| - 1)]
 
 theorem abs_log_one_add_sub_cubic_le {z : ℝ} (hz : |z| ≤ 1 / 2) :
@@ -176,10 +179,7 @@ theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
     have hd : d^2 = (4*T^2/9)*|y-r|^6/r^6 := by
       dsimp [d, atkinsonRootCubicCorrection]
       rw [show |y-r|^6 = (y-r)^6 by
-        calc
-          _ = (|y-r|^2)^3 := by ring
-          _ = ((y-r)^2)^3 := by rw [sq_abs]
-          _ = _ := by ring]
+        grind]
       ring
     rw [hd]
     have hp : 0 ≤ T^2*|y-r|^6/r^6 := by positivity

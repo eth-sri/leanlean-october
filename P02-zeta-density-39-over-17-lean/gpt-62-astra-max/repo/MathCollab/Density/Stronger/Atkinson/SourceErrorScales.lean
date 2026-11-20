@@ -53,7 +53,7 @@ theorem source_window_square_le_height {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
   have hsq := (div_le_iff₀ hT0).mp (source_scaled_window_square_le hT hG hδ hwidth hlog hlog4)
   have hGpow : G ≤ T ^ (1 / 2 + δ / 4) :=
     hwidth.trans (Real.rpow_le_rpow_of_exponent_le hT (by linarith))
-  have hprod := mul_le_mul_of_nonneg_right hGpow hT0.le
+  
   nlinarith [Real.rpow_pos_of_pos hT0 (1 / 2 + δ / 4)]
 
 theorem source_scaled_window_fourth_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
@@ -61,7 +61,7 @@ theorem source_scaled_window_fourth_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
     (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) :
     T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 4 / T ^ 2 ≤ G := by
   have hT0 : 0 < T := by linarith
-  have hratio : (G * Real.log T) ^ 2 / T ≤ 1 :=
+  have hratio  :=
     (div_le_one hT0).mpr (source_window_square_le_height hT hG hδ hwidth hlog hlog4)
   calc
     _ = (T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 2 / T) *
@@ -139,7 +139,6 @@ theorem exists_zetaSquareGaussianWindow_log_error {δ : ℝ} (hδ : 0 < δ) :
           mul_le_mul_of_nonneg_right hM (by positivity)
         _ = G * ((6 * D * Real.sqrt (2 * Real.pi)) * T ^ (1 / 2 + δ / 4) *
             Real.exp (-(1 / 2) * (Real.log T) ^ 2)) := by
-          rw [show -(Real.log T) ^ 2 / 2 = -(1 / 2) * (Real.log T) ^ 2 by ring]
           ring
         _ ≤ G * 1 := mul_le_mul_of_nonneg_left ht hG.le
         _ = G := mul_one G

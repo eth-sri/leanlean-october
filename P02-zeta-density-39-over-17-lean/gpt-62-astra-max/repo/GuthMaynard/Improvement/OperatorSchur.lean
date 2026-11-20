@@ -55,7 +55,7 @@ theorem operator_positive_norm_of_quadratic {E : Type*} [NormedAddCommGroup E]
   by_cases hf : f=0
   · subst f
     simpa using hM
-  have hf2 : 0 < ‖f‖^2 := sq_pos_of_pos (norm_pos_iff.mpr hf)
+  have hf2  := sq_pos_of_pos (norm_pos_iff.mpr hf)
   have he : T.reApplyInnerSelf f = (inner ℂ f (T f)).re := by
     change RCLike.re (inner ℂ (T f) f) = _
     rw [hT.inner_left_eq_inner_right, RCLike.re_eq_complex_re]
@@ -96,7 +96,7 @@ theorem operator_continuous_compact_schur {μ : ℝ → ℝ}
     {l u A L : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hA : 0 ≤ A) (hL : 0 ≤ L)
     (haA : ∀ x, a x ≤ A) (hs : ∀ x, x ∉ Icc l u → a x=0) :
     ‖operatorContinuous (timeMeasure μ) a L‖ ≤ (2*Real.pi*u*A)*L*B := by
-  have hu : 0 ≤ u := hl.le.trans hlu
+  have hu  := hl.le.trans hlu
   have hh := operator_continuous_schur hm h0 hB hb ha hi ha0
     (show 0 ≤ u*A by positivity) hL (fun x hx => ?_) (fun x hx => ?_)
   · simpa only [mul_assoc] using hh
@@ -125,7 +125,7 @@ theorem operator_fixed_cutoff_schur {a : ℝ → ℝ} (ha : Continuous a)
     · rw [hs x hx]
       exact hW
   have hai : Integrable a := ha.integrable_of_hasCompactSupport (HasCompactSupport.intro isCompact_Icc hs)
-  have hu : 0 ≤ u := hl.le.trans hlu
+  have hu  := hl.le.trans hlu
   refine ⟨2*Real.pi*u*W+1, by positivity, ?_⟩
   intro μ hm hiμ hμ0 B hB hμB L hL
   let := timeMeasure_finite hiμ

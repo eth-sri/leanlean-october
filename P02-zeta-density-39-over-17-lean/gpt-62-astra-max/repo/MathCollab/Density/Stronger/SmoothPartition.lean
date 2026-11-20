@@ -46,9 +46,6 @@ theorem dyadicStep_zero {x : ℝ} (hx : 3/2 ≤ x) : dyadicStep x = 0 := by
 the interval (1/2,2), so splitting at the centre introduces no endpoint mass. -/
 def smoothDyadicWeight (x : ℝ) : ℝ := dyadicStep x-dyadicStep (2*x)
 
-theorem smoothDyadicWeight_contDiff : ContDiff ℝ ∞ smoothDyadicWeight := by
-  unfold smoothDyadicWeight
-  exact dyadicStep_contDiff.sub (dyadicStep_contDiff.comp (contDiff_const.mul contDiff_id))
 
 theorem smoothDyadicWeight_zero_of_le {x : ℝ} (hx : x ≤ 5/8) :
     smoothDyadicWeight x = 0 := by
@@ -71,16 +68,6 @@ theorem smoothDyadicWeight_bounds (x : ℝ) :
     dsimp [smoothDyadicWeight]
     constructor <;> linarith
 
-theorem smoothDyadicWeight_tsupport :
-    tsupport smoothDyadicWeight ⊆ Icc (5/8 : ℝ) (3/2) := by
-  apply closure_minimal _ isClosed_Icc
-  intro x hx
-  change smoothDyadicWeight x ≠ 0 at hx
-  constructor
-  · by_contra h
-    exact hx (smoothDyadicWeight_zero_of_le (by linarith))
-  · by_contra h
-    exact hx (smoothDyadicWeight_zero_of_ge (by linarith))
 
 theorem smoothDyadicWeight_div_pow_succ (x : ℝ) (n : ℕ) :
     smoothDyadicWeight (x/(2 : ℝ)^(n+1)) =

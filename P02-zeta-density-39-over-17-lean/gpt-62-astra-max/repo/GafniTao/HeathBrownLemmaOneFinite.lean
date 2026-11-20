@@ -59,7 +59,7 @@ theorem heathBrown_lemma_one_finite_preVMVT
         heathBrownIntegratedMajorant N k H s f +
       V * ENNReal.ofReal ((H : ℝ) ^ 2) := by
   dsimp only
-  let V : ENNReal := ENNReal.ofReal
+  let V  := ENNReal.ofReal
     ((2 : ℝ) ^ (k - 1) *
       (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))
   have hbase := heathBrown_H_mul_exponentialSum_norm_le hHN f

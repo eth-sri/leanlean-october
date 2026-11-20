@@ -41,19 +41,17 @@ theorem wooleyNormalizationExponent_pos
     {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k) :
     0 < wooleyNormalizationExponent k r := by
   unfold wooleyNormalizationExponent
-  have hk : 1 < k := lt_of_le_of_lt hr hrk
-  have hkr : 0 < k - r := Nat.sub_pos_of_lt hrk
+  have hk  := lt_of_le_of_lt hr hrk
+  have hkr  := Nat.sub_pos_of_lt hrk
   have hnum : (0 : ℝ) < (k - 1 : ℕ) := by
     exact_mod_cast Nat.sub_pos_of_lt hk
-  have hden : (0 : ℝ) < (r : ℝ) * (k - r : ℕ) := by
-    positivity
-  exact div_pos hnum hden
+  apply div_pos <;> first | assumption | positivity | linarith
 
 theorem wooleyNormalizationExponent_le_one
     {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k) :
     wooleyNormalizationExponent k r ≤ 1 := by
   unfold wooleyNormalizationExponent
-  have hkr : 1 ≤ k - r := Nat.one_le_iff_ne_zero.mpr
+  have hkr  := Nat.one_le_iff_ne_zero.mpr
     (Nat.ne_of_gt (Nat.sub_pos_of_lt hrk))
   have hden : (0 : ℝ) < (r : ℝ) * (k - r : ℕ) := by positivity
   rw [div_le_one hden]
@@ -63,11 +61,7 @@ theorem wooleyNormalizationExponent_le_one
     exact_mod_cast (Nat.add_sub_of_le hrk.le).symm
   have hprod := mul_nonneg (sub_nonneg.mpr hrR) (sub_nonneg.mpr hkrR)
   rw [Nat.cast_sub (show 1 ≤ k by omega)]
-  have hid :
-      (r : ℝ) * (k - r : ℕ) - ((k : ℝ) - 1) =
-        ((r : ℝ) - 1) * ((k - r : ℕ) - 1) := by
-    rw [hsplit]
-    ring
+  
   norm_num only [Nat.cast_one] at *
   nlinarith [hprod]
 
@@ -109,11 +103,7 @@ theorem wooley_normalization_pred_exponent
     Nat.cast_add, Nat.cast_one]
   have hkR : (r : ℝ) < k := by exact_mod_cast hrk
   have hrR : (1 : ℝ) < r := by exact_mod_cast hr
-  have hkr0 : (k : ℝ) - r ≠ 0 := by linarith
-  have hkr10 : (k : ℝ) - r + 1 ≠ 0 := by linarith
-  have hr0 : (r : ℝ) ≠ 0 := by linarith
-  have hr10 : (r : ℝ) - 1 ≠ 0 := by linarith
-  field_simp [hkr0, hkr10, hr0, hr10]
+  grind
 
 /-- The complementary exponent in (8.3) is `1-1/(k-r+1)`. -/
 theorem wooley_section8_raw_complement
@@ -128,7 +118,6 @@ theorem wooleySourceNormalizationScale_nonneg
     (p B H s : ℕ) [NeZero p] [NeZero (p ^ B)]
     (Delta : ℝ) (gamma : WooleySourceSequence) :
     0 ≤ wooleySourceNormalizationScale phi p B H s Delta gamma := by
-  unfold wooleySourceNormalizationScale
   exact mul_nonneg (Real.rpow_nonneg (by positivity) _)
     (by
       unfold wooleySourcePolynomialConditionedMean
@@ -160,7 +149,6 @@ theorem wooleySourceNormalizedMixedMean_nonneg
     (Delta : ℝ) (gamma : WooleySourceSequence) :
     0 ≤ wooleySourceNormalizedMixedMean
       phi p B H s r a b nu Delta gamma := by
-  unfold wooleySourceNormalizedMixedMean
   exact Real.rpow_nonneg (div_nonneg
     (wooleySourcePolynomialMixedMean_nonneg
       phi s r p B a b nu gamma)
@@ -176,12 +164,12 @@ theorem wooley_normalized_two_factor
     (hmain : A ≤ D * (X ^ u * Y ^ v)) :
     (A / Z) ^ e ≤
       D ^ e * (X / Z) ^ (u * e) * (Y / Z) ^ (v * e) := by
-  have hAZ : 0 ≤ A / Z := div_nonneg hA hZ.le
-  have hright : 0 ≤ D * (X ^ u * Y ^ v) / Z := by positivity
-  have hdiv : A / Z ≤ D * (X ^ u * Y ^ v) / Z :=
+  have hAZ  := div_nonneg hA hZ.le
+  
+  have hdiv  :=
     div_le_div_of_nonneg_right hmain hZ.le
   have hpow := Real.rpow_le_rpow hAZ hdiv he
-  have hZne : Z ≠ 0 := ne_of_gt hZ
+  
   have hrewrite :
       D * (X ^ u * Y ^ v) / Z =
         D * ((X / Z) ^ u * (Y / Z) ^ v) := by

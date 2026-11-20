@@ -51,9 +51,9 @@ theorem fordVinogradovMomentNat_le_trivial_power_mul
         fordVinogradovMomentNat s₀ k Q := by
   let μ : Measure (UnitAddTorus (Fin k)) :=
     Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle)
-  let W : UnitAddTorus (Fin k) → ℝ :=
+  let W  :=
     fun α => ‖fordVinogradovWeylSum k Q α‖
-  have hW : Continuous W :=
+  have hW  :=
     (continuous_fordVinogradovWeylSum k Q).norm
   have hIntLeft : Integrable (fun α => W α ^ (2 * s)) μ := by
     rw [← integrableOn_univ]
@@ -77,10 +77,7 @@ theorem fordVinogradovMomentNat_le_trivial_power_mul
     rw [← hindex, pow_add]
     nlinarith [pow_nonneg (norm_nonneg (fordVinogradovWeylSum k Q α))
       (2 * s₀)]
-  have hIntegral :
-      (∫ α, W α ^ (2 * s) ∂μ) ≤
-        ∫ α, (Q : ℝ) ^ (2 * (s - s₀)) *
-          W α ^ (2 * s₀) ∂μ :=
+  have hIntegral  :=
     integral_mono hIntLeft hIntRight hPoint
   rw [integral_const_mul] at hIntegral
   simpa only [W, μ, ford_vinogradov_torus_real_mean_eq] using hIntegral

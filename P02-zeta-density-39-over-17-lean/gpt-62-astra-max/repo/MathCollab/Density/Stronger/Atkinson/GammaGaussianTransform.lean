@@ -27,7 +27,7 @@ theorem integrable_physical_gaussian {G : ℝ} (hG : G ≠ 0) :
 theorem physical_gaussian_tail_le {G r : ℝ} (hG : 0 < G) (hr : 0 ≤ r) :
     (∫ x in (Ioc (-r) r)ᶜ, Real.exp (-(x / G) ^ 2)) ≤
       Real.sqrt (2 * Real.pi) * G * Real.exp (-(r / G) ^ 2 / 2) := by
-  let K : ℝ → ℝ := fun x => Real.exp (-(1 / (2 * G ^ 2)) * x ^ 2)
+  let K  := fun x => Real.exp (-(1 / (2 * G ^ 2)) * x ^ 2)
   have hK : Integrable K := integrable_exp_neg_mul_sq (by positivity)
   have hmass : (∫ x : ℝ, K x) = Real.sqrt (2 * Real.pi) * G := by
     dsimp only [K]
@@ -85,7 +85,7 @@ theorem norm_zetaSquareGammaGaussianIntegrand (T G v x : ℝ) :
 
 theorem integrable_zetaSquareGammaGaussianIntegrand (T v : ℝ) {G : ℝ} (hG : G ≠ 0) :
     Integrable (zetaSquareGammaGaussianIntegrand T G v) := by
-  have hc : Continuous zetaSquareReflectedGammaPhase :=
+  have hc  :=
     continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
   have hf : Continuous (zetaSquareGammaGaussianIntegrand T G v) := by
     unfold zetaSquareGammaGaussianIntegrand

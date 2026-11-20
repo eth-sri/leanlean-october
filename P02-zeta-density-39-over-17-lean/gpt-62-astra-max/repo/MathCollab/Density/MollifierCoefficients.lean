@@ -43,7 +43,6 @@ theorem mollifierCoefficient_vanishes {X : ℝ} {n : ℕ} (hn : 2 ≤ n) (hnX : 
 
 theorem mollifierCoefficient_abs_le (X : ℝ) (n : ℕ) :
     |mollifierCoefficient X n| ≤ (n.divisors.card : ℤ) := by
-  unfold mollifierCoefficient
   calc
     _ ≤ ∑ d ∈ n.divisors with d ≤ ⌊X⌋₊, |ArithmeticFunction.moebius d| :=
       Finset.abs_sum_le_sum_abs _ _

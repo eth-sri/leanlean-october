@@ -26,7 +26,7 @@ theorem reflection_recursive_scale {N : ℕ} {T L H : ℝ}
     {M : ℕ} (hM : M ∈ reflectionBlocks L H) :
     (N : ℝ) ≤ (N : ℝ)*M ∧ (N : ℝ)*M ≤ 8*(T+1) := by
   have hNp : (0 : ℝ) < N := by exact_mod_cast hN
-  have hL : 0 < L := hNp.trans_le hNL
+  have hL  := hNp.trans_le hNL
   obtain ⟨hMp, _, hMhi⟩ := reflectionBlock_scale_bounds hL hH hM
   have hM1 : (1 : ℝ) ≤ M := by exact_mod_cast hMp
   refine ⟨by nlinarith, ?_⟩
@@ -54,7 +54,7 @@ theorem reflection_error_specialization {T L r : ℝ} (hT : 2 ≤ T)
     r^2*L^(-318 : ℝ) ≤ (9/4)*T^(-104 : ℝ) ∧
       r*L^(-318 : ℝ) ≤ (3/2)*T^(-105 : ℝ) := by
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hL
+  have hLp  := (Real.rpow_pos_of_pos hTp _).trans_le hL
   have hr' : r ≤ (3/2)*T := by linarith
   have hp := reflection_scale_error_power hT hL
   have he₂ : T^2*T^(-106 : ℝ) = T^(-104 : ℝ) := by
@@ -88,7 +88,7 @@ theorem uniform_reflection_application (w : ReflectionCutoff) :
   refine ⟨9*K^2, by positivity, ?_⟩
   intro T L H U hT hL hH hsep hdiam
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hL
+  have hLp  := (Real.rpow_pos_of_pos hTp _).trans_le hL
   have hc : (U.card : ℝ) ≤ T+1 := by
     have hh := separated_card_le_localDiameter hsep
     dsimp [localDiameter] at hh

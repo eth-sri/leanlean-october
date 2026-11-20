@@ -1,7 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaMorseSupport
-public import TaoTrudgianYang2025.BetaModelJetEstimatesFull
 
 @[expose] public section
 
@@ -28,7 +26,7 @@ theorem iteratedDeriv_segmentTaylorAverage
     iteratedDeriv n (segmentTaylorAverage f a k) x =
       segmentTaylorAverage f a (k+n) x := by
   induction n generalizing x with
-  | zero => simp only [iteratedDeriv_zero,Nat.add_zero]
+  | zero => rfl
   | succ n ih =>
       rw [iteratedDeriv_succ]
       have he : iteratedDeriv n (segmentTaylorAverage f a k) =ᶠ[𝓝 x]

@@ -30,7 +30,7 @@ theorem heathBrown_source_abel_identity
       by_cases hHzero : H = 0
       · subst H
         simp
-      · have hHpos : 1 ≤ H := Nat.one_le_iff_ne_zero.mpr hHzero
+      · have hHpos  := Nat.one_le_iff_ne_zero.mpr hHzero
         have hih := ih hHpos
         rw [Finset.sum_Icc_succ_top (by omega : 1 ≤ H + 1)]
         rw [Finset.sum_Icc_succ_top (by omega : 1 ≤ H + 1)]

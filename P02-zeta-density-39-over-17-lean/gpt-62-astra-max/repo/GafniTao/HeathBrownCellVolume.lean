@@ -69,8 +69,7 @@ theorem measureReal_heathBrownCoefficientCell_exact
       (2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹) := by
   unfold Measure.real
   rw [measure_heathBrownCoefficientCell_exact hH f n]
-  rw [ENNReal.toReal_ofReal]
-  exact mul_nonneg (by positivity) (by positivity)
+  simp
 
 end
 

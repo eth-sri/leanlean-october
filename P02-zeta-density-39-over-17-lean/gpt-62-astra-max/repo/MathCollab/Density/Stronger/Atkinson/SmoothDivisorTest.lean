@@ -52,7 +52,7 @@ theorem contDiff_zetaSmoothDivisorTest {T G L : ℝ}
   by_cases hx : 0 < x
   · exact ((Complex.ofRealCLM.contDiff.comp (contDiff_zetaDivisorBandCutoff T G L)).contDiffAt).mul
       (contDiffAt_zetaShortDivisorTestFunction T hG.ne' hx)
-  · have hxa : x < zetaDivisorBandEdge T G (-2 * L) :=
+  · have hxa  :=
       (le_of_not_gt hx).trans_lt (zetaDivisorBandEdge_pos hT G (-2 * L))
     apply (contDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq
     filter_upwards [isOpen_Iio.mem_nhds hxa] with y hy

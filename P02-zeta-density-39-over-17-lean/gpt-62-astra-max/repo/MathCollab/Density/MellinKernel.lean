@@ -66,7 +66,7 @@ theorem integrable_mellin_kernel {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
       (continuousOn_id.abs.inv₀
         (fun z hz => abs_ne_zero.mpr (ha.trans_le hz.1).ne')).integrableOn_Icc
     exact hh.mono_set Ioc_subset_Icc_self
-  have hm : Integrable (mellinLine w) := integrable_mellin_line_one hw hws
+  have hm  := integrable_mellin_line_one hw hws
   have hp : Measurable (fun p : ℝ × ℝ =>
       dirichletPhase k (p.2-v) * oscillatoryKernel v p.2 p.1) := by
     unfold dirichletPhase oscillatoryKernel
@@ -98,7 +98,7 @@ theorem modeIntegral_scaled {w : ℝ → ℂ}
     (hk : 0 < k) (hab : a ≤ b) (ha : a ≤ k / 2) (hb : 5*k ≤ b) (v : ℝ) :
     modeIntegral w v k = ∫ z in a..b, (k : ℂ)⁻¹ * w (z/k) *
       Complex.exp (I * ((v * Real.log (z/k) - 2*Real.pi*z : ℝ) : ℂ)) := by
-  let f : ℝ → ℂ := fun y => w y *
+  let f  := fun y => w y *
     Complex.exp (I * ((v * Real.log y - 2*Real.pi*k*y : ℝ) : ℂ))
   have hg : modeIntegral w v k = ∫ y, f y := by
     unfold modeIntegral
@@ -140,10 +140,7 @@ theorem modeIntegral_scaled {w : ℝ → ℂ}
       rw [← intervalIntegral.integral_const_mul]
       apply intervalIntegral.integral_congr
       intro z _
-      dsimp [f]
-      have hh : 2*Real.pi*k*(z/k) = 2*Real.pi*z := by field_simp
-      rw [hh]
-      ring
+      grind
 
 /-- Pointwise Mellin expansion after the dilation, with no inverse-scale residue. -/
 theorem scaled_cutoff_mellin {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
@@ -156,8 +153,6 @@ theorem scaled_cutoff_mellin {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   rw [cutoff_mellin_inversion_phase hw hws (div_pos hz hk)]
   let C : ℂ := ((1/(2*Real.pi) : ℝ) : ℂ)
   let E : ℂ := Complex.exp (I * ((v * Real.log (z/k) - 2*Real.pi*z : ℝ) : ℂ))
-  change (k : ℂ)⁻¹ * (C * ∫ r : ℝ,
-      ((z/k : ℝ) : ℂ)⁻¹ * dirichletPhase (z/k) (-r) * mellinLine w r) * E = _
   calc
     _ = C * (∫ r : ℝ, (k : ℂ)⁻¹ *
         ((((z/k : ℝ) : ℂ)⁻¹ * dirichletPhase (z/k) (-r)) * mellinLine w r) * E) := by
@@ -224,7 +219,6 @@ theorem integrable_reflection_kernel {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   have hh := (integrable_mellin_kernel hw hws
     (b := 20*H/Real.pi) (reflection_interval_pos hH) k v).integral_prod_right
   convert hh using 1
-  funext r
   simp only [reflectionKernel, intervalIntegral.integral_of_le (reflection_interval_order hH),
     ← mul_assoc, integral_const_mul]
 
@@ -239,7 +233,7 @@ theorem norm_reflectionKernel_sq_le {H : ℝ} (hH : 0 < H) (v r : ℝ) :
   have hs2 := Real.sq_sqrt (show 0 ≤ H/20 by positivity)
   have hb := (le_div_iff₀ hs).1 hh
   have hb2 := mul_self_le_mul_self (mul_nonneg (norm_nonneg _) hs.le) hb
-  have hn : 0 ≤ ‖reflectionKernel H v r‖ := norm_nonneg _
+  
   apply (le_div_iff₀ hH).2
   nlinarith [sq_nonneg ‖reflectionKernel H v r‖]
 

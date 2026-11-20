@@ -16,7 +16,7 @@ def ratioFourierInput (μ : ℝ → ℝ) (a b : ℝ) : ℝ → ℝ :=
 
 theorem ratioFourierInput_measurable {μ : ℝ → ℝ} (h1 : Integrable μ) (a b : ℝ) :
     Measurable (ratioFourierInput μ a b) := by
-  have hc : Continuous (𝓕 (fun t => (μ t : ℂ))) :=
+  have hc  :=
     VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
       (innerSL ℝ).continuous₂ (Complex.ofRealCLM.integrable_comp h1)
   exact ((hc.measurable.norm).comp (by unfold mellinFrequency; fun_prop)).indicator
@@ -24,7 +24,6 @@ theorem ratioFourierInput_measurable {μ : ℝ → ℝ} (h1 : Integrable μ) (a 
 
 theorem ratioFourierInput_nonneg (μ : ℝ → ℝ) (a b v : ℝ) :
     0 ≤ ratioFourierInput μ a b v := by
-  unfold ratioFourierInput
   exact indicator_nonneg (fun _ _ => norm_nonneg _) _
 
 theorem ratioFourierInput_on {μ : ℝ → ℝ} {a b v : ℝ} (hv : v ∈ Icc a b) :

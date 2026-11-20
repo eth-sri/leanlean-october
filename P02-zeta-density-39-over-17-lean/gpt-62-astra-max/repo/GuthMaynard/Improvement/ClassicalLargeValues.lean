@@ -29,13 +29,13 @@ theorem classical_cross_budget {N T V : ℝ} (hN : 0 ≤ N) (hT : 0 ≤ T) (hV :
 theorem classical_old_budget {M N T V : ℝ} (hM : 0 ≤ M) (hMN : M ≤ N)
     (hT : 0 ≤ T) (hV : 0 < V) :
     M^2/(V/2)^2+M^3*Real.sqrt T/(V/2)^4 ≤ 20*classicalLargeValueBudget N T V := by
-  have hN : 0 ≤ N := hM.trans hMN
-  have hA : 0 ≤ N^2/V^2 := by positivity
+  have hN  := hM.trans hMN
+  
   have hB : 0 ≤ T*N^4/V^6 := by positivity
   have hc := classical_cross_budget hN hT hV
   calc
     _ ≤ N^2/(V/2)^2+N^3*Real.sqrt T/(V/2)^4 := by gcongr
-    _ = 4*(N^2/V^2)+16*(N^3*Real.sqrt T/V^4) := by field_simp; ring
+    _ = 4*(N^2/V^2)+16*(N^3*Real.sqrt T/V^4) := by ring
     _ ≤ _ := by unfold classicalLargeValueBudget at *; nlinarith
 
 /-- For N>=8, the stronger interval range N<=T<=N² meets the audited integer scale condition. -/
@@ -59,7 +59,7 @@ theorem classical_log_budget {N δ : ℝ} (hN : 1 ≤ N) (hδ : 0 < δ) :
   have hn : 0 < N := by linarith
   rw [Real.log_mul (by norm_num) hn.ne']
   have hlog := Real.log_le_rpow_div hn.le hδ
-  have hpow : 1 ≤ N^δ := Real.one_le_rpow hN hδ.le
+  have hpow  := Real.one_le_rpow hN hδ.le
   have hm := mul_le_mul_of_nonneg_left hpow (Real.log_nonneg (by norm_num : (1:ℝ) ≤ 2))
   have he : N^δ/δ=(1/δ)*N^δ := by ring
   rw [he] at hlog
@@ -93,8 +93,7 @@ theorem classical_low_scalar {ε N T V R : ℝ} (hε : 0 < ε) (hN : 2 ≤ N)
         mul_le_mul hmoment hv4 (by positivity) (by positivity)
       _ ≤ (204*T*N*((Real.log 2+1/(ε/2))*N^(ε/2:ℝ)))*(16^4*N^(3+ε/2:ℝ)) := by gcongr
       _ = _ := by
-        have he := congrArg (fun x => (204*16^4*(Real.log 2+1/(ε/2)))*T*x) hpow
-        nlinarith [he]
+        grind
   have hC : 0 ≤ (204*16^4*(Real.log 2+1/(ε/2)))*N^ε := by positivity
   have hh := (le_div_iff₀ (pow_pos hV 6)).mpr hrv
   calc
@@ -136,7 +135,7 @@ theorem classical_large_values {ε : ℝ} (hε : 0 < ε) :
     · obtain ⟨t,ht⟩ := hne
       have hVupper := (hlarge t ht).trans (boundedPolynomial_norm_le_two_mul hN a ha t)
       have hpow : 1 ≤ N^(3/4+ε/8:ℝ) := Real.one_le_rpow (by linarith) (by positivity)
-      have hV16 : 16 ≤ V := by linarith
+      
       have hN8 : 8 ≤ N := by linarith
       obtain ⟨hM,hMlo,hMhi⟩ := source_floor_bounds hN
       obtain ⟨hscale₁,hscale₂⟩ := classical_floor_scale hN8 hNT hTN
@@ -158,11 +157,7 @@ theorem classical_large_values {ε : ℝ} (hε : 0 < ε) :
       calc
         _ ≤ C₁*T^(ε/2:ℝ)*((⌊N⌋₊:ℝ)^2/(V/2)^2+(⌊N⌋₊:ℝ)^3*Real.sqrt T/(V/2)^4) := hh
         _ ≤ C₁*N^ε*(20*classicalLargeValueBudget N T V) := by
-          apply mul_le_mul
-          · exact mul_le_mul_of_nonneg_left hTpow hC₁.le
-          · exact hbudget
-          · positivity
-          · positivity
+          gcongr
         _ = (20*C₁)*N^ε*classicalLargeValueBudget N T V := by ring
         _ ≤ _ := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hC₀.le)

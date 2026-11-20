@@ -28,7 +28,7 @@ theorem norm_zetaSmoothDivisorSum_sub_short_le {T G L : ℝ}
   let S := zetaQuadraticDivisorBand T G L
   let f := fun n : ℕ => divisorWeight n * zetaSmoothDivisorTest T G L n
   let B := Real.sqrt Real.pi * G * Real.exp (-L ^ 2 / 8)
-  have hf : Summable f := summable_zetaSmoothDivisorTerm hT hG hGT L
+  have hf  := summable_zetaSmoothDivisorTerm hT hG hGT L
   have hc := summable_norm_zetaFrozenDivisorCoefficient hT
   have hpoint (n : {n : ℕ // n ∉ S}) : ‖f n‖ ≤ ‖zetaFrozenDivisorCoefficient T n‖ * B :=
     (norm_zetaSmoothDivisorTerm_le T G L n).trans
@@ -46,7 +46,7 @@ theorem norm_zetaSmoothDivisorSum_sub_short_le {T G L : ℝ}
     _ = (∑' n : {n : ℕ // n ∉ S}, ‖zetaFrozenDivisorCoefficient T n‖) * B := tsum_mul_right
     _ ≤ _ := mul_le_mul_of_nonneg_right
       (Summable.tsum_subtype_le (fun n : ℕ => ‖zetaFrozenDivisorCoefficient T n‖)
-        (fun n => n ∉ S) (fun _ => norm_nonneg _) hc) (by dsimp [B]; positivity)
+        (fun n => n ∉ S) (fun _ => norm_nonneg _) hc) (by positivity)
 
 theorem exists_norm_zetaSmoothDivisorSum_sub_short_le (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 1 ≤ T → 0 < G → G ^ 2 ≤ 2 * T → 0 < L →
@@ -71,14 +71,13 @@ theorem exists_zetaSmoothDivisor_log_tail_bound (A : ℝ) :
   obtain ⟨B, hB, htail⟩ := exists_logGaussian_power_tail_bound C 1 A (b := 1 / 8) (by norm_num)
   refine ⟨max 2 B, le_max_left _ _, ?_⟩
   intro T G hT hG hGT
-  have hTB : B ≤ T := (le_max_right _ _).trans hT
-  have hT2 : 2 ≤ T := (le_max_left _ _).trans hT
+  have hTB  := (le_max_right _ _).trans hT
+  have hT2  := (le_max_left _ _).trans hT
   have h := hbound T G (Real.log T) (by linarith) hG hGT (Real.log_pos (by linarith))
   have he := mul_le_mul_of_nonneg_left (htail T hTB) hG.le
   rw [Real.rpow_one] at he
   norm_num only [show (1 / 2 + 1 / 2 : ℝ) = 1 by norm_num, Real.rpow_one] at h
   apply h.trans
-  rw [show -(Real.log T) ^ 2 / 8 = -(1 / 8) * (Real.log T) ^ 2 by ring]
   calc
     _ = G * (C * T * Real.exp (-(1 / 8) * (Real.log T) ^ 2)) := by ring
     _ ≤ _ := he

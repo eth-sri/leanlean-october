@@ -131,12 +131,7 @@ theorem gmTraceNonzeroFourierSum_eq_signed_add_far
     funext m
     by_cases hm : m.natAbs ≤ M
     · simp [hm, Nat.not_lt_of_ge hm]
-    · have hm' : M < m.natAbs := Nat.lt_of_not_ge hm
-      have hm0 : m ≠ 0 := by
-        intro hzero
-        subst m
-        simp at hm'
-      simp [hm, hm', hm0]
+    · grind
   rw [hsplit]
   congr 1
   · rw [tsum_eq_sum (s := Finset.Icc (-(M : ℤ)) (M : ℤ))]
@@ -147,17 +142,10 @@ theorem gmTraceNonzeroFourierSum_eq_signed_add_far
               if z = 0 then 0 else f z := by
                 apply Finset.sum_congr rfl
                 intro z hz
-                rw [ite_eq_left]
-                have hzData := Finset.mem_Icc.mp hz
-                omega
+                grind
         _ = _ := by
           simpa only [f] using gmTraceFourierCentral_eq_signed cutoff N M t
-    · intro z hz
-      rw [ite_eq_right]
-      intro hzAbs
-      have hzOut : z < -(M : ℤ) ∨ (M : ℤ) < z := by
-        simpa only [Finset.mem_Icc, not_and_or, not_le] using hz
-      omega
+    · grind
 
 /-- Arbitrary-order summation of the omitted integer frequencies.  The
 summable `|m|^-2` factor is retained before taking the `tsum`. -/
@@ -179,7 +167,7 @@ theorem gmTraceFourierFarTail_bound_order
     rw [hNorm, summable_abs_iff]
     exact Real.summable_one_div_int_pow.mpr (by norm_num)
   let B : ℝ := ∑' m : ℤ, ‖1 / (m : ℂ) ^ 2‖
-  have hB : 0 ≤ B := tsum_nonneg fun m => norm_nonneg _
+  
   refine ⟨C * B + 1, by positivity, ?_⟩
   intro N M hN hM t
   have hNr : 0 < (N : ℝ) := by exact_mod_cast hN
@@ -225,16 +213,14 @@ theorem gmTraceFourierFarTail_bound_order
           ((N : ℝ) ^ (n + 2) * |(m : ℝ)| ^ (n + 2)) := by
         rw [hFreqAbs, mul_pow]
         exact div_le_div_of_nonneg_right
-          (mul_le_mul_of_nonneg_right (by dsimp only [C]; linarith)
+          (mul_le_mul_of_nonneg_right (by linarith)
             (by positivity)) (by positivity)
       _ ≤ C * (1 + |t|) ^ (n + 2) /
           ((N : ℝ) ^ (n + 2) *
             ((M : ℝ) ^ n * |(m : ℝ)| ^ 2)) := by
-        exact div_le_div_of_nonneg_left (by positivity) (by positivity)
-          (mul_le_mul_of_nonneg_left hpow (by positivity))
+        gcongr
       _ = scale * (1 / |(m : ℝ)| ^ 2) := by
-        dsimp only [scale]
-        field_simp [hNr.ne', hMr.ne', hmAbsPos.ne']
+        grind
   have hComparison : ∀ m : ℤ,
       ‖if M < m.natAbs then
           gmTraceFourier cutoff t ((N : ℝ) * (m : ℝ)) else 0‖ ≤
@@ -245,7 +231,7 @@ theorem gmTraceFourierFarTail_bound_order
     · have hscale : 0 ≤ scale := by dsimp only [scale]; positivity
       rw [ite_eq_right hm, norm_zero]
       exact mul_nonneg hscale (norm_nonneg _)
-  have hScaled : Summable (fun m : ℤ => scale * ‖1 / (m : ℂ) ^ 2‖) :=
+  have hScaled  :=
     hPSeries.mul_left scale
   have hBound := tsum_of_norm_bounded hScaled.hasSum hComparison
   rw [tsum_mul_left] at hBound
@@ -304,7 +290,7 @@ theorem gmPositiveMellinCore_bound (cutoff : GMSmoothCutoff) :
   have hAB : (N : ℝ) ≤ 2 * N * M := by
     have hMr : (1 : ℝ) ≤ M := by exact_mod_cast hM
     nlinarith
-  have hSqrtPos : 0 < Real.sqrt T₀ := Real.sqrt_pos.2 hT₀Pos
+  have hSqrtPos  := Real.sqrt_pos.2 hT₀Pos
   have hHalfPos : 0 < Real.sqrt (T₀ / 2) := Real.sqrt_pos.2 (by positivity)
   have hSqrtCompare : Real.sqrt T₀ / 2 ≤ Real.sqrt (T₀ / 2) := by
     have hsq0 := Real.sq_sqrt hT₀Pos.le
@@ -334,17 +320,16 @@ theorem gmPositiveMellinCore_bound (cutoff : GMSmoothCutoff) :
         C / Real.sqrt T₀ * ‖gmReflectionDirichletPoly t M (-r)‖ := by
       apply integral_mono_ae hTarget hDom
       filter_upwards [ae_restrict_mem measurableSet_Icc] with r hr
-      have hrAbs : |r| ≤ H := (abs_le).2 ⟨hr.1, hr.2⟩
-      have hrCore : |r| ≤ T₀ / 2 := hrAbs.trans hHT
+      have hrAbs  := (abs_le).2 ⟨hr.1, hr.2⟩
+      have hrCore  := hrAbs.trans hHT
       have hMellinAt : ‖gmCutoffMellin cutoff r‖ ≤ C₀ := by
         simpa using hMellin r
       have hReflect := norm_gmReflectionIntegral_pos_core_le
         hT₀ ht hrCore hA hAB
       rw [norm_gmPositiveDualDirichletPoly_eq t r hN]
       dsimp only [C]
-      have hPolyNonneg : 0 ≤ ‖gmReflectionDirichletPoly t M (-r)‖ :=
-        norm_nonneg _
-      have hPi : 0 < 2 * Real.pi := by positivity
+      
+      
       calc
         (1 / (2 * Real.pi)) * ‖gmCutoffMellin cutoff r‖ *
               ‖gmReflectionIntegral (t - r) N (2 * N * M)‖ *
@@ -387,7 +372,7 @@ theorem gmPositiveMellinTail_bound_order
   have hK : 0 < K := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   refine ⟨K, hK, ?_⟩
   intro t H N M hH hN hM
-  have hHPos : 0 < H := zero_lt_one.trans_le hH
+  have hHPos  := zero_lt_one.trans_le hH
   have hA : (0 : ℝ) < N := by exact_mod_cast hN
   have hMr : (1 : ℝ) ≤ M := by exact_mod_cast hM
   have hAB : (N : ℝ) ≤ 2 * N * M := by nlinarith
@@ -497,7 +482,7 @@ theorem gmNegativeMellinCore_bound (cutoff : GMSmoothCutoff) :
   have hAB : (N : ℝ) ≤ 2 * N * M := by
     have hMr : (1 : ℝ) ≤ M := by exact_mod_cast hM
     nlinarith
-  have hSqrtPos : 0 < Real.sqrt T₀ := Real.sqrt_pos.2 hT₀Pos
+  have hSqrtPos  := Real.sqrt_pos.2 hT₀Pos
   have hHalfPos : 0 < Real.sqrt (T₀ / 2) := Real.sqrt_pos.2 (by positivity)
   have hSqrtCompare : Real.sqrt T₀ / 2 ≤ Real.sqrt (T₀ / 2) := by
     have hsq0 := Real.sq_sqrt hT₀Pos.le
@@ -526,8 +511,8 @@ theorem gmNegativeMellinCore_bound (cutoff : GMSmoothCutoff) :
         C / Real.sqrt T₀ * ‖gmReflectionDirichletPoly t M r‖ := by
       apply integral_mono_ae hTarget hDom
       filter_upwards [ae_restrict_mem measurableSet_Icc] with r hr
-      have hrAbs : |r| ≤ H := (abs_le).2 ⟨hr.1, hr.2⟩
-      have hrCore : |r| ≤ T₀ / 2 := hrAbs.trans hHT
+      have hrAbs  := (abs_le).2 ⟨hr.1, hr.2⟩
+      have hrCore  := hrAbs.trans hHT
       have hMellinAt : ‖gmCutoffMellin cutoff r‖ ≤ C₀ := by
         simpa using hMellin r
       have hReflect := norm_gmReflectionIntegral_neg_core_le
@@ -580,11 +565,11 @@ theorem gmRetainedSignedReflection_bound_order
   obtain ⟨K₀, hK₀, hTail⟩ := gmPositiveMellinTail_bound_order cutoff q hq
   refine ⟨C₁ + C₂, 2 * K₀, by positivity, by positivity, ?_⟩
   intro t T₀ H N M hT₀ ht hH hHT hN hM
-  let fpos : ℝ → ℝ := fun r =>
+  let fpos  := fun r =>
     (1 / (2 * Real.pi) : ℝ) * ‖gmCutoffMellin cutoff r‖ *
       ‖gmReflectionIntegral (t - r) N (2 * N * M)‖ *
         ‖gmPositiveDualDirichletPoly t N M r‖
-  let fneg : ℝ → ℝ := fun r =>
+  let fneg  := fun r =>
     (1 / (2 * Real.pi) : ℝ) * ‖gmCutoffMellin cutoff r‖ *
       ‖gmReflectionIntegral (-t - r) N (2 * N * M)‖ *
         ‖gmPositiveDualDirichletPoly (-t) N M r‖
@@ -594,9 +579,7 @@ theorem gmRetainedSignedReflection_bound_order
   have hNegInt : Integrable fneg := by
     simpa only [fneg] using
       integrable_norm_gmPositiveDualAggregate cutoff (-t) (M := M) hN
-  have hSourceNonneg : 0 ≤
-      ∫ u in -H..H, ‖gmReflectionDirichletPoly t M u‖ := by
-    exact intervalIntegral.integral_nonneg (by linarith) fun u _ => norm_nonneg _
+  
   have hCorePos := hPos hT₀ ht (zero_lt_one.trans_le hH) hHT hN hM
   have hCoreNeg := hNeg hT₀ ht (zero_lt_one.trans_le hH) hHT hN hM
   have hTailPos := hTail t H N M hH hN hM
@@ -617,9 +600,7 @@ theorem gmRetainedSignedReflection_bound_order
     _ ≤ (C₁ + C₂) / Real.sqrt T₀ *
           (∫ u in -H..H, ‖gmReflectionDirichletPoly t M u‖) +
         (2 * K₀) * (M : ℝ) ^ 2 * H ^ (1 - (q : ℝ)) := by
-      have hPieces := add_le_add
-        (add_le_add hCorePos hTailPos) (add_le_add hCoreNeg hTailNeg)
-      simpa only [fpos, fneg] using hPieces.trans_eq (by ring)
+      grind
 
 /-! ## Ordinate symmetry -/
 
@@ -640,7 +621,7 @@ theorem gmTraceNonzeroFourierSum_neg_eq_conj
   by_cases hm : m = 0
   · subst m
     simp
-  · have hneg : -m ≠ 0 := neg_ne_zero.mpr hm
+  · have hneg  := neg_ne_zero.mpr hm
     change (if -m = 0 then 0 else
         gmTraceFourier cutoff (-t) ((N : ℝ) * ((-m : ℤ) : ℝ))) =
       star (if m = 0 then 0 else
@@ -687,7 +668,7 @@ theorem gmCompleteSmoothReflection_bound_order
   obtain ⟨L, hL, hFar⟩ := gmTraceFourierFarTail_bound_order cutoff q
   refine ⟨C, K, L, hC, hK, hL, ?_⟩
   intro t T₀ H N M hT₀ ht hH hHT hN hM
-  have hAbsNonneg : 0 ≤ |t| := abs_nonneg t
+  have hAbsNonneg  := abs_nonneg t
   have hFarAt := hFar N M hN hM t
   by_cases htnonneg : 0 ≤ t
   · have hRet := hRetained (t := t) hT₀
@@ -709,10 +690,10 @@ theorem gmCompleteSmoothReflection_bound_order
             ((N : ℝ) ^ (q + 2) * (M : ℝ) ^ q) :=
         add_le_add hRet hFarAt
       _ = _ := by ring
-  · have htneg : t < 0 := lt_of_not_ge htnonneg
+  · have htneg  := lt_of_not_ge htnonneg
     let s : ℝ := -t
     have hs : s = |t| := by dsimp only [s]; rw [abs_of_neg htneg]
-    have hsNonneg : 0 ≤ s := by rw [hs]; exact hAbsNonneg
+    
     have hRet := hRetained (t := s) hT₀ (by simpa only [hs] using ht)
       hH hHT hN hM
     have hFarNeg := hFar N M hN hM s
@@ -759,12 +740,10 @@ noncomputable def gmReflectionHeight (T ε : ℝ) : ℝ :=
 
 theorem gmReflectionEta_pos {ε : ℝ} (hε : 0 < ε) :
     0 < gmReflectionEta ε := by
-  unfold gmReflectionEta
   exact lt_min (by positivity) (by norm_num)
 
 theorem gmReflectionEta_le_one {ε : ℝ} :
     gmReflectionEta ε ≤ 1 := by
-  unfold gmReflectionEta
   exact (min_le_right _ _).trans (by norm_num)
 
 theorem gmReflectionEta_lt_eps {ε : ℝ} (hε : 0 < ε) :
@@ -788,7 +767,7 @@ theorem gmReflectionDecayOrder_budget {A ε : ℝ}
     A + 5 ≤ gmReflectionEta ε *
       ((gmReflectionDecayOrder A ε : ℝ) - 1) := by
   have hη := gmReflectionEta_pos hε
-  have hRatioNonneg : 0 ≤ (A + 6) / gmReflectionEta ε := by positivity
+  
   have hceil : (A + 6) / gmReflectionEta ε ≤
       (Nat.ceil ((A + 6) / gmReflectionEta ε) : ℝ) := Nat.le_ceil _
   have hscaled : A + 6 ≤ gmReflectionEta ε *

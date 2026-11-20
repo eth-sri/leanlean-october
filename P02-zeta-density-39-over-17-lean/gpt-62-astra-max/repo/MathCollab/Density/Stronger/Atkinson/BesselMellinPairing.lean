@@ -80,8 +80,8 @@ theorem DFIVoronoiTestFunction.continuous_mellin_vertical
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
     Continuous (fun u : ℝ =>
       mellin g ((σ : ℂ) + (u : ℂ) * I)) := by
-  let F : 𝓢(ℝ, ℂ) := 𝓕 (dfiVoronoiMellinKernelSchwartz hg σ)
-  have hF : Continuous (F : ℝ → ℂ) := F.continuous
+  let F  := 𝓕 (dfiVoronoiMellinKernelSchwartz hg σ)
+  have hF  := F.continuous
   have hComp : Continuous (fun u : ℝ => F (u / (2 * Real.pi))) := by
     fun_prop
   apply hComp.congr
@@ -106,9 +106,7 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
     mellin g (z p.1) * ((p.2 : ℂ) ^ (-z p.1) * h p.2)
   have hMellinInt : Integrable (fun u : ℝ => ‖mellin g (z u)‖) := by
     simpa [z, VerticalIntegrable] using (hg.verticalIntegrable_mellin σ).norm
-  have hMajor : Integrable (fun p : ℝ × ℝ =>
-      ‖mellin g (z p.1)‖ * (p.2 ^ (-σ) * ‖h p.2‖))
-      (volume.prod (volume.restrict (Set.Ioi 0))) :=
+  have hMajor  :=
     hMellinInt.mul_prod hhInt
   let F₀ : ℝ × ℝ → ℂ := fun p =>
     mellin g (z p.1) * (p.2 : ℂ) ^ (-z p.1)
@@ -140,7 +138,7 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
               ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) =
             ((volume : Measure ℝ).restrict Set.univ).prod
               ((volume : Measure ℝ).restrict (Set.Ioi (0 : ℝ))) := by
-                rw [Measure.restrict_univ]
+                simp
         _ = ((volume : Measure ℝ).prod (volume : Measure ℝ)).restrict
               (Set.univ ×ˢ Set.Ioi (0 : ℝ)) :=
           Measure.prod_restrict Set.univ (Set.Ioi (0 : ℝ))

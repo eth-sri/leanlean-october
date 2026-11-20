@@ -34,8 +34,8 @@ theorem exists_atkinsonPhysicalCutoff_pair_geometry {δ η : ℝ}
   obtain ⟨hAH,hlogpow,hpowlarge,hlogH⟩ := hB H ((le_max_right _ _).trans hH)
   have hH1 : 1 ≤ H := by linarith [hA.trans hAH]
   have hH0 : 0 < H := by linarith
-  have hpow : 0 < H^δ := Real.rpow_pos_of_pos hH0 δ
-  have hG : 0 < G := hpow.trans_le hwidth
+  have hpow  := Real.rpow_pos_of_pos hH0 δ
+  have hG  := hpow.trans_le hwidth
   have hlog : 1 ≤ Real.log (2*H) :=
     hlogH.trans (Real.log_le_log hH0 (by linarith))
   have hN : (atkinsonSourceCutoff (2*H) G (Real.log (2*H)) : ℝ) ≤ H := by
@@ -82,11 +82,11 @@ theorem ExponentPair.atkinson_physical_gram_budget {k l δ ν : ℝ}
     positivity
   refine ⟨D*K,mul_pos hD hK,max A B,hA.trans (le_max_left _ _),?_⟩
   intro H G L W hH hwidth hupper hL hLH hsep hrange hdiam
-  have hAH : A ≤ H := (le_max_left _ _).trans hH
-  have hBH : B ≤ H := (le_max_right _ _).trans hH
+  have hAH  := (le_max_left _ _).trans hH
+  have hBH  := (le_max_right _ _).trans hH
   have hH1 : 1 ≤ H := by linarith [hA.trans hAH]
   have hH0 : 0 < H := by linarith
-  have hG1 : 1 ≤ G := (Real.one_le_rpow hH1 hδ.le).trans hwidth
+  have hG1  := (Real.one_le_rpow hH1 hδ.le).trans hwidth
   have hG : 0 < G := by linarith
   obtain ⟨hlog,hN,hsmall⟩ := hgeometry H G hAH hwidth hupper
   have hb := hgram H G L (atkinsonSourceCutoff (2*H) G (Real.log (2*H))) W
@@ -112,9 +112,6 @@ theorem ExponentPair.atkinson_physical_gram_budget {k l δ ν : ℝ}
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact mul_le_mul_of_nonneg_left (hB H hBH) hK.le
     _ = _ := by
-      calc
-        _ = (D*K)*(H^(3*(ν/6))*H^(ν/2))*
-            ((W.card : ℝ)*H/G+(W.card : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l)) := by ring
-        _ = _ := by rw [he]
+      grind
 
 end TaoTrudgianYang2025

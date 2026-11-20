@@ -78,8 +78,7 @@ theorem tsum_fourth_divisorWeight_tail_le {b : ℝ} (hb : 3/2 < b)
     _ ≤ _ := by
       have h := tsum_nat_rpow_tail_le hp hN
       have hnum : (1/2-b)+1 = 3/2-b := by ring
-      have hden : -(1/2-b)-1 = b-3/2 := by ring
-      simpa only [hnum,hden] using h
+      grind
 
 theorem exists_norm_zetaFourthTail_cutoff_le {b : ℝ} (hb : 3/2 < b) :
     ∃ K : ℝ, 0 < K ∧ ∀ t : ℝ, 4 ≤ t → 4*b ≤ t →
@@ -143,8 +142,8 @@ theorem exists_norm_fourthRightPiece_sub_cutoff_le {δ : ℝ} (hδ : 0 < δ) :
   obtain ⟨A,hA,hbound⟩ := exists_norm_zetaFourthTail_cutoff_le hb
   refine ⟨A*2^b,by positivity,max 4 (4*b),le_max_left _ _,?_⟩
   intro H hH t ht htH N hN a ha
-  have hH4 : 4 ≤ H := (le_max_left _ _).trans hH
-  have hHt : 4*b ≤ H := (le_max_right _ _).trans hH
+  have hH4  := (le_max_left _ _).trans hH
+  have hHt  := (le_max_right _ _).trans hH
   have ht0 : 0 ≤ t := by linarith
   have hNpos : 0 < N := by
     have hNreal : (0:ℝ) < N :=

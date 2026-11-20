@@ -1,8 +1,5 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import GuthMaynard.AffineSource.Foundation
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleCount
 
 @[expose] public section

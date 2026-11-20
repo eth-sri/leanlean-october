@@ -140,9 +140,9 @@ theorem heathBrown_movingPole_vertical_shift
           (heathBrownIntermediateLine delta) =
       heathBrownMovingPoleResidue s := by
   let d : ℝ := heathBrownIntermediateLine delta
-  let f : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand s
-  have hd : 0 < d := heathBrown_intermediateLine_pos hdeltaUpper
-  have hdUpper : d ≤ 1 / 4 :=
+  let f  := heathBrownZetaSquareMellinIntegrand s
+  have hd  := heathBrown_intermediateLine_pos hdeltaUpper
+  have hdUpper  :=
     heathBrown_intermediateLine_le_quarter hdelta.le
   have hpRe : (heathBrownMovingPole s).re = 1 / 2 - delta := by
     simp [heathBrownMovingPole, hsRe]
@@ -155,22 +155,18 @@ theorem heathBrown_movingPole_vertical_shift
   have hsHalf : 1 / 2 ≤ s.re := by rw [hsRe]; linarith
   have hBottom := tendsto_heathBrownMellin_HIntegral'_neg_zero
     hsHalf (a := d) (b := 2)
-    (ha := by dsimp only [d]; linarith)
+    (ha := by linarith)
     (hb := by norm_num) (hab := by linarith)
   have hTop := tendsto_heathBrownMellin_HIntegral'_zero
     hsHalf (a := d) (b := 2)
-    (ha := by dsimp only [d]; linarith)
+    (ha := by linarith)
     (hb := by norm_num) (hab := by linarith)
   have hIntD : Integrable (fun u : ℝ =>
       f ((d : ℂ) + (u : ℂ) * I)) := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_plus
       (s := s) (delta := d) hd hdUpper
-    · rw [hsRe]
-      dsimp only [d, heathBrownIntermediateLine]
-      linarith
-    · rw [hsRe]
-      dsimp only [d, heathBrownIntermediateLine]
-      linarith
+    · linarith
+    · linarith
   have hIntTwo : Integrable (fun u : ℝ =>
       f (((2 : ℝ) : ℂ) + (u : ℂ) * I)) := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_right
@@ -197,9 +193,9 @@ theorem heathBrown_gammaPole_vertical_shift
       VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) (-delta) =
         riemannZeta s ^ 2 := by
   let d : ℝ := heathBrownIntermediateLine delta
-  let f : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand s
-  have hd : 0 < d := heathBrown_intermediateLine_pos hdeltaUpper
-  have hdUpper : d ≤ 1 / 4 :=
+  let f  := heathBrownZetaSquareMellinIntegrand s
+  have hd  := heathBrown_intermediateLine_pos hdeltaUpper
+  have hdUpper  :=
     heathBrown_intermediateLine_le_quarter hdelta.le
   have hpRe : (heathBrownMovingPole s).re = 1 / 2 - delta := by
     simp [heathBrownMovingPole, hsRe]
@@ -212,12 +208,12 @@ theorem heathBrown_gammaPole_vertical_shift
   have hBottom := tendsto_heathBrownMellin_HIntegral'_neg_zero
     hsHalf (a := -delta) (b := d)
     (ha := by linarith)
-    (hb := by dsimp only [d, heathBrownIntermediateLine]; linarith)
+    (hb := by linarith)
     (hab := by linarith)
   have hTop := tendsto_heathBrownMellin_HIntegral'_zero
     hsHalf (a := -delta) (b := d)
     (ha := by linarith)
-    (hb := by dsimp only [d, heathBrownIntermediateLine]; linarith)
+    (hb := by linarith)
     (hab := by linarith)
   have hIntMinus : Integrable (fun u : ℝ =>
       f (((-delta : ℝ) : ℂ) + (u : ℂ) * I)) := by
@@ -225,18 +221,13 @@ theorem heathBrown_gammaPole_vertical_shift
       (s := s) hdelta hdeltaUpper
     · rw [hsRe]
       norm_num
-    · rw [hsRe]
-      linarith
+    · linarith
   have hIntD : Integrable (fun u : ℝ =>
       f ((d : ℂ) + (u : ℂ) * I)) := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_plus
       (s := s) (delta := d) hd hdUpper
-    · rw [hsRe]
-      dsimp only [d, heathBrownIntermediateLine]
-      linarith
-    · rw [hsRe]
-      dsimp only [d, heathBrownIntermediateLine]
-      linarith
+    · linarith
+    · linarith
   have hFinite : ∀ᶠ R : ℝ in atTop,
       RectangleIntegral' f
         (((-delta : ℝ) : ℂ) - (R : ℂ) * I)
@@ -286,17 +277,7 @@ theorem heathBrown_zetaSquare_eq_smoothed_sub_residue_sub_leftVertical
   have hShift := heathBrown_twoPole_vertical_shift
     hdelta hdeltaUpper hsRe
   have hRight := heathBrownSmoothedDivisorSeries_eq_rightVertical
-    (s := s) (by rw [hsRe]; linarith)
-  rw [← hRight] at hShift
-  calc
-    riemannZeta s ^ 2 =
-        (heathBrownSmoothedDivisorSeries s -
-          VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) (-delta)) -
-            heathBrownMovingPoleResidue s := by
-      rw [hShift]
-      ring
-    _ = heathBrownSmoothedDivisorSeries s - heathBrownMovingPoleResidue s -
-        VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) (-delta) := by
-      ring
+    (s := s) (by linarith)
+  grind
 
 end MathCollab.Density.Stronger.PointMean

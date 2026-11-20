@@ -26,7 +26,7 @@ theorem mixed_finite_box (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
   obtain ⟨C,hC,h⟩ := mixed_affine_real_scales D hD (C₀+2) (by linarith) hε
   refine ⟨16*C,by positivity,?_⟩
   intro T R K B Q f S hT hK hKR hB hBR hQ hQK hRT hf hs hp hbox
-  have hR : 1 ≤ R := hK.trans hKR
+  have hR  := hK.trans hKR
   let M₃ := ⌈C₀*R+1⌉₊
   have hM₃ : 0 < M₃ := Nat.ceil_pos.mpr (by positivity)
   have hM₃r : (M₃:ℝ) ≤ (C₀+2)*R := by
@@ -82,7 +82,7 @@ theorem mixed_finite_box (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
   rw [Finset.sum_const,hcard] at hsum
   rw [hcard] at hcov
   norm_num only [Nat.cast_ofNat,nsmul_eq_mul] at hsum hcov
-  exact hcov.trans (by nlinarith only [hsum])
+  exact hcov.trans (by linarith)
 
 set_option maxHeartbeats 800000 in
 /-- Full arbitrary-support finite-box estimate. The support radius and
@@ -102,7 +102,7 @@ theorem mixed_affine_full_finite (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   refine ⟨C*(L:ℝ)^ε*(L:ℝ)^6,by positivity,?_⟩
   intro T R K B Q f S hT hK hKR hB hBR hQ hQK hRT hf hs hp hbox
   have hTp : 0 < T := by linarith
-  have hR : 1 ≤ R := hK.trans hKR
+  have hR  := hK.trans hKR
   obtain ⟨g,hg,hgs⟩ := canonical_affine_input f hLp (f.smooth ⊤) hs
   have hg0 : ∀ x, 0 ≤ g x := by intro x; rw [hg]; exact hf _
   have hgp := affine_input_fourier_family D hD hTp hL1 hg hp
@@ -114,23 +114,23 @@ theorem mixed_affine_full_finite (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
     unfold InMixedAffineBox supportIndexMap
     push_cast
     refine ⟨hb1,hb2,?_,?_,?_⟩
-    · exact mul_le_mul_of_nonneg_left hq1 hLp.le
+    · gcongr
     · nlinarith only [mul_le_mul_of_nonneg_left hq2 hLp.le]
     · calc
         _ ≤ |(q.2.2:ℝ)|+|(L:ℝ)*(q.2.1:ℝ)| := abs_add_le _ _
-        _ = |(q.2.2:ℝ)|+(L:ℝ)*(q.2.1:ℝ) := by rw [abs_of_nonneg (mul_nonneg hLp.le (by linarith only [hq1,hQ]))]
+        _ = |(q.2.2:ℝ)|+(L:ℝ)*(q.2.1:ℝ) := by rw [abs_of_nonneg (mul_nonneg hLp.le (by linarith))]
         _ ≤ C₀*R+(L:ℝ)*(2*Q) := add_le_add hd (mul_le_mul_of_nonneg_left hq2 hLp.le)
         _ ≤ C₀*R+(L:ℝ)*(2*R) := by gcongr; exact hQK.trans hKR
         _ ≤ _ := by nlinarith [mul_le_mul_of_nonneg_left (le_mul_of_one_le_left (show 0 ≤ R by linarith) hL1) (show 0 ≤ C₀+2*L by positivity)]
-  have hTS : T ≤ (L:ℝ)*T := le_mul_of_one_le_left hTp.le hL1
-  have hS : 2 ≤ (L:ℝ)*T := hT.trans hTS
-  have hLK : 1 ≤ (L:ℝ)*K := one_le_mul_of_one_le_of_one_le hL1 hK
+  have hTS  := le_mul_of_one_le_left hTp.le hL1
+  have hS  := hT.trans hTS
+  have hLK  := one_le_mul_of_one_le_of_one_le hL1 hK
   have hscale' : (L:ℝ)*R ≤ ((L:ℝ)*T)^4 := by
     calc
       _ ≤ (L:ℝ)*T^4 := by gcongr
       _ ≤ (L:ℝ)^4*T^4 := by gcongr; simpa only [pow_one] using pow_le_pow_right₀ hL1 (show 1 ≤ 4 by decide)
       _ = _ := by ring
-  have hLQ : 1 ≤ (L:ℝ)*Q := one_le_mul_of_one_le_of_one_le hL1 hQ
+  have hLQ  := one_le_mul_of_one_le_of_one_le hL1 hQ
   have hmain := h ((L:ℝ)*T) ((L:ℝ)*R) ((L:ℝ)*K) B ((L:ℝ)*Q) g S'
     hS hLK (by gcongr) hB (hBR.trans (le_mul_of_one_le_left (by linarith) hL1))
     hLQ (by gcongr) hscale' hg0 hgs hgp hbox'
@@ -156,7 +156,7 @@ theorem mixed_affine_full_finite (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   have hmass0 : 0 ≤ ∫ x, f x := integral_nonneg hf
   have hgMass0 : 0 ≤ ∫ x, g x := integral_nonneg hg0
   have hf20 : 0 ≤ ∫ x, f x^2 := integral_nonneg (fun _ => sq_nonneg _)
-  have hLi : (L:ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hL1
+  have hLi  := inv_le_one_of_one_le₀ hL1
   have hmassle : (∫ x, g x) ≤ ∫ x, f x := by rw [hmass]; exact mul_le_of_le_one_left hmass0 hLi
   have hL2le : (∫ x, g x^2) ≤ ∫ x, f x^2 := by rw [hL2]; exact mul_le_of_le_one_left hf20 hLi
   have hw : ((L:ℝ)*R)^2*((L:ℝ)*K)^4*(∫ x, g x)^2+

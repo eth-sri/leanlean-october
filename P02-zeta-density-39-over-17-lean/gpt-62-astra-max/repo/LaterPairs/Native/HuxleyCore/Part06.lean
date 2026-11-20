@@ -115,7 +115,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     hSecondMain₀,hFourthMain₀,hFirstMain₀,hThirdMain₀,hFifthMain₀,hThird₀⟩ := hzero
   have hℓv : ℓ≤v := by dsimp only [ℓ,v]; linarith only [hδw]
   have hhp := hμ.trans_le hμh
-  have hℓp := hμ.trans_le hμℓ
+  
   have hg₀p := hμ.trans_le hμg₀
   have hβ : 0<β := by linarith only [hShort,hhp,hμ]
   have hξ : 0≤ξ := by dsimp only [ξ]; linarith only [hShort,hhp,hμ]
@@ -157,12 +157,12 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
   intro X M F a b setup
   have hTogether := hX₀ X ((le_max_right 1 X₀).trans setup.threshold_le_param)
   have hX2 := hTogether.1.1
-  have hX : 1≤X := (by norm_num : (1:ℝ)≤2).trans hX2
+  have hX  := (by norm_num : (1:ℝ)≤2).trans hX2
   have hXp := zero_lt_one.trans_le hX
-  have hMl : X^ℓ≤M :=
+  have hMl  :=
     (Real.rpow_le_rpow_of_exponent_le hX
       (sub_le_sub_left (min_le_right δsrc δw) _)).trans setup.rpow_sub_le_scale
-  have hMu : M≤X^v := setup.scale_le_rpow_add.trans
+  have hMu  := setup.scale_le_rpow_add.trans
     (Real.rpow_le_rpow_of_exponent_le hX (add_le_add le_rfl (min_le_right δsrc δw)))
   have hF := approximateModelPhase_mono setup.isApproximateModelPhase le_rfl (min_le_left δsrc δw)
   have hBasePhys := hTogether.1.2 M (X^g₀) g₀ ν₀ hMl hMu rfl hg₀p.le
@@ -173,7 +173,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     hMTBudget₀,hRTBudget₀,hTenBudget₀⟩ := hBasePhys
   have hMp := zero_lt_one.trans_le hM
   have hHp : (0:ℝ)<H := by exact_mod_cast (show 0<H by omega)
-  have hH1 : (1:ℝ)≤H := by exact_mod_cast (show 1≤H by omega)
+  
   have hHcube : (H:ℝ)^3≤X := by
     calc
       _ ≤ (X^h)^3 := pow_le_pow_left₀ hHp.le hHu 3
@@ -188,9 +188,9 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
   by_cases hba : b<a
   · rw [Expdb.exponentialSumAt_of_lt hba,norm_zero]
     exact Real.rpow_nonneg hXp.le _
-  have hab : a≤b := Nat.le_of_not_gt hba
+  have hab  := Nat.le_of_not_gt hba
   let L := b-a
-  have hEnd : a+L=b := Nat.add_sub_of_le hab
+  have hEnd  := Nat.add_sub_of_le hab
   have ha := setup.scale_le_start
   have hb : ((a+L:ℕ):ℝ)≤2*M := by rw [hEnd]; exact setup.end_le_two_mul_scale
   by_cases hShortL : L+1<H^2
@@ -204,7 +204,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
       _ = X^(2*h) := by
         simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast hXp.le h 2).symm
       _ ≤ X^β := Real.rpow_le_rpow_of_exponent_le hX (by linarith only [hShort,hμ])
-  have hLong : H^2≤L+1 := Nat.le_of_not_gt hShortL
+  have hLong  := Nat.le_of_not_gt hShortL
   obtain ⟨Fext,hSharp,hFamily⟩ := hSource M F hM hF
   obtain ⟨pick,k,hk,hkH,hpick,hZcap,hWeyl⟩ :=
     hWeylSource Fext σ X M a L H hσ hX hM hH2 hLong hHcube (hW.trans hw₀cap) ha hb
@@ -226,7 +226,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     exact_mod_cast (show k≤H^3 by omega)
   have hQ : 0≤A*X^εs*Log :=
     mul_nonneg (mul_nonneg hA0 (Real.rpow_nonneg hXp.le _)) hLog0
-  have hξPower : 1≤X^ξ := Real.one_le_rpow hX hξ
+  have hξPower  := Real.one_le_rpow hX hξ
   have hLossPower : 1≤X^(78*εs) := Real.one_le_rpow hX (by positivity)
   have hCommon :
       ‖Expdb.exponentialSumAt Fext X M a (a+L)‖^288 ≤ D*Log^72*X^(78*εs)*X^ξ := by
@@ -251,7 +251,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           mul_one,zero_add,add_zero,sub_zero] at hh
         calc
           _ ≤ M^4*(X^g₀)/(H:ℝ)^3 := by gcongr
-          _ = (X^g₀)*M^4/(H:ℝ)^3 := by rw [mul_comm (M^4)]
+          _ = (X^g₀)*M^4/(H:ℝ)^3 := by ring
           _ ≤ 8*X^(g₀+4*v-3*h) := hh
           _ ≤ 8*X^(ξ/72) := mul_le_mul_of_nonneg_left
             (Real.rpow_le_rpow_of_exponent_le hX (by
@@ -292,8 +292,8 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           norm_num
     · let γ := Real.logb X J
       have hXgt : 1<X := by linarith only [hX2]
-      have hJpow : J=X^γ := (Real.rpow_logb hXp hXgt.ne' hJp).symm
-      have hγlo : g₀≤γ :=
+      have hJpow  := (Real.rpow_logb hXp hXgt.ne' hJp).symm
+      have hγlo  :=
         (Real.le_logb_iff_rpow_le hXgt hJp).mpr (le_of_not_ge hSmallJ)
       have hγhi : γ≤3*h := by
         apply (Real.logb_le_iff_le_rpow hXgt hJp).mpr
@@ -349,35 +349,34 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
         dsimp only [Main]
         clear * - hJp hMp hNp hRp hXp
         positivity
-      have hFamilyMoment : Z^12≤Csrc*T^εs*(Main+E^12) := by
-        exact hFamily X n N a L H (H^2) k R hThreshold rfl hN2 hBR hk
+      have hFamilyMoment := hFamily X n N a L H (H^2) k R hThreshold rfl hN2 hBR hk
           (by simpa only [Nat.cast_pow] using hWidthJ) hJM
           (by simpa only [Nat.cast_pow] using hWJ) ha hb hscale
           hRNbudget hNRbudget hNMbudget hCubicBudget hCapBudget hHeightBudget
           hMTbudget hRTbudget hTenBudget pick (fun l hl => ⟨(hpick l hl).1,(hpick l hl).2.1⟩)
-      have hMoment : Z^12≤Csrc*X^εs*(Main+E^12) := hFamilyMoment.trans
+      have hMoment  := hFamilyMoment.trans
         (mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hTp.le hTX hεs.le) hCsrc0)
           (add_nonneg hMain0 (pow_nonneg hE0 12)))
-      have hWeighted : (M^3/(H:ℝ)^3)^72*(E^72+Main^6)≤(2:ℝ)^288*V :=
+      have hWeighted  :=
         double_difference_weighted_capped_integer_moments hXp hMp hNp hJp hHp hRp hscale
       have hPower := double_difference_fourth_twelfth_moment_assembly
         (norm_nonneg _) hZ0 (div_nonneg (pow_nonneg hMp.le 4) (pow_nonneg hHp.le 2))
         (div_nonneg (pow_nonneg hMp.le 3) (pow_nonneg hHp.le 3)) hMain0 hE0 hCsrc hX hεs.le hQ
         hWeyl hMoment hWeighted
-      have hPoly : 1+(M^288/(H:ℝ)^144+V)≤(11*(2:ℝ)^432)*X^ξ :=
+      have hPoly  :=
         double_difference_ten_monomials_power_window hX hξ hMl hMu hNl hNu hHl hJpow
-          (by dsimp only [ξ]; linarith only [hDiag'])
-          (by dsimp only [ξ]; linarith only [hSqrt])
-          (by dsimp only [ξ]; linarith only [hSecond])
-          (by dsimp only [ξ]; linarith only [hThird])
-          (by dsimp only [ξ]; linarith only [hFourth])
-          (by dsimp only [ξ]; linarith only [hFirstMain])
-          (by dsimp only [ξ]; linarith only [hSecondMain])
-          (by dsimp only [ξ]; linarith only [hThirdMain])
-          (by dsimp only [ξ]; linarith only [hFourthMain])
-          (by dsimp only [ξ]; linarith only [hFifthMain])
-      have hPoly' : M^288/(H:ℝ)^144+V≤(11*(2:ℝ)^432)*X^ξ :=
+          (by linarith only [hDiag'])
+          (by linarith only [hSqrt])
+          (by linarith only [hSecond])
+          (by linarith only [hThird])
+          (by linarith only [hFourth])
+          (by linarith only [hFirstMain])
+          (by linarith only [hSecondMain])
+          (by linarith only [hThirdMain])
+          (by linarith only [hFourthMain])
+          (by linarith only [hFifthMain])
+      have hPoly'  :=
         (le_add_of_nonneg_left (by norm_num : (0:ℝ)≤1)).trans hPoly
       have hPowers :
           (2:ℝ)^364*(A*X^εs*Log)^72*Csrc^6*X^(6*εs)*
@@ -398,7 +397,6 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           hPower.trans_eq hPowers
         _ ≤ ((2:ℝ)^364*A^72*Csrc^6)*Log^72*X^(78*εs)*((11*(2:ℝ)^432)*X^ξ) :=
           mul_le_mul_of_nonneg_left hPoly' (by
-            clear * - hA0 hCsrc0 hLog0 hXp
             positivity)
         _ = Clarge*Log^72*X^(78*εs)*X^ξ := by
           dsimp only [Clarge]
@@ -406,13 +404,12 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           exact heq _ _ _ _ _ _ _
         _ ≤ D*Log^72*X^(78*εs)*X^ξ := by gcongr
   have hSharp' := hSharp X a (a+L) ha hb
-  have hOriginal : ‖Expdb.exponentialSumAt F X M a (a+L)‖≤
-      6+‖Expdb.exponentialSumAt Fext X M a (a+L)‖ :=
+  have hOriginal  :=
     (norm_le_norm_sub_add _ _).trans (add_le_add hSharp' le_rfl)
-  have hY : 1≤Log^72*X^(78*εs)*X^ξ :=
+  have hY  :=
     one_le_mul_of_one_le_of_one_le
       (one_le_mul_of_one_le_of_one_le hLog72 hLossPower) hξPower
-  have hSix : (6:ℝ)^288≤(6:ℝ)^288*(Log^72*X^(78*εs)*X^ξ) :=
+  have hSix  :=
     le_mul_of_one_le_right (pow_nonneg (by norm_num : (0:ℝ)≤6) 288) hY
   have hFinalPower : ‖Expdb.exponentialSumAt F X M a (a+L)‖^288≤X^(288*β) := by
     have hLogLoss : Ctotal*Log^72≤X^ζ :=

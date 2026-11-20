@@ -34,7 +34,7 @@ theorem continuous_zetaSquareFrozenDivisorIntegral {T : ℝ} (hT : 0 < T) :
   apply continuous_tsum (u := fun n => ‖zetaFrozenDivisorCoefficient T n‖)
   · intro n
     simp_rw [zetaSquareFrozenDivisorContribution_eq_phase]
-    have hc : Continuous zetaSquareReflectedGammaPhase :=
+    have hc  :=
       continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
     fun_prop (disch := assumption)
   · exact summable_norm_zetaFrozenDivisorCoefficient hT
@@ -97,7 +97,7 @@ theorem exists_abs_zetaSquareGaussianWindow_sub_frozen_window_le (ε : ℝ) (hε
   refine ⟨2 * C, by positivity, ?_⟩
   intro T G r hT hG hr hrT
   have hT0 : 0 < T := by linarith
-  let F : ℝ → ℝ := fun x => Real.exp (-(x / G) ^ 2) *
+  let F  := fun x => Real.exp (-(x / G) ^ 2) *
     (zetaMomentCriticalNorm (T + x) ^ 2 - 2 * (zetaSquareFrozenDivisorIntegral T x).re)
   have hz : Continuous (fun x : ℝ => Real.exp (-(x / G) ^ 2) * zetaMomentCriticalNorm (T + x) ^ 2) := by
     have hc := continuous_zetaMomentCriticalNorm

@@ -49,16 +49,14 @@ theorem heathBrownPositiveShiftFiber_shift_le
   have hp := hn'.2.2
   have hsep := heathBrown_actualBlock_pair_source_separation
     hk hA hlambda hsmall hg hgd hkBounds hp
-  have hdN : d ≤ N :=
+  have hdN  :=
     le_trans (Nat.le_add_left d n) hn'.2.1
   have hdReal : (d : ℝ) ≤
       4 * ((k - 1).factorial : ℝ) /
         (lambda * (H : ℝ) ^ (k - 1)) := by
     simpa only [Nat.cast_add, add_sub_cancel_left, abs_of_nonneg,
       Nat.cast_nonneg] using hsep
-  have hfloor : d ≤ ⌊4 * ((k - 1).factorial : ℝ) /
-      (lambda * (H : ℝ) ^ (k - 1))⌋₊ := by
-    exact Nat.le_floor hdReal
+  have hfloor := Nat.le_floor hdReal
   exact (Nat.le_min).2 ⟨hdN, hfloor⟩
 
 theorem heathBrownPositiveShiftFiber_eq_empty_of_shiftBound_lt

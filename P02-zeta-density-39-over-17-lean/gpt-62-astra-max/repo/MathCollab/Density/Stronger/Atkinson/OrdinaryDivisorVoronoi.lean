@@ -38,7 +38,7 @@ theorem DFIVoronoiTestFunction.integrable_dualMultiplier_of_quadratic_bound
   calc
     _ ≤ (C*(1+|u|)^2)*‖mellin g ((-1/2 : ℂ)+(u : ℂ)*I)‖ :=
       mul_le_mul_of_nonneg_right (hb u) (norm_nonneg _)
-    _ = _ := by simp only [neg_div]; ring
+    _ = _ := by ring
 
 theorem DFIVoronoiTestFunction.integrable_voronoiMinusMultiplier
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :

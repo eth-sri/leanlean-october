@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairSourceCorrelation
 public import LaterPairs.Native.ExponentPairWeylSum
 
@@ -33,24 +30,14 @@ theorem sum_sourceOscillatorySequence (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) 
   unfold exponentialSumAt
   apply Finset.sum_bij (fun n _ => a+n.toNat)
   case hi =>
-    intro n hn
-    have hn' := Finset.mem_Ico.mp hn
-    have hto : (n.toNat : ℤ) = n := Int.toNat_of_nonneg hn'.1
-    have hbound : n.toNat ≤ L := by omega
-    exact Finset.mem_Icc.mpr ⟨by omega,by omega⟩
+    grind
   case i_inj =>
-    intro n hn m hm he
-    have hn0 := (Finset.mem_Ico.mp hn).1
-    have hm0 := (Finset.mem_Ico.mp hm).1
-    have hto : n.toNat = m.toNat := by omega
-    have he' := congrArg (fun k : ℕ => (k : ℤ)) hto
-    rw [Int.toNat_of_nonneg hn0,Int.toNat_of_nonneg hm0] at he'
-    exact he'
+    grind
   case i_surj =>
     intro m hm
     have hm' := Finset.mem_Icc.mp hm
     refine ⟨(m-a : ℕ),?_,by omega⟩
-    exact Finset.mem_Ico.mpr ⟨by positivity,by exact_mod_cast (show m-a < L+1 by omega)⟩
+    exact Finset.mem_Ico.mpr ⟨by positivity,by omega⟩
   case h =>
     intro n hn
     have hn0 := (Finset.mem_Ico.mp hn).1
@@ -66,8 +53,6 @@ theorem padded_source_correlation_eq (F : ℝ → ℝ) (T N : ℝ) (a L H h k : 
       sourceShiftCorrelation F T N a L (k-h) := by
   rw [padded_sequence_correlation_eq _ (L+1) H h k hh hk hhk]
   unfold sourceShiftCorrelation sourceOscillatorySequence
-  apply Finset.sum_congr rfl
-  intro j _
   simp only [Int.cast_add,Int.cast_sub,Int.cast_natCast,Nat.cast_sub hhk.le,add_assoc,starRingEnd_apply]
 
 theorem norm_padded_source_correlation (F : ℝ → ℝ) (T N : ℝ) (a L H h k : ℕ)

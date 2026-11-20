@@ -102,10 +102,6 @@ theorem scaled_smooth_power_bound (φ : ℝ → ℝ) (ψ : 𝓢(ℝ, ℂ))
   have h1 := mul_le_mul_of_nonneg_left
     (fourier_scaled_smooth_mass_bound hφ hg hg0 hδ ξ) (pow_nonneg (abs_nonneg ξ) j)
   have h2 := mul_le_mul_of_nonneg_right (h δ hδ ξ) hm
-  rw [hψ] at h2
-  calc
-    _ ≤ |ξ| ^ j * ((∫ x, g x) * ‖𝓕 (fun x => (φ x : ℂ)) (δ * ξ)‖) := h1
-    _ = (|ξ| ^ j * ‖𝓕 (fun x => (φ x : ℂ)) (δ * ξ)‖) * (∫ x, g x) := by ring
-    _ ≤ _ := h2
+  grind
 
 end GuthMaynard.Improvement

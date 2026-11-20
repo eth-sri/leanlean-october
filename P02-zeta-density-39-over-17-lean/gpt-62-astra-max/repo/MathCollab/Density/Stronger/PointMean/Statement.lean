@@ -42,7 +42,7 @@ theorem heathBrownLemmaThreeMoment_eq_centered (t L : ℝ) :
     heathBrownLemmaThreeMoment t L =
       ∫ v in t - L..t + L,
         Real.exp (-|t - v|) * zetaMomentCriticalNorm v ^ (2 : ℕ) := by
-  let f : ℝ → ℝ := fun v ↦
+  let f  := fun v ↦
     Real.exp (-|t - v|) * zetaMomentCriticalNorm v ^ (2 : ℕ)
   have hshift := intervalIntegral.integral_comp_add_right f t
       (a := -L) (b := L)
@@ -51,10 +51,7 @@ theorem heathBrownLemmaThreeMoment_eq_centered (t L : ℝ) :
     (∫ u in -L..L,
         Real.exp (-|u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)) =
         ∫ u in -L..L, f (u + t) := by
-      apply intervalIntegral.integral_congr
-      intro u hu
-      simp only [f, show t - (u + t) = -u by ring, abs_neg]
-      rw [add_comm]
+      grind
     _ = ∫ v in -L + t..L + t, f v := hshift
     _ = ∫ v in t - L..t + L,
         Real.exp (-|t - v|) * zetaMomentCriticalNorm v ^ (2 : ℕ) := by

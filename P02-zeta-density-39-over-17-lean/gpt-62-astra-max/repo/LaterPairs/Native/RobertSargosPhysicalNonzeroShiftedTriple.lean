@@ -1,7 +1,4 @@
 module
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosNonzeroShiftError
 public import LaterPairs.Native.RobertSargosNonzeroShiftedBound
 public import LaterPairs.Native.RobertSargosPhysicalCommonShiftBudget
@@ -58,7 +55,7 @@ theorem robertSargos_physical_nonzero_shifted_triple
     ring
   rw [mul_add,hcancel,halg] at he
   have hb := robertSargos_physical_common_shift_budget M H hlam hsmall hM hHmax
-  have hCp : 0 ≤ C := zero_le_one.trans hC
+  have hCp  := zero_le_one.trans hC
   have hfactor : 1 ≤ 1+2*Real.pi*C := by
     have hp : 0 ≤ 2*Real.pi*C := by positivity
     linarith

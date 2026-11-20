@@ -13,7 +13,7 @@ theorem inverse_ratio_integral {q : ℝ → ℝ} (hq : Integrable q)
     (hq0 : ∀ x, 0 ≤ q x) {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) :
     IntegrableOn (fun v => q (1/v)) (Icc a b) ∧
       (∫ v in Icc a b, q (1/v)) ≤ b^2*(∫ u, q u) := by
-  have hb : 0 < b := ha.trans_le hab
+  
   have hd : ∀ x ∈ Icc a b, HasDerivWithinAt (fun v : ℝ => v⁻¹)
       (-(x^2)⁻¹) (Icc a b) x := by
     intro x hx
@@ -31,7 +31,7 @@ theorem inverse_ratio_integral {q : ℝ → ℝ} (hq : Integrable q)
     have hv0 : v ≠ 0 := ne_of_gt (ha.trans_le hv.1)
     rw [abs_neg,abs_of_nonneg (inv_nonneg.mpr (sq_nonneg v)),← mul_assoc,
       mul_inv_cancel₀ (pow_ne_zero _ hv0),one_mul,one_div]
-  have hi : IntegrableOn (fun v => q (1/v)) (Icc a b) :=
+  have hi  :=
     (hweight.bdd_mul (by fun_prop) hnorm).congr (by
       filter_upwards [ae_restrict_mem measurableSet_Icc] with v hv
       exact heq v hv)

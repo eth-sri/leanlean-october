@@ -31,16 +31,14 @@ theorem sparse_cyclic_fourth_moment {ι : Type*} [Fintype ι]
       ‖∑ i, c i*productCyclicPhase (v i) x‖^4) ≤
       (∑ i, (∏ j, integerFourthWeight (v i j))*‖c i‖^2)^2 := by
   classical
-  let A : Finset ℤ := insert 0 (univ.biUnion (fun i : ι => univ.image (v i)))
+  let A  := insert 0 (univ.biUnion (fun i : ι => univ.image (v i)))
   have hmem (i : ι) (j : Fin d) : v i j ∈ A :=
     mem_insert_of_mem (mem_biUnion.mpr ⟨i, mem_univ _, mem_image.mpr ⟨j, mem_univ _, rfl⟩⟩)
   have hAN : ∀ n ∈ A, n.natAbs < N := by
     intro n hn
     rcases mem_insert.mp hn with rfl | hn
     · simpa using Nat.pos_of_ne_zero (NeZero.ne N)
-    · obtain ⟨i, _, hn⟩ := mem_biUnion.mp hn
-      obtain ⟨j, _, rfl⟩ := mem_image.mp hn
-      exact hN i j
+    · grind
   let e : ι → Fin d → A := fun i j => ⟨v i j, hmem i j⟩
   have he : Function.Injective e := by
     intro i j hij

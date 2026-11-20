@@ -88,13 +88,13 @@ theorem smoothDyadicBlock_scale_tail_le {a : ℕ → ℂ}
     (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) (R : ℝ) :
     (∑' j : ℤ, if R < (2 : ℝ)^j then ‖smoothDyadicBlock a j‖ else 0) ≤
       ∑' n : ℕ, if R/2 < ((n+2 : ℕ) : ℝ) then ‖a (n+2)‖ else 0 := by
-  let F : ℕ → ℤ → ℝ := fun n j =>
+  let F  := fun n j =>
     if R < (2 : ℝ)^j then ‖smoothDyadicTerm a n j‖ else 0
   have hFnonneg (n : ℕ) (j : ℤ) : 0 ≤ F n j := by dsimp [F]; split_ifs <;> positivity
   have hFle (n : ℕ) (j : ℤ) : F n j ≤ ‖smoothDyadicTerm a n j‖ := by
     dsimp [F]; split_ifs <;> simp
   have hs := summable_norm_smoothDyadicTerm ha
-  have hF : Summable (Function.uncurry F) :=
+  have hF  :=
     hs.of_nonneg_of_le (fun p => hFnonneg p.1 p.2) (fun p => hFle p.1 p.2)
   have hrow (n : ℕ) : (∑' j : ℤ, F n j) ≤
       if R/2 < ((n+2 : ℕ) : ℝ) then ‖a (n+2)‖ else 0 := by
@@ -121,9 +121,9 @@ theorem smoothDyadicBlock_scale_tail_le {a : ℕ → ℂ}
     · simp only [F, ite_eq_right hj, tsum_zero, le_refl]
   have hleft : Summable (fun j : ℤ => if R < (2 : ℝ)^j then ‖smoothDyadicBlock a j‖ else 0) :=
     (summable_norm_smoothDyadicBlock ha).of_nonneg_of_le
-      (fun j => by split_ifs <;> positivity) (fun j => by split_ifs <;> simp)
+      (fun j => by positivity) (fun j => by split_ifs <;> simp)
   have hright : Summable (fun n : ℕ => if R/2 < ((n+2 : ℕ) : ℝ) then ‖a (n+2)‖ else 0) :=
-    ha.of_nonneg_of_le (fun n => by split_ifs <;> positivity) (fun n => by split_ifs <;> simp)
+    ha.of_nonneg_of_le (fun n => by positivity) (fun n => by split_ifs <;> simp)
   calc
     _ ≤ ∑' j : ℤ, ∑' n : ℕ, F n j := hleft.tsum_le_tsum hcol hF.prod_symm.prod
     _ = ∑' n : ℕ, ∑' j : ℤ, F n j := hF.tsum_comm

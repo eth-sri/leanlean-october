@@ -1,8 +1,5 @@
 module
 public import LaterPairs.Native.RobertSargosAffineBandExtras
-public import TaoTrudgianYang2025.HeathBrownExponentPairs
-public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosFrequencyFibers
 public import LaterPairs.Native.RobertSargosFrequencyWeightSums
 

@@ -63,8 +63,7 @@ def atkinsonIndexRealNormalizedPhase (T x : ℝ) : ℝ :=
 /-- The real-index phase restricts to the source phase on natural
 indices. -/
 theorem atkinsonIndexRealPhase_natCast (T : ℝ) (n : ℕ) :
-    atkinsonIndexRealPhase T n = atkinsonSourcePhase T n := by
-  rfl
+    atkinsonIndexRealPhase T n = atkinsonSourcePhase T n := rfl
 
 /-- Algebraic normalization of the literal real-index phase. -/
 theorem atkinsonIndexRealPhase_eq_normalized
@@ -227,7 +226,7 @@ theorem hasDerivAt_atkinsonIndexRealNormalizedPhase
       _ = (Real.pi * x) * (2 * T + Real.pi * x) / x ^ 2 := by
         rw [hinner]
       _ = 2 * Real.pi * T / x + Real.pi ^ (2 : ℕ) := by
-        field_simp [hx.ne']
+        field_simp <;> ring
   have hnonneg : 0 ≤ 2 * T * r * s / x := by
     exact div_nonneg
       (mul_nonneg (mul_nonneg (by positivity) (Real.sqrt_nonneg _)) hspos.le)

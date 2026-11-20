@@ -10,8 +10,7 @@ namespace Montgomery.RationalMoment
 
 theorem cyclic_probability_mass {N d : ℕ} [NeZero N] :
     (∑ _x : Fin d → ZMod N, ∏ _j : Fin d, (N : ℝ)⁻¹) = 1 := by
-  rw [← Fintype.prod_sum (fun (_ : Fin d) (_ : ZMod N) => (N : ℝ)⁻¹)]
-  simp [ZMod.card, NeZero.ne N]
+  simp
 
 theorem rational_coefficient_energy_one (A : Finset ℚ) (hA : ∀ r ∈ A, 0 < r)
     (c : ℚ → ℂ) : rationalCoefficientEnergy A 1 c = ∑ r ∈ A, ‖c r‖^2 := by
@@ -93,8 +92,7 @@ theorem rational_mul_numerator_le {r s : ℚ} (hr : r ≠ 0) (hs : s ≠ 0) :
   have he := congrArg Int.natAbs (Rat.num_mul_num_eq_num_mul_gcd r s)
   simp only [Int.natAbs_mul, Int.natAbs_natCast] at he
   apply Nat.le_of_dvd
-  · exact Nat.mul_pos (Int.natAbs_pos.mpr (Rat.num_ne_zero.mpr hr))
-      (Int.natAbs_pos.mpr (Rat.num_ne_zero.mpr hs))
+  · positivity
   · exact ⟨_, he⟩
 
 theorem rational_product_numerator {ι : Type*} (S : Finset ι) (r : ι → ℚ)

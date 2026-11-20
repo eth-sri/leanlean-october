@@ -34,8 +34,7 @@ theorem shellEnergy_eq_twice_positive (w : ReflectionCutoff) (L : ℝ)
       (if H ≤ v ∧ v < 2*H then ‖hKernel w L v‖ ^ 2 else 0) +
       (if H ≤ -v ∧ -v < 2*H then ‖hKernel w L (-v)‖ ^ 2 else 0) := by
     by_cases hv : 0 ≤ v
-    · have hn : ¬(H ≤ -v ∧ -v < 2*H) := by intro hh; linarith [hh.1]
-      simp only [abs_of_nonneg hv, ite_eq_right hn, add_zero]
+    · grind
     · have hn : ¬(H ≤ v ∧ v < 2*H) := by intro hh; linarith [hh.1]
       simp only [abs_of_nonpos (le_of_not_ge hv), ite_eq_right hn, zero_add, norm_hKernel_neg]
   unfold shellEnergy positiveShell
@@ -125,7 +124,7 @@ theorem uniform_reflection (w : ReflectionCutoff) {A : ℕ} (hA : 1 < A) :
     have hh := mul_le_mul_of_nonneg_left hp (by norm_num : (0 : ℝ) ≤ 2)
     rw [hpow] at hh
     convert hh using 1; ring
-  · have hz : ‖hKernel w L 0‖ ≤ E := (herr L H H hL hH le_rfl (by linarith)).2
+  · have hz  := (herr L H H hL hH le_rfl (by linarith)).2
     have hz2 := pow_le_pow_left₀ (norm_nonneg _) hz 2
     have hh := Finset.sum_le_sum (s := U) (fun t _ => hz2)
     simp only [Finset.sum_const, nsmul_eq_mul] at hh ⊢

@@ -47,7 +47,7 @@ theorem mem_pointClusterBins_iff {H G : ℝ} {W : Finset ℝ} {n : ℕ} :
 
 theorem pointCluster_card_partition (H G : ℝ) (W : Finset ℝ) :
     W.card = ∑ n ∈ pointClusterBins H G W, (pointCluster H G W n).card := by
-  exact Finset.card_eq_sum_card_image (atkinsonHeightBin H (G/2)) W
+  apply Finset.card_eq_sum_card_image <;> assumption
 
 theorem pointCluster_interval {H G : ℝ} {W : Finset ℝ} (n : ℕ)
     (hG : 0 < G) (hlow : ∀ t ∈ W, H ≤ t) :
@@ -73,8 +73,7 @@ theorem pointClusterCenter_range {H G : ℝ} {W : Finset ℝ} {n : ℕ}
   have htW := pointCluster_subset H G W n ht
   have hi := pointCluster_interval n hG (fun t ht => (hrange t ht).1) t ht
   constructor
-  · unfold pointClusterCenter
-    exact le_add_of_nonneg_right (by positivity)
+  · exact le_add_of_nonneg_right (by positivity)
   · exact hi.1.trans (hrange t htW).2
 
 theorem pointClusterCenter_injective {H G : ℝ} (hG : 0 < G) :
@@ -82,7 +81,7 @@ theorem pointClusterCenter_injective {H G : ℝ} (hG : 0 < G) :
   intro k l h
   have hm : (k:ℝ)*(G/2) = (l:ℝ)*(G/2) := by
     simpa only [pointClusterCenter, add_right_inj] using h
-  have he : (k:ℝ) = (l:ℝ) :=
+  have he  :=
     mul_right_cancel₀ (ne_of_gt (half_pos hG)) hm
   exact_mod_cast he
 
@@ -106,7 +105,7 @@ theorem pointClusterCenters_separated {H G : ℝ} (hG : 0 < G)
   obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
   obtain ⟨l,hl,rfl⟩ := Finset.mem_image.mp hy
   have hne : k ≠ l := by intro h; subst l; exact hxy rfl
-  have he : k%2 = l%2 := (hmod k hk).trans (hmod l hl).symm
+  have he  := (hmod k hk).trans (hmod l hl).symm
   rw [Real.dist_eq]
   rcases lt_or_gt_of_ne hne with hkl | hlk
   · rw [abs_sub_comm]

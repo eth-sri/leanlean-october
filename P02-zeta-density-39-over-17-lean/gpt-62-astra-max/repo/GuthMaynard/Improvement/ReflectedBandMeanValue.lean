@@ -73,7 +73,7 @@ theorem boundedPolynomial_integer_phase {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ)
   rw [mul_sum]
   apply sum_congr rfl
   intro n hn
-  have hn0 : (0:ℝ) < n := hN.trans ((sourceRatioIndices_mem hN.le n).mp hn).1
+  have hn0  := hN.trans ((sourceRatioIndices_mem hN.le n).mp hn).1
   unfold MathCollab.Density.dirichletPhase dirichletPhase
   rw [Real.log_div hn0.ne' hN.ne']
   calc
@@ -130,19 +130,15 @@ theorem reflected_band_mean_value {η : ℝ} (hη : 0 < η) :
     (fun m _ => reflected_band_coefficient_norm L H r u m)
   have hfactor : 0 ≤ H+4*(Y:ℝ)*(1+Real.log Y) := by
     by_cases hy : Y=0
-    · simp only [hy,Nat.cast_zero,mul_zero,zero_mul,add_zero]
-      exact hH
-    · have hy1 : (1:ℝ) ≤ Y := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hy
-      have hl : 0 ≤ Real.log Y := Real.log_nonneg hy1
-      positivity
+    · positivity
+    · positivity
   calc
     _ = ∫ t in Set.Icc (u+H) (u+2*H), ‖finiteDirichletPolynomial Y c t‖^2 := by
       apply integral_congr_ae
       filter_upwards with t
       exact reflected_band_product_norm hN hL H r u t a
     _ ≤ (H+4*(Y:ℝ)*(1+Real.log Y))*(∑ k ∈ Finset.Icc 1 Y, ‖c k‖^2) := by
-      convert hmv using 1
-      ring
+      linarith
     _ ≤ (H+4*(Y:ℝ)*(1+Real.log Y))*(C*(1+2*N*X)^η*(N+1)*X) :=
       mul_le_mul_of_nonneg_left he hfactor
     _ = _ := by ring

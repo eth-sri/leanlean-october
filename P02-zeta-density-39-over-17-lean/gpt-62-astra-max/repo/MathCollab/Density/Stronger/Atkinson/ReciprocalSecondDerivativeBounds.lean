@@ -78,11 +78,7 @@ theorem intervalC2Bound_real_reciprocal {g : ℝ → ℝ} {a c B R : ℝ}
     simp only [abs_div, abs_mul, abs_pow, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
     calc
       _ ≤ 2 * (B * R) ^ 2 / B ^ 3 + (B * R ^ 2) / B ^ 2 := by
-        gcongr
-        · exact hfirst x hx
-        · exact hlo x hx
-        · exact hsecond x hx
-        · exact hlo x hx
+        bound
       _ = _ := by field_simp; ring
 
 theorem IntervalC2Bound.deriv_c1 {f : ℝ → ℂ} {a c M R : ℝ}
@@ -94,10 +90,10 @@ theorem IntervalC2Bound.deriv_c1 {f : ℝ → ℂ} {a c M R : ℝ}
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hac]
     exact fun x hx => ((hs x hx).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
-  have hlen : 0 ≤ c - a := sub_nonneg.mpr hac
-  have hMR : 0 ≤ M * R := mul_nonneg hf.nonneg hf.scale_nonneg
+  
+  have hMR  := mul_nonneg hf.nonneg hf.scale_nonneg
   have hlast : 0 ≤ M * ((c - a) * R ^ 2) := by positivity [hf.nonneg]
-  refine ⟨by positivity [hf.nonneg, hf.scale_nonneg], hs, ?_, ?_⟩
+  refine ⟨by linarith, hs, ?_, ?_⟩
   · intro x hx
     exact (hf.deriv_le x hx).trans (by nlinarith)
   · calc

@@ -48,7 +48,7 @@ theorem wooley_section4_depth_margin
   have hceil : (k : ℝ) * (B ⌈/⌉ k : ℕ) < B + k := by
     exact_mod_cast hceilNat
   have hk0 : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
-  have hH0 : (0 : ℝ) ≤ (B ⌈/⌉ k : ℕ) := by positivity
+  
   have hkhReal : (k : ℝ) * h ≤ B := by
     have : (k : ℝ) * h ≤ (1 - delta) *
         ((k : ℝ) * (B ⌈/⌉ k : ℕ)) := by

@@ -17,7 +17,7 @@ theorem middle_low_threshold_budget {N T V : ℝ} (hN : 2 ≤ N)
     N^2/(middleThreshold N T)^2+T*N^4/(middleThreshold N T)^6 ≤
       2*middleMoment N T/V^4 := by
   have hn : 0 < N := by linarith
-  have ht : 0 < T := hn.trans_le (middle_time_bounds hN hlo hhi).1
+  have ht  := hn.trans_le (middle_time_bounds hN hlo hhi).1
   have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
   have hp : 0 < middleMoment N T := by unfold middleMoment; positivity
   have hnl := (middle_length_bounds hN hlo hhi).1
@@ -70,10 +70,7 @@ theorem middle_large_values_low {ε : ℝ} (hε : 0 < ε) :
     _ ≤ E*N^(ε/2)*(2*middleMoment N T/V^4+D*N^(ε/2)*middleMoment N T/V^4) :=
       hx.trans (mul_le_mul_of_nonneg_left (add_le_add hbudget le_rfl) (by positivity))
     _ ≤ E*N^(ε/2)*(2*N^(ε/2)*middleMoment N T/V^4+D*N^(ε/2)*middleMoment N T/V^4) := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      apply add_le_add _ le_rfl
-      gcongr
-      linarith
+      bound
     _ = E*(2+D)*(N^(ε/2)*N^(ε/2))*middleMoment N T/V^4 := by ring
     _ = _ := by rw [hid]
 

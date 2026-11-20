@@ -66,8 +66,8 @@ theorem norm_inv_gamma_critical_half_le (t : ℝ) :
   let p := afeCriticalPoint t / 2
   have hp : 0 < p.re := by norm_num [p, afeCriticalPoint]
   have hq : 0 < (1 - p).re := by norm_num [p, afeCriticalPoint]
-  have hGp : Complex.Gamma p ≠ 0 := Complex.Gamma_ne_zero_of_re_pos hp
-  have hGq : Complex.Gamma (1 - p) ≠ 0 := Complex.Gamma_ne_zero_of_re_pos hq
+  have hGp  := Complex.Gamma_ne_zero_of_re_pos hp
+  have hGq  := Complex.Gamma_ne_zero_of_re_pos hq
   have href := Complex.Gamma_mul_Gamma_one_sub p
   have hsin : Complex.sin ((Real.pi : ℂ) * p) ≠ 0 := by
     intro h
@@ -133,17 +133,16 @@ theorem norm_zetaSquarePoleShift_le_polynomial
   have hcrit : ‖afeCriticalPoint (-t)‖ ≤ 1/2+t := by
     simpa [afeCriticalPoint,abs_of_nonneg ht] using
       norm_add_le (1/2:ℂ) (((-t:ℝ):ℂ)*I)
-  have hw : ‖w‖ ≤ c+|u| := norm_vertical_shift_le hc u
+  have hw  := norm_vertical_shift_le hc u
   have hs : ‖s‖ ≤ 1/2+t+c+|u| :=
     (norm_add_le _ _).trans (by linarith)
-  have hsR : ‖s‖ ≤ R := hs.trans (by dsimp [R]; linarith)
+  have hsR : ‖s‖ ≤ R := hs.trans (by linarith)
   have hsub : ‖1-s‖ ≤ R := (norm_sub_le _ _).trans (by
     rw [norm_one]
     dsimp [R]
     linarith)
-  have hR : 0 ≤ R := by dsimp [R]; positivity
+  
   rw [zetaSquarePoleShift_eq_source, norm_div, norm_pow, norm_mul]
-  change (‖s‖*‖1-s‖)^2/‖zetaSquarePoleNormalization t‖ ≤ 16*R^4
   calc
     _ ≤ (R*R)^2/(1/16) := by
       gcongr
@@ -157,13 +156,12 @@ theorem exists_norm_zetaFourthKernel_far_le {c : ℝ} (hc : 0 < c) :
         K*Real.exp (-99*u^2) := by
   obtain ⟨C,hC,hInv⟩ := exists_norm_inv_zetaSquareGammaNormalization_le
   let G : ℝ := Real.pi^(-(1/2+c)/2)*Real.Gamma ((1/2+c)/2)
-  have hG : 0 < G := mul_pos (Real.rpow_pos_of_pos Real.pi_pos _)
-    (Real.Gamma_pos_of_pos (by linarith))
+  
   let A : ℝ := 10000*G^2*C/c
   let Q : ℝ := 12*(c+3)+(60+4*Real.pi)^2/4
   let K : ℝ := A*Real.exp (100*c^2)*Real.exp Q
   have hA : 0 < A := by dsimp [A]; positivity
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  refine ⟨K,by positivity,?_⟩
   intro t u ht hu
   let w : ℂ := (c:ℂ)+(u:ℂ)*I
   let R : ℝ := 3+c+t+|u|
@@ -171,9 +169,9 @@ theorem exists_norm_zetaFourthKernel_far_le {c : ℝ} (hc : 0 < c) :
   have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
   have hw := norm_vertical_shift_le hc.le u
   have hwlower := vertical_shift_re_le_norm hc.le u
-  have haux : ‖hughesYoungAuxiliaryZero w‖ ≤ 625*R^8 :=
-    norm_hughesYoungAuxiliaryZero_le_polynomial hR (hw.trans (by dsimp [R]; linarith))
-  have hpole : ‖zetaSquarePoleShift t w‖ ≤ 16*R^4 :=
+  have haux  :=
+    norm_hughesYoungAuxiliaryZero_le_polynomial hR (hw.trans (by linarith))
+  have hpole  :=
     norm_zetaSquarePoleShift_le_polynomial ht hc.le u
   have hg : ‖Complex.Gammaℝ (afeCriticalPoint (-t)+w)‖ ≤ G := by
     have hre : (afeCriticalPoint (-t)+w).re = 1/2+c := by
@@ -213,8 +211,7 @@ theorem exists_norm_zetaFourthKernel_far_le {c : ℝ} (hc : 0 < c) :
     _ ≤ Real.exp (100*c^2-100*u^2)*(625*R^8)*(16*R^4)*
         (G^2*(C*Real.exp (Real.pi*t)))/c := by gcongr
     _ = A*R^12*Real.exp (100*c^2-100*u^2)*Real.exp (Real.pi*t) := by dsimp [A]; ring
-    _ ≤ A*B^12*Real.exp (100*c^2-100*u^2)*Real.exp ((4*Real.pi)*|u|) := by
-      exact mul_le_mul
+    _ ≤ A*B^12*Real.exp (100*c^2-100*u^2)*Real.exp ((4*Real.pi)*|u|) := mul_le_mul
         (mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by linarith) hRB 12) hA.le)
           (Real.exp_pos _).le)
@@ -223,7 +220,7 @@ theorem exists_norm_zetaFourthKernel_far_le {c : ℝ} (hc : 0 < c) :
         (B^12*Real.exp ((4*Real.pi)*|u|))*Real.exp (-100*u^2) := by rw [he]; ring
     _ ≤ A*Real.exp (100*c^2)*(Real.exp Q*Real.exp (u^2))*Real.exp (-100*u^2) := by
       gcongr
-    _ = K*(Real.exp (u^2)*Real.exp (-100*u^2)) := by dsimp [K]; ring
+    _ = K*(Real.exp (u^2)*Real.exp (-100*u^2)) := by ring
     _ = _ := by rw [hgauss]
 
 end MathCollab.Density.Stronger.Fourth

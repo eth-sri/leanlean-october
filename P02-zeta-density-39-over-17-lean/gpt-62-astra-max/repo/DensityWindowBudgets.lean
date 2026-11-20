@@ -1,9 +1,20 @@
 module
 public import FiniteCubicLargeValues
 public import DiscreteAdditiveEnergy
-public import GuthMaynard.Improvement.MomentScalarClosure
-public import GuthMaynard.Improvement.WeakShortDensity
-public import RefinedDensity
+public import GuthMaynard.Improvement.ShortWindowLargeValues
+public import GuthMaynard.Improvement.ShortTypeIICount
+public import GuthMaynard.Improvement.WeakShortMoment
+public import GuthMaynard.Improvement.NativeDensitySourceBridge
+public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointSlab
+public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
+public import GuthMaynard.Improvement.CurveUniformization
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
+public import MathCollab.Density.Stronger.PointMean.PeaksInput
+public import MathCollab.Density.Stronger.Peaks.WidthRanges
+public import MathCollab.Density.Stronger.SeparatedVolume
+public import MathCollab.Density.Stronger.ShortPoweredHeight
+public import MathCollab.Density.Stronger.LongScalarBudget
+public import MathCollab.Density.DensityConclusion
 
 @[expose] public section
 
@@ -50,8 +61,8 @@ theorem two_term_amplifier_budgets {σ a p α T N : ℝ}
   have he : 0 ≤ 6*σ-4 := by linarith [hw.sigma_low]
   have hnexp : 0 ≤ 5-6*σ := by linarith [hw.sigma_high]
   have ha : 0 ≤ a := by linarith [hw.a_low]
-  have hp : 0 ≤ p := by linarith [hw.p_low]
-  have hN1 : 1 ≤ N := (Real.one_le_rpow hT ha).trans hlo
+  
+  
   have hpow (q : ℝ) : (T^a)^q = T^(a*q) := (Real.rpow_mul hTp.le a q).symm
   have hpow' (q : ℝ) : (T^α)^q = T^(α*q) := (Real.rpow_mul hTp.le α q).symm
   have hlower : N^(5-6*σ) ≤ T^p := by
@@ -72,7 +83,7 @@ theorem two_term_amplifier_budgets {σ a p α T N : ℝ}
       _ = T^(p+α*(6*σ-4)) := by rw [hpow',← Real.rpow_add hTp]
       _ ≤ T^(1:ℝ) := Real.rpow_le_rpow_of_exponent_le hT hw.amplifier_upper
       _ = T := Real.rpow_one T
-  · have hdiv : T/N ≤ T/(T^a) := div_le_div_of_nonneg_left hTp.le (by positivity) hlo
+  · have hdiv  := div_le_div_of_nonneg_left hTp.le (by positivity) hlo
     calc
       _ ≤ (T/(T^a))^2 := pow_le_pow_left₀ (by positivity) hdiv 2
       _ = T^(2*(1-a)) := by

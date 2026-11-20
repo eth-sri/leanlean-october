@@ -66,7 +66,7 @@ theorem heathBrown_kernel_support
     (hphi : heathBrownTriangularKernel B C x y ≠ 0) :
     heathBrownDistanceToInteger x < B ∧
       heathBrownDistanceToInteger y < C := by
-  have hphiPos : 0 < heathBrownTriangularKernel B C x y :=
+  have hphiPos  :=
     lt_of_le_of_ne (heathBrownTriangularKernel_nonneg B C x y) hphi.symm
   have hprod := (mul_pos_iff.mp hphiPos)
   rcases hprod with hpos | hneg
@@ -130,7 +130,6 @@ theorem heathBrown_sameBlock_kernel_sum_le_pairCountTwo
     _ ≤ ∑ _p ∈ T, (1 : ℝ) := by
       apply Finset.sum_le_sum
       intro p _hp
-      unfold heathBrownPairKernel
       exact heathBrownTriangularKernel_le_one (by positivity) (by positivity)
     _ = (T.card : ℝ) := by simp
 

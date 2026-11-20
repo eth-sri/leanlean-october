@@ -1,5 +1,5 @@
 module
-public import GuthMaynard.Improvement.UnequalSourceScales
+public import GuthMaynard.AffineSource.LargeValuesAffineHeight
 
 @[expose] public section
 set_option autoImplicit false
@@ -57,7 +57,7 @@ theorem mixed_source_retained_core {ε T Q Y : ℝ}
             (gmAffineSecondPoissonCutoff T Q M₂ M₃/Q)
             (by unfold gmAffineSecondPoissonCutoff; positivity) f) M₂)) := by
   have hrad : 0 ≤ gmAffineFirstPoissonRadius M₁ M₃ Q := by unfold gmAffineFirstPoissonRadius; positivity
-  have hwindow : 0 ≤ (Y+gmAffineFirstPoissonRadius M₁ M₃ Q)^ε := by positivity
+  
   have hfactor := gmAffineFirstPoissonRadius_card_factor_mul_scale_le h₁ h₃ hQ
   have h₁r : (M₁:ℝ) ≤ R := by exact_mod_cast h₁R
   have h₂k : (M₂:ℝ) ≤ K := by exact_mod_cast h₂K
@@ -72,7 +72,7 @@ theorem mixed_source_retained_core {ε T Q Y : ℝ}
       (gmAffineTildeSchwartz
         (gmAffineSecondPoissonCutoff T Q M₂ M₃ / Q)
         (by unfold gmAffineSecondPoissonCutoff; positivity) f) M₂)
-  have hH : 0 ≤ H := by dsimp only [H]; positivity
+  
   unfold gmAffineRegionIICoreRawBound gmAffineRegionIICoreConstant
   dsimp only
   change 2 *

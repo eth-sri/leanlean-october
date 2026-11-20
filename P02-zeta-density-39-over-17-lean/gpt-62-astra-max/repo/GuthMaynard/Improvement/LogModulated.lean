@@ -24,7 +24,7 @@ theorem logModulated_deriv {a : ℝ → ℂ}
     (ha : ContDiffOn ℝ ∞ a (Ioi 0)) (s : ℝ) {x : ℝ} (hx : 0 < x) :
     deriv (logModulated a s) x =
       logModulated (deriv a) s x + (s:ℂ)*Complex.I*logModulated (fun x => a x/(x:ℂ)) s x := by
-  have hd : HasDerivAt a (deriv a x) x :=
+  have hd  :=
     ((ha.contDiffAt (isOpen_Ioi.mem_nhds hx)).differentiableAt (by simp)).hasDerivAt
   have he := (((Real.hasDerivAt_log hx.ne').ofReal_comp).const_mul ((s:ℂ)*Complex.I)).cexp
   have hh := (hd.mul he).deriv
@@ -60,7 +60,7 @@ theorem logModulated_uniform_deriv (n : ℕ) {l u : ℝ} (hl : 0 < l)
     obtain ⟨D,hD,hd⟩ := ih (fun x => a x/(x:ℂ)) haq
     refine ⟨C+D,by positivity,?_⟩
     intro s x hx
-    have hxp : x ∈ Ioi (0:ℝ) := lt_of_lt_of_le hl hx.1
+    have hxp  := lt_of_lt_of_le hl hx.1
     have heq : deriv (logModulated a s) =ᶠ[𝓝 x]
         (fun z => logModulated (deriv a) s z + (s:ℂ)*Complex.I*logModulated (fun z => a z/(z:ℂ)) s z) := by
       filter_upwards [isOpen_Ioi.mem_nhds hxp] with z hz
@@ -91,7 +91,7 @@ theorem logModulated_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   by_cases hx : 0 < x
   · exact (logModulated_smoothOn ha.contDiffOn s).contDiffAt (isOpen_Ioi.mem_nhds hx)
   · apply (contDiffAt_const : ContDiffAt ℝ ∞ (fun _ : ℝ => (0:ℂ)) x).congr_of_eventuallyEq
-    have hxl : x < l := lt_of_le_of_lt (le_of_not_gt hx) hl
+    have hxl  := lt_of_le_of_lt (le_of_not_gt hx) hl
     filter_upwards [isOpen_Iio.mem_nhds hxl] with z hz
     have haz := hs z (fun h => (not_lt_of_ge h.1) hz)
     simp [logModulated,haz]

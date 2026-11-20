@@ -35,7 +35,7 @@ theorem norm_poleShift_gammaReal_sq_sub_exp_le {t : ℝ} (ht : 4 ≤ t)
   apply (norm_add_le _ _).trans
   simp only [norm_mul]
   have hB : 0 ≤ zetaGammaShiftError t w := zetaGammaShiftError_nonneg (by linarith) w
-  have hexp : 1 ≤ Real.exp (zetaGammaShiftError t w) := Real.one_le_exp hB
+  have hexp  := Real.one_le_exp hB
   have hnE : ‖E‖ = Real.exp ((w * zetaGammaLeadingLog t).re) := Complex.norm_exp _
   rw [hnE]
   calc
@@ -84,7 +84,7 @@ theorem norm_rightContour_shift_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t / 
 
 private theorem near_shift_exponent_le {t u : ℝ} (ht : 4 ≤ t) :
     zetaGammaShiftError t (1 + (u : ℂ) * I) + u * (Real.pi / 2) ≤ 20 + 10 * u ^ 2 := by
-  have ht0 : 0 < t := by linarith
+  
   have hw : ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ 1 + |u| := by
     simpa [Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
   have hB : zetaGammaShiftError t (1 + (u : ℂ) * I) ≤
@@ -105,7 +105,7 @@ theorem norm_near_pole_gamma_error_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t
         Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2 - Complex.exp (w * zetaGammaLeadingLog t)‖ ≤
       183 * (1 + |u|) ^ 2 * Real.exp (20 + 10 * u ^ 2) := by
   let w : ℂ := 1 + (u : ℂ) * I
-  have ht0 : 0 < t := by linarith
+  
   have hwre : 0 ≤ w.re := by norm_num [w]
   have herr := norm_poleShift_gammaReal_sq_sub_exp_le ht hwre (norm_rightContour_shift_le ht hu)
   have he : Real.exp ((w * zetaGammaLeadingLog t).re) =
@@ -154,7 +154,7 @@ theorem norm_zetaSquareRightKernel_sub_leading_near_le {t u : ℝ}
     simpa [w, Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
   have hwlower : 1 ≤ ‖w‖ := by simpa [w] using Complex.abs_re_le_norm w
   have haux := norm_hughesYoungAuxiliaryZero_le_polynomial
-    (show 1 ≤ 1 + |u| by linarith [abs_nonneg u]) hw
+    (show 1 ≤ 1 + |u| by linarith) hw
   have hexp : ‖Complex.exp (100 * w ^ 2)‖ = Real.exp (100 - 100 * u ^ 2) := by
     rw [Complex.norm_exp]
     congr 1

@@ -10,12 +10,12 @@ namespace Montgomery.RationalMoment
 theorem eighth_gap_count_absorption {R S C : ℝ}
     (hS : 0 < S) (hSR : S ≤ R)
     (hbound : R^2 ≤ C*S^(1/8:ℝ)*R^(15/8:ℝ)) : R ≤ C^8*S := by
-  have hR : 0 < R := hS.trans_le hSR
+  have hR  := hS.trans_le hSR
   have he : R^2=R^(1/8:ℝ)*R^(15/8:ℝ) := by
     rw [← Real.rpow_add hR]
     norm_num
   rw [he] at hbound
-  have hh : R^(1/8:ℝ) ≤ C*S^(1/8:ℝ) :=
+  have hh  :=
     (mul_le_mul_iff_left₀ (by positivity : 0 < R^(15/8:ℝ))).mp (by
       simpa only [mul_comm,mul_left_comm] using hbound)
   have hp := pow_le_pow_left₀ (by positivity : 0 ≤ R^(1/8:ℝ)) hh 8

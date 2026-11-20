@@ -93,10 +93,10 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
             (T * (discreteAdditiveEnergy W : ℝ)) := by
   obtain ⟨C₀, T₁, hC₀, hT₁, hFull⟩ := gmDiscreteFourthMoment_native ε hε
   let C : ℝ := 2 * C₀ + 28672 * Real.pi
-  refine ⟨C, max T₁ 2, by dsimp only [C]; positivity,
+  refine ⟨C, max T₁ 2, by positivity,
     hT₁.trans (le_max_left _ _), ?_⟩
   intro M T W hM hT hMT hSep hBase
-  have hTtwo : 2 ≤ T := (le_max_right _ _).trans hT
+  have hTtwo  := (le_max_right _ _).trans hT
   have hTone : 1 ≤ T := by linarith
   have hTpos : 0 < T := by linarith
   have hMone : (1 : ℝ) ≤ M := by exact_mod_cast hM
@@ -104,9 +104,9 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
   have hMleT : (M : ℝ) ≤ T := by nlinarith
   have hMroot : (M : ℝ) ≤ Real.sqrt T := by
     nlinarith [Real.sq_sqrt hTpos.le, Real.sqrt_nonneg T]
-  have hCbig : 28672 * Real.pi ≤ C := by dsimp only [C]; linarith
+  
   have hCfull : 2 * C₀ ≤ C := by dsimp only [C]; linarith [Real.pi_pos]
-  have hTpow : 1 ≤ T ^ ε := Real.one_le_rpow hTone hε.le
+  have hTpow  := Real.one_le_rpow hTone hε.le
   have hEzero : 0 ≤ (discreteAdditiveEnergy W : ℝ) := Nat.cast_nonneg _
   have hShort : nativeCoprimeFourth M W ≤ C * T ^ ε *
       (T * (discreteAdditiveEnergy W : ℝ)) := by
@@ -159,13 +159,7 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
           rw [← hEprod]
           ring
         _ ≤ E ^ (3 / 4 : ℝ) * (W.card : ℝ) * Real.sqrt T * M := by
-          have hpE : 0 ≤ E ^ (3 / 4 : ℝ) := Real.rpow_nonneg hEpos.le _
-          have hq := mul_le_mul_of_nonneg_left hQuarter hpE
-          have hq' := mul_le_mul_of_nonneg_right hq (mul_nonneg hMzero hMzero)
-          have hm := mul_le_mul_of_nonneg_left hMroot
-            (mul_nonneg hpE (Nat.cast_nonneg W.card))
-          have hm' := mul_le_mul_of_nonneg_right hm hMzero
-          nlinarith
+          bound
     have hFull := hFull M T W hM ((le_max_left _ _).trans hT) hMleT hSep hBase
     rw [native_approx_energy_eq] at hFull
     have hshape : (W.card : ℝ) ^ 4 * M + E * (M : ℝ) ^ 2 +

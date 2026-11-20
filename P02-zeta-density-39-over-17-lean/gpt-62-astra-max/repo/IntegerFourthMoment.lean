@@ -41,13 +41,13 @@ theorem int_reciprocal_square_budget (A : Finset ℤ)
         rw [Int.natCast_natAbs, abs_of_nonpos hn0, neg_neg]⟩)
   have hp : (∑ n ∈ P, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by
     rw [show P = B.image (fun n : ℕ => (n : ℤ)) from rfl, sum_image]
-    · simp only [Int.cast_natCast, inv_pow]
+    · simp
     · intro a _ b _ hab
       change (a : ℤ) = (b : ℤ) at hab
       exact_mod_cast hab
   have hq : (∑ n ∈ Q, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by
     rw [show Q = B.image (fun n : ℕ => -(n : ℤ)) from rfl, sum_image]
-    · simp only [Int.cast_neg, Int.cast_natCast, inv_neg, neg_sq, inv_pow]
+    · simp
     · intro a _ b _ hab
       exact_mod_cast neg_injective hab
   calc
@@ -61,7 +61,7 @@ theorem int_reciprocal_square_budget (A : Finset ℤ)
         have hn : 0 ≤ ∑ n ∈ P ∩ Q, (n : ℝ)⁻¹ ^ 2 :=
           sum_nonneg (fun _ _ => sq_nonneg _)
         linarith
-    _ ≤ 4 := by rw [hp, hq]; linarith
+    _ ≤ 4 := by linarith
 
 def integerFourthWeight (n : ℤ) : ℝ := if n = 0 then 1 else 16*(n : ℝ)^2
 
@@ -99,7 +99,7 @@ theorem cyclic_fourth_moment {N : ℕ} [NeZero N] (A : Finset ℤ)
   have hh := weighted_character_fourth_moment (A.erase 0) univ
     (fun _ : ZMod N => (N : ℝ)⁻¹) cyclicPhase c (c 0) (fun n => (n : ℝ))
     (fun _ _ => by positivity)
-    (by simp [ZMod.card, hNp.ne']) hmean
+    (by simp) hmean
     (fun n hn => by exact_mod_cast ne_of_mem_erase hn)
     (fun n _ x _ => (cyclicPhase_norm n x).le)
     (int_reciprocal_square_budget (A.erase 0) (fun _ hn => ne_of_mem_erase hn))

@@ -36,8 +36,7 @@ theorem wooleySourcePolynomial_equation_8_7_ratio
         wooleySourceNormalizationScale phi p B H s Lambda gamma ≤
       (p : ℝ) ^ ((s : ℝ) * (nu : ℝ) - Lambda * (b : ℝ)) := by
   have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
-  have hUH : 0 ≤ wooleySourcePolynomialConditionedMean
-      s (p ^ B) (p ^ H) phi gamma :=
+  have hUH  :=
     wooleySourcePolynomialConditionedMean_nonneg phi s (p ^ B) (p ^ H) gamma
   have hexp :
       ((H - b : ℕ) : ℝ) * (Lambda + epsilon) ≤

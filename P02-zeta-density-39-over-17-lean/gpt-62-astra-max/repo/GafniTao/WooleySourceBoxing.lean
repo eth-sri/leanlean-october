@@ -29,7 +29,6 @@ def wooleySourceRadius (gamma : WooleySourceSequence) : ℕ :=
 theorem wooleySource_natAbs_le_radius
     (gamma : WooleySourceSequence) {n : ℤ} (hn : n ∈ gamma.support) :
     n.natAbs ≤ wooleySourceRadius gamma := by
-  unfold wooleySourceRadius
   exact Finset.single_le_sum (fun m _ => Nat.zero_le m.natAbs) hn
 
 theorem wooleySource_neg_radius_le
@@ -38,18 +37,11 @@ theorem wooleySource_neg_radius_le
   have habs := wooleySource_natAbs_le_radius gamma hn
   have hcast : (n.natAbs : ℤ) ≤ (wooleySourceRadius gamma : ℤ) := by
     exact_mod_cast habs
-  have hnabs : -(n.natAbs : ℤ) ≤ n := by
-    by_cases hn0 : 0 ≤ n
-    · exact (neg_nonpos.mpr (by positivity)).trans hn0
-    · have hnonpos : n ≤ 0 := le_of_not_ge hn0
-      rw [Int.ofNat_natAbs_of_nonpos hnonpos]
-      simp
-  exact (neg_le_neg hcast).trans hnabs
+  grind
 
 theorem wooleySource_le_radius
     (gamma : WooleySourceSequence) {n : ℤ} (hn : n ∈ gamma.support) :
-    n ≤ (wooleySourceRadius gamma : ℤ) := by
-  exact (Int.le_natAbs (a := n)).trans (by
+    n ≤ (wooleySourceRadius gamma : ℤ) := (Int.le_natAbs (a := n)).trans (by
     exact_mod_cast wooleySource_natAbs_le_radius gamma hn)
 
 /-- The box embedding has image exactly the integer interval `[1,Q]`. -/
@@ -61,8 +53,7 @@ theorem mem_range_wooleyBoxIndexEmbedding_iff
   · rintro ⟨n, rfl⟩
     constructor
     · norm_num
-    · change ((((n : ℕ) + 1 : ℕ) : ℕ) : ℤ) ≤ (Q : ℤ)
-      exact_mod_cast (Nat.succ_le_iff.mpr n.isLt)
+    · bound
   · rintro ⟨hy1, hyQ⟩
     have hy0 : 0 ≤ y - 1 := by omega
     have hylt : y - 1 < (Q : ℤ) := by omega
@@ -94,7 +85,7 @@ theorem wooleyBoxedSourceSequence_support_subset
     (↑(wooleyBoxedSourceSequence gamma).support : Set ℤ) ⊆
       Set.range (wooleyBoxIndexEmbedding (wooleySourceBoxLength gamma)) := by
   intro y hy
-  have hyne : wooleyBoxedSourceSequence gamma y ≠ 0 :=
+  have hyne  :=
     Finsupp.mem_support_iff.mp hy
   have hnmem :
       y - ((wooleySourceRadius gamma + 1 : ℕ) : ℤ) ∈ gamma.support := by
@@ -121,8 +112,7 @@ theorem wooleyBoxSourceSequence_boxCoefficients
       wooleyBoxedSourceSequence gamma := by
   let f := wooleyBoxIndexEmbedding (wooleySourceBoxLength gamma)
   let beta := wooleyBoxedSourceSequence gamma
-  have hsupp : (↑beta.support : Set ℤ) ⊆ Set.range f := by
-    exact wooleyBoxedSourceSequence_support_subset gamma
+  have hsupp := wooleyBoxedSourceSequence_support_subset gamma
   have hrecover := Finsupp.embDomain_comapDomain (f := f) (g := beta) hsupp
   have hcoeff :
       Finsupp.comapDomain f beta f.injective.injOn =
@@ -197,8 +187,7 @@ theorem wooleySourcePolynomialConditionedMean_boxing_translation
         (wooleyBoxedPolynomialSystem phi gamma)
         (wooleyBoxedSourceSequence gamma) =
       wooleySourcePolynomialConditionedMean s q qH phi gamma := by
-  exact wooleySourcePolynomialConditionedMean_affinePullback_one
-    phi gamma (-((wooleySourceRadius gamma + 1 : ℕ) : ℤ))
+  apply wooleySourcePolynomialConditionedMean_affinePullback_one <;> assumption
 
 /-- Every conditioned source mean is exactly its finite-box polynomial
 realization after the same translation. -/

@@ -77,10 +77,8 @@ theorem boundedPolynomial_mean_value {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ)
       _ ≤ _ := by simpa [sourceRatioIndices,amplifierSource] using amplifier_source_card hN.le
   have hcoef : 0 ≤ (t-s)+4*(X:ℝ)*(1+Real.log (X:ℝ)) := by
     by_cases hx : X=0
-    · simp only [hx,Nat.cast_zero,mul_zero,zero_mul,add_zero]; linarith
-    · have hh : 1 ≤ (X:ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hx
-      have hl := Real.log_nonneg hh
-      positivity
+    · positivity
+    · positivity
   simp_rw [hnorm]
   exact (dirichlet_mean_value X c hst).trans (mul_le_mul_of_nonneg_left henergy hcoef)
 
@@ -94,7 +92,7 @@ theorem separated_second_moment_raw {N T t₀ : ℝ} (hN : 0 < N) (hT : 0 ≤ T)
   let D := boundedPolynomial N a
   let D' := boundedPolynomial N (sourceDerivativeCoefficient N a)
   let S := Icc t₀ (t₀+T+1)
-  have hc : Continuous D := (boundedPolynomial_regular N a).1
+  have hc  := (boundedPolynomial_regular N a).1
   have hc' : Continuous D' := (boundedPolynomial_regular N _).1
   have hd : ∀ t, HasDerivAt (fun x => D x^2) (2*D t*D' t) t := by
     intro t
@@ -137,7 +135,7 @@ theorem separated_second_moment_scalar {N T : ℝ} (hN : 2 ≤ N) (hT : 0 ≤ T)
   have hx1 : (1:ℝ) ≤ ⌊2*N⌋₊ := by
     have hh : 1 ≤ ⌊2*N⌋₊ := Nat.le_floor (by norm_num; linarith)
     exact_mod_cast hh
-  have hlg : Real.log (⌊2*N⌋₊:ℝ) ≤ Real.log (2*N) := Real.log_le_log (by linarith) hx
+  have hlg  := Real.log_le_log (by linarith) hx
   have hlog : 1 ≤ Real.log (2*N) := by
     have h4 := Real.log_le_log (by norm_num : (0:ℝ)<4) (show (4:ℝ) ≤ 2*N by linarith)
     have he : Real.log 4=2*Real.log 2 := by
@@ -147,17 +145,13 @@ theorem separated_second_moment_scalar {N T : ℝ} (hN : 2 ≤ N) (hT : 0 ≤ T)
     linarith [Real.log_two_gt_d9]
   have hm : (⌊2*N⌋₊:ℝ)*(1+Real.log (⌊2*N⌋₊:ℝ)) ≤ 4*N*Real.log (2*N) := by
     have hh := mul_le_mul hx (show 1+Real.log (⌊2*N⌋₊:ℝ) ≤ 2*Real.log (2*N) by linarith)
-      (by linarith [Real.log_nonneg hx1]) (by positivity : 0 ≤ 2*N)
+      (by positivity) (by positivity : 0 ≤ 2*N)
     nlinarith
   have hfac : (T+1)+4*(⌊2*N⌋₊:ℝ)*(1+Real.log (⌊2*N⌋₊:ℝ)) ≤ T+17*N*Real.log (2*N) := by
     nlinarith
   calc
     _ ≤ 3*(T+17*N*Real.log (2*N))*(2*N) := by
-      apply mul_le_mul
-      · exact mul_le_mul_of_nonneg_left hfac (by norm_num)
-      · linarith
-      · linarith
-      · positivity
+      bound
     _ ≤ _ := by nlinarith [mul_nonneg hN0 hT]
 
 /-- Actual separated second moment with an absolute constant and no analytic premise. -/

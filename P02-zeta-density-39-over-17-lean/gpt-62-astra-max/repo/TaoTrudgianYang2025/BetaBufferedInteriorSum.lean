@@ -1,7 +1,5 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedInteriorFrequency
-public import Mathlib.NumberTheory.Harmonic.Bounds
 
 @[expose] public section
 
@@ -83,7 +81,7 @@ theorem modelPhaseBufferedInteriorRange_error
   obtain ⟨C,hC,hmode⟩ := modelPhaseBufferedFourierMode_interior_frequency_uniform hσ
   refine ⟨2*C,by linarith,?_⟩
   intro l r η hl hr hη hflat F δ T N Q L hδ hF hT hN hright hleft
-  have hC₀ : 0 ≤ C := zero_le_one.trans hC
+  have hC₀  := zero_le_one.trans hC
   have h := norm_sum_range_le_two_edge_harmonic hC₀ (L := L) (by
     intro n hn
     let lam := min ((n+1 : ℕ) : ℝ) ((L-n : ℕ) : ℝ)
@@ -120,7 +118,7 @@ theorem modelPhaseBufferedInteriorBlock_error
   · have hlen : ((B-A-1).toNat : ℤ) = B-A-1 := Int.toNat_of_nonneg (by omega)
     have hlen' : ((B-A-1).toNat : ℝ) = (B : ℝ)-(A : ℝ)-1 := by exact_mod_cast hlen
     have h := hblock l r η hl hr hη hflat F δ T N A (B-A-1).toNat
-      hδ hF hT hN hright (by rw [hlen']; linarith)
+      hδ hF hT hN hright (by linarith)
     have he : (∑ q ∈ Finset.Ioo A B,
         (modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q-
           modelPhaseStationaryMainTerm F T N q)) =
@@ -133,17 +131,14 @@ theorem modelPhaseBufferedInteriorBlock_error
         simp only [Finset.mem_range] at hn
         simp only [Finset.mem_Ioo,Nat.cast_add,Nat.cast_one]
         omega
-      · intro n hn m hm heq
-        simp only [Nat.cast_add,Nat.cast_one] at heq
-        omega
+      · omega
       · intro q hq
         simp only [Finset.mem_Ioo] at hq
         have hc : ((q-A-1).toNat : ℤ) = q-A-1 := Int.toNat_of_nonneg (by omega)
         refine ⟨(q-A-1).toNat,?_,?_⟩
         · simp only [Finset.mem_range]
           omega
-        · simp only [Nat.cast_add,Nat.cast_one]
-          omega
+        · omega
       · intro n hn
         simp only [Int.cast_add,Int.cast_natCast]
     rw [he]

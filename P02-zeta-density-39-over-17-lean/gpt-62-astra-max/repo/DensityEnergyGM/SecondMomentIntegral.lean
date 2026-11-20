@@ -39,11 +39,11 @@ theorem actual_second_moment_integral_native (ε : ℝ) (hε : 0 < ε) :
   refine ⟨C, T₀, hC, hT₀, ?_⟩
   intro M T a W hM hT hMT ha hBase
   obtain ⟨p, hrep, hmass⟩ := hWeak M T a W hM hT hMT ha hBase
-  let H : ℝ → ℝ := fun s =>
+  let H  := fun s =>
     ∑ j ∈ (differenceFloorSupport W).filter (fun j =>
       s ≤ ‖dirichletPoly M a ((p j).1 - (p j).2)‖ ^ 2),
       (differenceFloorCount W j : ℝ)
-  let G : ℝ → ℝ := fun s => min ((W.card : ℝ) ^ 2)
+  let G  := fun s => min ((W.card : ℝ) ^ 2)
     (Real.sqrt ((discreteAdditiveEnergy W : ℝ) *
       (C * (2 * T) ^ ε * ((M : ℝ) ^ 4 / s ^ 2 +
         ((M : ℝ) ^ (36 / 5 : ℝ) +

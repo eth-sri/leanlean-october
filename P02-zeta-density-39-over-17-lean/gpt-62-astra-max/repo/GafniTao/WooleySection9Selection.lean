@@ -45,7 +45,7 @@ theorem wooley_grade_geometric_le_average
     (hY : ∀ j ∈ wooleyGradeRange r, 0 ≤ Y j) :
     ∏ j ∈ wooleyGradeRange r, (Y j) ^ (1 / (r : ℝ)) ≤
       (1 / (r : ℝ)) * ∑ j ∈ wooleyGradeRange r, Y j := by
-  have hrR : (0 : ℝ) < r := by exact_mod_cast (show 0 < r by omega)
+  
   have hweights :
       ∑ _j ∈ wooleyGradeRange r, (1 / (r : ℝ)) = 1 := by
     rw [sum_const, wooleyGradeRange_card, nsmul_eq_mul]
@@ -75,7 +75,7 @@ theorem exists_wooley_grade_ge_geometric
   obtain ⟨j, hj, hjdom⟩ :=
     Finset.exists_le_of_sum_le (wooleyGradeRange_nonempty hr) hsum
   refine ⟨j, hj, havg.trans ?_⟩
-  have hrR : (0 : ℝ) < r := by exact_mod_cast (show 0 < r by omega)
+  
   dsimp [S] at hjdom ⊢
   simpa only [one_div, inv_mul_eq_div] using hjdom
 
@@ -88,12 +88,11 @@ theorem exists_wooley_grade_for_weighted_product
       ∏ i ∈ wooleyGradeRange r,
           (X i) ^ (wooleyRho k i / (r : ℝ)) ≤
         (X j) ^ wooleyRho k j := by
-  let Y : ℕ → ℝ := fun j => (X j) ^ wooleyRho k j
+  let Y  := fun j => (X j) ^ wooleyRho k j
   have hY : ∀ j ∈ wooleyGradeRange r, 0 ≤ Y j :=
     fun j _ => Real.rpow_nonneg (hX j ‹_›) _
   obtain ⟨j, hj, hgeom⟩ := exists_wooley_grade_ge_geometric hr Y hY
   refine ⟨j, hj, ?_⟩
-  rw [show (X j) ^ wooleyRho k j = Y j by rfl]
   calc
     ∏ i ∈ wooleyGradeRange r,
         (X i) ^ (wooleyRho k i / (r : ℝ)) =
@@ -119,8 +118,8 @@ theorem wooley_section9_decay_exponent
     (((r + 1) * k ^ 2 * nu : ℕ) : ℝ) -
         (b : ℝ) * ((1 - 1 / (k : ℝ)) * Lambda / (r : ℝ)) ≤
       -(b : ℝ) * Lambda / (2 * (k : ℝ)) := by
-  have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hrR : (1 : ℝ) ≤ r := by exact_mod_cast hr
+  
+  
   have hkOne : 1 ≤ k := by omega
   have hrkR : (r : ℝ) ≤ (k : ℝ) - 1 := by
     calc

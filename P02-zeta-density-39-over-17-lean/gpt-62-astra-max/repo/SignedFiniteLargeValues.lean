@@ -28,7 +28,7 @@ theorem finite_signed_large_value_comparison (w : MathCollab.Density.ComparisonC
   obtain ⟨B,hB,hnorm⟩ := cutoff_continuous_operator_norm w.toReflectionCutoff
   refine ⟨A,B+1,hA,by positivity,?_⟩
   intro N L hN hNL a ha W V hV hlarge hsep
-  have hL : 0 < L := hN.trans_le hNL
+  have hL  := hN.trans_le hNL
   have hP : 0 < A*(1+L)^η*(N+1) := by positivity
   obtain ⟨r,hr,v,hv,hwit⟩ := hamp N L (1/2) 5 hN hNL (by norm_num) (by norm_num)
     a w ha w.one_on W

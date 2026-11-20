@@ -137,7 +137,7 @@ theorem subdivision_term_eq {k l A H G Y : ℝ}
     rw [Real.rpow_add hY, Real.rpow_two]
   rw [absorptionLength_eq hA hH hG hY,ha,hh,hy]
   have h4 : (4:ℝ)^(1/k) ≠ 0 := (Real.rpow_pos_of_pos (by norm_num) _).ne'
-  have hg' : G^((2*l-1)/k) = G/G^((1+k-2*l)/k) :=
+  have hg'  :=
     (eq_div_iff hGp).mpr hg
   rw [hg']
   field_simp
@@ -170,7 +170,7 @@ theorem count_exponent_budget {k l D H G Y ν : ℝ}
   have hH0 : 0 < H := by linarith
   have hq : 0 < 1+1/k := by positivity
   have hq1 : 1 ≤ 1+1/k := le_add_of_nonneg_right (by positivity)
-  have hp : H^(ν/(1+1/k)) ≤ H^ν :=
+  have hp  :=
     Real.rpow_le_rpow_of_exponent_le hH (div_le_self hν hq1)
   have he : (D*H^(ν/(1+1/k)))^(1+1/k) = D^(1+1/k)*H^ν := by
     rw [Real.mul_rpow hD (by positivity), ← Real.rpow_mul hH0.le,
@@ -180,7 +180,6 @@ theorem count_exponent_budget {k l D H G Y ν : ℝ}
     _ ≤ 2*(D*H^ν)*H/(G*Y^2)+
         2*4^(1/k)*(D^(1+1/k)*H^ν)*H^(1+l/k)/
           (G^((2*l-1)/k)*Y^(2+2/k)) := by
-      apply add_le_add _ le_rfl
       gcongr
     _ ≤ _ := by
       have hx : 0 ≤ 2*D*H^ν*(H^(1+l/k)/(G^((2*l-1)/k)*Y^(2+2/k))) := by positivity
