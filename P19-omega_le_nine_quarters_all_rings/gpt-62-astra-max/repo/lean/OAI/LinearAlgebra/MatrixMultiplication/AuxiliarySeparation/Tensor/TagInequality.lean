@@ -6,222 +6,99 @@ Modified from OpenAI's matrix-multiplication sources to support arbitrary fields
 See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
 -/
 
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Entropy.Tag
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Separation.Basic
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Dot
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.CharacterBounds
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.FiniteSeparation
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.SharedPadding
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.Separation
 
-public section
+@[expose] public noncomputable section
 
-@[expose] section
+/-! Grouping words by histogram upgrades finite separation to a bound on triangular arrays of tensor blocks. -/
 
-namespace OAI
+namespace OAI.MatrixMultiplication.AuxiliarySeparation
+open Foundation TensorResource
+open scoped Classical
 
-/-!
-# The shared-input tensor tag inequality
+variable {K : Type*} [CommRing K]
+variable {s n : ℕ} {X Y Z : Type} [Fintype X] [Fintype Y] [Fintype Z]
+open scoped NNReal
 
-Exact type words in a power of a matched-sector tensor are obtained by explicit
-coordinate pullbacks. Their character values depend only on the type counts.
-The finite auxiliary separation inequality therefore supplies the integral
-bounds required by the entropy limit.
--/
+/-- Count words only by their histograms; no estimate of a multinomial
+coefficient, rational approximation, or entropy limit is needed. -/
+private def histogram {n s : ℕ} (w : Fin n → Fin s) (a : Fin s) : Fin (n+1) :=
+  ⟨Fintype.card {i // w i = a}, by simpa using Fintype.card_subtype_le fun i => w i = a⟩
 
-noncomputable section
-
-open MatrixMultiplication.Foundation
-open scoped BigOperators Classical
-
-namespace MatrixMultiplication.AuxiliarySeparation
-
-variable {K : Type*} [CommSemiring K]
-
-variable {s : ℕ} {X Y Z : Type}
-  [Fintype X] [Fintype Y] [Fintype Z]
-
-/-- A word prescribes one branch tensor at each tensor-product position. -/
-def branchWordTensor (B : Fin s → Tensor K X Y Z) {n : ℕ} (w : Fin n → Fin s) :
-    Tensor K (Fin n → X) (Fin n → Y) (Fin n → Z) :=
-  fun x y z => ∏ i, B (w i) (x i) (y i) (z i)
-
-/-- The canonical branch word tensor evaluates multiplicatively. -/
-theorem Character.value_branchWordTensor (χ : (Character K))
-    (B : Fin s → Tensor K X Y Z) {n : ℕ} (w : Fin n → Fin s) :
-    χ.value (branchWordTensor B w) = ∏ i, χ.value (B (w i)) := by
-  induction n with
-  | zero =>
-      have hzero : branchWordTensor B w = Tensor.pullback
-          (Equiv.equivPUnit (Fin 0 → X))
-          (Equiv.equivPUnit (Fin 0 → Y))
-          (Equiv.equivPUnit (Fin 0 → Z)) (unitTensor (K := K)) := by
-        funext x y z
-        simp [branchWordTensor, Tensor.pullback, unitTensor]
-      rw [hzero, χ.value_reindex, χ.map_one]
-      simp
-  | succ n ih =>
-      have heq : branchWordTensor B w = Tensor.pullback
-          (Fin.consEquiv (fun _ : Fin (n + 1) => X)).symm
-          (Fin.consEquiv (fun _ : Fin (n + 1) => Y)).symm
-          (Fin.consEquiv (fun _ : Fin (n + 1) => Z)).symm
-          (Tensor.product (B (w 0)) (branchWordTensor B (Fin.tail w))) := by
-        funext x y z
-        simp [branchWordTensor, Tensor.pullback, Tensor.product, Fin.consEquiv,
-          Fin.prod_univ_succ, Fin.tail]
-      rw [heq, χ.value_reindex, χ.map_product, ih, Fin.prod_univ_succ]
-      rfl
-
-/-- All words of an exact type have the same character value. -/
-theorem Character.value_exact_branchWordTensor (χ : (Character K))
-    (B : Fin s → Tensor K X Y Z) (counts : Fin s → ℕ) (w : ExactWords counts) :
-    χ.value (branchWordTensor B w.val) = ∏ a, χ.value (B a) ^ counts a := by
-  rw [χ.value_branchWordTensor,
-    ← Fintype.prod_fiberwise' w.val (fun a => χ.value (B a))]
-  simp only [Finset.prod_const, Finset.card_univ]
-  apply Finset.prod_congr rfl
-  intro a _
-  rw [show Fintype.card {i // w.val i = a} = counts a from w.property a]
-
-/-- A coordinate on a retained split leg remembers its type word. -/
-def typeWordCoordinate (counts : Fin s → ℕ)
-    (e : Fin (Fintype.card (ExactWords counts)) ≃ ExactWords counts)
-    {U : Type} (y : Fin (Fintype.card (ExactWords counts)) ×
-      (Fin (∑ a, counts a) → U)) : Fin (∑ a, counts a) → (Fin s × U) :=
-  fun i => ((e y.1).val i, y.2 i)
-
-omit [Fintype X] [Fintype Y] [Fintype Z] in
-/-- Restricting both split legs to one exact type produces a shared-first
-tensor whose branches are precisely the prescribed branch products. -/
-theorem exactType_power_pullback (B : Fin s → Tensor K X Y Z)
-    (counts : Fin s → ℕ)
-    (e : Fin (Fintype.card (ExactWords counts)) ≃ ExactWords counts) :
-    Tensor.pullback id (typeWordCoordinate counts e) (typeWordCoordinate counts e)
-        (Tensor.power (sharedFirstTensor B) (∑ a, counts a)) =
-      sharedFirstTensor (fun h => branchWordTensor B (e h).val) := by
+/-- Keep an arbitrary family of distinct words on the split legs of the power. -/
+private theorem words_le {I : Type} [Fintype I] [DecidableEq I]
+    (B : Fin s → Tensor K X Y Z) (w : I → Fin n → Fin s) (hw : Function.Injective w)
+    (ψ : Price K) : ψ.value (sharedFirstTensor fun i => Tensor.word (B ∘ w i)) ≤
+      ψ.value (sharedFirstTensor B) ^ n := by
+  let side {U : Type} (p : I × (Fin n → U)) (i : Fin n) := (w p.1 i, p.2 i)
+  rw [← ψ.value_power]
+  convert ψ.value_pullback_le (Tensor.power (sharedFirstTensor B) n) id side side using 2
   funext x y z
-  by_cases h : y.1 = z.1
-  · simp [Tensor.pullback, Tensor.power, typeWordCoordinate, sharedFirstTensor,
-      branchWordTensor, h]
-  · have hword : (e y.1).val ≠ (e z.1).val := by
-      intro heq
-      exact h (e.injective (Subtype.ext heq))
-    obtain ⟨i, hi⟩ := Function.ne_iff.mp hword
-    simp only [Tensor.pullback, Tensor.power, sharedFirstTensor, h, ↓reduceIte,
-      typeWordCoordinate, id_eq]
-    apply Finset.prod_eq_zero (Finset.mem_univ i)
-    simp [hi]
+  simp [sharedFirstTensor, side, Tensor.pullback, Tensor.power, Tensor.word,
+    Fintype.prod_ite_zero, ← funext_iff, hw.eq_iff]
 
-/-- The exact-type restriction never exceeds the source power in character. -/
-theorem Character.exactType_value_le_power (χ : (Character K))
-    (B : Fin s → Tensor K X Y Z) (counts : Fin s → ℕ)
-    (e : Fin (Fintype.card (ExactWords counts)) ≃ ExactWords counts) :
-    χ.value (sharedFirstTensor (fun h => branchWordTensor B (e h).val)) ≤
-      χ.value (sharedFirstTensor B) ^ (∑ a, counts a) := by
-  rw [← exactType_power_pullback B counts e, ← χ.value_power]
-  exact χ.value_pullback_le _ _ _ _
+namespace Price
+variable (χ : Price K)
 
-/-- An explicit finite separation comparison and exact-type restriction
-give the integral type bound over any coefficient semiring. -/
-theorem Character.integral_type_comparison_of_separation (χ : Character K)
-    (hsep : ∀ {M : ℕ} {X' Y' Z' : Type} [Fintype X'] [Fintype Y'] [Fintype Z'],
-      0 < M → ∀ B' : Fin M → Tensor K X' Y' Z',
-        (∑ i, χ.value (B' i)) * (M : ℝ) ^ χ.pX ≤
-          6 * (M : ℝ) * χ.value (sharedFirstTensor B'))
-    (B : Fin s → Tensor K X Y Z) (counts : Fin s → ℕ) :
-    (Fintype.card (ExactWords counts) : ℝ) ^ χ.pX *
-        ∏ a, χ.value (B a) ^ counts a ≤
-      6 * χ.value (sharedFirstTensor B) ^ (∑ a, counts a) := by
-  let M := Fintype.card (ExactWords counts)
-  let e : Fin M ≃ ExactWords counts := (Fintype.equivFin _).symm
-  let W : Fin M → Tensor K (Fin (∑ a, counts a) → X)
-      (Fin (∑ a, counts a) → Y) (Fin (∑ a, counts a) → Z) :=
-    fun h => branchWordTensor B (e h).val
-  have hM : 0 < M := by
-    simpa only [M, Fintype.card_eq_nat_card] using exactWords_card_pos counts
-  have hfinite : ((M : ℝ) * ∏ a, χ.value (B a) ^ counts a) * (M : ℝ) ^ χ.pX ≤
-      6 * (M : ℝ) * χ.value (sharedFirstTensor W) := by
-    simpa only [W, χ.value_exact_branchWordTensor, Finset.sum_const,
-      Finset.card_univ, Fintype.card_fin, nsmul_eq_mul] using
-      hsep hM W
-  have hsource : χ.value (sharedFirstTensor W) ≤
-      χ.value (sharedFirstTensor B) ^ (∑ a, counts a) :=
-    χ.exactType_value_le_power B counts e
-  have hcancel : (M : ℝ) *
-      ((M : ℝ) ^ χ.pX * ∏ a, χ.value (B a) ^ counts a) ≤
-        (M : ℝ) * (6 * χ.value (sharedFirstTensor B) ^ (∑ a, counts a)) := by
-    calc
-      _ = ((M : ℝ) * ∏ a, χ.value (B a) ^ counts a) * (M : ℝ) ^ χ.pX := by ring
-      _ ≤ 6 * (M : ℝ) * χ.value (sharedFirstTensor W) := hfinite
-      _ ≤ 6 * (M : ℝ) * χ.value (sharedFirstTensor B) ^ (∑ a, counts a) :=
-        mul_le_mul_of_nonneg_left hsource (by positivity)
-      _ = _ := by ring
-  have hbound := (mul_le_mul_iff_right₀ (Nat.cast_pos.mpr hM : (0 : ℝ) < M)).mp hcancel
-  simpa only [M, Fintype.card_eq_nat_card] using hbound
+/-- Expand the power of a sum over words, grouping by histogram. In each
+fiber every character sees a constant value. Finite separation bounds its
+entire contribution; the number of fibers grows only polynomially. -/
+theorem value_shared (B : Fin s → Tensor K X Y Z) :
+    (∑ j, χ.value (B j)) ≤ χ.value (sharedFirstTensor B) := by
+  let S := sharedFirstTensor B
+  let C := χ.eval (scalars 2)
+  apply polynomial_overhead (χ.nonneg S) ((Polynomial.X+1)^s*Polynomial.C C)
+  intro n
+  let A (c : Fin s → Fin (n+1)) := ∏ b, classOf (B b) ^ (c b).val
+  let V c := χ.eval (A c)
+  have hc (w : Fin n → Fin s) : classOf (Tensor.word (B ∘ w)) = A (histogram w) := by
+    rw [classOf_wordTensor]; simpa [A, histogram] using (Fintype.prod_fiberwise' w (classOf ∘ B)).symm
+  have hf (c) : (∑ _ : {w : Fin n → Fin s // histogram w = c}, V c) ≤ C*χ.value S^n := by
+    let F := {w : Fin n → Fin s // histogram w = c}
+    change (∑ _ : F, V c) ≤ _
+    have hn : 0 ≤ C := χ.nonnegative _
+    have hs := χ.nonneg S
+    rcases isEmpty_or_nonempty F with he | he
+    · simpa using (show 0 ≤ C*χ.value S^n by positivity)
+    let e := (Fintype.equivFin F).symm
+    have h := Integral.separate χ (v := A c) Fintype.card_pos (fun i => Tensor.word (B ∘ (e i).val)) (fun i => by simp only [hc, (e i).property])
+    simpa [V,C,S, nsmul_eq_mul] using h.trans (mul_le_mul_of_nonneg_left (words_le B _ (Subtype.val_injective.comp e.injective) χ) hn)
+  calc
+    _ = ∑ w, V (histogram w) := by simp [Finset.sum_pow', V, ← hc, value, classOf_wordTensor]
+    _ = _ := (Fintype.sum_fiberwise' histogram V).symm
+    _ ≤ ∑ _ : Fin s → Fin (n+1), C*χ.value S^n := Finset.sum_le_sum fun i _ => hf i
+    _ = _ := by simp [mul_assoc]
 
-/-- Positive branch values imply the shared-input tag inequality from a
-finite separation bound. No field structure is used. -/
-theorem Character.sharedFirst_tag_of_separation (χ : Character K)
-    (hsep : ∀ {M : ℕ} {X' Y' Z' : Type} [Fintype X'] [Fintype Y'] [Fintype Z'],
-      0 < M → ∀ B' : Fin M → Tensor K X' Y' Z',
-        (∑ i, χ.value (B' i)) * (M : ℝ) ^ χ.pX ≤
-          6 * (M : ℝ) * χ.value (sharedFirstTensor B'))
-    (q : FiniteLaw (Fin s)) (B : Fin s → Tensor K X Y Z)
-    (hB : ∀ a, 0 < χ.value (B a)) :
-    Real.exp (χ.pX * finiteEntropy q.mass) *
-        ∏ a, χ.value (B a) ^ q.mass a ≤ χ.value (sharedFirstTensor B) := by
-  have hs : 0 < s := by
-    by_contra hn
-    have hs0 : s = 0 := Nat.eq_zero_of_not_pos hn
-    subst s
-    have htotal := q.total
-    simp at htotal
-  let a : Fin s := ⟨0, hs⟩
-  have hbranch : Tensor.pullback id (fun y => (a, y)) (fun z => (a, z))
-      (sharedFirstTensor B) = B a := by
-    funext x y z
-    simp [Tensor.pullback, sharedFirstTensor]
-  have hbnd := χ.value_pullback_le (sharedFirstTensor B) id
-    (fun y => (a, y)) (fun z => (a, z))
-  rw [hbranch] at hbnd
-  have hT : 0 < χ.value (sharedFirstTensor B) := (hB a).trans_le hbnd
-  apply χ.tag_of_integral_type_comparison_of_value_pos q (sharedFirstTensor B) B χ.pX hT hB
-  intro counts _hcounts
-  simpa only [Fintype.card_eq_nat_card] using
-    χ.integral_type_comparison_of_separation hsep B counts
+/-- Coordinate maps for a single block. Its two split legs may have their
+own dimensions, and its common leg may be relabeled independently. -/
+structure Block (X Y Z : Type) where
+  {m n : ℕ}
+  x : X → X
+  y : Fin (m+1) → Y
+  z : Fin (n+1) → Z
 
-/-- A coefficient one in each branch supplies positivity for the tag bound. -/
-theorem Character.sharedFirst_tag_of_separation_of_coefficient_one (χ : Character K)
-    (hsep : ∀ {M : ℕ} {X' Y' Z' : Type} [Fintype X'] [Fintype Y'] [Fintype Z'],
-      0 < M → ∀ B' : Fin M → Tensor K X' Y' Z',
-        (∑ i, χ.value (B' i)) * (M : ℝ) ^ χ.pX ≤
-          6 * (M : ℝ) * χ.value (sharedFirstTensor B'))
-    (q : FiniteLaw (Fin s)) (B : Fin s → Tensor K X Y Z)
-    (hB : ∀ a, ∃ x y z, B a x y z = 1) :
-    Real.exp (χ.pX * finiteEntropy q.mass) *
-        ∏ a, χ.value (B a) ^ q.mass a ≤ χ.value (sharedFirstTensor B) :=
-  χ.sharedFirst_tag_of_separation hsep q B
-    (fun a => zero_lt_one.trans_le (χ.one_le_value_of_coefficient_one (hB a)))
+def Block.view (B : Block X Y Z) (T : Tensor K X Y Z) := Tensor.pullback B.x B.y B.z T
 
-section DependentGeneral
+/-- Project ambient coordinates back onto each block image. On the resulting
+common space, one monomial weighting retains all diagonal blocks. -/
+theorem value_blocks (T : Tensor K X Y Z)
+    (B : Fin s → Block X Y Z) (w : Fin s → ℕ)
+    (h : ∀ b c x j k, b ≠ c → T x ((B b).y j) ((B c).z k) ≠ 0 → w c < w b) :
+    (∑ i, χ.value ((B i).view T)) ≤ χ.value T := by
+  let project {I J : Type} [Nonempty I] (f : I → J) := f ∘ Function.invFun f
+  let y b := project (B b).y
+  let z b := project (B b).z
+  let H b := Tensor.pullback id (y b) (z b) T
+  apply le_trans (b := ∑ b, χ.value (H b))
+  · apply Finset.sum_le_sum; intro b _
+    convert χ.value_pullback_le (H b) (B b).x (B b).y (B b).z using 2
+    funext; simp [Block.view, H, Tensor.pullback, y, z, project, Function.apply_invFun_apply]
+  apply (χ.value_shared H).trans
+  apply χ.value_weighted T _ id (Function.uncurry y) (Function.uncurry z) (fun _ => 0) (fun p => w p.1) fun p => w p.1
+  rintro x ⟨b,j⟩ ⟨c,k⟩
+  simp [sharedFirstTensor, H, y, z, project, Tensor.pullback, Function.uncurry]
+  specialize h b c x (Function.invFun (B b).y j) (Function.invFun (B c).z k)
+  split_ifs <;> grind
 
-variable {U V : Fin s → Type} [∀ a, Fintype (U a)] [∀ a, Fintype (V a)]
-
-end DependentGeneral
-
-section Field
-
-variable {K : Type*} [Field K] [IsAlgClosed K]
-
-section Dependent
-
-variable {U V : Fin s → Type} [∀ a, Fintype (U a)] [∀ a, Fintype (V a)]
-
-end Dependent
-
-end Field
-
-end MatrixMultiplication.AuxiliarySeparation
-
-end
-
-end OAI
+end Price
+end OAI.MatrixMultiplication.AuxiliarySeparation

@@ -6,17 +6,12 @@ Integral extension of OpenAI's matrix-multiplication proof and its all-fields
 extension. See UPSTREAM.md for provenance and attribution.
 -/
 
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Existence
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Arithmetic.CharacterRounding
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.Inequalities
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.FiniteSeparation
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.ConvolutionCharacter
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Integral.Arithmetic
-public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.TrivialRing
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Price.Detection
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Estimates
+public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.Growth
+public import OAI.LinearAlgebra.MatrixMultiplication.Arithmetic.LowerBound
 
-public section
-
-@[expose] section
+@[expose] public noncomputable section
 
 /-!
 # Matrix multiplication over every ring
@@ -44,47 +39,40 @@ Both finite separation and convolution bounds are supplied by proved integral
 constructions, with no field or algebraic-closure hypothesis. -/
 theorem exactRankExponent_int_le_nine_quarters :
     exactRankExponent ℤ ≤ (9 : ℝ) / 4 := by
-  apply exactRankExponent_le_nine_quarters_of_characters
-  · intro d hd k hk
-    exact exists_detecting_character hd hk
-  · intro χ d hd
-    rw [χ.value_matrixMultiplication (by omega)]
-    apply Real.rpow_le_rpow_of_exponent_le
-      (by exact_mod_cast (show 1 ≤ d by omega))
-    apply χ.exponent_sum_le_nine_quarters_of_separation_and_convolution
-    · intro ψ M X Y Z _ _ _ hM B
-      exact finiteSeparation_bound_int ψ hM B
-    · intro ψ a b
-      exact ψ.value_convolution_le_int a b
+  apply rpow_exponent_le_of_nat_bound (C := 2)
+  intro d hd
+  let v := (d:ℝ)^(9/4:ℝ)
+  have hd' : (1:ℝ) ≤ d := by exact_mod_cast hd
+  have hv : 1 ≤ v := Real.one_le_rpow hd' (by norm_num)
+  by_contra! h
+  obtain ⟨χ,hχ⟩ := exists_detecting_price (k := ⌊v⌋₊+1) hd (by omega) (by
+    push_cast; linarith [Nat.floor_le (by linarith : 0 ≤ v)])
+  have hb := (χ.scalar_fourth (k := ⌊v⌋₊+1) (by omega)).trans ((Odd.pow_le_pow (by decide : Odd 3)).mpr hχ)
+  have he : v^4 = ((d:ℝ)^3)^3 := by
+    dsimp [v]; rw [← Real.rpow_mul_natCast (by positivity)]; norm_num; ring
+  push_cast at hb; linarith [pow_lt_pow_left₀ (Nat.lt_floor_add_one v) (by positivity : 0 ≤ v) (by decide : 4 ≠ 0)]
 
 end AuxiliarySeparation.Integral
-
-/-- The square matrix multiplication exponent over every associative unital
-ring is at most `9/4`. In the trivial case the existing infimum definition
-returns zero; the substantive integer-rank argument covers nontrivial rings. -/
-theorem omega_le_nine_quarters_all_rings (R : Type u) [Ring R] :
-    Arithmetic.omega R ≤ (9 : ℝ) / 4 := by
-  cases subsingleton_or_nontrivial R
-  · rw [Arithmetic.omega_eq_zero_of_subsingleton R]
-    norm_num
-  · exact (AuxiliarySeparation.Integral.omega_le_exactRankExponent_int R).trans
-      AuxiliarySeparation.Integral.exactRankExponent_int_le_nine_quarters
 
 /-- Every ring admits the positive-slack arithmetic bound at exponent `9/4`.
 This statement also includes the zero ring. -/
 theorem admissibleExponent_nine_quarters_all_rings (R : Type u) [Ring R] :
     Arithmetic.AdmissibleExponent R ((9 : ℝ) / 4) := by
   intro ε hε
-  obtain ⟨C, hC, hbound⟩ :=
-    AuxiliarySeparation.Integral.exactRankExponent_int_admissible R ε hε
-  refine ⟨C, hC, ?_⟩
-  intro n hn
-  obtain ⟨P, hP, hcost⟩ := hbound n hn
-  refine ⟨P, hP, hcost.trans ?_⟩
-  apply mul_le_mul_of_nonneg_left _ hC.le
-  apply Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn)
-  exact add_le_add
-    AuxiliarySeparation.Integral.exactRankExponent_int_le_nine_quarters (le_refl ε)
+  let α := AuxiliarySeparation.exactRankExponent ℤ
+  have h : α ≤ 9/4 := AuxiliarySeparation.Integral.exactRankExponent_int_le_nine_quarters
+  simpa [α] using AuxiliarySeparation.Integral.exactRankExponent_int_admissible R (9/4+ε-α) (by linarith)
+
+/-- The square matrix multiplication exponent over every associative unital
+ring is at most `9/4`. In the trivial case the existing infimum definition
+returns zero; the substantive integer-rank argument covers nontrivial rings. -/
+theorem omega_le_nine_quarters_all_rings (R : Type u) [Ring R] :
+    Arithmetic.omega R ≤ (9 : ℝ) / 4 := by
+  unfold Arithmetic.omega
+  by_cases h : BddBelow {τ : ℝ | Arithmetic.AdmissibleExponent R τ}
+  · exact csInf_le h (admissibleExponent_nine_quarters_all_rings R)
+  · rw [Real.sInf_of_not_bddBelow h]
+    norm_num
 
 /-- For each positive slack there is one constant valid for every matrix size,
 and division-free arithmetic programs with the original gate-count model. -/
