@@ -25,22 +25,23 @@ def intervalFourierKernel
     (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1)
     (v : PDE.oneDimensionalAxisBox a c) : ComplexMeasure (PDE.Vec 1) :=
   fourierProjection K (movingQuery σ τ hστ v.1 0
-    (by simpa only [movingDomain_stationary] using v.2)) ξ
+    (by simp)) ξ
+
+section
+variable (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) (σ τ : ℝ) (hστ : σ ≤ τ)
+  (ξ : PDE.Vec 1)
+include K σ τ hστ ξ
 
 /-- Characterization by the same ambient master measure and Fourier phase. -/
 theorem intervalFourierKernel_spec
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1)
     (v : PDE.oneDimensionalAxisBox a c) :
     IsFourierProjection K (movingQuery σ τ hστ v.1 0
-      (by simpa only [movingDomain_stationary] using v.2)) ξ
+      (by simp)) ξ
       (intervalFourierKernel K σ τ hστ ξ v) :=
   fourierProjection_spec K _ ξ
 
 /-- The interval kernel is Borel in its starting velocity. -/
 theorem measurable_intervalFourierKernel_apply
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1)
     (E : Set (PDE.Vec 1)) (hE : MeasurableSet E) :
     Measurable (fun v => intervalFourierKernel K σ τ hστ ξ v E) := by
   exact (measurable_fourierProjection_apply K ξ E hE).comp
@@ -48,25 +49,24 @@ theorem measurable_intervalFourierKernel_apply
       (measurable_subtype_coe.prodMk measurable_const))).subtype_mk)
 
 /-- Extend the killed interval Fourier kernel by the zero measure outside the interval. -/
-def intervalFourierKernelZero
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1) :
+def intervalFourierKernelZero :
     PDE.Vec 1 → ComplexMeasure (PDE.Vec 1) :=
   Function.extend Subtype.val (intervalFourierKernel K σ τ hστ ξ) (fun _ => 0)
 
+end
+
+section
+variable (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) (σ τ : ℝ) (hστ : σ ≤ τ)
+
 /-- The zero extension agrees with the actual kernel at every interval velocity. -/
-theorem intervalFourierKernelZero_coe
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1)
+theorem intervalFourierKernelZero_coe (ξ : PDE.Vec 1)
     (v : PDE.oneDimensionalAxisBox a c) :
     intervalFourierKernelZero K σ τ hστ ξ v.1 =
       intervalFourierKernel K σ τ hστ ξ v :=
   Subtype.val_injective.extend_apply _ _ v
 
 /-- Outside the interval the extension is the zero measure. -/
-theorem intervalFourierKernelZero_of_notMem
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec 1)
+theorem intervalFourierKernelZero_of_notMem (ξ v : PDE.Vec 1)
     (hv : v ∉ PDE.oneDimensionalAxisBox a c) :
     intervalFourierKernelZero K σ τ hστ ξ v = 0 := by
   exact Function.extend_apply' _ _ v (by
@@ -74,23 +74,21 @@ theorem intervalFourierKernelZero_of_notMem
     exact hv w.2)
 
 /-- The killed Fourier kernel is a contraction. -/
-theorem intervalFourierKernel_totalVariation_le_one
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1)
+theorem intervalFourierKernel_totalVariation_le_one (ξ : PDE.Vec 1)
     (v : PDE.oneDimensionalAxisBox a c) :
     totalVariationNorm (intervalFourierKernel K σ τ hστ ξ v) ≤ 1 :=
   fourierProjection_totalVariation_le_one K _ ξ _
     (intervalFourierKernel_spec K σ τ hστ ξ v)
 
 /-- At zero frequency the kernel is exactly its positive velocity marginal. -/
-theorem intervalFourierKernel_zero
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (v : PDE.oneDimensionalAxisBox a c) :
+theorem intervalFourierKernel_zero (v : PDE.oneDimensionalAxisBox a c) :
     intervalFourierKernel K σ τ hστ 0 v =
       (K.firstMarginal (movingQuery σ τ hστ v.1 0
-        (by simpa only [movingDomain_stationary] using v.2))).withDensityᵥ
+        (by simp))).withDensityᵥ
           (fun _ => (1 : ℂ)) :=
   fourierProjection_zero_measure K _ _ (intervalFourierKernel_spec K σ τ hστ 0 v)
+
+end
 
 /-- Covariance removes the initial position on the interval, without changing its geometry. -/
 theorem intervalFourierKernel_eq_startingPosition

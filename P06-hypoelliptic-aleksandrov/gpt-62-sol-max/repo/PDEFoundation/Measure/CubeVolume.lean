@@ -17,23 +17,25 @@ namespace PDE
 
 open MeasureTheory
 
-theorem volume_axisCube_ne_top {d : ℕ}
-    (z : Vec d) (L : ℝ) :
+section
+variable {d : ℕ} (z : Vec d)
+
+theorem volume_axisCube_ne_top (L : ℝ) :
     volume (axisCube z L) ≠ ⊤ :=
   IsOpenBoundedConvexDomain.volume_ne_top
     (isOpenBoundedConvexDomain_axisCube z L)
 
-theorem volume_axisCube_pos {d : ℕ}
-    (z : Vec d) {L : ℝ} (hL : 0 < L) :
+theorem volume_axisCube_pos {L : ℝ} (hL : 0 < L) :
     0 < volume (axisCube z L) :=
   IsOpenBoundedConvexDomain.volume_pos
     (isOpenBoundedConvexDomain_axisCube z L)
     (axisCube_nonempty z hL)
 
-theorem isFiniteMeasure_volumeOn_axisCube {d : ℕ}
-    (z : Vec d) (L : ℝ) :
+theorem isFiniteMeasure_volumeOn_axisCube (L : ℝ) :
     IsFiniteMeasure (volumeOn (axisCube z L)) :=
   IsOpenBoundedConvexDomain.isFiniteMeasure_volumeOn
     (isOpenBoundedConvexDomain_axisCube z L)
+
+end
 
 end PDE

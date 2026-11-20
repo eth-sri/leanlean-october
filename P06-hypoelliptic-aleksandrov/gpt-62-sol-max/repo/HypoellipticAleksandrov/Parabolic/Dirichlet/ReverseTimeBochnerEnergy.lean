@@ -40,14 +40,9 @@ theorem exists_reverseTimeL2V_of_continuousOn_energy
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
     change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
     infer_instance
-  have hBnonneg : 0 ≤ B := by
-    exact (sq_nonneg (‖valueCLM hΩ (w 0)‖)).trans
-      (hvalue 0 ⟨le_rfl, le_of_lt hT⟩)
   have hgradientIntegralNonneg :
       0 ≤ ∫ t in Set.Ioc 0 T, ‖gradientCLM hΩ (w t)‖ ^ 2 := by
     exact integral_nonneg fun _ => sq_nonneg _
-  have hGnonneg : 0 ≤ G := by
-    exact (mul_nonneg (le_of_lt hlam) hgradientIntegralNonneg).trans hgradient
   have hvalueContinuous :
       ContinuousOn (fun t => valueCLM hΩ (w t)) (Set.Icc 0 T) :=
     (valueCLM hΩ).continuous.comp_continuousOn hw

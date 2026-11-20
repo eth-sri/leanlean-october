@@ -39,8 +39,11 @@ def castLE {d L M : ℕ} (hLM : L ≤ M)
     (beta : ParabolicDerivativeIndex d L) :
     (castLE hLM beta).1 = beta.1 := rfl
 
+section
+variable {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+
 /-- Add one time derivative while remaining at the fixed bound `L`. -/
-def timeSucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+def timeSucc
     (h : beta.1.parabolicWeight + 2 ≤ L) :
     ParabolicDerivativeIndex d L :=
   ⟨TimeVelocityMultiIndex.ofTimeVelocity
@@ -52,7 +55,7 @@ def timeSucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
       omega⟩
 
 /-- Add one velocity derivative while remaining at the fixed bound `L`. -/
-def velocitySucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+def velocitySucc
     (i : Fin d) (h : beta.1.parabolicWeight + 1 ≤ L) :
     ParabolicDerivativeIndex d L :=
   ⟨TimeVelocityMultiIndex.ofTimeVelocity beta.1.timeOrder
@@ -70,56 +73,63 @@ def velocitySucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
       change 2 * beta.1.timeOrder + (∑ j, beta.1.velocity j) + 1 ≤ L at h
       omega⟩
 
-@[simp] theorem coe_timeSucc {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L)
+end
+
+section
+variable {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+
+@[simp] theorem coe_timeSucc
     (h : beta.1.parabolicWeight + 2 ≤ L) :
     (timeSucc beta h).1 = TimeVelocityMultiIndex.ofTimeVelocity
       (beta.1.timeOrder + 1) beta.1.velocity := rfl
 
-@[simp] theorem coe_velocitySucc {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L) (i : Fin d)
+@[simp] theorem coe_velocitySucc (i : Fin d)
     (h : beta.1.parabolicWeight + 1 ≤ L) :
     (velocitySucc beta i h).1 =
       TimeVelocityMultiIndex.ofTimeVelocity beta.1.timeOrder
         (Function.update beta.1.velocity i (beta.1.velocity i + 1)) := rfl
 
-@[simp] theorem timeOrder_timeSucc {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L)
+@[simp] theorem timeOrder_timeSucc
     (h : beta.1.parabolicWeight + 2 ≤ L) :
     (timeSucc beta h).1.timeOrder = beta.1.timeOrder + 1 := rfl
 
-@[simp] theorem velocity_timeSucc {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L)
-    (h : beta.1.parabolicWeight + 2 ≤ L) :
+end
+
+section
+variable {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+
+section
+variable (h : beta.1.parabolicWeight + 2 ≤ L)
+
+@[simp] theorem velocity_timeSucc :
     (timeSucc beta h).1.velocity = beta.1.velocity := rfl
 
-@[simp] theorem parabolicWeight_timeSucc {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L)
-    (h : beta.1.parabolicWeight + 2 ≤ L) :
+@[simp] theorem parabolicWeight_timeSucc :
     (timeSucc beta h).1.parabolicWeight = beta.1.parabolicWeight + 2 := by
   simp [timeSucc, TimeVelocityMultiIndex.parabolicWeight,
     VelocityMultiIndex.parabolicWeight]
   omega
 
-@[simp] theorem timeOrder_velocitySucc {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L) (i : Fin d)
-    (h : beta.1.parabolicWeight + 1 ≤ L) :
+end
+
+section
+variable (i : Fin d) (h : beta.1.parabolicWeight + 1 ≤ L)
+
+@[simp] theorem timeOrder_velocitySucc :
     (velocitySucc beta i h).1.timeOrder = beta.1.timeOrder := rfl
 
-@[simp] theorem velocity_velocitySucc_apply_self {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L) (i : Fin d)
-    (h : beta.1.parabolicWeight + 1 ≤ L) :
+@[simp] theorem velocity_velocitySucc_apply_self :
     (velocitySucc beta i h).1.velocity i = beta.1.velocity i + 1 := by
   simp [velocitySucc]
 
-@[simp] theorem velocity_velocitySucc_apply_of_ne {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L) (i j : Fin d)
+end
+
+@[simp] theorem velocity_velocitySucc_apply_of_ne (i j : Fin d)
     (hji : j ≠ i) (h : beta.1.parabolicWeight + 1 ≤ L) :
     (velocitySucc beta i h).1.velocity j = beta.1.velocity j := by
   simp [velocitySucc, hji]
 
-@[simp] theorem parabolicWeight_velocitySucc {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L) (i : Fin d)
+@[simp] theorem parabolicWeight_velocitySucc (i : Fin d)
     (h : beta.1.parabolicWeight + 1 ≤ L) :
     (velocitySucc beta i h).1.parabolicWeight =
       beta.1.parabolicWeight + 1 := by
@@ -134,7 +144,7 @@ def velocitySucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
       2 * beta.1.timeOrder + (∑ j, beta.1.velocity j) + 1
   omega
 
-private theorem time_predecessor {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+private theorem time_predecessor
     (hq : 0 < beta.1.timeOrder) :
     ∃ (gamma : ParabolicDerivativeIndex d L)
         (h : gamma.1.parabolicWeight + 2 ≤ L),
@@ -163,8 +173,7 @@ private theorem time_predecessor {d L : ℕ} (beta : ParabolicDerivativeIndex d 
     _ = TimeVelocityMultiIndex.ofTimeVelocity
         (beta.1.timeOrder - 1 + 1) beta.1.velocity := by rw [hqeq]
 
-private theorem velocity_predecessor {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L) (i : Fin d)
+private theorem velocity_predecessor (i : Fin d)
     (hi : 0 < beta.1.velocity i) :
     ∃ (gamma : ParabolicDerivativeIndex d L)
         (h : gamma.1.parabolicWeight + 1 ≤ L),
@@ -210,9 +219,13 @@ private theorem velocity_predecessor {d L : ℕ}
     _ = TimeVelocityMultiIndex.ofTimeVelocity beta.1.timeOrder
         (Function.update alpha i (alpha i + 1)) := by rw [halpha]
 
+end
+
+section
+variable {d L : ℕ}
+
 /-- Every bounded parabolic index is zero or a one-coordinate successor. -/
-theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
-    {d L : ℕ} (beta : ParabolicDerivativeIndex d L) :
+theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc (beta : ParabolicDerivativeIndex d L) :
     beta = zero d L ∨
       (∃ (gamma : ParabolicDerivativeIndex d L)
           (h : gamma.1.parabolicWeight + 2 ≤ L),
@@ -240,7 +253,7 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
       exact Nat.eq_zero_of_not_pos (fun hj => hv ⟨j, hj⟩)
 
 /-- Induction by zero and the two fixed-bound successor operations. -/
-theorem inductionOn {d L : ℕ}
+theorem inductionOn
     {P : ParabolicDerivativeIndex d L → Prop}
     (beta : ParabolicDerivativeIndex d L)
     (hzero : P (zero d L))
@@ -268,7 +281,7 @@ theorem inductionOn {d L : ℕ}
         · rfl
 
 /-- Every coordinate multiplicity is bounded by the parabolic bound. -/
-theorem coe_apply_le {d L : ℕ}
+theorem coe_apply_le
     (beta : ParabolicDerivativeIndex d L)
     (j : TimeVelocityCoord d) : beta.1 j ≤ L := by
   rcases j with j | j
@@ -283,6 +296,8 @@ theorem coe_apply_le {d L : ℕ}
       simp [TimeVelocityMultiIndex.parabolicWeight,
         VelocityMultiIndex.parabolicWeight]
     exact hj.trans (ha.trans beta.2)
+
+end
 
 noncomputable instance instFintypeParabolicDerivativeIndex
     (d L : ℕ) : Fintype (ParabolicDerivativeIndex d L) := by

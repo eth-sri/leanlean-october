@@ -81,8 +81,11 @@ theorem laplaceTaylor_remainder_bound (a : Pos) (q : ℝ) (N L : ℕ) (C : ℝ)
   have hfinal := h.trans hlast
   simpa only [s, K, neg_add, sub_eq_add_neg] using hfinal
 
+section
+variable (a : Pos) (b : ℝ) (N : ℕ)
+
 /-- A concrete inverse-power bound for every finite U truncation. -/
-theorem UIr_remainder_bound (a : Pos) (b : ℝ) (N : ℕ) :
+theorem UIr_remainder_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℝ, 1 ≤ z →
       ‖UIr a b z - uExpansion a.1 b N z‖ ≤ C * z ^ (-a.1 - (N : ℝ)) := by
   obtain ⟨C₀, L, hC₀, hrem⟩ := exists_powerTaylor_remainder_bound (b - a.1 - 1) N
@@ -119,7 +122,7 @@ theorem UIr_remainder_bound (a : Pos) (b : ℝ) (N : ℕ) :
     (by dsimp only [C]; ring)
 
 /-- Positive-axis finite-order U expansion with the exact source coefficients. -/
-theorem UIr_expansion (a : Pos) (b : ℝ) (N : ℕ) :
+theorem UIr_expansion :
     Asymptotics.IsBigO atTop (fun z => UIr a b z - uExpansion a.1 b N z)
       (fun z => Real.rpow z (-a.1 - (N : ℝ))) := by
   obtain ⟨C, _, h⟩ := UIr_remainder_bound a b N
@@ -129,8 +132,13 @@ theorem UIr_expansion (a : Pos) (b : ℝ) (N : ℕ) :
   simpa only [Real.rpow_eq_pow, Real.norm_of_nonneg
     (Real.rpow_nonneg (zero_le_one.trans hz) _)] using h z hz
 
+end
+
+section
+variable (a : NegThird) (N : ℕ)
+
 /-- The finite U polynomial respects the same power transformation as the integral. -/
-theorem uExpansion_transform (a : NegThird) (N : ℕ) (z : ℝ) (hz : 0 < z) :
+theorem uExpansion_transform (z : ℝ) (hz : 0 < z) :
     z ^ (1 / 3 : ℝ) * uExpansion (a.1 + 1 / 3) (4 / 3) N z =
       uExpansion a.1 (2 / 3) N z := by
   have hscale : z ^ (1 / 3 : ℝ) * z ^ (-(a.1 + 1 / 3)) = z ^ (-a.1) := by
@@ -147,7 +155,7 @@ theorem uExpansion_transform (a : NegThird) (N : ℕ) (z : ℝ) (hz : 0 < z) :
   ring
 
 /-- A concrete remainder bound for the transformed negative-shape solution. -/
-theorem UNr_remainder_bound (a : NegThird) (N : ℕ) :
+theorem UNr_remainder_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℝ, 1 ≤ z →
       ‖UNr a z - uExpansion a.1 (2 / 3) N z‖ ≤ C * z ^ (-a.1 - (N : ℝ)) := by
   let c : Pos := ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩
@@ -172,7 +180,7 @@ theorem UNr_remainder_bound (a : NegThird) (N : ℕ) :
     _ = _ := by rw [hscale]
 
 /-- Positive-axis finite-order expansion for the negative-shape source solution. -/
-theorem UNr_expansion (a : NegThird) (N : ℕ) :
+theorem UNr_expansion :
     Asymptotics.IsBigO atTop (fun z => UNr a z - uExpansion a.1 (2 / 3) N z)
       (fun z => Real.rpow z (-a.1 - (N : ℝ))) := by
   obtain ⟨C, _, h⟩ := UNr_remainder_bound a N
@@ -181,5 +189,7 @@ theorem UNr_expansion (a : NegThird) (N : ℕ) :
   filter_upwards [eventually_ge_atTop (1 : ℝ)] with z hz
   simpa only [Real.rpow_eq_pow, Real.norm_of_nonneg
     (Real.rpow_nonneg (zero_le_one.trans hz) _)] using h z hz
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

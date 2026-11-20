@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsModulus
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsModulusReference
 
 /-! # Position-fiber majorants of the actual homogeneous Bellman jets -/
 

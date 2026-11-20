@@ -1,3 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockCalculusAssembly
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockExtensionsSetting

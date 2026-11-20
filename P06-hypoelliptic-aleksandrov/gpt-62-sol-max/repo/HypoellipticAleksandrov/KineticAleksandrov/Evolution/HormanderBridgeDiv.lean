@@ -33,8 +33,7 @@ theorem basisV_eq_basisVec (j : Fin n) :
   funext i
   rw [PDE.basisVec_apply]
   refine Fin.cases ?_ (fun k => ?_) i
-  · rw [ite_eq_right_of_eq_false _ _ (eq_false (Fin.succ_ne_zero _).symm)]
-    simp [basisV]
+  · rfl
   · refine Fin.addCases (fun a => ?_) (fun c => ?_) k
     · simp only [basisV, packPoint_diffused_apply, Pi.single_apply, Fin.succ_inj,
         Fin.castAdd_inj]
@@ -48,8 +47,7 @@ theorem basisZ_eq_basisVec (l : Fin n) :
   funext i
   rw [PDE.basisVec_apply]
   refine Fin.cases ?_ (fun k => ?_) i
-  · rw [ite_eq_right_of_eq_false _ _ (eq_false (Fin.succ_ne_zero _).symm)]
-    simp [basisZ]
+  · rfl
   · refine Fin.addCases (fun a => ?_) (fun c => ?_) k
     · rw [ite_eq_right_of_eq_false _ _ (eq_false ?_)]
       · simp only [basisZ, packPoint_diffused_apply]; rfl
@@ -89,7 +87,7 @@ theorem euclideanDivergence_packPoint {s : EvolutionVec n → ℝ} {g h : Evolut
   have hV : DifferentiableAt ℝ (fun y => packPoint (s y) (g y) (h y)) x := by
     refine differentiableAt_pi.2 fun i => ?_
     refine Fin.cases ?_ (fun j => ?_) i
-    · simpa only [packPoint_zero_apply] using hs
+    · assumption
     · refine Fin.addCases (fun a => ?_) (fun c => ?_) j
       · simpa only [packPoint_diffused_apply] using hg a
       · simpa only [packPoint_transported_apply] using hh c

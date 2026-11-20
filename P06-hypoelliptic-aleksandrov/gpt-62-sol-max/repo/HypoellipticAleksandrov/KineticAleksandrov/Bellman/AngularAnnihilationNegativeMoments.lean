@@ -38,7 +38,6 @@ theorem bellmanAngularDensity_negative_lower (β : ℝ) (f h J : ℝ → ℝ)
     (-y / 3) * bellmanAngularFirstMoment f y ≤ h y := by
   have hb := bellmanAngularSecondMoment_negative_bound hf hn hy
   have hd : 0 ≤ (β - 3) / 3 := by linarith
-  have hm := mul_le_mul_of_nonneg_left hb hd
   rw [he y, h0, hj0]
   nlinarith
 

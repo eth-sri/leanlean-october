@@ -38,8 +38,7 @@ theorem velocityBandAction_eq_probability {lam Lam : ℝ} (A : SmoothAutonomous 
   change (∫ w, (velocityNativeBand r).indicator (fun _ => (1 : ℝ)) w
     ∂E.2.master (wholeQuery (Real.toNNReal t) z)) = _
   rw [integral_indicator (velocityNativeBand_measurable r)]
-  simp only [integral_const, smul_eq_mul, mul_one, Measure.real, velocityBandProbability,
-    Measure.restrict_apply MeasurableSet.univ, univ_inter]
+  simp [integral_const, smul_eq_mul, mul_one, Measure.real, velocityBandProbability, Measure.restrict_apply MeasurableSet.univ, univ_inter]
 
 /-- In physical scalar coordinates the same probability is the band mass of `kernelXV`. -/
 theorem velocityBandProbability_eq_kernelXV (E : FullSpaceEvolution) (r t : ℝ) (z : Z) :

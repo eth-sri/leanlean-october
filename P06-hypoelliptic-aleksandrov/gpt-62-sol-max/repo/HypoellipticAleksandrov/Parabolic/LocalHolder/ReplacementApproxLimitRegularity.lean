@@ -16,9 +16,11 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter Set MeasureTheory
 open scoped Topology
 
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)}
+
 /-- Scalar anisotropic classical regularity is local on its carrier. -/
-theorem scalarC12On_of_locally_scalarC12On {d : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+theorem scalarC12On_of_locally_scalarC12On {u : TimeVelocity d → ℝ}
     (hlocal : ∀ z ∈ U, ∃ V, IsOpen V ∧ z ∈ V ∧ IsScalarC12On u V) :
     IsScalarC12On u U := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -46,8 +48,7 @@ theorem scalarC12On_of_locally_scalarC12On {d : ℕ}
     exact ⟨V, hV, hzV, huV.continuousOn_scalarSpatialHessian.mono inter_subset_right⟩
 
 /-- A continuous function carrying the actual higher weak family is classical on its carrier. -/
-theorem scalarC12On_of_continuousOn_higher_weak_family {d : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U)
+theorem scalarC12On_of_continuousOn_higher_weak_family (hU : IsOpen U)
     {u : TimeVelocity d → ℝ} (hu : ContinuousOn u U)
     (D : ParabolicWeakDerivativeFamily d (2 * (d + 4)) U u) :
     IsScalarC12On u U := by
@@ -62,6 +63,8 @@ theorem scalarC12On_of_continuousOn_higher_weak_family {d : ℕ}
     hv.continuous.continuousOn (hu.mono hsub)
   refine ⟨V, hV, ?_, ?_⟩
   · exact Metric.self_subset_thickening hrho _ (mem_singleton z)
-  · exact KineticAleksandrov.Occupation.isScalarC12On_congr_open hV hv12 heq.symm
+  · exact hv12.congr hV heq.symm
+
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

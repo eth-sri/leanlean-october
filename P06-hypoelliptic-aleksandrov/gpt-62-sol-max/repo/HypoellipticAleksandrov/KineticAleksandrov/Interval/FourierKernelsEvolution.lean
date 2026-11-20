@@ -16,26 +16,17 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 /-- The clauses hold for every kernel realizing the same interval problem. -/
-theorem interval_evolution_clauses
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam m Lb a c : ℝ} (hac : a < c)
-    (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1)
-    (hs : SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b)
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (hr : RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-      (zIndependentCoefficient B) b S K) :
-    IsDomainMonotoneEvolution (PDE.oneDimensionalAxisBox a c) stationary
-      (zIndependentCoefficient B) b K ∧
-    HasParabolicMarginalBundle (PDE.oneDimensionalAxisBox a c) stationary hJ
-      (zIndependentCoefficient B) K ∧
-    IsTranslationCovariantEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ K := by
+theorem IntervalEvolution.clauses
+    {lam Lam m Lb : ℝ} (E : IntervalEvolution lam Lam m Lb) :
+    IsDomainMonotoneEvolution (E.domain) stationary
+      (zIndependentCoefficient E.coefficient) E.drift E.kernel ∧
+    HasParabolicMarginalBundle (E.domain) stationary E.measurableSet
+      (zIndependentCoefficient E.coefficient) E.kernel ∧
+    IsTranslationCovariantEvolution (E.domain) stationary E.measurableSet E.kernel := by
   obtain ⟨S₀, K₀, hr₀, hm, hp, hc⟩ :=
-    exists_interval_evolution hH hLE lam Lam m Lb a c hac B b hs
-  have hK := (terminalEvolution_unique (PDE.oneDimensionalAxisBox a c) stationary
-    (interval_admissible hac) (zIndependentCoefficient B) b S S₀ K K₀ hr hr₀).2
+    exists_interval_evolution lam Lam m Lb E.left E.right E.lt E.coefficient E.drift E.setting
+  have hK := (terminalEvolution_unique (E.domain) stationary
+    (interval_admissible E.lt) (zIndependentCoefficient E.coefficient) E.drift E.operator S₀ E.kernel K₀ E.realizes hr₀).2
   subst K₀
   exact ⟨hm, hp, hc⟩
 

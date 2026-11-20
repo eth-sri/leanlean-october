@@ -54,7 +54,7 @@ theorem comparison_exit_boundary_approx {d : ℕ}
     apply subset_closure (closure_innerCylinder_subset Z₀ R hR δ hδ0 hδlt ?_)
     rw [← innerRetraction_image_closure Z₀ R hR δ hδ0 hδlt]
     exact mem_image_of_mem _ (hS hy)
-  · exact fun y hy => hclose δ hδ0 hδlt hδη y (hS hy)
+  exact fun y hy => hclose δ hδ0 hδlt hδη y (hS hy)
 
 /-- The same compact-boundary passage in the backward kinetic geometry. -/
 theorem comparison_kinetic_boundary_approx {d : ℕ}

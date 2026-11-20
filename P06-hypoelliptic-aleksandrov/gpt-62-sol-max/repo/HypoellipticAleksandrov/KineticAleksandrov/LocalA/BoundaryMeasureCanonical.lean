@@ -12,79 +12,89 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory
 open scoped ENNReal
 
-variable (hH : HormanderHypoellipticityStatement)
-  (hLE : LiebermanEllipsoidDirichletStatement)
+variable
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-  (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
+section
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+include P T
+
 /-- The actual finite exit measure, chosen only after full existence and uniqueness. -/
-def ballExitRaw (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
+def ballExitRaw :
     Measure (KineticPoint d) :=
-  (existsUnique_ballExitMeasure hH hLE hd hlam hLam B hB v₀ hR P T).exists.choose
+  (existsUnique_ballExitMeasure hd B hB v₀ hR P T).exists.choose
 
 /-- Full finite-measure, trace-support and smooth-test characterization of the choice. -/
-theorem ballExitRaw_spec (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
-    IsFiniteMeasure (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) ∧
-    ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T (localTrace P.1.time T.1 v₀ R)ᶜ = 0 ∧
+theorem ballExitRaw_spec :
+    IsFiniteMeasure (ballExitRaw hd B hB v₀ hR P T) ∧
+    ballExitRaw hd B hB v₀ hR P T (localTrace P.1.time T.1 v₀ R)ᶜ = 0 ∧
     ∀ φ : KineticPoint d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
       HasCompactSupport φ →
-      (∫ Q, φ Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) =
-        ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 φ P.1 :=
-  (existsUnique_ballExitMeasure hH hLE hd hlam hLam B hB v₀ hR P T).exists.choose_spec
+      (∫ Q, φ Q ∂ballExitRaw hd B hB v₀ hR P T) =
+        ballBoundarySolution hd B hB v₀ hR P.1.time T.1 φ P.1 :=
+  (existsUnique_ballExitMeasure hd B hB v₀ hR P T).exists.choose_spec
+
+end
 
 /-- The chosen exit measure is finite. -/
 instance ballExitRaw_isFiniteMeasure (P : LocalBallStart v₀ R)
     (T : {t : ℝ // P.1.time < t}) :
-    IsFiniteMeasure (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) :=
-  (ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR P T).1
+    IsFiniteMeasure (ballExitRaw hd B hB v₀ hR P T) :=
+  (ballExitRaw_spec hd B hB v₀ hR P T).1
+
+section
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+include P T
 
 /-- The stated smooth-test identity alone determines the selected finite ambient measure. -/
-theorem ballExitRaw_unique (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+theorem ballExitRaw_unique
     (μ : Measure (KineticPoint d)) [IsFiniteMeasure μ]
     (hμ : ∀ φ : KineticPoint d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
       HasCompactSupport φ → (∫ Q, φ Q ∂μ) =
-        ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 φ P.1) :
-    μ = ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T := by
+        ballBoundarySolution hd B hB v₀ hR P.1.time T.1 φ P.1) :
+    μ = ballExitRaw hd B hB v₀ hR P T := by
   apply boundary_measure_ext
   intro φ hφ hc
-  exact (hμ φ hφ hc).trans ((ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR P T).2.2
+  exact (hμ φ hφ hc).trans ((ballExitRaw_spec hd B hB v₀ hR P T).2.2
     φ hφ hc).symm
 
 /-- Exit coordinates retain absolute exit time and exit velocity, and subtract free transport. -/
-def ballExit (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
+def ballExit :
     Measure (PDE.Vec d × Parabolic.TimeVelocity d) :=
-  Measure.map (exitCoordinates P.1 v₀) (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T)
+  Measure.map (exitCoordinates P.1 v₀) (ballExitRaw hd B hB v₀ hR P T)
+
+end
 
 /-- The actual exit-coordinate measure is finite. -/
 instance ballExit_isFiniteMeasure (P : LocalBallStart v₀ R)
     (T : {t : ℝ // P.1.time < t}) :
-    IsFiniteMeasure (ballExit hH hLE hd hlam hLam B hB v₀ hR P T) := by
+    IsFiniteMeasure (ballExit hd B hB v₀ hR P T) := by
   unfold ballExit
   infer_instance
 
-omit hH hLE hd hlam hLam B hB v₀ hR in
+omit hd B hB v₀ hR in
 /-- The generic exit Fourier measure is the literal phase-density map to time and velocity. -/
 def exitFourier (ω : Measure (PDE.Vec d × Parabolic.TimeVelocity d)) (ξ : PDE.Vec d) :
     ComplexMeasure (Parabolic.TimeVelocity d) :=
   (ω.withDensityᵥ (exitPhase ξ)).map Prod.snd
 
-omit hH hLE hd hlam hLam B hB v₀ hR in
+omit hd B hB v₀ hR in
 /-- The literal exit phase has modulus one. -/
 theorem norm_exitPhase (ξ : PDE.Vec d) (Q : PDE.Vec d × Parabolic.TimeVelocity d) :
     ‖exitPhase ξ Q‖ = 1 := by
   simp [exitPhase, Complex.norm_exp, Complex.mul_re]
 
-omit hH hLE hd hlam hLam B hB v₀ hR in
+omit hd B hB v₀ hR in
 /-- The literal exit phase is continuous. -/
 theorem continuous_exitPhase (ξ : PDE.Vec d) : Continuous (exitPhase ξ) := by
   unfold exitPhase PDE.vecDot
   fun_prop
 
-omit hH hLE hd hlam hLam B hB v₀ hR in
+omit hd B hB v₀ hR in
 /-- Every finite exit-coordinate measure admits the actual phase integral. -/
 theorem integrable_exitPhase (ω : Measure (PDE.Vec d × Parabolic.TimeVelocity d))
     [IsFiniteMeasure ω] (ξ : PDE.Vec d) : Integrable (exitPhase ξ) ω :=

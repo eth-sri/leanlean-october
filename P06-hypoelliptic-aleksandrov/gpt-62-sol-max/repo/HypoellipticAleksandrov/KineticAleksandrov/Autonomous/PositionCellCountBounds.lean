@@ -1,6 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoxConcentrationHeadline
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoxConcentration
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.DeterministicBoxOccupation
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionPowerSum
 import Mathlib.Tactic
 

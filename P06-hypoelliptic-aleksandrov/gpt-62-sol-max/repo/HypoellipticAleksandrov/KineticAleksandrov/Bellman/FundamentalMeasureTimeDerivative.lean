@@ -11,14 +11,20 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+section
+variable (s : ℝ) (q : ℝ × ℝ)
+include s q
+
 /-- The scalar time chart of the literal positive-time Gaussian. -/
-def bellmanGaussianTimeChart (s : ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanGaussianTimeChart : ℝ :=
   Real.sqrt 3 / (2 * Real.pi * s ^ 2) *
     Real.exp (-3 * q.1 ^ 2 / s ^ 3 + 3 * q.1 * q.2 / s ^ 2 - q.2 ^ 2 / s)
 
 /-- The coefficient of the Gaussian in its time derivative. -/
-def bellmanGaussianTimeCoefficient (s : ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanGaussianTimeCoefficient : ℝ :=
   9 * q.1 ^ 2 / s ^ 4 - 6 * q.1 * q.2 / s ^ 3 + q.2 ^ 2 / s ^ 2 - 2 / s
+
+end
 
 /-- A continuous polynomial bound for the time-derivative coefficient. -/
 def bellmanGaussianTimeWeight (q : ℝ × ℝ) : ℝ :=
@@ -39,8 +45,7 @@ theorem hasDerivAt_bellmanGaussianTimeChart (t : BellmanPositiveTime) (q : ℝ �
 /-- Sixth-order exponential decay dominates the inverse-power singularity. -/
 theorem bellman_exp_neg_le_inv_six (y : ℝ) (hy : 0 < y) :
     Real.exp (-y) ≤ 720 / y ^ 6 := by
-  have h := Real.pow_div_factorial_le_exp y hy.le 6
-  have hm := mul_le_mul_of_nonneg_right h (Real.exp_pos (-y)).le
+  have hm := mul_le_mul_of_nonneg_right (Real.pow_div_factorial_le_exp y hy.le 6) (Real.exp_pos (-y)).le
   have hexp : Real.exp y * Real.exp (-y) = 1 := by
     rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
   rw [hexp] at hm

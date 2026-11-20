@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Measure.InkSpotsGeometry
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.MeasureTheory.Measure.Real
 public import Mathlib.Tactic
+import HypoellipticAleksandrov.Parabolic.DensityPositiveGeometry
 
 /-!
 # Selection geometry for parabolic ink spots
@@ -24,74 +25,10 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
-private theorem closedSourceBox_subset_closedUnitBox (d : Nat) (q : InkSpotsBox d)
-    (hR : 0 < q.radius) (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d) :
-    parabolicClosedBox 1 q.radius q.baseTime q.center ⊆
-      parabolicClosedBox 1 1 0 0 := by
-  have hsource : closure (inkSpotsSourceBox q) =
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    simpa only [inkSpotsSourceBox] using
-      (closure_parabolicBox_of_pos (d := d) (vartheta := (1 : Real))
-        (r := q.radius) (t0 := q.baseTime) (v0 := q.center)
-        (by norm_num) hR)
-  have hunit : closure (inkSpotsUnitBox d) =
-      parabolicClosedBox 1 1 0 0 := by
-    simpa only [inkSpotsUnitBox] using
-      (closure_parabolicBox_of_pos (d := d) (vartheta := (1 : Real))
-        (r := (1 : Real)) (t0 := 0) (v0 := (0 : PDE.Vec d))
-        (by norm_num) (by norm_num))
-  rw [← hsource, ← hunit]
-  exact closure_mono hq
+section
+variable {d : Nat}
 
-private theorem strictDense_source_bounds {d : Nat} {Gamma : Set (TimeVelocity d)}
-    {xi : Real} {q : InkSpotsBox d} (hq : inkSpotsStrictDense Gamma xi q) :
-    0 ≤ q.baseTime ∧ q.baseTime + q.radius ^ 2 ≤ 1 ∧
-      ∀ i, |q.center i| + q.radius ≤ 1 := by
-  have hclosed := closedSourceBox_subset_closedUnitBox d q hq.1 hq.2.1
-  have hterminal : (q.baseTime + q.radius ^ 2, q.center) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨?_, ?_, fun i => ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · norm_num
-    · simp [hq.1.le]
-  have hterminalUnit := hclosed hterminal
-  rw [mem_parabolicClosedBox_iff] at hterminalUnit
-  have hplus : (q.baseTime, q.center + q.radius • (1 : PDE.Vec d)) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨le_rfl, ?_, ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · intro i
-      simp only [Pi.add_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul]
-      rw [add_sub_cancel_left]
-      simp [abs_of_nonneg hq.1.le]
-  have hminus : (q.baseTime, q.center - q.radius • (1 : PDE.Vec d)) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨le_rfl, ?_, ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · intro i
-      simp only [Pi.sub_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul]
-      rw [sub_sub_cancel_left]
-      simp [abs_of_nonneg hq.1.le]
-  have hplusUnit := hclosed hplus
-  have hminusUnit := hclosed hminus
-  rw [mem_parabolicClosedBox_iff] at hplusUnit hminusUnit
-  refine ⟨hplusUnit.1, by norm_num at hterminalUnit ⊢; exact hterminalUnit.2.1, ?_⟩
-  intro i
-  have hp := hplusUnit.2.2 i
-  have hm := hminusUnit.2.2 i
-  simp only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, Pi.one_apply,
-    smul_eq_mul, Pi.zero_apply, sub_zero] at hp hm
-  have hp' : q.center i + q.radius * 1 ≤ 1 := (le_abs_self _).trans hp
-  have hm' : -(q.center i - q.radius * 1) ≤ 1 := (neg_le_abs _).trans hm
-  have habs : |q.center i| ≤ 1 - q.radius := by
-    rw [abs_le]
-    constructor <;> linarith
-  linarith
-
-private theorem parabolicBox_subset_closed {d : Nat} {vartheta r t0 : Real}
+theorem parabolicBox_subset_closed {vartheta r t0 : Real}
     {v0 : PDE.Vec d} :
     parabolicBox vartheta r t0 v0 ⊆ parabolicClosedBox vartheta r t0 v0 := by
   intro z hz
@@ -99,14 +36,14 @@ private theorem parabolicBox_subset_closed {d : Nat} {vartheta r t0 : Real}
   rw [mem_parabolicClosedBox_iff]
   exact ⟨hz.1.le, hz.2.1.le, fun i => (hz.2.2 i).le⟩
 
-private theorem sourceBox_measure_ne_top {d : Nat} (q : InkSpotsBox d) :
+private theorem sourceBox_measure_ne_top (q : InkSpotsBox d) :
     volume (inkSpotsSourceBox q) ≠ ∞ := by
   apply measure_ne_top_of_subset
     (parabolicBox_subset_closed (d := d) (vartheta := (1 : Real))
       (r := q.radius) (t0 := q.baseTime) (v0 := q.center))
   exact (isCompact_parabolicClosedBox 1 q.radius q.baseTime q.center).measure_ne_top
 
-private theorem inkSpotsQ3_subset_positive_unit {d : Nat}
+private theorem inkSpotsQ3_subset_positive_unit
     {Gamma : Set (TimeVelocity d)} {xi eta zeta : Real} {q : InkSpotsBox d}
     (heta : 0 < eta) (hzeta : 0 < zeta) (hzeta1 : zeta < 1)
     (hq : inkSpotsStrictDense Gamma xi q) :
@@ -114,7 +51,7 @@ private theorem inkSpotsQ3_subset_positive_unit {d : Nat}
   rintro z hz
   rcases (mem_inkSpotsQ3_iff.mp hz) with ⟨y, hy, hyz⟩
   rcases (mem_inkSpotsQ2_iff.mp hy) with ⟨hyleft, hyright, hycenter, hyunit⟩
-  obtain ⟨hbase, hterminal, hcenter⟩ := strictDense_source_bounds hq
+  obtain ⟨hbase, hterminal, -, hcenter⟩ := inkSpots_source_bounds hq.1 hq.2.1
   subst z
   constructor
   · dsimp [inkSpotsContraction]
@@ -160,6 +97,8 @@ private theorem inkSpotsQ3_subset_positive_unit {d : Nat}
         linarith
       _ = 1 := by ring
 
+end
+
 private theorem inkSpotsD3_subset_positive_unit (d : Nat) (Gamma : Set (TimeVelocity d))
     (xi eta zeta : Real) (heta : 0 < eta) (hzeta : 0 < zeta) (hzeta1 : zeta < 1) :
     inkSpotsD3 Gamma xi eta zeta ⊆ Ioi 0 ×ˢ velocityCube (0 : PDE.Vec d) 1 := by
@@ -196,9 +135,11 @@ def inkSpotsShrunkSourceBox {d : Nat} (alpha : Real) (q : InkSpotsBox d) :
     baseTime := q.baseTime
     center := q.center }
 
+section
+variable (d : Nat) (alpha : Real) (q : InkSpotsBox d)
+
 /-- A non-expanding positive radius factor gives nested source boxes. -/
 theorem inkSpotsSourceBox_shrunk_subset
-    (d : Nat) (alpha : Real) (q : InkSpotsBox d)
     (halpha0 : 0 < alpha) (halpha1 : alpha ≤ 1) :
     inkSpotsSourceBox (inkSpotsShrunkSourceBox alpha q) ⊆
       inkSpotsSourceBox q := by
@@ -210,8 +151,6 @@ theorem inkSpotsSourceBox_shrunk_subset
       v ∈ velocityCube q.center (alpha * q.radius) at hz
   refine ⟨hz.1, ?_, ?_⟩
   · have hfactor : alpha ^ 2 ≤ 1 := by
-      have hnonneg : 0 ≤ (1 - alpha) * (1 + alpha) :=
-        mul_nonneg (sub_nonneg.mpr halpha1) (by linarith)
       nlinarith
     have hsquare : (alpha * q.radius) ^ 2 ≤ q.radius ^ 2 := by
       calc
@@ -234,7 +173,6 @@ theorem inkSpotsSourceBox_shrunk_subset
 
 /-- The volume of a shrunk source box has the exact parabolic scaling factor. -/
 theorem volume_inkSpotsSourceBox_shrunk_toReal
-    (d : Nat) (alpha : Real) (q : InkSpotsBox d)
     (halpha : 0 ≤ alpha) (hR : 0 ≤ q.radius) :
     (volume (inkSpotsSourceBox (inkSpotsShrunkSourceBox alpha q))).toReal =
       alpha ^ (d + 2) * (volume (inkSpotsSourceBox q)).toReal := by
@@ -249,6 +187,8 @@ theorem volume_inkSpotsSourceBox_shrunk_toReal
       (by norm_num) hR]
   rw [mul_pow]
   ring
+
+end
 
 /-- The selected shrinking factor has the reciprocal parabolic volume power. -/
 theorem selected_inkSpots_alpha_pow
@@ -268,10 +208,12 @@ theorem selected_inkSpots_alpha_pow
       field_simp [hden]
     _ = (1 + a)⁻¹ := Real.rpow_neg_one _
 
+section
+variable (d : Nat) (Gamma : Set (TimeVelocity d))
+
 /-- Strict density `a` on a source box transfers to strict density `a^2` on
 the selected shrunk source box. -/
-theorem inkSpotsStrictDense_shrunkSourceBox
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (a alpha : Real)
+theorem inkSpotsStrictDense_shrunkSourceBox (a alpha : Real)
     (q : InkSpotsBox d)
     (ha0 : 0 < a) (ha1 : a < 1)
     (halpha : alpha = (1 + a) ^ (-(1 / ((d : Real) + 2))))
@@ -340,8 +282,7 @@ theorem inkSpotsStrictDense_shrunkSourceBox
 
 /-- A strict large-outside volume alternative contains a strict dense source
 box whose forward enlargement contains a point at the time `1 + c`. -/
-theorem exists_inkSpotsQ2_crossing_of_volume_outside
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (a eta zeta c : Real)
+theorem exists_inkSpotsQ2_crossing_of_volume_outside (a eta zeta c : Real)
     (hc : 0 < c)
     (heta0 : 0 < eta) (heta1 : eta < 1)
     (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1)
@@ -383,7 +324,7 @@ theorem exists_inkSpotsQ2_crossing_of_volume_outside
   rcases Set.mem_iUnion.mp hzD3 with ⟨hq, hzQ3⟩
   rcases (mem_inkSpotsQ3_iff.mp hzQ3) with ⟨y, hyQ2, hyz⟩
   rcases (mem_inkSpotsQ2_iff.mp hyQ2) with ⟨hyleft, hyright, hycenter, hyunit⟩
-  obtain ⟨hbase, hsourceTerminal, hcenter⟩ := strictDense_source_bounds hq
+  obtain ⟨hbase, hsourceTerminal, -, hcenter⟩ := inkSpots_source_bounds hq.1 hq.2.1
   refine ⟨q, y.2, hq, ?_⟩
   rw [mem_inkSpotsQ2_iff]
   refine ⟨?_, ?_, hycenter, hyunit⟩
@@ -400,6 +341,8 @@ theorem exists_inkSpotsQ2_crossing_of_volume_outside
       rw [← hyz]
       exact hcontracted'
     exact hzlarge.trans hcontracted
+
+end
 
 end
 

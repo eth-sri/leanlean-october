@@ -23,9 +23,11 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped Topology
 
-private theorem hasDerivAt_backwardSpatialShift
-    {d : ℕ} (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ 1 φ)
-    (k : Fin d) (z : TimeVelocity d) :
+section
+variable {d : ℕ} (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ 1 φ) (k : Fin d) (z : TimeVelocity d)
+include hφ
+
+private theorem hasDerivAt_backwardSpatialShift :
     HasDerivAt (fun h : ℝ => φ (spatialShift k (-h) z))
       (-velocityGradient φ z k) 0 := by
   have hline : HasDerivAt (fun h : ℝ => spatialShift k (-h) z)
@@ -40,14 +42,14 @@ private theorem hasDerivAt_backwardSpatialShift
   simpa only [Function.comp_def, velocityGradient, map_neg, map_prod, map_zero, PDE.basisVec]
     using hcomp
 
-private theorem tendsto_backwardSpatialDifferenceQuotient
-    {d : ℕ} (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ 1 φ)
-    (k : Fin d) (z : TimeVelocity d) :
+private theorem tendsto_backwardSpatialDifferenceQuotient :
     Tendsto (fun h : ℝ => (φ (spatialShift k (-h) z) - φ z) / h)
       (𝓝[≠] 0) (𝓝 (-velocityGradient φ z k)) := by
   have h := (hasDerivAt_backwardSpatialShift φ hφ k z).tendsto_slope_zero
   simpa only [zero_add, smul_eq_mul, div_eq_mul_inv, mul_comm,
     neg_zero, spatialShift_zero, id_eq] using h
+
+end
 
 private theorem tsupport_backwardSpatialDifferenceQuotient_subset_cthickening
     {d : ℕ} {φ : TimeVelocity d → ℝ} (k : Fin d) (h r : ℝ)
@@ -78,7 +80,7 @@ private theorem tsupport_backwardSpatialDifferenceQuotient_subset_cthickening
       _ ≤ r := hh
   · exact Metric.mem_cthickening_of_dist_le z z r (tsupport φ) hz (by simp [hr])
 
-private theorem eq_zero_of_not_mem_tsupport
+theorem eq_zero_of_not_mem_tsupport
     {X E : Type*} [TopologicalSpace X] [Zero E] {f : X → E} {x : X}
     (hx : x ∉ tsupport f) : f x = 0 := by
   by_contra hzero

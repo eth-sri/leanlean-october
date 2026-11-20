@@ -19,7 +19,10 @@ namespace HypoellipticAleksandrov.Parabolic
 open Matrix Set
 open scoped MatrixOrder
 
-private theorem isClosed_isHermitian (d : ℕ) :
+section
+variable (d : ℕ)
+
+theorem isClosed_isHermitian :
     IsClosed {H : PDE.Mat d | H.IsHermitian} := by
   have hset :
       {H : PDE.Mat d | H.IsHermitian} =
@@ -37,7 +40,7 @@ private theorem isClosed_isHermitian (d : ℕ) :
   refine isClosed_iInter fun i => isClosed_iInter fun j => ?_
   exact isClosed_eq (continuous_id.matrix_elem j i) (continuous_id.matrix_elem i j)
 
-private theorem isClosed_posSemidef (d : ℕ) :
+theorem isClosed_posSemidef :
     IsClosed {H : PDE.Mat d | H.PosSemidef} := by
   have hset :
       {H : PDE.Mat d | H.PosSemidef} =
@@ -53,7 +56,7 @@ private theorem isClosed_posSemidef (d : ℕ) :
   exact isClosed_le continuous_const hquad
 
 /-- The affine lower Loewner cone is closed in the native matrix topology. -/
-theorem isClosed_setOf_lowerEllipticity (d : ℕ) (lam : ℝ) :
+theorem isClosed_setOf_lowerEllipticity (lam : ℝ) :
     IsClosed {M : PDE.Mat d | lam • (1 : PDE.Mat d) ≤ M} := by
   have hset : {M : PDE.Mat d | lam • (1 : PDE.Mat d) ≤ M} =
       (fun M : PDE.Mat d => M - lam • (1 : PDE.Mat d)) ⁻¹'
@@ -62,6 +65,8 @@ theorem isClosed_setOf_lowerEllipticity (d : ℕ) (lam : ℝ) :
     exact Matrix.le_iff
   rw [hset]
   exact (isClosed_posSemidef d).preimage (continuous_id.sub continuous_const)
+
+end
 
 namespace HasLowerEllipticityOn
 

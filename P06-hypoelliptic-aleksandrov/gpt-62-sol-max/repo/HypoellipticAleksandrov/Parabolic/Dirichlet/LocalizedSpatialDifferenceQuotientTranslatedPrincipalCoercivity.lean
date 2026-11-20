@@ -2,7 +2,11 @@ module
 
 public import HypoellipticAleksandrov.LinearAlgebra.LoewnerPolarization
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientPrincipalField
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialCoefficientCutoffFields
+public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientBound
+public import HypoellipticAleksandrov.Topology.Support
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTests
+public import PDEFoundation.Sobolev.Cutoff.Basic
 
 /-!
 # Translated principal coercivity for localized spatial difference quotients
@@ -20,7 +24,10 @@ open scoped BigOperators ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem vecDot_add_mulVec_sub_expand {d : ℕ} (A : PDE.Mat d)
+section
+variable {d : ℕ}
+
+private theorem vecDot_add_mulVec_sub_expand (A : PDE.Mat d)
     (G W : PDE.Vec d) :
     PDE.vecDot (G + W) (Matrix.mulVec A (G - W)) =
       ∑ i : Fin d, ∑ j : Fin d, A i j * (G j - W j) * (G i + W i) := by
@@ -32,7 +39,7 @@ private theorem vecDot_add_mulVec_sub_expand {d : ℕ} (A : PDE.Mat d)
   intro j _
   ring
 
-private theorem weighted_vecDot_add_mulVec_sub_expand {d : ℕ} (c χ : ℝ)
+private theorem weighted_vecDot_add_mulVec_sub_expand (c χ : ℝ)
     (A : PDE.Mat d) (G W E H : PDE.Vec d)
     (hE : E = G - W) (hH : H = G + W)
     (hχH : ∀ i : Fin d, χ * H i = H i) :
@@ -55,15 +62,15 @@ private theorem weighted_vecDot_add_mulVec_sub_expand {d : ℕ} (c χ : ℝ)
       rw [hχHi]
     _ = (c * χ * A i j) * (G j - W j) * (G i + W i) := by ring
 
-private theorem vecNormSq_zero {d : ℕ} : PDE.vecNormSq (0 : PDE.Vec d) = 0 := by
+private theorem vecNormSq_zero : PDE.vecNormSq (0 : PDE.Vec d) = 0 := by
   unfold PDE.vecNormSq PDE.vecDot
   simp only [Pi.zero_apply, mul_zero, Finset.sum_const_zero]
 
-private theorem hilbertVec_vecNormSq_eq_norm_sq {d : ℕ} (v : PDE.HilbertVec d) :
+private theorem hilbertVec_vecNormSq_eq_norm_sq (v : PDE.HilbertVec d) :
     PDE.vecNormSq v.toVec = ‖v‖ ^ 2 := by
   rw [PDE.HilbertVec.norm_eq_vecEuclideanNorm, PDE.vecEuclideanNorm_sq]
 
-private theorem integral_coercivity_of_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem integral_coercivity_of_ae {Ω : Set (PDE.Vec d)}
     (c lam Lam : ℝ) (G W : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞))
     (F : Fin d → Fin d → PDE.Vec d → ℝ)
     (hterm : ∀ i j : Fin d, Integrable (F i j) (PDE.volumeOn Ω))
@@ -115,38 +122,22 @@ private theorem integral_coercivity_of_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 /-- The one-cutoff translated principal term controls the sharp localized
 difference-quotient gradient-minus-commutator norm expression. -/
-theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
     (r₀ r₁ lam Lam : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d,
-      z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-        lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-    (hUpper : ∀ z : TimeVelocity d,
-      z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-        a z.1 z.2 ≤ Lam • (1 : PDE.Mat d))
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hLower : HasLowerEllipticityOn lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hUpper : HasUpperEllipticityOn Lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (ζ : ReverseTimeScalarTest (r₁ - r₀))
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
     (k : Fin d) (h : ℝ)
-    (hχshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport χ.toFun) Ω)
+    (hχshift : χ.ShiftMapsInto k h Ω)
     (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
     (hζnonneg : 0 ≤ ζ τ)
     (u : H10HilbertGraph hΩ) :
-    let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-      intro y hy
-      apply subset_tsupport
-      change χ y ≠ 0
-      rw [χ.eq_one_on_inner y hy]
-      exact one_ne_zero
-    let hηshift : Set.MapsTo
-        (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (tsupport η.toFun) Ω :=
+    let hηχ := χ.inner_subset_tsupport
+    let hηshift : η.ShiftMapsInto k h Ω :=
       hχshift.mono_left hηχ
     let Gv : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
       gradientCLM hΩ
@@ -168,15 +159,8 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
             PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev y *
             PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y ∂volume := by
   dsimp only
-  let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-    intro y hy
-    apply subset_tsupport
-    change χ y ≠ 0
-    rw [χ.eq_one_on_inner y hy]
-    exact one_ne_zero
-  let hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω := hχshift.mono_left hηχ
+  let hηχ := χ.inner_subset_tsupport
+  let hηshift : η.ShiftMapsInto k h Ω := hχshift.mono_left hηχ
   let Gv : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) := gradientCLM hΩ
     (localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift u)
   let Wv : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
@@ -215,10 +199,6 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
   have hcoefCompact (i j : Fin d) : HasCompactSupport
       (fun y : PDE.Vec d => χ y * spatialTranslate k h (α i j) (τ, y)) :=
     χ.hasCompactSupport.mul_right
-  have hcoord (X : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) (i : Fin d) :
-      MemLp (fun y : PDE.Vec d => (X y).toVec i) (2 : ℝ≥0∞) (PDE.volumeOn Ω) := by
-    exact MeasureTheory.MemLp.ae_eq
-      (PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i X) (Lp.memLp _)
   have hterm (i j : Fin d) : Integrable (fun y : PDE.Vec d =>
       (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) *
         PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev y *
@@ -435,5 +415,7 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
         PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev y *
         PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y)
     hterm hpoint
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

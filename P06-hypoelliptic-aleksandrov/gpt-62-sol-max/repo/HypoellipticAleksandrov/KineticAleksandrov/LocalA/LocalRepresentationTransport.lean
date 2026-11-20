@@ -10,40 +10,51 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter Parabolic
 open scoped Topology
 
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+include Z₀ χ
+
 /-- The multiplier on the literal time-position carrier. -/
-def localPositionMultiplier {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localPositionMultiplier
     (z : TimeVelocity d) : ℝ := χ (z.2 - Z₀.position - (z.1 - Z₀.time) • Z₀.velocity)
 
 /-- The free-transport defect is the cutoff differential applied to relative velocity. -/
-def localCutoffTransport {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localCutoffTransport
     (P : KineticPoint d) : ℝ :=
   fderiv ℝ χ (relativePosition Z₀ P) (P.velocity - Z₀.velocity)
 
+end
+
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ)
+include hχ
+
 /-- The time-position multiplier is globally smooth. -/
-theorem contDiff_localPositionMultiplier {d : ℕ} (Z₀ : KineticPoint d)
-    {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
+theorem contDiff_localPositionMultiplier :
     ContDiff ℝ (⊤ : ℕ∞) (localPositionMultiplier Z₀ χ) :=
   hχ.comp ((contDiff_snd.sub contDiff_const).sub
     ((contDiff_fst.sub contDiff_const).smul contDiff_const))
 
 /-- The cutoff transport defect is continuous on the full physical carrier. -/
-theorem continuous_localCutoffTransport {d : ℕ} (Z₀ : KineticPoint d)
-    {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
+theorem continuous_localCutoffTransport :
     Continuous (localCutoffTransport Z₀ χ) := by
-  have hrel : Continuous (relativePosition Z₀) :=
-    (continuous_position.sub continuous_const).sub
-      ((continuous_time.sub continuous_const).smul continuous_const)
+  have hrel := continuous_relativePosition Z₀
   exact ((hχ.continuous_fderiv (by simp)).comp hrel).clm_apply
     (continuous_velocity.sub continuous_const)
 
+end
+
+section
+variable {d : ℕ} (Z₀ P : KineticPoint d)
+
 /-- Outside the cutoff support there is no transport defect. -/
-theorem localCutoffTransport_zero {d : ℕ} (Z₀ P : KineticPoint d)
+theorem localCutoffTransport_zero
     (χ : PDE.Vec d → ℝ) (hx : relativePosition Z₀ P ∉ tsupport χ) :
     localCutoffTransport Z₀ χ P = 0 := by
   rw [localCutoffTransport, fderiv_of_notMem_tsupport ℝ hx, zero_apply]
 
 /-- The two coordinate transport terms equal the differential on relative velocity. -/
-theorem localPositionMultiplier_transport {d : ℕ} (Z₀ P : KineticPoint d)
+theorem localPositionMultiplier_transport
     {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
     scalarTimeDerivative (localPositionMultiplier Z₀ χ) (P.time, P.position) +
       PDE.vecDot P.velocity
@@ -79,6 +90,8 @@ theorem localPositionMultiplier_transport {d : ℕ} (Z₀ P : KineticPoint d)
   rw [← PDE.ContinuousLinearMap.apply_eq_vecDot_basisValues]
   simp only [localCutoffTransport, map_neg, map_sub]
   ring
+
+end
 
 /-- The exact local cutoff residual, at a point where the original solution is classical. -/
 theorem localCutoffSolution_operator {d : ℕ} (Z₀ : KineticPoint d)

@@ -62,7 +62,7 @@ theorem flat_source_eLpNorm_le_of_profile (d : ℕ) (alpha p : ℝ)
         (ENNReal.ofReal p) (volume.restrict {q | profileFunction hprofile q < 1}) ≤
           ENNReal.ofReal (C * Real.rpow r (alpha - 2 + 4 * (d : ℝ) / p)) := by
   obtain ⟨hlam, hlamLam, hc, hC, hAm, hA, hH, hzero, hhom, hcomp,
-    _, hgv, _, _, _, hgrad, _⟩ := selectedProfile_spec hprofile
+    _, hgv, _, _, _, hgrad, _, _, _, _, _, _⟩ := selectedProfile_spec hprofile
   have hp0 : 0 < p := zero_lt_one.trans_le hp
   obtain ⟨V, hV, hvol⟩ := shell_volume_bound (profileFunction hprofile) alpha
     (profileLowerComparison hprofile) ha hc hH (fun q => (hcomp q).1) hhom

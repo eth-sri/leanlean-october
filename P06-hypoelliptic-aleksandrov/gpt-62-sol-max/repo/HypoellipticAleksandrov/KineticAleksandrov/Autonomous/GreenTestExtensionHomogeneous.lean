@@ -14,8 +14,7 @@ open scoped Topology
 /-- The uniquely characterized actual exit measure represents every bounded homogeneous
 solution with the prescribed continuous future traces. -/
 theorem reconstruction_homogeneous_exit_representation
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (lower T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : lower < e.1.time) (u : Point → ℝ)
@@ -24,7 +23,7 @@ theorem reconstruction_homogeneous_exit_representation
     (hop : ∀ p ∈ reconstructionStrip H lower T, forwardScalarOperator A.a u p = 0)
     (hc : ContinuousOn u (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
     (hb : ∃ M : ℝ, 0 ≤ M ∧ ∀ p ∈ reconstructionClosedSlab H e.1.time T, |u p| ≤ M) :
-    u e.1 = ∫ p, u p ∂stripExitOfRealization hH hlam hLam A H E hE T e := by
+    u e.1 = ∫ p, u p ∂stripExitOfRealization A H E hE T e := by
   obtain ⟨M, hM, hb⟩ := hb
   let r (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
   have hr (n : ℕ) : 0 < r n := by dsimp only [r]; positivity
@@ -33,9 +32,9 @@ theorem reconstruction_homogeneous_exit_representation
     simp only [one_mul]
     linarith [Nat.cast_nonneg (α := ℝ) n]
   choose F hFb hclose herr using fun n : ℕ => reconstruction_homogeneous_probe_error
-    hH hlam hLam A H E hE lower T e he u hu hop hc M hM hb ((n : ℝ) + 1) (r n) (hr n)
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
-  have hΩ := stripExitOfRealization_ae_closed_future hH hlam hLam A H E hE T e
+    A H E hE lower T e he u hu hop hc M hM hb ((n : ℝ) + 1) (r n) (hr n)
+  let Ω := stripExitOfRealization A H E hE T e
+  have hΩ := stripExitOfRealization_ae_closed_future A H E hE T e
   have hlim : Tendsto (fun n => ∫ p, exitProbePhysical (F n) p ∂Ω) atTop (𝓝 (∫ p, u p ∂Ω)) := by
     apply tendsto_integral_of_dominated_convergence (fun _ => M + 1)
     · intro n

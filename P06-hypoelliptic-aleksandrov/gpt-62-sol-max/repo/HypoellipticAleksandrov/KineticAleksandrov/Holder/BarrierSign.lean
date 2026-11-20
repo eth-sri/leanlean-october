@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.GaussianBarrierOperator
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.BarrierSignAcceleration
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonGrowth
 
 /-! # The reviewed multiplied Gaussian barrier inequality, including zero amplitude -/
 
@@ -59,7 +60,7 @@ theorem gaussianBarrier_sign {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < 
   have hR : 0 ≤ R := gramian_inv_velocity_nonneg hlam hh hstrip
   have hLam0 : 0 ≤ Lam := (hlam.trans_le hLam).le
   have hquad := loewner_quadratic_lower hl pvec
-  have htrA := loewner_trace_upper hu
+  have htrA := _root_.HypoellipticAleksandrov.KineticAleksandrov.trace_le_of_le_smul_one hu
   have htrR := gramian_velocity_trace_le d hlam hh hs.1.le hs.2
   rw [Matrix.trace_smul, Matrix.trace_one] at htrR
   simp only [Fintype.card_fin, smul_eq_mul] at htrR

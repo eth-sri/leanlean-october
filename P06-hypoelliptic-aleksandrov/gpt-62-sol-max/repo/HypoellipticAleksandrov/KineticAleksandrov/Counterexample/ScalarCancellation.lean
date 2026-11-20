@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarTails
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarNegativeJets
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarMatching
 import Mathlib.Tactic
 
@@ -23,8 +23,7 @@ theorem scalar_power_remainder_deriv (f : ℝ → ℝ) (alpha c s : ℝ) (hs : 0
     (hf : DifferentiableAt ℝ f s) :
     deriv (fun t => f t - c * Real.rpow t alpha) s =
       deriv f s - c * alpha * Real.rpow s (alpha - 1) := by
-  have hp := (Real.hasDerivAt_rpow_const (p := alpha) (Or.inl hs.ne')).const_mul c
-  have hh := hf.hasDerivAt.sub hp
+  have hh := hf.hasDerivAt.sub ((Real.hasDerivAt_rpow_const (p := alpha) (Or.inl hs.ne')).const_mul c)
   simpa only [Real.rpow_eq_pow, Pi.sub_def, Pi.mul_def, Function.comp_def, mul_assoc]
     using hh.deriv
 
@@ -46,8 +45,12 @@ theorem scalar_power_cancellation (f : ℝ → ℝ) (gamma c s : ℝ) (hs : 0 < 
       ring
     _ = _ := by ring
 
+section
+variable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+include hLam
+
 /-- The actual joined profile's positive position-derivative tail has three lower degrees. -/
-theorem F_position_cancellation_atTop (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_position_cancellation_atTop :
     IsBigO atTop (fun s => gamma.1 * F gamma Lam s - s / 3 * deriv (F gamma Lam) s)
       (fun s => Real.rpow s (3 * gamma.1 - 3)) := by
   let c : ℝ := Real.rpow (9 * Lam) (-gamma.1)
@@ -75,7 +78,7 @@ theorem F_position_cancellation_atTop (gamma : ScalarGamma) (Lam : ℝ) (hLam : 
   ring
 
 /-- The actual joined profile has the corresponding cancellation on the negative ray. -/
-theorem F_position_cancellation_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem F_position_cancellation_atBot
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) :
     IsBigO atBot (fun s => gamma.1 * F gamma Lam s - s / 3 * deriv (F gamma Lam) s)
@@ -119,5 +122,7 @@ theorem F_position_cancellation_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 
   · exact Eventually.of_forall fun s => by simp only [Function.comp_def, neg_neg]
   · filter_upwards [eventually_lt_atBot (0 : ℝ)] with s hs
     simp only [Function.comp_def, abs_of_neg hs]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

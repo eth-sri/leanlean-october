@@ -76,37 +76,36 @@ theorem existsUnique_parabolicDyadicIndex_mem_halfOpenCell
   exact (Set.disjoint_left.mp (parabolicDyadicHalfOpenCell_disjoint_of_ne hne)
     hindex' hindex).elim
 
+section
+variable (d : Nat) (z : TimeVelocity d) (hz : z ∈ parabolicDyadicReferenceCell d) (n : Nat)
+include z hz n
+
 /-- The unique generation-`n` half-open dyadic index containing the supplied
 reference point. -/
-noncomputable def parabolicDyadicIndexContaining
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d) (n : Nat) :
+noncomputable def parabolicDyadicIndexContaining :
     ParabolicDyadicIndex d n :=
   Classical.choose
     (ExistsUnique.exists
       (existsUnique_parabolicDyadicIndex_mem_halfOpenCell (n := n) z hz))
 
 /-- The heterogeneous address obtained from the selected generation index. -/
-noncomputable def parabolicDyadicAddressContaining
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d) (n : Nat) :
+noncomputable def parabolicDyadicAddressContaining :
     ParabolicDyadicAddress d :=
   ⟨n, parabolicDyadicIndexContaining d z hz n⟩
 
 /-- The selected fixed-generation index contains the supplied reference point. -/
-theorem parabolicDyadicIndexContaining_mem_halfOpenCell
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d) (n : Nat) :
+theorem parabolicDyadicIndexContaining_mem_halfOpenCell :
     z ∈ parabolicDyadicHalfOpenCell
       (parabolicDyadicIndexContaining d z hz n) := by
-  exact Classical.choose_spec
-    (ExistsUnique.exists
-      (existsUnique_parabolicDyadicIndex_mem_halfOpenCell (n := n) z hz))
+  exact Classical.choose_spec (ExistsUnique.exists (existsUnique_parabolicDyadicIndex_mem_halfOpenCell z hz))
+
+end
+
+section
+variable (d : Nat) (z : TimeVelocity d) (hz : z ∈ parabolicDyadicReferenceCell d)
 
 /-- Selected dyadic addresses are prefix-compatible across generations. -/
 theorem parabolicDyadicAddressContaining_prefix
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d)
     {m n : Nat} (hmn : m ≤ n) :
     parabolicDyadicAddressPrefix
       (parabolicDyadicAddressContaining d z hz m)
@@ -118,16 +117,13 @@ theorem parabolicDyadicAddressContaining_prefix
         (parabolicDyadicIndexContaining d z hz n)⟩
       ⟨n, parabolicDyadicIndexContaining d z hz n⟩ :=
     ⟨hmn, rfl⟩
-  have htruncated : z ∈ parabolicDyadicHalfOpenCell
-      (parabolicDyadicTruncate hmn (parabolicDyadicIndexContaining d z hz n)) :=
+  have htruncated :=
     parabolicDyadicHalfOpenCell_subset_of_addressPrefix hprefix hselected
   exact ((existsUnique_parabolicDyadicIndex_mem_halfOpenCell (n := m) z hz).unique
     (parabolicDyadicIndexContaining_mem_halfOpenCell d z hz m) htruncated).symm
 
 /-- The supplied point belongs to every selected literal closed forward box. -/
-theorem parabolicDyadicAddressContaining_mem_closedForwardBox
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d) (n : Nat) :
+theorem parabolicDyadicAddressContaining_mem_closedForwardBox (n : Nat) :
     z ∈ parabolicClosedBox 1
       (parabolicDyadicSourceBox
         (parabolicDyadicIndexContaining d z hz n)).radius
@@ -139,9 +135,7 @@ theorem parabolicDyadicAddressContaining_mem_closedForwardBox
     (parabolicDyadicIndexContaining_mem_halfOpenCell d z hz n)
 
 /-- The radii of selected dyadic source boxes shrink at the exact dyadic rate. -/
-theorem tendsto_two_mul_parabolicDyadicIndexContaining_radius_atTop
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d) :
+theorem tendsto_two_mul_parabolicDyadicIndexContaining_radius_atTop :
     Filter.Tendsto
       (fun n : Nat =>
         2 * (parabolicDyadicSourceBox
@@ -152,5 +146,12 @@ theorem tendsto_two_mul_parabolicDyadicIndexContaining_radius_atTop
   exact tendsto_two_mul_parabolicDyadicSourceBox_radius_atTop
 
 end
+
+end
+
+/-- The forward box associated to the dyadic address of `z` at generation `n`. -/
+noncomputable abbrev parabolicDyadicSelectedBox {d : ℕ} (z : TimeVelocity d)
+    (hz : z ∈ parabolicDyadicReferenceCell d) (n : ℕ) : InkSpotsBox d :=
+  parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz n).2
 
 end HypoellipticAleksandrov.Parabolic

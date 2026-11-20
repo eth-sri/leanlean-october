@@ -39,7 +39,11 @@ private theorem measurableSet_parabolicDyadicRestrictedCell_iSup
   exact (le_iSup (fun k : ℕ => parabolicDyadicFiltration d k)
     ((d + 2) * n)) _ hatom
 
-private noncomputable def parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) :
+section
+variable (d : ℕ) (q : ℝ)
+include q
+
+private noncomputable def parabolicDyadicTimeLowerUnion :
     Set (ParabolicDyadicReferenceSpace d) := by
   classical
   exact ⋃ n : ℕ, ⋃ index : ParabolicDyadicIndex d n,
@@ -47,7 +51,7 @@ private noncomputable def parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) :
       parabolicDyadicRestrictedCell index
     else ∅
 
-private theorem measurableSet_parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) :
+private theorem measurableSet_parabolicDyadicTimeLowerUnion :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       (parabolicDyadicTimeLowerUnion d q) := by
   classical
@@ -64,7 +68,7 @@ private theorem measurableSet_parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) 
     (fun _ => measurableSet_parabolicDyadicRestrictedCell_iSup d n index)
     (fun _ => @MeasurableSet.empty _ M)
 
-private theorem parabolicDyadicTimeLowerUnion_eq_preimage_Iio (d : ℕ) (q : ℝ) :
+private theorem parabolicDyadicTimeLowerUnion_eq_preimage_Iio :
     parabolicDyadicTimeLowerUnion d q =
       {z : ParabolicDyadicReferenceSpace d | z.val.1 < q} := by
   classical
@@ -104,22 +108,26 @@ private theorem parabolicDyadicTimeLowerUnion_eq_preimage_Iio (d : ℕ) (q : ℝ
     rw [if_pos hcell]
     exact hzindex'
 
-private theorem measurableSet_time_preimage_Iio_iSup (d : ℕ) (q : ℝ) :
+private theorem measurableSet_time_preimage_Iio_iSup :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       {z : ParabolicDyadicReferenceSpace d | z.val.1 < q} := by
   rw [← parabolicDyadicTimeLowerUnion_eq_preimage_Iio]
   exact measurableSet_parabolicDyadicTimeLowerUnion d q
 
-private noncomputable def parabolicDyadicVelocityLowerUnion (d : ℕ)
-    (coordinate : Fin d) (q : ℝ) : Set (ParabolicDyadicReferenceSpace d) := by
+end
+
+section
+variable (d : ℕ) (coordinate : Fin d) (q : ℝ)
+include coordinate q
+
+private noncomputable def parabolicDyadicVelocityLowerUnion : Set (ParabolicDyadicReferenceSpace d) := by
   classical
   exact ⋃ n : ℕ, ⋃ index : ParabolicDyadicIndex d n,
     if ∀ z ∈ parabolicDyadicRestrictedCell index, z.val.2 coordinate < q then
       parabolicDyadicRestrictedCell index
     else ∅
 
-private theorem measurableSet_parabolicDyadicVelocityLowerUnion (d : ℕ)
-    (coordinate : Fin d) (q : ℝ) :
+private theorem measurableSet_parabolicDyadicVelocityLowerUnion :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       (parabolicDyadicVelocityLowerUnion d coordinate q) := by
   classical
@@ -136,8 +144,7 @@ private theorem measurableSet_parabolicDyadicVelocityLowerUnion (d : ℕ)
     (fun _ => measurableSet_parabolicDyadicRestrictedCell_iSup d n index)
     (fun _ => @MeasurableSet.empty _ M)
 
-private theorem parabolicDyadicVelocityLowerUnion_eq_preimage_Iio (d : ℕ)
-    (coordinate : Fin d) (q : ℝ) :
+private theorem parabolicDyadicVelocityLowerUnion_eq_preimage_Iio :
     parabolicDyadicVelocityLowerUnion d coordinate q =
       {z : ParabolicDyadicReferenceSpace d | z.val.2 coordinate < q} := by
   classical
@@ -180,12 +187,13 @@ private theorem parabolicDyadicVelocityLowerUnion_eq_preimage_Iio (d : ℕ)
     rw [if_pos hcell]
     exact hzindex'
 
-private theorem measurableSet_velocity_preimage_Iio_iSup (d : ℕ)
-    (coordinate : Fin d) (q : ℝ) :
+private theorem measurableSet_velocity_preimage_Iio_iSup :
     MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
       {z : ParabolicDyadicReferenceSpace d | z.val.2 coordinate < q} := by
   rw [← parabolicDyadicVelocityLowerUnion_eq_preimage_Iio]
   exact measurableSet_parabolicDyadicVelocityLowerUnion d coordinate q
+
+end
 
 /-- The scheduled finite parabolic dyadic filtration generates exactly the
 ambient subtype measurable space of the half-open reference cell. -/

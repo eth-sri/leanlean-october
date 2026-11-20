@@ -35,8 +35,8 @@ theorem construction_smoothed_operator_eq {d : ℕ} (hd : 1 ≤ d)
   have hdt : kineticTimeDerivative (smoothedZeroExtendedProfile h r mu R phi) P =
       spatialMollify phi (constructionExtendedTimeJet h r mu R P.time)
         (P.position, P.velocity) :=
-    construction_mollified_time_jet ha h r mu R hr hmu hR
-      (fun y hy => (hmargin y hy).trans_lt hm) phi P.time (P.position, P.velocity)
+    (spatial_zeroExtendedProfile_regular_of_profile ha h r mu R hr hmu hR
+      (fun y hy => (hmargin y hy).trans_lt hm) phi).2 P.time (P.position, P.velocity)
   have hx : kineticPositionGradient (smoothedZeroExtendedProfile h r mu R phi) P =
       fun i => spatialMollify phi (fun y =>
         constructionExtendedNativeGradient h r mu R m P.time y (Fin.castAdd d i))

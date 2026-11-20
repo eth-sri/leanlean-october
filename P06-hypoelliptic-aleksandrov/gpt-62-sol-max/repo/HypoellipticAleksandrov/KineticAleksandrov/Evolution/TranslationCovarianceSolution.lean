@@ -28,35 +28,41 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 
 variable {n : ℕ}
 
+section
+variable (h : PDE.Vec n)
+include h
+
 /-- Shift the transported coordinate of a kinetic point by `h`. -/
-def kineticVelocityShift (h : PDE.Vec n) (p : KineticPoint n) : KineticPoint n :=
+def kineticVelocityShift (p : KineticPoint n) : KineticPoint n :=
   ⟨p.time, p.position, p.velocity + h⟩
 
 /-- The velocity shift of kinetic points is continuous. -/
-theorem continuous_kineticVelocityShift (h : PDE.Vec n) :
+theorem continuous_kineticVelocityShift :
     Continuous (kineticVelocityShift h) :=
   KineticPoint.continuous_mk continuous_time continuous_position
     (continuous_velocity.add continuous_const)
 
 /-- The shift of the transported coordinate of an ambient state is Borel. -/
-theorem measurable_ambientShift (h : PDE.Vec n) :
+theorem measurable_ambientShift :
     Measurable (evolutionAmbientStateShift h) :=
   measurable_fst.prodMk (measurable_snd.add_const h)
 
 /-- The shift of the transported coordinate of an ambient state, as a homeomorphism. -/
-def ambientShiftHomeomorph (h : PDE.Vec n) :
+def ambientShiftHomeomorph :
     EvolutionAmbientState n ≃ₜ EvolutionAmbientState n :=
   (Homeomorph.refl (PDE.Vec n)).prodCongr (Homeomorph.addRight h)
 
 /-- The terminal datum `F ∘ (z ↦ z + h)`. -/
-def terminalDatumShift (h : PDE.Vec n) (F : BoundedBorel (EvolutionAmbientState n)) :
+def terminalDatumShift (F : BoundedBorel (EvolutionAmbientState n)) :
     BoundedBorel (EvolutionAmbientState n) :=
   F.pullback (evolutionAmbientStateShift h) (measurable_ambientShift h)
 
-@[simp] theorem terminalDatumShift_apply (h : PDE.Vec n)
+@[simp] theorem terminalDatumShift_apply
     (F : BoundedBorel (EvolutionAmbientState n)) (x : EvolutionAmbientState n) :
     terminalDatumShift h F x = F (evolutionAmbientStateShift h x) :=
   rfl
+
+end
 
 /-- The transported-coordinate shift preserves smooth compactly supported terminal data. -/
 theorem IsSmoothCompactTerminalDatum.shift {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {τ : ℝ}

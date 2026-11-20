@@ -26,19 +26,20 @@ namespace KineticAffineScaling
 variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : Set (PDE.Vec d)}
   {γ γ' : ℝ → PDE.Vec d}
 
+section
+variable (h : Φ.MapsDomain Ω γ Ω' γ') (hΩ : IsAdmissibleEvolutionDomain Ω)
+  (hγ : IsContinuousPiecewiseC1 γ) (hΩ' : IsAdmissibleEvolutionDomain Ω')
+  {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d} {S : TerminalOperatorFamily Ω γ}
+  {K : MovingFiberKernel Ω γ}
+  (hreal : SectionTwo.RealizesTerminalEvolution Ω γ (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S K)
+  {S' : TerminalOperatorFamily Ω' γ'} {K' : MovingFiberKernel Ω' γ'}
+  (hreal' : SectionTwo.RealizesTerminalEvolution Ω' γ' (measurableSet_of_isAdmissibleEvolutionDomain hΩ') (Φ.coefficient B) (Φ.drift b) S' K')
+include hΩ hγ hΩ' B b S hreal S' hreal'
+
 /-- **Kernel transport.**  If `(S, K)` realizes the terminal evolution for `(Ω, γ, B, b)`
 and `(S', K')` realizes it for the rescaled data `(Ω', γ', Φ.coefficient B, Φ.drift b)`, then
 `K'` is the pushforward of `K` and `S'` is integration against it. -/
-theorem realizes_unique_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
-    (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
-    (hΩ' : IsAdmissibleEvolutionDomain Ω')
-    {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
-    (hreal : SectionTwo.RealizesTerminalEvolution Ω γ
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S K)
-    {S' : TerminalOperatorFamily Ω' γ'} {K' : MovingFiberKernel Ω' γ'}
-    (hreal' : SectionTwo.RealizesTerminalEvolution Ω' γ'
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ') (Φ.coefficient B) (Φ.drift b) S' K') :
+theorem realizes_unique_pushKernel :
     K' = pushKernel h K ∧
       S' = fiberOperator (pushKernel h K) (measurableSet_of_isAdmissibleEvolutionDomain hΩ') := by
   have hpush := realizes_pushKernel h (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1
@@ -49,20 +50,13 @@ theorem realizes_unique_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
 
 /-- The master kernel of any realization of the rescaled problem, in the pushforward form
 `K̂'.master q' = (K.master (Φ q')).map (Φ_{τ'})⁻¹`. -/
-theorem realizes_master_eq_map (h : Φ.MapsDomain Ω γ Ω' γ')
-    (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
-    (hΩ' : IsAdmissibleEvolutionDomain Ω')
-    {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
-    (hreal : SectionTwo.RealizesTerminalEvolution Ω γ
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S K)
-    {S' : TerminalOperatorFamily Ω' γ'} {K' : MovingFiberKernel Ω' γ'}
-    (hreal' : SectionTwo.RealizesTerminalEvolution Ω' γ'
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ') (Φ.coefficient B) (Φ.drift b) S' K')
+theorem realizes_master_eq_map
     (q : EvolutionQuery Ω' γ') :
     K'.master q = (K.master (queryMap h q)).map (Φ.ambientEquiv q.1.2.1).symm := by
   rw [(realizes_unique_pushKernel h hΩ hγ hΩ' hreal hreal').1]
   exact pushKernel_master_apply h K q
+
+end
 
 end KineticAffineScaling
 

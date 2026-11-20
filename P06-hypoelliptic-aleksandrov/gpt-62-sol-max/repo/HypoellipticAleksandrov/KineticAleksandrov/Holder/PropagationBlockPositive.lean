@@ -19,8 +19,11 @@ theorem Xi_nonneg (d : ℕ) {lam Lam H h : ℝ} (hlam : 0 < lam) (hLam : lam ≤
   unfold Xi
   positivity
 
+section
+variable {d : ℕ}
+
 /-- Positivity of the whole-carrier barrier forces the definite strip and the source q bound. -/
-theorem gaussianBarrier_pos_quadratic {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
+theorem gaussianBarrier_pos_quadratic {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (Lam H L ell tminus sblock : ℝ) (hLam : lam ≤ Lam) (hell : 0 ≤ ell)
     (hbudget : Xi d lam Lam H h * h ≤ L ^ 2 / 4)
     (x v : ℝ → PDE.Vec d) (P : KineticPoint d)
@@ -52,7 +55,7 @@ theorem gaussianBarrier_pos_quadratic {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (
     linarith only [hexp, hm, hbudget]
 
 /-- The covariance upper bound turns the source q bound into both scaled Euclidean bounds. -/
-theorem qform_scaled_norm_bounds {d : ℕ} {lam h sigma L : ℝ}
+theorem qform_scaled_norm_bounds {lam h sigma L : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (hL : 0 ≤ L) (hs : -(h / 128) ≤ sigma)
     (ht : |sigma / h| ≤ 1) (y V : PDE.Vec d)
     (hq : qform lam h sigma y V ≤ (513 / 512 : ℝ) * L ^ 2) :
@@ -78,15 +81,14 @@ theorem qform_scaled_norm_bounds {d : ℕ} {lam h sigma L : ℝ}
     linarith only [hupper, PDE.vecNormSq_nonneg Y]
 
 /-- Undoing a positive scalar scaling preserves the native Euclidean radius bound exactly. -/
-theorem vecEuclideanNorm_le_of_scaled {d : ℕ} {a C : ℝ} (ha : 0 < a)
+theorem vecEuclideanNorm_le_of_scaled {a C : ℝ} (ha : 0 < a)
     (y : PDE.Vec d) (h : PDE.vecEuclideanNorm (a⁻¹ • y) ≤ C) :
     PDE.vecEuclideanNorm y ≤ C * a := by
   rw [PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.mpr ha)] at h
-  have hm := mul_le_mul_of_nonneg_left h ha.le
-  simpa only [← mul_assoc, mul_inv_cancel₀ ha.ne', one_mul, mul_comm a C] using hm
+  simpa only [← mul_assoc, mul_inv_cancel₀ ha.ne', one_mul, mul_comm a C] using (mul_le_mul_of_nonneg_left h ha.le)
 
 /-- Both native Euclidean coordinates obey the exact source positivity-set radii. -/
-theorem gaussianBarrier_positive_set {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
+theorem gaussianBarrier_positive_set {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (Lam H L ell tminus sblock : ℝ) (hLam : lam ≤ Lam) (hell : 0 ≤ ell) (hL : 0 ≤ L)
     (hbudget : Xi d lam Lam H h * h ≤ L ^ 2 / 4)
     (x v : ℝ → PDE.Vec d) (P : KineticPoint d)
@@ -111,5 +113,7 @@ theorem gaussianBarrier_positive_set {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (h
   · have he := vecEuclideanNorm_le_of_scaled (Real.rpow_pos_of_pos hh _)
       (P.velocity - v (P.time - tminus)) hV
     rwa [← Real.sqrt_eq_rpow] at he
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

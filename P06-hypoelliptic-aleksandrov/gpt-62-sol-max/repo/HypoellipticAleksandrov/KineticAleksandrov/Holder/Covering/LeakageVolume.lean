@@ -20,8 +20,12 @@ theorem isOpen_roundBox (d : ℕ) (a b R : ℝ) : IsOpen (roundBox d a b R) :=
       (((PDE.isOpen_euclideanBall 0 R).preimage continuous_position).inter
         ((PDE.isOpen_euclideanBall 0 1).preimage continuous_velocity)))
 
+section
+variable (d : ℕ) (a b : ℝ) {R : ℝ} (hR : 0 < R)
+include hR
+
 /-- Exact volume of a product box in the coordinate measure. -/
-theorem volume_roundBox (d : ℕ) (a b : ℝ) {R : ℝ} (hR : 0 < R) :
+theorem volume_roundBox :
     volume (roundBox d a b R) = ENNReal.ofReal (b-a)*ENNReal.ofReal (R^d)*
       volume (unitCylinder d) := by
   let s := Ioo a b ×ˢ (PDE.euclideanBall (0 : PDE.Vec d) R ×ˢ
@@ -45,11 +49,13 @@ theorem volume_roundBox (d : ℕ) (a b : ℝ) {R : ℝ} (hR : 0 < R) :
   ring
 
 /-- Finite volume of every positive-radius product box. -/
-theorem volume_roundBox_ne_top (d : ℕ) (a b : ℝ) {R : ℝ} (hR : 0 < R) :
+theorem volume_roundBox_ne_top :
     volume (roundBox d a b R) ≠ ⊤ := by
   rw [volume_roundBox d a b hR]
   exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)
     (volume_cylinder_pos_ne_top _ zero_lt_one).2
+
+end
 
 /-- Real volume formula for a nonempty round product box. -/
 theorem volume_roundBox_toReal (d : ℕ) {a b R : ℝ} (hab : a ≤ b) (hR : 0 < R) :
@@ -91,7 +97,6 @@ theorem one_sub_pow_lower (d : ℕ) {z : ℝ} (_hz : 0 ≤ z) (hz1 : z ≤ 1) :
   | succ d ih =>
     rw [pow_succ]
     push_cast
-    have hm := mul_le_mul_of_nonneg_right ih (sub_nonneg.mpr hz1)
     have hd : 0 ≤ (d : ℝ) := Nat.cast_nonneg d
     nlinarith [mul_nonneg hd (sq_nonneg z)]
 
@@ -108,8 +113,12 @@ theorem volume_sdiff_toReal_of_subset {d : ℕ} {A B : Set (KineticPoint d)}
 /-- The spatial core whose complement is charged in the critical-cylinder proof. -/
 def spatialCore (d : ℕ) (R : ℝ) : Set (KineticPoint d) := roundBox d (-1) 0 (1-2*R^2)
 
+section
+variable (d : ℕ) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1/4)
+include hR hRsmall
+
 /-- The spatial core is contained in the unit cylinder for small positive cutoff. -/
-theorem spatialCore_subset_unit (d : ℕ) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1/4) :
+theorem spatialCore_subset_unit :
     spatialCore d R ⊆ unitCylinder d := by
   have hrad : 0 < 1-2*R^2 := by nlinarith
   intro X hX
@@ -122,7 +131,7 @@ theorem spatialCore_subset_unit (d : ℕ) {R : ℝ} (hR : 0 < R) (hRsmall : R �
     nlinarith [sq_nonneg R]
 
 /-- The excluded spatial layer costs at most twice dimension times unit volume times R². -/
-theorem spatial_shell_volume (d : ℕ) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1/4) :
+theorem spatial_shell_volume :
     (volume (unitCylinder d \ spatialCore d R)).toReal ≤
       2*(d : ℝ)*(volume (unitCylinder d)).toReal*R^2 := by
   have hrad : 0 < 1-2*R^2 := by nlinarith
@@ -137,8 +146,14 @@ theorem spatial_shell_volume (d : ℕ) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1
   have hv := ENNReal.toReal_nonneg (a := volume (unitCylinder d))
   nlinarith only [mul_le_mul_of_nonneg_right hp hv]
 
+end
+
+section
+variable (d : ℕ) {h : ℝ} (h0 : 0 < h)
+include h0
+
 /-- Q is contained in the positive-height leakage envelope. -/
-theorem unit_subset_leakage_envelope (d : ℕ) {h : ℝ} (h0 : 0 < h) :
+theorem unit_subset_leakage_envelope :
     unitCylinder d ⊆ roundBox d (-1) h (1+4*h) := by
   intro X hX
   obtain ⟨htlo, hthi, hv, hx⟩ := (mem_unitCylinder_iff X).mp hX
@@ -149,7 +164,7 @@ theorem unit_subset_leakage_envelope (d : ℕ) {h : ℝ} (h0 : 0 < h) :
     exact hv
 
 /-- Linear volume bound for the portion of the leakage envelope outside Q. -/
-theorem leakage_shell_volume (d : ℕ) {h : ℝ} (h0 : 0 < h) (h1 : h ≤ 1) :
+theorem leakage_shell_volume (h1 : h ≤ 1) :
     (volume (roundBox d (-1) h (1+4*h) \ unitCylinder d)).toReal ≤
       2*(5 : ℝ)^d*(volume (unitCylinder d)).toReal*h := by
   have hQ : NullMeasurableSet (unitCylinder d) volume :=
@@ -159,5 +174,7 @@ theorem leakage_shell_volume (d : ℕ) {h : ℝ} (h0 : 0 < h) (h1 : h ≤ 1) :
     (volume_roundBox_ne_top d (-1) h (by positivity))]
   have hb := leakage_envelope_volume (d := d) h0 h1
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

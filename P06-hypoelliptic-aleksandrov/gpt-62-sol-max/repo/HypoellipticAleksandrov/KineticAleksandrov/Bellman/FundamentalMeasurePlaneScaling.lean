@@ -32,8 +32,12 @@ theorem map_bellmanPuncturedVolume_coe :
       simpa only [Set.mem_ofPred_eq, not_not, Set.ofPred_eq_eq_singleton] using
         (measure_singleton (μ := (volume : Measure (ℝ × ℝ))) (0, 0))
 
+section
+variable (r : ℝ) (hr : 0 < r)
+include hr
+
 /-- The ambient dilation has determinant r to the fourth power. -/
-theorem map_bellmanPlaneDilation_volume (r : ℝ) (hr : 0 < r) :
+theorem map_bellmanPlaneDilation_volume :
     Measure.map (bellmanPlaneDilation r) (volume : Measure (ℝ × ℝ)) =
       ENNReal.ofReal (r⁻¹ ^ 4) • volume := by
   rw [Measure.volume_eq_prod]
@@ -48,14 +52,14 @@ theorem map_bellmanPlaneDilation_volume (r : ℝ) (hr : 0 < r) :
   ring
 
 /-- Positive kinetic dilation of the punctured plane is measurable. -/
-theorem measurable_bellmanDilation (r : ℝ) (hr : 0 < r) :
+theorem measurable_bellmanDilation :
     Measurable (bellmanDilation r hr) := by
   apply Continuous.measurable
   unfold bellmanDilation
   fun_prop
 
 /-- Punctured-plane volume has the same determinant scaling as ambient volume. -/
-theorem map_bellmanPuncturedVolume_dilation (r : ℝ) (hr : 0 < r) :
+theorem map_bellmanPuncturedVolume_dilation :
     Measure.map (bellmanDilation r hr) bellmanPuncturedVolume =
       ENNReal.ofReal (r⁻¹ ^ 4) • bellmanPuncturedVolume := by
   have he : MeasurableEmbedding (Subtype.val : BellmanPuncturedPlane → ℝ × ℝ) :=
@@ -67,5 +71,7 @@ theorem map_bellmanPuncturedVolume_dilation (r : ℝ) (hr : 0 < r) :
   rw [← Measure.map_map (by unfold bellmanPlaneDilation; fun_prop) he.measurable,
     map_bellmanPuncturedVolume_coe, map_bellmanPlaneDilation_volume r hr,
     Measure.map_smul _ he.measurable.aemeasurable, map_bellmanPuncturedVolume_coe]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

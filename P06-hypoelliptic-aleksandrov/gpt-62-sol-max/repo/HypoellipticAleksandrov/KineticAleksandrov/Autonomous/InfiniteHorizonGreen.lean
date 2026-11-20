@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoundedSourceLimitsInfinite
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeOneSign
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitCone
 
 /-! # The exact infinite-horizon Green supremum and inherited quadratic bound -/
 
@@ -14,24 +14,21 @@ open Set MeasureTheory HypoellipticAleksandrov
 def stripPoleFinite (H : Interval) (e : StripPole H ⊤) (T : ℝ) (hT : e.1.time < T) :
     StripPole H (T : WithTop ℝ) := ⟨e.1, WithTop.coe_lt_coe.mpr hT, e.2.2⟩
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+
 /-- Every finite terminal Green measure is the physical-time restriction of the infinite one. -/
 theorem stripGreen_finite_restrict_infinite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
     (T : ℝ) (hT : e.1.time < T) :
-    stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T hT) =
-      (stripGreen hH hLE hlam hLam A H ⊤ e).restrict {p | p.time < T} :=
+    stripGreen A H T (stripPoleFinite H e T hT) =
+      (stripGreen A H ⊤ e).restrict {p | p.time < T} :=
   stripGreenOfKernel_horizonRestriction H _ T (stripPoleFinite H e T hT)
 
 /-- The actual infinite Green measure is the supremum over all later finite terminal times. -/
-theorem stripGreen_infinite_eq_iSup
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) :
-    stripGreen hH hLE hlam hLam A H ⊤ e =
+theorem stripGreen_infinite_eq_iSup :
+    stripGreen A H ⊤ e =
       ⨆ (T : ℝ) (hT : e.1.time < T),
-        stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T hT) := by
+        stripGreen A H T (stripPoleFinite H e T hT) := by
   apply le_antisymm
   · apply Measure.le_iff.mpr
     intro B hB
@@ -62,21 +59,23 @@ theorem stripGreen_infinite_eq_iSup
     conv_lhs => rw [← hun, hm.measure_iUnion]
     apply iSup_le
     intro n
-    have hr := stripGreen_finite_restrict_infinite hH hLE hlam hLam A H e (t n) (ht n)
+    have hr := stripGreen_finite_restrict_infinite A H e (t n) (ht n)
     have heq := congrArg (fun μ : Measure Point => μ B) hr
     rw [Measure.restrict_apply hB] at heq
     rw [← heq]
-    have hle : stripGreen hH hLE hlam hLam A H (t n)
+    have hle : stripGreen A H (t n)
         (stripPoleFinite H e (t n) (ht n)) ≤
           ⨆ (T : ℝ) (hT : e.1.time < T),
-            stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T hT) :=
+            stripGreen A H T (stripPoleFinite H e T hT) :=
       le_iSup_of_le (t n) (le_iSup_of_le (ht n) le_rfl)
     exact Measure.le_iff.mp hle B hB
   · apply iSup_le
     intro T
     apply iSup_le
     intro hT
-    rw [stripGreen_finite_restrict_infinite hH hLE hlam hLam A H e T hT]
+    rw [stripGreen_finite_restrict_infinite A H e T hT]
     exact Measure.restrict_le_self
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

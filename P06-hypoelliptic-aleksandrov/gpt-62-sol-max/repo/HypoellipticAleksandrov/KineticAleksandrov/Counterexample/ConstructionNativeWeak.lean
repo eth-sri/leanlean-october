@@ -9,9 +9,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 
+section
+variable {d : ℕ}
+
 /-- A packed weak directional derivative transfers back to the native spatial carrier.
 The measure-preserving chart introduces no Jacobian factor. -/
-theorem construction_weak_directional_native {d : ℕ}
+theorem construction_weak_directional_native
     (u g : PDE.Vec (d + d) → ℝ) (z : PDE.Vec (d + d))
     (hweak : ∀ test : PDE.Vec (d + d) → ℝ, ContDiff ℝ (⊤ : ℕ∞) test →
       HasCompactSupport test →
@@ -44,7 +47,7 @@ theorem construction_weak_directional_native {d : ℕ}
   exact hLn.symm.trans ((hweak psi hp hc).trans (congrArg Neg.neg hRn))
 
 /-- Local integrability transfers to the native carrier through the same chart. -/
-theorem construction_locallyIntegrable_native {d : ℕ} (f : PDE.Vec (d + d) → ℝ)
+theorem construction_locallyIntegrable_native (f : PDE.Vec (d + d) → ℝ)
     (hf : LocallyIntegrable f volume) :
     LocallyIntegrable (fun q => f ((spatialCoordinateCLE d).symm q)) volume := by
   apply locallyIntegrable_iff.mpr
@@ -59,9 +62,11 @@ theorem construction_locallyIntegrable_native {d : ℕ} (f : PDE.Vec (d + d) →
   simpa only [Function.comp_def, e] using! he
 
 /-- Almost-everywhere statements transfer to the native carrier without exceptional mass. -/
-theorem construction_ae_native {d : ℕ} (prop : PDE.Vec (d + d) → Prop)
+theorem construction_ae_native (prop : PDE.Vec (d + d) → Prop)
     (hp : ∀ᵐ x ∂volume, prop x) :
     ∀ᵐ q ∂volume, prop ((spatialCoordinateCLE d).symm q) :=
   (measurePreserving_spatialCoordinate d).symm.quasiMeasurePreserving.ae hp
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

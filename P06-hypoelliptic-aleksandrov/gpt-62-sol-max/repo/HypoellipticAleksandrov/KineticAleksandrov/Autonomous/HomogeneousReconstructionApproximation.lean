@@ -14,9 +14,12 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo Evolution
 open scoped CompactlySupported Topology
 
+section
+variable {V : Set (ℝ × PDE.Vec 1 × PDE.Vec 1)} (hV : IsOpen V)
+include hV
+
 /-- Multiplying a locally continuous source by an interior compact cutoff is continuous. -/
 theorem reconstruction_cutoff_mul_continuous
-    {V : Set (ℝ × PDE.Vec 1 × PDE.Vec 1)} (hV : IsOpen V)
     {g χ : (ℝ × PDE.Vec 1 × PDE.Vec 1) → ℝ}
     (hg : ContinuousOn g V) (hχ : Continuous χ) (hs : tsupport χ ⊆ V) :
     Continuous (fun x => χ x * g x) := by
@@ -36,7 +39,6 @@ theorem reconstruction_cutoff_mul_continuous
 
 /-- A continuous compact interior function admits a smooth compact interior approximation. -/
 theorem reconstruction_smooth_compact_close
-    {V : Set (ℝ × PDE.Vec 1 × PDE.Vec 1)} (hV : IsOpen V)
     (g : (ℝ × PDE.Vec 1 × PDE.Vec 1) → ℝ) (hg : Continuous g)
     (hc : HasCompactSupport g) (hs : tsupport g ⊆ V)
     {ε : ℝ} (hε : 0 < ε) :
@@ -57,22 +59,28 @@ theorem reconstruction_smooth_compact_close
   rw [heq, abs_mul, abs_of_nonneg (hb x).1]
   exact (mul_le_of_le_one_left (abs_nonneg _) (hb x).2).trans (hclose x)
 
+end
+
+section
+variable (H : Interval) (a T δ R : ℝ)
+include H a T δ R
+
 /-- Closed scalar truncation, embedded in native product coordinates. -/
-def reconstructionTrim (H : Interval) (a T δ R : ℝ) :
+def reconstructionTrim :
     Set (ℝ × PDE.Vec 1 × PDE.Vec 1) :=
   (fun q : ℝ × ℝ × ℝ => (q.1, (fun _ : Fin 1 => q.2.1),
     (fun _ : Fin 1 => q.2.2))) ''
       (Icc a (T - δ) ×ˢ (Icc (H.lo + δ) (H.hi - δ) ×ˢ Icc (-R) R))
 
 /-- The trimmed coordinate box is compact. -/
-theorem isCompact_reconstructionTrim (H : Interval) (a T δ R : ℝ) :
+theorem isCompact_reconstructionTrim :
     IsCompact (reconstructionTrim H a T δ R) :=
   (isCompact_Icc.prod (isCompact_Icc.prod isCompact_Icc)).image
     (continuous_fst.prodMk ((continuous_pi fun _ => continuous_snd.fst).prodMk
       (continuous_pi fun _ => continuous_snd.snd)))
 
 /-- Membership in the trimmed box is exactly its scalar coordinate inequalities. -/
-theorem mem_reconstructionTrim (H : Interval) (a T δ R : ℝ)
+theorem mem_reconstructionTrim
     (x : ℝ × PDE.Vec 1 × PDE.Vec 1) :
     x ∈ reconstructionTrim H a T δ R ↔
       a ≤ x.1 ∧ x.1 ≤ T - δ ∧ H.lo + δ ≤ x.2.1 0 ∧
@@ -84,6 +92,8 @@ theorem mem_reconstructionTrim (H : Interval) (a T δ R : ℝ)
     refine ⟨(x.1, x.2.1 0, x.2.2 0), ⟨⟨htl, htu⟩, ⟨hvl, hvu⟩, abs_le.mp hx⟩, ?_⟩
     change (x.1, (fun _ : Fin 1 => x.2.1 0), (fun _ : Fin 1 => x.2.2 0)) = x
     refine Prod.ext rfl (Prod.ext ?_ ?_) <;> (funext i; fin_cases i; rfl)
+
+end
 
 /-- Interior source domain in native product coordinates. -/
 def reconstructionSourceDomain (H : Interval) (sMinus T : ℝ) :

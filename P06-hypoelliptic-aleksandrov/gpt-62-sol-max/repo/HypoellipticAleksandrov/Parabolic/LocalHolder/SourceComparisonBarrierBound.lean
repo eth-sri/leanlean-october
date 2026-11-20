@@ -19,37 +19,38 @@ open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
 theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
     {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (lam : ℝ) (hlam : 0 < lam)
-    (A : CoefficientField d) (hA : IsSmoothCoefficient A)
+    (A : CoefficientField d)
+    (b : ℝ → PDE.Vec d → PDE.Vec d)
+    (hb : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2))
+    (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticity lam A) (F G : TimeVelocity d → ℝ)
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (hG : ContDiff ℝ (⊤ : ℕ∞) G)
     (q : PDE.H10Function Ω) (hq : ContDiff ℝ 2 q.toH1Function.toFun)
     (hqn : ∀ y ∈ Ω, 0 ≤ q.toH1Function.toFun y)
     (heq : ∀ z ∈ Icc a T ×ˢ Ω,
-      scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
+      scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
         (fun z => q.toH1Function.toFun z.2) z = G z)
     (hGF : ∀ z ∈ scalarParabolicClosedCylinder a T Ω, G z ≤ -|F z|)
     (u : ReverseTimeL2V hΩ (T - a)) (g : ReverseTimeL2VStar hΩ (T - a))
     (hdu : HasGelfandWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) u g)
     (hu : IsReverseTimeVariationalEnergySolution a T haT hΩ hΩb A
-      (fun _ _ => 0) (fun _ _ => 0) (fun t y => F (t, y))
-      ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩ 0 u g hdu) :
+      b (fun _ _ => 0) (fun t y => F (t, y))
+      hF.onNeighborhood 0 u g hdu) :
     ∀ τ : ℝ, ∀ hτ : τ ∈ Icc 0 (T - a), ∀ᵐ y ∂PDE.volumeOn Ω,
       |reverseTimeHilbertRepresentative hΩ (T - a) (sub_pos.mpr haT)
         u g hdu ⟨τ, hτ⟩ y| ≤ q.toH1Function.toFun y := by
   let Q := h10HilbertGraphOfH10Function hΩ q
-  let hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hA.contDiffOn⟩
-  let hbs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : PDE.Vec d))
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+  let hAs : IsSmoothOnClosedCylinder a T Ω A :=
+    hA.onNeighborhood
+  let hbs : IsSmoothOnClosedCylinder a T Ω b :=
+    hb.onNeighborhood
   let hcs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : ℝ))
       (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+    (ContDiff.onNeighborhood contDiff_const)
   let hFs : IsSmoothOnNeighborhood F (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩
+    hF.onNeighborhood
   let hGs : IsSmoothOnNeighborhood G (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hG.contDiffOn⟩
+    hG.onNeighborhood
   have hinit : ∀ᵐ y ∂PDE.volumeOn Ω,
       (0 : PDE.ScalarLp Ω 2) y ≤ valueCLM hΩ Q y := by
     filter_upwards [Lp.coeFn_zero ℝ 2 (PDE.volumeOn Ω),
@@ -58,9 +59,9 @@ theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
     rw [hy, hqy]
     exact hqn y hyo
   have hqenergy := stationarySourceCurve_isVariationalEnergySolution
-    hΩ hΩb a T haT A hA G hG q hq heq
+    hΩ hΩb a T haT A b hb hA G hG q hq heq
   have hupper := reverseTimeVariationalEnergySolution_le a T lam haT hlam hΩ hΩb
-    A (fun _ _ => 0) (fun _ _ => 0) (fun t y => F (t, y)) (fun t y => G (t, y))
+    A b (fun _ _ => 0) (fun t y => F (t, y)) (fun t y => G (t, y))
     hAs hbs hcs hFs hGs (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl)
     (fun z hz => (hGF z hz).trans (neg_abs_le (F z)))
     0 (valueCLM hΩ Q) hinit u g hdu hu
@@ -70,7 +71,7 @@ theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
       (-(0 : PDE.ScalarLp Ω 2)) y ≤ valueCLM hΩ Q y := by
     simpa only [neg_zero] using hinit
   have hneg := reverseTimeVariationalEnergySolution_le a T lam haT hlam hΩ hΩb
-    A (fun _ _ => 0) (fun _ _ => 0) (fun t y => -F (t, y)) (fun t y => G (t, y))
+    A b (fun _ _ => 0) (fun t y => -F (t, y)) (fun t y => G (t, y))
     hAs hbs hcs (IsSmoothOnNeighborhood.neg hFs) hGs
     (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl)
     (fun z hz => (hGF z hz).trans (neg_le_neg (le_abs_self (F z))))

@@ -40,13 +40,18 @@ def ccToBcfLinear : C_c(X, ℝ) →ₗ[ℝ] (X →ᵇ ℝ) where
 def ccSupSeminorm : Seminorm ℝ C_c(X, ℝ) :=
   (normSeminorm ℝ (X →ᵇ ℝ)).comp ccToBcfLinear
 
+section
+variable (f : C_c(X, ℝ))
+
 /-- A compactly supported function is pointwise bounded by its sup seminorm. -/
-theorem abs_apply_le_ccSupSeminorm (f : C_c(X, ℝ)) (x : X) : |f x| ≤ ccSupSeminorm f :=
+theorem abs_apply_le_ccSupSeminorm (x : X) : |f x| ≤ ccSupSeminorm f :=
   BoundedContinuousFunction.norm_coe_le_norm (f.toBoundedContinuousFunction) x
 
 /-- The sup seminorm is nonnegative. -/
-theorem ccSupSeminorm_nonneg (f : C_c(X, ℝ)) : 0 ≤ ccSupSeminorm f :=
+theorem ccSupSeminorm_nonneg : 0 ≤ ccSupSeminorm f :=
   norm_nonneg (f.toBoundedContinuousFunction)
+
+end
 
 /-- A uniform bound dominates the sup seminorm. -/
 theorem ccSupSeminorm_le {f : C_c(X, ℝ)} {c : ℝ} (hc : 0 ≤ c) (h : ∀ x, |f x| ≤ c) :

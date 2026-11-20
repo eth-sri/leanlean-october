@@ -19,8 +19,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+section
+variable {ι : Type*} (a h : ι → ℝ)
+
 /-- A bounded forward union controls the preceding union by the sharp delay factor. -/
-theorem interval_delay_of_bounded_union {ι : Type*} (a h : ι → ℝ) (I : Set ι)
+theorem interval_delay_of_bounded_union (I : Set ι)
     {m : ℝ} (hm : 0 < m) (hh : ∀ i ∈ I, 0 < h i)
     (hbelow : BddBelow (⋃ i ∈ I, Ioo (a i) (a i + m*h i)))
     (habove : BddAbove (⋃ i ∈ I, Ioo (a i) (a i + m*h i))) :
@@ -33,8 +36,7 @@ theorem interval_delay_of_bounded_union {ι : Type*} (a h : ι → ℝ) (I : Set
   have hback : (⋃ i ∈ I, Ioo (a i-h i) (a i)) ⊆ ⋃ s ∈ C, ext s := by
     intro x hx
     obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
-    have hai : a i < a i+m*h i := by nlinarith only [hm, hh i hi]
-    obtain ⟨s, hs, hIs⟩ := hcontains (a i) (a i+m*h i) hai
+    obtain ⟨s, hs, hIs⟩ := hcontains (a i) (a i+m*h i) (by nlinarith only [hm, hh i hi])
       (subset_iUnion₂_of_subset i hi Subset.rfl)
     have hI := backwardInterval_subset_component_extension (hh i hi) hm
       (hIs.trans (subset_of_eq (hcomp s hs).2))
@@ -62,7 +64,7 @@ theorem interval_delay_of_bounded_union {ι : Type*} (a h : ι → ℝ) (I : Set
       rw [← hsum]
 
 /-- The sharp delayed-union inequality for a finite interval family. -/
-theorem interval_delay_finset {ι : Type*} (a h : ι → ℝ) (s : Finset ι)
+theorem interval_delay_finset (s : Finset ι)
     {m : ℝ} (hm : 0 < m) (hh : ∀ i ∈ s, 0 < h i) :
     volume (⋃ i ∈ s, Ioo (a i-h i) (a i)) ≤
       ENNReal.ofReal ((m+1)/m) * volume (⋃ i ∈ s, Ioo (a i) (a i+m*h i)) := by
@@ -77,6 +79,8 @@ theorem interval_delay_finset {ι : Type*} (a h : ι → ℝ) (s : Finset ι)
     intro x hx
     obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
     exact hxi.2.le.trans (hb (mem_image_of_mem (fun i => a i+m*h i) hi))
+
+end
 
 /-- Countable delayed interval families satisfy the same sharp factor. -/
 theorem interval_delay_countable {ι : Type*} [Countable ι] (a h : ι → ℝ)

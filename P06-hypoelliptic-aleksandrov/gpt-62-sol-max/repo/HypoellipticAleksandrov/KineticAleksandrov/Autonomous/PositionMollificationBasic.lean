@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierModul
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionMollificationLineWeak
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.Setting
 public import Mathlib.Analysis.Calculus.ContDiff.Convolution
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsFiber
 
 /-! # Position convolution and the Bellman inequality with coefficients held fixed -/
 
@@ -13,23 +14,29 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory BarrierRegularization
 open scoped Convolution
 
+section
+variable (eta : ℝ → ℝ)
+include eta
+
 /-- Position-only convolution, leaving the velocity coordinate fixed. -/
-def positionConvolution (eta : ℝ → ℝ) (Phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def positionConvolution (Phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
   ∫ X, eta (q.1 - X) * Phi (X, q.2)
 
 /-- A compact smooth approximate-identity kernel at any fixed positive scale. -/
-def IsNonnegativeUnitSmoothMollifier (eta : ℝ → ℝ) : Prop :=
+def IsNonnegativeUnitSmoothMollifier : Prop :=
   ContDiff ℝ (⊤ : ℕ∞) eta ∧ HasCompactSupport eta ∧
     (∀ X, 0 ≤ eta X) ∧ (∫ X, eta X) = 1
 
 /-- The convolution is the ordinary scalar convolution of each position fiber. -/
-theorem positionConvolution_eq (eta : ℝ → ℝ) (Phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) :
+theorem positionConvolution_eq (Phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) :
     positionConvolution eta Phi q =
       ((fun X => Phi (X, q.2)) ⋆[ContinuousLinearMap.mul ℝ ℝ, volume] eta) q.1 := by
   unfold positionConvolution convolution
   congr 1
   funext X
   exact mul_comm _ _
+
+end
 
 /-- Smoothing in position gives C∞ position fibers even on the zero-velocity line. -/
 theorem barrier_position_convolution_smooth {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ}
@@ -47,8 +54,7 @@ theorem barrier_position_convolution_smooth {alpha : ℝ} {Phi : (ℝ × ℝ) �
 theorem position_kernel_integrable (eta f : ℝ → ℝ) (heta : Continuous eta)
     (hc : HasCompactSupport eta) (hf : LocallyIntegrable f volume) (X : ℝ) :
     Integrable (fun Y => eta (X - Y) * f Y) volume := by
-  have hh := hc.convolutionExists_right (ContinuousLinearMap.mul ℝ ℝ) hf heta X
-  simpa only [ConvolutionExistsAt, ContinuousLinearMap.mul_apply', mul_comm] using hh
+  simpa only [ConvolutionExistsAt, ContinuousLinearMap.mul_apply', mul_comm] using (hc.convolutionExists_right (ContinuousLinearMap.mul ℝ ℝ) hf heta X)
 
 /-- All source velocity fibers are locally integrable, including at velocity zero. -/
 theorem barrier_velocity_fibers_locallyIntegrable {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ}
@@ -79,7 +85,7 @@ theorem barrier_weight_fiber_locallyIntegrable (alpha : ℝ) (ha : 0 < alpha)
   apply hb.mono' hm.aestronglyMeasurable.restrict
   filter_upwards [ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with X hX
   rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (bellmanGauge_nonneg _) _)]
-  have hh := barrier_position_fiber_bound (alpha - 2) (by linarith)
+  have hh := _root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrier_position_fiber_bound (alpha - 2) (by linarith)
     (fun q => bellmanGauge q ^ (alpha - 2)) 1 zero_le_one
     (fun q _ => by rw [abs_of_nonneg (Real.rpow_nonneg (bellmanGauge_nonneg _) _), one_mul])
     X v hX
@@ -110,8 +116,7 @@ theorem barrier_convolved_jet_inequality {lam Lam alpha c : ℝ}
       (hivv.const_mul (A.a q.1 q.2)), integral_const_mul] using hh
   · filter_upwards [volume.ae_ne (0 : ℝ)] with X hX
     have hq : (X, q.2) ∈ bellmanPuncturedSet := fun he => hX (congrArg Prod.fst he)
-    have hb := hbound (X, q.2) hq (A.a q.1 q.2) (A.bounds q.1 q.2)
-    have hi := mul_le_mul_of_nonneg_left hb (heta.2.2.1 (q.1 - Y - X))
+    have hi := mul_le_mul_of_nonneg_left (hbound (X, q.2) hq (A.a q.1 q.2) (A.bounds q.1 q.2)) (heta.2.2.1 (q.1 - Y - X))
     dsimp only [bellmanOperator] at hi
     simpa only [Pi.add_apply, mul_add, mul_left_comm, mul_assoc] using hi
 

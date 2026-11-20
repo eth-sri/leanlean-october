@@ -12,21 +12,29 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set Filter
 open scoped Topology
 
+section
+variable (ζ φ : ℝ → ℝ) (q : ℝ × ℝ)
+include ζ φ q
+
 /-- A separated angular test, extended by zero to nonpositive position. -/
-def bellmanAngularTest (ζ φ : ℝ → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanAngularTest : ℝ :=
   if 0 < q.1 then bellmanSeparatedExpression ζ φ q else 0
 
 /-- On positive position, the zero extension agrees locally with the separated expression. -/
-theorem bellmanAngularTest_eventuallyEq_positive (ζ φ : ℝ → ℝ)
-    (q : ℝ × ℝ) (hq : 0 < q.1) :
+theorem bellmanAngularTest_eventuallyEq_positive (hq : 0 < q.1) :
     bellmanAngularTest ζ φ =ᶠ[𝓝 q] bellmanSeparatedExpression ζ φ := by
   have ho : IsOpen {q : ℝ × ℝ | 0 < q.1} := isOpen_lt continuous_const continuous_fst
   filter_upwards [ho.mem_nhds hq] with z hz
   exact ite_eq_left hz
 
+end
+
+section
+variable (ζ φ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+include hζ hφ
+
 /-- The separated expression is smooth at every point with positive position. -/
-theorem bellmanSeparatedExpression_contDiffAt (ζ φ : ℝ → ℝ)
-    (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+theorem bellmanSeparatedExpression_contDiffAt
     (q : ℝ × ℝ) (hq : 0 < q.1) :
     ContDiffAt ℝ (⊤ : ℕ∞) (bellmanSeparatedExpression ζ φ) q := by
   have hr : ContDiffAt ℝ (⊤ : ℕ∞) bellmanTestRadius q :=
@@ -38,8 +46,7 @@ theorem bellmanSeparatedExpression_contDiffAt (ζ φ : ℝ → ℝ)
   exact (hζ.contDiffAt.comp q hr).mul (hφ.contDiffAt.comp q ha)
 
 /-- The separated test extended by zero is smooth, including on the position axis. -/
-theorem bellmanAngularTest_contDiff (ζ φ : ℝ → ℝ)
-    (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+theorem bellmanAngularTest_contDiff
     (hs : tsupport ζ ⊆ Ioi (0 : ℝ)) :
     ContDiff ℝ (⊤ : ℕ∞) (bellmanAngularTest ζ φ) := by
   apply contDiff_iff_contDiffAt.mpr
@@ -65,5 +72,7 @@ theorem bellmanAngularTest_contDiff (ζ φ : ℝ → ℝ)
       apply (contDiffAt_const (c := (0 : ℝ))).congr_of_eventuallyEq
       filter_upwards [ho.mem_nhds hneg] with z hz
       exact ite_eq_right (not_lt_of_gt hz)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

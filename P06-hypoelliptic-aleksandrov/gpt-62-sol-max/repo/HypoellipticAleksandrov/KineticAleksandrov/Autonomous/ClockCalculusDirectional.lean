@@ -25,19 +25,20 @@ theorem hasDerivAt_coordinateLine (q d : Fin 3 → ℝ) (t₀ t : ℝ) :
   simpa only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, sub_zero, one_mul] using!
     (((hasDerivAt_id t).sub_const t₀).mul_const (d i)).const_add (q i)
 
+section
+variable (f : (Fin 3 → ℝ) → ℝ) (q d : Fin 3 → ℝ) (t₀ : ℝ)
+
 /-- The first chain rule along an affine line, with local differentiability only. -/
-theorem deriv_coordinateLine (f : (Fin 3 → ℝ) → ℝ) (q d : Fin 3 → ℝ)
-    (t₀ : ℝ) (hf : DifferentiableAt ℝ f q) :
+theorem deriv_coordinateLine (hf : DifferentiableAt ℝ f q) :
     deriv (fun t => f (q + (t-t₀) • d)) t₀ = directional f d q := by
-  have hq : q + (t₀-t₀) • d = q := by simp only [sub_self, zero_smul, add_zero]
+  have hq : q + (t₀-t₀) • d = q := by simp
   have hf' : HasFDerivAt f (fderiv ℝ f q) (q + (t₀-t₀) • d) := by
     simpa only [hq] using! hf.hasFDerivAt
   have h := hf'.comp_hasDerivAt t₀ (hasDerivAt_coordinateLine q d t₀ t₀)
   simpa only [hq, directional] using! h.deriv
 
 /-- The second directional chain rule; finite C-two regularity supplies the neighborhood. -/
-theorem deriv_deriv_coordinateLine (f : (Fin 3 → ℝ) → ℝ) (q d : Fin 3 → ℝ)
-    (t₀ : ℝ) (hf : ContDiffAt ℝ 2 f q) :
+theorem deriv_deriv_coordinateLine (hf : ContDiffAt ℝ 2 f q) :
     deriv (deriv (fun t => f (q + (t-t₀) • d))) t₀ =
       directional (directional f d) d q := by
   have hn : ∀ᶠ p in 𝓝 q, ContDiffAt ℝ 2 f p := hf.eventually (by norm_num)
@@ -67,9 +68,13 @@ theorem deriv_deriv_coordinateLine (f : (Fin 3 → ℝ) → ℝ) (q d : Fin 3 �
   exact deriv_coordinateLine (directional f d) q d t₀
     (hd.differentiableAt (by norm_num))
 
+end
+
+section
+variable (f : (Fin 3 → ℝ) → ℝ) (q : Fin 3 → ℝ) (i : Fin 3)
+
 /-- A named partial derivative is the scalar derivative on its coordinate line. -/
-theorem deriv_coordinate_slice (f : (Fin 3 → ℝ) → ℝ) (q : Fin 3 → ℝ)
-    (i : Fin 3) (hf : DifferentiableAt ℝ f q) :
+theorem deriv_coordinate_slice (hf : DifferentiableAt ℝ f q) :
     deriv (fun t => f (Function.update q i t)) (q i) =
       directional f (coordinateDirection i) q := by
   have he : (fun t => f (Function.update q i t)) =
@@ -85,8 +90,7 @@ theorem deriv_coordinate_slice (f : (Fin 3 → ℝ) → ℝ) (q : Fin 3 → ℝ)
   exact deriv_coordinateLine f q (coordinateDirection i) (q i) hf
 
 /-- The second named partial derivative is likewise the scalar second slice derivative. -/
-theorem deriv_deriv_coordinate_slice (f : (Fin 3 → ℝ) → ℝ) (q : Fin 3 → ℝ)
-    (i : Fin 3) (hf : ContDiffAt ℝ 2 f q) :
+theorem deriv_deriv_coordinate_slice (hf : ContDiffAt ℝ 2 f q) :
     deriv (deriv (fun t => f (Function.update q i t))) (q i) =
       directional (directional f (coordinateDirection i)) (coordinateDirection i) q := by
   have he : (fun t => f (Function.update q i t)) =
@@ -100,5 +104,7 @@ theorem deriv_deriv_coordinate_slice (f : (Fin 3 → ℝ) → ℝ) (q : Fin 3 �
     · simp [coordinateDirection, hij]
   rw [he]
   exact deriv_deriv_coordinateLine f q (coordinateDirection i) (q i) hf
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

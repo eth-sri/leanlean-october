@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeOneSign
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitCone
 
 /-! # Closed physical slabs and continuous trace bounds -/
 
@@ -57,15 +57,18 @@ theorem closure_reconstructionStrip (H : Interval) (a T : ℝ) (ha : a < T) :
       fin_cases i
       rfl
 
+section
+variable (H : Interval) {lower a T : ℝ} (ha : lower < a)
+include ha
+
 /-- Every closed future slab lies in the regular strip together with its prescribed exit. -/
-theorem reconstructionClosedSlab_subset_strip_union_exit (H : Interval)
-    {lower a T : ℝ} (ha : lower < a) :
+theorem reconstructionClosedSlab_subset_strip_union_exit :
     reconstructionClosedSlab H a T ⊆ reconstructionStrip H lower T ∪ reconstructionExit H
       lower T := by
   intro p hp
   by_cases ht : p.time = T
   · exact Or.inr (Or.inl ⟨ht, hp.2.2⟩)
-  · have hpt : p.time < T := lt_of_le_of_ne hp.2.1 ht
+  · have hpt := lt_of_le_of_ne hp.2.1 ht
     by_cases hv : p.velocity 0 ∈ H.carrier
     · exact Or.inl ⟨ha.trans_le hp.1, hpt, hv⟩
     · have hf : p.velocity 0 = H.lo ∨ p.velocity 0 = H.hi := by
@@ -76,8 +79,7 @@ theorem reconstructionClosedSlab_subset_strip_union_exit (H : Interval)
       exact Or.inr (Or.inr ⟨ha.trans_le hp.1, hpt, hf⟩)
 
 /-- The original interior bound extends to every closed future slab by the prescribed continuity. -/
-theorem reconstruction_closed_slab_test_bound
-    (H : Interval) {lower a T : ℝ} (ha : lower < a) (hT : a < T)
+theorem reconstruction_closed_slab_test_bound (hT : a < T)
     (phi : Point → ℝ)
     (hc : ContinuousOn phi (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
     (M : ℝ) (hM : ∀ p ∈ reconstructionStrip H lower T, |phi p| ≤ M) :
@@ -92,5 +94,7 @@ theorem reconstruction_closed_slab_test_bound
     exact (hc.mono (reconstructionClosedSlab_subset_strip_union_exit H ha)).abs
   · exact continuousOn_const
   · exact hp
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

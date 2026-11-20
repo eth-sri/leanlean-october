@@ -2,7 +2,6 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BorelCorrectorsHomogeneous
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.Assembly
-import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.EvolutionConclusionConsumers
 import Mathlib.Topology.MetricSpace.Pseudo.Basic
 
 /-! # Borel homogeneous correctors on compact interior collars
@@ -19,8 +18,6 @@ open scoped Topology ENNReal Matrix.Norms.Elementwise
 
 /-- Compact-interior Borel solutions have actual smooth homogeneous correctors. -/
 theorem exists_borel_homogeneous_correctors
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField d) (hA : IsBorelCoefficient A)
     (hs : IsSymmetricCoefficient A) (hlo : HasLowerEllipticityAE lam A)
@@ -49,14 +46,13 @@ theorem exists_borel_homogeneous_correctors
   have hCoeff j : IsSectionTwoCoefficient lam Lam (B j) :=
     ⟨hlam, hLam, isSmoothFullKineticCoefficient_zIndependent (hB j).1,
       (hB j).2.1, (hB j).2.2.1, (hB j).2.2.2⟩
-  have hEv := exists_terminalEvolution_of_classical hLE hH
-  have hwhole := SectionTwo.taAssemblyEvolution_of_conclusion hEv d hd lam Lam hlam hLam
-  choose S K hreal _ _ _ using (fun j => hwhole (B j) (hCoeff j))
+  have hEv := exists_terminalEvolution_of_classical
+  choose S K hreal _ _ _ using (fun j => (hEv.timeVelocity hd (wholeSpace_admissible d) (B j) (hCoeff j)).realizes)
   let T := Z₀.time + R ^ 2
   let J := fun j => borelCorrectedFunction (K j) T χ (B j) U
   have hDt : ∀ P ∈ D, P.time < T := fun P hP => hP.2.1
   have hOD' : O ⊆ D := subset_closure.trans hOD
-  have hJ j := borelCorrectedFunction_smooth_homogeneous hH (B j) (hCoeff j) (hB j).1
+  have hJ j := borelCorrectedFunction_smooth_homogeneous (B j) (hCoeff j) (hB j).1
     (S j) (K j) (hreal j) T D O hD hO hOD' hDt U hu χ hχ hχc hχD
     (fun P hP => hχone P (subset_closure hP))
   let p := 2 * (d : ℝ) + 2
@@ -64,7 +60,7 @@ theorem exists_borel_homogeneous_correctors
   have hp0 : 0 < p := by dsimp [p]; positivity
   obtain ⟨hmem, hnorm⟩ := borelCorrectorSource_norm_tendsto hlam hLam A hA hlo hhi
     B hB hconv hD U hu he χ hχ hχc hχD hχb hp0
-  obtain ⟨C, _, hbound⟩ := borelCorrectorPotential_uniform_bound hH hLE hd lam Lam p
+  obtain ⟨C, _, hbound⟩ := borelCorrectorPotential_uniform_bound hd lam Lam p
     hlam hLam hp
   let e := fun j => C * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
     (eLpNorm (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p) volume).toReal

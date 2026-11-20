@@ -65,23 +65,23 @@ theorem physical_restrict_eq_of_early_probes {μ ν : Measure Point}
 
 /-- The unique infinite exit measure has exactly the consistent finite early restrictions. -/
 theorem stripInfiniteExit_restrict_finite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
     (T : ℝ) (ht : e.1.time < T) (R : ℝ) (hRT : R ≤ T) :
-    (stripInfiniteExit hH hLE hlam hLam A H e).restrict {p | p.time < R} =
-      (stripExit hH hLE hlam hLam A H T (stripPoleFinite H e T ht)).restrict
+    (stripInfiniteExit A H e).restrict {p | p.time < R} =
+      (stripExit A H T (stripPoleFinite H e T ht)).restrict
         {p | p.time < R} := by
   apply physical_restrict_eq_of_early_probes
   intro f hs
   rw [stripInfiniteExit_probe_integral]
-  have hfinite := stripExitOfRealization_probe_integral hH hlam hLam A H _
-    (stripEvolution_spec hH hLE hlam hLam A H) T (stripPoleFinite H e T ht) f
+  have hfinite := stripExitOfRealization_probe_integral A H _
+    (stripEvolution_spec A H) T (stripPoleFinite H e T ht) f
   change (∫ p, exitProbePhysical f p
-    ∂stripExit hH hLE hlam hLam A H T (stripPoleFinite H e T ht)) =
+    ∂stripExit A H T (stripPoleFinite H e T ht)) =
       exitProbePhysical f e.1 + ∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
-        ∂stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T ht) at hfinite
-  rw [hfinite, infinite_probe_source_integral hH hLE hlam hLam A H e T ht R hRT f hs]
+        ∂stripGreen A H T (stripPoleFinite H e T ht) at hfinite
+  rw [hfinite, infinite_probe_source_integral A H e T ht R hRT f hs]
   rfl
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

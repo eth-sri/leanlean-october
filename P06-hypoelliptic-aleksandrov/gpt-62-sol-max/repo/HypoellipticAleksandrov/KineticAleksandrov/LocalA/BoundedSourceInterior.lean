@@ -13,7 +13,6 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 /-- Every signed bounded Borel source supported in the past domain has a continuous
 literal potential there, with only the Hörmander input. -/
 theorem continuousOn_duhamelPotential_bounded_signed
-    (hH : HormanderHypoellipticityStatement)
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
@@ -40,9 +39,9 @@ theorem continuousOn_duhamelPotential_bounded_signed
   have hgz : ∀ p, KineticPoint.equivProd d p ∉ boundedSourcePast Ω γ T → g p = 0 := by
     intro p hp
     simp only [g, hFz p hp, neg_zero, max_self]
-  have hfc := continuousOn_duhamelPotential_bounded_nonneg hH hΩa hΩ hγ B b S K hreal
+  have hfc := continuousOn_duhamelPotential_bounded_nonneg hΩa hΩ hγ B b S K hreal
     hB hBs hb lam Lam m hlam hm hell hcoerc T f hfm M hM hfb hfz
-  have hgc := continuousOn_duhamelPotential_bounded_nonneg hH hΩa hΩ hγ B b S K hreal
+  have hgc := continuousOn_duhamelPotential_bounded_nonneg hΩa hΩ hγ B b S K hreal
     hB hBs hb lam Lam m hlam hm hell hcoerc T g hgm M hM hgb hgz
   have hsplit : F = (fun p => f p + -g p) := by
     funext p

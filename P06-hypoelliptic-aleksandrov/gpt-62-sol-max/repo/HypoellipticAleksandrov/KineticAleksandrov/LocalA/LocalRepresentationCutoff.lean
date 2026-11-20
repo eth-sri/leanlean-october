@@ -11,27 +11,33 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter Parabolic Evolution
 open scoped Topology
 
+section
+variable {d : ℕ} (Z₀ : KineticPoint d)
+include Z₀
+
 /-- The position cutoff uses the cylinder's actual free-transport frame. -/
-def localPositionCutoff {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localPositionCutoff (χ : PDE.Vec d → ℝ)
     (P : KineticPoint d) : ℝ := χ (relativePosition Z₀ P)
 
 /-- The local solution multiplied by a position cutoff, with no extension assumption. -/
-def localCutoffSolution {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localCutoffSolution (χ : PDE.Vec d → ℝ)
     (u : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ := localPositionCutoff Z₀ χ P * u P
 
 /-- Free-transport relative position is smooth on the physical product carrier. -/
-theorem contDiff_relativePosition_native {d : ℕ} (Z₀ : KineticPoint d) :
+theorem contDiff_relativePosition_native :
     ContDiff ℝ (⊤ : ℕ∞)
       (relativePosition Z₀ ∘ (KineticPoint.equivProd d).symm) :=
   (contDiff_snd.fst.sub contDiff_const).sub
     ((contDiff_fst.sub contDiff_const).smul contDiff_const)
 
 /-- A smooth position cutoff is smooth in physical product coordinates. -/
-theorem contDiff_localPositionCutoff {d : ℕ} (Z₀ : KineticPoint d)
+theorem contDiff_localPositionCutoff
     {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
     ContDiff ℝ (⊤ : ℕ∞)
       (localPositionCutoff Z₀ χ ∘ (KineticPoint.equivProd d).symm) :=
   hχ.comp (contDiff_relativePosition_native Z₀)
+
+end
 
 /-- Strict position membership and closed velocity membership give outer closure membership. -/
 theorem local_closed_strip_mem_outer {d : ℕ} (Z₀ Q : KineticPoint d)
@@ -48,9 +54,45 @@ theorem local_closed_strip_mem_outer {d : ℕ} (Z₀ Q : KineticPoint d)
   change PDE.vecNormSq (Q.velocity - Z₀.velocity) ≤ R ^ 2 at hv
   simpa only [sub_zero] using hv
 
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) {R a T : ℝ} (hR : 0 < R) (ha : Z₀.time ≤ a)
+  (hT : T ≤ Z₀.time + R ^ 2) (u : KineticPoint d → ℝ)
+  (hu : ContinuousOn u (closure (forwardCylinder Z₀ R hR))) (χ : PDE.Vec d → ℝ)
+  (hs : tsupport χ ⊆ PDE.euclideanBall 0 (R ^ 3)) (f : KineticPoint d → ℝ) (hf : Continuous f)
+  (hz : ∀ Q, relativePosition Z₀ Q ∉ tsupport χ → f Q = 0)
+include hR ha hT hu χ hs hf hz
+
+/-- A continuous multiplier supported inside the position face preserves closed-strip continuity. -/
+theorem localRepresentation_supported_mul_continuousOn :
+    ContinuousOn (fun Q => f Q * u Q) (localClosedStrip a T Z₀.velocity R) := by
+  have hrel := continuous_relativePosition Z₀
+  intro P hP
+  by_cases hx : relativePosition Z₀ P ∈ tsupport χ
+  · have hp := local_closed_strip_mem_outer Z₀ P hR ha hT hP (hs hx)
+    have hmem : closure (forwardCylinder Z₀ R hR) ∈
+        𝓝[localClosedStrip a T Z₀.velocity R] P := by
+      have hpos := hrel.continuousAt.preimage_mem_nhds
+        ((PDE.isOpen_euclideanBall 0 (R ^ 3)).mem_nhds (hs hx))
+      apply mem_of_superset (inter_mem (mem_nhdsWithin_of_mem_nhds hpos)
+        self_mem_nhdsWithin)
+      intro Q hQ
+      exact local_closed_strip_mem_outer Z₀ Q hR ha hT hQ.2 hQ.1
+    exact hf.continuousAt.continuousWithinAt.mul
+      ((hu P hp).mono_of_mem_nhdsWithin hmem)
+  · have hzero : (fun Q => f Q * u Q) =ᶠ[𝓝 P] (fun _ => (0 : ℝ)) := by
+      have hmem := hrel.continuousAt.preimage_mem_nhds
+        ((isClosed_tsupport χ).isOpen_compl.mem_nhds hx)
+      filter_upwards [hmem] with Q hQ
+      rw [hz Q hQ, zero_mul]
+    exact (continuousAt_const.congr_of_eventuallyEq hzero).continuousWithinAt
+
+end
+
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) {R a T : ℝ} (hR : 0 < R)
+
 /-- The cutoff solution is smooth inside the whole velocity strip. -/
-theorem localCutoffSolution_contDiffOn {d : ℕ} (Z₀ : KineticPoint d)
-    {R a T : ℝ} (hR : 0 < R) (ha : Z₀.time < a) (hT : T < Z₀.time + R ^ 2)
+theorem localCutoffSolution_contDiffOn (ha : Z₀.time < a) (hT : T < Z₀.time + R ^ 2)
     (u : KineticPoint d → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' forwardCylinder Z₀ R hR))
@@ -81,37 +123,17 @@ theorem localCutoffSolution_contDiffOn {d : ℕ} (Z₀ : KineticPoint d)
     exact (contDiffAt_const.congr_of_eventuallyEq hz).contDiffWithinAt
 
 /-- The original closed-cylinder continuity gives closed-strip continuity after cutoff. -/
-theorem localCutoffSolution_continuousOn {d : ℕ} (Z₀ : KineticPoint d)
-    {R a T : ℝ} (hR : 0 < R) (ha : Z₀.time ≤ a) (hT : T ≤ Z₀.time + R ^ 2)
+theorem localCutoffSolution_continuousOn (ha : Z₀.time ≤ a) (hT : T ≤ Z₀.time + R ^ 2)
     (u : KineticPoint d → ℝ)
     (hu : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))
     (χ : PDE.Vec d → ℝ) (hχ : Continuous χ)
     (hs : tsupport χ ⊆ PDE.euclideanBall 0 (R ^ 3)) :
-    ContinuousOn (localCutoffSolution Z₀ χ u) (localClosedStrip a T Z₀.velocity R) := by
-  have hrel : Continuous (relativePosition Z₀) :=
-    (continuous_position.sub continuous_const).sub
-      ((continuous_time.sub continuous_const).smul continuous_const)
-  intro P hP
-  by_cases hx : relativePosition Z₀ P ∈ tsupport χ
-  · have hp := local_closed_strip_mem_outer Z₀ P hR ha hT hP (hs hx)
-    have hmem : closure (forwardCylinder Z₀ R hR) ∈
-        𝓝[localClosedStrip a T Z₀.velocity R] P := by
-      have hpos := hrel.continuousAt.preimage_mem_nhds
-        ((PDE.isOpen_euclideanBall 0 (R ^ 3)).mem_nhds (hs hx))
-      apply mem_of_superset (inter_mem (mem_nhdsWithin_of_mem_nhds hpos)
-        self_mem_nhdsWithin)
-      intro Q hQ
-      exact local_closed_strip_mem_outer Z₀ Q hR ha hT hQ.2 hQ.1
-    exact (hχ.comp hrel).continuousAt.continuousWithinAt.mul
-      ((hu P hp).mono_of_mem_nhdsWithin hmem)
-  · have he : χ =ᶠ[𝓝 (relativePosition Z₀ P)] 0 :=
-      notMem_tsupport_iff_eventuallyEq.mp hx
-    have hz : localCutoffSolution Z₀ χ u =ᶠ[𝓝 P] (fun _ => (0 : ℝ)) := by
-      filter_upwards [hrel.continuousAt.eventually he] with Q hQ
-      change χ (relativePosition Z₀ Q) * u Q = 0
-      change χ (relativePosition Z₀ Q) = 0 at hQ
-      rw [hQ, zero_mul]
-    exact (continuousAt_const.congr_of_eventuallyEq hz).continuousWithinAt
+    ContinuousOn (localCutoffSolution Z₀ χ u) (localClosedStrip a T Z₀.velocity R) :=
+  localRepresentation_supported_mul_continuousOn Z₀ hR ha hT u hu χ hs
+    (localPositionCutoff Z₀ χ) (hχ.comp (continuous_relativePosition Z₀))
+    (fun Q hx => show χ (relativePosition Z₀ Q) = 0 from image_eq_zero_of_notMem_tsupport hx)
+
+end
 
 /-- A cutoff with zero position germ has zero classical operator, even for arbitrary data. -/
 theorem localCutoffSolution_operator_zero {d : ℕ} (Z₀ P : KineticPoint d)

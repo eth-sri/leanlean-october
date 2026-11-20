@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Parabolic.Derivatives
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
 
+import HypoellipticAleksandrov.Parabolic.SeparatedCalculus
+
 /-!
 # Smooth gradient time-energy identity
 
@@ -60,8 +62,10 @@ private theorem integral_restrict_eq_integral_of_eq_zero_off
     · simp [hz]
     · simp [hz, hoff z hz]
 
-private theorem fderiv_timeVelocityCutoff
-    {d : ℕ} (ζ : ℝ → ℝ) (η : PDE.Vec d → ℝ)
+section
+variable {d : ℕ} (ζ : ℝ → ℝ) (η : PDE.Vec d → ℝ)
+
+theorem fderiv_timeVelocityCutoff
     (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
     (hη : ContDiff ℝ (⊤ : ℕ∞) η) :
     ContDiff ℝ (⊤ : ℕ∞)
@@ -69,23 +73,25 @@ private theorem fderiv_timeVelocityCutoff
   exact (hζ.comp (contDiff_fst (𝕜 := ℝ))).mul
     ((hη.comp (contDiff_snd (𝕜 := ℝ))).pow 2)
 
-private theorem timeVelocityCutoff_hasCompactSupport
-    {d : ℕ} (ζ : ℝ → ℝ) (η : PDE.Vec d → ℝ)
+/-- The squared spatial cutoff has the same support as the spatial factor. -/
+theorem tsupport_timeVelocityCutoff :
+    tsupport (fun z : TimeVelocity d => ζ z.1 * η z.2 ^ 2) = tsupport ζ ×ˢ tsupport η := by
+  rw [tsupport_separated_mul ζ (fun y => η y ^ 2)]
+  congr 1
+  unfold tsupport
+  congr 1
+  ext y
+  simp [Function.mem_support]
+
+theorem timeVelocityCutoff_hasCompactSupport
     (hζCompact : HasCompactSupport ζ)
     (hηCompact : HasCompactSupport η) :
     HasCompactSupport (fun z : TimeVelocity d => ζ z.1 * η z.2 ^ 2) := by
-  have hprod : IsCompact (tsupport ζ ×ˢ tsupport η) :=
-    hζCompact.isCompact.prod hηCompact.isCompact
-  apply HasCompactSupport.of_support_subset_isCompact hprod
-  intro z hz
-  have hzζ : ζ z.1 ≠ 0 := by
-    intro hzero
-    exact hz (by simp [hzero])
-  have hzη : η z.2 ≠ 0 := by
-    intro hzero
-    exact hz (by simp [hzero])
-  exact ⟨subset_tsupport ζ (Function.mem_support.mpr hzζ),
-    subset_tsupport η (Function.mem_support.mpr hzη)⟩
+  change IsCompact (tsupport _)
+  rw [tsupport_timeVelocityCutoff]
+  exact hζCompact.isCompact.prod hηCompact.isCompact
+
+end
 
 private theorem fderiv_fderiv_apply_comm
     {d : ℕ} (r : TimeVelocity d → ℝ)
@@ -109,24 +115,19 @@ private theorem fderiv_fderiv_apply_comm
     hrz.of_le (WithTop.coe_le_coe.mpr (show (2 : ℕ∞) ≤ ⊤ from le_top))
   exact (hrzTwo.isSymmSndFDerivAt (by norm_num)).eq q p
 
-private theorem velocity_time_mixed_comm
-    {d : ℕ} (r : TimeVelocity d → ℝ)
-    (hr : ContDiff ℝ (⊤ : ℕ∞) r)
-    (i : Fin d) (z : TimeVelocity d) :
-    fderiv ℝ (timeDerivative r) z (0, Pi.single i 1) =
-      fderiv ℝ (fun x => velocityGradient r x i) z (1, 0) := by
-  unfold timeDerivative velocityGradient
-  exact fderiv_fderiv_apply_comm r hr z (1, 0) (0, Pi.single i 1)
+section
+variable {d : ℕ} (r : TimeVelocity d → ℝ) (hr : ContDiff ℝ (⊤ : ℕ∞) r) (i : Fin d)
+include hr
 
-private theorem velocityGradient_component_contDiff
-    {d : ℕ} (r : TimeVelocity d → ℝ)
-    (hr : ContDiff ℝ (⊤ : ℕ∞) r) (i : Fin d) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient r z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hr).2.clm_apply contDiff_const
+theorem velocityGradient_component_contDiff :
+    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient r z i) := (contDiff_infty_iff_fderiv.mp hr).2.clm_apply contDiff_const
+
+end
+
+section
+variable {d : ℕ} (r : TimeVelocity d → ℝ)
 
 private theorem weightedVelocityGradient_contDiff
-    {d : ℕ} (r : TimeVelocity d → ℝ)
     (hr : ContDiff ℝ (⊤ : ℕ∞) r)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
@@ -138,64 +139,39 @@ private theorem weightedVelocityGradient_contDiff
     (velocityGradient_component_contDiff r hr i)
 
 private theorem weightedVelocityGradient_hasCompactSupport
-    {d : ℕ} (r : TimeVelocity d → ℝ)
     (η : PDE.Vec d → ℝ) (hηCompact : HasCompactSupport η)
     (ζ : ℝ → ℝ) (hζCompact : HasCompactSupport ζ)
     (i : Fin d) :
     HasCompactSupport
       (fun z : TimeVelocity d =>
-        ζ z.1 * η z.2 ^ 2 * velocityGradient r z i) := by
-  exact (timeVelocityCutoff_hasCompactSupport ζ η hζCompact hηCompact).mul_right
+        ζ z.1 * η z.2 ^ 2 * velocityGradient r z i) := (timeVelocityCutoff_hasCompactSupport ζ η hζCompact hηCompact).mul_right
 
-private theorem fderiv_timeVelocityCutoff_spatial
+end
+
+theorem fderiv_timeVelocityCutoff_spatial
     {d : ℕ} (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
     (i : Fin d) (z : TimeVelocity d) :
     fderiv ℝ (fun x : TimeVelocity d => ζ x.1 * η x.2 ^ 2) z
         (0, Pi.single i 1) =
       ζ z.1 * (2 * η z.2 * spatialPartial i η z.2) := by
-  have hζDiff : DifferentiableAt ℝ (fun x : TimeVelocity d => ζ x.1) z :=
-    (hζ.comp (contDiff_fst (𝕜 := ℝ))).differentiable (by simp) z
-  have hηDiff : DifferentiableAt ℝ (fun x : TimeVelocity d => η x.2) z :=
-    (hη.comp (contDiff_snd (𝕜 := ℝ))).differentiable (by simp) z
-  rw [show (fun x : TimeVelocity d => ζ x.1 * η x.2 ^ 2) =
-      (fun x => ζ x.1) * (fun x => η x.2) ^ 2 by rfl]
-  rw [fderiv_mul hζDiff (hηDiff.pow 2)]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-    smul_eq_mul]
-  change ζ z.1 * fderiv ℝ (fun x : TimeVelocity d => η x.2 ^ 2) z
-      (0, Pi.single i 1) + η z.2 ^ 2 *
-      fderiv ℝ (fun x : TimeVelocity d => ζ x.1) z (0, Pi.single i 1) = _
-  rw [fderiv_fun_pow 2 hηDiff]
-  have hζzero : fderiv ℝ (fun x : TimeVelocity d => ζ x.1) z
-      (0, Pi.single i 1) = 0 := by
-    change fderiv ℝ (ζ ∘ Prod.fst) z (0, Pi.single i 1) = 0
-    rw [fderiv_comp z (hζ.differentiable (by simp) z.1)
-      (differentiableAt_fst (𝕜 := ℝ))]
-    rw [fderiv_fst]
-    simp
-  have hηeval : fderiv ℝ (fun x : TimeVelocity d => η x.2) z
-      (0, Pi.single i 1) = spatialPartial i η z.2 := by
-    change fderiv ℝ (η ∘ Prod.snd) z (0, Pi.single i 1) = _
-    rw [fderiv_comp z (hη.differentiable (by simp) z.2)
-      (differentiableAt_snd (𝕜 := ℝ))]
-    rw [fderiv_snd]
-    rfl
-  rw [hζzero]
-  simp only [ContinuousLinearMap.smul_apply, Nat.reduceSub, pow_one,
-    nsmul_eq_mul, Nat.cast_ofNat]
-  rw [hηeval]
-  simp only [smul_eq_mul]
-  ring
+  have hg := hη.differentiable (by simp) z.2
+  change velocityGradient (fun x : TimeVelocity d => ζ x.1 * η x.2 ^ 2) z i = _
+  rw [velocityGradient_separated_mul (g := fun y => η y ^ 2)
+    (hζ.differentiable (by simp) z.1) (hg.pow 2)]
+  simp only [spatialPartial, fderiv_fun_pow 2 hg, ContinuousLinearMap.smul_apply,
+    smul_eq_mul, nsmul_eq_mul, Nat.cast_ofNat, Nat.reduceSub, pow_one]
+
+section
+variable {d : ℕ} (r : TimeVelocity d → ℝ) (hr : ContDiff ℝ (⊤ : ℕ∞) r)
+include hr
 
 private theorem fderiv_velocityGradient_component_spatial
-    {d : ℕ} (r : TimeVelocity d → ℝ)
-    (hr : ContDiff ℝ (⊤ : ℕ∞) r)
     (i : Fin d) (z : TimeVelocity d) :
     fderiv ℝ (fun x => velocityGradient r x i) z (0, Pi.single i 1) =
       velocityHessian r z i i := by
   unfold velocityGradient velocityHessian
-  have hgrad : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ r) :=
+  have hgrad :=
     (contDiff_infty_iff_fderiv.mp hr).2
   rw [fderiv_clm_apply
     (hgrad.differentiable (by simp) z)
@@ -204,8 +180,6 @@ private theorem fderiv_velocityGradient_component_spatial
   simp
 
 private theorem fderiv_weightedVelocityGradient_spatial
-    {d : ℕ} (r : TimeVelocity d → ℝ)
-    (hr : ContDiff ℝ (⊤ : ℕ∞) r)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
     (i : Fin d) (z : TimeVelocity d) :
@@ -229,54 +203,28 @@ private theorem fderiv_weightedVelocityGradient_spatial
     fderiv_velocityGradient_component_spatial r hr i z]
   ring
 
-private theorem fderiv_timeVelocityCutoff_time
+end
+
+theorem fderiv_timeVelocityCutoff_time
     {d : ℕ} (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
     (z : TimeVelocity d) :
     fderiv ℝ (fun x : TimeVelocity d => ζ x.1 * η x.2 ^ 2) z (1, 0) =
-      _root_.deriv ζ z.1 * η z.2 ^ 2 := by
-  have hζDiff : DifferentiableAt ℝ (fun x : TimeVelocity d => ζ x.1) z :=
-    (hζ.comp (contDiff_fst (𝕜 := ℝ))).differentiable (by simp) z
-  have hηDiff : DifferentiableAt ℝ (fun x : TimeVelocity d => η x.2) z :=
-    (hη.comp (contDiff_snd (𝕜 := ℝ))).differentiable (by simp) z
-  rw [show (fun x : TimeVelocity d => ζ x.1 * η x.2 ^ 2) =
-      (fun x => ζ x.1) * (fun x => η x.2) ^ 2 by rfl]
-  rw [fderiv_mul hζDiff (hηDiff.pow 2)]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-    smul_eq_mul]
-  change ζ z.1 * fderiv ℝ (fun x : TimeVelocity d => η x.2 ^ 2) z (1, 0) +
-      η z.2 ^ 2 * fderiv ℝ (fun x : TimeVelocity d => ζ x.1) z (1, 0) = _
-  rw [fderiv_fun_pow 2 hηDiff]
-  have hηzero : fderiv ℝ (fun x : TimeVelocity d => η x.2) z (1, 0) = 0 := by
-    change fderiv ℝ (η ∘ Prod.snd) z (1, 0) = 0
-    rw [fderiv_comp z (hη.differentiable (by simp) z.2)
-      (differentiableAt_snd (𝕜 := ℝ)), fderiv_snd]
-    simp
-  have hζeval : fderiv ℝ (fun x : TimeVelocity d => ζ x.1) z (1, 0) =
-      _root_.deriv ζ z.1 := by
-    change fderiv ℝ (ζ ∘ Prod.fst) z (1, 0) = _
-    rw [fderiv_comp z (hζ.differentiable (by simp) z.1)
-      (differentiableAt_fst (𝕜 := ℝ)), fderiv_fst]
-    rfl
-  rw [hζeval]
-  simp only [ContinuousLinearMap.smul_apply, Nat.reduceSub, pow_one,
-    nsmul_eq_mul, Nat.cast_ofNat, hηzero, mul_zero, smul_zero, zero_add]
-  ring
+      _root_.deriv ζ z.1 * η z.2 ^ 2 := 
+  timeDerivative_separated_mul (hζ.differentiable (by simp) z.1) ((hη.differentiable (by simp) z.2).pow 2)
 
 private theorem timeDerivative_contDiff
     {d : ℕ} (r : TimeVelocity d → ℝ)
     (hr : ContDiff ℝ (⊤ : ℕ∞) r) :
-    ContDiff ℝ (⊤ : ℕ∞) (timeDerivative r) := by
-  unfold timeDerivative
-  exact (contDiff_infty_iff_fderiv.mp hr).2.clm_apply contDiff_const
+    ContDiff ℝ (⊤ : ℕ∞) (timeDerivative r) := (contDiff_infty_iff_fderiv.mp hr).2.clm_apply contDiff_const
+
+section
+variable {d : ℕ} (r : TimeVelocity d → ℝ) (hr : ContDiff ℝ (⊤ : ℕ∞) r) (η : PDE.Vec d → ℝ)
+  (hη : ContDiff ℝ (⊤ : ℕ∞) η) (hηCompact : HasCompactSupport η) (ζ : ℝ → ℝ)
+  (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ) (hζCompact : HasCompactSupport ζ)
+include hr hη hηCompact hζ hζCompact
 
 private theorem global_coordinate_timeEnergy
-    {d : ℕ} (r : TimeVelocity d → ℝ)
-    (hr : ContDiff ℝ (⊤ : ℕ∞) r)
-    (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
-    (hηCompact : HasCompactSupport η)
-    (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
-    (hζCompact : HasCompactSupport ζ)
     (i : Fin d) :
     2 * (∫ z : TimeVelocity d,
       timeDerivative r z *
@@ -362,7 +310,7 @@ private theorem global_coordinate_timeEnergy
   have hmixed (z : TimeVelocity d) :
       fderiv ℝ (timeDerivative r) z (0, Pi.single i 1) =
         fderiv ℝ (fun x => velocityGradient r x i) z (1, 0) :=
-    velocity_time_mixed_comm r hr i z
+    (fderiv_fderiv_apply_comm r hr z (1, 0) (0, Pi.single i 1))
   have hpair :
       (∫ z : TimeVelocity d,
         fderiv ℝ (timeDerivative r) z (0, Pi.single i 1) *
@@ -407,13 +355,7 @@ private theorem global_coordinate_timeEnergy
       apply integral_congr_ae
       exact Filter.Eventually.of_forall fun z => by ring
 
-private theorem global_timeEnergy
-    {d : ℕ} (r : TimeVelocity d → ℝ)
-    (hr : ContDiff ℝ (⊤ : ℕ∞) r)
-    (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
-    (hηCompact : HasCompactSupport η)
-    (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
-    (hζCompact : HasCompactSupport ζ) :
+private theorem global_timeEnergy :
     2 * (∫ z : TimeVelocity d,
       ζ z.1 * timeDerivative r z *
         localizedGradientDivergence η
@@ -502,6 +444,8 @@ private theorem global_timeEnergy
       apply integral_congr_ae
       exact Filter.Eventually.of_forall fun z => by
         simp only [R, Finset.mul_sum]
+
+end
 
 /-- Smooth compactly supported gradient time-energy identity on a literal
 product cylinder. -/

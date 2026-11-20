@@ -44,7 +44,6 @@ theorem bellmanAngularFirstMoment_bound (β : ℝ) (f h J : ℝ → ℝ)
     bellmanAngularFirstMoment f y ≤ 3 * (h 0 / y + J 0) := by
   have hm := bellmanAngularSecondMoment_le hi hf hy.le
   have hp : 0 ≤ (β - 3) / 3 := by linarith
-  have hb := mul_le_mul_of_nonneg_left hm hp
   have hn := hh y
   rw [he y] at hn
   apply le_of_mul_le_mul_right (a := y) _ hy

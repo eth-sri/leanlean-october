@@ -1,5 +1,6 @@
 module
 
+public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Realization
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalMeasure
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationComparison
@@ -61,27 +62,13 @@ end Outside
 
 section EvolutionData
 
-variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-variable (hΩ : IsAdmissibleEvolutionDomain Ω)
-variable (hγ : IsContinuousPiecewiseC1 γ)
-variable (hB_smooth : IsSmoothFullKineticCoefficient B)
-variable (hB_symm : IsSymmetricFullKineticCoefficient B)
-variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-variable (hb_smooth : IsSmoothDrift b)
-variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-variable (hEx : ClassicalTerminalExistence Ω γ B b)
-include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
-include hb_smooth hb_lipschitz hb_coercive hEx
+variable {n : ℕ} {lam Lam m L_b : ℝ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    (data : TerminalEvolutionData lam Lam m L_b Ω γ B b)
+include data
 
-local notation "S" => terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "S" => terminalValue data.exists_solution
+local notation "μ" => terminalMeasure data
 
 /-- Domain domination at the level of master measures, from clauses 1 and 6 of the antecedent only:
 the master measure of ANY small kernel `K'` with the clause-1 solution representation and the
@@ -107,11 +94,10 @@ theorem terminalMeasure_domination
     (q' : EvolutionQuery Ω' γ') :
     K'.master q' ≤ μ (largeQueryOfSmall hsub q') := by
   obtain ⟨⟨σ, τ, w⟩, hστ, hw⟩ := q'
-  have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
+  have hΩo := isOpen_of_isAdmissibleEvolutionDomain data.domain
   have hΩo' := isOpen_of_isAdmissibleEvolutionDomain hΩ'
   have hU : IsOpen (evolutionStateSet Ω' γ' τ) := (isOpen_movingDomain hΩo' τ).prod isOpen_univ
-  have hspec := terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+  have hspec := terminalMeasure_spec data
     (largeQueryOfSmall hsub ⟨(σ, τ, w), hστ, hw⟩)
   have hfinν : IsFiniteMeasure (K'.master ⟨(σ, τ, w), hστ, hw⟩) :=
     ⟨(K'.mass_le_one ⟨(σ, τ, w), hστ, hw⟩).trans_lt ENNReal.one_lt_top⟩
@@ -127,14 +113,13 @@ theorem terminalMeasure_domination
   have hF : IsSmoothCompactTerminalDatum Ω γ τ F :=
     ⟨hfs, hfc, hfU.trans fun x hx => ⟨hsub τ hx.1, mem_univ _⟩⟩
   obtain ⟨u', hu', hrep, -⟩ := h1 τ F hF'
-  obtain ⟨u, hu, -, -⟩ := hEx τ F hF
-  have hcmp := classical_le_of_subdomain hΩo hΩo' hγ.1 hγ'.1 hsub hlam hB_ell hb_lipschitz
+  obtain ⟨u, hu, -, -⟩ := data.exists_solution τ F hF
+  have hcmp := classical_le_of_subdomain hΩo hΩo' data.curve.1 hγ'.1 hsub data.lam_pos data.elliptic data.lipschitz
     hu hu' hfnn ⟨σ, w.1, w.2⟩ ⟨hστ, subset_closure hw.1⟩
   have hA := integral_master_eq_operator hΩ' K' P' h6 σ hστ ⟨w, hw⟩ F
   have hlhs : ∫ x, f x ∂(K'.master ⟨(σ, τ, w), hστ, hw⟩) = u' ⟨σ, w.1, w.2⟩ :=
     ((hrep σ hστ ⟨w, hw⟩).trans hA).symm
-  have hS := terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ
+  have hS := terminalValue_eq_of_solution data.exists_solution σ τ hστ
     ⟨w, ⟨hsub σ hw.1, hw.2⟩⟩ F hF u hu
   have hrhs : ∫ x, f x ∂(μ (largeQueryOfSmall hsub ⟨(σ, τ, w), hστ, hw⟩)) =
       u ⟨σ, w.1, w.2⟩ := (hspec.2.2 F hF).trans hS
@@ -147,54 +132,10 @@ smaller admissible problem `(Ω', γ', P', K')` satisfying the complete eight-cl
 the fourteenth conjunct is zero-extension dominated by `K`. -/
 theorem terminalKernel_domain_domination_of_master_eq
     (K : MovingFiberKernel Ω γ) (hK : ∀ q, K.master q = μ q) :
-    ∀ (Ω' : Set (PDE.Vec n)) (γ' : ℝ → PDE.Vec n)
-            (hΩ' : IsAdmissibleEvolutionDomain Ω')
-            (hγ' : IsContinuousPiecewiseC1 γ')
-            (hsub : ∀ σ, movingDomain Ω' γ' σ ⊆
-              movingDomain Ω γ σ)
-            (P' : TerminalOperatorFamily Ω' γ')
-            (K' : MovingFiberKernel Ω' γ'),
-          ((∀ (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)),
-              IsSmoothCompactTerminalDatum Ω' γ' τ F →
-                ∃ u : KineticPoint n → ℝ,
-                  IsClassicalTerminalSolution Ω' γ' B b τ F u ∧
-                  (∀ (σ : ℝ) (hστ : σ ≤ τ)
-                      (p : EvolutionState Ω' γ' σ),
-                    u ⟨σ, p.1.1, p.1.2⟩ =
-                      P' σ τ hστ (terminalStateDatum F) p) ∧
-                  (∀ v : KineticPoint n → ℝ,
-                    IsClassicalTerminalSolution Ω' γ' B b τ F v →
-                      EqOn v u (evolutionPastClosedCylinder Ω' γ' τ)))) ∧
-           (∀ (σ : ℝ),
-             P' σ σ le_rfl =
-               (LinearMap.id :
-                 BoundedBorel (EvolutionState Ω' γ' σ) →ₗ[ℝ]
-                   BoundedBorel (EvolutionState Ω' γ' σ))) ∧
-           (∀ (σ τ : ℝ) (hστ : σ ≤ τ)
-               (f : BoundedBorel (EvolutionState Ω' γ' τ)),
-             0 ≤ f → 0 ≤ P' σ τ hστ f) ∧
-           (∀ (σ τ : ℝ) (hστ : σ ≤ τ),
-             P' σ τ hστ (1 : BoundedBorel (EvolutionState Ω' γ' τ)) ≤
-               (1 : BoundedBorel (EvolutionState Ω' γ' σ))) ∧
-           (∀ (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ),
-             P' σ τ (hσr.trans hrτ) =
-               (P' σ r hσr).comp (P' r τ hrτ)) ∧
-           (∀ (σ τ : ℝ) (hστ : σ ≤ τ)
-               (p : EvolutionState Ω' γ' σ)
-               (f : BoundedBorel (EvolutionState Ω' γ' τ)),
-             P' σ τ hστ f p =
-               ∫ q, f q ∂(K'.fiberKernel
-                 (measurableSet_of_isAdmissibleEvolutionDomain hΩ')
-                 σ τ hστ p)) ∧
-           MovingFiberKernel.HasEndpoint K'
-             (measurableSet_of_isAdmissibleEvolutionDomain hΩ') ∧
-           MovingFiberKernel.HasComposition K'
-             (measurableSet_of_isAdmissibleEvolutionDomain hΩ') →
-          MovingFiberKernel.IsZeroExtensionDominatedBy K' K hsub := by
+    SectionTwo.IsDomainMonotoneEvolution Ω γ B b K := by
   rintro Ω' γ' hΩ' hγ' hsub P' K' ⟨h1, -, -, -, -, h6, -, -⟩ q'
   rw [hK]
-  exact terminalMeasure_domination n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+  exact terminalMeasure_domination data
     Ω' γ' hΩ' hγ' hsub P' K' h1 h6 q'
 
 end EvolutionData

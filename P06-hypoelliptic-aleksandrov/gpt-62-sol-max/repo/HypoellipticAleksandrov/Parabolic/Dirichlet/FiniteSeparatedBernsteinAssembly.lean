@@ -20,13 +20,17 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+section
+variable {d n : ℕ}
+include n
+
 /-- The affine image of the product Bernstein grid in the centered cube. -/
-def centeredPiBernsteinGrid {d n : ℕ} (R : ℝ)
+def centeredPiBernsteinGrid (R : ℝ)
     (k : Fin d → Fin (n + 1)) : PDE.Vec d :=
   fun i => R * (2 * (piBernsteinGrid k i : ℝ) - 1)
 
 /-- The sampled, cutoff product-Bernstein sum on the centered cube. -/
-def cutoffPiBernsteinApproximation {d n : ℕ} (R : ℝ)
+def cutoffPiBernsteinApproximation (R : ℝ)
     (χ : PDE.Vec d → ℝ) (f : TimeVelocity d → ℝ) :
     TimeVelocity d → ℝ :=
   fun z => χ z.2 * ∑ k : Fin d → Fin (n + 1),
@@ -36,8 +40,7 @@ def cutoffPiBernsteinApproximation {d n : ℕ} (R : ℝ)
 
 /-- The sampled cutoff Bernstein sum and its literal time derivative have a finite separated
 representation whose factors share the prescribed compact product support. -/
-theorem exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
-    {d n : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+theorem exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
     (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞))
     (χ : PDE.Vec d → ℝ) (hχ : ContDiff ℝ (⊤ : ℕ∞) χ)
     (hχcompact : IsCompact (tsupport χ)) (hχO : tsupport χ ⊆ O)
@@ -85,5 +88,7 @@ theorem exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
     ring
   · intro m z hz
     exact ⟨(hη (e.symm m)).2.2 hz.1, (hψ (e.symm m)).2 hz.2⟩
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

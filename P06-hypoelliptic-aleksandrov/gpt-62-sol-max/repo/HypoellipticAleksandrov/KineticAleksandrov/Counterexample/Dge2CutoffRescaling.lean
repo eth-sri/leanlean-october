@@ -26,10 +26,13 @@ theorem rescaledCutoff_zero {d : ℕ} (alpha sigma : ℝ) (e z : PDE.Vec d) :
     rescaledCutoff alpha sigma 0 0 e z = radialProfile alpha z := by
   simp [rescaledCutoff, seedBase, radialProfile]
 
+section
+variable {d : ℕ} (alpha sigma : ℝ) (p : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d) (hz : p.2 ≠ 0)
+  (hb : seedBase (p.1.2.1 * sigma) p.2 (p.1.2.1 • p.1.2.2) ≠ 0)
+include hz hb
+
 /-- The fixed-annulus family is smooth wherever both radial power bases are positive. -/
-theorem contDiffAt_rescaledCutoff {d : ℕ} (alpha sigma : ℝ)
-    (p : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d) (hz : p.2 ≠ 0)
-    (hb : seedBase (p.1.2.1 * sigma) p.2 (p.1.2.1 • p.1.2.2) ≠ 0) :
+theorem contDiffAt_rescaledCutoff :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun q : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d =>
         rescaledCutoff alpha sigma q.1.1 q.1.2.1 q.1.2.2 q.2) p := by
@@ -48,9 +51,7 @@ theorem contDiffAt_rescaledCutoff {d : ℕ} (alpha sigma : ℝ)
     ((hs.add (hbase.contDiffAt.rpow_const_of_ne hb)).sub hr))
 
 /-- Partial velocity derivatives of the fixed-annulus family are smooth jointly. -/
-theorem contDiffAt_rescaledCutoff_first {d : ℕ} (alpha sigma : ℝ)
-    (p : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d) (hz : p.2 ≠ 0)
-    (hb : seedBase (p.1.2.1 * sigma) p.2 (p.1.2.1 • p.1.2.2) ≠ 0) :
+theorem contDiffAt_rescaledCutoff_first :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun q : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d =>
         fderiv ℝ (rescaledCutoff alpha sigma q.1.1 q.1.2.1 q.1.2.2) q.2) p := by
@@ -61,9 +62,7 @@ theorem contDiffAt_rescaledCutoff_first {d : ℕ} (alpha sigma : ℝ)
   exact (hf.comp (p, p.2) hc).fderiv contDiffAt_snd (by simp)
 
 /-- The velocity Hessian is continuous jointly at every regular parameter point. -/
-theorem continuousAt_rescaledCutoff_hessian {d : ℕ} (alpha sigma : ℝ)
-    (p : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d) (hz : p.2 ≠ 0)
-    (hb : seedBase (p.1.2.1 * sigma) p.2 (p.1.2.1 • p.1.2.2) ≠ 0)
+theorem continuousAt_rescaledCutoff_hessian
     (w u : PDE.Vec d) :
     ContinuousAt
       (fun q : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d =>
@@ -79,5 +78,7 @@ theorem continuousAt_rescaledCutoff_hessian {d : ℕ} (alpha sigma : ℝ)
       (p, p.2) := by fun_prop
   exact (((heval.comp (p, p.2) hc).fderiv (m := 0) contDiffAt_snd (by simp)).clm_apply
     contDiffAt_const).continuousAt
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

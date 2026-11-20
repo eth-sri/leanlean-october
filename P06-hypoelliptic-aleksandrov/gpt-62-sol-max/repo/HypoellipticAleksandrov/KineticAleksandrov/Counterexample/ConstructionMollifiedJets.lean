@@ -9,22 +9,27 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r mu R m t : ℝ) (q : XV d)
+include alpha h r mu R m t q
+
 /-- The selected first representative on the native carrier. -/
-def constructionExtendedNativeGradient {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R m t : ℝ)
-    (q : XV d) (i : Fin (d + d)) : ℝ :=
+def constructionExtendedNativeGradient (i : Fin (d + d)) : ℝ :=
   constructionExtendedPackedGradient h r mu R m t ((spatialCoordinateCLE d).symm q) i
 
 /-- The selected second velocity representative on the native carrier. -/
-def constructionExtendedNativeHessian {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R m t : ℝ)
-    (q : XV d) (i k : Fin d) : ℝ :=
+def constructionExtendedNativeHessian (i k : Fin d) : ℝ :=
   constructionExtendedPackedHessian h r mu R m t ((spatialCoordinateCLE d).symm q) i k
 
+end
+
+section
+variable {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+  (h : CounterProfileStatement d alpha)
+include hd ha ha1
+
 /-- Spatial convolution differentiates to convolution of the selected first representatives. -/
-theorem construction_mollified_first_jet {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
+theorem construction_mollified_first_jet (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)
     (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m)
@@ -40,9 +45,7 @@ theorem construction_mollified_first_jet {d : ℕ} (hd : 1 ≤ d)
       hscale hmargin t i) q
 
 /-- The first velocity representative differentiates after convolution to the selected Hessian. -/
-theorem construction_mollified_velocityJet_derivative {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem construction_mollified_velocityJet_derivative (r : ℝ) (hr : 0 < r)
     (mu R m t : ℝ) (i k : Fin d) (phi : ContDiffBump (0 : XV d)) (q : XV d) :
     fderiv ℝ (spatialMollify phi (fun y =>
       constructionExtendedNativeGradient h r mu R m t y (Fin.natAdd d k))) q
@@ -59,6 +62,8 @@ theorem construction_mollified_velocityJet_derivative {d : ℕ} (hd : 1 ≤ d)
     (construction_extended_velocityJet_weak hd ha ha1 h r hr mu R m t i k) test ht hs
   simpa only [spatialCoordinate_basis_velocity, constructionExtendedNativeGradient,
     constructionExtendedNativeHessian] using! he
+
+end
 
 /-- The actual second velocity derivatives of the mollified value use the same Hessian. -/
 theorem construction_mollified_second_velocity_jet {d : ℕ} (hd : 1 ≤ d)

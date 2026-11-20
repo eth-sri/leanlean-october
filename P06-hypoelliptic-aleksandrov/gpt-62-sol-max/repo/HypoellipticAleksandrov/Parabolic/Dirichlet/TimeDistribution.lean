@@ -41,10 +41,12 @@ private theorem integrable_mul_of_tsupport_subset
   exact (integrableOn_iff_integrable_of_support_subset hproductSupportSubset).mp
     hproductSupport
 
+section
+variable (T : ℝ) {f : ℝ → ℝ}
+
 /-- An integrable scalar function on the literal reverse-time interval whose
 pairing with every compact smooth reverse-time test vanishes is zero a.e. -/
 theorem ae_eq_zero_of_integral_reverseTimeScalarTest
-    (T : ℝ) {f : ℝ → ℝ}
     (hf : MeasureTheory.Integrable f (reverseTimeVolume T))
     (hzero : ∀ eta : ReverseTimeScalarTest T,
       (∫ tau, f tau * eta tau ∂reverseTimeVolume T) = 0) :
@@ -107,7 +109,6 @@ theorem ae_eq_zero_of_integral_reverseTimeScalarTest
 
 /-- The `L²` specialization of reverse-time scalar distribution separation. -/
 theorem ae_eq_zero_of_memLp_two_integral_reverseTimeScalarTest
-    (T : ℝ) {f : ℝ → ℝ}
     (hf : MeasureTheory.MemLp f (2 : ℝ≥0∞) (reverseTimeVolume T))
     (hzero : ∀ eta : ReverseTimeScalarTest T,
       (∫ tau, f tau * eta tau ∂reverseTimeVolume T) = 0) :
@@ -117,5 +118,7 @@ theorem ae_eq_zero_of_memLp_two_integral_reverseTimeScalarTest
     infer_instance
   exact ae_eq_zero_of_integral_reverseTimeScalarTest T
     (hf.integrable (by norm_num : 1 ≤ (2 : ℝ≥0∞))) hzero
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -69,7 +69,7 @@ theorem shell_source_bound {d : ℕ} (A : XV d → PDE.Mat d) (H : XV d → ℝ)
   obtain ⟨G, hG, hgradShell⟩ := velocity_gradient_on_shell H gv alpha C ha ha1 hC
     hzero hcomp hgrad
   obtain ⟨D, hD, hsecond⟩ := flatteningPsi_deriv2_bound
-  have hLam : 0 < Lam := hlam.trans_le hlamLam
+  have hLam := hlam.trans_le hlamLam
   refine ⟨D * Lam * G ^ 2, by positivity, ?_⟩
   intro r hr q
   by_cases hq : q ∈ profileShell H alpha r

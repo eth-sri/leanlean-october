@@ -22,8 +22,11 @@ namespace PDE
 
 namespace HasWeakPartialDerivOn
 
+section
+variable {d : ℕ} {U : Set (Vec d)} {i : Fin d}
+
 /-- Zero has zero weak partial derivative. -/
-theorem zero {d : ℕ} {U : Set (Vec d)} {i : Fin d} :
+theorem zero :
     HasWeakPartialDerivOn U i (0 : Vec d → ℝ) 0 := by
   intro φ _hφSmooth _hφCompact _hφSupport
   simp only [Pi.zero_apply, zero_mul, MeasureTheory.integral_zero, neg_zero]
@@ -33,7 +36,7 @@ theorem zero {d : ℕ} {U : Set (Vec d)} {i : Fin d} :
 The four local-integrability assumptions are needed to apply additivity of the
 Bochner integral to the two test-function pairings.
 -/
-theorem add {d : ℕ} {U : Set (Vec d)} {i : Fin d}
+theorem add
     {u v gi hi : Vec d → ℝ}
     (hu : HasWeakPartialDerivOn U i u gi)
     (hv : HasWeakPartialDerivOn U i v hi)
@@ -49,8 +52,7 @@ theorem add {d : ℕ} {U : Set (Vec d)} {i : Fin d}
     simpa only [dφ] using
       (hφSmooth.continuous_fderiv (by simp)).clm_apply continuous_const
   have hdφCompact : HasCompactSupport dφ := by
-    simpa only [dφ] using
-      hφCompact.fderiv_apply (𝕜 := ℝ) (basisVec i)
+    exact id (HasCompactSupport.fderiv_apply ℝ hφCompact (basisVec i))
   have huIntegrable :
       MeasureTheory.Integrable (fun x => u x * dφ x) (volumeOn U) := by
     simpa only [smul_eq_mul] using
@@ -106,7 +108,7 @@ theorem add {d : ℕ} {U : Set (Vec d)} {i : Fin d}
             simp only [Pi.add_apply, add_mul]
 
 /-- Weak partial differentiation commutes with real scalar multiplication. -/
-theorem smul {d : ℕ} {U : Set (Vec d)} {i : Fin d}
+theorem smul
     {u gi : Vec d → ℝ}
     (h : HasWeakPartialDerivOn U i u gi) (c : ℝ) :
     HasWeakPartialDerivOn U i (c • u) (c • gi) := by
@@ -140,8 +142,13 @@ theorem smul {d : ℕ} {U : Set (Vec d)} {i : Fin d}
           exact Filter.Eventually.of_forall fun x => by
             simp only [Pi.smul_apply, smul_eq_mul, mul_assoc]
 
+end
+
+section
+variable {d : ℕ} {U : Set (Vec d)} {i : Fin d}
+
 /-- Weak partial differentiation commutes with negation. -/
-theorem neg {d : ℕ} {U : Set (Vec d)} {i : Fin d}
+theorem neg
     {u gi : Vec d → ℝ}
     (h : HasWeakPartialDerivOn U i u gi) :
     HasWeakPartialDerivOn U i (-u) (-gi) := by
@@ -157,7 +164,7 @@ theorem neg {d : ℕ} {U : Set (Vec d)} {i : Fin d}
 As for addition, local integrability of both values and both weak partial
 representatives is essential.
 -/
-theorem sub {d : ℕ} {U : Set (Vec d)} {i : Fin d}
+theorem sub
     {u v gi hi : Vec d → ℝ}
     (hu : HasWeakPartialDerivOn U i u gi)
     (hv : HasWeakPartialDerivOn U i v hi)
@@ -169,19 +176,24 @@ theorem sub {d : ℕ} {U : Set (Vec d)} {i : Fin d}
   simpa only [sub_eq_add_neg] using
     hu.add hv.neg huLoc hvLoc.neg hgiLoc hhiLoc.neg
 
+end
+
 end HasWeakPartialDerivOn
 
 namespace HasWeakGradientOn
 
+section
+variable {d : ℕ} {U : Set (Vec d)}
+
 /-- The zero vector field is a weak gradient of the zero function. -/
-theorem zero {d : ℕ} {U : Set (Vec d)} :
+theorem zero :
     HasWeakGradientOn U (0 : Vec d → ℝ) 0 := by
   intro i
   exact HasWeakPartialDerivOn.zero
 
 /-- Weak gradients commute with addition under the local-integrability
 hypotheses needed coordinatewise by the raw Bochner identities. -/
-theorem add {d : ℕ} {U : Set (Vec d)}
+theorem add
     {u v : Vec d → ℝ} {Du Dv : Vec d → Vec d}
     (hu : HasWeakGradientOn U u Du)
     (hv : HasWeakGradientOn U v Dv)
@@ -191,30 +203,25 @@ theorem add {d : ℕ} {U : Set (Vec d)}
       (fun x => Du x i) (volumeOn U))
     (hDvLoc : ∀ i, MeasureTheory.LocallyIntegrable
       (fun x => Dv x i) (volumeOn U)) :
-    HasWeakGradientOn U (u + v) (Du + Dv) := by
-  intro i
-  simpa only [Pi.add_apply] using!
-    (hu i).add (hv i) huLoc hvLoc (hDuLoc i) (hDvLoc i)
+    HasWeakGradientOn U (u + v) (Du + Dv) := fun i => id (HasWeakPartialDerivOn.add (hu i) (hv i) huLoc hvLoc (hDuLoc i) (hDvLoc i))
+
+section
+variable {u : Vec d → ℝ} {Du : Vec d → Vec d} (h : HasWeakGradientOn U u Du)
+include h
 
 /-- Weak gradients commute with real scalar multiplication. -/
-theorem smul {d : ℕ} {U : Set (Vec d)}
-    {u : Vec d → ℝ} {Du : Vec d → Vec d}
-    (h : HasWeakGradientOn U u Du) (c : ℝ) :
-    HasWeakGradientOn U (c • u) (c • Du) := by
-  intro i
-  simpa only [Pi.smul_apply, smul_eq_mul] using! (h i).smul c
+theorem smul (c : ℝ) :
+    HasWeakGradientOn U (c • u) (c • Du) := fun i => id (HasWeakPartialDerivOn.smul (h i) c)
 
 /-- Weak gradients commute with negation. -/
-theorem neg {d : ℕ} {U : Set (Vec d)}
-    {u : Vec d → ℝ} {Du : Vec d → Vec d}
-    (h : HasWeakGradientOn U u Du) :
-    HasWeakGradientOn U (-u) (-Du) := by
-  intro i
-  simpa only [Pi.neg_apply] using! (h i).neg
+theorem neg :
+    HasWeakGradientOn U (-u) (-Du) := fun i => id (HasWeakPartialDerivOn.neg (h i))
+
+end
 
 /-- Weak gradients commute with subtraction under the local-integrability
 hypotheses needed coordinatewise by the raw Bochner identities. -/
-theorem sub {d : ℕ} {U : Set (Vec d)}
+theorem sub
     {u v : Vec d → ℝ} {Du Dv : Vec d → Vec d}
     (hu : HasWeakGradientOn U u Du)
     (hv : HasWeakGradientOn U v Dv)
@@ -224,10 +231,9 @@ theorem sub {d : ℕ} {U : Set (Vec d)}
       (fun x => Du x i) (volumeOn U))
     (hDvLoc : ∀ i, MeasureTheory.LocallyIntegrable
       (fun x => Dv x i) (volumeOn U)) :
-    HasWeakGradientOn U (u - v) (Du - Dv) := by
-  intro i
-  simpa only [Pi.sub_apply] using!
-    (hu i).sub (hv i) huLoc hvLoc (hDuLoc i) (hDvLoc i)
+    HasWeakGradientOn U (u - v) (Du - Dv) := fun i => id (HasWeakPartialDerivOn.sub (hu i) (hv i) huLoc hvLoc (hDuLoc i) (hDvLoc i))
+
+end
 
 end HasWeakGradientOn
 

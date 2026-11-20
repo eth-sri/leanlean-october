@@ -46,7 +46,7 @@ include hlam hB hb hε hε1 hC hFC hrlim hv
 /-- The actual expanding-ball limit is a bounded classical whole-space solution,
 including its exact terminal values, relative to the explicit Hörmander input. -/
 theorem isClassicalViscousTerminalSolution_wholeSpace_ball_limit
-    (hH : HormanderHypoellipticityStatement) :
+    :
     IsClassicalViscousTerminalSolution univ (fun _ => 0) B b ε τ F
       (fun p => limUnder atTop (fun j => v j p)) ∧
     ∀ p ∈ evolutionPastClosedCylinder univ (fun _ => 0) τ,
@@ -55,7 +55,7 @@ theorem isClassicalViscousTerminalSolution_wholeSpace_ball_limit
   have hUnif (α S : ℝ) := tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S)
     hlam hB hb hε.le hε1 hC F hFC r hrlim v hv
   have hLocal (α S : ℝ) := classical_wholeSpace_ball_limit (α := α) (S0 := S)
-    hlam hB hb hε hε1 hC F hFC r hrlim v hv hBs hBsym hbs hH
+    hlam hB hb hε hε1 hC F hFC r hrlim v hv hBs hBsym hbs
   have hcl (p : KineticPoint n) (hp : p.time ≤ τ) :
       p ∈ movingClosedSlab univ (fun _ => 0) (p.time - 1) τ := by
     refine ⟨by linarith, hp, ?_⟩

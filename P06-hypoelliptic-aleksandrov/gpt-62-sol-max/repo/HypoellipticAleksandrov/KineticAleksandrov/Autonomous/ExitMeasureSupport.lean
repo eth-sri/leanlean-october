@@ -12,24 +12,25 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval)
+
+section
+variable (E : StripEvolution H) (hE : IsStripEvolution A H E)
+
 /-- No velocity-face exit occurs at or before the pole time. -/
-theorem stripExitOfRealization_face_at_pole_zero
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
-    stripExitOfRealization hH hlam hLam A H E hE T e
+theorem stripExitOfRealization_face_at_pole_zero (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
+    stripExitOfRealization A H E hE T e
       {p | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ e.1.time} = 0 := by
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
+  let Ω := stripExitOfRealization A H E hE T e
   let d := min (e.1.velocity 0 - H.lo) (H.hi - e.1.velocity 0)
   let c := d ^ 2 / (4 * Lam)
   have hd : 0 < d := lt_min (sub_pos.mpr e.2.2.1) (sub_pos.mpr e.2.2.2)
   have hc : 0 < c := div_pos (sq_pos_of_pos hd)
-    (mul_pos (by norm_num) (hlam.trans_le hLam))
-  have hn (n : ℕ) : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+    (mul_pos (by norm_num) (A.positive.trans_le A.ordered))
   have hb (n : ℕ) : Ω {p | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ e.1.time} ≤
       ENNReal.ofReal (2 * Real.exp (-((n : ℝ) + 1) * c)) := by
-    have h := strip_exit_early_face_of_realization hH hlam hLam A H E hE e.1.time T e
+    have h := strip_exit_early_face_of_realization A H E hE e.1.time T e
       le_rfl (1 / ((n : ℝ) + 1)) (by positivity)
     have hsub : {p : Point | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ e.1.time} ⊆
         {p | p.velocity 0 ∈ frontier H.carrier ∧
@@ -54,28 +55,24 @@ theorem stripExitOfRealization_face_at_pole_zero
   exact le_antisymm (ge_of_tendsto hz (Eventually.of_forall hb)) (zero_le)
 
 /-- The actual probability measure has the prescribed exit support even at the lower time. -/
-theorem strip_exit_probability_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (sMinus T : ℝ)
+theorem strip_exit_probability_of_realization (sMinus T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
-    stripExitOfRealization hH hlam hLam A H E hE T e univ = 1 ∧
-      stripExitOfRealization hH hlam hLam A H E hE T e
+    stripExitOfRealization A H E hE T e univ = 1 ∧
+      stripExitOfRealization A H E hE T e
         (reconstructionExit H sMinus T)ᶜ = 0 ∧
-      stripExitOfRealization hH hlam hLam A H E hE T e
+      stripExitOfRealization A H E hE T e
         {p | p.time < e.1.time} = 0 := by
-  refine ⟨stripExitOfRealization_mass_one hH hlam hLam A H E hE T e, ?_,
-    stripExitOfRealization_before_pole hH hlam hLam A H E hE T e⟩
-  have hf : ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+  refine ⟨stripExitOfRealization_mass_one A H E hE T e, ?_,
+    stripExitOfRealization_before_pole A H E hE T e⟩
+  have hf : ∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       ¬ (p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ e.1.time) := by
     rw [ae_iff]
-    simpa using stripExitOfRealization_face_at_pole_zero hH hlam hLam A H E hE T e
-  have hb : ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+    simpa using stripExitOfRealization_face_at_pole_zero A H E hE T e
+  have hb : ∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       p ∈ stripClosedExit H T := by
     rw [ae_iff]
-    exact stripExitOfRealization_compl_closedExit hH hlam hLam A H E hE T e
-  have hs : ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+    exact stripExitOfRealization_compl_closedExit A H E hE T e
+  have hs : ∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       p ∈ reconstructionExit H sMinus T := by
     filter_upwards [hb, hf] with p hp hpf
     rcases hp with hp | hp
@@ -94,16 +91,17 @@ theorem strip_exit_probability_of_realization
   rw [ae_iff] at hs
   exact hs
 
+end
+
 /-- Canonical probability normalization and exact terminal/lateral exit support. -/
-theorem strip_exit_probability
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (sMinus T : ℝ)
+theorem strip_exit_probability (sMinus T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
-    stripExit hH hLE hlam hLam A H T e univ = 1 ∧
-      stripExit hH hLE hlam hLam A H T e (reconstructionExit H sMinus T)ᶜ = 0 ∧
-      stripExit hH hLE hlam hLam A H T e {p | p.time < e.1.time} = 0 :=
-  strip_exit_probability_of_realization hH hlam hLam A H _
-    (stripEvolution_spec hH hLE hlam hLam A H) sMinus T e he
+    stripExit A H T e univ = 1 ∧
+      stripExit A H T e (reconstructionExit H sMinus T)ᶜ = 0 ∧
+      stripExit A H T e {p | p.time < e.1.time} = 0 :=
+  strip_exit_probability_of_realization A H _
+    (stripEvolution_spec A H) sMinus T e he
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

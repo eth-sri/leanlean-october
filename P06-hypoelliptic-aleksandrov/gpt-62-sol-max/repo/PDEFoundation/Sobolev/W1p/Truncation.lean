@@ -1,7 +1,8 @@
 module
 
 public import PDEFoundation.Sobolev.W1p.Composition
-public import PDEFoundation.Measure.EuclideanFieldMeasurability
+public import PDEFoundation.Ambient.EuclideanNorm
+public import Mathlib.MeasureTheory.Function.StronglyMeasurable.AEStronglyMeasurable
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 
@@ -64,32 +65,41 @@ theorem smoothPositivePartStep_continuous (c δ : ℝ) :
     Continuous (smoothPositivePartStep c δ) :=
   (smoothPositivePartStep_contDiff c δ).continuous
 
-theorem smoothPositivePartStep_nonneg (c δ t : ℝ) :
+section
+variable (c δ t : ℝ)
+
+theorem smoothPositivePartStep_nonneg :
     0 ≤ smoothPositivePartStep c δ t :=
   Real.smoothTransition.nonneg _
 
-theorem smoothPositivePartStep_le_one (c δ t : ℝ) :
+theorem smoothPositivePartStep_le_one :
     smoothPositivePartStep c δ t ≤ 1 :=
   Real.smoothTransition.le_one _
 
-theorem abs_smoothPositivePartStep_le_one (c δ t : ℝ) :
+theorem abs_smoothPositivePartStep_le_one :
     |smoothPositivePartStep c δ t| ≤ 1 := by
   rw [abs_of_nonneg (smoothPositivePartStep_nonneg c δ t)]
   exact smoothPositivePartStep_le_one c δ t
 
-theorem smoothPositivePartStep_eq_zero
-    {c δ t : ℝ} (hδ : 0 < δ) (ht : t ≤ c + δ) :
+end
+
+section
+variable {c δ t : ℝ} (hδ : 0 < δ)
+include hδ
+
+theorem smoothPositivePartStep_eq_zero (ht : t ≤ c + δ) :
     smoothPositivePartStep c δ t = 0 := by
   apply Real.smoothTransition.zero_of_nonpos
   rw [sub_nonpos, div_le_one hδ]
   linarith
 
-theorem smoothPositivePartStep_eq_one
-    {c δ t : ℝ} (hδ : 0 < δ) (ht : c + 2 * δ ≤ t) :
+theorem smoothPositivePartStep_eq_one (ht : c + 2 * δ ≤ t) :
     smoothPositivePartStep c δ t = 1 := by
   apply Real.smoothTransition.one_of_one_le
   rw [le_sub_iff_add_le, le_div_iff₀ hδ]
   linarith
+
+end
 
 theorem smoothPositivePartStep_intervalIntegrable (c δ a b : ℝ) :
     IntervalIntegrable (smoothPositivePartStep c δ) volume a b :=
@@ -103,13 +113,16 @@ theorem smoothPositivePartApprox_hasDerivAt (c δ t : ℝ) :
     ((smoothPositivePartStep_continuous c δ).stronglyMeasurableAtFilter _ _)
     (smoothPositivePartStep_continuous c δ).continuousAt
 
-theorem deriv_smoothPositivePartApprox (c δ : ℝ) :
+section
+variable (c δ : ℝ)
+
+theorem deriv_smoothPositivePartApprox :
     deriv (smoothPositivePartApprox c δ) =
       smoothPositivePartStep c δ := by
   funext t
   exact (smoothPositivePartApprox_hasDerivAt c δ t).deriv
 
-theorem smoothPositivePartApprox_contDiff_one (c δ : ℝ) :
+theorem smoothPositivePartApprox_contDiff_one :
     ContDiff ℝ 1 (smoothPositivePartApprox c δ) := by
   rw [contDiff_one_iff_deriv]
   refine ⟨fun t => ?_, ?_⟩
@@ -118,13 +131,15 @@ theorem smoothPositivePartApprox_contDiff_one (c δ : ℝ) :
     exact smoothPositivePartStep_continuous c δ
 
 /-- The one-sided positive-part approximation is smooth to every order. -/
-theorem smoothPositivePartApprox_contDiff (c δ : ℝ) :
+theorem smoothPositivePartApprox_contDiff :
     ContDiff ℝ (⊤ : ℕ∞) (smoothPositivePartApprox c δ) := by
   rw [contDiff_infty_iff_deriv]
   refine ⟨fun t => ?_, ?_⟩
   · exact (smoothPositivePartApprox_hasDerivAt c δ t).differentiableAt
   · rw [deriv_smoothPositivePartApprox]
     exact smoothPositivePartStep_contDiff c δ
+
+end
 
 theorem abs_deriv_smoothPositivePartApprox_le (c δ t : ℝ) :
     |deriv (smoothPositivePartApprox c δ) t| ≤ 1 := by
@@ -189,20 +204,21 @@ theorem smoothPositivePartApprox_eq_zero_of_le
     smoothPositivePartStep_eq_zero hδ
       (by linarith [hs.2, le_of_lt hδ])
 
+section
+variable {c δ : ℝ} (hδ : 0 < δ) (t : ℝ)
+include hδ
+
 /-- The one-sided approximation to the positive part is pointwise
 nonnegative. -/
-theorem smoothPositivePartApprox_nonneg
-    {c δ : ℝ} (hδ : 0 < δ) (t : ℝ) :
+theorem smoothPositivePartApprox_nonneg :
     0 ≤ smoothPositivePartApprox c δ t := by
   rcases le_total t c with htc | hct
   · rw [smoothPositivePartApprox_eq_zero_of_le hδ htc]
   · rw [smoothPositivePartApprox]
-    exact intervalIntegral.integral_nonneg hct
-      (fun s _ => smoothPositivePartStep_nonneg c δ s)
+    exact intervalIntegral.integral_nonneg hct fun s x => smoothPositivePartStep_nonneg c δ s
 
 /-- The scalar approximation is uniformly within `2δ` of the positive part. -/
-theorem abs_smoothPositivePartApprox_sub_le
-    {c δ : ℝ} (hδ : 0 < δ) (t : ℝ) :
+theorem abs_smoothPositivePartApprox_sub_le :
     |smoothPositivePartApprox c δ t - max (t - c) 0| ≤ 2 * δ := by
   rcases le_or_gt t c with htc | htc
   · have hzero : smoothPositivePartApprox c δ t = 0 := by
@@ -265,15 +281,19 @@ theorem abs_smoothPositivePartApprox_sub_le
     rw [abs_le]
     constructor <;> linarith
 
+end
+
 namespace W1pFunction
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
+section
+variable (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞) (u : W1pFunction U p)
+  (c : ℝ)
+include hU hp hpTop u c
+
 /-- Value integrability, gradient integrability, and weak differentiation for truncation. -/
-theorem positivePartSubConst_data
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) (c : ℝ) :
+theorem positivePartSubConst_data :
     MemLpOn U p (fun x => max (u.toFun x - c) 0) ∧
       GradMemLpOn U p
         (fun x => {y | c < u.toFun y}.indicator u.grad x) ∧
@@ -495,10 +515,7 @@ theorem positivePartSubConst_data
 
 /-- Positive-part truncation of a representative `W^{1,p}` function at a
 constant level.  Both the value and gradient representatives are literal. -/
-noncomputable def positivePartSubConst
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) (c : ℝ) :
+noncomputable def positivePartSubConst :
     W1pFunction U p where
   toFun := fun x => max (u.toFun x - c) 0
   grad := fun x =>
@@ -510,23 +527,25 @@ noncomputable def positivePartSubConst
   hasWeakGradient :=
     (positivePartSubConst_data hU hp hpTop u c).2.2
 
+end
+
+section
+variable (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞) (u : W1pFunction U p)
+  (c : ℝ)
+
 @[simp]
-theorem positivePartSubConst_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) (c : ℝ) :
+theorem positivePartSubConst_toFun :
     (u.positivePartSubConst hU hp hpTop c).toFun =
       fun x => max (u.toFun x - c) 0 :=
   rfl
 
 @[simp]
-theorem positivePartSubConst_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) (c : ℝ) :
+theorem positivePartSubConst_grad :
     (u.positivePartSubConst hU hp hpTop c).grad =
       fun x => {y | c < u.toFun y}.indicator u.grad x :=
   rfl
+
+end
 
 end W1pFunction
 

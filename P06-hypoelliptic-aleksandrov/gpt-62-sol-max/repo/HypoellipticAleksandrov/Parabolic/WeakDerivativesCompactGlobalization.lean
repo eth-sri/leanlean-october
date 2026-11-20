@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.Analysis.Calculus.FDeriv.Mul
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientPairingLimit
 
 /-!
 # Globalization of compactly supported weak derivatives
@@ -24,25 +25,18 @@ open Filter MeasureTheory
 open Set
 open scoped ENNReal Topology
 
-private theorem value_eq_zero_of_not_mem_tsupport
-    {X E : Type*} [TopologicalSpace X] [Zero E] {f : X → E} {x : X}
-    (hx : x ∉ tsupport f) : f x = 0 := by
-  by_contra hzero
-  exact hx (subset_closure (Function.mem_support.mpr hzero))
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)}
 
-private theorem weakFDerivApply_univ_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    {u du : TimeVelocity d → ℝ} (q : TimeVelocity d)
-    (h : ∀ φ : TimeVelocity d → ℝ,
-      ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
-      (∫ z in U, u z * fderiv ℝ φ z q ∂(volume : Measure (TimeVelocity d))) =
-        -∫ z in U, du z * φ z ∂(volume : Measure (TimeVelocity d)))
+section
+variable (hU : IsOpen U) {u du : TimeVelocity d → ℝ}
+include hU
+
+/-- Globalize a weak directional derivative when both representatives are supported in the open carrier. -/
+theorem HasWeakFDerivApplyOn.univ_of_tsupport_subset {q : TimeVelocity d}
+    (h : HasWeakFDerivApplyOn U q u du)
     (hu : tsupport u ⊆ U) (hdu : tsupport du ⊆ U) :
-    ∀ φ : TimeVelocity d → ℝ,
-      ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ Set.univ →
-      (∫ z in Set.univ, u z * fderiv ℝ φ z q
-        ∂(volume : Measure (TimeVelocity d))) =
-        -∫ z in Set.univ, du z * φ z ∂(volume : Measure (TimeVelocity d)) := by
+    HasWeakFDerivApplyOn univ q u du := by
   intro φ hφ hφCompact _
   let K : Set (TimeVelocity d) :=
     (tsupport u ∪ tsupport du) ∩ tsupport φ
@@ -82,9 +76,9 @@ private theorem weakFDerivApply_univ_of_tsupport_subset
       have hdb : fderiv ℝ b z = 0 := hbFDerivZero hzK
       simp [hbz, hdb]
     · have hdφ : fderiv ℝ φ z = 0 := by
-        apply value_eq_zero_of_not_mem_tsupport
+        apply _root_.HypoellipticAleksandrov.Parabolic.eq_zero_of_not_mem_tsupport
         exact fun hzderiv => hzφ ((tsupport_fderiv_subset ℝ) hzderiv)
-      have hφz : φ z = 0 := value_eq_zero_of_not_mem_tsupport hzφ
+      have hφz : φ z = 0 := _root_.HypoellipticAleksandrov.Parabolic.eq_zero_of_not_mem_tsupport hzφ
       simp [hdφ, hφz]
   have hrightPoint (z : TimeVelocity d) : du z * ψ z = du z * φ z := by
     by_cases hduz : du z = 0
@@ -117,7 +111,7 @@ private theorem weakFDerivApply_univ_of_tsupport_subset
       by_cases hz : z ∈ U
       · simp [hz]
       · have huz : u z = 0 := by
-          apply value_eq_zero_of_not_mem_tsupport
+          apply _root_.HypoellipticAleksandrov.Parabolic.eq_zero_of_not_mem_tsupport
           exact fun hzts => hz (hu hzts)
         simp [hz, huz]
   have hrightUniv :
@@ -129,7 +123,7 @@ private theorem weakFDerivApply_univ_of_tsupport_subset
       by_cases hz : z ∈ U
       · simp [hz]
       · have hduz : du z = 0 := by
-          apply value_eq_zero_of_not_mem_tsupport
+          apply _root_.HypoellipticAleksandrov.Parabolic.eq_zero_of_not_mem_tsupport
           exact fun hzts => hz (hdu hzts)
         simp [hz, hduz]
   rw [hleftUniv, hrightUniv, ← hleftRestrict, ← hrightRestrict]
@@ -139,29 +133,25 @@ private theorem weakFDerivApply_univ_of_tsupport_subset
 carrier is
 also the ambient raw weak time derivative. -/
 theorem HasWeakTimeDerivOn.univ_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    {u du : TimeVelocity d → ℝ}
     (h : HasWeakTimeDerivOn U u du)
     (hu : tsupport u ⊆ U)
     (hdu : tsupport du ⊆ U) :
-    HasWeakTimeDerivOn Set.univ u du := by
-  exact weakFDerivApply_univ_of_tsupport_subset hU (1, 0) h hu hdu
+    HasWeakTimeDerivOn Set.univ u du := HasWeakFDerivApplyOn.univ_of_tsupport_subset hU h hu hdu
+
+end
 
 /-- A raw weak velocity derivative whose topological supports lie in an open
 carrier is also the ambient raw weak velocity derivative. -/
-theorem HasWeakVelocityPartialDerivOn.univ_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+theorem HasWeakVelocityPartialDerivOn.univ_of_tsupport_subset (hU : IsOpen U)
     {i : Fin d} {u dui : TimeVelocity d → ℝ}
     (h : HasWeakVelocityPartialDerivOn U i u dui)
     (hu : tsupport u ⊆ U)
     (hdui : tsupport dui ⊆ U) :
-    HasWeakVelocityPartialDerivOn Set.univ i u dui := by
-  exact weakFDerivApply_univ_of_tsupport_subset hU (0, Pi.single i 1) h hu hdui
+    HasWeakVelocityPartialDerivOn Set.univ i u dui := HasWeakFDerivApplyOn.univ_of_tsupport_subset hU h hu hdui
 
 /-- Restricted `Lᵖ` membership globalizes when the selected representative
 vanishes pointwise off the measurable carrier. -/
-theorem ParabolicMemLpOn.memLp_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : MeasurableSet U)
+theorem ParabolicMemLpOn.memLp_of_support_subset (hU : MeasurableSet U)
     {p : ℝ≥0∞} {f : TimeVelocity d → ℝ}
     (hf : ParabolicMemLpOn U p f)
     (hsupp : Function.support f ⊆ U) :
@@ -177,5 +167,7 @@ theorem ParabolicMemLpOn.memLp_of_support_subset
       simp [hz, hfz]
   rw [← hindicator]
   exact (memLp_indicator_iff_restrict hU).2 hf
+
+end
 
 end HypoellipticAleksandrov.Parabolic

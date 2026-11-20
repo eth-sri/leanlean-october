@@ -9,34 +9,32 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Filter Parabolic SectionTwo
 
-variable (hH : HormanderHypoellipticityStatement)
-  (hLE : LiebermanEllipsoidDirichletStatement)
+variable
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-  (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
+section
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+
 /-- The actual ambient exit measure lies on the prescribed terminal/lateral trace. -/
-theorem ballExitRaw_ae_trace (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) :
-    ∀ᵐ Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T,
+theorem ballExitRaw_ae_trace :
+    ∀ᵐ Q ∂ballExitRaw hd B hB v₀ hR P T,
       Q ∈ localTrace P.1.time T.1 v₀ R := by
   rw [ae_iff]
-  exact (ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR P T).2.1
+  exact (ballExitRaw_spec hd B hB v₀ hR P T).2.1
 
 /-- Both time endpoints and the full centered Euclidean cone hold almost everywhere. -/
-theorem ballExitRaw_cone (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) :
-    ∀ᵐ Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T,
+theorem ballExitRaw_cone :
+    ∀ᵐ Q ∂ballExitRaw hd B hB v₀ hR P T,
       P.1.time ≤ Q.time ∧ Q.time ≤ T.1 ∧
       PDE.vecEuclideanNorm (Q.position - P.1.position - (Q.time - P.1.time) • v₀) ≤
         R * (Q.time - P.1.time) := by
-  have htr := ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T
-  have ht : ∀ᵐ Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T,
-      P.1.time ≤ Q.time := htr.mono (fun Q hQ => (localTrace_subset_closed T.2.le v₀ R hQ).1)
+  have htr := ballExitRaw_ae_trace hd B hB v₀ hR P T
+  have ht := htr.mono (fun Q hQ => (localTrace_subset_closed T.2.le v₀ R hQ).1)
   have hcone := cone_norm_of_directional_ae
-    (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) P.1 v₀ R hR.le ht (fun e => by
-      have he := ballExitRaw_directional_cone hH hLE hd hlam hLam B hB v₀ hR P T
+    (ballExitRaw hd B hB v₀ hR P T) P.1 v₀ R hR.le ht (fun e => by
+      have he := ballExitRaw_directional_cone hd B hB v₀ hR P T
         (-(PDE.vecEuclideanNorm e * R) - PDE.vecDot e v₀) e
         (-(-(PDE.vecEuclideanNorm e * R) - PDE.vecDot e v₀) * P.1.time -
           PDE.vecDot e P.1.position)
@@ -49,8 +47,8 @@ theorem ballExitRaw_cone (P : LocalBallStart v₀ R)
     (localTrace_subset_closed T.2.le v₀ R hQ).2.1, hQc⟩
 
 /-- The canonical exit-coordinate measure has the source's exact Euclidean cone support. -/
-theorem ballExit_cone (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
-    ∀ᵐ z ∂ballExit hH hLE hd hlam hLam B hB v₀ hR P T,
+theorem ballExit_cone :
+    ∀ᵐ z ∂ballExit hd B hB v₀ hR P T,
       P.1.time ≤ z.2.1 ∧ z.2.1 ≤ T.1 ∧
       PDE.vecEuclideanNorm z.1 ≤ R * (z.2.1 - P.1.time) := by
   unfold ballExit
@@ -61,6 +59,8 @@ theorem ballExit_cone (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}
           (isClosed_le (PDE.continuous_vecEuclideanNorm.comp continuous_fst)
             (continuous_const.mul (continuous_snd.fst.sub continuous_const))))).measurableSet)
     |>.mpr
-  exact ballExitRaw_cone hH hLE hd hlam hLam B hB v₀ hR P T
+  exact ballExitRaw_cone hd B hB v₀ hR P T
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

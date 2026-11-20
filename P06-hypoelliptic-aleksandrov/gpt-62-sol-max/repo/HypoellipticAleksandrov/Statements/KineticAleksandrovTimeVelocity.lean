@@ -1,11 +1,11 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.MainAssembly
-public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.Final
+import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.SmoothEstimateSource
 public import HypoellipticAleksandrov.KineticAleksandrov.Geometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import HypoellipticAleksandrov.Geometry.KineticPointMeasure
+import HypoellipticAleksandrov.Statements.KineticAleksandrovTimeVelocityLocalised
 
 /-!
 # Kinetic Aleksandrov estimate for time–velocity coefficients
@@ -49,8 +49,13 @@ theorem kinetic_aleksandrov_timeVelocity
             C * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
               (eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_timeVelocity_proof
-    d hd lam Lam p hlam hLam hp
+  obtain ⟨C, hC, h⟩ := kinetic_aleksandrov_timeVelocity_localised d hd lam Lam p hlam hLam hp
+  refine ⟨C, hC, ?_⟩
+  intro P₀ R hR A hBorel hsym hlo hhi f u hf hc hr hsub hLp P hP
+  refine (h P₀ R hR A hBorel hsym hlo hhi f u hf hc hr hsub hLp P hP).trans ?_
+  exact add_le_add le_rfl (mul_le_mul_of_nonneg_left
+    (TheoremA.localized_positive_source_norm_le volume (isOpen_backwardCylinder P₀ R hR)
+      u f hr.continuousOn _ hLp) (mul_nonneg hC (Real.rpow_nonneg hR.le _)))
 
 end KineticAleksandrov
 

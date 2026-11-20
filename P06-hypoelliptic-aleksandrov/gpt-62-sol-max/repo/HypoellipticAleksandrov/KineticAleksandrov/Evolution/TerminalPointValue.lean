@@ -16,7 +16,7 @@ enters only through the premise `ClassicalTerminalExistence`, which is exactly i
 conclusion; the premise is discharged by that theorem.
 
 * `ClassicalTerminalExistence`: the classical existence statement as a `Prop`.
-* `exists_unique_terminalValue`: existence from the premise and uniqueness by comparison.
+* `exists_unique_terminalValue`: existence and uniqueness inherited from the classical solution.
 * `terminalValue`: the unique value, chosen from the `∃!` statement.
 * `terminalValue_spec`, `terminalValue_eq_of_solution`: the full characterization.
 -/
@@ -46,13 +46,36 @@ def ClassicalTerminalExistence {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PD
         IsClassicalTerminalSolution Ω γ B b τ F v →
           EqOn v u (evolutionPastClosedCylinder Ω γ τ))
 
+/-- Assumptions and classical solvability data used to construct terminal operators. -/
+structure TerminalEvolutionData {n : ℕ} (lam Lam m L_b : ℝ)
+    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+    (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) : Prop where
+  dim_pos : 1 ≤ n
+  lam_pos : 0 < lam
+  lam_le : lam ≤ Lam
+  m_pos : 0 < m
+  m_le : m ≤ L_b
+  domain : IsAdmissibleEvolutionDomain Ω
+  curve : IsContinuousPiecewiseC1 γ
+  smooth_coefficient : IsSmoothFullKineticCoefficient B
+  symmetric : IsSymmetricFullKineticCoefficient B
+  elliptic : HasEverywhereLoewnerBounds lam Lam B
+  smooth_drift : IsSmoothDrift b
+  lipschitz : HasEuclideanLipschitzDrift L_b b
+  coercive : HasUnitDirectionDriftCoercivity m b
+  exists_solution : ClassicalTerminalExistence Ω γ B b
+
 section Outside
 
 variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
   {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {τ : ℝ}
 
+section
+variable (hΩ : IsOpen Ω) (hγ : Continuous γ)
+include hΩ hγ
+
 /-- Sums of classical terminal solutions solve the problem for the summed data. -/
-theorem IsClassicalTerminalSolution.add (hΩ : IsOpen Ω) (hγ : Continuous γ)
+theorem IsClassicalTerminalSolution.add
     {F G : BoundedBorel (EvolutionAmbientState n)} {u v : KineticPoint n → ℝ}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u)
     (hv : IsClassicalTerminalSolution Ω γ B b τ G v) :
@@ -80,7 +103,7 @@ theorem IsClassicalTerminalSolution.add (hΩ : IsOpen Ω) (hγ : Continuous γ)
     simp
 
 /-- Real multiples of classical terminal solutions solve the problem for the scaled data. -/
-theorem IsClassicalTerminalSolution.smul (hΩ : IsOpen Ω) (hγ : Continuous γ) (c : ℝ)
+theorem IsClassicalTerminalSolution.smul (c : ℝ)
     {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) :
     IsClassicalTerminalSolution Ω γ B b τ (c • F) (fun q => c * u q) := by
@@ -104,6 +127,8 @@ theorem IsClassicalTerminalSolution.smul (hΩ : IsOpen Ω) (hγ : Continuous γ)
     rw [hl p hp]
     simp
 
+end
+
 /-- Two classical terminal solutions with the same datum agree on the past closed cylinder. -/
 theorem IsClassicalTerminalSolution.eqOn_of_lam {lam Lam : ℝ} (hΩ : IsOpen Ω)
     (hγ : Continuous γ) (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
@@ -126,75 +151,58 @@ end Outside
 
 section EvolutionData
 
-variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-variable (hΩ : IsAdmissibleEvolutionDomain Ω)
-variable (hγ : IsContinuousPiecewiseC1 γ)
-variable (hB_smooth : IsSmoothFullKineticCoefficient B)
-variable (hB_symm : IsSymmetricFullKineticCoefficient B)
-variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-variable (hb_smooth : IsSmoothDrift b)
-variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-variable (hEx : ClassicalTerminalExistence Ω γ B b)
-include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
-include hb_smooth hb_lipschitz hb_coercive hEx
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    (hEx : ClassicalTerminalExistence Ω γ B b)
+include hEx
+
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+  (F : BoundedBorel (EvolutionAmbientState n)) (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
+include σ τ hστ p F hF
 
 /-- The point value of the terminal evolution at the source state `p` is well defined:
 there is exactly one real number which is the value at `(σ, p)` of some classical terminal
 solution with datum `F`. -/
-theorem exists_unique_terminalValue
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
+theorem exists_unique_terminalValue :
     ∃! x : ℝ, ∃ u : KineticPoint n → ℝ,
       IsClassicalTerminalSolution Ω γ B b τ F u ∧
       u ⟨σ, p.1.1, p.1.2⟩ = x := by
-  obtain ⟨u, hu, -, -⟩ := hEx τ F hF
-  refine ⟨u ⟨σ, p.1.1, p.1.2⟩, ⟨u, hu, rfl⟩, ?_⟩
+  obtain ⟨u, hu, -, unique⟩ := hEx τ F hF
+  refine ⟨_, ⟨u, hu, rfl⟩, ?_⟩
   rintro x ⟨v, hv, rfl⟩
-  exact IsClassicalTerminalSolution.eqOn_of_lam
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hlam hB_ell hb_lipschitz hv hu
-    (mk_mem_evolutionPastClosedCylinder hστ p)
+  exact unique v hv (mk_mem_evolutionPastClosedCylinder hστ p)
 
 /-- The unique real value `S σ τ hστ p F hF` of the terminal evolution at the source
 state `p`, chosen from the `∃!` statement `exists_unique_terminalValue`. -/
-def terminalValue
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) : ℝ :=
-  (exists_unique_terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF).choose
+def terminalValue : ℝ :=
+  (exists_unique_terminalValue hEx σ τ hστ p F hF).choose
 
-local notation "S" => terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+end
+
+local notation "S" => terminalValue hEx
+
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+  (F : BoundedBorel (EvolutionAmbientState n)) (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
 
 /-- The chosen value is the value of some classical terminal solution. -/
-theorem terminalValue_spec
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
+theorem terminalValue_spec :
     ∃ u : KineticPoint n → ℝ,
       IsClassicalTerminalSolution Ω γ B b τ F u ∧
       u ⟨σ, p.1.1, p.1.2⟩ = S σ τ hστ p F hF :=
-  (exists_unique_terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+  (exists_unique_terminalValue hEx
     σ τ hστ p F hF).choose_spec.1
 
 /-- The chosen value equals the value of every classical terminal solution. -/
 theorem terminalValue_eq_of_solution
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
     (u : KineticPoint n → ℝ)
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) :
     S σ τ hστ p F hF = u ⟨σ, p.1.1, p.1.2⟩ :=
-  ((exists_unique_terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+  ((exists_unique_terminalValue hEx
     σ τ hστ p F hF).choose_spec.2 _ ⟨u, hu, rfl⟩).symm
+
+end
 
 end EvolutionData
 

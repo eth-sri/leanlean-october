@@ -24,34 +24,38 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
+section
+variable (hΩ : IsOpen Ω)
+include hΩ
+
 /-- The `H⁻¹` carrier dual to the spatial Hilbert realization of `H¹₀(Ω)`. -/
-abbrev H10HilbertGraphDual (hΩ : IsOpen Ω) : Type _ :=
+abbrev H10HilbertGraphDual : Type _ :=
   StrongDual ℝ (H10HilbertGraph hΩ)
 
 /-- The canonical continuous pivot embedding from spatial `L²` into the dual
 of the spatial Hilbert realization of `H¹₀`. -/
-noncomputable def scalarLpToH10HilbertGraphDual
-    (hΩ : IsOpen Ω) :
+noncomputable def scalarLpToH10HilbertGraphDual :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ] H10HilbertGraphDual hΩ :=
   ContinuousLinearMap.toSesqForm (valueCLM hΩ)
 
+section
+variable (h : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+
 @[simp]
 theorem scalarLpToH10HilbertGraphDual_apply
-    (hΩ : IsOpen Ω) (h : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (v : H10HilbertGraph hΩ) :
     scalarLpToH10HilbertGraphDual hΩ h v = inner ℝ (valueCLM hΩ v) h := by
   change inner ℝ h (valueCLM hΩ v) = inner ℝ (valueCLM hΩ v) h
   exact real_inner_comm _ _
 
 /-- The pivot embedding is bounded by the operator norm of the spatial value map. -/
-theorem norm_scalarLpToH10HilbertGraphDual_apply_le
-    (hΩ : IsOpen Ω) (h : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    ‖scalarLpToH10HilbertGraphDual hΩ h‖ ≤ ‖valueCLM hΩ‖ * ‖h‖ := by
-  exact ContinuousLinearMap.toSesqForm_apply_norm_le
+theorem norm_scalarLpToH10HilbertGraphDual_apply_le :
+    ‖scalarLpToH10HilbertGraphDual hΩ h‖ ≤ ‖valueCLM hΩ‖ * ‖h‖ := ContinuousLinearMap.toSesqForm_apply_norm_le
+
+end
 
 /-- Dense range of the spatial value map makes the pivot embedding injective. -/
-theorem scalarLpToH10HilbertGraphDual_injective
-    (hΩ : IsOpen Ω) :
+theorem scalarLpToH10HilbertGraphDual_injective :
     Function.Injective (scalarLpToH10HilbertGraphDual hΩ) := by
   intro h k hhk
   have h_dense : Dense
@@ -68,5 +72,7 @@ theorem scalarLpToH10HilbertGraphDual_injective
         scalarLpToH10HilbertGraphDual hΩ k v :=
     congrArg (fun ℓ : H10HilbertGraphDual hΩ => ℓ v) hhk
   simpa only [scalarLpToH10HilbertGraphDual_apply, ContinuousLinearMap.coe_coe] using h_eval
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

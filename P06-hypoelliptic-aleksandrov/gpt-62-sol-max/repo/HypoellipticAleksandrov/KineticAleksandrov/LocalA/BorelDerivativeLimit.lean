@@ -21,9 +21,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter Metric
 open scoped Topology ContDiff
 
+section
+variable {E : Type*}
+
 /-- Compactness of all jets on a closed ball, with one common subsequence. -/
-theorem corrector_all_jets_subsequence
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+theorem corrector_all_jets_subsequence [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     (f : ℕ → E → ℝ) (a : E) (r : ℝ)
     (hs : ∀ j, ∀ x ∈ closedBall a r, ContDiffAt ℝ (⊤ : ℕ∞) (f j) x)
     (M : ℕ → NNReal)
@@ -67,7 +69,6 @@ theorem corrector_all_jets_subsequence
       (isCompact_closedBall _ _) (range (J m))
     · rintro _ x ⟨j, rfl⟩
       rw [mem_closedBall, dist_zero_right]
-      change ‖iteratedFDeriv ℝ m (f j) x‖ ≤ (M m : ℝ)
       exact NNReal.coe_le_coe.mpr (hb j m x x.property)
     · apply (LipschitzWith.uniformEquicontinuous
         (fun q : range (J m) => (q.val : K → _)) (M (m + 1)) ?_).equicontinuous
@@ -87,8 +88,7 @@ theorem corrector_all_jets_subsequence
     simp
 
 /-- Uniform convergence plus bounds at every order recover smoothness and all jets. -/
-theorem corrector_derivative_recovery
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+theorem corrector_derivative_recovery [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     (f : ℕ → E → ℝ) (u : E → ℝ) (a : E) (r : ℝ)
     (hs : ∀ j, ∀ x ∈ closedBall a r, ContDiffAt ℝ (⊤ : ℕ∞) (f j) x)
     (M : ℕ → NNReal)
@@ -121,7 +121,7 @@ theorem corrector_derivative_recovery
     simpa only [fderiv_iteratedFDeriv, Function.comp_apply] using
       ((hs (φ j) y (ball_subset_closedBall hy)).differentiableAt_iteratedFDeriv
         (ENat.natCast_lt_of_coe_top_le_withTop le_rfl m)).hasFDerivAt
-  have htaylor : HasFTaylorSeriesUpToOn (⊤ : ℕ∞) u g (ball a r) :=
+  have htaylor :=
     (hasFTaylorSeriesUpToOn_top_iff' le_rfl).mpr
       ⟨hzero, fun m x hx => (hder m x hx).hasFDerivWithinAt⟩
   refine ⟨htaylor.contDiffOn, φ, hφ, fun m => ?_⟩
@@ -133,8 +133,7 @@ theorem corrector_derivative_recovery
   exact ((hg m).mono ball_subset_closedBall).congr_right (fun _ hx => he _ hx)
 
 /-- Derivative estimates with convergent amplitudes pass to the same smooth limit. -/
-theorem corrector_derivative_estimates
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+theorem corrector_derivative_estimates [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     (f : ℕ → E → ℝ) (u : E → ℝ) (a : E) (r : ℝ) (hr : 0 < r)
     (hs : ∀ j, ∀ x ∈ closedBall a r, ContDiffAt ℝ (⊤ : ℕ∞) (f j) x)
     (hu : TendstoUniformlyOn f u atTop (closedBall a r))
@@ -184,5 +183,7 @@ theorem corrector_derivative_estimates
   have hright := ((hV.comp (tendsto_add_atTop_nat N)).comp hφ.tendsto_atTop).const_mul (b m)
   exact le_of_tendsto_of_tendsto hleft hright (Eventually.of_forall fun j =>
     hbound (φ j + N) m hm a (ball_subset_closedBall ha))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

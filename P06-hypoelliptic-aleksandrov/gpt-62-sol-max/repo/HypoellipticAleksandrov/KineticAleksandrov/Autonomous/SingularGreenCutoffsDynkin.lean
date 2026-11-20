@@ -1,8 +1,9 @@
 module
 
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.WeakCalculus
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsC2
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionWeak
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionComparison
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassComparison
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TerminalMomentBoundsKernel
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceInterior
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceTraces
@@ -21,8 +22,8 @@ open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set Measu
 /-- A C² test with a bounded terminal error obeys the same error bound against
 its actual signed Green potential. No Green identity is taken as a premise. -/
 theorem fullspace_green_terminal_error
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
-    (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
+    {lam Lam : ℝ}
+    (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (T : ℝ)
     (u g : Point → ℝ)
     (hu : ContDiffOn ℝ 2 (u ∘ evolutionHomeomorph 1)
@@ -65,13 +66,13 @@ theorem fullspace_green_terminal_error
       (b := identityDrift 1) ((hu.contDiffAt (hU.mem_nhds hx)).of_le (by simp)) (x := x)
     dsimp only [Function.comp_apply]
     rw [he, hop _ hx.1]
-  have hvw := weak_same_source_sub A hw hue
+  have hvw := hw.sub_same_source hue (evolutionCoefficient_smooth A) (identityDrift_smooth 1)
   have hWc : ContinuousOn W D :=
-    continuousOn_duhamelPotential_bounded_signed hH autonomousWholeDomain_admissible
+    continuousOn_duhamelPotential_bounded_signed autonomousWholeDomain_admissible
       autonomousWholeDomain_measurable continuous_const (evolutionCoefficient A.a)
       (identityDrift 1) E.1 E.2 hE (evolutionCoefficient_smooth A)
       (evolutionCoefficient_symmetric A.a) (identityDrift_smooth 1)
-      lam Lam 1 hlam one_pos (evolutionCoefficient_bounds A) (identityDrift_bounds 1).2
+      lam Lam 1 A.positive one_pos (evolutionCoefficient_bounds A) (identityDrift_bounds 1).2
       T g hg M hM hgb (by
         intro p hp
         apply hgz p
@@ -82,13 +83,13 @@ theorem fullspace_green_terminal_error
           rw [movingDomain_wholeSpace]; trivial⟩)
   have hvc : ContinuousOn v D := hWc.sub (huc.mono (fun _ hp => ⟨hp.1.le, subset_closure hp.2⟩))
   have hvs : ContDiffOn ℝ (⊤ : ℕ∞) (v ∘ evolutionHomeomorph 1) U :=
-    homogeneous_weak_contDiffOn hH hlam A hU hvw
+    homogeneous_weak_contDiffOn A hU hvw
       (hvc.comp (evolutionHomeomorph 1).continuous.continuousOn (fun _ hx => hx))
   have hve := duhamel_operator_eq_of_smooth_weak hU (evolutionCoefficient_smooth A)
     (evolutionCoefficient_symmetric A.a) (identityDrift_smooth 1) hvs
     continuousOn_const hvw
   have hvr (p : Point) (hp : p ∈ D) : IsSliceRegularAt v p :=
-    reconstruction_slice_regular_of_contDiffOn hD hvs p hp
+    IsSliceRegularAt.of_packed_smooth hD hvs p hp
   have hvop (p : Point) (hp : p ∈ D) :
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) v p = 0 := by
     have hx : (evolutionHomeomorph 1).symm p ∈ U := by
@@ -132,7 +133,7 @@ theorem fullspace_green_terminal_error
         |f p| ≤ (T - p₀.time) * M + Cu) : f p₀ ≤ δ := by
     have hh := growth_comparison
       (isOpen_of_isAdmissibleEvolutionDomain autonomousWholeDomain_admissible)
-      continuous_const hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
+      continuous_const A.positive (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
       (le_refl 0) zero_le_one (a := p₀.time) (T := T) (u := fun p => f p - δ)
       ⟨_, fun p hp => sub_le_sub_right ((le_abs_self _).trans (hfb p hp)) δ⟩
       ((hfc.sub continuousOn_const).mono (fun _ hp => ⟨hp.2.1, hp.2.2⟩))

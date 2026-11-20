@@ -23,7 +23,10 @@ namespace KineticAffineScaling
 
 variable {d : ℕ} (Φ : KineticAffineScaling d)
 
-theorem time_lt_iff {x y : ℝ} : Φ.time x < Φ.time y ↔ x < y := by
+section
+variable {x y : ℝ}
+
+theorem time_lt_iff : Φ.time x < Φ.time y ↔ x < y := by
   unfold time
   constructor
   · intro h
@@ -31,7 +34,7 @@ theorem time_lt_iff {x y : ℝ} : Φ.time x < Φ.time y ↔ x < y := by
   · intro h
     nlinarith [Φ.a_pos]
 
-theorem time_le_iff {x y : ℝ} : Φ.time x ≤ Φ.time y ↔ x ≤ y := by
+theorem time_le_iff : Φ.time x ≤ Φ.time y ↔ x ≤ y := by
   unfold time
   constructor
   · intro h
@@ -39,12 +42,14 @@ theorem time_le_iff {x y : ℝ} : Φ.time x ≤ Φ.time y ↔ x ≤ y := by
   · intro h
     nlinarith [Φ.a_pos]
 
-theorem time_inj {x y : ℝ} : Φ.time x = Φ.time y ↔ x = y := by
+theorem time_inj : Φ.time x = Φ.time y ↔ x = y := by
   constructor
   · intro h
     exact le_antisymm (Φ.time_le_iff.1 h.le) (Φ.time_le_iff.1 h.ge)
   · intro h
     rw [h]
+
+end
 
 variable {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
 
@@ -72,29 +77,34 @@ variable {Φ}
 variable (h : Φ.MapsDomain Ω γ Ω' γ')
 include h
 
-theorem MapsDomain.mem_openCylinder_iff (τ : ℝ) (p : KineticPoint d) :
+section
+variable (τ : ℝ) (p : KineticPoint d)
+
+theorem MapsDomain.mem_openCylinder_iff :
     p ∈ evolutionPastOpenCylinder Ω' γ' τ ↔
       Φ.point p ∈ evolutionPastOpenCylinder Ω γ (Φ.time τ) := by
   simp only [evolutionPastOpenCylinder, mem_ofPred_eq, point_time, point_position,
     Φ.time_lt_iff, h.mem_iff]
 
-theorem MapsDomain.mem_closedCylinder_iff (τ : ℝ) (p : KineticPoint d) :
+theorem MapsDomain.mem_closedCylinder_iff :
     p ∈ evolutionPastClosedCylinder Ω' γ' τ ↔
       Φ.point p ∈ evolutionPastClosedCylinder Ω γ (Φ.time τ) := by
   simp only [evolutionPastClosedCylinder, mem_ofPred_eq, point_time, point_position,
     Φ.time_le_iff, h.closure_eq, mem_preimage]
 
-theorem MapsDomain.mem_terminalClosure_iff (τ : ℝ) (p : KineticPoint d) :
+theorem MapsDomain.mem_terminalClosure_iff :
     p ∈ evolutionTerminalClosure Ω' γ' τ ↔
       Φ.point p ∈ evolutionTerminalClosure Ω γ (Φ.time τ) := by
   simp only [evolutionTerminalClosure, mem_ofPred_eq, point_time, point_position,
     Φ.time_inj, h.closure_eq, mem_preimage]
 
-theorem MapsDomain.mem_lateralFrontier_iff (τ : ℝ) (p : KineticPoint d) :
+theorem MapsDomain.mem_lateralFrontier_iff :
     p ∈ evolutionLateralFrontier Ω' γ' τ ↔
       Φ.point p ∈ evolutionLateralFrontier Ω γ (Φ.time τ) := by
   simp only [evolutionLateralFrontier, mem_ofPred_eq, point_time, point_position,
     Φ.time_le_iff, h.frontier_eq, mem_preimage]
+
+end
 
 theorem MapsDomain.mem_interiorRaw_iff (τ : ℝ) (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
     q ∈ evolutionPastInteriorRaw Ω' γ' τ ↔

@@ -14,8 +14,10 @@ open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
-private theorem marginal_query_eq {d : ℕ} {D : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (hD : MeasurableSet D) (B : CoefficientField d)
+section
+variable {d : ℕ} {D : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+
+private theorem marginal_query_eq (hD : MeasurableSet D) (B : CoefficientField d)
     (K : MovingFiberKernel D γ)
     (hpar : HasParabolicMarginalBundle D γ hD (zIndependentCoefficient B) K)
     (s T : ℝ) (hsT : s ≤ T) (p : EvolutionState D γ s) :
@@ -28,8 +30,7 @@ private theorem marginal_query_eq {d : ℕ} {D : Set (PDE.Vec d)}
     K.map_fiberFirstMarginal_eq_firstMarginal hD s T hsT]
   rfl
 
-private theorem integrated_minorant {d : ℕ} {D : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel D γ) {s T : ℝ} (hsT : s ≤ T)
+private theorem integrated_minorant (K : MovingFiberKernel D γ) {s T : ℝ} (hsT : s ≤ T)
     (R : Measure (EvolutionState D γ s)) [IsFiniteMeasure R]
     (a h : ℝ) (ha : 0 < a) (hmass : R.real univ = a)
     (ν : Measure (PDE.Vec d))
@@ -53,6 +54,8 @@ private theorem integrated_minorant {d : ℕ} {D : Set (PDE.Vec d)}
       have he := hp A
       simpa only [Measure.smul_apply, smul_eq_mul,
         Measure.map_apply measurable_fst hA] using he)
+
+end
 
 /-- Integrating the source terminal minorant supplies two dominated portions
 with exactly the same first marginal and the uniform source mass floor. -/

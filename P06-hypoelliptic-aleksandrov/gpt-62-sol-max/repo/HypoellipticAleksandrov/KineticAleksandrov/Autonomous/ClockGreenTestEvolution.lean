@@ -1,6 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockExtensionsAssembly
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockCalculusAssembly
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockExtensionsSetting
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EvolutionInstance
 
 /-! # The unique actual normalized case-I killed evolution of the position clock -/
@@ -21,58 +22,32 @@ def IsClockEvolution {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (c : Clock) 
     (intervalDomain_measurable clockNormalizedInterval)
     (zIndependentCoefficient (c.extendedCoefficient lam A.a e)) c.extendedVectorDrift E.1 E.2
 
-/-- The normalized clock setting produces an actual killed evolution through the
-  full-coefficient existence theorem. -/
-theorem exists_clockEvolution
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) :
-    ∃ E : StripEvolution clockNormalizedInterval, IsClockEvolution A c e E := by
-  have hs := c.extended_sourceSetting hlam hLam A e
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
+
+/-- Existence and uniqueness precede the canonical normalized family. -/
+theorem existsUnique_clockEvolution :
+    ∃! E : StripEvolution clockNormalizedInterval, IsClockEvolution A c e E := by
+  have hs := c.extended_sourceSetting A e
   obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds (3 * lam / 5) (3 * Lam)
     (c.extendedCoefficient lam A.a e) hs.1
-  obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, -, -⟩ :=
-    exists_terminalEvolution_of_classical hLE hH 1 (by omega) (3 * lam / 5) (3 * Lam)
-      (9 / 25) 9 (by positivity) (by linarith) (by norm_num) (by norm_num)
+  exact (exists_terminalEvolution_of_classical 1 (by omega) (3 * lam / 5) (3 * Lam)
+      (9 / 25) 9 (by linarith [A.positive]) (by linarith [A.positive, A.ordered]) (by norm_num) (by norm_num)
       (intervalDomain clockNormalizedInterval) (fun _ => 0)
       (zIndependentCoefficient (c.extendedCoefficient lam A.a e)) c.extendedVectorDrift
       (intervalDomain_admissible clockNormalizedInterval) (zeroCurve_piecewiseC1 1)
-      hBs hBsym hBell hs.2.1 hs.2.2.2.2.1.1 hs.2.2.2.2.1.2
-  exact ⟨(S, K), hc, hi, he, hcomp⟩
-
-/-- The normalized realization is unique among all genuine realizing pairs. -/
-theorem clockEvolution_unique {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (c : Clock) (e : Point) (E E' : StripEvolution clockNormalizedInterval)
-    (hE : IsClockEvolution A c e E) (hE' : IsClockEvolution A c e E') : E = E' := by
-  obtain ⟨hS, hK⟩ := terminalEvolution_unique (intervalDomain clockNormalizedInterval)
-    (fun _ => 0) (intervalDomain_admissible clockNormalizedInterval)
-    (zIndependentCoefficient (c.extendedCoefficient lam A.a e)) c.extendedVectorDrift
-    E.1 E'.1 E.2 E'.2 hE hE'
-  exact Prod.ext hS hK
-
-/-- Existence and uniqueness precede the canonical normalized family. -/
-theorem existsUnique_clockEvolution
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) :
-    ∃! E : StripEvolution clockNormalizedInterval, IsClockEvolution A c e E := by
-  obtain ⟨E, hE⟩ := exists_clockEvolution hH hLE hlam hLam A c e
-  exact ⟨E, hE, fun E' hE' => clockEvolution_unique A c e E' E hE' hE⟩
+      hBs hBsym hBell hs.2.1 hs.2.2.2.2.1.1 hs.2.2.2.2.1.2).existsUnique_realization
 
 /-- The actual normalized clock evolution, selected only from its proved unique characterization. -/
-def clockEvolution
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) :
+def clockEvolution :
     StripEvolution clockNormalizedInterval :=
-  (existsUnique_clockEvolution hH hLE hlam hLam A c e).exists.choose
+  (existsUnique_clockEvolution A c e).exists.choose
 
 /-- The selected clock pair realizes exactly the extended case-I coefficient and drift. -/
-theorem clockEvolution_spec
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) :
-    IsClockEvolution A c e (clockEvolution hH hLE hlam hLam A c e) :=
-  (existsUnique_clockEvolution hH hLE hlam hLam A c e).exists.choose_spec
+theorem clockEvolution_spec :
+    IsClockEvolution A c e (clockEvolution A c e) :=
+  (existsUnique_clockEvolution A c e).exists.choose_spec
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

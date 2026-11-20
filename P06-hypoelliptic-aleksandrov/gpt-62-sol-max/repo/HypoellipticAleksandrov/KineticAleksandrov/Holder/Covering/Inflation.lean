@@ -23,12 +23,15 @@ def inflationCenter {d : ℕ} (P : KineticPoint d) (r k : ℝ) : KineticPoint d 
   ⟨P.time + (k ^ 2 - 1) * r ^ 2 / 2,
     P.position + ((k ^ 2 - 1) * r ^ 2 / 2) • P.velocity, P.velocity⟩
 
+section
+variable {d : ℕ}
+
 /-- Centered kinetic inflation by the factor k. -/
-def inflatedCylinder {d : ℕ} (P : KineticPoint d) (r k : ℝ) :
+def inflatedCylinder (P : KineticPoint d) (r k : ℝ) :
     Set (KineticPoint d) := backwardCylinder (inflationCenter P r k) (k * r)
 
 /-- Inflation preserves the free-transport position coordinates. -/
-theorem relativePosition_inflationCenter {d : ℕ} (P Z : KineticPoint d) (r k : ℝ) :
+theorem relativePosition_inflationCenter (P Z : KineticPoint d) (r k : ℝ) :
     relativePosition (inflationCenter P r k) Z = relativePosition P Z := by
   ext i
   simp only [relativePosition, inflationCenter, Pi.sub_apply, Pi.add_apply, Pi.smul_apply,
@@ -36,40 +39,23 @@ theorem relativePosition_inflationCenter {d : ℕ} (P Z : KineticPoint d) (r k :
   ring
 
 /-- Every backward kinetic cylinder is open in the transported product topology. -/
-theorem isOpen_cylinder {d : ℕ} (P : KineticPoint d) (r : ℝ) :
+theorem isOpen_cylinder (P : KineticPoint d) (r : ℝ) :
     IsOpen (backwardCylinder P r) := by
-  have hx : Continuous (relativePosition P) :=
-    (continuous_position.sub continuous_const).sub
-      ((continuous_time.sub continuous_const).smul continuous_const)
+  have hx := continuous_relativePosition P
   exact (isOpen_lt continuous_const continuous_time).inter
     ((isOpen_lt continuous_time continuous_const).inter
       (((PDE.isOpen_euclideanBall P.velocity r).preimage continuous_velocity).inter
         ((PDE.isOpen_euclideanBall 0 (r ^ 3)).preimage hx)))
 
-/-- Positive-radius cylinders have an explicit interior point. -/
-theorem cylinder_nonempty {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
-    (backwardCylinder P r).Nonempty := by
-  refine ⟨⟨P.time - r ^ 2 / 2, P.position - (r ^ 2 / 2) • P.velocity, P.velocity⟩,
-    ?_, ?_, PDE.center_mem_euclideanBall _ hr, ?_⟩
-  · nlinarith [sq_pos_of_pos hr]
-  · nlinarith [sq_pos_of_pos hr]
-  · have heq : relativePosition P
-        ⟨P.time - r ^ 2 / 2, P.position - (r ^ 2 / 2) • P.velocity, P.velocity⟩ = 0 := by
-      ext i
-      simp only [relativePosition, Pi.sub_apply, Pi.smul_apply, smul_eq_mul, Pi.zero_apply]
-      ring
-    rw [heq]
-    exact PDE.center_mem_euclideanBall 0 (pow_pos hr 3)
-
 /-- Two points in the same backward cylinder differ in time by less than its squared radius. -/
-theorem abs_time_sub_lt_sq {d : ℕ} {P X Y : KineticPoint d} {r : ℝ}
+theorem abs_time_sub_lt_sq {P X Y : KineticPoint d} {r : ℝ}
     (hX : X ∈ backwardCylinder P r) (hY : Y ∈ backwardCylinder P r) :
     |X.time - Y.time| < r ^ 2 := by
   rw [abs_lt]
   constructor <;> linarith only [hX.1, hX.2.1, hY.1, hY.2.1]
 
 /-- Relative position at different centers can be compared using a shared point. -/
-theorem relativePosition_change_center {d : ℕ} (P Q X Z : KineticPoint d) :
+theorem relativePosition_change_center (P Q X Z : KineticPoint d) :
     relativePosition Q X = relativePosition P X - relativePosition P Z +
       relativePosition Q Z + (X.time - Z.time) • (P.velocity - Q.velocity) := by
   ext i
@@ -77,7 +63,7 @@ theorem relativePosition_change_center {d : ℕ} (P Q X Z : KineticPoint d) :
   ring
 
 /-- Euclidean velocity separation between intersecting cylinders. -/
-theorem velocity_centers_lt {d : ℕ} {P Q Z : KineticPoint d} {r s : ℝ}
+theorem velocity_centers_lt {P Q Z : KineticPoint d} {r s : ℝ}
     (hr : 0 < r) (hs : 0 < s) (hZP : Z ∈ backwardCylinder P r)
     (hZQ : Z ∈ backwardCylinder Q s) :
     PDE.vecEuclideanNorm (P.velocity - Q.velocity) < r + s := by
@@ -90,6 +76,8 @@ theorem velocity_centers_lt {d : ℕ} {P Q Z : KineticPoint d} {r s : ℝ}
     _ ≤ PDE.vecEuclideanNorm (-(Z.velocity - P.velocity)) +
         PDE.vecEuclideanNorm (Z.velocity - Q.velocity) := PDE.vecEuclideanNorm_add_le _ _
     _ < r + s := by rw [PDE.vecEuclideanNorm_neg]; exact add_lt_add hP hQ
+
+end
 
 /-- A cylinder intersecting another of at least half its radius lies in its eightfold inflation. -/
 theorem cylinder_subset_inflation_of_inter {d : ℕ} {P Q : KineticPoint d} {r s : ℝ}

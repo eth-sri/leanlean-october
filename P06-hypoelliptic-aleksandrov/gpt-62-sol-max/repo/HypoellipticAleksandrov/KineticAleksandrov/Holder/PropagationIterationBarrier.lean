@@ -11,8 +11,11 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
+section
+variable {d : ℕ} {lam h : ℝ}
+
 /-- Before the block starts its positive Gaussian height is at most the source loss factor. -/
-theorem gaussianBarrier_initial_upper {d : ℕ} {lam h : ℝ}
+theorem gaussianBarrier_initial_upper
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell tminus sblock : ℝ)
     (hLam : lam ≤ Lam) (hell : 0 ≤ ell)
     (hbudget : Xi d lam Lam H h * h ≤ L ^ 2 / 4)
@@ -56,7 +59,7 @@ theorem gaussianBarrier_initial_upper {d : ℕ} {lam h : ℝ}
   · exact (le_of_not_gt hp).trans (mul_nonneg hell (Real.exp_pos _).le)
 
 /-- In the terminal half-height ellipsoid the Gaussian dominates the source block height. -/
-theorem gaussianBarrier_terminal_lower {d : ℕ} {lam h : ℝ}
+theorem gaussianBarrier_terminal_lower
     (hh : 0 < h) (Lam H L ell tminus sblock : ℝ) (hell : 0 ≤ ell)
     (hXi : 0 ≤ Xi d lam Lam H h) (hbudget : Xi d lam Lam H h * h ≤ L ^ 2 / 4)
     (x v : ℝ → PDE.Vec d) (P : KineticPoint d)
@@ -71,7 +74,8 @@ theorem gaussianBarrier_terminal_lower {d : ℕ} {lam h : ℝ}
   unfold barrierCb
   apply sub_le_sub_right
   apply Real.exp_le_exp.mpr
-  have he := (mul_le_mul_of_nonneg_left ht hXi).trans hbudget
-  linarith only [he, hq]
+  linarith only [((mul_le_mul_of_nonneg_left ht hXi).trans hbudget), hq]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

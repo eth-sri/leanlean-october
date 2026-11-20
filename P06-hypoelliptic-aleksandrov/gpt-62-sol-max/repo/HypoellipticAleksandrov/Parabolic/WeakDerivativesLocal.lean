@@ -29,135 +29,90 @@ theorem mono {d : ℕ} {U V : Set (TimeVelocity d)} {p : ℝ≥0∞}
 
 end ParabolicMemLpOn
 
+namespace HasWeakFDerivApplyOn
+
+variable {d : ℕ} {U V : Set (TimeVelocity d)} {e : TimeVelocity d}
+
+/-- Changing representatives almost everywhere preserves the weak derivative. -/
+theorem congr_ae {u v du dv : TimeVelocity d → ℝ}
+    (hu : HasWeakFDerivApplyOn U e u du) (huv : u =ᵐ[timeVelocityVolumeOn U] v)
+    (hd : du =ᵐ[timeVelocityVolumeOn U] dv) : HasWeakFDerivApplyOn U e v dv := by
+  intro φ hφ hc hs
+  rw [← integral_congr_ae (huv.mono fun z hz => congrArg (· * fderiv ℝ φ z e) hz),
+    ← integral_congr_ae (hd.mono fun z hz => congrArg (· * φ z) hz)]
+  exact hu φ hφ hc hs
+
+/-- Restriction to any smaller carrier preserves the weak derivative. -/
+theorem restrict {u du : TimeVelocity d → ℝ}
+    (hu : HasWeakFDerivApplyOn U e u du) (hVU : V ⊆ U) : HasWeakFDerivApplyOn V e u du := by
+  intro φ hφ hc hs
+  have hI {f g : TimeVelocity d → ℝ} (h : tsupport g ⊆ V) :
+      (∫ z in V, f z * g z ∂volume) = ∫ z in U, f z * g z ∂volume := by
+    have hzero {S : Set (TimeVelocity d)} (hS : tsupport g ⊆ S) :
+        ∀ z ∉ S, f z * g z = 0 := fun z hz => by
+      rw [image_eq_zero_of_notMem_tsupport (fun hzg => hz (hS hzg)), mul_zero]
+    exact (setIntegral_eq_integral_of_forall_compl_eq_zero (hzero h)).trans
+      (setIntegral_eq_integral_of_forall_compl_eq_zero (hzero (h.trans hVU))).symm
+  rw [hI ((tsupport_fderiv_apply_subset ℝ e).trans hs), hI hs]
+  exact hu φ hφ hc (hs.trans hVU)
+
+end HasWeakFDerivApplyOn
+
 namespace HasWeakTimeDerivOn
 
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)}
+
 /-- Change only the value representative in a weak time-derivative identity. -/
-theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
+theorem congr_value_ae
     {u v du : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v) :
-    HasWeakTimeDerivOn U v du := by
-  intro φ hφSmooth hφCompact hφSupport
-  calc
-    ∫ z in U, v z * timeDerivative φ z ∂volume =
-        ∫ z in U, u z * timeDerivative φ z ∂volume := by
-      apply integral_congr_ae
-      filter_upwards [huv] with z hz
-      rw [hz]
-    _ = -∫ z in U, du z * φ z ∂volume := hu φ hφSmooth hφCompact hφSupport
+    HasWeakTimeDerivOn U v du := HasWeakFDerivApplyOn.congr_ae (e := (1, 0)) hu huv Filter.EventuallyEq.rfl
 
 /-- Change both representatives in a weak time-derivative identity. -/
-theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)}
+theorem congr_ae
     {u v du dv : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v)
     (hdudv : du =ᵐ[timeVelocityVolumeOn U] dv) :
-    HasWeakTimeDerivOn U v dv := by
-  intro φ hφSmooth hφCompact hφSupport
-  have huv' := hu.congr_value_ae huv
-  calc
-    ∫ z in U, v z * timeDerivative φ z ∂volume =
-        -∫ z in U, du z * φ z ∂volume :=
-      huv' φ hφSmooth hφCompact hφSupport
-    _ = -∫ z in U, dv z * φ z ∂volume := by
-      congr 1
-      apply integral_congr_ae
-      filter_upwards [hdudv] with z hz
-      rw [hz]
+    HasWeakTimeDerivOn U v dv := HasWeakFDerivApplyOn.congr_ae (e := (1, 0)) hu huv hdudv
+
+end
 
 /-- Restrict a raw weak time-derivative identity to any smaller set. -/
 theorem restrict {d : ℕ} {U V : Set (TimeVelocity d)}
     {u du : TimeVelocity d → ℝ} (hu : HasWeakTimeDerivOn U u du)
-    (hVU : V ⊆ U) : HasWeakTimeDerivOn V u du := by
-  intro φ hφSmooth hφCompact hφSupport
-  have hWeak := hu φ hφSmooth hφCompact (hφSupport.trans hVU)
-  have hValueZero : ∀ z, z ∉ V → u z * timeDerivative φ z = 0 := by
-    intro z hz
-    have hφEq : φ =ᶠ[𝓝 z] 0 :=
-      (isClosed_tsupport (f := φ)).isOpen_compl.eventually_mem
-          (fun hzs => hz (hφSupport hzs)) |>.mono
-        (fun y hy => image_eq_zero_of_notMem_tsupport hy)
-    unfold timeDerivative
-    rw [Filter.EventuallyEq.fderiv_eq hφEq]
-    simp
-  have hDerivZero : ∀ z, z ∉ V → du z * φ z = 0 := by
-    intro z hz
-    simp [image_eq_zero_of_notMem_tsupport (fun hzs => hz (hφSupport hzs))]
-  have hValueZeroU : ∀ z, z ∉ U → u z * timeDerivative φ z = 0 :=
-    fun z hz => hValueZero z (fun hzV => hz (hVU hzV))
-  have hDerivZeroU : ∀ z, z ∉ U → du z * φ z = 0 :=
-    fun z hz => hDerivZero z (fun hzV => hz (hVU hzV))
-  rw [MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero hValueZero,
-    MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero hDerivZero,
-    ← MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero hValueZeroU,
-    ← MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero hDerivZeroU,
-    hWeak]
+    (hVU : V ⊆ U) : HasWeakTimeDerivOn V u du := HasWeakFDerivApplyOn.restrict (e := (1, 0)) hu hVU
 
 end HasWeakTimeDerivOn
 
 namespace HasWeakVelocityPartialDerivOn
 
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+
 /-- Change only the value representative in a weak velocity-derivative identity. -/
-theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem congr_value_ae
     {u v dui : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v) :
-    HasWeakVelocityPartialDerivOn U i v dui := by
-  intro φ hφSmooth hφCompact hφSupport
-  calc
-    ∫ z in U, v z * velocityGradient φ z i ∂volume =
-        ∫ z in U, u z * velocityGradient φ z i ∂volume := by
-      apply integral_congr_ae
-      filter_upwards [huv] with z hz
-      rw [hz]
-    _ = -∫ z in U, dui z * φ z ∂volume := hu φ hφSmooth hφCompact hφSupport
+    HasWeakVelocityPartialDerivOn U i v dui := HasWeakFDerivApplyOn.congr_ae (e := (0, Pi.single i 1)) hu huv Filter.EventuallyEq.rfl
 
 /-- Change both representatives in a weak velocity-derivative identity. -/
-theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem congr_ae
     {u v dui dvi : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v)
     (hduidvi : dui =ᵐ[timeVelocityVolumeOn U] dvi) :
-    HasWeakVelocityPartialDerivOn U i v dvi := by
-  intro φ hφSmooth hφCompact hφSupport
-  have huv' := hu.congr_value_ae huv
-  calc
-    ∫ z in U, v z * velocityGradient φ z i ∂volume =
-        -∫ z in U, dui z * φ z ∂volume :=
-      huv' φ hφSmooth hφCompact hφSupport
-    _ = -∫ z in U, dvi z * φ z ∂volume := by
-      congr 1
-      apply integral_congr_ae
-      filter_upwards [hduidvi] with z hz
-      rw [hz]
+    HasWeakVelocityPartialDerivOn U i v dvi := HasWeakFDerivApplyOn.congr_ae (e := (0, Pi.single i 1)) hu huv hduidvi
+
+end
 
 /-- Restrict a raw weak velocity-derivative identity to any smaller set. -/
 theorem restrict {d : ℕ} {U V : Set (TimeVelocity d)} {i : Fin d}
     {u dui : TimeVelocity d → ℝ} (hu : HasWeakVelocityPartialDerivOn U i u dui)
-    (hVU : V ⊆ U) : HasWeakVelocityPartialDerivOn V i u dui := by
-  intro φ hφSmooth hφCompact hφSupport
-  have hWeak := hu φ hφSmooth hφCompact (hφSupport.trans hVU)
-  have hValueZero : ∀ z, z ∉ V → u z * velocityGradient φ z i = 0 := by
-    intro z hz
-    have hφEq : φ =ᶠ[𝓝 z] 0 :=
-      (isClosed_tsupport (f := φ)).isOpen_compl.eventually_mem
-          (fun hzs => hz (hφSupport hzs)) |>.mono
-        (fun y hy => image_eq_zero_of_notMem_tsupport hy)
-    unfold velocityGradient
-    rw [Filter.EventuallyEq.fderiv_eq hφEq]
-    simp
-  have hDerivZero : ∀ z, z ∉ V → dui z * φ z = 0 := by
-    intro z hz
-    simp [image_eq_zero_of_notMem_tsupport (fun hzs => hz (hφSupport hzs))]
-  have hValueZeroU : ∀ z, z ∉ U → u z * velocityGradient φ z i = 0 :=
-    fun z hz => hValueZero z (fun hzV => hz (hVU hzV))
-  have hDerivZeroU : ∀ z, z ∉ U → dui z * φ z = 0 :=
-    fun z hz => hDerivZero z (fun hzV => hz (hVU hzV))
-  rw [MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero hValueZero,
-    MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero hDerivZero,
-    ← MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero hValueZeroU,
-    ← MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero hDerivZeroU,
-    hWeak]
+    (hVU : V ⊆ U) : HasWeakVelocityPartialDerivOn V i u dui := HasWeakFDerivApplyOn.restrict (e := (0, Pi.single i 1)) hu hVU
 
 end HasWeakVelocityPartialDerivOn
 

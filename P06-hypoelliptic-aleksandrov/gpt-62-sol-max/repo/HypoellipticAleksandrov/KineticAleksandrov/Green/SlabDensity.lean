@@ -26,15 +26,21 @@ open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal NNReal
 
+section
+variable (d : ℕ) (q : ℝ)
+include d q
+
 /-- The intermediate exponent `γ = (q + γ₀)/2` chosen in the proof of Proposition 5.3. -/
-def slabGamma (d : ℕ) (q : ℝ) : ℝ := (q + slabGamma0 d) / 2
+def slabGamma : ℝ := (q + slabGamma0 d) / 2
 
 /-- The dual exponent `q₁` with `(q-1)/γ + 1/q₁ = 1`. -/
-def slabQ1 (d : ℕ) (q : ℝ) : ℝ := slabGamma d q / (slabGamma d q - q + 1)
+def slabQ1 : ℝ := slabGamma d q / (slabGamma d q - q + 1)
 
 /-- The constant of Proposition 5.3, in terms of the constants `C_γ` of Lemma 5.1. -/
-def slabConstant (d : ℕ) (q : ℝ) (C : ℝ → ℝ≥0) : ℝ≥0 :=
+def slabConstant (C : ℝ → ℝ≥0) : ℝ≥0 :=
   C (slabGamma d q) ^ (q - 1) * C (slabQ1 d q)
+
+end
 
 section Numerics
 
@@ -51,17 +57,21 @@ lemma slabGamma0_eq {d : ℕ} (hd : 0 < (d : ℝ)) : slabGamma0 d = 1 + 1 / (d :
   unfold slabGamma0
   field_simp
 
-lemma slab_q_lt_gamma (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
+section
+variable (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ))
+include hq hqd
+
+lemma slab_q_lt_gamma :
     q < slabGamma d q ∧ slabGamma d q < slabGamma0 d := by
   have hd := slab_d_pos hq hqd
   unfold slabGamma
   rw [slabGamma0_eq hd]
   constructor <;> linarith [hqd]
 
-lemma slab_gamma_one_lt (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) : 1 < slabGamma d q :=
+lemma slab_gamma_one_lt : 1 < slabGamma d q :=
   hq.trans (slab_q_lt_gamma hq hqd).1
 
-lemma slab_hq₁ (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
+lemma slab_hq₁ :
     (q - 1) / slabGamma d q + 1 / slabQ1 d q = 1 := by
   have hγ := slab_gamma_one_lt hq hqd
   have h0 : slabGamma d q - q + 1 ≠ 0 := by linarith [(slab_q_lt_gamma hq hqd).1]
@@ -69,7 +79,7 @@ lemma slab_hq₁ (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
   field_simp
   ring
 
-lemma slab_q1_bounds (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
+lemma slab_q1_bounds :
     1 ≤ slabQ1 d q ∧ slabQ1 d q ≤ slabGamma0 d := by
   have hd := slab_d_pos hq hqd
   have hγ := slab_gamma_one_lt hq hqd
@@ -79,10 +89,6 @@ lemma slab_q1_bounds (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
   constructor
   · rw [le_div_iff₀ hpos]; linarith
   · rw [div_le_iff₀ hpos, slabGamma0_eq hd]
-    have h1 : (d : ℝ) * (q - 1) < 1 := by
-      have := mul_lt_mul_of_pos_left (sub_lt_sub_right hqd 1) hd
-      rw [show 1 + 1 / (d : ℝ) - 1 = 1 / (d : ℝ) by ring, mul_one_div_cancel hd.ne'] at this
-      exact this
     have h2 : (d : ℝ) * (1 + 1 / (d : ℝ)) = d + 1 := by field_simp
     have h3 : slabGamma d q ≤ (1 + 1 / (d : ℝ)) * (slabGamma d q - q + 1) := by
       have : (d : ℝ) * slabGamma d q ≤ (d + 1) * (slabGamma d q - q + 1) := by
@@ -94,17 +100,10 @@ lemma slab_q1_bounds (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
     exact h3
 
 /-- The power of `T` in Proposition 5.3. -/
-lemma slab_exponent (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
+lemma slab_exponent :
     (q - 1) * (slabBeta d (slabGamma d q) - 3 * (d : ℝ) / 2) +
         slabBeta d (slabQ1 d q) = 1 - 2 * d * (q - 1) := by
-  have hγ0 : slabGamma d q ≠ 0 := by linarith [slab_gamma_one_lt hq hqd]
   have hq1 := slab_hq₁ hq hqd
-  have hq10 : slabQ1 d q ≠ 0 := by
-    intro h; rw [h] at hq1; simp at hq1
-    have : (q - 1) / slabGamma d q < 1 := by
-      rw [div_lt_one (by linarith [slab_gamma_one_lt hq hqd])]
-      linarith [(slab_q_lt_gamma hq hqd).1]
-    linarith
   unfold slabBeta
   have key : ((d : ℝ) + 2) / (2 * slabGamma d q) * (q - 1) +
       ((d : ℝ) + 2) / (2 * slabQ1 d q) = ((d : ℝ) + 2) / 2 := by
@@ -114,6 +113,8 @@ lemma slab_exponent (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
       field_simp
     rw [this, hq1, mul_one]
   nlinarith [key]
+
+end
 
 end Numerics
 
@@ -125,7 +126,6 @@ lemma slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T e₁ e₂ s q : ℝ} (hT : 
       ((a ^ (q - 1) * b : ℝ≥0) : ℝ≥0∞) * M ^ q * ENNReal.ofReal (T ^ s) := by
   have hq0 : 0 ≤ q - 1 := by linarith
   have hT1 : 0 ≤ T ^ e₁ := (Real.rpow_pos_of_pos hT _).le
-  have hT2 : 0 ≤ T ^ e₂ := (Real.rpow_pos_of_pos hT _).le
   rw [ENNReal.mul_rpow_of_nonneg _ _ hq0, ENNReal.mul_rpow_of_nonneg _ _ hq0,
     ← ENNReal.coe_rpow_of_nonneg _ hq0, ENNReal.ofReal_rpow_of_nonneg hT1 hq0,
     ← Real.rpow_mul hT.le, ENNReal.coe_mul]

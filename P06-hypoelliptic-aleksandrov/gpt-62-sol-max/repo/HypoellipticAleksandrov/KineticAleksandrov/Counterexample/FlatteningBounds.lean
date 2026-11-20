@@ -11,16 +11,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open Set MeasureTheory
 
+section
+variable {d : ℕ}
+
 /-- The flattened explicit jets are locally bounded, also on compact sets containing the origin. -/
-theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
+theorem flatProfile_jets_compact_bound_of_profile {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (K : Set (XV d)) (hK : IsCompact K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ q ∈ K,
       ‖flatProfilePositionJet h r q‖ ≤ M ∧ ‖flatProfileVelocityJet h r q‖ ≤ M ∧
         ∀ i k, |flatProfileHessian h r q i k| ≤ M := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hzero := (selectedProfile_spec h).2.2.2.2.2.2.2.1
-  have hbounds := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
+  have hH := (selectedProfile_spec h).continuous
+  have hzero := (selectedProfile_spec h).at_zero
+  have hbounds := (selectedProfile_spec h).compact_jet_bound
   let L := K ∩ {q | Real.rpow r alpha ≤ profileFunction h q}
   have hL : IsCompact L := hK.inter_right (isClosed_le continuous_const hH)
   have hz : (0 : XV d) ∉ L := by
@@ -108,7 +111,7 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
     exact ⟨hM.trans hMB, hM.trans hMB, fun _ _ => hM.trans hMB⟩
 
 /-- Measurable real functions bounded on each compact set are locally integrable. -/
-theorem locallyIntegrable_of_compact_bound {d : ℕ} (f : XV d → ℝ) (hf : Measurable f)
+theorem locallyIntegrable_of_compact_bound (f : XV d → ℝ) (hf : Measurable f)
     (hb : ∀ K : Set (XV d), IsCompact K →
       ∃ M : ℝ, 0 ≤ M ∧ ∀ q ∈ K, |f q| ≤ M) : LocallyIntegrable f volume := by
   apply locallyIntegrable_iff.mpr
@@ -122,7 +125,7 @@ theorem locallyIntegrable_of_compact_bound {d : ℕ} (f : XV d → ℝ) (hf : Me
   simpa only [Real.norm_eq_abs, abs_of_nonneg hM] using hbM q hq
 
 /-- All selected flattened derivative components are locally integrable. -/
-theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
+theorem flatProfile_jets_locallyIntegrable_of_profile {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
     (∀ i, LocallyIntegrable (fun q => flatProfilePositionJet h r q i) volume) ∧
     (∀ i, LocallyIntegrable (fun q => flatProfileVelocityJet h r q i) volume) ∧
@@ -152,5 +155,7 @@ theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
     intro K hK
     obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr K hK
     exact ⟨M, hM, fun q hq => (hb q hq).2.2 i k⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

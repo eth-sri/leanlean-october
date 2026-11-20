@@ -14,19 +14,19 @@ open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
 /-- The actual initial visit satisfies both outer Green and exit decompositions. -/
 theorem enlargedInitial_nested
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
     (P : Point) (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
-    let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J s T P 0
-    let GW := enlargedVisitGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) T
-    let EW := enlargedVisitExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) T
-    enlargedVisitGreenKernel hH hLE hlam hLam A J.toFiniteUnion T P =
+    let gamma := enlargedVisitEntrance A c J s T P 0
+    let GW := enlargedVisitGreenKernel A (visitWaitingUnion c J) T
+    let EW := enlargedVisitExitKernel A (visitWaitingUnion c J) T
+    enlargedVisitGreenKernel A J.toFiniteUnion T P =
       visitInitialGreen P (visitEntranceInterval c) GW +
-        enlargedVisitGreenKernel hH hLE hlam hLam A J.toFiniteUnion T ∘ₘ gamma ∧
-    enlargedVisitExitKernel hH hLE hlam hLam A J.toFiniteUnion T P =
+        enlargedVisitGreenKernel A J.toFiniteUnion T ∘ₘ gamma ∧
+    enlargedVisitExitKernel A J.toFiniteUnion T P =
       visitInitialExit P (visitEntranceInterval c) (finiteUnionExitSet J.toFiniteUnion s T) EW +
-        enlargedVisitExitKernel hH hLE hlam hLam A J.toFiniteUnion T ∘ₘ gamma := by
+        enlargedVisitExitKernel A J.toFiniteUnion T ∘ₘ gamma := by
   classical
   dsimp only
   by_cases hi : P.velocity 0 ∈ closure (visitEntranceInterval c).carrier
@@ -39,9 +39,9 @@ theorem enlargedInitial_nested
       refine ⟨hP.2.1, ?_⟩
       rw [visitWaitingUnion_carrier]
       exact ⟨hP.2.2, hi⟩
-    have hmu : ∀ᵐ p ∂Measure.dirac P, p ∈ enlargedVisitPoleSet (visitWaitingUnion c J) T :=
+    have hmu :=
       (ae_dirac_iff (measurableSet_enlargedVisitPoleSet _ T)).mpr hpw
-    have h := enlargedUnion_nested hH hLE hlam hLam A (visitWaitingUnion c J) J.toFiniteUnion
+    have h := enlargedUnion_nested A (visitWaitingUnion c J) J.toFiniteUnion
       hsub s T hT (Measure.dirac P) hmu
       ((ae_dirac_iff (isClosed_le continuous_const continuous_time).measurableSet).mpr hP.1)
     simpa only [visitWaiting_internalExit, visitKernel_comp_dirac, enlargedVisitEntrance,

@@ -36,12 +36,6 @@ theorem integral_local_time_energy_le {d : ℕ}
   have hsχ : tsupport (fun z => ρ z ^ 2) ⊆ U := by
     simpa only [pow_two] using
       (tsupport_mul_subset_left (f := ρ) (g := ρ)).trans hsub
-  have hw : IntegrableOn
-      (fun z => scalarTimeDerivative u z * u z * ρ z ^ 2) U :=
-    (integrable_local_cutoff_square_mul hU
-      (fun z => scalarTimeDerivative u z * u z) ρ
-      (hu.continuousOn_scalarTimeDerivative.mul hu.continuousOn)
-      hρ.continuous hc hsub).restrict
   have htest := integral_square_mul_timeDerivative_eq hu
     (fun z => ρ z ^ 2) hχ hcχ hsχ
   have hdt : IntegrableOn

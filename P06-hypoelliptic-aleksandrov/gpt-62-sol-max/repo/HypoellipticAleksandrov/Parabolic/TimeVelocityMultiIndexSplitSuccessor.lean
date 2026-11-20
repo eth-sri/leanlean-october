@@ -174,12 +174,7 @@ private theorem mkSucc_right_eq_old_right {d : ℕ} (beta : TimeVelocityMultiInd
 
 private theorem mkSucc_left_eq_old_left {d : ℕ} (beta : TimeVelocityMultiIndex d)
     (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) :
-    (mkSucc beta c ⟨k, by omega⟩ a).left = (mkOld beta c k a).left := by
-  funext j
-  change ((mkSucc beta c ⟨k, by omega⟩ a) j : ℕ) = (mkOld beta c k a) j
-  by_cases h : j = c
-  · subst j; simp
-  · simp [h]
+    (mkSucc beta c ⟨k, by omega⟩ a).left = (mkOld beta c k a).left := rfl
 
 private theorem mkSucc_right_eq_old_right_add {d : ℕ} (beta : TimeVelocityMultiIndex d)
     (c : TimeVelocityCoord d) (k : Fin (beta c + 1)) (a : SplitTail beta c) :
@@ -309,9 +304,7 @@ namespace ParabolicDerivativeIndex
   classical
   funext c
   rcases c with _ | j
-  · simp [velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,
-      TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
-      timeCoord, velocityCoord]
+  · rfl
   · by_cases hji : j = i
     · subst j
       simp [velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,

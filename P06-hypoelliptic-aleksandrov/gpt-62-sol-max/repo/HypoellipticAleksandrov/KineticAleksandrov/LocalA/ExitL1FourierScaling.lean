@@ -10,23 +10,26 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open MeasureTheory
 
+section
+variable {d : ℕ} (c : ℝ) (j : ℕ)
+include d c j
+
 /-- The structural stretched-exponential moment at unit spatial scale. -/
-def exitFrequencyMoment {d : ℕ} (c : ℝ) (j : ℕ) : ℝ :=
+def exitFrequencyMoment : ℝ :=
   ∫ ξ : PDE.Vec d, ‖ξ‖ ^ j * Real.exp (-c * ‖ξ‖ ^ (1 / 3 : ℝ))
 
 /-- Unit-scale frequency moments are nonnegative. -/
-theorem exitFrequencyMoment_nonneg {d : ℕ} (c : ℝ) (j : ℕ) :
+theorem exitFrequencyMoment_nonneg :
     0 ≤ exitFrequencyMoment (d := d) c j :=
   integral_nonneg (fun ξ => mul_nonneg (pow_nonneg (norm_nonneg ξ) j) (Real.exp_pos _).le)
 
 /-- Frequency dilation gives the raw dimension-plus-derivative scaling factor. -/
-theorem exitFrequencyMoment_scaling {d : ℕ} (c : ℝ) (j : ℕ) {R : ℝ} (hR : 0 < R) :
+theorem exitFrequencyMoment_scaling {R : ℝ} (hR : 0 < R) :
     (∫ ξ : PDE.Vec d, ‖ξ‖ ^ j *
       Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ))) =
       ((R ^ 3) ^ (d + j))⁻¹ * exitFrequencyMoment (d := d) c j := by
   let f : PDE.Vec d → ℝ := fun ξ =>
     ‖ξ‖ ^ j * Real.exp (-c * ‖ξ‖ ^ (1 / 3 : ℝ))
-  have hn : R ^ 3 ≠ 0 := (pow_pos hR 3).ne'
   have heq : (fun ξ : PDE.Vec d => ‖ξ‖ ^ j *
       Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ))) =
       fun ξ => ((R ^ 3) ^ j)⁻¹ * f (R ^ 3 • ξ) := by
@@ -42,5 +45,7 @@ theorem exitFrequencyMoment_scaling {d : ℕ} (c : ℝ) (j : ℕ) {R : ℝ} (hR 
   rw [hdim]
   change ((R ^ 3) ^ j)⁻¹ * (((R ^ 3) ^ d)⁻¹ * exitFrequencyMoment c j) = _
   rw [pow_add, mul_inv_rev, mul_assoc]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -21,12 +21,15 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 def laplaceFlux (a b z t : ℝ) : ℝ :=
   Real.exp (-(z * t)) * t ^ a * (1 + t) ^ (b - a)
 
+section
+variable (a b z : ℝ)
+
 /-- The flux vanishes at the lower endpoint for positive shape. -/
-theorem laplaceFlux_zero (a b z : ℝ) (ha : 0 < a) : laplaceFlux a b z 0 = 0 := by
+theorem laplaceFlux_zero (ha : 0 < a) : laplaceFlux a b z 0 = 0 := by
   simp only [laplaceFlux, Real.zero_rpow ha.ne', mul_zero, zero_mul]
 
 /-- The endpoint extension of the flux is continuous. -/
-theorem continuousAt_laplaceFlux_zero (a b z : ℝ) (ha : 0 < a) :
+theorem continuousAt_laplaceFlux_zero (ha : 0 < a) :
     ContinuousAt (laplaceFlux a b z) 0 := by
   apply ContinuousAt.mul
   · exact ((continuous_const.mul continuous_id).neg.rexp.continuousAt).mul
@@ -35,7 +38,7 @@ theorem continuousAt_laplaceFlux_zero (a b z : ℝ) (ha : 0 < a) :
       (Or.inl (by norm_num))
 
 /-- The flux vanishes at infinity by exponential domination of its polynomial bound. -/
-theorem tendsto_laplaceFlux_atTop (a b z : ℝ) (hz : 0 < z) :
+theorem tendsto_laplaceFlux_atTop (hz : 0 < z) :
     Tendsto (laplaceFlux a b z) atTop (𝓝 0) := by
   obtain ⟨n, hn⟩ := exists_nat_gt (b - a)
   have hlimit : Tendsto
@@ -58,13 +61,15 @@ theorem tendsto_laplaceFlux_atTop (a b z : ℝ) (hz : 0 < z) :
     simp only [laplaceFlux, neg_mul] at h ⊢
     exact h.trans_eq (by ring)
 
+end
+
 /-- Exact flux derivative expressed by the first three integral moments. -/
 theorem hasDerivAt_laplaceFlux (a b z t : ℝ) (ht : 0 < t) :
     HasDerivAt (laplaceFlux a b z)
       (a * laplaceKernelReal a b z t +
         (b - z) * laplaceKernelReal (a + 1) (b + 1) z t -
         z * laplaceKernelReal (a + 2) (b + 2) z t) t := by
-  have ht1 : 0 < 1 + t := add_pos zero_lt_one ht
+  have ht1 := add_pos zero_lt_one ht
   have he := (((hasDerivAt_id t).const_mul z).neg.exp.mul
     (Real.hasDerivAt_rpow_const (Or.inl ht.ne') :
       HasDerivAt (fun u : ℝ => u ^ a) (a * t ^ (a - 1)) t)).mul
@@ -121,8 +126,12 @@ theorem laplaceIntegral_moment_relation (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) 
   rw [hsub, hadd, integral_const_mul, integral_const_mul, integral_const_mul] at hf
   exact hf
 
+section
+variable (a : Pos) (b z : ℝ) (hz : 0 < z)
+include hz
+
 /-- Second derivative of the normalized integral at a positive argument. -/
-theorem deriv_deriv_UIr (a : Pos) (b z : ℝ) (hz : 0 < z) :
+theorem deriv_deriv_UIr :
     deriv (deriv (UIr a b)) z =
       (Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 2) (b + 2) z := by
   have h := (hasDerivAt_laplaceIntegral (a.1 + 1) (b + 1) z
@@ -136,13 +145,14 @@ theorem deriv_deriv_UIr (a : Pos) (b z : ℝ) (hz : 0 < z) :
     show b + 1 + 1 = b + 2 by ring] using hd
 
 /-- Kummer's equation for the positive integral definition. -/
-theorem UIr_ode (a : Pos) (b z : ℝ) (hz : 0 < z) :
+theorem UIr_ode :
     z * deriv (deriv (UIr a b)) z + (b - z) * deriv (UIr a b) z - a.1 * UIr a b z = 0 := by
   rw [deriv_deriv_UIr a b z hz, (hasDerivAt_UIr a b z hz).deriv]
   change z * ((Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 2) (b + 2) z) +
     (b - z) * (-(Real.Gamma a.1)⁻¹ * laplaceIntegral (a.1 + 1) (b + 1) z) -
     a.1 * ((Real.Gamma a.1)⁻¹ * laplaceIntegral a.1 b z) = 0
-  have h := laplaceIntegral_moment_relation a.1 b z a.2 hz
-  linear_combination -(Real.Gamma a.1)⁻¹ * h
+  linear_combination -(Real.Gamma a.1)⁻¹ * (laplaceIntegral_moment_relation a.1 b z a.2 hz)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

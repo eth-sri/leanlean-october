@@ -19,7 +19,6 @@ open scoped Matrix.Norms.Elementwise
 
 /-- The planned forward replacement has the exact initial/lateral traces and source error. -/
 theorem exists_parabolic_homogeneous_replacement
-    (hLE : KineticAleksandrov.LiebermanEllipsoidDirichletStatement)
     {N : ℕ} (hN : 1 ≤ N) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField N) (hA : IsSmoothCoefficient A)
     (hs : IsSymmetricCoefficient A) (hlo : HasLowerEllipticity lam A)
@@ -69,7 +68,7 @@ theorem exists_parabolic_homogeneous_replacement
       by dsimp [timeReflection]; linarith only [hz.1.1]⟩, hz.2⟩
   let v := timeReflectedScalar u
   have hv12 : IsScalarC12On v (scalarParabolicOpenCylinder a T Ω) :=
-    scalarC12On_mono (isScalarC12On_timeReflectedScalar hu.2.1) hopen
+    scalarC12On_mono (_root_.HypoellipticAleksandrov.KineticAleksandrov.Occupation.isScalarC12On_timeReflectedScalar hu.2.1) hopen
   have hvc : ContinuousOn v (scalarParabolicClosedCylinder a T Ω) :=
     hu.1.comp continuous_timeReflection.continuousOn hclosed
   have htrace : EqOn v w (({a} ×ˢ closure Ω) ∪ (Icc a T ×ˢ frontier Ω)) := by
@@ -93,7 +92,7 @@ theorem exists_parabolic_homogeneous_replacement
       zero_mul, Finset.sum_const_zero, add_zero, B, timeReflectedCoefficient,
       timeReflection, sub_sub_cancel] at he
     rw [scalarTimeDerivative_timeReflectedScalar_C12 hu.2.1 (hopen hz),
-      scalarSpatialHessian_timeReflectedScalar_C12]
+      _root_.HypoellipticAleksandrov.KineticAleksandrov.Occupation.scalarSpatialHessian_timeReflectedScalar]
     change -scalarTimeDerivative u (timeReflection z) =
       matrixContraction (A z.1 z.2) (scalarSpatialHessian u (timeReflection z))
     change scalarTimeDerivative u (timeReflection z) +

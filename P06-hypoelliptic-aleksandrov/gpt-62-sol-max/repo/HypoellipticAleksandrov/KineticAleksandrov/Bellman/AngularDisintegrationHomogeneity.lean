@@ -43,11 +43,14 @@ theorem bellmanDilation_preimage_positive (r : ℝ) (hr : 0 < r) :
   ext q
   exact mul_pos_iff_of_pos_left (pow_pos hr 3)
 
+section
+variable {β : ℝ} {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ) (r : ℝ)
+  (hr : 0 < r)
+include hμ
+
 /-- Density degree also gives the exact pushforward factor on the positive-position
 restriction. -/
-theorem HasBellmanDensityDegree.map_positive_restrict {β : ℝ}
-    {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ)
-    (r : ℝ) (hr : 0 < r) :
+theorem HasBellmanDensityDegree.map_positive_restrict :
     Measure.map (bellmanDilation r hr) (μ.restrict {q | 0 < q.val.1}) =
       ENNReal.ofReal (r ^ (β - 4)) • μ.restrict {q | 0 < q.val.1} := by
   have hm : MeasurableSet {q : BellmanPuncturedPlane | 0 < q.val.1} :=
@@ -57,9 +60,7 @@ theorem HasBellmanDensityDegree.map_positive_restrict {β : ℝ}
     hμ.map_dilation r hr, Measure.restrict_smul, bellmanDilation_preimage_positive r hr]
 
 /-- The source coordinate pullback has the same degree, acting only on its radial coordinate. -/
-theorem HasBellmanDensityDegree.map_angularPullback {β : ℝ}
-    {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ)
-    (r : ℝ) (hr : 0 < r) :
+theorem HasBellmanDensityDegree.map_angularPullback :
     Measure.map ((bellmanRadialScale r hr).prodCongr (Homeomorph.refl ℝ))
       (bellmanAngularPullback μ) =
       ENNReal.ofReal (r ^ (β - 4)) • bellmanAngularPullback μ := by
@@ -73,5 +74,7 @@ theorem HasBellmanDensityDegree.map_angularPullback {β : ℝ}
     exact (bellmanAngularPoint_dilation r hr w).symm
   rw [hc, ← Measure.map_map (measurable_bellmanDilation r hr) he.measurable,
     map_bellmanAngularPullback, hμ.map_positive_restrict r hr]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

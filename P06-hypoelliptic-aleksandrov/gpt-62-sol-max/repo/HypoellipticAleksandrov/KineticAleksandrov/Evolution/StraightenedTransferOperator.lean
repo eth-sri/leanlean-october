@@ -55,14 +55,19 @@ theorem continuous_straightenedPoint {g : ℝ → PDE.Vec n} (hg : Continuous g)
 
 section Blocks
 
-theorem vecDot_spatialPack_right (a b : PDE.Vec n) (w : PDE.Vec (n + n)) :
+section
+variable (a b : PDE.Vec n) (w : PDE.Vec (n + n))
+
+theorem vecDot_spatialPack_right :
     PDE.vecDot w (spatialPack a b) = PDE.vecDot (spatialY w) a + PDE.vecDot (spatialZ w) b := by
   rw [vecDot_eq_spatial]
   simp
 
-theorem vecDot_spatialPack_left (a b : PDE.Vec n) (w : PDE.Vec (n + n)) :
+theorem vecDot_spatialPack_left :
     PDE.vecDot (spatialPack a b) w = PDE.vecDot a (spatialY w) + PDE.vecDot b (spatialZ w) := by
   rw [PDE.vecDot_comm, vecDot_spatialPack_right, PDE.vecDot_comm, PDE.vecDot_comm b]
+
+end
 
 /-- Contraction with the block matrix `diag(A, ε I)` splits along the blocks. -/
 theorem matrixContraction_viscousBlockMatrix (A : PDE.Mat n) (ε : ℝ) (H : PDE.Mat (n + n)) :
@@ -99,9 +104,12 @@ theorem kineticVelocityGradient_straightenedPullback
     (fun i => embedZCLM_basisVec i)
   exact this
 
+section
+variable (h : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) (i j : Fin n)
+include h
+
 /-- The diffused Hessian of the pullback is the `YY` block of the spatial Hessian. -/
-theorem diffusedHessian_straightenedPullback
-    (h : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) (i j : Fin n) :
+theorem diffusedHessian_straightenedPullback :
     diffusedHessian (straightenedPullback g ũ) p i j =
       scalarSpatialHessian ũ (straightenedPoint g p) (Fin.castAdd n i) (Fin.castAdd n j) := by
   have := hessian_comp_block
@@ -111,8 +119,7 @@ theorem diffusedHessian_straightenedPullback
   exact this
 
 /-- The velocity Hessian of the pullback is the `zz` block of the spatial Hessian. -/
-theorem kineticVelocityHessian_straightenedPullback
-    (h : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) (i j : Fin n) :
+theorem kineticVelocityHessian_straightenedPullback :
     kineticVelocityHessian (straightenedPullback g ũ) p i j =
       scalarSpatialHessian ũ (straightenedPoint g p) (Fin.natAdd n i) (Fin.natAdd n j) := by
   have := hessian_comp_block
@@ -120,6 +127,8 @@ theorem kineticVelocityHessian_straightenedPullback
     (fun z' => hasFDerivAt_pack_right (p.position - g p.time) z') (y := p.velocity) h
     (e := Fin.natAdd n) (fun i => embedZCLM_basisVec i) i j
   exact this
+
+end
 
 /-- The time derivative of the pullback: the straightened time derivative plus the drift
 term `-g'(σ) · ∇_Y ũ` produced by the moving frame. -/
@@ -260,10 +269,13 @@ theorem differentiableAt_time_straightenedPullback (hg : DifferentiableAt ℝ g 
   exact DifferentiableAt.comp (g := ũ) (f := fun r : ℝ => (r, spatialPack (p.position - g r)
     p.velocity)) p.time hũ (differentiableAt_id.prodMk hc)
 
+section
+variable (hslice : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2)
+include hslice
+
 /-- `C²` regularity of the spatial slice of `ũ` at the straightened point gives `C²` regularity
 of the diffused slice of the pullback. -/
-theorem contDiffAt_position_straightenedPullback
-    (hslice : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) :
+theorem contDiffAt_position_straightenedPullback :
     ContDiffAt ℝ 2 (fun y => straightenedPullback g ũ ⟨p.time, y, p.velocity⟩) p.position :=
   ContDiffAt.comp (g := fun X => ũ (p.time, X))
     (f := fun y : PDE.Vec n => spatialPack (y - g p.time) p.velocity) p.position hslice
@@ -271,12 +283,13 @@ theorem contDiffAt_position_straightenedPullback
 
 /-- `C²` regularity of the spatial slice of `ũ` at the straightened point gives `C²` regularity
 of the transported slice of the pullback. -/
-theorem contDiffAt_velocity_straightenedPullback
-    (hslice : ContDiffAt ℝ 2 (fun X => ũ (p.time, X)) (straightenedPoint g p).2) :
+theorem contDiffAt_velocity_straightenedPullback :
     ContDiffAt ℝ 2 (fun z => straightenedPullback g ũ ⟨p.time, p.position, z⟩) p.velocity :=
   ContDiffAt.comp (g := fun X => ũ (p.time, X))
     (f := fun z : PDE.Vec n => spatialPack (p.position - g p.time) z) p.velocity hslice
     (contDiff_spatialPack contDiff_const contDiff_id).contDiffAt
+
+end
 
 /-- The pullback is slice regular wherever `ũ` is jointly differentiable with a `C²` spatial
 slice.  This is the regularity hypothesis of the comparison theorems. -/

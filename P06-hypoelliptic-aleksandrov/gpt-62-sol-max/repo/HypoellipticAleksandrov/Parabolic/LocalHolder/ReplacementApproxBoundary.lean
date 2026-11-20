@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApprox
+public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import Mathlib.Analysis.Calculus.BumpFunction.SmoothApprox
 import Mathlib.Topology.TietzeExtension

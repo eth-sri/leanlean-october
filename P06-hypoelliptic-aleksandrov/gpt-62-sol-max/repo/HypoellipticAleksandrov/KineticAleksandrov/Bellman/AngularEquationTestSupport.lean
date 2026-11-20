@@ -11,11 +11,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set
 
+section
+variable (ζ φ : ℝ → ℝ) (hcζ : HasCompactSupport ζ) (hcφ : HasCompactSupport φ)
+  (hs : tsupport ζ ⊆ Ioi (0 : ℝ))
+include hcζ hcφ hs
+
 /-- A compact positive radial support times a compact angular support stays away from the
 origin. -/
-theorem bellmanAngularTest_support_data (ζ φ : ℝ → ℝ)
-    (hcζ : HasCompactSupport ζ) (hcφ : HasCompactSupport φ)
-    (hs : tsupport ζ ⊆ Ioi (0 : ℝ)) :
+theorem bellmanAngularTest_support_data :
     HasCompactSupport (bellmanAngularTest ζ φ) ∧
       tsupport (bellmanAngularTest ζ φ) ⊆ {q : ℝ × ℝ | 0 < q.1} := by
   let K : Set (BellmanPositiveTime × ℝ) :=
@@ -60,14 +63,14 @@ theorem bellmanAngularTest_support_data (ζ φ : ℝ → ℝ)
 
 /-- Compact angular tests with positive radial support satisfy the punctured-test support
 rule. -/
-theorem bellmanAngularTest_support_punctured (ζ φ : ℝ → ℝ)
-    (hcζ : HasCompactSupport ζ) (hcφ : HasCompactSupport φ)
-    (hs : tsupport ζ ⊆ Ioi (0 : ℝ)) :
+theorem bellmanAngularTest_support_punctured :
     tsupport (bellmanAngularTest ζ φ) ⊆ {q : ℝ × ℝ | q ≠ (0, 0)} := by
   intro q hq he
   have hx := (bellmanAngularTest_support_data ζ φ hcζ hcφ hs).2 hq
   rw [he] at hx
   change (0 : ℝ) < 0 at hx
   exact lt_irrefl 0 hx
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

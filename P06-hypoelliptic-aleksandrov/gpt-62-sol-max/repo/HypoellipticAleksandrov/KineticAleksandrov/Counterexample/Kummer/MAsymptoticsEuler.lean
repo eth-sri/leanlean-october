@@ -43,7 +43,7 @@ theorem laplaceMoment_half_isBigO (a r : ℝ) (ha : 0 < a) :
       (integrable_laplaceMoment a X ha hX) (by norm_num : (0 : ℝ) ≤ 1 / 2)
     rw [integral_laplaceMoment a X ha hX] at he
     linarith only [he]
-  · exact Filter.Eventually.of_forall (fun _ => rfl)
+  · rfl
 
 /-- The far endpoint of the Euler integral has an exponential bound. -/
 theorem eulerLaplace_tail_bound (a c X : ℝ) (ha : 0 < a) (hc : 0 < c)
@@ -109,8 +109,12 @@ theorem laplaceMoment_mul_pow (a X t : ℝ) (ht : 0 < t) (n : ℕ) :
   congr 2
   ring
 
+section
+variable (a c : ℝ) (N : ℕ)
+include a c N
+
 /-- The polynomial Gamma kernel is the Taylor polynomial times the zeroth kernel. -/
-theorem polynomialLaplace_eq (a c : ℝ) (N : ℕ) (X t : ℝ) (ht : 0 < t) :
+theorem polynomialLaplace_eq (X t : ℝ) (ht : 0 < t) :
     polynomialLaplace a c N X t = laplaceMoment a X t * betaPolynomial (1 - c) N t := by
   simp only [polynomialLaplace, betaPolynomial, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -119,7 +123,7 @@ theorem polynomialLaplace_eq (a c : ℝ) (N : ℕ) (X t : ℝ) (ht : 0 < t) :
   ring
 
 /-- Integrability of the polynomial Gamma kernel on the first half interval. -/
-theorem intervalIntegrable_polynomialLaplace (a c : ℝ) (N : ℕ) (X : ℝ)
+theorem intervalIntegrable_polynomialLaplace (X : ℝ)
     (ha : 0 < a) (hX : 0 < X) :
     IntervalIntegrable (polynomialLaplace a c N X) volume 0 (1 / 2) := by
   have hs := IntervalIntegrable.sum (Finset.range N) (fun n _ =>
@@ -131,7 +135,7 @@ theorem intervalIntegrable_polynomialLaplace (a c : ℝ) (N : ℕ) (X : ℝ)
   simp only [polynomialLaplace, Finset.sum_apply]
 
 /-- The Taylor remainder is dominated by the next positive Gamma moment. -/
-theorem eulerLaplace_remainder_pointwise (a c : ℝ) (N : ℕ) :
+theorem eulerLaplace_remainder_pointwise :
     ∃ C : ℝ, 0 < C ∧ ∀ X t : ℝ, 0 < t → t ≤ 1 / 2 →
       |eulerLaplace a c X t - polynomialLaplace a c N X t| ≤
         C * laplaceMoment (a + N) X t := by
@@ -140,8 +144,7 @@ theorem eulerLaplace_remainder_pointwise (a c : ℝ) (N : ℕ) :
   intro X t ht ht1
   have he : eulerLaplace a c X t =
       laplaceMoment a X t * (1 - t) ^ (-(1 - c)) := by
-    rw [eulerLaplace, betaWeight, laplaceMoment]
-    rw [show -(1 - c) = c - 1 by ring]
+    rw [eulerLaplace, betaWeight, laplaceMoment, show -(1 - c) = c - 1 by ring]
     ring
   rw [he, polynomialLaplace_eq a c N X t ht, ← mul_sub, abs_mul,
     abs_of_nonneg (laplaceMoment_nonneg a X t ht.le)]
@@ -153,14 +156,14 @@ theorem eulerLaplace_remainder_pointwise (a c : ℝ) (N : ℕ) :
       ring
 
 /-- The first half Taylor error has the required algebraic order. -/
-theorem eulerLaplace_near_remainder_isBigO (a c : ℝ) (N : ℕ)
+theorem eulerLaplace_near_remainder_isBigO
     (ha : 0 < a) (hc : 0 < c) :
     IsBigO atTop
       (fun X => (∫ t in (0 : ℝ)..(1 / 2), eulerLaplace a c X t) -
         ∫ t in (0 : ℝ)..(1 / 2), polynomialLaplace a c N X t)
       (fun X => X ^ (-a - (N : ℝ))) := by
   obtain ⟨C, hC, hb⟩ := eulerLaplace_remainder_pointwise a c N
-  have haN : 0 < a + N := add_pos_of_pos_of_nonneg ha (Nat.cast_nonneg N)
+  have haN := add_pos_of_pos_of_nonneg ha (Nat.cast_nonneg N)
   refine IsBigO.of_bound (C * Real.Gamma (a + N)) ?_
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with X hX
   have he := (intervalIntegrable_eulerLaplace a c X ha hc).mono_set
@@ -195,9 +198,11 @@ theorem eulerLaplace_near_remainder_isBigO (a c : ℝ) (N : ℕ)
       ring
 
 /-- Full moments evaluate the polynomial Gamma kernel. -/
-def gammaPolynomial (a c : ℝ) (N : ℕ) (X : ℝ) : ℝ :=
+def gammaPolynomial (X : ℝ) : ℝ :=
   ∑ n ∈ Finset.range N, poch (1 - c) n / (n.factorial : ℝ) *
     (X ^ (-(a + n)) * Real.Gamma (a + n))
+
+end
 
 /-- Replacing all half moments by full moments costs less than every algebraic order. -/
 theorem polynomialLaplace_half_isBigO (a c r : ℝ) (N : ℕ) (ha : 0 < a) :
@@ -223,7 +228,7 @@ theorem polynomialLaplace_half_isBigO (a c r : ℝ) (N : ℕ) (ha : 0 < a) :
     · intro n _
       exact (intervalIntegrable_laplaceMoment (a + n) X
         (add_pos_of_pos_of_nonneg ha (Nat.cast_nonneg n)) hX).const_mul _
-  · exact Filter.Eventually.of_forall (fun _ => rfl)
+  · rfl
 
 /-- The complete Euler integral has its algebraic moment expansion. -/
 theorem eulerLaplace_expansion (a c : ℝ) (N : ℕ) (ha : 0 < a) (hc : 0 < c) :

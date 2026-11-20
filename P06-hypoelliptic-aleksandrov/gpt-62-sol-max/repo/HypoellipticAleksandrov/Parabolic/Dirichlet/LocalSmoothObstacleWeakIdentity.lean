@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTime
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
 public import HypoellipticAleksandrov.Parabolic.LocalCompactSupportIntegrationByParts
+import HypoellipticAleksandrov.Parabolic.SpatialPrincipalIntegrationByParts
 
 /-!
 # Local smooth-obstacle weak identity
@@ -20,19 +21,6 @@ open scoped BigOperators
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem spatialPartial_mul_local
-    {d : ℕ} {D : Set (PDE.Vec d)} (hD : IsOpen D) (i : Fin d)
-    {f g : PDE.Vec d → ℝ} (hf : ContDiffOn ℝ 1 f D)
-    (hg : ContDiffOn ℝ 1 g D) {y : PDE.Vec d} (hy : y ∈ D) :
-    spatialPartial i (fun x ↦ f x * g x) y =
-      spatialPartial i f y * g y + f y * spatialPartial i g y := by
-  rw [spatialPartial, fderiv_fun_mul
-    ((hf.contDiffAt (hD.mem_nhds hy)).differentiableAt (by norm_num))
-    ((hg.contDiffAt (hD.mem_nhds hy)).differentiableAt (by norm_num))]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
-    spatialPartial]
-  ring
-
 private theorem integrable_mul_of_right_compactSupport
     {d : ℕ} {D : Set (PDE.Vec d)} {f g : PDE.Vec d → ℝ}
     (hf : ContinuousOn f D) (hg : Continuous g)
@@ -45,14 +33,14 @@ private theorem integrable_mul_of_right_compactSupport
   apply (integrableOn_iff_integrable_of_support_subset ?_).mp hon
   exact (Function.support_mul_subset_right f g).trans (subset_tsupport g)
 
+section
+variable {d : ℕ} {D : Set (PDE.Vec d)} (hD : IsOpen D) (r₁ τ : ℝ) (a : CoefficientField d)
+  (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+include hD
+
 /-- The lower-order remainder in the generic reverse-time classical identity
 is integrable against a bundled smooth compactly supported test function. -/
 theorem integrableOn_reverseTimeClassicalRemainder_weakTest
-    {d : ℕ} {D : Set (PDE.Vec d)} (hD : IsOpen D)
-    (r₁ τ : ℝ)
-    (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
     (p : TimeVelocity d → ℝ)
     (ψ : PDE.WeakTestFunction D)
     (ha : ∀ i j : Fin d,
@@ -121,11 +109,7 @@ theorem integrableOn_reverseTimeClassicalRemainder_weakTest
 classical scalar field equals the negative original-time operator against each
 bundled smooth compactly supported test function.  A source-facing obstacle
 consumer must derive the stated lower-order remainder integrability. -/
-theorem integral_reverseTimeClassicalResidual_weakTest_eq_neg_operator
-    {d : ℕ} {D : Set (PDE.Vec d)} (hD : IsOpen D)
-    (r₁ τ : ℝ)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ) (ell : TimeVelocity d → ℝ)
+theorem integral_reverseTimeClassicalResidual_weakTest_eq_neg_operator (ell : TimeVelocity d → ℝ)
     (ψ : PDE.WeakTestFunction D)
     (ha : ∀ i j : Fin d, ContDiffOn ℝ 1 (fun y ↦ a (r₁ - τ) y i j) D)
     (hell : IsScalarC12On ell ({r₁ - τ} ×ˢ D))
@@ -202,7 +186,7 @@ theorem integral_reverseTimeClassicalResidual_weakTest_eq_neg_operator
         intro y hy
         change spatialPartial i
           (fun x ↦ a (r₁ - τ) x i j * spatialPartial j u x) y * ψ y = _
-        rw [spatialPartial_mul_local hD i (ha i j) (hgrad j) hy]
+        rw [_root_.HypoellipticAleksandrov.Parabolic.spatialPartial_mul hD i (ha i j) (hgrad j) hy]
         rw [← hgradient_eq y j, ← hhessian_eq y hy i j]
   let p : PDE.Vec d → ℝ := fun y ↦
     ∑ i : Fin d, ∑ j : Fin d,
@@ -305,5 +289,7 @@ theorem integral_reverseTimeClassicalResidual_weakTest_eq_neg_operator
       simp_rw [Finset.sum_sub_distrib]
       simp_rw [Finset.sum_neg_distrib]
       ring_nf
+
+end
 
 end HypoellipticAleksandrov.Parabolic

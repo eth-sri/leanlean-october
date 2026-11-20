@@ -52,9 +52,10 @@ private theorem h10ShiftedPositivePart_gradientCoord
       _ = _ := (Set.indicator_of_notMem
         (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy _).symm
 
-private theorem reverseTimePrincipal_shiftedPositivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (r₁ τ : ℝ) (a : CoefficientField d) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
+
+private theorem reverseTimePrincipal_shiftedPositivePart_eq (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
       (∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
         a (r₁ - τ) y i j *
           (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)) y *
@@ -87,8 +88,6 @@ private theorem reverseTimePrincipal_shiftedPositivePart_eq
     ring
 
 private theorem reverseTimeDrift_shiftedPositivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
       (∑ j : Fin d, ∫ y in Ω,
         reverseTimeDivergenceDrift r₁ a b τ y j *
@@ -116,9 +115,12 @@ private theorem reverseTimeDrift_shiftedPositivePart_eq
     rw [hj', hw0]
     ring
 
-private theorem reverseTimeScalar_shiftedPositivePart_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (r₁ τ : ℝ)
+
+private theorem reverseTimeScalar_shiftedPositivePart_le (c : ℝ → PDE.Vec d → ℝ)
     (u : H10HilbertGraph hΩ) (k : ℝ≥0)
     (hScalarNonpos : ∀ᵐ y ∂PDE.volumeOn Ω,
       reverseTimeScalarCoefficient r₁ c τ y ≤ 0)
@@ -190,25 +192,7 @@ private theorem reverseTimeScalar_shiftedPositivePart_le
   dsimp only [q, w] at hscalar
   exact hscalar
 
-private theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_scalar_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (u : H10HilbertGraph hΩ) (k : ℝ≥0)
-    (hscalar :
-      (∫ y, reverseTimeScalarCoefficient r₁ c τ y * valueCLM hΩ u y *
-        valueCLM hΩ (h10ShiftedPositivePart hΩ u k) y ∂PDE.volumeOn Ω) ≤
-        ∫ y, reverseTimeScalarCoefficient r₁ c τ y *
-          valueCLM hΩ (h10ShiftedPositivePart hΩ u k) y *
-          valueCLM hΩ (h10ShiftedPositivePart hΩ u k) y ∂PDE.volumeOn Ω) :
-    reverseTimeSpatialForm hΩ r₁ τ a b c u (h10ShiftedPositivePart hΩ u k) ≥
-      reverseTimeSpatialForm hΩ r₁ τ a b c
-        (h10ShiftedPositivePart hΩ u k) (h10ShiftedPositivePart hΩ u k) := by
-  rw [reverseTimeSpatialForm_apply]
-  rw [reverseTimePrincipal_shiftedPositivePart_eq hΩ r₁ τ a u k]
-  rw [reverseTimeDrift_shiftedPositivePart_eq hΩ r₁ τ a b u k]
-  rw [reverseTimeSpatialForm_apply]
-  exact sub_le_sub_left hscalar _
+end
 
 /-- Testing the reverse-time spatial form against `(u - k)₊` dominates the
 form with `(u - k)₊` in both slots when the reverse-time scalar coefficient is
@@ -234,7 +218,10 @@ theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge
         (h10ShiftedPositivePart hΩ u k) (h10ShiftedPositivePart hΩ u k) := by
   have hscalar := reverseTimeScalar_shiftedPositivePart_le hΩ r₁ τ c u k
     hScalarNonpos hScalarSquare hScalarCross
-  exact reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_scalar_le
-    hΩ r₁ τ a b c u k hscalar
+  rw [reverseTimeSpatialForm_apply]
+  rw [reverseTimePrincipal_shiftedPositivePart_eq hΩ r₁ τ a u k]
+  rw [reverseTimeDrift_shiftedPositivePart_eq hΩ r₁ τ a b u k]
+  rw [reverseTimeSpatialForm_apply]
+  exact sub_le_sub_left hscalar _
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

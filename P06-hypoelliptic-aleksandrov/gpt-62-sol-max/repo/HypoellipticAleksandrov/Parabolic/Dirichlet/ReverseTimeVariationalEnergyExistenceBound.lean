@@ -30,24 +30,12 @@ theorem exists_reverseTime_variational_energy_solution_norm_le_radius
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d,
-      z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-        lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-    (hUpper : ∀ z : TimeVelocity d,
-      z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-        a z.1 z.2 ≤ Lam • (1 : PDE.Mat d))
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
+    (hLower : HasLowerEllipticityOn lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hUpper : HasUpperEllipticityOn Lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
@@ -58,12 +46,10 @@ theorem exists_reverseTime_variational_energy_solution_norm_le_radius
           IsReverseTimeVariationalEnergySolution
               r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu ∧
             ‖u‖ ≤
-              reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-                a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial := by
+              reverseTimeGalerkinPrimalRadius ⟨h₀₁, hlam, hΩ, hΩbounded, a, b, c, F, haSmooth, hbSmooth, hcSmooth, hFSmooth, hLower, hcNonpos⟩ initial := by
   obtain ⟨U, hdu, htrace, hNorm⟩ :=
     exists_reverseTimeGalerkinPrimal_initialTrace_norm_le_radius
-      r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
+      ⟨h₀₁, hlam, hΩ, hΩbounded, a, b, c, F, haSmooth, hbSmooth, hcSmooth, hFSmooth, hLower, hcNonpos⟩ initial
   refine ⟨U,
     reverseTimeFormResidual r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth F hFSmooth U,

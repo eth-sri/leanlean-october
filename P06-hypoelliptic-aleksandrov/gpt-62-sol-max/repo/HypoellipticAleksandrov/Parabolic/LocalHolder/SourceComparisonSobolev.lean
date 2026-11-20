@@ -1,6 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10OrderIdeal
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.CompactInteriorH1ToH10
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenH1ZeroLevel
+public import PDEFoundation.Sobolev.H1.ZeroBoundaryLimit
 import PDEFoundation.Measure.LpDominatedConvergence
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 
@@ -16,9 +18,12 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hcl : IsCompact (closure Ω))
+include hΩ hcl
+
 /-- A continuous nonnegative H1 representative vanishing on the frontier belongs to H10. -/
-theorem memH10_of_continuous_nonnegative_zero_frontier {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hcl : IsCompact (closure Ω))
+theorem memH10_of_continuous_nonnegative_zero_frontier
     (f : PDE.H1Function Ω) (hc : Continuous f.toFun)
     (hn : ∀ x ∈ Ω, 0 ≤ f.toFun x)
     (hz : ∀ x ∈ frontier Ω, f.toFun x = 0) : PDE.MemH10 Ω f.toFun := by
@@ -112,8 +117,7 @@ theorem memH10_of_continuous_nonnegative_zero_frontier {d : ℕ}
     exact PDE.eLpNorm_sub_swap _ _
 
 /-- A smooth nonnegative zero-frontier barrier has a smooth compact H10 realization. -/
-theorem exists_h10_smooth_barrier_eqOn {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (hcl : IsCompact (closure Ω)) (f : PDE.Vec d → ℝ)
+theorem exists_h10_smooth_barrier_eqOn (f : PDE.Vec d → ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hn : ∀ x ∈ Ω, 0 ≤ f x) (hz : ∀ x ∈ frontier Ω, f x = 0) :
     ∃ q : PDE.H10Function Ω,
@@ -144,5 +148,7 @@ theorem exists_h10_smooth_barrier_eqOn {d : ℕ} {Ω : Set (PDE.Vec d)}
     rw [hq]
     change χ x * f x = f x
     rw [hχone x hx, one_mul]
+
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

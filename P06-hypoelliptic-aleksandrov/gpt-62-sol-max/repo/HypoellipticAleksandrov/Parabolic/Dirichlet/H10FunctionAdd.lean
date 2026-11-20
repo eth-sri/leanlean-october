@@ -43,10 +43,6 @@ noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
       simpa using u.tendsto_approx.add v.tendsto_approx
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hbound
       (fun _ => zero_le) (fun n => ?_)
-    have huApprox : AEStronglyMeasurable (u.approx n) (volume.restrict U) :=
-      (u.approx_smooth n).continuous.aestronglyMeasurable
-    have hvApprox : AEStronglyMeasurable (v.approx n) (volume.restrict U) :=
-      (v.approx_smooth n).continuous.aestronglyMeasurable
     have heq :
         (fun x => (u.approx n x + v.approx n x) -
           (u.toH1Function + v.toH1Function).toFun x) =
@@ -79,16 +75,6 @@ noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
       simpa using (u.tendsto_approx_grad i).add (v.tendsto_approx_grad i)
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hbound
       (fun _ => zero_le) (fun n => ?_)
-    have huDeriv : AEStronglyMeasurable
-        (fun x => (fderiv ℝ (u.approx n) x) (basisVec i))
-        (volume.restrict U) := by
-      exact ((((u.approx_smooth n).fderiv_right (m := (⊤ : ℕ∞)) (by norm_cast)).clm_apply
-        contDiff_const).continuous.aestronglyMeasurable)
-    have hvDeriv : AEStronglyMeasurable
-        (fun x => (fderiv ℝ (v.approx n) x) (basisVec i))
-        (volume.restrict U) := by
-      exact ((((v.approx_smooth n).fderiv_right (m := (⊤ : ℕ∞)) (by norm_cast)).clm_apply
-        contDiff_const).continuous.aestronglyMeasurable)
     have heq :
         (fun x =>
           (fderiv ℝ (fun y => u.approx n y + v.approx n y) x) (basisVec i) -

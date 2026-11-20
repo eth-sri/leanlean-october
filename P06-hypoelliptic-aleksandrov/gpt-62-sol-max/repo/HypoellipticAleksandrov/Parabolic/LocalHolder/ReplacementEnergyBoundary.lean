@@ -51,17 +51,12 @@ theorem exists_signed_source_ball_correction {d : ℕ} (hd : 0 < d)
     intro z hz
     exact piecewise_eq_of_mem U w (fun _ => 0) (hsub hz)
   have hwD : IsScalarC12On w D :=
-    ⟨hw.continuousOn.mono hsub,
-      fun z hz => hw.timeSlice_differentiableAt (hsub hz),
-      fun z hz => hw.spatialSlice_contDiffAt (hsub hz),
-      hw.continuousOn_scalarTimeDerivative.mono hsub,
-      hw.continuousOn_scalarSpatialGradient.mono hsub,
-      hw.continuousOn_scalarSpatialHessian.mono hsub⟩
+    hw.mono hsub
   have hD : IsOpen D := isOpen_Ioo.prod hΩ
   have hWc := continuousOn_source_zeroExtension_closed_ball (a - 1) a T hleft
     v₀ r lam M hM w hw.continuousOn ht hs
-  have hWr := Occupation.isScalarC12On_congr_open hD hwD hWD
-  obtain ⟨hdt, _, hdd⟩ := Occupation.scalarJet_eqOn_of_eqOn_open hD hWD
+  have hWr := hwD.congr hD hWD
+  obtain ⟨hdt, _, hdd⟩ := scalarJet_eqOn_of_eqOn_open hD hWD
   refine ⟨W, hWc, hWr, ?_, ?_, ?_⟩
   · intro z hz
     simp only [scalarParabolicZeroOrderOperator_apply, Pi.zero_apply, PDE.vecDot,

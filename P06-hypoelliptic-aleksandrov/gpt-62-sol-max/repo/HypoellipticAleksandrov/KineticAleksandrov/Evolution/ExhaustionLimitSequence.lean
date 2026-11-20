@@ -1,5 +1,6 @@
 module
 
+public import HypoellipticAleksandrov.Statements.LiebermanDirichlet
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.InnerBallExhaustion
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionTerminalApproximation
@@ -24,7 +25,6 @@ open scoped Topology MatrixOrder
 /-- A smooth inner-ball approximation sequence with actual finite Dirichlet solutions
 exists relative only to the Lieberman premise. -/
 theorem exists_innerBall_dirichlet_sequence
-    (hLE : LiebermanEllipsoidDirichletStatement)
     {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hBs : IsSmoothFullKineticCoefficient B) (hBsym : IsSymmetricFullKineticCoefficient B)
@@ -60,7 +60,6 @@ theorem exists_innerBall_dirichlet_sequence
   let R (k : ℕ) := R0 + (k : ℝ) + 1
   have hRR0 (k : ℕ) : R0 ≤ R k := by
     dsimp only [R]
-    have hk := Nat.cast_nonneg (α := ℝ) k
     linarith
   have hRp (k : ℕ) : 0 < R k := hR0.trans_le (hRR0 k)
   have hex (k : ℕ) : ∃ u : TimeVelocity (n + n) → ℝ,
@@ -96,7 +95,7 @@ theorem exists_innerBall_dirichlet_sequence
     obtain ⟨hQ, hl, ho, hsy, hsm, hlo, hup, hbsm, hdatum, hcompact⟩ :=
       straightened_base_premises hBs hBsym hB hbs hlam hlamLam
         (r0 - β k) (R k) hr (hRp k) (g k) (hg0 _) ε hε τ hF hFc
-    obtain ⟨u, hu, -⟩ := hLE hQ haτ (min lam ε) (max Lam ε) hl ho
+    obtain ⟨u, hu, -⟩ := exists_isClassicalBackwardDirichletSolution_openEllipsoid_uniqueOn_of_lieberman hQ haτ (min lam ε) (max Lam ε) hl ho
       (straightenedCoefficient B (g k) ε) (straightenedDrift b (g k)) hsy hsm hlo hup hbsm
       (fun x => F (g k τ + spatialY x, spatialZ x)) hdatum hcompact hsupport
     exact ⟨u, hu⟩

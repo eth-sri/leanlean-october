@@ -54,7 +54,7 @@ theorem integral_scalar_local_spatial_value_energy_spacetime {d : ℕ}
   apply integral_congr_ae
   filter_upwards [ae_restrict_mem measurableSet_Ioo] with t ht
   have hcoeff : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-    (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+    (contDiff_apply_apply ℝ ℝ i j).comp hA
   have hslice : ContDiffOn ℝ 1 (fun y => A t y i j) O :=
     ((hcoeff.comp (contDiff_const.prodMk contDiff_id)).of_le (by simp)).contDiffOn
   exact integral_scalar_local_spatial_value_energy_slice a T O hO u ρ hu hρ hc hsub

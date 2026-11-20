@@ -26,7 +26,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 variable {d : ℕ}
 
 /-- **Proposition 4.2.** -/
-theorem occupation_potential (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+theorem occupation_potential {lam Lam : ℝ}
     {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
     (hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
@@ -58,7 +58,7 @@ theorem occupation_potential (hH : HormanderHypoellipticityStatement) {lam Lam :
     intro p hp
     have := hFsupp hp
     exact ⟨this.1.2, by rw [movingDomain_wholeSpace]; exact mem_univ _⟩
-  obtain ⟨hsm, -, heq, -, -, -⟩ := parabolic_duhamel hH hΩ hγ hB K hP 1 F hF0 hFs hFc hU
+  obtain ⟨hsm, -, heq, -, -, -⟩ := parabolic_duhamel hΩ hγ hB K hP 1 F hF0 hFs hFc hU
   have hΩm := measurableSet_of_isAdmissibleEvolutionDomain hΩ
   have hg : ∀ r, Measurable (fun v : PDE.Vec d => F (r, v)) := fun r =>
     hFs.continuous.measurable.comp (measurable_const.prodMk measurable_id)
@@ -67,7 +67,7 @@ theorem occupation_potential (hH : HormanderHypoellipticityStatement) {lam Lam :
     rintro _ ⟨p, rfl⟩
     exact (le_abs_self _).trans (by simpa using hC p)⟩
   have hgb : ∀ p, F p ≤ ⨆ q, F q := fun p => le_ciSup hbdd p
-  have hsup0 : 0 ≤ ⨆ q, F q := (hF0 (0, 0)).trans (hgb _)
+  have hsup0 := (hF0 (0, 0)).trans (hgb _)
   have hle : ∀ p : TimeVelocity d, p.1 ∈ Icc (0 : ℝ) 1 →
       parabolicDuhamelPotential K hΩm 1 F p ≤ ⨆ q, F q := by
     intro p hp

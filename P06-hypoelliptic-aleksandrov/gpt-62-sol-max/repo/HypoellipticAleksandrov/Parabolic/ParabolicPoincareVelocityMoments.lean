@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareSlices
+import HypoellipticAleksandrov.Parabolic.ParabolicPoincareMoments
 public import PDEFoundation.Sobolev.Mean
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.MeasureTheory.Constructions.Pi
@@ -16,9 +17,8 @@ unit velocity cube.  It proves its slice compatibility, affine reproduction,
 subtraction algebra, and an extended-real `L^p` bound with no finiteness
 premise on the input norm.
 
-The first- and second-moment computations are kept private.  They are local to
-the unit velocity cube and deliberately do not use the full parabolic-box
-moment module.
+The velocity moments use the same cube measure computation as the parabolic
+box projection.
 -/
 
 @[expose] public section
@@ -40,96 +40,6 @@ noncomputable def parabolicMorreyUnitVelocityAffineProjection {d : Nat}
         (3 * PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
           (fun w => g w * w i)) * v i
 
-private theorem unit_velocity_cube_measure (d : ℕ) :
-    volume.restrict (velocityCube (0 : PDE.Vec d) 1) =
-      Measure.pi (fun _ : Fin d => volume.restrict (Set.Ioo (-1 : ℝ) 1)) := by
-  rw [velocityCube_eq_pi]
-  simp only [Pi.zero_apply, zero_sub, zero_add]
-  change (Measure.pi (fun _ : Fin d => volume)).restrict
-    (Set.univ.pi fun _ : Fin d => Set.Ioo (-1 : ℝ) 1) = _
-  rw [Measure.restrict_pi_pi]
-
-private theorem unit_interval_integral_id :
-    ∫ x in Set.Ioo (-1 : ℝ) 1, x = 0 := by
-  rw [← integral_Ioc_eq_integral_Ioo,
-    ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
-  norm_num [integral_id]
-
-private theorem unit_interval_integral_sq :
-    ∫ x in Set.Ioo (-1 : ℝ) 1, x * x = 2 / 3 := by
-  rw [show (fun x : ℝ => x * x) = fun x => x ^ 2 by ext x; ring,
-    ← integral_Ioc_eq_integral_Ioo,
-    ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
-  norm_num [integral_pow]
-
-private theorem unit_velocity_cube_integral_eval {d : ℕ} (i : Fin d) :
-    ∫ v in velocityCube (0 : PDE.Vec d) 1, v i = 0 := by
-  rw [unit_velocity_cube_measure]
-  let q : Fin d → ℝ → ℝ := fun k x => if k = i then x else 1
-  have hq : (fun v : PDE.Vec d => v i) = fun v => ∏ k, q k (v k) := by
-    ext v
-    simp [q]
-  rw [hq, integral_fintype_prod_eq_prod]
-  simp only [q]
-  apply Finset.prod_eq_zero (Finset.mem_univ i)
-  simpa [q] using unit_interval_integral_id
-
-private theorem unit_velocity_cube_integral_eval_mul_eval {d : ℕ} (i j : Fin d) :
-    ∫ v in velocityCube (0 : PDE.Vec d) 1, v i * v j =
-      if i = j then (2 : ℝ) ^ d / 3 else 0 := by
-  classical
-  rw [unit_velocity_cube_measure]
-  by_cases hij : i = j
-  · subst j
-    let q : Fin d → ℝ → ℝ := fun k x => if k = i then x * x else 1
-    have hq : (fun v : PDE.Vec d => v i * v i) = fun v => ∏ k, q k (v k) := by
-      ext v
-      simp [q]
-    rw [hq, integral_fintype_prod_eq_prod]
-    have hqint : (fun k : Fin d => ∫ x in Set.Ioo (-1 : ℝ) 1, q k x) =
-        fun k => if k = i then 2 / 3 else 2 := by
-      funext k
-      by_cases hki : k = i
-      · subst k
-        simpa [q] using unit_interval_integral_sq
-      · simp [q, hki]
-        norm_num
-    rw [hqint, if_pos rfl]
-    have hfactor : (fun k : Fin d => if k = i then (2 / 3 : ℝ) else 2) =
-        fun k => 2 * (if k = i then (1 / 3 : ℝ) else 1) := by
-      funext k
-      by_cases hki : k = i
-      · simp [hki]
-        norm_num
-      · simp [hki]
-    rw [hfactor, Finset.prod_mul_distrib, Finset.prod_const, Fintype.prod_ite_eq']
-    simp only [Finset.card_univ, Fintype.card_fin]
-    ring
-  · let q : Fin d → ℝ → ℝ := fun k x =>
-      if k = i then x else if k = j then x else 1
-    have hq : (fun v : PDE.Vec d => v i * v j) = fun v => ∏ k, q k (v k) := by
-      ext v
-      calc
-        v i * v j = q i (v i) * q j (v j) := by simp [q]
-        _ = q i (v i) * (q j (v j) *
-            ∏ k ∈ (Finset.univ.erase i).erase j, q k (v k)) := by
-          congr 1
-          have hprod : ∏ k ∈ (Finset.univ.erase i).erase j, q k (v k) = 1 := by
-            apply Finset.prod_eq_one
-            intro k hk
-            rcases Finset.mem_erase.mp hk with ⟨hkj, hki_mem⟩
-            exact by simp [q, hkj, (Finset.mem_erase.mp hki_mem).1]
-          rw [hprod, mul_one]
-        _ = ∏ k, q k (v k) := by
-          rw [Finset.mul_prod_erase (Finset.univ.erase i) (fun k => q k (v k))]
-          · rw [Finset.mul_prod_erase Finset.univ (fun k => q k (v k))]
-            exact Finset.mem_univ _
-          · exact Finset.mem_erase.mpr ⟨fun h => hij h.symm, Finset.mem_univ _⟩
-    rw [hq, integral_fintype_prod_eq_prod]
-    rw [if_neg hij]
-    apply Finset.prod_eq_zero (Finset.mem_univ i)
-    simpa [q, hij] using unit_interval_integral_id
-
 private theorem unit_velocity_average_one (d : ℕ) :
     PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
       (fun _ : PDE.Vec d => (1 : ℝ)) = 1 := by
@@ -139,30 +49,24 @@ private theorem unit_velocity_average_one (d : ℕ) :
   simp only [smul_eq_mul]
   field_simp
 
-private theorem unit_velocity_average_eval {d : ℕ} (i : Fin d) :
-    PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
-      (fun v : PDE.Vec d => v i) = 0 := by
-  rw [PDE.integralAverage, unit_velocity_cube_integral_eval]
-  ring_nf
-
 /-- Every velocity coordinate has zero normalized average on the literal unit velocity cube. -/
 theorem parabolicMorreyUnitVelocityAverage_eval {d : Nat} (i : Fin d) :
     PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
       (fun v : PDE.Vec d => v i) = 0 :=
-  unit_velocity_average_eval i
+  by simp [PDE.integralAverage, integral_eval_unit_velocityCube]
 
 private theorem unit_velocity_average_eval_mul_eval {d : ℕ} (i j : Fin d) :
     PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
       (fun v : PDE.Vec d => v i * v j) =
       if i = j then (1 / 3 : ℝ) else 0 := by
-  rw [PDE.integralAverage, unit_velocity_cube_integral_eval_mul_eval,
+  rw [PDE.integralAverage, integral_eval_mul_eval_unit_velocityCube,
     volume_velocityCube_toReal (v₀ := (0 : PDE.Vec d)) (by norm_num : (0 : ℝ) ≤ 1)]
   by_cases hij : i = j
   · simp [hij]
     field_simp
   · simp [hij]
 
-private theorem continuous_integrable_unit_velocity_cube {d : ℕ}
+theorem continuous_integrable_unit_velocity_cube {d : ℕ}
     {f : PDE.Vec d → ℝ} (hf : Continuous f) :
     Integrable f (volume.restrict (velocityCube (0 : PDE.Vec d) 1)) := by
   let K : Set (PDE.Vec d) := velocityClosedCube (0 : PDE.Vec d) 1
@@ -176,9 +80,13 @@ private theorem continuous_integrable_unit_velocity_cube {d : ℕ}
     exact (hv i).le
   exact (hf.continuousOn.integrableOn_compact hKcompact).mono_set hsubset
 
-private theorem unit_velocity_average_add {d : ℕ} (f g : PDE.Vec d → ℝ)
-    (hf : Integrable f (volume.restrict (velocityCube (0 : PDE.Vec d) 1)))
-    (hg : Integrable g (volume.restrict (velocityCube (0 : PDE.Vec d) 1))) :
+section
+variable {d : ℕ} (f g : PDE.Vec d → ℝ)
+  (hf : Integrable f (volume.restrict (velocityCube (0 : PDE.Vec d) 1)))
+  (hg : Integrable g (volume.restrict (velocityCube (0 : PDE.Vec d) 1)))
+include hf hg
+
+private theorem unit_velocity_average_add :
     PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1) (f + g) =
       PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1) f +
         PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1) g := by
@@ -187,9 +95,7 @@ private theorem unit_velocity_average_add {d : ℕ} (f g : PDE.Vec d → ℝ)
   rw [integral_add hf hg]
   ring
 
-private theorem unit_velocity_average_sub {d : ℕ} (f g : PDE.Vec d → ℝ)
-    (hf : Integrable f (volume.restrict (velocityCube (0 : PDE.Vec d) 1)))
-    (hg : Integrable g (volume.restrict (velocityCube (0 : PDE.Vec d) 1))) :
+theorem unit_velocity_average_sub :
     PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1) (f - g) =
       PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1) f -
         PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1) g := by
@@ -197,6 +103,8 @@ private theorem unit_velocity_average_sub {d : ℕ} (f g : PDE.Vec d → ℝ)
   simp only [Pi.sub_apply]
   rw [integral_sub hf hg]
   ring
+
+end
 
 private theorem unit_velocity_average_smul {d : ℕ} (c : ℝ) (f : PDE.Vec d → ℝ) :
     PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1) (c • f) =
@@ -220,7 +128,10 @@ private theorem unit_velocity_average_finset_sum {d ι : ℕ} (s : Finset (Fin �
   unfold PDE.integralAverage
   rw [integral_finset_sum s hf, Finset.mul_sum]
 
-private theorem unit_velocity_average_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ) :
+section
+variable {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
+
+theorem unit_velocity_average_affine :
     PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
         (fun v : PDE.Vec d => a + ∑ i : Fin d, b i * v i) = a := by
   let f : Fin d → PDE.Vec d → ℝ := fun i v => b i * v i
@@ -253,10 +164,10 @@ private theorem unit_velocity_average_affine {d : ℕ} (a : ℝ) (b : Fin d → 
   simp_rw [show f = fun i => b i • (fun v : PDE.Vec d => v i) by
     funext i v
     simp only [f, Pi.smul_apply, smul_eq_mul]]
-  simp_rw [unit_velocity_average_smul, unit_velocity_average_eval]
+  simp_rw [unit_velocity_average_smul, parabolicMorreyUnitVelocityAverage_eval]
   simp only [smul_eq_mul, mul_zero, Finset.sum_const_zero, add_zero]
 
-private theorem unit_velocity_affine_coefficient {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
+private theorem unit_velocity_affine_coefficient
     (j : Fin d) :
     3 * PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
         (fun v : PDE.Vec d => (a + ∑ i : Fin d, b i * v i) * v j) = b j := by
@@ -287,7 +198,7 @@ private theorem unit_velocity_affine_coefficient {d : ℕ} (a : ℝ) (b : Fin d 
         a • (fun v : PDE.Vec d => v j) by
           ext v
           simp only [Pi.smul_apply, smul_eq_mul]
-      , unit_velocity_average_smul, unit_velocity_average_eval]
+      , unit_velocity_average_smul, parabolicMorreyUnitVelocityAverage_eval]
     simp only [smul_eq_mul, mul_zero]
   rw [hfirst_avg]
   simp_rw [show g = fun i => b i • (fun v : PDE.Vec d => v i * v j) by
@@ -304,10 +215,14 @@ private theorem unit_velocity_affine_coefficient {d : ℕ} (a : ℝ) (b : Fin d 
   · intro i _ hij
     simp [hij]
 
+end
+
+section
+variable {d : Nat}
+
 /-- The time-slice projection is exactly the shared velocity-only projection
 applied to that slice. -/
-theorem parabolicMorreyUnitSpatialAffineProjection_eq_velocityAffineProjection
-    {d : Nat} (u : TimeVelocity d -> Real) (t : Real) :
+theorem parabolicMorreyUnitSpatialAffineProjection_eq_velocityAffineProjection (u : TimeVelocity d -> Real) (t : Real) :
     (fun v : PDE.Vec d => parabolicMorreyUnitSpatialAffineProjection u (t, v)) =
       parabolicMorreyUnitVelocityAffineProjection (fun v => u (t, v)) := by
   funext v
@@ -319,8 +234,7 @@ theorem parabolicMorreyUnitSpatialAffineProjection_eq_velocityAffineProjection
 
 /-- The unit-velocity moment projection exactly reproduces every affine scalar
 field in the velocity variables. -/
-theorem parabolicMorreyUnitVelocityAffineProjection_reproduces_affine
-    {d : Nat} (a : Real) (b : Fin d -> Real) :
+theorem parabolicMorreyUnitVelocityAffineProjection_reproduces_affine (a : Real) (b : Fin d -> Real) :
     parabolicMorreyUnitVelocityAffineProjection
         (fun v : PDE.Vec d => a + ∑ i : Fin d, b i * v i) =
       fun v => a + ∑ i : Fin d, b i * v i := by
@@ -330,8 +244,7 @@ theorem parabolicMorreyUnitVelocityAffineProjection_reproduces_affine
 
 /-- The unit-velocity moment projection commutes with subtraction when the
 value and all first moments of both inputs are integrable. -/
-theorem parabolicMorreyUnitVelocityAffineProjection_sub
-    {d : Nat} (f g : PDE.Vec d -> Real)
+theorem parabolicMorreyUnitVelocityAffineProjection_sub (f g : PDE.Vec d -> Real)
     (hf : Integrable f (volume.restrict (velocityCube (0 : PDE.Vec d) 1)))
     (hg : Integrable g (volume.restrict (velocityCube (0 : PDE.Vec d) 1)))
     (hfv : ∀ i : Fin d, Integrable (fun v => f v * v i)
@@ -363,6 +276,8 @@ theorem parabolicMorreyUnitVelocityAffineProjection_sub
   rw [Finset.sum_sub_distrib]
   ring
 
+end
+
 private theorem unit_velocity_cube_measure_pos (d : ℕ) :
     0 < volume (velocityCube (0 : PDE.Vec d) 1) := by
   apply (ENNReal.toReal_pos_iff.mp ?_).1
@@ -379,15 +294,14 @@ private theorem unit_velocity_cube_measure_lt_top (d : ℕ) :
     change ∀ i : Fin d, |v i - (0 : PDE.Vec d) i| ≤ 1
     intro i
     exact (hv i).le
-  calc
-    volume (velocityCube (0 : PDE.Vec d) 1) ≤
-        volume (velocityClosedCube (0 : PDE.Vec d) 1) := measure_mono hsubset
-    _ < ∞ := (isCompact_velocityClosedCube (0 : PDE.Vec d) 1).measure_lt_top
+  exact Trans.trans (measure_mono hsubset) (IsCompact.measure_lt_top (isCompact_velocityClosedCube 0 1))
 
-private theorem eLpMeanNormOn_unit_velocity_affine_projection_le
-    {d : Nat} (g : PDE.Vec d -> Real)
-    (hg : AEStronglyMeasurable g
-      (volume.restrict (velocityCube (0 : PDE.Vec d) 1))) :
+section
+variable {d : Nat} (g : PDE.Vec d -> Real)
+  (hg : AEStronglyMeasurable g (volume.restrict (velocityCube (0 : PDE.Vec d) 1)))
+include hg
+
+private theorem eLpMeanNormOn_unit_velocity_affine_projection_le :
     PDE.eLpMeanNormOn (velocityCube (0 : PDE.Vec d) 1) (parabolicExponent d)
       (parabolicMorreyUnitVelocityAffineProjection g) <=
       ENNReal.ofReal (1 + 3 * (d : Real)) *
@@ -489,9 +403,6 @@ private theorem eLpMeanNormOn_unit_velocity_affine_projection_le
         (3 * PDE.integralAverage V (fun w => g w * w i)) * v i) μ := by
     intro i
     exact aestronglyMeasurable_const.mul (continuous_apply i).aestronglyMeasurable
-  have hsum_measurable : AEStronglyMeasurable (∑ i : Fin d, fun v =>
-      (3 * PDE.integralAverage V (fun w => g w * w i)) * v i) μ :=
-    Finset.aestronglyMeasurable_sum Finset.univ fun i _ => hterm_measurable i
   have hfactor : ENNReal.ofReal (1 + 3 * (d : Real)) =
       1 + 3 * (d : ℝ≥0∞) := by
     rw [ENNReal.ofReal_add (by norm_num) (by positivity),
@@ -539,10 +450,7 @@ private theorem eLpMeanNormOn_unit_velocity_affine_projection_le
 
 /-- The canonical unit-velocity moment projection has the exact finite-free
 extended-real norm bound needed by the spatial and temporal Poincare layers. -/
-theorem eLpNormOn_parabolicMorreyUnitVelocityAffineProjection_le
-    {d : Nat} (g : PDE.Vec d -> Real)
-    (hg : AEStronglyMeasurable g
-      (volume.restrict (velocityCube (0 : PDE.Vec d) 1))) :
+theorem eLpNormOn_parabolicMorreyUnitVelocityAffineProjection_le :
     PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1) (parabolicExponent d)
         (parabolicMorreyUnitVelocityAffineProjection g) <=
       ENNReal.ofReal (1 + 3 * (d : Real)) *
@@ -568,5 +476,7 @@ theorem eLpNormOn_parabolicMorreyUnitVelocityAffineProjection_le
     _ = ENNReal.ofReal (1 + 3 * (d : Real)) *
         (volume V ^ (1 / p).toReal * PDE.eLpMeanNormOn V p g) := by
       ac_rfl
+
+end
 
 end HypoellipticAleksandrov.Parabolic

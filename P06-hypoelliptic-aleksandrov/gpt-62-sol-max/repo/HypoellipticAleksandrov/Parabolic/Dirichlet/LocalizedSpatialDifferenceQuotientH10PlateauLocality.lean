@@ -19,34 +19,29 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+section
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+  (χ : PDE.QuantitativeSmoothCutoff inner outer K)
+
 /-- A smooth cutoff is almost everywhere strongly measurable on restricted volume. -/
-theorem cutoffL2Multiplier_aestronglyMeasurable
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (χ : PDE.QuantitativeSmoothCutoff inner outer K) :
+theorem cutoffL2Multiplier_aestronglyMeasurable :
     AEStronglyMeasurable χ.toFun (PDE.volumeOn Ω) :=
   χ.smooth.continuous.aestronglyMeasurable
 
 /-- A quantitative cutoff has norm at most one almost everywhere. -/
-theorem cutoffL2Multiplier_norm_le_one
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (χ : PDE.QuantitativeSmoothCutoff inner outer K) :
+theorem cutoffL2Multiplier_norm_le_one :
     ∀ᵐ y ∂PDE.volumeOn Ω, ‖χ.toFun y‖ ≤ (1 : ℝ) :=
-  ae_of_all _ fun y => by
-    rw [Real.norm_eq_abs, abs_of_nonneg (χ.nonneg y)]
-    exact χ.le_one y
+  ae_of_all _ fun y => χ.norm_le_one y
 
-private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
-    {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :
-    PDE.classicalGradient η.toFun y i = 0 := by
-  rw [PDE.classicalGradient_apply, fderiv_of_notMem_tsupport ℝ hy]
-  exact ContinuousLinearMap.zero_apply _
+end
+
+section
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+  (χ : PDE.QuantitativeSmoothCutoff inner outer K)
+include inner outer K χ
 
 /-- Multiplication by a quantitative spatial cutoff on restricted `L²`. -/
-noncomputable def cutoffL2Multiplier
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (χ : PDE.QuantitativeSmoothCutoff inner outer K) :
+noncomputable def cutoffL2Multiplier :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
       PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
   scalarL2Multiplier χ.toFun (cutoffL2Multiplier_aestronglyMeasurable χ) 1
@@ -55,8 +50,6 @@ noncomputable def cutoffL2Multiplier
 /-- The cutoff multiplier is represented almost everywhere by pointwise
 multiplication. -/
 theorem cutoffL2Multiplier_apply_ae
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (χ : PDE.QuantitativeSmoothCutoff inner outer K)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ⇑(cutoffL2Multiplier (Ω := Ω) χ f) =ᵐ[PDE.volumeOn Ω]
       fun y => χ y * f y := by
@@ -64,14 +57,16 @@ theorem cutoffL2Multiplier_apply_ae
     (cutoffL2Multiplier_aestronglyMeasurable χ) 1 zero_le_one
     (cutoffL2Multiplier_norm_le_one χ) f
 
-private theorem cutoffL2Multiplier_apply_localizedSpatialDifferenceQuotientL2
-    {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
-    {Kη Kχ : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
-    (χ : PDE.QuantitativeSmoothCutoff innerχ outerχ Kχ)
-    (hηχ : tsupport η.toFun ⊆ innerχ)
-    (hΩ : MeasurableSet Ω) (k : Fin d) (h : ℝ)
+end
+
+section
+variable {d : ℕ} {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+  (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
+  (χ : PDE.QuantitativeSmoothCutoff innerχ outerχ Kχ) (hηχ : tsupport η.toFun ⊆ innerχ)
+  (hΩ : MeasurableSet Ω)
+include innerη outerη innerχ outerχ Kη Kχ η χ hηχ hΩ
+
+private theorem cutoffL2Multiplier_apply_localizedSpatialDifferenceQuotientL2 (k : Fin d) (h : ℝ)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     cutoffL2Multiplier (Ω := Ω) χ
         (localizedSpatialDifferenceQuotientL2 hΩ η k h f) =
@@ -86,14 +81,7 @@ private theorem cutoffL2Multiplier_apply_localizedSpatialDifferenceQuotientL2
   · rw [χ.eq_one_on_inner y (hηχ (subset_tsupport η.toFun hy)), one_mul]
 
 private theorem
-    cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotientL2
-    {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
-    {Kη Kχ : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
-    (χ : PDE.QuantitativeSmoothCutoff innerχ outerχ Kχ)
-    (hηχ : tsupport η.toFun ⊆ innerχ)
-    (hΩ : MeasurableSet Ω) (i k : Fin d) (h : ℝ)
+    cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotientL2 (i k : Fin d) (h : ℝ)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     cutoffL2Multiplier (Ω := Ω) χ
         (cutoffGradientSpatialDifferenceQuotientL2 hΩ η i k h f) =
@@ -108,12 +96,13 @@ private theorem
   · rw [cutoffGradient_eq_zero_of_not_mem_tsupport η i hy]
     ring
 
-private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
+end
+
+theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω)
+    (hηshift : η.ShiftMapsInto k h Ω)
     (i : Fin d) (u : H10HilbertGraph hΩ) :
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
         (gradientCLM hΩ
@@ -145,9 +134,7 @@ theorem
     (hηχ : tsupport η.toFun ⊆ innerχ)
     (i k : Fin d) (h : ℝ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
+    (hηshift : η.ShiftMapsInto k h Ω)
     (u : H10HilbertGraph hΩ) :
     cutoffL2Multiplier (Ω := Ω) χ
         (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i

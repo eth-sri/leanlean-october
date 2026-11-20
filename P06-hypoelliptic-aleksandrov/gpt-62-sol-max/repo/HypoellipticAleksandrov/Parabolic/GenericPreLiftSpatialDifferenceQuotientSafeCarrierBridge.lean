@@ -2,7 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientPointwiseCoercivity
 public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
-public import Mathlib.MeasureTheory.Function.L2Space
+public import HypoellipticAleksandrov.Analysis.L2ProductConvergence
 
 /-!
 # Safe-carrier integrated coercivity
@@ -18,23 +18,8 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
-open MeasureTheory Set
+open MeasureTheory Set Analysis
 open scoped Convex ENNReal MatrixOrder
-
-private theorem setIntegral_eq_setIntegral_of_subset_of_eq_zero
-    {d : ℕ} {V S : Set (TimeVelocity d)} (hS : MeasurableSet S)
-    (hV : MeasurableSet V) (hVS : V ⊆ S) (f : TimeVelocity d → ℝ)
-    (hoff : ∀ z ∈ S, z ∉ V → f z = 0) :
-    ∫ z in S, f z = ∫ z in V, f z := by
-  rw [← integral_indicator hS, ← integral_indicator hV]
-  apply integral_congr_ae
-  exact ae_of_all _ fun z ↦ by
-    by_cases hzV : z ∈ V
-    · simp only [Set.indicator_of_mem hzV, Set.indicator_of_mem (hVS hzV)]
-    · by_cases hzS : z ∈ S
-      · simp only [Set.indicator_of_mem hzS, Set.indicator_of_notMem hzV,
-          hoff z hzS hzV]
-      · simp only [Set.indicator_of_notMem hzS, Set.indicator_of_notMem hzV]
 
 /-- Integrate the fixed-direction coercivity estimate on a shift-safe carrier,
 then transport only the cutoff-supported energy and flux terms to the outer
@@ -47,12 +32,10 @@ theorem setIntegral_fixedDirection_fluxPairing_coercive_absorbed_on_safeCarrier
     (w Q : TimeVelocity d → ℝ) (k : Fin d)
     (h lam Lam Ma Keta : ℝ)
     (hd : 0 < d) (hlam : 0 < lam)
-    (hMa : 0 ≤ Ma) (hKeta : 0 ≤ Keta)
-    (hwMeas : AEStronglyMeasurable w (timeVelocityVolumeOn V))
+    (hKeta : 0 ≤ Keta)
+    (hwLp : ParabolicMemLpOn V ∞ w)
     (hw : ∀ z ∈ V, 0 ≤ w z)
     (hwLe : ∀ z ∈ V, w z ≤ 1)
-    (hOff : ∀ z ∈ S, z ∉ V →
-      w z = 0 ∧ ∀ i, velocityGradient w z i = 0)
     (hEll : ∀ z ∈ V,
       lam • (1 : PDE.Mat d) ≤ A (spatialShift k h z) ∧
         A (spatialShift k h z) ≤ Lam • (1 : PDE.Mat d))
@@ -71,7 +54,7 @@ theorem setIntegral_fixedDirection_fluxPairing_coercive_absorbed_on_safeCarrier
           spatialDifferenceQuotient k h (fun x ↦ A x i j) z * G j z)) *
         (velocityGradient w z i * Q z + w z * H i z))
       (timeVelocityVolumeOn S)) :
-    (lam / 2) * ∫ z in S, w z * ∑ i : Fin d, H i z ^ 2 ≤
+    (lam / 2) * ∫ z in V, w z * ∑ i : Fin d, H i z ^ 2 ≤
       (∑ i : Fin d, ∫ z in S,
         (∑ j : Fin d,
           (spatialTranslate k h (fun x ↦ A x i j) z * H j z +
@@ -82,22 +65,11 @@ theorem setIntegral_fixedDirection_fluxPairing_coercive_absorbed_on_safeCarrier
         ((d : ℝ) ^ 2 + (d : ℝ)) * Ma * Keta) *
         ((∫ z in V, Q z ^ 2) +
           ∑ j : Fin d, ∫ z in V, G j z ^ 2) := by
-  have _hMa : 0 ≤ Ma := hMa
   let Gamma : ℝ :=
     8 * (d : ℝ) ^ 3 / lam * Lam ^ 2 * Keta ^ 2 +
       2 * (d : ℝ) ^ 2 / lam * Ma ^ 2 +
       ((d : ℝ) ^ 2 + (d : ℝ)) * Ma * Keta
-  have hsumHInt : Integrable (fun z ↦ ∑ i : Fin d, H i z ^ 2)
-      (timeVelocityVolumeOn V) :=
-    integrable_finset_sum _ fun i _ ↦ (hH i).integrable_sq
-  have hweightedHInt : Integrable (fun z ↦ w z * ∑ i : Fin d, H i z ^ 2)
-      (timeVelocityVolumeOn V) := by
-    refine Integrable.mono' hsumHInt (hwMeas.mul hsumHInt.1) ?_
-    filter_upwards [ae_restrict_mem hV] with z hz
-    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (hw z hz),
-      abs_of_nonneg (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z))]
-    exact mul_le_of_le_one_left
-      (Finset.sum_nonneg fun i _ ↦ sq_nonneg (H i z)) (hwLe z hz)
+  have hweightedHInt := integrable_weighted_sum_sq hwLp hH
   have hdataInt : Integrable (fun z ↦ Q z ^ 2 + ∑ j : Fin d, G j z ^ 2)
       (timeVelocityVolumeOn V) :=
     hQ.integrable_sq.add (integrable_finset_sum _ fun j _ ↦ (hG j).integrable_sq)
@@ -134,19 +106,8 @@ theorem setIntegral_fixedDirection_fluxPairing_coercive_absorbed_on_safeCarrier
     integral_add hQ.integrable_sq
       (integrable_finset_sum _ fun j _ ↦ (hG j).integrable_sq),
     integral_finset_sum _ (fun j _ ↦ (hG j).integrable_sq)] at hmono
-  have henergyEq : (∫ z in S, w z * ∑ i : Fin d, H i z ^ 2) =
-      ∫ z in V, w z * ∑ i : Fin d, H i z ^ 2 := by
-    apply setIntegral_eq_setIntegral_of_subset_of_eq_zero hS hV hVS
-    intro z hzS hzV
-    rw [(hOff z hzS hzV).1, zero_mul]
-  have hfluxEq (i : Fin d) : (∫ z in S, flux i z) = ∫ z in V, flux i z := by
-    apply setIntegral_eq_setIntegral_of_subset_of_eq_zero hS hV hVS
-    intro z _ hzV
-    have hDzero : velocityGradient w z i * Q z + w z * H i z = 0 := by
-      by_contra hne
-      exact hzV (hDsupport i (subset_closure hne))
-    simp only [flux, hDzero, mul_zero]
-  rw [henergyEq]
+  have hfluxEq (i : Fin d) : (∫ z in S, flux i z) = ∫ z in V, flux i z :=
+    setIntegral_mul_eq_of_tsupport_subset hS hVS _ _ (hDsupport i)
   change (lam / 2) * ∫ z in V, w z * ∑ i : Fin d, H i z ^ 2 ≤
     (∑ i : Fin d, ∫ z in S, flux i z) + Gamma *
       ((∫ z in V, Q z ^ 2) + ∑ j : Fin d, ∫ z in V, G j z ^ 2)

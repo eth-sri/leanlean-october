@@ -31,8 +31,7 @@ theorem exists_disjoint_selection_measure_bounds {d : ℕ} {ι : Type*}
   obtain ⟨u, hut, hcount, hdisj, hcover⟩ :=
     exists_disjoint_cylinder_selection P r t R hr hR
   refine ⟨u, hut, hcount, hdisj, ?_, ?_⟩
-  · exact (measure_mono hcover).trans
-      (measure_biUnion_le volume hcount (fun i => inflatedCylinder (P i) (r i) 8))
+  · exact LE.le.trans (measure_mono hcover) (measure_biUnion_le volume hcount fun i => inflatedCylinder (P i) (r i) 8)
   · calc
       (∑' i : u, volume (E ∩ backwardCylinder (P i) (r i))) =
           ∑' i : u, (volume.restrict E) (backwardCylinder (P i) (r i)) := by

@@ -36,12 +36,14 @@ theorem IsClassicalTerminalSolution.continuousOn_slice
     simpa only [evolutionStateSet, closure_prod_eq, closure_univ] using hx
   exact ⟨hrτ, hx'.1⟩
 
+section
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {B : FullKineticCoefficient n}
+  {b : PDE.Vec n → PDE.Vec n} {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
+  {u : KineticPoint n → ℝ} (hu : IsClassicalTerminalSolution Ω γ B b τ F u)
+include B b F hu
+
 /-- Extending an intermediate slice by zero outside its state fiber is continuous. -/
-theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r ≤ τ) :
+theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice (hrτ : r ≤ τ) :
     Continuous ((evolutionStateSet Ω γ r).indicator
       (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)) := by
   apply continuous_indicator ?_ (hu.continuousOn_slice hrτ)
@@ -51,15 +53,13 @@ theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice
   exact hu.2.2.2.2.2 ⟨r, x.1, x.2⟩ ⟨hrτ, hx'.1⟩
 
 /-- A strictly earlier slice is smooth on the open state fiber. -/
-theorem IsClassicalTerminalSolution.contDiffOn_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r < τ) :
+theorem IsClassicalTerminalSolution.contDiffOn_slice (hrτ : r < τ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)
       (evolutionStateSet Ω γ r) := by
   exact hu.2.2.1.comp ((contDiff_const.prodMk contDiff_id).contDiffOn)
     (fun x hx => ⟨hrτ, hx.1⟩)
+
+end
 
 /-- Multiplying an interior-smooth function by an interior-supported smooth cutoff gives
 an ambient smooth function, irrespective of the original function outside the open set. -/

@@ -37,7 +37,7 @@ theorem bounded_convergence_eLpNorm {X : Type*} [MeasurableSpace X]
     (C : ℝ) (hbound : ∀ n, ∀ᵐ x ∂ν, ‖F n x‖ ≤ C)
     (hlim : ∀ᵐ x ∂ν, Tendsto (fun n => F n x) atTop (𝓝 0)) :
     Tendsto (fun n => eLpNorm (F n) p ν) atTop (𝓝 0) := by
-  have hpow : 0 < p.toReal := ENNReal.toReal_pos hp0 hp
+  have hpow := ENNReal.toReal_pos hp0 hp
   have hi : Tendsto (fun n => ∫⁻ x, ‖F n x‖ₑ ^ p.toReal ∂ν) atTop (𝓝 0) := by
     have hh := tendsto_lintegral_of_dominated_convergence'
       (μ := ν) (F := fun n x => ‖F n x‖ₑ ^ p.toReal) (f := fun _ => 0)
@@ -98,12 +98,16 @@ variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
   [MeasureSpace G] [BorelSpace G] [FiniteDimensional ℝ G]
    [Measure.IsAddHaarMeasure (volume : Measure G)]
 
+section
+variable (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+include φ g
+
 /-- Spatial smoothing by an actual normalized bump kernel. -/
-def spatialMollify (φ : ContDiffBump (0 : G)) (g : G → ℝ) : G → ℝ :=
+def spatialMollify : G → ℝ :=
   φ.normed volume ⋆[lsmul ℝ ℝ, volume] g
 
 /-- Bounded input gives the same uniform bound after normalized convolution. -/
-theorem spatialMollify_norm_le (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+theorem spatialMollify_norm_le
     (hg : AEStronglyMeasurable g volume) (C : ℝ) (hC : 0 ≤ C)
     (hbound : ∀ x, ‖g x‖ ≤ C) (x : G) : ‖spatialMollify φ g x‖ ≤ C := by
   have h := dist_convolution_le (μ := volume) (x₀ := x) (z₀ := (0 : ℝ)) hC
@@ -112,10 +116,12 @@ theorem spatialMollify_norm_le (φ : ContDiffBump (0 : G)) (g : G → ℝ)
   simpa only [spatialMollify, dist_zero_right] using! h
 
 /-- Spatial convolution is smooth; this does not assert joint time smoothness. -/
-theorem spatialMollify_contDiff (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+theorem spatialMollify_contDiff
     (hg : LocallyIntegrable g volume) :
     ContDiff ℝ (⊤ : ℕ∞) (spatialMollify φ g) :=
   φ.hasCompactSupport_normed.contDiff_convolution_left (lsmul ℝ ℝ)
     φ.contDiff_normed hg
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

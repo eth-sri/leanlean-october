@@ -74,13 +74,16 @@ theorem betaCoordinate_weight (a c t : ℝ) (ht : 0 < t) :
   rw [smul_eq_mul, abs_of_pos (Real.rpow_pos_of_pos hp _), betaWeight, he,
     betaCoordinate, Real.div_rpow ht.le hp.le, Real.inv_rpow hp.le,
     div_eq_mul_inv, ← Real.rpow_neg hp.le]
-  rw [← Real.rpow_neg hp.le]
-  rw [mul_left_comm, mul_assoc, ← Real.rpow_add hp, ← Real.rpow_add hp]
+  rw [← Real.rpow_neg hp.le, mul_left_comm, mul_assoc, ← Real.rpow_add hp, ← Real.rpow_add hp]
   congr 2
   ring
 
+section
+variable (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
+include ha hc
+
 /-- Integrability of the half-line Beta weight. -/
-theorem integrableOn_betaHalf (a c : ℝ) (ha : 0 < a) (hc : 0 < c) :
+theorem integrableOn_betaHalf :
     IntegrableOn (fun t : ℝ => t ^ (a - 1) * (1 + t) ^ (-a - c)) (Ioi 0) := by
   have h := (integrableOn_image_iff_integrableOn_abs_deriv_smul measurableSet_Ioi
     (fun t ht => (hasDerivAt_betaCoordinate t ht).hasDerivWithinAt)
@@ -90,7 +93,7 @@ theorem integrableOn_betaHalf (a c : ℝ) (ha : 0 < a) (hc : 0 < c) :
   exact h.congr_fun (fun t ht => betaCoordinate_weight a c t ht) measurableSet_Ioi
 
 /-- Evaluation of the half-line Beta integral. -/
-theorem integral_betaHalf (a c : ℝ) (ha : 0 < a) (hc : 0 < c) :
+theorem integral_betaHalf :
     (∫ t in Ioi (0 : ℝ), t ^ (a - 1) * (1 + t) ^ (-a - c)) =
       Real.Gamma a * Real.Gamma c / Real.Gamma (a + c) := by
   have h := integral_image_eq_integral_abs_deriv_smul measurableSet_Ioi
@@ -102,5 +105,7 @@ theorem integral_betaHalf (a c : ℝ) (ha : 0 < a) (hc : 0 < c) :
   rw [he] at h
   rw [← h, setIntegral_congr_set Ioo_ae_eq_Ioc, ← intervalIntegral.integral_of_le
     (by norm_num : (0 : ℝ) ≤ 1), integral_betaWeight a c ha hc]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

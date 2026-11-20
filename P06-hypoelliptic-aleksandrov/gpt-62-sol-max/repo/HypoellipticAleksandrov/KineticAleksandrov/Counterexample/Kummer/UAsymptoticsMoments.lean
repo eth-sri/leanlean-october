@@ -39,7 +39,7 @@ theorem choose_eq_signed_poch (q : ℝ) (n : ℕ) :
 theorem Gamma_add_nat_eq_poch (a : Pos) (n : ℕ) :
     Real.Gamma (a.1 + n) = Real.Gamma a.1 * poch a.1 n := by
   induction n with
-  | zero => simp only [Nat.cast_zero, add_zero, poch_zero, mul_one]
+  | zero => simp
   | succ n ih =>
       rw [Nat.cast_succ, ← add_assoc,
         Real.Gamma_add_one (ne_of_gt (add_pos_of_pos_of_nonneg a.2 (Nat.cast_nonneg n))),
@@ -54,8 +54,12 @@ theorem integral_gammaKernel (a z : ℝ) (ha : 0 < a) (hz : 0 < z) :
   rw [one_div, ← Real.rpow_neg_eq_inv_rpow] at h
   simpa only [mul_comm] using h
 
+section
+variable (a : Pos) (z : ℝ) (hz : 0 < z) (n : ℕ)
+include hz
+
 /-- The nth Gamma moment has precisely the source rising-factorial coefficient. -/
-theorem integral_gammaKernel_moment (a : Pos) (z : ℝ) (hz : 0 < z) (n : ℕ) :
+theorem integral_gammaKernel_moment :
     (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n) =
       Real.Gamma a.1 * poch a.1 n * z ^ (-a.1) * z⁻¹ ^ n := by
   have heq : (∫ t in Ioi (0 : ℝ), Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n) =
@@ -73,7 +77,7 @@ theorem integral_gammaKernel_moment (a : Pos) (z : ℝ) (hz : 0 < z) (n : ℕ) :
   ring
 
 /-- Integrability of each Taylor moment before finite summation. -/
-theorem integrableOn_gammaKernel_moment (a : Pos) (z : ℝ) (hz : 0 < z) (n : ℕ) :
+theorem integrableOn_gammaKernel_moment :
     IntegrableOn (fun t : ℝ => Real.exp (-(z * t)) * t ^ (a.1 - 1) * t ^ n)
       (Ioi 0) volume := by
   apply IntegrableOn.congr_fun
@@ -84,6 +88,8 @@ theorem integrableOn_gammaKernel_moment (a : Pos) (z : ℝ) (hz : 0 < z) (n : �
   rw [show a.1 + (n : ℝ) - 1 = (a.1 - 1) + (n : ℝ) by ring,
     Real.rpow_add ht, Real.rpow_natCast]
   ring
+
+end
 
 /-- Integrability of the complete finite Taylor polynomial against the Gamma kernel. -/
 theorem integrableOn_gammaKernel_powerTaylor (a : Pos) (q z : ℝ) (hz : 0 < z) (N : ℕ) :

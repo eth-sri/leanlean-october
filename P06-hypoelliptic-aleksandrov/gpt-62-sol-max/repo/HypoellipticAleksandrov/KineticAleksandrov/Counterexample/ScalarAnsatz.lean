@@ -17,18 +17,26 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter Set
 open scoped Topology ContDiff
 
+/-- A one-dimensional vector is determined by its only coordinate. -/
+theorem scalarCoordinate_eq_zero_iff {v : PDE.Vec 1} : v 0 = 0 ↔ v = 0 := by
+  simp only [funext_iff, Fin.forall_fin_one, Pi.zero_apply]
+
+section
+variable (x v : ℝ)
+include x v
+
 /-- The source signed similarity coordinate. -/
-def scalarSimilarity (x v : ℝ) : ℝ := -v / Real.rpow x (1 / 3)
+def scalarSimilarity : ℝ := -v / Real.rpow x (1 / 3)
 
 /-- The velocity derivative of the signed similarity coordinate. -/
-theorem scalarSimilarity_hasDerivAt_v (x v : ℝ) :
+theorem scalarSimilarity_hasDerivAt_v :
     HasDerivAt (scalarSimilarity x) (-(Real.rpow x (1 / 3))⁻¹) v := by
   unfold scalarSimilarity
   simpa only [Pi.neg_def, id_eq, neg_div, one_div] using
     ((hasDerivAt_id v).neg.div_const (Real.rpow x (1 / 3)))
 
 /-- The position derivative of the signed similarity coordinate on x>0. -/
-theorem scalarSimilarity_hasDerivAt_x (x v : ℝ) (hx : 0 < x) :
+theorem scalarSimilarity_hasDerivAt_x (hx : 0 < x) :
     HasDerivAt (fun y => scalarSimilarity y v) ((v / 3) * Real.rpow x (-(4 / 3))) x := by
   have he : (fun y => scalarSimilarity y v) =ᶠ[𝓝 x]
       fun y => -v * y ^ (-(1 / 3 : ℝ)) := by
@@ -43,8 +51,13 @@ theorem scalarSimilarity_hasDerivAt_x (x v : ℝ) (hx : 0 < x) :
   rw [heD] at hd
   exact hd.congr_of_eventuallyEq he
 
+end
+
+section
+variable (gamma : ScalarGamma) (Lam x v : ℝ)
+
 /-- The first velocity derivative of the source ansatz. -/
-theorem scalarAnsatz_hasDerivAt_v (gamma : ScalarGamma) (Lam x v : ℝ)
+theorem scalarAnsatz_hasDerivAt_v
     (hf : DifferentiableAt ℝ (F gamma Lam) (scalarSimilarity x v)) :
     HasDerivAt (scalarAnsatz gamma Lam x)
       (-(Real.rpow x gamma.1 / Real.rpow x (1 / 3)) *
@@ -57,7 +70,7 @@ theorem scalarAnsatz_hasDerivAt_v (gamma : ScalarGamma) (Lam x v : ℝ)
   · ring
 
 /-- The exact position derivative, before the source leading-term cancellation. -/
-theorem scalarAnsatz_hasDerivAt_x (gamma : ScalarGamma) (Lam x v : ℝ) (hx : 0 < x)
+theorem scalarAnsatz_hasDerivAt_x (hx : 0 < x)
     (hf : DifferentiableAt ℝ (F gamma Lam) (scalarSimilarity x v)) :
     HasDerivAt (fun y => scalarAnsatz gamma Lam y v)
       (gamma.1 * Real.rpow x (gamma.1 - 1) * F gamma Lam (scalarSimilarity x v) +
@@ -72,7 +85,7 @@ theorem scalarAnsatz_hasDerivAt_x (gamma : ScalarGamma) (Lam x v : ℝ) (hx : 0 
     ring
 
 /-- The second velocity derivative in the signed similarity variable. -/
-theorem scalarAnsatz_deriv2_v (gamma : ScalarGamma) (Lam x v : ℝ)
+theorem scalarAnsatz_deriv2_v
     (hf : ContDiffAt ℝ 2 (F gamma Lam) (scalarSimilarity x v)) :
     deriv (deriv (scalarAnsatz gamma Lam x)) v =
       (Real.rpow x gamma.1 / (Real.rpow x (1 / 3)) ^ 2) *
@@ -81,14 +94,15 @@ theorem scalarAnsatz_deriv2_v (gamma : ScalarGamma) (Lam x v : ℝ)
   have he : deriv (scalarAnsatz gamma Lam x) =ᶠ[𝓝 v] fun w =>
       -(Real.rpow x gamma.1 / Real.rpow x (1 / 3)) *
         deriv (F gamma Lam) (scalarSimilarity x w) := by
-    have hev := hc.continuousAt.tendsto.eventually (hf.eventually (by norm_num))
-    filter_upwards [hev] with w hw
+    filter_upwards [(hc.continuousAt.tendsto.eventually (hf.eventually (by norm_num)))] with w hw
     exact (scalarAnsatz_hasDerivAt_v gamma Lam x w (hw.differentiableAt (by norm_num))).deriv
   have hd := (hf.derivWithin (by norm_num : (1 : ℕ∞ω) + 1 ≤ 2)).differentiableAt
     (by norm_num : (1 : ℕ∞ω) ≠ 0)
   have h := (hd.hasDerivAt.comp v (scalarSimilarity_hasDerivAt_v x v)).const_mul
     (-(Real.rpow x gamma.1 / Real.rpow x (1 / 3)))
   exact (h.congr_of_eventuallyEq he).deriv.trans (by ring)
+
+end
 
 /-- The cubic power of the positive similarity scale is exactly the position variable. -/
 theorem scalar_similarity_scale_cube (x : ℝ) (hx : 0 < x) :

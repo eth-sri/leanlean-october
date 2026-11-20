@@ -14,8 +14,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+section
+variable (d : ℕ)
+
 /-- The transported product metric is proper; this statement concerns topology only. -/
-theorem properSpace_kineticPoint (d : ℕ) : ProperSpace (KineticPoint d) := by
+theorem properSpace_kineticPoint : ProperSpace (KineticPoint d) := by
   refine ⟨fun P R => ?_⟩
   have h := (isCompact_closedBall ((KineticPoint.isometryEquivProd d) P) R).image
     (KineticPoint.isometryEquivProd d).symm.continuous
@@ -24,7 +27,7 @@ theorem properSpace_kineticPoint (d : ℕ) : ProperSpace (KineticPoint d) := by
   exact h
 
 /-- Literal kinetic Lebesgue volume is locally finite. -/
-theorem locallyFinite_kinetic_volume (d : ℕ) :
+theorem locallyFinite_kinetic_volume :
     IsLocallyFiniteMeasure (volume : Measure (KineticPoint d)) := by
   refine ⟨fun P => ?_⟩
   refine ⟨centeredCylinder P 1,
@@ -33,7 +36,7 @@ theorem locallyFinite_kinetic_volume (d : ℕ) :
   exact lt_top_iff_ne_top.mpr (volume_cylinder_pos_ne_top (centeredTop P 1) zero_lt_one).2
 
 /-- Kinetic Lebesgue volume is outer regular by its defining coordinate homeomorphism. -/
-theorem outerRegular_kinetic_volume (d : ℕ) :
+theorem outerRegular_kinetic_volume :
     Measure.OuterRegular (volume : Measure (KineticPoint d)) := by
   change Measure.OuterRegular
     (Measure.map (KineticPoint.homeomorphProd d).symm
@@ -41,6 +44,8 @@ theorem outerRegular_kinetic_volume (d : ℕ) :
   let : Measure.Regular (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d))) :=
     Measure.Regular.of_sigmaCompactSpace_of_isLocallyFiniteMeasure volume
   exact Measure.OuterRegular.map (KineticPoint.homeomorphProd d).symm volume
+
+end
 
 /-- Every bounded kinetic set has finite volume. -/
 theorem volume_bounded_ne_top {d : ℕ} {E : Set (KineticPoint d)}

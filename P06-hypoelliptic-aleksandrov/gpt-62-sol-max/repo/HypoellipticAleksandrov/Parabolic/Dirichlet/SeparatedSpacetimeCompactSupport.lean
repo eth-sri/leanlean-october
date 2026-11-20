@@ -22,21 +22,24 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+section
+variable {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}
+  (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞))
+include d τ₁ τ₂ O hO φ
+
 /-- The compact time projection of a spacetime test support. -/
-def spacetimeTestTimeSupportCompact
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}
-    (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞)) :
+def spacetimeTestTimeSupportCompact :
     TopologicalSpace.Compacts ℝ :=
   ⟨Prod.fst '' tsupport (φ : TimeVelocity d → ℝ),
     φ.hasCompactSupport.isCompact.image continuous_fst⟩
 
 /-- The compact spatial projection of a spacetime test support. -/
-def spacetimeTestSpatialSupportCompact
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}
-    (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞)) :
+def spacetimeTestSpatialSupportCompact :
     TopologicalSpace.Compacts (PDE.Vec d) :=
   ⟨Prod.snd '' tsupport (φ : TimeVelocity d → ℝ),
     φ.hasCompactSupport.isCompact.image continuous_snd⟩
+
+end
 
 /-- A smooth compact spatial cutoff equal to one near the spatial support projection. -/
 theorem exists_spacetimeTest_spatialCutoff

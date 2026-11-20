@@ -29,12 +29,13 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTest
   tsupport_subset :=
     (tsupport_localizedSpatialDifferenceQuotient_subset η k h φ).trans hηΩ
 
+section
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+  (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+  (hηΩ : tsupport η.toFun ⊆ Ω)
+
 /-- The bundled localized quotient has the literal pointwise value. -/
-@[simp] theorem localizedSpatialDifferenceQuotientWeakTest_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω) (y : PDE.Vec d) :
+@[simp] theorem localizedSpatialDifferenceQuotientWeakTest_apply (y : PDE.Vec d) :
     localizedSpatialDifferenceQuotientWeakTest η k h φ hηΩ y =
       η y * ((φ (y + h • PDE.basisVec k) - φ y) / h) :=
   rfl
@@ -42,10 +43,6 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTest
 /-- The coordinate derivative of the bundled localized quotient obeys the
 literal cutoff product rule. -/
 theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω)
     (j : Fin d) (y : PDE.Vec d) :
     (localizedSpatialDifferenceQuotientWeakTest η k h φ hηΩ).partialDeriv j y =
       PDE.classicalGradient η.toFun y j *
@@ -99,5 +96,7 @@ theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
   rw [hquotientDeriv]
   simp only [PDE.WeakTestFunction.partialDeriv]
   ring
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

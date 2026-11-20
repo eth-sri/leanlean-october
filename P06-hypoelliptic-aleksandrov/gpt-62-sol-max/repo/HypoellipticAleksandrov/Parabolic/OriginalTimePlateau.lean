@@ -41,34 +41,34 @@ private def timePlateau (s₀ t₁ t₂ s₁ : ℝ) : ℝ → ℝ :=
 
 private theorem timePlateauLeft_contDiff (s₀ t₁ : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (timePlateauLeft s₀ t₁) := by
-  unfold timePlateauLeft
   exact PDE.smoothTransitionProfile.smooth.comp
     ((contDiff_id.sub contDiff_const).div_const _)
 
 private theorem timePlateauRight_contDiff (t₂ s₁ : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (timePlateauRight t₂ s₁) := by
-  unfold timePlateauRight
   exact PDE.smoothTransitionProfile.smooth.comp
     ((contDiff_const.sub contDiff_id).div_const _)
 
 private theorem timePlateau_contDiff (s₀ t₁ t₂ s₁ : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (timePlateau s₀ t₁ t₂ s₁) := by
-  unfold timePlateau
   exact (timePlateauLeft_contDiff s₀ t₁).mul
     (timePlateauRight_contDiff t₂ s₁)
 
-private theorem timePlateau_nonneg (s₀ t₁ t₂ s₁ t : ℝ) :
+section
+variable (s₀ t₁ t₂ s₁ t : ℝ)
+
+private theorem timePlateau_nonneg :
     0 ≤ timePlateau s₀ t₁ t₂ s₁ t := by
-  unfold timePlateau timePlateauLeft timePlateauRight
   exact mul_nonneg (PDE.smoothTransitionProfile.nonneg _)
     (PDE.smoothTransitionProfile.nonneg _)
 
-private theorem timePlateau_le_one (s₀ t₁ t₂ s₁ t : ℝ) :
+private theorem timePlateau_le_one :
     timePlateau s₀ t₁ t₂ s₁ t ≤ 1 := by
-  unfold timePlateau timePlateauLeft timePlateauRight
   exact mul_le_one₀ (PDE.smoothTransitionProfile.le_one _)
     (PDE.smoothTransitionProfile.nonneg _)
     (PDE.smoothTransitionProfile.le_one _)
+
+end
 
 private theorem timePlateauLeft_eq_one
     {s₀ t₁ t : ℝ} (hs₀t₁ : s₀ < t₁) (ht₁ : t₁ ≤ t) :
@@ -90,15 +90,6 @@ private theorem timePlateauRight_eq_one
   rw [le_div_iff₀ hden]
   linarith
 
-private theorem timePlateau_eq_one_on
-    {s₀ t₁ t₂ s₁ t : ℝ} (hs₀t₁ : s₀ < t₁)
-    (ht₁t₂ : t₁ ≤ t₂) (ht₂s₁ : t₂ < s₁) (ht : t ∈ Icc t₁ t₂) :
-    timePlateau s₀ t₁ t₂ s₁ t = 1 := by
-  have hvalue : timePlateau s₀ t₁ t₂ s₁ t = 1 := by
-    simp only [timePlateau, timePlateauLeft_eq_one hs₀t₁ ht.1,
-      timePlateauRight_eq_one ht₂s₁ ht.2, one_mul]
-  exact (show t₁ ≤ t₂ ∧ timePlateau s₀ t₁ t₂ s₁ t = 1 from ⟨ht₁t₂, hvalue⟩).2
-
 private theorem timePlateauLeft_eq_zero_of_lt_midpoint
     {s₀ t₁ t : ℝ} (hs₀t₁ : s₀ < t₁)
     (ht : t < timePlateauLeftMidpoint s₀ t₁) :
@@ -119,8 +110,11 @@ private theorem timePlateauRight_eq_zero_of_midpoint_lt
   apply le_of_lt
   apply div_neg_of_neg_of_pos <;> linarith
 
-private theorem timePlateau_support_subset
-    {s₀ t₁ t₂ s₁ : ℝ} (hs₀t₁ : s₀ < t₁) (ht₂s₁ : t₂ < s₁) :
+section
+variable {s₀ t₁ t₂ s₁ : ℝ} (hs₀t₁ : s₀ < t₁) (ht₂s₁ : t₂ < s₁)
+include hs₀t₁ ht₂s₁
+
+private theorem timePlateau_support_subset :
     support (timePlateau s₀ t₁ t₂ s₁) ⊆
       Icc (timePlateauLeftMidpoint s₀ t₁) (timePlateauRightMidpoint t₂ s₁) := by
   intro t hsupport
@@ -135,21 +129,18 @@ private theorem timePlateau_support_subset
     have hzero := timePlateauRight_eq_zero_of_midpoint_lt ht₂s₁ hlt
     exact hsupport (by simp only [timePlateau, hzero, mul_zero])
 
-private theorem timePlateau_tsupport_subset
-    {s₀ t₁ t₂ s₁ : ℝ} (hs₀t₁ : s₀ < t₁) (ht₂s₁ : t₂ < s₁) :
+private theorem timePlateau_tsupport_subset :
     tsupport (timePlateau s₀ t₁ t₂ s₁) ⊆
       Icc (timePlateauLeftMidpoint s₀ t₁) (timePlateauRightMidpoint t₂ s₁) := by
   rw [tsupport]
   exact closure_minimal (timePlateau_support_subset hs₀t₁ ht₂s₁) isClosed_Icc
 
-private theorem timePlateau_hasCompactSupport
-    {s₀ t₁ t₂ s₁ : ℝ} (hs₀t₁ : s₀ < t₁) (ht₂s₁ : t₂ < s₁) :
+private theorem timePlateau_hasCompactSupport :
     HasCompactSupport (timePlateau s₀ t₁ t₂ s₁) := by
   apply HasCompactSupport.of_support_subset_isCompact isCompact_Icc
   exact timePlateau_support_subset hs₀t₁ ht₂s₁
 
-private theorem timePlateau_tsupport_subset_outer
-    {s₀ t₁ t₂ s₁ : ℝ} (hs₀t₁ : s₀ < t₁) (ht₂s₁ : t₂ < s₁) :
+private theorem timePlateau_tsupport_subset_outer :
     tsupport (timePlateau s₀ t₁ t₂ s₁) ⊆ Ioo s₀ s₁ := by
   refine (timePlateau_tsupport_subset hs₀t₁ ht₂s₁).trans ?_
   intro t ht
@@ -162,6 +153,8 @@ private theorem timePlateau_tsupport_subset_outer
       unfold timePlateauRightMidpoint
       linarith
     exact lt_of_le_of_lt ht.2 hmid
+
+end
 
 /-- A smooth original-time cutoff with a closed plateau, strictly interior
 topological support, and a nonnegative global derivative bound. -/
@@ -190,7 +183,10 @@ theorem exists_smooth_timePlateau_with_deriv_bound
   · intro t
     exact timePlateau_le_one s₀ t₁ t₂ s₁ t
   · intro t ht
-    exact timePlateau_eq_one_on hs₀t₁ ht₁t₂ ht₂s₁ ht
+    have hvalue : timePlateau s₀ t₁ t₂ s₁ t = 1 := by
+      simp only [timePlateau, timePlateauLeft_eq_one hs₀t₁ ht.1,
+        timePlateauRight_eq_one ht₂s₁ ht.2, one_mul]
+    assumption
   · exact timePlateau_tsupport_subset_outer hs₀t₁ ht₂s₁
   · intro t
     simpa only [Real.norm_eq_abs] using! (hC t).trans (le_max_left C 0)

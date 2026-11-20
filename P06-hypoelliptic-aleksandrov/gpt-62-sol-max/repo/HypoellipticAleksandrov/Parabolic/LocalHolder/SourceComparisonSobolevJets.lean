@@ -14,10 +14,13 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Dirichlet
 open scoped ENNReal
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (q : PDE.H10Function Ω)
+  (hq : ContDiff ℝ 1 q.toH1Function.toFun) (i : Fin d)
+include hΩ hq
+
 /-- The weak gradient of a smooth H10 representative is its classical gradient. -/
-theorem h10Function_grad_ae_classical {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (q : PDE.H10Function Ω)
-    (hq : ContDiff ℝ 1 q.toH1Function.toFun) (i : Fin d) :
+theorem h10Function_grad_ae_classical :
     (fun x => q.toH1Function.grad x i) =ᵐ[PDE.volumeOn Ω]
       fun x => PDE.classicalGradient q.toH1Function.toFun x i := by
   apply PDE.HasWeakPartialDerivOn.ae_eq hΩ
@@ -30,13 +33,13 @@ theorem h10Function_grad_ae_classical {d : ℕ} {Ω : Set (PDE.Vec d)}
   · exact PDE.HasWeakGradientOn.of_contDiff hq i
 
 /-- The canonical Hilbert graph of a smooth barrier has the classical gradient jet. -/
-theorem gradientCoord_h10HilbertGraph_ae_classical {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (q : PDE.H10Function Ω)
-    (hq : ContDiff ℝ 1 q.toH1Function.toFun) (i : Fin d) :
+theorem gradientCoord_h10HilbertGraph_ae_classical :
     (fun x => PDE.hilbertVectorLpCoord Ω 2 i
       (gradientCLM hΩ (h10HilbertGraphOfH10Function hΩ q)) x)
       =ᵐ[PDE.volumeOn Ω] fun x => PDE.classicalGradient q.toH1Function.toFun x i :=
   (gradientCoord_h10HilbertGraphOfH10Function hΩ q i).trans
     (h10Function_grad_ae_classical hΩ q hq i)
+
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

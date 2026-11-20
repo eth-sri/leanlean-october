@@ -21,16 +21,15 @@ def enlargedAdmissibleAlpha (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam
 
 /-- The canonical count with time measured from its starting pole. -/
 def visitsFromZero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
     (P : Point) : Measure Point :=
-  enlargedVisitStarts hH hLE hlam hLam A c J P.time (P.time + T) P
+  enlargedVisitStarts A c J P.time (P.time + T) P
 
 /-- Position visits: the q-independent counts and the q-dependent power-sum estimate. -/
 def PositionVisitsStatement : Prop :=
-  ∀ (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
+  ∀
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ),
     enlargedAdmissibleAlpha lam Lam hlam hLam alpha →
     (∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
@@ -38,10 +37,10 @@ def PositionVisitsStatement : Prop :=
       |c.vbar| = 2 * c.r → closure c.active ⊆ J.carrier → 0 < T →
       P.velocity 0 ∈ closure c.entrance →
       ∀ j : ℕ,
-        enlargedTimeVisitMass (visitsFromZero hH hLE hlam hLam A c J T P) c P.time j ≤
+        enlargedTimeVisitMass (visitsFromZero A c J T P) c P.time j ≤
           C * (1 + (j : ℝ)) ^ (-1 / 2 : ℝ) ∧
         ∀ k : ℤ,
-          enlargedPositionVisitMass (visitsFromZero hH hLE hlam hLam A c J T P) c P.time 0 j k ≤
+          enlargedPositionVisitMass (visitsFromZero A c J T P) c P.time 0 j k ≤
             C * (1 + (j : ℝ)) ^ (-(2 - alpha) / 2)) ∧
     (∀ q : ℝ, (1 < q ∧ q < 3 / 2) →
       ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
@@ -50,7 +49,7 @@ def PositionVisitsStatement : Prop :=
         closure c.active ⊆ J.carrier →
         P.velocity 0 ∈ closure c.entrance →
         (∑' j : ℕ, ∑' k : ℤ, ENNReal.ofReal
-          (enlargedPositionVisitMass (visitsFromZero hH hLE hlam hLam A c J T P)
+          (enlargedPositionVisitMass (visitsFromZero A c J T P)
             c P.time 0 j k ^ q)) ≤
           ENNReal.ofReal (C * (1 + R / c.r) ^ (1 - (2 - alpha) * (q - 1))))
 

@@ -2,7 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementEnergyBoundary
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementSmoothResidual
-public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonCalculus
+public import HypoellipticAleksandrov.Parabolic.ScalarCalculus
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparison
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
 

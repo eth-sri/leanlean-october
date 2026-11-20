@@ -20,19 +20,18 @@ open scoped BigOperators ENNReal RealInnerProductSpace
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+section
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ} (hΩ : IsOpen Ω) (r₁ τ : ℝ)
+
 /-- The reverse-time spatial form on a smooth input and its localized energy
 test is the literal principal, divergence-drift, and scalar integral sum. -/
 theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEnergyTest_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω) :
+    (hηshift : η.ShiftMapsInto k h Ω) :
     reverseTimeSpatialForm hΩ r₁ τ a b c
         (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ)
         (localizedSpatialDifferenceQuotientEnergyTestH10CLM
@@ -137,8 +136,6 @@ theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEn
 /-- The reverse-time source functional on a smooth localized energy test is
 the literal negative source integral. -/
 theorem reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuotientEnergyTest_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ)
     (F : ℝ → PDE.Vec d → ℝ)
     (hF : MeasureTheory.MemLp
       (fun y : PDE.Vec d => F (r₁ - τ) y)
@@ -146,9 +143,7 @@ theorem reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuoti
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω) :
+    (hηshift : η.ShiftMapsInto k h Ω) :
     reverseTimeSourceFunctional hΩ
         (reverseTimeSourceSlice r₁ τ F hF)
         (localizedSpatialDifferenceQuotientEnergyTestH10CLM
@@ -170,5 +165,7 @@ theorem reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuoti
           η k h φ φ.contDiff hηΩ hηshift)] with y hF hψ
   rw [hψ, hF]
   simp only [RCLike.inner_apply, conj_trivial]
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

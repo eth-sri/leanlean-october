@@ -23,7 +23,7 @@ theorem borel_bounded_error_norm_tendsto {E : Type*} [MeasurableSpace E]
     apply (memLp_const B).of_le (hm j)
     filter_upwards [hnn j,hb j] with z hz hzB
     simpa only [Real.norm_of_nonneg hz,Real.norm_of_nonneg hB] using hzB
-  have hpower j : AEStronglyMeasurable (fun z => e j z ^ p) μ :=
+  have hpower j :=
     (Real.continuous_rpow_const hp.le).comp_aestronglyMeasurable (hm j)
   have hbound j : ∀ᵐ z ∂μ, ‖e j z ^ p‖ ≤ B ^ p := by
     filter_upwards [hnn j,hb j] with z hz hzB

@@ -2,7 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.CompactScalarJet
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.UniformConvolution
-public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.SmoothDerivatives
+public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
 
 /-! # Uniform approximation of the anisotropic scalar jet -/
 

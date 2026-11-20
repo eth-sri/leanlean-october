@@ -4,6 +4,9 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BracketSquares
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeWeak
 import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExternalRegularity
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeOperator
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.PastGluingLocality
 
 /-!
 # Classical recovery for smooth regularized weak solutions
@@ -20,89 +23,23 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 
 open HypoellipticAleksandrov MeasureTheory Set
 
-private theorem smooth_direction {n : ℕ} {U : Set (EvolutionVec n)} (hU : IsOpen U)
-    {u : EvolutionVec n → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (v : EvolutionVec n) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ u x v) U :=
-  (hu.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
-
-/-- The regularized kinetic operator of a smooth function is smooth on an open set. -/
-theorem contDiffOn_regularizedOperator {n : ℕ} {U : Set (EvolutionVec n)} (hU : IsOpen U)
-    {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    {b : PDE.Vec n → PDE.Vec n} (hb : IsSmoothDrift b) (ε : ℝ)
-    {u : EvolutionVec n → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (regularizedOperator B b ε u) U := by
-  have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec n =>
-      B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) i j) :=
-    fun i j => (hB i j).comp (evolutionProdCLE n).contDiff
-  have hβ : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec n => b (diffusedCoord n x) i) :=
-    fun i => (contDiff_pi.mp hb i).comp (diffusedCoord n).contDiff
-  unfold regularizedOperator transportedOperator
-  refine (((smooth_direction hU hu basisT).add ?_).add ?_).add ?_
-  · exact ContDiffOn.sum fun i _ => ContDiffOn.sum fun j _ => (hA i j).contDiffOn.mul
-      (smooth_direction hU (smooth_direction hU hu (basisV j)) (basisV i))
-  · exact ContDiffOn.sum fun i _ => (hβ i).contDiffOn.mul
-      (smooth_direction hU hu (basisZ i))
-  · exact contDiffOn_const.mul (ContDiffOn.sum fun i _ =>
-      smooth_direction hU (smooth_direction hU hu (basisZ i)) (basisZ i))
+section
+variable {n : ℕ} {U : Set (EvolutionVec n)} (hU : IsOpen U) {B : FullKineticCoefficient n}
+  (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
+  {b : PDE.Vec n → PDE.Vec n} (hb : IsSmoothDrift b) (ε : ℝ) {u : EvolutionVec n → ℝ}
+  (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+include hU hB hBs hb hu
 
 /-- Integration against the regularized adjoint equals integration of the classical
 operator for an actually smooth interior function. -/
-theorem integral_regularizedAdjoint_contDiffOn {n : ℕ} {U : Set (EvolutionVec n)}
-    (hU : IsOpen U) {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
-    (hb : IsSmoothDrift b) (ε : ℝ) {u : EvolutionVec n → ℝ}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+theorem integral_regularizedAdjoint_contDiffOn
     (ψ : EvolutionVec n → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
     (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     (∫ x in U, u x * regularizedAdjoint B b ε ψ x) =
-      ∫ x in U, regularizedOperator B b ε u x * ψ x := by
-  let D (v : EvolutionVec n) (f : EvolutionVec n → ℝ) (x : EvolutionVec n) :=
-    fderiv ℝ f x v
-  have hd : ∀ v, ContDiffOn ℝ (⊤ : ℕ∞) (D v u) U :=
-    fun v => smooth_direction hU hu v
-  have hdd : ∀ v w, ContDiffOn ℝ (⊤ : ℕ∞) (D w (D v u)) U :=
-    fun v w => smooth_direction hU (hd v) w
-  have hline : ∀ v x, x ∈ U → HasLineDerivAt ℝ u (D v u x) x v := by
-    intro v x hx
-    exact ((hu.contDiffAt (hU.mem_nhds hx)).differentiableAt (by simp)
-      ).hasFDerivAt.hasLineDerivAt v
-  have hline2 : ∀ v w x, x ∈ U →
-      HasLineDerivAt ℝ (D v u) (D w (D v u) x) x w := by
-    intro v w x hx
-    exact (((hd v).contDiffAt (hU.mem_nhds hx)).differentiableAt (by simp)
-      ).hasFDerivAt.hasLineDerivAt w
-  have key := integral_regularizedAdjoint_of_jets B b ε hB hb u (D basisT u)
-    (fun i => D (basisV i) u) (fun i => D (basisZ i) u)
-    (fun i j => D (basisV j) (D (basisV i) u))
-    (fun i => D (basisZ i) (D (basisZ i) u))
-    hu.continuousOn (hd basisT).continuousOn
-    (fun i => (hd (basisV i)).continuousOn) (fun i => (hd (basisZ i)).continuousOn)
-    (fun i j => (hdd (basisV i) (basisV j)).continuousOn)
-    (fun i => (hdd (basisZ i) (basisZ i)).continuousOn)
-    (hline basisT) (fun i => hline (basisV i)) (fun i => hline (basisZ i))
-    (fun i j => hline2 (basisV i) (basisV j))
-    (fun i => hline2 (basisZ i) (basisZ i)) ψ hψ hc hs
-  refine key.trans (setIntegral_congr_fun hU.measurableSet fun x _ => ?_)
-  congr 1
-  dsimp only [D, regularizedOperator, transportedOperator]
-  congr 1
-  congr 1
-  rw [Finset.sum_comm]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro i _
-  apply Finset.sum_congr rfl
-  intro j _
-  congr 1
-  exact congrFun (congrFun (hBs (timeCoord n x) (diffusedCoord n x)
-    (transportedCoord n x)) i) j
+      ∫ x in U, regularizedOperator B b ε u x * ψ x := integral_regularizedAdjoint_contDiffOn_two hU hB hBs hb ε (hu.of_le (by simp)) ψ hψ hc hs
 
 /-- A smooth regularized weak solution satisfies its zero-source equation pointwise. -/
-theorem regularizedOperator_eq_zero_of_smooth_weak {n : ℕ} {U : Set (EvolutionVec n)}
-    (hU : IsOpen U) {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
-    (hb : IsSmoothDrift b) (ε : ℝ) {u : EvolutionVec n → ℝ}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+theorem regularizedOperator_eq_zero_of_smooth_weak
     (hw : IsWeakRegularizedSolution B b ε U u (fun _ => 0)) :
     ∀ x ∈ U, regularizedOperator B b ε u x = 0 := by
   have hop := (contDiffOn_regularizedOperator hU hB hb ε hu).continuousOn
@@ -120,5 +57,31 @@ theorem regularizedOperator_eq_zero_of_smooth_weak {n : ℕ} {U : Set (Evolution
     (ae_restrict_iff' hU.measurableSet).2 hae0
   have heq := Measure.eqOn_open_of_ae_eq hae1 hU hop continuousOn_const
   exact fun x hx => heq hx
+
+end
+
+/-- A continuous homogeneous viscous weak solution is classical in the open set. -/
+theorem classical_kinetic_of_continuous_weak {n : ℕ} {lam Lam ε : ℝ} {B : FullKineticCoefficient n}
+    {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam) (hell : HasEverywhereLoewnerBounds lam Lam B)
+    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
+    (hb : IsSmoothDrift b) (hε : 0 < ε) {U : Set (KineticPoint n)} (hU : IsOpen U)
+    {f : KineticPoint n → ℝ} (hf : ContinuousOn f U)
+    (hw : IsKineticWeakRegularizedSolution B b ε U f 0) :
+    ContDiffOn ℝ (⊤ : ℕ∞) (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) ∧
+    ∀ p ∈ U, viscousTransportedOperator B b ε f p = 0 := by
+  obtain ⟨w, hws, hae⟩ := exists_smooth_viscous_kinetic_representative hlam hB hell hb U hU ε hε f hw
+  have hV := hU.preimage (evolutionHomeomorph n).continuous
+  have hfg := eqOn_of_ae_eq_of_continuousOn_kinetic hU
+    (hf.comp (evolutionHomeomorph n).continuous.continuousOn fun _ hx => hx) hws.continuousOn hae
+  have hsm : ContDiffOn ℝ (⊤ : ℕ∞) (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) :=
+    hws.congr (fun _ hx => hfg hx)
+  have hOp := regularizedOperator_eq_zero_of_smooth_weak hV hB hBs hb ε hsm
+    ((isWeakRegularizedSolution_comp_iff B b ε U f 0).mpr hw)
+  refine ⟨hsm, fun p hp => ?_⟩
+  let x := (evolutionHomeomorph n).symm p
+  have hx : x ∈ evolutionHomeomorph n ⁻¹' U := by simpa [x] using hp
+  have hz := hOp x hx
+  rw [regularizedOperator_comp ε ((hsm.contDiffAt (hV.mem_nhds hx)).of_le (by simp))] at hz
+  simpa only [x, Homeomorph.apply_symm_apply, viscousTransportedOperator] using hz
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

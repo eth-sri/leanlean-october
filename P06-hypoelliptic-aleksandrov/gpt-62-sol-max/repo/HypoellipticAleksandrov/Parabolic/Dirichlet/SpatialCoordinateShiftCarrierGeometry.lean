@@ -19,10 +19,12 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Set
 open scoped Convex
 
+section
+variable {d : ℕ} {K Ω : Set (PDE.Vec d)}
+
 /-- A compact spatial carrier inside an open set has a positive common signed
 coordinate-shift radius whose literal carrier stays in the open set. -/
 theorem IsCompact.exists_spatialCoordinateShiftCarrier_subset_open
-    {d : ℕ} {K Ω : Set (PDE.Vec d)}
     (hK : IsCompact K) (hΩ : IsOpen Ω) (hKΩ : K ⊆ Ω) :
     ∃ δ : ℝ, 0 < δ ∧
       HypoellipticAleksandrov.Parabolic.Dirichlet.spatialCoordinateShiftCarrier K δ ⊆ Ω := by
@@ -42,22 +44,23 @@ theorem IsCompact.exists_spatialCoordinateShiftCarrier_subset_open
 
 /-- Containment of the coordinate-shift carrier gives the corresponding
 signed coordinate-shift map into the outer set. -/
-theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
-    {d : ℕ} {K Ω : Set (PDE.Vec d)} {δ h : ℝ}
+theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset {δ h : ℝ}
     (hcarrier : spatialCoordinateShiftCarrier K δ ⊆ Ω)
     (k : Fin d) (hh : |h| ≤ δ) :
     Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k) K Ω := by
   intro y hy
   exact hcarrier (mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le hy hh)
 
-/-- A time--velocity coordinate segment over `K` stays in the closed time slab
+end
+
+/-- A time–velocity coordinate segment over `K` keeps its time coordinate
 and the literal signed coordinate-shift carrier. -/
-theorem segment_spatialShift_subset_Icc_prod_spatialCoordinateShiftCarrier
-    {d : ℕ} {K : Set (PDE.Vec d)} {T δ h : ℝ}
+theorem segment_spatialShift_subset_prod_spatialCoordinateShiftCarrier
+    {d : ℕ} {K : Set (PDE.Vec d)} {I : Set ℝ} {δ h : ℝ}
     (k : Fin d) (z : TimeVelocity d)
-    (hh : |h| ≤ δ) (hz : z ∈ Set.Icc 0 T ×ˢ K) :
+    (hh : |h| ≤ δ) (hz : z ∈ I ×ˢ K) :
     [z -[ℝ] spatialShift k h z] ⊆
-      Set.Icc 0 T ×ˢ spatialCoordinateShiftCarrier K δ := by
+      I ×ˢ spatialCoordinateShiftCarrier K δ := by
   intro w hw
   rw [segment_eq_image_lineMap] at hw
   rcases hw with ⟨t, ht, rfl⟩

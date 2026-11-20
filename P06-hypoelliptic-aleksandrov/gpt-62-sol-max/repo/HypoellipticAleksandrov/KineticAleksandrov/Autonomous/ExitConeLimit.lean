@@ -13,19 +13,18 @@ open scoped Topology
 
 /-- A nonpositive transport direction gives closed-cone support for both actual measures. -/
 theorem reconstruction_transport_cone_ae
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (alpha beta gamma : ℝ)
     (he : reconstructionConeCoordinate alpha beta gamma e.1 = 0)
     (hdir : ∀ v ∈ H.carrier, alpha + v * beta ≤ 0) :
-    (∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+    (∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       reconstructionConeCoordinate alpha beta gamma p ≤ 0) ∧
     ∀ᵐ p ∂stripGreenOfKernel H E.2 T e, reconstructionConeCoordinate alpha beta gamma p ≤ 0 := by
   let r (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
   have hr (n : ℕ) : 0 < r n := by dsimp only [r]; positivity
-  have hn (n : ℕ) := reconstruction_strict_transport_cone_ae hH hlam hLam A H E hE T e
+  have hn (n : ℕ) := reconstruction_strict_transport_cone_ae A H E hE T e
     (alpha - r n) beta (gamma + r n * e.1.time) (r n) (hr n)
     (by dsimp only [reconstructionConeCoordinate] at he ⊢; nlinarith)
     (fun v hv => by have hh := hdir v hv; linarith)

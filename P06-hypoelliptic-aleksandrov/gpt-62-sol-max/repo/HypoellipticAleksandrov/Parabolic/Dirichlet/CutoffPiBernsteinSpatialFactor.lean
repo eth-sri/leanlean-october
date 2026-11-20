@@ -30,7 +30,6 @@ theorem exists_cutoffPiBernsteinSpatialFactor
       (∀ y, ψ y = χ y *
         ∏ i : Fin d, (bernsteinPolynomial ℝ n (k i)).eval (((y i / R) + 1) / 2)) ∧
       tsupport (ψ : PDE.Vec d → ℝ) ⊆ tsupport χ := by
-  have _hRne : R ≠ 0 := hR.ne'
   let p : PDE.Vec d → ℝ := fun y =>
     ∏ i : Fin d, (bernsteinPolynomial ℝ n (k i)).eval (((y i / R) + 1) / 2)
   have hp : ContDiff ℝ (⊤ : ℕ∞) p := by

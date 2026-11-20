@@ -12,27 +12,33 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory Filter Set
 open scoped Topology Convolution
 
+section
+variable (n : ℕ)
+include n
+
 /-- The positive position smoothing radius tends to zero. -/
-def barrierMollifierRadius (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
+def barrierMollifierRadius : ℝ := 1 / ((n : ℝ) + 1)
 
 /-- Every smoothing radius is strictly positive. -/
-theorem barrierMollifierRadius_pos (n : ℕ) : 0 < barrierMollifierRadius n := by
+theorem barrierMollifierRadius_pos : 0 < barrierMollifierRadius n := by
   dsimp only [barrierMollifierRadius]
   positivity
 
 /-- The source position bump at the actual shrinking radius. -/
-def barrierMollifierBump (n : ℕ) : ContDiffBump (0 : ℝ) :=
+def barrierMollifierBump : ContDiffBump (0 : ℝ) :=
   ⟨barrierMollifierRadius n / 2, barrierMollifierRadius n,
     half_pos (barrierMollifierRadius_pos n), half_lt_self (barrierMollifierRadius_pos n)⟩
 
 /-- The actual nonnegative normalized smooth position mollifier. -/
-def barrierMollifier (n : ℕ) : ℝ → ℝ := (barrierMollifierBump n).normed volume
+def barrierMollifier : ℝ → ℝ := (barrierMollifierBump n).normed volume
 
 /-- Every sequence member satisfies the mollifier conditions. -/
-theorem barrierMollifier_spec (n : ℕ) : IsNonnegativeUnitSmoothMollifier (barrierMollifier n) :=
+theorem barrierMollifier_spec : IsNonnegativeUnitSmoothMollifier (barrierMollifier n) :=
   ⟨(barrierMollifierBump n).contDiff_normed,
     (barrierMollifierBump n).hasCompactSupport_normed,
     (barrierMollifierBump n).nonneg_normed, (barrierMollifierBump n).integral_normed⟩
+
+end
 
 /-- The outer support radii tend to zero. -/
 theorem barrierMollifierRadius_tendsto :

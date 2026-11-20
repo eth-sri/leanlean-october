@@ -23,8 +23,7 @@ open MeasureTheory
 private theorem segmentBlend_swap {d : ℕ}
     (x y : Vec d) (t : ℝ) :
     segmentBlend x t y = segmentBlend y (1 - t) x := by
-  simpa only [segmentBlend] using
-    (AffineMap.lineMap_apply_one_sub x y t).symm
+  simp
 
 /-- Double integration along convex segments costs at most `2 ^ d` times the
 volume of the domain.

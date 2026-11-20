@@ -22,14 +22,19 @@ open scoped ENNReal
 
 namespace PDE
 
+section
+variable {d : ℕ} (U : Set (Vec d))
+include U
+
 /-- Scalar `L²` membership on a restricted domain. -/
-abbrev MemL2On {d : ℕ} (U : Set (Vec d)) (u : Vec d → ℝ) : Prop :=
+abbrev MemL2On (u : Vec d → ℝ) : Prop :=
   MemLpOn U (2 : ℝ≥0∞) u
 
 /-- Coordinatewise gradient `L²` membership on a restricted domain. -/
-abbrev GradMemL2On {d : ℕ}
-    (U : Set (Vec d)) (Du : Vec d → Vec d) : Prop :=
+abbrev GradMemL2On (Du : Vec d → Vec d) : Prop :=
   GradMemLpOn U (2 : ℝ≥0∞) Du
+
+end
 
 /-- A concrete scalar representative and a chosen coordinate weak gradient in
 `L²(U)`.
@@ -51,8 +56,11 @@ instance {d : ℕ} {U : Set (Vec d)} :
 
 namespace H1Function
 
+section
+variable {d : ℕ} {U : Set (Vec d)}
+
 @[ext]
-theorem ext {d : ℕ} {U : Set (Vec d)} {u v : H1Function U}
+theorem ext {u v : H1Function U}
     (htoFun : u.toFun = v.toFun) (hgrad : u.grad = v.grad) :
     u = v := by
   cases u
@@ -61,15 +69,9 @@ theorem ext {d : ℕ} {U : Set (Vec d)} {u v : H1Function U}
   cases hgrad
   rfl
 
-/-- The `i`th chosen gradient component belongs to `L²(U)`. -/
-theorem grad_memL2 {d : ℕ} {U : Set (Vec d)}
-    (u : H1Function U) (i : Fin d) :
-    MemL2On U (fun x => u.grad x i) :=
-  u.gradMemL2 i
-
 /-- Regard an `H1Function` as the exactly corresponding `W1pFunction` at
 `p = 2`. -/
-def toW1pFunction {d : ℕ} {U : Set (Vec d)}
+def toW1pFunction
     (u : H1Function U) : W1pFunction U (2 : ℝ≥0∞) where
   toFun := u.toFun
   grad := u.grad
@@ -77,23 +79,27 @@ def toW1pFunction {d : ℕ} {U : Set (Vec d)}
   gradMemLp := u.gradMemL2
   hasWeakGradient := u.hasWeakGradient
 
+end
+
+section
+variable {d : ℕ} {U : Set (Vec d)} (u : H1Function U)
+
 @[simp]
-theorem toW1pFunction_toFun {d : ℕ} {U : Set (Vec d)}
-    (u : H1Function U) :
+theorem toW1pFunction_toFun :
     u.toW1pFunction.toFun = u.toFun :=
   rfl
 
 @[simp]
-theorem toW1pFunction_grad {d : ℕ} {U : Set (Vec d)}
-    (u : H1Function U) :
+theorem toW1pFunction_grad :
     u.toW1pFunction.grad = u.grad :=
   rfl
 
 @[simp]
-theorem toW1pFunction_apply {d : ℕ} {U : Set (Vec d)}
-    (u : H1Function U) (x : Vec d) :
+theorem toW1pFunction_apply (x : Vec d) :
     u.toW1pFunction x = u x :=
   rfl
+
+end
 
 end H1Function
 
@@ -109,23 +115,25 @@ def toH1Function {d : ℕ} {U : Set (Vec d)}
   gradMemL2 := u.gradMemLp
   hasWeakGradient := u.hasWeakGradient
 
+section
+variable {d : ℕ} {U : Set (Vec d)} (u : W1pFunction U (2 : ℝ≥0∞))
+
 @[simp]
-theorem toH1Function_toFun {d : ℕ} {U : Set (Vec d)}
-    (u : W1pFunction U (2 : ℝ≥0∞)) :
+theorem toH1Function_toFun :
     u.toH1Function.toFun = u.toFun :=
   rfl
 
 @[simp]
-theorem toH1Function_grad {d : ℕ} {U : Set (Vec d)}
-    (u : W1pFunction U (2 : ℝ≥0∞)) :
+theorem toH1Function_grad :
     u.toH1Function.grad = u.grad :=
   rfl
 
 @[simp]
-theorem toH1Function_apply {d : ℕ} {U : Set (Vec d)}
-    (u : W1pFunction U (2 : ℝ≥0∞)) (x : Vec d) :
+theorem toH1Function_apply (x : Vec d) :
     u.toH1Function x = u x :=
   rfl
+
+end
 
 end W1pFunction
 
@@ -146,24 +154,26 @@ def restrict {d : ℕ} {U V : Set (Vec d)}
     H1Function V :=
   (u.toW1pFunction.restrict hVOpen hVU).toH1Function
 
+section
+variable {d : ℕ} {U V : Set (Vec d)} (u : H1Function U) (hVOpen : IsOpen V) (hVU : V ⊆ U)
+
 @[simp]
-theorem restrict_toFun {d : ℕ} {U V : Set (Vec d)}
-    (u : H1Function U) (hVOpen : IsOpen V) (hVU : V ⊆ U) :
+theorem restrict_toFun :
     (u.restrict hVOpen hVU).toFun = u.toFun :=
   rfl
 
 @[simp]
-theorem restrict_grad {d : ℕ} {U V : Set (Vec d)}
-    (u : H1Function U) (hVOpen : IsOpen V) (hVU : V ⊆ U) :
+theorem restrict_grad :
     (u.restrict hVOpen hVU).grad = u.grad :=
   rfl
 
 @[simp]
-theorem restrict_apply {d : ℕ} {U V : Set (Vec d)}
-    (u : H1Function U) (hVOpen : IsOpen V) (hVU : V ⊆ U)
+theorem restrict_apply
     (x : Vec d) :
     u.restrict hVOpen hVU x = u x :=
   rfl
+
+end
 
 end H1Function
 

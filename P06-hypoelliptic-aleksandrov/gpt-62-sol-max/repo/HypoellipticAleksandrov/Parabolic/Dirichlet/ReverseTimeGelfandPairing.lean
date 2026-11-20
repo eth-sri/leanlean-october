@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeDualPairingRight
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedMultiplier
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedTest
 
 /-!
 # Reverse-time Gelfand pairings
@@ -19,16 +19,6 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem scalarLpToH10HilbertGraphDual_apply_smul
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (u0 v0 : H10HilbertGraph hΩ) (q0 : ℝ) :
-    scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ u0) (q0 • v0) =
-      inner ℝ (valueCLM hΩ v0) (valueCLM hΩ u0) * q0 := by
-  rw [scalarLpToH10HilbertGraphDual_apply, (valueCLM hΩ).map_smul,
-    inner_smul_left]
-  simp only [starRingEnd_apply, star_trivial]
-  ring
-
 /-- Pairing the Gelfand image with a bounded separated multiplier is the
 literal spatial `L²` mass integral. -/
 theorem reverseTimeGelfand_pairing_multiplier_eq_integral
@@ -44,21 +34,8 @@ theorem reverseTimeGelfand_pairing_multiplier_eq_integral
       ∫ tau,
         inner ℝ (valueCLM hΩ v) (valueCLM hΩ (u tau)) * q tau
         ∂reverseTimeVolume T := by
-  let G := reverseTimeGelfandCLM hΩ T u
-  let z := reverseTimeSeparatedVTestOfMemLp hΩ q hq v
-  change reverseTimeDualPairingRightCLM hΩ T z G = _
-  calc
-    reverseTimeDualPairingRightCLM hΩ T z G =
-        reverseTimeDualPairingCLM hΩ T G z :=
-      reverseTimeDualPairingRightCLM_apply hΩ T z G
-    _ = ∫ tau, G tau (z tau) ∂reverseTimeVolume T :=
-      reverseTimeDualPairingCLM_apply hΩ T G z
-    _ = _ := by
-      apply integral_congr_ae
-      filter_upwards [coeFn_reverseTimeGelfandCLM hΩ T u,
-        ae_reverseTimeSeparatedVTestOfMemLp hΩ q hq v] with tau hG hz
-      dsimp only [G, z]
-      rw [hG, hz]
-      exact scalarLpToH10HilbertGraphDual_apply_smul hΩ (u tau) v (q tau)
+  refine reverseTimeDualPairing_multiplier_eq_integral hΩ _ q hq v ?_
+  filter_upwards [coeFn_reverseTimeGelfandCLM hΩ T u] with t ht
+  rw [ht, scalarLpToH10HilbertGraphDual_apply]
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

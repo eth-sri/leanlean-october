@@ -2,7 +2,9 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.CompactlySupportedSpatialL2
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.NestedCutoffLocality
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialDifferenceQuotientBounds
+public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientBound
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
+public import PDEFoundation.Sobolev.Cutoff.Basic
 
 /-!
 # Definition of the nonprincipal localized commutator remainder
@@ -31,9 +33,7 @@ noncomputable def localizedSpatialDifferenceQuotientH10NonprincipalRemainder
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
     (k : Fin d) (h τ : ℝ)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
+    (hηshift : η.ShiftMapsInto k h Ω)
     (u : H10HilbertGraph hΩ) : ℝ :=
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift

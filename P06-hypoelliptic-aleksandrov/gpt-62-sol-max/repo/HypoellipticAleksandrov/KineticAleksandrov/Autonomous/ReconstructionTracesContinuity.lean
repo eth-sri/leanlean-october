@@ -11,10 +11,12 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
+  (g : BoundedBorel Point)
+
 /-- The source potential is zero at every invalid open-strip pole. -/
-theorem reconstruction_potential_zero_outside (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (g : BoundedBorel Point) (p : Point) (hp : p ∉ stripPast H T) :
+theorem reconstruction_potential_zero_outside (p : Point) (hp : p ∉ stripPast H T) :
     stripSourcePotential H K T g p = 0 := by
   by_cases ht : p.time < T
   · apply duhamelPotential_eq_zero_of_not_mem
@@ -26,9 +28,7 @@ theorem reconstruction_potential_zero_outside (H : Interval)
       (sectionTwoPoint p) (le_of_not_gt ht)
 
 /-- The time barrier extends continuously to all ambient points. -/
-theorem reconstruction_potential_abs_le_time (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (g : BoundedBorel Point) (C : ℝ) (hC : 0 ≤ C) (hg : ∀ p, |g p| ≤ C) (p : Point) :
+theorem reconstruction_potential_abs_le_time (C : ℝ) (hC : 0 ≤ C) (hg : ∀ p, |g p| ≤ C) (p : Point) :
     |stripSourcePotential H K T g p| ≤ C * max (T - p.time) 0 := by
   by_cases hp : p ∈ stripPast H T
   · let e : StripPole H (T : WithTop ℝ) := ⟨p, WithTop.coe_lt_coe.mpr hp.1, hp.2⟩
@@ -38,10 +38,11 @@ theorem reconstruction_potential_abs_le_time (H : Interval)
   · rw [reconstruction_potential_zero_outside H K T g p hp, abs_zero]
     exact mul_nonneg hC (le_max_right _ _)
 
+end
+
 /-- The quadratic face barrier extends continuously to all ambient points. -/
 theorem reconstruction_potential_abs_le_face
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ)
     (g : BoundedBorel Point) (C : ℝ) (hC : 0 ≤ C) (hg : ∀ p, |g p| ≤ C) (p : Point) :
@@ -51,9 +52,9 @@ theorem reconstruction_potential_abs_le_face
   · let e : StripPole H (T : WithTop ℝ) := ⟨p, WithTop.coe_lt_coe.mpr hp.1, hp.2⟩
     have hq : 0 ≤ (p.velocity 0 - H.lo) * (H.hi - p.velocity 0) / (2 * lam) :=
       div_nonneg (mul_nonneg (sub_nonneg.mpr hp.2.1.le) (sub_nonneg.mpr hp.2.2.le))
-        (by positivity)
+        (mul_nonneg (by norm_num) A.positive.le)
     rw [stripSourcePotential_eq_green H E.2 T g e, max_eq_left hq]
-    exact stripPotentialOfRealization_abs_le_quadratic hH hlam hLam A H E hE T e g C hC hg
+    exact stripPotentialOfRealization_abs_le_quadratic A H E hE T e g C hC hg
   · rw [reconstruction_potential_zero_outside H E.2 T g p hp, abs_zero]
     exact mul_nonneg hC (le_max_right _ _)
 
@@ -76,12 +77,13 @@ theorem reconstruction_potential_continuousAt_terminal (H : Interval)
     (fun h => (by simpa only [hp] using h.1 : T < T).false)]
   exact ht
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+  (hE : IsStripEvolution A H E)
+include lam Lam A hE
+
 /-- Bounded-source potentials are ambient continuous at either velocity face. -/
-theorem reconstruction_potential_continuousAt_face
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (g : BoundedBorel Point)
+theorem reconstruction_potential_continuousAt_face (T : ℝ) (g : BoundedBorel Point)
     (p : Point) (hp : p.velocity 0 = H.lo ∨ p.velocity 0 = H.hi) :
     ContinuousAt (stripSourcePotential H E.2 T g) p := by
   obtain ⟨C, hC, hg⟩ := g.exists_bound
@@ -100,7 +102,7 @@ theorem reconstruction_potential_continuousAt_face
         (hc.continuousAt (x := p)).tendsto
   have ht := squeeze_zero_norm (f := stripSourcePotential H E.2 T g)
     (fun q => by simpa only [Real.norm_eq_abs] using
-      reconstruction_potential_abs_le_face hH hlam hLam A H E hE T g C hC hg q) hb
+      reconstruction_potential_abs_le_face A H E hE T g C hC hg q) hb
   change Tendsto (stripSourcePotential H E.2 T g) (𝓝 p)
     (𝓝 (stripSourcePotential H E.2 T g p))
   have hn : p ∉ stripPast H T := by
@@ -112,11 +114,7 @@ theorem reconstruction_potential_continuousAt_face
   exact ht
 
 /-- Actual reconstruction is continuous on the interior together with its prescribed exit. -/
-theorem reconstruction_candidate_continuousOn_exit
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (sMinus T : ℝ) (phi : Point → ℝ)
+theorem reconstruction_candidate_continuousOn_exit (sMinus T : ℝ) (phi : Point → ℝ)
     (hphi : Parabolic.IsKineticC112On phi (reconstructionStrip H sMinus T))
     (hc : ContinuousOn phi (reconstructionStrip H sMinus T ∪ reconstructionExit H sMinus T))
     (g : BoundedBorel Point)
@@ -125,11 +123,13 @@ theorem reconstruction_candidate_continuousOn_exit
       (reconstructionStrip H sMinus T ∪ reconstructionExit H sMinus T) := by
   apply hc.sub
   apply ContinuousOn.union_continuousAt (isOpen_reconstructionStrip H sMinus T)
-    (reconstruction_source_potential_continuousOn hH hlam hLam A H E hE sMinus T g
+    (reconstruction_source_potential_continuousOn A H E hE sMinus T g
       (reconstruction_source_continuousOn A H sMinus T phi hphi g hg))
   intro p hp
   rcases hp with ht | hv
   · exact reconstruction_potential_continuousAt_terminal H E.2 T g p ht.1
-  · exact reconstruction_potential_continuousAt_face hH hlam hLam A H E hE T g p hv.2.2
+  · exact reconstruction_potential_continuousAt_face A H E hE T g p hv.2.2
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

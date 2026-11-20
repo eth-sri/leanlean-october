@@ -13,9 +13,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+section
+variable (Z₀ : Point) (R : ℝ) (hR : 0 < R) (hfar : 8 * R < |Z₀.velocity 0|)
+include Z₀ R hR hfar
+
 /-- The source's single clock, with centre v₀ and radius 4R. -/
-def farVelocityClock (Z₀ : Point) (R : ℝ) (hR : 0 < R)
-    (hfar : 8 * R < |Z₀.velocity 0|) : Clock where
+def farVelocityClock : Clock where
   vbar := Z₀.velocity 0
   r := 4 * R
   nonzero := by intro h; rw [h, abs_zero] at hfar; linarith
@@ -23,8 +26,7 @@ def farVelocityClock (Z₀ : Point) (R : ℝ) (hR : 0 < R)
   radius := by linarith
 
 /-- The cylinder velocity interval is contained in the single clock's active interval. -/
-theorem farVelocityClock_contains (Z₀ : Point) (R : ℝ) (hR : 0 < R)
-    (hfar : 8 * R < |Z₀.velocity 0|) :
+theorem farVelocityClock_contains :
     (capacityCylinderInterval Z₀ R hR).carrier ⊆
       (farVelocityClock Z₀ R hR hfar).active := by
   intro v hv
@@ -33,9 +35,11 @@ theorem farVelocityClock_contains (Z₀ : Point) (R : ℝ) (hR : 0 < R)
     v < Z₀.velocity 0 + 3 * (4 * R) / 4
   constructor <;> linarith [hv.1, hv.2]
 
+end
+
 /-- The source far-velocity density estimate, conditional only on p:pushforward. -/
 theorem cylinder_density_far (hpush : PushforwardStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
@@ -43,7 +47,7 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
       (hP : P ∈ forwardCylinder Z₀ R hR),
       8 * R < |Z₀.velocity 0| →
       ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
-        (stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z₀ R hR)
+        (stripGreen A (capacityCylinderInterval Z₀ R hR)
           (Z₀.time + R ^ 2) (capacityCylinderPole Z₀ P R hR hP)).restrict
             (forwardCylinder Z₀ R hR) =
           (volume.restrict (forwardCylinder Z₀ R hR)).withDensity
@@ -51,7 +55,7 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
         MemLp G (ENNReal.ofReal q) (volume.restrict (forwardCylinder Z₀ R hR)) ∧
         (eLpNorm G (ENNReal.ofReal q)
           (volume.restrict (forwardCylinder Z₀ R hR))).toReal ≤ C * R ^ (6 / q - 4) := by
-  obtain ⟨C, hC, hc⟩ := (hpush hH hLE lam Lam hlam hLam).2 q hq
+  obtain ⟨C, hC, hc⟩ := (hpush lam Lam hlam hLam).2 q hq
   refine ⟨C * (4 : ℝ) ^ (6 / q - 4), by positivity, ?_⟩
   intro A Z₀ R hR P hP hfar
   let c := farVelocityClock Z₀ R hR hfar
@@ -59,7 +63,7 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
   let e := capacityCylinderPole Z₀ P R hR hP
   have he : P.velocity 0 ∈ c.active := hsub e.2.2
   obtain ⟨f, hfm, hf0, hfd, hfp, hfn⟩ := hc A c P he
-  have hm := stripGreen_mono hH hLE hlam hLam A
+  have hm := stripGreen_mono A
     (capacityCylinderInterval Z₀ R hR) c.activeInterval hsub
     (Z₀.time + R ^ 2) ⊤ le_top e
   have hep : stripEnlargePole (capacityCylinderInterval Z₀ R hR) c.activeInterval hsub
@@ -70,7 +74,7 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
       (isOpen_Ioo.preimage ((continuous_apply 0).comp continuous_velocity)).measurableSet
   have := density_volume_sigmaFinite
   obtain ⟨g, hgm, hg0, hgd, hgp, hgn⟩ := density_restrict_of_le_withDensity volume
-    (stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z₀ R hR)
+    (stripGreen A (capacityCylinderInterval Z₀ R hR)
       (Z₀.time + R ^ 2) e) (densityClockStrip c P) (forwardCylinder Z₀ R hR)
     hD (isOpen_forwardCylinder Z₀ R hR).measurableSet f hfm hf0
     (ENNReal.ofReal q) hfp hm

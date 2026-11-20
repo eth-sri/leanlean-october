@@ -48,15 +48,13 @@ theorem tendsto_eLpNorm_weakEquationMollificationResidual_on_compact
       (fun i j =>
         (measurable_pi_iff.mp (measurable_pi_iff.mp hExtBorel i) j).aestronglyMeasurable)
       (fun i j =>
-        locallyIntegrable_coefficientAt_entry_of_ellipticity
+        _root_.HypoellipticAleksandrov.Parabolic.locallyIntegrable_coefficient_entry
           hExtBorel hExtLower hExtUpper i j)
       (fun i j z =>
-        coefficient_entry_abs_le_of_ellipticity
+        _root_.HypoellipticAleksandrov.Parabolic.coefficient_entry_abs_le
           (hExtLower z.1 z.2) (hExtUpper z.1 z.2) i j)
       (fun i j => by
         have h := g.velocityHessian_memLp i j
-        change MemLp (fun z => g.velocityHessian z i j) (parabolicExponent d)
-          ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-        simpa only [Measure.restrict_univ] using h)
+        grind [Measure.restrict_univ])
 
 end HypoellipticAleksandrov.Parabolic

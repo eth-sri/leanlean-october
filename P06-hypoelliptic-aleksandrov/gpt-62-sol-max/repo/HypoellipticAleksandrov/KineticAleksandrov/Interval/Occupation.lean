@@ -21,78 +21,69 @@ open scoped ENNReal
 
 /-- Interval occupation has a common density with constants independent of interval length. -/
 theorem interval_occupation
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∃ C : ℝ → ℝ, (∀ γ : ℝ, 1 ≤ γ → γ ≤ 2 → 0 ≤ C γ) ∧
-    ∀ (m Lb : ℝ), 0 < m → m ≤ Lb →
-    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
-    SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
-    ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-      (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-      (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-    RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-      (zIndependentCoefficient B) b S K →
+    ∀ {m Lb : ℝ} (E : IntervalEvolution lam Lam m Lb),
     ∀ (σ T : ℝ), 0 < T →
-    ∀ (ρ : Measure (PDE.oneDimensionalAxisBox a c)) [IsFiniteMeasure ρ],
+    ∀ (ρ : Measure (E.domain)) [IsFiniteMeasure ρ],
     ∃ g : TimeVelocity 1 → ℝ, Measurable g ∧ (∀ p, 0 ≤ g p) ∧
       (∀ φ : BoundedBorel (TimeVelocity 1),
-        (∫ p, φ p * g p ∂volume.restrict (Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c)) =
+        (∫ p, φ p * g p ∂volume.restrict (Ioo 0 T ×ˢ E.domain)) =
         ∫ v, ∫ t : ElapsedTime (ENNReal.ofReal T), ∫ w, φ (t.1, w)
-          ∂P K hJ (scalarQuery σ (σ + t.1) (le_add_of_nonneg_right t.2.1.le) v.1
+          ∂P E.kernel E.measurableSet (scalarQuery σ (σ + t.1) (le_add_of_nonneg_right t.2.1.le) v.1
             (by simpa only [movingDomain_stationary] using v.2))
           ∂elapsedVolume (ENNReal.ofReal T) ∂ρ) ∧
       ∀ γ : ℝ, 1 ≤ γ → γ ≤ 2 →
         MemLp g (ENNReal.ofReal γ)
-          (volume.restrict (Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c)) ∧
+          (volume.restrict (Ioo 0 T ×ˢ E.domain)) ∧
         eLpNorm g (ENNReal.ofReal γ)
-          (volume.restrict (Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c)) ≤
+          (volume.restrict (Ioo 0 T ×ˢ E.domain)) ≤
           ENNReal.ofReal (C γ) * ρ univ * ENNReal.ofReal (T ^ (3 / (2 * γ) - 1 / 2)) := by
-  obtain ⟨C, hC, hocc⟩ := occupation hH (d := 1) (by norm_num)
+  obtain ⟨C, hC, hocc⟩ := occupation (d := 1) (by norm_num)
     lam Lam hlam hlamLam
   refine ⟨C, fun γ hγ1 hγ2 => hC γ hγ1 (by norm_num; exact hγ2), ?_⟩
-  intro m Lb _hm _hmLb a c hac B b hs hJ S K hr σ T hT ρ _
-  have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
-  have hsetting : SourceSetting lam Lam 1 1 (univ : Set (PDE.Vec 1)) B (identityDrift 1) :=
-    ⟨hs.1, identityDrift_smooth 1, zero_lt_one, le_rfl, identityDrift_bounds 1,
+  intro m Lb E σ T hT ρ _
+  have hp := (E.clauses).2.1
+  have E.setting : SourceSetting lam Lam 1 1 (univ : Set (PDE.Vec 1)) E.coefficient (identityDrift 1) :=
+    ⟨E.setting.1, identityDrift_smooth 1, zero_lt_one, le_rfl, identityDrift_bounds 1,
       Or.inl ⟨rfl, rfl, rfl, rfl⟩⟩
   obtain ⟨Sw, Kw, hrw, _, hpw, _⟩ :=
-    exists_unitBlock_evolution (exists_terminalEvolution_of_classical hLE hH)
-      (by norm_num) lam Lam 1 1 univ B (identityDrift 1) hsetting
+    exists_unitBlock_evolution (exists_terminalEvolution_of_classical )
+      (by norm_num) lam Lam 1 1 univ E.coefficient (identityDrift 1) E.setting
       (wholeSpace 1) (fun _ => 0) (wholeSpace_admissible 1) (zeroCurve_piecewiseC1 1)
-  obtain ⟨gw, hgw, hgwLp⟩ := hocc B hs.1 Sw Kw hrw hpw (ρ.map Subtype.val) σ T hT
+  obtain ⟨gw, hgw, hgwLp⟩ := hocc E.coefficient E.setting.1 Sw Kw hrw hpw (ρ.map Subtype.val) σ T hT
   have hgwi : Integrable gw (volume.restrict (Ioo (0 : ℝ) T ×ˢ univ)) :=
     memLp_one_iff_integrable.1 (by simpa using (hgwLp 1 le_rfl (by norm_num)).1)
   have hgwSlab : Green.SlabOccupationDensity Kw σ T (ρ.map Subtype.val) gw :=
     (isOccupationDensity_iff_slabOccupationDensity Kw σ T (ρ.map Subtype.val) gw).mp hgw
-  have hdom := intervalOccupationMeasure_le_density hac B hs.1 hJ K hp Kw hpw
+  have hdom := intervalOccupationMeasure_le_density E.lt E.coefficient E.setting.1 E.measurableSet E.kernel hp Kw hpw
     σ T hT ρ gw hgwSlab hgwi
-  let U : Set (TimeVelocity 1) := Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c
-  have hU : MeasurableSet U := measurableSet_Ioo.prod hJ
-  have hνU : (intervalOccupationMeasure σ T K ρ).restrict U =
-      intervalOccupationMeasure σ T K ρ :=
+  let U : Set (TimeVelocity 1) := Ioo 0 T ×ˢ E.domain
+  have hU : MeasurableSet U := measurableSet_Ioo.prod E.measurableSet
+  have hνU : (intervalOccupationMeasure σ T E.kernel ρ).restrict U =
+      intervalOccupationMeasure σ T E.kernel ρ :=
     Measure.restrict_eq_self_of_ae_mem (by
-      rw [ae_iff]; exact intervalOccupationMeasure_compl_region σ T hT hJ K ρ)
-  have hdomU : intervalOccupationMeasure σ T K ρ ≤
+      rw [ae_iff]; exact intervalOccupationMeasure_compl_region σ T hT E.measurableSet E.kernel ρ)
+  have hdomU : intervalOccupationMeasure σ T E.kernel ρ ≤
       (volume.restrict U).withDensity (fun p => ENNReal.ofReal (gw p)) := by
     have h := Measure.restrict_mono_measure hdom U
     rw [hνU, restrict_withDensity hU, Measure.restrict_restrict_of_subset
       (show U ⊆ Ioo (0 : ℝ) T ×ˢ univ from prod_mono Subset.rfl (subset_univ _))] at h
     exact h
-  have := intervalOccupationMeasure_finite σ T hT K ρ
+  have := intervalOccupationMeasure_finite σ T hT E.kernel ρ
   obtain ⟨g, hgm, hg0, _hgi, hgle, hpair⟩ := exists_real_density_of_le_withDensity
-    (volume.restrict U) (intervalOccupationMeasure σ T K ρ) gw hgw.1 hgw.2.1 hdomU
+    (volume.restrict U) (intervalOccupationMeasure σ T E.kernel ρ) gw hgw.1 hgw.2.1 hdomU
   refine ⟨g, hgm, hg0, ?_, ?_⟩
   · intro φ
     rw [hpair φ]
     obtain ⟨M, _, hM⟩ := φ.exists_bound
-    rw [integral_intervalOccupationMeasure σ T hT K ρ φ φ.measurable ⟨M, hM⟩]
+    rw [integral_intervalOccupationMeasure σ T hT E.kernel ρ φ φ.measurable ⟨M, hM⟩]
     apply integral_congr_ae
     refine Filter.Eventually.of_forall fun v => ?_
     apply integral_congr_ae
     refine Filter.Eventually.of_forall fun t => ?_
     dsimp only
-    rw [interval_firstMarginal_eq_parabolic hJ K B hp σ (σ + t.1)
+    rw [interval_firstMarginal_eq_parabolic E.measurableSet E.kernel E.coefficient hp σ (σ + t.1)
       (le_add_of_nonneg_right t.2.1.le) v.1 0]
   · intro γ hγ1 hγ2
     have hw := hgwLp γ hγ1 (by norm_num; exact hγ2)

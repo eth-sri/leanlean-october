@@ -15,18 +15,18 @@ open scoped ENNReal
 /-- The overlap convolution gives the source global density power bound. -/
 theorem position_density_power_sum (hpush : PushforwardStatement)
     (htail : RestartTailStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (c : Clock) (_hc : |c.vbar| = 2 * c.r) (s x : ℝ)
       (nu : Measure Point) [IsFiniteMeasure nu],
       (∀ᵐ e ∂nu, s ≤ e.time ∧ e.velocity 0 ∈ c.active) →
-      (∫⁻ z, positionMixtureDensity hH hLE hlam hLam A c nu z ^ q ∂volume) ≤
+      (∫⁻ z, positionMixtureDensity A c nu z ^ q ∂volume) ≤
         ENNReal.ofReal (C * c.r ^ (6 - 4 * q)) *
           ∑' a : ℕ × ℤ, nu (enlargedStartCell c s x a.1 a.2) ^ q := by
   obtain ⟨C, c₀, hC, hc₀, hd⟩ :=
-    position_density_convolution_positive hpush htail hH hLE hlam hLam q hq
+    position_density_convolution_positive hpush htail hlam hLam q hq
   let W := ∑' h, positionYoungKernel (c₀ / 12) h
   have hs := positionYoungKernel_summable (c₀ / 12) (by linarith)
   have hw (h : ℤ × ℤ) : 0 ≤ positionYoungKernel (c₀ / 12) h :=
@@ -40,7 +40,7 @@ theorem position_density_power_sum (hpush : PushforwardStatement)
   refine ⟨D ^ q, Real.rpow_pos_of_pos hD q, ?_⟩
   intro A c hc s x nu hfinite hnu
   have hq0 : 0 < q := by linarith [hq.1]
-  rw [positionMixtureDensity_power_partition hpush hH hLE hlam hLam A c hc nu s x q hq0 hnu]
+  rw [positionMixtureDensity_power_partition hpush A c hc nu s x q hq0 hnu]
   calc
     _ ≤ ∑' b : ℕ × ℤ, (ENNReal.ofReal (C * c.r ^ (6 / q - 4)) *
         ∑' a : ℕ × ℤ, positionOverlapWeight c₀ b.1 a.1 b.2 a.2 *

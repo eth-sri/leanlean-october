@@ -1,5 +1,6 @@
 module
 
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.WeakCalculus
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionClassicalWeak
 
 /-! # The actual homogeneous reconstruction in distributions
@@ -14,32 +15,23 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Evolution SectionTwo MeasureTheory Set
 
-private theorem source_congr {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    {U : Set (EvolutionVec 1)} (hU : IsOpen U) {u g f : EvolutionVec 1 → ℝ}
-    (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u g)
-    (hg : EqOn g f U) :
-    IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u f := by
-  refine ⟨hu.1, ?_⟩
-  intro ψ hψ hc hs
-  refine (hu.2 ψ hψ hc hs).trans (setIntegral_congr_fun hU.measurableSet ?_)
-  intro x hx
-  change g x * ψ x = f x * ψ x
-  rw [hg hx]
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+  (hE : IsStripEvolution A H E) (sMinus T : ℝ) (phi : Point → ℝ)
+  (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
+include hE hphi
 
-private theorem candidate_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (H : Interval) (E : StripEvolution H) (hE : IsStripEvolution A H E)
-    (sMinus T : ℝ) (phi : Point → ℝ)
-    (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
+private theorem candidate_weak
     (g : BoundedBorel Point)
     (hg : ∀ p ∈ reconstructionStrip H sMinus T,
       g p = -forwardScalarOperator A.a phi p) :
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1)
-      (reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T)
-      (stripReconstructionCandidate H E.2 T phi g ∘ reconstructionPhysicalPoint)
+      (packedPhysicalPoint ⁻¹' reconstructionStrip H sMinus T)
+      (stripReconstructionCandidate H E.2 T phi g ∘ packedPhysicalPoint)
       (fun _ => 0) := by
-  let U := reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T
+  let U := packedPhysicalPoint ⁻¹' reconstructionStrip H sMinus T
   have hU : IsOpen U := (isOpen_reconstructionStrip H sMinus T).preimage
-    continuous_reconstructionPhysicalPoint
+    continuous_packedPhysicalPoint
   have htest := reconstruction_test_isWeakTransportedSolution A
     (isOpen_reconstructionStrip H sMinus T) hphi
   have hw := (isWeakTransportedSolution_comp_iff (evolutionCoefficient A.a)
@@ -52,40 +44,38 @@ private theorem candidate_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     rw [movingDomain, PDE.mem_translateSet_iff_sub_mem, sub_zero, intervalDomain,
       PDE.mem_oneDimensionalAxisBox_iff]
     exact hx.2.2
-  have hwr := weak_solution_restrict A hsub hw
+  have hwr := hw.mono hsub
   have hsource : EqOn
       ((fun p => -nativeStripSource g p) ∘ evolutionHomeomorph 1)
-      (forwardScalarOperator A.a phi ∘ reconstructionPhysicalPoint) U := by
+      (forwardScalarOperator A.a phi ∘ packedPhysicalPoint) U := by
     intro x hx
-    change -g (reconstructionPhysicalPoint x) = _
+    change -g (packedPhysicalPoint x) = _
     rw [hg _ hx, neg_neg]
     rfl
-  have hws := source_congr A hU hwr hsource
-  exact weak_same_source_sub A htest hws
+  have hws := hwr.congr_source hU.measurableSet hsource
+  exact htest.sub_same_source hws (evolutionCoefficient_smooth A) (identityDrift_smooth 1)
 
 /-- The literal reconstruction candidate has a homogeneous smooth AE representative.
 The bounded Borel source is constructed from the test, rather than assumed. -/
 theorem exists_reconstruction_smooth_ae
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (sMinus T : ℝ) (phi : Point → ℝ)
-    (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
     (hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H sMinus T,
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
     ∃ (g : BoundedBorel Point) (f : EvolutionVec 1 → ℝ),
       (∀ p ∈ reconstructionStrip H sMinus T, g p = -forwardScalarOperator A.a phi p) ∧
       (∀ p ∉ reconstructionStrip H sMinus T, g p = 0) ∧
       ContDiffOn ℝ (⊤ : ℕ∞) f
-        (reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T) ∧
-      (stripReconstructionCandidate H E.2 T phi g ∘ reconstructionPhysicalPoint)
+        (packedPhysicalPoint ⁻¹' reconstructionStrip H sMinus T) ∧
+      (stripReconstructionCandidate H E.2 T phi g ∘ packedPhysicalPoint)
         =ᵐ[volume.restrict
-          (reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T)] f ∧
-      ∀ x ∈ reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T,
+          (packedPhysicalPoint ⁻¹' reconstructionStrip H sMinus T)] f ∧
+      ∀ x ∈ packedPhysicalPoint ⁻¹' reconstructionStrip H sMinus T,
         transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f x = 0 := by
   obtain ⟨g, hg, hg0⟩ := exists_bounded_reconstruction_source A H sMinus T phi hphi hb
-  obtain ⟨f, hf, hae, heq⟩ := homogeneous_weak_smooth_solution hH hlam A
-    ((isOpen_reconstructionStrip H sMinus T).preimage continuous_reconstructionPhysicalPoint)
+  obtain ⟨f, hf, hae, heq⟩ := homogeneous_weak_smooth_solution A
+    ((isOpen_reconstructionStrip H sMinus T).preimage continuous_packedPhysicalPoint)
     (candidate_weak A H E hE sMinus T phi hphi g hg)
   exact ⟨g, f, hg, hg0, hf, hae, heq⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -27,9 +27,15 @@ theorem kineticAffine_comp {d : ℕ} (P₀ P : KineticPoint d) (R r : ℝ) :
   funext Q
   ext i <;> simp [kineticAffine] <;> ring
 
+section
+variable {d : ℕ} (P₀ : KineticPoint d)
+
+section
+variable {R : ℝ} (hR : R ≠ 0) (P : KineticPoint d)
+include hR
+
 /-- The literal inverse cancels the affine map. -/
-theorem kineticAffineInverse_apply {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
-    (hR : R ≠ 0) (P : KineticPoint d) :
+theorem kineticAffineInverse_apply :
     kineticAffineInverse P₀ R (kineticAffine P₀ R P) = P := by
   ext i
   all_goals simp [kineticAffineInverse, kineticAffine, relativePosition, relativeVelocity]
@@ -37,15 +43,16 @@ theorem kineticAffineInverse_apply {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
   all_goals ring
 
 /-- The affine map cancels its literal inverse. -/
-theorem kineticAffine_apply_inverse {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
-    (hR : R ≠ 0) (P : KineticPoint d) :
+theorem kineticAffine_apply_inverse :
     kineticAffine P₀ R (kineticAffineInverse P₀ R P) = P := by
   ext i <;>
     simp [kineticAffineInverse, kineticAffine, relativePosition, relativeVelocity] <;>
     field_simp <;> ring
 
+end
+
 /-- The affine coordinate map is continuous in the existing topology. -/
-theorem continuous_kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
+theorem continuous_kineticAffine (R : ℝ) :
     Continuous (kineticAffine P₀ R) := by
   have ht : Continuous (fun P : KineticPoint d => P.time) := continuous_time
   have hx : Continuous (fun P : KineticPoint d => P.position) := continuous_position
@@ -57,7 +64,7 @@ theorem continuous_kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
   · exact continuous_const.add ((continuous_const (y := (R : ℝ))).smul hv)
 
 /-- The inverse coordinate map is continuous in the existing topology. -/
-theorem continuous_kineticAffineInverse {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
+theorem continuous_kineticAffineInverse (R : ℝ) :
     Continuous (kineticAffineInverse P₀ R) := by
   have ht : Continuous (fun P : KineticPoint d => P.time) := continuous_time
   have hx : Continuous (fun P : KineticPoint d => P.position) := continuous_position
@@ -68,8 +75,13 @@ theorem continuous_kineticAffineInverse {d : ℕ} (P₀ : KineticPoint d) (R : �
       ((ht.sub continuous_const).smul continuous_const))
   · exact (continuous_const (y := (R⁻¹ : ℝ))).smul (hv.sub continuous_const)
 
+end
+
+section
+variable {d : ℕ}
+
 /-- Nonzero kinetic affine maps are homeomorphisms. -/
-def kineticAffineHomeomorph {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : R ≠ 0) :
+def kineticAffineHomeomorph (P₀ : KineticPoint d) (R : ℝ) (hR : R ≠ 0) :
     KineticPoint d ≃ₜ KineticPoint d where
   toFun := kineticAffine P₀ R
   invFun := kineticAffineInverse P₀ R
@@ -79,7 +91,7 @@ def kineticAffineHomeomorph {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : R 
   continuous_invFun := continuous_kineticAffineInverse P₀ R
 
 /-- Membership in a source cylinder is transported from the unit cylinder. -/
-theorem kineticAffine_mem_cylinder {d : ℕ} (P₀ P : KineticPoint d) {R : ℝ}
+theorem kineticAffine_mem_cylinder (P₀ P : KineticPoint d) {R : ℝ}
     (hR : 0 < R) :
     kineticAffine P₀ R P ∈ backwardCylinder P₀ R ↔
       P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
@@ -100,7 +112,7 @@ theorem kineticAffine_mem_cylinder {d : ℕ} (P₀ P : KineticPoint d) {R : ℝ}
     refine ⟨?_, ?_, hv', hx'⟩ <;> nlinarith
 
 /-- The kinetic affine image of the unit cylinder is the exact source cylinder. -/
-theorem kineticAffine_image_unitCylinder {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
+theorem kineticAffine_image_unitCylinder (P₀ : KineticPoint d) {R : ℝ}
     (hR : 0 < R) :
     kineticAffine P₀ R '' backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 =
       backwardCylinder P₀ R := by
@@ -112,5 +124,7 @@ theorem kineticAffine_image_unitCylinder {d : ℕ} (P₀ : KineticPoint d) {R : 
     refine ⟨kineticAffineInverse P₀ R P, ?_, kineticAffine_apply_inverse P₀ hR.ne' P⟩
     apply (kineticAffine_mem_cylinder P₀ _ hR).mp
     simpa only [kineticAffine_apply_inverse P₀ hR.ne' P] using hP
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

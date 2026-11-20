@@ -59,13 +59,17 @@ lemma integral_snd_compProd {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ 
   rw [Measure.snd, integral_map hsnd.aemeasurable hf'', Measure.integral_compProd hf']
 
 
+section
+variable (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ : Measurable π) (h : Z → ℂ)
+  (hh : Measurable h) (hb : ∃ C : ℝ, ∀ z, ‖h z‖ ≤ C)
+include hph hph1 hπ hh hb
+
 /-- Pairing of bounded Borel `h` with `η`, as an iterated kernel integral. -/
-lemma evolved_integral (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ : Measurable π)
-    (h : Z → ℂ) (hh : Measurable h) (hb : ∃ C : ℝ, ∀ z, ‖h z‖ ≤ C) :
+lemma evolved_integral :
     (∫ᵛ z, h z ∂[ContinuousLinearMap.mul ℝ ℂ; evolvedMeasure μ κ ph π]) =
       ∫ x, ∫ y, h (π y) * ph y ∂κ x ∂μ := by
   set Λ : Measure Y := (μ ⊗ₘ κ).snd with hΛ
-  have hv : (Λ.withDensityᵥ ph).variation = Λ := variation_density_one Λ ph hph hph1
+  have hv := variation_density_one Λ ph hph hph1
   have hi : Integrable (fun y : Y => h (π y)) Λ := by
     obtain ⟨C, hC⟩ := hb
     exact Integrable.mono' (integrable_const C) (hh.comp hπ).aestronglyMeasurable
@@ -79,8 +83,7 @@ lemma evolved_integral (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ
     (hi.mul_bdd hph.aestronglyMeasurable (Filter.Eventually.of_forall (fun y => (hph1 y).le)))
 
 /-- `‖∫ h dη‖ ≤ ∫ ‖h‖ d|η|`. -/
-lemma evolved_integral_enorm_le (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ : Measurable π)
-    (h : Z → ℂ) (hh : Measurable h) (hb : ∃ C : ℝ, ∀ z, ‖h z‖ ≤ C) :
+lemma evolved_integral_enorm_le :
     ‖∫ x, ∫ y, h (π y) * ph y ∂κ x ∂μ‖ₑ ≤ ∫⁻ z, ‖h z‖ₑ ∂(evolvedMeasure μ κ ph π).variation := by
   rw [← evolved_integral μ κ ph π hph hph1 hπ h hh hb]
   refine VectorMeasure.enorm_integral_le_lintegral_enorm.trans ?_
@@ -90,20 +93,30 @@ lemma evolved_integral_enorm_le (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ 
   calc _ ≤ 1 * ∫⁻ z, ‖h z‖ₑ ∂(evolvedMeasure μ κ ph π).variation := by gcongr
     _ = _ := one_mul _
 
+end
+
 
 lemma integrable_phase_finite {W : Type*} [MeasurableSpace W] (ν : Measure W) [IsFiniteMeasure ν]
     (ph : W → ℂ) (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) : Integrable ph ν :=
   Integrable.mono' (integrable_const (1 : ℝ)) hph.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun w => (hph1 w).le))
 
-lemma fibreMeasure_apply (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ : Measurable π)
+section
+variable (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1)
+include hph hph1
+
+section
+variable (hπ : Measurable π)
+include hπ
+
+lemma fibreMeasure_apply
     (x : X) {t : Set Z} (ht : MeasurableSet t) :
     fibreMeasure κ ph π x t = ∫ y, (π ⁻¹' t).indicator ph y ∂κ x := by
   unfold fibreMeasure
   rw [VectorMeasure.map_apply _ hπ ht, withDensityᵥ_apply (integrable_phase_finite _ ph hph hph1)
     (hπ ht), integral_indicator (hπ ht)]
 
-lemma evolvedMeasure_apply (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ : Measurable π)
+lemma evolvedMeasure_apply
     {t : Set Z} (ht : MeasurableSet t) :
     evolvedMeasure μ κ ph π t = ∫ x, ∫ y, (π ⁻¹' t).indicator ph y ∂κ x ∂μ := by
   unfold evolvedMeasure
@@ -113,7 +126,7 @@ lemma evolvedMeasure_apply (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) 
   exact ((integrable_phase_finite _ ph hph hph1).indicator (hπ ht))
 
 /-- **Mass of `|η|`.**  If every fibre has total variation at most `δ`, so does `η` up to `μ(X)`. -/
-lemma evolved_variation_le (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) (hπ : Measurable π)
+lemma evolved_variation_le
     (δ : ℝ≥0∞) (hδ : ∀ x, (fibreMeasure κ ph π x).variation univ ≤ δ) :
     (evolvedMeasure μ κ ph π).variation univ ≤ μ univ * δ := by
   refine le_of_forall_lt (fun a ha => ?_)
@@ -143,9 +156,11 @@ lemma evolved_variation_le (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) 
           (hδ x)
     _ = μ univ * δ := by rw [lintegral_const, mul_comm]
 
+end
+
 
 /-- The variation measure of `η` is finite. -/
-lemma evolved_variation_finite (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ = 1) :
+lemma evolved_variation_finite :
     IsFiniteMeasure (evolvedMeasure μ κ ph π).variation := by
   have hle : (evolvedMeasure μ κ ph π).variation ≤ ((μ ⊗ₘ κ).snd).map π := by
     unfold evolvedMeasure
@@ -153,5 +168,7 @@ lemma evolved_variation_finite (hph : Measurable ph) (hph1 : ∀ y, ‖ph y‖ =
     rw [variation_density_one _ ph hph hph1]
   have : IsFiniteMeasure (((μ ⊗ₘ κ).snd).map π) := inferInstance
   exact isFiniteMeasure_of_le _ hle
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

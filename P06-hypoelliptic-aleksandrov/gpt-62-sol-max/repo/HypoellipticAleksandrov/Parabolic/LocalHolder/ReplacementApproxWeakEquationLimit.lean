@@ -18,9 +18,13 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators Topology Matrix.Norms.Elementwise
 
+section
+variable {d L : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ} (hL : 2 ≤ L)
+  (A : CoefficientField d)
+include hL A
+
 /-- The literal homogeneous residual of a coherent family through at least weight two. -/
-def homogeneousWeakFamilyResidual {d L : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hL : 2 ≤ L) (A : CoefficientField d)
+def homogeneousWeakFamilyResidual
     (D : ParabolicWeakDerivativeFamily d L U u) (z : TimeVelocity d) : ℝ :=
   D.representative (ParabolicDerivativeIndex.castLE hL
     (ParabolicDerivativeIndex.timeOne d)) z +
@@ -28,9 +32,7 @@ def homogeneousWeakFamilyResidual {d L : ℕ} {U : Set (TimeVelocity d)}
     (ParabolicDerivativeIndex.castLE hL (ParabolicDerivativeIndex.velocityTwo j i)) z
 
 /-- Testing the literal residual equals the sum of its selected derivative pairings. -/
-theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
-    (hL : 2 ≤ L) (A : CoefficientField d) (hA : IsSmoothCoefficient A)
+theorem integral_homogeneousWeakFamilyResidual_mul (hA : IsSmoothCoefficient A)
     (D : ParabolicWeakDerivativeFamily d L U u)
     (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hc : HasCompactSupport φ) :
@@ -46,8 +48,8 @@ theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
   have hij (i j : Fin d) : IntegrableOn (fun z => D.representative
       (ParabolicDerivativeIndex.castLE hL (ParabolicDerivativeIndex.velocityTwo j i)) z *
       (A z.1 z.2 i j * φ z)) U := by
-    have ha : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+    have ha :=
+      (contDiff_apply_apply ℝ ℝ i j).comp hA
     exact integrableOn_weak_pairing _ _ (D.memLp _) (ha.mul hφ)
       (HasCompactSupport.mul_left hc)
   have heq : (fun z => homogeneousWeakFamilyResidual hL A D z * φ z) =
@@ -68,6 +70,8 @@ theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
     integral_finsetSum Finset.univ (fun i _ =>
       integrable_finsetSum Finset.univ (fun j _ => hij i j))]
   simp_rw [integral_finsetSum Finset.univ (fun j _ => hij _ j)]
+
+end
 
 /-- A common weak testing limit preserves the homogeneous equation almost everywhere. -/
 theorem homogeneousWeakFamilyResidual_ae_eq_zero_of_testing_limit {d L : ℕ}
@@ -101,7 +105,7 @@ theorem homogeneousWeakFamilyResidual_ae_eq_zero_of_testing_limit {d L : ℕ}
     (ParabolicDerivativeIndex.timeOne d)) φ hφ hc hs
   have hij (i j : Fin d) := by
     have ha : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+      (contDiff_apply_apply ℝ ℝ i j).comp hA
     exact htest (ParabolicDerivativeIndex.castLE hL
       (ParabolicDerivativeIndex.velocityTwo j i))
       (fun z => A z.1 z.2 i j * φ z) (ha.mul hφ)

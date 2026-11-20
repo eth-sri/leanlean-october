@@ -19,17 +19,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 
+section
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+  {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
+  (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
+  (hb : HasEuclideanLipschitzDrift Lb b) {r τ δ : ℝ} (hrτ : r ≤ τ) (hδ : 0 ≤ δ)
+  {F G : BoundedBorel (EvolutionAmbientState n)} {u v : KineticPoint n → ℝ}
+  (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hv : IsClassicalTerminalSolution Ω γ B b r G v)
+include hΩ hγ lam hlam B hB hb τ hrτ hδ F G hu hv
+
 /-- A weighted terminal error between two classical solutions propagates to every
 point of the earlier closed cylinder. The first solution may end at a later time. -/
 theorem classical_intermediate_sub_le_growth
-    {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {r τ δ : ℝ} (hrτ : r ≤ τ) (hδ : 0 ≤ δ)
-    {F G : BoundedBorel (EvolutionAmbientState n)} {u v : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u)
-    (hv : IsClassicalTerminalSolution Ω γ B b r G v)
     (hterm : ∀ p ∈ evolutionTerminalClosure Ω γ r,
       u p - v p ≤ δ * (1 + radialSq p)) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ r,
@@ -99,14 +100,6 @@ theorem classical_intermediate_sub_le_growth
 
 /-- Absolute weighted terminal errors propagate under the same Euclidean growth barrier. -/
 theorem classical_intermediate_abs_sub_le_growth
-    {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {r τ δ : ℝ} (hrτ : r ≤ τ) (hδ : 0 ≤ δ)
-    {F G : BoundedBorel (EvolutionAmbientState n)} {u v : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u)
-    (hv : IsClassicalTerminalSolution Ω γ B b r G v)
     (hterm : ∀ p ∈ evolutionTerminalClosure Ω γ r,
       |u p - v p| ≤ δ * (1 + radialSq p)) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ r,
@@ -121,5 +114,7 @@ theorem classical_intermediate_abs_sub_le_growth
   intro p hp
   have hh := hlower p hp
   exact abs_le.mpr ⟨by linarith only [hh], hupper p hp⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

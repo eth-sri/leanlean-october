@@ -32,18 +32,10 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
     (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval (r₁ - r₀))
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
@@ -112,7 +104,6 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
   have hglobalOpen : IsOpen globalSet := by
     exact (isOpen_Ioo.prod hΩ)
   have hglobalMeas : MeasurableSet globalSet := hglobalOpen.measurableSet
-  have hlocalMeas : MeasurableSet localSet := (isOpen_Ioo.prod hO).measurableSet
   have hetaDerivSupport : tsupport eta.deriv ⊆ tsupport (eta : ℝ → ℝ) := by
     rw [OriginalTimeScalarTest.deriv, tsupport]
     exact closure_minimal support_deriv_subset (isClosed_tsupport _)

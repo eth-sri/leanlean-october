@@ -28,6 +28,18 @@ namespace HypoellipticAleksandrov.Parabolic
 def IsOpenSubinterval (J I : Set ℝ) : Prop :=
   I.Nonempty ∧ IsOpen I ∧ I.OrdConnected ∧ I ⊆ J
 
+/-- A nonempty open bounded order-connected set has its infimum and supremum as endpoints. -/
+theorem isOpen_ordConnected_eq_Ioo_csInf_csSup (I : Set ℝ)
+    (ho : IsOpen I) (hc : I.OrdConnected) (hn : I.Nonempty)
+    (hl : BddBelow I) (hu : BddAbove I) : I = Ioo (sInf I) (sSup I) := by
+  refine subset_antisymm ?_ (IsConnected.Ioo_csInf_csSup_subset ⟨hn, hc.isPreconnected⟩ hl hu)
+  intro x hx
+  obtain ⟨a, b, hx', hab⟩ := mem_nhds_iff_exists_Ioo_subset.mp (ho.mem_nhds hx)
+  obtain ⟨y, hay, hyx⟩ := exists_between hx'.1
+  obtain ⟨z, hxz, hzb⟩ := exists_between hx'.2
+  exact ⟨(csInf_le hl (hab ⟨hay, hyx.trans hx'.2⟩)).trans_lt hyx,
+    hxz.trans_le (le_csSup hu (hab ⟨hx'.1.trans hxz, hzb⟩))⟩
+
 private theorem connectedComponentIn_eq_ordConnectedComponent_of_mem
     (U : Set ℝ) {x : ℝ} (hx : x ∈ U) :
     connectedComponentIn U x = ordConnectedComponent U x := by
@@ -36,7 +48,7 @@ private theorem connectedComponentIn_eq_ordConnectedComponent_of_mem
       isPreconnected_connectedComponentIn.ordConnected
     exact Set.subset_ordConnectedComponent (mem_connectedComponentIn hx)
       (connectedComponentIn_subset U x)
-  · have hpre : IsPreconnected (ordConnectedComponent U x) :=
+  · have hpre :=
       Set.OrdConnected.isPreconnected
         (show OrdConnected (ordConnectedComponent U x) from inferInstance)
     exact IsPreconnected.subset_connectedComponentIn hpre
@@ -46,10 +58,13 @@ end HypoellipticAleksandrov.Parabolic
 
 namespace HypoellipticAleksandrov.Parabolic
 
+section
+variable (kappa : ℝ) (hkappa : 1 < kappa)
+include hkappa
+
 /-- Non-strict local-measure companion to
 `volume_sUnion_monotone_interval_enlargement`. -/
 theorem volume_sUnion_monotone_interval_enlargement_of_le
-    (kappa : ℝ) (hkappa : 1 < kappa)
     (J : Set ℝ) (hJopen : IsOpen J) (hJord : J.OrdConnected)
     (B : Set (Set ℝ)) (g : Set ℝ → Set ℝ)
     (hB : ∀ I ∈ B, IsOpenSubinterval J I)
@@ -60,10 +75,6 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
     (hmono : ∀ I₁ I₂, IsOpenSubinterval J I₁ → IsOpenSubinterval J I₂ →
       I₁ ⊆ I₂ → g I₁ ⊆ g I₂) :
     volume (⋃₀ (g '' B)) ≤ ENNReal.ofReal kappa * volume (⋃₀ B) := by
-  have _hkappa : 0 < kappa := lt_trans zero_lt_one hkappa
-  have _hJopen : IsOpen J := hJopen
-  have _hJord : J.OrdConnected := hJord
-  have _hg : ∀ I, IsOpenSubinterval J I → IsOpenSubinterval J (g I) := hg
   let U : Set ℝ := ⋃₀ B
   have hUopen : IsOpen U := by
     exact isOpen_sUnion fun I hI => (hB I hI).2.1
@@ -157,8 +168,7 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
 
 /-- Finite-ambient non-strict local-measure companion to
 `volume_sUnion_monotone_interval_enlargement_Ioo`. -/
-theorem volume_sUnion_monotone_interval_enlargement_Ioo_of_le
-    (kappa : ℝ) (hkappa : 1 < kappa) (t1 t2 : ℝ) (ht : t1 < t2)
+theorem volume_sUnion_monotone_interval_enlargement_Ioo_of_le (t1 t2 : ℝ) (ht : t1 < t2)
     (B : Set (Set ℝ)) (g : Set ℝ → Set ℝ)
     (hB : ∀ I ∈ B, IsOpenSubinterval (Ioo t1 t2) I)
     (hg : ∀ I, IsOpenSubinterval (Ioo t1 t2) I →
@@ -178,5 +188,7 @@ theorem volume_sUnion_monotone_interval_enlargement_Ioo_of_le
   · intro I hI _
     exact hmeasure I hI
   · exact hmono
+
+end
 
 end HypoellipticAleksandrov.Parabolic

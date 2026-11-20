@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ActiveTerminalDominationIntegration
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionSupport
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitMassSupport
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreStartBandVisits
 
 /-! # Actual finite terminal visits telescope against a homogeneous stopped potential -/
 
@@ -15,8 +16,8 @@ open scoped Classical
 
 /-- A supplied homogeneous potential bounds the actual finite enlarged terminal sum. -/
 theorem enlarged_terminal_stopped_potential_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (hBT : b ≤ T)
     (hJ : closure c.active ⊆ J.carrier) (u : Point → ℝ)
@@ -26,7 +27,7 @@ theorem enlarged_terminal_stopped_potential_le
     (hop : ∀ p, p.time < b → forwardScalarOperator A.a u p = 0)
     (hn : ∀ p, p.time ≤ b → 0 ≤ u p) (N : ℕ) :
     (∫ q, enlargedStoppedPotential b u q
-      ∂enlargedActiveTerminal hH hLE hlam hLam A c J s T P N b) ≤
+      ∂enlargedActiveTerminal A c J s T P N b) ≤
         enlargedStoppedPotential b u P := by
   let V := enlargedStoppedPotential b u
   let D : Set Point := {q | q.time < b}
@@ -35,13 +36,13 @@ theorem enlarged_terminal_stopped_potential_le
   let Sout := visitBoundary s T (visitActiveInterval c) J
   have hi : MeasurableSet Sin := measurableSet_visitBoundary s T _ J
   have ho : MeasurableSet Sout := measurableSet_visitBoundary s T _ J
-  let EA := enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T
-  let EW := enlargedVisitExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) T
+  let EA := enlargedVisitExitKernel A (visitActiveUnion c J) T
+  let EW := enlargedVisitExitKernel A (visitWaitingUnion c J) T
   let KA := EA.restrict (ho.inter hD)
   let KW := EW.restrict hi
-  let KT := enlargedTerminalFamilyKernel hH hLE hlam hLam A c J b
-  let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J s T P
-  let beta := enlargedVisitOutgoing hH hLE hlam hLam A c J s T P
+  let KT := enlargedTerminalFamilyKernel A c J b
+  let gamma := enlargedVisitEntrance A c J s T P
+  let beta := enlargedVisitOutgoing A c J s T P
   let U := fun n => ∫ p, V p ∂gamma n
   let R := fun n => ∫ p, V p ∂(beta n).restrict D
   let W := fun n => ∫ p, V p ∂KT ∘ₘ gamma n
@@ -64,18 +65,18 @@ theorem enlarged_terminal_stopped_potential_le
     rfl
   have ha (n : ℕ) : W n + R n ≤ U n := by
     have hp : ∀ᵐ p ∂gamma n, p.velocity 0 ∈ c.active :=
-      (enlargedVisitEntrance_ae_support hH hLE hlam hLam A c J s T P hs hT n).mono
-        fun _ hp => enlarged_closedEntrance_subset_active c hp.2.2
+      (enlargedVisitEntrance_ae_support A c J s T P hs hT n).mono
+        fun _ hp => _root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.enlargedEntrance_subset_active c hp.2.2
     have hh := enlarged_integral_kernel_pair_le KT KA (gamma n) V V
       (hint _) (hint _) (hint _) (hp.mono fun p hp =>
-        enlarged_active_stopped_step hH hLE hlam hLam A c J b T hBT hJ u hphi hc M hM
+        enlarged_active_stopped_step A c J b T hBT hJ u hphi hc M hM
           hbound hop hn p hp (Sout ∩ D) (ho.inter hD) inter_subset_right)
     rw [hka n] at hh
     exact hh
   have hw (n : ℕ) : U (n + 1) ≤ R n := by
     have hh := enlarged_integral_kernel_le KW (beta n) V (D.indicator V)
       (hint _) ((hint _).indicator hD) (Filter.Eventually.of_forall fun p =>
-        enlarged_waiting_stopped_step hH hLE hlam hLam A (visitWaitingUnion c J) b T hBT
+        enlarged_waiting_stopped_step A (visitWaitingUnion c J) b T hBT
           u hphi hc M hM hbound hop hn p Sin hi)
     rw [hkw n, integral_indicator hD] at hh
     exact hh
@@ -84,7 +85,7 @@ theorem enlarged_terminal_stopped_potential_le
     unfold visitInitial
     split
     · rw [integral_dirac]
-    · have hh := enlarged_waiting_stopped_step hH hLE hlam hLam A (visitWaitingUnion c J)
+    · have hh := enlarged_waiting_stopped_step A (visitWaitingUnion c J)
         b T hBT u hphi hc M hM hbound hop hn P Sin hi
       apply hh.trans
       by_cases hp : P ∈ D

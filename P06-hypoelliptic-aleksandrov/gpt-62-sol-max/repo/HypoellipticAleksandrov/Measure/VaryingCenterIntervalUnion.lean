@@ -38,44 +38,6 @@ def boundaryShiftedMidpointExpansion (kappa : Real) (J : Set Real) : Set Real :=
       (max (-1 + kappa * intervalEndpointLength J)
         (intervalEndpointMidpoint J + kappa * intervalEndpointLength J / 2)))
 
-private theorem open_ordConnected_eq_Ioo_csInf_csSup (J : Set Real)
-    (hJopen : IsOpen J) (hJord : J.OrdConnected) (hJnonempty : J.Nonempty)
-    (hJbelow : BddBelow J) (hJabove : BddAbove J) :
-    J = Ioo (sInf J) (sSup J) := by
-  apply Subset.antisymm
-  · intro x hx
-    have hinf : sInf J ≤ x := csInf_le hJbelow hx
-    have hsup : x ≤ sSup J := le_csSup hJabove hx
-    constructor
-    · by_contra hnot
-      have hxeq : x = sInf J := le_antisymm (le_of_not_gt hnot) hinf
-      rcases Metric.mem_nhds_iff.1 (hJopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hleft : x - eps / 2 ∈ J := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x - eps / 2) - x| = eps / 2 := by
-          rw [show (x - eps / 2) - x = -(eps / 2) by ring, abs_neg,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : sInf J ≤ x - eps / 2 := csInf_le hJbelow hleft
-      rw [← hxeq] at hle
-      linarith
-    · by_contra hnot
-      have hxeq : sSup J = x := le_antisymm (le_of_not_gt hnot) hsup
-      rcases Metric.mem_nhds_iff.1 (hJopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hright : x + eps / 2 ∈ J := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x + eps / 2) - x| = eps / 2 := by
-          rw [show (x + eps / 2) - x = eps / 2 by ring,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : x + eps / 2 ≤ sSup J := le_csSup hJabove hright
-      rw [hxeq] at hle
-      linarith
-  · exact IsConnected.Ioo_csInf_csSup_subset
-      ⟨hJnonempty, hJord.isPreconnected⟩ hJbelow hJabove
-
 private theorem open_subinterval_endpoint_data {J : Set Real}
     (hJ : IsOpenSubinterval (Ioo (-1 : Real) 1) J) :
     BddBelow J ∧ BddAbove J ∧ J = Ioo (sInf J) (sSup J) ∧
@@ -84,8 +46,8 @@ private theorem open_subinterval_endpoint_data {J : Set Real}
     ⟨-1, fun x hx => (hJ.2.2.2 hx).1.le⟩
   have habove : BddAbove J :=
     ⟨1, fun x hx => (hJ.2.2.2 hx).2.le⟩
-  have heq : J = Ioo (sInf J) (sSup J) :=
-    open_ordConnected_eq_Ioo_csInf_csSup J hJ.2.1 hJ.2.2.1 hJ.1 hbelow habove
+  have heq :=
+    isOpen_ordConnected_eq_Ioo_csInf_csSup J hJ.2.1 hJ.2.2.1 hJ.1 hbelow habove
   have hlow : (-1 : Real) ≤ sInf J := by
     apply le_csInf hJ.1
     intro x hx
@@ -100,22 +62,19 @@ private theorem open_subinterval_endpoint_data {J : Set Real}
     exact hx.1.trans hx.2
   exact ⟨hbelow, habove, heq, hlow, hlt, hupp⟩
 
-private theorem midpoint_left_lt_left {kappa a b : Real}
-    (hkappa : 1 < kappa) (hab : a < b) :
+section
+variable {kappa a b : Real} (hkappa : 1 < kappa)
+include hkappa
+
+private theorem midpoint_left_lt_left (hab : a < b) :
     (a + b) / 2 - kappa * (b - a) / 2 < a := by
-  have hprod : 0 < (kappa - 1) * (b - a) :=
-    mul_pos (sub_pos.mpr hkappa) (sub_pos.mpr hab)
   nlinarith
 
-private theorem right_lt_midpoint_right {kappa a b : Real}
-    (hkappa : 1 < kappa) (hab : a < b) :
+private theorem right_lt_midpoint_right (hab : a < b) :
     b < (a + b) / 2 + kappa * (b - a) / 2 := by
-  have hprod : 0 < (kappa - 1) * (b - a) :=
-    mul_pos (sub_pos.mpr hkappa) (sub_pos.mpr hab)
   nlinarith
 
-private theorem boundary_shifted_endpoints_strict {kappa a b : Real}
-    (hkappa : 1 < kappa) (ha : -1 ≤ a) (hab : a < b) (hb : b ≤ 1) :
+private theorem boundary_shifted_endpoints_strict (ha : -1 ≤ a) (hab : a < b) (hb : b ≤ 1) :
     max (-1 : Real)
         (min (1 - kappa * (b - a)) ((a + b) / 2 - kappa * (b - a) / 2)) <
       min 1
@@ -131,6 +90,8 @@ private theorem boundary_shifted_endpoints_strict {kappa a b : Real}
     · exact hb
     · exact (right_lt_midpoint_right hkappa hab).le.trans (le_max_right _ _)
   exact lt_of_le_of_lt hleft (lt_of_lt_of_le hab hright)
+
+end
 
 private theorem boundary_shifted_length_le {kappa a b : Real}
     (_hkappa : 1 < kappa) (_ha : -1 ≤ a) (_hab : a < b) (_hb : b ≤ 1) :
@@ -217,8 +178,6 @@ private theorem midpoint_expansion_mono_of_endpoints {kappa a₁ b₁ a₂ b₂ 
         (max (-1 + kappa * (b₁ - a₁)) ((a₁ + b₁) / 2 + kappa * (b₁ - a₁) / 2)) ≤
       min 1
         (max (-1 + kappa * (b₂ - a₂)) ((a₂ + b₂) / 2 + kappa * (b₂ - a₂) / 2)) := by
-  have hk : 0 ≤ kappa := le_trans zero_le_one hkappa.le
-  have hlen : b₁ - a₁ ≤ b₂ - a₂ := by linarith
   have hleft : (a₂ + b₂) / 2 - kappa * (b₂ - a₂) / 2 ≤
       (a₁ + b₁) / 2 - kappa * (b₁ - a₁) / 2 := by
     have hda : 0 ≤ a₁ - a₂ := sub_nonneg.mpr ha
@@ -247,10 +206,13 @@ private theorem midpoint_expansion_mono_of_endpoints {kappa a₁ b₁ a₂ b₂ 
     · gcongr
     · exact hright
 
+section
+variable (kappa : Real) (hkappa : 1 < kappa)
+include hkappa
+
 /-- Boundary-shifted midpoint expansion is monotone even when the two
 intervals encounter different boundary cases. -/
-theorem boundaryShiftedMidpointExpansion_mono_of_subset
-    (kappa : Real) (hkappa : 1 < kappa) {J₁ J₂ : Set Real}
+theorem boundaryShiftedMidpointExpansion_mono_of_subset {J₁ J₂ : Set Real}
     (hJ₁ : IsOpenSubinterval (Ioo (-1 : Real) 1) J₁)
     (hJ₂ : IsOpenSubinterval (Ioo (-1 : Real) 1) J₂)
     (hsubset : J₁ ⊆ J₂) :
@@ -267,14 +229,12 @@ theorem boundaryShiftedMidpointExpansion_mono_of_subset
 
 /-- The boundary-shifted expansion has at most the sharp local `kappa`
 volume factor. -/
-theorem volume_boundaryShiftedMidpointExpansion_le
-    (kappa : Real) (hkappa : 1 < kappa) {J : Set Real}
+theorem volume_boundaryShiftedMidpointExpansion_le {J : Set Real}
     (hJ : IsOpenSubinterval (Ioo (-1 : Real) 1) J) :
     volume (boundaryShiftedMidpointExpansion kappa J) ≤
       ENNReal.ofReal kappa * volume J := by
   rcases open_subinterval_endpoint_data hJ with ⟨_, _, heq, hlow, hlt, hupp⟩
   have hlength := boundary_shifted_length_le hkappa hlow hlt hupp
-  have hpositive := boundary_shifted_endpoints_strict hkappa hlow hlt hupp
   rw [boundaryShiftedMidpointExpansion, intervalEndpointLength,
     intervalEndpointMidpoint, heq, csInf_Ioo hlt, csSup_Ioo hlt,
     Real.volume_Ioo, Real.volume_Ioo]
@@ -283,8 +243,7 @@ theorem volume_boundaryShiftedMidpointExpansion_le
   simpa only using hlength
 
 /-- Sharp uncountable-family estimate for varying-centre expansions. -/
-theorem volume_sUnion_boundaryShiftedMidpointExpansion
-    (kappa : Real) (hkappa : 1 < kappa) (B : Set (Set Real))
+theorem volume_sUnion_boundaryShiftedMidpointExpansion (B : Set (Set Real))
     (hB : ∀ J ∈ B, IsOpenSubinterval (Ioo (-1 : Real) 1) J) :
     volume (⋃₀ (boundaryShiftedMidpointExpansion kappa '' B)) ≤
       ENNReal.ofReal kappa * volume (⋃₀ B) := by
@@ -297,6 +256,8 @@ theorem volume_sUnion_boundaryShiftedMidpointExpansion
     exact volume_boundaryShiftedMidpointExpansion_le kappa hkappa hJ
   · intro J₁ J₂ hJ₁ hJ₂ hsubset
     exact boundaryShiftedMidpointExpansion_mono_of_subset kappa hkappa hJ₁ hJ₂ hsubset
+
+end
 
 private theorem interval_inter_reference_eq {a b : Real} :
     Ioo a b ∩ Ioo (-1 : Real) 1 = Ioo (max (-1 : Real) a) (min 1 b) := by
@@ -321,7 +282,6 @@ private theorem boundary_shifted_affine_image_formula
           (max (-1 + (u - l))
             (c + zeta * ((l + u) / 2 - c) + (u - l) / 2))) := by
   have hcontracted : zeta * l + (1 - zeta) * c < zeta * u + (1 - zeta) * c := by
-    have hmul : 0 < zeta * (u - l) := mul_pos hzeta0 (sub_pos.mpr hlu)
     nlinarith
   unfold boundaryShiftedMidpointExpansion intervalEndpointLength intervalEndpointMidpoint
   rw [show (fun x : Real => c + zeta * (x - c)) =

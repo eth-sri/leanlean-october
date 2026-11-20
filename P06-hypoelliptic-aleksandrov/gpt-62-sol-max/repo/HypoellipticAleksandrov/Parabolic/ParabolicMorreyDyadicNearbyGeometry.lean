@@ -20,25 +20,23 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
+section
+variable (d : Nat) (z : TimeVelocity d) (hz : z ∈ parabolicDyadicReferenceCell d)
+  (w : TimeVelocity d) (hw : w ∈ parabolicDyadicReferenceCell d)
+include hw
+
 /-- Two distinct points in the reference carrier have a least dyadic scale
 whose source-box radius is no greater than their coordinate distance. -/
 theorem exists_parabolicDyadicGeneration_radius_le_coordinateDist_lt_two_mul_radius
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d)
-    (w : TimeVelocity d)
-    (hw : w ∈ parabolicDyadicReferenceCell d)
     (hzw : z ≠ w) :
     ∃ n : Nat,
-      (parabolicDyadicSourceBox
-        (parabolicDyadicAddressContaining d z hz n).2).radius ≤
+      (parabolicDyadicSelectedBox z hz n).radius ≤
           parabolicCoordinateDist z w ∧
       parabolicCoordinateDist z w <
-        2 * (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).radius := by
+        2 * (parabolicDyadicSelectedBox z hz n).radius := by
   let rho : Real := parabolicCoordinateDist z w
   let radius : Nat → Real := fun n =>
-    (parabolicDyadicSourceBox
-      (parabolicDyadicAddressContaining d z hz n).2).radius
+    (parabolicDyadicSelectedBox z hz n).radius
   have hrhoPos : 0 < rho := by
     apply lt_of_le_of_ne (parabolicCoordinateDist_nonneg z w)
     intro hzero
@@ -100,107 +98,31 @@ theorem exists_parabolicDyadicGeneration_radius_le_coordinateDist_lt_two_mul_rad
 /-- The two selected source boxes at a fixed generation lie in one literal
 nearby forward box of radius three times the coordinate separation. -/
 theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d)
-    (w : TimeVelocity d)
-    (hw : w ∈ parabolicDyadicReferenceCell d)
     (n : Nat)
-    (hr :
-      (parabolicDyadicSourceBox
-        (parabolicDyadicAddressContaining d z hz n).2).radius ≤
-        parabolicCoordinateDist z w) :
-    parabolicBox 1
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).radius
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).baseTime
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).center ⊆
-      parabolicBox 1 (3 * parabolicCoordinateDist z w)
-        (min
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).baseTime
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d w hw n).2).baseTime)
-        ((z.2 + w.2) / 2) ∧
-    parabolicBox 1
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d w hw n).2).radius
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d w hw n).2).baseTime
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d w hw n).2).center ⊆
-      parabolicBox 1 (3 * parabolicCoordinateDist z w)
-        (min
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).baseTime
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d w hw n).2).baseTime)
-        ((z.2 + w.2) / 2) ∧
-    parabolicClosedBox 1
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).radius
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).baseTime
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).center ⊆
-      parabolicClosedBox 1 (3 * parabolicCoordinateDist z w)
-        (min
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).baseTime
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d w hw n).2).baseTime)
-        ((z.2 + w.2) / 2) ∧
-    parabolicClosedBox 1
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d w hw n).2).radius
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d w hw n).2).baseTime
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d w hw n).2).center ⊆
-      parabolicClosedBox 1 (3 * parabolicCoordinateDist z w)
-        (min
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).baseTime
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d w hw n).2).baseTime)
-        ((z.2 + w.2) / 2) := by
-  let rho : Real := parabolicCoordinateDist z w
-  let qz := parabolicDyadicSourceBox
-    (parabolicDyadicAddressContaining d z hz n).2
-  let qw := parabolicDyadicSourceBox
-    (parabolicDyadicAddressContaining d w hw n).2
-  let tMin : Real := min qz.baseTime qw.baseTime
-  have hqzRadiusPos : 0 < qz.radius := by
-    change 0 < (parabolicDyadicSourceBox
-      (parabolicDyadicAddressContaining d z hz n).2).radius
-    exact parabolicDyadicSourceBox_radius_pos _
-  have hrhoPos : 0 < rho := lt_of_lt_of_le hqzRadiusPos hr
-  have hRadius : qz.radius = qw.radius := by
-    change ((2 : Real) ^ n)⁻¹ = ((2 : Real) ^ n)⁻¹
-    rfl
-  have hRadiusSq : qz.radius ^ 2 = qw.radius ^ 2 := by rw [hRadius]
-  have hzClosed : z ∈ parabolicClosedBox 1 qz.radius qz.baseTime qz.center := by
-    change z ∈ parabolicClosedBox 1
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).radius
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).baseTime
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).center
-    exact parabolicDyadicAddressContaining_mem_closedForwardBox d z hz n
-  have hwClosed : w ∈ parabolicClosedBox 1 qw.radius qw.baseTime qw.center := by
-    change w ∈ parabolicClosedBox 1
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).radius
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).baseTime
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).center
-    exact parabolicDyadicAddressContaining_mem_closedForwardBox d w hw n
-  have hzClosedMem := hzClosed
-  have hwClosedMem := hwClosed
-  rw [mem_parabolicClosedBox_iff] at hzClosed hwClosed
+    (hr : (parabolicDyadicSelectedBox z hz n).radius ≤ parabolicCoordinateDist z w) :
+    let qz := parabolicDyadicSelectedBox z hz n
+    let qw := parabolicDyadicSelectedBox w hw n
+    let t := min qz.baseTime qw.baseTime
+    let r := 3 * parabolicCoordinateDist z w
+    let v := (z.2 + w.2) / 2
+    inkSpotsSourceBox qz ⊆ parabolicBox 1 r t v ∧
+    inkSpotsSourceBox qw ⊆ parabolicBox 1 r t v ∧
+    parabolicClosedBox 1 qz.radius qz.baseTime qz.center ⊆ parabolicClosedBox 1 r t v ∧
+    parabolicClosedBox 1 qw.radius qw.baseTime qw.center ⊆ parabolicClosedBox 1 r t v := by
+  let rho := parabolicCoordinateDist z w
+  let qz := parabolicDyadicSelectedBox z hz n
+  let qw := parabolicDyadicSelectedBox w hw n
+  let tMin := min qz.baseTime qw.baseTime
+  have hqzRadiusPos : 0 < qz.radius := parabolicDyadicSourceBox_radius_pos _
+  have hqwRadiusPos : 0 < qw.radius := hqzRadiusPos
+  have hrhoPos : 0 < rho := hqzRadiusPos.trans_le hr
+  have hRadiusSq : qz.radius ^ 2 = qw.radius ^ 2 := rfl
+  have hzClosed : z ∈ parabolicClosedBox 1 qz.radius qz.baseTime qz.center :=
+    parabolicDyadicAddressContaining_mem_closedForwardBox d z hz n
+  have hwClosed : w ∈ parabolicClosedBox 1 qw.radius qw.baseTime qw.center :=
+    parabolicDyadicAddressContaining_mem_closedForwardBox d w hw n
+  have hzMem := mem_parabolicClosedBox_iff.mp hzClosed
+  have hwMem := mem_parabolicClosedBox_iff.mp hwClosed
   have htimeRoot : Real.sqrt |z.1 - w.1| ≤ rho := by
     dsimp only [rho, parabolicCoordinateDist]
     exact le_max_left _ _
@@ -216,31 +138,19 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
   have hzwTime : z.1 - w.1 ≤ rho ^ 2 := (le_abs_self _).trans htime
   have hwzTime : w.1 - z.1 ≤ rho ^ 2 := by
     nlinarith [neg_le_abs (z.1 - w.1), htime]
-  have hRadiusSqLe : qz.radius ^ 2 ≤ rho ^ 2 := by
-    have hnonneg : 0 ≤ (rho - qz.radius) * (rho + qz.radius) :=
-      mul_nonneg (sub_nonneg.mpr hr) (add_nonneg hrhoPos.le hqzRadiusPos.le)
-    nlinarith
   have hqzBase : qz.baseTime ≤ tMin + qz.radius ^ 2 + rho ^ 2 := by
-    dsimp only [tMin]
-    rcases le_total qz.baseTime qw.baseTime with hbase | hbase
-    · rw [min_eq_left hbase]
-      nlinarith [sq_nonneg qz.radius, sq_nonneg rho]
-    · rw [min_eq_right hbase]
-      nlinarith [hzClosed.1, hzClosed.2.1, hwClosed.1, hwClosed.2.1,
-        hzwTime, hRadiusSq]
+    simp only [tMin, min_def]
+    split <;> nlinarith only [sq_nonneg qz.radius, sq_nonneg rho, hzMem.1,
+      hwMem.2.1, hzwTime, hRadiusSq]
   have hqwBase : qw.baseTime ≤ tMin + qw.radius ^ 2 + rho ^ 2 := by
-    dsimp only [tMin]
-    rcases le_total qw.baseTime qz.baseTime with hbase | hbase
-    · rw [min_eq_right hbase]
-      nlinarith [sq_nonneg qw.radius, sq_nonneg rho]
-    · rw [min_eq_left hbase]
-      nlinarith [hzClosed.1, hzClosed.2.1, hwClosed.1, hwClosed.2.1,
-        hwzTime, hRadiusSq]
+    simp only [tMin, min_def]
+    split <;> nlinarith only [sq_nonneg qw.radius, sq_nonneg rho, hwMem.1,
+      hzMem.2.1, hwzTime, hRadiusSq]
   have boxEnclosure : ∀ (q : InkSpotsBox d) (c other : TimeVelocity d),
       c ∈ parabolicClosedBox 1 q.radius q.baseTime q.center →
       tMin ≤ q.baseTime →
       q.baseTime ≤ tMin + q.radius ^ 2 + rho ^ 2 →
-      0 ≤ q.radius →
+      0 < q.radius →
       q.radius ≤ rho →
       (∀ coordinate : Fin d, |c.2 coordinate - other.2 coordinate| ≤ rho) →
       c.2 + other.2 = z.2 + w.2 →
@@ -249,91 +159,39 @@ theorem parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
       parabolicClosedBox 1 q.radius q.baseTime q.center ⊆
         parabolicClosedBox 1 (3 * rho) tMin ((z.2 + w.2) / 2) := by
     intro q c other hc hmin hbase hqRadiusNonneg hrad hcoordinate hmidpoint
-    rw [mem_parabolicClosedBox_iff] at hc
-    have hqRadiusSqLe : q.radius ^ 2 ≤ rho ^ 2 := by
-      have hnonneg : 0 ≤ (rho - q.radius) * (rho + q.radius) :=
-        mul_nonneg (sub_nonneg.mpr hrad) (add_nonneg hrhoPos.le hqRadiusNonneg)
-      nlinarith
-    have velocityEstimate (x : TimeVelocity d) (coordinate : Fin d) :
-        |x.2 coordinate - ((z.2 + w.2) / 2) coordinate| ≤
-          |x.2 coordinate - q.center coordinate| +
-            |q.center coordinate - c.2 coordinate| +
-              |c.2 coordinate - other.2 coordinate| / 2 := by
-      have hsplit : x.2 coordinate - ((z.2 + w.2) / 2) coordinate =
-          (x.2 coordinate - q.center coordinate) +
-            (q.center coordinate - c.2 coordinate) +
-              (c.2 coordinate - other.2 coordinate) / 2 := by
+    have hsq := (sq_le_sq₀ hqRadiusNonneg.le hrhoPos.le).mpr hrad
+    have ho : parabolicBox 1 q.radius q.baseTime q.center ⊆
+        parabolicBox 1 (3 * rho) tMin ((z.2 + w.2) / 2) := by
+      intro x hx
+      rw [mem_parabolicBox_iff] at hx ⊢
+      refine ⟨hmin.trans_lt hx.1, ?_, mem_velocityCube_iff.mpr ?_⟩
+      · nlinarith [hx.2.1, sq_pos_of_pos hrhoPos]
+      intro i
+      have hsplit : x.2 i - ((z.2 + w.2) / 2) i =
+          (x.2 i - q.center i) + (q.center i - c.2 i) + (c.2 i - other.2 i) / 2 := by
         rw [← hmidpoint]
         simp only [Pi.add_apply, Pi.div_apply, Pi.ofNat_apply]
         ring
+      have hx' := (mem_velocityCube_iff.mp hx.2.2) i
+      have hc' := (mem_velocityClosedCube_iff.mp (mem_parabolicClosedBox_iff.mp hc).2.2) i
       rw [hsplit]
-      calc
-        |(x.2 coordinate - q.center coordinate) +
-            (q.center coordinate - c.2 coordinate) +
-              (c.2 coordinate - other.2 coordinate) / 2| ≤
-            |(x.2 coordinate - q.center coordinate) +
-                (q.center coordinate - c.2 coordinate)| +
-              |(c.2 coordinate - other.2 coordinate) / 2| := abs_add_le _ _
-        _ ≤ |x.2 coordinate - q.center coordinate| +
-              |q.center coordinate - c.2 coordinate| +
-                |(c.2 coordinate - other.2 coordinate) / 2| := by
-              linarith [abs_add_le (x.2 coordinate - q.center coordinate)
-                (q.center coordinate - c.2 coordinate)]
-        _ = |x.2 coordinate - q.center coordinate| +
-              |q.center coordinate - c.2 coordinate| +
-                |c.2 coordinate - other.2 coordinate| / 2 := by
-              rw [abs_div]
-              norm_num
-    constructor
-    · intro x hx
-      rw [mem_parabolicBox_iff] at hx ⊢
-      refine ⟨hmin.trans_lt hx.1, ?_, ?_⟩
-      · nlinarith [sq_pos_of_pos hrhoPos]
-      · rw [mem_velocityCube_iff]
-        intro coordinate
-        have hxCoordinate := (mem_velocityCube_iff.mp hx.2.2) coordinate
-        have hcCoordinate := (mem_velocityClosedCube_iff.mp hc.2.2) coordinate
-        have hcCoordinate' : |q.center coordinate - c.2 coordinate| ≤ q.radius := by
-          simpa only [abs_sub_comm] using hcCoordinate
-        have hotherCoordinate := hcoordinate coordinate
-        have hestimate := velocityEstimate x coordinate
-        calc
-          |x.2 coordinate - ((z.2 + w.2) / 2) coordinate| ≤
-              |x.2 coordinate - q.center coordinate| +
-                |q.center coordinate - c.2 coordinate| +
-                  |c.2 coordinate - other.2 coordinate| / 2 := hestimate
-          _ < q.radius + q.radius + rho / 2 := by
-            linarith only [hxCoordinate, hcCoordinate', hotherCoordinate]
-          _ ≤ 3 * rho := by linarith only [hrad, hrhoPos.le]
-    · intro x hx
-      rw [mem_parabolicClosedBox_iff] at hx ⊢
-      refine ⟨hmin.trans hx.1, ?_, ?_⟩
-      · nlinarith [sq_nonneg rho]
-      · rw [mem_velocityClosedCube_iff]
-        intro coordinate
-        have hxCoordinate := (mem_velocityClosedCube_iff.mp hx.2.2) coordinate
-        have hcCoordinate := (mem_velocityClosedCube_iff.mp hc.2.2) coordinate
-        have hcCoordinate' : |q.center coordinate - c.2 coordinate| ≤ q.radius := by
-          simpa only [abs_sub_comm] using hcCoordinate
-        have hotherCoordinate := hcoordinate coordinate
-        have hestimate := velocityEstimate x coordinate
-        calc
-          |x.2 coordinate - ((z.2 + w.2) / 2) coordinate| ≤
-              |x.2 coordinate - q.center coordinate| +
-                |q.center coordinate - c.2 coordinate| +
-                  |c.2 coordinate - other.2 coordinate| / 2 := hestimate
-          _ ≤ q.radius + q.radius + rho / 2 := by
-            linarith only [hxCoordinate, hcCoordinate', hotherCoordinate]
-          _ ≤ 3 * rho := by linarith only [hrad, hrhoPos.le]
-  have hzEnclosure := boxEnclosure qz z w hzClosedMem (min_le_left _ _) hqzBase
-    hqzRadiusPos.le hr hvelocity rfl
-  have hwEnclosure := boxEnclosure qw w z hwClosedMem (min_le_right _ _) hqwBase
-    (by simpa only [hRadius] using hqzRadiusPos.le)
-    (by change qw.radius ≤ rho; rw [← hRadius]; exact hr)
-    (fun coordinate => by
-      simpa only [abs_sub_comm] using hvelocity coordinate)
-    (by ext coordinate; simp only [Pi.add_apply]; rw [add_comm])
+      have hb := (abs_add_le ((x.2 i - q.center i) + (q.center i - c.2 i))
+        ((c.2 i - other.2 i) / 2)).trans (add_le_add
+        (abs_add_le (x.2 i - q.center i) (q.center i - c.2 i))
+        le_rfl)
+      rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2), abs_sub_comm (q.center i)] at hb
+      linarith only [hb, hx', hc', hcoordinate i, hrad, hrhoPos.le]
+    refine ⟨ho, ?_⟩
+    simpa only [closure_parabolicBox_of_pos one_pos hqRadiusNonneg,
+      closure_parabolicBox_of_pos one_pos (show 0 < 3 * rho by positivity)]
+      using closure_mono ho
+  have hzEnclosure := boxEnclosure qz z w hzClosed (min_le_left _ _) hqzBase
+    hqzRadiusPos hr hvelocity rfl
+  have hwEnclosure := boxEnclosure qw w z hwClosed (min_le_right _ _) hqwBase
+    hqwRadiusPos hr (fun i => by simpa only [abs_sub_comm] using hvelocity i) (add_comm _ _)
   exact ⟨hzEnclosure.1, hwEnclosure.1, hzEnclosure.2, hwEnclosure.2⟩
+
+end
 
 end
 

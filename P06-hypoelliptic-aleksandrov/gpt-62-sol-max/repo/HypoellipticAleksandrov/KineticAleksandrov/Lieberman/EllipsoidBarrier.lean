@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.EllipsoidBarr
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonSobolev
 import Mathlib.Analysis.Matrix.Order
 import Mathlib.Tactic
+import HypoellipticAleksandrov.Parabolic.MinimumPrinciple
 
 /-! # Smooth zero-boundary ellipsoid barriers absorbing bounded drift -/
 
@@ -14,24 +15,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov Parabolic Set Filter Matrix
 open scoped Matrix MatrixOrder Topology BigOperators
 
-private theorem trace_mul_nonneg {d : ℕ} {A Q : PDE.Mat d}
-    (hA : A.PosSemidef) (hQ : Q.PosSemidef) : 0 ≤ (A * Q).trace := by
-  let S : PDE.Mat d := CFC.sqrt Q
-  have hS : S.PosSemidef := (CFC.sqrt_nonneg Q).posSemidef
-  have hconj := hA.mul_mul_conjTranspose_same S
-  calc
-    0 ≤ (S * A * Sᴴ).trace := hconj.trace_nonneg
-    _ = (S * A * S).trace := by rw [hS.isHermitian.eq]
-    _ = (A * S * S).trace := (Matrix.trace_mul_cycle A S S).symm
-    _ = (A * (S * S)).trace := by rw [Matrix.mul_assoc]
-    _ = (A * Q).trace := by
-      rw [show S * S = Q from CFC.sqrt_mul_sqrt_self Q hQ.nonneg]
-
 /-- Lower Loewner ellipticity controls contraction with a positive-definite matrix. -/
 theorem contraction_lower {d : ℕ} {A Q : PDE.Mat d} (hQ : Q.PosDef)
     {lam : ℝ} (hA : lam • (1 : PDE.Mat d) ≤ A) :
     lam * Q.trace ≤ matrixContraction A Q := by
-  have hh := trace_mul_nonneg (Matrix.le_iff.mp hA) hQ.posSemidef
+  have hh := _root_.HypoellipticAleksandrov.Parabolic.trace_mul_nonneg_of_posSemidef (Matrix.le_iff.mp hA) hQ.posSemidef
   rw [Matrix.sub_mul, Matrix.smul_mul, Matrix.one_mul, Matrix.trace_sub,
     Matrix.trace_smul] at hh
   rw [matrixContraction_eq_trace_mul_of_isSymm _ _ hQ.isHermitian.isSymm]

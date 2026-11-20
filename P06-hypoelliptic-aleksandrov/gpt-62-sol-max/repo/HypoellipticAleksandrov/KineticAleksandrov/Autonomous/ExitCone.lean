@@ -43,16 +43,16 @@ theorem reconstruction_green_infinite_zero_of_finite
   apply le_antisymm _ bot_le
   exact (measure_iUnion_le _).trans (by simp [hzero])
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval)
+
 /-- The actual Green measure has finite-speed support for every terminal horizon. -/
-theorem strip_cone_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+theorem strip_cone_of_realization (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : WithTop ℝ) (e : StripPole H T) :
     stripGreenOfKernel H E.2 T e
       {p | |p.position 0 - e.1.position 0| > max |H.lo| |H.hi| * (p.time - e.1.time)} = 0 := by
   cases T with
-  | coe T => exact strip_cone_finite_of_realization hH hlam hLam A H E hE T e
+  | coe T => exact strip_cone_finite_of_realization A H E hE T e
   | top =>
     apply reconstruction_green_infinite_zero_of_finite H E e
     · exact isOpen_lt
@@ -60,16 +60,15 @@ theorem strip_cone_of_realization
         ((((continuous_apply 0).comp continuous_position).sub continuous_const).abs)
           |>.measurableSet
     · intro T hT
-      exact strip_cone_finite_of_realization hH hlam hLam A H E hE T _
+      exact strip_cone_finite_of_realization A H E hE T _
 
 /-- The canonical Green measure obeys the same literal physical cone for every horizon. -/
-theorem strip_cone
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ) (e : StripPole H T) :
-    stripGreen hH hLE hlam hLam A H T e
+theorem strip_cone (T : WithTop ℝ) (e : StripPole H T) :
+    stripGreen A H T e
       {p | |p.position 0 - e.1.position 0| > max |H.lo| |H.hi| * (p.time - e.1.time)} = 0 :=
-  strip_cone_of_realization hH hlam hLam A H _
-    (stripEvolution_spec hH hLE hlam hLam A H) T e
+  strip_cone_of_realization A H _
+    (stripEvolution_spec A H) T e
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

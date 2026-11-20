@@ -12,12 +12,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set Filter
 open scoped Topology
 
+section
+variable {d : ℕ} {alpha : ℝ} (ha : 0 < alpha) (h : CounterProfileStatement d alpha) (T S : ℝ)
+  (hS : 0 < S) (hTS : T < S ^ 2)
+  (hgeom : ∀ q, profileFunction h q ≤ 1 → PDE.vecEuclideanNorm q.1 < S ^ 3 ∧ PDE.vecEuclideanNorm q.2 < S)
+include ha hS hTS hgeom
+
 /-- A single positive collar works for every flattening scale and every time. -/
-theorem construction_exists_smoothing_collar {d : ℕ} {alpha : ℝ}
-    (ha : 0 < alpha) (h : CounterProfileStatement d alpha) (T S : ℝ)
-    (hS : 0 < S) (hTS : T < S ^ 2)
-    (hgeom : ∀ q, profileFunction h q ≤ 1 →
-      PDE.vecEuclideanNorm q.1 < S ^ 3 ∧ PDE.vecEuclideanNorm q.2 < S) :
+theorem construction_exists_smoothing_collar :
     ∃ delta : ℝ, 0 < delta ∧ ∀ (r mu R : ℝ) (phi : ContDiffBump (0 : XV d)),
       phi.rOut < delta → ∀ P : KineticPoint d,
       P ∈ initialFullLateralBoundary (⟨T, 0, 0⟩ : KineticPoint d) S →
@@ -32,7 +34,6 @@ theorem construction_exists_smoothing_collar {d : ℕ} {alpha : ℝ}
     have hh := hgeom q hq
     have hx := PDE.vecEuclideanNorm_nonneg q.1
     have hv := PDE.vecEuclideanNorm_nonneg q.2
-    have hs3 := pow_pos hS 3
     change PDE.vecNormSq q.1 < (S ^ 3) ^ 2 ∧ PDE.vecNormSq q.2 < S ^ 2
     rw [← PDE.vecEuclideanNorm_sq, ← PDE.vecEuclideanNorm_sq]
     constructor <;> nlinarith
@@ -63,11 +64,7 @@ theorem construction_exists_smoothing_collar {d : ℕ} {alpha : ℝ}
     exact (ne_of_lt hh.1) he
 
 /-- Every sufficiently late concrete mollifier preserves the complete boundary. -/
-theorem construction_smoothed_boundary_eventually {d : ℕ} {alpha : ℝ}
-    (ha : 0 < alpha) (h : CounterProfileStatement d alpha) (T S : ℝ)
-    (hS : 0 < S) (hTS : T < S ^ 2)
-    (hgeom : ∀ q, profileFunction h q ≤ 1 →
-      PDE.vecEuclideanNorm q.1 < S ^ 3 ∧ PDE.vecEuclideanNorm q.2 < S)
+theorem construction_smoothed_boundary_eventually
     (r mu R : ℝ) :
     ∀ᶠ n in atTop, ∀ P : KineticPoint d,
       P ∈ initialFullLateralBoundary (⟨T, 0, 0⟩ : KineticPoint d) S →
@@ -76,5 +73,7 @@ theorem construction_smoothed_boundary_eventually {d : ℕ} {alpha : ℝ}
   have hr := standardMollifierSequence_rOut_tendsto (G := XV d)
   filter_upwards [hr.eventually (Iio_mem_nhds hd)] with n hn
   exact hb r mu R (standardMollifierSequence n) hn
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

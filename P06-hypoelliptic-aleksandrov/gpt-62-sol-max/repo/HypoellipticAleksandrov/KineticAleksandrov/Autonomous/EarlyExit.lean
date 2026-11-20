@@ -13,22 +13,21 @@ open scoped ENNReal
 
 /-- The actual exit measure satisfies the explicit two-face Gaussian early-exit bound. -/
 theorem strip_exit_early_face_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : sMinus ≤ e.1.time) (theta : ℝ) (htheta : 0 < theta) :
-    stripExitOfRealization hH hlam hLam A H E hE T e
+    stripExitOfRealization A H E hE T e
       {p | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ sMinus + theta} ≤
         ENNReal.ofReal (2 * Real.exp
           (-(min (e.1.velocity 0 - H.lo) (H.hi - e.1.velocity 0)) ^ 2 /
             (4 * Lam * theta))) := by
   let d := min (e.1.velocity 0 - H.lo) (H.hi - e.1.velocity 0)
   have hd : 0 < d := lt_min (sub_pos.mpr e.2.2.1) (sub_pos.mpr e.2.2.2)
-  have hLam0 : 0 < Lam := hlam.trans_le hLam
+  have hLam0 : 0 < Lam := A.positive.trans_le A.ordered
   let k := d / (2 * Lam * theta)
   have hk : 0 < k := div_pos hd (by positivity)
-  have hl := reconstruction_early_face_exponential_bound hH hlam hLam A H E hE sMinus T e he
+  have hl := reconstruction_early_face_exponential_bound A H E hE sMinus T e he
     theta k (-k) H.lo d hk.le (by ring)
     (fun v hv => mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr hk.le)
       (sub_nonneg.mpr hv.1))
@@ -37,7 +36,7 @@ theorem strip_exit_early_face_of_realization
         (e.1.velocity 0 - H.lo) (H.hi - e.1.velocity 0)) hk.le
       change -k * (e.1.velocity 0 - H.lo) ≤ -k * d
       nlinarith)
-  have hr := reconstruction_early_face_exponential_bound hH hlam hLam A H E hE sMinus T e he
+  have hr := reconstruction_early_face_exponential_bound A H E hE sMinus T e he
     theta k k H.hi d hk.le rfl
     (fun v hv => mul_nonpos_of_nonneg_of_nonpos hk.le (sub_nonpos.mpr hv.2))
     (by
@@ -49,7 +48,7 @@ theorem strip_exit_early_face_of_realization
     change v ∈ frontier (Ioo H.lo H.hi) at hv
     rw [frontier_Ioo H.ordered] at hv
     simpa only [mem_insert_iff, mem_singleton_iff] using hv
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
+  let Ω := stripExitOfRealization A H E hE T e
   have hsub : {p : Point | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ sMinus + theta} ⊆
       {p | p.velocity 0 = H.lo ∧ p.time ≤ sMinus + theta} ∪
         {p | p.velocity 0 = H.hi ∧ p.time ≤ sMinus + theta} := by

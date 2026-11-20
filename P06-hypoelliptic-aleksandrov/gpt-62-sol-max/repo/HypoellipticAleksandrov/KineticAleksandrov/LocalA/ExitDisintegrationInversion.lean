@@ -11,13 +11,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo Reconstruction ProbabilityTheory
 open scoped ENNReal
 
+section
+variable {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d))
+
 /-- The jointly measurable real inverse representative in the original coordinate order. -/
-def exitJointDensity {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d))
+def exitJointDensity
     [IsFiniteMeasure ν] (p : PDE.Vec d × TimeVelocity d) : ℝ :=
   ((2 * Real.pi) ^ d)⁻¹ * (vecInvIntegral (fun ξ => exitFourierRep ν ξ p.2) p.1).re
 
 /-- The real inverse integral is measurable jointly in position and exit data. -/
-theorem measurable_exitJointDensity {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem measurable_exitJointDensity
     [IsFiniteMeasure ν] : Measurable (exitJointDensity ν) := by
   unfold exitJointDensity vecInvIntegral
   apply measurable_const.mul
@@ -26,29 +29,28 @@ theorem measurable_exitJointDensity {d : ℕ} (ν : Measure (PDE.Vec d × TimeVe
       Complex.exp (Complex.I * (PDE.vecDot p.1 p.2 : ℂ))) := by
     unfold PDE.vecDot
     fun_prop
-  have hm : Measurable (fun q : (PDE.Vec d × TimeVelocity d) × PDE.Vec d =>
-      Complex.exp (Complex.I * (PDE.vecDot q.2 q.1.1 : ℂ)) *
-        exitFourierRep ν q.2 q.1.2) :=
+  have hm :=
     (hc.measurable.comp (measurable_snd.prodMk (measurable_fst.comp measurable_fst))).mul
       ((measurable_exitFourierRep ν).comp
         (measurable_snd.prodMk (measurable_snd.comp measurable_fst)))
   exact hm.stronglyMeasurable.integral_prod_right.measurable
 
+end
+
+section
+variable {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d)
+  (hB : IsSectionTwoCoefficient lam Lam B) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+  (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+  (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4)) (hT : T.1 - P.1.time = R ^ 2 / 8)
+include d hd lam Lam B hB v₀ R hR P T hv hT
+
 /-- Joint integrability of the Fourier representatives follows from the actual decay. -/
-theorem ballExitFourierRep_integrable_prod
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
-    (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
-    (hT : T.1 - P.1.time = R ^ 2 / 8) :
-    let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+theorem ballExitFourierRep_integrable_prod :
+    let ν := ballExit hd B hB v₀ hR P T
     Integrable (fun p : PDE.Vec d × TimeVelocity d => exitFourierRep ν p.1 p.2)
       (volume.prod (exitMarginal ν)) := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+  let ν := ballExit hd B hB v₀ hR P T
   apply (integrable_prod_iff (measurable_exitFourierRep ν).aestronglyMeasurable).mpr
   refine ⟨Filter.Eventually.of_forall (integrable_exitFourierRep ν), ?_⟩
   have hnorm : (fun ξ => ∫ z, ‖exitFourierRep ν ξ z‖ ∂exitMarginal ν) =
@@ -57,49 +59,33 @@ theorem ballExitFourierRep_integrable_prod
     exact (L1.norm_of_fun_eq_integral_norm (integrable_exitFourierRep ν ξ)).symm
   rw [hnorm]
   simpa only [pow_zero, one_mul] using
-    ballExitL1Fourier_integrable_moments hH hLE hd hlam hLam B hB v₀ hR P T hv hT 0
+    ballExitL1Fourier_integrable_moments hd B hB v₀ hR P T hv hT 0
 
 /-- Almost every conditional position measure has the explicit inverse-integral density. -/
-theorem ballExitPositionKernel_density
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
-    (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
-    (hT : T.1 - P.1.time = R ^ 2 / 8) :
-    let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+theorem ballExitPositionKernel_density :
+    let ν := ballExit hd B hB v₀ hR P T
     ∀ᵐ z ∂exitMarginal ν,
       exitPositionKernel ν z = volume.withDensity (fun y =>
         ENNReal.ofReal (exitJointDensity ν (y, z))) ∧
       ∀ y, 0 ≤ exitJointDensity ν (y, z) := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
-  have hi := (ballExitFourierRep_integrable_prod hH hLE hd hlam hLam B hB v₀ hR
+  let ν := ballExit hd B hB v₀ hR P T
+  have hi := (ballExitFourierRep_integrable_prod hd B hB v₀ hR
     P T hv hT).prod_left_ae
   filter_upwards [hi] with z hz
-  have hint : Integrable (vecFourier (exitPositionKernel ν z)) := hz
+  have hint := hz
   refine ⟨?_, ?_⟩
   · exact eq_withDensity_vecInvDensity (exitPositionKernel ν z) hint
   · exact vecInvDensity_nonneg (exitPositionKernel ν z) hint
 
 /-- The joint inverse density reconstructs the actual exit measure over its own marginal. -/
-theorem ballExit_eq_withDensity_exitJointDensity
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
-    (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
-    (hT : T.1 - P.1.time = R ^ 2 / 8) :
-    let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+theorem ballExit_eq_withDensity_exitJointDensity :
+    let ν := ballExit hd B hB v₀ hR P T
     ν = (volume.prod (exitMarginal ν)).withDensity
       (fun p => ENNReal.ofReal (exitJointDensity ν p)) := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
-  have hfib := ballExitPositionKernel_density hH hLE hd hlam hLam B hB v₀ hR P T hv hT
+  let ν := ballExit hd B hB v₀ hR P T
+  have hfib := ballExitPositionKernel_density hd B hB v₀ hR P T hv hT
   change ∀ᵐ z ∂exitMarginal ν,
     exitPositionKernel ν z = volume.withDensity
       (fun y => ENNReal.ofReal (exitJointDensity ν (y, z))) ∧
@@ -140,5 +126,7 @@ theorem ballExit_eq_withDensity_exitJointDensity
   · exact ((hm.comp measurable_swap).ennreal_ofReal.indicator
       (hS.preimage measurable_swap))
   · exact measurable_swap
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

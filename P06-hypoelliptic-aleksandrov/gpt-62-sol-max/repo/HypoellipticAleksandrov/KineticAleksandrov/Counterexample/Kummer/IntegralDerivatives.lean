@@ -124,8 +124,7 @@ theorem contDiffOn_laplaceIntegral_nat (n : ℕ) (a b : ℝ) (ha : 0 < a) :
       change ContDiffOn ℝ ((n : ℕ∞ω) + 1) (laplaceIntegral a b) (Ioi 0)
       rw [contDiffOn_succ_iff_deriv_of_isOpen isOpen_Ioi]
       refine ⟨differentiableOn_laplaceIntegral a b ha, ?_, ?_⟩
-      · intro hn
-        exact False.elim (by simp at hn)
+      · simp
       · exact (ih (a + 1) (b + 1) (add_pos ha zero_lt_one)).neg.congr
           (fun z hz => deriv_laplaceIntegral a b z ha hz)
 

@@ -2,7 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyBoxCoefficientBound
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyMeanNormRestriction
-public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyProjectionMoments
+public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyProjection
 
 /-!
 # Nested parabolic Morrey affine projections
@@ -22,13 +22,12 @@ open MeasureTheory Set
 open scoped BigOperators ENNReal
 
 private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
+    (1 : ENNReal) ≤ parabolicExponent d := le_add_of_nonneg_left bot_le
 
-private theorem physicalProjection_recenter
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
-    (t_s : Real) (v_s : PDE.Vec d) (u : TimeVelocity d -> Real)
+section
+variable {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real) (t_s : Real) (v_s : PDE.Vec d)
+
+private theorem physicalProjection_recenter (u : TimeVelocity d -> Real)
     (z : TimeVelocity d) :
     parabolicMorreyBoxAffineProjection t_b v_b r_b u z =
       parabolicMorreyBoxAffineProjection t_b v_b r_b u (t_s, v_s) +
@@ -44,9 +43,7 @@ private theorem physicalProjection_recenter
   rw [Finset.sum_congr rfl fun i _ => hterm i, Finset.sum_add_distrib]
   ring
 
-private theorem physicalProjection_pullback_recenter
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
-    (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (_hr_s : 0 < r_s)
+private theorem physicalProjection_pullback_recenter {r_s : Real} (_hr_s : 0 < r_s)
     (u : TimeVelocity d -> Real) :
     pullbackScalar (parabolicMorreyBoxAffineProjection t_b v_b r_b u)
       t_s v_s r_s =
@@ -61,8 +58,12 @@ private theorem physicalProjection_pullback_recenter
   intro i _
   ring
 
-private theorem unit_raw_integrable_of_physical_mean_memLp
-    {d : Nat} (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
+end
+
+section
+variable {d : Nat}
+
+private theorem unit_raw_integrable_of_physical_mean_memLp (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
     (f : TimeVelocity d -> Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r_s t_s v_s))) :
@@ -79,8 +80,7 @@ private theorem unit_raw_integrable_of_physical_mean_memLp
   letI : Fact (volume (parabolicMorreyUnitBox d) < ∞) := ⟨hUtop⟩
   exact hraw.integrable (parabolicExponent_one_le d)
 
-private theorem unit_raw_integrable_affine
-    {d : Nat} (a : Real) (b : Fin d -> Real) :
+private theorem unit_raw_integrable_affine (a : Real) (b : Fin d -> Real) :
     Integrable (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i)
       (volume.restrict (parabolicMorreyUnitBox d)) := by
   letI : Fact (volume (parabolicMorreyUnitBox d) < ∞) :=
@@ -88,55 +88,13 @@ private theorem unit_raw_integrable_affine
   exact (Continuous.memLp_parabolicMorreyUnitBox (by fun_prop)).integrable
     (parabolicExponent_one_le d)
 
-private theorem unit_average_affine
-    {d : Nat} (a : Real) (b : Fin d -> Real) :
-    parabolicMorreyUnitAverage
-      (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) = a := by
-  have hprojection :=
-    parabolicMorreyUnitAffineProjection_reproduces_velocity_affine a b
-  have hzero := congrFun hprojection (0, 0)
-  simpa only [parabolicMorreyUnitAffineProjection, Pi.zero_apply, mul_zero,
-    Finset.sum_const_zero, add_zero] using hzero
-
-private theorem unit_coeff_affine
-    {d : Nat} (a : Real) (b : Fin d -> Real) (j : Fin d) :
-    parabolicMorreyUnitVelocityCoeff
-      (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) j = b j := by
-  have hprojection :=
-    parabolicMorreyUnitAffineProjection_reproduces_velocity_affine a b
-  have havg : parabolicMorreyUnitAverage
-      (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) = a :=
-    unit_average_affine a b
-  let e : PDE.Vec d := fun i => if i = j then 1 else 0
-  have hsumCoeff : ∑ i : Fin d,
-      parabolicMorreyUnitVelocityCoeff
-        (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) i * e i =
-      parabolicMorreyUnitVelocityCoeff
-        (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) j := by
-    simp only [e, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq',
-      Finset.mem_univ, ite_true]
-  have hsumAffine : ∑ i : Fin d, b i * e i = b j := by
-    simp only [e, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq',
-      Finset.mem_univ, ite_true]
-  have he := congrFun hprojection (0, e)
-  have heq : parabolicMorreyUnitAverage
-      (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) +
-      ∑ i : Fin d,
-        parabolicMorreyUnitVelocityCoeff
-          (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) i * e i =
-      a + ∑ i : Fin d, b i * e i := by
-    simpa only [parabolicMorreyUnitAffineProjection] using he
-  rw [hsumCoeff, hsumAffine, havg] at heq
-  linarith
-
-private theorem unit_raw_integrable_mul_velocity
-    {d : Nat} {f : TimeVelocity d -> Real}
+private theorem unit_raw_integrable_mul_velocity {f : TimeVelocity d -> Real}
     (hf : Integrable f (volume.restrict (parabolicMorreyUnitBox d)))
     (i : Fin d) :
     Integrable (fun z => f z * z.2 i)
       (volume.restrict (parabolicMorreyUnitBox d)) := by
   refine hf.mul_bdd (c := 1) ?_ ?_
-  · exact ((continuous_apply i).comp continuous_snd).aestronglyMeasurable
+  · fun_prop
   · filter_upwards [ae_restrict_mem
       (measurableSet_parabolicBox 1 1 0 (0 : PDE.Vec d))] with z hz
     change z ∈ parabolicBox 1 1 0 (0 : PDE.Vec d) at hz
@@ -144,10 +102,14 @@ private theorem unit_raw_integrable_mul_velocity
     change |z.2 i| ≤ 1
     simpa only [Pi.zero_apply, sub_zero] using (hz.2.2 i).le
 
+end
+
+section
+variable {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real) (t_s : Real) (v_s : PDE.Vec d)
+  {r_s : Real} (hr_s : 0 < r_s) (u : TimeVelocity d -> Real)
+include hr_s
+
 private theorem parabolicMorreyBoxAverage_sub_projection
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
-    (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
-    (u : TimeVelocity d -> Real)
     (hf : MemLp (fun z => u z -
       parabolicMorreyBoxAffineProjection t_b v_b r_b u z)
       (parabolicExponent d)
@@ -179,16 +141,13 @@ private theorem parabolicMorreyBoxAverage_sub_projection
   rw [← hsum] at havg
   have hBavg : parabolicMorreyUnitAverage bhat = B (t_s, v_s) := by
     rw [hbhat_shape]
-    exact unit_average_affine _ _
+    exact _root_.HypoellipticAleksandrov.Parabolic.average_velocity_affine _ _
   change parabolicMorreyUnitAverage fhat =
     parabolicMorreyUnitAverage (pullbackScalar u t_s v_s r_s) - B (t_s, v_s)
   rw [hBavg] at havg
   linarith
 
-private theorem parabolicMorreyBoxVelocitySlope_sub_projection
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
-    (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
-    (u : TimeVelocity d -> Real) (i : Fin d)
+private theorem parabolicMorreyBoxVelocitySlope_sub_projection (i : Fin d)
     (hf : MemLp (fun z => u z -
       parabolicMorreyBoxAffineProjection t_b v_b r_b u z)
       (parabolicExponent d)
@@ -227,7 +186,7 @@ private theorem parabolicMorreyBoxVelocitySlope_sub_projection
   have hBcoeff : parabolicMorreyUnitVelocityCoeff bhat i =
       r_s * parabolicMorreyBoxVelocitySlope t_b v_b r_b u i := by
     rw [hbhat_shape]
-    exact unit_coeff_affine _ _ i
+    exact _root_.HypoellipticAleksandrov.Parabolic.coeff_velocity_affine _ _ i
   change r_s⁻¹ * parabolicMorreyUnitVelocityCoeff fhat i =
     r_s⁻¹ * parabolicMorreyUnitVelocityCoeff (pullbackScalar u t_s v_s r_s) i -
       parabolicMorreyBoxVelocitySlope t_b v_b r_b u i
@@ -236,9 +195,13 @@ private theorem parabolicMorreyBoxVelocitySlope_sub_projection
   field_simp [hr_s.ne']
   ring
 
-private theorem parabolicMorreyNestedProjection_abs_sub_le_discrepancy
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
-    (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (_hr_s : 0 < r_s)
+end
+
+section
+variable {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real) (t_s : Real) (v_s : PDE.Vec d)
+  {r_s : Real}
+
+private theorem parabolicMorreyNestedProjection_abs_sub_le_discrepancy (_hr_s : 0 < r_s)
     (u : TimeVelocity d -> Real) (z : TimeVelocity d)
     (hz : z ∈ parabolicBox 1 r_s t_s v_s) :
     |parabolicMorreyBoxAffineProjection t_s v_s r_s u z -
@@ -327,9 +290,7 @@ private theorem parabolicMorreyNestedProjection_abs_sub_le_discrepancy
 
 /-- The small-box projection discrepancy is controlled by the normalized
 residual from an arbitrary reference affine projection. -/
-theorem parabolicMorreyNestedProjection_discrepancy_le_smallResidual
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
-    (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
+theorem parabolicMorreyNestedProjection_discrepancy_le_smallResidual (hr_s : 0 < r_s)
     (u : TimeVelocity d -> Real)
     (hsmall : MemLp (fun z => u z - parabolicMorreyBoxAffineProjection t_b v_b r_b u z)
       (parabolicExponent d)
@@ -357,13 +318,17 @@ theorem parabolicMorreyNestedProjection_discrepancy_le_smallResidual
   simp_rw [hslope] at hbound
   exact hbound
 
+end
+
+section
+variable {d : Nat} (t_b : Real) (v_b : PDE.Vec d) {r_b : Real} (hr_b : 0 < r_b) (t_s : Real)
+  (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
+  (hsub : parabolicBox 1 r_s t_s v_s ⊆ parabolicBox 1 r_b t_b v_b) (u : TimeVelocity d -> Real)
+include hr_b hr_s hsub
+
 /-- A nested small-box discrepancy is controlled by the normalized residual
 on the containing large box with the exact parabolic radius factor. -/
 theorem parabolicMorreyNestedProjection_discrepancy_le_largeResidual
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) {r_b : Real} (hr_b : 0 < r_b)
-    (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
-    (hsub : parabolicBox 1 r_s t_s v_s ⊆ parabolicBox 1 r_b t_b v_b)
-    (u : TimeVelocity d -> Real)
     (hbig : MemLp (fun z => u z - parabolicMorreyBoxAffineProjection t_b v_b r_b u z)
       (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r_b t_b v_b))) :
@@ -378,8 +343,7 @@ theorem parabolicMorreyNestedProjection_discrepancy_le_largeResidual
           (parabolicBox 1 r_b t_b v_b) hbig := by
   let f : TimeVelocity d -> Real := fun z =>
     u z - parabolicMorreyBoxAffineProjection t_b v_b r_b u z
-  have hsmall : MemLp f (parabolicExponent d)
-      (parabolicNormalizedVolumeOn (parabolicBox 1 r_s t_s v_s)) :=
+  have hsmall :=
     memLp_parabolicNormalizedVolumeOn_mono_parabolicBox
       t_b v_b hr_b t_s v_s hr_s hsub hbig
   have hsmallbound :=
@@ -394,7 +358,7 @@ theorem parabolicMorreyNestedProjection_discrepancy_le_largeResidual
         parabolicMorreyBoxVelocitySlope t_b v_b r_b u i| ≤
         (1 + 3 * (d : Real)) *
           parabolicLpMeanNormOn d f (parabolicBox 1 r_s t_s v_s) hsmall := by
-      simpa only [f] using hsmallbound
+      assumption
     _ ≤ (1 + 3 * (d : Real)) *
         ((r_b / r_s) ^ (((d : Real) + 2) / ((d : Real) + 1)) *
           parabolicLpMeanNormOn d f (parabolicBox 1 r_b t_b v_b) hbig) :=
@@ -406,11 +370,7 @@ theorem parabolicMorreyNestedProjection_discrepancy_le_largeResidual
 
 /-- Two nested canonical affine projections differ pointwise by the same
 large-box residual bound on the small forward box. -/
-theorem parabolicMorreyNestedProjection_abs_sub_le_largeResidual
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) {r_b : Real} (hr_b : 0 < r_b)
-    (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
-    (hsub : parabolicBox 1 r_s t_s v_s ⊆ parabolicBox 1 r_b t_b v_b)
-    (u : TimeVelocity d -> Real) (z : TimeVelocity d)
+theorem parabolicMorreyNestedProjection_abs_sub_le_largeResidual (z : TimeVelocity d)
     (hz : z ∈ parabolicBox 1 r_s t_s v_s)
     (hbig : MemLp (fun w => u w - parabolicMorreyBoxAffineProjection t_b v_b r_b u w)
       (parabolicExponent d)
@@ -426,5 +386,7 @@ theorem parabolicMorreyNestedProjection_abs_sub_le_largeResidual
     t_b v_b r_b t_s v_s hr_s u z hz).trans
       (parabolicMorreyNestedProjection_discrepancy_le_largeResidual
         t_b v_b hr_b t_s v_s hr_s hsub u hbig)
+
+end
 
 end HypoellipticAleksandrov.Parabolic

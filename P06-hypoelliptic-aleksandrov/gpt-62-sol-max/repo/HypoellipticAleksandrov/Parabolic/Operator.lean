@@ -17,18 +17,22 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
+section
+variable {d : ℕ} (A : CoefficientField d) (u : TimeVelocity d → ℝ) (z : TimeVelocity d)
+include d A u z
+
 /-- The forward parabolic operator `∂ₜ u - A : Dᵥ² u`. -/
-def parabolicOperator {d : ℕ} (A : CoefficientField d)
-    (u : TimeVelocity d → ℝ) (z : TimeVelocity d) : ℝ :=
+def parabolicOperator : ℝ :=
   timeDerivative u z - matrixContraction (coefficientAt A z) (velocityHessian u z)
 
 /-- Evaluation of the forward parabolic operator. -/
 @[simp]
-theorem parabolicOperator_apply {d : ℕ} (A : CoefficientField d)
-    (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+theorem parabolicOperator_apply :
     parabolicOperator A u z =
       timeDerivative u z - matrixContraction (coefficientAt A z) (velocityHessian u z) :=
   rfl
+
+end
 
 /-- A function is a subsolution when the forward operator is bounded by its source on a set. -/
 def IsParabolicSubsolutionOn {d : ℕ} (A : CoefficientField d)

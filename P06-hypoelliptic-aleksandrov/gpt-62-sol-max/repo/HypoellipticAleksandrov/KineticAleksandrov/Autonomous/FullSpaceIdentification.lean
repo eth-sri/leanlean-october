@@ -32,58 +32,30 @@ abbrev FullSpaceEvolution :=
   TerminalOperatorFamily autonomousWholeDomain (fun _ => 0) ×
     MovingFiberKernel autonomousWholeDomain (fun _ => 0)
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+include lam Lam A
+
 /-- The autonomous realization, with the physical position and velocity correctly exchanged. -/
-def IsFullSpaceEvolution {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+def IsFullSpaceEvolution
     (E : FullSpaceEvolution) : Prop :=
   RealizesTerminalEvolution autonomousWholeDomain (fun _ => 0) autonomousWholeDomain_measurable
     (evolutionCoefficient A.a) (identityDrift 1) E.1 E.2
 
-/-- The autonomous full-space evolution is supplied by the full-coefficient existence theorem. -/
-theorem autonomous_fullspace_instance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) :
-    ∃ E : FullSpaceEvolution, IsFullSpaceEvolution A E := by
-  obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, -, -⟩ :=
-    exists_terminalEvolution_of_classical hLE hH 1 (by omega) lam Lam 1 1
-      hlam hLam one_pos le_rfl autonomousWholeDomain (fun _ => 0)
-      (evolutionCoefficient A.a) (identityDrift 1) autonomousWholeDomain_admissible
-      (zeroCurve_piecewiseC1 1) (evolutionCoefficient_smooth A)
-      (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
-      (identityDrift_smooth 1) (identityDrift_bounds 1).1 (identityDrift_bounds 1).2
-  exact ⟨(S, K), hc, hi, he, hcomp⟩
-
-/-- Uniqueness holds for every realizing pair, rather than for a selected construction. -/
-theorem fullSpaceEvolution_unique {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (E E' : FullSpaceEvolution)
-    (hE : IsFullSpaceEvolution A E) (hE' : IsFullSpaceEvolution A E') : E = E' := by
-  obtain ⟨hS, hK⟩ := terminalEvolution_unique autonomousWholeDomain (fun _ => 0)
-    autonomousWholeDomain_admissible (evolutionCoefficient A.a) (identityDrift 1)
-    E.1 E'.1 E.2 E'.2 hE hE'
-  exact Prod.ext hS hK
-
 /-- Existence and uniqueness precede the definition of a canonical full-space family. -/
-theorem existsUnique_fullSpaceEvolution
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) :
-    ∃! E : FullSpaceEvolution, IsFullSpaceEvolution A E := by
-  obtain ⟨E, hE⟩ := autonomous_fullspace_instance hH hLE hlam hLam A
-  exact ⟨E, hE, fun E' hE' => fullSpaceEvolution_unique A E' E hE' hE⟩
+theorem existsUnique_fullSpaceEvolution :
+    ∃! E : FullSpaceEvolution, IsFullSpaceEvolution A E := 
+  (autonomous_terminalEvolution A autonomousWholeDomain_admissible).existsUnique_realization
 
 /-- The canonical pair is chosen solely from its proved unique characterization. -/
-def fullSpaceEvolution
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) : FullSpaceEvolution :=
-  (existsUnique_fullSpaceEvolution hH hLE hlam hLam A).exists.choose
+def fullSpaceEvolution : FullSpaceEvolution :=
+  (existsUnique_fullSpaceEvolution A).exists.choose
 
 /-- The canonical pair realizes precisely the autonomous operator on the whole space. -/
-theorem fullSpaceEvolution_spec
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) :
-    IsFullSpaceEvolution A (fullSpaceEvolution hH hLE hlam hLam A) :=
-  (existsUnique_fullSpaceEvolution hH hLE hlam hLam A).exists.choose_spec
+theorem fullSpaceEvolution_spec :
+    IsFullSpaceEvolution A (fullSpaceEvolution A) :=
+  (existsUnique_fullSpaceEvolution A).exists.choose_spec
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

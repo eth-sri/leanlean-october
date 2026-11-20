@@ -24,8 +24,12 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped ENNReal
 
+section
+variable {d : ℕ} {M : ℝ} (hM : 0 < M)
+include hM
+
 /-- The exact product-volume normalization of the slope--intercept wedge. -/
-theorem volume_slopeInterceptWedge {d : ℕ} {M : ℝ} (hM : 0 < M) :
+theorem volume_slopeInterceptWedge :
     volume (slopeInterceptWedge d M) =
       ENNReal.ofReal (M / 4) *
         (ENNReal.ofReal ((M / 4) ^ d) *
@@ -37,7 +41,7 @@ theorem volume_slopeInterceptWedge {d : ℕ} {M : ℝ} (hM : 0 < M) :
     PDE.volume_euclideanBall_eq_unit_mul_of_pos (0 : PDE.Vec d) hM4]
 
 /-- The wedge volume with its time and velocity scaling combined into one power. -/
-theorem volume_slopeInterceptWedge_eq {d : ℕ} {M : ℝ} (hM : 0 < M) :
+theorem volume_slopeInterceptWedge_eq :
     volume (slopeInterceptWedge d M) =
       ENNReal.ofReal ((M / 4) ^ (d + 1)) *
         volume (PDE.euclideanBall (0 : PDE.Vec d) 1) := by
@@ -57,6 +61,8 @@ theorem volume_slopeInterceptWedge_eq {d : ℕ} {M : ℝ} (hM : 0 < M) :
       congr 2
       rw [pow_succ]
       ring
+
+end
 
 /-- The one-sided area formula for the actual parabolic normal map on its sign set.
 

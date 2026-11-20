@@ -24,37 +24,40 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped MatrixOrder Topology
 
+section
+variable {d : ℕ} (v0 : PDE.Vec d)
+include v0
+
 /-- The affine map from the unit cylinder to the local ABP cylinder centered
 at `v0`. -/
-def localABPAffine {d : ℕ} (v0 : PDE.Vec d) : TimeVelocity d → TimeVelocity d :=
+def localABPAffine : TimeVelocity d → TimeVelocity d :=
   parabolicAffine (3 / 4) v0 (1 / 2)
 
 /-- The open inner cylinder `(3/4, 1) × B_(1/2)(v0)`, presented as the affine
 image of the reference parabolic interior. -/
-def localABPInterior {d : ℕ} (v0 : PDE.Vec d) : Set (TimeVelocity d) :=
+def localABPInterior : Set (TimeVelocity d) :=
   localABPAffine v0 '' parabolicInterior 1 0
 
 /-- The compact closure of the local inner ABP cylinder. -/
-def localABPClosure {d : ℕ} (v0 : PDE.Vec d) : Set (TimeVelocity d) :=
+def localABPClosure : Set (TimeVelocity d) :=
   localABPAffine v0 '' closedParabolicCylinder 1 0
 
 /-- The initial-plus-lateral, but not terminal, boundary of the local ABP
 cylinder. -/
-def localABPForwardBoundary {d : ℕ} (v0 : PDE.Vec d) : Set (TimeVelocity d) :=
+def localABPForwardBoundary : Set (TimeVelocity d) :=
   localABPAffine v0 '' forwardParabolicBoundary 1 0
 
 /-- The local ABP closure is compact. -/
-theorem isCompact_localABPClosure {d : ℕ} (v0 : PDE.Vec d) :
+theorem isCompact_localABPClosure :
     IsCompact (localABPClosure v0) := by
-  unfold localABPClosure localABPAffine
   exact (isCompact_closedParabolicCylinder 1 0).image
     (contDiff_parabolicAffine (3 / 4) v0 (1 / 2)).continuous
 
 /-- The local ABP interior is contained in its compact closure. -/
-theorem localABPInterior_subset_closure {d : ℕ} (v0 : PDE.Vec d) :
-    localABPInterior v0 ⊆ localABPClosure v0 := by
-  unfold localABPInterior localABPClosure
-  exact Set.image_mono (parabolicInterior_subset_closedParabolicCylinder 1 0)
+theorem localABPInterior_subset_closure :
+    localABPInterior v0 ⊆ localABPClosure v0 := Set.image_mono (parabolicInterior_subset_closedParabolicCylinder 1 0)
+
+end
 
 private theorem forwardParabolicBoundary_subset_closedParabolicCylinder_one
     {d : ℕ} :
@@ -77,14 +80,15 @@ private theorem forwardParabolicBoundary_subset_closedParabolicCylinder_one
         change PDE.euclideanSqDist v (0 : PDE.Vec d) = 1 ^ 2 at hsphere
         exact hsphere.le⟩
 
+section
+variable {d : ℕ} (v0 : PDE.Vec d)
+
 /-- The local forward boundary is contained in the compact local ABP closure. -/
-theorem localABPForwardBoundary_subset_closure {d : ℕ} (v0 : PDE.Vec d) :
-    localABPForwardBoundary v0 ⊆ localABPClosure v0 := by
-  unfold localABPForwardBoundary localABPClosure
-  exact Set.image_mono forwardParabolicBoundary_subset_closedParabolicCylinder_one
+theorem localABPForwardBoundary_subset_closure :
+    localABPForwardBoundary v0 ⊆ localABPClosure v0 := Set.image_mono forwardParabolicBoundary_subset_closedParabolicCylinder_one
 
 /-- The terminal centre is in the local ABP closure. -/
-theorem localABPTarget_mem_closure {d : ℕ} (v0 : PDE.Vec d) :
+theorem localABPTarget_mem_closure :
     (1, v0) ∈ localABPClosure v0 := by
   refine ⟨(1, 0), ?_, ?_⟩
   · exact mem_closedParabolicCylinder_iff.mpr ⟨by norm_num, by norm_num, by
@@ -95,12 +99,14 @@ theorem localABPTarget_mem_closure {d : ℕ} (v0 : PDE.Vec d) :
     · norm_num [div_pow]
     · simp
 
-private theorem localABPAffine_referenceTarget {d : ℕ} (v0 : PDE.Vec d) :
+private theorem localABPAffine_referenceTarget :
     localABPAffine v0 (1, 0) = (1, v0) := by
   simp only [localABPAffine, parabolicAffine]
   ext
   · norm_num [div_pow]
   · simp
+
+end
 
 private theorem referenceTarget_mem_closedParabolicCylinder {d : ℕ} :
     (1, 0) ∈ closedParabolicCylinder 1 (0 : PDE.Vec d) := by
@@ -115,7 +121,7 @@ private theorem eventualEq_nhds_of_eventualEq_nhdsSet {α : Type*}
 
 /-- Common proof of the local ABP consequences with ellipticity on the compact
 cylinder actually used by the cutoff-and-pullback construction. -/
-private theorem exists_local_abp_inner_cylinder_core
+theorem exists_local_abp_inner_cylinder_core
     (d : ℕ) (hd : 0 < d) (lam : ℝ) (hlam : 0 < lam) :
     ∃ C : ℝ, 0 < C ∧
       ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
@@ -206,7 +212,6 @@ private theorem exists_local_abp_inner_cylinder_core
   let Bhat : CoefficientField d := pullbackCoefficient Bbar (3 / 4) v0 (1 / 2)
   let uhat : TimeVelocity d → ℝ := pullbackScalar g (3 / 4) v0 (1 / 2)
   let fhat : TimeVelocity d → ℝ := fun z => (1 / 2 : ℝ) ^ 2 * G (a z)
-  have ha : a = parabolicAffine (3 / 4) v0 (1 / 2) := rfl
   have haCont : Continuous a := by
     dsimp only [a, localABPAffine]
     exact (contDiff_parabolicAffine (3 / 4) v0 (1 / 2)).continuous
@@ -328,32 +333,5 @@ private theorem exists_local_abp_inner_cylinder_core
               (localABPInterior v0) := by
       dsimp only [H, exponentialTimeWeight]
       ring
-
-/-- The local ABP consequence requiring lower ellipticity only on the compact
-local cylinder used by its cutoff-and-pullback proof. -/
-theorem exists_local_abp_inner_cylinder_of_lower_ellipticity_on_closure
-    (d : ℕ) (hd : 0 < d) (lam : ℝ) (hlam : 0 < lam) :
-    ∃ C : ℝ, 0 < C ∧
-      ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
-        (w F : TimeVelocity d → ℝ) (v0 : PDE.Vec d) (rho : ℝ),
-        IsOpen U →
-        localABPClosure v0 ⊆ U →
-        IsContinuousCoefficientOn B U →
-        ContDiffOn ℝ 2 w U →
-        ContinuousOn F U →
-        HasLowerEllipticityOn lam B (localABPClosure v0) →
-        IsNonnegativeOn F (localABPInterior v0) →
-        (∀ z ∈ localABPInterior v0,
-          parabolicOperator B w z + rho * w z ≤ F z) →
-        (∀ z ∈ localABPForwardBoundary v0, w z ≤ 0) →
-        w (1, v0) ≤
-          C * (1 / 2 : ℝ) ^ ((d : ℝ) / ((d : ℝ) + 1)) *
-            Real.exp (-rho / 4) *
-              parabolicLpNormOn d
-                (fun z => Real.exp (rho * (z.1 - 3 / 4)) * F z)
-                (localABPInterior v0) := by
-  obtain ⟨C, hC, hcore⟩ :=
-    exists_local_abp_inner_cylinder_core d hd lam hlam
-  exact ⟨C, hC, hcore⟩
 
 end HypoellipticAleksandrov.Parabolic

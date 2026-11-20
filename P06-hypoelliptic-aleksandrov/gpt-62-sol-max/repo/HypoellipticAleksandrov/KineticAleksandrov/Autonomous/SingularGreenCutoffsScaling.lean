@@ -18,13 +18,17 @@ open HypoellipticAleksandrov.Parabolic
 /-- Rescale a scalar cutoff by its physical radius. -/
 def scaledScalarCutoff (chi : ℝ → ℝ) (R : ℝ) : ℝ → ℝ := fun s => chi (s/R)
 
+section
+variable (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
+include hchi
+
 /-- Scalar rescaling preserves C² regularity. -/
-theorem scaledScalarCutoff_contDiff (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
+theorem scaledScalarCutoff_contDiff
     (R : ℝ) : ContDiff ℝ 2 (scaledScalarCutoff chi R) :=
   hchi.comp (contDiff_id.div_const R)
 
 /-- The first derivative has the exact inverse-radius factor. -/
-theorem scaledScalarCutoff_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
+theorem scaledScalarCutoff_deriv
     (R s : ℝ) :
     deriv (scaledScalarCutoff chi R) s = deriv chi (s/R)/R := by
   have hc := (hchi.differentiable (by norm_num) (s/R)).hasDerivAt
@@ -33,7 +37,7 @@ theorem scaledScalarCutoff_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
   simpa only [id_eq, one_div, div_eq_mul_inv, one_mul] using (hc.comp s hs).deriv
 
 /-- The second derivative has the exact inverse-square radius factor. -/
-theorem scaledScalarCutoff_second_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
+theorem scaledScalarCutoff_second_deriv
     {R : ℝ} (hR : R ≠ 0) (s : ℝ) :
     deriv (deriv (scaledScalarCutoff chi R)) s = deriv (deriv chi) (s/R)/R^2 := by
   have he : deriv (scaledScalarCutoff chi R) = fun t => deriv chi (t/R)/R := by
@@ -49,10 +53,12 @@ theorem scaledScalarCutoff_second_deriv (chi : ℝ → ℝ) (hchi : ContDiff ℝ
   field_simp
 
 /-- Uniform first-derivative bounds acquire one inverse-radius factor. -/
-theorem scaledScalarCutoff_deriv_bound (chi : ℝ → ℝ) (hchi : ContDiff ℝ 2 chi)
+theorem scaledScalarCutoff_deriv_bound
     {R : ℝ} (hR : 0 < R) (C : ℝ) (hC : ∀ s, |deriv chi s| ≤ C) (s : ℝ) :
     |deriv (scaledScalarCutoff chi R) s| ≤ C/R := by
   rw [scaledScalarCutoff_deriv chi hchi, abs_div, abs_of_pos hR]
   exact div_le_div_of_nonneg_right (hC _) hR.le
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

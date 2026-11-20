@@ -11,11 +11,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval)
+
 /-- The quadratic barrier controls total Green mass even at the infinite horizon. -/
-theorem stripGreenOfRealization_infinite_quadratic_mass
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+theorem stripGreenOfRealization_infinite_quadratic_mass (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (e : StripPole H ⊤) :
     stripGreenOfKernel H E.2 ⊤ e univ ≤
       ENNReal.ofReal ((e.1.velocity 0 - H.lo) * (H.hi - e.1.velocity 0) / (2 * lam)) := by
@@ -49,20 +49,19 @@ theorem stripGreenOfRealization_infinite_quadratic_mass
   have hm := congrArg (fun μ : Measure Point => μ univ) hh
   rw [Measure.restrict_apply MeasurableSet.univ, univ_inter] at hm
   rw [← hm]
-  exact stripGreenOfRealization_quadratic_mass hH hlam hLam A H E hE (T n) (pole n)
+  exact stripGreenOfRealization_quadratic_mass A H E hE (T n) (pole n)
 
 /-- The canonical Green measure has the exact quadratic bound at every admitted horizon. -/
-theorem stripGreen_quadratic_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
+theorem stripGreen_quadratic_mass (T : WithTop ℝ)
     (e : StripPole H T) :
-    stripGreen hH hLE hlam hLam A H T e univ ≤
+    stripGreen A H T e univ ≤
       ENNReal.ofReal ((e.1.velocity 0 - H.lo) * (H.hi - e.1.velocity 0) / (2 * lam)) := by
   cases T with
   | top =>
-    exact stripGreenOfRealization_infinite_quadratic_mass hH hlam hLam A H _
-      (stripEvolution_spec hH hLE hlam hLam A H) e
-  | coe t => exact stripGreen_finite_quadratic_mass hH hLE hlam hLam A H t e
+    exact stripGreenOfRealization_infinite_quadratic_mass A H _
+      (stripEvolution_spec A H) e
+  | coe t => exact stripGreen_finite_quadratic_mass A H t e
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

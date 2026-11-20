@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
+public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 
 /-!
 # Scalar jets of equal point germs
@@ -15,147 +15,62 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter
 open scoped Topology
 noncomputable section
-open TimeVelocityMultiIndex
+open Filter Set
 
-private theorem scalarTimeDerivative_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d)
-    (hu : ContDiffAt ℝ 1 u z) :
-    scalarTimeDerivative u z =
-      coordinateIteratedFDeriv (Pi.single (timeCoord d) 1) u z := by
-  have h := coordinateIteratedFDeriv_add_single_at
-    (0 : TimeVelocityMultiIndex d) (timeCoord d) u z
-      (by simpa [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-        TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order] using hu)
-  simp only [zero_add, timeVelocityBasis_time] at h
-  rw [show coordinateIteratedFDeriv (0 : TimeVelocityMultiIndex d) u = u by
-    funext x; exact coordinateIteratedFDeriv_zero u x] at h
-  rw [h]
-  unfold scalarTimeDerivative
-  have hsF := (hu.differentiableAt (by norm_num)).hasFDerivAt.comp z.1
-    ((hasDerivAt_id z.1).prodMk (hasDerivAt_const z.1 z.2))
-  have hs : HasDerivAt (fun r : ℝ ↦ u (r, z.2))
-      ((fderiv ℝ u z) (1, 0)) z.1 := by
-    convert hsF.hasDerivAt using 1
-    all_goals simp [Function.comp_def]
-  exact hs.deriv
+variable {d : ℕ} {f g : TimeVelocity d → ℝ} {z : TimeVelocity d}
 
-private theorem scalarSpatialGradient_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (j : Fin d)
-    (hu : ContDiffAt ℝ 1 u z) :
-    scalarSpatialGradient u z j =
-      coordinateIteratedFDeriv (Pi.single (velocityCoord j) 1) u z := by
-  have h := coordinateIteratedFDeriv_add_single_at
-    (0 : TimeVelocityMultiIndex d) (velocityCoord j) u z
-      (by simpa [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-        TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order] using hu)
-  simp only [zero_add, timeVelocityBasis_velocity] at h
-  rw [show coordinateIteratedFDeriv (0 : TimeVelocityMultiIndex d) u = u by
-    funext x; exact coordinateIteratedFDeriv_zero u x] at h
-  rw [h, scalarSpatialGradient, PDE.classicalGradient_apply]
-  have hs : HasFDerivAt (fun y : PDE.Vec d ↦ u (z.1, y))
-      ((fderiv ℝ u z).comp (ContinuousLinearMap.inr ℝ ℝ (PDE.Vec d))) z.2 :=
-    (hu.differentiableAt (by norm_num)).hasFDerivAt.comp z.2
-      ((hasFDerivAt_const (x := z.2) z.1).prodMk (hasFDerivAt_id z.2))
-  rw [hs.fderiv]
-  simp
+section
+variable (h : f =ᶠ[nhds z] g)
+include h
 
-private theorem scalarSpatialHessian_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (i j : Fin d)
-    (hu : ContDiffAt ℝ 2 u z) :
-    scalarSpatialHessian u z i j =
-      coordinateIteratedFDeriv
-        (Pi.single (velocityCoord j) 1 + Pi.single (velocityCoord i) 1) u z := by
-  classical
-  let q : TimeVelocity d → ℝ :=
-    coordinateIteratedFDeriv (Pi.single (velocityCoord j) 1) u
-  have hq : ContDiffAt ℝ 1 q z := by
-    have hr : ContDiffAt ℝ 1
-        (fun x ↦ (fderiv ℝ u x) (timeVelocityBasis (velocityCoord j))) z :=
-      (hu.fderiv_right (m := 1) (by norm_num)).clm_apply contDiffAt_const
-    apply hr.congr_of_eventuallyEq
-    filter_upwards [hu.eventually (by simp)] with x hx
-    have hadd := coordinateIteratedFDeriv_add_single_at
-      (0 : TimeVelocityMultiIndex d) (velocityCoord j) u x
-      (by simpa [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-        TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order] using hx.of_le (by norm_num))
-    rw [show coordinateIteratedFDeriv (0 : TimeVelocityMultiIndex d) u = u by
-      funext y; exact coordinateIteratedFDeriv_zero u y] at hadd
-    simpa [q] using hadd
-  have hgradient : (fun x : TimeVelocity d ↦ scalarSpatialGradient u x j) =ᶠ[nhds z] q := by
-    filter_upwards [hu.eventually (by simp)] with x hx
-    exact scalarSpatialGradient_eq_coordinate_open_local u x j (hx.of_le (by norm_num))
-  have hgradientDiff : DifferentiableAt ℝ
-      (fun x : TimeVelocity d ↦ scalarSpatialGradient u x j) z :=
-    hgradient.differentiableAt_iff.mpr (hq.differentiableAt (by norm_num))
-  have hslice : ContDiffAt ℝ 2 (fun y : PDE.Vec d ↦ u (z.1, y)) z.2 :=
-    hu.comp z.2 (contDiffAt_const.prodMk contDiffAt_id)
-  have hgradientApply :
-      (fderiv ℝ (fun y : PDE.Vec d ↦
-          PDE.classicalGradient (fun w : PDE.Vec d ↦ u (z.1, w)) y j) z.2)
-          (PDE.basisVec i) =
-        (fderiv ℝ (fun y : PDE.Vec d ↦
-          PDE.classicalGradient (fun w : PDE.Vec d ↦ u (z.1, w)) y) z.2
-          (PDE.basisVec i)) j := by
-    have hgrad : DifferentiableAt ℝ
-        (fun y ↦ PDE.classicalGradient (fun w : PDE.Vec d ↦ u (z.1, w)) y) z.2 := by
-      apply differentiableAt_pi.2
-      intro k
-      have hd : DifferentiableAt ℝ
-          (fderiv ℝ (fun w : PDE.Vec d ↦ u (z.1, w))) z.2 :=
-        (hslice.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-      exact hd.clm_apply (differentiableAt_const (c := PDE.basisVec k))
-    rw [fderiv_pi (fun k ↦ (differentiableAt_pi.mp hgrad) k)]
-    simp
-  have hcomp :
-      fderiv ℝ (fun y : PDE.Vec d ↦ scalarSpatialGradient u (z.1, y) j) z.2 =
-        (fderiv ℝ (fun x : TimeVelocity d ↦ scalarSpatialGradient u x j) z).comp
-          (ContinuousLinearMap.inr ℝ ℝ (PDE.Vec d)) := by
-    change fderiv ℝ ((fun x : TimeVelocity d ↦ scalarSpatialGradient u x j) ∘
-      fun y : PDE.Vec d ↦ (z.1, y)) z.2 = _
-    rw [fderiv_comp z.2 hgradientDiff
-      ((differentiableAt_const (c := z.1)).prodMk differentiableAt_id)]
-    congr 1
-    exact ((hasFDerivAt_const (x := z.2) z.1).prodMk (hasFDerivAt_id z.2)).fderiv
-  have hsucc := coordinateIteratedFDeriv_add_single_at
-    (Pi.single (velocityCoord j) 1) (velocityCoord i) u z (by
-      convert hu using 1 <;>
-        norm_num [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-        TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-        TimeVelocityMultiIndex.velocity, velocityCoord, timeCoord, Pi.single_apply])
-  change (fderiv ℝ (fun y : PDE.Vec d ↦
-      PDE.classicalGradient (fun w : PDE.Vec d ↦ u (z.1, w)) y) z.2
-      (PDE.basisVec i)) j = _
-  rw [← hgradientApply]
-  change (fderiv ℝ (fun y : PDE.Vec d ↦
-    scalarSpatialGradient u (z.1, y) j) z.2) (PDE.basisVec i) = _
-  rw [hcomp, hgradient.fderiv_eq]
-  simpa [q] using hsucc.symm
+private theorem timeSlice_congr :
+    (fun r => f (r, z.2)) =ᶠ[nhds z.1] (fun r => g (r, z.2)) :=
+  h.comp_tendsto ((continuous_id.prodMk continuous_const).tendsto z.1)
 
-/-- Two ambient `C²` germs that agree near a point have the same scalar time,
-gradient, and ordered Hessian jets at that point. -/
-theorem scalarJet_eqAt_of_eventuallyEq
-    {d : ℕ} {f g : TimeVelocity d → ℝ} {z : TimeVelocity d}
-    (hf : ContDiffAt ℝ 2 f z) (hg : ContDiffAt ℝ 2 g z)
-    (hfg : f =ᶠ[nhds z] g) :
+private theorem spaceSlice_congr :
+    (fun y => f (z.1, y)) =ᶠ[nhds z.2] (fun y => g (z.1, y)) :=
+  h.comp_tendsto ((continuous_const.prodMk continuous_id).tendsto z.2)
+
+/-- Functions with the same germ have identical scalar parabolic jets at the point. -/
+theorem scalarJet_eqAt_of_eventuallyEq :
     scalarTimeDerivative f z = scalarTimeDerivative g z ∧
     scalarSpatialGradient f z = scalarSpatialGradient g z ∧
     scalarSpatialHessian f z = scalarSpatialHessian g z := by
-  constructor
-  · rw [scalarTimeDerivative_eq_coordinate_open_local f z (hf.of_le (by norm_num)),
-      scalarTimeDerivative_eq_coordinate_open_local g z (hg.of_le (by norm_num))]
-    exact coordinateIteratedFDeriv_congr_of_eventuallyEq
-      (Pi.single (timeCoord d) 1) hfg
-  constructor
-  · funext j
-    rw [scalarSpatialGradient_eq_coordinate_open_local f z j (hf.of_le (by norm_num)),
-      scalarSpatialGradient_eq_coordinate_open_local g z j (hg.of_le (by norm_num))]
-    exact coordinateIteratedFDeriv_congr_of_eventuallyEq
-      (Pi.single (velocityCoord j) 1) hfg
-  · funext i j
-    rw [scalarSpatialHessian_eq_coordinate_open_local f z i j hf,
-      scalarSpatialHessian_eq_coordinate_open_local g z i j hg]
-    exact coordinateIteratedFDeriv_congr_of_eventuallyEq
-      (Pi.single (velocityCoord j) 1 + Pi.single (velocityCoord i) 1) hfg
+  have hs := spaceSlice_congr h
+  have hg : PDE.classicalGradient (fun y => f (z.1, y)) =ᶠ[nhds z.2]
+      PDE.classicalGradient (fun y => g (z.1, y)) := by
+    filter_upwards [hs.fderiv (𝕜 := ℝ)] with y hy
+    funext i
+    simp only [PDE.classicalGradient_apply, hy]
+  refine ⟨(timeSlice_congr h).deriv_eq, hg.eq_of_nhds, ?_⟩
+  unfold scalarSpatialHessian
+  rw [hg.fderiv_eq (𝕜 := ℝ)]
+
+end
+
+variable {s : Set (TimeVelocity d)}
+
+/-- Equality on an open set implies equality of the three jet fields there. -/
+theorem scalarJet_eqOn_of_eqOn_open (hs : IsOpen s) (h : EqOn f g s) :
+    EqOn (scalarTimeDerivative f) (scalarTimeDerivative g) s ∧
+    EqOn (scalarSpatialGradient f) (scalarSpatialGradient g) s ∧
+    EqOn (scalarSpatialHessian f) (scalarSpatialHessian g) s := by
+  have eqJet (x : TimeVelocity d) (hx : x ∈ s) :=
+    scalarJet_eqAt_of_eventuallyEq (h.eventuallyEq_of_mem (hs.mem_nhds hx))
+  exact ⟨fun x hx => (eqJet x hx).1, fun x hx => (eqJet x hx).2.1, fun x hx => (eqJet x hx).2.2⟩
+
+/-- `C¹,²` regularity on an open set is invariant under equality there. -/
+theorem IsScalarC12On.congr (hg : IsScalarC12On g s) (hs : IsOpen s) (h : EqOn f g s) :
+    IsScalarC12On f s := by
+  obtain ⟨ht, hgrad, hh⟩ := scalarJet_eqOn_of_eqOn_open hs h
+  refine ⟨hg.continuousOn.congr h, ?_, ?_, hg.continuousOn_scalarTimeDerivative.congr ht,
+    hg.continuousOn_scalarSpatialGradient.congr hgrad, hg.continuousOn_scalarSpatialHessian.congr hh⟩
+  · intro x hx
+    exact (hg.timeSlice_differentiableAt hx).congr_of_eventuallyEq
+      (timeSlice_congr (h.eventuallyEq_of_mem (hs.mem_nhds hx)))
+  · intro x hx
+    exact (hg.spatialSlice_contDiffAt hx).congr_of_eventuallyEq
+      (spaceSlice_congr (h.eventuallyEq_of_mem (hs.mem_nhds hx)))
 
 end
 end HypoellipticAleksandrov.Parabolic

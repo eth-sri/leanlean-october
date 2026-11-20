@@ -25,16 +25,16 @@ theorem contDiff_spatialPackedBarrier (d : ℕ) (mu R t : ℝ) :
     (contDiff_const (c := Real.exp (-mu * t))).mul ((contDiff_const (c := (2 : ℝ))).sub
       ((PDE.contDiff_vecNormSq.comp (spatialCoordinateCLE d).contDiff.snd).div_const (R ^ 2)))
 
+section
+variable (hflat : ∀ {d : ℕ}, 1 ≤ d → ∀ {alpha : ℝ}, 0 < alpha → alpha < 1 → ∀ h : CounterProfileStatement d alpha, ∀ r : ℝ, 0 < r → FlatProfileSourceStatement h r)
+  {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+  (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) {D : Set (PDE.Vec (d + d))}
+  (hD : PDE.IsOpenBoundedConvexDomain D) (mu R t : ℝ)
+include hflat hd alpha ha ha1 h r hr D hD mu R t
+
 /-- The first weak chain rule for the actual cutoff profile. All regularity of the
 flattened profile is discharged by the complete published upstream source theorem. -/
-theorem weakGradient_timeCutoffProfile_of_flatProfile_source
-    (hflat : ∀ {d : ℕ}, 1 ≤ d → ∀ {alpha : ℝ}, 0 < alpha → alpha < 1 →
-      ∀ h : CounterProfileStatement d alpha, ∀ r : ℝ, 0 < r →
-        FlatProfileSourceStatement h r)
-    {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
-    {D : Set (PDE.Vec (d + d))} (hD : PDE.IsOpenBoundedConvexDomain D)
-    (mu R t : ℝ) :
+theorem weakGradient_timeCutoffProfile_of_flatProfile_source :
     PDE.HasWeakGradientOn D
       (fun x => timeCutoffTheta
         (selectedFlatProfile h r (spatialCoordinateCLE d x) - spatialPackedBarrier d mu R t x))
@@ -52,14 +52,7 @@ theorem weakGradient_timeCutoffProfile_of_flatProfile_source
 
 /-- The actual velocity Hessian chain rule for the cutoff profile, proved using the
 same first and second upstream weak representatives and the smooth barrier. -/
-theorem weakSecond_timeCutoffProfile_of_flatProfile_source
-    (hflat : ∀ {d : ℕ}, 1 ≤ d → ∀ {alpha : ℝ}, 0 < alpha → alpha < 1 →
-      ∀ h : CounterProfileStatement d alpha, ∀ r : ℝ, 0 < r →
-        FlatProfileSourceStatement h r)
-    {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
-    {D : Set (PDE.Vec (d + d))} (hD : PDE.IsOpenBoundedConvexDomain D)
-    (mu R t : ℝ) (i k : Fin d) :
+theorem weakSecond_timeCutoffProfile_of_flatProfile_source (i k : Fin d) :
     let u := fun x => selectedFlatProfile h r (spatialCoordinateCLE d x)
     let B := spatialPackedBarrier d mu R t
     let gv := fun x j => flatProfileVelocityJet h r (spatialCoordinateCLE d x) j -
@@ -86,5 +79,7 @@ theorem weakSecond_timeCutoffProfile_of_flatProfile_source
     _ hm hw timeCutoffTheta (contDiff_timeCutoffTheta.of_le (by simp)) M hM.le hb
   simpa only [u, flatProfileW1p_of_flatProfile_source, spatialPackedGradient,
     Fin.addCases_right] using! he
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -70,7 +70,6 @@ theorem position_displacement_le_kinetic_power {d : ℕ} {P Q : KineticPoint d}
 
 /-- Parabolic and spatial moduli give an oscillation-normalized kinetic estimate. -/
 theorem normalized_holder_from_slice_jets
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (K : ℝ) (hK : 0 ≤ K) :
     ∃ C α : ℝ, 0 < C ∧ 0 < α ∧ α < 1 ∧
@@ -90,7 +89,7 @@ theorem normalized_holder_from_slice_jets
           (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1) *
           kineticIncrement (⟨0, 0, 0⟩ : KineticPoint d) P Q ^ α := by
   obtain ⟨Cp, α, hCp, hα, hα1, hpar⟩ :=
-    parabolic_holder_of_bounded_source hLE d hd lam Lam hlam hLam
+    parabolic_holder_of_bounded_source d hd lam Lam hlam hLam
   refine ⟨Cp * (1 + K) + K, α, by positivity, hα, hα1, ?_⟩
   intro A hA hs hlo hhi u hc hu he hdx P hP Q hQ
   let Z : KineticPoint d := ⟨0, 0, 0⟩

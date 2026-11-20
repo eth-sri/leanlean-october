@@ -15,22 +15,23 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
 open Filter Asymptotics
 
+section
+variable (a : ℝ) (b : Pos) (N : ℕ) (X : ℝ) (hX : 0 < X)
+include hX
+
 /-- The first derivative of the literal negative-axis expansion error. -/
-theorem hasDerivAt_M_negative_remainder (a : ℝ) (b : Pos) (N : ℕ)
-    (X : ℝ) (hX : 0 < X) :
+theorem hasDerivAt_M_negative_remainder :
     HasDerivAt (fun Y => M a b (-Y) - mExpansion a b.1 N Y)
       (-(a / b.1) *
         (M (a + 1) (next b) (-X) - mExpansion (a + 1) (next b).1 N X)) X := by
   have hM := (hasDerivAt_M a b (-X)).comp X (hasDerivAt_id X).neg
-  have hE := hasDerivAt_mExpansion a b N X hX
-  convert hM.sub hE using 1
+  convert hM.sub (hasDerivAt_mExpansion a b N X hX) using 1
   · rfl
   · rw [show (next b).1 = b.1 + 1 from rfl]
     ring
 
 /-- The second derivative of the literal negative-axis expansion error. -/
-theorem deriv2_M_negative_remainder (a : ℝ) (b : Pos) (N : ℕ)
-    (X : ℝ) (hX : 0 < X) :
+theorem deriv2_M_negative_remainder :
     deriv (deriv (fun Y => M a b (-Y) - mExpansion a b.1 N Y)) X =
       (-(a / b.1) * -((a + 1) / (next b).1)) *
         (M (a + 1 + 1) (next (next b)) (-X) -
@@ -44,6 +45,8 @@ theorem deriv2_M_negative_remainder (a : ℝ) (b : Pos) (N : ℕ)
     exact (hasDerivAt_M_negative_remainder a b N Y hY).deriv
   rw [(hd.congr_of_eventuallyEq he).deriv]
   ring
+
+end
 
 /-- The expansion error and its first two ordinary derivative jets have exact algebraic orders. -/
 theorem M_negative_expansion_jet (a : ℝ) (b : Pos)
@@ -81,8 +84,7 @@ theorem M_negative_expansion_jet (a : ℝ) (b : Pos)
       |>.const_mul_left (-(a / b.1) * -((a + 1) / (next b).1))
     apply h.congr'
     · filter_upwards [eventually_gt_atTop (0 : ℝ)] with X hX
-      simpa only [jet, Function.iterate_succ_apply, Function.iterate_zero, id_eq] using
-        (deriv2_M_negative_remainder a b N X hX).symm
+      exact id (Eq.symm (deriv2_M_negative_remainder a b N X hX))
     · exact Filter.Eventually.of_forall (fun X => by
         simp only [Nat.cast_ofNat]
         change Real.rpow X (-(a + 1 + 1) - (N : ℝ)) =

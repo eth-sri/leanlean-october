@@ -17,9 +17,7 @@ theorem bellmanRadialHaar_reweight (β : ℝ) :
       bellmanRadialWeight β := by
   have h1 : Measurable (fun s : BellmanPositiveTime => ENNReal.ofReal s.val⁻¹) := by
     fun_prop
-  have h2 : Measurable (fun s : BellmanPositiveTime =>
-      ENNReal.ofReal (s.val ^ (4 - β))) := by fun_prop
-  rw [bellmanRadialHaar, ← withDensity_mul _ h1 h2]
+  rw [bellmanRadialHaar, ← withDensity_mul _ h1 (by fun_prop)]
   unfold bellmanRadialWeight
   congr 1
   funext s
@@ -40,10 +38,13 @@ theorem bellmanRadialDegreeWeight_inv (β : ℝ) (w : BellmanPositiveTime × ℝ
   congr 1
   ring
 
+section
+variable (β : ℝ) (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ)
+  (hd : HasBellmanDensityDegree β μ)
+include hμ hd
+
 /-- The actual homogeneous coordinate measure is s^(3-β) ds times its actual angular measure. -/
-theorem bellmanAngularPullback_factorization (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ)
-    (hd : HasBellmanDensityDegree β μ) :
+theorem bellmanAngularPullback_factorization :
     bellmanAngularPullback μ =
       (bellmanRadialWeight β).prod (bellmanAngularMeasure β μ) := by
   let : IsFiniteMeasureOnCompacts (bellmanAngularMeasure β μ) :=
@@ -68,11 +69,11 @@ theorem bellmanAngularPullback_factorization (β : ℝ)
   exact he
 
 /-- Mapping the proved product representation yields the exact positive-position restriction. -/
-theorem bellmanAngularMeasure_representation (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ)
-    (hd : HasBellmanDensityDegree β μ) :
+theorem bellmanAngularMeasure_representation :
     μ.restrict {q | 0 < q.val.1} = bellmanAngularRep β (bellmanAngularMeasure β μ) := by
   rw [← map_bellmanAngularPullback μ, bellmanAngularPullback_factorization β μ hμ hd]
   rfl
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

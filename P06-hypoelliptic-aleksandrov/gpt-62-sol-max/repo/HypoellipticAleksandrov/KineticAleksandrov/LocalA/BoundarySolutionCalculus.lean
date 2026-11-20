@@ -13,9 +13,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
 open scoped Topology
 
+section
+variable {d : ℕ} (φ : KineticPoint d → ℝ)
+  (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
+include hφ
+
 /-- Smoothness in physical product coordinates gives smoothness in the fixed native packing. -/
-theorem boundary_probe_native_smooth {d : ℕ} (φ : KineticPoint d → ℝ)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm)) :
+theorem boundary_probe_native_smooth :
     ContDiff ℝ (⊤ : ℕ∞) ((φ ∘ sectionTwoPoint) ∘ evolutionHomeomorph d) := by
   have hs : ContDiff ℝ (⊤ : ℕ∞)
       (fun q : ℝ × PDE.Vec d × PDE.Vec d => (q.1, q.2.2, q.2.1)) :=
@@ -23,14 +27,15 @@ theorem boundary_probe_native_smooth {d : ℕ} (φ : KineticPoint d → ℝ)
   exact (hφ.comp hs).comp (evolutionProdCLE d).contDiff
 
 /-- Smooth physical compact probes have globally continuous values. -/
-theorem boundary_probe_continuous {d : ℕ} (φ : KineticPoint d → ℝ)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm)) : Continuous φ := by
+theorem boundary_probe_continuous : Continuous φ := by
   have hc := hφ.continuous.comp (KineticPoint.homeomorphProd d).continuous
   have heq : (φ ∘ (KineticPoint.equivProd d).symm) ∘ KineticPoint.homeomorphProd d = φ := by
     funext P
     rfl
   rw [heq] at hc
   exact hc
+
+end
 
 /-- The compact-support finite-sum API in pointwise form. -/
 theorem boundary_compact_sum {X ι : Type*} [TopologicalSpace X] [Fintype ι]
@@ -43,8 +48,11 @@ theorem boundary_compact_sum {X ι : Type*} [TopologicalSpace X] [Fintype ι]
   rw [heq] at h
   exact h
 
+section
+variable {d : ℕ}
+
 /-- An actual smooth compact probe has a compactly supported native kinetic operator. -/
-theorem boundary_probe_operator_compact {d : ℕ}
+theorem boundary_probe_operator_compact
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     {f : EvolutionVec d → ℝ} (hc : HasCompactSupport f) :
     HasCompactSupport (transportedOperator B b f) := by
@@ -74,7 +82,7 @@ theorem boundary_probe_operator_compact {d : ℕ}
   exact ((hc.fderiv_apply ℝ basisT).add hh).add hz
 
 /-- The physical kinetic operator equals the native operator at the fixed swapped packing. -/
-theorem boundary_probe_operator_native {d : ℕ} (B : CoefficientField d)
+theorem boundary_probe_operator_native (B : CoefficientField d)
     (φ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
     (x : EvolutionVec d) :
@@ -87,7 +95,7 @@ theorem boundary_probe_operator_native {d : ℕ} (B : CoefficientField d)
     ((boundary_probe_native_smooth φ hφ).of_le (by simp)).contDiffAt).symm
 
 /-- Smooth compact physical tests have smooth bounded actual operator data. -/
-theorem boundary_probe_operator_bounded {d : ℕ} {lam Lam : ℝ}
+theorem boundary_probe_operator_bounded {lam Lam : ℝ}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (φ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
@@ -121,5 +129,7 @@ theorem boundary_probe_operator_bounded {d : ℕ} {lam Lam : ℝ}
   intro P
   rw [heq]
   exact (hM _).trans (le_max_left _ _)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -34,8 +34,11 @@ abbrev BorelSmoothEstimate {d : ℕ} (lam Lam p alpha C₀ : ℝ) (localised : B
       C₀ * R ^ alpha * (eLpNorm (borelSource localised u f)
         (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R))).toReal
 
+section
+variable {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ)
+
 /-- Both source variants are nonnegative pointwise. -/
-theorem borelSource_nonneg {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ)
+theorem borelSource_nonneg
     (P : KineticPoint d) : 0 ≤ borelSource localised u f P := by
   cases localised
   · exact le_max_right _ _
@@ -45,7 +48,7 @@ theorem borelSource_nonneg {d : ℕ} (localised : Bool) (u f : KineticPoint d �
     · simp only [borelSource,ite_true,indicator_of_notMem (show P ∉ {z | 0 < u z} from h),le_refl]
 
 /-- A nonnegative additive error changes either source variant by at most that error. -/
-theorem borelSource_error_le {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ)
+theorem borelSource_error_le
     {e : KineticPoint d → ℝ} (P : KineticPoint d) (he : 0 ≤ e P) :
     |borelSource localised u (f + e) P - borelSource localised u f P| ≤ e P := by
   have hscalar : |max (f P + e P) 0 - max (f P) 0| ≤ e P := by
@@ -65,5 +68,7 @@ theorem borelSource_error_le {d : ℕ} (localised : Bool) (u f : KineticPoint d 
         hscalar
     · simp only [borelSource,ite_true,indicator_of_notMem (show P ∉ {z | 0 < u z} from h),
         sub_self,abs_zero,he]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

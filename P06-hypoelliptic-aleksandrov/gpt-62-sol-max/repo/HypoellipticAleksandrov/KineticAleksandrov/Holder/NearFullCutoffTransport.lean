@@ -21,9 +21,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Parabolic Scaling
 
+section
+variable {d : ℕ} {u : KineticPoint d → ℝ} {P : KineticPoint d}
+  (hu : DifferentiableAt ℝ (rawLift u) (rawPoint P))
+include hu
+
 /-- The position slice derivative is the corresponding raw coordinate direction. -/
-theorem fderiv_positionSlice {d : ℕ} {u : KineticPoint d → ℝ} {P : KineticPoint d}
-    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint P)) (w : PDE.Vec d) :
+theorem fderiv_positionSlice (w : PDE.Vec d) :
     fderiv ℝ (fun x => u ⟨P.time, x, P.velocity⟩) P.position w =
       fderiv ℝ (rawLift u) (rawPoint P) (0, (w, 0)) := by
   have hc : HasFDerivAt (fun x : PDE.Vec d => (P.time, (x, P.velocity)))
@@ -38,17 +42,17 @@ theorem fderiv_positionSlice {d : ℕ} {u : KineticPoint d → ℝ} {P : Kinetic
     zero_apply, ContinuousLinearMap.id_apply]
 
 /-- The source time-plus-transport operator is the literal raw directional derivative. -/
-theorem kinetic_transport_eq_fderiv {d : ℕ} {u : KineticPoint d → ℝ}
-    {P : KineticPoint d} (hu : DifferentiableAt ℝ (rawLift u) (rawPoint P)) :
+theorem kinetic_transport_eq_fderiv :
     kineticTimeDerivative u P + PDE.vecDot P.velocity (kineticPositionGradient u P) =
       fderiv ℝ (rawLift u) (rawPoint P) (1, (P.velocity, 0)) := by
   rw [kineticTimeDerivative_eq_fderiv hu, PDE.vecDot_comm]
   change _ + PDE.vecDot
     (PDE.classicalGradient (fun x => u ⟨P.time, x, P.velocity⟩) P.position) P.velocity = _
-  rw [← PDE.fderiv_apply_eq_vecDot_classicalGradient, fderiv_positionSlice hu]
-  rw [← map_add]
+  rw [← PDE.fderiv_apply_eq_vecDot_classicalGradient, fderiv_positionSlice hu, ← map_add]
   congr 1
   ext <;> simp
+
+end
 
 /-- The unit free-transport direction under the inverse physical affine coordinates. -/
 theorem hasDerivAt_inverse_transport {d : ℕ} (P₀ P : KineticPoint d)

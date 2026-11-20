@@ -53,8 +53,12 @@ theorem geometricProfile_homogeneous {d : ℕ} (alpha C₀ sigma R r : ℝ) (hr 
   · simp only [hx, hzero.not.mpr hx, ite_false]
     exact homogeneousAnsatz_dilate alpha r hr _ q.1 q.2
 
+section
+variable {d : ℕ} (alpha C₀ sigma R : ℝ)
+include alpha C₀
+
 /-- The extended profile is positive at every nonzero kinetic point. -/
-theorem geometricProfile_pos {d : ℕ} (alpha C₀ sigma R : ℝ)
+theorem geometricProfile_pos
     (hC₀ : 0 ≤ C₀) (hsigma : 0 < sigma) (hR : 0 < R)
     (q : PDE.Vec d × PDE.Vec d) (hq : q ≠ 0) :
     0 < geometricProfile alpha C₀ sigma R q := by
@@ -68,7 +72,7 @@ theorem geometricProfile_pos {d : ℕ} (alpha C₀ sigma R : ℝ)
     · exact cutoffProfile_pos alpha C₀ sigma R hC₀ hsigma hR _ _
 
 /-- Exterior interpolation cancels all position dependence of the ansatz exactly. -/
-theorem homogeneousAnsatz_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
+theorem homogeneousAnsatz_eq_radial (hR : 0 < R)
     (x v : PDE.Vec d) (hx : x ≠ 0)
     (hout : 2 * R ≤ PDE.vecEuclideanNorm (normalizedVelocity x v)) :
     homogeneousAnsatz alpha (cutoffProfile alpha C₀ sigma R) x v = radialProfile alpha v := by
@@ -86,7 +90,7 @@ theorem homogeneousAnsatz_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0
   rw [he, Real.rpow_zero, one_mul]
 
 /-- The physical outer-region condition forces exact radial agreement. -/
-theorem geometricProfile_eq_radial_of_outer {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
+theorem geometricProfile_eq_radial_of_outer (hR : 0 < R)
     (q : PDE.Vec d × PDE.Vec d)
     (hout : 2 * R * Real.rpow (PDE.vecEuclideanNorm q.1) (1 / 3) ≤
       PDE.vecEuclideanNorm q.2) :
@@ -106,9 +110,12 @@ theorem geometricProfile_eq_radial_of_outer {d : ℕ} (alpha C₀ sigma R : ℝ)
     have hh := (le_div_iff₀ hp).mpr hout
     simpa only [div_eq_mul_inv, mul_comm] using hh
 
+section
+variable (hsigma : 0 < sigma) (hR : 0 < R)
+include hsigma hR
+
 /-- The ansatz of the actual smooth cutoff is smooth at every nonzero position. -/
-theorem contDiffAt_cutoffAnsatz {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) (q : PDE.Vec d × PDE.Vec d) (hx : q.1 ≠ 0) :
+theorem contDiffAt_cutoffAnsatz (q : PDE.Vec d × PDE.Vec d) (hx : q.1 ≠ 0) :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun z : PDE.Vec d × PDE.Vec d =>
         homogeneousAnsatz alpha (cutoffProfile alpha C₀ sigma R) z.1 z.2) q := by
@@ -127,8 +134,7 @@ theorem contDiffAt_cutoffAnsatz {d : ℕ} (alpha C₀ sigma R : ℝ)
     ((contDiff_cutoffProfile alpha C₀ sigma R hsigma hR).contDiffAt.comp q (hy.prodMk he))
 
 /-- The literal extension is smooth everywhere except the joint origin. -/
-theorem geometricProfile_smooth_off_origin {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) :
+theorem geometricProfile_smooth_off_origin :
     ContDiffOn ℝ (⊤ : ℕ∞) (geometricProfile (d := d) alpha C₀ sigma R) ({0}ᶜ) := by
   intro q hq
   apply ContDiffAt.contDiffWithinAt
@@ -158,5 +164,9 @@ theorem geometricProfile_smooth_off_origin {d : ℕ} (alpha C₀ sigma R : ℝ)
   · apply (contDiffAt_cutoffAnsatz alpha C₀ sigma R hsigma hR q hx).congr_of_eventuallyEq
     filter_upwards [continuous_fst.continuousAt.eventually_ne hx] with z hz
     simp only [geometricProfile, ite_eq_right hz]
+
+end
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

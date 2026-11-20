@@ -14,10 +14,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory Filter
 open scoped Topology
 
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha)
+  (ha1 : alpha < 1) (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ) (hs : HasCompactSupport κ)
+include alpha h ha ha1 hκ hs
+
 /-- Position smoothing is C² on the entire physical plane, without a regularity premise. -/
-theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ) (hs : HasCompactSupport κ) :
+theorem positionBarrierConvolution_jet_spec :
     ∀ q0 : ℝ × ℝ,
       ContDiffAt ℝ 2 (positionBarrierConvolution κ phi) q0 ∧
       HasFDerivAt (positionBarrierConvolution κ phi) (∫ Y, barrierConvolutionJet κ phi q0 Y) q0 ∧
@@ -171,11 +174,11 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
     exact (hs2.2.2 q0 hq0).congr_of_eventuallyEq he1
 
 /-- Position smoothing is C² on the entire physical plane, including zero velocity. -/
-theorem positionBarrierConvolution_contDiff {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ) (hs : HasCompactSupport κ) :
+theorem positionBarrierConvolution_contDiff :
     ContDiff ℝ 2 (positionBarrierConvolution κ phi) := by
   rw [contDiff_iff_contDiffAt]
   exact fun q => (positionBarrierConvolution_jet_spec h ha ha1 κ hκ hs q).1
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

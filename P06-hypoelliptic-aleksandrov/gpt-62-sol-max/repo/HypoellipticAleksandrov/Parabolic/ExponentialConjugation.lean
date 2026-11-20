@@ -32,43 +32,51 @@ def exponentialConjugate {d : ℕ} (rho tBase : ℝ)
     (w : TimeVelocity d → ℝ) (z : TimeVelocity d) : ℝ :=
   exponentialTimeWeight rho tBase z * w z
 
+section
+variable {d : ℕ} (rho tBase : ℝ)
+include rho tBase
+
 /-- Evaluation of the exponential time weight. -/
-@[simp] theorem exponentialTimeWeight_apply {d : ℕ} (rho tBase : ℝ)
+@[simp] theorem exponentialTimeWeight_apply
     (z : TimeVelocity d) :
     exponentialTimeWeight rho tBase z = Real.exp (rho * (z.1 - tBase)) :=
   rfl
 
 /-- Evaluation of the exponential time conjugate. -/
-@[simp] theorem exponentialConjugate_apply {d : ℕ} (rho tBase : ℝ)
+@[simp] theorem exponentialConjugate_apply
     (w : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     exponentialConjugate rho tBase w z = exponentialTimeWeight rho tBase z * w z :=
   rfl
 
 /-- The exponential time weight is strictly positive at every point. -/
-theorem exponentialTimeWeight_pos {d : ℕ} (rho tBase : ℝ) (z : TimeVelocity d) :
+theorem exponentialTimeWeight_pos (z : TimeVelocity d) :
     0 < exponentialTimeWeight rho tBase z :=
   Real.exp_pos _
 
 /-- The exponential time weight is globally smooth. -/
-theorem contDiff_exponentialTimeWeight {d : ℕ} (rho tBase : ℝ) :
+theorem contDiff_exponentialTimeWeight :
     ContDiff ℝ ⊤ (exponentialTimeWeight (d := d) rho tBase) := by
   unfold exponentialTimeWeight
   fun_prop
 
+end
+
+section
+variable {d : ℕ}
+
 /-- Exponential conjugation preserves local `C²` regularity. -/
-theorem contDiffOn_exponentialConjugate {d : ℕ} {U : Set (TimeVelocity d)}
+theorem contDiffOn_exponentialConjugate {U : Set (TimeVelocity d)}
     {rho tBase : ℝ} {w : TimeVelocity d → ℝ}
     (hw : ContDiffOn ℝ 2 w U) :
-    ContDiffOn ℝ 2 (exponentialConjugate rho tBase w) U := by
-  exact (((contDiff_exponentialTimeWeight rho tBase).of_le (by norm_num)).contDiffOn).mul hw
+    ContDiffOn ℝ 2 (exponentialConjugate rho tBase w) U := (((contDiff_exponentialTimeWeight rho tBase).of_le (by norm_num)).contDiffOn).mul hw
 
-private theorem fderiv_timeCoordinate_apply {d : ℕ}
+theorem fderiv_timeCoordinate_apply
     (z direction : TimeVelocity d) :
     fderiv ℝ (fun y : TimeVelocity d => y.1) z direction = direction.1 := by
   rw [(hasFDerivAt_fst (𝕜 := ℝ) (p := z)).fderiv]
   rfl
 
-private theorem fderiv_exponentialTimeWeight_apply {d : ℕ} (rho tBase : ℝ)
+private theorem fderiv_exponentialTimeWeight_apply (rho tBase : ℝ)
     (z direction : TimeVelocity d) :
     fderiv ℝ (exponentialTimeWeight rho tBase) z direction =
       exponentialTimeWeight rho tBase z * (rho * direction.1) := by
@@ -81,12 +89,12 @@ private theorem fderiv_exponentialTimeWeight_apply {d : ℕ} (rho tBase : ℝ)
   simp only [fderiv_timeCoordinate_apply,
     fderiv_const_apply, sub_zero]
 
-private theorem fderiv_fderiv_apply_eq_fderiv_eval {d : ℕ}
+theorem fderiv_fderiv_apply_eq_fderiv_eval
     {w : TimeVelocity d → ℝ} {z direction₁ direction₂ : TimeVelocity d}
     (hw : ContDiffAt ℝ 2 w z) :
     fderiv ℝ (fderiv ℝ w) z direction₁ direction₂ =
       fderiv ℝ (fun y => fderiv ℝ w y direction₂) z direction₁ := by
-  have hDw : DifferentiableAt ℝ (fderiv ℝ w) z :=
+  have hDw :=
     (hw.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have hEval :
       fderiv ℝ (fun y => fderiv ℝ w y direction₂) z =
@@ -98,7 +106,7 @@ private theorem fderiv_fderiv_apply_eq_fderiv_eval {d : ℕ}
     (fun L : TimeVelocity d →L[ℝ] ℝ => L direction₁) hEval
   simpa only [ContinuousLinearMap.flip_apply] using hEvalAt.symm
 
-private theorem fderiv_fderiv_exponentialTimeWeight_apply {d : ℕ}
+private theorem fderiv_fderiv_exponentialTimeWeight_apply
     (rho tBase : ℝ) (z direction₁ direction₂ : TimeVelocity d) :
     fderiv ℝ (fderiv ℝ (exponentialTimeWeight rho tBase)) z direction₁ direction₂ =
       exponentialTimeWeight rho tBase z * rho ^ 2 * direction₁.1 * direction₂.1 := by
@@ -121,10 +129,15 @@ private theorem fderiv_fderiv_exponentialTimeWeight_apply {d : ℕ}
       rw [fderiv_exponentialTimeWeight_apply]
       ring
 
+end
+
+section
+variable {d : ℕ} {rho tBase : ℝ} {w : TimeVelocity d → ℝ} {z : TimeVelocity d}
+  (hw : ContDiffAt ℝ 2 w z)
+include hw
+
 /-- The exact time derivative after exponential time conjugation. -/
-theorem timeDerivative_exponentialConjugate {d : ℕ} {rho tBase : ℝ}
-    {w : TimeVelocity d → ℝ} {z : TimeVelocity d}
-    (hw : ContDiffAt ℝ 2 w z) :
+theorem timeDerivative_exponentialConjugate :
     timeDerivative (exponentialConjugate rho tBase w) z =
       exponentialTimeWeight rho tBase z * (timeDerivative w z + rho * w z) := by
   have heDiff : DifferentiableAt ℝ (exponentialTimeWeight rho tBase) z :=
@@ -139,9 +152,7 @@ theorem timeDerivative_exponentialConjugate {d : ℕ} {rho tBase : ℝ}
   ring
 
 /-- The exact velocity Hessian after exponential time conjugation. -/
-theorem velocityHessian_exponentialConjugate {d : ℕ} {rho tBase : ℝ}
-    {w : TimeVelocity d → ℝ} {z : TimeVelocity d}
-    (hw : ContDiffAt ℝ 2 w z) :
+theorem velocityHessian_exponentialConjugate :
     velocityHessian (exponentialConjugate rho tBase w) z =
       exponentialTimeWeight rho tBase z • velocityHessian w z := by
   let e : TimeVelocity d → ℝ := exponentialTimeWeight rho tBase
@@ -226,6 +237,8 @@ theorem velocityHessian_exponentialConjugate {d : ℕ} {rho tBase : ℝ}
         fderiv_fderiv_exponentialTimeWeight_apply rho tBase z]
       simp only [mul_zero, zero_mul, add_zero,
         Matrix.smul_apply, smul_eq_mul, velocityHessian]
+
+end
 
 /-- The exact project-sign operator identity after exponential time
 conjugation. -/

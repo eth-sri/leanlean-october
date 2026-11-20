@@ -24,7 +24,7 @@ theorem integral_pairing_tendsto_of_eLpNorm_two {X : Type*} [MeasurableSpace X]
     (hF : ∀ n, MemLp (F n) 2 mu) (hf : MemLp f 2 mu) (hg : MemLp g 2 mu)
     (hlim : Tendsto (fun n => eLpNorm (F n - f) 2 mu) atTop (𝓝 0)) :
     Tendsto (fun n => ∫ x, F n x * g x ∂mu) atTop (𝓝 (∫ x, f x * g x ∂mu)) := by
-  have hLp : Tendsto (fun n => (hF n).toLp (F n)) atTop (𝓝 (hf.toLp f)) :=
+  have hLp :=
     (Lp.tendsto_Lp_iff_tendsto_eLpNorm'' F hF f hf).2 hlim
   have he (a b : X → ℝ) (ha : MemLp a 2 mu) (hb : MemLp b 2 mu) :
       inner ℝ (ha.toLp a) (hb.toLp b) = ∫ x, a x * b x ∂mu := by

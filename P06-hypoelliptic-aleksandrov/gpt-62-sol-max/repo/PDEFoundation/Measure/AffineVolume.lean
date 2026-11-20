@@ -22,13 +22,14 @@ namespace PDE
 
 open MeasureTheory
 
-theorem measurePreserving_addRight_restrict_translateSet {d : ℕ}
+section
+variable {d : ℕ}
+
+theorem measurePreserving_addRight_restrict_translateSet
     (z : Vec d) (U : Set (Vec d)) :
     MeasurePreserving (fun x : Vec d => x + z)
       (volumeOn U) (volumeOn (translateSet z U)) := by
-  let hμ :
-      MeasurePreserving (fun x : Vec d => x + z)
-        (volume : Measure (Vec d)) volume :=
+  let hμ :=
     measurePreserving_add_right
       (volume : Measure (Vec d)) z
   simpa [volumeOn, preimage_addNeg_eq_translateSet (z := z) U,
@@ -36,8 +37,7 @@ theorem measurePreserving_addRight_restrict_translateSet {d : ℕ}
     MeasurePreserving.restrict_image_emb hμ
       (Homeomorph.addRight z).measurableEmbedding U
 
-theorem setIntegral_comp_addRight_translateSet
-    {d : ℕ} {E : Type*}
+theorem setIntegral_comp_addRight_translateSet {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (z : Vec d) (U : Set (Vec d)) (f : Vec d → E) :
     ∫ y in U, f (y + z) ∂volume =
@@ -46,7 +46,7 @@ theorem setIntegral_comp_addRight_translateSet
     (measurePreserving_addRight_restrict_translateSet z U).integral_comp
       (Homeomorph.addRight z).measurableEmbedding f
 
-theorem volume_translateSet_eq {d : ℕ}
+theorem volume_translateSet_eq
     (z : Vec d) (U : Set (Vec d)) :
     volume (translateSet z U) = volume U := by
   have h :=
@@ -57,7 +57,7 @@ theorem volume_translateSet_eq {d : ℕ}
       (translateSet z U)
   simpa [preimage_addRight_translateSet_eq] using h.symm
 
-theorem volume_smul_set_of_nonneg {d : ℕ}
+theorem volume_smul_set_of_nonneg
     {r : ℝ} (hr : 0 ≤ r) (U : Set (Vec d)) :
     volume (r • U) =
       ENNReal.ofReal (r ^ d) * volume U := by
@@ -65,8 +65,7 @@ theorem volume_smul_set_of_nonneg {d : ℕ}
     (Measure.addHaar_smul_of_nonneg
       (μ := volume) (E := Vec d) hr U)
 
-theorem setIntegral_comp_smul_of_pos
-    {d : ℕ} {E : Type*}
+theorem setIntegral_comp_smul_of_pos {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     {r : ℝ} (hr : 0 < r) (U : Set (Vec d))
     (f : Vec d → E) :
@@ -75,5 +74,7 @@ theorem setIntegral_comp_smul_of_pos
   simpa [Vec] using
     (Measure.setIntegral_comp_smul_of_pos
       (μ := volume) (f := f) (s := U) hr)
+
+end
 
 end PDE

@@ -18,10 +18,13 @@ theorem construction_compact_scalar_bound {X : Type*} [TopologicalSpace X]
   exact ⟨max C 0, le_max_right _ _, fun x hx =>
     (hb ⟨x, hx, rfl⟩).trans (le_max_left _ _)⟩
 
+section
+variable {X : Type*} (K : Set X) (f g : X → ℝ) (hf : ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ K, |f x| ≤ C)
+  (hg : ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ K, |g x| ≤ C)
+include hf hg
+
 /-- Uniform scalar bounds are preserved by subtraction. -/
-theorem construction_scalar_bound_sub {X : Type*} (K : Set X) (f g : X → ℝ)
-    (hf : ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ K, |f x| ≤ C)
-    (hg : ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ K, |g x| ≤ C) :
+theorem construction_scalar_bound_sub :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ K, |f x - g x| ≤ C := by
   obtain ⟨C, hC, hf⟩ := hf
   obtain ⟨D, hD, hg⟩ := hg
@@ -29,9 +32,7 @@ theorem construction_scalar_bound_sub {X : Type*} (K : Set X) (f g : X → ℝ)
     (abs_sub _ _).trans (add_le_add (hf x hx) (hg x hx))⟩
 
 /-- Uniform scalar bounds are preserved by multiplication. -/
-theorem construction_scalar_bound_mul {X : Type*} (K : Set X) (f g : X → ℝ)
-    (hf : ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ K, |f x| ≤ C)
-    (hg : ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ K, |g x| ≤ C) :
+theorem construction_scalar_bound_mul :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x ∈ K, |f x * g x| ≤ C := by
   obtain ⟨C, hC, hf⟩ := hf
   obtain ⟨D, hD, hg⟩ := hg
@@ -39,8 +40,13 @@ theorem construction_scalar_bound_mul {X : Type*} (K : Set X) (f g : X → ℝ)
   rw [abs_mul]
   exact mul_le_mul (hf x hx) (hg x hx) (abs_nonneg _) hC
 
+end
+
+section
+variable (d : ℕ) (mu R : ℝ)
+
 /-- The packed barrier gradient depends continuously on time and space together. -/
-theorem construction_barrier_gradient_joint_continuous (d : ℕ) (mu R : ℝ)
+theorem construction_barrier_gradient_joint_continuous
     (i : Fin (d + d)) : Continuous (fun z : ℝ × PDE.Vec (d + d) =>
       PDE.classicalGradient (spatialPackedBarrier d mu R z.1) z.2 i) := by
   refine Fin.addCases (fun j => ?_) (fun j => ?_) i
@@ -53,18 +59,22 @@ theorem construction_barrier_gradient_joint_continuous (d : ℕ) (mu R : ℝ)
         continuous_snd).snd)
 
 /-- The packed barrier Hessian is jointly continuous. -/
-theorem construction_barrier_hessian_joint_continuous (d : ℕ) (mu R : ℝ)
+theorem construction_barrier_hessian_joint_continuous
     (i k : Fin d) : Continuous (fun z : ℝ × PDE.Vec (d + d) =>
       PDE.classicalGradient (fun y => PDE.classicalGradient
         (spatialPackedBarrier d mu R z.1) y (Fin.natAdd d k)) z.2 (Fin.natAdd d i)) := by
   simp only [spatialPackedBarrier_velocityHessian]
-  exact (((continuous_const.mul (continuous_const.mul continuous_fst).rexp).div_const
-    (R ^ 2)).neg).mul continuous_const
+  fun_prop
+
+end
+
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+  (mu R a b : ℝ) (K : Set (PDE.Vec (d + d))) (hK : IsCompact K)
+include hr hK
 
 /-- First raw representatives have bounds uniform over both compact time and compact space. -/
-theorem construction_rawGradient_uniform_bound {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (mu R a b : ℝ)
-    (K : Set (PDE.Vec (d + d))) (hK : IsCompact K) (i : Fin (d + d)) :
+theorem construction_rawGradient_uniform_bound (i : Fin (d + d)) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t ∈ Icc a b, ∀ x ∈ K,
       |spatialPackedCutoffGradient h r mu R t x i| ≤ C := by
   let D := Icc a b ×ˢ K
@@ -85,9 +95,7 @@ theorem construction_rawGradient_uniform_bound {d : ℕ} {alpha : ℝ}
     (by simpa only [one_mul] using hbN (t, x) ⟨ht, hx⟩)
 
 /-- Second raw representatives have bounds uniform over compact time and compact space. -/
-theorem construction_rawHessian_uniform_bound {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (mu R a b : ℝ)
-    (K : Set (PDE.Vec (d + d))) (hK : IsCompact K) (i k : Fin d) :
+theorem construction_rawHessian_uniform_bound (i k : Fin d) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t ∈ Icc a b, ∀ x ∈ K,
       |spatialPackedCutoffVelocityHessian h r mu R t x i k| ≤ C := by
   let D := Icc a b ×ˢ K
@@ -125,5 +133,7 @@ theorem construction_rawHessian_uniform_bound {d : ℕ} {alpha : ℝ}
       (by simpa only [one_mul] using hbN (t, x) ⟨ht, hx⟩)
   · rw [mul_assoc, abs_mul]
     exact mul_le_mul (hbL _) (hbC (t, x) ⟨ht, hx⟩) (abs_nonneg _) hL.le
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

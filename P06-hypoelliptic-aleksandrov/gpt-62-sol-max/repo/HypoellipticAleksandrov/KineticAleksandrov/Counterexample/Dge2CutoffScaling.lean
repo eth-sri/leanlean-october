@@ -11,8 +11,11 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
+section
+variable {d : ℕ}
+
 /-- Dilation transports the shifted regularization base exactly. -/
-theorem seedBase_dilate {d : ℕ} (sigma R : ℝ) (hR : R ≠ 0) (z e : PDE.Vec d) :
+theorem seedBase_dilate (sigma R : ℝ) (hR : R ≠ 0) (z e : PDE.Vec d) :
     seedBase sigma (R • z) e = R ^ 2 * seedBase (R⁻¹ * sigma) z (R⁻¹ • e) := by
   have heq : R • z - e = R • (z - R⁻¹ • e) := by
     rw [smul_sub, smul_smul, mul_inv_cancel₀ hR, one_smul]
@@ -21,7 +24,7 @@ theorem seedBase_dilate {d : ℕ} (sigma R : ℝ) (hR : R ≠ 0) (z e : PDE.Vec 
   field_simp
 
 /-- The radial cutoff becomes the fixed unit-radius cutoff under dilation. -/
-theorem radialCutoff_dilate {d : ℕ} (R : ℝ) (hR : R ≠ 0) (z : PDE.Vec d) :
+theorem radialCutoff_dilate (R : ℝ) (hR : R ≠ 0) (z : PDE.Vec d) :
     radialCutoff R (R • z) = radialCutoff 1 z := by
   unfold radialCutoff
   rw [PDE.vecNormSq_smul]
@@ -29,7 +32,7 @@ theorem radialCutoff_dilate {d : ℕ} (R : ℝ) (hR : R ≠ 0) (z : PDE.Vec d) :
   field_simp
 
 /-- The source cutoff is exactly the rescaled interpolation times R to the alpha. -/
-theorem cutoffProfile_dilate_rescaled {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
+theorem cutoffProfile_dilate_rescaled (alpha C₀ sigma R : ℝ) (hR : 0 < R)
     (z e : PDE.Vec d) :
     cutoffProfile alpha C₀ sigma R (R • z) e =
       Real.rpow R alpha * rescaledCutoff alpha sigma
@@ -59,7 +62,7 @@ theorem cutoffProfile_dilate_rescaled {d : ℕ} (alpha C₀ sigma R : ℝ) (hR :
   field_simp
 
 /-- Exact first-jet scaling for a smooth scalar function on native vectors. -/
-theorem fderiv_scaledFunction {d : ℕ} (F : PDE.Vec d → ℝ)
+theorem fderiv_scaledFunction (F : PDE.Vec d → ℝ)
     (hF : Differentiable ℝ F) (a R : ℝ) (z w : PDE.Vec d) :
     fderiv ℝ (fun y => a * F (R • y)) z w = a * R * fderiv ℝ F (R • z) w := by
   have hh := ((hF (R • z)).hasFDerivAt.comp z
@@ -75,7 +78,7 @@ theorem fderiv_scaledFunction {d : ℕ} (F : PDE.Vec d → ℝ)
   ring
 
 /-- Exact Hessian scaling for a smooth scalar function on native vectors. -/
-theorem hessian_scaledFunction {d : ℕ} (F : PDE.Vec d → ℝ)
+theorem hessian_scaledFunction (F : PDE.Vec d → ℝ)
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (a R : ℝ) (z w u : PDE.Vec d) :
     fderiv ℝ (fun y => fderiv ℝ (fun b => a * F (R • b)) y w) z u =
       a * R ^ 2 * fderiv ℝ (fun y => fderiv ℝ F y w) (R • z) u := by
@@ -94,7 +97,7 @@ theorem hessian_scaledFunction {d : ℕ} (F : PDE.Vec d → ℝ)
     _ = _ := by ring
 
 /-- The fixed-annulus Hessian is the physical cutoff Hessian times a positive scalar. -/
-theorem rescaledCutoff_hessian {d : ℕ} (alpha C₀ sigma R : ℝ)
+theorem rescaledCutoff_hessian (alpha C₀ sigma R : ℝ)
     (hsigma : 0 < sigma) (hR : 0 < R) (e z w u : PDE.Vec d) :
     fderiv ℝ (fun a => fderiv ℝ
       (rescaledCutoff alpha sigma (C₀ / Real.rpow R alpha) R⁻¹ e) a w) z u =
@@ -112,5 +115,7 @@ theorem rescaledCutoff_hessian {d : ℕ} (alpha C₀ sigma R : ℝ)
     rw [← mul_assoc, inv_mul_cancel₀ (Real.rpow_pos_of_pos hR alpha).ne', one_mul]
   rw [heq]
   exact hessian_scaledFunction _ hF _ R z w u
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -21,8 +21,7 @@ theorem abpPositiveCutoff_spec {ε : ℝ} (hε : 0 < ε) :
       (∀ s, 0 ≤ abpPositiveCutoff ε s ∧ abpPositiveCutoff ε s ≤ 1) ∧
       (∀ s, s ≤ ε / 2 → abpPositiveCutoff ε s = 0) ∧
       (∀ s, ε ≤ s → abpPositiveCutoff ε s = 1) := by
-  have hc : ContDiff ℝ (⊤ : ℕ∞) (fun s : ℝ => (2 * s - ε) / ε) := by fun_prop
-  refine ⟨Real.smoothTransition.contDiff.comp hc,?_,?_,?_⟩
+  refine ⟨Real.smoothTransition.contDiff.comp (by fun_prop),?_,?_,?_⟩
   · intro s
     exact ⟨Real.smoothTransition.nonneg _,Real.smoothTransition.le_one _⟩
   · intro s hs
@@ -43,10 +42,7 @@ theorem continuousOn_matrixContraction {E : Type*} [TopologicalSpace E] {d : ℕ
   apply continuousOn_finsetSum
   intro i _
   apply continuousOn_finsetSum
-  intro j _
-  exact ((continuous_apply j).comp_continuousOn
-    ((continuous_apply i).comp_continuousOn hA)).mul
-    ((continuous_apply j).comp_continuousOn ((continuous_apply i).comp_continuousOn hH))
+  fun_prop (disch := assumption)
 
 /-- The forward operator of a classical function is continuous for continuous coefficients. -/
 theorem continuousOn_forwardKineticOperator {d : ℕ} {D : Set (KineticPoint d)}

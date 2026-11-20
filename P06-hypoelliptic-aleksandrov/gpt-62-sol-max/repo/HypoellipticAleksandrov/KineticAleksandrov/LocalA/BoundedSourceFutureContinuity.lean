@@ -21,7 +21,6 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 /-- A positive bounded source supported strictly in the future gives a continuous literal
 potential on every compact regular collar lying strictly before the source starts. -/
 theorem continuousOn_duhamelFuture_compact_collar
-    (hH : HormanderHypoellipticityStatement)
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
@@ -52,7 +51,7 @@ theorem continuousOn_duhamelFuture_compact_collar
   have hweak := duhamelPotential_weak_before_source hΩa hΩ hγ B b S K hreal hB hBs hb
     F hF M hM (fun p => by rw [abs_of_nonneg (hFb p).1]; exact (hFb p).2)
     s T hsT hzero
-  have hw := boundedSource_ambientWeak_restrict hUpast B b u hweak
+  have hw := hweak.mono hUpast
   have hbound (g : KineticPoint d → ℝ) (Cg : ℝ) (hCg : 0 ≤ Cg)
       (hgb : ∀ p, |g p| ≤ Cg) : ∀ z ∈ U,
       |duhamelPotential K T g (P z)| ≤ (T - a) * Cg := by
@@ -69,7 +68,7 @@ theorem continuousOn_duhamelFuture_compact_collar
   have hu : MemLp u 2 μ := MemLp.of_bound hum.aestronglyMeasurable.restrict
     ((T - a) * (M + 2)) (by simpa only [Real.norm_eq_abs] using hub)
   obtain ⟨v, hvc, hve, hidentify⟩ :=
-    exists_continuousRepresentative_identified_by_homogeneous_limits hH B b hB hb
+    exists_continuousRepresentative_identified_by_homogeneous_limits B b hB hb
       lam Lam m hlam hm hell hcoerc U C hU hC hCi hCU u hu hw
   have heq : EqOn u v C := by
     intro z hz
@@ -104,7 +103,7 @@ theorem continuousOn_duhamelFuture_compact_collar
     have hfnc (n : ℕ) : ContinuousOn (fn n) U :=
       (hfc n).comp P.continuous.continuousOn (fun w hw =>
         ⟨(hUpast hw).1.le.trans hsT, subset_closure (hUpast hw).2⟩)
-    have hfnw (n : ℕ) := boundedSource_ambientWeak_restrict hUpast B b (fn n) (hfw n)
+    have hfnw (n : ℕ) := (hfw n).mono hUpast
     exact hidentify fn hfn hfnc hfnw hstrong z hz hp
   exact (hvc.mono hCU).congr (fun z hz => heq hz)
 

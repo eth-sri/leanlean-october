@@ -19,24 +19,25 @@ namespace HypoellipticAleksandrov.Parabolic
 open Set
 open scoped Convex
 
+section
+variable {d : ℕ} (U : Set (TimeVelocity d))
+include U
+
 /-- The points whose full directed segment to the given spatial shift remains
 inside `U`. -/
-noncomputable def spatialSegmentSafeSet {d : ℕ}
-    (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ) :
+noncomputable def spatialSegmentSafeSet (k : Fin d) (h : ℝ) :
     Set (TimeVelocity d) :=
   {z | [z -[ℝ] spatialShift k h z] ⊆ U}
 
 /-- Membership in the spatial-segment-safe carrier is its defining segment
 containment condition. -/
-@[simp] theorem mem_spatialSegmentSafeSet_iff {d : ℕ}
-    (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ)
+@[simp] theorem mem_spatialSegmentSafeSet_iff (k : Fin d) (h : ℝ)
     (z : TimeVelocity d) :
     z ∈ spatialSegmentSafeSet U k h ↔
       [z -[ℝ] spatialShift k h z] ⊆ U := Iff.rfl
 
 /-- The maximal spatial-segment-safe carrier of an open set is open. -/
-theorem isOpen_spatialSegmentSafeSet {d : ℕ}
-    (U : Set (TimeVelocity d)) (hU : IsOpen U)
+theorem isOpen_spatialSegmentSafeSet (hU : IsOpen U)
     (k : Fin d) (h : ℝ) :
     IsOpen (spatialSegmentSafeSet U k h) := by
   let F : TimeVelocity d × ℝ → TimeVelocity d := fun p =>
@@ -72,5 +73,7 @@ theorem isOpen_spatialSegmentSafeSet {d : ℕ}
   rw [← hw]
   have hzs : (z', s) ∈ u ×ˢ v := ⟨hz', @hIv' s hs⟩
   exact huv hzs
+
+end
 
 end HypoellipticAleksandrov.Parabolic

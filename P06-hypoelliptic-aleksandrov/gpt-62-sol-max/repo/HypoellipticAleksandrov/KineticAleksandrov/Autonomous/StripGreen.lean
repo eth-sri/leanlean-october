@@ -26,8 +26,11 @@ def stripHorizon (T : WithTop ℝ) (s : ℝ) : ℝ≥0∞ :=
   | ⊤ => ⊤
   | (t : ℝ) => ENNReal.ofReal (t - s)
 
+section
+variable (H : Interval) (T : WithTop ℝ) (e : StripPole H T)
+
 /-- Valid poles have strictly positive elapsed horizons. -/
-theorem stripHorizon_pos (H : Interval) (T : WithTop ℝ) (e : StripPole H T) :
+theorem stripHorizon_pos :
     0 < stripHorizon T e.1.time := by
   cases T with
   | top => exact ENNReal.zero_lt_top
@@ -36,13 +39,15 @@ theorem stripHorizon_pos (H : Interval) (T : WithTop ℝ) (e : StripPole H T) :
     exact sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
 
 /-- The pole's native state, with physical velocity first. -/
-def stripPoleState (H : Interval) (T : WithTop ℝ) (e : StripPole H T) :
+def stripPoleState :
     EvolutionState (intervalDomain H) (fun _ => 0) e.1.time :=
   ⟨(e.1.velocity, e.1.position), by
     refine ⟨?_, mem_univ _⟩
     apply PDE.mem_translateSet_iff_sub_mem.mpr
     simpa only [sub_zero, intervalDomain, PDE.mem_oneDimensionalAxisBox_iff,
       Interval.carrier, mem_Ioo, PDE.vecOneCoordinate] using e.2.2⟩
+
+end
 
 /-- Restore absolute time and physical position-velocity order. -/
 def elapsedPhysicalPoint (s : ℝ) {R : ℝ≥0∞}
@@ -65,10 +70,10 @@ def stripGreenOfKernel (H : Interval) (K : MovingFiberKernel (intervalDomain H) 
 
 /-- The canonical autonomous Green measure uses the unique autonomous evolution. -/
 def stripGreen
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
     (e : StripPole H T) : Measure Point :=
-  stripGreenOfKernel H (stripEvolution hH hLE hlam hLam A H).2 T e
+  stripGreenOfKernel H (stripEvolution A H).2 T e
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

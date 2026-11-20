@@ -42,14 +42,6 @@ theorem integral_abs_le_sqrt_volume_mul_eLpNorm
       by_contra hgx
       have hgx' : g x ≠ 0 := fun h => hgx h.symm
       exact hx (hgsupp (Function.mem_support.mpr hgx'))
-  have hgIntegrable : Integrable g μ := by
-    have hgIntegrableOn : IntegrableOn g K μ := by
-      letI : IsFiniteMeasure (μ.restrict K) :=
-        ⟨by
-          rw [Measure.restrict_apply_univ]
-          exact hKfinite⟩
-      exact (hgmem.restrict K).integrable (by norm_num)
-    exact (integrableOn_iff_integrable_of_support_subset hgsupp).mp hgIntegrableOn
   have hgKmem : MemLp (K.indicator g) (2 : ℝ≥0∞) μ :=
     hgmem.indicator hKmeas
   have honeKmem : MemLp (K.indicator fun _ : TimeVelocity d => (1 : ℝ))

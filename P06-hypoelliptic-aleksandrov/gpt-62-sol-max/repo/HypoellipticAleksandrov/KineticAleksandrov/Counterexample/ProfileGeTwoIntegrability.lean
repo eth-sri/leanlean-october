@@ -22,7 +22,7 @@ theorem profile_classical_jets_locallyIntegrable (d : ℕ) (hd : 1 ≤ d)
     (∀ i k, LocallyIntegrable (fun q => dvv H q i k) volume) := by
   refine ⟨?_, ?_, ?_⟩
   · intro i
-    apply homogeneous_component_locallyIntegrable_off_origin d hd (fun q => dx H q i)
+    apply homogeneous_component_locallyIntegrable d hd (fun q => dx H q i)
       ((measurable_pi_apply i).comp (measurable_dx H))
       (alpha - 3) (by linarith) (by linarith)
     · intro r hr q hq
@@ -35,7 +35,7 @@ theorem profile_classical_jets_locallyIntegrable (d : ℕ) (hd : 1 ≤ d)
       intro q hq
       simpa only [Real.norm_eq_abs] using (norm_le_pi_norm (dx H q) i).trans (hM q hq).1
   · intro i
-    apply homogeneous_component_locallyIntegrable_off_origin d hd (fun q => dv H q i)
+    apply homogeneous_component_locallyIntegrable d hd (fun q => dv H q i)
       ((measurable_pi_apply i).comp (measurable_dv H))
       (alpha - 1) (by linarith) (by linarith)
     · intro r hr q hq
@@ -48,7 +48,7 @@ theorem profile_classical_jets_locallyIntegrable (d : ℕ) (hd : 1 ≤ d)
       intro q hq
       simpa only [Real.norm_eq_abs] using (norm_le_pi_norm (dv H q) i).trans (hM q hq).2.1
   · intro i k
-    apply homogeneous_component_locallyIntegrable_off_origin d hd (fun q => dvv H q i k)
+    apply homogeneous_component_locallyIntegrable d hd (fun q => dvv H q i k)
       (measurable_dvv H i k) (alpha - 2) (by linarith) (by linarith)
     · intro r hr q hq
       exact homogeneous_dvv_off_origin H alpha r hr (hhom r hr) hs q hq i k

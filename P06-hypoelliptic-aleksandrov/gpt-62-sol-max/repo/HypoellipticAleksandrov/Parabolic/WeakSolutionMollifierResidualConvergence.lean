@@ -62,7 +62,7 @@ theorem eventually_residual_equation_on
       _ = matrixContraction (coefficientAt A z) (J.w.velocityHessian z) := hweq hzO
       _ = matrixContraction (coefficientAt Aext z) (J.g.velocityHessian z) := by
         rw [hAext hzO, hhessian hzO]
-  have hEquation := eventually_residual_equation_of_ae_on J.V_closure_compact hO hclosureVO
+  have hEquation := _root_.HypoellipticAleksandrov.Parabolic.eventually_residual_equation_of_ae_on_plateau J.V_closure_compact hO hclosureVO
     J.g hp hEqO
   filter_upwards [hEquation] with n hn
   intro z hz

@@ -31,8 +31,8 @@ theorem exists_compact_coefficient_spatial_derivative_bound {d : ℕ}
     intro i
     apply continuous_pi
     intro j
-    have hcoeff : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+    have hcoeff :=
+      (contDiff_apply_apply ℝ ℝ i j).comp hA
     have hc12 := isScalarC12On_of_contDiff_two (hcoeff.of_le (by simp)) univ
     exact (continuous_apply k).comp
       (continuousOn_univ.mp hc12.continuousOn_scalarSpatialGradient)

@@ -2,7 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.VariationalEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGelfandPairing
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourcePairing
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeDualPairingRight
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
 
 /-!
 # Reverse-time separated variational residual
@@ -19,38 +20,6 @@ open scoped ENNReal RealInnerProductSpace
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
-
-private theorem integrable_reverseTimeNegativeSourceRaw_mul_test
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (eta : ReverseTimeScalarTest (r₁ - r₀)) (v : H10HilbertGraph hΩ) :
-    Integrable
-      (fun tau => reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau v * eta tau)
-      (reverseTimeVolume (r₁ - r₀)) := by
-  let S := reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
-  let z := reverseTimeSeparatedVTest hΩ eta v
-  have hPair : Integrable (fun tau => S tau (z tau)) (reverseTimeVolume (r₁ - r₀)) :=
-    integrable_reverseTimeDualPairing hΩ (r₁ - r₀) z S
-  refine hPair.congr ?_
-  filter_upwards
-    [(memLp_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).coeFn_toLp,
-      ae_reverseTimeSeparatedVTest hΩ eta v] with tau hS hz
-  dsimp only [S, z]
-  calc
-    reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau
-        (reverseTimeSeparatedVTest hΩ eta v tau) =
-        reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau (eta tau • v) :=
-      congrArg (reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau) hz
-    _ = eta tau * reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau v := by
-      rw [ContinuousLinearMap.map_smul]
-      rfl
-    _ = eta tau * reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau v :=
-      congrArg (fun q => eta tau * q v) hS
-    _ = reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau v * eta tau :=
-      mul_comm _ _
 
 private theorem integral_sub_add_eq_zero_of_pairing
     {α : Type*} [MeasurableSpace α] (μ : Measure α)
@@ -73,8 +42,7 @@ theorem reverseTime_separated_residual_of_variationalEnergy
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
@@ -112,8 +80,12 @@ theorem reverseTime_separated_residual_of_variationalEnergy
         filter_upwards [coeFn_reverseTimeValueCLM hΩ (r₁ - r₀) u] with tau huValue
         rw [huValue]
       _ = _ := hmassLiftEq
-  have hsource := integrable_reverseTimeNegativeSourceRaw_mul_test r₀ r₁ h₀₁ hΩ hΩbounded F
-    hFSmooth eta v
+  have hcontinuous :=
+    (continuous_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).clm_apply
+      (continuous_const (y := v))
+  have hsource := ((hcontinuous.mul eta.contDiff.continuous).integrable_of_hasCompactSupport
+    (μ := volume) eta.hasCompactSupport.mul_left).restrict
+      (s := reverseTimeOpenInterval (r₁ - r₀))
   have hformEq : ∀ᵐ tau ∂reverseTimeVolume (r₁ - r₀),
       reverseTimeSpatialForm hΩ r₁ tau a b c (u tau) v * eta tau =
         reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau v * eta tau -

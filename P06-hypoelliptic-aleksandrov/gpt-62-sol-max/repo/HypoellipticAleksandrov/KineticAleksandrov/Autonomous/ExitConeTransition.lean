@@ -10,16 +10,6 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Real
 
-/-- The source's cone probe has a uniform unit bound. -/
-theorem reconstructionConeTransition_bound (x : ℝ) :
-    0 ≤ expNegInvGlue x ∧ expNegInvGlue x ≤ 1 := by
-  refine ⟨expNegInvGlue.nonneg x, ?_⟩
-  by_cases hx : x ≤ 0
-  · rw [expNegInvGlue.zero_of_nonpos hx]
-    exact zero_le_one
-  · rw [expNegInvGlue, ite_eq_right hx]
-    exact Real.exp_le_one_iff.mpr (neg_nonpos.mpr (inv_nonneg.mpr (not_le.mp hx).le))
-
 /-- The exact derivative of the cone transition. -/
 theorem reconstructionConeTransition_deriv (x : ℝ) :
     deriv expNegInvGlue x = x⁻¹ ^ 2 * expNegInvGlue x := by

@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VelocityReturnAveraging
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TimeBinCountReturnBridge
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnTime
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnGeometryKernel
 
@@ -13,27 +13,22 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set
 
 /-- The band itself has square-root decay; the constant precedes all coefficient and pole data. -/
-theorem velocity_band_return_of_return_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
-      (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
-      0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →
-      S hH hLE hlam hLam A t F (X, v) ≤ C * S hH hLE hlam hLam A s F (X, v)) :
+theorem velocity_band_return
+    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam):
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (r : ℝ) (z : Z) (t : NNReal),
       0 < r → |z.2| ≤ 3 * r →
-      (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) t z
+      (kernelXV (fullSpaceEvolution A) t z
         {w | |w.2| ≤ 3 * r}).toReal ≤ C * (1 + (t : ℝ) / r ^ 2) ^ (-(1 : ℝ) / 2) := by
-  obtain ⟨CR, hCR, hreturn⟩ := return_time_ambient_of_scalar hH hLE hlam hLam hReturn
-  obtain ⟨B, hB, hocc⟩ := velocity_occupation_and_moment hH hLE hlam hLam
+  obtain ⟨CR, hCR, hreturn⟩ := return_time_ambient hlam hLam
+  obtain ⟨B, hB, hocc⟩ := velocity_occupation_and_moment hlam hLam
   let K := CR * B * Real.sqrt 3
   have hK : 0 < K := by dsimp only [K]; positivity
   let C := (10 : ℝ) ^ ((1 : ℝ) / 2) + K * (2 : ℝ) ^ ((1 : ℝ) / 2)
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro A r z t hr hz
-  let E := fullSpaceEvolution hH hLE hlam hLam A
-  have hE := fullSpaceEvolution_spec hH hLE hlam hLam A
+  let E := fullSpaceEvolution A
+  have hE := fullSpaceEvolution_spec A
   let f := fun s => velocityBandAction E r s z
   let x := (t : ℝ) / r ^ 2
   have hx : 0 ≤ x := div_nonneg t.property (sq_nonneg r)

@@ -17,8 +17,11 @@ theorem stackPathBound_large (m : ℕ) : (m : ℝ)+3 ≤ stackPathBound m := by
   have := Nat.cast_nonneg (α := ℝ) m
   linarith
 
+section
+variable (d m : ℕ)
+
 /-- The fixed comparison region is open. -/
-theorem isOpen_stackComparisonRegion (d m : ℕ) : IsOpen (stackComparisonRegion d m) :=
+theorem isOpen_stackComparisonRegion : IsOpen (stackComparisonRegion d m) :=
   (isOpen_lt continuous_const continuous_time).inter
     ((isOpen_lt continuous_time continuous_const).inter
       ((isOpen_lt (PDE.continuous_vecEuclideanNorm.comp continuous_position)
@@ -27,7 +30,7 @@ theorem isOpen_stackComparisonRegion (d m : ℕ) : IsOpen (stackComparisonRegion
           continuous_const)))
 
 /-- A compact rectangular envelope bounds the comparison region. -/
-theorem isBounded_stackComparisonRegion (d m : ℕ) :
+theorem isBounded_stackComparisonRegion :
     Bornology.IsBounded (stackComparisonRegion d m) := by
   let E : Set (KineticPoint d) := (KineticPoint.equivProd d) ⁻¹'
     (Icc (-2 : ℝ) ((m : ℝ)+1) ×ˢ
@@ -48,7 +51,7 @@ theorem isBounded_stackComparisonRegion (d m : ℕ) :
     simpa only [sub_zero] using hP.2.2.2.le
 
 /-- The unit backward-cylinder closure is strictly inside the comparison region. -/
-theorem closure_unitCylinder_subset_comparison (d m : ℕ) :
+theorem closure_unitCylinder_subset_comparison :
     closure (backwardCylinder (⟨0,0,0⟩ : KineticPoint d) 1) ⊆
       stackComparisonRegion d m := by
   intro P hP
@@ -64,7 +67,7 @@ theorem closure_unitCylinder_subset_comparison (d m : ℕ) :
     nlinarith [hb.2.2.1, hb.2.2.2]
 
 /-- Weak endpoint inequalities hold throughout the unit-stack closure. -/
-theorem closure_unitStack_bounds (d m : ℕ) :
+theorem closure_unitStack_bounds :
     closure (forwardStack (⟨0,0,0⟩ : KineticPoint d) 1 m) ⊆
       {P | 0 ≤ P.time ∧ P.time ≤ (m : ℝ) ∧
         PDE.vecEuclideanNorm P.position ≤ (m : ℝ)+2 ∧
@@ -91,7 +94,7 @@ theorem closure_unitStack_bounds (d m : ℕ) :
             continuous_const)))
 
 /-- The unit forward-stack closure is strictly inside the same comparison region. -/
-theorem closure_unitStack_subset_comparison (d m : ℕ) :
+theorem closure_unitStack_subset_comparison :
     closure (forwardStack (⟨0,0,0⟩ : KineticPoint d) 1 m) ⊆
       stackComparisonRegion d m := by
   intro P hP
@@ -100,5 +103,7 @@ theorem closure_unitStack_subset_comparison (d m : ℕ) :
   have hm := Nat.cast_nonneg (α := ℝ) m
   exact ⟨by linarith [hb.1], by linarith [hb.2.1],
     by linarith [hb.2.2.1], by linarith [hb.2.2.2]⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

@@ -56,11 +56,11 @@ theorem stripGreenOfKernel_timeMarginal (H : Interval)
 
 /-- The canonical autonomous strip Green measure has the exact constant-one time bound. -/
 theorem stripGreen_timeMarginal
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
     (e : StripPole H T) (J : Set ℝ) (hJ : MeasurableSet J) :
-    stripGreen hH hLE hlam hLam A H T e {p | p.time ∈ J} ≤ volume J :=
+    stripGreen A H T e {p | p.time ∈ J} ≤ volume J :=
   stripGreenOfKernel_timeMarginal H _ T e J hJ
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

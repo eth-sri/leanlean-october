@@ -68,15 +68,16 @@ private theorem weak_limit_le_on_finite_set {α : Type*} [MeasurableSpace α]
 /-- The existing kinetic volume assigns positive mass to every nonempty open set. -/
 instance kineticVolume_isOpenPosMeasure (n : ℕ) :
     Measure.IsOpenPosMeasure (volume : Measure (KineticPoint n)) := by
-  change Measure.IsOpenPosMeasure
-    (Measure.map (KineticPoint.equivProd n).symm volume)
   exact (KineticPoint.homeomorphProd n).symm.continuous.isOpenPosMeasure_map
     (KineticPoint.equivProd n).symm.surjective
 
+section
+variable {n : ℕ} (U W : Set (KineticPoint n)) (hW : IsOpen W) (hWU : W ⊆ U)
+  (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ)
+include hW hWU
+
 /-- A smooth representative inherits every uniform upper bound on an open subregion. -/
-theorem bounded_weak_limit_le_on_open {n : ℕ}
-    (U W : Set (KineticPoint n)) (hW : IsOpen W) (hWU : W ⊆ U)
-    (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ) (C a : ℝ)
+theorem bounded_weak_limit_le_on_open (C a : ℝ)
     (hv : ∀ j, AEStronglyMeasurable (v j) (volume.restrict U))
     (hb : ∀ j, ∀ᵐ x ∂volume.restrict U, |v j x| ≤ C)
     (hu : AEStronglyMeasurable u (volume.restrict U))
@@ -110,9 +111,7 @@ theorem bounded_weak_limit_le_on_open {n : ℕ}
   exact min_le_right _ _
 
 /-- Uniform local absolute trace bounds pass to the continuous weak-limit representative. -/
-theorem bounded_weak_limit_abs_sub_le_on_open {n : ℕ}
-    (U W : Set (KineticPoint n)) (hW : IsOpen W) (hWU : W ⊆ U)
-    (v : ℕ → KineticPoint n → ℝ) (u V : KineticPoint n → ℝ) (C a η : ℝ)
+theorem bounded_weak_limit_abs_sub_le_on_open (C a η : ℝ)
     (hv : ∀ j, AEStronglyMeasurable (v j) (volume.restrict U))
     (hb : ∀ j, ∀ᵐ x ∂volume.restrict U, |v j x| ≤ C)
     (hu : AEStronglyMeasurable u (volume.restrict U))
@@ -139,5 +138,7 @@ theorem bounded_weak_limit_abs_sub_le_on_open {n : ℕ}
     (fun j x hx => by have h := (abs_le.mp (hbound j x hx)).1; linarith)
   intro x hx
   exact abs_le.mpr ⟨by linarith [hneg x hx], by linarith [hupp x hx]⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

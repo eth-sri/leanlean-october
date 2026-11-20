@@ -62,38 +62,53 @@ def transportedCoord : EvolutionVec n →L[ℝ] PDE.Vec n :=
     ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin (EvolutionDim n) => ℝ)
       (Fin.succ (Fin.natAdd n l))
 
-@[simp] theorem timeCoord_apply (x : EvolutionVec n) : timeCoord n x = x 0 := rfl
+section
+variable (x : EvolutionVec n)
 
-@[simp] theorem diffusedCoord_apply (x : EvolutionVec n) (i : Fin n) :
+@[simp] theorem timeCoord_apply : timeCoord n x = x 0 := rfl
+
+@[simp] theorem diffusedCoord_apply (i : Fin n) :
     diffusedCoord n x i = x (Fin.succ (Fin.castAdd n i)) := rfl
 
-@[simp] theorem transportedCoord_apply (x : EvolutionVec n) (l : Fin n) :
+@[simp] theorem transportedCoord_apply (l : Fin n) :
     transportedCoord n x l = x (Fin.succ (Fin.natAdd n l)) := rfl
 
-@[simp] theorem packPoint_zero_apply (s : ℝ) (v z : PDE.Vec n) : packPoint s v z 0 = s := by
-  simp only [packPoint, Fin.cons_zero]
+end
 
-@[simp] theorem packPoint_diffused_apply (s : ℝ) (v z : PDE.Vec n) (i : Fin n) :
+section
+variable (s : ℝ) (v z : PDE.Vec n)
+
+@[simp] theorem packPoint_zero_apply : packPoint s v z 0 = s := by
+  rfl
+
+@[simp] theorem packPoint_diffused_apply (i : Fin n) :
     packPoint s v z (Fin.succ (Fin.castAdd n i)) = v i := by
   simp only [packPoint, Fin.cons_succ, Fin.append_left]
 
-@[simp] theorem packPoint_transported_apply (s : ℝ) (v z : PDE.Vec n) (l : Fin n) :
+@[simp] theorem packPoint_transported_apply (l : Fin n) :
     packPoint s v z (Fin.succ (Fin.natAdd n l)) = z l := by
   simp only [packPoint, Fin.cons_succ, Fin.append_right]
 
-@[simp] theorem timeCoord_packPoint (s : ℝ) (v z : PDE.Vec n) :
+end
+
+section
+variable (s : ℝ) (v z : PDE.Vec n)
+
+@[simp] theorem timeCoord_packPoint :
     timeCoord n (packPoint s v z) = s := by
   rw [timeCoord_apply, packPoint_zero_apply]
 
-@[simp] theorem diffusedCoord_packPoint (s : ℝ) (v z : PDE.Vec n) :
+@[simp] theorem diffusedCoord_packPoint :
     diffusedCoord n (packPoint s v z) = v := by
   ext i
   rw [diffusedCoord_apply, packPoint_diffused_apply]
 
-@[simp] theorem transportedCoord_packPoint (s : ℝ) (v z : PDE.Vec n) :
+@[simp] theorem transportedCoord_packPoint :
     transportedCoord n (packPoint s v z) = z := by
   ext l
   rw [transportedCoord_apply, packPoint_transported_apply]
+
+end
 
 /-- Two points are equal iff their three coordinate blocks are equal. -/
 theorem ext_coords {x y : EvolutionVec n} (ht : timeCoord n x = timeCoord n y)

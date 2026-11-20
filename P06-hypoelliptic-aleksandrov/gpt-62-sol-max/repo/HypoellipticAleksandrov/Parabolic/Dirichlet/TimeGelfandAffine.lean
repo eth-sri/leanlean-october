@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeVStarPrimitive
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTimeDerivative
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDerivativeKernel
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevSeparable
+import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBochnerContinuous
 
 /-!
 # Canonical affine representative for the reverse-time Gelfand curve
@@ -23,11 +24,12 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+
 /-- The canonical Bochner-average constant in the reverse-time affine Gelfand
 identification.  The positive-time proof argument guards this normalization. -/
-noncomputable def reverseTimeGelfandAffineConstant
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (_hT : 0 < T)
+noncomputable def reverseTimeGelfandAffineConstant (_hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     H10HilbertGraphDual hΩ :=
   T⁻¹ • ∫ tau,
@@ -35,8 +37,6 @@ noncomputable def reverseTimeGelfandAffineConstant
       reverseTimeVStarPrimitive hΩ T g tau) ∂reverseTimeVolume T
 
 private theorem integrable_reverseTimeGelfandAffineDifference
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     Integrable
       (fun tau => reverseTimeGelfandCLM hΩ T u tau -
@@ -57,16 +57,7 @@ private theorem integrable_reverseTimeGelfandAffineDifference
       |>.mono_set Ioo_subset_Icc_self
   exact hG.sub hP
 
-private theorem reverseTimeVolume_real_univ (T : ℝ) (hT : 0 < T) :
-    (reverseTimeVolume T).real univ = T := by
-  change (volume.restrict (Ioo (0 : ℝ) T)).real univ = T
-  rw [MeasureTheory.measureReal_restrict_apply_univ,
-    Real.volume_real_Ioo_of_le (le_of_lt hT)]
-  norm_num
-
-private theorem integral_reverseTimeGelfandAffineDifference_apply_deriv_eq_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+private theorem integral_reverseTimeGelfandAffineDifference_apply_deriv_eq_zero (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) :
@@ -88,9 +79,7 @@ private theorem integral_reverseTimeGelfandAffineDifference_apply_deriv_eq_zero
       coeFn_reverseTimeValueCLM hΩ T u] with tau hGelfand hValue
     dsimp only [G]
     rw [hGelfand, scalarLpToH10HilbertGraphDual_apply, hValue]
-  have hG : Integrable
-      (fun tau => G tau v * eta.deriv tau)
-      (reverseTimeVolume T) :=
+  have hG :=
     hGInner.congr hGae.symm
   have hIdentity :
       (∫ tau, G tau v * eta.deriv tau
@@ -120,8 +109,12 @@ private theorem integral_reverseTimeGelfandAffineDifference_apply_deriv_eq_zero
           ∂reverseTimeVolume T := integral_sub hG hP
     _ = 0 := by rw [hIdentity, sub_self]
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+
 private theorem reverseTimeGelfandAffineDifference_apply_ae_eq_affineConstant_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -162,18 +155,7 @@ private theorem reverseTimeGelfandAffineDifference_apply_ae_eq_affineConstant_ap
   filter_upwards [ha] with tau htau
   rw [htau, hConstant]
 
-private theorem ae_all_h10HilbertGraphDual_apply_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {hΩ : IsOpen Ω} {T : ℝ}
-    (F : ℝ → H10HilbertGraphDual hΩ) (c : H10HilbertGraphDual hΩ)
-    (q : ℕ → H10HilbertGraph hΩ)
-    (hpair : ∀ n : ℕ, (fun tau => F tau (q n)) =ᵐ[reverseTimeVolume T]
-      fun _ => c (q n)) :
-    ∀ᵐ tau ∂reverseTimeVolume T, ∀ n : ℕ, F tau (q n) = c (q n) :=
-  ae_all_iff.mpr hpair
-
-private theorem h10HilbertGraphDual_eq_of_dense_apply_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω}
+private theorem h10HilbertGraphDual_eq_of_dense_apply_eq {hΩ : IsOpen Ω}
     (q : ℕ → H10HilbertGraph hΩ) (hqDense : DenseRange q)
     (ell ell' : H10HilbertGraphDual hΩ)
     (hpair : ∀ n : ℕ, ell (q n) = ell' (q n)) :
@@ -182,6 +164,8 @@ private theorem h10HilbertGraphDual_eq_of_dense_apply_eq
   exact Continuous.ext_on hqDense ell.continuous ell'.continuous (by
     rintro _ ⟨n, rfl⟩
     exact hpair n)
+
+end
 
 private theorem reverseTimeGelfandAffineDifference_ae_eq_affineConstant
     {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -212,7 +196,7 @@ private theorem reverseTimeGelfandAffineDifference_ae_eq_affineConstant
       reverseTimeGelfandAffineDifference_apply_ae_eq_affineConstant_apply
         hΩ T hT u g hderiv hF (q n)
   have hpairAll : ∀ᵐ tau ∂reverseTimeVolume T, ∀ n : ℕ, F tau (q n) = c (q n) :=
-    ae_all_h10HilbertGraphDual_apply_eq F c q hpairAE
+    (ae_all_iff.mpr hpairAE)
   filter_upwards [hpairAll] with tau htau
   exact h10HilbertGraphDual_eq_of_dense_apply_eq q hqDense (F tau) c (htau)
 
@@ -234,10 +218,7 @@ theorem reverseTimeGelfandCLM_ae_eq_reverseTimeVStarPrimitive_add_affineConstant
     reverseTimeGelfandCLM hΩ T u =ᵐ[reverseTimeVolume T] fun tau =>
       reverseTimeVStarPrimitive hΩ T g tau +
         reverseTimeGelfandAffineConstant hΩ T hT u g := by
-  have hF : Integrable
-      (fun tau => reverseTimeGelfandCLM hΩ T u tau -
-        reverseTimeVStarPrimitive hΩ T g tau)
-      (reverseTimeVolume T) :=
+  have hF :=
     integrable_reverseTimeGelfandAffineDifference hΩ T u g
   exact ae_eq_add_of_ae_sub_eq
     (reverseTimeGelfandAffineDifference_ae_eq_affineConstant hΩ T hT u g hderiv hF)

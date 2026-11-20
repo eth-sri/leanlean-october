@@ -44,8 +44,11 @@ def SourceDensityToPoint (d : ℕ) (lam Lam beta g C : ℝ) : Prop :=
       g ≤ u (1, v) + C * parabolicLpNormOn d F
         (parabolicBox 1 1 0 0)
 
+section
+variable {d : ℕ}
+
 /-- Eliminates a source-aware density-to-point relation at fixed local data. -/
-theorem SourceDensityToPoint.apply {d : ℕ} {lam Lam beta g C : ℝ}
+theorem SourceDensityToPoint.apply {lam Lam beta g C : ℝ}
     (h : SourceDensityToPoint d lam Lam beta g C) (U : Set (TimeVelocity d))
     (B : CoefficientField d) (F u : TimeVelocity d → ℝ) (hU : IsOpen U)
     (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
@@ -66,7 +69,7 @@ theorem SourceDensityToPoint.apply {d : ℕ} {lam Lam beta g C : ℝ}
   h U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
 
 /-- Increasing the required density preserves a source-aware relation. -/
-theorem SourceDensityToPoint.mono_density {d : ℕ} {lam Lam beta beta' g C : ℝ}
+theorem SourceDensityToPoint.mono_density {lam Lam beta beta' g C : ℝ}
     (hbeta : beta ≤ beta') (h : SourceDensityToPoint d lam Lam beta g C) :
     SourceDensityToPoint d lam Lam beta' g C := by
   intro U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
@@ -79,7 +82,7 @@ theorem SourceDensityToPoint.mono_density {d : ℕ} {lam Lam beta beta' g C : �
       (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ u z})).toReal := hdensity
 
 /-- Decreasing the asserted terminal value preserves a source-aware relation. -/
-theorem SourceDensityToPoint.mono_value {d : ℕ} {lam Lam beta g g' C : ℝ}
+theorem SourceDensityToPoint.mono_value {lam Lam beta g g' C : ℝ}
     (hg : g' ≤ g) (h : SourceDensityToPoint d lam Lam beta g C) :
     SourceDensityToPoint d lam Lam beta g' C := by
   intro U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
@@ -87,7 +90,7 @@ theorem SourceDensityToPoint.mono_value {d : ℕ} {lam Lam beta g g' C : ℝ}
     hsuper hdensity v hv)
 
 /-- Increasing the source-error coefficient preserves a source-aware relation. -/
-theorem SourceDensityToPoint.mono_error {d : ℕ} {lam Lam beta g C C' : ℝ}
+theorem SourceDensityToPoint.mono_error {lam Lam beta g C C' : ℝ}
     (hC : C ≤ C') (h : SourceDensityToPoint d lam Lam beta g C) :
     SourceDensityToPoint d lam Lam beta g C' := by
   intro U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
@@ -99,8 +102,7 @@ theorem SourceDensityToPoint.mono_error {d : ℕ} {lam Lam beta g C C' : ℝ}
     _ ≤ u (1, v) + C' * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
       gcongr
 
-private theorem IsParabolicSupersolutionOn.const_smul_source
-    {d : ℕ} {B : CoefficientField d} {f u : TimeVelocity d → ℝ}
+private theorem IsParabolicSupersolutionOn.const_smul_source {B : CoefficientField d} {f u : TimeVelocity d → ℝ}
     {V : Set (TimeVelocity d)} {c : ℝ} (hc : 0 ≤ c)
     (h : IsParabolicSupersolutionOn B f u V) :
     IsParabolicSupersolutionOn B (fun z ↦ c * f z) (c • u) V := by
@@ -110,7 +112,7 @@ private theorem IsParabolicSupersolutionOn.const_smul_source
 
 /-- Parabolic affine scaling preserves the source-aware relation with the
 exact source-norm scaling factor. -/
-theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
+theorem SourceDensityToPoint.scaled {lam Lam beta g C : ℝ}
     (h : SourceDensityToPoint d lam Lam beta g C)
     {R eps t₀ : ℝ} {v₀ : PDE.Vec d}
     (hR : 0 < R) (heps : 0 < eps)
@@ -275,6 +277,8 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
     _ = u (t₀ + R ^ 2, v) + C * R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
           parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀) := by
       field_simp [heps.ne']
+
+end
 
 end
 

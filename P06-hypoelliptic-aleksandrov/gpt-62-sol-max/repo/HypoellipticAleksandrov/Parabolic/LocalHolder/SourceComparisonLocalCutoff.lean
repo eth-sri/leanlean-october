@@ -16,35 +16,43 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped Topology
 
+/-- Squaring a cutoff keeps its support inside the original compact support. -/
+theorem cutoff_square_support {X : Type*} [TopologicalSpace X] {ρ : X → ℝ}
+    (hc : HasCompactSupport ρ) :
+    HasCompactSupport (fun z => ρ z ^ 2) ∧ tsupport (fun z => ρ z ^ 2) ⊆ tsupport ρ := by
+  have h : tsupport (fun z => ρ z ^ 2) ⊆ tsupport ρ := by
+    simpa only [pow_two] using
+      (tsupport_mul_subset_left : tsupport (fun z => ρ z * ρ z) ⊆ tsupport ρ)
+  exact ⟨hc.of_isClosed_subset (isClosed_tsupport _) h, h⟩
+
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+include hU
+
 /-- A continuous local field times an interior compact cutoff is globally integrable. -/
-theorem integrable_local_cutoff_mul {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (f χ : TimeVelocity d → ℝ) (hf : ContinuousOn f U)
+theorem integrable_local_cutoff_mul (f χ : TimeVelocity d → ℝ) (hf : ContinuousOn f U)
     (hχ : Continuous χ) (hc : HasCompactSupport χ) (hsub : tsupport χ ⊆ U) :
     Integrable (fun z => f z * χ z) := by
-  have hprod : Continuous (fun z => f z * χ z) :=
+  have hprod :=
     (hf.mul hχ.continuousOn).continuous_of_tsupport_subset hU
       (tsupport_mul_subset_right.trans hsub)
   exact hprod.integrable_of_hasCompactSupport (HasCompactSupport.mul_left hc)
 
 /-- Squared interior cutoffs also globalize continuous local integrands. -/
-theorem integrable_local_cutoff_square_mul {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (f ρ : TimeVelocity d → ℝ) (hf : ContinuousOn f U)
+theorem integrable_local_cutoff_square_mul (f ρ : TimeVelocity d → ℝ) (hf : ContinuousOn f U)
     (hρ : Continuous ρ) (hc : HasCompactSupport ρ) (hsub : tsupport ρ ⊆ U) :
     Integrable (fun z => f z * ρ z ^ 2) := by
-  have hpowc : HasCompactSupport (fun z => ρ z ^ 2) := by
-    rw [show (fun z => ρ z ^ 2) = ρ * ρ by funext z; exact pow_two (ρ z)]
-    exact HasCompactSupport.mul_left hc
-  have hpows : tsupport (fun z => ρ z ^ 2) ⊆ U := by
-    have hp : tsupport (fun z => ρ z ^ 2) ⊆ tsupport ρ := by
-      simpa only [pow_two] using
-        (tsupport_mul_subset_right : tsupport (fun z => ρ z * ρ z) ⊆ tsupport ρ)
-    exact hp.trans hsub
+  obtain ⟨hpowc, hpows⟩ := cutoff_square_support hc
   exact integrable_local_cutoff_mul hU f (fun z => ρ z ^ 2) hf
-    (hρ.pow 2) hpowc hpows
+    (hρ.pow 2) hpowc (hpows.trans hsub)
+
+end
+
+section
+variable {d : ℕ} (χ : TimeVelocity d → ℝ)
 
 /-- A fixed-time slice of a compact spacetime cutoff has compact spatial support. -/
-theorem hasCompactSupport_local_cutoff_time_slice {d : ℕ}
-    (χ : TimeVelocity d → ℝ) (hc : HasCompactSupport χ) (t : ℝ) :
+theorem hasCompactSupport_local_cutoff_time_slice (hc : HasCompactSupport χ) (t : ℝ) :
     HasCompactSupport (fun y => χ (t, y)) := by
   apply hc.comp_isClosedEmbedding
   refine ⟨isEmbedding_prodMkRight t, ?_⟩
@@ -54,8 +62,7 @@ theorem hasCompactSupport_local_cutoff_time_slice {d : ℕ}
   exact isClosed_singleton.prod isClosed_univ
 
 /-- The support of a fixed-time cutoff slice stays in the spatial carrier. -/
-theorem tsupport_local_cutoff_time_slice_subset {d : ℕ}
-    (χ : TimeVelocity d → ℝ) {a T : ℝ} {O : Set (PDE.Vec d)}
+theorem tsupport_local_cutoff_time_slice_subset {a T : ℝ} {O : Set (PDE.Vec d)}
     (hsub : tsupport χ ⊆ Ioo a T ×ˢ O) (t : ℝ) :
     tsupport (fun y => χ (t, y)) ⊆ O := by
   have hpre : tsupport (fun y => χ (t, y)) ⊆
@@ -65,6 +72,8 @@ theorem tsupport_local_cutoff_time_slice_subset {d : ℕ}
       exact subset_tsupport χ hy
     · exact (isClosed_tsupport χ).preimage (continuous_const.prodMk continuous_id)
   exact fun y hy => (hsub (hpre hy)).2
+
+end
 
 /-- Spatial slice derivatives vanish outside the actual spacetime support. -/
 theorem scalarSpatialGradient_eq_zero_of_notMem_tsupport {d : ℕ}

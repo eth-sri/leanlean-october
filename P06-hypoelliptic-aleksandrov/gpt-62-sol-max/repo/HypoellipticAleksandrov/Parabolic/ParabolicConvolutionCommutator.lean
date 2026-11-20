@@ -75,7 +75,6 @@ theorem tendsto_eLpNorm_bounded_multiplier_commutator
       ‖(a x - an n x) * h x‖ ≤ ‖(2 * M) * |h x|‖ := by
     filter_upwards [haLimitBound, haBound n] with x hax hanx
     simp only [Pi.mul_apply, Pi.sub_apply, Real.norm_eq_abs, abs_mul]
-    have htwoM : 0 ≤ 2 * M := by linarith
     rw [abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2),
       abs_of_nonneg hM, abs_abs]
     have hsub : |a x - an n x| ≤ 2 * M := by
@@ -129,8 +128,6 @@ theorem tendsto_eLpNorm_bounded_multiplier_commutator
           ring, eLpNorm_neg]
     rw [hlastEq]
     exact hlast
-  have hcMeas : AEStronglyMeasurable c μ :=
-    (ha.mul hh.aestronglyMeasurable).congr hc.symm
   let r : Nat → α → Real := fun n x =>
     (cn n x - c x) +
       ((a x - an n x) * h x + an n x * (h x - hn n x))
@@ -180,19 +177,6 @@ theorem tendsto_eLpNorm_bounded_multiplier_commutator
   have heLp (n : Nat) : eLpNorm (cn n - fun x => an n x * hn n x) p μ =
       eLpNorm (r n) p μ := eLpNorm_congr_ae (heq n)
   simpa only [heLp] using hr
-
-private theorem parabolicConvolution_eq_leftConvolution {d : Nat}
-    (f rho : TimeVelocity d → Real) :
-    parabolicConvolution f rho =
-      rho ⋆[ContinuousLinearMap.lsmul Real Real,
-        (volume : Measure (TimeVelocity d))] f := by
-  rw [← convolution_flip]
-  ext z
-  simp only [parabolicConvolution, convolution_def]
-  apply integral_congr_ae
-  filter_upwards with y
-  change f y * rho (z - y) = rho (z - y) * f y
-  exact mul_comm _ _
 
 private theorem abs_parabolicConvolution_le_of_abs_le
     {d : Nat} {f : TimeVelocity d → Real} {M : Real}
@@ -261,8 +245,10 @@ private theorem parabolicConvolution_finset_sum {d : Nat} {ι : Type*}
     rw [hconv, ih (fun i hi => hf i (Finset.mem_insert_of_mem hi))]
     rfl
 
+section
+variable {d : Nat} (A : CoefficientField d) (H : TimeVelocity d → PDE.Mat d)
+
 private theorem parabolicConvolution_matrixContraction_eq_sum
-    {d : Nat} (A : CoefficientField d) (H : TimeVelocity d → PDE.Mat d)
     (hprod : ∀ i j : Fin d,
       LocallyIntegrable (fun z => coefficientAt A z i j * H z i j) volume)
     (n : Nat) :
@@ -301,8 +287,6 @@ private theorem parabolicConvolution_matrixContraction_eq_sum
 /-- The entrywise parabolic convolution commutator tends to zero in finite
 `L^(d + 1)` norm on every compact carrier. -/
 theorem tendsto_eLpNorm_parabolicConvolutionCommutator_on_compact
-    {d : Nat} (A : CoefficientField d)
-    (H : TimeVelocity d → PDE.Mat d)
     (K : Set (TimeVelocity d)) (hK : IsCompact K)
     (M : Real) (hM : 0 ≤ M)
     (hAmeas : ∀ i j : Fin d,
@@ -428,9 +412,6 @@ theorem tendsto_eLpNorm_parabolicConvolutionCommutator_on_compact
     apply Finset.sum_congr rfl
     intro i _
     rw [← Finset.sum_sub_distrib]
-  have hresMeas (i j : Fin d) (n : Nat) :
-      AEStronglyMeasurable (residual i j n) μK := by
-    exact (hcnMeas i j n).sub ((hanMeas i j n).mul (hhnMeas i j n))
   have hsumBound (n : Nat) : eLpNorm (parabolicConvolutionCommutator A H n) p μK ≤
       ∑ i : Fin d, ∑ j : Fin d, eLpNorm (residual i j n) p μK := by
     rw [hreconstruction n, ← Finset.sum_fn]
@@ -454,5 +435,7 @@ theorem tendsto_eLpNorm_parabolicConvolutionCommutator_on_compact
     hsumTendsto
   · exact Filter.Eventually.of_forall fun n => bot_le
   · exact Filter.Eventually.of_forall hsumBound
+
+end
 
 end HypoellipticAleksandrov.Parabolic

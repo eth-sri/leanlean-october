@@ -13,7 +13,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open Set
 
 /-- Every nonnegative C¹,² solution satisfies the unit-cylinder Harnack comparison. -/
-theorem parabolic_harnack_unit_cylinder_aux
+theorem parabolic_harnack_unit_cylinder
     (N : ℕ) (hN : 1 ≤ N) (lam : ℝ) (hlam : 0 < lam)
     (Lam : ℝ) (hlamLam : lam ≤ Lam) :
     ∃ h : ℝ, 0 < h ∧

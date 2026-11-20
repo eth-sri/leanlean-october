@@ -25,21 +25,23 @@ structure FiniteSeparatedSpacetimeTest
   timeFactor : Fin termCount → OriginalTimeScalarTest τ₁ τ₂
   spatialFactor : Fin termCount → PDE.WeakTestFunction O
 
+section
+variable {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O)
+include τ₁ τ₂ O q
+
 /-- The raw spacetime function represented by a finite separated test. -/
-noncomputable def FiniteSeparatedSpacetimeTest.toFun
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) :
+noncomputable def FiniteSeparatedSpacetimeTest.toFun :
     TimeVelocity d → ℝ :=
   fun z => ∑ m : Fin q.termCount,
     q.timeFactor m z.1 * q.spatialFactor m z.2
 
 /-- The literal time derivative of a finite separated test. -/
-noncomputable def FiniteSeparatedSpacetimeTest.timeDeriv
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) :
+noncomputable def FiniteSeparatedSpacetimeTest.timeDeriv :
     TimeVelocity d → ℝ :=
   fun z => ∑ m : Fin q.termCount,
     (q.timeFactor m).deriv z.1 * q.spatialFactor m z.2
+
+end
 
 /-- The time derivative of a finite separated test differentiates only its time factors. -/
 @[simp] theorem timeDerivative_finiteSeparatedSpacetimeTest

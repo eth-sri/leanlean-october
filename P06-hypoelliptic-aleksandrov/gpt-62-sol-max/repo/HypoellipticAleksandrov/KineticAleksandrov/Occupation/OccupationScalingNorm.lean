@@ -11,9 +11,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set
 open scoped ENNReal
 
+section
+variable {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+include hr
+
 /-- Restricted volume under the parabolic affine change of variables. -/
-theorem occupation_map_restrict_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
-    {r : ℝ} (hr : 0 < r) (s : Set (TimeVelocity d)) :
+theorem occupation_map_restrict_parabolicAffine (s : Set (TimeVelocity d)) :
     Measure.map (parabolicAffine t₀ v₀ r) (volume.restrict s) =
       ENNReal.ofReal ((r ^ (d + 2))⁻¹) •
         volume.restrict (parabolicAffine t₀ v₀ r '' s) := by
@@ -28,8 +31,7 @@ theorem occupation_map_restrict_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : P
     _ = _ := by rw [map_volume_parabolicAffine t₀ v₀ hr, Measure.restrict_smul]
 
 /-- Pullback norm with a scalar prefactor, at every extended exponent. -/
-theorem occupation_eLpNorm_pullback {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
-    {r : ℝ} (hr : 0 < r) (a : ℝ) (g : TimeVelocity d → ℝ)
+theorem occupation_eLpNorm_pullback (a : ℝ) (g : TimeVelocity d → ℝ)
     (p : ℝ≥0∞) (s : Set (TimeVelocity d)) :
     eLpNorm (fun z => a * g (parabolicAffine t₀ v₀ r z)) p (volume.restrict s) =
       ‖a‖ₑ * (ENNReal.ofReal ((r ^ (d + 2))⁻¹) ^ (1 / p).toReal) *
@@ -43,12 +45,16 @@ theorem occupation_eLpNorm_pullback {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
     eLpNorm_smul_measure_of_ne_zero hc]
   simp only [smul_eq_mul, mul_assoc]
 
+end
+
+section
+variable {d : ℕ}
+
 /-- Inverse parabolic dilation carries the length-T open slab onto the unit slab. -/
-theorem occupation_inverseScaling_image_slab {d : ℕ} {T : ℝ} (hT : 0 < T) :
+theorem occupation_inverseScaling_image_slab {T : ℝ} (hT : 0 < T) :
     parabolicAffine 0 (0 : PDE.Vec d) (Real.sqrt T)⁻¹ ''
       (Ioo (0 : ℝ) T ×ˢ univ) = Ioo (0 : ℝ) 1 ×ˢ univ := by
   have hs : (Real.sqrt T) ^ 2 = T := Real.sq_sqrt hT.le
-  have hs0 : Real.sqrt T ≠ 0 := (Real.sqrt_pos.mpr hT).ne'
   ext q
   constructor
   · rintro ⟨z, hz, rfl⟩
@@ -71,12 +77,15 @@ theorem occupation_inverseScaling_image_slab {d : ℕ} {T : ℝ} (hT : 0 < T) :
         field_simp
         simp only [zero_add]
 
+section
+variable {T γ : ℝ} (hT : 0 < T)
+include hT
+
 /-- The scalar determinant factor is exactly the source time exponent. -/
-theorem occupation_scaling_factor {d : ℕ} {T γ : ℝ} (hT : 0 < T) :
+theorem occupation_scaling_factor :
     T ^ (-(d : ℝ) / 2) *
       (((Real.sqrt T)⁻¹ ^ (d + 2))⁻¹) ^ (1 / γ) =
         T ^ occupationBeta d γ := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hT
   rw [inv_pow, inv_inv, ← Real.rpow_natCast, Real.sqrt_eq_rpow,
     ← Real.rpow_mul hT.le, ← Real.rpow_mul hT.le, ← Real.rpow_add hT]
   congr 1
@@ -85,12 +94,12 @@ theorem occupation_scaling_factor {d : ℕ} {T γ : ℝ} (hT : 0 < T) :
   ring
 
 /-- The real norm of the constructed scaled density has the exact source factor. -/
-theorem occupationLpNorm_scaledDensity {d : ℕ} {T γ : ℝ} (hT : 0 < T)
+theorem occupationLpNorm_scaledDensity
     (hγ : 0 ≤ γ) (g : TimeVelocity d → ℝ) :
     occupationLpNorm T γ
       (fun q => T ^ (-(d : ℝ) / 2) * g (q.1 / T, (Real.sqrt T)⁻¹ • q.2)) =
         T ^ occupationBeta d γ * occupationLpNorm 1 γ g := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hT
+  have hs := Real.sqrt_pos.mpr hT
   have hsq := Real.sq_sqrt hT.le
   have hf : (fun q : TimeVelocity d =>
       T ^ (-(d : ℝ) / 2) * g (q.1 / T, (Real.sqrt T)⁻¹ • q.2)) =
@@ -112,8 +121,10 @@ theorem occupationLpNorm_scaledDensity {d : ℕ} {T γ : ℝ} (hT : 0 < T)
     ENNReal.toReal_div, ENNReal.toReal_one, ENNReal.toReal_ofReal hγ,
     occupation_scaling_factor hT]
 
+end
+
 /-- Parabolic pullback with a finite prefactor preserves finite extended norms. -/
-theorem occupation_memLp_pullback {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
+theorem occupation_memLp_pullback (t₀ : ℝ) (v₀ : PDE.Vec d)
     {r : ℝ} (hr : 0 < r) (a : ℝ) (g : TimeVelocity d → ℝ)
     (p : ℝ≥0∞) (s : Set (TimeVelocity d))
     (hg : MemLp g p (volume.restrict (parabolicAffine t₀ v₀ r '' s))) :
@@ -126,10 +137,12 @@ theorem occupation_memLp_pullback {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
   · exact hg
 
 /-- The inverse-density prefactor times its Jacobian equals the elapsed-time scale. -/
-theorem occupation_density_jacobian {d : ℕ} {T : ℝ} (hT : 0 < T) :
+theorem occupation_density_jacobian {T : ℝ} (hT : 0 < T) :
     T ^ (-(d : ℝ) / 2) * ((Real.sqrt T)⁻¹ ^ (d + 2))⁻¹ = T := by
   have hh := occupation_scaling_factor (d := d) (γ := 1) hT
   have hb : occupationBeta d 1 = 1 := by unfold occupationBeta; ring
   simpa only [div_one, Real.rpow_one, hb] using hh
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

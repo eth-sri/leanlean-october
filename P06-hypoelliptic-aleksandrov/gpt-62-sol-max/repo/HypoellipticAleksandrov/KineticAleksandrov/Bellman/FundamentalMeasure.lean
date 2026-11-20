@@ -48,8 +48,6 @@ def bellmanFundamentalMeasure : Measure BellmanPuncturedPlane :=
 theorem continuous_bellmanGaussianKernel :
     Continuous (fun w : BellmanPositiveTime × (ℝ × ℝ) =>
       bellmanGaussianKernel w.1 w.2) := by
-  have ht : ∀ w : BellmanPositiveTime × (ℝ × ℝ), w.1.val ≠ 0 :=
-    fun w => ne_of_gt w.1.property
   unfold bellmanGaussianKernel bellmanGaussianExponent
   fun_prop (disch := aesop)
 

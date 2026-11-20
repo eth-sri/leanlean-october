@@ -94,8 +94,7 @@ noncomputable def subAverage [Fact (1 ≤ p)]
 theorem subAverage_apply [Fact (1 ≤ p)]
     [IsFiniteMeasure (volumeOn U)]
     (u : W1pFunction U p) (x : Vec d) :
-    u.subAverage x = u x - integralAverage U u.toFun := by
-  simp only [subAverage, addConst_apply, sub_eq_add_neg]
+    u.subAverage x = u x - integralAverage U u.toFun := rfl
 
 @[simp]
 theorem subAverage_grad [Fact (1 ≤ p)]
@@ -113,9 +112,7 @@ theorem meanZeroOn_subAverage [Fact (1 ≤ p)]
   have hmean :=
     meanZeroOn_sub_integralAverage
       u.integrableOn hUPos hUTop
-  apply hmean.congr_ae
-  exact Filter.Eventually.of_forall fun x => by
-    rw [subAverage_apply]
+  assumption
 
 end W1pFunction
 

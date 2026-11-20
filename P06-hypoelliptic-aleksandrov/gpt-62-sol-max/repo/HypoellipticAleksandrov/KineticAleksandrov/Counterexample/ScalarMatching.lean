@@ -19,20 +19,27 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set Filter
 open scoped Topology ContDiff
 
+section
+variable (gamma : ScalarGamma)
+include gamma
+
 /-- The entire local expression at diffusivity a, with the source linear normalization. -/
-def scalarLocal (gamma : ScalarGamma) (Lam a s : ℝ) : ℝ :=
+def scalarLocal (Lam a s : ℝ) : ℝ :=
   gammaA gamma.1 * Kummer.M (-gamma.1) Kummer.b23 (scalarCubic a s) +
     gammaB gamma.1 * s / Real.rpow (9 * Lam) (1 / 3) *
       Kummer.M (1 / 3 - gamma.1) Kummer.b43 (scalarCubic a s)
 
 /-- The literal local expression at diffusivity one is the negative piece. -/
-theorem scalarLocal_one (gamma : ScalarGamma) (Lam : ℝ) :
+theorem scalarLocal_one (Lam : ℝ) :
     scalarLocal gamma Lam 1 = Fminus gamma Lam := by
   funext s
   simp only [scalarLocal, scalarCubic, mul_one, Fminus]
 
+section
+variable (Lam a : ℝ)
+
 /-- Smoothness of the entire local expression. -/
-theorem contDiff_scalarLocal (gamma : ScalarGamma) (Lam a : ℝ) :
+theorem contDiff_scalarLocal :
     ContDiff ℝ (⊤ : ℕ∞) (scalarLocal gamma Lam a) := by
   have hm (u : ℝ) (b : Kummer.Pos) : ContDiff ℝ (⊤ : ℕ∞) (Kummer.M u b) :=
     (Kummer.analyticOnNhd_M u b).contDiff
@@ -41,13 +48,12 @@ theorem contDiff_scalarLocal (gamma : ScalarGamma) (Lam a : ℝ) :
       ((hm _ _).comp (contDiff_scalarCubic a)))
 
 /-- The local expression has the source value at zero for every diffusivity. -/
-@[simp] theorem scalarLocal_zero (gamma : ScalarGamma) (Lam a : ℝ) :
+@[simp] theorem scalarLocal_zero :
     scalarLocal gamma Lam a 0 = gammaA gamma.1 := by
-  simp only [scalarLocal, scalarCubic, zero_pow (by decide : 3 ≠ 0), zero_div,
-    Kummer.M_zero, mul_one, mul_zero, add_zero]
+  simp [scalarLocal, scalarCubic, zero_div, Kummer.M_zero, mul_one, mul_zero, add_zero]
 
 /-- Its first derivative at zero is independent of the branch diffusivity. -/
-theorem scalarLocal_hasDerivAt_zero (gamma : ScalarGamma) (Lam a : ℝ) :
+theorem scalarLocal_hasDerivAt_zero :
     HasDerivAt (scalarLocal gamma Lam a)
       (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)) 0 := by
   have hc : scalarCubic a 0 = 0 := by simp [scalarCubic]
@@ -63,8 +69,10 @@ theorem scalarLocal_hasDerivAt_zero (gamma : ScalarGamma) (Lam a : ℝ) :
     zero_pow (by decide : 3 ≠ 0), zero_div, Kummer.M_zero, mul_zero, zero_mul,
     add_zero, zero_add, mul_one] using h
 
+end
+
 /-- The local expression solves the scalar equation at all real s. -/
-theorem scalarLocal_ode (gamma : ScalarGamma) (Lam a s : ℝ) (ha : a ≠ 0) :
+theorem scalarLocal_ode (Lam a s : ℝ) (ha : a ≠ 0) :
     a * deriv (deriv (scalarLocal gamma Lam a)) s -
       s ^ 2 / 3 * deriv (scalarLocal gamma Lam a) s +
         gamma.1 * s * scalarLocal gamma Lam a s = 0 := by
@@ -94,12 +102,12 @@ theorem scalarLocal_ode (gamma : ScalarGamma) (Lam a s : ℝ) (ha : a ≠ 0) :
     (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)) s hf hg hfo hgo
 
 /-- Both local second derivatives vanish at zero by their actual differential equation. -/
-theorem scalarLocal_deriv2_zero (gamma : ScalarGamma) (Lam a : ℝ) (ha : a ≠ 0) :
+theorem scalarLocal_deriv2_zero (Lam a : ℝ) (ha : a ≠ 0) :
     deriv (deriv (scalarLocal gamma Lam a)) 0 = 0 := by
   have ho := scalarLocal_ode gamma Lam a 0 ha
-  simp only [zero_pow (by decide : 2 ≠ 0), zero_div, zero_mul, mul_zero, sub_zero,
-    add_zero] at ho
-  exact (mul_eq_zero.mp ho).resolve_left ha
+  simp_all
+
+end
 
 /-- Exact positive-side connection consumer, pending the Kummer lane's connection proof. -/
 theorem Fplus_eq_scalarLocal_of_connection
@@ -131,8 +139,12 @@ variable (hconnection : ∀ a : Kummer.NegThird, ∀ z : ℝ, 0 < z →
 
 include hconnection
 
+section
+variable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+include hLam
+
 /-- The source piecewise profile is the join of its two entire local expressions. -/
-theorem F_eq_scalarJoin_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_eq_scalarJoin_of_connection :
     F gamma Lam = scalarJoin (scalarLocal gamma Lam Lam) (scalarLocal gamma Lam 1) := by
   funext s
   unfold F scalarJoin
@@ -147,7 +159,7 @@ theorem F_eq_scalarJoin_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 
       simp only [hz, lt_self_iff_false, ↓reduceIte, Fminus_zero]
 
 /-- Exact C² matching at the scalar join, conditional only on the complete connection export. -/
-theorem F_contDiff_two_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_contDiff_two_of_connection :
     ContDiff ℝ 2 (F gamma Lam) := by
   rw [F_eq_scalarJoin_of_connection hconnection gamma Lam hLam]
   apply contDiff_two_scalarJoin
@@ -160,7 +172,7 @@ theorem F_contDiff_two_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0
       scalarLocal_deriv2_zero gamma Lam 1 one_ne_zero]
 
 /-- The joined value and first two derivatives have precisely the source normalization. -/
-theorem F_zero_jets_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_zero_jets_of_connection :
     F gamma Lam 0 = gammaA gamma.1 ∧
     deriv (F gamma Lam) 0 = gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3) ∧
     deriv (deriv (F gamma Lam)) 0 = 0 := by
@@ -190,6 +202,8 @@ theorem F_zero_jets_of_connection (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < 
   · rw [scalarJoin_deriv _ _ hfdd hgdd hdfg hddfg]
     simp only [scalarJoin, lt_self_iff_false, ↓reduceIte]
     exact scalarLocal_deriv2_zero gamma Lam 1 one_ne_zero
+
+end
 
 /-- The glued profile solves the scalar equation, including its regular joining point. -/
 theorem F_ode_of_connection (gamma : ScalarGamma) (Lam s : ℝ) (hLam : 0 < Lam) :

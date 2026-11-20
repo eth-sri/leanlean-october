@@ -55,8 +55,7 @@ theorem mass_homogeneous_abs_weighted {d : ℕ} {lam Lam : ℝ}
   intro P hP
   apply abs_le.mpr
   constructor
-  · have hh := h₂ P hP
-    linarith only [hh]
+  · linarith only [(h₂ P hP)]
   · exact h₁ P hP
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

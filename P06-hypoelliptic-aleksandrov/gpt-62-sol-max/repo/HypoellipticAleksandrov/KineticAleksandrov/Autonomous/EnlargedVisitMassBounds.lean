@@ -16,45 +16,39 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
+
 /-- Actual active pieces have the physical active-velocity support. -/
-theorem enlargedActivePiece_ae_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+theorem enlargedActivePiece_ae_active (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
-    ∀ᵐ q ∂enlargedActivePiece hH hLE hlam hLam A c J s T P n,
+    ∀ᵐ q ∂enlargedActivePiece A c J s T P n,
       q.velocity 0 ∈ c.active := by
   unfold enlargedActivePiece
-  rw [enlargedVisitGreen_comp_eq_clipped hH hLE hlam hLam A (visitActiveUnion c J) s T _
-    ((enlargedVisitEntrance_ae_support hH hLE hlam hLam A c J s T P hs hT n).mono
+  rw [enlargedVisitGreen_comp_eq_clipped A (visitActiveUnion c J) s T _
+    ((enlargedVisitEntrance_ae_support A c J s T P hs hT n).mono
       fun _ hp => hp.1)]
-  exact visitActiveGreenMixture_ae_active hH hLE hlam hLam A c J (s - 1) T _
+  exact visitActiveGreenMixture_ae_active A c J (s - 1) T _
 
 /-- Finite active occupation sums inherit the full-space velocity-band capacity. -/
-theorem enlargedActivePiece_partial_capacity_of_domination
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+theorem enlargedActivePiece_partial_capacity_of_domination (T : ℝ)
     (P : Point) (hT : 0 < T) (hbar : |c.vbar| = 2 * c.r) (N : ℕ)
     (hOccupation : (∑ n ∈ Finset.range N,
-      enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P n) ≤
-        enlargedFullSpaceOccupation hH hLE hlam hLam A P T) :
+      enlargedActivePiece A c J P.time (P.time + T) P n) ≤
+        enlargedFullSpaceOccupation A P T) :
     (∑ n ∈ Finset.range N,
-      (enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P n univ).toReal) ≤
+      (enlargedActivePiece A c J P.time (P.time + T) P n univ).toReal) ≤
         (64 * c.r / lam) * Real.sqrt (2 * Lam * T) := by
-  let gm := enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P
+  let gm := enlargedActivePiece A c J P.time (P.time + T) P
   have hPT : P.time < P.time + T := by linarith
   have : ∀ n, IsFiniteMeasure (gm n) := fun n =>
-    enlargedActivePiece_isFiniteMeasure hH hLE hlam hLam A c J P.time (P.time + T)
+    enlargedActivePiece_isFiniteMeasure A c J P.time (P.time + T)
       P le_rfl hPT n
   let B : Set Point := {q | |q.velocity 0| ≤ 3 * c.r}
-  have hB : MeasurableSet B := measurableSet_le
-    (continuous_abs.measurable.comp ((continuous_apply 0).comp continuous_velocity).measurable)
-    measurable_const
   have hs : ∀ᵐ q ∂(∑ n ∈ Finset.range N, gm n), q ∈ B := by
     apply ae_finsetSum_measure_iff.mpr
     intro n _
-    apply (enlargedActivePiece_ae_active hH hLE hlam hLam A c J P.time (P.time + T)
+    apply (enlargedActivePiece_ae_active A c J P.time (P.time + T)
       P le_rfl hPT n).mono
     intro q hq
     have hv := (c.active_abs_bounds hq).2
@@ -65,13 +59,15 @@ theorem enlargedActivePiece_partial_capacity_of_domination
     (Measure.restrict_eq_self_of_ae_mem hs)
   rw [Measure.restrict_apply MeasurableSet.univ, univ_inter] at he
   have hb := (hOccupation B).trans
-    (enlargedFullSpaceOccupation_band_le hH hLE hlam hLam A P T c.r hT c.positive)
+    (enlargedFullSpaceOccupation_band_le A P T c.r hT c.positive)
   rw [he] at hb
   have hradius := c.positive
-  have hnon : 0 ≤ (64 * c.r / lam) * Real.sqrt (2 * Lam * T) := by positivity
+  have hnon : 0 ≤ (64 * c.r / lam) * Real.sqrt (2 * Lam * T) := by have := A.positive; positivity
   have hr := ENNReal.toReal_mono ENNReal.ofReal_ne_top hb
   rw [ENNReal.toReal_ofReal hnon, visit_partial_real_mass gm N univ MeasurableSet.univ] at hr
   exact hr
+
+end
 
 /-- Source horizon conversion for the quadratic count inequality. -/
 theorem enlarged_mass_arithmetic {r R M D : ℝ} (hr : 0 < r) (hR : 0 ≤ R)

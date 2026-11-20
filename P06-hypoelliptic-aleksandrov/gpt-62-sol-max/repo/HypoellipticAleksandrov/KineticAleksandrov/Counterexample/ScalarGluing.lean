@@ -17,11 +17,15 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set Filter
 open scoped Topology ContDiff
 
+section
+variable (f g : ℝ → ℝ)
+include f g
+
 /-- Join the positive-side function to the negative-side function at zero. -/
-def scalarJoin (f g : ℝ → ℝ) (s : ℝ) : ℝ := if 0 < s then f s else g s
+def scalarJoin (s : ℝ) : ℝ := if 0 < s then f s else g s
 
 /-- The glued derivative at zero follows from the two one-sided derivatives. -/
-theorem scalarJoin_hasDerivAt_zero (f g : ℝ → ℝ) (D : ℝ)
+theorem scalarJoin_hasDerivAt_zero (D : ℝ)
     (hf : HasDerivAt f D 0) (hg : HasDerivAt g D 0) (hfg : f 0 = g 0) :
     HasDerivAt (scalarJoin f g) D 0 := by
   have hr : HasDerivWithinAt (scalarJoin f g) D (Ici 0) 0 :=
@@ -43,7 +47,7 @@ theorem scalarJoin_hasDerivAt_zero (f g : ℝ → ℝ) (D : ℝ)
   exact (hr.union hl).hasDerivAt (by rw [hu]; exact univ_mem)
 
 /-- Away from zero, differentiation commutes with the branch selection. -/
-theorem scalarJoin_deriv_of_ne_zero (f g : ℝ → ℝ) (s : ℝ) (hs : s ≠ 0) :
+theorem scalarJoin_deriv_of_ne_zero (s : ℝ) (hs : s ≠ 0) :
     deriv (scalarJoin f g) s = scalarJoin (deriv f) (deriv g) s := by
   rcases lt_or_gt_of_ne hs with hs | hs
   · have he : scalarJoin f g =ᶠ[𝓝 s] g := by
@@ -57,10 +61,15 @@ theorem scalarJoin_deriv_of_ne_zero (f g : ℝ → ℝ) (s : ℝ) (hs : s ≠ 0)
     rw [he.deriv_eq]
     simp only [scalarJoin, hs, ↓reduceIte]
 
+end
+
+section
+variable (f g : ℝ → ℝ) (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) (hfg : f 0 = g 0)
+  (hdfg : deriv f 0 = deriv g 0)
+include hf hg hfg hdfg
+
 /-- Matching first jets gives the global piecewise derivative identity. -/
-theorem scalarJoin_deriv (f g : ℝ → ℝ)
-    (hf : Differentiable ℝ f) (hg : Differentiable ℝ g)
-    (hfg : f 0 = g 0) (hdfg : deriv f 0 = deriv g 0) :
+theorem scalarJoin_deriv :
     deriv (scalarJoin f g) = scalarJoin (deriv f) (deriv g) := by
   funext s
   by_cases hs : s = 0
@@ -71,9 +80,7 @@ theorem scalarJoin_deriv (f g : ℝ → ℝ)
   · exact scalarJoin_deriv_of_ne_zero f g s hs
 
 /-- Matching first jets gives ordinary differentiability of the join. -/
-theorem differentiable_scalarJoin (f g : ℝ → ℝ)
-    (hf : Differentiable ℝ f) (hg : Differentiable ℝ g)
-    (hfg : f 0 = g 0) (hdfg : deriv f 0 = deriv g 0) :
+theorem differentiable_scalarJoin :
     Differentiable ℝ (scalarJoin f g) := by
   intro s
   rcases lt_trichotomy s 0 with hs | hs | hs
@@ -86,6 +93,8 @@ theorem differentiable_scalarJoin (f g : ℝ → ℝ)
   · apply (hf s).congr_of_eventuallyEq
     filter_upwards [Ioi_mem_nhds hs] with t ht
     simp only [scalarJoin, show 0 < t from ht, ↓reduceIte]
+
+end
 
 /-- Matching values makes the join continuous. -/
 theorem continuous_scalarJoin (f g : ℝ → ℝ) (hf : Continuous f) (hg : Continuous g)

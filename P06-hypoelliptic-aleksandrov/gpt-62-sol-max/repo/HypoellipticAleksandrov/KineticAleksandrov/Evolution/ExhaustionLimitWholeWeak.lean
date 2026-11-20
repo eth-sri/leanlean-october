@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitWholeIntegral
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitWholeUniform
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitWholeGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitClassical
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitAdjoint
@@ -41,73 +41,31 @@ theorem weakRegularized_wholeSpace_ball_limit :
     IsKineticWeakRegularizedSolution B b ε (wholeSpaceInnerCylinder α τ S0)
       (fun p => limUnder atTop (fun j => v j p)) (fun _ => 0) := by
   let U := wholeSpaceInnerCylinder (n := n) α τ S0
-  let K := movingClosedSlab univ (fun _ : ℝ => (0 : PDE.Vec n)) α τ ∩
-    {p | radialSq p ≤ S0 ^ 2}
   have hU : IsOpen U := isOpen_wholeSpaceInnerCylinder α τ S0
-  have hUK : U ⊆ K := wholeSpaceInnerCylinder_subset_closed α τ S0
-  have hcont := (tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S0)
-    hlam hB hb hε.le hε1 hC F hFC r hrlim v hv).2.1.mono hUK
-  refine ⟨hcont.locallyIntegrableOn hU.measurableSet, ?_⟩
-  intro ψ hψ hc hs
-  let φ (p : KineticPoint n) := regularizedAdjoint B b ε ψ
-    ((evolutionHomeomorph n).symm p)
-  have hφ : Continuous φ := (contDiff_regularizedAdjoint hBs hbs hψ ε).continuous.comp
-    (evolutionHomeomorph n).symm.continuous
-  have hzeroU (p : KineticPoint n) (hp : p ∉ U) : φ p = 0 := by
-    apply regularizedAdjoint_eq_zero_of_notMem_tsupport
-    intro hx
-    exact hp (by simpa using hs hx)
-  have hzeroK (p : KineticPoint n) (hp : p ∉ K) : φ p = 0 :=
-    hzeroU p (fun h => hp (hUK h))
-  have hInt := tendsto_setIntegral_mul_wholeSpace_ball_solutions (α := α) (S0 := S0)
-    hlam hB hb hε.le hε1 hC F hFC r hrlim v hv φ hφ
-  have hnear : ∀ᶠ j : ℕ in atTop, |S0| < r j :=
-    hrlim.eventually (eventually_gt_atTop |S0|)
-  have hIz : ∀ᶠ j : ℕ in atTop, (∫ p in K, v j p * φ p) = 0 := by
-    filter_upwards [hnear] with j hj
-    let V := evolutionHomeomorph n ⁻¹' U
-    have hV : IsOpen V := hU.preimage (evolutionHomeomorph n).continuous
-    have hball (p : KineticPoint n) (hp : p ∈ U) :
-        p.position ∈ movingDomain (PDE.euclideanBall 0 (r j)) (fun _ => 0) p.time :=
-      mem_movingBall_of_radialSq_le (abs_nonneg S0) hj
-        (by simpa only [sq_abs] using (show radialSq p < S0 ^ 2 from hp.2.2).le)
-    have hsm : ContDiffOn ℝ (⊤ : ℕ∞) (v j ∘ evolutionHomeomorph n) V := by
-      exact (hv j).2.2.1.comp (evolutionProdCLE n).contDiff.contDiffOn
-        (fun x hx => ⟨hx.2.1, hball _ hx⟩)
-    have hop : ∀ x ∈ V, regularizedOperator B b ε (v j ∘ evolutionHomeomorph n) x = 0 := by
-      intro x hx
-      have hc2 : ContDiffAt ℝ 2 (v j ∘ evolutionHomeomorph n) x :=
-        (hsm.contDiffAt (hV.mem_nhds hx)).of_le (by norm_num)
-      rw [regularizedOperator_comp ε hc2]
-      exact (hv j).2.2.2.1 _ ⟨hx.2.1, hball _ hx⟩
-    have hePack : (∫ x in V, v j (evolutionHomeomorph n x) *
-        regularizedAdjoint B b ε ψ x) = 0 := by
-      change (∫ x in V, (v j ∘ evolutionHomeomorph n) x *
-        regularizedAdjoint B b ε ψ x) = 0
-      rw [integral_regularizedAdjoint_contDiffOn hV hBs hBsym hbs ε hsm ψ hψ hc hs]
-      have he : (∫ x in V, regularizedOperator B b ε
-          (v j ∘ evolutionHomeomorph n) x * ψ x) = ∫ x in V, (0 : ℝ) :=
-        setIntegral_congr_fun hV.measurableSet
-        (fun x hx => by rw [hop x hx, zero_mul])
-      exact he.trans (by simp only [integral_zero])
-    have heU : (∫ p in U, v j p * φ p) = 0 := by
-      have ht := setIntegral_comp_evolutionHomeomorph (fun p => v j p * φ p) U
-      simp only [φ, Homeomorph.symm_apply_apply] at ht
-      exact ht.symm.trans hePack
-    rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-      (fun p hp => by rw [hzeroK p hp, mul_zero])]
-    rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-      (fun p hp => by rw [hzeroU p hp, mul_zero])] at heU
-    exact heU
-  have heLim : (∫ p in K, limUnder atTop (fun j => v j p) * φ p) = 0 :=
-    tendsto_nhds_unique hInt (tendsto_const_nhds.congr' (hIz.mono fun j hj => hj.symm))
-  rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-    (fun p hp => by rw [hzeroK p hp, mul_zero])] at heLim
-  simp only [zero_mul, integral_zero]
-  change (∫ p in U, limUnder atTop (fun j => v j p) * φ p) = 0
-  rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-    (fun p hp => by rw [hzeroU p hp, mul_zero])]
-  exact heLim
+  let V := evolutionHomeomorph n ⁻¹' U
+  have hV : IsOpen V := hU.preimage (evolutionHomeomorph n).continuous
+  have ht := (tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S0)
+    hlam hB hb hε.le hε1 hC F hFC r hrlim v hv).1
+  refine weakRegularized_of_tendstoUniformlyOn hBs hbs hU
+    (wholeSpaceInnerCylinder_subset_closed α τ S0)
+    (isCompact_movingClosedSlab_inter continuous_const α τ S0) ht
+    (eventually_continuousOn_abs_le_wholeSpace hlam hB hb hε.le hε1 hC F hFC r hrlim v hv) ?_
+  filter_upwards [hrlim.eventually (eventually_gt_atTop |S0|)] with j hj
+  have hball (p : KineticPoint n) (hp : p ∈ U) :
+      p.position ∈ movingDomain (PDE.euclideanBall 0 (r j)) (fun _ => 0) p.time :=
+    mem_movingBall_of_radialSq_le (abs_nonneg S0) hj
+      (by simpa only [sq_abs] using (show radialSq p < S0 ^ 2 from hp.2.2).le)
+  have hsm : ContDiffOn ℝ (⊤ : ℕ∞) (v j ∘ evolutionHomeomorph n) V :=
+    (hv j).2.2.1.comp (evolutionProdCLE n).contDiff.contDiffOn
+      (fun x hx => ⟨hx.2.1, hball _ hx⟩)
+  refine ⟨U, subset_rfl, (isWeakRegularizedSolution_comp_iff B b ε U _ 0).mp ?_⟩
+  refine ⟨hsm.continuousOn.locallyIntegrableOn hV.measurableSet, fun ψ hψ hc hs => ?_⟩
+  rw [integral_regularizedAdjoint_contDiffOn hV hBs hBsym hbs ε hsm ψ hψ hc hs]
+  refine setIntegral_congr_fun hV.measurableSet fun x hx => ?_
+  have hc2 : ContDiffAt ℝ 2 (v j ∘ evolutionHomeomorph n) x :=
+    (hsm.contDiffAt (hV.mem_nhds hx)).of_le (by simp)
+  rw [regularizedOperator_comp ε hc2]
+  exact congrArg (· * ψ x) ((hv j).2.2.2.1 _ ⟨hx.2.1, hball _ hx⟩)
 
 end Data
 

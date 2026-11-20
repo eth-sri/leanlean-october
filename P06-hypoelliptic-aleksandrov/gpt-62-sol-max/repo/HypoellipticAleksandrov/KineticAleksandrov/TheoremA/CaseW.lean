@@ -34,16 +34,19 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open scoped MatrixOrder ContDiff Matrix.Norms.Elementwise
 
+section
+variable {d : ℕ}
+
 /-- A kinetic point `(s,X,v)` read as the Section 2 point `(σ,v,z) = (s,v,X)`. -/
-def sectionTwoPoint {d : ℕ} (P : KineticPoint d) : KineticPoint d :=
+def sectionTwoPoint (P : KineticPoint d) : KineticPoint d :=
   ⟨P.time, P.velocity, P.position⟩
 
 /-- The coordinate swap is an involution. -/
-theorem sectionTwoPoint_involutive {d : ℕ} :
+theorem sectionTwoPoint_involutive :
     Function.Involutive (sectionTwoPoint (d := d)) := fun _ => rfl
 
 /-- (6.3) is (2.3) with `z = X`, `b(v) = v` and the same time-velocity coefficient. -/
-theorem forwardKineticOperator_eq_lop_identity {d : ℕ} (B : CoefficientField d)
+theorem forwardKineticOperator_eq_lop_identity (B : CoefficientField d)
     (U : KineticPoint d → ℝ) (P : KineticPoint d) :
     forwardKineticOperator (ofTimeVelocityCoefficient B) U P =
       lop B (identityDrift d) (U ∘ sectionTwoPoint) (sectionTwoPoint P) := by
@@ -60,7 +63,7 @@ theorem forwardKineticOperator_eq_lop_identity {d : ℕ} (B : CoefficientField d
   exact add_right_comm _ _ _
 
 /-- Entrywise smoothness of the `z`-independent lift of a smooth time-velocity coefficient. -/
-theorem isSmoothFullKineticCoefficient_zIndependent {d : ℕ} {B : CoefficientField d}
+theorem isSmoothFullKineticCoefficient_zIndependent {B : CoefficientField d}
     (hB : IsSmoothCoefficient B) :
     IsSmoothFullKineticCoefficient (zIndependentCoefficient B) := by
   intro i j
@@ -71,7 +74,7 @@ theorem isSmoothFullKineticCoefficient_zIndependent {d : ℕ} {B : CoefficientFi
 
 /-- The reflected coefficient and the identity drift satisfy the setting (W) premises,
 with `m = L_b = 1` and `D = ℝ^d`. -/
-theorem caseW_sourceSetting {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+theorem caseW_sourceSetting {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     {A : CoefficientField d} (hsm : IsSmoothCoefficient A) (hsymm : IsSymmetricCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A) :
     SourceSetting lam Lam 1 1 (wholeSpace d) (kineticReflectedCoefficient A)
@@ -82,5 +85,7 @@ theorem caseW_sourceSetting {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : l
     fun s v => hlo (-s) v, fun s v => hhi (-s) v⟩,
     identityDrift_smooth d, one_pos, le_rfl, identityDrift_bounds d,
     Or.inl ⟨rfl, rfl, rfl, rfl⟩⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

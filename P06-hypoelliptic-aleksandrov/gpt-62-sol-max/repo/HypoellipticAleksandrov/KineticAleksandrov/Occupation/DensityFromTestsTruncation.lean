@@ -35,8 +35,7 @@ def signedTruncatedDualPower (g : α → ℝ) (r : ℝ) (n : ℕ) (x : α) : ℝ
 
 /-- The absolute-value truncation is measurable. -/
 theorem measurable_truncatedAbs {g : α → ℝ} (hg : Measurable g) (n : ℕ) :
-    Measurable (truncatedAbs g n) := by
-  exact hg.norm.indicator (measurableSet_le hg.norm measurable_const)
+    Measurable (truncatedAbs g n) := hg.norm.indicator (measurableSet_le hg.norm measurable_const)
 
 omit [MeasurableSpace α] in
 /-- The absolute-value truncation is nonnegative. -/
@@ -62,16 +61,18 @@ theorem memLp_truncatedAbs [IsFiniteMeasure μ] {g : α → ℝ}
     (hg : Measurable g) (n : ℕ) (p : ENNReal) :
     MemLp (truncatedAbs g n) p μ := by
   apply MemLp.of_bound (measurable_truncatedAbs hg n).aestronglyMeasurable (n + 1)
-  exact ae_of_all _ fun x => by
-    simpa only [Real.norm_eq_abs] using abs_truncatedAbs_le g n x
+  exact ae_of_all μ fun x => id (abs_truncatedAbs_le g n x)
+
+section
+variable {g : α → ℝ} (hg : Measurable g) {r : ℝ} (hr : 1 < r) (n : ℕ)
+include hg hr
 
 /-- The signed truncated dual power is measurable and globally bounded. -/
-theorem signedTruncatedDualPower_measurable_bounded
-    {g : α → ℝ} (hg : Measurable g) {r : ℝ} (hr : 1 < r) (n : ℕ) :
+theorem signedTruncatedDualPower_measurable_bounded :
     Measurable (signedTruncatedDualPower g r n) ∧
       ∀ x, |signedTruncatedDualPower g r n x| ≤
         (n + 1 : ℝ) ^ (r - 1) := by
-  have hpow : Measurable (fun x => (truncatedAbs g n x) ^ (r - 1)) :=
+  have hpow :=
     (Real.continuous_rpow_const (sub_nonneg.mpr hr.le)).measurable.comp
       (measurable_truncatedAbs hg n)
   refine ⟨Measurable.ite (measurableSet_le measurable_const hg) hpow hpow.neg,
@@ -92,8 +93,7 @@ theorem signedTruncatedDualPower_measurable_bounded
       hbound (sub_nonneg.mpr hr.le)
 
 /-- The signed test has the same conjugate norm as the unsigned dual power. -/
-theorem eLpNorm_signedTruncatedDualPower
-    {g : α → ℝ} (hg : Measurable g) {r : ℝ} (hr : 1 < r) (n : ℕ) :
+theorem eLpNorm_signedTruncatedDualPower :
     eLpNorm (signedTruncatedDualPower g r n)
         (ENNReal.ofReal (r / (r - 1))) μ =
       eLpNorm (truncatedAbs g n) (ENNReal.ofReal r) μ ^ (r - 1) := by
@@ -106,7 +106,7 @@ theorem eLpNorm_signedTruncatedDualPower
         ‖(truncatedAbs g n x) ^ (r - 1)‖
       rw [signedTruncatedDualPower]
       split_ifs <;> simp)]
-  have hrSub : 0 < r - 1 := sub_pos.mpr hr
+  have hrSub := sub_pos.mpr hr
   have hexp : ENNReal.ofReal (r / (r - 1)) * ENNReal.ofReal (r - 1) =
       ENNReal.ofReal r := by
     rw [← ENNReal.ofReal_mul (div_nonneg (zero_le_one.trans hr.le) hrSub.le)]
@@ -117,6 +117,8 @@ theorem eLpNorm_signedTruncatedDualPower
     funext x
     rw [Real.norm_of_nonneg (truncatedAbs_nonneg g n x)]
   rw [hfun, eLpNorm_norm_rpow _ hTrunc.aestronglyMeasurable hrSub, hexp]
+
+end
 
 omit [MeasurableSpace α] in
 private theorem signedTruncatedDualPower_mul

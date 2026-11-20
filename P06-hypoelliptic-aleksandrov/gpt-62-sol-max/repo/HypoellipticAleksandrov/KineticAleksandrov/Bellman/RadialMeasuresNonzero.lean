@@ -35,9 +35,11 @@ theorem bellmanRadiusMeasure_ne_zero (alpha : ℝ) : bellmanRadiusMeasure alpha 
     apply MeasureTheory.ae_eq_bot.mp
     exact Filter.empty_mem_iff_bot.mp hempty)
 
+section
+variable {lam Lam : ℝ} (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+
 /-- The radius marginal of the first projected measure is the original weighted radial volume. -/
-theorem radialMu_radius_marginal {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsProbabilityMeasure pi] :
+theorem radialMu_radius_marginal [IsProbabilityMeasure pi] :
     Measure.map bellmanGaugeRadius (radialMu alpha pi) = bellmanRadiusMeasure alpha := by
   unfold radialMu
   rw [Measure.map_map continuous_bellmanGaugeRadius.measurable
@@ -49,12 +51,13 @@ theorem radialMu_radius_marginal {lam Lam : ℝ} (alpha : ℝ)
   rw [he, Measure.map_fst_prod, measure_univ, one_smul]
 
 /-- A probability on the sphere produces a genuinely nonzero first adjoint measure. -/
-theorem radialMu_ne_zero {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsProbabilityMeasure pi] :
+theorem radialMu_ne_zero [IsProbabilityMeasure pi] :
     radialMu alpha pi ≠ 0 := by
   intro hz
   have hm := radialMu_radius_marginal alpha pi
   rw [hz, Measure.map_zero] at hm
   exact bellmanRadiusMeasure_ne_zero alpha hm.symm
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

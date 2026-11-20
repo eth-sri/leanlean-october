@@ -1,4 +1,0 @@
-module
-public import Mathlib.Topology.Order.Compact
-public import HypoellipticAleksandrov.Parabolic.LocalClassical
-public import HypoellipticAleksandrov.Parabolic.MinimumPrinciple

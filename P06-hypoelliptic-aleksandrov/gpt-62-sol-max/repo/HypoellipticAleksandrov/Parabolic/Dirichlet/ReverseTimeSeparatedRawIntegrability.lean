@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTests
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+import HypoellipticAleksandrov.Parabolic.Dirichlet.HessianCoefficientWeightedWeakIdentity
 
 /-!
 # Integrability of reverse-time separated raw terms
@@ -22,24 +23,14 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem reverseTimeCompactCylinder_mapsTo
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) :
-    reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) ⊆
-      scalarParabolicClosedCylinder r₀ r₁ Ω := by
-  rintro _ ⟨z, hz, rfl⟩
-  rcases z with ⟨τ, y⟩
-  rcases hz with ⟨hτ, hy⟩
-  simp only [reverseTimeMap_apply]
-  exact ⟨⟨by linarith [hτ.2], by linarith [hτ.1]⟩, hy⟩
+section
+variable {d : ℕ}
 
-private theorem reverseTime_openCylinder_volume_lt_top
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+private theorem reverseTime_openCylinder_volume_lt_top {Ω : Set (PDE.Vec d)} {T : ℝ}
     (hΩbounded : Bornology.IsBounded Ω) :
-    volume (reverseTimeOpenInterval T ×ˢ Ω : Set (TimeVelocity d)) < ⊤ := by
-  exact ((Metric.isBounded_Ioo 0 T).prod hΩbounded).measure_lt_top
+    volume (reverseTimeOpenInterval T ×ˢ Ω : Set (TimeVelocity d)) < ⊤ := ((Metric.isBounded_Ioo 0 T).prod hΩbounded).measure_lt_top
 
-private theorem integrable_mul_of_memLp_two_of_continuousOn_reverseTime
-    {d : ℕ} {S K : Set (TimeVelocity d)} (hSmeas : MeasurableSet S)
+private theorem integrable_mul_of_memLp_two_of_continuousOn_reverseTime {S K : Set (TimeVelocity d)} (hSmeas : MeasurableSet S)
     (hSK : S ⊆ K) (hKcompact : IsCompact K) (hSfinite : volume S < ⊤)
     (W q : TimeVelocity d → ℝ)
     (hW : MemLp W 2 (timeVelocityVolumeOn S)) (hq : ContinuousOn q K) :
@@ -54,47 +45,19 @@ private theorem integrable_mul_of_memLp_two_of_continuousOn_reverseTime
   filter_upwards [ae_restrict_mem hSmeas] with z hz
   exact hC z (hSK hz)
 
-private theorem integrable_of_continuousOn_reverseTime
-    {d : ℕ} {S K : Set (TimeVelocity d)} (hSmeas : MeasurableSet S)
-    (hSK : S ⊆ K) (hKcompact : IsCompact K) (hSfinite : volume S < ⊤)
-    (q : TimeVelocity d → ℝ) (hq : ContinuousOn q K) :
-    Integrable q (timeVelocityVolumeOn S) := by
-  letI : Fact (volume S < ⊤) := ⟨hSfinite⟩
-  letI : IsFiniteMeasure (timeVelocityVolumeOn S) := by
-    change IsFiniteMeasure (volume.restrict S)
-    infer_instance
-  obtain ⟨C, hC⟩ := hKcompact.exists_bound_of_continuousOn hq
-  have hqLp : MemLp q (2 : ℝ≥0∞) (timeVelocityVolumeOn S) :=
-    MemLp.of_bound ((hq.mono hSK).aestronglyMeasurable hSmeas) C (by
-      filter_upwards [ae_restrict_mem hSmeas] with z hz
-      exact hC z (hSK hz))
-  exact hqLp.integrable (by norm_num)
-
-private theorem continuousOn_of_smoothOnNeighborhood
-    {d : ℕ} {K : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
-    (hf : IsSmoothOnNeighborhood f K) : ContinuousOn f K := by
-  rcases hf with ⟨V, hVopen, hKV, hV⟩
-  exact hV.continuousOn.mono hKV
+section
+variable {Ω : Set (PDE.Vec d)}
 
 /-- The five families in the reverse-time separated raw expression are integrable. -/
 theorem raw_reverseTime_separated_product_families_integrable
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (U : TimeVelocity d → ℝ)
     (hU : MemLp U (2 : ℝ≥0∞)
       (timeVelocityVolumeOn
@@ -205,21 +168,19 @@ theorem raw_reverseTime_separated_product_families_integrable
     simpa only [Function.comp_def, reverseTimeMap_apply,
       reverseTimeScalarCoefficient_apply] using
         continuousOn_of_smoothOnNeighborhood hsourceSmooth
-  have hsource := integrable_of_continuousOn_reverseTime hSmeas hSK hKcompact hSfinite
-    (fun z => reverseTimeScalarCoefficient r₁ F z.1 z.2 * psi z.2 * eta z.1)
-    ((hsourceCoeff.mul (psi.contDiff.continuous.comp continuous_snd).continuousOn).mul
-      (eta.contDiff.continuous.comp continuous_fst).continuousOn)
+  have hsource := (((hsourceCoeff.mul (psi.contDiff.continuous.comp continuous_snd).continuousOn).mul
+      (eta.contDiff.continuous.comp continuous_fst).continuousOn).integrableOn_compact hKcompact
+      (μ := (volume : Measure (TimeVelocity d)))).mono_set hSK
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · simpa only [S, mul_assoc] using hmass
   · intro i j; simpa only [S] using hprincipal i j
   · intro j; simpa only [S] using hdrift j
   · refine hscalar.congr (ae_of_all _ fun z => ?_)
     ring
-  · simpa only [S] using hsource
+  · exact hsource.congr (ae_of_all _ fun _ => rfl)
 
 /-- Integrability of the five families implies integrability of the literal raw sum. -/
-theorem integrable_full_reverseTime_separated_product_of_raw_families
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
+theorem integrable_full_reverseTime_separated_product_of_raw_families {r₀ r₁ : ℝ}
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
     (U : TimeVelocity d → ℝ) (G : Fin d → TimeVelocity d → ℝ)
@@ -300,5 +261,9 @@ theorem integrable_full_reverseTime_separated_product_of_raw_families
     refine hdriftSum.congr (ae_of_all _ fun z => ?_)
     simp only [Finset.sum_mul]
   exact (((hmass.sub hprincipal').sub hdrift').add hscalar).sub hsource
+
+end
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

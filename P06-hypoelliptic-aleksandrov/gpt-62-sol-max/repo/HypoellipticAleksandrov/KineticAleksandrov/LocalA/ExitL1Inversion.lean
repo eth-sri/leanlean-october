@@ -31,19 +31,16 @@ def exitL1Inversion {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFi
 
 /-- The actual Fourier decay yields one smooth `L¹`-valued inverse for all orders. -/
 theorem ballExitL1Inversion_contDiff
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
     ContDiff ℝ (⊤ : ℕ∞)
-      (exitL1Inversion (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)) := by
+      (exitL1Inversion (ballExit hd B hB v₀ hR P T)) := by
   apply ContDiff.const_smul
   apply VectorFourier.contDiff_fourierIntegral
   intro n _hn
-  exact ballExitL1Fourier_integrable_moments hH hLE hd hlam hLam B hB v₀ hR P T hv hT n
+  exact ballExitL1Fourier_integrable_moments hd B hB v₀ hR P T hv hT n
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

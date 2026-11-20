@@ -52,32 +52,11 @@ theorem originCutoff_tendsto {d : ℕ} (x : PDE.Vec d) (hx : x ≠ 0) :
   filter_upwards [he] with n hn
   exact (Real.smoothTransition.one_of_one_le (by linarith)).symm
 
-/-- A velocity cutoff removes the origin from the support of any product test. -/
-theorem zero_notMem_tsupport_velocity_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ) :
-    (0 : XV d) ∉ tsupport (fun q => test q * originCutoff n q.2) := by
-  apply notMem_tsupport_iff_eventuallyEq.mpr
-  have ht : Tendsto (Prod.snd : XV d → PDE.Vec d) (nhds 0) (nhds 0) :=
-    continuous_snd.tendsto 0
-  have he := (originCutoff_eventually_zero d n).comp_tendsto ht
-  filter_upwards [he] with q hq
-  change originCutoff n q.2 = 0 at hq
-  rw [hq, mul_zero]
-  rfl
-
-/-- A position cutoff removes the origin from the support of any product test. -/
-theorem zero_notMem_tsupport_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ) :
-    (0 : XV d) ∉ tsupport (fun q => test q * originCutoff n q.1) := by
-  apply notMem_tsupport_iff_eventuallyEq.mpr
-  have ht : Tendsto (Prod.fst : XV d → PDE.Vec d) (nhds 0) (nhds 0) :=
-    continuous_fst.tendsto 0
-  have he := (originCutoff_eventually_zero d n).comp_tendsto ht
-  filter_upwards [he] with q hq
-  change originCutoff n q.1 = 0 at hq
-  rw [hq, mul_zero]
-  rfl
+section
+variable {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d)
 
 /-- A cutoff in velocity has zero position derivative. -/
-theorem dx_velocity_cutoff {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d) :
+theorem dx_velocity_cutoff :
     dx (fun z : XV d => originCutoff n z.2) q i = 0 := by
   have hc : DifferentiableAt ℝ (originCutoff (d := d) n) q.2 :=
     ((contDiff_originCutoff d n).differentiable (by simp)).differentiableAt
@@ -86,7 +65,7 @@ theorem dx_velocity_cutoff {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d) :
   simp
 
 /-- A cutoff in position has zero velocity derivative. -/
-theorem dv_position_cutoff {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d) :
+theorem dv_position_cutoff :
     dv (fun z : XV d => originCutoff n z.1) q i = 0 := by
   have hc : DifferentiableAt ℝ (originCutoff (d := d) n) q.1 :=
     ((contDiff_originCutoff d n).differentiable (by simp)).differentiableAt
@@ -94,9 +73,14 @@ theorem dv_position_cutoff {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d) :
   rw [fderiv_fun_comp q hc differentiableAt_fst, fderiv_fst]
   simp
 
+end
+
+section
+variable {d : ℕ} (test : XV d → ℝ) (n : ℕ) (q : XV d) (ht : DifferentiableAt ℝ test q) (i : Fin d)
+include ht
+
 /-- Complementary-coordinate cutoff multiplication preserves the position derivative. -/
-theorem dx_mul_velocity_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
-    (q : XV d) (ht : DifferentiableAt ℝ test q) (i : Fin d) :
+theorem dx_mul_velocity_cutoff :
     dx (fun z => test z * originCutoff n z.2) q i =
       dx test q i * originCutoff n q.2 := by
   have hc : DifferentiableAt ℝ (fun z : XV d => originCutoff n z.2) q :=
@@ -108,8 +92,7 @@ theorem dx_mul_velocity_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
   rw [hz, mul_zero, zero_add, mul_comm]
 
 /-- Complementary-coordinate cutoff multiplication preserves the velocity derivative. -/
-theorem dv_mul_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
-    (q : XV d) (ht : DifferentiableAt ℝ test q) (i : Fin d) :
+theorem dv_mul_position_cutoff :
     dv (fun z => test z * originCutoff n z.1) q i =
       dv test q i * originCutoff n q.1 := by
   have hc : DifferentiableAt ℝ (fun z : XV d => originCutoff n z.1) q :=
@@ -120,15 +103,20 @@ theorem dv_mul_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
   simp only [add_apply, smul_apply, smul_eq_mul]
   rw [hz, mul_zero, zero_add, mul_comm]
 
+end
+
+section
+variable {d : ℕ} (test : XV d → ℝ)
+
 /-- A C2 test has continuously differentiable velocity derivative components. -/
-theorem contDiff_dv_test {d : ℕ} (test : XV d → ℝ)
+theorem contDiff_dv_test
     (ht : ContDiff ℝ 2 test) (k : Fin d) :
     ContDiff ℝ 1 (fun q => dv test q k) := by
   exact (ht.contDiff_fderiv_apply (m := 1) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)
 
 /-- Complementary-coordinate cutoffs also preserve the second velocity test derivative. -/
-theorem dvv_mul_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
+theorem dvv_mul_position_cutoff (n : ℕ)
     (ht : ContDiff ℝ 2 test) (q : XV d) (i k : Fin d) :
     dvv (fun z => test z * originCutoff n z.1) q i k =
       dvv test q i k * originCutoff n q.1 := by
@@ -141,8 +129,10 @@ theorem dvv_mul_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
   exact dv_mul_position_cutoff (fun z => dv test z k) n q
     ((contDiff_dv_test test ht k).differentiable (by norm_num) q) i
 
+end
+
 /-- Bounded scalar cutoffs tending to one preserve the integral of an integrable function. -/
-theorem integral_mul_cutoff_tendsto {d : ℕ} (f : XV d → ℝ)
+private theorem integral_mul_cutoff_tendsto {d : ℕ} (f : XV d → ℝ)
     (hf : Integrable f volume) (cutoff : ℕ → XV d → ℝ)
     (hc : ∀ n, Measurable (cutoff n))
     (hb : ∀ n q, |cutoff n q| ≤ 1)
@@ -158,5 +148,22 @@ theorem integral_mul_cutoff_tendsto {d : ℕ} (f : XV d → ℝ)
       simpa only [mul_one] using mul_le_mul_of_nonneg_left (hb n q) (norm_nonneg _))
   · filter_upwards [hlim] with q hq
     simpa only [mul_one] using tendsto_const_nhds.mul hq
+
+/-- A linear integral identity for every cutoff passes to the uncut integrals. -/
+theorem integral_eq_of_originCutoff {d : ℕ} {f g : XV d → ℝ} (hf : Integrable f volume)
+    (hg : Integrable g volume) (s : ℝ) {proj : XV d → PDE.Vec d} (hp : Continuous proj)
+    (hae : ∀ᵐ q ∂volume, proj q ≠ 0)
+    (he : ∀ n, (∫ q, f q * originCutoff n (proj q)) = s * ∫ q, g q * originCutoff n (proj q)) :
+    (∫ q, f q) = s * ∫ q, g q := by
+  let cut n q := originCutoff n (proj q)
+  have hc (n : ℕ) : Measurable (cut n) :=
+    ((contDiff_originCutoff d n).continuous.comp hp).measurable
+  have hbound (n : ℕ) (q : XV d) : |cut n q| ≤ 1 := abs_originCutoff_le_one n _
+  have hlim : ∀ᵐ q ∂volume, Tendsto (fun n => cut n q) atTop (nhds 1) :=
+    hae.mono (fun q hq => originCutoff_tendsto (proj q) hq)
+  exact tendsto_nhds_unique_of_eventuallyEq
+    (integral_mul_cutoff_tendsto f hf cut hc hbound hlim)
+    (tendsto_const_nhds.mul (integral_mul_cutoff_tendsto g hg cut hc hbound hlim))
+    (Eventually.of_forall he)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

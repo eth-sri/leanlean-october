@@ -31,7 +31,7 @@ lemma eLpNorm_slabShift_le {d : ℕ} (g : ℝ × PDE.Vec d → ℝ) (hgm : Measu
   have h1 : eLpNorm (fun y => ENNReal.ofReal (g (slabShift d s y))) (ENNReal.ofReal γ)
       (slabBase d T) = eLpNorm g (ENNReal.ofReal γ) ((slabBase d T).map (slabShift d s)) := by
     rw [hemb.eLpNorm_map_measure]
-    have hm1 : Measurable (fun y => ENNReal.ofReal (g (slabShift d s y))) :=
+    have hm1 :=
       ENNReal.measurable_ofReal.comp (hgm.comp hemb.measurable)
     refine eLpNorm_congr_enorm_ae hm1.aestronglyMeasurable
       (hgm.comp hemb.measurable).aestronglyMeasurable (Filter.Eventually.of_forall (fun y => ?_))
@@ -43,9 +43,11 @@ lemma eLpNorm_slabShift_le {d : ℕ} (g : ℝ × PDE.Vec d → ℝ) (hgm : Measu
   constructor <;> linarith [hq.1, hq.2]
 
 
+section
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+
 /-- The occupation-kernel integral over the slab sections of `E`, as a function of `v`. -/
-lemma measurable_slab_occupation {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ₁ s T : ℝ)
+lemma measurable_slab_occupation (σ₁ s T : ℝ)
     {E : Set (SlabBase d)} (hE : MeasurableSet E) :
     Measurable (fun v : PDE.Vec d => ∫⁻ τ in slabTimeSet T,
       occupationKernel K σ₁ (τ.1 - s) v {w | (τ, w) ∈ E} ∂elapsedVolume ⊤) := by
@@ -57,8 +59,7 @@ lemma measurable_slab_occupation {d : ℕ}
   exact hm.lintegral_prod_right'
 
 /-- Slab mass of the Green measure in terms of the occupation kernel of the velocity marginal. -/
-theorem green_slab_marginal_eq {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem green_slab_marginal_eq
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
     (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
@@ -113,6 +114,8 @@ theorem green_slab_marginal_eq {d : ℕ}
       fun w => Set.indicator_of_notMem (fun h => hτ ⟨h.2.1, h.2.2⟩) _
     exact (lintegral_congr hz).trans lintegral_zero
 
+end
+
 
 lemma one_le_slabGamma0 {d : ℕ} (hd : 0 < d) : 1 ≤ slabGamma0 d := by
   unfold slabGamma0
@@ -125,8 +128,7 @@ lemma ofReal_marginal_bound (C a M b : ℝ) (hC : 0 ≤ C) (hM : 0 ≤ M) (T : �
     (β : ℝ) (hb : b = (2 * T) ^ β) (ha : a = (2 : ℝ) ^ β) :
     ENNReal.ofReal (C * M * b) =
       ENNReal.ofReal (C * a) * ENNReal.ofReal M * ENNReal.ofReal (T ^ β) := by
-  have h2 : (0 : ℝ) ≤ 2 := by norm_num
-  rw [hb, ha, Real.mul_rpow h2 hT, ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul
+  rw [hb, ha, Real.mul_rpow (by norm_num) hT, ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul
     (by positivity)]
   congr 1
   ring

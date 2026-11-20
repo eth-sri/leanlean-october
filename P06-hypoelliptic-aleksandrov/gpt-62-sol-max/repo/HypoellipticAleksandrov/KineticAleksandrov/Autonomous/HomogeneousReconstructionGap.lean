@@ -12,7 +12,7 @@ open SectionTwo TheoremA Evolution
 
 /-- Growth comparison controls a homogeneous solution gap by its actual exit discrepancy. -/
 theorem reconstruction_homogeneous_gap_le_barrier
-    {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
+    {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (H : Interval) (lower T : ℝ) (e : StripPole H (T : WithTop ℝ)) (he : lower < e.1.time)
     (u v : Point → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
@@ -57,7 +57,7 @@ theorem reconstruction_homogeneous_gap_le_barrier
     (reconstruction_closedSlab_mapsTo H he)
   have hmax := growth_comparison
     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)) continuous_const
-    hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
+    A.positive (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
     (le_refl 0) zero_le_one (a := a) (T := T)
     (u := fun p => (u (sectionTwoPoint p) - v (sectionTwoPoint p) - eps) - q p)
     ⟨Mu + Mv + |eps|, fun p hp => by

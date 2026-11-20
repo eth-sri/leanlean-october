@@ -34,8 +34,11 @@ theorem vecEuclideanNorm_sub_le_add {n : ℕ} (x y z : PDE.Vec n) :
 def CurveLipschitzOn {n : ℕ} (γ : ℝ → PDE.Vec n) (L : ℝ) (S : Set ℝ) : Prop :=
   ∀ s ∈ S, ∀ t ∈ S, PDE.vecEuclideanNorm (γ s - γ t) ≤ L * |s - t|
 
+section
+variable {n : ℕ} {γ : ℝ → PDE.Vec n}
+
 /-- Lipschitz bounds on two adjacent intervals glue to the union interval. -/
-theorem CurveLipschitzOn.glue {n : ℕ} {γ : ℝ → PDE.Vec n} {L a c b : ℝ} (hac : a ≤ c)
+theorem CurveLipschitzOn.glue {L a c b : ℝ} (hac : a ≤ c)
     (hcb : c ≤ b) (h₁ : CurveLipschitzOn γ L (Icc a c)) (h₂ : CurveLipschitzOn γ L (Icc c b)) :
     CurveLipschitzOn γ L (Icc a b) := by
   have key : ∀ s t, s ∈ Icc a c → t ∈ Icc c b →
@@ -63,12 +66,12 @@ theorem CurveLipschitzOn.glue {n : ℕ} {γ : ℝ → PDE.Vec n} {L a c b : ℝ}
     · exact h₂ s ⟨(not_le.mp hsc).le, hs.2⟩ t ⟨(not_le.mp htc).le, ht.2⟩
 
 /-- Weakening the constant. -/
-theorem CurveLipschitzOn.mono_const {n : ℕ} {γ : ℝ → PDE.Vec n} {L L' : ℝ} {S : Set ℝ}
+theorem CurveLipschitzOn.mono_const {L L' : ℝ} {S : Set ℝ}
     (h : CurveLipschitzOn γ L S) (hL : L ≤ L') : CurveLipschitzOn γ L' S := fun s hs t ht =>
   (h s hs t ht).trans (mul_le_mul_of_nonneg_right hL (abs_nonneg _))
 
 /-- A `C¹` curve on a compact interval is Lipschitz for the Euclidean norm there. -/
-theorem exists_curveLipschitzOn_of_contDiffOn {n : ℕ} {γ : ℝ → PDE.Vec n} {u v : ℝ}
+theorem exists_curveLipschitzOn_of_contDiffOn {u v : ℝ}
     (h : ContDiffOn ℝ 1 γ (Icc u v)) :
     ∃ L : ℝ, 0 ≤ L ∧ CurveLipschitzOn γ L (Icc u v) := by
   obtain ⟨K, hK⟩ := h.exists_lipschitzOnWith one_ne_zero (convex_Icc u v) isCompact_Icc
@@ -79,6 +82,8 @@ theorem exists_curveLipschitzOn_of_contDiffOn {n : ℕ} {γ : ℝ → PDE.Vec n}
         PDE.vecEuclideanNorm_le_sqrt_natCast_mul_norm _
     _ ≤ Real.sqrt n * (K * |s - t|) := mul_le_mul_of_nonneg_left h1 (Real.sqrt_nonneg _)
     _ = Real.sqrt n * K * |s - t| := by ring
+
+end
 
 /-- (companion paper, 2.1).  A continuous piecewise `C¹` curve is Lipschitz, for the Euclidean
 norm, on every finite interval `[a, τ]`. -/
@@ -132,16 +137,21 @@ theorem slabExtension_eq {n : ℕ} (γ : ℝ → PDE.Vec n) {a τ s : ℝ} (hs :
   unfold slabExtension
   rw [min_eq_right hs.2, max_eq_right hs.1]
 
+section
+variable {n : ℕ} {γ : ℝ → PDE.Vec n}
+
 /-- The slab extension of a continuous curve is continuous. -/
-theorem continuous_slabExtension {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (a τ : ℝ) :
+theorem continuous_slabExtension (hγ : Continuous γ) (a τ : ℝ) :
     Continuous (slabExtension γ a τ) :=
   hγ.comp (continuous_const.max (continuous_const.min continuous_id))
 
 /-- The slab extension of a curve that is `L`-Lipschitz on `[a, τ]` is globally `L`-Lipschitz. -/
-theorem slabExtension_lipschitz {n : ℕ} {γ : ℝ → PDE.Vec n} {a τ L : ℝ} (haτ : a ≤ τ)
+theorem slabExtension_lipschitz {a τ L : ℝ} (haτ : a ≤ τ)
     (hL : 0 ≤ L) (h : CurveLipschitzOn γ L (Icc a τ)) (s t : ℝ) :
     PDE.vecEuclideanNorm (slabExtension γ a τ s - slabExtension γ a τ t) ≤ L * |s - t| :=
   (h _ (clamp_mem_Icc haτ s) _ (clamp_mem_Icc haτ t)).trans
     (mul_le_mul_of_nonneg_left (abs_clamp_sub_clamp_le a τ s t) hL)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

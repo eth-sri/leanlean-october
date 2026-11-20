@@ -24,13 +24,15 @@ open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 variable (K : MovingFiberKernel Ω γ)
 
+section
+variable {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω) (hγ : Continuous γ)
+  (hP : SectionTwo.HasParabolicMarginalBundle Ω γ (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
+  (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
+  (hgU : tsupport g ⊆ duhamelFiber Ω γ T)
+include B hγ hP hgs hgc hgU
+
 /-- The slice integrand has the terminal value `g(r,v)` as a left limit at interior points. -/
-theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hγ : Continuous γ)
-    (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
-    (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
-    (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (r : ℝ) (v : PDE.Vec d)
+theorem slice_leftLimit (r : ℝ) (v : PDE.Vec d)
     (hv : (r, v) ∈ duhamelFiber Ω γ T) :
     Tendsto (fun t : ℝ => parabolicDuhamelIntegrand K
         (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g (t, v) r) (𝓝[<] r)
@@ -54,12 +56,7 @@ theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDo
   exact (hVeq (t, v) ht).symm
 
 /-- The left limit of `u_r ψ` at `σ = r` is `g(r,v) ψ(r,v,z)`. -/
-theorem slice_terminal_limit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hγ : Continuous γ)
-    (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
-    (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
-    (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (C : ℝ)
+theorem slice_terminal_limit (C : ℝ)
     (hub : ∀ p r, |parabolicDuhamelIntegrand K
         (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g p r| ≤ C)
     {ψ : EvolutionVec d → ℝ} (hψ : Continuous ψ)
@@ -84,5 +81,7 @@ theorem slice_terminal_limit {B : CoefficientField d} (hΩa : IsAdmissibleEvolut
     have hv : (r, w.1) ∈ duhamelFiber Ω γ T := by
       simpa only [mem_preimage, evolutionToTimeVelocity_packQ] using hfib
     exact (slice_leftLimit K hΩa hγ hP g hgs hgc T hgU r w.1 hv).mul hψt
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

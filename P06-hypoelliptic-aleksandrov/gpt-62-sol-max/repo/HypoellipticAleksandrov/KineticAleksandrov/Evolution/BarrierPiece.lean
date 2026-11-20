@@ -27,10 +27,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
+section
+variable {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar) (hdr : dstar < r₀)
+  {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
+  (hγL : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ Lγ * |s - t|)
+include hd hdr hγ hLγ hγL
+
 /-- Inset comparison on the collar region of `[α, t₂]`, `t₁ < α < t₂`. -/
-theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
-    (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
-    (hγL : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ Lγ * |s - t|)
+theorem collar_piece_inset
     {t₁ t₂ α : ℝ} (hα : t₁ < α)
     (hdiff : ∀ σ ∈ Ioo t₁ t₂, DifferentiableAt ℝ γ σ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
@@ -152,9 +156,7 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
         linarith
 
 /-- Collar comparison on the whole closed piece `[t₁, t₂]`. -/
-theorem collar_piece {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
-    (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
-    (hγL : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ Lγ * |s - t|)
+theorem collar_piece
     {t₁ t₂ : ℝ} (ht : t₁ < t₂)
     (hdiff : ∀ σ ∈ Ioo t₁ t₂, DifferentiableAt ℝ γ σ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
@@ -228,5 +230,7 @@ theorem collar_piece {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dsta
     simp only [Function.comp_apply, hq1] at this
     exact this
   exact le_of_tendsto_of_tendsto hv hG hle
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

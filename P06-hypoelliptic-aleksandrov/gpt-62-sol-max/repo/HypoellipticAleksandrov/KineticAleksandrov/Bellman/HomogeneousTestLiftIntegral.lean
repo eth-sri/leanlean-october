@@ -4,6 +4,7 @@ public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
 import Mathlib.Tactic
+import Mathlib.Analysis.Normed.Operator.Bilinear
 
 /-! # Differentiating an integral with a compact parameter carrier -/
 
@@ -11,6 +12,38 @@ import Mathlib.Tactic
 noncomputable section
 open Set MeasureTheory Filter Topology Metric
 namespace HypoellipticAleksandrov.KineticAleksandrov
+
+section
+variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+  [NormedAddCommGroup F] [NormedSpace ℝ F]
+
+/-- Precompose a joint derivative with the spatial inclusion. -/
+abbrev bellmanRestrictSpatial : ((E × ℝ) →L[ℝ] F) →L[ℝ] E →L[ℝ] F :=
+  (ContinuousLinearMap.compL ℝ E (E × ℝ) F).flip ((ContinuousLinearMap.id ℝ E).prod 0)
+
+/-- The derivative in the spatial variables, leaving the radius fixed. -/
+def bellmanSpatialJet (f : E × ℝ → F) (q : E × ℝ) : E →L[ℝ] F :=
+  bellmanRestrictSpatial (fderiv ℝ f q)
+
+@[simp] theorem bellmanSpatialJet_apply (f : E × ℝ → F) (q : E × ℝ) (e : E) :
+    bellmanSpatialJet f q e = fderiv ℝ f q (e, 0) := by
+  simp [bellmanSpatialJet, bellmanRestrictSpatial]
+
+/-- Restrict a joint derivative to a slice at fixed radius. -/
+theorem hasFDerivAt_bellmanSpatialJet {f : E × ℝ → F} {q : E} {r : ℝ}
+    (hf : DifferentiableAt ℝ f (q, r)) :
+    HasFDerivAt (fun x => f (x, r)) (bellmanSpatialJet f (q, r)) q := by
+  have h : HasFDerivAt (fun x : E => (x, r)) ((ContinuousLinearMap.id ℝ E).prod 0) q :=
+    (hasFDerivAt_id q).prodMk (hasFDerivAt_const r q)
+  exact hf.hasFDerivAt.comp q h
+
+/-- Restricting to spatial directions preserves regularity of the derivative. -/
+theorem contDiffOn_bellmanSpatialJet {f : E × ℝ → F} {U : Set (E × ℝ)}
+    {m n : WithTop ℕ∞} (hU : IsOpen U) (hf : ContDiffOn ℝ n f U) (hm : m + 1 ≤ n) :
+    ContDiffOn ℝ m (bellmanSpatialJet f) U :=
+  (bellmanRestrictSpatial (E := E) (F := F)).contDiff.comp_contDiffOn (hf.fderiv_of_isOpen hU hm)
+
+end
 
 variable {E F A : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [ProperSpace E]
   [NormedAddCommGroup F] [NormedSpace ℝ F] [CompleteSpace F]
@@ -37,7 +70,7 @@ theorem bellman_compact_parameter_bound {U : Set E} (hU : IsOpen U)
     {q : E} (hq : q ∈ U) : ∃ s ∈ 𝓝 q, s ⊆ U ∧ ∃ C : ℝ,
       ∀ x ∈ s, ∀ a : A, ‖f x a‖ ≤ C := by
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.mp hU q hq
-  have hp : 0 < r / 2 := half_pos hr
+  have hp := half_pos hr
   have hsmall : closedBall q (r / 2) ⊆ U := by
     intro x hx
     apply hsub

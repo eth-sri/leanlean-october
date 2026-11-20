@@ -30,12 +30,16 @@ theorem reconstructionUnitBump_properties :
     fun x => ⟨reconstructionUnitBump.nonneg, reconstructionUnitBump.le_one⟩,
     max D 0, le_max_right _ _, fun x => (hD x).trans (le_max_left _ _)⟩
 
+section
+variable (R : ℝ) (hR : 0 < R)
+include R hR
+
 /-- A position cutoff with radius `R` and outer radius `2R`. -/
-def reconstructionPositionBump (R : ℝ) (hR : 0 < R) : ContDiffBump (0 : ℝ) :=
+def reconstructionPositionBump : ContDiffBump (0 : ℝ) :=
   ⟨R, 2 * R, hR, by linarith⟩
 
 /-- Radius rescaling agrees with the previously verified scalar cutoff calculus. -/
-theorem reconstructionPositionBump_eq_scaled (R : ℝ) (hR : 0 < R) :
+theorem reconstructionPositionBump_eq_scaled :
     (reconstructionPositionBump R hR : ℝ → ℝ) =
       scaledScalarCutoff reconstructionUnitBump R := by
   funext x
@@ -43,16 +47,17 @@ theorem reconstructionPositionBump_eq_scaled (R : ℝ) (hR : 0 < R) :
     scaledScalarCutoff, sub_zero, smul_eq_mul]
   congr 1
   · field_simp
-  · simp only [inv_one, one_mul, div_eq_mul_inv]
-    ring
+  · ring
 
 /-- The cutoff derivative has a uniform inverse-radius bound. -/
-theorem reconstructionPositionBump_deriv_bound (R : ℝ) (hR : 0 < R) (D : ℝ)
+theorem reconstructionPositionBump_deriv_bound (D : ℝ)
     (hD : ∀ x, |deriv reconstructionUnitBump x| ≤ D) (x : ℝ) :
     |deriv (reconstructionPositionBump R hR) x| ≤ D / R := by
   rw [reconstructionPositionBump_eq_scaled]
   exact scaledScalarCutoff_deriv_bound _
     (reconstructionUnitBump_properties.1.of_le (by simp)) hR D hD x
+
+end
 
 /-- Expanding position cutoffs eventually equal one at every fixed position. -/
 theorem reconstructionPositionBump_tendsto (x : ℝ) :

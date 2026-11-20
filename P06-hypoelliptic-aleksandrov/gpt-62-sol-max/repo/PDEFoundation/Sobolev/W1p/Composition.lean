@@ -1,7 +1,8 @@
 module
 
 public import Mathlib.Analysis.Calculus.MeanValue
-public import PDEFoundation.Measure.EuclideanFieldMeasurability
+public import PDEFoundation.Ambient.EuclideanNorm
+public import Mathlib.MeasureTheory.Function.StronglyMeasurable.AEStronglyMeasurable
 public import PDEFoundation.Measure.LpDominatedConvergence
 public import PDEFoundation.Sobolev.W1p.Closure
 public import PDEFoundation.Sobolev.W1p.ConvexApprox.Density
@@ -102,15 +103,14 @@ namespace W1pFunction
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
+section
+variable (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞) (u : W1pFunction U p)
+  {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G) {M : ℝ} (hM : 0 ≤ M) (hderiv : ∀ t, |deriv G t| ≤ M)
+include hU hp hpTop u G hG M hM hderiv
+
 /-- A bounded-derivative `C¹` composition has the expected weak gradient on a
 bounded open convex domain, for every finite `p ≥ 1`. -/
-theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
+theorem hasWeakGradient_comp_contDiff_of_deriv_bounded :
     HasWeakGradientOn U
       (fun x => G (u.toFun x))
       (fun x i =>
@@ -508,13 +508,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
 
 /-- Compose a representative-level Sobolev function with a `C¹` real
 function whose derivative is bounded by `M`. -/
-noncomputable def compContDiffOfDerivBounded
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
+noncomputable def compContDiffOfDerivBounded :
     W1pFunction U p where
   toFun := fun x => G (u.toFun x)
   grad := fun x i =>
@@ -563,32 +557,28 @@ noncomputable def compContDiffOfDerivBounded
     hasWeakGradient_comp_contDiff_of_deriv_bounded
       hU hp hpTop u hG hM hderiv
 
+end
+
+section
+variable (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞) (u : W1pFunction U p)
+  {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G) {M : ℝ} (hM : 0 ≤ M) (hderiv : ∀ t, |deriv G t| ≤ M)
+
 @[simp]
-theorem compContDiffOfDerivBounded_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
+theorem compContDiffOfDerivBounded_toFun :
     (u.compContDiffOfDerivBounded
       hU hp hpTop hG hM hderiv).toFun =
         fun x => G (u.toFun x) :=
   rfl
 
 @[simp]
-theorem compContDiffOfDerivBounded_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
-    (hderiv : ∀ t, |deriv G t| ≤ M) :
+theorem compContDiffOfDerivBounded_grad :
     (u.compContDiffOfDerivBounded
       hU hp hpTop hG hM hderiv).grad =
         fun x i =>
           deriv G (u.toFun x) * u.grad x i :=
   rfl
+
+end
 
 end W1pFunction
 

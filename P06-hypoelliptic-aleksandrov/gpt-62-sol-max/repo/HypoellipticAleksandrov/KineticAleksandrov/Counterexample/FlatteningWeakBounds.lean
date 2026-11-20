@@ -43,19 +43,21 @@ theorem abs_flatSecond_le (s gi gk hij alpha r M P : ℝ) (hr : 0 < r) (hM : 0 �
         _ ≤ r ^ (-alpha) * P * M * M := by gcongr
         _ = _ := by ring
 
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha)
+
 /-- The unflattened approximations and all their classical jets have one eventual compact bound. -/
-theorem mollifiedProfile_eventually_bounded {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (K : Set (XV d)) (hK : IsCompact K) (hz : 0 ∉ K) :
+theorem mollifiedProfile_eventually_bounded (K : Set (XV d)) (hK : IsCompact K) (hz : 0 ∉ K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ᶠ n in atTop, ∀ q ∈ K,
       ‖mollifiedProfile h n q‖ ≤ M ∧
       (∀ i, |dx (mollifiedProfile h n) q i| ≤ M) ∧
       (∀ i, |dv (mollifiedProfile h n) q i| ≤ M) ∧
       (∀ i k, |dvv (mollifiedProfile h n) q i k| ≤ M) := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hmx := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.1
-  have hmv := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.1
-  have hmh := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.1
-  have hb := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
+  have hH := (selectedProfile_spec h).continuous
+  have hmx := (selectedProfile_spec h).measurable_position
+  have hmv := (selectedProfile_spec h).measurable_velocity
+  have hmh := (selectedProfile_spec h).measurable_hessian
+  have hb := (selectedProfile_spec h).compact_jet_bound
   have hsub : K ⊆ ({0}ᶜ : Set (XV d)) := by
     intro q hq
     change q ≠ 0
@@ -99,8 +101,7 @@ theorem mollifiedProfile_eventually_bounded {d : ℕ} {alpha : ℝ}
     simpa only [Real.norm_eq_abs] using ((hMG y (hyL y hy)).2.2 i k).trans hGM
 
 /-- The flattened values and all jets have one eventual bound on each punctured compact set. -/
-theorem mollifiedFlatProfile_eventually_bounded {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem mollifiedFlatProfile_eventually_bounded (r : ℝ) (hr : 0 < r)
     (K : Set (XV d)) (hK : IsCompact K) (hz : 0 ∉ K) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ n in atTop, ∀ q ∈ K,
       ‖mollifiedFlatProfile h r n q‖ ≤ C ∧
@@ -146,5 +147,7 @@ theorem mollifiedFlatProfile_eventually_bounded {d : ℕ} {alpha : ℝ}
       ((contDiff_mollifiedProfile h n).contDiffAt.of_le (by simp)) i k]
     exact (abs_flatSecond_le _ _ _ _ alpha r M P hr hM (hv i) (hv k) (hh i k)
       hP.le (hp _)).trans hDC
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

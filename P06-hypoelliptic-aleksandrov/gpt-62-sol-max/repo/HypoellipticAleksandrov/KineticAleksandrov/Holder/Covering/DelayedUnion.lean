@@ -14,17 +14,22 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+section
+variable {d : ℕ}
+
+section
+variable (P : KineticPoint d) (r : ℝ) (m : ℕ)
+include P r m
+
 /-- Open stack interiors avoid any uncountable union of terminal faces. -/
-def openForwardStack {d : ℕ} (P : KineticPoint d) (r : ℝ) (m : ℕ) :
+def openForwardStack :
     Set (KineticPoint d) :=
   forwardStack P r m ∩ {X | X.time < P.time+(m : ℝ)*r^2}
 
 /-- Open forward stack interiors are open. -/
-theorem isOpen_openForwardStack {d : ℕ} (P : KineticPoint d) (r : ℝ) (m : ℕ) :
+theorem isOpen_openForwardStack :
     IsOpen (openForwardStack P r m) := by
-  have hx : Continuous (relativePosition P) :=
-    (continuous_position.sub continuous_const).sub
-      ((continuous_time.sub continuous_const).smul continuous_const)
+  have hx := continuous_relativePosition P
   have heq : openForwardStack P r m =
       {X | P.time < X.time ∧ X.time < P.time+(m : ℝ)*r^2 ∧
         X.velocity ∈ PDE.euclideanBall P.velocity r ∧
@@ -42,12 +47,14 @@ theorem isOpen_openForwardStack {d : ℕ} (P : KineticPoint d) (r : ℝ) (m : �
       (((PDE.isOpen_euclideanBall _ _).preimage continuous_velocity).inter
         ((PDE.isOpen_euclideanBall _ _).preimage hx)))
 
+end
+
 /-- Kinetic volume equals integration of time-slice volumes in transport coordinates. -/
-theorem volume_transport_slices {d : ℕ} {S : Set (KineticPoint d)}
+theorem volume_transport_slices {S : Set (KineticPoint d)}
     (hS : MeasurableSet S) :
     volume S = ∫⁻ v : PDE.Vec d, ∫⁻ y : PDE.Vec d,
       volume {t : ℝ | transportChart (v,y,t) ∈ S} := by
-  have hs : MeasurableSet (transportChart ⁻¹' S) :=
+  have hs :=
     hS.preimage (continuous_transportChart d).measurable
   rw [← (measurePreserving_transportChart d).measure_preimage hS.nullMeasurableSet,
     Measure.volume_eq_prod, Measure.prod_apply hs]
@@ -57,13 +64,13 @@ theorem volume_transport_slices {d : ℕ} {S : Set (KineticPoint d)}
   rfl
 
 /-- Each transport slice satisfies the sharp one-dimensional delayed-union inequality. -/
-theorem delayed_union_slice {d : ℕ} {ι : Type*} [Countable ι]
+theorem delayed_union_slice {ι : Type*} [Countable ι]
     (P : ι → KineticPoint d) (r : ι → ℝ) (hr : ∀ i, 0 < r i)
     (m : ℕ) (hm : 0 < m) (v y : PDE.Vec d) :
     volume {t : ℝ | transportChart (v,y,t) ∈ ⋃ i, backwardCylinder (P i) (r i)} ≤
       ENNReal.ofReal (((m : ℝ)+1)/(m : ℝ)) *
         volume {t : ℝ | transportChart (v,y,t) ∈ ⋃ i, openForwardStack (P i) (r i) m} := by
-  let A : Set ι := {i | v ∈ PDE.euclideanBall (P i).velocity (r i) ∧
+  let A := {i | v ∈ PDE.euclideanBall (P i).velocity (r i) ∧
     y ∈ PDE.euclideanBall ((P i).position-(P i).time • v) (2*(r i)^3)}
   have hback : {t : ℝ | transportChart (v,y,t) ∈ ⋃ i, backwardCylinder (P i) (r i)} ⊆
       ⋃ i : A, Ioo ((P i).time-(r i)^2) (P i).time := by
@@ -86,7 +93,7 @@ theorem delayed_union_slice {d : ℕ} {ι : Type*} [Countable ι]
     _ ≤ _ := mul_le_mul_right (measure_mono hforward) _
 
 /-- Countable kinetic cylinder families satisfy the sharp delayed-union estimate. -/
-theorem delayed_union_countable {d : ℕ} {ι : Type*} [Countable ι]
+theorem delayed_union_countable {ι : Type*} [Countable ι]
     (P : ι → KineticPoint d) (r : ι → ℝ) (hr : ∀ i, 0 < r i)
     (m : ℕ) (hm : 0 < m) :
     volume (⋃ i, backwardCylinder (P i) (r i)) ≤
@@ -101,5 +108,7 @@ theorem delayed_union_countable {d : ℕ} {ι : Type*} [Countable ι]
   dsimp only
   rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   exact lintegral_mono fun y => delayed_union_slice P r hr m hm v y
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

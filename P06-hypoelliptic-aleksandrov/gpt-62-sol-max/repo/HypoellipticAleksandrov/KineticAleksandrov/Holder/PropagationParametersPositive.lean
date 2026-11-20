@@ -11,29 +11,36 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
+section
+variable {d : ℕ} (hd : 1 ≤ d) {lam Lam H T1 : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (hT1 : 0 ≤ T1)
+include hd hlam hLam hT1
+
 /-- The source damping budget is positive in positive dimension. -/
-theorem XiStar_pos {d : ℕ} (hd : 1 ≤ d) {lam Lam H T1 : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (hT1 : 0 ≤ T1) : 0 < XiStar d lam Lam H T1 := by
+theorem XiStar_pos : 0 < XiStar d lam Lam H T1 := by
   have hd0 : (0 : ℝ) < d := Nat.cast_pos.mpr (by omega)
   have hLam0 : 0 < Lam := hlam.trans_le hLam
   unfold XiStar
   exact add_pos_of_pos_of_nonneg (by positivity) (by positivity)
 
 /-- The source Gaussian level is positive. -/
-theorem barrierL_pos {d : ℕ} (hd : 1 ≤ d) {lam Lam H T1 : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (hT1 : 0 ≤ T1) :
+theorem barrierL_pos :
     0 < barrierL d lam Lam H T1 :=
   mul_pos (by norm_num) (Real.sqrt_pos.mpr (XiStar_pos hd hlam hLam hT1))
 
+end
+
+section
+variable {d : ℕ} {lam Lam H T1 : ℝ}
+
 /-- Squaring the source level gives exactly four times its damping budget. -/
-theorem barrierL_sq {d : ℕ} {lam Lam H T1 : ℝ} (hXi : 0 ≤ XiStar d lam Lam H T1) :
+theorem barrierL_sq (hXi : 0 ≤ XiStar d lam Lam H T1) :
     (barrierL d lam Lam H T1) ^ 2 = 4 * XiStar d lam Lam H T1 := by
   unfold barrierL
   rw [mul_pow, Real.sq_sqrt hXi]
   norm_num
 
 /-- The radius multiplier is at least two. -/
-theorem two_le_barrierW {d : ℕ} {lam Lam H T1 : ℝ} (hH : 0 ≤ H) :
+theorem two_le_barrierW (hH : 0 ≤ H) :
     2 ≤ barrierW d lam Lam H T1 := by
   have hL : 0 ≤ barrierL d lam Lam H T1 := mul_nonneg (by norm_num) (Real.sqrt_nonneg _)
   unfold barrierW
@@ -42,11 +49,13 @@ theorem two_le_barrierW {d : ℕ} {lam Lam H T1 : ℝ} (hH : 0 ≤ H) :
   linarith only [h1, h2]
 
 /-- The two tube constants are positive with their literal source formulas. -/
-theorem tubeConstants_pos {d : ℕ} {lam Lam H T1 : ℝ} (hH : 0 ≤ H) :
+theorem tubeConstants_pos (hH : 0 ≤ H) :
     0 < velocityTubeConstant d lam Lam H T1 ∧ 0 < positionTubeConstant d lam Lam H T1 := by
   have hW : 0 < barrierW d lam Lam H T1 := lt_of_lt_of_le (by norm_num) (two_le_barrierW hH)
   unfold velocityTubeConstant positionTubeConstant
   constructor <;> positivity
+
+end
 
 /-- The source minimum step is strictly positive. -/
 theorem stepSize_pos {d : ℕ} {lam Lam H T0 T1 kx kv : ℝ}
@@ -59,8 +68,12 @@ theorem stepSize_pos {d : ℕ} {lam Lam H T0 T1 kx kv : ℝ}
   · positivity
   · apply lt_min <;> positivity
 
+section
+variable {L : ℝ} (hL : 0 < L)
+include hL
+
 /-- The Gaussian gap is positive and below one. -/
-theorem barrierCb_bounds {L : ℝ} (hL : 0 < L) : 0 < barrierCb L ∧ barrierCb L < 1 := by
+theorem barrierCb_bounds : 0 < barrierCb L ∧ barrierCb L < 1 := by
   have hsq : 0 < L ^ 2 := sq_pos_of_pos hL
   have he : Real.exp (-L ^ 2) < Real.exp (-3 / 4 * L ^ 2) :=
     Real.exp_lt_exp.mpr (by linarith only [hsq])
@@ -71,7 +84,7 @@ theorem barrierCb_bounds {L : ℝ} (hL : 0 < L) : 0 < barrierCb L ∧ barrierCb 
   · linarith only [hu, Real.exp_pos (-L ^ 2)]
 
 /-- The source loss factor is strictly between zero and one. -/
-theorem barrierGamma_bounds {L : ℝ} (hL : 0 < L) :
+theorem barrierGamma_bounds :
     0 < barrierGamma L ∧ barrierGamma L < 1 := by
   obtain ⟨hc0, hc1⟩ := barrierCb_bounds hL
   have he : Real.exp (-L ^ 2 / 512) ≤ 1 :=
@@ -80,13 +93,14 @@ theorem barrierGamma_bounds {L : ℝ} (hL : 0 < L) :
   · exact mul_pos hc0 (Real.exp_pos _)
   · exact (mul_le_of_le_one_right hc0.le he).trans_lt hc1
 
+end
+
 /-- Every admissible block remains within one quarter of the initial time budget. -/
 theorem propagation_step_time {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
     (hH : 0 ≤ H) (hh : 0 < h) (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv) :
     (barrierW d lam Lam H T1) ^ 2 * h ≤ T0 ∧ 4 * h ≤ T0 := by
   have hW := two_le_barrierW (d := d) (lam := lam) (Lam := Lam) (T1 := T1) hH
-  have hWpos : 0 < barrierW d lam Lam H T1 := by linarith only [hW]
-  have ht := (le_div_iff₀ (sq_pos_of_pos hWpos)).mp
+  have ht := (le_div_iff₀ (sq_pos_of_pos (by linarith only [hW]))).mp
     (hhstar.trans (stepSize_le_time d lam Lam H T0 T1 kx kv))
   constructor
   · simpa only [mul_comm] using ht

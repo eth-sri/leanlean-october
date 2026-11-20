@@ -12,8 +12,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic Holder
 
+section
+variable {d : ℕ}
+
 /-- A fixed-position outer parabolic slice is contained in the three-quarter cylinder. -/
-theorem holder_slice_mem_inner {d : ℕ} (x : PDE.Vec d)
+theorem holder_slice_mem_inner (x : PDE.Vec d)
     (hx : x ∈ PDE.euclideanBall 0 (1 / 8 : ℝ)) (z : TimeVelocity d)
     (hz : z ∈ scalarParabolicOpenCylinder (-9 / 16) 0
       (PDE.euclideanBall 0 (3 / 4 : ℝ))) :
@@ -28,7 +31,7 @@ theorem holder_slice_mem_inner {d : ℕ} (x : PDE.Vec d)
     PDE.euclideanBall_mono (by norm_num) (by norm_num : (1 / 8 : ℝ) ≤ (3 / 4) ^ 3) hx
 
 /-- A point in the half kinetic cylinder supplies precisely the inner slice coordinates. -/
-theorem holder_half_coordinates {d : ℕ} {P : KineticPoint d}
+theorem holder_half_coordinates {P : KineticPoint d}
     (hP : P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) (1 / 2)) :
     (P.time, P.velocity) ∈ scalarParabolicOpenCylinder (-1 / 4) 0
       (PDE.euclideanBall 0 (1 / 2 : ℝ)) ∧
@@ -39,12 +42,11 @@ theorem holder_half_coordinates {d : ℕ} {P : KineticPoint d}
     show (1 / 2 : ℝ) ^ 3 = 1 / 8 by norm_num] using hx
 
 /-- Kinetic affine normalization transports every positive subradius exactly. -/
-theorem kineticAffine_mem_radius {d : ℕ} (P₀ P : KineticPoint d)
+theorem kineticAffine_mem_radius (P₀ P : KineticPoint d)
     {R r : ℝ} (hR : 0 < R) (hr : 0 < r) :
     kineticAffine P₀ R P ∈ backwardCylinder P₀ (R * r) ↔
       P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) r := by
-  rw [mem_backwardCylinder_iff, mem_backwardCylinder_iff]
-  rw [relativePosition_kineticAffine]
+  rw [mem_backwardCylinder_iff, mem_backwardCylinder_iff, relativePosition_kineticAffine]
   simp only [kineticAffine_time, kineticAffine_velocity,
     relativePosition, sub_zero, smul_zero]
   rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (mul_pos hR hr),
@@ -62,7 +64,7 @@ theorem kineticAffine_mem_radius {d : ℕ} (P₀ P : KineticPoint d)
     refine ⟨?_, ?_, ?_, ?_⟩ <;> nlinarith only [ha, hb, hv, hx, hR, hR2, hR3]
 
 /-- Pullback leaves the oscillation unchanged on corresponding full cylinders. -/
-theorem oscillationOn_kineticPullback {d : ℕ} (u : KineticPoint d → ℝ)
+theorem oscillationOn_kineticPullback (u : KineticPoint d → ℝ)
     (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) :
     oscillationOn (kineticPullback u P₀ R)
       (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1) =
@@ -76,7 +78,7 @@ theorem oscillationOn_kineticPullback {d : ℕ} (u : KineticPoint d → ℝ)
   simp only [oscillationOn, he]
 
 /-- Continuity on the closed outer cylinder is preserved under normalization. -/
-theorem continuousOn_kineticPullback_closure {d : ℕ} {u : KineticPoint d → ℝ}
+theorem continuousOn_kineticPullback_closure {u : KineticPoint d → ℝ}
     (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
     (hu : ContinuousOn u (closure (backwardCylinder P₀ R))) :
     ContinuousOn (kineticPullback u P₀ R)
@@ -87,7 +89,7 @@ theorem continuousOn_kineticPullback_closure {d : ℕ} {u : KineticPoint d → �
   exact mem_image_of_mem _ hP
 
 /-- Kinetic increments scale by one power of the physical radius. -/
-theorem kineticIncrement_kineticAffine {d : ℕ} (P₀ P Q : KineticPoint d)
+theorem kineticIncrement_kineticAffine (P₀ P Q : KineticPoint d)
     {R : ℝ} (hR : 0 < R) :
     kineticIncrement P₀ (kineticAffine P₀ R P) (kineticAffine P₀ R Q) / R =
       kineticIncrement (⟨0, 0, 0⟩ : KineticPoint d) P Q := by
@@ -114,5 +116,7 @@ theorem kineticIncrement_kineticAffine {d : ℕ} (P₀ P Q : KineticPoint d)
     Real.mul_rpow (pow_nonneg hR.le 3) (PDE.vecEuclideanNorm_nonneg _),
     hp2, hp3, smul_zero, sub_zero]
   field_simp
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

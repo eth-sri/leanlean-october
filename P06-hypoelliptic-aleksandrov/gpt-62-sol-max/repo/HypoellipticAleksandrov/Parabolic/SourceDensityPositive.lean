@@ -67,135 +67,34 @@ private theorem unit_high_measurable
   rw [← hdiff]
   exact hbox.diff hlow
 
-private theorem inkSpots_radius_le_one_of_strictDense {d : Nat}
-    {Gamma : Set (TimeVelocity d)} {xi : Real} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) : q.radius ≤ 1 := by
-  have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hq.1 hq.2.1
-  have htop : (q.baseTime + q.radius ^ 2, q.center) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    exact ⟨by linarith [sq_nonneg q.radius], by norm_num, fun i => by simp [hq.1.le]⟩
-  have hbottom : (q.baseTime, q.center) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    exact ⟨le_rfl, by nlinarith [sq_nonneg q.radius], fun i => by simp [hq.1.le]⟩
-  have htop' := hclosed htop
-  have hbottom' := hclosed hbottom
-  rw [mem_parabolicClosedBox_iff] at htop' hbottom'
-  norm_num at htop' hbottom'
-  nlinarith [sq_nonneg (q.radius - 1)]
-
 private theorem inkSpotsD3_finite
     (d : Nat) (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real)
     (heta0 : 0 < eta) (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) :
     volume (inkSpotsD3 Gamma xi eta zeta) ≠ ∞ := by
-  apply measure_ne_top_of_subset
-    (show inkSpotsD3 Gamma xi eta zeta ⊆
-        parabolicClosedBox (1 + 4 / eta) 1 0 (0 : PDE.Vec d) by
-      intro z hz
-      rw [inkSpotsD3] at hz
-      rcases Set.mem_iUnion.mp hz with ⟨q, hz⟩
-      rcases Set.mem_iUnion.mp hz with ⟨hq, hzq⟩
-      rcases mem_inkSpotsQ3_iff.mp hzq with ⟨y, hy, rfl⟩
-      rcases mem_inkSpotsQ2_iff.mp hy with ⟨hyleft, hyright, hycenter, hyunit⟩
-      have hRle : q.radius ≤ 1 := inkSpots_radius_le_one_of_strictDense hq
-      rw [mem_parabolicClosedBox_iff]
-      constructor
-      · dsimp [inkSpotsContraction]
-        have hbase : 0 ≤ q.baseTime := by
-          have hsource := hq.2.1
-          have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hq.1 hsource
-          have hbottom : (q.baseTime, q.center) ∈
-              parabolicClosedBox 1 q.radius q.baseTime q.center := by
-            rw [mem_parabolicClosedBox_iff]
-            exact ⟨le_rfl, by nlinarith [sq_nonneg q.radius], fun i => by simp [hq.1.le]⟩
-          have := hclosed hbottom
-          rw [mem_parabolicClosedBox_iff] at this
-          exact this.1
-        have hTpos : 0 < inkSpotsTerminalTime eta q := by
-          rw [inkSpotsTerminalTime_eq]
-          exact add_pos (add_pos_of_nonneg_of_pos hbase (sq_pos_of_pos hq.1))
-            (div_pos (mul_pos (by norm_num) (sq_pos_of_pos hq.1)) heta0)
-        have hypos : 0 < y.1 :=
-          (add_pos_of_nonneg_of_pos hbase (sq_pos_of_pos hq.1)).trans hyleft
-        have hzetaSq : zeta ^ 2 < 1 := by nlinarith
-        have hrewrite : inkSpotsTerminalTime eta q - zeta ^ 2 *
-            (inkSpotsTerminalTime eta q - y.1) =
-            (1 - zeta ^ 2) * inkSpotsTerminalTime eta q + zeta ^ 2 * y.1 := by ring
-        change 0 ≤ inkSpotsTerminalTime eta q - zeta ^ 2 *
-          (inkSpotsTerminalTime eta q - y.1)
-        rw [hrewrite]
-        exact (add_pos (mul_pos (sub_pos.mpr hzetaSq) hTpos)
-          (mul_pos (sq_pos_of_pos hzeta0) hypos)).le
-      constructor
-      · dsimp [inkSpotsContraction]
-        have hterminal : q.baseTime + q.radius ^ 2 ≤ 1 := by
-          have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hq.1 hq.2.1
-          have htop : (q.baseTime + q.radius ^ 2, q.center) ∈
-              parabolicClosedBox 1 q.radius q.baseTime q.center := by
-            rw [mem_parabolicClosedBox_iff]
-            exact ⟨by linarith [sq_nonneg q.radius], by norm_num,
-              fun i => by simp [hq.1.le]⟩
-          have := hclosed htop
-          rw [mem_parabolicClosedBox_iff] at this
-          norm_num at this
-          exact this.2.1
-        have hzetaSq : 0 ≤ zeta ^ 2 := sq_nonneg zeta
-        have hR2' : q.radius ^ 2 ≤ 1 ^ 2 :=
-          (sq_le_sq₀ hq.1.le (by norm_num : (0 : ℝ) ≤ 1)).2 hRle
-        have hR2 : q.radius ^ 2 ≤ 1 := by simpa using hR2'
-        have hspan : 4 * q.radius ^ 2 / eta ≤ 4 / eta := by
-          apply (div_le_div_iff_of_pos_right heta0).mpr
-          nlinarith
-        have hT : inkSpotsTerminalTime eta q ≤ 1 + 4 / eta := by
-          rw [inkSpotsTerminalTime_eq]
-          linarith
-        have hleT : inkSpotsTerminalTime eta q - zeta ^ 2 *
-            (inkSpotsTerminalTime eta q - y.1) ≤ inkSpotsTerminalTime eta q := by
-          exact sub_le_self _ (mul_nonneg hzetaSq (sub_nonneg.mpr hyright.le))
-        simpa using hleT.trans hT
-      · intro i
-        dsimp [inkSpotsContraction]
-        have hyabs : |y.2 i| < 1 := by simpa only [Pi.zero_apply, sub_zero] using hyunit i
-        have hcenter : |q.center i| + q.radius ≤ 1 := by
-          have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hq.1 hq.2.1
-          have hp : (q.baseTime, q.center + q.radius • (1 : PDE.Vec d)) ∈
-              parabolicClosedBox 1 q.radius q.baseTime q.center := by
-            rw [mem_parabolicClosedBox_iff]
-            refine ⟨le_rfl, by nlinarith [sq_nonneg q.radius], ?_⟩
-            intro j
-            simp [abs_of_nonneg hq.1.le]
-          have hm : (q.baseTime, q.center - q.radius • (1 : PDE.Vec d)) ∈
-              parabolicClosedBox 1 q.radius q.baseTime q.center := by
-            rw [mem_parabolicClosedBox_iff]
-            refine ⟨le_rfl, by nlinarith [sq_nonneg q.radius], ?_⟩
-            intro j
-            simp [abs_of_nonneg hq.1.le]
-          have hp' := hclosed hp
-          have hm' := hclosed hm
-          rw [mem_parabolicClosedBox_iff] at hp' hm'
-          have hplus : q.center i + q.radius ≤ 1 := by
-            have := (le_abs_self _).trans (hp'.2.2 i)
-            simpa using this
-          have hminus : -(q.center i - q.radius) ≤ 1 := by
-            simpa using (neg_le_abs _).trans (hm'.2.2 i)
-          have habs : |q.center i| ≤ 1 - q.radius := by
-            rw [abs_le]
-            constructor <;> linarith
-          linarith
-        have hcabs : |q.center i| < 1 := by linarith [hq.1]
-        have hzeta1' : 0 < 1 - zeta := sub_pos.mpr hzeta1
-        have hrewrite : q.center i + zeta * (y.2 i - q.center i) =
-            (1 - zeta) * q.center i + zeta * y.2 i := by ring
-        rw [sub_zero, hrewrite]
-        exact (calc
-          |(1 - zeta) * q.center i + zeta * y.2 i| ≤
-              |(1 - zeta) * q.center i| + |zeta * y.2 i| := abs_add_le _ _
-          _ = (1 - zeta) * |q.center i| + zeta * |y.2 i| := by
-            rw [abs_mul, abs_mul, abs_of_pos hzeta1', abs_of_pos hzeta0]
-          _ < (1 - zeta) * 1 + zeta * 1 := by gcongr
-          _ = 1 := by ring).le)
-  exact (isCompact_parabolicClosedBox (1 + 4 / eta) 1 0 (0 : PDE.Vec d)).measure_ne_top
+  refine measure_ne_top_of_subset ?_
+    ((isCompact_parabolicClosedBox (1 + 4 / eta) 1 0 (0 : PDE.Vec d)).measure_ne_top (μ := volume))
+  intro z hz
+  simp only [inkSpotsD3, mem_iUnion, mem_inkSpotsQ3_iff] at hz
+  obtain ⟨q, hq, y, hy, rfl⟩ := hz
+  obtain ⟨hyleft, hyright, -, hyunit⟩ := mem_inkSpotsQ2_iff.mp hy
+  obtain ⟨hbase, hterminal, -, hcenter⟩ := inkSpots_source_bounds hq.1 hq.2.1
+  have hy0 : 0 ≤ y.1 := by linarith [sq_nonneg q.radius]
+  have hT : inkSpotsTerminalTime eta q ≤ 1 + 4 / eta := by
+    rw [inkSpotsTerminalTime_eq]
+    gcongr
+    linarith
+  have hsq : zeta ^ 2 ≤ 1 := by
+    nlinarith [mul_nonneg hzeta0.le (sub_nonneg.mpr hzeta1.le)]
+  have ht : (inkSpotsContraction eta zeta q y).1 ∈ Icc 0 (1 + 4 / eta) := by
+    change inkSpotsTerminalTime eta q - zeta ^ 2 * (inkSpotsTerminalTime eta q - y.1) ∈ _
+    rw [sub_eq_add_neg, ← mul_neg, neg_sub]
+    exact (convex_Icc ..).add_smul_sub_mem ⟨hy0.trans hyright.le, hT⟩
+      ⟨hy0, hyright.le.trans hT⟩ ⟨sq_nonneg zeta, hsq⟩
+  refine mem_parabolicClosedBox_iff.mpr ⟨ht.1, by simpa only [inkSpotsContraction, zero_add, one_mul, one_pow, mul_one] using ht.2, fun i => ?_⟩
+  have hc : q.center i ∈ Icc (-1 : ℝ) 1 := abs_le.mp (by linarith [hcenter i, hq.1])
+  have hyi : y.2 i ∈ Icc (-1 : ℝ) 1 := abs_le.mp (by simpa using (hyunit i).le)
+  simpa [inkSpotsContraction] using
+    abs_le.mpr ((convex_Icc ..).add_smul_sub_mem hc hyi ⟨hzeta0.le, hzeta1.le⟩)
 
 private theorem IsParabolicSupersolutionOn.const_smul_source
     {d : Nat} {B : CoefficientField d} {F u : TimeVelocity d → Real}
@@ -213,38 +112,14 @@ private theorem parabolicLpNormOn_const_smul_of_nonneg
     {d : Nat} (c : Real) (hc : 0 ≤ c)
     (F : TimeVelocity d → Real) (S : Set (TimeVelocity d)) :
     parabolicLpNormOn d (c • F) S = c * parabolicLpNormOn d F S := by
-  unfold parabolicLpNormOn parabolicELpNormOn
-  rw [eLpNorm_const_smul, ENNReal.toReal_mul]
-  simp only [Real.enorm_of_nonneg hc, ENNReal.toReal_ofReal hc]
+  simp [parabolicLpNormOn, parabolicELpNormOn, eLpNorm_const_smul, ENNReal.toReal_mul, Real.enorm_of_nonneg hc, ENNReal.toReal_ofReal hc]
 
-private theorem nonneg_at_terminal_half_cube
-    {d : Nat} {U : Set (TimeVelocity d)} {u : TimeVelocity d → Real}
-    (hU : IsOpen U) (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
-    (hu : ContDiffOn Real 2 u U)
-    (hnonneg : IsNonnegativeOn u (parabolicBox 1 1 0 0))
-    (v : PDE.Vec d) (hv : v ∈ velocityClosedCube 0 (1 / 2)) :
-    0 ≤ u (1, v) := by
-  have htargetClosed : (1, v) ∈ closure (parabolicBox 1 1 0 (0 : PDE.Vec d)) := by
-    rw [closure_parabolicBox_of_pos (by norm_num) (by norm_num)]
-    rw [mem_parabolicClosedBox_iff]
-    exact ⟨by norm_num, by norm_num, fun i => (hv i).trans (by norm_num)⟩
-  have htargetU : (1, v) ∈ U := by
-    apply hclosed
-    rw [← closure_parabolicBox_of_pos (by norm_num) (by norm_num)]
-    exact htargetClosed
-  have hmaps : MapsTo u (parabolicBox 1 1 0 (0 : PDE.Vec d)) (Ici 0) := by
-    intro y hy
-    exact hnonneg y hy
-  have hcont : ContinuousAt u (1, v) :=
-    (contDiffAt_of_contDiffOn_of_isOpen hU hu htargetU).continuousAt
-  have himage : u (1, v) ∈ closure (Ici 0) :=
-    hcont.continuousWithinAt.mem_closure htargetClosed hmaps
-  simpa only [isClosed_Ici.closure_eq, Set.mem_Ici] using himage
+section
+variable (d : Nat) (hd : 0 < d) (lam : Real) (hlam : 0 < lam) (Lam : Real) (hlamLam : lam ≤ Lam)
+include hd hlam hlamLam
 
 /-- One source-faithful crawling-of-ink-spots descent step. -/
 private theorem source_density_descent_step
-    (d : Nat) (hd : 0 < d) (lam : Real) (hlam : 0 < lam)
-    (Lam : Real) (hlamLam : lam ≤ Lam)
     (a eta zeta L beta₂ beta₁ g₂ C₂ C₀ : Real)
     (ha0 : 0 < a) (ha1 : a < 1)
     (heta0 : 0 < eta) (heta1 : eta < 1)
@@ -314,15 +189,6 @@ private theorem source_density_descent_step
   have hLbeta : L * beta₂ < beta₁ := by
     rw [lt_div_iff₀ hL0] at hstep
     simpa [mul_comm] using hstep
-  have hscaled : L * (beta₂ * (volume (inkSpotsUnitBox d)).toReal) ≤
-      L * (volume D).toReal := by
-    calc
-      L * (beta₂ * (volume (inkSpotsUnitBox d)).toReal) =
-          (L * beta₂) * (volume (inkSpotsUnitBox d)).toReal := by ring
-      _ ≤ beta₁ * (volume (inkSpotsUnitBox d)).toReal :=
-        mul_le_mul_of_nonneg_right hLbeta.le hQnonneg
-      _ ≤ (volume Gamma).toReal := hdensity
-      _ ≤ L * (volume D).toReal := by simpa only [D] using haggregate
   have hDstrong : (beta₁ / L) * (volume (inkSpotsUnitBox d)).toReal ≤
       (volume D).toReal := by
     rw [div_mul_eq_mul_div]
@@ -339,7 +205,6 @@ private theorem source_density_descent_step
         (measureReal_inter_add_diff (μ := volume) (s := D) hQmeas hDfinite)
     have hcapDensity : beta₂ * (volume (inkSpotsUnitBox d)).toReal ≤
         (volume (D ∩ inkSpotsUnitBox d)).toReal := by
-      have hcEq : c + beta₂ = beta₁ / L := by dsimp [c]; ring
       nlinarith [hDstrong]
     have hDcap : ∀ z ∈ D ∩ inkSpotsUnitBox d,
         h₃ ≤ u z + C₃ * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
@@ -451,9 +316,7 @@ private theorem source_density_descent_step
 
 /-- Krylov--Safonov's finite source-aware descent upgrades the near-one
 density relation to every positive density threshold. -/
-theorem exists_sourceDensityToPoint_positive
-    (d : Nat) (hd : 0 < d) (lam : Real) (hlam : 0 < lam)
-    (Lam : Real) (hlamLam : lam ≤ Lam) (beta : Real)
+theorem exists_sourceDensityToPoint_positive (beta : Real)
     (hbeta0 : 0 < beta) (hbeta1 : beta < 1) :
     ∃ g C : Real, 0 < g ∧ g < 1 ∧ 0 ≤ C ∧
       SourceDensityToPoint d lam Lam beta g C := by
@@ -510,5 +373,7 @@ theorem exists_sourceDensityToPoint_positive
     exact (min_le_right _ _).trans_lt (sub_lt_self 1 hbeta0)
   exact ⟨g', C, hg'0, hg'1, hC,
     (SourceDensityToPoint.mono_density hN.le hNrel).mono_value (min_le_left _ _)⟩
+
+end
 
 end HypoellipticAleksandrov.Parabolic

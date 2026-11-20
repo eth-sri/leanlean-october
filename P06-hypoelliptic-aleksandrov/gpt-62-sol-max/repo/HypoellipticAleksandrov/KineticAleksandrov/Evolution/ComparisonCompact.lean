@@ -31,8 +31,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped MatrixOrder Topology
 
+section
+variable {n : ℕ}
+
 /-- Maximum principle on a compact region, strict version. -/
-theorem le_zero_of_strict_viscous_compact {n : ℕ} {B : FullKineticCoefficient n}
+theorem le_zero_of_strict_viscous_compact {B : FullKineticCoefficient n}
     {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} {K D : Set (KineticPoint n)}
     {w : KineticPoint n → ℝ} (hε : 0 ≤ ε) (hKc : IsCompact K)
     (hwc : ContinuousOn w K)
@@ -46,7 +49,7 @@ theorem le_zero_of_strict_viscous_compact {n : ℕ} {B : FullKineticCoefficient 
   by_contra hneg'
   have hneg := not_le.mp hneg'
   obtain ⟨p, hpK, hpmax⟩ := hKc.exists_isMaxOn ⟨p₀, hp₀⟩ hwc
-  have hwp : 0 < w p := lt_of_lt_of_le hneg (hpmax hp₀)
+  have hwp := lt_of_lt_of_le hneg (hpmax hp₀)
   have hpD : p ∈ D := by
     by_contra h
     exact absurd (hbdry p hpK h) (not_le.mpr hwp)
@@ -57,7 +60,7 @@ theorem le_zero_of_strict_viscous_compact {n : ℕ} {B : FullKineticCoefficient 
     (not_le.mpr (hpos p hpD))
 
 /-- The time coordinate has `L_ε (σ - T) = 1`. -/
-theorem viscousTransportedOperator_time_sub {n : ℕ} (B : FullKineticCoefficient n)
+theorem viscousTransportedOperator_time_sub (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n) (ε T : ℝ) (p : KineticPoint n) :
     viscousTransportedOperator B b ε (fun q => q.time - T) p = 1 := by
   have hh : ∀ x : PDE.Vec n, sliceHessian (fun _ : PDE.Vec n => p.time - T) x = 0 := by
@@ -87,14 +90,14 @@ theorem viscousTransportedOperator_time_sub {n : ℕ} (B : FullKineticCoefficien
   simp [PDE.vecDot]
 
 /-- The time coordinate `σ - T` is slice regular everywhere. -/
-theorem isSliceRegularAt_time_sub {n : ℕ} (T : ℝ) (p : KineticPoint n) :
+theorem isSliceRegularAt_time_sub (T : ℝ) (p : KineticPoint n) :
     IsSliceRegularAt (fun q : KineticPoint n => q.time - T) p :=
   ⟨differentiableAt_id.sub_const T,
     (show ContDiffAt ℝ 2 (fun _ : PDE.Vec n => p.time - T) p.position from contDiffAt_const),
     (show ContDiffAt ℝ 2 (fun _ : PDE.Vec n => p.time - T) p.velocity from contDiffAt_const)⟩
 
 /-- Maximum principle on a compact region for a subsolution `L_ε w ≥ 0`. -/
-theorem le_zero_of_viscous_nonneg_compact {n : ℕ} {B : FullKineticCoefficient n}
+theorem le_zero_of_viscous_nonneg_compact {B : FullKineticCoefficient n}
     {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} {K D : Set (KineticPoint n)}
     {w : KineticPoint n → ℝ} {T : ℝ} (hε : 0 ≤ ε) (hKc : IsCompact K)
     (hKT : ∀ p ∈ K, p.time ≤ T) (hwc : ContinuousOn w K)
@@ -141,5 +144,7 @@ theorem le_zero_of_viscous_nonneg_compact {n : ℕ} {B : FullKineticCoefficient 
     rw [div_lt_iff₀ hden]
     nlinarith
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

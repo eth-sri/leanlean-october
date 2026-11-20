@@ -16,18 +16,18 @@ open SectionTwo TheoremA Evolution
 /-- At every observation time in the source window, the genuine finite terminal sum is
 bounded by the FULL-SPACE terminal measure. Initial-time entrance atoms are retained. -/
 theorem enlarged_active_terminal_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (N : ℕ) (b : ℝ)
     (hb : P.time ≤ b) (hBT : b ≤ T) :
-    enlargedActiveTerminal hH hLE hlam hLam A c J s T P N b ≤
-      enlargedFullSpaceTerminal hH hLE hlam hLam A P b := by
-  let mu := enlargedActiveTerminal hH hLE hlam hLam A c J s T P N b
-  let nu := enlargedFullSpaceTerminal hH hLE hlam hLam A P b
+    enlargedActiveTerminal A c J s T P N b ≤
+      enlargedFullSpaceTerminal A P b := by
+  let mu := enlargedActiveTerminal A c J s T P N b
+  let nu := enlargedFullSpaceTerminal A P b
   have : IsFiniteMeasure nu := ⟨(enlargedFullSpaceTerminal_mass_le_one
-    hH hLE hlam hLam A P b).trans_lt ENNReal.one_lt_top⟩
+    A P b).trans_lt ENNReal.one_lt_top⟩
   apply enlarged_physical_measure_le
   intro f hf0
   let G : EvolutionAmbientState 1 → ℝ :=
@@ -43,28 +43,28 @@ theorem enlarged_active_terminal_le_fullspace
       exact hx.trans (le_max_left _ _)⟩
   have hF0 : ∀ z, 0 ≤ F z := fun z => hf0 ⟨b, z.2, z.1⟩
   obtain ⟨u, hphi, hc, ⟨M, hM, hbound⟩, hop, hn, ht, hr⟩ :=
-    enlarged_exists_fullspace_potential hH hLE hlam hLam A b F hG hF0
+    enlarged_exists_fullspace_potential A b F hG hF0
   have hp : enlargedStoppedPotential b u =ᵐ[mu] exitProbePhysical f := by
-    filter_upwards [enlargedActiveTerminal_ae_time hH hLE hlam hLam A c J s T P N b]
+    filter_upwards [enlargedActiveTerminal_ae_time A c J s T P N b]
       with p hp
     rw [show enlargedStoppedPotential b u p = u p from ite_eq_left hp.le, ht p hp]
     change f.1 ((evolutionProdCLE 1).symm (b, p.velocity, p.position)) =
       f.1 ((evolutionProdCLE 1).symm (p.time, p.velocity, p.position))
     rw [hp]
-  have hh := enlarged_terminal_stopped_potential_le hH hLE hlam hLam A c J s T b P hs hT
+  have hh := enlarged_terminal_stopped_potential_le A c J s T b P hs hT
     hBT hJ u hphi hc M hM hbound hop hn N
   change (∫ p, enlargedStoppedPotential b u p ∂mu) ≤ enlargedStoppedPotential b u P at hh
   rw [integral_congr_ae hp, show enlargedStoppedPotential b u P = u P from ite_eq_left hb,
     hr P hb] at hh
-  have he : (∫ z, F z ∂(fullSpaceEvolution hH hLE hlam hLam A).2.master
+  have he : (∫ z, F z ∂(fullSpaceEvolution A).2.master
       (wholeSpaceQuery P.time b hb P.velocity P.position)) =
       ∫ p, exitProbePhysical f p ∂nu := by
-    have hi := enlargedFullSpace_native_terminal_integral hH hLE hlam hLam A P b hb
+    have hi := enlargedFullSpace_native_terminal_integral A P b hb
       (exitProbePhysical f) (exitProbePhysical_continuous_compact f).1.measurable
-    change (∫ z, F z ∂(fullSpaceEvolution hH hLE hlam hLam A).2.master
+    change (∫ z, F z ∂(fullSpaceEvolution A).2.master
       (wholeSpaceQuery P.time b hb P.velocity P.position)) = _ at hi
     unfold nu enlargedFullSpaceTerminal
-    rw [integral_map (enlargedTerminalPoint_measurable b).aemeasurable
+    rw [integral_map (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.measurable_enlargedTerminalPoint b).aemeasurable
       (exitProbePhysical_continuous_compact f).1.measurable.aestronglyMeasurable]
     exact hi
   rw [he] at hh

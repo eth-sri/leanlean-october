@@ -96,19 +96,22 @@ theorem isContinuousPiecewiseC1_of_breakpoints {n : ℕ} (γ : ℝ → PDE.Vec n
   obtain ⟨N, t, ht, h0, hl, hno⟩ := exists_partition_avoiding S hab
   refine ⟨N, t, ht, h0, hl, fun i => hS _ _ (ht (Fin.castSucc_lt_succ)) (hno i)⟩
 
+section
+variable {d : ℕ}
+
 /-- The Euclidean dot product with `ξ` as a continuous linear functional. -/
-noncomputable def dotCLM {d : ℕ} (ξ : PDE.Vec d) : PDE.Vec d →L[ℝ] ℝ :=
+noncomputable def dotCLM (ξ : PDE.Vec d) : PDE.Vec d →L[ℝ] ℝ :=
   ∑ i, ξ i • ContinuousLinearMap.proj i
 
 @[simp]
-theorem dotCLM_apply {d : ℕ} (ξ w : PDE.Vec d) : dotCLM ξ w = PDE.vecDot ξ w := by
+theorem dotCLM_apply (ξ w : PDE.Vec d) : dotCLM ξ w = PDE.vecDot ξ w := by
   classical
   unfold dotCLM PDE.vecDot
   simp
 
 /-- The line `r ↦ v₀ + h(r) ξ` with `h` `α`-Lipschitz has Euclidean speed at most `α`
 wherever it is differentiable. -/
-theorem speed_line_le {d : ℕ} (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) (h : ℝ → ℝ)
+theorem speed_line_le (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) (h : ℝ → ℝ)
     (α : ℝ) (hα : 0 ≤ α) (hlip : ∀ r r', |h r - h r'| ≤ α * |r - r'|) (r : ℝ)
     (hdiff : DifferentiableAt ℝ (fun r => v0 + h r • ξ) r) :
     PDE.vecEuclideanNorm (deriv (fun r => v0 + h r • ξ) r) ≤ α := by
@@ -127,7 +130,7 @@ theorem speed_line_le {d : ℕ} (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
   have hbd : ‖deriv h r‖ ≤ α := by
     have := norm_deriv_le_of_lipschitz (f := h) (x₀ := r) hL
     simpa [Real.coe_toNNReal _ hα] using this
-  have hder : HasDerivAt (fun r => v0 + h r • ξ) (deriv h r • ξ) r :=
+  have hder :=
     (HasDerivAt.smul_const hhd.hasDerivAt ξ).const_add v0
   rw [hder.deriv, PDE.vecEuclideanNorm_smul]
   have h1 : PDE.vecEuclideanNorm ξ = 1 := by
@@ -135,28 +138,32 @@ theorem speed_line_le {d : ℕ} (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
   rw [h1, mul_one]
   simpa using hbd
 
+end
+
 
 /-! ## The clamped tent -/
 
 /-- The tent profile extended by `0` outside `[0, L₀]`, the source's constant extension. -/
 noncomputable def tentPulse (L0 t : ℝ) : ℝ := tent L0 (max 0 (min L0 t))
 
-theorem tent_zero {L0 : ℝ} (h : 0 ≤ L0) : tent L0 0 = 0 := by
+section
+variable {L0 : ℝ} (h : 0 ≤ L0)
+include h
+
+theorem tent_zero : tent L0 0 = 0 := by
   simp [tent, h]
 
-theorem tent_self {L0 : ℝ} (h : 0 ≤ L0) : tent L0 L0 = 0 := by
+theorem tent_self : tent L0 L0 = 0 := by
   simp [tent, h]
+
+end
 
 theorem continuous_tent (L0 : ℝ) : Continuous (tent L0) := by
   unfold tent; fun_prop
 
-theorem continuous_tentPulse (L0 : ℝ) : Continuous (tentPulse L0) := by
-  unfold tentPulse
-  exact (continuous_tent L0).comp (by fun_prop)
+theorem continuous_tentPulse (L0 : ℝ) : Continuous (tentPulse L0) := (continuous_tent L0).comp (by fun_prop)
 
-theorem tent_nonneg {L0 t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ L0) : 0 ≤ tent L0 t := by
-  unfold tent
-  exact le_min h0 (le_min zero_le_one (by linarith))
+theorem tent_nonneg {L0 t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ L0) : 0 ≤ tent L0 t := le_min h0 (le_min zero_le_one (by linarith))
 
 theorem tent_le_one (L0 t : ℝ) : tent L0 t ≤ 1 :=
   (min_le_right _ _).trans (min_le_left _ _)
@@ -256,22 +263,30 @@ theorem integral_tent {L0 : ℝ} (hL0 : 2 ≤ L0) :
   simp only [intervalIntegral.integral_const, integral_id, smul_eq_mul]
   ring
 
+section
+variable {d : ℕ} (ξ v0 : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d)
+include d ξ v0 b
+
 /-- The source drift gap `Δ(α) = ∫₀^{L₀} ξ · (b(v₀ + α 𝖿(t) ξ) - b(v₀)) dt`. -/
-noncomputable def driftGap {d : ℕ} (ξ v0 : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d)
+noncomputable def driftGap
     (L0 α : ℝ) : ℝ :=
   ∫ t in (0 : ℝ)..L0,
     (PDE.vecDot ξ (b (v0 + (α * tent L0 t) • ξ)) - PDE.vecDot ξ (b v0))
 
-theorem driftGap_zero {d : ℕ} (ξ v0 : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d) (L0 : ℝ) :
+theorem driftGap_zero (L0 : ℝ) :
     driftGap ξ v0 b L0 0 = 0 := by
   simp [driftGap]
 
-theorem continuous_driftGap {d : ℕ} (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d}
+end
+
+section
+variable {d : ℕ}
+
+theorem continuous_driftGap (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d}
     (hb : Continuous b) (L0 : ℝ) : Continuous (driftGap ξ v0 b L0) := by
   unfold driftGap
   have hc := continuous_tent L0
   have hp : Continuous fun p : ℝ × ℝ => v0 + (p.1 * tent L0 p.2) • ξ := by
-    have h2 : Continuous fun p : ℝ × ℝ => tent L0 p.2 := hc.comp continuous_snd
     fun_prop
   refine intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'
     (f := fun (α t : ℝ) =>
@@ -279,7 +294,7 @@ theorem continuous_driftGap {d : ℕ} (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE
   exact ((continuous_vecDot_right ξ).comp (hb.comp hp)).sub continuous_const
 
 /-- The pointwise coercivity increment: `ξ · (b(v₀ + a f ξ) - b(v₀)) ≥ m a f` for `a, f ≥ 0`. -/
-theorem drift_increment_ge {d : ℕ} {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
+theorem drift_increment_ge {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
     (hb : IsSmoothDrift b) (hco : HasUnitDirectionDriftCoercivity m b)
     (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) {f α : ℝ} (hf : 0 ≤ f) (hα : 0 ≤ α) :
     m * α * f ≤ PDE.vecDot ξ (b (v0 + (α * f) • ξ)) - PDE.vecDot ξ (b v0) := by
@@ -312,7 +327,7 @@ theorem drift_increment_ge {d : ℕ} {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
   linarith
 
 
-theorem continuous_driftGap_integrand {d : ℕ} (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d}
+theorem continuous_driftGap_integrand (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d}
     (hb : Continuous b) (L0 α : ℝ) :
     Continuous fun t : ℝ =>
       PDE.vecDot ξ (b (v0 + (α * tent L0 t) • ξ)) - PDE.vecDot ξ (b v0) := by
@@ -320,7 +335,7 @@ theorem continuous_driftGap_integrand {d : ℕ} (ξ v0 : PDE.Vec d) {b : PDE.Vec
   have hp : Continuous fun t : ℝ => v0 + (α * tent L0 t) • ξ := by fun_prop
   exact ((continuous_vecDot_right ξ).comp (hb.comp hp)).sub continuous_const
 
-theorem driftGap_ge {d : ℕ} {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
+theorem driftGap_ge {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
     (hb : IsSmoothDrift b) (hco : HasUnitDirectionDriftCoercivity m b)
     (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) {L0 : ℝ} (hL0 : 2 ≤ L0) {α : ℝ}
     (hα : 0 ≤ α) : m * α * (L0 - 1) ≤ driftGap ξ v0 b L0 α := by
@@ -335,7 +350,7 @@ theorem driftGap_ge {d : ℕ} {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
   exact hmono
 
 /-- The source intermediate value step: `Δ(α) = π` for some `α ∈ (0, 1/2)`. -/
-theorem exists_driftGap_eq_pi {d : ℕ} {m : ℝ} (hm : 0 < m) {b : PDE.Vec d → PDE.Vec d}
+theorem exists_driftGap_eq_pi {m : ℝ} (hm : 0 < m) {b : PDE.Vec d → PDE.Vec d}
     (hb : IsSmoothDrift b) (hco : HasUnitDirectionDriftCoercivity m b)
     (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) :
     ∃ α : ℝ, 0 < α ∧ α < 1 / 2 ∧ driftGap ξ v0 b (blockL0 m) α = Real.pi := by
@@ -354,13 +369,13 @@ theorem exists_driftGap_eq_pi {d : ℕ} {m : ℝ} (hm : 0 < m) {b : PDE.Vec d �
   exact ⟨α, hα.1, hα.2, hαeq⟩
 
 
-theorem vecEuclideanNorm_of_vecNormSq_eq_one {d : ℕ} {ξ : PDE.Vec d}
+theorem vecEuclideanNorm_of_vecNormSq_eq_one {ξ : PDE.Vec d}
     (hξ : PDE.vecNormSq ξ = 1) : PDE.vecEuclideanNorm ξ = 1 := by
   unfold PDE.vecEuclideanNorm; rw [hξ, Real.sqrt_one]
 
 /-- A tube of radius `η ≤ 1/4` around a point within Euclidean distance `1/2` of `v₀` lies in
 the fitting ball `B_{R_*}(v₀)`. -/
-theorem euclideanBall_subset_of_close {d : ℕ} {m Lb : ℝ} (hLb : 0 < Lb) (hm : 0 < m)
+theorem euclideanBall_subset_of_close {m Lb : ℝ} (hLb : 0 < Lb) (hm : 0 < m)
     {D : Set (PDE.Vec d)} {v0 c : PDE.Vec d}
     (hfit : PDE.euclideanBall v0 (blockOuter Lb) ⊆ D)
     (hc : PDE.vecEuclideanNorm (c - v0) ≤ 1 / 2) :
@@ -380,14 +395,13 @@ theorem euclideanBall_subset_of_close {d : ℕ} {m Lb : ℝ} (hLb : 0 < Lb) (hm 
   linarith
 
 
-theorem phaseCenter_sub_eq_driftGap {d : ℕ} {b : PDE.Vec d → PDE.Vec d} (hb : Continuous b)
+theorem phaseCenter_sub_eq_driftGap {b : PDE.Vec d → PDE.Vec d} (hb : Continuous b)
     (ξ v0 : PDE.Vec d) {L0 : ℝ} (hL0 : 2 ≤ L0) (σ α : ℝ) :
     phaseCenter ξ b (fun r => v0 + (α * tent L0 (max 0 (min L0 (r - σ)))) • ξ) σ (σ + L0) -
       phaseCenter ξ b (fun _ => v0) σ (σ + L0) = driftGap ξ v0 b L0 α := by
   have hc := continuous_tentPulse L0
   have hA : Continuous fun r : ℝ =>
       PDE.vecDot ξ (b (v0 + (α * tent L0 (max 0 (min L0 (r - σ)))) • ξ)) := by
-    have h2 : Continuous fun r : ℝ => tentPulse L0 (r - σ) := hc.comp (by fun_prop)
     have hp : Continuous fun r : ℝ => v0 + (α * tentPulse L0 (r - σ)) • ξ := by fun_prop
     exact (continuous_vecDot_right ξ).comp (hb.comp hp)
   unfold phaseCenter
@@ -407,7 +421,7 @@ theorem phaseCenter_sub_eq_driftGap {d : ℕ} {b : PDE.Vec d → PDE.Vec d} (hb 
 
 /-- Proposition 3.9 and (3.17): two paths from `v₀` to `v₀` of speed at
 most `1/2`, whose `ξ`-phase centers differ by exactly `π`, with tubes inside `D`. -/
-theorem exists_opposite_paths {d : ℕ} (m Lb σ : ℝ) (hm : 0 < m) (hmLb : m ≤ Lb)
+theorem exists_opposite_paths (m Lb σ : ℝ) (hm : 0 < m) (hmLb : m ≤ Lb)
     (D : Set (PDE.Vec d)) (b : PDE.Vec d → PDE.Vec d)
     (hb : IsSmoothDrift b) (hbounds : HasTransportBounds m Lb b)
     (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
@@ -498,5 +512,7 @@ theorem exists_opposite_paths {d : ℕ} (m Lb σ : ℝ) (hm : 0 < m) (hmLb : m �
     · exact euclideanBall_subset_of_close hLb hm hfit ((hdev r).trans hα1.le)
   · rw [phaseCenter_sub_eq_driftGap hb.continuous ξ v0 hL0 σ α]
     exact hΔ
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

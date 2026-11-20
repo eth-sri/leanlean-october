@@ -19,7 +19,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndex
 
-open scoped BigOperators
+open scoped BigOperators ContDiff
 
 variable {d : ℕ}
 
@@ -32,19 +32,21 @@ private def directionalFDerivs {E F : Type*} [NormedAddCommGroup E] [NormedSpace
   | [], f => f
   | v :: l, f => directionalFDerivs l (directionalFDeriv v f)
 
-private theorem contDiff_directionalFDeriv {E F : Type*} [NormedAddCommGroup E]
+section
+variable {E F : Type*}
+
+private theorem contDiff_directionalFDeriv [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] {n : ℕ}
     (v : E) (f : E → F) (hf : ContDiff ℝ (n + 1) f) :
-    ContDiff ℝ n (directionalFDeriv v f) := by
-  exact (hf.fderiv_right (le_refl _)).clm_apply contDiff_const
+    ContDiff ℝ n (directionalFDeriv v f) := (hf.fderiv_right (le_refl _)).clm_apply contDiff_const
 
-private theorem directionalFDeriv_comm {E F : Type*} [NormedAddCommGroup E]
+private theorem directionalFDeriv_comm [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
     (a b : E) (f : E → F) (hf : ContDiff ℝ 2 f) :
     directionalFDeriv b (directionalFDeriv a f) =
       directionalFDeriv a (directionalFDeriv b f) := by
   funext x
-  have hd : DifferentiableAt ℝ (fderiv ℝ f) x :=
+  have hd :=
     (hf.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num) x
   change fderiv ℝ (fun y => fderiv ℝ f y a) x b =
     fderiv ℝ (fun y => fderiv ℝ f y b) x a
@@ -54,14 +56,14 @@ private theorem directionalFDeriv_comm {E F : Type*} [NormedAddCommGroup E]
     ContinuousLinearMap.flip_apply]
   exact (hf.contDiffAt.isSymmSndFDerivAt (by simp)).eq b a
 
-private theorem directionalFDerivs_congr {E F : Type*} [NormedAddCommGroup E]
+private theorem directionalFDerivs_congr [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
     (l : List E) {f g : E → F} (h : f = g) :
     directionalFDerivs l f = directionalFDerivs l g := by
   subst g
   rfl
 
-private theorem directionalFDerivs_append {E F : Type*} [NormedAddCommGroup E]
+private theorem directionalFDerivs_append [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
     (l₁ l₂ : List E) (f : E → F) :
     directionalFDerivs (l₁ ++ l₂) f =
@@ -72,7 +74,7 @@ private theorem directionalFDerivs_append {E F : Type*} [NormedAddCommGroup E]
       simp only [List.cons_append, directionalFDerivs]
       exact ih (directionalFDeriv v f)
 
-private theorem directionalFDerivs_eq_of_perm {E F : Type*} [NormedAddCommGroup E]
+private theorem directionalFDerivs_eq_of_perm [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
     {l₁ l₂ : List E} (hperm : l₁.Perm l₂) (f : E → F)
     (hf : ContDiff ℝ l₁.length f) :
@@ -94,7 +96,7 @@ private theorem directionalFDerivs_eq_of_perm {E F : Type*} [NormedAddCommGroup 
   | @trans l₁ l₂ l₃ h₁₂ h₂₃ ih₁₂ ih₂₃ =>
       exact (ih₁₂ f hf).trans (ih₂₃ f (h₁₂.length_eq ▸ hf))
 
-private theorem directionalFDerivs_reverse_ofFn {E F : Type*} [NormedAddCommGroup E]
+private theorem directionalFDerivs_reverse_ofFn [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
     (n : ℕ) (v : Fin n → E) (f : E → F) (z : E) (hf : ContDiff ℝ n f) :
     directionalFDerivs (List.ofFn v).reverse f z = iteratedFDeriv ℝ n f z v := by
@@ -112,7 +114,9 @@ private theorem directionalFDerivs_reverse_ofFn {E F : Type*} [NormedAddCommGrou
             iteratedFDeriv_clm_apply_const_apply
               (hc := hf.fderiv_right (by simp)) (hi := le_rfl)
           _ = _ := (iteratedFDeriv_succ_apply_right v).symm
-      · exact contDiff_directionalFDeriv (v (Fin.last n)) f hf
+      exact contDiff_directionalFDeriv (v (Fin.last n)) f hf
+
+end
 
 /-- The coordinate multiset of a multi-index, represented by the fixed `Finset.univ.toList`
 coordinate order and repeated according to multiplicity. -/
@@ -127,13 +131,19 @@ def choose (beta gamma : TimeVelocityMultiIndex d) : ℕ :=
 abbrev Split (beta : TimeVelocityMultiIndex d) :=
   (c : TimeVelocityCoord d) → Fin (beta c + 1)
 
+section
+variable {beta : TimeVelocityMultiIndex d} (gamma : Split beta)
+include beta gamma
+
 /-- The left multi-index of a split. -/
-def Split.left {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
+def Split.left :
     TimeVelocityMultiIndex d := fun c => gamma c
 
 /-- The complementary right multi-index of a split. -/
-def Split.right {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
+def Split.right :
     TimeVelocityMultiIndex d := beta - gamma.left
+
+end
 
 /-- The classical coordinate derivative associated to `beta`, implemented by evaluating the
 actual iterated Fréchet derivative on its fixed coordinate list. -/
@@ -154,6 +164,57 @@ def coordinateIteratedFDeriv (beta : TimeVelocityMultiIndex d)
     TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
     VelocityMultiIndex.order, timeCoord, velocityCoord]
 
+section
+variable (alpha : TimeVelocityMultiIndex d) {m n : ℕ∞ω} {f : TimeVelocity d → ℝ}
+
+/-- Evaluating iterated derivatives on the fixed coordinate list preserves the remaining regularity. -/
+theorem coordinateIteratedFDeriv_contDiffAt {z : TimeVelocity d}
+    (hf : ContDiffAt ℝ n f z) (hmn : m + alpha.order ≤ n) :
+    ContDiffAt ℝ m (alpha.coordinateIteratedFDeriv f) z :=
+  (contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
+    (fun i => timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply
+      (hf.iteratedFDeriv_right (by simpa using hmn))
+
+theorem coordinateIteratedFDeriv_contDiffOn {U : Set (TimeVelocity d)}
+    (hU : IsOpen U) (hf : ContDiffOn ℝ n f U) (hmn : m + alpha.order ≤ n) :
+    ContDiffOn ℝ m (alpha.coordinateIteratedFDeriv f) U :=
+  fun z hz => (alpha.coordinateIteratedFDeriv_contDiffAt
+    (hf.contDiffAt (hU.mem_nhds hz)) hmn).contDiffWithinAt
+
+end
+
+section
+variable (alpha : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ)
+
+theorem coordinateIteratedFDeriv_contDiff (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+    ContDiff ℝ (⊤ : ℕ∞) (alpha.coordinateIteratedFDeriv f) := by
+  rw [contDiff_iff_contDiffAt]
+  exact fun z => alpha.coordinateIteratedFDeriv_contDiffAt hf.contDiffAt (by simp)
+
+theorem coordinateIteratedFDeriv_tsupport_subset : tsupport (alpha.coordinateIteratedFDeriv f) ⊆ tsupport f :=
+  (tsupport_comp_subset (g := fun D : TimeVelocity d [×alpha.coordinateList.length]→L[ℝ] ℝ =>
+    D (fun i => timeVelocityBasis (alpha.coordinateList.get i))) rfl _).trans
+      (tsupport_iteratedFDeriv_subset alpha.coordinateList.length)
+
+theorem coordinateIteratedFDeriv_hasCompactSupport (hf : HasCompactSupport f) :
+    HasCompactSupport (alpha.coordinateIteratedFDeriv f) :=
+  hf.of_isClosed_subset isClosed_closure (alpha.coordinateIteratedFDeriv_tsupport_subset f)
+
+end
+
+theorem Split.eq_default_of_left_eq_zero {beta : TimeVelocityMultiIndex d}
+    (gamma : Split beta) (h : gamma.left = 0) : gamma = default := by
+  funext c
+  exact Fin.ext (congr_fun h c)
+
+theorem coordinateIteratedFDeriv_const_of_ne_zero {alpha : TimeVelocityMultiIndex d}
+    (h : alpha ≠ 0) (c : ℝ) (z : TimeVelocity d) :
+    alpha.coordinateIteratedFDeriv (fun _ => c) z = 0 := by
+  unfold coordinateIteratedFDeriv
+  rw [iteratedFDeriv_const_of_ne (by
+    simpa using fun h₀ => h (eq_zero_of_order_eq_zero h₀)) c]
+  rfl
+
 /-- Choosing zero derivatives in every coordinate has coefficient one. -/
 @[simp] theorem choose_zero_right (beta : TimeVelocityMultiIndex d) :
     beta.choose 0 = 1 := by
@@ -164,19 +225,22 @@ def coordinateIteratedFDeriv (beta : TimeVelocityMultiIndex d)
     beta.choose beta = 1 := by
   simp [choose]
 
+section
+variable {beta : TimeVelocityMultiIndex d} (gamma : Split beta)
+
 /-- The left side of a split is bounded coordinatewise by the original index. -/
-theorem Split.left_le {beta : TimeVelocityMultiIndex d}
-    (gamma : Split beta) :
+theorem Split.left_le :
     gamma.left ≤ beta := by
   intro c
   exact Nat.le_of_lt_succ (gamma c).isLt
 
 /-- The two sides of a split add back to the original multi-index. -/
-@[simp] theorem Split.left_add_right
-    {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
+@[simp] theorem Split.left_add_right :
     gamma.left + gamma.right = beta := by
   funext c
   exact Nat.add_sub_of_le (gamma.left_le c)
+
+end
 
 /-- Total differential order is additive. -/
 @[simp] theorem order_add (beta gamma : TimeVelocityMultiIndex d) :
@@ -243,8 +307,10 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
   rw [coordinateList_zero]
   exact iteratedFDeriv_zero_apply _
 
-private theorem coordinateList_add_single_perm
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d) :
+section
+variable (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
+
+theorem coordinateList_add_single_perm :
     (beta + Pi.single c 1).coordinateList.Perm (c :: beta.coordinateList) := by
   classical
   letI : BEq (TimeVelocityCoord d) := ⟨fun a b => decide (a = b)⟩
@@ -286,7 +352,6 @@ private theorem coordinateList_add_single_perm
 /-- Adding one coordinate to a multi-index differentiates the associated
 classical coordinate derivative in that direction. -/
 theorem coordinateIteratedFDeriv_add_single
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
     (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
     (hf : ContDiff ℝ (beta.order + 1) f) :
     coordinateIteratedFDeriv (beta + Pi.single c 1) f z =
@@ -330,6 +395,8 @@ theorem coordinateIteratedFDeriv_add_single
       exact congrArg (fun q => fderiv ℝ q z (timeVelocityBasis c))
         (funext fun y => (eval_dirs beta y (hf.of_le (by simp))).symm)
 
+end
+
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -356,7 +423,6 @@ theorem coordinateIteratedFDeriv_congr_of_eventuallyEq
     (hfg : f =ᶠ[nhds z] g) :
     coordinateIteratedFDeriv beta f z =
       coordinateIteratedFDeriv beta g z := by
-  unfold coordinateIteratedFDeriv
   exact congrArg
     (fun L => L (fun i => timeVelocityBasis (beta.coordinateList.get i)))
     (hfg.iteratedFDeriv ℝ beta.coordinateList.length).self_of_nhds

@@ -14,15 +14,16 @@ time--velocity supports inside an open set under small coordinate shifts.
 
 namespace HypoellipticAleksandrov.Parabolic
 
+section
+variable {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d)
+
 /-- A spatial shift leaves the time coordinate unchanged. -/
-@[simp] theorem spatialShift_fst
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
+@[simp] theorem spatialShift_fst :
     (spatialShift k h z).1 = z.1 := by
   simp [spatialShift]
 
 /-- A coordinate spatial shift has native product-metric distance `|h|`. -/
-theorem dist_spatialShift
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
+theorem dist_spatialShift :
     dist (spatialShift k h z) z = |h| := by
   rcases z with ⟨t, y⟩
   rw [spatialShift_apply, dist_prod_same_left, dist_eq_norm]
@@ -31,6 +32,8 @@ theorem dist_spatialShift
       rw [add_sub_cancel_left]
     _ = ‖h‖ * ‖PDE.basisVec k‖ := norm_smul _ _
     _ = |h| := by simp [PDE.basisVec, Pi.norm_single]
+
+end
 
 /-- A compact subset of an open time--velocity set has a positive native
 collar stable under every coordinate shift of at most the collar radius. -/
@@ -58,7 +61,7 @@ theorem tsupport_spatialTranslate_subset_of_mapsTo_spatialShift_neg
   intro z hz
   rw [tsupport_spatialTranslate] at hz
   change spatialShift k h z ∈ tsupport f at hz
-  have hback : spatialShift k (-h) (spatialShift k h z) ∈ U :=
+  have hback :=
     hshift (hfK hz)
   have hcancel : spatialShift k (-h) (spatialShift k h z) = z := by
     calc

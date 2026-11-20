@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsSpatialC2
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsTerminalC2
 
 /-! # Compact support and continuity of actual spatial generators -/
 

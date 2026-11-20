@@ -14,8 +14,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open HypoellipticAleksandrov Parabolic Set
 
+section
+variable {d : ℕ} (Lam α δ T : ℝ) (v : PDE.Vec d)
+include Lam α δ T v
+
 /-- The source's two-sign coordinate barrier, without a coefficient derivative. -/
-def ballExitBarrier {d : ℕ} (Lam α δ T : ℝ) (v : PDE.Vec d)
+def ballExitBarrier
     (p : TimeVelocity d) : ℝ :=
   ∑ i : Fin d, (ballExitPlane i (-Lam * α ^ 2) α
     (Lam * α ^ 2 * T - α * v i - α * δ) p +
@@ -23,18 +27,23 @@ def ballExitBarrier {d : ℕ} (Lam α δ T : ℝ) (v : PDE.Vec d)
       (Lam * α ^ 2 * T + α * v i - α * δ) p)
 
 /-- Every summand of the barrier is positive. -/
-theorem ballExitBarrier_nonneg {d : ℕ} (Lam α δ T : ℝ) (v : PDE.Vec d)
+theorem ballExitBarrier_nonneg
     (p : TimeVelocity d) : 0 ≤ ballExitBarrier Lam α δ T v p :=
   Finset.sum_nonneg (fun _ _ => add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le)
 
 /-- The barrier is smooth, including both time faces. -/
-theorem ballExitBarrier_contDiff {d : ℕ} (Lam α δ T : ℝ) (v : PDE.Vec d) :
+theorem ballExitBarrier_contDiff :
     ContDiff ℝ (⊤ : ℕ∞) (ballExitBarrier Lam α δ T v) :=
   ContDiff.sum (fun i _ => (ballExitPlane_contDiff i _ _ _).add
     (ballExitPlane_contDiff i _ _ _))
 
+end
+
+section
+variable {d : ℕ}
+
 /-- The barrier is a backward scalar supersolution under upper ellipticity. -/
-theorem ballExitBarrier_operator_nonpos {d : ℕ} {lam Lam : ℝ}
+theorem ballExitBarrier_operator_nonpos {lam Lam : ℝ}
     (B : CoefficientField d) (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
     (α δ T : ℝ) (v : PDE.Vec d) (p : TimeVelocity d) :
     scalarParabolicOperator B 0 (ballExitBarrier Lam α δ T v) p ≤ 0 := by
@@ -51,7 +60,7 @@ theorem ballExitBarrier_operator_nonpos {d : ℕ} {lam Lam : ℝ}
     (hn ▸ ballExitPlane_operator_nonpos B hB i (-α) _ p)
 
 /-- At the starting velocity, every coordinate plane has the same exponential value. -/
-theorem ballExitBarrier_at_center {d : ℕ} (Lam α δ T s : ℝ) (v : PDE.Vec d) :
+theorem ballExitBarrier_at_center (Lam α δ T s : ℝ) (v : PDE.Vec d) :
     ballExitBarrier Lam α δ T v (s, v) =
       2 * (d : ℝ) * Real.exp (-α * δ + Lam * α ^ 2 * (T - s)) := by
   unfold ballExitBarrier ballExitPlane
@@ -65,7 +74,7 @@ theorem ballExitBarrier_at_center {d : ℕ} (Lam α δ T s : ℝ) (v : PDE.Vec d
   ring
 
 /-- A sufficiently distant signed coordinate makes a lateral summand at least one. -/
-theorem ballExitBarrier_lateral {d : ℕ} (hd : 1 ≤ d) {R Lam σ : ℝ}
+theorem ballExitBarrier_lateral (hd : 1 ≤ d) {R Lam σ : ℝ}
     (hR : 0 < R) (hLam : 0 < Lam) (α T : ℝ) (hα : 0 ≤ α)
     (v₀ v : PDE.Vec d) (hv : v ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (p : TimeVelocity d) (hp : p ∈ scalarParabolicLateralFace σ T
@@ -115,7 +124,7 @@ theorem ballExitBarrier_lateral {d : ℕ} (hd : 1 ≤ d) {R Lam σ : ℝ}
   exact hone.trans hterm
 
 /-- Optimizing the exponential parameter gives the exact source Gaussian exponent. -/
-theorem ballExitBarrier_optimized {d : ℕ} (hd : 1 ≤ d) {Lam R σ τ : ℝ}
+theorem ballExitBarrier_optimized (hd : 1 ≤ d) {Lam R σ τ : ℝ}
     (hLam : 0 < Lam) (hR : 0 < R) (hστ : σ < τ) (v : PDE.Vec d) :
     let δ := R / (4 * Real.sqrt d)
     let α := δ / (2 * Lam * (τ - σ))
@@ -130,5 +139,7 @@ theorem ballExitBarrier_optimized {d : ℕ} (hd : 1 ≤ d) {Lam R σ τ : ℝ}
   have ht : τ - σ ≠ 0 := ne_of_gt (sub_pos.mpr hστ)
   field_simp [hs, ht, hLam.ne']
   nlinarith only [hs2]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

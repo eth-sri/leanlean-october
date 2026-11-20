@@ -43,12 +43,13 @@ theorem kernelXV_mass_le_one (E : FullSpaceEvolution) (t : NNReal) (z : Z) :
 theorem wholeQuery_realTime_measurable (z : Z) :
     Measurable (fun t : ℝ => wholeQuery (Real.toNNReal t) z) := by
   apply Measurable.subtype_mk
-  change Measurable (fun t : ℝ => (0, ((Real.toNNReal t : ℝ),
-    ((fun _ : Fin 1 => z.2), (fun _ : Fin 1 => z.1)))))
   fun_prop
 
+section
+variable (E : FullSpaceEvolution) (z : Z)
+
 /-- Evaluation of the actual physical kernel on any Borel set is measurable in elapsed time. -/
-theorem kernelXV_realTime_measurable (E : FullSpaceEvolution) (z : Z)
+theorem kernelXV_realTime_measurable
     (s : Set Z) (hs : MeasurableSet s) :
     Measurable (fun t : ℝ => kernelXV E (Real.toNNReal t) z s) := by
   have he (t : ℝ) : kernelXV E (Real.toNNReal t) z s =
@@ -59,7 +60,7 @@ theorem kernelXV_realTime_measurable (E : FullSpaceEvolution) (z : Z)
     (wholeQuery_realTime_measurable z)
 
 /-- Real box actions are genuinely integrable over finite time intervals. -/
-theorem box_action_integrableOn (E : FullSpaceEvolution) (z : Z) (A0 r Y T : ℝ) :
+theorem box_action_integrableOn (A0 r Y T : ℝ) :
     IntegrableOn (fun t : ℝ => (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal)
       (Ioc 0 T) := by
   have hm := (kernelXV_realTime_measurable E z _ (box_measurable A0 r Y)).ennreal_toReal
@@ -74,7 +75,7 @@ theorem box_action_integrableOn (E : FullSpaceEvolution) (z : Z) (A0 r Y T : ℝ
   simpa only [ENNReal.toReal_one] using ENNReal.toReal_mono ENNReal.one_ne_top hmass
 
 /-- The extended and source real box occupations agree, with finiteness established first. -/
-theorem box_occupation_ofReal_integral (E : FullSpaceEvolution) (z : Z) (A0 r Y T : ℝ) :
+theorem box_occupation_ofReal_integral (A0 r Y T : ℝ) :
     ENNReal.ofReal (∫ t in Ioc 0 T,
       (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal) =
       ∫⁻ t in Ioc 0 T, kernelXV E (Real.toNNReal t) z (box A0 r Y) := by
@@ -85,6 +86,8 @@ theorem box_occupation_ofReal_integral (E : FullSpaceEvolution) (z : Z) (A0 r Y 
   have hb := (measure_mono (subset_univ (box A0 r Y))).trans
     (kernelXV_mass_le_one E (Real.toNNReal t) z)
   exact ENNReal.ofReal_toReal (ne_of_lt (hb.trans_lt ENNReal.one_lt_top))
+
+end
 
 /-- The source box indicator as an actual bounded Borel physical terminal datum. -/
 def boxIndicatorDatum (A0 r Y : ℝ) : BoundedBorel (EvolutionAmbientState 1) := by

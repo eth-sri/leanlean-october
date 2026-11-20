@@ -17,18 +17,22 @@ open Evolution Occupation
 open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
+section
+variable (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
+  (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d) (S : TerminalOperatorFamily Ω γ)
+  (K : MovingFiberKernel Ω γ) (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
+  (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
+  (hb : IsSmoothDrift b) (g : KineticPoint d → ℝ) (hg : Measurable g) (M : ℝ) (hM : 0 ≤ M)
+  (hgb : ∀ p, |g p| ≤ M) (T : ℝ)
+include hΩa hΩ hγ S hreal hB hBs hb hg M hM hgb
+
+section
+variable {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ)
+  (hψs : tsupport ψ ⊆ evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T)
+include hψ hc hψs
+
 /-- The bounded-source weak identity in product coordinates. -/
-theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (g : KineticPoint d → ℝ) (hg : Measurable g)
-    (M : ℝ) (hM : 0 ≤ M) (hgb : ∀ p, |g p| ≤ M) (T : ℝ)
-    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
-    (hc : HasCompactSupport ψ)
-    (hψs : tsupport ψ ⊆ evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T) :
+theorem duhamel_bounded_product_identity :
     (∫ q, transportedAdjoint B b ψ (packQ d q) *
       duhamelPotential K T g ⟨q.1, q.2.1, q.2.2⟩) =
       -(∫ q, ψ (packQ d q) * g ⟨q.1, q.2.1, q.2.2⟩) := by
@@ -60,7 +64,7 @@ theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
     intro q hq
     apply hΨU
     rw [hpreΨ]
-    exact boundedSourceAdjoint_support ψ hq
+    exact tsupport_transportedAdjoint_subset ψ hq
   obtain ⟨a, haT, hfloor⟩ := exists_boundedSource_test_floor Λ hΛc T
   have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩa
   have heq := weakSourceMeasures_eq_of_smooth_identity K hΩo hγ Λ Ψ hΛ hΛc hΨ hΨc
@@ -114,17 +118,7 @@ theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
   linarith only [hint, hsub, hsubbase]
 
 /-- The signed bounded Borel identity in the existing transported coordinates. -/
-theorem duhamel_bounded_weak_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (g : KineticPoint d → ℝ) (hg : Measurable g)
-    (M : ℝ) (hM : 0 ≤ M) (hgb : ∀ p, |g p| ≤ M) (T : ℝ)
-    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
-    (hc : HasCompactSupport ψ)
-    (hψs : tsupport ψ ⊆ evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T) :
+theorem duhamel_bounded_weak_identity :
     (∫ q, transportedAdjoint B b ψ q *
       duhamelPotential K T g (evolutionHomeomorph d q)) =
       -(∫ q, ψ q * g (evolutionHomeomorph d q)) := by
@@ -133,15 +127,10 @@ theorem duhamel_bounded_weak_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
   exact duhamel_bounded_product_identity hΩa hΩ hγ B b S K hreal hB hBs hb
     g hg M hM hgb T hψ hc hψs
 
+end
+
 /-- Bounded Borel sources give the existing kinetic weak-solution carrier. -/
-theorem duhamel_bounded_isKineticWeakTransportedSolution
-    (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (g : KineticPoint d → ℝ) (hg : Measurable g)
-    (M : ℝ) (hM : 0 ≤ M) (hgb : ∀ p, |g p| ≤ M) (T : ℝ) :
+theorem duhamel_bounded_isKineticWeakTransportedSolution :
     IsKineticWeakTransportedSolution B b (evolutionPastOpenCylinder Ω γ T)
       (duhamelPotential K T g) (fun p => -g p) := by
   have hU := (isOpen_duhamelCylinder
@@ -172,5 +161,7 @@ theorem duhamel_bounded_isKineticWeakTransportedSolution
     rw [image_eq_zero_of_notMem_tsupport (fun h => hx (hs h)), mul_zero]
   · intro x hx
     rw [transportedAdjoint_eq_zero_of_notMem_tsupport ψ (fun h => hx (hs h)), mul_zero]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

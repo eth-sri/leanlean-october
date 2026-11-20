@@ -32,38 +32,24 @@ open scoped CompactlySupported
 
 section EvolutionData
 
-variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-variable (hΩ : IsAdmissibleEvolutionDomain Ω)
-variable (hγ : IsContinuousPiecewiseC1 γ)
-variable (hB_smooth : IsSmoothFullKineticCoefficient B)
-variable (hB_symm : IsSymmetricFullKineticCoefficient B)
-variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-variable (hb_smooth : IsSmoothDrift b)
-variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-variable (hEx : ClassicalTerminalExistence Ω γ B b)
-include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
-include hb_smooth hb_lipschitz hb_coercive hEx
+variable {n : ℕ} {lam Lam m L_b : ℝ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    (data : TerminalEvolutionData lam Lam m L_b Ω γ B b)
+include data
 
-local notation "S" => terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-local notation "S_add" => terminalValue_add n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-local notation "S_smul" => terminalValue_smul n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-local notation "S_nonneg" => terminalValue_nonneg n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-local notation "S_abs_le" => abs_terminalValue_le n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "S" => terminalValue data.exists_solution
+local notation "S_add" => terminalValue_add data
+local notation "S_smul" => terminalValue_smul data
+local notation "S_nonneg" => terminalValue_nonneg data
+local notation "S_abs_le" => abs_terminalValue_le data
+
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+include σ hστ p
 
 /-- The terminal point value depends only on the datum, not on the smoothness proof or the
 presentation of the datum. -/
 theorem terminalValue_congr
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
     {F G : BoundedBorel (EvolutionAmbientState n)} (h : F = G)
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hG : IsSmoothCompactTerminalDatum Ω γ τ G) :
     S σ τ hστ p F hF = S σ τ hστ p G hG := by
@@ -71,20 +57,18 @@ theorem terminalValue_congr
   rfl
 
 /-- The terminal point value as a linear functional on smooth compactly supported probes. -/
-def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalProbeValue :
     terminalProbeSubmodule Ω γ τ →ₗ[ℝ] ℝ where
   toFun F := S σ τ hστ p (terminalProbeDatum F) F.2
   map_add' F G := by
-    refine (terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
+    refine (terminalValue_congr data σ τ hστ p
       (BoundedBorel.ext fun _ => rfl) (terminalProbeDatum_isSmoothCompact (F + G))
       ((terminalProbeDatum_isSmoothCompact F).add
         (terminalProbeDatum_isSmoothCompact G))).trans ?_
     exact S_add σ τ hστ p _ _ (terminalProbeDatum_isSmoothCompact F)
       (terminalProbeDatum_isSmoothCompact G)
   map_smul' c F := by
-    refine (terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
+    refine (terminalValue_congr data σ τ hστ p
       (F := terminalProbeDatum (c • F)) (G := c • terminalProbeDatum F)
       (BoundedBorel.ext fun _ => rfl) (terminalProbeDatum_isSmoothCompact (c • F))
       ((terminalProbeDatum_isSmoothCompact F).smul c)).trans ?_
@@ -92,8 +76,7 @@ def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω 
 
 /-- For each source state, the terminal point value extends uniquely to a positive
 linear functional on `C_c` of the open terminal fiber, bounded by the sup norm. -/
-theorem exists_unique_terminalFunctional
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem exists_unique_terminalFunctional :
     ∃! ℓ : C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ,
       (∀ (f : C_c(EvolutionState Ω γ τ, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
         |ℓ f| ≤ c) ∧
@@ -101,11 +84,10 @@ theorem exists_unique_terminalFunctional
         (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
         (f : C_c(EvolutionState Ω γ τ, ℝ)),
         (∀ q, f q = F q.1) → ℓ f = S σ τ hστ p F hF := by
-  have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
+  have hΩo := isOpen_of_isAdmissibleEvolutionDomain data.domain
   obtain ⟨ℓ, hbd, hℓ⟩ := exists_positive_extension_of_dense
     (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := τ))
-    (terminalProbeValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p)
+    (terminalProbeValue data σ τ hστ p)
     (fun F c hc h => S_abs_le σ τ hστ p _ (terminalProbeDatum_isSmoothCompact F) c hc
       (terminalProbe_abs_le hc h))
     (fun F h => S_nonneg σ τ hστ p _ (terminalProbeDatum_isSmoothCompact F)
@@ -119,8 +101,7 @@ theorem exists_unique_terminalFunctional
     have hfeq : f = terminalProbeCcLinear (terminalProbeOfDatum F hF) :=
       CompactlySupportedContinuousMap.ext fun x => hf x
     rw [hfeq, hℓ]
-    exact terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
+    exact terminalValue_congr data σ τ hστ p
       (terminalProbeDatum_ofDatum F hF) (terminalProbeDatum_isSmoothCompact _) hF
   refine ⟨ℓ, ⟨hbd, hprobe⟩, ?_⟩
   rintro ℓ' ⟨hbd', hprobe'⟩
@@ -135,27 +116,24 @@ theorem exists_unique_terminalFunctional
 
 /-- The unique positive terminal functional at the source state `p`, chosen from the
 `∃!` statement `exists_unique_terminalFunctional`. -/
-def terminalFunctional (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalFunctional :
     C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ :=
-  (exists_unique_terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).choose
+  (exists_unique_terminalFunctional data σ τ hστ p).choose
 
 /-- The chosen functional is sup-norm bounded and reproduces the point value on
 every smooth compactly supported probe. -/
-theorem terminalFunctional_spec
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem terminalFunctional_spec :
     (∀ (f : C_c(EvolutionState Ω γ τ, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
-      |terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p f| ≤ c) ∧
+      |terminalFunctional data σ τ hστ p f| ≤ c) ∧
       ∀ (F : BoundedBorel (EvolutionAmbientState n))
         (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
         (f : C_c(EvolutionState Ω γ τ, ℝ)),
         (∀ q, f q = F q.1) →
-          terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-            hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p f =
+          terminalFunctional data σ τ hστ p f =
             S σ τ hστ p F hF :=
-  (exists_unique_terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).choose_spec.1
+  (exists_unique_terminalFunctional data σ τ hστ p).choose_spec.1
+
+end
 
 end EvolutionData
 

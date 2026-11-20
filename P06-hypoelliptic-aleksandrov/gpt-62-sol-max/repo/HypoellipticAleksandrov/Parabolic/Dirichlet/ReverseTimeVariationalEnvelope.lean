@@ -27,17 +27,11 @@ theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentat
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d,
-      z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-        lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
+    (hLower : HasLowerEllipticityOn lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
     (Minit MF : ℝ) (hMinit : 0 ≤ Minit) (hMF : 0 ≤ MF)
@@ -67,9 +61,7 @@ theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentat
   let gneg : ReverseTimeL2VStar hΩ (r₁ - r₀) := (-1 : ℝ) • g
   let hduneg : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
       (sub_pos.mpr h₀₁) uneg gneg := hdu.smul (-1)
-  have hFnegSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => Fneg z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) :=
+  have hFnegSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω Fneg :=
     IsSmoothOnNeighborhood.neg hFSmooth
   have hFnegBound : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → |Fneg z.1 z.2| ≤ MF := by

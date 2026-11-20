@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.SpatialSegmentSafeOpen
 public import HypoellipticAleksandrov.Parabolic.SpatialTranslationWeakDerivatives
 public import Mathlib.MeasureTheory.Integral.Prod
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBochnerContinuous
 
 /-!
 # Weak derivatives paired with signed spatial difference quotients
@@ -23,8 +24,10 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped ENNReal Topology
 
-private theorem spatialShift_segment_formula
-    {d : ℕ} (k : Fin d) (h t : ℝ) (z : TimeVelocity d) :
+section
+variable {d : ℕ} (k : Fin d)
+
+private theorem spatialShift_segment_formula (h t : ℝ) (z : TimeVelocity d) :
     spatialShift k (t * h) z =
       z + t • (spatialShift k h z - z) := by
   rcases z with ⟨r, y⟩
@@ -32,15 +35,14 @@ private theorem spatialShift_segment_formula
     sub_self, Prod.smul_mk, smul_zero, Prod.mk.injEq, true_and]
   module
 
-private theorem backward_spatialDifferenceQuotient_eq_intervalIntegral
-    {d : ℕ} (k : Fin d) (h : ℝ) (hh : h ≠ 0)
+private theorem backward_spatialDifferenceQuotient_eq_intervalIntegral (h : ℝ) (hh : h ≠ 0)
     (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (z : TimeVelocity d) :
     spatialDifferenceQuotient k (-h) φ z =
       ∫ t in (0 : ℝ)..1,
         velocityGradient φ (spatialShift k (-(t * h)) z) k := by
   let F : ℝ → ℝ := fun t => φ (spatialShift k (-(t * h)) z)
-  have hφdiff : Differentiable ℝ φ := hφ.differentiable (by simp)
+  have hφdiff := hφ.differentiable (by simp)
   have hFdiff : Differentiable ℝ F := by
     have hline : Differentiable ℝ (fun t : ℝ => spatialShift k (-(t * h)) z) := by
       dsimp only [spatialShift]
@@ -89,8 +91,12 @@ private theorem backward_spatialDifferenceQuotient_eq_intervalIntegral
   apply (div_eq_iff (neg_ne_zero.mpr hh)).2
   linarith
 
-private theorem translated_test_tsupport_subset
-    {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d) (h t : ℝ)
+end
+
+section
+variable {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d)
+
+private theorem translated_test_tsupport_subset (h t : ℝ)
     (ht : t ∈ Icc (0 : ℝ) 1) (φ : TimeVelocity d → ℝ)
     (hφsafe : tsupport φ ⊆ spatialSegmentSafeSet U k h) :
     tsupport (fun z => φ (spatialShift k (-(t * h)) z)) ⊆ U := by
@@ -112,8 +118,7 @@ private theorem translated_test_tsupport_subset
   rw [spatialShift_comp]
   simp
 
-private theorem integrable_joint_shifted_mul
-    {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ)
+private theorem integrable_joint_shifted_mul (h : ℝ)
     (u φ : TimeVelocity d → ℝ)
     (hu : ParabolicMemLpOn U (2 : ℝ≥0∞) u)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφcompact : HasCompactSupport φ) :
@@ -164,21 +169,7 @@ private theorem integrable_joint_shifted_mul
     Function.uncurry_def, Pi.mul_def, timeVelocityVolumeOn] using
     huProd.integrable_mul hgradShiftU
 
-private theorem sqNorm_integral_eq_norm_sq_toLp
-    {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
-    {μ : Measure α} (F : α → E) (hF : MemLp F (2 : ℝ≥0∞) μ) :
-    ∫ x, ‖F x‖ ^ 2 ∂μ = ‖hF.toLp F‖ ^ 2 := by
-  rw [Lp.norm_def, eLpNorm_congr_ae hF.coeFn_toLp,
-    hF.eLpNorm_eq_integral_rpow_norm]
-  · simp
-    rw [ENNReal.toReal_ofReal (Real.rpow_nonneg (integral_nonneg fun _ => sq_nonneg _) _)]
-    exact (Real.rpow_inv_natCast_pow
-      (integral_nonneg fun _ => sq_nonneg _) (by norm_num)).symm
-  · norm_num
-  · simp
-
-private theorem integrable_joint_shifted_test_mul
-    {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ)
+private theorem integrable_joint_shifted_test_mul (h : ℝ)
     (g φ : TimeVelocity d → ℝ)
     (hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g)
     (hφmem : MemLp φ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
@@ -186,7 +177,7 @@ private theorem integrable_joint_shifted_test_mul
       g z * φ (spatialShift k (-(t * h)) z))
       ((volume.restrict (uIoc (0 : ℝ) 1)).prod
         (volume.restrict U : Measure (TimeVelocity d))) := by
-  let μt : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
+  let μt := volume.restrict (Ioc (0 : ℝ) 1)
   let shear : ℝ × TimeVelocity d → ℝ × TimeVelocity d :=
     fun p => (p.1, spatialShift k (-(p.1 * h)) p.2)
   have hshear : MeasurePreserving shear (μt.prod volume) (μt.prod volume) := by
@@ -216,18 +207,18 @@ private theorem integrable_joint_shifted_test_mul
     Function.uncurry_def, Pi.mul_def, timeVelocityVolumeOn] using
     hgProd.integrable_mul hφshiftU
 
+end
+
+section
+variable {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ) (u g φ : TimeVelocity d → ℝ)
+  (hh : h ≠ 0) (hu : ParabolicMemLpOn U (2 : ℝ≥0∞) u) (hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g)
+  (hweak : HasWeakVelocityPartialDerivOn U k u g) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+  (hφcompact : HasCompactSupport φ) (hφsafe : tsupport φ ⊆ spatialSegmentSafeSet U k h)
+include hh hu hg hweak hφ hφcompact hφsafe
+
 /-- Pairing a signed spatial difference quotient with a smooth compactly
 supported test equals the average pairing with the selected weak derivative. -/
-theorem HasWeakVelocityPartialDerivOn.setIntegral_spatialDifferenceQuotient_mul_eq_intervalIntegral
-    {d : ℕ} (U : Set (TimeVelocity d))
-    (k : Fin d) (h : ℝ) (u g φ : TimeVelocity d → ℝ)
-    (hh : h ≠ 0)
-    (hu : ParabolicMemLpOn U (2 : ℝ≥0∞) u)
-    (hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g)
-    (hweak : HasWeakVelocityPartialDerivOn U k u g)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφcompact : HasCompactSupport φ)
-    (hφsafe : tsupport φ ⊆ spatialSegmentSafeSet U k h) :
+theorem HasWeakVelocityPartialDerivOn.setIntegral_spatialDifferenceQuotient_mul_eq_intervalIntegral :
     (∫ z in U, spatialDifferenceQuotient k h u z * φ z
       ∂(volume : Measure (TimeVelocity d))) =
       ∫ t in (0 : ℝ)..1,
@@ -275,16 +266,7 @@ theorem HasWeakVelocityPartialDerivOn.setIntegral_spatialDifferenceQuotient_mul_
 
 /-- The averaged weak-derivative identity obeys the sharp constant-one `L²`
 Cauchy--Schwarz bound. -/
-theorem HasWeakVelocityPartialDerivOn.abs_setIntegral_spatialDifferenceQuotient_mul_le
-    {d : ℕ} (U : Set (TimeVelocity d))
-    (k : Fin d) (h : ℝ) (u g φ : TimeVelocity d → ℝ)
-    (hh : h ≠ 0)
-    (hu : ParabolicMemLpOn U (2 : ℝ≥0∞) u)
-    (hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g)
-    (hweak : HasWeakVelocityPartialDerivOn U k u g)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφcompact : HasCompactSupport φ)
-    (hφsafe : tsupport φ ⊆ spatialSegmentSafeSet U k h) :
+theorem HasWeakVelocityPartialDerivOn.abs_setIntegral_spatialDifferenceQuotient_mul_le :
     |∫ z in U, spatialDifferenceQuotient k h u z * φ z
       ∂(volume : Measure (TimeVelocity d))| ≤
       ‖hg.toLp g‖ *
@@ -322,8 +304,8 @@ theorem HasWeakVelocityPartialDerivOn.abs_setIntegral_spatialDifferenceQuotient_
             (f := g) (g := ψ) Real.HolderConjugate.two_two hg'
             (by simpa only [ENNReal.ofReal_ofNat] using hψU))
       _ = ‖hg.toLp g‖ * ‖hψU.toLp ψ‖ := by
-        have hgsq := sqNorm_integral_eq_norm_sq_toLp g hg
-        have hψsq := sqNorm_integral_eq_norm_sq_toLp ψ hψU
+        have hgsq := _root_.HypoellipticAleksandrov.Parabolic.Dirichlet.integral_norm_sq_eq_norm_sq_toLp g hg
+        have hψsq := _root_.HypoellipticAleksandrov.Parabolic.Dirichlet.integral_norm_sq_eq_norm_sq_toLp ψ hψU
         simp only [Real.norm_eq_abs] at hgsq hψsq
         have hgroot : (∫ z, |g z| ^ (2 : ℝ) ∂timeVelocityVolumeOn U) ^
             (1 / (2 : ℝ)) = ‖hg.toLp g‖ := by
@@ -364,5 +346,7 @@ theorem HasWeakVelocityPartialDerivOn.abs_setIntegral_spatialDifferenceQuotient_
         (intervalIntegrable_const)
         (fun t _ => hslice t)
     _ = ‖hg.toLp g‖ * ‖hφmem.toLp φ‖ := by simp
+
+end
 
 end HypoellipticAleksandrov.Parabolic

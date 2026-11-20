@@ -89,8 +89,7 @@ theorem autonomous_operator_const_mul {u : Point → ℝ} {D : Set Point}
       classicalGradient_const_mul c
         ((hu.positionSlice_contDiffAt hP).differentiableAt (by norm_num))]
   have hh : kineticVelocityHessian (fun Q => c * u Q) P = c • kineticVelocityHessian u P := by
-    simp only [kineticVelocityHessian_eq_sliceHessian]
-    exact sliceHessian_const_mul c (hu.velocitySlice_contDiffAt hP)
+    exact id (sliceHessian_const_mul c (IsKineticC112On.velocitySlice_contDiffAt hu hP))
   rw [hh]
   simp only [autonomousScalarOperator_apply, Pi.smul_apply, Matrix.smul_apply, smul_eq_mul]
   ring

@@ -18,8 +18,11 @@ theorem reference_cap_center_mem (d : ℕ) :
     (⟨-(3 / 16 : ℝ), 0, 0⟩ : KineticPoint d) ∈ cap d := by
   norm_num [cap, PDE.euclideanBall, PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot]
 
+section
+variable {d : ℕ}
+
 /-- The cap-center affine image is exactly the source propagation start. -/
-theorem cap_center_affine {d : ℕ} (P : KineticPoint d) (r : ℝ) :
+theorem cap_center_affine (P : KineticPoint d) (r : ℝ) :
     kineticAffine P r (⟨-(3 / 16 : ℝ), 0, 0⟩ : KineticPoint d) =
       ⟨stackStartTime P r, stackStartPosition P r, P.velocity⟩ := by
   ext i
@@ -28,7 +31,7 @@ theorem cap_center_affine {d : ℕ} (P : KineticPoint d) (r : ℝ) :
   all_goals ring
 
 /-- Every sampling subcylinder's cap center is a valid reference-path start. -/
-theorem sampling_cap_center_mem {d : ℕ} (m : ℕ) (P : KineticPoint d) {r : ℝ}
+theorem sampling_cap_center_mem (m : ℕ) (P : KineticPoint d) {r : ℝ}
     (hr : 0 < r) (hsub : backwardCylinder P r ⊆ samplingCylinder d m) :
     (⟨stackStartTime P r, stackStartPosition P r, P.velocity⟩ : KineticPoint d) ∈
       closure (samplingCylinder d m) := by
@@ -36,10 +39,10 @@ theorem sampling_cap_center_mem {d : ℕ} (m : ℕ) (P : KineticPoint d) {r : �
   apply hsub
   rw [← cap_center_affine P r]
   apply (kineticAffine_mem_cylinder P _ hr).mpr
-  exact (closedCap_subset_unitCylinder d) (cap_subset_closedCap d (reference_cap_center_mem d))
+  exact closedCap_subset_unitCylinder d (cap_subset_closedCap d (reference_cap_center_mem d))
 
 /-- The physical image of an initial tangent is the tangent at the physical initial point. -/
-theorem physicalPath_initial_tangent {d : ℕ} (P0 S : KineticPoint d) {scale : ℝ}
+theorem physicalPath_initial_tangent (P0 S : KineticPoint d) {scale : ℝ}
     (hscale : 0 < scale) (x v : ℝ → PDE.Vec d)
     (hleft : ∀ s ≤ 0, x s = S.position + s • S.velocity ∧ v s = S.velocity)
     (s : ℝ) (hs : s ≤ 0) :
@@ -59,7 +62,7 @@ theorem physicalPath_initial_tangent {d : ℕ} (P0 S : KineticPoint d) {scale : 
     rfl
 
 /-- Transported path endpoints match the affine target exactly. -/
-theorem physicalPath_endpoint {d : ℕ} (P0 S P : KineticPoint d) {scale : ℝ}
+theorem physicalPath_endpoint (P0 S P : KineticPoint d) {scale : ℝ}
     (hscale : scale ≠ 0) (x v : ℝ → PDE.Vec d)
     (hx : x (P.time - S.time) = P.position) (hv : v (P.time - S.time) = P.velocity) :
     physicalPathPosition P0 scale S.time x (scale ^ 2 * (P.time - S.time)) =
@@ -77,5 +80,7 @@ theorem physicalPath_endpoint {d : ℕ} (P0 S P : KineticPoint d) {scale : ℝ}
   · unfold physicalPathVelocity
     rw [ht, hv]
     rfl
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

@@ -33,8 +33,7 @@ theorem tendsto_M_fractional_increment_zero (a : ℝ) (b : Pos) :
   filter_upwards [self_mem_nhdsWithin] with z hz
   have he : z ^ (2 / 3 : ℝ) * z ^ (1 / 3 : ℝ) = z := by
     rw [← Real.rpow_add hz, show (2 / 3 : ℝ) + 1 / 3 = 1 by ring, Real.rpow_one]
-  have hn := ne_of_gt (Real.rpow_pos_of_pos hz (1 / 3 : ℝ))
-  apply (eq_div_iff hn).mpr
+  apply (eq_div_iff (ne_of_gt (Real.rpow_pos_of_pos hz (1 / 3 : ℝ)))).mpr
   rw [mul_assoc, he]
   field_simp [ne_of_gt hz]
 

@@ -24,26 +24,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped ENNReal
 
-private theorem map_restrict_parabolicAffine
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
-    (s : Set (TimeVelocity d)) :
-    Measure.map (parabolicAffine t₀ v₀ r) (volume.restrict s) =
-      (Measure.map (parabolicAffine t₀ v₀ r) volume).restrict
-        (parabolicAffine t₀ v₀ r '' s) := by
-  have hpreimage :
-      parabolicAffine t₀ v₀ r ⁻¹' (parabolicAffine t₀ v₀ r '' s) = s :=
-    preimage_image_eq _ (parabolicAffine_injective hr)
-  calc
-    Measure.map (parabolicAffine t₀ v₀ r) (volume.restrict s) =
-        Measure.map (parabolicAffine t₀ v₀ r)
-          (volume.restrict
-            (parabolicAffine t₀ v₀ r ⁻¹' (parabolicAffine t₀ v₀ r '' s))) := by
-      rw [hpreimage]
-    _ = (Measure.map (parabolicAffine t₀ v₀ r) volume).restrict
-        (parabolicAffine t₀ v₀ r '' s) :=
-      ((parabolicAffine_measurableEmbedding hr).restrict_map volume
-        (parabolicAffine t₀ v₀ r '' s)).symm
-
 /-- Positive parabolic affine scaling sends normalized volume on the literal
 unit forward box to normalized volume on its literal forward physical image. -/
 theorem map_parabolicNormalizedVolumeOn_parabolicMorreyUnitBox
@@ -81,34 +61,30 @@ theorem map_parabolicNormalizedVolumeOn_parabolicMorreyUnitBox
     himage, smul_smul, hscalar]
   exact (contDiff_parabolicAffine t₀ v₀ r).continuous.measurable.aemeasurable
 
+section
+variable {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) (f : TimeVelocity d -> Real)
+include hr
+
 /-- Normalized `MemLp` on a physical forward box is equivalent to normalized
 `MemLp` of its scalar affine pullback on the literal unit forward box. -/
-theorem memLp_parabolicNormalizedVolumeOn_parabolicBox_iff
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
-    (f : TimeVelocity d -> Real) :
+theorem memLp_parabolicNormalizedVolumeOn_parabolicBox_iff :
     MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀)) ↔
       MemLp (pullbackScalar f t₀ v₀ r) (parabolicExponent d)
         (parabolicNormalizedVolumeOn (parabolicMorreyUnitBox d)) := by
   rw [← map_parabolicNormalizedVolumeOn_parabolicMorreyUnitBox t₀ v₀ hr]
-  simpa only [pullbackScalar] using
-    ((parabolicAffine_measurableEmbedding hr).memLp_map_measure_iff
-      (μ := parabolicNormalizedVolumeOn (parabolicMorreyUnitBox d))
-      (g := f) (p := parabolicExponent d))
+  exact id (MeasurableEmbedding.memLp_map_measure_iff (parabolicAffine_measurableEmbedding hr))
 
 /-- The authoritative normalized extended `L^(d+1)` norm is exactly affine
 covariant between a physical forward box and the literal unit forward box. -/
-theorem parabolicELpMeanNormOn_parabolicBox_eq
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
-    (f : TimeVelocity d -> Real) :
+theorem parabolicELpMeanNormOn_parabolicBox_eq :
     parabolicELpMeanNormOn d f (parabolicBox 1 r t₀ v₀) =
       parabolicELpMeanNormOn d (pullbackScalar f t₀ v₀ r)
         (parabolicMorreyUnitBox d) := by
   unfold parabolicELpMeanNormOn
   rw [← map_parabolicNormalizedVolumeOn_parabolicMorreyUnitBox t₀ v₀ hr]
-  simpa only [pullbackScalar] using
-    ((parabolicAffine_measurableEmbedding hr).eLpNorm_map_measure
-      (μ := parabolicNormalizedVolumeOn (parabolicMorreyUnitBox d))
-      (g := f) (p := parabolicExponent d))
+  exact id (MeasurableEmbedding.eLpNorm_map_measure (parabolicAffine_measurableEmbedding hr))
+
+end
 
 end HypoellipticAleksandrov.Parabolic

@@ -30,8 +30,10 @@ private theorem segment_subset_cthickening_of_spatialShift
     _ = |h| := dist_spatialShift k h z
     _ ≤ δ := hh
 
+section
+variable {d : ℕ} {S U : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
+
 private theorem abs_spatialDifferenceQuotient_le_of_fderiv_bound
-    {d : ℕ} {S U : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
     {δ C h : ℝ} {k : Fin d} {z : TimeVelocity d}
     (hU : IsOpen U)
     (hf : ContDiffOn ℝ 1 f U)
@@ -76,7 +78,6 @@ private theorem abs_spatialDifferenceQuotient_le_of_fderiv_bound
 /-- A scalar field which is continuously differentiable on an open neighborhood
 has uniformly bounded signed spatial difference quotients on a compact carrier. -/
 theorem IsCompact.exists_spatialDifferenceQuotient_bound_of_contDiffOn_one
-    {d : ℕ} {S U : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
     (hS : IsCompact S) (hU : IsOpen U) (hSU : S ⊆ U)
     (hf : ContDiffOn ℝ 1 f U) :
     ∃ δ C : ℝ, 0 < δ ∧ 0 ≤ C ∧
@@ -98,5 +99,7 @@ theorem IsCompact.exists_spatialDifferenceQuotient_bound_of_contDiffOn_one
   · intro k h z hh hz
     exact abs_spatialDifferenceQuotient_le_of_fderiv_bound hU hf hδU
       (fun w hw => (hC₀ w hw).trans (le_max_left _ _)) (le_max_right _ _) hh hz
+
+end
 
 end HypoellipticAleksandrov.Parabolic

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VelocityReturnAction
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitMassSupport
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreStartBandVisits
 
 /-! # Uniform velocity decay throughout an elapsed-time bin
 
@@ -14,37 +15,36 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory
 
+section
+variable (c : Clock) (j : ℕ) (t : ℝ) (ht : (j : ℝ) * c.r ^ 2 ≤ t)
+include ht
+
 /-- Elapsed time after the start of bin `j` has at least its dimensionless bin index. -/
-theorem timeBinCount_scaled_time_le (c : Clock) (j : ℕ) (t : ℝ)
-    (ht : (j : ℝ) * c.r ^ 2 ≤ t) :
+theorem timeBinCount_scaled_time_le :
     1 + (j : ℝ) ≤ 1 + t / c.r ^ 2 := by
   have h := (le_div_iff₀ (sq_pos_of_pos c.positive)).mpr ht
   linarith only [h]
 
 /-- The source square-root decay is bounded by its value at the bin's left endpoint. -/
-theorem timeBinCount_decay_le (c : Clock) (j : ℕ) (t : ℝ)
-    (ht : (j : ℝ) * c.r ^ 2 ≤ t) :
+theorem timeBinCount_decay_le :
     (1 + t / c.r ^ 2) ^ (-1 / 2 : ℝ) ≤ (1 + (j : ℝ)) ^ (-1 / 2 : ℝ) :=
   Real.rpow_le_rpow_of_nonpos (by positivity) (timeBinCount_scaled_time_le c j t ht)
     (by norm_num)
 
+end
+
 /-- The actual active-velocity action has a uniform square-root bound throughout each bin. -/
-theorem timeBinCount_velocity_decay_of_return_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
-      (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
-      0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →
-      S hH hLE hlam hLam A t F (X, v) ≤ C * S hH hLE hlam hLam A s F (X, v)) :
+theorem timeBinCount_velocity_decay
+    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam):
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point),
       |c.vbar| = 2 * c.r → P.velocity 0 ∈ closure c.entrance →
       ∀ (j : ℕ) (t : ℝ), (j : ℝ) * c.r ^ 2 ≤ t →
-      S hH hLE hlam hLam A t (activeVelocityDatum c) (P.position 0, P.velocity 0) ≤
+      S A t (activeVelocityDatum c) (P.position 0, P.velocity 0) ≤
         C * (1 + (j : ℝ)) ^ (-1 / 2 : ℝ) := by
-  obtain ⟨C, hC, h⟩ := velocity_return_action_of_return_time hH hLE hlam hLam hReturn
+  obtain ⟨C, hC, h⟩ := velocity_return_action hlam hLam
   refine ⟨C, hC, ?_⟩
   intro A c P hbar hv j t ht
-  have hb := (c.active_abs_bounds (enlarged_closedEntrance_subset_active c hv)).2
+  have hb := (c.active_abs_bounds (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.enlargedEntrance_subset_active c hv)).2
   rw [hbar] at hb
   have hp : |P.velocity 0| ≤ 3 * c.r := by linarith only [hb, c.positive]
   have ht0 : 0 ≤ t := (mul_nonneg (Nat.cast_nonneg j) (sq_nonneg c.r)).trans ht

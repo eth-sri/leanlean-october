@@ -12,9 +12,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+section
+variable (μ ν : Measure ℝ)
+
 /-- A Radon measure has a locally integrable Radon–Nikodym density against any dominating
 measure. -/
-theorem bellman_rnDeriv_locallyIntegrable (μ ν : Measure ℝ)
+theorem bellman_rnDeriv_locallyIntegrable
     [IsFiniteMeasureOnCompacts μ] :
     LocallyIntegrable (fun x => (μ.rnDeriv ν x).toReal) ν := by
   rw [locallyIntegrable_iff]
@@ -22,7 +25,7 @@ theorem bellman_rnDeriv_locallyIntegrable (μ ν : Measure ℝ)
   exact Measure.integrableOn_toReal_rnDeriv hK.measure_lt_top.ne
 
 /-- Multiplying a locally integrable function by the density transfers local integrability. -/
-theorem bellman_rnDeriv_mul_locallyIntegrable (μ ν : Measure ℝ)
+theorem bellman_rnDeriv_mul_locallyIntegrable
     [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) (f : ℝ → ℝ)
     (hf : LocallyIntegrable f μ) :
     LocallyIntegrable (fun x => (μ.rnDeriv ν x).toReal * f x) ν := by
@@ -37,7 +40,7 @@ theorem bellman_rnDeriv_mul_locallyIntegrable (μ ν : Measure ℝ)
   by_cases hx : x ∈ K <;> simp [hx]
 
 /-- Equality on smooth tests gives equality of the two densities against a common dominator. -/
-theorem bellman_test_pairing_rnDeriv_eq (μ ν : Measure ℝ)
+theorem bellman_test_pairing_rnDeriv_eq
     [IsFiniteMeasureOnCompacts μ] [SigmaFinite ν] (hμν : μ ≪ ν)
     (f : ℝ → ℝ) (hf : LocallyIntegrable f volume)
     (hvolν : volume ≪ ν)
@@ -47,8 +50,7 @@ theorem bellman_test_pairing_rnDeriv_eq (μ ν : Measure ℝ)
     (bellman_rnDeriv_locallyIntegrable μ ν)
     (bellman_rnDeriv_mul_locallyIntegrable volume ν hvolν f hf)
   intro φ hφ hc
-  let ψ : BellmanRealTest := ⟨φ, hφ, hc, by simp⟩
-  have he := ht ψ
+  have he := ht ⟨φ, hφ, hc, by simp⟩
   change (∫ x, φ x ∂μ) = ∫ x, φ x * f x at he
   simp only [smul_eq_mul]
   calc
@@ -61,6 +63,8 @@ theorem bellman_test_pairing_rnDeriv_eq (μ ν : Measure ℝ)
       rw [show (fun x => φ x * ((volume.rnDeriv ν x).toReal * f x)) =
         (fun x => (volume.rnDeriv ν x).toReal * (φ x * f x)) by funext x; ring]
       exact (integral_toReal_rnDeriv_mul hvolν).symm
+
+end
 
 /-- A positive Radon measure represented on smooth tests has the asserted Lebesgue density. -/
 theorem bellman_measure_eq_withDensity_of_test_pairing (μ : Measure ℝ)

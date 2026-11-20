@@ -18,7 +18,7 @@ open scoped CompactlySupported ENNReal
 theorem reconstruction_green_potential_measurable (H : Interval)
     (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ) (g : BoundedBorel Point) :
     Measurable (fun e : StripPole H (T : WithTop ℝ) => stripPotentialOfKernel H K T g e) := by
-  have hΓ : Measurable (fun e : StripPole H (T : WithTop ℝ) => stripGreenOfKernel H K T e) :=
+  have hΓ :=
     Measure.measurable_measure.mpr (stripGreenOfKernel_measurable_apply H K T)
   have hp := (Measure.measurable_lintegral g.measurable.ennreal_ofReal).comp hΓ
   have hn := (Measure.measurable_lintegral g.measurable.neg.ennreal_ofReal).comp hΓ
@@ -31,22 +31,21 @@ theorem reconstruction_green_potential_measurable (H : Interval)
   rw [heq]
   exact hp.ennreal_toReal.sub hn.ennreal_toReal
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+
 /-- The unique homogeneous value of any fixed smooth exit probe depends measurably on its pole. -/
-theorem exitProbeValue_measurable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (H : Interval) (E : StripEvolution H) (T : ℝ) (f : exitProbeSubmodule) :
+theorem exitProbeValue_measurable (T : ℝ) (f : exitProbeSubmodule) :
     Measurable (fun e : StripPole H (T : WithTop ℝ) => exitProbeValue A H E T e f) :=
   ((exitProbePhysical_continuous_compact f).1.measurable.comp measurable_subtype_coe).add
     (reconstruction_green_potential_measurable H E.2 T (exitProbeOperatorDatum A f))
 
 /-- The unique physical exit family is a Borel measure family. -/
 theorem stripExitOfRealization_measurable
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) :
     Measurable (fun e : StripPole H (T : WithTop ℝ) =>
-      stripExitOfRealization hH hlam hLam A H E hE T e) := by
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T
+      stripExitOfRealization A H E hE T e) := by
+  let Ω := stripExitOfRealization A H E hE T
   let ν (e : StripPole H (T : WithTop ℝ)) : Measure (EvolutionVec 1) :=
     (Ω e).map reconstructionPhysicalHomeomorph.symm
   have hν : ∀ e, IsFiniteMeasure (ν e) := fun e => by dsimp [ν, Ω]; infer_instance
@@ -55,7 +54,7 @@ theorem stripExitOfRealization_measurable
     dsimp only [ν]
     rw [Measure.map_apply reconstructionPhysicalHomeomorph.symm.continuous.measurable
       MeasurableSet.univ, preimage_univ]
-    exact stripExitOfRealization_mass_le_one hH hlam hLam A H E hE T e
+    exact stripExitOfRealization_mass_le_one A H E hE T e
   have htest (f : C_c(EvolutionVec 1, ℝ)) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
       Measurable (fun e => ∫ x, f x ∂ν e) := by
     let F : exitProbeSubmodule := ⟨f, hf, f.hasCompactSupport⟩
@@ -65,7 +64,7 @@ theorem stripExitOfRealization_measurable
       rw [integral_map reconstructionPhysicalHomeomorph.symm.continuous.measurable.aemeasurable
         (show AEStronglyMeasurable (fun x => f x) _ from
           f.continuous.measurable.aestronglyMeasurable)]
-      exact stripExitOfRealization_probe_integral hH hlam hLam A H E hE T e F
+      exact stripExitOfRealization_probe_integral A H E hE T e F
     rw [heq]
     exact exitProbeValue_measurable A H E T F
   have hv := measurable_measure_family_of_smooth_tests ν hm htest
@@ -81,5 +80,7 @@ theorem stripExitOfRealization_measurable
     rw [hid, Measure.map_id]
   change Measurable (fun e => (ν e).map reconstructionPhysicalHomeomorph) at hh
   rwa [heq] at hh
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

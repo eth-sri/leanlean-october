@@ -9,8 +9,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+section
+variable (H : FiniteIntervalUnion)
+include H
+
 /-- Component face points remain boundary points of the entire open union. -/
-theorem FiniteIntervalUnion.frontier_component_subset (H : FiniteIntervalUnion)
+theorem FiniteIntervalUnion.frontier_component_subset
     (i : Fin H.count) : frontier (H.component i).carrier ⊆ frontier H.carrier := by
   intro v hv
   rw [frontier, mem_sdiff, H.isOpen_carrier.interior_eq]
@@ -27,12 +31,12 @@ theorem FiniteIntervalUnion.frontier_component_subset (H : FiniteIntervalUnion)
     exact Set.disjoint_left.mp hd (frontier_subset_closure hv) hj
 
 /-- The prescribed physical union exit has the true velocity frontier. -/
-def finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : ℝ) : Set Point :=
+def finiteUnionExitSet (sMinus T : ℝ) : Set Point :=
   {p | p.time = T ∧ p.velocity 0 ∈ closure H.carrier} ∪
     {p | sMinus < p.time ∧ p.time < T ∧ p.velocity 0 ∈ frontier H.carrier}
 
 /-- Each interval exit lies on the union's prescribed exit. -/
-theorem reconstructionExit_subset_finiteUnionExitSet (H : FiniteIntervalUnion)
+theorem reconstructionExit_subset_finiteUnionExitSet
     (i : Fin H.count) (sMinus T : ℝ) :
     reconstructionExit (H.component i) sMinus T ⊆ finiteUnionExitSet H sMinus T := by
   intro p hp
@@ -47,7 +51,7 @@ theorem reconstructionExit_subset_finiteUnionExitSet (H : FiniteIntervalUnion)
     simpa only [mem_insert_iff, mem_singleton_iff] using hp.2.2
 
 /-- The genuine union exit is Borel. -/
-theorem measurableSet_finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : ℝ) :
+theorem measurableSet_finiteUnionExitSet (sMinus T : ℝ) :
     MeasurableSet (finiteUnionExitSet H sMinus T) := by
   unfold finiteUnionExitSet
   apply MeasurableSet.union
@@ -62,14 +66,16 @@ theorem measurableSet_finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : �
     simp only [mem_ofPred_eq, mem_inter_iff]
     tauto
 
+end
+
 /-- The componentwise exit is supported on the actual union exit, with no lower-time defect. -/
 theorem finiteUnionExit_compl_exit
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (sMinus T : ℝ)
     (e : FiniteUnionPole H (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
-    finiteUnionExit hH hLE hlam hLam A H T e (finiteUnionExitSet H sMinus T)ᶜ = 0 := by
-  have hp := (strip_exit_probability hH hLE hlam hLam A
+    finiteUnionExit A H T e (finiteUnionExitSet H sMinus T)ᶜ = 0 := by
+  have hp := (strip_exit_probability A
     (H.component (finiteUnionPoleIndex H T e)) sMinus T
     (finiteUnionComponentPole H T e) he).2.1
   apply le_antisymm _ (zero_le)

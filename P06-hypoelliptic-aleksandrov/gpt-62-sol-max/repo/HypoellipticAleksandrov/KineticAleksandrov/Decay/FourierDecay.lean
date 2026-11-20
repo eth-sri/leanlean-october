@@ -17,11 +17,14 @@ open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
+section
+variable (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+  (hEvol : IterationEvolutionStatement)
+  (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl)
+include hd hlam hlamLam hEvol hblock
+
 /-- Source case W exponential decay for every characterized Fourier projection. -/
-theorem fourier_decay_whole_space_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-    (hEvol : IterationEvolutionStatement)
-    (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl) :
+theorem fourier_decay_whole_space_of_unitBlock :
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
       ∀ (B : CoefficientField d), IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily univ stationary) (K : MovingFiberKernel univ stationary),
@@ -54,10 +57,7 @@ theorem fourier_decay_whole_space_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
 
 /-- The Green family, conditional on the unit-block estimate and the terminal evolution statement.
 -/
-theorem fourierDecayFamily_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-    (hEvol : IterationEvolutionStatement)
-    (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl) :
+theorem fourierDecayFamily_of_unitBlock :
     HypoellipticAleksandrov.KineticAleksandrov.Green.FourierDecayFamily d lam Lam := by
   obtain ⟨C, c, hC, hc, hdecay⟩ :=
     fourier_decay_whole_space_of_unitBlock d hd lam Lam hlam hlamLam hEvol hblock
@@ -65,7 +65,7 @@ theorem fourierDecayFamily_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
   intro B hB S K hreal σ τ hστ v ξ
   have ht := hdecay B hB S K hreal σ τ hστ v ξ
     (wholeSpaceQuery σ τ hστ.le v 0) rfl _ (fourierKernel_spec K σ τ hστ.le ξ v)
-  have hf : totalVariationNorm (fourierKernel K σ τ hστ.le ξ v) ≠ ⊤ :=
+  have hf :=
     ne_of_lt ((fourierKernel_totalVariation_le_one K σ τ hστ.le ξ v).trans_lt
       ENNReal.one_lt_top)
   calc
@@ -75,5 +75,7 @@ theorem fourierDecayFamily_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
         (-c * (τ - σ) * PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ))) :=
       ENNReal.ofReal_le_ofReal ht
     _ = _ := by congr 3; ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

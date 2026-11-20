@@ -32,19 +32,27 @@ theorem velocityWholeQuery_measurable (z : Z) :
   unfold wholeQuery wholeSpaceQuery
   fun_prop
 
+section
+variable (E : FullSpaceEvolution)
+
+section
+variable (r : ℝ) (z : Z)
+
 /-- Actual band probabilities depend measurably on elapsed time. -/
-theorem velocityBandProbability_measurable (E : FullSpaceEvolution) (r : ℝ) (z : Z) :
+theorem velocityBandProbability_measurable :
     Measurable (velocityBandProbability E r z) :=
   (E.2.master.measurable_coe (velocityNativeBand_measurable r)).comp
     (velocityWholeQuery_measurable z)
 
 /-- Band transition probabilities are bounded by one. -/
-theorem velocityBandProbability_le_one (E : FullSpaceEvolution) (r : ℝ) (z : Z) (t : ℝ) :
+theorem velocityBandProbability_le_one (t : ℝ) :
     velocityBandProbability E r z t ≤ 1 :=
   (measure_mono (subset_univ _)).trans (E.2.mass_le_one _)
 
+end
+
 /-- Green band mass is the unnormalized elapsed-time integral of transition probabilities. -/
-theorem velocityGreenRaw_band_eq_lintegral (E : FullSpaceEvolution)
+theorem velocityGreenRaw_band_eq_lintegral
     {T : ℝ} (hT : 0 < T) (r : ℝ) (z : Z) :
     velocityGreenRaw E T hT z (velocityRawBand r) =
       ∫⁻ t in Ioo 0 T, velocityBandProbability E r z t := by
@@ -82,7 +90,7 @@ theorem velocityGreenRaw_band_eq_lintegral (E : FullSpaceEvolution)
   rw [hset]
 
 /-- Real band probabilities are integrable on every finite time interval. -/
-theorem velocityBandProbability_toReal_integrable (E : FullSpaceEvolution)
+theorem velocityBandProbability_toReal_integrable
     (r : ℝ) (z : Z) (T : ℝ) :
     Integrable (fun t => (velocityBandProbability E r z t).toReal)
       (volume.restrict (Ioc 0 T)) := by
@@ -90,18 +98,18 @@ theorem velocityBandProbability_toReal_integrable (E : FullSpaceEvolution)
     (velocityBandProbability_measurable E r z).ennreal_toReal.aestronglyMeasurable
   exact Eventually.of_forall fun t => by
     rw [Real.norm_of_nonneg ENNReal.toReal_nonneg]
-    simpa only [ENNReal.toReal_one] using ENNReal.toReal_mono ENNReal.one_ne_top
-      (velocityBandProbability_le_one E r z t)
+    exact ENNReal.toReal_mono ENNReal.one_ne_top (velocityBandProbability_le_one E r z t)
 
 /-- Ordinary real time integration is the real value of Green band mass. -/
-theorem velocity_band_integral_eq_green (E : FullSpaceEvolution)
+theorem velocity_band_integral_eq_green
     {T : ℝ} (hT : 0 < T) (r : ℝ) (z : Z) :
     (∫ t in Ioc 0 T, (velocityBandProbability E r z t).toReal) =
       (velocityGreenRaw E T hT z (velocityRawBand r)).toReal := by
   rw [integral_Ioc_eq_integral_Ioo, integral_toReal
     (velocityBandProbability_measurable E r z).aemeasurable]
   · rw [velocityGreenRaw_band_eq_lintegral E hT r z]
-  · exact Eventually.of_forall fun t =>
-      (velocityBandProbability_le_one E r z t).trans_lt ENNReal.one_lt_top
+  exact Eventually.of_forall fun t => LE.le.trans_lt (velocityBandProbability_le_one E r z t) ENNReal.one_lt_top
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

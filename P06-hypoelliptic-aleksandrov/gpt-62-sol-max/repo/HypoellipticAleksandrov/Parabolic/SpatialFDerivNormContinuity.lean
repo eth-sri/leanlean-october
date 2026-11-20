@@ -11,10 +11,12 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open scoped BigOperators Matrix.Norms.Elementwise
 
+section
+variable {d : ℕ} {K : Set (TimeVelocity d)}
+
 /-- Smoothness on a neighborhood makes the spatial derivative norm of a
 scalar field continuous on the carrier. -/
 theorem IsSmoothOnNeighborhood.continuousOn_spatialScalarFDerivEuclideanNorm
-    {d : ℕ} {K : Set (TimeVelocity d)}
     {f : TimeVelocity d → ℝ}
     (hf : IsSmoothOnNeighborhood f K) :
     ContinuousOn (spatialScalarFDerivEuclideanNorm f) K := by
@@ -29,7 +31,6 @@ theorem IsSmoothOnNeighborhood.continuousOn_spatialScalarFDerivEuclideanNorm
 /-- Smoothness on a neighborhood makes the spatial derivative Frobenius norm
 of a vector field continuous on the carrier. -/
 theorem IsSmoothOnNeighborhood.continuousOn_spatialVectorFDerivFrobeniusNorm
-    {d : ℕ} {K : Set (TimeVelocity d)}
     {f : TimeVelocity d → PDE.Vec d}
     (hf : IsSmoothOnNeighborhood f K) :
     ContinuousOn (spatialVectorFDerivFrobeniusNorm f) K := by
@@ -40,7 +41,7 @@ theorem IsSmoothOnNeighborhood.continuousOn_spatialVectorFDerivFrobeniusNorm
   intro j _hj
   apply continuousOn_finset_sum
   intro k _hk
-  have hfj : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => f z j) V :=
+  have hfj :=
     (contDiffOn_apply ℝ ℝ j Set.univ).comp hV fun _ _ => Set.mem_univ _
   exact ((hfj.continuousOn_fderiv_of_isOpen hVopen (by simp)).clm_apply
     continuousOn_const).pow 2
@@ -48,7 +49,6 @@ theorem IsSmoothOnNeighborhood.continuousOn_spatialVectorFDerivFrobeniusNorm
 /-- Smoothness on a neighborhood makes the spatial derivative Frobenius norm
 of a matrix field continuous on the carrier. -/
 theorem IsSmoothOnNeighborhood.continuousOn_spatialMatrixFDerivFrobeniusNorm
-    {d : ℕ} {K : Set (TimeVelocity d)}
     {f : TimeVelocity d → PDE.Mat d}
     (hf : IsSmoothOnNeighborhood f K) :
     ContinuousOn (spatialMatrixFDerivFrobeniusNorm f) K := by
@@ -67,5 +67,7 @@ theorem IsSmoothOnNeighborhood.continuousOn_spatialMatrixFDerivFrobeniusNorm
     (contDiffOn_apply ℝ ℝ j Set.univ).comp hfi fun _ _ => Set.mem_univ _
   exact ((hfij.continuousOn_fderiv_of_isOpen hVopen (by simp)).clm_apply
     continuousOn_const).pow 2
+
+end
 
 end HypoellipticAleksandrov.Parabolic

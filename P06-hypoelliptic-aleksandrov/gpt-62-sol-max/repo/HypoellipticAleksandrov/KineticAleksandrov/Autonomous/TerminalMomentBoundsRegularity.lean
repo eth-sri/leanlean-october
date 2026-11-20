@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TerminalMomentBoundsKernel
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FourthMomentsPolynomials
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TerminalMomentBoundsPolynomials
 import Mathlib.Tactic
 
 /-! # Regularity of the concrete polynomial supersolutions in evolution coordinates -/
@@ -25,15 +25,19 @@ theorem positionSecondBarrier_raw_smooth (Lam X0 tau : ℝ) :
     (q.2.2 0-X0+(tau-q.1)*q.2.1 0)^2+(2/3:ℝ)*Lam*(tau-q.1)^3)
   fun_prop
 
+section
+variable (W : Point → ℝ) (hW : ContDiff ℝ (⊤ : ℕ∞) (rawLift W))
+include hW
+
 /-- Raw smoothness supplies global continuity on the native point carrier. -/
-theorem terminal_raw_continuous (W : Point → ℝ)
-    (hW : ContDiff ℝ (⊤ : ℕ∞) (rawLift W)) : Continuous W := by
+theorem terminal_raw_continuous : Continuous W := by
   exact hW.continuous.comp (KineticPoint.homeomorphProd 1).continuous_toFun
 
 /-- Raw smoothness supplies all comparison slices. -/
-theorem terminal_raw_regular (W : Point → ℝ)
-    (hW : ContDiff ℝ (⊤ : ℕ∞) (rawLift W)) (p : Point) : IsSliceRegularAt W p := by
+theorem terminal_raw_regular (p : Point) : IsSliceRegularAt W p := by
   apply IsSliceRegularAt.of_contDiffAt
   exact (hW.of_le (by norm_num)).contDiffAt
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -13,15 +13,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
+section
+variable {d : ℕ}
+
 /-- Replace only matrices violating the source ellipticity bounds. -/
-def borelEllipticRepresentative {d : ℕ} (lam Lam : ℝ) (A : CoefficientField d) :
+def borelEllipticRepresentative (lam Lam : ℝ) (A : CoefficientField d) :
     CoefficientField d := by
   classical
   exact fun t v => if lam • (1 : PDE.Mat d) ≤ A t v ∧ A t v ≤ Lam • (1 : PDE.Mat d)
   then A t v else lam • (1 : PDE.Mat d)
 
 /-- The replacement is Borel, symmetric, elliptic everywhere, and a.e. unchanged. -/
-theorem borelEllipticRepresentative_spec {d : ℕ} (lam Lam : ℝ)
+theorem borelEllipticRepresentative_spec (lam Lam : ℝ)
     (_hlam : 0 < lam) (hLam : lam ≤ Lam) (A : CoefficientField d)
     (hBorel : IsBorelCoefficient A) (hsymm : IsSymmetricCoefficient A)
     (hlo : HasLowerEllipticityAE lam A) (hhi : HasUpperEllipticityAE Lam A) :
@@ -60,9 +63,11 @@ theorem borelEllipticRepresentative_spec {d : ℕ} (lam Lam : ℝ)
     exact ite_eq_left ⟨hl,hh⟩
 
 /-- The matrix bridge uses precisely the inherited finite-product supremum norm. -/
-@[instance_reducible] def borelMatrixContinuousENorm {d : ℕ} :
+@[instance_reducible] def borelMatrixContinuousENorm :
     ContinuousENorm (PDE.Mat d) :=
   inferInstanceAs (ContinuousENorm (Fin d → Fin d → ℝ))
+
+end
 
 attribute [local instance] borelMatrixContinuousENorm
 
@@ -79,7 +84,7 @@ theorem borel_coefficient_locallyIntegrable {d : ℕ} {lam Lam : ℝ}
   let : SecondCountableTopology (PDE.Mat d) :=
     inferInstanceAs (SecondCountableTopology (Fin d → Fin d → ℝ))
   change Measurable (coefficientAt A) at hBorel
-  have hLam0 : 0 ≤ Lam := (hlam.le.trans hLam)
+  have hLam0 := (hlam.le.trans hLam)
   apply (locallyIntegrable_const Lam).mono hBorel.aestronglyMeasurable
   filter_upwards with z
   rw [Real.norm_of_nonneg hLam0,Matrix.norm_le_iff hLam0]

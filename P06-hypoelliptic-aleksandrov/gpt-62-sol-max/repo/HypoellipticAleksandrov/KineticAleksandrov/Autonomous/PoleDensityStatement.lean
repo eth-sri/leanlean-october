@@ -13,15 +13,15 @@ open scoped ENNReal
 
 /-- Strict clock-time support gives the source's signed spatial concentration. -/
 theorem clock_signed_concentration
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
-    stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he)
+    stripGreen A c.activeInterval ⊤ (densityClockPole c e he)
       {z | ¬0 < Real.sign c.vbar * (z.position 0 - e.position 0)} = 0 := by
   apply (ae_iff).mp
-  filter_upwards [stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
+  filter_upwards [stripGreen_infinite_ae_future_carrier A c.activeInterval
     (densityClockPole c e he),
-    clock_forward_cone_infinite hH hLE hlam hLam A c (densityClockPole c e he)] with p hp hc
+    clock_forward_cone_infinite A c (densityClockPole c e he)] with p hp hc
   have hs : 0 < (c.map e p).time := by
     have ht : e.time < p.time := hp.1
     change p.time - e.time ≤ 2 * c.r ^ 2 * (c.map e p).time at hc
@@ -40,13 +40,13 @@ theorem clock_signed_concentration
 solvability hypothesis kept explicit rather than hidden in the proposition. -/
 theorem pushforwardStatement_holds :
     PushforwardStatement := by
-  intro hH hLE lam Lam hlam hLam
+  intro lam Lam hlam hLam
   constructor
   · intro A c e he
-    exact ⟨clock_signed_concentration hH hLE hlam hLam A c e he,
-      clock_green_pushforward hH hLE hlam hLam A c e he⟩
+    exact ⟨clock_signed_concentration A c e he,
+      clock_green_pushforward A c e he⟩
   · intro q hq
-    obtain ⟨C, hC, hc⟩ := one_sign_pole_density hH hLE hlam hLam q hq.1 hq.2
+    obtain ⟨C, hC, hc⟩ := one_sign_pole_density hlam hLam q hq.1 hq.2
     refine ⟨C, hC, ?_⟩
     intro A c e he
     obtain ⟨G, hGm, hGn, hGE, hGN, hGs⟩ := hc A c e he
@@ -59,7 +59,7 @@ theorem pushforwardStatement_holds :
     have hfinite := hbound.trans_lt (ENNReal.ofReal_lt_top)
     refine ⟨G, hGm, hGn, ?_, hfinite, ?_⟩
     · calc
-        _ = (stripGreen hH hLE hlam hLam A c.activeInterval ⊤
+        _ = (stripGreen A c.activeInterval ⊤
             (densityClockPole c e he)).restrict (densityClockStrip c e) :=
           (Measure.restrict_eq_self_of_ae_mem hGs).symm
         _ = _ := (congrArg (fun μ : Measure Point =>

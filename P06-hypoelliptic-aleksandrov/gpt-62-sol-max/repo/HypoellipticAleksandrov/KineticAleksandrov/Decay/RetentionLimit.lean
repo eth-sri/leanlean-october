@@ -1,7 +1,9 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.RetentionMatrix
-public import HypoellipticAleksandrov.KineticAleksandrov.Decay.SourceComparison
+public import HypoellipticAleksandrov.KineticAleksandrov.Decay.SourceNotation
+public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrinciple
+public import HypoellipticAleksandrov.Parabolic.KineticClassical
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonRadial
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierGeometry

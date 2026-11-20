@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
-public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
+public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
 public import Mathlib.Analysis.Calculus.FDeriv.Comp
 
 /-!
@@ -20,14 +20,14 @@ open scoped Convolution Pointwise Topology
 
 namespace HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
 
-private theorem translatedKernel_contDiff
-    {d : ℕ} {ε : ℝ} (z : TimeVelocity d) :
-    ContDiff ℝ (⊤ : ℕ∞)
-      (fun y : TimeVelocity d => spacetimeMollifier ε (z - y)) := by
-  exact (spacetimeMollifier_contDiff ε).comp (contDiff_const.sub contDiff_id)
+section
+variable {d : ℕ} {ε : ℝ}
 
-private theorem translatedKernel_hasCompactSupport
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε) (z : TimeVelocity d) :
+private theorem translatedKernel_contDiff (z : TimeVelocity d) :
+    ContDiff ℝ (⊤ : ℕ∞)
+      (fun y : TimeVelocity d => spacetimeMollifier ε (z - y)) := (spacetimeMollifier_contDiff ε).comp (contDiff_const.sub contDiff_id)
+
+private theorem translatedKernel_hasCompactSupport (hε : 0 < ε) (z : TimeVelocity d) :
     HasCompactSupport
       (fun y : TimeVelocity d => spacetimeMollifier ε (z - y)) := by
   let C : Set (TimeVelocity d) :=
@@ -42,8 +42,7 @@ private theorem translatedKernel_hasCompactSupport
   refine ⟨z - y, hzy, ?_⟩
   exact sub_sub_cancel z y
 
-private theorem fderiv_translatedKernel_apply
-    {d : ℕ} {ε : ℝ} (z y q : TimeVelocity d) :
+private theorem fderiv_translatedKernel_apply (z y q : TimeVelocity d) :
     fderiv ℝ (fun w : TimeVelocity d => spacetimeMollifier ε (z - w)) y q =
       -(fderiv ℝ (spacetimeMollifier (d := d) ε) (z - y) q) := by
   have hk : DifferentiableAt ℝ (spacetimeMollifier (d := d) ε) (z - y) :=
@@ -58,20 +57,15 @@ private theorem fderiv_translatedKernel_apply
   rw [ha.fderiv]
   simp
 
-private theorem fderiv_spacetimeMollification_apply
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+/-- The spacetime mollifier commutes with a global weak directional derivative. -/
+theorem fderiv_spacetimeMollification_apply (hε : 0 < ε)
     (u du : TimeVelocity d → ℝ)
     (huLoc : LocallyIntegrable u
       (volume : Measure (TimeVelocity d)))
     (hduLoc : LocallyIntegrable du
       (volume : Measure (TimeVelocity d)))
     (q : TimeVelocity d)
-    (hu : ∀ φ : TimeVelocity d → ℝ,
-      ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ Set.univ →
-      (∫ y in Set.univ, u y * fderiv ℝ φ y q
-        ∂(volume : Measure (TimeVelocity d))) =
-        -∫ y in Set.univ, du y * φ y
-          ∂(volume : Measure (TimeVelocity d)))
+    (hu : HasWeakFDerivApplyOn Set.univ q u du)
     (z : TimeVelocity d) :
     fderiv ℝ (spacetimeMollification ε u) z q =
       spacetimeMollification ε du z := by
@@ -169,8 +163,13 @@ private theorem fderiv_spacetimeMollification_apply
         simp only [ρ, smul_eq_mul]
       · exact (hI hduIntegrable).elim
 
-private theorem spacetimeMollification_congr_on_of_eqOn_thickening_aux
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+end
+
+section
+variable {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+include hε
+
+theorem spacetimeMollification_congr_on_of_eqOn_thickening_aux
     {K : Set (TimeVelocity d)}
     {f g : TimeVelocity d → ℝ}
     (hfg : Set.EqOn f g (Metric.thickening ε K)) :
@@ -189,14 +188,11 @@ private theorem spacetimeMollification_congr_on_of_eqOn_thickening_aux
         apply Metric.mem_thickening_iff.mpr
         refine ⟨z, hz, ?_⟩
         simpa [dist_eq_norm] using hxball
-      change spacetimeMollifier ε x * f (z - x) =
-        spacetimeMollifier ε x * g (z - x)
-      rw [hfg hread]
+      simp [hfg hread]
 
 /-- Ambient raw weak time differentiation commutes with the fixed positive-
 radius spacetime mollifier. -/
 theorem timeDerivative_spacetimeMollification
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
     (u du : TimeVelocity d → ℝ)
     (huLoc : LocallyIntegrable u
       (volume : Measure (TimeVelocity d)))
@@ -211,7 +207,6 @@ theorem timeDerivative_spacetimeMollification
 /-- Ambient raw weak differentiation in one velocity coordinate commutes with
 the fixed positive-radius spacetime mollifier. -/
 theorem velocityGradient_spacetimeMollification
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
     (i : Fin d) (u dui : TimeVelocity d → ℝ)
     (huLoc : LocallyIntegrable u
       (volume : Measure (TimeVelocity d)))
@@ -224,15 +219,18 @@ theorem velocityGradient_spacetimeMollification
   exact fderiv_spacetimeMollification_apply hε u dui huLoc hduiLoc
     (0, Pi.single i 1) hu z
 
-/-- Convolution by the fixed positive-radius kernel only reads a function on
-the open radius thickening of the evaluation carrier. -/
-theorem spacetimeMollification_congr_on_of_eqOn_thickening
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
-    {K : Set (TimeVelocity d)}
-    {f g : TimeVelocity d → ℝ}
-    (hfg : Set.EqOn f g (Metric.thickening ε K)) :
-    Set.EqOn (spacetimeMollification ε f)
-      (spacetimeMollification ε g) K :=
-  spacetimeMollification_congr_on_of_eqOn_thickening_aux hε hfg
+end
+
+/-- Ambient ordered second weak differentiation commutes with mollification. -/
+theorem velocityHessian_spacetimeMollification
+    {d : ℕ} {ε : ℝ} (hε : 0 < ε) {j i : Fin d} {u g H : TimeVelocity d → ℝ}
+    (hu : LocallyIntegrable u volume) (hg : LocallyIntegrable g volume) (hH : LocallyIntegrable H volume)
+    (hug : HasWeakVelocityPartialDerivOn univ j u g) (hgH : HasWeakVelocityPartialDerivOn univ i g H) :
+    (fun z => velocityHessian (spacetimeMollification ε u) z j i) = spacetimeMollification ε H := by
+  have h₁ := velocityGradient_spacetimeMollification hε j u g hu hg hug
+  have h₂ := velocityGradient_spacetimeMollification hε i g H hg hH hgH
+  rw [← h₁] at h₂
+  funext z
+  exact (velocityGradient_velocityGradient (contDiff_spacetimeMollification hε u hu) z).symm.trans (congrFun h₂ z)
 
 end HypoellipticAleksandrov.Parabolic.SpacetimeMollifier

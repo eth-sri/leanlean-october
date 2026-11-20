@@ -19,32 +19,23 @@ open scoped ENNReal
 
 /-- The proved interval occupation constants also bound its zero-extension carrier. -/
 theorem intervalExtension_occupation
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∃ C : ℝ → ℝ,
-    ∀ (m Lb : ℝ), 0 < m → m ≤ Lb →
-    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
-    SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
-    ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-      (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-      (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-    RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-      (zIndependentCoefficient B) b S K → OccupationBoundedBy (intervalExtension hJ K) C := by
-  obtain ⟨C, hC, hocc⟩ := interval_occupation hH hLE lam Lam hlam hlamLam
+    ∀ {m Lb : ℝ} (E : IntervalEvolution lam Lam m Lb), OccupationBoundedBy (intervalExtension E.measurableSet E.kernel) C := by
+  obtain ⟨C, hC, hocc⟩ := interval_occupation lam Lam hlam hlamLam
   refine ⟨C, ?_⟩
-  intro m Lb hm hmLb a c hac B b hs hJ S K hr
+  intro m Lb E
   refine ⟨fun γ hγ1 hγ2 => hC γ hγ1 (by norm_num [slabGamma0] at hγ2; exact hγ2), ?_⟩
   intro ρ _ σ T hT
-  let ρj : Measure (PDE.oneDimensionalAxisBox a c) := Measure.comap Subtype.val ρ
-  have hρj : ρj univ ≤ ρ univ := intervalInitial_comap_mass_le hJ ρ
+  let ρj : Measure (E.domain) := Measure.comap Subtype.val ρ
+  have hρj : ρj univ ≤ ρ univ := intervalInitial_comap_mass_le E.measurableSet ρ
   have : IsFiniteMeasure ρj := ⟨hρj.trans_lt (measure_lt_top ρ univ)⟩
   obtain ⟨g, hgm, hg0, hchar, hb⟩ :=
-    hocc m Lb hm hmLb a c hac B b hs hJ S K hr σ T hT ρj
-  have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
-  let U : Set (TimeVelocity 1) := Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c
+    hocc E σ T hT ρj
+  have hp := (E.clauses).2.1
+  let U : Set (TimeVelocity 1) := Ioo 0 T ×ˢ E.domain
   let gw := U.indicator g
-  have hU : MeasurableSet U := measurableSet_Ioo.prod hJ
+  have hU : MeasurableSet U := measurableSet_Ioo.prod E.measurableSet
   have hUR : U ⊆ Ioo (0 : ℝ) T ×ˢ univ := prod_mono Subset.rfl (subset_univ _)
   have hgw : Measurable gw := hgm.indicator hU
   have hgw0 : ∀ p, 0 ≤ gw p := fun p => by
@@ -59,17 +50,17 @@ theorem intervalExtension_occupation
     rw [hfun, integral_indicator hU, Measure.restrict_restrict_of_subset hUR, hchar φ]
     let F : PDE.Vec 1 → ℝ := fun v =>
       ∫ t : ElapsedTime (ENNReal.ofReal T), ∫ w, φ (t.1, w)
-        ∂(intervalExtension hJ K).firstMarginal
+        ∂(intervalExtension E.measurableSet E.kernel).firstMarginal
           (wholeSpaceQuery σ (σ + t.1) (le_add_of_nonneg_right t.2.1.le) v 0)
         ∂elapsedVolume (ENNReal.ofReal T)
-    have hFzero : ∀ v, v ∉ PDE.oneDimensionalAxisBox a c → F v = 0 := by
+    have hFzero : ∀ v, v ∉ E.domain → F v = 0 := by
       intro v hv
       dsimp only [F]
-      simp_rw [intervalExtension_first_outside hJ K σ _ _ v hv]
+      simp_rw [intervalExtension_first_outside E.measurableSet E.kernel σ _ _ v hv]
       simp only [integral_zero_measure, integral_zero]
     change _ = ∫ v, F v ∂ρ
     rw [← setIntegral_eq_integral_of_forall_compl_eq_zero hFzero,
-      ← integral_subtype_comap hJ F]
+      ← integral_subtype_comap E.measurableSet F]
     apply integral_congr_ae
     refine Filter.Eventually.of_forall fun v => ?_
     dsimp only [F]
@@ -77,7 +68,7 @@ theorem intervalExtension_occupation
     refine Filter.Eventually.of_forall fun t => ?_
     dsimp only
     rw [intervalExtension_first_inside,
-      interval_firstMarginal_eq_parabolic hJ K B hp]
+      interval_firstMarginal_eq_parabolic E.measurableSet E.kernel E.coefficient hp]
   · intro γ hγ1 hγ2
     have hγ2' : γ ≤ 2 := by norm_num [slabGamma0] at hγ2; exact hγ2
     obtain ⟨hgLp, hgBound⟩ := hb γ hγ1 hγ2'

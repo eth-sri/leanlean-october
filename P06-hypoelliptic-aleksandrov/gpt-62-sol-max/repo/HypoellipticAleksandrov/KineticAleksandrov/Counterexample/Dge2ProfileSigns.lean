@@ -15,9 +15,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 def fullVelocityQuadratic {d : ℕ} (H : XV d → ℝ) (q : XV d) (w : PDE.Vec d) : ℝ :=
   fderiv ℝ (fun z => fderiv ℝ H z (0, w)) q (0, w)
 
+section
+variable {d : ℕ} (alpha C₀ sigma R : ℝ) (hsigma : 0 < sigma) (hR : 0 < R)
+include hsigma hR
+
+section
+variable (q : XV d) (hx : q.1 ≠ 0)
+include hx
+
 /-- The profile's full velocity Hessian has the source cutoff prefactor at nonzero position. -/
-theorem geometricProfile_quadratic_nonzero_position {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) (q : XV d) (hx : q.1 ≠ 0) (w : PDE.Vec d) :
+theorem geometricProfile_quadratic_nonzero_position (w : PDE.Vec d) :
     fullVelocityQuadratic (geometricProfile alpha C₀ sigma R) q w =
       Real.rpow (PDE.vecEuclideanNorm q.1) ((alpha - 2) / 3) *
         cutoffHessian alpha C₀ sigma R (normalizedVelocity q.1 q.2) (positionDirection q.1) w := by
@@ -35,8 +42,7 @@ theorem geometricProfile_quadratic_nonzero_position {d : ℕ} (alpha C₀ sigma 
   exact homogeneousAnsatz_velocity_hessian alpha C₀ sigma R hsigma hR q.1 q.2 w w hx
 
 /-- The full profile transport has the same source prefactor at nonzero position. -/
-theorem geometricProfile_transport_nonzero_position {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) (q : XV d) (hx : q.1 ≠ 0) :
+theorem geometricProfile_transport_nonzero_position :
     PDE.vecDot q.2 (dx (geometricProfile alpha C₀ sigma R) q) =
       Real.rpow (PDE.vecEuclideanNorm q.1) ((alpha - 2) / 3) *
         ansatzTransport alpha (cutoffProfile alpha C₀ sigma R)
@@ -57,9 +63,10 @@ theorem geometricProfile_transport_nonzero_position {d : ℕ} (alpha C₀ sigma 
   exact (contDiff_cutoffProfile alpha C₀ sigma R hsigma hR).differentiable
     (by simp) (normalizedVelocity q.1 q.2, positionDirection q.1)
 
+end
+
 /-- The full velocity Hessian at zero position is the exact radial Hessian. -/
-theorem geometricProfile_quadratic_zero_position {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) (v w : PDE.Vec d) (hv : v ≠ 0) :
+theorem geometricProfile_quadratic_zero_position (v w : PDE.Vec d) (hv : v ≠ 0) :
     fullVelocityQuadratic (geometricProfile alpha C₀ sigma R) (0, v) w =
       radialHessianForm alpha v w w := by
   have hq : ((0, v) : XV d) ≠ 0 := fun h => hv (congrArg Prod.snd h)
@@ -73,6 +80,8 @@ theorem geometricProfile_quadratic_zero_position {d : ℕ} (alpha C₀ sigma R :
   unfold fullVelocityQuadratic
   rw [full_velocity_hessian_eq_slice _ 0 v w w hH, heq]
   exact radialProfile_hessian alpha v w w hv
+
+end
 
 /-- All source Hessian and transport sign conditions hold for the actual full profile. -/
 theorem exists_geometricProfile_sign_parameters (d : ℕ) (hd : 2 ≤ d) (alpha : ℝ)

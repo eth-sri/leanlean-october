@@ -17,29 +17,13 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem order_le_parabolicWeight {d : ℕ}
-    (beta : TimeVelocityMultiIndex d) :
-    beta.order ≤ beta.parabolicWeight := by
-  simp only [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.parabolicWeight,
-    VelocityMultiIndex.parabolicWeight]
-  omega
-
 private theorem continuousOn_coordinateIteratedFDeriv
     {d M : ℕ} {U : Set (TimeVelocity d)}
     (hU : IsOpen U) (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ M f U)
     (alpha : ParabolicDerivativeIndex d M) :
     ContinuousOn
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 f) U := by
-  intro z hz
-  have horder : alpha.1.order ≤ M :=
-    (order_le_parabolicWeight alpha.1).trans alpha.2
-  have hdiff : ContDiffAt ℝ M f z := hf.contDiffAt (hU.mem_nhds hz)
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hiter := hdiff.iteratedFDeriv_right
-    (m := 0) (i := alpha.1.coordinateList.length) (by simpa)
-  exact ((contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis
-      (alpha.1.coordinateList.get i)))).clm_apply hiter).continuousAt.continuousWithinAt
+      (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 f) U := (alpha.1.coordinateIteratedFDeriv_contDiffOn (m := 0) hU hf
+    (by simpa using alpha.1.order_le_parabolicWeight.trans alpha.2)).continuousOn
 
 /-- A compact subset of an open time--velocity set has one precompact open
 neighborhood carrying nonnegative finite-order derivative majorants for an

@@ -14,14 +14,17 @@ noncomputable section
 open Set MeasureTheory Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable (R : ℝ) (hR : 1 ≤ R)
+
 /-- Degree two provides the lower bound for the chosen exponent. -/
-theorem bellmanAdjointExponent_two_le (R : ℝ) (hR : 1 ≤ R) :
+theorem bellmanAdjointExponent_two_le :
     2 ≤ bellmanAdjointExponent R hR :=
   (bellmanAdjointExponent_characterization R hR).1.1
     (two_mem_bellmanAdmissibleDegrees R hR)
 
 /-- The excluded endpoint remains excluded after taking the supremum of admissible degrees. -/
-theorem bellmanAdjointExponent_lt_three (R : ℝ) (hR : 1 ≤ R) :
+theorem bellmanAdjointExponent_lt_three :
     bellmanAdjointExponent R hR < 3 := by
   have hlu := (bellmanAdjointExponent_characterization R hR).1
   have hle : bellmanAdjointExponent R hR ≤ 3 :=
@@ -67,8 +70,10 @@ theorem bellmanAdjointExponent_lt_three (R : ℝ) (hR : 1 ≤ R) :
   exact (lt_irrefl (3 : ℝ)) (admissible_degree_lt_three R hR 3 hmem)
 
 /-- The normalized homogeneous adjoint exponent lies in the source's half-open interval. -/
-theorem bellmanAdjointExponent_range (R : ℝ) (hR : 1 ≤ R) :
+theorem bellmanAdjointExponent_range :
     2 ≤ bellmanAdjointExponent R hR ∧ bellmanAdjointExponent R hR < 3 :=
   ⟨bellmanAdjointExponent_two_le R hR, bellmanAdjointExponent_lt_three R hR⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

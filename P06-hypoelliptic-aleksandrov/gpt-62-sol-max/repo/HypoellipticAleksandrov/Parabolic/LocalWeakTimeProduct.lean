@@ -8,6 +8,7 @@ public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifierL2
 public import HypoellipticAleksandrov.Analysis.L2ProductConvergence
 public import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
 public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+import HypoellipticAleksandrov.Analysis.BoundedMultiplierLp
 
 /-!
 # Local weak-time product rule for jointly `C¹` multipliers
@@ -25,86 +26,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter Function MeasureTheory Set Topology
 open scoped ENNReal Topology
 open SpacetimeMollifier
-
-private theorem ae_restrict_of_forall_mem
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (S : Set α) (hS : MeasurableSet S) {P : α → Prop} (hP : ∀ x ∈ S, P x) :
-    ∀ᵐ x ∂μ.restrict S, P x := by
-  filter_upwards [ae_restrict_mem hS] with x hx
-  exact hP x hx
-
-private theorem memLp_mul_of_abs_le
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {p : ℝ≥0∞} {a f : α → ℝ} {M : ℝ}
-    (hM : 0 ≤ M) (ha : AEStronglyMeasurable a μ)
-    (hf : MemLp f p μ) (haM : ∀ᵐ x ∂μ, |a x| ≤ M) :
-    MemLp (fun x => a x * f x) p μ ∧
-      eLpNorm (fun x => a x * f x) p μ ≤
-        ENNReal.ofReal M * eLpNorm f p μ := by
-  have hmeas : AEStronglyMeasurable (fun x => a x * f x) μ := ha.mul hf.aestronglyMeasurable
-  have hpoint : ∀ᵐ x ∂μ, ‖a x * f x‖ ≤ M * ‖f x‖ := by
-    filter_upwards [haM] with x hx
-    simpa only [Real.norm_eq_abs, abs_mul] using
-      mul_le_mul hx le_rfl (abs_nonneg (f x)) hM
-  exact ⟨MemLp.of_le_mul hf hmeas hpoint,
-    eLpNorm_le_mul_eLpNorm_of_ae_le_mul hmeas hpoint p⟩
-
-private theorem toReal_eLpNorm_mul_le
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {p : ℝ≥0∞} {a f : α → ℝ} {M : ℝ}
-    (hM : 0 ≤ M) (ha : AEStronglyMeasurable a μ)
-    (hf : MemLp f p μ) (haM : ∀ᵐ x ∂μ, |a x| ≤ M) :
-    MemLp (fun x => a x * f x) p μ ∧
-      ENNReal.toReal (eLpNorm (fun x => a x * f x) p μ) ≤
-        M * ENNReal.toReal (eLpNorm f p μ) := by
-  obtain ⟨haf, hle⟩ := memLp_mul_of_abs_le hM ha hf haM
-  refine ⟨haf, ?_⟩
-  have htop : ENNReal.ofReal M * eLpNorm f p μ ≠ ∞ :=
-    ENNReal.mul_ne_top ENNReal.ofReal_ne_top hf.eLpNorm_ne_top
-  have hr := ENNReal.toReal_mono htop hle
-  simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM] using hr
-
-private theorem aestronglyMeasurable_of_restrict_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : MeasurableSet U)
-    {f : TimeVelocity d → ℝ}
-    (hf : AEStronglyMeasurable f (timeVelocityVolumeOn U))
-    (hsupp : Function.support f ⊆ U) :
-    AEStronglyMeasurable f (volume : Measure (TimeVelocity d)) := by
-  have hindicator : U.indicator f = f := by
-    funext z
-    by_cases hz : z ∈ U
-    · simp [hz]
-    · have hfz : f z = 0 := by
-        by_contra hn
-        exact hz (hsupp (Function.mem_support.mpr hn))
-      simp [hz, hfz]
-  rw [← hindicator]
-  exact (aestronglyMeasurable_indicator_iff hU).2 hf
-
-private theorem timeDerivative_eq_zero_of_eq_one_on
-    {d : ℕ} {b : TimeVelocity d → ℝ} {K : Set (TimeVelocity d)}
-    {δ : ℝ} (hδ : 0 < δ) (hb : Set.EqOn b 1 (Metric.cthickening δ K))
-    {z : TimeVelocity d} (hz : z ∈ K) :
-    timeDerivative b z = 0 := by
-  have heq : b =ᶠ[𝓝 z] (fun _ => (1 : ℝ)) := by
-    filter_upwards [Metric.ball_mem_nhds z hδ] with y hy
-    apply hb
-    exact Metric.mem_cthickening_of_dist_le y z δ K hz (le_of_lt hy)
-  unfold timeDerivative
-  rw [heq.fderiv_eq]
-  simp
-
-private theorem timeDerivative_tsupport_subset_local
-    {d : ℕ} (b : TimeVelocity d → ℝ) :
-    tsupport (fun z => timeDerivative b z) ⊆ tsupport b := by
-  unfold timeDerivative
-  change closure (Function.support
-    (fun z => fderiv ℝ b z ((1, 0) : TimeVelocity d))) ⊆ tsupport b
-  exact (closure_mono fun z hz => by
-    rw [Function.mem_support] at hz ⊢
-    intro hbz
-    apply hz
-    simp [hbz]).trans (tsupport_fderiv_subset ℝ)
+open HypoellipticAleksandrov.Analysis
 
 private theorem tendsto_integral_spacetimeMollification_mul_fixed
     {d : ℕ} (f g : TimeVelocity d → ℝ)
@@ -113,463 +35,177 @@ private theorem tendsto_integral_spacetimeMollification_mul_fixed
     Tendsto
       (fun ε : ℝ => ∫ z : TimeVelocity d,
         spacetimeMollification ε f z * g z ∂volume)
-      (𝓝[>] 0) (𝓝 (∫ z : TimeVelocity d, f z * g z ∂volume)) := by
-  apply HypoellipticAleksandrov.Analysis.tendsto_integral_mul_of_tendsto_eLpNorm_two
-      (fun ε => spacetimeMollification ε f) (fun _ => g) f g
-  · filter_upwards [self_mem_nhdsWithin] with ε hε
-    exact SpacetimeMollifierL2.spacetimeMollification_memLp hε f hf
-  · exact Eventually.of_forall fun _ => hg
-  · exact hf
-  · exact hg
-  · exact
-      SpacetimeMollifierL2.tendsto_eLpNorm_spacetimeMollification_sub f hf
-  · have hzero : (fun n : ℝ => eLpNorm
-        (fun _ : TimeVelocity d => (0 : ℝ)) (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d))) = fun _ => (0 : ℝ≥0∞) := by
-      funext n
-      exact eLpNorm_zero
-    simpa only [sub_self, hzero] using
-      (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℝ≥0∞)) (𝓝[>] 0) (𝓝 0))
+      (𝓝[>] 0) (𝓝 (∫ z : TimeVelocity d, f z * g z ∂volume)) := (SpacetimeMollifierL2.spacetimeMollification_strongL2 hf).pairing (StrongL2Limit.const hg)
 
 private theorem integral_univ_eq_setIntegral_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : MeasurableSet U)
+    {d : ℕ} {U : Set (TimeVelocity d)} 
     (f : TimeVelocity d → ℝ) (hsupp : Function.support f ⊆ U) :
-    (∫ z : TimeVelocity d, f z ∂volume) = ∫ z in U, f z ∂volume := by
-  rw [← integral_indicator hU]
-  apply integral_congr_ae
-  exact Eventually.of_forall fun z => by
-    by_cases hz : z ∈ U
-    · simp [hz]
-    · have hfz : f z = 0 := by
-        by_contra hn
-        exact hz (hsupp (Function.mem_support.mpr hn))
-      simp [hz, hfz]
+    (∫ z : TimeVelocity d, f z ∂volume) = ∫ z in U, f z ∂volume := (setIntegral_eq_integral_of_forall_compl_eq_zero fun z hz =>
+    notMem_support.mp (fun hn => hz (hsupp hn))).symm
+
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+include hU
+
+private theorem continuousOn_fderiv_apply_one {q : TimeVelocity d → ℝ}
+    (hq : ContDiffOn ℝ 1 q U) (e : TimeVelocity d) :
+    ContinuousOn (fun z => fderiv ℝ q z e) U :=
+  fun z hz => (((hq.contDiffAt (hU.mem_nhds hz)).continuousAt_fderiv (by norm_num)).clm_apply
+    continuousAt_const).continuousWithinAt
+
+/-- A `C¹` representative has its classical directional derivative as a weak derivative. -/
+theorem contDiffOn_one_hasWeakFDerivApplyOn (e : TimeVelocity d)
+    {q : TimeVelocity d → ℝ} (hq : ContDiffOn ℝ 1 q U) :
+    HasWeakFDerivApplyOn U e q (fun z => fderiv ℝ q z e) := by
+  intro φ hφ hc hs
+  have hInt {f g : TimeVelocity d → ℝ} (hf : ContinuousOn f U)
+      (hg : Continuous g) (hgc : HasCompactSupport g) (hgs : tsupport g ⊆ U) :
+      Integrable (f * g) volume :=
+    (integrableOn_iff_integrable_of_support_subset
+      ((support_mul_subset_right f g).trans ((subset_tsupport g).trans hgs))).mp
+      (integrable_restrict_mul_of_locallyIntegrableOn (hf.locallyIntegrableOn hU.measurableSet) hg hgc hgs)
+  have hds := (tsupport_fderiv_apply_subset ℝ (f := φ) e).trans hs
+  have h := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
+    (hInt (continuousOn_fderiv_apply_one hU hq e) hφ.continuous hc hs)
+    (hInt hq.continuousOn ((hφ.continuous_fderiv (by simp)).clm_apply continuous_const)
+      (hc.fderiv_apply ℝ e) hds) (hInt hq.continuousOn hφ.continuous hc hs)
+    (fun z hz => (hq.contDiffAt (hU.mem_nhds (hs hz))).differentiableAt (by norm_num))
+    (fun z _ => hφ.differentiable (by simp) z)
+  rwa [integral_univ_eq_setIntegral_of_support_subset _
+      ((support_mul_subset_right _ _).trans ((subset_tsupport _).trans hds)),
+    integral_univ_eq_setIntegral_of_support_subset _
+      ((support_mul_subset_right _ _).trans ((subset_tsupport _).trans hs))] at h
+
+/-- A bounded coefficient with bounded weak derivative obeys the weak product rule. -/
+private theorem bounded_weak_mul {e : TimeVelocity d}
+    {q dq u du : TimeVelocity d → ℝ}
+    (hq : ParabolicMemLpOn U ∞ q) (hdq : ParabolicMemLpOn U ∞ dq)
+    (hqWeak : HasWeakFDerivApplyOn U e q dq)
+    (hu : ParabolicMemLpOn U 2 u) (hdu : ParabolicMemLpOn U 2 du)
+    (hweak : HasWeakFDerivApplyOn U e u du) :
+    HasWeakFDerivApplyOn U e (q * u) (q * du + dq * u) := by
+  intro φ hφ hφc hφU
+  let D (f : TimeVelocity d → ℝ) := fun z => fderiv ℝ f z e
+  have hD {f} (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Continuous (D f) :=
+    (hf.continuous_fderiv (by simp)).clm_apply continuous_const
+  have hDs (f) : tsupport (D f) ⊆ tsupport f := tsupport_fderiv_apply_subset ℝ e
+  have hloc {f : TimeVelocity d → ℝ} {p : ℝ≥0∞} (hf : ParabolicMemLpOn U p f) (hp : 1 ≤ p) :=
+    locallyIntegrableOn_of_locallyIntegrable_restrict (hf.locallyIntegrable hp)
+  obtain ⟨δ, hδ, b, hb, hbc, hbU, hb1⟩ :=
+    exists_contDiff_one_on_cthickening_tsupport_subset hU hφc.isCompact hφU
+  let Q := b * q
+  let DQ := b * dq + q * D b
+  have hQs : tsupport Q ⊆ U := tsupport_mul_subset_left.trans hbU
+  have hDQs : tsupport DQ ⊆ U := (tsupport_add _ _).trans (union_subset
+    (tsupport_mul_subset_left.trans hbU) (tsupport_mul_subset_right.trans ((hDs b).trans hbU)))
+  have hQWeak : HasWeakFDerivApplyOn univ e Q DQ :=
+    (hqWeak.mul_contDiff hb (hloc hq (by simp)) (hloc hdq (by simp))).univ_of_tsupport_subset hU hQs hDQs
+  have hb2 : ParabolicMemLpOn U 2 b := hb.continuous.memLp_of_hasCompactSupport hbc
+  have hDb2 : ParabolicMemLpOn U 2 (D b) := (hD hb).memLp_of_hasCompactSupport (hbc.fderiv_apply ℝ e)
+  have hQ : MemLp Q 2 volume := ParabolicMemLpOn.memLp_of_support_subset hU.measurableSet (hb2.mul hq)
+    ((subset_tsupport _).trans hQs)
+  have hDQ : MemLp DQ 2 volume := ParabolicMemLpOn.memLp_of_support_subset hU.measurableSet
+    ((hb2.mul hdq).add (hq.mul hDb2)) ((subset_tsupport _).trans hDQs)
+  have htest {f g : TimeVelocity d → ℝ} (hf : ParabolicMemLpOn U 2 f)
+      (hg : Continuous g) (hgc : HasCompactSupport g) (hgs : tsupport g ⊆ U) :
+      MemLp (f * g) 2 volume :=
+    ParabolicMemLpOn.memLp_of_support_subset hU.measurableSet
+      (hf.mul (hg.memLp_top_of_hasCompactSupport hgc (timeVelocityVolumeOn U))) ((support_mul_subset_right _ _).trans ((subset_tsupport _).trans hgs))
+  have hp := htest hu (hD hφ) (hφc.fderiv_apply ℝ e) ((hDs φ).trans hφU)
+  have hv := htest hdu hφ.continuous hφc hφU
+  have hw := htest hu hφ.continuous hφc hφU
+  let I (f g : TimeVelocity d → ℝ) := ∫ z in U, f z * g z
+  have hconv (f g : TimeVelocity d → ℝ) (hf : MemLp f 2 volume) (hg : MemLp g 2 volume)
+      (hgs : Function.support g ⊆ U) :
+      Tendsto (fun ε => I (spacetimeMollification ε f) g) (𝓝[>] 0) (𝓝 (I f g)) := by
+    have hpair (F : TimeVelocity d → ℝ) : (∫ z, F z * g z) = I F g :=
+      integral_univ_eq_setIntegral_of_support_subset _ ((support_mul_subset_right _ _).trans hgs)
+    simpa only [hpair] using tendsto_integral_spacetimeMollification_mul_fixed f g hf hg
+  have hs {f g : TimeVelocity d → ℝ} (hgs : tsupport g ⊆ U) : Function.support (f * g) ⊆ U :=
+    (support_mul_subset_right _ _).trans ((subset_tsupport _).trans hgs)
+  have hsplit (F G : TimeVelocity d → ℝ) (hF : MemLp F 2 volume) (hG : MemLp G 2 volume) :
+      (∫ z in U, (F z * du z + G z * u z) * φ z) = I F (du * φ) + I G (u * φ) := by
+    simpa only [I, Pi.mul_apply, add_mul, mul_assoc] using
+      integral_add ((hF.integrable_mul hv).restrict (s := U)) ((hG.integrable_mul hw).restrict (s := U))
+  have hEq : ∀ᶠ ε in 𝓝[>] (0 : ℝ), I (spacetimeMollification ε Q) (u * D φ) =
+      -(I (spacetimeMollification ε Q) (du * φ) + I (spacetimeMollification ε DQ) (u * φ)) := by
+    filter_upwards [self_mem_nhdsWithin] with ε hε
+    have hm := contDiff_spacetimeMollification hε Q (hQ.locallyIntegrable (by norm_num))
+    have h := (hweak.mul_contDiff hm (hloc hu (by norm_num)) (hloc hdu (by norm_num))) φ hφ hφc hφU
+    simp_rw [fderiv_spacetimeMollification_apply hε Q DQ (hQ.locallyIntegrable (by norm_num))
+      (hDQ.locallyIntegrable (by norm_num)) e hQWeak] at h
+    have h' : I (spacetimeMollification ε Q) (u * D φ) =
+        -∫ z in U, (spacetimeMollification ε Q z * du z + spacetimeMollification ε DQ z * u z) * φ z := by
+      simpa only [I, D, Pi.mul_apply, mul_assoc, mul_comm (u _)] using h
+    rw [h', hsplit _ _ (SpacetimeMollifierL2.spacetimeMollification_memLp hε Q hQ)
+      (SpacetimeMollifierL2.spacetimeMollification_memLp hε DQ hDQ)]
+  have hLim := tendsto_nhds_unique (hconv Q _ hQ hp (hs ((hDs φ).trans hφU)))
+    (((hconv Q _ hQ hv (hs hφU)).add (hconv DQ _ hDQ hw (hs hφU))).neg.congr' (hEq.mono fun _ h => h.symm))
+  have hb_eq {z : TimeVelocity d} (hz : z ∈ tsupport φ) : b =ᶠ[𝓝 z] 1 := by
+    filter_upwards [Metric.isOpen_thickening.mem_nhds (Metric.self_subset_thickening hδ _ hz)] with w hw
+    exact hb1 (Metric.thickening_subset_cthickening _ _ hw)
+  have hQeq {z : TimeVelocity d} (hz : z ∈ tsupport φ) : Q z = q z := by
+    simp [Q, (hb_eq hz).eq_of_nhds]
+  have hDQeq {z : TimeVelocity d} (hz : z ∈ tsupport φ) : DQ z = dq z := by
+    have hbz := (hb_eq hz).fderiv_eq (𝕜 := ℝ)
+    simp [DQ, D, hbz, (hb_eq hz).eq_of_nhds]
+  have hchange {f g w : TimeVelocity d → ℝ} (hfg : Set.EqOn f g (tsupport φ))
+      (hw : Function.support w ⊆ tsupport φ) : I f w = I g w := by
+    refine integral_congr_ae (.of_forall fun z => ?_)
+    by_cases hz : z ∈ tsupport φ
+    · simp only [hfg hz]
+    · simp [notMem_support.mp (fun h => hz (hw h))]
+  have hleft : I Q (u * D φ) = I q (u * D φ) := hchange (fun _ hz => hQeq hz)
+    ((support_mul_subset_right u (D φ)).trans ((subset_tsupport _).trans (hDs φ)))
+  have hright : (∫ z in U, (DQ z * u z + Q z * du z) * φ z) =
+      ∫ z in U, (dq z * u z + q z * du z) * φ z := by
+    refine integral_congr_ae (.of_forall fun z => ?_)
+    by_cases hz : z ∈ tsupport φ
+    · simp only [hDQeq hz, hQeq hz]
+    · simp [image_eq_zero_of_notMem_tsupport hz]
+  rw [hleft, ← hsplit Q DQ hQ hDQ] at hLim
+  simpa only [I, D, Pi.mul_apply, Pi.add_apply, ← mul_assoc, add_comm] using
+    hLim.trans (congrArg Neg.neg (by simpa only [add_comm] using hright))
+
+/-- The weak product rule with componentwise `L²` bounds for a `C¹` coefficient. -/
+theorem fderivApplyC1_mul_hasWeakFDerivApplyOn_memLp_eLpNorm_le (e : TimeVelocity d)
+    (Bq Bdq : ℝ) (hBq : 0 ≤ Bq) (hBdq : 0 ≤ Bdq)
+    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ 1 q U)
+    (hqBound : ∀ z ∈ U, |q z| ≤ Bq) (hdqBound : ∀ z ∈ U, |fderiv ℝ q z e| ≤ Bdq)
+    (u du : TimeVelocity d → ℝ) (hu : ParabolicMemLpOn U 2 u) (hdu : ParabolicMemLpOn U 2 du)
+    (hweak : HasWeakFDerivApplyOn U e u du) :
+    let dq := fun z => fderiv ℝ q z e
+    let μ := timeVelocityVolumeOn U
+    AEStronglyMeasurable dq μ ∧ MemLp (q * u) 2 μ ∧ MemLp (q * du + dq * u) 2 μ ∧
+      HasWeakFDerivApplyOn U e (q * u) (q * du + dq * u) ∧
+      (eLpNorm (q * u) 2 μ).toReal ≤ Bq * (eLpNorm u 2 μ).toReal ∧
+      (eLpNorm (q * du + dq * u) 2 μ).toReal ≤
+        Bq * (eLpNorm du 2 μ).toReal + Bdq * (eLpNorm u 2 μ).toReal := by
+  intro dq μ
+  have hqM := hq.continuousOn.aestronglyMeasurable (μ := volume) hU.measurableSet
+  have hdqM := (continuousOn_fderiv_apply_one hU hq e).aestronglyMeasurable (μ := volume) hU.measurableSet
+  have hqB := ae_restrict_of_forall_mem (μ := volume) hU.measurableSet hqBound
+  have hdqB := ae_restrict_of_forall_mem (μ := volume) hU.measurableSet hdqBound
+  obtain ⟨hqu, hquN⟩ := memLp_mul_eLpNorm_toReal_le_of_ae_abs_le hBq hqM hu hqB
+  obtain ⟨hqdu, hqduN⟩ := memLp_mul_eLpNorm_toReal_le_of_ae_abs_le hBq hqM hdu hqB
+  obtain ⟨hdqu, hdquN⟩ := memLp_mul_eLpNorm_toReal_le_of_ae_abs_le hBdq hdqM hu hdqB
+  refine ⟨hdqM, hqu, hqdu.add hdqu, ?_, hquN, ?_⟩
+  · exact bounded_weak_mul hU
+      (memLp_top_of_bound hqM Bq (by simpa only [Real.norm_eq_abs] using hqB))
+      (memLp_top_of_bound hdqM Bdq (by simpa only [Real.norm_eq_abs] using hdqB))
+      (contDiffOn_one_hasWeakFDerivApplyOn hU e hq) hu hdu hweak
+  · have hsum := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hqdu.eLpNorm_ne_top, hdqu.eLpNorm_ne_top⟩)
+      (eLpNorm_add_le (by norm_num : (1 : ℝ≥0∞) ≤ 2))
+    rw [ENNReal.toReal_add hqdu.eLpNorm_ne_top hdqu.eLpNorm_ne_top] at hsum
+    exact hsum.trans (add_le_add hqduN hdquN)
+
+end
 
 /-- A scalar that is `C¹` on an open time--velocity carrier has its literal
-time derivative as its raw weak time derivative there. -/
+ time derivative as its raw weak time derivative there. -/
 theorem contDiffOn_one_hasWeakTimeDerivOn
     {d : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ 1 q U) :
-    HasWeakTimeDerivOn U q (timeDerivative q) := by
-  intro φ hφ hφCompact hφSub
-  let p : TimeVelocity d → ℝ := fun z => q z * φ z
-  have hp : ContDiff ℝ 1 p := by
-    rw [contDiff_iff_contDiffAt]
-    intro z
-    by_cases hz : z ∈ U
-    · exact (hq.contDiffAt (hU.mem_nhds hz)).mul
-        ((hφ.of_le (by norm_num)).contDiffAt)
-    · have hzφ : z ∉ tsupport φ := fun h => hz (hφSub h)
-      have heq : p =ᶠ[𝓝 z] fun _ => 0 := by
-        filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hzφ] with y hy
-        simp [p, hy]
-      exact (contDiffAt_const (x := z) (n := 1) (c := (0 : ℝ))).congr_of_eventuallyEq heq
-  have hpCompact : HasCompactSupport p := hφCompact.mul_left
-  have hdpCompact : HasCompactSupport (fun z => fderiv ℝ p z ((1, 0) : TimeVelocity d)) :=
-    hpCompact.fderiv_apply ℝ ((1, 0) : TimeVelocity d)
-  have hpInt : Integrable p := hp.continuous.integrable_of_hasCompactSupport hpCompact
-  have hdpInt : Integrable (fun z => fderiv ℝ p z ((1, 0) : TimeVelocity d)) :=
-    ((hp.continuous_fderiv_apply (by norm_num)).comp
-      (continuous_id.prodMk continuous_const)).integrable_of_hasCompactSupport hdpCompact
-  have hzero : (∫ z, fderiv ℝ p z ((1, 0) : TimeVelocity d) ∂volume) = 0 := by
-    have h := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
-      (μ := volume) (v := ((1, 0) : TimeVelocity d))
-      (f := fun _ : TimeVelocity d => (1 : ℝ)) (g := p)
-      (by simp) (by simpa using hdpInt) (by simpa using hpInt)
-      (by fun_prop) (fun z _ => hp.differentiable (by norm_num) z)
-    simpa using h
-  have hprod (z : TimeVelocity d) (hz : z ∈ U) :
-      fderiv ℝ p z ((1, 0) : TimeVelocity d) =
-        timeDerivative q z * φ z + q z * timeDerivative φ z := by
-    rw [show p = fun y => q y * φ y from rfl]
-    rw [fderiv_fun_mul ((hq.contDiffAt (hU.mem_nhds hz)).differentiableAt (by norm_num))
-      (hφ.differentiable (by simp) z)]
-    simp [timeDerivative, add_comm, mul_comm]
-  have houtside (z : TimeVelocity d) (hz : z ∉ U) :
-      fderiv ℝ p z ((1, 0) : TimeVelocity d) = 0 := by
-    exact congrArg (fun L => L ((1, 0) : TimeVelocity d))
-      (fderiv_of_notMem_tsupport ℝ
-        (fun hp' => hz (hφSub (tsupport_mul_subset_right hp'))))
-  have hglobal : (∫ z, fderiv ℝ p z ((1, 0) : TimeVelocity d) ∂volume) =
-      ∫ z in U, (timeDerivative q z * φ z + q z * timeDerivative φ z) ∂volume := by
-    rw [← integral_indicator hU.measurableSet]
-    apply integral_congr_ae
-    exact Eventually.of_forall fun z => by
-      by_cases hz : z ∈ U
-      · simp [Set.indicator_of_mem hz, hprod z hz]
-      · simp [Set.indicator_of_notMem hz, houtside z hz]
-  rw [hglobal] at hzero
-  have hleft : IntegrableOn (fun z => q z * timeDerivative φ z) U := by
-    have hc : Continuous (fun z => q z * timeDerivative φ z) := by
-      rw [continuous_iff_continuousAt]
-      intro z
-      by_cases hz : z ∈ U
-      · exact (hq.contDiffAt (hU.mem_nhds hz)).continuousAt.mul
-          ((hφ.continuous_fderiv (by simp)).clm_apply
-            (continuous_const : Continuous (fun _ => ((1, 0) : TimeVelocity d)))).continuousAt
-      · have hzφ : z ∉ tsupport φ := fun h => hz (hφSub h)
-        have hd := (notMem_tsupport_iff_eventuallyEq.mp hzφ).fderiv (𝕜 := ℝ)
-        exact continuousAt_const.congr_of_eventuallyEq (hd.mono fun y hy => by
-          change q y * fderiv ℝ φ y ((1, 0) : TimeVelocity d) = 0
-          rw [hy]
-          simp)
-    exact (hc.integrable_of_hasCompactSupport
-      ((hφCompact.fderiv_apply ℝ ((1, 0) : TimeVelocity d)).mul_left)).integrableOn
-  have hright : IntegrableOn (fun z => timeDerivative q z * φ z) U := by
-    have hc : Continuous (fun z => timeDerivative q z * φ z) := by
-      rw [continuous_iff_continuousAt]
-      intro z
-      by_cases hz : z ∈ U
-      · unfold timeDerivative
-        exact (((hq.contDiffAt (hU.mem_nhds hz)).continuousAt_fderiv (by norm_num)).clm_apply
-          (continuousAt_const : ContinuousAt (fun _ => ((1, 0) : TimeVelocity d)) z)).mul
-          hφ.continuous.continuousAt
-      · have hzφ : z ∉ tsupport φ := fun h => hz (hφSub h)
-        have heq := notMem_tsupport_iff_eventuallyEq.mp hzφ
-        exact continuousAt_const.congr_of_eventuallyEq (heq.mono fun y hy => by
-          change timeDerivative q y * φ y = 0
-          simp [hy])
-    exact (hc.integrable_of_hasCompactSupport hφCompact.mul_left).integrableOn
-  rw [integral_add hright hleft] at hzero
-  linarith
-
-private theorem bounded_weak_mul
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (Bq Bdq : ℝ) (hBq : 0 ≤ Bq) (hBdq : 0 ≤ Bdq)
-    (q dq u du : TimeVelocity d → ℝ)
-    (hqMeas : AEStronglyMeasurable q (timeVelocityVolumeOn U))
-    (hdqMeas : AEStronglyMeasurable dq (timeVelocityVolumeOn U))
-    (hqBound : ∀ z ∈ U, |q z| ≤ Bq)
-    (hdqBound : ∀ z ∈ U, |dq z| ≤ Bdq)
-    (hqWeak : HasWeakTimeDerivOn U q dq)
-    (hu : ParabolicMemLpOn U 2 u) (hdu : ParabolicMemLpOn U 2 du)
-    (hweak : HasWeakTimeDerivOn U u du) :
-    HasWeakTimeDerivOn U (fun z => q z * u z)
-      (fun z => q z * du z + dq z * u z) := by
-  have hUmeas : MeasurableSet U := hU.measurableSet
-  have hqAE : ∀ᵐ z ∂timeVelocityVolumeOn U, |q z| ≤ Bq :=
-    ae_restrict_of_forall_mem U hUmeas hqBound
-  have hdqAE : ∀ᵐ z ∂timeVelocityVolumeOn U, |dq z| ≤ Bdq :=
-    ae_restrict_of_forall_mem U hUmeas hdqBound
-  have hqTop : MemLp q ∞ (timeVelocityVolumeOn U) :=
-    memLp_top_of_bound hqMeas Bq (by simpa only [Real.norm_eq_abs] using hqAE)
-  have hdqTop : MemLp dq ∞ (timeVelocityVolumeOn U) :=
-    memLp_top_of_bound hdqMeas Bdq (by simpa only [Real.norm_eq_abs] using hdqAE)
-  have hqLoc : LocallyIntegrableOn q U volume :=
-    locallyIntegrableOn_of_locallyIntegrable_restrict (hqTop.locallyIntegrable (by simp))
-  have hdqLoc : LocallyIntegrableOn dq U volume :=
-    locallyIntegrableOn_of_locallyIntegrable_restrict (hdqTop.locallyIntegrable (by simp))
-  intro φ hφ hφCompact hφSub
-  obtain ⟨δ, hδ, b, hb, hbCompact, hbSub, hbOne⟩ :=
-    exists_contDiff_one_on_cthickening_tsupport_subset
-      hU hφCompact.isCompact hφSub
-  let Q : TimeVelocity d → ℝ := fun z => b z * q z
-  let DQ : TimeVelocity d → ℝ := fun z => b z * dq z + q z * timeDerivative b z
-  have hQWeakU : HasWeakTimeDerivOn U Q DQ := by
-    simpa only [Q, DQ, mul_comm, add_comm] using
-      hqWeak.mul_contDiff hb hqLoc hdqLoc
-  have hQSupp : tsupport Q ⊆ U := by
-    exact (tsupport_mul_subset_left (f := b) (g := q)).trans hbSub
-  have hDQSuppB : tsupport DQ ⊆ tsupport b := by
-    exact (tsupport_add _ _).trans (union_subset
-      (tsupport_mul_subset_left (f := b) (g := dq))
-      ((tsupport_mul_subset_right (f := q)
-        (g := fun z => timeDerivative b z)).trans
-          (timeDerivative_tsupport_subset_local b)))
-  have hDQSupp : tsupport DQ ⊆ U := hDQSuppB.trans hbSub
-  have hQWeak : HasWeakTimeDerivOn Set.univ Q DQ :=
-    hQWeakU.univ_of_tsupport_subset hU hQSupp hDQSupp
-  have hQSupport : Function.support Q ⊆ U := (subset_tsupport Q).trans hQSupp
-  have hDQSupport : Function.support DQ ⊆ U := (subset_tsupport DQ).trans hDQSupp
-  have hbMeasU : AEStronglyMeasurable b (timeVelocityVolumeOn U) :=
-    hb.continuous.aestronglyMeasurable
-  have hdbMeasU : AEStronglyMeasurable (fun z => timeDerivative b z)
-      (timeVelocityVolumeOn U) := by
-    unfold timeDerivative
-    exact ((hb.continuous_fderiv (by simp)).clm_apply continuous_const).aestronglyMeasurable
-  have hQMeasU : AEStronglyMeasurable Q (timeVelocityVolumeOn U) :=
-    hbMeasU.mul hqMeas
-  have hDQMeasU : AEStronglyMeasurable DQ (timeVelocityVolumeOn U) :=
-    (hbMeasU.mul hdqMeas).add (hqMeas.mul hdbMeasU)
-  have hQMeas : AEStronglyMeasurable Q
-      (volume : Measure (TimeVelocity d)) :=
-    aestronglyMeasurable_of_restrict_of_support_subset hUmeas hQMeasU hQSupport
-  have hDQMeas : AEStronglyMeasurable DQ
-      (volume : Measure (TimeVelocity d)) :=
-    aestronglyMeasurable_of_restrict_of_support_subset hUmeas hDQMeasU hDQSupport
-  obtain ⟨Cb, hCb⟩ := hb.continuous.bounded_above_of_compact_support hbCompact
-  have hdbCont : Continuous (fun z => timeDerivative b z) := by
-    unfold timeDerivative
-    exact (hb.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hdbCompact : HasCompactSupport (fun z => timeDerivative b z) := by
-    exact HasCompactSupport.of_support_subset_isCompact hbCompact.isCompact
-      ((subset_tsupport _).trans (timeDerivative_tsupport_subset_local b))
-  obtain ⟨Cdb, hCdb⟩ := hdbCont.bounded_above_of_compact_support hdbCompact
-  have hQPoint : ∀ z, ‖Q z‖ ≤ |Cb| * Bq := by
-    intro z
-    by_cases hz : z ∈ U
-    · dsimp only [Q]
-      rw [Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul (le_trans (hCb z) (le_abs_self Cb)) (hqBound z hz)
-        (abs_nonneg _) (abs_nonneg _)
-    · have hQz : Q z = 0 := by
-        by_contra hn
-        exact hz (hQSupport (Function.mem_support.mpr hn))
-      simp [hQz, mul_nonneg (abs_nonneg Cb) hBq]
-  have hDQPoint : ∀ z, ‖DQ z‖ ≤ |Cb| * Bdq + Bq * |Cdb| := by
-    intro z
-    by_cases hz : z ∈ U
-    · dsimp only [DQ]
-      rw [Real.norm_eq_abs]
-      calc
-        |b z * dq z + q z * timeDerivative b z| ≤
-            |b z| * |dq z| + |q z| * |timeDerivative b z| := by
-              simpa only [abs_mul] using abs_add_le (b z * dq z) (q z * timeDerivative b z)
-        _ ≤ |Cb| * Bdq + Bq * |Cdb| := by
-          exact add_le_add
-            (mul_le_mul (le_trans (hCb z) (le_abs_self Cb)) (hdqBound z hz)
-              (abs_nonneg _) (abs_nonneg _))
-            (mul_le_mul (hqBound z hz) (le_trans (hCdb z) (le_abs_self Cdb))
-              (abs_nonneg _) hBq)
-    · have hDQz : DQ z = 0 := by
-        by_contra hn
-        exact hz (hDQSupport (Function.mem_support.mpr hn))
-      rw [hDQz, norm_zero]
-      exact add_nonneg (mul_nonneg (abs_nonneg Cb) hBdq)
-        (mul_nonneg hBq (abs_nonneg Cdb))
-  have hQCompact : HasCompactSupport Q := by
-    exact HasCompactSupport.of_support_subset_isCompact hbCompact.isCompact
-      ((subset_tsupport Q).trans
-        (tsupport_mul_subset_left (f := b) (g := q)))
-  have hQMem : MemLp Q (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
-    hQCompact.memLp_of_bound hQMeas (|Cb| * Bq) (Eventually.of_forall hQPoint)
-  have hDQCompact : HasCompactSupport DQ := by
-    exact HasCompactSupport.of_support_subset_isCompact hbCompact.isCompact
-      ((subset_tsupport _).trans hDQSuppB)
-  have hDQMem : MemLp DQ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
-    hDQCompact.memLp_of_bound hDQMeas (|Cb| * Bdq + Bq * |Cdb|)
-      (Eventually.of_forall hDQPoint)
-  have hφTop : MemLp φ ∞ (volume : Measure (TimeVelocity d)) :=
-    hφ.continuous.memLp_top_of_hasCompactSupport hφCompact volume
-  have hgradCont : Continuous (fun z => timeDerivative φ z) := by
-    unfold timeDerivative
-    exact (hφ.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hgradCompact : HasCompactSupport (fun z => timeDerivative φ z) := by
-    exact HasCompactSupport.of_support_subset_isCompact hφCompact.isCompact
-      ((subset_tsupport _).trans (timeDerivative_tsupport_subset_local φ))
-  have hgradTop : MemLp (fun z => timeDerivative φ z) ∞
-      (volume : Measure (TimeVelocity d)) :=
-    hgradCont.memLp_top_of_hasCompactSupport hgradCompact volume
-  have huφR : ParabolicMemLpOn U 2 (fun z => u z * φ z) := by
-    simpa only [mul_comm] using hu.mul' (hφTop.restrict U)
-  have hduφR : ParabolicMemLpOn U 2 (fun z => du z * φ z) := by
-    simpa only [mul_comm] using hdu.mul' (hφTop.restrict U)
-  have huGradR : ParabolicMemLpOn U 2
-      (fun z => u z * timeDerivative φ z) := by
-    simpa only [mul_comm] using hu.mul' (hgradTop.restrict U)
-  have huφSupp : Function.support (fun z => u z * φ z) ⊆ U :=
-    (Function.support_mul_subset_right u φ).trans (subset_tsupport φ |>.trans hφSub)
-  have hduφSupp : Function.support (fun z => du z * φ z) ⊆ U :=
-    (Function.support_mul_subset_right du φ).trans (subset_tsupport φ |>.trans hφSub)
-  have huGradSupp : Function.support (fun z => u z * timeDerivative φ z) ⊆ U :=
-    (Function.support_mul_subset_right u _).trans
-      ((subset_tsupport _).trans ((timeDerivative_tsupport_subset_local φ).trans hφSub))
-  have huφ : MemLp (fun z => u z * φ z) 2 volume :=
-    huφR.memLp_of_support_subset hUmeas huφSupp
-  have hduφ : MemLp (fun z => du z * φ z) 2 volume :=
-    hduφR.memLp_of_support_subset hUmeas hduφSupp
-  have huGrad : MemLp (fun z => u z * timeDerivative φ z) 2 volume :=
-    huGradR.memLp_of_support_subset hUmeas huGradSupp
-  have hQlim := tendsto_integral_spacetimeMollification_mul_fixed Q
-    (fun z => u z * timeDerivative φ z) hQMem huGrad
-  have hQdulim := tendsto_integral_spacetimeMollification_mul_fixed Q
-    (fun z => du z * φ z) hQMem hduφ
-  have hDQlim := tendsto_integral_spacetimeMollification_mul_fixed DQ
-    (fun z => u z * φ z) hDQMem huφ
-  have hsmooth (ε : ℝ) (hε : 0 < ε) :
-      HasWeakTimeDerivOn U
-        (fun z => spacetimeMollification ε Q z * u z)
-        (fun z => spacetimeMollification ε Q z * du z +
-          u z * spacetimeMollification ε DQ z) := by
-    have hQεsmooth := contDiff_spacetimeMollification hε Q
-      (hQMem.locallyIntegrable (by norm_num))
-    have hcomm := timeDerivative_spacetimeMollification hε Q DQ
-      (hQMem.locallyIntegrable (by norm_num))
-      (hDQMem.locallyIntegrable (by norm_num)) hQWeak
-    have hp := hweak.mul_contDiff hQεsmooth
-      (hu.locallyIntegrableOn (by norm_num)) (hdu.locallyIntegrableOn (by norm_num))
-    have hcommPoint (z : TimeVelocity d) :
-        timeDerivative (spacetimeMollification ε Q) z =
-          spacetimeMollification ε DQ z := congrFun hcomm z
-    simp_rw [hcommPoint] at hp
-    exact hp
-  have hid : ∀ ε ∈ Ioi (0 : ℝ),
-      (∫ z : TimeVelocity d, spacetimeMollification ε Q z *
-        (u z * timeDerivative φ z) ∂volume) =
-      -((∫ z : TimeVelocity d, spacetimeMollification ε Q z *
-          (du z * φ z) ∂volume) +
-        ∫ z : TimeVelocity d, spacetimeMollification ε DQ z *
-          (u z * φ z) ∂volume) := by
-    intro ε hε
-    have hw := hsmooth ε hε φ hφ hφCompact hφSub
-    have hleft := integral_univ_eq_setIntegral_of_support_subset hUmeas
-      (fun z => spacetimeMollification ε Q z * (u z * timeDerivative φ z))
-      ((Function.support_mul_subset_right _ _).trans huGradSupp)
-    have hright₁ := integral_univ_eq_setIntegral_of_support_subset hUmeas
-      (fun z => spacetimeMollification ε Q z * (du z * φ z))
-      ((Function.support_mul_subset_right _ _).trans hduφSupp)
-    have hright₂ := integral_univ_eq_setIntegral_of_support_subset hUmeas
-      (fun z => spacetimeMollification ε DQ z * (u z * φ z))
-      ((Function.support_mul_subset_right _ _).trans huφSupp)
-    rw [hleft, hright₁, hright₂]
-    calc
-      (∫ z in U, spacetimeMollification ε Q z *
-          (u z * timeDerivative φ z) ∂volume) =
-          ∫ z in U, (spacetimeMollification ε Q z * u z) *
-            timeDerivative φ z ∂volume := by
-              apply integral_congr_ae
-              exact Eventually.of_forall fun z => by ring
-      _ = -∫ z in U, (spacetimeMollification ε Q z * du z +
-          u z * spacetimeMollification ε DQ z) * φ z ∂volume := hw
-      _ = -((∫ z in U, spacetimeMollification ε Q z * (du z * φ z) ∂volume) +
-          ∫ z in U, spacetimeMollification ε DQ z * (u z * φ z) ∂volume) := by
-            rw [← integral_add]
-            · congr 1
-              apply integral_congr_ae
-              exact Eventually.of_forall fun z => by ring
-            · exact ((SpacetimeMollifierL2.spacetimeMollification_memLp hε Q hQMem)
-                |>.integrable_mul hduφ).restrict
-            · exact ((SpacetimeMollifierL2.spacetimeMollification_memLp hε DQ hDQMem)
-                |>.integrable_mul huφ).restrict
-  have hlimitRight := hQdulim.add hDQlim |>.neg
-  have heqEventually : ∀ᶠ ε in 𝓝[>] (0 : ℝ),
-      (∫ z : TimeVelocity d, spacetimeMollification ε Q z *
-        (u z * timeDerivative φ z) ∂volume) =
-      -((∫ z : TimeVelocity d, spacetimeMollification ε Q z *
-          (du z * φ z) ∂volume) +
-        ∫ z : TimeVelocity d, spacetimeMollification ε DQ z *
-          (u z * φ z) ∂volume) := by
-    filter_upwards [self_mem_nhdsWithin] with ε hε
-    exact hid ε hε
-  have hlimEq :
-      (∫ z : TimeVelocity d, Q z * (u z * timeDerivative φ z) ∂volume) =
-      -((∫ z : TimeVelocity d, Q z * (du z * φ z) ∂volume) +
-        ∫ z : TimeVelocity d, DQ z * (u z * φ z) ∂volume) :=
-    tendsto_nhds_unique hQlim
-      (hlimitRight.congr' (heqEventually.mono fun _ h => h.symm))
-  have hQeq (z : TimeVelocity d) (hz : z ∈ tsupport φ) : Q z = q z := by
-    have hbz := hbOne (Metric.self_subset_cthickening (tsupport φ) hz)
-    simp [Q, hbz]
-  have hDQeq (z : TimeVelocity d) (hz : z ∈ tsupport φ) : DQ z = dq z := by
-    have hbz := hbOne (Metric.self_subset_cthickening (tsupport φ) hz)
-    have hdbz := timeDerivative_eq_zero_of_eq_one_on hδ hbOne hz
-    simp [DQ, hbz, hdbz]
-  rw [integral_univ_eq_setIntegral_of_support_subset hUmeas _
-      ((Function.support_mul_subset_right _ _).trans huGradSupp),
-    integral_univ_eq_setIntegral_of_support_subset hUmeas _
-      ((Function.support_mul_subset_right _ _).trans hduφSupp),
-    integral_univ_eq_setIntegral_of_support_subset hUmeas _
-      ((Function.support_mul_subset_right _ _).trans huφSupp)] at hlimEq
-  calc
-    (∫ z in U, (q z * u z) * timeDerivative φ z ∂volume) =
-        ∫ z in U, Q z * (u z * timeDerivative φ z) ∂volume := by
-          apply integral_congr_ae
-          exact Eventually.of_forall fun z => by
-            by_cases hdφ : timeDerivative φ z = 0
-            · simp [hdφ]
-            · have hzts : z ∈ tsupport φ :=
-                (timeDerivative_tsupport_subset_local φ)
-                  (subset_tsupport _ (Function.mem_support.mpr hdφ))
-              change q z * u z * timeDerivative φ z =
-                Q z * (u z * timeDerivative φ z)
-              rw [hQeq z hzts]
-              ring
-    _ = -((∫ z in U, Q z * (du z * φ z) ∂volume) +
-        ∫ z in U, DQ z * (u z * φ z) ∂volume) := hlimEq
-    _ = -∫ z in U, (q z * du z + dq z * u z) * φ z ∂volume := by
-      rw [← integral_add]
-      · congr 1
-        apply integral_congr_ae
-        exact Eventually.of_forall fun z => by
-          by_cases hzφ : φ z = 0
-          · simp [hzφ]
-          · have hzts : z ∈ tsupport φ := subset_tsupport φ
-                (Function.mem_support.mpr hzφ)
-            change Q z * (du z * φ z) + DQ z * (u z * φ z) =
-              (q z * du z + dq z * u z) * φ z
-            rw [hQeq z hzts, hDQeq z hzts]
-            ring
-      · exact (hQMem.integrable_mul hduφ).restrict
-      · exact (hDQMem.integrable_mul huφ).restrict
-
-/-- A bounded jointly `C¹` multiplier obeys the weak time Leibniz rule on an
-open carrier, with quantitative `L²` control. -/
-theorem timeC1_mul_hasWeakTimeDerivOn_memLp_eLpNorm_le
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (Bq Bdt : ℝ) (hBq : 0 ≤ Bq) (hBdt : 0 ≤ Bdt)
-    (q : TimeVelocity d → ℝ) (hqC1 : ContDiffOn ℝ 1 q U)
-    (hqBound : ∀ z ∈ U, |q z| ≤ Bq)
-    (hdtqBound : ∀ z ∈ U, |timeDerivative q z| ≤ Bdt)
-    (u ut : TimeVelocity d → ℝ)
-    (hu : ParabolicMemLpOn U 2 u)
-    (hut : ParabolicMemLpOn U 2 ut)
-    (hweak : HasWeakTimeDerivOn U u ut) :
-    AEStronglyMeasurable (timeDerivative q) (timeVelocityVolumeOn U) ∧
-      ParabolicMemLpOn U 2 (fun z ↦ q z * u z) ∧
-      ParabolicMemLpOn U 2
-        (fun z ↦ q z * ut z + timeDerivative q z * u z) ∧
-      HasWeakTimeDerivOn U (fun z ↦ q z * u z)
-        (fun z ↦ q z * ut z + timeDerivative q z * u z) ∧
-      ENNReal.toReal (eLpNorm (fun z ↦ q z * u z) 2
-          (timeVelocityVolumeOn U)) ≤
-        Bq * ENNReal.toReal (eLpNorm u 2 (timeVelocityVolumeOn U)) ∧
-      ENNReal.toReal (eLpNorm
-          (fun z ↦ q z * ut z + timeDerivative q z * u z) 2
-          (timeVelocityVolumeOn U)) ≤
-        Bq * ENNReal.toReal (eLpNorm ut 2 (timeVelocityVolumeOn U)) +
-          Bdt * ENNReal.toReal (eLpNorm u 2 (timeVelocityVolumeOn U)) := by
-  have hUmeas : MeasurableSet U := hU.measurableSet
-  have hqMeas : AEStronglyMeasurable q (timeVelocityVolumeOn U) :=
-    hqC1.continuousOn.aestronglyMeasurable hUmeas
-  have hdtqMeas : AEStronglyMeasurable (timeDerivative q)
-      (timeVelocityVolumeOn U) := by
-    have hc : ContinuousOn (timeDerivative q) U := fun z hz => by
-      unfold timeDerivative
-      exact ((hqC1.contDiffAt (hU.mem_nhds hz)).continuousAt_fderiv
-        (by norm_num)).clm_apply
-          (continuousAt_const : ContinuousAt (fun _ => ((1, 0) : TimeVelocity d)) z)
-        |>.continuousWithinAt
-    exact hc.aestronglyMeasurable hUmeas
-  have hqAE : ∀ᵐ z ∂timeVelocityVolumeOn U, |q z| ≤ Bq :=
-    ae_restrict_of_forall_mem U hUmeas hqBound
-  have hdtqAE : ∀ᵐ z ∂timeVelocityVolumeOn U,
-      |timeDerivative q z| ≤ Bdt :=
-    ae_restrict_of_forall_mem U hUmeas hdtqBound
-  obtain ⟨hqu, hquNorm⟩ := toReal_eLpNorm_mul_le hBq hqMeas hu hqAE
-  obtain ⟨hqut, hqutNorm⟩ := toReal_eLpNorm_mul_le hBq hqMeas hut hqAE
-  obtain ⟨hdtqu, hdtquNorm⟩ :=
-    toReal_eLpNorm_mul_le hBdt hdtqMeas hu hdtqAE
-  have hsum : ParabolicMemLpOn U 2
-      (fun z => q z * ut z + timeDerivative q z * u z) := hqut.add hdtqu
-  have hsumNorm : ENNReal.toReal
-      (eLpNorm (fun z => q z * ut z + timeDerivative q z * u z) 2
-        (timeVelocityVolumeOn U)) ≤
-      Bq * ENNReal.toReal (eLpNorm ut 2 (timeVelocityVolumeOn U)) +
-        Bdt * ENNReal.toReal (eLpNorm u 2 (timeVelocityVolumeOn U)) := by
-    have htri : eLpNorm (fun z => q z * ut z + timeDerivative q z * u z) 2
-        (timeVelocityVolumeOn U) ≤
-        eLpNorm (fun z => q z * ut z) 2 (timeVelocityVolumeOn U) +
-          eLpNorm (fun z => timeDerivative q z * u z) 2
-            (timeVelocityVolumeOn U) := eLpNorm_add_le (by norm_num)
-    have hreal := ENNReal.toReal_mono
-      (ENNReal.add_ne_top.mpr ⟨hqut.eLpNorm_ne_top, hdtqu.eLpNorm_ne_top⟩) htri
-    rw [ENNReal.toReal_add hqut.eLpNorm_ne_top hdtqu.eLpNorm_ne_top] at hreal
-    exact hreal.trans (add_le_add hqutNorm hdtquNorm)
-  have hqWeak := contDiffOn_one_hasWeakTimeDerivOn U hU q hqC1
-  have hmulWeak : HasWeakTimeDerivOn U (fun z => q z * u z)
-      (fun z => q z * ut z + timeDerivative q z * u z) :=
-    bounded_weak_mul hU Bq Bdt hBq hBdt q (timeDerivative q) u ut
-      hqMeas hdtqMeas hqBound hdtqBound hqWeak hu hut hweak
-  exact ⟨hdtqMeas, hqu, hsum, hmulWeak, hquNorm, hsumNorm⟩
+    HasWeakTimeDerivOn U q (timeDerivative q) := contDiffOn_one_hasWeakFDerivApplyOn hU (1, 0) hq
 
 end HypoellipticAleksandrov.Parabolic

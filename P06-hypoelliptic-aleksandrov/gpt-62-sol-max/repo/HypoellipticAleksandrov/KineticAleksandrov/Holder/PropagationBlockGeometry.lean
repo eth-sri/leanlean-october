@@ -22,10 +22,7 @@ theorem closure_backwardCylinder_bounds {d : ℕ} (P₀ : KineticPoint d) {R : �
       {P | P₀.time - R ^ 2 ≤ P.time ∧ P.time ≤ P₀.time ∧
         PDE.vecEuclideanNorm (P.velocity - P₀.velocity) ≤ R ∧
         PDE.vecEuclideanNorm (relativePosition P₀ P) ≤ R ^ 3} := by
-  have hx : Continuous (relativePosition P₀) := by
-    unfold relativePosition
-    exact (continuous_position.sub continuous_const).sub
-      ((continuous_time.sub continuous_const).smul continuous_const)
+  have hx := continuous_relativePosition P₀
   have hv : Continuous (fun P : KineticPoint d => P.velocity - P₀.velocity) :=
     continuous_velocity.sub continuous_const
   apply closure_minimal
@@ -39,15 +36,21 @@ theorem closure_backwardCylinder_bounds {d : ℕ} (P₀ : KineticPoint d) {R : �
         ((isClosed_le (PDE.continuous_vecEuclideanNorm.comp hv) continuous_const).inter
           (isClosed_le (PDE.continuous_vecEuclideanNorm.comp hx) continuous_const)))
 
+section
+variable {h W : ℝ} (hh : 0 ≤ h)
+include hh
+
 /-- The block radius has its literal source time scale. -/
-theorem propagation_block_radius_sq {h W : ℝ} (hh : 0 ≤ h) :
+theorem propagation_block_radius_sq :
     (W * Real.sqrt h) ^ 2 = W ^ 2 * h := by rw [mul_pow, Real.sq_sqrt hh]
 
 /-- The block radius has its literal source position scale. -/
-theorem propagation_block_radius_cube {h W : ℝ} (hh : 0 ≤ h) :
+theorem propagation_block_radius_cube :
     (W * Real.sqrt h) ^ 3 = W ^ 3 * h ^ (3 / 2 : ℝ) := by
   rw [mul_pow, Real.sqrt_eq_rpow, ← Real.rpow_natCast (h ^ (1 / 2 : ℝ)) 3,
     ← Real.rpow_mul hh]
   norm_num
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

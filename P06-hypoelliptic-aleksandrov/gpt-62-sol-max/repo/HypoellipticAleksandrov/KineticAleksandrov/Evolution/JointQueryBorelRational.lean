@@ -15,24 +15,28 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open Filter MeasureTheory
 open scoped Topology
 
+section
+variable (j : ℕ)
+include j
+
 /-- The integer index of the upper mesh approximation of a terminal time. -/
-def terminalTimeMeshIndex (j : ℕ) (τ : ℝ) : ℤ := Int.ceil (τ * ((j : ℝ) + 1))
+def terminalTimeMeshIndex (τ : ℝ) : ℤ := Int.ceil (τ * ((j : ℝ) + 1))
 
 /-- The upper mesh approximation, with mesh size `1 / (j + 1)`. -/
-def terminalTimeMesh (j : ℕ) (τ : ℝ) : ℝ :=
+def terminalTimeMesh (τ : ℝ) : ℝ :=
   (terminalTimeMeshIndex j τ : ℝ) / ((j : ℝ) + 1)
 
 /-- The mesh index is Borel measurable. -/
-theorem measurable_terminalTimeMeshIndex (j : ℕ) : Measurable (terminalTimeMeshIndex j) :=
+theorem measurable_terminalTimeMeshIndex : Measurable (terminalTimeMeshIndex j) :=
   Int.measurable_ceil.comp (measurable_id.mul_const _)
 
 /-- Every upper mesh approximation is at least the original time. -/
-theorem le_terminalTimeMesh (j : ℕ) (τ : ℝ) : τ ≤ terminalTimeMesh j τ := by
+theorem le_terminalTimeMesh (τ : ℝ) : τ ≤ terminalTimeMesh j τ := by
   rw [terminalTimeMesh, le_div_iff₀ (by positivity : 0 < (j : ℝ) + 1)]
   exact Int.le_ceil _
 
 /-- The upper mesh error is at most the mesh size. -/
-theorem terminalTimeMesh_sub_le (j : ℕ) (τ : ℝ) :
+theorem terminalTimeMesh_sub_le (τ : ℝ) :
     terminalTimeMesh j τ - τ ≤ 1 / ((j : ℝ) + 1) := by
   have hh := Int.ceil_lt_add_one (τ * ((j : ℝ) + 1))
   dsimp only [terminalTimeMesh, terminalTimeMeshIndex]
@@ -40,11 +44,13 @@ theorem terminalTimeMesh_sub_le (j : ℕ) (τ : ℝ) :
   field_simp
   linarith only [hh]
 
+end
+
 /-- Upper mesh times tend to their original terminal time. -/
 theorem tendsto_terminalTimeMesh (τ : ℝ) :
     Tendsto (fun j => terminalTimeMesh j τ) atTop (𝓝 τ) := by
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
-  have hnorm (j : ℕ) : ‖terminalTimeMesh j τ - τ‖ = terminalTimeMesh j τ - τ :=
+  have hnorm (j : ℕ) :=
     Real.norm_of_nonneg (sub_nonneg.mpr (le_terminalTimeMesh j τ))
   simp only [hnorm]
   exact squeeze_zero (fun j => sub_nonneg.mpr (le_terminalTimeMesh j τ))

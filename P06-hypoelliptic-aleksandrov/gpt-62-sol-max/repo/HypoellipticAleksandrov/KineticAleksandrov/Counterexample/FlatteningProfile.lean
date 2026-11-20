@@ -15,26 +15,30 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Set
 
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ)
+include alpha h r
+
 /-- The literal flattening of the selected profile. -/
-noncomputable def selectedFlatProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) : XV d → ℝ :=
+noncomputable def selectedFlatProfile : XV d → ℝ :=
   flatProfile (profileFunction h) flatteningPsi flatteningOffset alpha r
 
+section
+variable (q : XV d)
+include q
+
 /-- The position derivative representative obtained by the scalar chain rule. -/
-noncomputable def flatProfilePositionJet {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (q : XV d) : PDE.Vec d :=
+noncomputable def flatProfilePositionJet : PDE.Vec d :=
   fun i => -deriv flatteningPsi (profileFunction h q / Real.rpow r alpha) *
     profilePositionJet h q i
 
 /-- The velocity derivative representative obtained by the scalar chain rule. -/
-noncomputable def flatProfileVelocityJet {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (q : XV d) : PDE.Vec d :=
+noncomputable def flatProfileVelocityJet : PDE.Vec d :=
   fun i => -deriv flatteningPsi (profileFunction h q / Real.rpow r alpha) *
     profileVelocityJet h q i
 
 /-- The second velocity derivative, including the rank-one chain-rule term. -/
-noncomputable def flatProfileHessian {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (q : XV d) : PDE.Mat d :=
+noncomputable def flatProfileHessian : PDE.Mat d :=
   fun i k =>
     -deriv flatteningPsi (profileFunction h q / Real.rpow r alpha) *
       profileHessian h q i k -
@@ -42,17 +46,24 @@ noncomputable def flatProfileHessian {d : ℕ} {alpha : ℝ}
       deriv (deriv flatteningPsi) (profileFunction h q / Real.rpow r alpha) *
       profileVelocityJet h q i * profileVelocityJet h q k
 
+end
+
+end
+
+section
+variable {d : ℕ}
+
 /-- The selected literal flattened profile is continuous. -/
-theorem continuous_selectedFlatProfile {d : ℕ} {alpha : ℝ}
+theorem continuous_selectedFlatProfile {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) :
     Continuous (selectedFlatProfile h r) := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
+  have hH := (selectedProfile_spec h).continuous
   unfold selectedFlatProfile flatProfile
   exact continuous_const.sub (continuous_const.mul
     (contDiff_flatteningPsi.continuous.comp (hH.div_const _)))
 
 /-- The ordinary first chain rule at a differentiability point of the unflattened profile. -/
-theorem fderiv_flatProfile {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem fderiv_flatProfile (H : XV d → ℝ) (alpha r : ℝ)
     (hr : 0 < r) (q : XV d) (hH : DifferentiableAt ℝ H q) :
     fderiv ℝ (flatProfile H flatteningPsi flatteningOffset alpha r) q =
       (-deriv flatteningPsi (H q / Real.rpow r alpha)) • fderiv ℝ H q := by
@@ -74,7 +85,7 @@ theorem fderiv_flatProfile {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
   field_simp
 
 /-- Entrywise contraction expands the rank-one term of the flattening chain rule. -/
-theorem contraction_flattening_identity {d : ℕ} (A B : PDE.Mat d)
+theorem contraction_flattening_identity (A B : PDE.Mat d)
     (w : PDE.Vec d) (s t : ℝ) :
     matrixContraction A (fun i k => -s * B i k - t * w i * w k) =
       -s * matrixContraction A B - t * PDE.vecDot (A.mulVec w) w := by
@@ -88,16 +99,21 @@ theorem contraction_flattening_identity {d : ℕ} (A B : PDE.Mat d)
   intro k hk
   ring
 
+end
+
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ)
+include d alpha h r
+
 /-- The explicit weak representatives satisfy the source equation algebraically almost everywhere.
 This conclusion alone does not establish that they are derivatives of the flattened profile. -/
-theorem flatProfile_representatives_source {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) :
+theorem flatProfile_representatives_source :
     ∀ᵐ q ∂volume,
       PDE.vecDot q.2 (flatProfilePositionJet h r q) -
         matrixContraction (profileMatrix h q) (flatProfileHessian h r q) =
       flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q := by
-  have hEq := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
-  have hJets := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.1
+  have hEq := (selectedProfile_spec h).ae_equation
+  have hJets := (selectedProfile_spec h).ae_jets
   filter_upwards [hEq, hJets] with q hq hj
   unfold flatProfilePositionJet flatProfileHessian
   rw [contraction_flattening_identity]
@@ -115,14 +131,13 @@ theorem flatProfile_representatives_source {d : ℕ} {alpha : ℝ}
   ring
 
 /-- All explicit flattened derivative representatives are measurable. -/
-theorem measurable_flatProfile_jets {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) :
+theorem measurable_flatProfile_jets :
     Measurable (flatProfilePositionJet h r) ∧ Measurable (flatProfileVelocityJet h r) ∧
       (∀ i k, Measurable (fun q => flatProfileHessian h r q i k)) := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hmx := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.1
-  have hmv := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.1
-  have hmh := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.1
+  have hH := (selectedProfile_spec h).continuous
+  have hmx := (selectedProfile_spec h).measurable_position
+  have hmv := (selectedProfile_spec h).measurable_velocity
+  have hmh := (selectedProfile_spec h).measurable_hessian
   have hpsi : Continuous (deriv flatteningPsi) := by
     rw [funext deriv_flatteningPsi]
     exact contDiff_flatteningSlope.continuous
@@ -146,8 +161,7 @@ theorem measurable_flatProfile_jets {d : ℕ} {alpha : ℝ}
       ((ht.mul ((measurable_pi_apply i).comp hmv)).mul ((measurable_pi_apply k).comp hmv))
 
 /-- The complete weak flattened-profile conclusion required by the mollification lane. -/
-def FlatProfileSourceStatement {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) : Prop :=
+def FlatProfileSourceStatement : Prop :=
   let u := selectedFlatProfile h r
   let gx := flatProfilePositionJet h r
   let gv := flatProfileVelocityJet h r
@@ -170,5 +184,7 @@ def FlatProfileSourceStatement {d : ℕ} {alpha : ℝ}
       flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q) ∧
   (∀ᵐ q ∂volume, statOp (profileMatrix h) u q =
     flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

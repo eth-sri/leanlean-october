@@ -47,7 +47,7 @@ private theorem chain_left_le_right_le_spatial_subset_zero
     {k : ℕ} (hk : k ≤ N + 2) :
     left 0 ≤ left k ∧ right k ≤ right 0 ∧ spatial k ⊆ spatial 0 := by
   induction k with
-  | zero => exact ⟨le_rfl, le_rfl, Subset.rfl⟩
+  | zero => simp
   | succ k ih =>
       rcases ih (Nat.le_trans (Nat.le_succ k) hk) with ⟨hl, hr, hs⟩
       rcases h.step (Nat.lt_of_succ_le hk) with
@@ -55,10 +55,12 @@ private theorem chain_left_le_right_le_spatial_subset_zero
       exact ⟨hl.trans hlstep.le, hrstep.le.trans hr,
         (subset_closure.trans hspstep).trans hs⟩
 
+section
+variable {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)}
+
 /-- A supplied local weight-two strong jet bootstraps to the finite
 higher-order weak-derivative family on a larger box around the target. -/
 theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
-    {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)
@@ -69,20 +71,14 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-    (hUpper : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)) :
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hLower : HasLowerEllipticityOn lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hUpper : HasUpperEllipticityOn Lam a (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
     ∃ Citer : ℝ, 0 ≤ Citer ∧
       ∀ (F : ℝ → PDE.Vec d → ℝ)
-        (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-          (scalarParabolicClosedCylinder r₀ r₁ Ω))
+        (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
         (J : ParabolicW12Function d (Set.Ioo q₀ q₁ ×ˢ O₀) (2 : ℝ≥0∞)),
         (∀ᵐ z ∂timeVelocityVolumeOn (Set.Ioo q₀ q₁ ×ˢ O₀),
           J.timeDeriv z + (∑ i : Fin d, ∑ j : Fin d,
@@ -168,47 +164,23 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
     exists_higherOrderSourceWeakDerivativeFamily d
       (scalarParabolicClosedCylinder r₀ r₁ Ω) Q F
       (isOpen_Ioo.prod hO₀open) hQcompact hQK hFSmooth
-  have hEll : ∀ z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0,
-      lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧ a z.1 z.2 ≤ Lam • (1 : PDE.Mat d) := by
-    intro z hz
-    exact ⟨hLower z (subset_closure.trans hQK hz),
-      hUpper z (subset_closure.trans hQK hz)⟩
-  have hBaQ : ∀ i j alpha z, z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0 →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤ Ba i j alpha := by
-    intro i j alpha z hz
-    apply hBa i j alpha z
-    exact subset_closure (hQV (subset_closure hz))
-  have hBbQ : ∀ j alpha z, z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0 →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d => b x.1 x.2 j) z| ≤ Bb j alpha := by
-    intro j alpha z hz
-    apply hBb j alpha z
-    exact subset_closure (hQV (subset_closure hz))
-  have hBcQ : ∀ alpha z, z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0 →
-      |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (fun x : TimeVelocity d => c x.1 x.2) z| ≤ Bc alpha := by
-    intro alpha z hz
-    apply hBc alpha z
-    exact subset_closure (hQV (subset_closure hz))
+  have hcoeff : PreliftCoefficientBounds (Ioo (left 0) (right 0) ×ˢ spatial 0)
+      lam Lam Ba Bb Bc a b c := by
+    have hin := subset_closure.trans hKU
+    have hsub : Q ⊆ closure V := fun _ hz => subset_closure (hQV (subset_closure hz))
+    exact ⟨fun z hz => ⟨hLower z (subset_closure.trans hQK hz), hUpper z (subset_closure.trans hQK hz)⟩,
+      fun i j => (ha i j).mono hin, fun j => (hb j).mono hin, hc.mono hin,
+      fun i j α z hz => hBa i j α z (hsub hz), fun j α z hz => hBb j α z (hsub hz),
+      fun α z hz => hBc α z (hsub hz)⟩
   let Dseed := J.toWeakDerivativeFamily (isOpen_Ioo.prod hO₀open)
   let Eseed : ParabolicWeakDerivativeFamily d N
       (Set.Ioo (left 0) (right 0) ×ˢ spatial 0)
       (fun z : TimeVelocity d => F z.1 z.2) := by simpa only [N, Q] using Emax
-  have hrun' := hrun a b c F J.toFun Dseed Eseed
-  obtain ⟨Dcore, hDseed, hDnorm⟩ := hrun'
-    hEll
-    (fun i j => (ha i j).mono (subset_closure.trans hKU))
-    (fun j => (hb j).mono (subset_closure.trans hKU))
-    (hc.mono (subset_closure.trans hKU))
-    hBaQ hBbQ hBcQ
-    (by
-      exact ParabolicW12Function.toWeakDerivativeFamily_originalTimeEquation
-        (isOpen_Ioo.prod hO₀open) J a b c F hEq)
+  obtain ⟨Dcore, hDseed, hDnorm⟩ := hrun a b c F J.toFun Dseed Eseed hcoeff
+    (ParabolicW12Function.toWeakDerivativeFamily_originalTimeEquation
+      (isOpen_Ioo.prod hO₀open) J a b c F hEq)
   rcases hsteps (N - 1) (by simp [N]) with ⟨hlN, _, hrN, hsN⟩
   rcases hboxes N (by omega) with ⟨hONopen, hONne, hONcompact, _, _⟩
-  have hmonoN := chain_left_le_right_le_spatial_subset_zero hchain
-    (show N ≤ N + 2 by omega)
   have hprev := chain_left_le_right_le_spatial_subset_zero hchain
     (show N - 1 ≤ N + 2 by omega)
   have hprevStep := hchain.step (show N - 1 < N + 2 by omega)
@@ -248,8 +220,7 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
 
 /-- A selected global value representative admits a compatible local
 higher-order weak-derivative family. -/
-theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_valueRepresentative
-    {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)} (hd : 0 < d)
+theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_valueRepresentative (hd : 0 < d)
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hr₀q₀ : r₀ < q₀)
     (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁) (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
@@ -258,21 +229,15 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_valueRepresentative
     (hOopen : IsOpen O) (hOne : O.Nonempty) (hOcompact : IsCompact (closure O))
     (hOO₀ : closure O ⊆ O₀) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-    (hUpper : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      a z.1 z.2 ≤ Lam • (1 : PDE.Mat d))
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hLower : HasLowerEllipticityOn lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hUpper : HasUpperEllipticityOn Lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (hcNonpos : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
       c z.1 z.2 ≤ 0) :
     ∃ Citer : ℝ, 0 ≤ Citer ∧ ∀ (F : ℝ → PDE.Vec d → ℝ)
-      (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-        (scalarParabolicClosedCylinder r₀ r₁ Ω))
+      (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
       (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (u : ReverseTimeL2V hΩ (r₁ - r₀))
       (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
       (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g)
@@ -322,5 +287,7 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_valueRepresentative
     w hwmem hwslice
   obtain ⟨coreLeft, coreRight, Ocore, B, Emax, Dcore, hrest⟩ := hrun F hFSmooth J hEq
   exact ⟨J, coreLeft, coreRight, Ocore, B, Emax, Dcore, hJw, hEq, hrest⟩
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

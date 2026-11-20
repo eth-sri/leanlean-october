@@ -46,19 +46,19 @@ theorem nestedIntervalExit_compl_iff_internal (H1 H2 : Interval)
 /-- With strict open-strip pole support the actual smaller exit splits into outer and internal
   exits. -/
 theorem nestedIntervalExit_boundary_split
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H1 H2 : Interval)
     (hsub : H1.carrier ⊆ H2.carrier) (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) (he : sMinus < e.1.time) :
-    stripExit hH hLE hlam hLam A H1 T e =
-      (stripExit hH hLE hlam hLam A H1 T e).restrict (reconstructionExit H2 sMinus T) +
-      (stripExit hH hLE hlam hLam A H1 T e).restrict
+    stripExit A H1 T e =
+      (stripExit A H1 T e).restrict (reconstructionExit H2 sMinus T) +
+      (stripExit A H1 T e).restrict
         (nestedIntervalInternalExit H1 H2 sMinus T) := by
-  let μ := stripExit hH hLE hlam hLam A H1 T e
+  let μ := stripExit A H1 T e
   have hm : ∀ᵐ p ∂μ, p ∈ reconstructionExit H1 sMinus T := by
     rw [ae_iff]
-    exact (strip_exit_probability hH hLE hlam hLam A H1 sMinus T e he.le).2.1
+    exact (strip_exit_probability A H1 sMinus T e he.le).2.1
   have heq : (reconstructionExit H2 sMinus T)ᶜ =ᵐ[μ]
       nestedIntervalInternalExit H1 H2 sMinus T := by
     filter_upwards [hm] with p hp

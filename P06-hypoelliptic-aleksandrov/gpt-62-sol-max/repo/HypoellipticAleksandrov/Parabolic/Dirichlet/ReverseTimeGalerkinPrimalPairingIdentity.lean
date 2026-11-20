@@ -1,9 +1,14 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGelfandPairing
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourcePairing
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormPairing
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeDualPairingRight
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormBochner
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalBochner
+
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalBase
+
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeFormResidual
 
 /-!
 # Finite reverse-time Galerkin pairing identity
@@ -20,242 +25,97 @@ open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProduct
 noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem integrable_reverseTimeNegativeSourceRaw_mul_test
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (eta : ReverseTimeScalarTest (r₁ - r₀)) (v : H10HilbertGraph hΩ) :
-    Integrable (fun τ => reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ v * eta τ)
-      (reverseTimeVolume (r₁ - r₀)) := by
-  let S := reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
-  let z := reverseTimeSeparatedVTest hΩ eta v
-  have hPair : Integrable (fun τ => S τ (z τ)) (reverseTimeVolume (r₁ - r₀)) :=
-    integrable_reverseTimeDualPairing hΩ (r₁ - r₀) z S
-  refine hPair.congr ?_
-  filter_upwards [(memLp_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).coeFn_toLp,
-    ae_reverseTimeSeparatedVTest hΩ eta v] with τ hS hz
-  dsimp only [S, z]
-  calc
-    reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ
-        (reverseTimeSeparatedVTest hΩ eta v τ) =
-        reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (eta τ • v) :=
-      congrArg (reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ) hz
-    _ = eta τ * reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ v := by
-      rw [ContinuousLinearMap.map_smul]
-      rfl
-    _ = eta τ * reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ v :=
-      congrArg (fun g => eta τ * g v) hS
-    _ = reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ v * eta τ := mul_comm _ _
-
-private theorem raw_integral_transport
-    {α : Type*} [MeasurableSpace α] (μ : Measure α)
-    (mass source form : ℝ) (s f : α → ℝ)
-    (hs : Integrable s μ) (hsf : Integrable (fun x => s x - f x) μ)
-    (hmass : mass = -(∫ x, (s x - f x) ∂μ))
-    (hsource : source = ∫ x, s x ∂μ) (hform : form = ∫ x, f x ∂μ) :
-    mass = -source + form := by
-  have hf : Integrable f μ := by
-    refine (hs.sub hsf).congr (Eventually.of_forall fun x => ?_)
-    change s x - (s x - f x) = f x
-    ring
-  calc
-    mass = -(∫ x, (s x - f x) ∂μ) := hmass
-    _ = -((∫ x, s x ∂μ) - ∫ x, f x ∂μ) := by rw [integral_sub hs hf]
-    _ = -(∫ x, s x ∂μ) + ∫ x, f x ∂μ := by ring
-    _ = -source + form := by rw [← hsource, ← hform]
-
-
-private theorem integral_eq_of_ae_of_integrable
-    {α : Type*} [MeasurableSpace α] (μ : Measure α) (f g : α → ℝ)
-    (hf : Integrable f μ) (hg : Integrable g μ) (hfg : f =ᵐ[μ] g) :
-    (∫ x, f x ∂μ) = ∫ x, g x ∂μ := by
-  have hL1 : hf.toL1 f = hg.toL1 g :=
-    (Integrable.toL1_eq_toL1_iff f g hf hg).2 hfg
-  calc
-    (∫ x, f x ∂μ) = ∫ x, (hf.toL1 f) x ∂μ := (L1.integral_of_fun_eq_integral hf).symm
-    _ = ∫ x, (hg.toL1 g) x ∂μ := congrArg (fun w : α →₁[μ] ℝ => ∫ x, w x ∂μ) hL1
-    _ = ∫ x, g x ∂μ := L1.integral_of_fun_eq_integral hg
-
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
-variable (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
-  (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-  (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
-  (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-    (scalarParabolicClosedCylinder r₀ r₁ Ω))
-  (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-    (scalarParabolicClosedCylinder r₀ r₁ Ω))
-  (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-    (scalarParabolicClosedCylinder r₀ r₁ Ω))
-  (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-    (scalarParabolicClosedCylinder r₀ r₁ Ω))
-  (hLower : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → lam • (1 : PDE.Mat
-    d) ≤ a z.1 z.2)
-  (hcNonpos : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
 
-/-- The literal finite Galerkin mass/source/form pairing identity. -/
-def reverseTimeGalerkinPrimal_pairing_identity_prop {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam) (hΩ : IsOpen Ω) (hΩbounded :
-      Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → lam • (1 : PDE.Mat
-      d) ≤ a z.1 z.2)
-    (hcNonpos : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (v : galerkinSpace hΩ N) (eta :
-      ReverseTimeScalarTest (r₁-r₀)) : Prop :=
-  reverseTimeDualPairingRightCLM hΩ (r₁-r₀) (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv
-    (eta.memLp_deriv ∞) (v : H10HilbertGraph hΩ))
-      (reverseTimeGelfandCLM hΩ (r₁-r₀) (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-        a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)) =
-    -reverseTimeDualPairingRightCLM hΩ (r₁-r₀) (reverseTimeSeparatedVTest hΩ eta (v :
-      H10HilbertGraph hΩ)) (reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth) +
-    reverseTimeDualPairingRightCLM hΩ (r₁-r₀) (reverseTimeSeparatedVTest hΩ eta (v :
-      H10HilbertGraph hΩ))
-      (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth
-          hcSmooth hFSmooth hLower hcNonpos N initial))
+/-- A fixed lower Galerkin test pairs the higher initial projection exactly as
+it pairs the original spatial initial datum. -/
+private theorem inner_value_galerkinInitialProjection_eq
+    (hΩ : IsOpen Ω) {M N : ℕ} (hMN : M ≤ N)
+    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    (v : galerkinSpace hΩ M) :
+    inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
+      (valueCLM hΩ (galerkinInitialProjection hΩ N initial :
+        H10HilbertGraph hΩ)) =
+      inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ)) initial := by
+  let K := galerkinValueSpace hΩ N
+  have hvN : (v : H10HilbertGraph hΩ) ∈ galerkinSpace hΩ N :=
+    galerkinSpace_mono hΩ hMN v.property
+  let u : K := ⟨valueCLM hΩ (v : H10HilbertGraph hΩ), ⟨v, hvN, rfl⟩⟩
+  rw [value_galerkinInitialProjection]
+  change inner ℝ (u : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (K.orthogonalProjection initial) =
+    inner ℝ (u : PDE.ScalarLp Ω (2 : ℝ≥0∞)) initial
+  exact Submodule.inner_orthogonalProjection_eq_of_mem_left u initial
 
-private theorem reverseTimeGalerkinPrimal_pairing_identity_prop_intro
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (v : galerkinSpace hΩ N)
-    (eta : ReverseTimeScalarTest (r₁ - r₀)) (U : ReverseTimeL2V hΩ (r₁ - r₀))
-    (hU : U = reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
-    (h : reverseTimeDualPairingRightCLM hΩ (r₁-r₀)
-        (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv (eta.memLp_deriv ∞)
-          (v : H10HilbertGraph hΩ))
-        (reverseTimeGelfandCLM hΩ (r₁-r₀) U) =
-      -reverseTimeDualPairingRightCLM hΩ (r₁-r₀)
-          (reverseTimeSeparatedVTest hΩ eta (v : H10HilbertGraph hΩ))
-          (reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth) +
-        reverseTimeDualPairingRightCLM hΩ (r₁-r₀)
-          (reverseTimeSeparatedVTest hΩ eta (v : H10HilbertGraph hΩ))
-          (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
-            haSmooth hbSmooth hcSmooth U)) :
-    reverseTimeGalerkinPrimal_pairing_identity_prop r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial v eta := by
-  subst U
-  simpa only [reverseTimeGalerkinPrimal_pairing_identity_prop] using h
+variable {r₀ r₁ lam : ℝ} (P : ReverseTimeGalerkinProblem Ω r₀ r₁ lam)
 
-/-- The finite Galerkin pairing identity for canonical quotient representatives. -/
-theorem reverseTimeGalerkinPrimal_pairing_identity
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (v : galerkinSpace hΩ N)
-    (eta : ReverseTimeScalarTest (r₁ - r₀)) :
-    reverseTimeGalerkinPrimal_pairing_identity_prop r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial v eta := by
-  let U := reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth
-    hcSmooth hFSmooth hLower hcNonpos N initial
-  let raw := reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth
-    hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial
-  have hUraw : U =ᵐ[reverseTimeVolume (r₁ - r₀)] raw := by
-    simpa only [U, raw] using ae_reverseTimeGalerkinPrimal_eq_raw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-      a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial
-  obtain ⟨hMassRaw, hResidualRaw, hRawIdentity⟩ :=
-    reverseTimeGalerkinPrimal_compactTime r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth
-      hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial v eta
-  have hMassRaw' : Integrable (fun τ => inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-      (valueCLM hΩ (raw τ)) * eta.deriv τ) (reverseTimeVolume (r₁-r₀)) := by
-    simpa only [raw] using hMassRaw
-  have hMassCanonical : Integrable (fun τ => inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ))
-      (valueCLM hΩ (U τ)) * eta.deriv τ) (reverseTimeVolume (r₁-r₀)) := by
-    refine hMassRaw'.congr ?_
-    filter_upwards [hUraw] with τ hτ
-    rw [hτ]
-  let massRaw : ℝ := ∫ τ, inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ)) (valueCLM hΩ (raw τ)) *
-    eta.deriv τ ∂reverseTimeVolume (r₁ - r₀)
-  have hMassPair : reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-      (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv (eta.memLp_deriv ∞) (v : H10HilbertGraph hΩ))
-      (reverseTimeGelfandCLM hΩ (r₁ - r₀) U) = massRaw := by
-    calc
-      _ = ∫ τ, inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ)) (valueCLM hΩ (U τ)) * eta.deriv τ
-        ∂reverseTimeVolume (r₁ - r₀) :=
-        reverseTimeGelfand_pairing_multiplier_eq_integral hΩ U eta.deriv (eta.memLp_deriv ∞) (v :
-          H10HilbertGraph hΩ)
-      _ = massRaw := by
-        dsimp only [massRaw]
-        apply integral_eq_of_ae_of_integrable (reverseTimeVolume (r₁-r₀))
-          (fun τ => inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ)) (valueCLM hΩ (U τ)) * eta.deriv
-            τ)
-          (fun τ => inner ℝ (valueCLM hΩ (v : H10HilbertGraph hΩ)) (valueCLM hΩ (raw τ)) *
-            eta.deriv τ)
-          hMassCanonical hMassRaw'
-        filter_upwards [hUraw] with τ hτ
-        rw [hτ]
-  have hSourceRaw := integrable_reverseTimeNegativeSourceRaw_mul_test r₀ r₁ h₀₁ hΩ hΩbounded F
-    hFSmooth eta (v : H10HilbertGraph hΩ)
-  have hSourcePair := reverseTimeNegativeSource_pairing_eq_integral_raw r₀ r₁ h₀₁ hΩ hΩbounded F
-    hFSmooth eta (v : H10HilbertGraph hΩ)
-  have hFormPair := reverseTimeSpatialForm_pairing_eq_integral r₀ r₁ h₀₁ hΩ hΩbounded a b c
-    haSmooth hbSmooth hcSmooth U eta (v : H10HilbertGraph hΩ)
-  have hFormPairRaw : reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-      (reverseTimeSeparatedVTest hΩ eta (v : H10HilbertGraph hΩ))
-      (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-        U) =
-      ∫ τ, reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ) * eta τ
-        ∂reverseTimeVolume (r₁ - r₀) := by
-    calc
-      _ = ∫ τ, reverseTimeSpatialForm hΩ r₁ τ a b c (U τ) (v : H10HilbertGraph hΩ) * eta τ
-        ∂reverseTimeVolume (r₁ - r₀) := hFormPair
-      _ = _ := by
-        apply integral_congr_ae
-        filter_upwards [hUraw] with τ hτ
-        rw [hτ]
-  have hResidualRaw' : Integrable (fun τ =>
-      (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v : H10HilbertGraph hΩ) -
-        reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ)) * eta τ)
-          (reverseTimeVolume (r₁-r₀)) := by
-    simpa only [raw] using hResidualRaw
-  have hDiffRaw : Integrable (fun τ =>
-      reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v : H10HilbertGraph hΩ) *
-        eta τ -
-      reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ) * eta τ)
-        (reverseTimeVolume (r₁-r₀)) := by
-    refine hResidualRaw'.congr (Eventually.of_forall fun τ => ?_)
-    change (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v : H10HilbertGraph
-      hΩ) -
-      reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ)) * eta τ =
-      reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v : H10HilbertGraph hΩ) *
-        eta τ -
-      reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ) * eta τ
-    exact sub_mul _ _ _
-  have hRawIdentity' : massRaw = -∫ τ,
-      (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v : H10HilbertGraph hΩ) *
-        eta τ -
-      reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ) * eta τ)
-        ∂reverseTimeVolume (r₁-r₀) := by
-    have hRawIdentity0 : massRaw = -∫ τ,
-        (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v : H10HilbertGraph hΩ) -
-        reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ)) * eta τ
-          ∂reverseTimeVolume (r₁-r₀) := by
-      simpa only [massRaw, raw] using hRawIdentity
-    rw [hRawIdentity0]
-    congr 1
-    apply integral_eq_of_ae_of_integrable (reverseTimeVolume (r₁-r₀)) _ _ hResidualRaw' hDiffRaw
-    filter_upwards with τ
-    change (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v : H10HilbertGraph
-      hΩ) -
-      reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ)) * eta τ =
-      reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v : H10HilbertGraph hΩ) *
-        eta τ -
-      reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ) * eta τ
-    exact sub_mul _ _ _
-  have hConcrete := raw_integral_transport (reverseTimeVolume (r₁-r₀)) _ _ _
-    (fun τ => reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ (v :
-      H10HilbertGraph hΩ) * eta τ)
-    (fun τ => reverseTimeSpatialForm hΩ r₁ τ a b c (raw τ) (v : H10HilbertGraph hΩ) * eta τ)
-    hSourceRaw hDiffRaw (hMassPair.trans hRawIdentity') hSourcePair hFormPairRaw
-  have hU : U = reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial := rfl
-  exact reverseTimeGalerkinPrimal_pairing_identity_prop_intro r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b
-    c F
-    haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial v eta U hU hConcrete
+/-- The source minus the spatial form, as a Bochner dual value. -/
+noncomputable abbrev ReverseTimeGalerkinProblem.residual (U : ReverseTimeL2V P.hΩ (r₁ - r₀)) :=
+  reverseTimeFormResidual r₀ r₁ P.h₀₁ P.hΩ P.hΩbounded P.a P.b P.c
+    P.haSmooth P.hbSmooth P.hcSmooth P.F P.hFSmooth U
+
+/-- The reflected equation tested against a separated time and space test. -/
+def ReverseTimeGalerkinProblem.TestEquation
+    (U : ReverseTimeL2V P.hΩ (r₁ - r₀))
+    (v : H10HilbertGraph P.hΩ)
+    (eta : ReverseTimeScalarTest (r₁ - r₀)) : Prop :=
+  reverseTimeDualPairingRightCLM P.hΩ (r₁ - r₀)
+      (reverseTimeSeparatedVTestOfMemLp P.hΩ eta.deriv
+        (eta.memLp_deriv ∞) v)
+      (reverseTimeGelfandCLM P.hΩ (r₁ - r₀) U) =
+    -reverseTimeDualPairingRightCLM P.hΩ (r₁ - r₀)
+      (reverseTimeSeparatedVTest P.hΩ eta v) (P.residual U)
+
+local notation "primalCurve" => reverseTimeGalerkinPrimal P
+
+section
+variable (N : ℕ)
+
+/-- The boundary identity in the Bochner quotients, for a bounded time multiplier
+that vanishes only at the terminal endpoint. -/
+theorem reverseTimeGalerkinPrimal_boundaryPairing (initial : PDE.ScalarLp Ω 2) (v : galerkinSpace P.hΩ N)
+    (q dq : ℝ → ℝ) (hq : MemLp q ∞ (reverseTimeVolume (r₁ - r₀)))
+    (hdq : MemLp dq ∞ (reverseTimeVolume (r₁ - r₀)))
+    (hderiv : ∀ t ∈ Icc 0 (r₁ - r₀), HasDerivWithinAt q (dq t) (Icc 0 (r₁ - r₀)) t)
+    (hcont : ContinuousOn dq (Icc 0 (r₁ - r₀))) (hT : q (r₁ - r₀) = 0) :
+    let T := r₁ - r₀
+    let U := primalCurve N initial
+    let w : H10HilbertGraph P.hΩ := v
+    let z := reverseTimeSeparatedVTestOfMemLp P.hΩ q hq w
+    let dz := reverseTimeSeparatedVTestOfMemLp P.hΩ dq hdq w
+    reverseTimeDualPairingRightCLM P.hΩ T dz (reverseTimeGelfandCLM P.hΩ T U) =
+      -reverseTimeDualPairingRightCLM P.hΩ T z (P.residual U) -
+        inner ℝ (valueCLM P.hΩ w) initial * q 0 := by
+  let T := r₁ - r₀
+  let U := primalCurve N initial
+  let w : H10HilbertGraph P.hΩ := v
+  let raw := reverseTimeGalerkinPrimalRaw P N initial
+  let g := P.residual U
+  have hraw := ae_reverseTimeGalerkinPrimal_eq_raw P N initial
+  have hmass := reverseTimeGelfand_pairing_multiplier_eq_integral P.hΩ U dq hdq w
+  have hboundary := ((reverseTimeGalerkinPrimal_trajectory P N initial).boundaryTime P v q dq hderiv hcont hT).2.2
+  change (∫ t, inner ℝ (valueCLM P.hΩ w) (valueCLM P.hΩ (raw t)) * dq t ∂reverseTimeVolume T) =
+    -(∫ t, (P.sourceRaw t w - P.form t (raw t) w) * q t ∂reverseTimeVolume T) -
+      inner ℝ (valueCLM P.hΩ w) (valueCLM P.hΩ (reverseTimeGalerkinPrimalRaw P N initial 0)) * q 0 at hboundary
+  rw [reverseTimeGalerkinPrimalRaw_zero P N initial, inner_value_galerkinInitialProjection_eq P.hΩ le_rfl initial v] at hboundary
+  have hres := ae_reverseTimeFormResidual_eq_raw r₀ r₁ P.h₀₁ P.hΩ P.hΩbounded P.a P.b P.c
+    P.haSmooth P.hbSmooth P.hcSmooth P.F P.hFSmooth U
+  have hpair := reverseTimeDualPairing_multiplier_eq_integral P.hΩ g q hq w
+    (ae_of_all _ (fun _ => rfl))
+  have hmassRaw : (∫ t, inner ℝ (valueCLM P.hΩ w) (valueCLM P.hΩ (U t)) * dq t ∂reverseTimeVolume T) =
+      ∫ t, inner ℝ (valueCLM P.hΩ w) (valueCLM P.hΩ (raw t)) * dq t ∂reverseTimeVolume T := by
+    refine integral_congr_ae ?_
+    filter_upwards [hraw] with t ht
+    exact congrArg (fun u => inner ℝ (valueCLM P.hΩ w) (valueCLM P.hΩ u) * dq t) ht
+  have hresRaw : (∫ t, g t w * q t ∂reverseTimeVolume T) =
+      ∫ t, (P.sourceRaw t w - P.form t (raw t) w) * q t ∂reverseTimeVolume T := by
+    refine integral_congr_ae ?_
+    filter_upwards [hres, hraw] with t hg ht
+    rw [hg w]
+    exact congrArg (fun u => (P.sourceRaw t w - P.form t u w) * q t) ht
+  have h := hmass.trans (hmassRaw.trans hboundary)
+  rw [← hresRaw, ← hpair] at h
+  exact h
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

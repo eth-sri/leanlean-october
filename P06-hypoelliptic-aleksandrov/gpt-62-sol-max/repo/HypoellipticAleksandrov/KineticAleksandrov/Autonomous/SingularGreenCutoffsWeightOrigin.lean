@@ -11,9 +11,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory Filter
 open scoped Topology ENNReal
 
+section
+variable (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1)
+include ha ha1
+
 /-- The regularized origin value has the explicit negative position-scale power lower bound. -/
-theorem regularizedBarrierWeight_origin_lower (alpha : ℝ) (ha : 0 < alpha)
-    (ha1 : alpha < 1) (n : ℕ) :
+theorem regularizedBarrierWeight_origin_lower (n : ℕ) :
     barrierMollifierRadius n ^ ((alpha - 2) / 3) ≤ regularizedBarrierWeight alpha n (0, 0) := by
   let eta := barrierMollifier n
   have heta := barrierMollifier_spec n
@@ -41,8 +44,7 @@ theorem regularizedBarrierWeight_origin_lower (alpha : ℝ) (ha : 0 < alpha)
   exact hh
 
 /-- At the origin the regularized weight tends to positive infinity in real values. -/
-theorem regularizedBarrierWeight_origin_atTop (alpha : ℝ) (ha : 0 < alpha)
-    (ha1 : alpha < 1) :
+theorem regularizedBarrierWeight_origin_atTop :
     Tendsto (fun n => regularizedBarrierWeight alpha n (0, 0)) atTop atTop := by
   have hr : Tendsto barrierMollifierRadius atTop (𝓝[>] (0 : ℝ)) :=
     tendsto_nhdsWithin_iff.mpr ⟨barrierMollifierRadius_tendsto,
@@ -51,10 +53,11 @@ theorem regularizedBarrierWeight_origin_atTop (alpha : ℝ) (ha : 0 < alpha)
   exact tendsto_atTop_mono (regularizedBarrierWeight_origin_lower alpha ha ha1) hh
 
 /-- The extended regularized weight tends to infinity at the origin, retaining any origin atom. -/
-theorem regularizedBarrierWeight_origin_tendsto (alpha : ℝ) (ha : 0 < alpha)
-    (ha1 : alpha < 1) :
+theorem regularizedBarrierWeight_origin_tendsto :
     Tendsto (fun n => ENNReal.ofReal (regularizedBarrierWeight alpha n (0, 0)))
       atTop (𝓝 ⊤) :=
   ENNReal.tendsto_ofReal_atTop.comp (regularizedBarrierWeight_origin_atTop alpha ha ha1)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

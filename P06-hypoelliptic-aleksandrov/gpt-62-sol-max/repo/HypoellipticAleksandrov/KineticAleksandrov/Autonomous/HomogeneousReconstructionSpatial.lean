@@ -23,24 +23,29 @@ theorem reconstructionSpatialWeight_smooth :
     ContDiff ℝ (⊤ : ℕ∞) reconstructionSpatialWeight :=
   contDiff_id.exp.add contDiff_id.neg.exp
 
+section
+variable (B T : ℝ)
+
 /-- The spatial barrier is globally smooth in native product coordinates. -/
-theorem reconstructionSpatialBarrier_smooth (B T : ℝ) :
+theorem reconstructionSpatialBarrier_smooth :
     ContDiff ℝ (⊤ : ℕ∞) (rawLift (reconstructionSpatialBarrier B T)) :=
   (contDiff_const.mul (contDiff_const.sub contDiff_fst)).exp.mul
     (reconstructionSpatialWeight_smooth.comp
       ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd))
 
 /-- The spatial barrier has the required slice regularity. -/
-theorem reconstructionSpatialBarrier_regular (B T : ℝ) (p : Point) :
+theorem reconstructionSpatialBarrier_regular (p : Point) :
     IsSliceRegularAt (reconstructionSpatialBarrier B T) p :=
   IsSliceRegularAt.of_contDiffAt
     ((reconstructionSpatialBarrier_smooth B T).of_le (by simp)).contDiffAt
 
 /-- The spatial barrier is continuous. -/
-theorem reconstructionSpatialBarrier_continuous (B T : ℝ) :
+theorem reconstructionSpatialBarrier_continuous :
     Continuous (reconstructionSpatialBarrier B T) :=
   (reconstructionSpatialBarrier_smooth B T).continuous.comp
     (KineticPoint.homeomorphProd 1).continuous
+
+end
 
 private theorem spatial_weight_deriv (x : ℝ) :
     HasDerivAt reconstructionSpatialWeight (Real.exp x - Real.exp (-x)) x := by
@@ -98,8 +103,7 @@ theorem reconstruction_interval_abs_le (H : Interval) {v : ℝ}
   have hl := neg_abs_le H.lo
   have hh := le_abs_self H.hi
   have hm := le_max_left |H.lo| |H.hi|
-  have hn := le_max_right |H.lo| |H.hi|
-  constructor <;> linarith only [hl, hh, hm, hn, hv.1, hv.2]
+  constructor <;> linarith only [hl, hh, hm, (le_max_right |H.lo| |H.hi|), hv.1, hv.2]
 
 /-- The spatial supersolution absorbs the proper exponential forcing on the native strip. -/
 theorem reconstructionSpatialBarrier_operator_le (a : ℝ → ℝ → ℝ) (H : Interval)
@@ -138,15 +142,14 @@ theorem reconstructionSpatialBarrier_operator_le (a : ℝ → ℝ → ℝ) (H : 
 
 /-- Actual Green occupation has a finite proper spatial exponential moment. -/
 theorem reconstruction_green_spatial_weight_bound
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     ∫⁻ p, ENNReal.ofReal (reconstructionSpatialWeight (p.position 0))
         ∂stripGreenOfKernel H E.2 T e ≤
       ENNReal.ofReal (Real.exp ((max |H.lo| |H.hi| + 1) * (T - e.1.time)) *
         reconstructionSpatialWeight (e.1.position 0)) := by
-  exact reconstruction_green_lintegral_le_barrier hH hlam hLam A H E hE T e
+  exact reconstruction_green_lintegral_le_barrier A H E hE T e
     (fun p => reconstructionSpatialWeight (p.velocity 0))
     (reconstructionSpatialBarrier (max |H.lo| |H.hi| + 1) T)
     (reconstructionSpatialWeight_smooth.comp

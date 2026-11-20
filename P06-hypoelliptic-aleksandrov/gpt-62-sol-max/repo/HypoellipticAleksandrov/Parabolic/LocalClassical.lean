@@ -21,95 +21,115 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open scoped MatrixOrder
 
+section
+variable {d : ℕ}
+
 /-- A coefficient field is continuous at every point of a prescribed set. -/
-def IsContinuousCoefficientOn {d : ℕ} (A : CoefficientField d)
+def IsContinuousCoefficientOn (A : CoefficientField d)
     (U : Set (TimeVelocity d)) : Prop :=
   ContinuousOn (coefficientAt A) U
 
 /-- A coefficient field obeys a lower Loewner ellipticity bound on a set. -/
-def HasLowerEllipticityOn {d : ℕ} (lam : ℝ) (A : CoefficientField d)
+def HasLowerEllipticityOn (lam : ℝ) (A : CoefficientField d)
     (U : Set (TimeVelocity d)) : Prop :=
   ∀ z ∈ U, lam • (1 : PDE.Mat d) ≤ coefficientAt A z
 
 /-- A coefficient field obeys an upper Loewner ellipticity bound on a set. -/
-def HasUpperEllipticityOn {d : ℕ} (Lam : ℝ) (A : CoefficientField d)
+def HasUpperEllipticityOn (Lam : ℝ) (A : CoefficientField d)
     (U : Set (TimeVelocity d)) : Prop :=
   ∀ z ∈ U, coefficientAt A z ≤ Lam • (1 : PDE.Mat d)
 
 /-- A scalar function is nonnegative at every point of a set. -/
-def IsNonnegativeOn {d : ℕ} (q : TimeVelocity d → ℝ)
+def IsNonnegativeOn (q : TimeVelocity d → ℝ)
     (U : Set (TimeVelocity d)) : Prop :=
   ∀ z ∈ U, 0 ≤ q z
 
 /-- A scalar function is a pointwise supersolution of the forward equation on a set. -/
-def IsParabolicSupersolutionOn {d : ℕ} (A : CoefficientField d)
+def IsParabolicSupersolutionOn (A : CoefficientField d)
     (f u : TimeVelocity d → ℝ) (U : Set (TimeVelocity d)) : Prop :=
   ∀ z ∈ U, f z ≤ parabolicOperator A u z
 
 /-- A scalar function satisfies the homogeneous forward parabolic equation on a set. -/
-def IsParabolicSolutionOn {d : ℕ} (A : CoefficientField d)
+def IsParabolicSolutionOn (A : CoefficientField d)
     (u : TimeVelocity d → ℝ) (U : Set (TimeVelocity d)) : Prop :=
   ∀ z ∈ U, parabolicOperator A u z = 0
 
+end
+
 namespace IsContinuousCoefficientOn
 
+section
+variable {d : ℕ} {A : CoefficientField d}
+
 /-- A local coefficient-continuity predicate gives continuity at each of its points. -/
-theorem continuousWithinAt {d : ℕ} {A : CoefficientField d}
+theorem continuousWithinAt
     {U : Set (TimeVelocity d)} (h : IsContinuousCoefficientOn A U)
     {z : TimeVelocity d} (hz : z ∈ U) :
     ContinuousWithinAt (coefficientAt A) U z :=
   h z hz
 
 /-- Coefficient continuity restricts to a smaller set. -/
-theorem mono {d : ℕ} {A : CoefficientField d} {U V : Set (TimeVelocity d)}
+theorem mono {U V : Set (TimeVelocity d)}
     (h : IsContinuousCoefficientOn A U) (hVU : V ⊆ U) :
     IsContinuousCoefficientOn A V :=
   ContinuousOn.mono h hVU
 
 /-- Global coefficient continuity gives local coefficient continuity on every set. -/
-theorem of_global {d : ℕ} {A : CoefficientField d}
+theorem of_global
     (h : IsContinuousCoefficient A) (U : Set (TimeVelocity d)) :
     IsContinuousCoefficientOn A U :=
   h.continuousOn
+
+end
 
 end IsContinuousCoefficientOn
 
 namespace HasLowerEllipticityOn
 
+section
+variable {d : ℕ} {lam : ℝ} {A : CoefficientField d}
+
 /-- A local lower ellipticity bound can be evaluated at each point of its set. -/
-theorem le {d : ℕ} {lam : ℝ} {A : CoefficientField d}
+theorem le
     {U : Set (TimeVelocity d)} (h : HasLowerEllipticityOn lam A U)
     {z : TimeVelocity d} (hz : z ∈ U) :
     lam • (1 : PDE.Mat d) ≤ coefficientAt A z :=
   h z hz
 
 /-- A lower ellipticity bound restricts to a smaller set. -/
-theorem mono {d : ℕ} {lam : ℝ} {A : CoefficientField d}
+theorem mono
     {U V : Set (TimeVelocity d)} (h : HasLowerEllipticityOn lam A U)
     (hVU : V ⊆ U) : HasLowerEllipticityOn lam A V :=
   fun z hz => h z (hVU hz)
 
 /-- A global lower ellipticity bound gives the corresponding local bound. -/
-theorem of_global {d : ℕ} {lam : ℝ} {A : CoefficientField d}
+theorem of_global
     (h : HasLowerEllipticity lam A) (U : Set (TimeVelocity d)) :
     HasLowerEllipticityOn lam A U :=
   fun z _ => h z.1 z.2
+
+end
 
 end HasLowerEllipticityOn
 
 namespace HasUpperEllipticityOn
 
+section
+variable {d : ℕ} {Lam : ℝ} {A : CoefficientField d}
+
 /-- An upper ellipticity bound restricts to a smaller set. -/
-theorem mono {d : ℕ} {Lam : ℝ} {A : CoefficientField d}
+theorem mono
     {U V : Set (TimeVelocity d)} (h : HasUpperEllipticityOn Lam A U)
     (hVU : V ⊆ U) : HasUpperEllipticityOn Lam A V :=
   fun z hz => h z (hVU hz)
 
 /-- A global upper ellipticity bound gives the corresponding local bound. -/
-theorem of_global {d : ℕ} {Lam : ℝ} {A : CoefficientField d}
+theorem of_global
     (h : HasUpperEllipticity Lam A) (U : Set (TimeVelocity d)) :
     HasUpperEllipticityOn Lam A U :=
   fun z _ => h z.1 z.2
+
+end
 
 end HasUpperEllipticityOn
 
@@ -137,20 +157,27 @@ namespace IsParabolicSolutionOn
 
 end IsParabolicSolutionOn
 
+section
+variable {d : ℕ} {q : TimeVelocity d → ℝ}
+
 /-- A globally `C²` scalar function is `C²` on every prescribed set. -/
-theorem contDiffOn_of_global {d : ℕ} {q : TimeVelocity d → ℝ}
+theorem contDiffOn_of_global
     (h : ContDiff ℝ 2 q) (U : Set (TimeVelocity d)) : ContDiffOn ℝ 2 q U :=
   h.contDiffOn
 
 /-- On an open set, local `C²` regularity gives pointwise `C²` regularity. -/
-theorem contDiffAt_of_contDiffOn_of_isOpen {d : ℕ} {q : TimeVelocity d → ℝ}
+theorem contDiffAt_of_contDiffOn_of_isOpen
     {U : Set (TimeVelocity d)} (hU : IsOpen U) (hq : ContDiffOn ℝ 2 q U)
     {z : TimeVelocity d} (hz : z ∈ U) : ContDiffAt ℝ 2 q z :=
   (hq z hz).contDiffAt (hU.mem_nhds hz)
 
+end
+
+section
+variable {d : ℕ} (A : CoefficientField d) (u : TimeVelocity d → ℝ)
+
 /-- Negation reverses the forward parabolic operator. -/
-theorem parabolicOperator_neg {d : ℕ} (A : CoefficientField d)
-    (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+theorem parabolicOperator_neg (z : TimeVelocity d) :
     parabolicOperator A (fun y => -u y) z = -parabolicOperator A u z := by
   have hfirst : fderiv ℝ (fun y => -u y) = fun y => -fderiv ℝ u y := by
     funext y
@@ -169,8 +196,7 @@ theorem parabolicOperator_neg {d : ℕ} (A : CoefficientField d)
   ring
 
 /-- Adding a constant preserves the forward parabolic operator. -/
-theorem parabolicOperator_add_const {d : ℕ} (A : CoefficientField d)
-    (u : TimeVelocity d → ℝ) (c : ℝ) (z : TimeVelocity d) :
+theorem parabolicOperator_add_const (c : ℝ) (z : TimeVelocity d) :
     parabolicOperator A (fun y => u y + c) z = parabolicOperator A u z := by
   have hfirst : fderiv ℝ (fun y => u y + c) = fderiv ℝ u := by
     funext y
@@ -183,6 +209,8 @@ theorem parabolicOperator_add_const {d : ℕ} (A : CoefficientField d)
     unfold velocityHessian
     rw [hfirst]
   rw [parabolicOperator_apply, parabolicOperator_apply, htime, hhessian]
+
+end
 
 namespace IsParabolicSolutionOn
 

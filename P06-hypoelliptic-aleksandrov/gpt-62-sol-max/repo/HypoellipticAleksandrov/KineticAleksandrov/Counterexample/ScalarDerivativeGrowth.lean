@@ -29,8 +29,12 @@ theorem scalar_power_remainder_deriv2 (f : ℝ → ℝ) (alpha c s : ℝ) (hs : 
   simpa only [Real.rpow_eq_pow, Pi.sub_def, Pi.mul_def,
     show alpha - 1 - 1 = alpha - 2 by ring, mul_assoc] using hd.deriv
 
+section
+variable (f : ℝ → ℝ) (alpha c : ℝ) (hf : ContDiff ℝ 2 f)
+include hf
+
 /-- A differentiated power remainder gives a finite normalized first-derivative limit. -/
-theorem scalar_deriv_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ) (hf : ContDiff ℝ 2 f)
+theorem scalar_deriv_tail_ratio
     (hr : IsBigO atTop (deriv (fun s => f s - c * Real.rpow s alpha))
       (fun s => Real.rpow s (alpha - 4))) :
     Tendsto (fun s => deriv f s / Real.rpow s (alpha - 1)) atTop (𝓝 (c * alpha)) := by
@@ -50,7 +54,7 @@ theorem scalar_deriv_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ) (hf : ContDiff
   ring
 
 /-- A twice differentiated remainder gives a finite normalized second-derivative limit. -/
-theorem scalar_deriv2_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ) (hf : ContDiff ℝ 2 f)
+theorem scalar_deriv2_tail_ratio
     (hr : IsBigO atTop (deriv (deriv (fun s => f s - c * Real.rpow s alpha)))
       (fun s => Real.rpow s (alpha - 5))) :
     Tendsto (fun s => deriv (deriv f) s / Real.rpow s (alpha - 2))
@@ -70,8 +74,14 @@ theorem scalar_deriv2_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ) (hf : ContDif
   field_simp
   ring
 
+end
+
+section
+variable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+include hLam
+
 /-- The actual positive-ray remainder derivatives agree locally with the U-branch derivatives. -/
-theorem F_positive_remainder_derivatives (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_positive_remainder_derivatives :
     IsBigO atTop (deriv (fun s => F gamma Lam s -
       Real.rpow (9 * Lam) (-gamma.1) * Real.rpow s (3 * gamma.1)))
       (fun s => Real.rpow s (3 * gamma.1 - 4)) ∧
@@ -94,7 +104,7 @@ theorem F_positive_remainder_derivatives (gamma : ScalarGamma) (Lam : ℝ) (hLam
     exact (he s hs).deriv.deriv_eq
 
 /-- The actual reflected negative-ray remainder derivatives agree with the M branch. -/
-theorem F_negative_remainder_derivatives (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem F_negative_remainder_derivatives
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) :
     IsBigO atTop (deriv (fun s => F gamma Lam (-s) -
@@ -121,6 +131,8 @@ theorem F_negative_remainder_derivatives (gamma : ScalarGamma) (Lam : ℝ) (hLam
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
     exact (he s hs).deriv.deriv_eq
 
+end
+
 /-- A finite power-normalized limit gives the corresponding actual Big-O estimate. -/
 theorem scalar_isBigO_of_power_ratio (f : ℝ → ℝ) (beta c : ℝ)
     (ht : Tendsto (fun s => f s / Real.rpow s beta) atTop (𝓝 c)) :
@@ -132,8 +144,12 @@ theorem scalar_isBigO_of_power_ratio (f : ℝ → ℝ) (beta c : ℝ)
     exact fun hz => False.elim (hp hz)
   · simpa only [Pi.div_def] using ht
 
+section
+variable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+include hLam
+
 /-- Both actual velocity derivative orders have their leading power bounds on the positive ray. -/
-theorem F_derivatives_isBigO_atTop (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_derivatives_isBigO_atTop :
     IsBigO atTop (deriv (F gamma Lam)) (fun s => Real.rpow s (3 * gamma.1 - 1)) ∧
     IsBigO atTop (deriv (deriv (F gamma Lam))) (fun s => Real.rpow s (3 * gamma.1 - 2)) := by
   have hj := F_positive_remainder_derivatives gamma Lam hLam
@@ -145,7 +161,7 @@ theorem F_derivatives_isBigO_atTop (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 <
       (scalar_deriv2_tail_ratio _ _ _ hf hj.2)
 
 /-- Both actual derivative orders have their leading power bounds on the negative ray. -/
-theorem F_derivatives_isBigO_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem F_derivatives_isBigO_atBot
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) :
     IsBigO atBot (deriv (F gamma Lam)) (fun s => Real.rpow |s| (3 * gamma.1 - 1)) ∧
@@ -171,5 +187,7 @@ theorem F_derivatives_isBigO_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 <
         simp only [f, Function.comp_def, scalar_deriv2_comp_neg, neg_neg]
     · filter_upwards [eventually_lt_atBot (0 : ℝ)] with s hs
       simp only [Function.comp_def, abs_of_neg hs]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

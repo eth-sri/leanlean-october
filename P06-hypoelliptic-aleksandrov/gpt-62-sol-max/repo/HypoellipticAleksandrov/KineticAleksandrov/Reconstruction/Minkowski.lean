@@ -100,7 +100,6 @@ variable [SigmaFinite m] [SigmaFinite ν] {F : α → β → ℝ≥0∞}
 /-- The truncation is jointly measurable. -/
 lemma measurable_trunc (hF : Measurable (Function.uncurry F)) (n : ℕ) :
     Measurable (Function.uncurry (trunc m ν F n)) := by
-  unfold trunc
   exact (hF.min measurable_const).indicator
     ((measurableSet_spanningSets m n).prod (measurableSet_spanningSets ν n))
 
@@ -111,8 +110,11 @@ lemma trunc_le (n : ℕ) (y : α) (ξ : β) : trunc m ν F n y ξ ≤ F y ξ := 
   · rw [Set.indicator_of_mem h]; exact min_le_left _ _
   · rw [Set.indicator_of_notMem h]; exact zero_le
 
+section
+variable (y : α) (ξ : β)
+
 /-- The truncation is monotone in `n`. -/
-lemma trunc_mono (y : α) (ξ : β) : Monotone fun n => trunc m ν F n y ξ := by
+lemma trunc_mono : Monotone fun n => trunc m ν F n y ξ := by
   intro a b hab
   show trunc m ν F a y ξ ≤ trunc m ν F b y ξ
   unfold trunc
@@ -124,7 +126,7 @@ lemma trunc_mono (y : α) (ξ : β) : Monotone fun n => trunc m ν F n y ξ := b
   · rw [Set.indicator_of_notMem h]; exact zero_le
 
 /-- The truncations increase to `F`. -/
-lemma iSup_trunc (y : α) (ξ : β) : ⨆ n, trunc m ν F n y ξ = F y ξ := by
+lemma iSup_trunc : ⨆ n, trunc m ν F n y ξ = F y ξ := by
   refine le_antisymm (iSup_le fun n => trunc_le n y ξ) ?_
   refine le_of_forall_lt fun c hc => ?_
   obtain ⟨N, hN⟩ := mem_iUnion.1 (by rw [iUnion_spanningSets]; trivial : y ∈ ⋃ n, spanningSets m n)
@@ -138,6 +140,8 @@ lemma iSup_trunc (y : α) (ξ : β) : ⨆ n, trunc m ν F n y ξ = F y ξ := by
   unfold trunc
   rw [Set.indicator_of_mem hmem]
   exact lt_min hc (hk.trans_le (by exact_mod_cast le_max_right _ _))
+
+end
 
 /-- The truncated Minkowski left-hand side is finite. -/
 lemma lintegral_trunc_ne_top {p : ℝ} (hp : 0 < p) (n : ℕ) :
@@ -204,8 +208,6 @@ theorem minkowski_integral [SigmaFinite m] [SigmaFinite ν] {p : ℝ} (hp : 1 < 
     exact lintegral_congr fun ξ => iSup_trunc y ξ
   have hA : ∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ p ∂m =
       ⨆ n, ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ p ∂m := by
-    have hmono : ∀ y, Monotone fun n => ∫⁻ ξ, trunc m ν F n y ξ ∂ν :=
-      fun y a b hab => lintegral_mono fun ξ => trunc_mono y ξ hab
     rw [← lintegral_iSup]
     · refine lintegral_congr fun y => ?_
       rw [← hI y]

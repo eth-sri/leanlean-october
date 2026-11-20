@@ -19,10 +19,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 open scoped Topology
 
+section
+variable {n : ℕ}
+
 /-- The actual scalar Dirichlet solution transfers to a slice-regular kinetic solution
 on its finite open cylinder; no Hörmander or joint C2 premise is needed. -/
-theorem straightenedPullback_dirichlet_sliceRegular
-    {n : ℕ} {D : Set (PDE.Vec (n + n))} (hD : IsOpen D)
+theorem straightenedPullback_dirichlet_sliceRegular {D : Set (PDE.Vec (n + n))} (hD : IsOpen D)
     {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g)
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {ε a τ : ℝ}
     {F : BoundedBorel (EvolutionAmbientState n)} {u : TimeVelocity (n + n) → ℝ}
@@ -44,7 +46,7 @@ theorem straightenedPullback_dirichlet_sliceRegular
 
 /-- The straightening map, with its explicit inverse, is a homeomorphism on the literal
 kinetic and scalar time-spatial carriers. -/
-def straightenedPointHomeomorph {n : ℕ} (g : ℝ → PDE.Vec n) (hg : Continuous g) :
+def straightenedPointHomeomorph (g : ℝ → PDE.Vec n) (hg : Continuous g) :
     KineticPoint n ≃ₜ TimeVelocity (n + n) where
   toFun := straightenedPoint g
   invFun q := ⟨q.1, g q.1 + spatialY q.2, spatialZ q.2⟩
@@ -60,10 +62,12 @@ def straightenedPointHomeomorph {n : ℕ} (g : ℝ → PDE.Vec n) (hg : Continuo
     ((contDiff_spatialZ (m := 0)).continuous.comp continuous_snd)
 
 /-- A bounded finite spatial cylinder remains compact in absolute moving coordinates. -/
-theorem isCompact_straightened_closedCylinder {n : ℕ} {D : Set (PDE.Vec (n + n))}
+theorem isCompact_straightened_closedCylinder {D : Set (PDE.Vec (n + n))}
     (hD : Bornology.IsBounded D) {g : ℝ → PDE.Vec n} (hg : Continuous g) (a τ : ℝ) :
     IsCompact (straightenedPoint g ⁻¹' scalarParabolicClosedCylinder a τ D) :=
   (straightenedPointHomeomorph g hg).isCompact_preimage.mpr
     (isCompact_Icc.prod hD.isCompact_closure)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

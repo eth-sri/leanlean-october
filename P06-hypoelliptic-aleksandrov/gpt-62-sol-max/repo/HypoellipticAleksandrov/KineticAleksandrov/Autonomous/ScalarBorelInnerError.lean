@@ -23,8 +23,12 @@ theorem scalar_borel_operator_sub (C a : ℝ → ℝ → ℝ) (u : Point → ℝ
   unfold autonomousScalarOperator
   ring
 
+section
+variable {lam Lam : ℝ} (hlam : 0 < lam)
+include hlam
+
 /-- Scalar ellipticity bounds the contraction defect without differentiating coefficients. -/
-theorem scalar_borel_error_bound {lam Lam : ℝ} (hlam : 0 < lam)
+theorem scalar_borel_error_bound
     {C a : ℝ → ℝ → ℝ} (hC : ∀ x v, lam ≤ C x v ∧ C x v ≤ Lam)
     (ha : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) (H : Point → ℝ) (P : Point) :
     scalarBorelError C a H P ≤ 2 * Lam * |H P| := by
@@ -37,7 +41,7 @@ theorem scalar_borel_error_bound {lam Lam : ℝ} (hlam : 0 < lam)
   constructor <;> linarith
 
 /-- For a fixed compact set and continuous Hessian, the scalar defect vanishes in Lp. -/
-theorem scalar_borel_inner_error {lam Lam : ℝ} (hlam : 0 < lam)
+theorem scalar_borel_inner_error
     (a : ℝ → ℝ → ℝ) (ha : Measurable (Function.uncurry a))
     (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam)
     (C : ℕ → ℝ → ℝ → ℝ)
@@ -90,5 +94,7 @@ theorem scalar_borel_inner_error {lam Lam : ℝ} (hlam : 0 < lam)
   filter_upwards [hbound j] with P hP
   simpa only [scalarBorelError, Real.norm_eq_abs, abs_abs,
     abs_of_nonneg (by positivity : 0 ≤ 2 * Lam * M)] using hP
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

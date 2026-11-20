@@ -15,19 +15,23 @@ open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
+section
+variable {a c : ℝ}
+include c
+
 /-- Include an interval state in the whole-space fiber at the same time. -/
-def intervalStateInclusion {a c : ℝ} (σ : ℝ) :
+def intervalStateInclusion (σ : ℝ) :
     EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ →
       EvolutionState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ :=
   fun p => ⟨p.1, by rw [evolutionStateSet, movingDomain_wholeSpace]; trivial⟩
 
 /-- The fixed-time state inclusion is measurable. -/
-theorem measurable_intervalStateInclusion {a c : ℝ} (σ : ℝ) :
+theorem measurable_intervalStateInclusion (σ : ℝ) :
     Measurable (intervalStateInclusion (a := a) (c := c) σ) :=
   measurable_subtype_coe.subtype_mk
 
 /-- Exterior queries have zero master measure under the extension. -/
-theorem intervalExtensionMaster_outside {a c : ℝ}
+theorem intervalExtensionMaster_outside
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
     (q : EvolutionQuery (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)))
@@ -41,11 +45,14 @@ theorem intervalExtensionMaster_outside {a c : ℝ}
   rw [← he]
   simpa only [movingDomain_stationary] using p.2.2.1
 
+end
+
+section
+variable {a c : ℝ} (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
+  (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) (σ τ : ℝ) (hστ : σ ≤ τ)
+
 /-- Interior extended fibers are literal pushforwards of the original interval fibers. -/
-theorem intervalExtension_fiber_inside {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ)
+theorem intervalExtension_fiber_inside
     (p : EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ) :
     (intervalExtension hJ K).fiberKernel intervalWholeSpace_measurable σ τ hστ
       (intervalStateInclusion σ p) =
@@ -61,10 +68,7 @@ theorem intervalExtension_fiber_inside {a c : ℝ}
   rw [intervalExtensionMaster_inside, K.map_fiberKernel_eq_master]
 
 /-- Starting outside the interval gives the zero fixed-time fiber. -/
-theorem intervalExtension_fiber_outside {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ)
+theorem intervalExtension_fiber_outside
     (p : EvolutionState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ)
     (hp : p.1.1 ∉ PDE.oneDimensionalAxisBox a c) :
     (intervalExtension hJ K).fiberKernel intervalWholeSpace_measurable σ τ hστ p = 0 := by
@@ -72,5 +76,7 @@ theorem intervalExtension_fiber_outside {a c : ℝ}
   change Measure.comap Subtype.val (intervalExtensionMaster hJ K
     (evolutionQueryOfState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ τ hστ p)) = 0
   rw [intervalExtensionMaster_outside hJ K _ hp, Measure.comap_zero]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

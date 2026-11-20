@@ -53,13 +53,17 @@ theorem range_bellmanAngularPoint :
     apply Subtype.ext
     rfl
 
+section
+variable (μ : Measure BellmanPuncturedPlane)
+include μ
+
 /-- Pullback along the literal source coordinates, retaining possible angular singular
 measures. -/
-def bellmanAngularPullback (μ : Measure BellmanPuncturedPlane) :
+def bellmanAngularPullback :
     Measure (BellmanPositiveTime × ℝ) := Measure.comap bellmanAngularPoint μ
 
 /-- Mapping the coordinate pullback recovers precisely restriction to positive position. -/
-theorem map_bellmanAngularPullback (μ : Measure BellmanPuncturedPlane) :
+theorem map_bellmanAngularPullback :
     Measure.map bellmanAngularPoint (bellmanAngularPullback μ) =
       μ.restrict {q | 0 < q.val.1} := by
   rw [bellmanAngularPullback,
@@ -67,10 +71,12 @@ theorem map_bellmanAngularPullback (μ : Measure BellmanPuncturedPlane) :
     range_bellmanAngularPoint]
 
 /-- Pulling back a locally finite measure gives a locally finite coordinate measure. -/
-theorem bellmanAngularPullback_finiteOnCompacts (μ : Measure BellmanPuncturedPlane)
+theorem bellmanAngularPullback_finiteOnCompacts
     (hμ : IsFiniteMeasureOnCompacts μ) : IsFiniteMeasureOnCompacts (bellmanAngularPullback μ) := by
   let : IsFiniteMeasureOnCompacts μ := hμ
   exact IsFiniteMeasureOnCompacts.comap' μ continuous_bellmanAngularPoint
     isOpenEmbedding_bellmanAngularPoint.measurableEmbedding
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -19,52 +19,20 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped Topology
 
-private theorem coordinateIteratedFDeriv_contDiff
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞)
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) := by
-  rw [contDiff_infty]
-  intro m
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := (contDiff_infty.mp hf (m + gamma.order)).iteratedFDeriv_right
-    (m := m) (i := gamma.coordinateList.length) (by simp)
-  exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (gamma.coordinateList.get i)))).clm_apply hi
+section
+variable {d : ℕ} (gamma : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ)
+  (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+include hf
 
-private theorem coordinateIteratedFDeriv_tsupport_subset
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ) :
-    tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) ⊆ tsupport f := by
-  apply closure_minimal _ isClosed_closure
-  intro z hz
-  apply support_iteratedFDeriv_subset (f := f) (𝕜 := ℝ) gamma.coordinateList.length
-  intro hzero
-  exact hz (by
-    unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-    rw [hzero]
-    exact ContinuousMultilinearMap.zero_apply _)
-
-private theorem coordinateIteratedFDeriv_hasCompactSupport
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
-    HasCompactSupport
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) :=
-  hf.of_isClosed_subset isClosed_closure
-    (coordinateIteratedFDeriv_tsupport_subset gamma f)
-
-private theorem timeDerivative_coordinateIteratedFDeriv
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : TimeVelocity d) :
+private theorem timeDerivative_coordinateIteratedFDeriv (z : TimeVelocity d) :
     timeDerivative (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) z =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (gamma + Pi.single (timeCoord d) 1) f z := by
   rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single]
-  · simp [timeDerivative, timeVelocityBasis, timeCoord]
+  · rfl
   · exact contDiff_infty.mp hf _
 
 private theorem velocityGradient_coordinateIteratedFDeriv
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (i : Fin d) (z : TimeVelocity d) :
     velocityGradient (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) z i =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -72,6 +40,8 @@ private theorem velocityGradient_coordinateIteratedFDeriv
   rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single]
   · rfl
   · exact contDiff_infty.mp hf _
+
+end
 
 private theorem integral_mul_congr_ae
     {d : ℕ} {U : Set (TimeVelocity d)}
@@ -120,10 +90,10 @@ theorem ParabolicWeakDerivativeFamily.integral_representative_mul_test
       VelocityMultiIndex.order]
   · intro beta h ih gamma ψ hψSmooth hψCompact hψSupport
     let θ := TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma ψ
-    have hθSmooth := coordinateIteratedFDeriv_contDiff gamma ψ hψSmooth
-    have hθCompact := coordinateIteratedFDeriv_hasCompactSupport gamma ψ hψCompact
+    have hθSmooth := TimeVelocityMultiIndex.coordinateIteratedFDeriv_contDiff gamma ψ hψSmooth
+    have hθCompact := TimeVelocityMultiIndex.coordinateIteratedFDeriv_hasCompactSupport gamma ψ hψCompact
     have hθSupport :=
-      (coordinateIteratedFDeriv_tsupport_subset gamma ψ).trans hψSupport
+      (TimeVelocityMultiIndex.coordinateIteratedFDeriv_tsupport_subset gamma ψ).trans hψSupport
     have hweak := D.hasWeakTimeSucc beta h θ hθSmooth hθCompact hθSupport
     have hind := ih (gamma + Pi.single (timeCoord d) 1) ψ
       hψSmooth hψCompact hψSupport
@@ -141,10 +111,10 @@ theorem ParabolicWeakDerivativeFamily.integral_representative_mul_test
     ring_nf
   · intro beta i h ih gamma ψ hψSmooth hψCompact hψSupport
     let θ := TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma ψ
-    have hθSmooth := coordinateIteratedFDeriv_contDiff gamma ψ hψSmooth
-    have hθCompact := coordinateIteratedFDeriv_hasCompactSupport gamma ψ hψCompact
+    have hθSmooth := TimeVelocityMultiIndex.coordinateIteratedFDeriv_contDiff gamma ψ hψSmooth
+    have hθCompact := TimeVelocityMultiIndex.coordinateIteratedFDeriv_hasCompactSupport gamma ψ hψCompact
     have hθSupport :=
-      (coordinateIteratedFDeriv_tsupport_subset gamma ψ).trans hψSupport
+      (TimeVelocityMultiIndex.coordinateIteratedFDeriv_tsupport_subset gamma ψ).trans hψSupport
     have hweak := D.hasWeakVelocitySucc beta i h θ hθSmooth hθCompact hθSupport
     have hind := ih (gamma + Pi.single (velocityCoord i) 1) ψ
       hψSmooth hψCompact hψSupport

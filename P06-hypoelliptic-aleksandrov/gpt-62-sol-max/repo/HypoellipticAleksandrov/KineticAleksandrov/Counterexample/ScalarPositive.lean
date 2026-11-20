@@ -24,7 +24,7 @@ open scoped Topology ContDiff
 theorem scalar_local_min_curvature (f : ℝ → ℝ) (s : ℝ) (hc : ContinuousAt f s)
     (hmin : IsLocalMin f s) : 0 ≤ deriv (deriv f) s := by
   by_contra hn
-  have hneg : deriv (deriv f) s < 0 := lt_of_not_ge hn
+  have hneg := lt_of_not_ge hn
   have hmax := isLocalMax_of_deriv_deriv_neg hneg hmin.deriv_eq_zero hc
   have he : f =ᶠ[𝓝 s] fun _ => f s := by
     filter_upwards [hmin, hmax] with t ht ht'
@@ -66,16 +66,18 @@ theorem scalar_tail_eventually_pos (f : ℝ → ℝ) (alpha c : ℝ) (hc : 0 < c
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
     simp only [Real.rpow_eq_pow]
     rw [Real.rpow_neg hs.le]
-    have hp := (Real.rpow_pos_of_pos hs alpha).ne'
     field_simp
     ring
   filter_upwards [ht.eventually (Ioi_mem_nhds hc), eventually_gt_atTop (0 : ℝ)] with s hs hs0
   exact (div_pos_iff_of_pos_right (Real.rpow_pos_of_pos hs0 alpha)).mp hs
 
+section
+variable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+  (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) = Real.rpow Lam (-gamma.1))
+include hLam hmatch
+
 /-- The selected matching coefficient makes the negative scalar tail eventually positive. -/
-theorem Fminus_eventually_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) : ∀ᶠ s in atBot, 0 < Fminus gamma Lam s := by
+theorem Fminus_eventually_pos : ∀ᶠ s in atBot, 0 < Fminus gamma Lam s := by
   have hb := Fminus_negative_ray_asymptotic_of_M_expansion
     Kummer.M_negative_expansion gamma Lam hLam
   rw [scalar_matching_trace_coefficient gamma Lam hLam hmatch] at hb
@@ -85,10 +87,12 @@ theorem Fminus_eventually_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
       Real.rpow_pos_of_pos (mul_pos (by norm_num) hLam) (-gamma.1)) hb
   simpa only [neg_neg] using tendsto_neg_atBot_atTop.eventually hp
 
+section
+variable (s : ℝ) (hs : s ≤ 0)
+include hs
+
 /-- The actual negative-s solution is nonnegative by the compact minimum principle. -/
-theorem Fminus_nonneg (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) (s : ℝ) (hs : s ≤ 0) : 0 ≤ Fminus gamma Lam s := by
+theorem Fminus_nonneg : 0 ≤ Fminus gamma Lam s := by
   by_contra hn
   have hneg : Fminus gamma Lam s < 0 := lt_of_not_ge hn
   have hf0 : 0 < Fminus gamma Lam 0 := by
@@ -115,9 +119,7 @@ theorem Fminus_nonneg (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   exact not_lt_of_ge hc hmn
 
 /-- A zero negative-s minimum is excluded by the proved nonzero Wronskian. -/
-theorem Fminus_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) (s : ℝ) (hs : s ≤ 0) : 0 < Fminus gamma Lam s := by
+theorem Fminus_pos : 0 < Fminus gamma Lam s := by
   have hn := Fminus_nonneg gamma Lam hLam hmatch s hs
   refine lt_of_le_of_ne hn ?_
   intro hz
@@ -132,10 +134,10 @@ theorem Fminus_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
     exact Fminus_nonneg gamma Lam hLam hmatch t ht.le
   exact Fminus_no_zero_jet gamma Lam s ⟨hz', hmin.deriv_eq_zero⟩
 
+end
+
 /-- The whole signed scalar profile is strictly positive for every finite s. -/
-theorem F_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) (s : ℝ) : 0 < F gamma Lam s := by
+theorem F_pos (s : ℝ) : 0 < F gamma Lam s := by
   unfold F
   split_ifs with hs hs0
   · exact Fplus_pos gamma Lam s hLam hs
@@ -143,15 +145,13 @@ theorem F_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   · exact (gamma_constants_pos gamma.1 gamma.2.1 gamma.2.2).1
 
 /-- The literal reflected scalar H is positive away from the origin. -/
-theorem scalarProfile_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) (q : XV 1) (hq : q ≠ 0) :
+theorem scalarProfile_pos (q : XV 1) (hq : q ≠ 0) :
     0 < scalarProfile gamma Lam q := by
   unfold scalarProfile scalarAnsatz
   split_ifs with hx hx'
   · exact mul_pos (Real.rpow_pos_of_pos hx _) (F_pos gamma Lam hLam hmatch _)
   · exact mul_pos (Real.rpow_pos_of_pos (neg_pos.mpr hx') _) (F_pos gamma Lam hLam hmatch _)
-  · have hx0 : q.1 0 = 0 := le_antisymm (le_of_not_gt hx) (le_of_not_gt hx')
+  · have hx0 := le_antisymm (le_of_not_gt hx) (le_of_not_gt hx')
     have hv0 : q.2 0 ≠ 0 := by
       intro hv
       apply hq
@@ -164,5 +164,7 @@ theorem scalarProfile_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
         exact hv
     exact mul_pos (Real.rpow_pos_of_pos (mul_pos (by norm_num) hLam) _)
       (Real.rpow_pos_of_pos (abs_pos.mpr hv0) _)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

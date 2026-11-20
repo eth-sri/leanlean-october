@@ -22,20 +22,28 @@ theorem dyadicRadius_le {r : ℝ} (hr : 0 ≤ r) (n : ℕ) : dyadicRadius r n �
     (pow_le_one₀ (by norm_num : (0 : ℝ) ≤ 1 / 2) (by norm_num) :
       (1 / 2 : ℝ) ^ n ≤ 1) hr).trans_eq (mul_one r)
 
+section
+variable (r : ℝ) (n : ℕ)
+
 /-- Successor radii are exactly half the preceding radii. -/
-theorem dyadicRadius_succ (r : ℝ) (n : ℕ) :
+theorem dyadicRadius_succ :
     dyadicRadius r (n + 1) = dyadicRadius r n / 2 := by
   simp only [dyadicRadius, pow_succ]
   ring
 
 /-- Squared dyadic radii give the geometric quadratic forcing. -/
-theorem dyadicRadius_sq (r : ℝ) (n : ℕ) :
+theorem dyadicRadius_sq :
     dyadicRadius r n ^ 2 = r ^ 2 * (1 / 4 : ℝ) ^ n := by
   rw [dyadicRadius, mul_pow, ← pow_mul, Nat.mul_comm n 2, pow_mul]
   norm_num
 
+end
+
+section
+variable {N : ℕ} (T : ℝ) (v : PDE.Vec N)
+
 /-- Smaller closed backward cylinders lie in larger closed backward cylinders. -/
-theorem backward_ball_closed_mono {N : ℕ} (T : ℝ) (v : PDE.Vec N)
+theorem backward_ball_closed_mono
     {s r : ℝ} (hs : 0 < s) (hsr : s ≤ r) :
     scalarParabolicClosedCylinder (T - s ^ 2) T (PDE.euclideanBall v s) ⊆
       scalarParabolicClosedCylinder (T - r ^ 2) T (PDE.euclideanBall v r) := by
@@ -51,13 +59,14 @@ theorem backward_ball_closed_mono {N : ℕ} (T : ℝ) (v : PDE.Vec N)
     exact ((PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hs).mp hy).trans_le hsr
 
 /-- Every positive-radius backward cylinder is nonempty. -/
-theorem backward_ball_nonempty {N : ℕ} (T : ℝ) (v : PDE.Vec N)
+theorem backward_ball_nonempty
     {r : ℝ} (hr : 0 < r) :
     (scalarParabolicOpenCylinder (T - r ^ 2) T (PDE.euclideanBall v r)).Nonempty := by
   refine ⟨(T - r ^ 2 / 2, v), ?_, ?_⟩
-  · have hsq := sq_pos_of_pos hr
-    constructor <;> linarith only [hsq]
+  · constructor <;> linarith only [(sq_pos_of_pos hr)]
   · rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr, sub_self]
     simpa [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot] using hr
+
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

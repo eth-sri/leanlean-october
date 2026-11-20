@@ -59,14 +59,4 @@ theorem abs_le_of_continuousOn_of_ae_slices {d : ℕ}
   intro z hz
   exact min_eq_left_iff.mp (hmin hz)
 
-/-- An almost-everywhere time bound holds pointwise for a continuous interior representative. -/
-theorem abs_le_source_time_of_continuousOn_of_ae_slices {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (a T M : ℝ) (w : TimeVelocity d → ℝ)
-    (hw : ContinuousOn w (scalarParabolicOpenCylinder a T Ω))
-    (hb : ∀ᵐ t ∂volume.restrict (Ioo a T),
-      ∀ᵐ y ∂PDE.volumeOn Ω, |w (t, y)| ≤ M * (T - t)) :
-    ∀ z ∈ scalarParabolicOpenCylinder a T Ω, |w z| ≤ M * (T - z.1) :=
-  abs_le_of_continuousOn_of_ae_slices hΩ a T w (fun z => M * (T - z.1))
-    (continuous_const.mul (continuous_const.sub continuous_fst)) hw hb
-
 end HypoellipticAleksandrov.Parabolic.LocalHolder

@@ -18,8 +18,7 @@ open scoped BigOperators Matrix.Norms.Elementwise
 
 /-- The reverse-time map is smooth. -/
 theorem contDiff_reverseTimeMap {d : ℕ} (r₁ : ℝ) :
-    ContDiff ℝ ⊤ (reverseTimeMap r₁ : TimeVelocity d → TimeVelocity d) := by
-  exact (contDiff_const.sub contDiff_fst).prodMk contDiff_snd
+    ContDiff ℝ ⊤ (reverseTimeMap r₁ : TimeVelocity d → TimeVelocity d) := (contDiff_const.sub contDiff_fst).prodMk contDiff_snd
 
 /-- A function smooth on a neighborhood of a set is differentiable at each
 point of the set. -/
@@ -32,9 +31,11 @@ theorem IsSmoothOnNeighborhood.differentiableAt
   rcases hf with ⟨V, hVopen, hKV, hV⟩
   exact (hV.contDiffAt (hVopen.mem_nhds (hKV hx))).differentiableAt (by simp)
 
+section
+variable {d : ℕ}
+
 /-- Reverse-time pullback preserves smoothness on corresponding neighborhoods. -/
-theorem IsSmoothOnNeighborhood.reverseTime
-    {d : ℕ} {S K : Set (TimeVelocity d)} (r₁ : ℝ)
+theorem IsSmoothOnNeighborhood.reverseTime {S K : Set (TimeVelocity d)} (r₁ : ℝ)
     {f : TimeVelocity d → ℝ}
     (hSK : reverseTimeMap r₁ '' S ⊆ K)
     (hf : IsSmoothOnNeighborhood f K) :
@@ -49,8 +50,7 @@ theorem IsSmoothOnNeighborhood.reverseTime
       fun _ hz => hz
 
 /-- Matrix-valued coefficient smoothness gives smoothness of each entry. -/
-theorem IsSmoothOnNeighborhood.coefficientEntry
-    {d : ℕ} {K : Set (TimeVelocity d)} (a : CoefficientField d)
+theorem IsSmoothOnNeighborhood.coefficientEntry {K : Set (TimeVelocity d)} (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (i j : Fin d) :
     IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2 i j) K := by
@@ -62,8 +62,7 @@ theorem IsSmoothOnNeighborhood.coefficientEntry
 
 /-- The spatial slice derivative is the full derivative applied to a purely
 spatial tangent vector. -/
-theorem fderiv_spatialSlice_apply
-    {d : ℕ} (a : CoefficientField d) (r : ℝ)
+theorem fderiv_spatialSlice_apply (a : CoefficientField d) (r : ℝ)
     (y v : PDE.Vec d) (i j : Fin d)
     (ha : DifferentiableAt ℝ
       (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) :
@@ -78,8 +77,7 @@ theorem fderiv_spatialSlice_apply
   rfl
 
 /-- Smooth matrix and drift fields give a smooth divergence-form drift entry. -/
-theorem IsSmoothOnNeighborhood.divergenceDriftEntry
-    {d : ℕ} {K : Set (TimeVelocity d)}
+theorem IsSmoothOnNeighborhood.divergenceDriftEntry {K : Set (TimeVelocity d)}
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2) K)
@@ -115,5 +113,7 @@ theorem IsSmoothOnNeighborhood.divergenceDriftEntry
   have hbentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) Vb := by
     exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hVb fun _ _ => Set.mem_univ _
   exact (hdiv.mono Set.inter_subset_left).sub (hbentry.mono Set.inter_subset_right)
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

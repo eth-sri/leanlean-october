@@ -22,8 +22,11 @@ theorem reference_norm_sub_le {d : ℕ} (x y : PDE.Vec d) :
 /-- A fixed finite spatial reference bound, chosen before the physical scale. -/
 def referenceBound (m : ℕ) : ℝ := 16 * stackPathBound m + (m : ℝ) + 20
 
+section
+variable {d : ℕ} (m : ℕ)
+
 /-- Reference endpoints give the source travel-time and Hermite displacement bounds. -/
-theorem reference_endpoint_bounds {d : ℕ} (m : ℕ) (S P : KineticPoint d)
+theorem reference_endpoint_bounds (S P : KineticPoint d)
     (hS : S ∈ closure (samplingCylinder d m))
     (hP : P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1) :
     (m : ℝ) + 1 ≤ P.time - S.time ∧ P.time - S.time ≤ (m : ℝ) + 3 ∧
@@ -52,7 +55,7 @@ theorem reference_endpoint_bounds {d : ℕ} (m : ℕ) (S P : KineticPoint d)
     linarith only [hv, hpv, hsv]
 
 /-- The reference Hermite acceleration has exactly the source upper bound. -/
-theorem reference_hermite_acceleration {d : ℕ} (m : ℕ) {T : ℝ}
+theorem reference_hermite_acceleration {T : ℝ}
     (hTlo : (m : ℝ) + 1 ≤ T) (x0 v0 x1 v1 : PDE.Vec d)
     (hx : PDE.vecEuclideanNorm (x1 - x0 - T • v0) ≤ (m : ℝ) + 5)
     (hv : PDE.vecEuclideanNorm (v1 - v0) ≤ 2) :
@@ -62,8 +65,6 @@ theorem reference_hermite_acceleration {d : ℕ} (m : ℕ) {T : ℝ}
   have hT : 1 ≤ T := by linarith only [hTlo, hm]
   have hT0 : 0 < T := lt_of_lt_of_le (by norm_num) hT
   have hT2 : 1 ≤ T ^ 2 := by nlinarith only [hT]
-  have hx0 := PDE.vecEuclideanNorm_nonneg (x1 - x0 - T • v0)
-  have hv0 := PDE.vecEuclideanNorm_nonneg (v1 - v0)
   have he1 : 6 * PDE.vecEuclideanNorm (x1 - x0 - T • v0) / T ^ 2 ≤
       6 * ((m : ℝ) + 5) := by
     apply (div_le_iff₀ (sq_pos_of_pos hT0)).mpr
@@ -74,5 +75,7 @@ theorem reference_hermite_acceleration {d : ℕ} (m : ℕ) {T : ℝ}
     apply (div_le_iff₀ hT0).mpr
     nlinarith only [hv, hT]
   exact add_le_add he1 he2
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

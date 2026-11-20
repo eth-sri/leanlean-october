@@ -47,6 +47,13 @@ abbrev ReverseTimeL2VStar
   MeasureTheory.Lp (H10HilbertGraphDual hΩ) (2 : ℝ≥0∞)
     (reverseTimeVolume T)
 
+/-- Applying a bounded linear map to an `L²` curve gives an integrable squared norm. -/
+theorem integrable_norm_sq_timewise_apply {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    (T : ℝ) {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
+    Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) :=
+  (L.comp_memLp u).integrable_norm_pow (by decide : (2 : ℕ) ≠ 0)
+
 /-- Pointwise application of the spatial value map, lifted to Bochner `L²`. -/
 noncomputable def reverseTimeValueCLM
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :

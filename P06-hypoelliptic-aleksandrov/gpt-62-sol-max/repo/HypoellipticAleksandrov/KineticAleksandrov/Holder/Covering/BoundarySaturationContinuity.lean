@@ -31,9 +31,12 @@ theorem ae_ne_of_null_fiber {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (f : α → ℝ) (c : ℝ) (h : μ {x | f x = c} = 0) : ∀ᵐ x ∂μ, f x ≠ c := by
   simpa only [ae_iff, not_not] using h
 
+section
+variable {d : ℕ} (P : ℝ → KineticPoint d) (hP : Continuous P)
+include hP
+
 /-- Cylinder membership is locally constant in radius away from the four null faces. -/
-theorem ae_eventually_mem_cylinder_iff {d : ℕ} (P : ℝ → KineticPoint d)
-    (hP : Continuous P) {r : ℝ} (hr : 0 < r) :
+theorem ae_eventually_mem_cylinder_iff {r : ℝ} (hr : 0 < r) :
     ∀ᵐ Y ∂volume, ∀ᶠ s in 𝓝 r,
       Y ∈ backwardCylinder (P s) s ↔ Y ∈ backwardCylinder (P r) r := by
   have hvface : volume {Y : KineticPoint d |
@@ -66,8 +69,7 @@ theorem ae_eventually_mem_cylinder_iff {d : ℕ} (P : ℝ → KineticPoint d)
       and_congr h₁ (and_congr h₂ (and_congr h₃ h₄))
 
 /-- Intersection volume with any finite-volume set is continuous along continuous centers. -/
-theorem continuousAt_cylinder_inter_volume {d : ℕ} (P : ℝ → KineticPoint d)
-    (hP : Continuous P) {E : Set (KineticPoint d)} (hE : volume E ≠ ⊤)
+theorem continuousAt_cylinder_inter_volume {E : Set (KineticPoint d)} (hE : volume E ≠ ⊤)
     {r : ℝ} (hr : 0 < r) :
     ContinuousAt (fun s => (volume (E ∩ backwardCylinder (P s) s)).toReal) r := by
   change Tendsto _ (𝓝 r) (𝓝 _)
@@ -82,6 +84,8 @@ theorem continuousAt_cylinder_inter_volume {d : ℕ} (P : ℝ → KineticPoint d
   simpa only [Measure.restrict_apply (isOpen_cylinder _ _).measurableSet, inter_comm,
     Function.comp_def]
     using hreal
+
+end
 
 /-- The saturation centers depend continuously on the radius. -/
 theorem continuous_saturationCenter {d : ℕ} (X : KineticPoint d) :

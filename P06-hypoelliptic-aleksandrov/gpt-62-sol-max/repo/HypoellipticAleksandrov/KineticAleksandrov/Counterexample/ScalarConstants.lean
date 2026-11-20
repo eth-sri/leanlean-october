@@ -19,18 +19,24 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter Set
 open scoped Topology
 
+section
+variable (gamma : ℝ)
+include gamma
+
 /-- The constant term in the connection formula. -/
-def gammaA (gamma : ℝ) : ℝ := Real.Gamma (1 / 3) / Real.Gamma (1 / 3 - gamma)
+def gammaA : ℝ := Real.Gamma (1 / 3) / Real.Gamma (1 / 3 - gamma)
 
 /-- The linear coefficient in the connection formula. -/
-def gammaB (gamma : ℝ) : ℝ := Real.Gamma (-(1 / 3)) / Real.Gamma (-gamma)
+def gammaB : ℝ := Real.Gamma (-(1 / 3)) / Real.Gamma (-gamma)
 
 /-- The first negative-axis leading coefficient. -/
-def Pgamma (gamma : ℝ) : ℝ :=
+def Pgamma : ℝ :=
   Real.cos (Real.pi * gamma) - Real.sin (Real.pi * gamma) / Real.sqrt 3
 
 /-- The second negative-axis leading coefficient. -/
-def Qgamma (gamma : ℝ) : ℝ := 2 * Real.sin (Real.pi * gamma) / Real.sqrt 3
+def Qgamma : ℝ := 2 * Real.sin (Real.pi * gamma) / Real.sqrt 3
+
+end
 
 private theorem gamma_neg_of_mem (s : ℝ) (hs : -1 < s) (hs0 : s < 0) :
     Real.Gamma s < 0 := by
@@ -38,8 +44,12 @@ private theorem gamma_neg_of_mem (s : ℝ) (hs : -1 < s) (hs0 : s < 0) :
   rw [Real.Gamma_add_one hs0.ne] at hp
   exact neg_of_mul_pos_right hp hs0.le
 
+section
+variable (gamma : ℝ) (hg : 0 < gamma) (hg1 : gamma < 1 / 3)
+include hg hg1
+
 /-- Both connection constants are strictly positive. -/
-theorem gamma_constants_pos (gamma : ℝ) (hg : 0 < gamma) (hg1 : gamma < 1 / 3) :
+theorem gamma_constants_pos :
     0 < gammaA gamma ∧ 0 < gammaB gamma := by
   constructor
   · exact div_pos (Real.Gamma_pos_of_pos (by norm_num))
@@ -48,7 +58,7 @@ theorem gamma_constants_pos (gamma : ℝ) (hg : 0 < gamma) (hg1 : gamma < 1 / 3)
       (by norm_num)) (gamma_neg_of_mem (-gamma) (by linarith only [hg1]) (neg_neg_of_pos hg))
 
 /-- The trigonometric leading coefficients have the signs needed by matching. -/
-theorem PQ_pos (gamma : ℝ) (hg : 0 < gamma) (hg1 : gamma < 1 / 3) :
+theorem PQ_pos :
     0 < Pgamma gamma ∧ 0 < Qgamma gamma := by
   have ht : 0 < Real.pi * gamma := mul_pos Real.pi_pos hg
   have ht1 : Real.pi * gamma < Real.pi / 3 := by
@@ -67,19 +77,17 @@ theorem PQ_pos (gamma : ℝ) (hg : 0 < gamma) (hg1 : gamma < 1 / 3) :
   · exact div_pos (mul_pos (by norm_num) hs) hroot
 
 /-- At the unit diffusivity the matching difference is strictly negative. -/
-theorem matching_difference_one_neg (gamma : ℝ) (hg : 0 < gamma)
-    (hg1 : gamma < 1 / 3) : Pgamma gamma - Qgamma gamma - 1 < 0 := by
+theorem matching_difference_one_neg : Pgamma gamma - Qgamma gamma - 1 < 0 := by
   have hq := (PQ_pos gamma hg hg1).2
   have hs := Real.sin_pos_of_pos_of_lt_pi (mul_pos Real.pi_pos hg)
     (by nlinarith only [mul_lt_mul_of_pos_left hg1 Real.pi_pos, Real.pi_pos])
   have hp : Pgamma gamma ≤ 1 := by
     unfold Pgamma
-    have hnon := div_nonneg hs.le (Real.sqrt_nonneg 3)
-    linarith only [Real.cos_le_one (Real.pi * gamma), hnon]
+    linarith only [Real.cos_le_one (Real.pi * gamma), (div_nonneg hs.le (Real.sqrt_nonneg 3))]
   linarith only [hp, hq]
 
 /-- There is a finite diffusivity ratio greater than one matching the two traces. -/
-theorem exists_matching_ratio (gamma : ℝ) (hg : 0 < gamma) (hg1 : gamma < 1 / 3) :
+theorem exists_matching_ratio :
     ∃ Lam : ℝ, 1 < Lam ∧
       Pgamma gamma - Qgamma gamma * Real.rpow Lam (-(1 / 3)) =
         Real.rpow Lam (-gamma) := by
@@ -113,5 +121,7 @@ theorem exists_matching_ratio (gamma : ℝ) (hg : 0 < gamma) (hg1 : gamma < 1 / 
   · change Pgamma gamma - Qgamma gamma * Lam ^ (-(1 / 3 : ℝ)) -
       Lam ^ (-gamma) = 0 at hz
     exact sub_eq_zero.mp hz
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

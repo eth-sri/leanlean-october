@@ -7,6 +7,7 @@ public import Mathlib.MeasureTheory.Function.LpSpace.Basic
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
 public import Mathlib.MeasureTheory.Measure.Typeclasses.Finite
 public import PDEFoundation.Measure.RestrictedVolume
+import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 
 /-!
 # Local reverse-time spatial bounds
@@ -34,31 +35,14 @@ theorem isCompact_scalarParabolicClosedCylinder
   change IsCompact (Set.Icc r₀ r₁ ×ˢ closure Ω)
   exact isCompact_Icc.prod hΩbounded.isCompact_closure
 
-/-- The derivative of a fixed-time spatial coefficient slice is the joint
-derivative in a purely spatial direction. -/
-theorem fderiv_scalarSpatialSlice_apply
-    {d : ℕ} (a : CoefficientField d) (r : ℝ)
-    (y v : PDE.Vec d) (i j : Fin d)
-    (ha : DifferentiableAt ℝ
-      (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) :
-    (fderiv ℝ (fun x : PDE.Vec d => a r x i j) y) v =
-      (fderiv ℝ (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) (0, v) := by
-  have hslice : HasFDerivAt (fun x : PDE.Vec d => a r x i j)
-      ((fderiv ℝ (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)).comp
-        (ContinuousLinearMap.inr ℝ ℝ (PDE.Vec d))) y := by
-    simpa only [Function.comp_def] using ha.hasFDerivAt.comp y
-      (hasFDerivAt_prodMk_right (𝕜 := ℝ) r y)
-  rw [hslice.fderiv]
-  rfl
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 /-- Joint smoothness near the closed cylinder makes the literal fixed-time
 spatial coefficient divergence continuous there. -/
 theorem continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (ha : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (ha : IsSmoothOnClosedCylinder r₀ r₁ Ω a) :
     ContinuousOn (scalarSpatialCoefficientDivergence a)
       (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
   rcases ha with ⟨V, hVopen, hKV, hV⟩
@@ -84,17 +68,14 @@ theorem continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
   refine (hderiv.mono hKV).congr ?_
   intro z hz
   rcases z with ⟨r, y⟩
-  simpa using fderiv_scalarSpatialSlice_apply a r y (PDE.basisVec i) i j
+  simpa using _root_.HypoellipticAleksandrov.Parabolic.Dirichlet.fderiv_spatialSlice_apply a r y (PDE.basisVec i) i j
     ((hentry.contDiffAt (hVopen.mem_nhds (hKV hz))).differentiableAt (by simp))
 
 /-- A smooth scalar coefficient near the closed cylinder restricts to a
 continuous reverse-time spatial slice. -/
 theorem continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ τ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
-    (hc : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hc : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     ContinuousOn (fun y : PDE.Vec d =>
       reverseTimeScalarCoefficient r₁ c τ y) Ω := by
@@ -113,12 +94,9 @@ theorem continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
 /-- Smooth scalar coefficients near a bounded closed cylinder have one
 uniform bound for all reverse-time spatial slices. -/
 theorem exists_reverseTimeScalarCoefficient_bound_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ) (hΩbounded : Bornology.IsBounded Ω)
     (c : ℝ → PDE.Vec d → ℝ)
-    (hc : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hc : IsSmoothOnClosedCylinder r₀ r₁ Ω c) :
     ∃ M : ℝ, 0 ≤ M ∧
       ∀ τ : ℝ, τ ∈ Set.Icc 0 (r₁ - r₀) →
       ∀ y : PDE.Vec d, y ∈ Ω →
@@ -133,8 +111,9 @@ theorem exists_reverseTimeScalarCoefficient_bound_of_smoothOnNeighborhood
     constructor <;> linarith [hτ.1, hτ.2]
   have hpoint : (r₁ - τ, y) ∈ scalarParabolicClosedCylinder r₀ r₁ Ω :=
     ⟨htime, subset_closure hy⟩
-  simpa only [reverseTimeScalarCoefficient_apply, Real.norm_eq_abs] using
-    (hC (r₁ - τ, y) hpoint).trans (le_max_left _ _)
+  exact id (LE.le.trans (hC (r₁ - τ, y) hpoint) (le_max_left C 0))
+
+end
 
 /-- A smooth source near the closed cylinder is a.e.-strongly measurable on
 each reverse-time slice with respect to the restricted spatial volume. -/
@@ -142,9 +121,7 @@ theorem aestronglyMeasurable_reverseTimeSourceSlice_of_smoothOnNeighborhood
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ τ : ℝ) (hΩ : IsOpen Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hF : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hF : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     MeasureTheory.AEStronglyMeasurable
       (fun y : PDE.Vec d => F (r₁ - τ) y) (PDE.volumeOn Ω) := by
@@ -153,16 +130,15 @@ theorem aestronglyMeasurable_reverseTimeSourceSlice_of_smoothOnNeighborhood
   simpa only [reverseTimeScalarCoefficient_apply, Function.comp_def] using
     hcont.aestronglyMeasurable hΩ.measurableSet
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
+  (hΩbounded : Bornology.IsBounded Ω) (F : ℝ → PDE.Vec d → ℝ)
+  (hF : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
+include hΩ hΩbounded hF
+
 /-- A smooth source near a bounded closed cylinder belongs to `L²` on every
 reverse-time slice. -/
 theorem reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hF : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     MemLp
       (fun y : PDE.Vec d => F (r₁ - τ) y)
@@ -182,14 +158,7 @@ theorem reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
 
 /-- Smooth source data near a bounded closed cylinder have one uniform `L²`
 bound for all reverse-time slices. -/
-theorem exists_reverseTimeSourceSlice_L2_bound_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hF : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+theorem exists_reverseTimeSourceSlice_L2_bound_of_smoothOnNeighborhood :
     ∃ M : ℝ, 0 ≤ M ∧
       ∀ τ : ℝ, τ ∈ Set.Icc 0 (r₁ - r₀) →
       ∀ hτLp : MemLp
@@ -210,5 +179,7 @@ theorem exists_reverseTimeSourceSlice_L2_bound_of_smoothOnNeighborhood
   rw [hy]
   simpa only [Real.norm_eq_abs, reverseTimeScalarCoefficient_apply] using
     (hC τ hτ y hyΩ).trans (le_max_left _ _)
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

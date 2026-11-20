@@ -61,8 +61,12 @@ theorem bellman_map_homeomorph_finiteOnCompacts [T2Space A] [T2Space B]
     rw [he]
     exact (hK.image T.symm.continuous).measure_lt_top
 
+section
+variable (r : ℝ) (hr : 0 < r)
+include r hr
+
 /-- A positive position scale acts as an actual homeomorphism of the positive radial carrier. -/
-def bellmanRadialScale (r : ℝ) (hr : 0 < r) :
+def bellmanRadialScale :
     BellmanPositiveTime ≃ₜ BellmanPositiveTime where
   toFun s := ⟨r * s.val, mul_pos hr s.property⟩
   invFun s := ⟨r⁻¹ * s.val, mul_pos (inv_pos.mpr hr) s.property⟩
@@ -76,7 +80,7 @@ def bellmanRadialScale (r : ℝ) (hr : 0 < r) :
   continuous_invFun := by fun_prop
 
 /-- Positive radial volume transforms by the inverse radial factor. -/
-theorem map_bellmanPositiveTimeVolume_radialScale (r : ℝ) (hr : 0 < r) :
+theorem map_bellmanPositiveTimeVolume_radialScale :
     Measure.map (bellmanRadialScale r hr) bellmanPositiveTimeVolume =
       ENNReal.ofReal r⁻¹ • bellmanPositiveTimeVolume := by
   have he : MeasurableEmbedding (Subtype.val : BellmanPositiveTime → ℝ) :=
@@ -88,5 +92,7 @@ theorem map_bellmanPositiveTimeVolume_radialScale (r : ℝ) (hr : 0 < r) :
   rw [← Measure.map_map (by fun_prop) he.measurable,
     map_bellmanPositiveTimeVolume_coe, map_positiveVolume_mul r hr,
     Measure.map_smul _ he.measurable.aemeasurable, map_bellmanPositiveTimeVolume_coe]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

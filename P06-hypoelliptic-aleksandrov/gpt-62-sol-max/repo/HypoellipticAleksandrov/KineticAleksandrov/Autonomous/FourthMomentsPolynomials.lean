@@ -1,3 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TerminalMomentBoundsPolynomials
-import Mathlib.Tactic

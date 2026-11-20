@@ -18,72 +18,10 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private def affineUpperClamp (T r : ℝ) := min T (max 0 r)
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
-private theorem affineUpperClamp_mem {T : ℝ} (hT : 0 < T) (r : ℝ) :
-    affineUpperClamp T r ∈ Icc 0 T :=
-  ⟨le_min hT.le (le_max_left _ _), min_le_left _ _⟩
-
-private theorem affineUpperClamp_eq {T r : ℝ} (hr : r ∈ Icc 0 T) :
-    affineUpperClamp T r = r := by
-  simp only [affineUpperClamp, max_eq_right hr.1, min_eq_right hr.2]
-
-private theorem affineUpperClamp_continuous (T : ℝ) : Continuous (affineUpperClamp T) :=
-  continuous_const.min (continuous_const.max continuous_id)
-
-private theorem affineUpper_setIntegral_eq
-    (f : ℝ → ℝ) {T t : ℝ} (ht : t ∈ Icc 0 T) :
-    (∫ r in Ioc 0 t, f r ∂reverseTimeVolume T) = ∫ r in Ioc 0 t, f r := by
-  rw [reverseTimeVolume, reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc,
-    Measure.restrict_restrict measurableSet_Ioc]
-  congr 2
-  exact inter_eq_left.mpr (Ioc_subset_Icc_self.trans fun r hr => ⟨hr.1, hr.2.trans ht.2⟩)
-
-private theorem affineUpper_value_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (_hΩbounded : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T)
-    (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    (t : ℝ) (ht : t ∈ Icc 0 T) :
-    (∫ r in Ioc 0 t,
-        ‖valueCLM hΩ (h10ShiftedPositivePart hΩ (u r)
-          (reverseTimeAffineThreshold M N r))‖ ^ 2 ∂reverseTimeVolume T) =
-      ∫ r in Ioc 0 t,
-        ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N r)
-          (reverseTimeHilbertRepresentative hΩ T hT u g hd
-            ⟨affineUpperClamp T r, affineUpperClamp_mem hT r⟩)‖ ^ 2 := by
-  let Ubar := reverseTimeHilbertRepresentative hΩ T hT u g hd
-  have hUbar := (reverseTimeHilbertRepresentative_spec hΩ T hT u g hd).1
-  calc
-    _ = ∫ r in Ioc 0 t,
-        ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N r)
-          (Ubar ⟨affineUpperClamp T r, affineUpperClamp_mem hT r⟩)‖ ^ 2
-          ∂reverseTimeVolume T := by
-      apply integral_congr_ae
-      filter_upwards [ae_restrict_of_ae hUbar,
-        ae_restrict_of_ae (ae_restrict_mem measurableSet_Ioo)] with r hUr hr
-      have hrcc : r ∈ Icc 0 T := ⟨hr.1.le, hr.2.le⟩
-      have hUr' : Ubar ⟨affineUpperClamp T r, affineUpperClamp_mem hT r⟩ =
-          valueCLM hΩ (u r) := by
-        simpa only [affineUpperClamp_eq hrcc] using hUr hr
-      rw [hUr', valueCLM_h10ShiftedPositivePart]
-    _ = _ := affineUpper_setIntegral_eq _ ht
-
-private theorem affineUpper_initial_energy_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ} (hT : 0 < T)
-    (M N : ℝ≥0) (Ubar : C(Icc 0 T, PDE.ScalarLp Ω (2 : ℝ≥0∞)))
-    (hzero : shiftedPositivePartValue M (Ubar ⟨0, ⟨le_rfl, hT.le⟩⟩) = 0) :
-    ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N 0)
-      (Ubar ⟨affineUpperClamp T 0, affineUpperClamp_mem hT 0⟩)‖ ^ 2 = 0 := by
-  have hc : (⟨affineUpperClamp T 0, affineUpperClamp_mem hT 0⟩ : Icc 0 T) =
-      ⟨0, ⟨le_rfl, hT.le⟩⟩ := Subtype.ext (affineUpperClamp_eq ⟨le_rfl, hT.le⟩)
-  rw [hc]
-  simp only [reverseTimeAffineThreshold, Real.toNNReal_zero, zero_mul, add_zero,
-    hzero, norm_zero]
-  norm_num
-
-private theorem affineUpper_shiftedPositivePart_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+private theorem affineUpper_shiftedPositivePart_zero (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T)
     (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g) (K : ℝ) (hK : 0 ≤ K)
@@ -104,17 +42,12 @@ private theorem affineUpper_shiftedPositivePart_zero
       shiftedPositivePartValue (reverseTimeAffineThreshold M N t)
         (reverseTimeHilbertRepresentative hΩ T hT u g hd ⟨t, ht⟩) = 0 := by
   let Ubar := reverseTimeHilbertRepresentative hΩ T hT u g hd
-  let E : ℝ → ℝ := fun r =>
-    ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N r)
-      (Ubar ⟨affineUpperClamp T r, affineUpperClamp_mem hT r⟩)‖ ^ 2
-  have hEc : ContinuousOn E (Icc 0 T) :=
-    ((continuous_shiftedPositivePartValue_of_isBounded hΩbounded).comp
-      (Ubar.continuous.comp
-        ((affineUpperClamp_continuous T).subtype_mk _) |>.prodMk
-          (continuous_const.add
-            (continuous_real_toNNReal.mul continuous_const)))).norm.pow 2 |>.continuousOn
-  have hEn : ∀ r ∈ Icc 0 T, 0 ≤ E r := fun _ _ => sq_nonneg _
-  have hE0 : E 0 = 0 := affineUpper_initial_energy_zero hT M N Ubar hzero
+  let F := fun r => shiftedPositivePartValue (reverseTimeAffineThreshold M N r) (IccExtend hT.le Ubar r)
+  have hF : Continuous F :=
+    (continuous_shiftedPositivePartValue_of_isBounded hΩbounded).comp
+      (Ubar.continuous.Icc_extend'.prodMk
+        (continuous_const.add (continuous_real_toNNReal.mul continuous_const)))
+  have hUbar := (reverseTimeHilbertRepresentative_spec hΩ T hT u g hd).1
   have hpair : Integrable (fun r => (g r) (h10ShiftedPositivePart hΩ (u r)
       (reverseTimeAffineThreshold M N r))) (reverseTimeVolume T) :=
     (integrable_reverseTimeDualPairing hΩ T (reverseTimeShiftedPositivePart hΩ T M N u) g).congr
@@ -133,7 +66,7 @@ private theorem affineUpper_shiftedPositivePart_zero
     exact ((memLp_two_iff_integrable_sq_norm hm.aestronglyMeasurable).mp hm).congr (by
       filter_upwards [coeFn_reverseTimeShiftedPositivePart hΩ T M N u] with r hr
       rw [hr])
-  have hEle : ∀ t ∈ Icc 0 T, E t ≤ (2 * K) * ∫ r in Ioc 0 t, E r := by
+  have hEle : ∀ t ∈ Icc 0 T, ‖F t‖ ^ 2 ≤ 2 * K * ∫ r in Ioc 0 t, ‖F r‖ ^ 2 := by
     intro t ht
     have hinc := reverseTimeHilbertRepresentative_shiftedPositivePart_norm_sq_increment
       hΩ hΩbounded T hT M N u g hd 0 t ⟨le_rfl, hT.le⟩ ht ht.1
@@ -144,57 +77,35 @@ private theorem affineUpper_shiftedPositivePart_zero
         filter_upwards [hrate] with r hr
         simpa only [zero_mul, add_zero, Pi.sub_def] using hr))
     rw [integral_const_mul, integral_const_mul] at hint
-    have hval := affineUpper_value_integral hΩ hΩbounded T hT M N u g hd t ht
-    have hc : (⟨affineUpperClamp T t, affineUpperClamp_mem hT t⟩ : Icc 0 T) =
-        ⟨t, ht⟩ := Subtype.ext (affineUpperClamp_eq ht)
-    dsimp only [E]
+    have hval := reverseTime_integral_representative hT.le ht hUbar
+      (fun r x => ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N r) x‖ ^ 2)
     have hzero' : shiftedPositivePartValue (reverseTimeAffineThreshold M N 0)
         (reverseTimeHilbertRepresentative hΩ T hT u g hd
           ⟨0, ⟨le_rfl, hT.le⟩⟩) = 0 := by
       simpa only [reverseTimeAffineThreshold, Real.toNNReal_zero, zero_mul, add_zero]
         using hzero
     rw [hzero', norm_zero, zero_pow (by norm_num), sub_zero] at hinc
-    calc
-      _ = ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N t)
-          (Ubar ⟨t, ht⟩)‖ ^ 2 := congrArg (fun q : Icc 0 T =>
-            ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N t) (Ubar q)‖ ^ 2) hc
-      _ = 2 * (∫ r in Ioc 0 t,
-          (g r) (h10ShiftedPositivePart hΩ (u r) (reverseTimeAffineThreshold M N r)) -
-            (N : ℝ) * spatialMassCLM hΩbounded
-              (valueCLM hΩ (h10ShiftedPositivePart hΩ (u r)
-                (reverseTimeAffineThreshold M N r))) ∂reverseTimeVolume T) := hinc
-      _ ≤ 2 * K * (∫ r in Ioc 0 t,
-          ‖valueCLM hΩ (h10ShiftedPositivePart hΩ (u r)
-            (reverseTimeAffineThreshold M N r))‖ ^ 2 ∂reverseTimeVolume T) := hint
-      _ = _ := congrArg (fun q : ℝ => 2 * K * q) hval
-  have hz := eq_zero_on_Icc_of_nonneg_le_mul_integral hT
-    (mul_nonneg (by norm_num) hK) E hEc hEn hE0 hEle
+    simp only [F, IccExtend_of_mem hT.le Ubar ht]
+    rw [← hval]
+    simp only [← valueCLM_h10ShiftedPositivePart]
+    exact hinc.le.trans (by simpa only [Pi.sub_apply] using hint)
+  have hz := eq_zero_on_Icc_of_norm_sq_le_mul_integral hT (mul_nonneg (by norm_num) hK) F hF hEle
   intro t ht
-  have hc : (⟨affineUpperClamp T t, affineUpperClamp_mem hT t⟩ : Icc 0 T) =
-      ⟨t, ht⟩ := Subtype.ext (affineUpperClamp_eq ht)
-  have hs : ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N t)
-      (Ubar ⟨t, ht⟩)‖ ^ 2 = 0 := by
-    simpa only [E, hc] using hz t ht
-  exact norm_eq_zero.mp (sq_eq_zero_iff.mp hs)
+  simpa only [F, IccExtend_of_mem hT.le Ubar ht] using hz t ht
+
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
+  (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
+  (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
+  (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a) (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+  (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c) (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
+  (hLower : HasLowerEllipticityOn lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
+  (hcNonpos : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
+include lam hlam haSmooth hbSmooth hcSmooth hLower hcNonpos
 
 private theorem affineUpper_ae_rate
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-    (hcNonpos : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      c z.1 z.2 ≤ 0)
     (M N : ℝ≥0)
     (hFbound : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
       |F z.1 z.2| ≤ (N : ℝ))
@@ -244,23 +155,6 @@ private theorem affineUpper_ae_rate
 /-- A reverse-time variational energy solution is bounded above by the sharp
 affine envelope determined by its initial and source bounds. -/
 theorem IsReverseTimeVariationalEnergySolution.reverseTimeHilbertRepresentative_le_affine
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-    (hcNonpos : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      c z.1 z.2 ≤ 0)
     (Minit MF : ℝ) (hMinit : 0 ≤ Minit) (hMF : 0 ≤ MF)
     (hFbound : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
       |F z.1 z.2| ≤ MF)
@@ -323,5 +217,7 @@ theorem IsReverseTimeVariationalEnergySolution.reverseTimeHilbertRepresentative_
   have hle := max_eq_right_iff.mp hy
   rw [coe_reverseTimeAffineThreshold_of_nonneg M0 NF hτ.1, hM0, hNF] at hle
   exact sub_nonpos.mp hle
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

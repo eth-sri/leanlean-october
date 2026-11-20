@@ -39,8 +39,11 @@ theorem LieWord.eval_toInterface {k N : ℕ}
   | bracket p q hp hq =>
       simp only [LieWord.toInterface, Hormander.Interface.LieWord.eval, LieWord.eval, hp, hq]
 
+section
+variable {k N : ℕ} {Ω : Set (PDE.Vec N)}
+
 /-- The bracket condition implies the bracket condition of the `hormander` package. -/
-theorem LieAlgebraSpansOn.toInterface {k N : ℕ} {Ω : Set (PDE.Vec N)}
+theorem LieAlgebraSpansOn.toInterface
     {X : Fin (k + 1) → PDE.Vec N → PDE.Vec N} (h : LieAlgebraSpansOn Ω X) :
     Hormander.Interface.LieAlgebraSpansOn Ω X := by
   intro x hx
@@ -52,7 +55,6 @@ theorem LieAlgebraSpansOn.toInterface {k N : ℕ} {Ω : Set (PDE.Vec N)}
 /-- Hörmander's hypoellipticity theorem for locally integrable weak solutions, from the
 public facade of the `hormander` package. -/
 theorem exists_smooth_aeRepresentative_of_hormander_aux
-    {k N : ℕ} {Ω : Set (PDE.Vec N)}
     (hΩ : IsOpen Ω)
     (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N)
     (c g u : PDE.Vec N → ℝ)
@@ -64,5 +66,7 @@ theorem exists_smooth_aeRepresentative_of_hormander_aux
       ContDiffOn ℝ (⊤ : ℕ∞) f Ω ∧
         u =ᵐ[Measure.restrict volume Ω] f :=
   Hormander.Interface.exists_smooth_aeRepresentative hΩ X c g u hX hspan.toInterface hc hEq
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

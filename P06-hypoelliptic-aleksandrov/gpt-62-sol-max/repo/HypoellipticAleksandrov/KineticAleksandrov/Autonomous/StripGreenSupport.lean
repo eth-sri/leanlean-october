@@ -11,16 +11,20 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
+section
+variable (H : Interval) (T : ℝ)
+include H T
+
 /-- The physical open past strip, without an artificial lower time endpoint. -/
-def stripPast (H : Interval) (T : ℝ) : Set Point :=
+def stripPast : Set Point :=
   {p | p.time < T ∧ p.velocity 0 ∈ H.carrier}
 
 /-- The physical past strip is open in the native topology. -/
-theorem isOpen_stripPast (H : Interval) (T : ℝ) : IsOpen (stripPast H T) :=
+theorem isOpen_stripPast : IsOpen (stripPast H T) :=
   (isOpen_Iio.preimage continuous_time).inter
     (isOpen_Ioo.preimage ((continuous_apply 0).comp continuous_velocity))
 
-private theorem elapsedPhysicalPoint_mem_stripPast (H : Interval) (T : ℝ)
+private theorem elapsedPhysicalPoint_mem_stripPast
     (e : StripPole H (T : WithTop ℝ)) (τ : ElapsedTime (stripHorizon T e.1.time))
     (w : EvolutionAmbientState 1)
     (hw : w ∈ evolutionStateSet (intervalDomain H) (fun _ => 0) (e.1.time + τ.1)) :
@@ -35,10 +39,14 @@ private theorem elapsedPhysicalPoint_mem_stripPast (H : Interval) (T : ℝ)
     simpa only [stripPast, elapsedPhysicalPoint, Interval.carrier, PDE.vecOneCoordinate] using
       PDE.mem_oneDimensionalAxisBox_iff.mp hv
 
+end
+
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
+  (e : StripPole H (T : WithTop ℝ))
+
 /-- Killing and elapsed-time truncation support the actual measure on the open past strip. -/
-theorem stripGreenOfKernel_compl_stripPast (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) :
+theorem stripGreenOfKernel_compl_stripPast :
     stripGreenOfKernel H K T e (stripPast H T)ᶜ = 0 := by
   have hD := (isOpen_stripPast H T).measurableSet
   rw [← lintegral_indicator_one hD.compl]
@@ -57,11 +65,11 @@ theorem stripGreenOfKernel_compl_stripPast (H : Interval)
   exact indicator_of_notMem hn _
 
 /-- Green almost every physical point lies in the open past strip. -/
-theorem stripGreenOfKernel_ae_mem_stripPast (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) :
+theorem stripGreenOfKernel_ae_mem_stripPast :
     ∀ᵐ p ∂stripGreenOfKernel H K T e, p ∈ stripPast H T := by
   rw [ae_iff]
   exact stripGreenOfKernel_compl_stripPast H K T e
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

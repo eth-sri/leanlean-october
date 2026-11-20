@@ -16,15 +16,17 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA
 open scoped Topology
 
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
+include H K
+
 /-- The actual pointwise difference used in homogeneous reconstruction. -/
-def stripReconstructionCandidate (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
+def stripReconstructionCandidate
     (T : ℝ) (phi : Point → ℝ) (g : BoundedBorel Point) (p : Point) : ℝ :=
   phi p - stripSourcePotential H K T g p
 
 /-- The actual candidate equals its prescribed terminal/lateral exit value. -/
-theorem stripReconstructionCandidate_eqOn_exit (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
+theorem stripReconstructionCandidate_eqOn_exit
     (sMinus T : ℝ) (phi : Point → ℝ) (g : BoundedBorel Point) :
     EqOn (stripReconstructionCandidate H K T phi g) phi
       (reconstructionExit H sMinus T) := by
@@ -46,5 +48,7 @@ theorem stripReconstructionCandidate_eqOn_exit (H : Interval)
         exact fun h => (lt_irrefl H.hi) h.2
   change phi p - stripSourcePotential H K T g p = phi p
   rw [hz, sub_zero]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

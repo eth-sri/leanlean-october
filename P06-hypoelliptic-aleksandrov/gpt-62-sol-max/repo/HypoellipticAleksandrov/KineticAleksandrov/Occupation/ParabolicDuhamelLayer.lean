@@ -102,7 +102,7 @@ theorem integral_layer_substitution (r h : ℝ) (hh : 0 < h) (F : ℝ → ℝ) :
     ∫ t, h⁻¹ * layerKernel ((r - t) / h) * F t =
       ∫ s, layerKernel s * F (r - h * s) := by
   set g : ℝ → ℝ := fun t => h⁻¹ * layerKernel ((r - t) / h) * F t with hg
-  have h1 : ∫ t, g t = ∫ x, g (r - x) := (integral_sub_left_eq_self g volume r).symm
+  have h1 := (integral_sub_left_eq_self g volume r).symm
   have h2 : ∫ x, g (r - x) = h • ∫ s, g (r - h * s) := by
     have := Measure.integral_comp_mul_left (fun x => g (r - x)) h
     simp only [abs_inv, abs_of_pos hh] at this

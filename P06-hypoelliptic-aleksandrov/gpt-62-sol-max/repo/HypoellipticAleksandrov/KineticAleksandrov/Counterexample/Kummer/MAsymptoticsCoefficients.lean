@@ -29,18 +29,22 @@ def mExpansion (a b : ℝ) (N : ℕ) (X : ℝ) : ℝ :=
 /-- Iterated ordinary derivatives, including the zeroth derivative. -/
 def jet (j : ℕ) (f : ℝ → ℝ) : ℝ → ℝ := (deriv^[j]) f
 
+section
+variable (q : ℝ)
+include q
+
 /-- The polynomial arising from the Taylor expansion of the Euler weight. -/
-def betaPolynomial (q : ℝ) (N : ℕ) (t : ℝ) : ℝ :=
+def betaPolynomial (N : ℕ) (t : ℝ) : ℝ :=
   ∑ n ∈ Finset.range N, poch q n / (n.factorial : ℝ) * t ^ n
 
-private theorem multichoose_eq_poch (q : ℝ) (n : ℕ) :
+private theorem multichoose_eq_poch (n : ℕ) :
     Ring.multichoose q n = poch q n / (n.factorial : ℝ) := by
   apply (eq_div_iff (by exact_mod_cast Nat.factorial_ne_zero n)).mpr
   rw [mul_comm, ← nsmul_eq_mul, Ring.factorial_nsmul_multichoose_eq_ascPochhammer,
     Polynomial.ascPochhammer_smeval_eq_eval]
   rfl
 
-private theorem betaPolynomial_eq_partialSum (q : ℝ) (N : ℕ) (t : ℝ) :
+private theorem betaPolynomial_eq_partialSum (N : ℕ) (t : ℝ) :
     betaPolynomial q N t =
       (FormalMultilinearSeries.ofScalars ℝ
         (fun n => poch q n / (n.factorial : ℝ))).partialSum N t := by
@@ -48,7 +52,7 @@ private theorem betaPolynomial_eq_partialSum (q : ℝ) (N : ℕ) (t : ℝ) :
     FormalMultilinearSeries.ofScalars_apply_eq, smul_eq_mul]
 
 /-- The singular Beta factor has its exact rising-factorial Taylor series near zero. -/
-theorem betaFactor_hasFPowerSeries (q : ℝ) :
+theorem betaFactor_hasFPowerSeries :
     HasFPowerSeriesOnBall (fun t : ℝ => 1 / (1 - t) ^ q)
       (FormalMultilinearSeries.ofScalars ℝ (fun n => poch q n / (n.factorial : ℝ)))
       0 1 := by
@@ -58,7 +62,7 @@ theorem betaFactor_hasFPowerSeries (q : ℝ) :
     ← Ring.multichoose_eq, multichoose_eq_poch]
 
 /-- A uniform Taylor remainder on the first half of the Euler interval. -/
-theorem betaFactor_remainder_bound (q : ℝ) (N : ℕ) :
+theorem betaFactor_remainder_bound (N : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, 0 ≤ t → t ≤ 1 / 2 →
       |(1 - t) ^ (-q) - betaPolynomial q N t| ≤ C * t ^ N := by
   have hl : ((3 / 4 : ℝ≥0) : ℝ≥0∞) < 1 := by
@@ -78,6 +82,8 @@ theorem betaFactor_remainder_bound (q : ℝ) (N : ℕ) :
   simpa only [NNReal.coe_div, NNReal.coe_ofNat, Real.norm_eq_abs, abs_of_nonneg ht,
     mul_pow, div_pow, mul_assoc,
     mul_div_assoc, div_mul_eq_mul_div] using hh
+
+end
 
 /-- The Gamma-normalized coefficient of each negative-axis power. -/
 def expansionCoeff (a b : ℝ) (n : ℕ) : ℝ :=
@@ -103,8 +109,11 @@ theorem mExpansion_eq_sum (a b : ℝ) (N : ℕ) (X : ℝ) (hX : 0 < X) :
         (n.factorial : ℝ)) * (Real.rpow X (-a) * X⁻¹ ^ n)
   ring
 
+section
+variable (a : ℝ) (b : Pos)
+
 /-- Raising both parameters matches differentiation of an expansion coefficient. -/
-theorem expansionCoeff_deriv (a : ℝ) (b : Pos) (n : ℕ) :
+theorem expansionCoeff_deriv (n : ℕ) :
     -(a + n) * expansionCoeff a b.1 n =
       -(a / b.1) * expansionCoeff (a + 1) (b.1 + 1) n := by
   have hb := ne_of_gt b.2
@@ -119,7 +128,7 @@ theorem expansionCoeff_deriv (a : ℝ) (b : Pos) (n : ℕ) :
   nlinarith only [hsm]
 
 /-- Derivative of the finite expansion, preserving its truncation order. -/
-theorem hasDerivAt_mExpansion (a : ℝ) (b : Pos) (N : ℕ) (X : ℝ) (hX : 0 < X) :
+theorem hasDerivAt_mExpansion (N : ℕ) (X : ℝ) (hX : 0 < X) :
     HasDerivAt (mExpansion a b.1 N)
       (-(a / b.1) * mExpansion (a + 1) (b.1 + 1) N X) X := by
   have hd : HasDerivAt
@@ -138,8 +147,9 @@ theorem hasDerivAt_mExpansion (a : ℝ) (b : Pos) (N : ℕ) (X : ℝ) (hX : 0 < 
   rw [mExpansion_eq_sum (a + 1) (b.1 + 1) N X hX, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro n _
-  rw [show -(a + (n : ℝ)) - 1 = -(a + 1 + n) by ring]
-  rw [← mul_assoc, mul_comm (expansionCoeff a b.1 n), expansionCoeff_deriv]
+  rw [show -(a + (n : ℝ)) - 1 = -(a + 1 + n) by ring, ← mul_assoc, mul_comm (expansionCoeff a b.1 n), expansionCoeff_deriv]
   ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

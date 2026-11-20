@@ -44,23 +44,30 @@ private def parabolicAffineHomeomorph
   continuous_invFun := by
     fun_prop
 
+section
+variable {d : ℕ} {t0 s : ℝ} {v0 : PDE.Vec d} (hs : 0 < s)
+include hs
+
 private theorem isCompact_parabolicAffine_preimage
-    {d : ℕ} {t0 s : ℝ} {v0 : PDE.Vec d} (hs : 0 < s)
     {K : Set (TimeVelocity d)} (hK : IsCompact K) :
     IsCompact (parabolicAffine t0 v0 s ⁻¹' K) := by
   change IsCompact ((parabolicAffineHomeomorph t0 v0 s hs) ⁻¹' K)
   exact (parabolicAffineHomeomorph t0 v0 s hs).isCompact_preimage.mpr hK
 
 private theorem parabolicAffine_image_preimage_eq
-    {d : ℕ} {t0 s : ℝ} {v0 : PDE.Vec d} (hs : 0 < s)
     (K : Set (TimeVelocity d)) :
     parabolicAffine t0 v0 s '' (parabolicAffine t0 v0 s ⁻¹' K) = K := by
   change (parabolicAffineHomeomorph t0 v0 s hs : TimeVelocity d → TimeVelocity d) ''
     ((parabolicAffineHomeomorph t0 v0 s hs : TimeVelocity d → TimeVelocity d) ⁻¹' K) = K
   exact Set.image_preimage_eq _ (parabolicAffineHomeomorph t0 v0 s hs).surjective
 
+end
+
+section
+variable {d : ℕ} {r : ℝ} {v v0 : PDE.Vec d} (hr : 0 < r)
+include hr
+
 private theorem normalized_target_velocity
-    {d : ℕ} {r : ℝ} {v v0 : PDE.Vec d} (hr : 0 < r)
     (hv : v ∈ velocityCube v0 (r / 2)) :
     (2 / r) • (v - v0) ∈ velocityCube (0 : PDE.Vec d) 1 := by
   intro i
@@ -73,13 +80,14 @@ private theorem normalized_target_velocity
       mul_lt_mul_of_pos_left hvi hscale
     _ = 1 := by field_simp [hr.ne']
 
-private theorem physical_target_from_normalized_velocity
-    {d : ℕ} {r : ℝ} {v v0 : PDE.Vec d} (hr : 0 < r) :
+private theorem physical_target_from_normalized_velocity :
     v0 + (r / 2) • ((2 / r) • (v - v0)) = v := by
   ext i
   change v0 i + (r / 2) * ((2 / r) * (v i - v0 i)) = v i
   field_simp [hr.ne']
   ring
+
+end
 
 /-- The normalized source-aware local Harnack estimate at every positive
 physical radius, with the same constants and physical source norm. -/

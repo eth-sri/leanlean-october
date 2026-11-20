@@ -13,8 +13,8 @@ open scoped Topology ENNReal
 /-- Compact Green bounds pass to the noncompact sublinear barrier by extended Fatou.
 All cutoff generator errors have been proved quantitatively, and the signed endpoint is retained. -/
 theorem barrier_green_cutoff_removal
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    {lam Lam : ℝ}
+    (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (f : Z → ℝ) (hf : ContDiff ℝ 2 f) (alpha D Bv : ℝ)
     (ha : 0 ≤ alpha) (ha1 : alpha ≤ 1) (hD : 0 ≤ D) (hBv : 0 ≤ Bv)
@@ -27,7 +27,7 @@ theorem barrier_green_cutoff_removal
     (hfi : Integrable f (kernelXV E T z)) :
     ENNReal.ofReal c * (∫⁻ q, ENNReal.ofReal (w q) ∂physicalOccupationMeasure E z T) ≤
       ENNReal.ofReal ((∫ q, f q ∂kernelXV E T z) - f z) := by
-  obtain ⟨C, hC, hb⟩ := barrier_cutoff_green_bounds hH hlam hLam A E hE f hf alpha D Bv
+  obtain ⟨C, hC, hb⟩ := barrier_cutoff_green_bounds A E hE f hf alpha D Bv
     ha ha1 hD hBv hm hbv c hc w hw hwn hbound Y z T hT
   let F := fun n : ℕ => fun q : Z =>
     ENNReal.ofReal (c * (barrierRectCutoff Y ((n : ℝ) + 1) q * w q))

@@ -25,54 +25,73 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal MatrixOrder Topology
 
+section
+variable {d : ℕ}
+
 /-- Literal Section 3 notation: `TV`. -/
-abbrev TV {d : ℕ} (ν : ComplexMeasure (PDE.Vec d)) : ℝ :=
+abbrev TV (ν : ComplexMeasure (PDE.Vec d)) : ℝ :=
   (ν.variation univ).toReal
 
 /-- Literal Section 3 notation: `stationary`. -/
-def stationary {d : ℕ} : ℝ → PDE.Vec d := fun _ => 0
+def stationary : ℝ → PDE.Vec d := fun _ => 0
 
 /-- Literal Section 3 notation: `SourceCase`. -/
-def SourceCase {d : ℕ} (D : Set (PDE.Vec d)) (b : PDE.Vec d → PDE.Vec d)
+def SourceCase (D : Set (PDE.Vec d)) (b : PDE.Vec d → PDE.Vec d)
     (m Lb : ℝ) : Prop :=
   (D = univ ∧ b = id ∧ m = 1 ∧ Lb = 1) ∨
   (∃ hd : d = 1, ∃ a c : ℝ, a < c ∧ hd ▸ D = PDE.oneDimensionalAxisBox a c)
 
 /-- Literal Section 3 notation: `SourceSetting`. -/
-def SourceSetting {d : ℕ} (lam Lam m Lb : ℝ) (D : Set (PDE.Vec d))
+def SourceSetting (lam Lam m Lb : ℝ) (D : Set (PDE.Vec d))
     (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d) : Prop :=
   IsSectionTwoCoefficient lam Lam B ∧ IsSmoothDrift b ∧
   0 < m ∧ m ≤ Lb ∧ HasTransportBounds m Lb b ∧ SourceCase D b m Lb
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ)
+include τ hστ
+
 /-- Literal Section 3 notation: `movingQuery`. -/
-def movingQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d)
+def movingQuery (v z : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) : EvolutionQuery Ω γ :=
   ⟨(σ, τ, v, z), hστ, hv, mem_univ z⟩
 
 /-- Literal Section 3 notation: `scalarQuery`. -/
-def scalarQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (σ τ : ℝ) (hστ : σ ≤ τ) (v : PDE.Vec d)
+def scalarQuery (v : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) : ParabolicEvolutionQuery Ω γ :=
   ⟨(σ, τ, v), hστ, hv⟩
 
+end
+
 /-- Literal Section 3 notation: `P`. -/
-abbrev P {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+abbrev P
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (q : ParabolicEvolutionQuery Ω γ) : Measure (PDE.Vec d) :=
   parabolicMarginalAmbientMeasure K hΩ q
 
+end
+
+section
+variable {d : ℕ}
+
 /-- Literal Section 3 notation: `phaseCoordinate`. -/
-def phaseCoordinate {d : ℕ} (ξ z0 : PDE.Vec d)
+def phaseCoordinate (ξ z0 : PDE.Vec d)
     (x : EvolutionAmbientState d) : ℝ := PDE.vecDot ξ (x.2 - z0)
 
 /-- Literal Section 3 notation: `barrier`. -/
-def barrier {d : ℕ} (N : ℕ) (s : ℝ) (Y : PDE.Vec d) : ℝ :=
+def barrier (N : ℕ) (s : ℝ) (Y : PDE.Vec d) : ℝ :=
   (max (1 - PDE.vecNormSq Y / s ^ 2) 0) ^ N
 
 /-- Literal Section 3 notation: `Hess`. -/
-abbrev Hess {d : ℕ} (f : PDE.Vec d → ℝ) (Y : PDE.Vec d) : PDE.Mat d :=
+abbrev Hess (f : PDE.Vec d → ℝ) (Y : PDE.Vec d) : PDE.Mat d :=
   scalarSpatialHessian (fun z : TimeVelocity d => f z.2) (0, Y)
+
+end
 
 /-- Literal Section 3 notation: `barrierC`. -/
 def barrierC (d N : ℕ) (lam Lam : ℝ) : ℝ :=
@@ -115,35 +134,43 @@ noncomputable def blockOuter (Lb : ℝ) : ℝ := 1 + 4 * blockRho Lb
 noncomputable def blockMass (Cstar m Lb : ℝ) : ℝ :=
   Real.exp (-Cstar * ((blockEta m Lb)⁻¹ ^ 2 + 1 / 4) * blockL0 m)
 
+section
+variable {d : ℕ}
+
 /-- The signed source phase comparison barrier. -/
-def phaseBarrier {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
+def phaseBarrier (sgn : ℝ) (ξ z0 : PDE.Vec d)
     (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d)
     (σ Lb ρ : ℝ) (p : KineticPoint d) : ℝ :=
   sgn * (PDE.vecDot ξ (p.velocity - z0) - phaseCenter ξ b γ σ p.time) -
     Lb * ρ * (p.time - σ)
 
 /-- The source quadratic barrier controlling the transported infinity. -/
-def infinityBarrier {d : ℕ} (η M τ : ℝ) (z0 : PDE.Vec d)
+def infinityBarrier (η M τ : ℝ) (z0 : PDE.Vec d)
     (p : KineticPoint d) : ℝ :=
   η * (1 + PDE.vecNormSq (p.velocity - z0)) * Real.exp ((M + 1) * (τ - p.time))
 
 /-- Interchange diffused and transported coordinates, preserving time. -/
-def swapDiffusedTransported {d : ℕ} (p : KineticPoint d) : KineticPoint d :=
+def swapDiffusedTransported (p : KineticPoint d) : KineticPoint d :=
   ⟨p.time, p.velocity, p.position⟩
+
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} (σ τ : ℝ) (hστ : σ ≤ τ)
 
 /-- The query lift preserves the two times and both source coordinates. -/
 @[simp]
-theorem movingQuery_val {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d)
+theorem movingQuery_val (v z : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) :
     (movingQuery σ τ hστ v z hv).val = (σ, τ, v, z) := rfl
 
 /-- The scalar query lift preserves the two times and source position. -/
 @[simp]
-theorem scalarQuery_val {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (σ τ : ℝ) (hστ : σ ≤ τ) (v : PDE.Vec d)
+theorem scalarQuery_val (v : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) :
     (scalarQuery σ τ hστ v hv).val = (σ, τ, v) := rfl
+
+end
 
 /-- The coordinate interchange is an involution. -/
 @[simp]

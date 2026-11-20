@@ -18,22 +18,21 @@ def exitL1Density {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFini
     PDE.Vec d → Lp ℂ 1 (exitMarginal ν) :=
   fun y => exitRealPart.compLp (exitL1Inversion ν y)
 
+section
+variable {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d)
+  (hB : IsSectionTwoCoefficient lam Lam B) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+  (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+  (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4)) (hT : T.1 - P.1.time = R ^ 2 / 8)
+include hd lam Lam B hB v₀ R hR P T hv hT
+
 /-- The real inverse has the same joint density representative at every position. -/
-theorem ballExitL1Density_coe
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
-    (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
-    (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d) :
-    let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+theorem ballExitL1Density_coe (y : PDE.Vec d) :
+    let ν := ballExit hd B hB v₀ hR P T
     (exitL1Density ν y : TimeVelocity d → ℂ) =ᵐ[exitMarginal ν]
       fun z => (exitJointDensity ν (y, z) : ℂ) := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
-  have hi := ballExitL1Inversion_coe hH hLE hd hlam hLam B hB v₀ hR P T hv hT y
+  let ν := ballExit hd B hB v₀ hR P T
+  have hi := ballExitL1Inversion_coe hd B hB v₀ hR P T hv hT y
   change (exitRealPart.compLp (exitL1Inversion ν y) : TimeVelocity d → ℂ) =ᵐ[exitMarginal ν]
     fun z => (exitJointDensity ν (y, z) : ℂ)
   change (exitL1Inversion ν y : TimeVelocity d → ℂ) =ᵐ[exitMarginal ν]
@@ -49,18 +48,12 @@ theorem ballExitL1Density_coe
   rfl
 
 /-- One smooth real inverse function serves every derivative order simultaneously. -/
-theorem ballExitL1Density_contDiff
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
-    (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
-    (hT : T.1 - P.1.time = R ^ 2 / 8) :
+theorem ballExitL1Density_contDiff :
     ContDiff ℝ (⊤ : ℕ∞)
-      (exitL1Density (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)) := by
+      (exitL1Density (ballExit hd B hB v₀ hR P T)) := by
   exact (exitRealPart.compLpL 1 _).contDiff.comp
-    (ballExitL1Inversion_contDiff hH hLE hd hlam hLam B hB v₀ hR P T hv hT)
+    (ballExitL1Inversion_contDiff hd B hB v₀ hR P T hv hT)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

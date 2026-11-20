@@ -56,7 +56,6 @@ theorem spatialCutoffTest_operator (a : ℝ → ℝ → ℝ) (chi psi : ℝ → 
       2*a (p.position 0) (p.velocity 0)*chi (p.position 0)*deriv psi (p.velocity 0)*
         kineticVelocityGradient phi p 0 := by
   have hc := hchi.differentiable (by norm_num)
-  have hp := hpsi.differentiable (by norm_num)
   have htime : kineticTimeDerivative (spatialCutoffTest chi psi phi) p =
       chi (p.position 0)*psi (p.velocity 0)*kineticTimeDerivative phi p := by
     change deriv (fun t => (chi (p.position 0)*psi (p.velocity 0))*

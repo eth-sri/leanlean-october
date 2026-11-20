@@ -22,6 +22,9 @@ namespace HypoellipticAleksandrov
 
 open MeasureTheory
 
+section
+variable (d : ℕ)
+
 /-- Borel measurable sets for the coordinate product topology on kinetic points. -/
 @[expose] instance KineticPoint.instMeasurableSpace (d : ℕ) :
     MeasurableSpace (KineticPoint d) := borel (KineticPoint d)
@@ -36,17 +39,17 @@ open MeasureTheory
     (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d)))
 
 /-- The kinetic coordinate equivalence is Borel measurable. -/
-theorem KineticPoint.measurable_equivProd (d : ℕ) :
+theorem KineticPoint.measurable_equivProd :
     Measurable (KineticPoint.equivProd d) :=
   (KineticPoint.homeomorphProd d).continuous.measurable
 
 /-- The inverse coordinate equivalence is Borel measurable. -/
-theorem KineticPoint.measurable_equivProd_symm (d : ℕ) :
+theorem KineticPoint.measurable_equivProd_symm :
     Measurable (KineticPoint.equivProd d).symm :=
   (KineticPoint.homeomorphProd d).symm.continuous.measurable
 
 /-- Kinetic volume is exactly product Lebesgue volume in coordinate space. -/
-theorem KineticPoint.measurePreserving_equivProd (d : ℕ) :
+theorem KineticPoint.measurePreserving_equivProd :
     MeasurePreserving (KineticPoint.equivProd d) volume volume := by
   refine ⟨KineticPoint.measurable_equivProd d, ?_⟩
   change Measure.map (KineticPoint.equivProd d)
@@ -55,5 +58,7 @@ theorem KineticPoint.measurePreserving_equivProd (d : ℕ) :
     (KineticPoint.measurable_equivProd_symm d)]
   simpa only [Equiv.apply_symm_apply, Function.comp_def] using!
     (Measure.map_id (μ := (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d)))))
+
+end
 
 end HypoellipticAleksandrov

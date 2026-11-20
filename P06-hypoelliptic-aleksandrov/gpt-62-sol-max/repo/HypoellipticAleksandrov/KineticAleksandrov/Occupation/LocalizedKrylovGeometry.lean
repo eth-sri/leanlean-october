@@ -222,7 +222,6 @@ theorem parabolicELpNormOn_timeReflectedScalar_preimage {F : TimeVelocity d → 
     (hF : Continuous F) {S : Set (TimeVelocity d)} (hS : MeasurableSet S) :
     parabolicELpNormOn d (timeReflectedScalar F) (timeReflection ⁻¹' S) =
       parabolicELpNormOn d F S := by
-  unfold parabolicELpNormOn timeReflectedScalar
   exact eLpNorm_comp_measurePreserving hF.aestronglyMeasurable
     (timeReflection_measurePreserving.restrict_preimage hS)
 

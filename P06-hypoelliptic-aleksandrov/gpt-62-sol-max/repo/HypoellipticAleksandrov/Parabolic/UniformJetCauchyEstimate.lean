@@ -10,21 +10,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped ENNReal
 
-/-- Coordinate iterated derivatives do not enlarge topological support. -/
-theorem coordinateIteratedFDeriv_tsupport_subset
-    {d : ℕ} (alpha : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) :
-    tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) ⊆
-      tsupport f := by
-  apply closure_minimal _ isClosed_closure
-  intro z hz
-  apply support_iteratedFDeriv_subset (f := f) (𝕜 := ℝ) alpha.coordinateList.length
-  intro hzero
-  exact hz (by
-    unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-    rw [hzero]
-    exact ContinuousMultilinearMap.zero_apply _)
-
 /-- The grid-FTC sup estimate with the exact common compact-support constant. -/
 theorem abs_le_sqrt_volume_mul_eLpNorm_coordinateIteratedFDeriv_allOnes
     (d : ℕ)
@@ -46,7 +31,7 @@ theorem abs_le_sqrt_volume_mul_eLpNorm_coordinateIteratedFDeriv_allOnes
     hK.of_isClosed_subset (isClosed_tsupport (f := f)) hfsupp
   have hgsupp : Function.support g ⊆ K :=
     (subset_tsupport g).trans
-      ((coordinateIteratedFDeriv_tsupport_subset _ f).trans hfsupp)
+      ((TimeVelocityMultiIndex.coordinateIteratedFDeriv_tsupport_subset _ f).trans hfsupp)
   have hgcontdiff : ContDiff ℝ (⊤ : ℕ∞) g := by
     rw [contDiff_infty]
     intro m

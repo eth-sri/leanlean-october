@@ -19,28 +19,7 @@ def bellmanDerivativeMajorant (a : ℝ) (t : ℝ) : ℝ :=
 /-- The derivative majorant is integrable on the positive half-line. -/
 theorem integrable_bellmanDerivativeMajorant (a : ℝ) :
     Integrable (fun t : BellmanPositiveTime => bellmanDerivativeMajorant a t.val)
-      bellmanPositiveTimeVolume := by
-  have hsmall : IntegrableOn (fun _ : ℝ => 360 * 8 ^ 6 * Real.sqrt 3 / (Real.pi * a ^ 6))
-      (Ioc (0 : ℝ) 1) := integrableOn_const measure_Ioc_lt_top.ne
-  have hlarge : IntegrableOn (fun s : ℝ => Real.sqrt 3 / (2 * Real.pi) *
-      s ^ (-2 : ℝ)) (Ioi 1) :=
-    (integrableOn_Ioi_rpow_of_lt (by norm_num : (-2 : ℝ) < -1)
-      (by norm_num : (0 : ℝ) < 1)).const_mul _
-  have hi : Integrable (bellmanDerivativeMajorant a) (volume : Measure ℝ) :=
-    (hsmall.integrable_indicator measurableSet_Ioc).add
-      (hlarge.integrable_indicator measurableSet_Ioi)
-  have hmap : Measure.map (Subtype.val : BellmanPositiveTime → ℝ)
-      bellmanPositiveTimeVolume = volume.restrict (Ioi (0 : ℝ)) := by
-    unfold bellmanPositiveTimeVolume
-    convert! map_comap_subtype_coe (s := Ioi (0 : ℝ)) measurableSet_Ioi
-      (volume.restrict (Ioi (0 : ℝ))) using 1
-    rw [Measure.restrict_restrict measurableSet_Ioi, inter_self]
-  have h : Integrable (bellmanDerivativeMajorant a)
-      (Measure.map (Subtype.val : BellmanPositiveTime → ℝ) bellmanPositiveTimeVolume) := by
-    rw [hmap]
-    exact hi.restrict
-  exact (MeasurableEmbedding.subtype_coe (s := Ioi (0 : ℝ))
-    measurableSet_Ioi).integrable_map_iff.mp h
+      bellmanPositiveTimeVolume := integrable_bellmanPositiveTime_majorant _
 
 /-- The actual Gaussian time derivative has an integrable separated bound. -/
 theorem bellmanGaussianTimeDerivative_le_majorant (a : ℝ) (ha : 0 < a)
@@ -59,7 +38,7 @@ theorem bellmanGaussianTimeDerivative_le_majorant (a : ℝ) (ha : 0 < a)
       (div_nonneg (bellmanGaussianTimeWeight_nonneg q) (by positivity))
     refine h.trans_eq ?_
     field_simp [ne_of_gt t.property]
-  · have h1 : 1 < t.val := lt_of_not_ge ht
+  · have h1 := lt_of_not_ge ht
     simp only [bellmanDerivativeMajorant, indicator_of_notMem
       (show t.val ∉ Ioc (0 : ℝ) 1 from fun h => ht h.2),
       indicator_of_mem (show t.val ∈ Ioi (1 : ℝ) from h1), zero_add]

@@ -22,30 +22,27 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped ENNReal Topology
 
-private theorem spatialShift_neg_comp_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
+section
+variable {d : ℕ} (k : Fin d) (h : ℝ)
+
+theorem spatialShift_neg_comp_apply (z : TimeVelocity d) :
     spatialShift k (-h) (spatialShift k h z) = z := by
   change (spatialShift k (-h) ∘ spatialShift k h) z = z
   rw [spatialShift_comp]
   simp
 
-private theorem spatialShift_comp_neg_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
+theorem spatialShift_comp_neg_apply (z : TimeVelocity d) :
     spatialShift k h (spatialShift k (-h) z) = z := by
   change (spatialShift k h ∘ spatialShift k (-h)) z = z
   rw [spatialShift_comp]
   simp
 
-private theorem spatialShift_measurableEmbedding
-    {d : ℕ} (k : Fin d) (h : ℝ) :
+theorem spatialShift_measurableEmbedding :
     MeasurableEmbedding (spatialShift k h) := by
-  change MeasurableEmbedding (fun z => z + (0, h • PDE.basisVec k))
-  simpa only [Homeomorph.coe_addRight] using
-    (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
+  exact id (Homeomorph.measurableEmbedding (Homeomorph.addRight (0, h • PDE.basisVec k)))
 
 /-- A native coordinate spatial shift preserves product Lebesgue volume. -/
-theorem spatialShift_measurePreserving
-    {d : ℕ} (k : Fin d) (h : ℝ) :
+theorem spatialShift_measurePreserving :
     MeasurePreserving (spatialShift k h)
       (volume : Measure (TimeVelocity d))
       (volume : Measure (TimeVelocity d)) := by
@@ -53,23 +50,26 @@ theorem spatialShift_measurePreserving
     (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k)) volume volume
   exact measurePreserving_add_right volume _
 
+section
+variable (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+
 /-- Time differentiation commutes exactly with spatial translation. -/
-@[simp] theorem timeDerivative_spatialTranslate
-    {d : ℕ} (k : Fin d) (h : ℝ)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem timeDerivative_spatialTranslate :
     timeDerivative (spatialTranslate k h f) z =
       timeDerivative f (spatialShift k h z) := by
   unfold timeDerivative spatialTranslate spatialShift
   rw [fderiv_comp_add_right]
 
 /-- The velocity gradient commutes exactly with spatial translation. -/
-@[simp] theorem velocityGradient_spatialTranslate
-    {d : ℕ} (k : Fin d) (h : ℝ)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem velocityGradient_spatialTranslate :
     velocityGradient (spatialTranslate k h f) z =
       velocityGradient f (spatialShift k h z) := by
   unfold velocityGradient spatialTranslate spatialShift
   rw [fderiv_comp_add_right]
+
+end
+
+end
 
 /-- A weak velocity derivative transports to any subdomain whose forward shift lies
 in the original domain. -/

@@ -14,8 +14,7 @@ open scoped Topology
 /-- Bounded regular tests with ordered exit values have the same order at the actual
 homogeneous reconstruction value. This uses the proved pointwise reconstruction. -/
 theorem reconstruction_boundary_comparison
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : sMinus < e.1.time) (phi : Point → ℝ)
@@ -27,18 +26,18 @@ theorem reconstruction_boundary_comparison
     (hbd : ∀ p ∈ stripClosedExit H T, phi p ≤ c) :
     phi e.1 - ∫ p, -forwardScalarOperator A.a phi p ∂stripGreenOfKernel H E.2 T e ≤ c := by
   obtain ⟨g, f, hg, hg0, hf, heq, hop⟩ :=
-    exists_reconstruction_smooth_pointwise hH hlam hLam A H E hE sMinus T phi hphi hb
+    exists_reconstruction_smooth_pointwise A H E hE sMinus T phi hphi hb
   let u := stripReconstructionCandidate H E.2 T phi g
   let D := sectionTwoPoint ⁻¹' reconstructionStrip H sMinus T
-  let U := reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T
+  let U := packedPhysicalPoint ⁻¹' reconstructionStrip H sMinus T
   have hD : IsOpen D := (isOpen_reconstructionStrip H sMinus T).preimage
     (continuous_sectionTwoPoint 1)
   have hU : IsOpen U := (isOpen_reconstructionStrip H sMinus T).preimage
-    continuous_reconstructionPhysicalPoint
+    continuous_packedPhysicalPoint
   have hsm : ContDiffOn ℝ (⊤ : ℕ∞) ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D) := hf.congr (fun x hx => heq hx)
   have hreg (p : Point) (hp : p ∈ D) : IsSliceRegularAt (u ∘ sectionTwoPoint) p :=
-    reconstruction_slice_regular_of_contDiffOn hD hsm p hp
+    IsSliceRegularAt.of_packed_smooth hD hsm p hp
   have huop (p : Point) (hp : p ∈ D) :
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1)
         (u ∘ sectionTwoPoint) p = 0 := by
@@ -46,14 +45,14 @@ theorem reconstruction_boundary_comparison
     have hx : x ∈ U := by
       change sectionTwoPoint (evolutionHomeomorph 1 x) ∈ reconstructionStrip H sMinus T
       rwa [Homeomorph.apply_symm_apply]
-    have hh : (u ∘ reconstructionPhysicalPoint) =ᶠ[𝓝 x] f :=
+    have hh : (u ∘ packedPhysicalPoint) =ᶠ[𝓝 x] f :=
       Filter.mem_of_superset (hU.mem_nhds hx) (fun y hy => heq hy)
     have hj : ContDiffAt ℝ 2 ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1) x :=
       (hsm.contDiffAt ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds hx)).of_le
         (by simp)
     have ht := transportedOperator_comp (B := evolutionCoefficient A.a) (b := identityDrift 1) hj
     change transportedOperator (evolutionCoefficient A.a) (identityDrift 1)
-      (u ∘ reconstructionPhysicalPoint) x = _ at ht
+      (u ∘ packedPhysicalPoint) x = _ at ht
     rw [reconstruction_transportedOperator_congr _ _ hh, hop x hx] at ht
     simpa only [x, Homeomorph.apply_symm_apply] using ht.symm
   let a := e.1.time
@@ -65,14 +64,14 @@ theorem reconstruction_boundary_comparison
         Interval.carrier, sectionTwoPoint]
         using hp.2.2
   obtain ⟨C, hC, hgb⟩ := g.exists_bound
-  have hcand := reconstruction_candidate_continuousOn_exit hH hlam hLam A H E hE
+  have hcand := reconstruction_candidate_continuousOn_exit A H E hE
     sMinus T phi hphi hc.continuousOn g hg
   have hcslab : ContinuousOn (u ∘ sectionTwoPoint)
       (movingClosedSlab (intervalDomain H) (fun _ => 0) a T) :=
     hcand.comp (continuous_sectionTwoPoint 1).continuousOn (reconstruction_closedSlab_mapsTo H he)
   have hmax := growth_comparison
     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)) continuous_const
-    hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
+    A.positive (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
     (le_refl 0) zero_le_one (a := a) (T := T)
     (u := fun p => u (sectionTwoPoint p) - c)
     ⟨M + C * (T - a) + |c|, fun p hp => by

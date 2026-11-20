@@ -44,9 +44,10 @@ private theorem reverseTimeHilbertRepresentative_add_agrees
       rw [huv]
       rfl
 
-private theorem reverseTimeHilbertRepresentative_add_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+
+private theorem reverseTimeHilbertRepresentative_add_eq (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hu : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : ReverseTimeL2V hΩ T) (k : ReverseTimeL2VStar hΩ T)
@@ -61,8 +62,6 @@ private theorem reverseTimeHilbertRepresentative_add_eq
     (reverseTimeHilbertRepresentative_add_agrees hΩ T hT u g hu v k hv)
 
 private theorem reverseTimeDualPairing_add_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
     (u v : ReverseTimeL2V hΩ T) (g k : ReverseTimeL2VStar hΩ T) :
     (fun r => ((g + k) r) ((u + v) r)) =ᵐ[reverseTimeVolume T]
       (fun r => (g r) (u r) + (g r) (v r) + (k r) (u r) + (k r) (v r)) := by
@@ -80,9 +79,12 @@ private theorem reverseTimeDualPairing_add_ae
       congrArg₂ (· + ·) hgadd hkadd
     _ = _ := by ring
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+
 private theorem integral_sum_reverseTimeDualPairings_Ioc
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
     (u v : ReverseTimeL2V hΩ T) (g k : ReverseTimeL2VStar hΩ T)
     (s t : ℝ) :
     ∫ r in Ioc s t, ((g + k) r) ((u + v) r) ∂reverseTimeVolume T =
@@ -135,9 +137,7 @@ private theorem integral_sum_reverseTimeDualPairings_Ioc
 /-- Reverse-time Hilbert integration by parts for the canonical continuous
 spatial-`L²` representatives of two Gelfand weak-derivative curves. Raw
 Bochner representatives are not evaluated at closed-time endpoints. -/
-theorem reverseTimeHilbertRepresentative_inner_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+theorem reverseTimeHilbertRepresentative_inner_increment (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hu : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : ReverseTimeL2V hΩ T) (k : ReverseTimeL2VStar hΩ T)
@@ -180,12 +180,8 @@ theorem reverseTimeHilbertRepresentative_inner_increment
       ((reverseTimeVolume T).restrict (Ioc s t)) :=
     (integrable_reverseTimeDualPairing hΩ T u k).restrict
   rw [integral_add hgvIoc hkuIoc]
-  have hcross :
-      2 * (inner ℝ (U ⟨t, ht⟩) (V ⟨t, ht⟩) -
-        inner ℝ (U ⟨s, hs⟩) (V ⟨s, hs⟩)) =
-      2 * ((∫ r in Ioc s t, (g r) (v r) ∂reverseTimeVolume T) +
-        (∫ r in Ioc s t, (k r) (u r) ∂reverseTimeVolume T)) := by
-    linarith
   linarith
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

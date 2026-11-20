@@ -15,8 +15,8 @@ open scoped Topology
 
 /-- Every bounded smooth datum has a classical solution represented by the supplied kernel. -/
 theorem fullspace_bounded_smooth_solution
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    {lam Lam : ℝ}
+    (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState 1))
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
@@ -32,11 +32,11 @@ theorem fullspace_bounded_smooth_solution
       evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) τ, |v N p| ≤ C :=
     classical_abs_le_const
       (isOpen_of_isAdmissibleEvolutionDomain autonomousWholeDomain_admissible)
-      continuous_const hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
+      continuous_const A.positive (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
       le_rfl zero_le_one
       ((isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 (hv N))
       (boundedConservationDatum_bound F hC N)
-  obtain ⟨u, hulim, hu⟩ := exists_bounded_fullspace_classical_limit hH hlam hLam A
+  obtain ⟨u, hulim, hu⟩ := exists_bounded_fullspace_classical_limit A
     τ F C hC0 hC v hv hb
   refine ⟨u, hu, ?_⟩
   intro q hqτ

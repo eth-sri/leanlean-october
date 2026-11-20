@@ -64,20 +64,22 @@ theorem integral_unitOccupationMeasure_eq_potential (K : WholeKernel d)
     ∫ r in Ioc 0 1, parabolicDuhamelIntegrand K hΩm F (0, v) r
   exact (integral_Ioc_eq_integral_Ioo).symm
 
+section
+variable (hd : 0 < d)
+include hd
+
 /-- The endpoint density exponent is strictly greater than one in positive dimension. -/
-theorem occupation_endpoint_gt_one (hd : 0 < d) : 1 < ((d : ℝ) + 1) / d := by
-  have hdR : 0 < (d : ℝ) := by exact_mod_cast hd
-  exact (lt_div_iff₀ hdR).2 (by linarith)
+theorem occupation_endpoint_gt_one : 1 < ((d : ℝ) + 1) / d := by
+  exact (lt_div_iff₀ (by exact_mod_cast hd)).2 (by linarith)
 
 /-- The endpoint conjugate exponent is exactly `d+1`. -/
-theorem occupation_endpoint_conjugate (hd : 0 < d) :
+theorem occupation_endpoint_conjugate :
     (((d : ℝ) + 1) / d) / ((((d : ℝ) + 1) / d) - 1) = (d : ℝ) + 1 := by
-  have hdR : (d : ℝ) ≠ 0 := by exact_mod_cast hd.ne'
   field_simp
   ring
 
 /-- An interior-supported source has the same full-space and slab conjugate norms. -/
-theorem parabolicLpNorm_eq_slab (hd : 0 < d) (F : TimeVelocity d → ℝ)
+theorem parabolicLpNorm_eq_slab (F : TimeVelocity d → ℝ)
     (hF : tsupport F ⊆ Ioo (0 : ℝ) 1 ×ˢ univ) :
     parabolicLpNorm d F =
       (eLpNorm F (ENNReal.ofReal
@@ -87,10 +89,12 @@ theorem parabolicLpNorm_eq_slab (hd : 0 < d) (F : TimeVelocity d → ℝ)
   have he : ENNReal.ofReal ((d : ℝ) + 1) = parabolicExponent d := by
     simp [parabolicExponent, ENNReal.ofReal_add, Nat.cast_nonneg]
   rw [he]
-  have hind : (Ioo (0 : ℝ) 1 ×ˢ univ).indicator F = F :=
+  have hind :=
     indicator_eq_self.2 ((Function.support_subset_iff').2 fun q hq =>
       image_eq_zero_of_notMem_tsupport (fun h => hq (hF h)))
   unfold parabolicLpNorm parabolicELpNorm
   rw [← eLpNorm_indicator_eq_eLpNorm_restrict (measurableSet_Ioo.prod MeasurableSet.univ), hind]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

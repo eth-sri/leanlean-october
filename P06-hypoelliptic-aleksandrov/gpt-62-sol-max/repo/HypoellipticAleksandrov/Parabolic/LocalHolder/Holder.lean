@@ -18,7 +18,6 @@ open Set LocalHolder KineticAleksandrov.LocalA
 
 /-- The smooth-coefficient bounded-source instance of Krylov--Safonov Lemma 4.3. -/
 theorem parabolic_holder_of_bounded_source
-    (hLE : KineticAleksandrov.LiebermanEllipsoidDirichletStatement)
     (N : ℕ) (hN : 1 ≤ N) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C α : ℝ, 0 < C ∧ 0 < α ∧ α < 1 ∧
       ∀ (A : CoefficientField N), IsSmoothCoefficient A → IsSymmetricCoefficient A →
@@ -36,7 +35,7 @@ theorem parabolic_holder_of_bounded_source
       ∀ z' ∈ scalarParabolicOpenCylinder (-1/4) 0 (PDE.euclideanBall 0 (1/2 : ℝ)),
         |w z - w z'| ≤ C * M * parabolicDistance z z' ^ α := by
   obtain ⟨q, K, hqhalf, hq1, hK, hdecay⟩ :=
-    exists_forced_dyadic_range_decay hLE N hN lam Lam hlam hLam
+    exists_forced_dyadic_range_decay N hN lam Lam hlam hLam
   obtain ⟨α, hα, hα1, hqα⟩ := exists_holder_exponent_of_contraction hq1
   let C := K * (32 : ℝ) ^ α + 2 * (64 : ℝ) ^ α
   have hC : 0 < C := by dsimp [C]; positivity

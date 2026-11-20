@@ -37,21 +37,11 @@ theorem norm_sq_cutoffGradientSpatialDifferenceQuotientH10CLM_apply_le_gradient
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
     (k : Fin d) (h : ℝ)
-    (hχshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport χ.toFun) Ω)
+    (hχshift : χ.ShiftMapsInto k h Ω)
     (u : H10HilbertGraph hΩ) :
     ‖cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h u‖ ^ 2 ≤
       Kη ^ 2 * ‖gradientCLM hΩ u‖ ^ 2 := by
-  let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-    intro y hy
-    apply subset_tsupport
-    change χ y ≠ 0
-    rw [χ.eq_one_on_inner y hy]
-    exact one_ne_zero
-  let hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω := hχshift.mono_left hηχ
+  let hηχ := χ.inner_subset_tsupport
   let Q : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
     valueCLM hΩ
       (localizedSpatialDifferenceQuotientH10CLM

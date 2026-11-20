@@ -15,16 +15,20 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov Set
 
+section
+variable {d : ℕ} (u : KineticPoint d → ℝ) (K : Set (KineticPoint d))
+include d u K
+
 /-- Independence of the transported coordinate on a given tube. -/
-def IsTransportIndependentOn {d : ℕ} (u : KineticPoint d → ℝ)
-    (K : Set (KineticPoint d)) : Prop :=
+def IsTransportIndependentOn : Prop :=
   ∀ p ∈ K, ∀ z : PDE.Vec d, u ⟨p.time, p.position, z⟩ = u p
 
 /-- Uniform decay to negative infinity in the explicit Euclidean transported norm. -/
-def IsUniformlyNegAtInfinityOn {d : ℕ} (u : KineticPoint d → ℝ)
-    (K : Set (KineticPoint d)) : Prop :=
+def IsUniformlyNegAtInfinityOn : Prop :=
   ∀ M : ℝ, ∃ R : ℝ, 0 ≤ R ∧
     ∀ p ∈ K, R ≤ PDE.vecEuclideanNorm p.velocity → u p ≤ M
+
+end
 
 /-- Under either spatial-infinity alternative, a positive value yields a positive
 maximum on the entire moving tube. -/

@@ -58,7 +58,7 @@ theorem positionPositiveNorm_tsum {X ι : Type*} [MeasurableSpace X] [Countable 
       ∑' i, positionPositiveNorm m q (f i) := by
   classical
   have hq0 : 0 < q := by linarith
-  have hm (S : Finset ι) : Measurable (fun x => (∑ i ∈ S, f i x) ^ q) :=
+  have hm (S : Finset ι) :=
     (Finset.measurable_sum S (fun i _ => hf i)).pow_const q
   have hd : Directed (· ≤ ·) (fun S : Finset ι => fun x => (∑ i ∈ S, f i x) ^ q) := by
     intro S T

@@ -38,21 +38,16 @@ theorem interval_zero_tv_eq_mass {a c : ℝ}
   unfold Measure.real
   rw [interval_parabolic_mass_eq_master hJ K B hp σ τ hστ v.1 0]
 
+section
+variable (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlength : 0 < length)
+include hlam hlength
+
 /-- The scalar mass has the source killing decay with the exact squared-length rate. -/
-theorem interval_mass_decay
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlength : 0 < length) :
+theorem interval_mass_decay :
     ∃ C k : ℝ, 0 < C ∧ 0 < k ∧
-      ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
-      SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
-      ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-      (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-      (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-      RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-        (zIndependentCoefficient B) b S K →
-      c - a = length → ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (v : PDE.oneDimensionalAxisBox a c),
-      (P K hJ (scalarQuery σ τ hστ v.1
+      ∀ (E : IntervalEvolution lam Lam m Lb),
+      E.length = length → ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (v : E.domain),
+      (P E.kernel E.measurableSet (scalarQuery σ τ hστ v.1
         (by simpa only [movingDomain_stationary] using v.2))).real univ ≤
         C * Real.exp (-k * (τ - σ)) := by
   let q := intervalErf (1 / (4 * Real.sqrt lam))
@@ -60,39 +55,32 @@ theorem interval_mass_decay
   have hT : 0 < length ^ 2 := sq_pos_of_pos hlength
   refine ⟨q⁻¹, -Real.log q / length ^ 2, inv_pos.mpr hq,
     div_pos (neg_pos.mpr (Real.log_neg hq hq1)) hT, ?_⟩
-  intro a c hac B b hs hJ S K hr hlen σ τ hστ v
-  obtain ⟨_hm, hp, hc⟩ := interval_evolution_clauses hH hLE hac B b hs hJ S K hr
-  rw [← interval_zero_tv_eq_mass hJ K B hp σ τ hστ v]
-  apply interval_exponential_of_blocks K hJ hr.2.2.2 hc hT hq hq1.le 0
+  intro E hlen σ τ hστ v
+  obtain ⟨_hm, hp, hc⟩ := E.clauses
+  rw [← interval_zero_tv_eq_mass E.measurableSet E.kernel E.coefficient hp σ τ hστ v]
+  apply interval_exponential_of_blocks E.kernel E.measurableSet E.realizes.2.2.2 hc hT hq hq1.le 0
   intro s w
-  have h := interval_killing_block hH hLE hac B b hs hJ S K hr s 0 w
-    (le_add_of_nonneg_right (sq_nonneg (c - a)))
+  have h := interval_killing_block E s 0 w
+    (le_add_of_nonneg_right (sq_nonneg (E.length)))
   simpa only [hlen] using h
 
 /-- Every Fourier mode inherits the scalar killing rate, including zero frequency. -/
-theorem interval_fourier_killing_decay
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlength : 0 < length) :
+theorem interval_fourier_killing_decay :
     ∃ C k : ℝ, 0 < C ∧ 0 < k ∧
-      ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
-      SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
-      ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-      (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-      (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-      RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-        (zIndependentCoefficient B) b S K →
-      c - a = length → ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1)
-      (v : PDE.oneDimensionalAxisBox a c),
-      TV (intervalFourierKernel K σ τ hστ ξ v) ≤ C * Real.exp (-k * (τ - σ)) := by
-  obtain ⟨C, k, hC, hk, hmass⟩ := interval_mass_decay hH hLE
+      ∀ (E : IntervalEvolution lam Lam m Lb),
+      E.length = length → ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1)
+      (v : E.domain),
+      TV (intervalFourierKernel E.kernel σ τ hστ ξ v) ≤ C * Real.exp (-k * (τ - σ)) := by
+  obtain ⟨C, k, hC, hk, hmass⟩ := interval_mass_decay
     lam Lam m Lb length hlam hlength
   refine ⟨C, k, hC, hk, ?_⟩
-  intro a c hac B b hs hJ S K hr hlen σ τ hστ ξ v
-  have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
-  exact (interval_fourier_tv_le_mass hJ K B hp σ τ hστ v.1 0 ξ
+  intro E hlen σ τ hστ ξ v
+  have hp := (E.clauses).2.1
+  exact (interval_fourier_tv_le_mass E.measurableSet E.kernel E.coefficient hp σ τ hστ v.1 0 ξ
     (by simpa only [movingDomain_stationary] using v.2) _
-    (intervalFourierKernel_spec K σ τ hστ ξ v)).trans
-    (hmass a c hac B b hs hJ S K hr hlen σ τ hστ v)
+    (intervalFourierKernel_spec E.kernel σ τ hστ ξ v)).trans
+    (hmass E hlen σ τ hστ v)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

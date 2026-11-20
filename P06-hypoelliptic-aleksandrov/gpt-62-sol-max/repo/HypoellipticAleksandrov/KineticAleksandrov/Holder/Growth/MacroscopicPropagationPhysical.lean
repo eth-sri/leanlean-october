@@ -37,7 +37,7 @@ theorem exists_physical_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam L
     hell hcap P hP
   let Qref := kineticAffineInverse P0 scale Q
   let Pref := kineticAffineInverse P0 scale P
-  have hrref : r0 ≤ r / scale := (le_div_iff₀ hscale).mpr hbig
+  have hrref := (le_div_iff₀ hscale).mpr hbig
   have hsubref := physical_sampling_subcylinder P0 Q hscale hr m hsub
   have hPref : Pref ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
     apply (kineticAffine_mem_cylinder P0 Pref hscale).mp

@@ -28,26 +28,30 @@ local instance instReverseTimeL2VStarModule
     Module ℝ (ReverseTimeL2VStar hΩ T) :=
   MeasureTheory.Lp.instModule
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (v : H10HilbertGraph hΩ)
+  (eta : ReverseTimeScalarTest T)
+include v eta
+
 private noncomputable def weakDerivativeLeft
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
     (u : ReverseTimeL2V hΩ T) : ℝ → ℝ :=
   fun tau => inner ℝ (valueCLM hΩ v) (reverseTimeValueCLM hΩ T u tau) * eta.deriv tau
 
 private noncomputable def weakDerivativeRight
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
     (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun tau => (g tau) v * eta tau
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (v : H10HilbertGraph hΩ)
+  (eta : ReverseTimeScalarTest T)
+
 private theorem weakDerivativeLeft_add_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
     (u₁ u₂ : ReverseTimeL2V hΩ T) :
     weakDerivativeLeft hΩ T v eta (u₁ + u₂) =ᵐ[reverseTimeVolume T]
       weakDerivativeLeft hΩ T v eta u₁ + weakDerivativeLeft hΩ T v eta u₂ := by
-  have hmap : reverseTimeValueCLM hΩ T (u₁ + u₂) =
-      reverseTimeValueCLM hΩ T u₁ + reverseTimeValueCLM hΩ T u₂ :=
+  have hmap :=
     (reverseTimeValueCLM hΩ T).map_add u₁ u₂
   filter_upwards [Lp.coeFn_add (reverseTimeValueCLM hΩ T u₁)
     (reverseTimeValueCLM hΩ T u₂)] with tau ht
@@ -60,8 +64,6 @@ private theorem weakDerivativeLeft_add_ae
   simp only [inner_add_right, add_mul]
 
 private theorem weakDerivativeRight_add_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
     (g₁ g₂ : ReverseTimeL2VStar hΩ T) :
     weakDerivativeRight hΩ T v eta (g₁ + g₂) =ᵐ[reverseTimeVolume T]
       weakDerivativeRight hΩ T v eta g₁ + weakDerivativeRight hΩ T v eta g₂ := by
@@ -72,8 +74,6 @@ private theorem weakDerivativeRight_add_ae
   simp only [ContinuousLinearMap.add_apply, add_mul]
 
 private theorem weakDerivativeLeft_smul_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
     (u : ReverseTimeL2V hΩ T) (a : ℝ) :
     weakDerivativeLeft hΩ T v eta (a • u) =ᵐ[reverseTimeVolume T]
       a • weakDerivativeLeft hΩ T v eta u := by
@@ -88,8 +88,6 @@ private theorem weakDerivativeLeft_smul_ae
   simp only [weakDerivativeLeft, Pi.smul_apply, inner_smul_right, smul_eq_mul, mul_assoc]
 
 private theorem weakDerivativeRight_smul_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
     (g : ReverseTimeL2VStar hΩ T) (a : ℝ) :
     weakDerivativeRight hΩ T v eta (a • g : ReverseTimeL2VStar hΩ T) =ᵐ[reverseTimeVolume T]
       a • weakDerivativeRight hΩ T v eta g := by
@@ -97,6 +95,8 @@ private theorem weakDerivativeRight_smul_ae
   dsimp only [weakDerivativeRight]
   simpa only [weakDerivativeRight, Pi.smul_apply, smul_apply, smul_eq_mul, mul_assoc] using
     congrArg (fun q : H10HilbertGraphDual hΩ => q v * eta tau) ht
+
+end
 
 private theorem integral_neg_add
     {α : Type _} [MeasurableSpace α] (μ : Measure α)
@@ -129,12 +129,13 @@ private theorem integral_neg_smul
     _ = -(∫ x, a • g x ∂μ) := by rw [hg.integral_smul a]
     _ = -(∫ x, gScaled x ∂μ) := congrArg Neg.neg (integral_congr_ae hright).symm
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+
 /-- The Gelfand weak reverse-time derivative identity against compactly
 supported scalar tests.  The derivative is the ordinary positive-time
 derivative of the test, so the distributional sign appears on the right. -/
-def HasGelfandWeakTimeDerivative
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+def HasGelfandWeakTimeDerivative (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : Prop :=
   ∀ v : H10HilbertGraph hΩ, ∀ eta : ReverseTimeScalarTest T,
     Integrable
@@ -152,8 +153,6 @@ def HasGelfandWeakTimeDerivative
 /-- The left-hand scalar pairing in the Gelfand weak derivative identity is
 integrable by the Bochner `L²` carrier and Hölder's inequality. -/
 theorem integrable_reverseTimeWeakDerivative_left
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T)
     (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) :
     Integrable
@@ -170,8 +169,6 @@ theorem integrable_reverseTimeWeakDerivative_left
 /-- The right-hand dual pairing in the Gelfand weak derivative identity is
 integrable by the Bochner `L²` carrier and Hölder's inequality. -/
 theorem integrable_reverseTimeWeakDerivative_right
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
     (g : ReverseTimeL2VStar hΩ T)
     (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) :
     Integrable
@@ -181,10 +178,13 @@ theorem integrable_reverseTimeWeakDerivative_right
     (MeasureTheory.Lp.memLp g).continuousLinearMap_comp (ContinuousLinearMap.apply ℝ ℝ v)
   simpa only [Pi.mul_def] using hpair.integrable_mul (eta.memLp 2)
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
+
 /-- Gelfand weak time derivatives are closed under addition. -/
 theorem HasGelfandWeakTimeDerivative.add
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
     {u₁ u₂ : ReverseTimeL2V hΩ T} {g₁ g₂ : ReverseTimeL2VStar hΩ T}
     (h₁ : HasGelfandWeakTimeDerivative hΩ T hT u₁ g₁)
     (h₂ : HasGelfandWeakTimeDerivative hΩ T hT u₂ g₂) :
@@ -213,8 +213,6 @@ theorem HasGelfandWeakTimeDerivative.add
 
 /-- Gelfand weak time derivatives are closed under scalar multiplication. -/
 theorem HasGelfandWeakTimeDerivative.smul
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
     {u : ReverseTimeL2V hΩ T} {g : ReverseTimeL2VStar hΩ T}
     (h : HasGelfandWeakTimeDerivative hΩ T hT u g) (a : ℝ) :
     HasGelfandWeakTimeDerivative hΩ T hT (a • u) (a • g : ReverseTimeL2VStar hΩ T) := by
@@ -228,8 +226,6 @@ theorem HasGelfandWeakTimeDerivative.smul
 
 /-- The weak derivative relation respects equality of its two bundled curves. -/
 theorem HasGelfandWeakTimeDerivative.congr
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
     {u u' : ReverseTimeL2V hΩ T} {g g' : ReverseTimeL2VStar hΩ T}
     (h : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (hu : u = u') (hg : g = g') :
@@ -237,5 +233,7 @@ theorem HasGelfandWeakTimeDerivative.congr
   subst u'
   subst g'
   exact h
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

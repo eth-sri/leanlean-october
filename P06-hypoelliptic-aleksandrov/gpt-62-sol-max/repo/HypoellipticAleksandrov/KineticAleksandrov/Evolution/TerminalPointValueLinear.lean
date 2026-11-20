@@ -57,83 +57,65 @@ end Outside
 
 section EvolutionData
 
-variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-variable (hΩ : IsAdmissibleEvolutionDomain Ω)
-variable (hγ : IsContinuousPiecewiseC1 γ)
-variable (hB_smooth : IsSmoothFullKineticCoefficient B)
-variable (hB_symm : IsSymmetricFullKineticCoefficient B)
-variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-variable (hb_smooth : IsSmoothDrift b)
-variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-variable (hEx : ClassicalTerminalExistence Ω γ B b)
-include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
-include hb_smooth hb_lipschitz hb_coercive hEx
+variable {n : ℕ} {lam Lam m L_b : ℝ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    (data : TerminalEvolutionData lam Lam m L_b Ω γ B b)
+include data
 
-local notation "S" => terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "S" => terminalValue data.exists_solution
+
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
 
 /-- The terminal point value is additive in the datum. -/
 theorem terminalValue_add
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
     (F G : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hG : IsSmoothCompactTerminalDatum Ω γ τ G) :
     S σ τ hστ p (F + G) (hF.add hG) = S σ τ hστ p F hF + S σ τ hστ p G hG := by
-  obtain ⟨u, hu, hu'⟩ := terminalValue_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF
-  obtain ⟨v, hv, hv'⟩ := terminalValue_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p G hG
-  rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p (F + G)
+  obtain ⟨u, hu, hu'⟩ := terminalValue_spec data.exists_solution σ τ hστ p F hF
+  obtain ⟨v, hv, hv'⟩ := terminalValue_spec data.exists_solution σ τ hστ p G hG
+  rw [terminalValue_eq_of_solution data.exists_solution σ τ hστ p (F + G)
     (hF.add hG) _ (IsClassicalTerminalSolution.add
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hu hv)]
+      (isOpen_of_isAdmissibleEvolutionDomain data.domain) data.curve.1 hu hv)]
   simp only [hu', hv']
 
 /-- The terminal point value is homogeneous in the datum. -/
-theorem terminalValue_smul
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (c : ℝ)
+theorem terminalValue_smul (c : ℝ)
     (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     S σ τ hστ p (c • F) (hF.smul c) = c * S σ τ hστ p F hF := by
-  obtain ⟨u, hu, hu'⟩ := terminalValue_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF
-  rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p (c • F)
+  obtain ⟨u, hu, hu'⟩ := terminalValue_spec data.exists_solution σ τ hστ p F hF
+  rw [terminalValue_eq_of_solution data.exists_solution σ τ hστ p (c • F)
     (hF.smul c) _ (IsClassicalTerminalSolution.smul
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 c hu)]
+      (isOpen_of_isAdmissibleEvolutionDomain data.domain) data.curve.1 c hu)]
   simp only [hu']
 
+section
+variable (F : BoundedBorel (EvolutionAmbientState n)) (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
+
 /-- The terminal point value is nonnegative on nonnegative data. -/
-theorem terminalValue_nonneg
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hpos : ∀ q, 0 ≤ F q) :
+theorem terminalValue_nonneg (hpos : ∀ q, 0 ≤ F q) :
     0 ≤ S σ τ hστ p F hF := by
-  obtain ⟨u, hu, hu'⟩ := terminalValue_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF
-  have h0 := IsClassicalTerminalSolution.smul (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-    hγ.1 0 hu
-  have hle := IsClassicalTerminalSolution.le_of_le (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-    hγ.1 hlam hB_ell hb_lipschitz h0 hu (fun y z _ => by
+  obtain ⟨u, hu, hu'⟩ := terminalValue_spec data.exists_solution σ τ hστ p F hF
+  have h0 := IsClassicalTerminalSolution.smul (isOpen_of_isAdmissibleEvolutionDomain data.domain)
+    data.curve.1 0 hu
+  have hle := IsClassicalTerminalSolution.le_of_le (isOpen_of_isAdmissibleEvolutionDomain data.domain)
+    data.curve.1 data.lam_pos data.elliptic data.lipschitz h0 hu (fun y z _ => by
       simpa using hpos (y, z)) _ (mk_mem_evolutionPastClosedCylinder hστ p)
   rw [← hu']
   simpa using hle
 
 /-- The terminal point value is bounded by every uniform bound of the datum. -/
-theorem abs_terminalValue_le
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (C : ℝ) (hC : 0 ≤ C)
+theorem abs_terminalValue_le (C : ℝ) (hC : 0 ≤ C)
     (hFC : ∀ q, |F q| ≤ C) :
     |S σ τ hστ p F hF| ≤ C := by
-  obtain ⟨u, hu, hbd, -⟩ := hEx τ F hF
-  rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF u hu]
+  obtain ⟨u, hu, hbd, -⟩ := data.exists_solution τ F hF
+  rw [terminalValue_eq_of_solution data.exists_solution σ τ hστ p F hF u hu]
   exact hbd C hC hFC _ (mk_mem_evolutionPastClosedCylinder hστ p)
+
+end
+
+end
 
 /-- At equal times the terminal point value is the datum itself. -/
 theorem terminalValue_self
@@ -141,9 +123,8 @@ theorem terminalValue_self
     (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ σ F) :
     S σ σ le_rfl p F hF = F p.1 := by
-  obtain ⟨u, hu, -, -⟩ := hEx σ F hF
-  rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ σ le_rfl p F hF
+  obtain ⟨u, hu, -, -⟩ := data.exists_solution σ F hF
+  rw [terminalValue_eq_of_solution data.exists_solution σ σ le_rfl p F hF
     u hu]
   exact hu.2.2.2.2.1 ⟨σ, p.1.1, p.1.2⟩ ⟨rfl, subset_closure p.2.1⟩
 
@@ -153,12 +134,11 @@ theorem continuous_terminalValue_source
     (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     Continuous (fun p : EvolutionState Ω γ σ => S σ τ hστ p F hF) := by
-  obtain ⟨u, hu, -, -⟩ := hEx τ F hF
+  obtain ⟨u, hu, -, -⟩ := data.exists_solution τ F hF
   have hfun : (fun p : EvolutionState Ω γ σ => S σ τ hστ p F hF) =
       fun p => u ⟨σ, p.1.1, p.1.2⟩ := by
     funext p
-    exact terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF
+    exact terminalValue_eq_of_solution data.exists_solution σ τ hστ p F hF
       u hu
   rw [hfun]
   have hm : Continuous (fun p : EvolutionState Ω γ σ =>

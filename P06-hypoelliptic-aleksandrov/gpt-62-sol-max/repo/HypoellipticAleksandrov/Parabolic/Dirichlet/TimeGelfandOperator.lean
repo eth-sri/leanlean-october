@@ -28,19 +28,19 @@ noncomputable def h10HilbertGraphDualPrecompose
     H10HilbertGraphDual hΩ →L[ℝ] H10HilbertGraphDual hΩ :=
   (ContinuousLinearMap.compL ℝ (H10HilbertGraph hΩ) (H10HilbertGraph hΩ) ℝ).flip S
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+
 /-- Evaluation of dual precomposition. -/
 @[simp] theorem h10HilbertGraphDualPrecompose_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (ell : H10HilbertGraphDual hΩ) (v : H10HilbertGraph hΩ) :
-    h10HilbertGraphDualPrecompose hΩ S ell v = ell (S v) := by
-  rfl
+    h10HilbertGraphDualPrecompose hΩ S ell v = ell (S v) := rfl
+
+section
+variable (T : ℝ) (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
 
 private theorem ae_reverseTimeValueCLM_compLpL_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
-    (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (u : ReverseTimeL2V hΩ T) :
     reverseTimeValueCLM hΩ T
         (S.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u) =ᵐ[reverseTimeVolume T]
@@ -52,19 +52,14 @@ private theorem ae_reverseTimeValueCLM_compLpL_apply
   ] with τ hvalue hS
   rw [hvalue, hS]
 
-private theorem ae_h10HilbertGraphDualPrecompose_compLpL_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
-    (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-    (g : ReverseTimeL2VStar hΩ T) :
-    (h10HilbertGraphDualPrecompose hΩ S).compLpL
-        (2 : ℝ≥0∞) (reverseTimeVolume T) g =ᵐ[reverseTimeVolume T]
-      fun τ => h10HilbertGraphDualPrecompose hΩ S (g τ) :=
-  ContinuousLinearMap.coeFn_compLpL (h10HilbertGraphDualPrecompose hΩ S) g
+end
+
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
 
 private theorem ae_pivot_symmetric_left_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (hS : ∀ x y : H10HilbertGraph hΩ,
@@ -85,8 +80,6 @@ private theorem ae_pivot_symmetric_left_pairing
   rw [hSu, hu, hS]
 
 private theorem ae_pivot_symmetric_right_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
     (g : ReverseTimeL2VStar hΩ T)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) :
@@ -95,9 +88,11 @@ private theorem ae_pivot_symmetric_right_pairing
         (2 : ℝ≥0∞) (reverseTimeVolume T) g τ) v * eta τ) =ᵐ[
         reverseTimeVolume T]
       fun τ => (g τ) (S v) * eta τ := by
-  filter_upwards [ae_h10HilbertGraphDualPrecompose_compLpL_apply hΩ T S g] with τ hg
+  filter_upwards [(ContinuousLinearMap.coeFn_compLpL (h10HilbertGraphDualPrecompose hΩ S) g)] with τ hg
   rw [hg]
   rfl
+
+end
 
 /-- A Gelfand weak derivative is preserved by a bounded spatial operator that
 is symmetric for the scalar `L²` pivot. -/

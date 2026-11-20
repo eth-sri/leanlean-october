@@ -1,7 +1,8 @@
 module
 
 public import PDEFoundation.Ambient.EuclideanNorm
-public import PDEFoundation.Geometry.EuclideanBall
+public import PDEFoundation.Geometry.EuclideanBall.Basic
+public import PDEFoundation.Geometry.EuclideanBall.Topology
 
 /-!
 # Ambient Euclidean geometry

@@ -14,10 +14,13 @@ open Set MeasureTheory SectionTwo
 open scoped ENNReal
 variable {d : ℕ}
 
+section
+variable (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (Z₀ : KineticPoint d)
+  (R : ℝ) (hR : 0 < R)
+include K Z₀ R hR
+
 /-- Whole-space Green measure ending at the cylinder's terminal time, in absolute coordinates. -/
-def cylinderGreenMeasure
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (P : KineticPoint d) :
+def cylinderGreenMeasure (P : KineticPoint d) :
     Measure (KineticPoint d) :=
   if h : P.time < Z₀.time + R ^ 2 then
     ((greenMeasure K P.time (ENNReal.ofReal (Z₀.time + R ^ 2 - P.time))
@@ -28,8 +31,6 @@ def cylinderGreenMeasure
 
 /-- Interior source integrals are exactly the Section 2 Duhamel potentials. -/
 theorem integral_cylinderGreenMeasure
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (g : KineticPoint d → ℝ) (hg0 : ∀ P, 0 ≤ g P)
     (hg : Continuous g) (hgc : HasCompactSupport g)
     (hgQ : tsupport g ⊆ forwardCylinder Z₀ R hR)
@@ -42,11 +43,13 @@ theorem integral_cylinderGreenMeasure
     image_eq_zero_of_notMem_tsupport (fun h => hz (hgQ h)))]
   rw [(measurableEmbedding_greenKineticPoint d P.time _).integral_map]
   symm
-  have hgg : Continuous (g ∘ sectionTwoPoint) := hg.comp (continuous_sectionTwoPoint d)
+  have hgg := hg.comp (continuous_sectionTwoPoint d)
   have hcc := hasCompactSupport_sectionTwoPoint hgc
   exact duhamelPotential_eq_green K MeasurableSet.univ continuous_const
-    (Z₀.time + R ^ 2) (g ∘ sectionTwoPoint) (fun q => hg0 _) hgg hcc P.time hP
+    (Z₀.time + R ^ 2) (g ∘ sectionTwoPoint) hgg hcc P.time hP
     (kineticStartState d P) _
     (greenMeasure_spec K P.time _ _ (Measure.dirac (kineticStartState d P)))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

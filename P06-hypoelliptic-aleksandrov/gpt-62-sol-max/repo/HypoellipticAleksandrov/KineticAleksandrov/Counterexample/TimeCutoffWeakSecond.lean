@@ -19,10 +19,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 open scoped ENNReal
 
+section
+variable {d : ℕ} {D : Set (PDE.Vec d)} (hD : PDE.IsOpenBoundedConvexDomain D)
+include hD
+
 /-- The second weak chain rule for a `C²` scalar cutoff of a Sobolev difference.
 The prescribed mixed second derivative is genuine Sobolev regularity of that difference. -/
-theorem weakSecond_cutoff_sub {d : ℕ} {D : Set (PDE.Vec d)}
-    (hD : PDE.IsOpenBoundedConvexDomain D) (u B : PDE.W1pFunction D 2)
+theorem weakSecond_cutoff_sub (u B : PDE.W1pFunction D 2)
     (i k : Fin d) (hess : PDE.Vec d → ℝ) (hhess : PDE.MemLpOn D 2 hess)
     (hweak : PDE.HasWeakPartialDerivOn D i (fun x => u.grad x k - B.grad x k) hess)
     (theta : ℝ → ℝ) (htheta : ContDiff ℝ 2 theta)
@@ -49,8 +52,7 @@ theorem weakSecond_cutoff_sub {d : ℕ} {D : Set (PDE.Vec d)}
 
 /-- The second weak chain rule with a smooth subtracted function. Its Sobolev bounds
 and weak derivatives are constructed internally on the bounded convex domain. -/
-theorem weakSecond_cutoff_sub_smooth {d : ℕ} {D : Set (PDE.Vec d)}
-    (hD : PDE.IsOpenBoundedConvexDomain D) (u : PDE.W1pFunction D 2)
+theorem weakSecond_cutoff_sub_smooth (u : PDE.W1pFunction D 2)
     (B : PDE.Vec d → ℝ) (hB : ContDiff ℝ (⊤ : ℕ∞) B) (i k : Fin d)
     (hess : PDE.Vec d → ℝ) (hhess : PDE.MemLpOn D 2 hess)
     (hweak : PDE.HasWeakPartialDerivOn D i (fun x => u.grad x k) hess)
@@ -82,10 +84,12 @@ theorem weakSecond_cutoff_sub_smooth {d : ℕ} {D : Set (PDE.Vec d)}
         (bg.memLp.integrable (by norm_num)).locallyIntegrable
         (hhess.integrable (by norm_num)).locallyIntegrable
         ((bg.gradMemLp i).integrable (by norm_num)).locallyIntegrable
-  have hmem : PDE.MemLpOn D 2 (fun x => hess x - bg.grad x i) :=
+  have hmem :=
     hhess.sub (bg.gradMemLp i)
   simpa only [b, bg, PDE.W1pFunction.ofContDiffOnIsOpenBoundedConvexDomain,
     PDE.W1pFunction.ofContDiffOnIsSobolevRegularDomain] using!
     weakSecond_cutoff_sub hD u b i k _ hmem hdiff theta htheta M hM hbound
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

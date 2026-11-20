@@ -15,8 +15,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Matrix
 open scoped MatrixOrder
 
+section
+variable {theta : ℝ}
+
 /-- The upper covariance bound for unit ellipticity, in Loewner order. -/
-theorem ghat_unit_upper {theta : ℝ} (ht : |theta| ≤ 1) :
+theorem ghat_unit_upper (ht : |theta| ≤ 1) :
     ghat 1 theta ≤ (2 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) := by
   have ht0 := (abs_le.mp ht).1
   have ht1 := (abs_le.mp ht).2
@@ -43,7 +46,7 @@ theorem ghat_unit_upper {theta : ℝ} (ht : |theta| ≤ 1) :
   all_goals ring
 
 /-- Upper covariance bound on the short negative cutoff strip. -/
-theorem ghat_unit_cutoff_upper {theta : ℝ}
+theorem ghat_unit_cutoff_upper
     (ht0 : -(1 / 128 : ℝ) ≤ theta) (ht1 : theta ≤ 0) :
     ghat 1 theta ≤ (65 / 4096 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) := by
   have hsq : theta ^ 2 ≤ (1 / 128 : ℝ) ^ 2 := by nlinarith
@@ -65,7 +68,7 @@ theorem ghat_unit_cutoff_upper {theta : ℝ}
   all_goals ring
 
 /-- Lower covariance bound at the next block, proved by a positive shifted polynomial. -/
-theorem ghat_unit_next_lower {theta : ℝ} (ht : -(1 / 128 : ℝ) ≤ theta) :
+theorem ghat_unit_next_lower (ht : -(1 / 128 : ℝ) ≤ theta) :
     (125 / 2048 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) ≤ ghat 1 (theta + 1) := by
   let u := theta + 1 / 128
   have hu : 0 ≤ u := by dsimp [u]; linarith
@@ -93,5 +96,7 @@ theorem ghat_unit_next_lower {theta : ℝ} (ht : -(1 / 128 : ℝ) ≤ theta) :
   ext i j
   fin_cases i <;> fin_cases j <;> simp [ghat, Matrix.sub_apply, Matrix.smul_apply]
   all_goals ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

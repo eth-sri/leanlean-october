@@ -21,8 +21,6 @@ private theorem positive_gamma_product_ratio (t u : ℝ) (ht : 0 < t) (ht1 : t <
         Real.sin (Real.pi * u) / Real.sin (Real.pi * t) := by
   have htpi : Real.pi * t < Real.pi := by nlinarith only [ht1, Real.pi_pos]
   have hupi : Real.pi * u < Real.pi := by nlinarith only [hu1, Real.pi_pos]
-  have hs := (Real.sin_pos_of_pos_of_lt_pi (mul_pos Real.pi_pos ht) htpi).ne'
-  have hs' := (Real.sin_pos_of_pos_of_lt_pi (mul_pos Real.pi_pos hu) hupi).ne'
   rw [Real.Gamma_mul_Gamma_one_sub, Real.Gamma_mul_Gamma_one_sub]
   field_simp
 
@@ -41,7 +39,6 @@ theorem gammaA_leading_ratio (gamma : ScalarGamma) :
     rw [show Real.pi * (1 / 3 - gamma.1) = Real.pi / 3 - Real.pi * gamma.1 by ring,
       show Real.pi * (1 / 3 : ℝ) = Real.pi / 3 by ring,
       Real.sin_sub, Real.sin_pi_div_three, Real.cos_pi_div_three, Pgamma]
-    have hr := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
     field_simp
   rw [← hs, ← h]
   unfold gammaA
@@ -58,15 +55,8 @@ theorem gammaB_leading_ratio (gamma : ScalarGamma) :
   have hn13 := Real.Gamma_add_one (by norm_num : (-(1 / 3) : ℝ) ≠ 0)
   have h := positive_gamma_product_ratio (1 / 3) gamma.1
     (by norm_num) (by norm_num) gamma.2.1 (by linarith only [gamma.2.2])
-  have hden : Real.Gamma gamma.1 ≠ 0 := (Real.Gamma_pos_of_pos gamma.2.1).ne'
   have hden' : Real.Gamma (1 - gamma.1) ≠ 0 :=
     (Real.Gamma_pos_of_pos (by linarith only [gamma.2.2])).ne'
-  have hneg : Real.Gamma (-gamma.1) ≠ 0 := by
-    intro hz
-    rw [hz, mul_zero] at hgn
-    have he : -gamma.1 + 1 = 1 - gamma.1 := by ring
-    rw [he] at hgn
-    exact hden' hgn
   norm_num at h13 hn13
   rw [show -gamma.1 + 1 = 1 - gamma.1 by ring] at hgn
   rw [show gamma.1 + 1 = 1 + gamma.1 by ring] at hgp

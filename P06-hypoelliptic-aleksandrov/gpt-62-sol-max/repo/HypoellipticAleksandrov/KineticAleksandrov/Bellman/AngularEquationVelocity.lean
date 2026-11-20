@@ -15,8 +15,7 @@ open scoped Topology
 
 /-- Every positive-position point is the literal angular point of its inverse coordinates. -/
 theorem bellmanAngularPoint_inverse (q : ℝ × ℝ) (hq : 0 < q.1) :
-    (bellmanAngularPoint (bellmanAngularHomeomorph.symm ⟨q, hq⟩)).val = q := by
-  exact congrArg Subtype.val (bellmanAngularHomeomorph.apply_symm_apply ⟨q, hq⟩)
+    (bellmanAngularPoint (bellmanAngularHomeomorph.symm ⟨q, hq⟩)).val = q := congrArg Subtype.val (bellmanAngularHomeomorph.apply_symm_apply ⟨q, hq⟩)
 
 /-- The first velocity formula holds throughout the open positive-position half-plane. -/
 theorem bellmanSeparatedExpression_velocity_positive (ζ φ : ℝ → ℝ)

@@ -1,5 +1,7 @@
 module
 
+import HypoellipticAleksandrov.Analysis.CompactLp
+
 public import HypoellipticAleksandrov.Parabolic.SourceDensityPositive
 
 /-!
@@ -17,7 +19,10 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
-private theorem parabolicOperator_const_sub {d : ℕ} (B : CoefficientField d)
+section
+variable {d : ℕ}
+
+private theorem parabolicOperator_const_sub (B : CoefficientField d)
     (c : ℝ) (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     parabolicOperator B (fun y ↦ c - u y) z = -parabolicOperator B u z := by
   calc
@@ -30,14 +35,7 @@ private theorem parabolicOperator_const_sub {d : ℕ} (B : CoefficientField d)
       parabolicOperator_add_const B (fun y ↦ -u y) c z
     _ = -parabolicOperator B u z := parabolicOperator_neg B u z
 
-private theorem parabolicBox_subset_parabolicClosedBox {d : ℕ}
-    {vartheta r t₀ : ℝ} {v₀ : PDE.Vec d} :
-    parabolicBox vartheta r t₀ v₀ ⊆ parabolicClosedBox vartheta r t₀ v₀ := by
-  intro z hz
-  rcases hz with ⟨⟨hzleft, hzright⟩, hzv⟩
-  exact ⟨⟨hzleft.le, hzright.le⟩, fun i ↦ (hzv i).le⟩
-
-private theorem terminalCenter_mem_parabolicClosedBox {d : ℕ} {R t₀ : ℝ}
+private theorem terminalCenter_mem_parabolicClosedBox {R t₀ : ℝ}
     {v₀ : PDE.Vec d} (hR : 0 < R) :
     (t₀ + R ^ 2, v₀) ∈ parabolicClosedBox 1 R t₀ v₀ := by
   refine ⟨⟨?_, ?_⟩, ?_⟩
@@ -48,53 +46,24 @@ private theorem terminalCenter_mem_parabolicClosedBox {d : ℕ} {R t₀ : ℝ}
     simp only [sub_self, abs_zero]
     exact hR.le
 
-private theorem center_mem_velocityClosedCube {d : ℕ} {R : ℝ}
+private theorem center_mem_velocityClosedCube {R : ℝ}
     {v₀ : PDE.Vec d} (hR : 0 < R) :
     v₀ ∈ velocityClosedCube v₀ (R / 2) := by
   intro i
   simp only [sub_self, abs_zero]
   linarith
 
-private theorem contDiffOn_const_sub_div {d : ℕ} {U : Set (TimeVelocity d)}
+private theorem contDiffOn_const_sub_div {U : Set (TimeVelocity d)}
     {M D : ℝ} {u : TimeVelocity d → ℝ} (hu : ContDiffOn ℝ 2 u U) :
     ContDiffOn ℝ 2 (fun z ↦ (M - u z) / D) U :=
   (contDiffOn_const.sub hu).div_const D
 
-private theorem volume_toReal_mono_of_subset {d : ℕ} {s t : Set (TimeVelocity d)}
-    (ht : (volume : Measure (TimeVelocity d)) t ≠ ⊤) (hst : s ⊆ t) :
-    ((volume : Measure (TimeVelocity d)) s).toReal ≤
-      ((volume : Measure (TimeVelocity d)) t).toReal :=
-  ENNReal.toReal_mono ht (measure_mono hst)
-
-private theorem memLp_of_continuousOn_compact_carrier
-    {d : ℕ} {F : TimeVelocity d → ℝ} {U Q K : Set (TimeVelocity d)}
-    (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
-    (hQK : Q ⊆ K) :
-    MemLp F (parabolicExponent d) (volume.restrict Q) := by
-  have hFK : ContinuousOn F K := hF.mono hKU
-  have hKmeas : MeasurableSet K := hKcompact.measurableSet
-  letI : IsFiniteMeasure (volume.restrict K) :=
-    ⟨by
-      rw [Measure.restrict_apply_univ]
-      exact hKcompact.measure_lt_top⟩
-  obtain ⟨A, hA⟩ := hKcompact.exists_bound_of_continuousOn hFK
-  have hKmem : MemLp F (parabolicExponent d) (volume.restrict K) := by
-    refine MemLp.of_bound (hFK.aestronglyMeasurable hKmeas) A ?_
-    filter_upwards [ae_restrict_mem hKmeas] with z hz
-    exact hA z hz
-  exact hKmem.mono_measure (Measure.restrict_mono_set volume hQK)
-
-private theorem parabolicLpNormOn_abs_div
-    {d : ℕ} {F : TimeVelocity d → ℝ} {Q : Set (TimeVelocity d)} {D : ℝ}
+private theorem parabolicLpNormOn_abs_div {F : TimeVelocity d → ℝ} {Q : Set (TimeVelocity d)} {D : ℝ}
     (hD : 0 < D) (hFmem : MemLp F (parabolicExponent d) (volume.restrict Q)) :
     parabolicLpNormOn d (fun z ↦ |F z| / D) Q =
       D⁻¹ * parabolicLpNormOn d F Q := by
-  have hFtop : parabolicELpNormOn d F Q ≠ ⊤ := by
-    simpa only [parabolicELpNormOn] using hFmem.eLpNorm_ne_top
   have habsmem : MemLp (fun z ↦ |F z|) (parabolicExponent d) (volume.restrict Q) := by
     simpa only [Real.norm_eq_abs] using hFmem.norm
-  have habstop : parabolicELpNormOn d (fun z ↦ |F z|) Q ≠ ⊤ := by
-    simpa only [parabolicELpNormOn] using habsmem.eLpNorm_ne_top
   have hinv : 0 ≤ D⁻¹ := inv_nonneg.mpr hD.le
   calc
     parabolicLpNormOn d (fun z ↦ |F z| / D) Q =
@@ -114,6 +83,8 @@ private theorem parabolicLpNormOn_abs_div
       apply eLpNorm_congr_enorm_ae habsmem.aestronglyMeasurable hFmem.aestronglyMeasurable
       filter_upwards [] with z
       exact Real.enorm_abs (F z)
+
+end
 
 private theorem source_supersolution_const_sub_div
     {d : ℕ} {B : CoefficientField d} {M D : ℝ} {F u : TimeVelocity d → ℝ}
@@ -136,7 +107,7 @@ private theorem source_supersolution_const_sub_div
       _ = D⁻¹ * (-parabolicOperator B u z) := by
         rw [parabolicOperator_const_sub]
   rw [hoperator, heq z hz]
-  have hquotient : F z / D ≤ |F z| / D :=
+  have hquotient :=
     (div_le_div_iff_of_pos_right hD).mpr (le_abs_self (F z))
   calc
     -(|F z| / D) ≤ -(F z / D) := neg_le_neg hquotient
@@ -178,10 +149,10 @@ theorem source_level_growth_of_low_set_density
   have hD : 0 < D := by
     dsimp [D]
     linarith
-  have hQsubset : Q ⊆ Qclosed := parabolicBox_subset_parabolicClosedBox
+  have hQsubset : Q ⊆ Qclosed := _root_.HypoellipticAleksandrov.Parabolic.parabolicBox_subset_closed
   have hFmem : MemLp F (parabolicExponent d) (volume.restrict Q) :=
-    memLp_of_continuousOn_compact_carrier hF hclosed
-      (isCompact_parabolicClosedBox 1 R t0 v0) hQsubset
+    (Analysis.memLp_restrict_of_isCompact (isCompact_parabolicClosedBox 1 R t0 v0)
+      (hF.mono hclosed) _).mono_measure (Measure.restrict_mono_set volume hQsubset)
   have hFtop : parabolicELpNormOn d F Q ≠ ⊤ := by
     simpa only [parabolicELpNormOn] using hFmem.eLpNorm_ne_top
   have hFabsmem : MemLp Fabs (parabolicExponent d) (volume.restrict Q) := by
@@ -227,7 +198,7 @@ theorem source_level_growth_of_low_set_density
       (measure_mono hsuperclosed)
   have hwdensity : beta * ((volume : Measure (TimeVelocity d)) Q).toReal ≤
       ((volume : Measure (TimeVelocity d)) (Q ∩ {z | 1 ≤ w z})).toReal :=
-    hdensity.trans (volume_toReal_mono_of_subset hvolfin hlow)
+    hdensity.trans ((ENNReal.toReal_mono hvolfin (measure_mono hlow)))
   have hcenter : v0 ∈ velocityClosedCube v0 (R / 2) :=
     center_mem_velocityClosedCube hR
   have hpoint : g ≤ w (t0 + R ^ 2, v0) +

@@ -10,24 +10,25 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+  (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
+include lam Lam A hE
+
 /-- Both actual measures lie in the literal physical finite-speed cone. -/
-theorem strip_cone_ae_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
-    (∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+theorem strip_cone_ae_of_realization :
+    (∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       |p.position 0 - e.1.position 0| ≤ max |H.lo| |H.hi| * (p.time - e.1.time)) ∧
     ∀ᵐ p ∂stripGreenOfKernel H E.2 T e,
       |p.position 0 - e.1.position 0| ≤ max |H.lo| |H.hi| * (p.time - e.1.time) := by
   let V := max |H.lo| |H.hi|
-  have hr := reconstruction_transport_cone_ae hH hlam hLam A H E hE T e
+  have hr := reconstruction_transport_cone_ae A H E hE T e
     (-V) 1 (V * e.1.time - e.1.position 0)
     (by dsimp only [reconstructionConeCoordinate]; ring)
     (fun v hv => by
       have hh : v ≤ V := hv.2.le.trans ((le_abs_self H.hi).trans (le_max_right _ _))
       linarith)
-  have hl := reconstruction_transport_cone_ae hH hlam hLam A H E hE T e
+  have hl := reconstruction_transport_cone_ae A H E hE T e
     (-V) (-1) (V * e.1.time + e.1.position 0)
     (by dsimp only [reconstructionConeCoordinate]; ring)
     (fun v hv => by
@@ -48,15 +49,13 @@ theorem strip_cone_ae_of_realization
     exact hbound p hp hq
 
 /-- The finite-horizon Green measure gives zero mass to violations of the physical cone. -/
-theorem strip_cone_finite_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
+theorem strip_cone_finite_of_realization :
     stripGreenOfKernel H E.2 T e
       {p | |p.position 0 - e.1.position 0| > max |H.lo| |H.hi| * (p.time - e.1.time)} = 0 := by
-  have hh := (strip_cone_ae_of_realization hH hlam hLam A H E hE T e).2
+  have hh := (strip_cone_ae_of_realization A H E hE T e).2
   rw [ae_iff] at hh
   simpa only [not_le] using hh
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

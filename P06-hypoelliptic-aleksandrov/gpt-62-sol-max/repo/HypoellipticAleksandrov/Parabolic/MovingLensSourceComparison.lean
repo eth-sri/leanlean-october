@@ -1,11 +1,16 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.MovingLensSourceLowerBound
-public import HypoellipticAleksandrov.Parabolic.MovingLensComparison
+public import Mathlib.Topology.Order.Compact
+public import HypoellipticAleksandrov.Parabolic.LocalClassical
+public import HypoellipticAleksandrov.Parabolic.MinimumPrinciple
+public import HypoellipticAleksandrov.Parabolic.MovingLensSign
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+import HypoellipticAleksandrov.Parabolic.DensityToPoint
+import HypoellipticAleksandrov.Parabolic.ForwardPropagationGeometry
 
 /-!
 # Source-aware small-seed moving-lens comparison
@@ -23,29 +28,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open Filter Set
 open scoped MatrixOrder Topology
-
-private theorem parabolicOperator_const_smul
-    {d : Nat} (A : CoefficientField d) (c : Real)
-    (u : TimeVelocity d -> Real) (z : TimeVelocity d) :
-    parabolicOperator A (c • u) z = c * parabolicOperator A u z := by
-  have hfirst : fderiv Real (c • u) = c • fderiv Real u :=
-    fderiv_const_smul_field c
-  have htime : timeDerivative (c • u) z = c * timeDerivative u z := by
-    unfold timeDerivative
-    rw [fderiv_const_smul_field]
-    rfl
-  have hhessian : velocityHessian (c • u) z = c • velocityHessian u z := by
-    have hsecond : fderiv Real (fderiv Real (c • u)) z =
-        c • fderiv Real (fderiv Real u) z := by
-      rw [hfirst]
-      exact congrFun (fderiv_const_smul_field (f := fderiv Real u) c) z
-    ext i j
-    unfold velocityHessian
-    rw [hsecond]
-    rfl
-  rw [parabolicOperator_apply, parabolicOperator_apply, htime, hhessian,
-    HypoellipticAleksandrov.matrixContraction_smul_right]
-  ring
 
 private theorem parabolicOperator_sub_of_contDiffAt
     {d : Nat} (A : CoefficientField d) (u v : TimeVelocity d -> Real)
@@ -100,19 +82,29 @@ private theorem movingLensSignExponent_pos (d : Nat) (lam Lam kappa : Real) :
   unfold movingLensSignExponent
   omega
 
-private theorem movingLensDenominator_lt_kappa_sq
-    {kappa eps tau t : Real} (hkappa : 0 < kappa)
-    (hsmall : 2 * eps ^ 2 < kappa ^ 2) (ht : t <= tau)
-    (htau : tau <= kappa⁻¹) :
-    movingLensDenominator (movingLensSignXi kappa) eps t < kappa ^ 2 := by
-  unfold movingLensDenominator movingLensSignXi
-  have hslope : kappa ^ 3 / 2 * t <= kappa ^ 2 / 2 := by
-    calc
-      kappa ^ 3 / 2 * t <= kappa ^ 3 / 2 * kappa⁻¹ :=
-        mul_le_mul_of_nonneg_left (ht.trans htau) (by positivity)
-      _ = kappa ^ 2 / 2 := by
-        field_simp [hkappa.ne']
-  nlinarith
+abbrev SourceMovingLensComparison
+    (d : Nat) (lam Lam kappa C : Real) : Prop :=
+  ∀ (A : CoefficientField d) (U : Set (TimeVelocity d))
+    (F u : TimeVelocity d -> Real) (tau eps ell : Real) (y : PDE.Vec d),
+    0 < tau -> tau <= kappa⁻¹ -> 0 < eps ->
+    2 * eps ^ 2 < kappa ^ 2 -> 0 < ell ->
+    PDE.vecNormSq y <= (d : Real) * kappa ^ (-4 : Int) ->
+    IsOpen U -> movingLensClosed (movingLensSignXi kappa) eps tau y ⊆ U ->
+    IsContinuousCoefficientOn A U -> ContinuousOn F U ->
+    ContinuousOn u (movingLensClosed (movingLensSignXi kappa) eps tau y) ->
+    (∀ z ∈ movingLensActive (movingLensSignXi kappa) eps tau y,
+      ContDiffAt Real 2 u z) ->
+    IsNonnegativeOn u (movingLensClosed (movingLensSignXi kappa) eps tau y) ->
+    HasLowerEllipticityOn lam A (movingLensActive (movingLensSignXi kappa) eps tau y) ->
+    HasUpperEllipticityOn Lam A (movingLensActive (movingLensSignXi kappa) eps tau y) ->
+    IsNonnegativeOn F (movingLensActive (movingLensSignXi kappa) eps tau y) ->
+    IsParabolicSupersolutionOn A (fun z => -F z) u
+      (movingLensActive (movingLensSignXi kappa) eps tau y) ->
+    (∀ v : PDE.Vec d, PDE.vecNormSq v < eps ^ 2 -> ell <= u (0, v)) ->
+    ell * eps ^ (2 * movingLensSignExponent d lam Lam kappa) /
+        kappa ^ (2 * movingLensSignExponent d lam Lam kappa) <
+      u (tau, tau • y) + C * parabolicLpNormOn d F
+        (movingLensClosed (movingLensSignXi kappa) eps tau y)
 
 /-- A supplied nonnegative source changes the small-seed terminal comparison
 only by a structural multiple of its restricted parabolic norm. -/
@@ -120,35 +112,7 @@ theorem exists_movingLens_source_terminal_lower_bound
     (d : Nat) (hd : 0 < d) (lam Lam kappa : Real)
     (hlam : 0 < lam) (hlamLam : lam <= Lam)
     (hkappa : 0 < kappa) (hkappa_one : kappa <= 1) :
-    ∃ C : Real, 0 < C ∧
-      ∀ (A : CoefficientField d) (U : Set (TimeVelocity d))
-        (F u : TimeVelocity d -> Real) (tau eps ell : Real) (y : PDE.Vec d),
-        0 < tau -> tau <= kappa⁻¹ -> 0 < eps ->
-        2 * eps ^ 2 < kappa ^ 2 ->
-        0 < ell ->
-        PDE.vecNormSq y <= (d : Real) * kappa ^ (-4 : Int) ->
-        IsOpen U ->
-        movingLensClosed (movingLensSignXi kappa) eps tau y ⊆ U ->
-        IsContinuousCoefficientOn A U ->
-        ContinuousOn F U ->
-        ContinuousOn u (movingLensClosed (movingLensSignXi kappa) eps tau y) ->
-        (∀ z ∈ movingLensActive (movingLensSignXi kappa) eps tau y,
-          ContDiffAt Real 2 u z) ->
-        IsNonnegativeOn u
-          (movingLensClosed (movingLensSignXi kappa) eps tau y) ->
-        HasLowerEllipticityOn lam A
-          (movingLensActive (movingLensSignXi kappa) eps tau y) ->
-        HasUpperEllipticityOn Lam A
-          (movingLensActive (movingLensSignXi kappa) eps tau y) ->
-        IsNonnegativeOn F
-          (movingLensActive (movingLensSignXi kappa) eps tau y) ->
-        IsParabolicSupersolutionOn A (fun z => -F z) u
-          (movingLensActive (movingLensSignXi kappa) eps tau y) ->
-        (∀ v : PDE.Vec d, PDE.vecNormSq v < eps ^ 2 -> ell <= u (0, v)) ->
-        ell * eps ^ (2 * movingLensSignExponent d lam Lam kappa) /
-            kappa ^ (2 * movingLensSignExponent d lam Lam kappa) <
-          u (tau, tau • y) + C * parabolicLpNormOn d F
-            (movingLensClosed (movingLensSignXi kappa) eps tau y) := by
+    ∃ C : Real, 0 < C ∧ SourceMovingLensComparison d lam Lam kappa C := by
   rcases exists_movingLens_source_lower_bound d hd lam Lam kappa
     hlam hlamLam hkappa hkappa_one with ⟨C, hCpos, hC⟩
   refine ⟨C, hCpos, ?_⟩

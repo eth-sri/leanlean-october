@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.BoundarySaturationGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.DelayedUnion
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.AffineGeometryTopology
 
 /-! # A geometric envelope for delayed stacks -/
 
@@ -45,9 +46,13 @@ theorem top_mem_closure_cylinder {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 
     (hf.continuousOn.image_closure (mem_image_of_mem f ht))
   simpa only [f, sub_self, zero_smul, add_zero] using h
 
+section
+variable {d : ℕ} {P : KineticPoint d} {r : ℝ} (hr : 0 < r)
+  (hsub : backwardCylinder P r ⊆ unitCylinder d)
+include r hr hsub
+
 /-- A cylinder inside Q has bounded top time, position center, and velocity center. -/
-theorem cylinder_subset_unit_center_bounds {d : ℕ} {P : KineticPoint d} {r : ℝ}
-    (hr : 0 < r) (hsub : backwardCylinder P r ⊆ unitCylinder d) :
+theorem cylinder_subset_unit_center_bounds :
     -1 ≤ P.time ∧ P.time ≤ 0 ∧ PDE.vecEuclideanNorm P.position ≤ 1 ∧
       PDE.vecEuclideanNorm P.velocity < 1 := by
   have htop := closure_mono hsub
@@ -57,7 +62,7 @@ theorem cylinder_subset_unit_center_bounds {d : ℕ} {P : KineticPoint d} {r : �
     simpa only [relativePosition, sub_zero, smul_zero, one_pow] using hb.2.2.2
   have hpn := PDE.vecEuclideanNorm_nonneg P.position
   have hs := PDE.vecEuclideanNorm_sq P.position
-  obtain ⟨Y, hY⟩ := cylinder_nonempty P hr
+  obtain ⟨Y, hY⟩ := _root_.HypoellipticAleksandrov.KineticAleksandrov.Holder.backwardCylinder_nonempty P hr
   let Z : KineticPoint d := ⟨Y.time, Y.position, P.velocity⟩
   have hZ : Z ∈ backwardCylinder P r :=
     ⟨hY.1, hY.2.1, PDE.center_mem_euclideanBall _ hr, hY.2.2.2⟩
@@ -67,14 +72,14 @@ theorem cylinder_subset_unit_center_bounds {d : ℕ} {P : KineticPoint d} {r : �
   · exact hb.2.1
 
 /-- Every velocity in the source velocity ball of a subcylinder lies in the unit ball. -/
-theorem velocity_ball_subset_unit {d : ℕ} {P : KineticPoint d} {r : ℝ}
-    (hr : 0 < r) (hsub : backwardCylinder P r ⊆ unitCylinder d)
+theorem velocity_ball_subset_unit
     {v : PDE.Vec d} (hv : v ∈ PDE.euclideanBall P.velocity r) :
     PDE.vecEuclideanNorm v < 1 := by
-  obtain ⟨Y, hY⟩ := cylinder_nonempty P hr
+  obtain ⟨Y, hY⟩ := _root_.HypoellipticAleksandrov.KineticAleksandrov.Holder.backwardCylinder_nonempty P hr
   let Z : KineticPoint d := ⟨Y.time, Y.position, v⟩
-  have hZ : Z ∈ backwardCylinder P r := ⟨hY.1, hY.2.1, hv, hY.2.2.2⟩
-  exact ((mem_unitCylinder_iff Z).mp (hsub hZ)).2.2.1
+  exact ((mem_unitCylinder_iff Z).mp (hsub ⟨hY.1, hY.2.1, hv, hY.2.2.2⟩)).2.2.1
+
+end
 
 /-- A delayed stack lies in the time-spatial leakage envelope. -/
 theorem forwardStack_subset_roundBox {d : ℕ} {P : KineticPoint d} {r R : ℝ}

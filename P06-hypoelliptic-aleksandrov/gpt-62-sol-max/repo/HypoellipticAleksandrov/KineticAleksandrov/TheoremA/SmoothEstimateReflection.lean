@@ -27,8 +27,12 @@ theorem preimage_backwardCylinder_reflection (P₀ : KineticPoint d) (R : ℝ) (
     rw [← h]
     exact hq
 
+section
+variable (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+include P₀ R hR
+
 /-- Reflection preserves the restricted cylinder volumes, with no scale factor. -/
-theorem measurePreserving_reflection_forward (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem measurePreserving_reflection_forward :
     MeasurePreserving (kineticReflection (d := d))
       (volume.restrict (forwardCylinder (kineticReflection P₀) R hR))
       (volume.restrict (backwardCylinder P₀ R)) := by
@@ -39,15 +43,14 @@ theorem measurePreserving_reflection_forward (P₀ : KineticPoint d) (R : ℝ) (
   exact h
 
 /-- Reflection maps the closures used in the boundary-value estimate exactly. -/
-theorem preimage_closure_backwardCylinder_reflection
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem preimage_closure_backwardCylinder_reflection :
     kineticReflection ⁻¹' closure (backwardCylinder P₀ R) =
       closure (forwardCylinder (kineticReflection P₀) R hR) := by
   rw [← preimage_backwardCylinder_reflection P₀ R hR]
   exact (kineticReflectionHomeomorph d).preimage_closure _
 
 /-- The reflected boundary supremum is the original kinetic boundary supremum. -/
-theorem boundarySup_reflection (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+theorem boundarySup_reflection
     (u : KineticPoint d → ℝ) :
     sSup ((fun P => max ((u ∘ kineticReflection) P) 0) ''
       exitBoundary (kineticReflection P₀) R hR) =
@@ -58,5 +61,7 @@ theorem boundarySup_reflection (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
   funext P
   simp only [Function.comp_apply]
   rw [kineticReflection_involutive P]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

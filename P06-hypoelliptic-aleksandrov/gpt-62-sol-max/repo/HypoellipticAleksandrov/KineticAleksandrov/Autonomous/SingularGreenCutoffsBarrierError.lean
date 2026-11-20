@@ -24,8 +24,7 @@ theorem barrier_position_cutoff_deriv (Y R x : ℝ) :
     deriv (fun X => barrierCutoff ((X - Y) / R ^ 3)) x =
       deriv barrierCutoff ((x - Y) / R ^ 3) / R ^ 3 := by
   have hc := (barrierCutoff_contDiff.differentiable (by simp) ((x - Y) / R ^ 3)).hasDerivAt
-  have hx := ((hasDerivAt_id x).sub_const Y).div_const (R ^ 3)
-  simpa only [one_div, div_eq_mul_inv, Function.comp_def, id_eq, one_mul] using (hc.comp x hx).deriv
+  simpa only [one_div, div_eq_mul_inv, Function.comp_def, id_eq, one_mul] using (hc.comp x (((hasDerivAt_id x).sub_const Y).div_const (R ^ 3))).deriv
 
 /-- The literal error is exactly the generator product rule for a joint C² physical test. -/
 theorem barrierRectError_eq_operator (a : ℝ → ℝ → ℝ) (f : Z → ℝ)

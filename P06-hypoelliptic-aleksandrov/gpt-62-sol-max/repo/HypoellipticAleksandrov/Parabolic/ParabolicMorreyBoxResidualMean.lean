@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincarePhysical
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyMeanNormTransport
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDerivativeNorm
+import HypoellipticAleksandrov.Parabolic.ParabolicMorreyNestedProjectionClosed
 
 /-!
 # Mean residual estimate on a physical parabolic Morrey box
@@ -21,18 +22,10 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 
-private theorem continuous_parabolicMorreyBoxAffineProjection
-    {d : Nat} (t : Real) (v : PDE.Vec d) (r : Real) (u : TimeVelocity d -> Real) :
-    Continuous (parabolicMorreyBoxAffineProjection t v r u) := by
-  unfold parabolicMorreyBoxAffineProjection
-  apply Continuous.add continuous_const
-  apply continuous_finset_sum
-  intro i _
-  exact continuous_const.mul ((continuous_apply i).comp continuous_snd |>.sub
-    continuous_const)
+section
+variable {d : Nat}
 
-private theorem parabolicMorreyBoxAffineResidual_memLp
-    {d : Nat} (t : Real) (v : PDE.Vec d) {r : Real} (hr : 0 < r)
+theorem parabolicMorreyBoxAffineResidual_memLp (t : Real) (v : PDE.Vec d) {r : Real} (hr : 0 < r)
     (u : TimeVelocity d -> Real) (hu : ContDiff Real 2 u) :
     MemLp (fun z => u z - parabolicMorreyBoxAffineProjection t v r u z)
       (parabolicExponent d)
@@ -50,8 +43,7 @@ private theorem parabolicMorreyBoxAffineResidual_memLp
       (ENNReal.toReal_pos_iff.mp (volume_parabolicMorreyUnitBox_toReal_pos d)).1 hunitRaw
   exact (memLp_parabolicNormalizedVolumeOn_parabolicBox_iff t v hr f).mpr hunitMean
 
-private theorem parabolicMorreyBox_normalization_factor
-    {d : Nat} {r : Real} (hr : 0 < r) :
+private theorem parabolicMorreyBox_normalization_factor {r : Real} (hr : 0 < r) :
     ((2 : Real) ^ d * r ^ (d + 2))⁻¹ ^ (1 / ((d : Real) + 1)) * r ^ 2 =
       (2 : Real) ^ (-(d : Real) / ((d : Real) + 1)) *
         r ^ parabolicMorreyExponent d := by
@@ -77,8 +69,7 @@ private theorem parabolicMorreyBox_normalization_factor
     field_simp [hdenom]
     ring
 
-private theorem parabolicMorreyBoxAffineResidual_mean_bound
-    {d : Nat} (C : Real) (t : Real) (v : PDE.Vec d) {r : Real} (hr : 0 < r)
+theorem parabolicMorreyBoxAffineResidual_mean_bound (C : Real) (t : Real) (v : PDE.Vec d) {r : Real} (hr : 0 < r)
     (u : TimeVelocity d -> Real)
     (hP : (r ^ 2)⁻¹ *
       parabolicLpNormOn d
@@ -131,6 +122,8 @@ private theorem parabolicMorreyBoxAffineResidual_mean_bound
         C * A by ring,
     parabolicMorreyBox_normalization_factor hr]
   ring
+
+end
 
 /-- On every positive-radius forward physical box, the canonical affine
 residual of compactly supported `C²` data has its normalized `L^(d + 1)` mean

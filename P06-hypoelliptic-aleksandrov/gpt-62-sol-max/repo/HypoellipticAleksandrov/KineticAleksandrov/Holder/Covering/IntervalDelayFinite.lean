@@ -38,8 +38,12 @@ theorem open_ordConnected_eq_Ioo {s : Set ℝ} (hs : IsOpen s) (hn : s.Nonempty)
     obtain ⟨b, hb, hxb⟩ := exists_lt_of_lt_csSup hn hx.2
     exact hc.out ha hb ⟨hax.le, hxb.le⟩
 
+section
+variable {U : Set ℝ} (hU : IsOpen U)
+include hU
+
 /-- The order component of a point in an open real set is open. -/
-theorem isOpen_ordConnectedComponent {U : Set ℝ} (hU : IsOpen U) (x : ℝ) :
+theorem isOpen_ordConnectedComponent (x : ℝ) :
     IsOpen (ordConnectedComponent U x) := by
   rw [isOpen_iff_mem_nhds]
   intro y hy
@@ -48,7 +52,7 @@ theorem isOpen_ordConnectedComponent {U : Set ℝ} (hU : IsOpen U) (x : ℝ) :
 
 /-- A bounded open real set is a countable disjoint union of nonempty open intervals.
 Every nonempty open interval in the set is contained in one of these components. -/
-theorem bounded_open_interval_components {U : Set ℝ} (hU : IsOpen U)
+theorem bounded_open_interval_components
     (hbelow : BddBelow U) (habove : BddAbove U) :
     ∃ C : Set (Set ℝ), C.Countable ∧ C.PairwiseDisjoint id ∧
       (∀ s ∈ C, s.Nonempty ∧ s = Ioo (sInf s) (sSup s)) ∧
@@ -92,6 +96,8 @@ theorem bounded_open_interval_components {U : Set ℝ} (hU : IsOpen U)
     have hx : x ∈ Ioo a b := ⟨by dsimp [x]; linarith, by dsimp [x]; linarith⟩
     refine ⟨ordConnectedComponent U x, ⟨x, hsub hx, rfl⟩, ?_⟩
     exact subset_ordConnectedComponent hx hsub
+
+end
 
 /-- The backward interval lies in the left extension of any interval containing its delay. -/
 theorem backwardInterval_subset_component_extension {a h m l b : ℝ}

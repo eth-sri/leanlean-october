@@ -17,15 +17,10 @@ theorem enlarged_integral_kernel_pair_le
     (hg : Integrable g mu)
     (hstep : ∀ᵐ p ∂mu, (∫ q, f q ∂K p) + (∫ q, f q ∂L p) ≤ g p) :
     (∫ q, f q ∂K ∘ₘ mu) + (∫ q, f q ∂L ∘ₘ mu) ≤ ∫ p, g p ∂mu := by
-  have hiK : Integrable (fun p => ∫ q, f q ∂K p) mu := by
-    rw [Measure.comp_eq_comp_const_apply] at hK
-    simpa only [Kernel.const_apply] using hK.integral_comp
-  have hiL : Integrable (fun p => ∫ q, f q ∂L p) mu := by
-    rw [Measure.comp_eq_comp_const_apply] at hL
-    simpa only [Kernel.const_apply] using hL.integral_comp
-  rw [nested_integral_bind mu K K.measurable f hK,
-    nested_integral_bind mu L L.measurable f hL, ← integral_add hiK hiL]
-  exact integral_mono_ae (hiK.add hiL) hg hstep
+  rw [integral_measure_comp hK, integral_measure_comp hL,
+    ← integral_add (integrable_integral_measure_comp hK) (integrable_integral_measure_comp hL)]
+  exact integral_mono_ae ((integrable_integral_measure_comp hK).add
+    (integrable_integral_measure_comp hL)) hg hstep
 
 /-- Integrating one actual kernel action preserves a pointwise bound. -/
 theorem enlarged_integral_kernel_le
@@ -33,11 +28,8 @@ theorem enlarged_integral_kernel_le
     (f g : Point → ℝ) (hK : Integrable f (K ∘ₘ mu)) (hg : Integrable g mu)
     (hstep : ∀ᵐ p ∂mu, (∫ q, f q ∂K p) ≤ g p) :
     (∫ q, f q ∂K ∘ₘ mu) ≤ ∫ p, g p ∂mu := by
-  have hiK : Integrable (fun p => ∫ q, f q ∂K p) mu := by
-    rw [Measure.comp_eq_comp_const_apply] at hK
-    simpa only [Kernel.const_apply] using hK.integral_comp
-  rw [nested_integral_bind mu K K.measurable f hK]
-  exact integral_mono_ae hiK hg hstep
+  rw [integral_measure_comp hK]
+  exact integral_mono_ae (integrable_integral_measure_comp hK) hg hstep
 
 /-- Finite nonnegative terminal spends telescope through successive active and waiting values. -/
 theorem enlarged_terminal_values_telescope (U R D : ℕ → ℝ)

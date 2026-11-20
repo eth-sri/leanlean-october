@@ -16,22 +16,26 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set Matrix KineticAleksandrov
 open scoped Matrix.Norms.Elementwise
 
+section
+variable {d : ℕ} (lam M : ℝ) (A : CoefficientField d)
+include lam M A
+
 /-- The smooth forcing of the source-M spatial barrier. -/
-def sourceBallBarrierForcing {d : ℕ} (lam M : ℝ) (A : CoefficientField d)
+def sourceBallBarrierForcing
     (z : TimeVelocity d) : ℝ :=
   -(2 * M * (A z.1 z.2).trace) / (2 * (d : ℝ) * lam)
 
 /-- The trace forcing is smooth for smooth coefficients. -/
-theorem contDiff_sourceBallBarrierForcing {d : ℕ} (lam M : ℝ)
-    (A : CoefficientField d) (hA : IsSmoothCoefficient A) :
+theorem contDiff_sourceBallBarrierForcing (hA : IsSmoothCoefficient A) :
     ContDiff ℝ (⊤ : ℕ∞) (sourceBallBarrierForcing lam M A) := by
   have htr : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => (A z.1 z.2).trace) := by
     unfold Matrix.trace Matrix.diag
     apply ContDiff.sum
     intro i _
-    exact (contDiff_apply ℝ ℝ i).comp
-      ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+    exact (contDiff_apply_apply ℝ ℝ i i).comp hA
   exact (contDiff_const.mul htr).neg.div_const _
+
+end
 
 /-- The ball barrier has an actual smooth H10 realization with its literal trace forcing. -/
 theorem exists_h10_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)

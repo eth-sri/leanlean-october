@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonCalculus
+public import HypoellipticAleksandrov.Parabolic.ScalarCalculus
 import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementSource
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletSup
 import HypoellipticAleksandrov.Parabolic.ScalarDirichletComparison
@@ -36,7 +36,7 @@ theorem abs_homogeneous_solution_sub_le_boundary_error {d : ℕ}
     hΩ hΩb haT A (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => (0 : ℝ) - 0)
     (fun y => φ₁ y - φ₂ y) (fun z => b₁ z - b₂ z) (fun z => u z - v z)
     hAc continuous_const hApsd (fun _ _ => le_rfl) huv
-    ε ε 0 hε hε le_rfl hφ hb (fun _ _ => by simp only [sub_self, abs_zero, le_refl]) hz
+    ε ε 0 hε hε le_rfl hφ hb (fun _ _ => by simp) hz
   simpa only [mul_zero, add_zero, two_mul] using h
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

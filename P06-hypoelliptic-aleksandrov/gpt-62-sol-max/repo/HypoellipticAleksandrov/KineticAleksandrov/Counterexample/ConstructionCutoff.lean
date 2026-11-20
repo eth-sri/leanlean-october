@@ -19,7 +19,7 @@ theorem construction_exists_velocity_margin {d : ℕ} {alpha : ℝ}
     (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2) :
     ∃ m : ℝ, m < R ^ 2 ∧ ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m := by
   have hK := isCompact_profile_unit_sublevel ha h
-  have hzero := (selectedProfile_spec h).2.2.2.2.2.2.2.1
+  have hzero := (selectedProfile_spec h).at_zero
   have hne : ({q : XV d | profileFunction h q ≤ 1} : Set (XV d)).Nonempty :=
     ⟨0, by change profileFunction h 0 ≤ 1; rw [hzero]; norm_num⟩
   have hc : Continuous (fun q : XV d => PDE.vecNormSq q.2) :=
@@ -37,20 +37,24 @@ theorem contDiff_providerVelocityCutoff (d : ℕ) (m R : ℝ) :
   exact contDiff_const.sub (Real.smoothTransition.contDiff.comp
     (((PDE.contDiff_vecNormSq.comp contDiff_snd).sub contDiff_const).div_const _))
 
+section
+variable {d : ℕ} (m R : ℝ) (hm : m < R ^ 2) (q : XV d)
+include hm
+
 /-- The cutoff equals one below the inner squared-velocity threshold. -/
-theorem constructionVelocityCutoff_eq_one {d : ℕ} (m R : ℝ) (hm : m < R ^ 2)
-    (q : XV d) (hq : PDE.vecNormSq q.2 ≤ m) : constructionVelocityCutoff m R q = 1 := by
+theorem constructionVelocityCutoff_eq_one (hq : PDE.vecNormSq q.2 ≤ m) : constructionVelocityCutoff m R q = 1 := by
   unfold constructionVelocityCutoff
   rw [Real.smoothTransition.zero_of_nonpos (div_nonpos_of_nonpos_of_nonneg
     (sub_nonpos.mpr hq) (sub_pos.mpr hm).le), sub_zero]
 
 /-- The cutoff is zero at and beyond the barrier radius. -/
-theorem constructionVelocityCutoff_eq_zero {d : ℕ} (m R : ℝ) (hm : m < R ^ 2)
-    (q : XV d) (hq : R ^ 2 ≤ PDE.vecNormSq q.2) : constructionVelocityCutoff m R q = 0 := by
+theorem constructionVelocityCutoff_eq_zero (hq : R ^ 2 ≤ PDE.vecNormSq q.2) : constructionVelocityCutoff m R q = 0 := by
   unfold constructionVelocityCutoff
   rw [Real.smoothTransition.one_of_one_le
     ((le_div_iff₀ (sub_pos.mpr hm)).mpr (by simpa only [one_mul] using sub_le_sub_right hq m)),
     sub_self]
+
+end
 
 /-- Multiplying the raw cutoff by the smooth velocity cutoff is exactly the zero extension.
 This equality holds at every time, including the initial zero interval. -/

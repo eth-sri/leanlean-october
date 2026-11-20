@@ -16,7 +16,6 @@ open Set
 
 /-- Bounded forcing adds at most `4 M r²` to the structural range contraction. -/
 theorem exists_forced_range_contraction
-    (hLE : KineticAleksandrov.LiebermanEllipsoidDirichletStatement)
     (N : ℕ) (hN : 1 ≤ N) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ θ : ℝ, 0 ≤ θ ∧ θ < 1 ∧
       ∀ (A : CoefficientField N), IsSmoothCoefficient A → IsSymmetricCoefficient A →
@@ -41,7 +40,7 @@ theorem exists_forced_range_contraction
   intro A hA hs hlo hhi T v₀ r hr w M hM hw hwc hf l b hb
   have haT : T - r ^ 2 < T := sub_lt_self T (sq_pos_of_pos hr)
   obtain ⟨v, hv, hvc, htrace, he, herr⟩ := exists_parabolic_homogeneous_replacement
-    hLE hN lam Lam hlam hLam A hA hs hlo hhi (T - r ^ 2) T haT v₀ r hr w M hM hw hwc hf
+    hN lam Lam hlam hLam A hA hs hlo hhi (T - r ^ 2) T haT v₀ r hr w M hM hw hwc hf
   have herr' (z : TimeVelocity N)
       (hz : z ∈ scalarParabolicOpenCylinder (T - r ^ 2) T (PDE.euclideanBall v₀ r)) :
       |w z - v z| ≤ M * r ^ 2 := by

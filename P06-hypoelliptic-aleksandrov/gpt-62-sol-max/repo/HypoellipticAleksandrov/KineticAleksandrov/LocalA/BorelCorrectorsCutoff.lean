@@ -12,8 +12,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 open scoped Topology Matrix.Norms.Elementwise
 
+section
+variable {d : ℕ}
+
 /-- Compact interior sets have a compact collar and a physical smooth cutoff. -/
-theorem exists_borelCorrector_cutoff {d : ℕ} {D K : Set (KineticPoint d)}
+theorem exists_borelCorrector_cutoff {D K : Set (KineticPoint d)}
     (hD : IsOpen D) (hK : IsCompact K) (hKD : K ⊆ D) :
     ∃ (O : Set (KineticPoint d)) (χ : KineticPoint d → ℝ),
       IsOpen O ∧ K ⊆ O ∧ closure O ⊆ D ∧ IsCompact (closure O) ∧
@@ -52,7 +55,7 @@ theorem exists_borelCorrector_cutoff {d : ℕ} {D K : Set (KineticPoint d)}
     exact hφone (e P) (by rwa [hclosure] at hP)
 
 /-- Multiplication by a cutoff supported in the domain gives a globally continuous function. -/
-theorem borelCorrector_cutoff_continuous {d : ℕ} {D : Set (KineticPoint d)}
+theorem borelCorrector_cutoff_continuous {D : Set (KineticPoint d)}
     (hD : IsOpen D) (χ f : KineticPoint d → ℝ) (hχ : Continuous χ)
     (hs : tsupport χ ⊆ D) (hf : ContinuousOn f D) :
     Continuous (fun P => χ P * f P) := by
@@ -67,12 +70,12 @@ theorem borelCorrector_cutoff_continuous {d : ℕ} {D : Set (KineticPoint d)}
     exact continuousAt_const.congr hz.symm
 
 /-- The actual cutoff source uses the smooth coefficient's classical residual. -/
-def borelCorrectorSource {d : ℕ} (χ : KineticPoint d → ℝ)
+def borelCorrectorSource (χ : KineticPoint d → ℝ)
     (B : CoefficientField d) (U : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ :=
   χ P * forwardKineticOperator (ofTimeVelocityCoefficient B) U P
 
 /-- C112 jets make each cutoff residual continuous and compactly supported. -/
-theorem borelCorrectorSource_continuous_compact {d : ℕ} {D : Set (KineticPoint d)}
+theorem borelCorrectorSource_continuous_compact {D : Set (KineticPoint d)}
     (hD : IsOpen D) (χ : KineticPoint d → ℝ) (hχ : Continuous χ)
     (hχc : HasCompactSupport χ) (hs : tsupport χ ⊆ D)
     (B : CoefficientField d) (hB : IsSmoothCoefficient B)
@@ -84,7 +87,7 @@ theorem borelCorrectorSource_continuous_compact {d : ℕ} {D : Set (KineticPoint
     (hB.continuous.comp (continuous_time.prodMk continuous_velocity)).continuousOn
 
 /-- The forward operator change is exactly the coefficient-Hessian contraction. -/
-theorem borelCorrector_operator_sub {d : ℕ} (B A : CoefficientField d)
+theorem borelCorrector_operator_sub (B A : CoefficientField d)
     (U : KineticPoint d → ℝ) (P : KineticPoint d) :
     forwardKineticOperator (ofTimeVelocityCoefficient B) U P -
       forwardKineticOperator (ofTimeVelocityCoefficient A) U P =
@@ -93,5 +96,7 @@ theorem borelCorrector_operator_sub {d : ℕ} (B A : CoefficientField d)
   simp only [forwardKineticOperator_apply, ofTimeVelocityCoefficient, matrixContraction,
     Matrix.sub_apply, sub_mul, Finset.sum_sub_distrib]
   ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

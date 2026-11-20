@@ -14,8 +14,7 @@ open scoped ENNReal
 /-- A nonnegative smooth supersolution bounds the actual exit mass of any boundary set
 on which it is at least one. The identity used here is proved for the actual measures. -/
 theorem stripExitOfRealization_le_supersolution
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (phi : Point → ℝ)
@@ -29,17 +28,17 @@ theorem stripExitOfRealization_le_supersolution
     (B : Set Point) (hB : MeasurableSet B)
     (hbd : ∀ p ∈ B, e.1.time ≤ p.time → p.time ≤ T →
       p.velocity 0 ∈ Icc H.lo H.hi → 1 ≤ phi p) :
-    stripExitOfRealization hH hlam hLam A H E hE T e B ≤ ENNReal.ofReal (phi e.1) := by
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
+    stripExitOfRealization A H E hE T e B ≤ ENNReal.ofReal (phi e.1) := by
+  let Ω := stripExitOfRealization A H E hE T e
   let Γ := stripGreenOfKernel H E.2 T e
-  have hi := strip_identity_bounded_smooth_future_of_realization hH hlam hLam A H E hE T e
+  have hi := strip_identity_bounded_smooth_future_of_realization A H E hE T e
     phi hphi hb
   have hnonpos : (∫ p, forwardScalarOperator A.a phi p ∂Γ) ≤ 0 := by
     apply integral_nonpos_of_ae
     filter_upwards [stripGreenOfKernel_ae_mem_stripPast H E.2 T e,
       reconstruction_green_ae_time_gt H E.2 T e] with p hp ht
     exact hop p ht.le hp
-  have hΩ := stripExitOfRealization_ae_closed_future hH hlam hLam A H E hE T e
+  have hΩ := stripExitOfRealization_ae_closed_future A H E hE T e
   have hc := reconstruction_smooth_physical_continuous phi hphi
   obtain ⟨M, hM⟩ := hb
   have hint : Integrable phi Ω := by

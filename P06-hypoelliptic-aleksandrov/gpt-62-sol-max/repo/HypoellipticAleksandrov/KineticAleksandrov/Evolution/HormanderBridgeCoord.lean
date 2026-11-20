@@ -65,20 +65,25 @@ transported coordinate `z`. -/
 def evolutionHomeomorph : EvolutionVec n ≃ₜ KineticPoint n :=
   (evolutionProdCLE n).toHomeomorph.trans (KineticPoint.homeomorphProd n).symm
 
-theorem evolutionHomeomorph_apply (x : EvolutionVec n) :
+section
+variable (x : EvolutionVec n)
+
+theorem evolutionHomeomorph_apply :
     evolutionHomeomorph n x = ⟨timeCoord n x, diffusedCoord n x, transportedCoord n x⟩ := rfl
 
-@[simp] theorem time_evolutionHomeomorph (x : EvolutionVec n) :
+@[simp] theorem time_evolutionHomeomorph :
     (evolutionHomeomorph n x).time = timeCoord n x := rfl
 
-@[simp] theorem position_evolutionHomeomorph (x : EvolutionVec n) :
+@[simp] theorem position_evolutionHomeomorph :
     (evolutionHomeomorph n x).position = diffusedCoord n x := rfl
 
-@[simp] theorem velocity_evolutionHomeomorph (x : EvolutionVec n) :
+@[simp] theorem velocity_evolutionHomeomorph :
     (evolutionHomeomorph n x).velocity = transportedCoord n x := rfl
 
-@[simp] theorem equivProd_evolutionHomeomorph (x : EvolutionVec n) :
+@[simp] theorem equivProd_evolutionHomeomorph :
     KineticPoint.equivProd n (evolutionHomeomorph n x) = evolutionProdCLE n x := rfl
+
+end
 
 variable (n) in
 /-- The measurable equivalence `ℝ^{1+2d} ≃ᵐ ℝ × (ℝ^d × ℝ^d)` along the packing. -/
@@ -96,8 +101,7 @@ theorem measurePreserving_evolutionProdMeasurableEquiv :
     MeasurePreserving (evolutionProdMeasurableEquiv n) volume volume := by
   have h1 := volume_preserving_piFinSuccAbove (fun _ : Fin (n + n + 1) => ℝ) 0
   have h2 := (volume_measurePreserving_piCongrLeft (fun _ : Fin (n + n) => ℝ) finSumFinEquiv).symm
-  have h3 := volume_measurePreserving_sumPiEquivProdPi (fun _ : Fin n ⊕ Fin n => ℝ)
-  exact h1.trans ((MeasurePreserving.id volume).prod (h2.trans h3))
+  exact h1.trans ((MeasurePreserving.id volume).prod (h2.trans (volume_measurePreserving_sumPiEquivProdPi (fun _ : Fin n ⊕ Fin n => ℝ))))
 
 variable (n) in
 /-- The measurable equivalence `ℝ^{1+2d} ≃ᵐ KineticPoint n` of `evolutionHomeomorph`. -/

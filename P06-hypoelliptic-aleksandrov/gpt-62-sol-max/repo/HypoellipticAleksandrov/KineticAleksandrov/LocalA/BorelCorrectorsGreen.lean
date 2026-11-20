@@ -2,10 +2,9 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BorelCorrectorsSource
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceInterior
-public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.Final
+public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.LocalisedFinalEvolution
 public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.SmoothEstimateDensity
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.Assembly
-import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.EvolutionConclusionConsumers
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.Occupation
 import HypoellipticAleksandrov.KineticAleksandrov.Decay.UnitBlock
 import HypoellipticAleksandrov.KineticAleksandrov.Decay.FourierDecay
@@ -54,8 +53,6 @@ theorem borelCorrectorPotential_abs_le {d : ℕ}
 
 /-- The three analytic hypotheses give a coefficient-uniform bound for signed compact sources. -/
 theorem borelCorrectorPotential_uniform_bound
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     {d : ℕ} (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp : 2 * (d : ℝ) + 1 < p) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (B : CoefficientField d),
@@ -72,12 +69,11 @@ theorem borelCorrectorPotential_uniform_bound
         |borelCorrectorPotential K (Z₀.time + R ^ 2) F P| ≤
           C * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
             (eLpNorm F (ENNReal.ofReal p) volume).toReal := by
-  have hEv := exists_terminalEvolution_of_classical hLE hH
-  have hIter := SectionTwo.iterationEvolutionStatement_of_conclusion hEv
+  have hEv := exists_terminalEvolution_of_classical
   have hOcc := Occupation.parabolicOccupationFamily_holds
-    (SectionTwo.occupationEvolutionStatement_of_conclusion hEv) hH hd lam Lam hlam hLam
-  have hBlock := Decay.unit_frequency_block_W hIter d hd lam Lam hlam hLam
-  have hDecay := Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hIter hBlock
+    hEv hd lam Lam hlam hLam
+  have hBlock := Decay.unit_frequency_block_W hEv d hd lam Lam hlam hLam
+  have hDecay := Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hEv hBlock
   obtain ⟨C, hC, hgreen⟩ := green_density_bound_of_slabFourierBounds hd lam Lam p
     hlam hLam hp (Green.slabFourierBounds_of_occupation_decay hd lam Lam hOcc hDecay)
   have hp1 : 1 < p := by have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d; linarith

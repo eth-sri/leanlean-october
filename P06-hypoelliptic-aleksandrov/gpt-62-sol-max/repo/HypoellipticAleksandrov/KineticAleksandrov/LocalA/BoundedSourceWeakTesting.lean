@@ -63,16 +63,6 @@ theorem duhamel_smooth_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
     exact Filter.Eventually.of_forall fun q => mul_comm _ _
   exact hleft.trans (h.trans (congrArg Neg.neg hright))
 
-/-- The transported adjoint's support is contained in the support of its test. -/
-theorem boundedSourceAdjoint_support {B : FullKineticCoefficient d}
-    {b : PDE.Vec d → PDE.Vec d} (ψ : EvolutionVec d → ℝ) :
-    tsupport (transportedAdjoint B b ψ) ⊆ tsupport ψ := by
-  apply closure_minimal
-  · intro x hx
-    by_contra hnot
-    exact hx (transportedAdjoint_eq_zero_of_notMem_tsupport ψ hnot)
-  · exact isClosed_tsupport ψ
-
 /-- Compact weak tests have a uniform lower time bound in product coordinates. -/
 theorem exists_boundedSource_test_floor (Λ : ℝ × EvolutionAmbientState d → ℝ)
     (hc : HasCompactSupport Λ) (T : ℝ) :

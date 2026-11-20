@@ -16,7 +16,7 @@ open scoped Topology
 variable {d : ℕ}
 
 /-- The Green source integral has the regularity, sign and equation required by abstract ABP. -/
-theorem green_potentials (hH : HormanderHypoellipticityStatement)
+theorem green_potentials
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSmoothCoefficient B)
     (hBs : IsSymmetricCoefficient B) (hlo : HasLowerEllipticity lam B)
@@ -61,11 +61,7 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
   have hcoeff : IsSectionTwoCoefficient lam Lam B :=
     ⟨hlam, hLam, isSmoothFullKineticCoefficient_zIndependent hB, hBs, hlo, hhi⟩
   obtain ⟨hfull, hsym, hell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hcoeff
-  have hW := duhamelPotential_contDiffOn hH (wholeSpace_admissible d)
-    MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
-    S K hreal hfull hsym (identityDrift_smooth d) g₂ hg₂0 hg₂ hgc₂ hgs₂ T hgU
-    hlam (by norm_num : (0 : ℝ) < 1) hell (identityDrift_bounds d).2
-  have hEQ := duhamelPotential_source_equation hH (wholeSpace_admissible d)
+  obtain ⟨-, -, hW, hEQ⟩ := duhamelPotential_regular (wholeSpace_admissible d)
     MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
     S K hreal hfull hsym (identityDrift_smooth d) g₂ hg₂0 hg₂ hgc₂ hgs₂ T hgU
     hlam (by norm_num : (0 : ℝ) < 1) hell (identityDrift_bounds d).2

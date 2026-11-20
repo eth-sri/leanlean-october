@@ -16,9 +16,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+
 /-- The source's bounded admissible domains have compact closure. -/
-theorem isCompact_closure_of_maximumPrinciple_domain {d : ℕ}
-    {Ω : Set (PDE.Vec d)}
+theorem isCompact_closure_of_maximumPrinciple_domain
     (hΩ : (∃ c R, 0 < R ∧ Ω = PDE.euclideanBall c R) ∨
       (∃ hd : d = 1, ∃ a b, a < b ∧ hd ▸ Ω = PDE.oneDimensionalAxisBox a b)) :
     IsCompact (closure Ω) := by
@@ -33,8 +35,7 @@ theorem isCompact_closure_of_maximumPrinciple_domain {d : ℕ}
 /-- Maximum principle on the entire closed moving tube over a finite subdivision.
 This includes initial, terminal, lateral, and subdivision slices. The source's
 piecewise C¹ curve assumption can be weakened to continuity. -/
-theorem movingDomain_maximumPrinciple {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+theorem movingDomain_maximumPrinciple {γ : ℝ → PDE.Vec d}
     {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
     {u : KineticPoint d → ℝ}
     (hΩ : (∃ c R, 0 < R ∧ Ω = PDE.euclideanBall c R) ∨
@@ -61,8 +62,9 @@ theorem movingDomain_maximumPrinciple {d : ℕ}
     (_ : ∀ p ∈ maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 1))),
       p.position ∈ frontier (movingDomain Ω γ p.time) → u p ≤ 0),
     ∀ q ∈ maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 1))), u q ≤ 0 := by
-  have hopen := isOpen_of_isAdmissibleEvolutionDomain (Or.inr hΩ)
-  exact nonpos_on_piecewise_maximumClosedTube hopen
+  exact nonpos_on_piecewise_maximumClosedTube (isOpen_of_isAdmissibleEvolutionDomain (Or.inr hΩ))
     (isCompact_closure_of_maximumPrinciple_domain hΩ) n
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

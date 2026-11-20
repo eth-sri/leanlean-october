@@ -37,7 +37,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [LocallyCompactSpace X]
 theorem exists_compactSupport_cutoff :
     ∃ φ : ℕ → C_c(X, ℝ), (∀ j x, 0 ≤ φ j x ∧ φ j x ≤ 1) ∧
       ∀ x, Tendsto (fun j => φ j x) atTop (𝓝 1) := by
-  let K : CompactExhaustion X := CompactExhaustion.choice X
+  let K := CompactExhaustion.choice X
   have hex : ∀ j, ∃ f : C(X, ℝ), EqOn f 1 (K j) ∧ IsCompact (tsupport f) ∧
       tsupport f ⊆ interior (K (j + 1)) ∧ ∀ x, f x ∈ Icc (0 : ℝ) 1 := fun j =>
     exists_continuousMap_one_of_isCompact_subset_isOpen (K.isCompact j) isOpen_interior

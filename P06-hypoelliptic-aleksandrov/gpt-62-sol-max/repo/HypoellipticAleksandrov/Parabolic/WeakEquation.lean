@@ -44,19 +44,24 @@ def weakParabolicOperator {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
     (z : TimeVelocity d) : ℝ :=
   w.timeDeriv z - matrixContraction (coefficientAt A z) (w.velocityHessian z)
 
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞} (A : CoefficientField d)
+  (w : ParabolicW12Function d U p)
+include d U p A w
+
 /-- Evaluation of the selected-jet forward parabolic operator. -/
 @[simp]
-theorem weakParabolicOperator_apply {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (A : CoefficientField d) (w : ParabolicW12Function d U p)
+theorem weakParabolicOperator_apply
     (z : TimeVelocity d) :
     weakParabolicOperator A w z =
       w.timeDeriv z - matrixContraction (coefficientAt A z) (w.velocityHessian z) :=
   rfl
 
 /-- A selected weak jet solves the homogeneous forward equation almost everywhere. -/
-def IsWeakParabolicEquationOn {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (A : CoefficientField d) (w : ParabolicW12Function d U p) : Prop :=
+def IsWeakParabolicEquationOn : Prop :=
   weakParabolicOperator A w =ᵐ[timeVelocityVolumeOn U] 0
+
+end
 
 /-- A value representative satisfies the homogeneous equation through selected weak
 jets on every compactly-contained open subdomain. -/
@@ -107,8 +112,11 @@ end IsWeakParabolicEquationOn
 
 namespace IsWeakParabolicEquationLoc
 
+section
+variable {d : ℕ} {A : CoefficientField d}
+
 /-- A local homogeneous equation supplies the underlying local weak Sobolev data. -/
-theorem parabolicW12Loc {d : ℕ} {A : CoefficientField d}
+theorem parabolicW12Loc
     {U : Set (TimeVelocity d)} {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
     (h : IsWeakParabolicEquationLoc A U p u) : ParabolicW12Loc U p u := by
   intro V hVOpen hVCompact hVU
@@ -117,7 +125,7 @@ theorem parabolicW12Loc {d : ℕ} {A : CoefficientField d}
 
 /-- Every compatible selected jet on a compactly-contained open subdomain obeys
 the local homogeneous equation. -/
-theorem equationOn {d : ℕ} {A : CoefficientField d}
+theorem equationOn
     {U V : Set (TimeVelocity d)} {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
     (h : IsWeakParabolicEquationLoc A U p u) (hVOpen : IsOpen V)
     (hVCompact : IsCompact (closure V)) (hVU : closure V ⊆ U) (hp : 1 ≤ p)
@@ -127,6 +135,8 @@ theorem equationOn {d : ℕ} {A : CoefficientField d}
   rcases h V hVOpen hVCompact hVU with ⟨w', hw'u, hw'eq⟩
   exact (IsWeakParabolicEquationOn.congr_value_ae_iff hVOpen hp w' w
     (hw'u.trans hwu.symm)).mp hw'eq
+
+end
 
 end IsWeakParabolicEquationLoc
 

@@ -18,9 +18,11 @@ theorem barrier_projection_norm_le (a b : ℝ) :
       barrierVelocityProjection, ContinuousLinearMap.norm_fst, ContinuousLinearMap.norm_snd,
       mul_one])
 
+section
+variable (κ : ℝ → ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) (Y : ℝ)
+
 /-- The first convolution jet only needs the value and first velocity fiber majorants. -/
-theorem barrierConvolutionJet_norm_le (κ : ℝ → ℝ) (phi : (ℝ × ℝ) → ℝ)
-    (q : ℝ × ℝ) (Y : ℝ) :
+theorem barrierConvolutionJet_norm_le :
     ‖barrierConvolutionJet κ phi q Y‖ ≤
       |deriv κ (q.1 - Y)| * |bellmanOriginExtension phi (Y, q.2)| +
         |κ (q.1 - Y)| * |bellmanDv phi (Y, q.2)| := by
@@ -30,8 +32,7 @@ theorem barrierConvolutionJet_norm_le (κ : ℝ → ℝ) (phi : (ℝ × ℝ) →
       (κ (q.1 - Y) * bellmanDv phi (Y, q.2))
 
 /-- The second convolution jet needs only the locally integrable second velocity majorant. -/
-theorem barrierConvolutionSecondJet_norm_le (κ : ℝ → ℝ) (phi : (ℝ × ℝ) → ℝ)
-    (q : ℝ × ℝ) (Y : ℝ) :
+theorem barrierConvolutionSecondJet_norm_le :
     ‖barrierConvolutionSecondJet κ phi q Y‖ ≤
       |deriv (deriv κ) (q.1 - Y)| * |bellmanOriginExtension phi (Y, q.2)| +
         2 * |deriv κ (q.1 - Y)| * |bellmanDv phi (Y, q.2)| +
@@ -55,5 +56,7 @@ theorem barrierConvolutionSecondJet_norm_le (κ : ℝ → ℝ) (phi : (ℝ × �
   simp only [ContinuousLinearMap.norm_smulRight_apply, hX, hv, mul_one] at hh
   simp only [abs_mul] at h1 h2
   linarith only [hh, h1, h2]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

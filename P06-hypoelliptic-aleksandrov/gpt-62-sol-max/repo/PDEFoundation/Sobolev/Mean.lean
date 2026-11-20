@@ -20,42 +20,48 @@ namespace PDE
 open MeasureTheory
 open scoped ENNReal Pointwise
 
+section
+variable {d : ℕ} (U : Set (Vec d)) (u : Vec d → ℝ)
+include d U u
+
 /-- A scalar function has zero integral on `U`. -/
-noncomputable def MeanZeroOn {d : ℕ}
-    (U : Set (Vec d)) (u : Vec d → ℝ) : Prop :=
+noncomputable def MeanZeroOn : Prop :=
   ∫ x in U, u x ∂volume = 0
 
 /-- The arithmetic integral average on `U`.
 
 This total definition is retained for compatibility.  Its mathematical
 average properties require `0 < volume U` and `volume U < ∞`. -/
-noncomputable def integralAverage {d : ℕ}
-    (U : Set (Vec d)) (u : Vec d → ℝ) : ℝ :=
+noncomputable def integralAverage : ℝ :=
   (volume U).toReal⁻¹ * ∫ x in U, u x ∂volume
 
 /-- The arithmetic average is literally integration against normalized
 restricted volume. The identity is total, including zero- and
 infinite-volume sets. -/
-theorem integral_normalizedVolumeOn_eq_integralAverage
-    {d : ℕ} (U : Set (Vec d)) (u : Vec d → ℝ) :
+theorem integral_normalizedVolumeOn_eq_integralAverage :
     ∫ x, u x ∂normalizedVolumeOn U =
       integralAverage U u := by
   rw [normalizedVolumeOn, integral_smul_measure,
     ENNReal.toReal_inv]
   rfl
 
-theorem integralAverage_eq_zero_of_meanZeroOn {d : ℕ}
-    {U : Set (Vec d)} {u : Vec d → ℝ}
+end
+
+section
+variable {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
+
+theorem integralAverage_eq_zero_of_meanZeroOn
     (hu : MeanZeroOn U u) :
     integralAverage U u = 0 := by
   rw [integralAverage, hu, mul_zero]
 
+section
+variable (hu : IntegrableOn u U volume) (hUPos : 0 < volume U) (hUTop : volume U < ∞)
+include hu hUPos hUTop
+
 /-- Subtracting the arithmetic average produces a zero-mean function on a
 positive finite-volume set. -/
-theorem meanZeroOn_sub_integralAverage
-    {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
-    (hu : IntegrableOn u U volume)
-    (hUPos : 0 < volume U) (hUTop : volume U < ∞) :
+theorem meanZeroOn_sub_integralAverage :
     MeanZeroOn U (fun x => u x - integralAverage U u) := by
   have hconst :
       IntegrableOn (fun _ : Vec d => integralAverage U u)
@@ -77,9 +83,6 @@ average of all pointwise differences from a fixed point.
 
 This identity is the Jensen step in the convex-domain Poincaré argument. -/
 theorem sub_integralAverage_eq_volumeAverage_sub
-    {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
-    (hu : IntegrableOn u U volume)
-    (hUPos : 0 < volume U) (hUTop : volume U < ∞)
     (x : Vec d) :
     u x - integralAverage U u =
       (volume U).toReal⁻¹ *
@@ -114,9 +117,15 @@ theorem sub_integralAverage_eq_volumeAverage_sub
         ∫ y in U, (u x - u y) ∂volume := by
       rw [integral_sub hconstInt hu]
 
+end
+
+end
+
+section
+variable {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
+
 /-- Probability-measure form of the mean-difference identity. -/
 theorem sub_integralAverage_eq_integral_sub_normalizedVolumeOn
-    {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
     (hu : IntegrableOn u U volume)
     (hUPos : 0 < volume U) (hUTop : volume U < ∞)
     (x : Vec d) :
@@ -130,7 +139,6 @@ theorem sub_integralAverage_eq_integral_sub_normalizedVolumeOn
 /-- Jensen's inequality for the mean-subtracted value, written on normalized
 restricted volume. -/
 theorem abs_sub_integralAverage_rpow_le_integral_abs_sub_rpow
-    {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
     {p : ℝ} (hp : 1 ≤ p)
     (hu : IntegrableOn u U volume)
     (hUPos : 0 < volume U) (hUTop : volume U < ∞)
@@ -160,17 +168,6 @@ theorem abs_sub_integralAverage_rpow_le_integral_abs_sub_rpow
   exact abs_integral_rpow_le_integral_abs_rpow
     hp hdiff hpowDiff
 
-theorem MeanZeroOn.congr_ae {d : ℕ}
-    {U : Set (Vec d)} {u v : Vec d → ℝ}
-    (hu : MeanZeroOn U u) (huv : u =ᵐ[volumeOn U] v) :
-    MeanZeroOn U v := by
-  unfold MeanZeroOn at hu ⊢
-  have hint :
-      (∫ x, u x ∂volumeOn U) =
-        ∫ x, v x ∂volumeOn U :=
-    integral_congr_ae huv
-  change (∫ x, v x ∂volumeOn U) = 0
-  rw [← hint]
-  simpa [volumeOn] using hu
+end
 
 end PDE

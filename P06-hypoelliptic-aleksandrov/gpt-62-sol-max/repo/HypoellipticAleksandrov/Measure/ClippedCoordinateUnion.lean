@@ -46,44 +46,6 @@ prescribed contraction centre. -/
 def IsClippedCoordinateInterval (c : Real) (I : Set Real) : Prop :=
   IsOpenSubinterval (Ioo (-1 : Real) 1) I /\ c ∈ I
 
-private theorem isOpen_ordConnected_eq_Ioo_csInf_csSup (I : Set Real)
-    (hIopen : IsOpen I) (hIord : I.OrdConnected) (hInonempty : I.Nonempty)
-    (hIbelow : BddBelow I) (hIabove : BddAbove I) :
-    I = Ioo (sInf I) (sSup I) := by
-  apply Subset.antisymm
-  · intro x hx
-    have hinf : sInf I ≤ x := csInf_le hIbelow hx
-    have hsup : x ≤ sSup I := le_csSup hIabove hx
-    constructor
-    · by_contra hnot
-      have hxeq : x = sInf I := le_antisymm (le_of_not_gt hnot) hinf
-      rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hleft : x - eps / 2 ∈ I := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x - eps / 2) - x| = eps / 2 := by
-          rw [show (x - eps / 2) - x = -(eps / 2) by ring, abs_neg,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : sInf I ≤ x - eps / 2 := csInf_le hIbelow hleft
-      rw [← hxeq] at hle
-      linarith
-    · by_contra hnot
-      have hxeq : sSup I = x := le_antisymm (le_of_not_gt hnot) hsup
-      rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hright : x + eps / 2 ∈ I := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x + eps / 2) - x| = eps / 2 := by
-          rw [show (x + eps / 2) - x = eps / 2 by ring,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : x + eps / 2 ≤ sSup I := le_csSup hIabove hright
-      rw [hxeq] at hle
-      linarith
-  · exact IsConnected.Ioo_csInf_csSup_subset
-      ⟨hInonempty, hIord.isPreconnected⟩ hIbelow hIabove
-
 private theorem clipped_coordinate_interval_data {c : Real} {I : Set Real}
     (hI : IsClippedCoordinateInterval c I) :
     BddBelow I ∧ BddAbove I ∧ I = Ioo (sInf I) (sSup I) ∧
@@ -128,7 +90,7 @@ theorem isClippedCoordinateInterval_centeredCoordinateContraction_image
     ⟨_, _, hIeq, hcinf, hcsup, hinf, hsup⟩
   rw [hIeq]
   unfold centeredCoordinateContraction
-  have hone : 0 < 1 - zeta := sub_pos.mpr hzeta1
+  have hone := sub_pos.mpr hzeta1
   have hleft : zeta * sInf I + (1 - zeta) * c < c := by
     nlinarith [mul_pos hzeta0 (sub_pos.mpr hcinf)]
   have hright : c < zeta * sSup I + (1 - zeta) * c := by
@@ -149,15 +111,17 @@ theorem isClippedCoordinateInterval_centeredCoordinateContraction_image
     · exact Ioo_subset_Ioo hlow.le hupp.le
   · exact ⟨hleft, hright⟩
 
+section
+variable {n : Nat} (i : Fin (n + 1)) (S : Set (Fin (n + 1) -> Real))
+include i S
+
 /-- The section obtained by varying `i`; remaining coordinates use
 `i.succAbove` order. -/
-def coordinateSection {n : Nat} (i : Fin (n + 1))
-    (S : Set (Fin (n + 1) -> Real)) (w : Fin n -> Real) : Set Real :=
+def coordinateSection (w : Fin n -> Real) : Set Real :=
   {x | (MeasurableEquiv.piFinSuccAbove
     (fun _ : Fin (n + 1) => Real) i).symm (x, w) ∈ S}
 
-private theorem coordinateSection_eq_preimage_image {n : Nat}
-    (i : Fin (n + 1)) (S : Set (Fin (n + 1) -> Real)) (w : Fin n -> Real) :
+private theorem coordinateSection_eq_preimage_image (w : Fin n -> Real) :
     (fun x : Real => (x, w)) ⁻¹'
       (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => Real) i '' S) =
       coordinateSection i S w := by
@@ -175,12 +139,11 @@ private theorem coordinateSection_eq_preimage_image {n : Nat}
   · intro hx
     exact ⟨e.symm (x, w), hx, e.apply_symm_apply (x, w)⟩
 
-private theorem volume_eq_lintegral_coordinateSection {n : Nat}
-    (i : Fin (n + 1)) (S : Set (Fin (n + 1) -> Real))
+private theorem volume_eq_lintegral_coordinateSection
     (hS : MeasurableSet S) :
     volume S = ∫⁻ w, volume (coordinateSection i S w) := by
   let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => Real) i
-  have he : MeasurePreserving e :=
+  have he :=
     volume_preserving_piFinSuccAbove (fun _ : Fin (n + 1) => Real) i
   have himage : volume (e '' S) = volume S := by
     rw [← he.map_eq, Measure.map_apply e.measurable (e.measurableSet_image.2 hS),
@@ -192,6 +155,8 @@ private theorem volume_eq_lintegral_coordinateSection {n : Nat}
         (e.measurableSet_image.2 hS)]
       exact lintegral_congr fun w =>
         congr_arg volume (coordinateSection_eq_preimage_image i S w)
+
+end
 
 /-- Fubini lift of pointwise one-coordinate section inequalities. -/
 theorem volume_le_of_forall_volume_coordinateSection_le
@@ -248,7 +213,7 @@ theorem volume_timeVelocity_le_of_forall_volume_coordinateSection_le
         (timeVelocityCoordinateEquiv d '' S) (timeVelocityCoordinateEquiv d '' T)
         ((timeVelocityCoordinateEquiv d).measurableSet_image.2 hS)
         ((timeVelocityCoordinateEquiv d).measurableSet_image.2 hT) kappa
-        (by simpa only [timeVelocityCoordinateSection] using hsection)
+        (by assumption)
     _ = ENNReal.ofReal kappa * volume T := by
       rw [volume_timeVelocityCoordinateEquiv_image T hT]
 

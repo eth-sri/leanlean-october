@@ -18,9 +18,12 @@ theorem construction_continuous_compact_bound {n : ℕ} (f : PDE.Vec n → ℝ)
   exact ⟨max M 0, le_max_right _ _, fun x hx =>
     (hb ⟨x, hx, rfl⟩).trans (le_max_left _ _)⟩
 
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+include hr
+
 /-- Subtraction of a smooth barrier preserves the compact bounds of the first jets. -/
-theorem construction_gradient_difference_compact_bound {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem construction_gradient_difference_compact_bound
     (mu R t : ℝ) (i : Fin (d + d)) (K : Set (PDE.Vec (d + d))) (hK : IsCompact K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ x ∈ K,
       |spatialPackedGradient (flatProfilePositionJet h r) (flatProfileVelocityJet h r) x i -
@@ -35,8 +38,7 @@ theorem construction_gradient_difference_compact_bound {d : ℕ} {alpha : ℝ}
     (abs_sub _ _).trans (add_le_add (hbM x hx) (hbN x hx))⟩
 
 /-- The packed Hessian representatives of the flattening are locally integrable. -/
-theorem construction_packedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i k : Fin d) :
+theorem construction_packedHessian_locallyIntegrable (i k : Fin d) :
     LocallyIntegrable (fun x => flatProfileHessian h r (spatialCoordinateCLE d x) i k)
       volume := by
   obtain ⟨_, _, hm⟩ := measurable_flatProfile_jets h r
@@ -46,6 +48,8 @@ theorem construction_packedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
   obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr
     ((spatialCoordinateCLE d) '' K) (hK.image (spatialCoordinateCLE d).continuous)
   exact ⟨M, hM, fun x hx => (hb _ ⟨x, hx, rfl⟩).2.2 i k⟩
+
+end
 
 /-- The explicit second weak cutoff representative is locally integrable. -/
 theorem construction_cutoffHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}

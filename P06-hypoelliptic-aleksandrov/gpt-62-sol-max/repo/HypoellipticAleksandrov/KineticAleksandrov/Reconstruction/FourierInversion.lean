@@ -217,12 +217,16 @@ lemma regDensity_nonneg (μ : Measure V) {c : ℝ} (hc : 0 ≤ c) (z : V) : 0 �
 noncomputable def invIntegral (φ : V → ℂ) (z : V) : ℂ :=
   ∫ ξ, cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * φ ξ
 
+section
+variable (μ : Measure V)
+include μ
+
 /-- The candidate density `(2π)^{-d} Re ∫ e^{i⟨ξ,z⟩} φ(ξ) dξ`. -/
-noncomputable def invDensity (μ : Measure V) (z : V) : ℝ :=
+noncomputable def invDensity (z : V) : ℝ :=
   ((2 * Real.pi) ^ finrank ℝ V)⁻¹ * (invIntegral (measureFourier μ) z).re
 
 /-- The regularised density is the real part of the damped inversion integral. -/
-lemma two_pi_pow_mul_regDensity (μ : Measure V) [IsFiniteMeasure μ] {c : ℝ} (hc : 0 < c) (z : V) :
+lemma two_pi_pow_mul_regDensity [IsFiniteMeasure μ] {c : ℝ} (hc : 0 < c) (z : V) :
     ((2 * Real.pi) ^ finrank ℝ V : ℝ) * regDensity μ c z =
       (∫ ξ : V, cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2) *
         (cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * measureFourier μ ξ)).re := by
@@ -231,7 +235,7 @@ lemma two_pi_pow_mul_regDensity (μ : Measure V) [IsFiniteMeasure μ] {c : ℝ} 
 
 /-- The damped inversion integral converges to the inversion integral (dominated
 convergence). -/
-lemma tendsto_regularized (μ : Measure V) (hφ : Integrable (measureFourier μ)) (z : V) :
+lemma tendsto_regularized (hφ : Integrable (measureFourier μ)) (z : V) :
     Tendsto (fun c : ℝ => ∫ ξ : V, cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2) *
         (cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * measureFourier μ ξ)) atTop
       (𝓝 (invIntegral (measureFourier μ) z)) := by
@@ -255,6 +259,8 @@ lemma tendsto_regularized (μ : Measure V) (hφ : Integrable (measureFourier μ)
       simpa using this.cexp
     simpa [invIntegral] using h1.mul_const _
 
+end
+
 /-- The Gaussian profile has integral one. -/
 lemma integral_peakProfile : ∫ w : V, peakProfile V w = 1 := by
   have hpi := Real.pi_pos
@@ -270,7 +276,6 @@ omit [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] in
 /-- The Gaussian profile decays faster than any power at infinity. -/
 lemma tendsto_norm_pow_mul_peakProfile :
     Tendsto (fun w : V => ‖w‖ ^ finrank ℝ V * peakProfile V w) (Bornology.cobounded V) (𝓝 0) := by
-  have hpi := Real.pi_pos
   have A : Tendsto (fun (w : V) ↦ Real.pi ^ 2 * ‖w‖ ^ 2) (Bornology.cobounded V) atTop := by
     rw [tendsto_const_mul_atTop_of_pos (by positivity)]
     apply (tendsto_pow_atTop two_ne_zero).comp tendsto_norm_cobounded_atTop
@@ -407,14 +412,16 @@ lemma norm_regularized_integrand_le (μ : Measure V) {c : ℝ} (hc : 0 < c) (z �
     zero_mul, mul_zero, Real.exp_zero, one_mul, sub_self]
   nlinarith [norm_damp_le_one (V := V) hc ξ, norm_nonneg (measureFourier μ ξ)]
 
+section
+variable (μ : Measure V)
+
 /-- Uniform bound `(2π)^{-d} ‖μ̂‖₁` for the regularised density. -/
-lemma regDensity_le (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
+lemma regDensity_le [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
     {c : ℝ} (hc : 0 < c) (z : V) :
     regDensity μ c z ≤ ((2 * Real.pi) ^ finrank ℝ V)⁻¹ * ∫ ξ, ‖measureFourier μ ξ‖ := by
   have hpos : 0 < (2 * Real.pi) ^ finrank ℝ V := by have := Real.pi_pos; positivity
   have h1 := two_pi_pow_mul_regDensity μ hc z
-  have h2 : (∫ ξ : V, cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2) *
-        (cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * measureFourier μ ξ)).re ≤ ∫ ξ, ‖measureFourier μ ξ‖ :=
+  have h2 :=
     (Complex.re_le_norm _).trans
       (norm_integral_le_of_norm_le hφ.norm
         (Filter.Eventually.of_forall fun ξ => norm_regularized_integrand_le μ hc z ξ))
@@ -423,7 +430,7 @@ lemma regDensity_le (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable (mea
   linarith
 
 /-- The regularised density converges pointwise to the inversion density. -/
-lemma tendsto_regDensity (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
+lemma tendsto_regDensity [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
     (z : V) : Tendsto (fun c : ℝ => regDensity μ c z) atTop (𝓝 (invDensity μ z)) := by
   have h := ((Complex.continuous_re.tendsto _).comp (tendsto_regularized μ hφ z)).const_mul
     (((2 * Real.pi) ^ finrank ℝ V)⁻¹)
@@ -434,38 +441,35 @@ lemma tendsto_regDensity (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable
   rw [← two_pi_pow_mul_regDensity μ hc z, inv_mul_cancel_left₀ hpos.ne']
 
 /-- The inversion density is nonnegative. -/
-lemma invDensity_nonneg (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
+lemma invDensity_nonneg [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
     (z : V) : 0 ≤ invDensity μ z :=
   ge_of_tendsto (tendsto_regDensity μ hφ z)
     (by filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc using regDensity_nonneg μ hc.le z)
 
 /-- The inversion density is bounded by `(2π)^{-d} ‖μ̂‖₁`. -/
-lemma invDensity_le (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
+lemma invDensity_le [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
     (z : V) : invDensity μ z ≤ ((2 * Real.pi) ^ finrank ℝ V)⁻¹ * ∫ ξ, ‖measureFourier μ ξ‖ :=
   le_of_tendsto (tendsto_regDensity μ hφ z)
     (by filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc using regDensity_le μ hφ hc z)
 
 /-- The inversion integral is continuous. -/
-lemma continuous_invIntegral (μ : Measure V) (hφ : Integrable (measureFourier μ)) :
+lemma continuous_invIntegral (hφ : Integrable (measureFourier μ)) :
     Continuous (invIntegral (measureFourier μ)) := by
   unfold invIntegral
   refine continuous_of_dominated (bound := fun ξ => ‖measureFourier μ ξ‖) (fun z => ?_)
     (fun z => Filter.Eventually.of_forall fun ξ => ?_) hφ.norm
     (Filter.Eventually.of_forall fun ξ => ?_)
   · exact (Continuous.aestronglyMeasurable (by fun_prop)).mul hφ.1
-  · rw [norm_mul, Complex.norm_exp]
-    simp
+  · simp
   · fun_prop
 
 /-- The inversion density is continuous. -/
-lemma continuous_invDensity (μ : Measure V) (hφ : Integrable (measureFourier μ)) :
-    Continuous (invDensity μ) := by
-  unfold invDensity
-  exact continuous_const.mul (Complex.continuous_re.comp (continuous_invIntegral μ hφ))
+lemma continuous_invDensity (hφ : Integrable (measureFourier μ)) :
+    Continuous (invDensity μ) := continuous_const.mul (Complex.continuous_re.comp (continuous_invIntegral μ hφ))
 
 /-- The regularised density converges to the inversion density against compactly
 supported test functions (dominated convergence). -/
-lemma tendsto_integral_mul_regDensity_inv (μ : Measure V) [IsFiniteMeasure μ]
+lemma tendsto_integral_mul_regDensity_inv [IsFiniteMeasure μ]
     (hφ : Integrable (measureFourier μ)) {ψ : V → ℝ} (hψ : Continuous ψ)
     (hψs : HasCompactSupport ψ) :
     Tendsto (fun c : ℝ => ∫ z, ψ z * regDensity μ c z) atTop
@@ -485,7 +489,7 @@ lemma tendsto_integral_mul_regDensity_inv (μ : Measure V) [IsFiniteMeasure μ]
 
 /-- `μ` and the inversion density have the same integral against compactly supported
 continuous functions. -/
-theorem integral_mul_invDensity_eq (μ : Measure V) [IsFiniteMeasure μ]
+theorem integral_mul_invDensity_eq [IsFiniteMeasure μ]
     (hφ : Integrable (measureFourier μ)) {ψ : V → ℝ} (hψ : Continuous ψ)
     (hψs : HasCompactSupport ψ) :
     ∫ x, ψ x ∂μ = ∫ z, ψ z * invDensity μ z :=
@@ -494,10 +498,10 @@ theorem integral_mul_invDensity_eq (μ : Measure V) [IsFiniteMeasure μ]
 
 /-- **Fourier inversion for finite measures.**  A finite measure on `V` with integrable Fourier
 transform equals Lebesgue measure with the (nonnegative, continuous) density `invDensity μ`. -/
-theorem eq_withDensity_invDensity (μ : Measure V) [IsFiniteMeasure μ]
+theorem eq_withDensity_invDensity [IsFiniteMeasure μ]
     (hφ : Integrable (measureFourier μ)) :
     μ = volume.withDensity (fun z => ENNReal.ofReal (invDensity μ z)) := by
-  have hmeas : Measurable (invDensity μ) := (continuous_invDensity μ hφ).measurable
+  have hmeas := (continuous_invDensity μ hφ).measurable
   set ν : Measure V := volume.withDensity (fun z => ENNReal.ofReal (invDensity μ z)) with hν
   have : IsFiniteMeasureOnCompacts ν := by
     refine ⟨fun K hK => ?_⟩
@@ -516,6 +520,8 @@ theorem eq_withDensity_invDensity (μ : Measure V) [IsFiniteMeasure μ]
   have := integral_mul_invDensity_eq μ hφ f.continuous f.hasCompactSupport
   simp only [mul_comm (invDensity μ _)]
   exact this
+
+end
 
 end Main
 

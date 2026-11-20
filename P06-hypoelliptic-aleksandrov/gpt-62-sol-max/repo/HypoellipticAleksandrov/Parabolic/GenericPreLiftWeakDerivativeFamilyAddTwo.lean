@@ -62,7 +62,7 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
     (t₀ t₁ t₂ t₃ : ℝ)
     (ht₀₁ : t₀ < t₁) (ht₁₂ : t₁ < t₂) (ht₂₃ : t₂ < t₃)
     (O₀ O₁ : Set (PDE.Vec d))
-    (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
+    (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
@@ -82,47 +82,8 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
         (E : ParabolicWeakDerivativeFamily d M
           (Set.Ioo t₀ t₃ ×ˢ O₀)
           (fun z : TimeVelocity d => F z.1 z.2)),
-        (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀, (a z.1 z.2).IsSymm) →
-        (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀,
-          lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
-            a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)) →
-        (∀ i j, ContDiffOn ℝ (M + 1)
-          (fun z : TimeVelocity d => a z.1 z.2 i j)
-          (Set.Ioo t₀ t₃ ×ˢ O₀)) →
-        (∀ j, ContDiffOn ℝ M
-          (fun z : TimeVelocity d => b z.1 z.2 j)
-          (Set.Ioo t₀ t₃ ×ˢ O₀)) →
-        ContDiffOn ℝ M (fun z : TimeVelocity d => c z.1 z.2)
-          (Set.Ioo t₀ t₃ ×ˢ O₀) →
-        (∀ i j alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤ Ba i j alpha) →
-        (∀ j alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => b x.1 x.2 j) z| ≤ Bb j alpha) →
-        (∀ alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => c x.1 x.2) z| ≤ Bc alpha) →
-        ((fun z =>
-          D.representative
-              (ParabolicDerivativeIndex.castLE
-                (by omega : 2 ≤ M + 1)
-                (ParabolicDerivativeIndex.timeOne d)) z +
-            (∑ i, ∑ j, a z.1 z.2 i j *
-              D.representative
-                (ParabolicDerivativeIndex.castLE
-                  (by omega : 2 ≤ M + 1)
-                  (ParabolicDerivativeIndex.velocityTwo j i)) z) +
-            (∑ j, b z.1 z.2 j *
-              D.representative
-                (ParabolicDerivativeIndex.castLE
-                  (by omega : 2 ≤ M + 1)
-                  (ParabolicDerivativeIndex.velocityOne j)) z) +
-            c z.1 z.2 *
-              D.representative
-                (ParabolicDerivativeIndex.castLE
-                  (by omega : 2 ≤ M + 1)
-                  (ParabolicDerivativeIndex.zeroTwo d)) z)
+        PreliftCoefficientBounds (Set.Ioo t₀ t₃ ×ˢ O₀) lam Lam Ba Bb Bc a b c →
+        (D.backwardOperator (by omega) a b c
           =ᵐ[timeVelocityVolumeOn (Set.Ioo t₀ t₃ ×ˢ O₀)]
             fun z => F z.1 z.2) →
         GenericPreliftAddTwoFamilyConclusion
@@ -130,16 +91,16 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
   classical
   obtain ⟨C_HW, hC_HW, hpredecessor⟩ :=
     exists_genericPrelift_hessian_timeSuccessor_family_estimate
-      d M hM t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁ hO₁ne
+      d M hM t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁
         hO₁compact hO₁O₀ lam Lam hlam hlamLam Ba Bb Bc hBa hBb hBc
   let N : ℝ := Fintype.card (ParabolicDerivativeIndex d (M + 2))
   let Cnext : ℝ := N * (1 + C_HW)
   have hN : 0 ≤ N := by dsimp only [N]; positivity
   have hCnext : 0 ≤ Cnext := mul_nonneg hN (add_nonneg zero_le_one hC_HW)
   refine ⟨Cnext, hCnext, ?_⟩
-  intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
+  intro a b c F u D E hcoeff hEq
   obtain ⟨H, hHmem, hHweak, hWmem, hWweak, hHWnorm⟩ :=
-    hpredecessor a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
+    hpredecessor a b c F u D E hcoeff hEq
   let U := Set.Ioo t₀ t₃ ×ˢ O₀
   let V := Set.Ioo t₁ t₂ ×ˢ O₁
   have hVopen : IsOpen V := isOpen_Ioo.prod hO₁
@@ -164,9 +125,6 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
       ParabolicWeakDerivativeFamily.squaredL2Norm_restrict_le D hVU
     have hEnorm : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm E :=
       ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E
-    have htotal : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm D +
-        ParabolicWeakDerivativeFamily.squaredL2Norm E := add_nonneg
-      (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D) hEnorm
     calc
       ParabolicWeakDerivativeFamily.squaredL2Norm Dnext ≤
           N * (ParabolicWeakDerivativeFamily.squaredL2Norm (D.restrict hVU) +

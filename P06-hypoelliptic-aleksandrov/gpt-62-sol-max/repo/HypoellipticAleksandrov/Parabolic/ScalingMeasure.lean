@@ -7,6 +7,7 @@ public import Mathlib.MeasureTheory.Constructions.Polish.Basic
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Group.Measure
 public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import HypoellipticAleksandrov.Parabolic.DensityToPoint
 
 /-!
 # Measure scaling for parabolic affine maps
@@ -29,10 +30,7 @@ open scoped ENNReal
 
 private theorem parabolicLinear_eq_prodMap (d : ℕ) (r : ℝ) :
     (parabolicLinear (d := d) r : TimeVelocity d →ₗ[ℝ] TimeVelocity d) =
-      LinearMap.prodMap ((r ^ 2) • LinearMap.id) (r • LinearMap.id) := by
-  apply LinearMap.ext
-  rintro ⟨time, velocity⟩
-  rfl
+      LinearMap.prodMap ((r ^ 2) • LinearMap.id) (r • LinearMap.id) := rfl
 
 /-- The determinant of the parabolic linear scaling is `r^(d + 2)`. -/
 theorem parabolicLinear_det (d : ℕ) (r : ℝ) :
@@ -47,8 +45,11 @@ theorem parabolicLinear_det (d : ℕ) (r : ℝ) :
   congr 1
   omega
 
+section
+variable {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+
 /-- A nonzero-radius parabolic affine map is injective. -/
-theorem parabolicAffine_injective_of_ne_zero {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+theorem parabolicAffine_injective_of_ne_zero
     (hr : r ≠ 0) : Function.Injective (parabolicAffine t₀ v₀ r) := by
   intro z w hzw
   apply Prod.ext
@@ -63,23 +64,18 @@ theorem parabolicAffine_injective_of_ne_zero {d : ℕ} {t₀ r : ℝ} {v₀ : PD
     linarith
 
 /-- A nonzero-radius parabolic affine map is a measurable embedding. -/
-theorem parabolicAffine_measurableEmbedding_of_ne_zero {d : ℕ} {t₀ r : ℝ}
-    {v₀ : PDE.Vec d} (hr : r ≠ 0) :
+theorem parabolicAffine_measurableEmbedding_of_ne_zero (hr : r ≠ 0) :
     MeasurableEmbedding (parabolicAffine t₀ v₀ r) :=
   (contDiff_infty_parabolicAffine t₀ v₀ r).continuous.measurableEmbedding
     (parabolicAffine_injective_of_ne_zero hr)
 
 /-- A positive-radius parabolic affine map is a measurable embedding. -/
-theorem parabolicAffine_measurableEmbedding {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+theorem parabolicAffine_measurableEmbedding
     (hr : 0 < r) :
     MeasurableEmbedding (parabolicAffine t₀ v₀ r) :=
   parabolicAffine_measurableEmbedding_of_ne_zero hr.ne'
 
-private theorem parabolicLinear_det_ne_zero {d : ℕ} {r : ℝ} (hr : 0 < r) :
-    LinearMap.det (parabolicLinear (d := d) r : TimeVelocity d →ₗ[ℝ]
-      TimeVelocity d) ≠ 0 := by
-  rw [parabolicLinear_det]
-  exact (pow_pos hr _).ne'
+end
 
 private theorem parabolicAffine_eq_add_parabolicLinear {d : ℕ}
     (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) :
@@ -87,10 +83,13 @@ private theorem parabolicAffine_eq_add_parabolicLinear {d : ℕ}
   funext z
   rfl
 
+section
+variable {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+include hr
+
 /-- The pushforward of product Lebesgue volume by a positive-radius parabolic
 affine map has the inverse determinant factor. -/
-theorem map_volume_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ}
-    (hr : 0 < r) :
+theorem map_volume_parabolicAffine :
     Measure.map (parabolicAffine t₀ v₀ r) (volume : Measure (TimeVelocity d)) =
       ENNReal.ofReal ((r ^ (d + 2))⁻¹) • volume := by
   have hL_measurable : Measurable (parabolicLinear (d := d) r) :=
@@ -122,13 +121,15 @@ theorem map_volume_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r 
       rw [MeasureTheory.map_add_left_eq_self volume (t₀, v₀)]
     _ = ENNReal.ofReal ((r ^ (d + 2))⁻¹) • volume := rfl
 
+section
+variable (s : Set (TimeVelocity d))
+
 /-- The image of a set under positive-radius parabolic affine scaling has the
 direct determinant factor. -/
-theorem volume_parabolicAffine_image_eq {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
-    {r : ℝ} (hr : 0 < r) (s : Set (TimeVelocity d)) :
+theorem volume_parabolicAffine_image_eq :
     (volume : Measure (TimeVelocity d)) (parabolicAffine t₀ v₀ r '' s) =
       ENNReal.ofReal (r ^ (d + 2)) * volume s := by
-  let q : TimeVelocity d := (t₀, v₀)
+  let q := (t₀, v₀)
   calc
     (volume : Measure (TimeVelocity d)) (parabolicAffine t₀ v₀ r '' s) =
         volume ((fun z : TimeVelocity d ↦ q + z) '' (parabolicLinear r '' s)) := by
@@ -139,8 +140,7 @@ theorem volume_parabolicAffine_image_eq {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d
       rw [Measure.addHaar_image_continuousLinearMap, parabolicLinear_det,
         abs_of_pos (pow_pos hr _)]
 
-private theorem map_restrict_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
-    {r : ℝ} (hr : 0 < r) (s : Set (TimeVelocity d)) :
+theorem map_restrict_parabolicAffine :
     Measure.map (parabolicAffine t₀ v₀ r) ((volume : Measure (TimeVelocity d)).restrict s) =
       (Measure.map (parabolicAffine t₀ v₀ r) volume).restrict
         (parabolicAffine t₀ v₀ r '' s) := by
@@ -155,6 +155,10 @@ private theorem map_restrict_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.
         (parabolicAffine t₀ v₀ r '' s) :=
       ((parabolicAffine_measurableEmbedding hr).restrict_map volume
         (parabolicAffine t₀ v₀ r '' s)).symm
+
+end
+
+end
 
 /-- The ENNReal restricted-norm pullback formula before its elementary real
 power simplification.  It has no measurability or finiteness premise. -/
@@ -180,13 +184,8 @@ theorem parabolicELpNormOn_pullback_raw {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d
     Measure.restrict_smul, eLpNorm_smul_measure_of_ne_zero hc]
   simp only [a, smul_eq_mul, mul_assoc]
 
-private theorem parabolicExponent_toReal (d : ℕ) :
-    (parabolicExponent d).toReal = (d : ℝ) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ℝ≥0∞) + 1 = ((d + 1 : ℕ) : ℝ≥0∞) := by
-    norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
+theorem parabolicExponent_toReal (d : ℕ) :
+    (parabolicExponent d).toReal = (d : ℝ) + 1 := rfl
 
 private theorem parabolic_norm_scaling_factor (d : ℕ) {r : ℝ} (hr : 0 < r) :
     r ^ 2 * ((r ^ (d + 2))⁻¹) ^ (1 / ((d : ℝ) + 1)) =
@@ -209,8 +208,7 @@ theorem parabolicLpNormOn_pullback {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r 
         (fun z ↦ r ^ 2 * f (parabolicAffine t₀ v₀ r z)) s =
       r ^ ((d : ℝ) / ((d : ℝ) + 1)) *
         parabolicLpNormOn d f (parabolicAffine t₀ v₀ r '' s) := by
-  have hraw := parabolicELpNormOn_pullback_raw t₀ v₀ hr f s
-  have hreal := congrArg ENNReal.toReal hraw
+  have hreal := congrArg ENNReal.toReal (parabolicELpNormOn_pullback_raw t₀ v₀ hr f s)
   unfold parabolicLpNormOn
   calc
     (parabolicELpNormOn d

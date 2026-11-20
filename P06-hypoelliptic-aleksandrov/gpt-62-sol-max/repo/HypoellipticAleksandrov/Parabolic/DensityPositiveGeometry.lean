@@ -44,62 +44,35 @@ theorem inkSpots_closedSourceBox_subset_closedUnitBox
   rw [← hsource, ← hunit]
   exact closure_mono hq
 
+section
+variable {d : ℕ}
+
 /-- Elementary endpoint and coordinate consequences of source containment. -/
-private theorem inkSpots_source_bounds {d : ℕ} {q : InkSpotsBox d}
+theorem inkSpots_source_bounds {q : InkSpotsBox d}
     (hR : 0 < q.radius)
     (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d) :
     0 ≤ q.baseTime ∧ q.baseTime + q.radius ^ 2 ≤ 1 ∧ q.radius ≤ 1 ∧
       ∀ i, |q.center i| + q.radius ≤ 1 := by
   have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hR hq
-  have hcenter : (q.baseTime + q.radius ^ 2, q.center) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨?_, ?_, fun i => ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · norm_num
-    · simp [hR.le]
-  have hcenterUnit := hclosed hcenter
-  rw [mem_parabolicClosedBox_iff] at hcenterUnit
-  have hplus : (q.baseTime, q.center + q.radius • (1 : PDE.Vec d)) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨le_rfl, ?_, ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · intro i
-      simp only [Pi.add_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul]
-      rw [add_sub_cancel_left]
-      simp [abs_of_nonneg hR.le]
-  have hminus : (q.baseTime, q.center - q.radius • (1 : PDE.Vec d)) ∈
-      parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨le_rfl, ?_, ?_⟩
-    · nlinarith [sq_nonneg q.radius]
-    · intro i
-      simp only [Pi.sub_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul]
-      rw [sub_sub_cancel_left]
-      simp [abs_of_nonneg hR.le]
-  have hplusUnit := hclosed hplus
-  have hminusUnit := hclosed hminus
-  rw [mem_parabolicClosedBox_iff] at hplusUnit hminusUnit
-  refine ⟨hplusUnit.1, by norm_num at hcenterUnit ⊢; exact hcenterUnit.2.1, ?_, ?_⟩
-  · nlinarith [sq_nonneg (q.radius - 1)]
-  · intro i
-    have hp := hplusUnit.2.2 i
-    have hm := hminusUnit.2.2 i
-    simp only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, Pi.one_apply,
-      smul_eq_mul, Pi.zero_apply, sub_zero] at hp hm
-    have hp' : q.center i + q.radius * 1 ≤ 1 :=
-      (le_abs_self _).trans hp
-    have hm' : -(q.center i - q.radius * 1) ≤ 1 :=
-      (neg_le_abs _).trans hm
-    have habs : |q.center i| ≤ 1 - q.radius := by
-      rw [abs_le]
-      constructor <;> linarith
-    linarith
+  have top := mem_parabolicClosedBox_iff.mp (hclosed ((mem_parabolicClosedBox_iff
+    (t := q.baseTime + q.radius ^ 2) (v := q.center)).mpr
+    ⟨le_add_of_nonneg_right (sq_nonneg _), by simp, fun i => by simp [hR.le]⟩))
+  have shift (r : ℝ) (hr : |r| ≤ q.radius) :=
+    mem_parabolicClosedBox_iff.mp (hclosed ((mem_parabolicClosedBox_iff
+      (t := q.baseTime) (v := fun i => q.center i + r)).mpr
+      ⟨le_rfl, by simpa using le_add_of_nonneg_right (a := q.baseTime) (sq_nonneg q.radius),
+        fun i => by simpa using hr⟩))
+  have hp := shift q.radius (abs_of_nonneg hR.le).le
+  have hm := shift (-q.radius) (by simpa only [abs_neg] using (abs_of_nonneg hR.le).le)
+  have ht : q.baseTime + q.radius ^ 2 ≤ 1 := by simpa using top.2.1
+  refine ⟨hp.1, ht, by nlinarith [hp.1, sq_nonneg (q.radius - 1)], fun i => ?_⟩
+  have hu : q.center i + q.radius ≤ 1 := le_abs_self _ |>.trans (by simpa using hp.2.2 i)
+  have hl : -(q.center i + -q.radius) ≤ 1 := neg_le_abs _ |>.trans (by simpa using hm.2.2 i)
+  exact (le_sub_iff_add_le.mp (abs_le.mpr ⟨by linarith, by linarith⟩))
 
 /-- A point of the terminal contraction has the source's strict time and
 coordinate bounds. -/
-private theorem inkSpotsQ3_bounds {d : ℕ} {eta zeta : ℝ} {q : InkSpotsBox d}
+private theorem inkSpotsQ3_bounds {eta zeta : ℝ} {q : InkSpotsBox d}
     {z : TimeVelocity d} (heta : 0 < eta) (hzeta : 0 < zeta) (hzeta1 : zeta < 1)
     (hR : 0 < q.radius)
     (hz : z ∈ inkSpotsQ3 eta zeta q) :
@@ -154,7 +127,7 @@ private theorem inkSpotsQ3_bounds {d : ℕ} {eta zeta : ℝ} {q : InkSpotsBox d}
 
 /-- The clipped terminal stack has strict coordinate room inside the unit
 box, measured at every contraction factor no larger than `1 - zeta`. -/
-private theorem inkSpotsQ3_unit_margin {d : ℕ} {eta zeta kappa : ℝ}
+private theorem inkSpotsQ3_unit_margin {eta zeta kappa : ℝ}
     {q : InkSpotsBox d} {z : TimeVelocity d}
     (hzeta : 0 < zeta) (hzeta1 : zeta < 1) (hR : 0 < q.radius)
     (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d)
@@ -193,11 +166,13 @@ private theorem inkSpotsQ3_unit_margin {d : ℕ} {eta zeta kappa : ℝ}
 
 /-- The positive coordinatewise slack used to enlarge the two relevant
 velocity points to a closed propagation rectangle. -/
-private def inkSpotsCorridorSlack {d : ℕ} (kappa : ℝ) (q : InkSpotsBox d)
+private def inkSpotsCorridorSlack (kappa : ℝ) (q : InkSpotsBox d)
     (z : TimeVelocity d) (i : Fin d) : ℝ :=
   min (kappa * q.radius / 2)
     (min (1 - |q.center i| - kappa * q.radius)
       (1 - |z.2 i| - kappa * q.radius) / 2)
+
+end
 
 /-- Numerical consequences of the source's first propagation parameter. -/
 private theorem inkSpots_kappa_properties {eta zeta kappa : ℝ}
@@ -449,7 +424,6 @@ private theorem selected_alpha_bounds {d : ℕ} {a alpha : ℝ}
     exact Real.rpow_lt_one_of_one_lt_of_neg hbase hexpNeg
   have hfrac : 2 / ((d : ℝ) + 2) ≤ 1 := by
     apply (div_le_iff₀ hden).mpr
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := by positivity
     nlinarith
   have hexp : (-1 : ℝ) ≤ -(2 / ((d : ℝ) + 2)) := by
     exact neg_le_neg hfrac

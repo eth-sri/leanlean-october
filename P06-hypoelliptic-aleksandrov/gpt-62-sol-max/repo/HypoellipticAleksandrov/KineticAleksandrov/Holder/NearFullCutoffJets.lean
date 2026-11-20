@@ -22,15 +22,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Parabolic Scaling
 
+section
+variable {d : ℕ}
+
 /-- Smoothness of a scaled cutoff in the existing raw product coordinates. -/
-theorem contDiff_rawLift_scaledUnitCutoff {d : ℕ}
+theorem contDiff_rawLift_scaledUnitCutoff
     {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (P₀ : KineticPoint d) (R ell : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (rawLift (scaledUnitCutoff f P₀ R ell)) :=
   contDiff_const.mul (hf.comp (contDiff_kineticAffineInverse_prod P₀ R))
 
 /-- The physical free-transport curve differentiates to the source transport operator. -/
-theorem hasDerivAt_kinetic_transport {d : ℕ} {u : KineticPoint d → ℝ}
+theorem hasDerivAt_kinetic_transport {u : KineticPoint d → ℝ}
     {P : KineticPoint d} (hu : DifferentiableAt ℝ (rawLift u) (rawPoint P)) :
     HasDerivAt (fun t : ℝ => u ⟨P.time + t, P.position + t • P.velocity, P.velocity⟩)
       (kineticTimeDerivative u P + PDE.vecDot P.velocity (kineticPositionGradient u P))
@@ -50,7 +53,7 @@ theorem hasDerivAt_kinetic_transport {d : ℕ} {u : KineticPoint d → ℝ}
     hu'.hasFDerivAt.comp_hasDerivAt 0 hc
 
 /-- The time-plus-transport jet scales by the exact inverse-square radius. -/
-theorem scaledUnitCutoff_transport {d : ℕ}
+theorem scaledUnitCutoff_transport
     {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (P₀ P : KineticPoint d) (R ell : ℝ) :
     kineticTimeDerivative (scaledUnitCutoff f P₀ R ell) P +
@@ -85,5 +88,7 @@ theorem scaledUnitCutoff_transport {d : ℕ}
   rw [hsame, hv, map_smul]
   simp only [smul_eq_mul]
   ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

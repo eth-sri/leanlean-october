@@ -21,46 +21,12 @@ open scoped ENNReal Topology
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem strictDense_timeInterval_subset_unit {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) :
-    Ioo q.baseTime (q.baseTime + q.radius ^ 2) ⊆ Ioo 0 1 := by
-  have hr : 0 < q.radius := hq.1
-  intro t ht
-  have htSource : (t, q.center) ∈ inkSpotsSourceBox q := by
-    rw [mem_inkSpotsSourceBox_iff]
-    refine ⟨ht.1, ht.2, ?_⟩
-    · intro i
-      simp only [sub_self, abs_zero]
-      exact hr
-  have htUnit : (t, q.center) ∈ inkSpotsUnitBox d := hq.2.1 htSource
-  rw [inkSpotsUnitBox, mem_parabolicBox_iff] at htUnit
-  constructor
-  · exact htUnit.1
-  · convert htUnit.2.1 using 1
-    norm_num
+section
+variable {d : ℕ} {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
+  (hq : inkSpotsStrictDense Gamma xi q)
+include Gamma xi hq
 
-private theorem strictDense_baseTime_nonneg {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) :
-    0 ≤ q.baseTime := by
-  have htime := strictDense_timeInterval_subset_unit hq
-  have hnonempty : q.baseTime < q.baseTime + q.radius ^ 2 := by
-    nlinarith [sq_pos_of_pos hq.1]
-  exact (Ioo_subset_Ioo_iff hnonempty).mp htime |>.1
-
-private theorem strictDense_baseTime_add_sq_le_one {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) :
-    q.baseTime + q.radius ^ 2 ≤ 1 := by
-  have htime := strictDense_timeInterval_subset_unit hq
-  have hnonempty : q.baseTime < q.baseTime + q.radius ^ 2 := by
-    nlinarith [sq_pos_of_pos hq.1]
-  exact (Ioo_subset_Ioo_iff hnonempty).mp htime |>.2
-
-private theorem strictDense_center_mem_unit_velocityCube {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) :
+private theorem strictDense_center_mem_unit_velocityCube :
     q.center ∈ velocityCube (0 : PDE.Vec d) 1 := by
   have hr : 0 < q.radius := hq.1
   let t : ℝ := q.baseTime + q.radius ^ 2 / 2
@@ -78,236 +44,29 @@ private theorem strictDense_center_mem_unit_velocityCube {d : ℕ}
   rw [inkSpotsUnitBox, mem_parabolicBox_iff] at htUnit
   exact htUnit.2.2
 
-private theorem strictDense_center_coord_bounds {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) (j : Fin d) :
+private theorem strictDense_center_coord_bounds (j : Fin d) :
     -1 < q.center j ∧ q.center j < 1 := by
   simpa only [Pi.zero_apply, sub_zero] using
     abs_lt.mp (strictDense_center_mem_unit_velocityCube hq j)
 
-private def windAmbientTime (eta : ℝ) : Set ℝ :=
-  Ioo 0 (1 + 4 / eta)
+end
 
-private def windAmbientVelocity (d : ℕ) : Set (PDE.Vec d) :=
-  velocityCube (0 : PDE.Vec d) 1
-
-private def windAmbient (d : ℕ) (eta : ℝ) : Set (TimeVelocity d) :=
-  windAmbientTime eta ×ˢ windAmbientVelocity d
-
-private theorem inkSpotsQ2_subset_windAmbient {d : ℕ} {eta : ℝ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (heta : 0 < eta) (hq : inkSpotsStrictDense Gamma xi q) :
-    inkSpotsQ2 eta q ⊆ windAmbient d eta := by
-  intro z hz
-  rcases z with ⟨t, v⟩
-  rw [mem_inkSpotsQ2_iff] at hz
-  refine ⟨?_, hz.2.2.2⟩
-  constructor
-  · have hbase : 0 ≤ q.baseTime := strictDense_baseTime_nonneg hq
-    nlinarith [sq_pos_of_pos hq.1]
-  · have htop : q.baseTime + q.radius ^ 2 ≤ 1 :=
-      strictDense_baseTime_add_sq_le_one hq
-    have hbase : 0 ≤ q.baseTime := strictDense_baseTime_nonneg hq
-    have hsquare : q.radius ^ 2 ≤ 1 := by nlinarith [hbase]
-    rw [inkSpotsTerminalTime_eq] at hz
-    have hdiv : 4 * q.radius ^ 2 / eta ≤ 4 / eta := by
-      rw [div_le_div_iff_of_pos_right heta]
-      nlinarith
-    exact hz.2.1.trans_le (by linarith)
-
-/-- The time section of a forward source stack. -/
-private def windForwardInterval {d : ℕ} (eta : ℝ) (q : InkSpotsBox d) : Set ℝ :=
-  Ioo (q.baseTime + q.radius ^ 2) (inkSpotsTerminalTime eta q)
-
-private theorem isOpen_ordConnected_eq_Ioo_csInf_csSup (I : Set ℝ)
-    (hIopen : IsOpen I) (hIord : I.OrdConnected) (hInonempty : I.Nonempty)
-    (hIbelow : BddBelow I) (hIabove : BddAbove I) :
-    I = Ioo (sInf I) (sSup I) := by
-  apply Subset.antisymm
-  · intro x hx
-    have hinf : sInf I ≤ x := csInf_le hIbelow hx
-    have hsup : x ≤ sSup I := le_csSup hIabove hx
-    constructor
-    · by_contra hnot
-      have hxeq : x = sInf I := le_antisymm (le_of_not_gt hnot) hinf
-      rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hleft : x - eps / 2 ∈ I := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x - eps / 2) - x| = eps / 2 := by
-          rw [show (x - eps / 2) - x = -(eps / 2) by ring, abs_neg,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : sInf I ≤ x - eps / 2 := csInf_le hIbelow hleft
-      rw [← hxeq] at hle
-      linarith
-    · by_contra hnot
-      have hxeq : sSup I = x := le_antisymm (le_of_not_gt hnot) hsup
-      rcases Metric.mem_nhds_iff.1 (hIopen.mem_nhds hx) with ⟨eps, heps, hball⟩
-      have hright : x + eps / 2 ∈ I := hball (by
-        rw [Metric.mem_ball, Real.dist_eq]
-        have habs : |(x + eps / 2) - x| = eps / 2 := by
-          rw [show (x + eps / 2) - x = eps / 2 by ring,
-            abs_of_pos (by linarith)]
-        rw [habs]
-        linarith)
-      have hle : x + eps / 2 ≤ sSup I := le_csSup hIabove hright
-      rw [hxeq] at hle
-      linarith
-  · exact IsConnected.Ioo_csInf_csSup_subset
-      ⟨hInonempty, hIord.isPreconnected⟩ hIbelow hIabove
-
-/-- Right-end interval expansion, clipped only at the left endpoint of the
-ambient interval.  This is the concrete map used for the time sections. -/
-private def rightEndpointExpansion (a kappa : ℝ) (I : Set ℝ) : Set ℝ :=
-  Ioo (max a (sSup I - kappa * (sSup I - sInf I))) (sSup I)
-
-private theorem rightEndpointExpansion_mono_of_subset {a kappa : ℝ}
-    {I₁ I₂ : Set ℝ} (hI₁nonempty : I₁.Nonempty) (hI₂below : BddBelow I₂)
-    (hI₁above : BddAbove I₁) (hI₂above : BddAbove I₂)
-    (hkappa : 1 ≤ kappa) (hsub : I₁ ⊆ I₂) :
-    rightEndpointExpansion a kappa I₁ ⊆ rightEndpointExpansion a kappa I₂ := by
-  have hinf : sInf I₂ ≤ sInf I₁ := by
-    apply le_csInf hI₁nonempty
-    intro x hx
-    exact csInf_le hI₂below (hsub hx)
-  have hsup : sSup I₁ ≤ sSup I₂ := by
-    apply (csSup_le_iff hI₁above hI₁nonempty).2
-    intro x hx
-    exact le_csSup hI₂above (hsub hx)
-  unfold rightEndpointExpansion
-  apply Ioo_subset_Ioo
-  · apply max_le_max_left
-    nlinarith
-  · exact hsup
-
-private theorem rightEndpointExpansion_measure_le {a b kappa : ℝ} {I : Set ℝ}
-    (hkappa : 1 ≤ kappa) (hI : IsOpenSubinterval (Ioo a b) I) :
-    volume (rightEndpointExpansion a kappa I) ≤
-      ENNReal.ofReal kappa * volume I := by
-  have hIbelow : BddBelow I :=
-    ⟨a, fun x hx => (hI.2.2.2 hx).1.le⟩
-  have hIabove : BddAbove I :=
-    ⟨b, fun x hx => (hI.2.2.2 hx).2.le⟩
-  have hIeq := isOpen_ordConnected_eq_Ioo_csInf_csSup I hI.2.1 hI.2.2.1
-    hI.1 hIbelow hIabove
-  have hlt : sInf I < sSup I := by
-    rw [hIeq] at hI
-    exact nonempty_Ioo.mp hI.1
-  rw [hIeq, rightEndpointExpansion, csInf_Ioo hlt, csSup_Ioo hlt,
-    Real.volume_Ioo, Real.volume_Ioo]
-  rw [← ENNReal.ofReal_mul (le_trans zero_le_one hkappa)]
-  apply ENNReal.ofReal_le_ofReal
-  have hleft : sSup I - kappa * (sSup I - sInf I) ≤
-      max a (sSup I - kappa * (sSup I - sInf I)) := le_max_right _ _
-  nlinarith
-
-private theorem isOpenSubinterval_rightEndpointExpansion {a b kappa : ℝ}
-    {I : Set ℝ} (hkappa : 1 < kappa) (hI : IsOpenSubinterval (Ioo a b) I) :
-    IsOpenSubinterval (Ioo a b) (rightEndpointExpansion a kappa I) := by
-  have hIbelow : BddBelow I :=
-    ⟨a, fun x hx => (hI.2.2.2 hx).1.le⟩
-  have hIabove : BddAbove I :=
-    ⟨b, fun x hx => (hI.2.2.2 hx).2.le⟩
-  have hIeq := isOpen_ordConnected_eq_Ioo_csInf_csSup I hI.2.1 hI.2.2.1
-    hI.1 hIbelow hIabove
-  have hlt : sInf I < sSup I := by
-    rw [hIeq] at hI
-    exact nonempty_Ioo.mp hI.1
-  have hupper : sSup I ≤ b := by
-    rcases hI.1 with ⟨x, hx⟩
-    apply (csSup_le_iff hIabove ⟨x, hx⟩).2
-    intro y hy
-    exact (hI.2.2.2 hy).2.le
-  have haUpper : a < sSup I := by
-    rcases hI.1 with ⟨x, hx⟩
-    exact (hI.2.2.2 hx).1.trans_le (le_csSup hIabove hx)
-  unfold rightEndpointExpansion
-  constructor
-  · refine nonempty_Ioo.mpr (max_lt ?_ ?_)
-    · exact haUpper
-    · have hproduct : 0 < kappa * (sSup I - sInf I) :=
-        mul_pos (zero_lt_one.trans hkappa) (sub_pos.mpr hlt)
-      linarith
-  constructor
-  · exact isOpen_Ioo
-  constructor
-  · exact ordConnected_Ioo
-  · exact Ioo_subset_Ioo (le_max_left _ _) hupper
-
-private theorem volume_sUnion_rightEndpointExpansion {a b kappa : ℝ}
-    (hkappa : 1 < kappa) (B : Set (Set ℝ))
-    (hB : ∀ I ∈ B, IsOpenSubinterval (Ioo a b) I)
-    (hbounded : Bornology.IsBounded (⋃₀ B)) :
-    volume (⋃₀ (rightEndpointExpansion a kappa '' B)) ≤
-      ENNReal.ofReal kappa * volume (⋃₀ B) := by
-  apply volume_sUnion_monotone_interval_enlargement_of_le kappa hkappa (Ioo a b)
-    isOpen_Ioo ordConnected_Ioo B (rightEndpointExpansion a kappa) hB hbounded
-  · intro I hI
-    exact isOpenSubinterval_rightEndpointExpansion hkappa hI
-  · intro I hI _
-    exact rightEndpointExpansion_measure_le hkappa.le hI
-  · intro I₁ I₂ hI₁ hI₂ hsub
-    have hI₂below : BddBelow I₂ :=
-      ⟨a, fun x hx => (hI₂.2.2.2 hx).1.le⟩
-    have hI₁above : BddAbove I₁ :=
-      ⟨b, fun x hx => (hI₁.2.2.2 hx).2.le⟩
-    have hI₂above : BddAbove I₂ :=
-      ⟨b, fun x hx => (hI₂.2.2.2 hx).2.le⟩
-    exact rightEndpointExpansion_mono_of_subset hI₁.1 hI₂below hI₁above hI₂above
-      hkappa.le hsub
-
-private def timeSection {d : ℕ} (S : Set (TimeVelocity d)) (v : PDE.Vec d) : Set ℝ :=
-  {t | (t, v) ∈ S}
-
-private theorem windForwardInterval_eligible {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} {q : InkSpotsBox d}
-    (heta : 0 < eta) (hq : inkSpotsStrictDense Gamma xi q) :
-    IsOpenSubinterval (windAmbientTime eta) (windForwardInterval eta q) := by
-  constructor
-  · apply nonempty_Ioo.mpr
-    rw [inkSpotsTerminalTime_eq]
-    have hsquare : 0 < q.radius ^ 2 := sq_pos_of_pos hq.1
-    field_simp
-    nlinarith
-  constructor
-  · exact isOpen_Ioo
-  constructor
-  · exact ordConnected_Ioo
-  · intro t ht
-    have hbase : 0 ≤ q.baseTime := strictDense_baseTime_nonneg hq
-    have htop : q.baseTime + q.radius ^ 2 ≤ 1 :=
-      strictDense_baseTime_add_sq_le_one hq
-    have hsquare : q.radius ^ 2 ≤ 1 := by nlinarith
-    rw [windForwardInterval, mem_Ioo] at ht
-    rw [windAmbientTime, mem_Ioo]
-    constructor
-    · nlinarith [sq_pos_of_pos hq.1]
-    · rw [inkSpotsTerminalTime_eq] at ht
-      have hdiv : 4 * q.radius ^ 2 / eta ≤ 4 / eta := by
-        rw [div_le_div_iff_of_pos_right heta]
-        nlinarith
-      exact ht.2.trans_le (by linarith)
-
-private theorem volume_eq_lintegral_timeSection {d : ℕ} (S : Set (TimeVelocity d))
-    (hS : MeasurableSet S) :
-    volume S = ∫⁻ v, volume (timeSection S v) := by
-  rw [Measure.volume_eq_prod, Measure.prod_apply_symm hS]
-  rfl
+section
+variable {d : ℕ}
 
 /-- The source terminal contraction restricted to its time coordinate. -/
-private def inkSpotsTimeContraction {d : ℕ} (eta zeta : ℝ) (q : InkSpotsBox d) :
+private def inkSpotsTimeContraction (eta zeta : ℝ) (q : InkSpotsBox d) :
     ℝ → ℝ :=
   fun t => inkSpotsTerminalTime eta q - zeta ^ 2 *
     (inkSpotsTerminalTime eta q - t)
 
 /-- The first, time-only stage of the terminal contraction. -/
-private def inkSpotsQ2TimeContracted {d : ℕ} (eta zeta : ℝ) (q : InkSpotsBox d) :
+private def inkSpotsQ2TimeContracted (eta zeta : ℝ) (q : InkSpotsBox d) :
     Set (TimeVelocity d) :=
   (inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q) ×ˢ
     (velocityCube q.center (3 * q.radius) ∩ velocityCube 0 1)
 
-private theorem inkSpotsTimeContraction_forwardInterval {d : ℕ} {eta zeta : ℝ}
+private theorem inkSpotsTimeContraction_forwardInterval {eta zeta : ℝ}
     {q : InkSpotsBox d} (hzeta : 0 < zeta) :
     inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q =
       Ioo (inkSpotsTerminalTime eta q - zeta ^ 2 *
@@ -319,53 +78,33 @@ private theorem inkSpotsTimeContraction_forwardInterval {d : ℕ} {eta zeta : �
   convert image_affine_Ioo hsq ((1 - zeta ^ 2) * T)
     (q.baseTime + q.radius ^ 2) T using 1 <;> ext <;> dsimp [T] <;> ring_nf
 
-private def inkSpotsD2TimeContractedUnion {d : ℕ} (Gamma : Set (TimeVelocity d))
+private def inkSpotsD2TimeContractedUnion (Gamma : Set (TimeVelocity d))
     (xi eta zeta : ℝ) : Set (TimeVelocity d) :=
   ⋃ q ∈ inkSpotsDenseBoxes Gamma xi, inkSpotsQ2TimeContracted eta zeta q
 
-private theorem inkSpotsQ2TimeContracted_subset_Q2 {d : ℕ} {eta zeta : ℝ}
-    {q : InkSpotsBox d} (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) :
-    inkSpotsQ2TimeContracted eta zeta q ⊆ inkSpotsQ2 eta q := by
-  intro z hz
-  rcases z with ⟨t, v⟩
-  rcases hz.1 with ⟨s, hs, rfl⟩
-  rw [mem_inkSpotsQ2_iff]
-  refine ⟨?_, ?_, hz.2.1, hz.2.2⟩
-  · change q.baseTime + q.radius ^ 2 <
-      inkSpotsTerminalTime eta q - zeta ^ 2 *
-        (inkSpotsTerminalTime eta q - s)
-    have hsq1 : zeta ^ 2 < 1 := by
-      nlinarith [mul_pos hzeta0 (sub_pos.mpr hzeta1)]
-    rw [windForwardInterval, mem_Ioo] at hs
-    have hT : q.baseTime + q.radius ^ 2 < inkSpotsTerminalTime eta q :=
-      hs.1.trans hs.2
-    have hdecomp :
-        inkSpotsTerminalTime eta q - zeta ^ 2 *
-            (inkSpotsTerminalTime eta q - s) - (q.baseTime + q.radius ^ 2) =
-          (1 - zeta ^ 2) *
-              (inkSpotsTerminalTime eta q - (q.baseTime + q.radius ^ 2)) +
-            zeta ^ 2 * (s - (q.baseTime + q.radius ^ 2)) := by
-      ring
-    apply sub_pos.mp
-    rw [hdecomp]
-    exact add_pos
-      (mul_pos (sub_pos.mpr hsq1) (sub_pos.mpr hT))
-      (mul_pos (sq_pos_of_pos hzeta0) (sub_pos.mpr hs.1))
-  · change inkSpotsTerminalTime eta q - zeta ^ 2 *
-      (inkSpotsTerminalTime eta q - s) < inkSpotsTerminalTime eta q
-    have hsq0 : 0 < zeta ^ 2 := sq_pos_of_pos hzeta0
-    rw [windForwardInterval, mem_Ioo] at hs
-    apply sub_pos.mp
-    nlinarith [mul_pos hsq0 (sub_pos.mpr hs.2)]
+private theorem contractedTime_subset_forward {eta zeta : ℝ} {q : InkSpotsBox d}
+    (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) :
+    inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q ⊆ windForwardInterval eta q := by
+  rintro t ⟨x, hx, rfl⟩
+  have hx' : q.baseTime + q.radius ^ 2 < x ∧ x < inkSpotsTerminalTime eta q := hx
+  have hζ : zeta ^ 2 ≤ 1 := by nlinarith [mul_pos hzeta0 (sub_pos.mpr hzeta1)]
+  change _ < inkSpotsTimeContraction eta zeta q x ∧ _ < _
+  unfold inkSpotsTimeContraction
+  constructor <;> nlinarith [mul_nonneg (sub_nonneg.mpr hζ) (sub_nonneg.mpr hx'.2.le),
+    mul_pos (sq_pos_of_pos hzeta0) (sub_pos.mpr hx'.2)]
 
-private def hotTimeSectionFamily {d : ℕ} (Gamma : Set (TimeVelocity d))
-    (xi eta zeta : ℝ) (v : PDE.Vec d) : Set (Set ℝ) :=
+end
+
+section
+variable {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (v : PDE.Vec d)
+include d Gamma xi eta zeta v
+
+private def hotTimeSectionFamily : Set (Set ℝ) :=
   {I | ∃ q, inkSpotsStrictDense Gamma xi q ∧
     v ∈ velocityCube q.center (3 * q.radius) ∧ v ∈ velocityCube 0 1 ∧
     I = inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q}
 
-private theorem timeSection_inkSpotsD2TimeContractedUnion_eq_sUnion_hotTimeSectionFamily
-    {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (v : PDE.Vec d) :
+private theorem timeSection_inkSpotsD2TimeContractedUnion_eq_sUnion_hotTimeSectionFamily :
     timeSection (inkSpotsD2TimeContractedUnion Gamma xi eta zeta) v =
       ⋃₀ (hotTimeSectionFamily Gamma xi eta zeta v) := by
   ext t
@@ -383,89 +122,47 @@ private theorem timeSection_inkSpotsD2TimeContractedUnion_eq_sUnion_hotTimeSecti
     rw [timeSection, inkSpotsD2TimeContractedUnion]
     exact mem_iUnion.2 ⟨q, mem_iUnion.2 ⟨hq, ⟨ht, hvCenter, hvUnit⟩⟩⟩
 
-private theorem hotTimeInterval_eligible {d : ℕ} {Gamma : Set (TimeVelocity d)}
-    {xi eta zeta : ℝ} {q : InkSpotsBox d} (heta : 0 < eta)
-    (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1)
-    (hq : inkSpotsStrictDense Gamma xi q) :
+end
+
+section
+variable {d : ℕ} {Gamma : Set (TimeVelocity d)} {xi eta zeta : ℝ} {q : InkSpotsBox d}
+  (heta : 0 < eta) (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) (hq : inkSpotsStrictDense Gamma xi q)
+include Gamma xi heta hzeta0 hzeta1 hq
+
+private theorem hotTimeInterval_eligible :
     IsOpenSubinterval (windAmbientTime eta)
       (inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q) := by
-  rw [inkSpotsTimeContraction_forwardInterval hzeta0]
-  constructor
-  · apply nonempty_Ioo.mpr
-    have hsource : q.baseTime + q.radius ^ 2 < inkSpotsTerminalTime eta q := by
-      rw [inkSpotsTerminalTime_eq]
-      have hr : 0 < q.radius ^ 2 := sq_pos_of_pos hq.1
-      field_simp
-      nlinarith
-    have hsq : zeta ^ 2 < 1 := by
-      nlinarith [mul_pos hzeta0 (sub_pos.mpr hzeta1)]
-    have hgap : 0 < inkSpotsTerminalTime eta q -
-        (q.baseTime + q.radius ^ 2) := sub_pos.mpr hsource
-    nlinarith [mul_pos (sq_pos_of_pos hzeta0) hgap]
-  constructor
+  have hf := windForwardInterval_eligible heta hq
+  refine ⟨hf.1.image _, ?_, ?_, (contractedTime_subset_forward hzeta0 hzeta1).trans hf.2.2.2⟩ <;>
+    rw [inkSpotsTimeContraction_forwardInterval hzeta0]
   · exact isOpen_Ioo
-  constructor
   · exact ordConnected_Ioo
-  · intro t ht
-    have himage : t ∈ inkSpotsTimeContraction eta zeta q ''
-        windForwardInterval eta q := by
-      rw [inkSpotsTimeContraction_forwardInterval hzeta0]
-      exact ht
-    rcases himage with ⟨s, hs, rfl⟩
-    have htime : (inkSpotsTimeContraction eta zeta q s, q.center) ∈
-        inkSpotsQ2TimeContracted eta zeta q := by
-      refine ⟨⟨s, hs, rfl⟩, ?_, ?_⟩
-      · intro i
-        simp only [sub_self, abs_zero]
-        exact mul_pos (by norm_num) hq.1
-      · exact strictDense_center_mem_unit_velocityCube hq
-    have hq2 := inkSpotsQ2TimeContracted_subset_Q2 hzeta0 hzeta1 htime
-    rw [mem_inkSpotsQ2_iff] at hq2
-    rw [windAmbientTime, mem_Ioo]
-    exact (windForwardInterval_eligible heta hq).2.2.2 ⟨hq2.1, hq2.2.1⟩
 
-private theorem hotTimeExpansion_contractedInterval {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta zeta : ℝ} {q : InkSpotsBox d}
-    (heta : 0 < eta) (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1)
-    (hq : inkSpotsStrictDense Gamma xi q) :
+private theorem hotTimeExpansion_contractedInterval :
     rightEndpointExpansion 0 (zeta ^ 2)⁻¹
         (inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q) =
       windForwardInterval eta q := by
   rw [inkSpotsTimeContraction_forwardInterval hzeta0]
+  have hs : q.baseTime + q.radius ^ 2 < inkSpotsTerminalTime eta q :=
+    nonempty_Ioo.mp (windForwardInterval_eligible heta hq).1
+  have hgap := mul_pos (sq_pos_of_pos hzeta0) (sub_pos.mpr hs)
+  have hi : inkSpotsTerminalTime eta q - zeta ^ 2 *
+      (inkSpotsTerminalTime eta q - (q.baseTime + q.radius ^ 2)) < inkSpotsTerminalTime eta q := by linarith
   unfold rightEndpointExpansion windForwardInterval
-  have hsource : q.baseTime + q.radius ^ 2 < inkSpotsTerminalTime eta q := by
-    rw [inkSpotsTerminalTime_eq]
-    have hr : 0 < q.radius ^ 2 := sq_pos_of_pos hq.1
-    field_simp [ne_of_gt heta]
-    nlinarith
-  have hcontracted :
-      inkSpotsTerminalTime eta q - zeta ^ 2 *
-          (inkSpotsTerminalTime eta q - (q.baseTime + q.radius ^ 2)) <
-        inkSpotsTerminalTime eta q := by
-    have hgap : 0 < inkSpotsTerminalTime eta q -
-        (q.baseTime + q.radius ^ 2) := sub_pos.mpr hsource
-    nlinarith [mul_pos (sq_pos_of_pos hzeta0) hgap]
-  rw [csInf_Ioo hcontracted, csSup_Ioo hcontracted]
-  congr 1
-  rw [max_eq_right]
-  · field_simp
-    ring
-  · have hsq1 : zeta ^ 2 < 1 := by
-      nlinarith [mul_pos hzeta0 (sub_pos.mpr hzeta1)]
-    have hbase : 0 ≤ q.baseTime := strictDense_baseTime_nonneg hq
-    have hidentity : inkSpotsTerminalTime eta q - (zeta ^ 2)⁻¹ *
-        (inkSpotsTerminalTime eta q -
-          (inkSpotsTerminalTime eta q - zeta ^ 2 *
-            (inkSpotsTerminalTime eta q - (q.baseTime + q.radius ^ 2)))) =
-        q.baseTime + q.radius ^ 2 := by
-      field_simp [ne_of_gt (sq_pos_of_pos hzeta0)]
-      ring
-    rw [hidentity]
-    exact add_nonneg hbase (sq_nonneg _)
+  rw [csInf_Ioo hi, csSup_Ioo hi, show inkSpotsTerminalTime eta q - (zeta ^ 2)⁻¹ *
+      (inkSpotsTerminalTime eta q - (inkSpotsTerminalTime eta q - zeta ^ 2 *
+        (inkSpotsTerminalTime eta q - (q.baseTime + q.radius ^ 2)))) = q.baseTime + q.radius ^ 2 by
+      field_simp [hzeta0.ne']; ring]
+  rw [max_eq_right (add_nonneg (strictDense_baseTime_nonneg hq) (sq_nonneg _))]
 
-private theorem timeSection_inkSpotsD2_subset_expanded_hotTimeSections {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (heta : 0 < eta)
-    (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) (v : PDE.Vec d) :
+end
+
+section
+variable {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (heta : 0 < eta)
+  (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) (v : PDE.Vec d)
+include heta hzeta0 hzeta1
+
+private theorem timeSection_inkSpotsD2_subset_expanded_hotTimeSections :
     timeSection (inkSpotsD2 Gamma xi eta) v ⊆
       ⋃₀ (rightEndpointExpansion 0 (zeta ^ 2)⁻¹ ''
         hotTimeSectionFamily Gamma xi eta zeta v) := by
@@ -482,22 +179,18 @@ private theorem timeSection_inkSpotsD2_subset_expanded_hotTimeSections {d : ℕ}
   rw [hotTimeExpansion_contractedInterval heta hzeta0 hzeta1 hq]
   exact ⟨ht.1, ht.2.1⟩
 
-private theorem sUnion_hotTimeSectionFamily_bounded {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (heta : 0 < eta)
-    (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) (v : PDE.Vec d) :
+private theorem sUnion_hotTimeSectionFamily_bounded :
     Bornology.IsBounded (⋃₀ hotTimeSectionFamily Gamma xi eta zeta v) := by
   apply (Metric.isBounded_Ioo 0 (1 + 4 / eta)).subset
   refine sUnion_subset fun I hI => ?_
   rcases hI with ⟨q, hq, _, _, rfl⟩
   exact (hotTimeInterval_eligible heta hzeta0 hzeta1 hq).2.2.2
 
-private theorem volume_timeSection_inkSpotsD2_le_zeta_sq_inv_mul_timeContracted
-    {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (heta : 0 < eta)
-    (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) (v : PDE.Vec d) :
+private theorem volume_timeSection_inkSpotsD2_le_zeta_sq_inv_mul_timeContracted :
     volume (timeSection (inkSpotsD2 Gamma xi eta) v) ≤
       ENNReal.ofReal ((zeta ^ 2)⁻¹) *
         volume (timeSection (inkSpotsD2TimeContractedUnion Gamma xi eta zeta) v) := by
-  have hsq0 : 0 < zeta ^ 2 := sq_pos_of_pos hzeta0
+  have hsq0 := sq_pos_of_pos hzeta0
   have hsq1 : zeta ^ 2 < 1 := by
     nlinarith [mul_pos hzeta0 (sub_pos.mpr hzeta1)]
   calc
@@ -517,14 +210,18 @@ private theorem volume_timeSection_inkSpotsD2_le_zeta_sq_inv_mul_timeContracted
         volume (timeSection (inkSpotsD2TimeContractedUnion Gamma xi eta zeta) v) := by
       rw [timeSection_inkSpotsD2TimeContractedUnion_eq_sUnion_hotTimeSectionFamily]
 
+end
+
 private theorem isOpen_inkSpotsQ2TimeContracted {d : ℕ} {eta zeta : ℝ}
     (q : InkSpotsBox d) (hzeta0 : 0 < zeta) :
     IsOpen (inkSpotsQ2TimeContracted eta zeta q) := by
   rw [inkSpotsQ2TimeContracted, inkSpotsTimeContraction_forwardInterval hzeta0]
   exact isOpen_Ioo.prod ((isOpen_velocityCube _ _).inter (isOpen_velocityCube _ _))
 
-private theorem isOpen_inkSpotsD2TimeContractedUnion {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (hzeta0 : 0 < zeta) :
+section
+variable {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ)
+
+private theorem isOpen_inkSpotsD2TimeContractedUnion (hzeta0 : 0 < zeta) :
     IsOpen (inkSpotsD2TimeContractedUnion Gamma xi eta zeta) := by
   rw [inkSpotsD2TimeContractedUnion]
   apply isOpen_iUnion
@@ -533,8 +230,7 @@ private theorem isOpen_inkSpotsD2TimeContractedUnion {d : ℕ}
   intro _
   exact isOpen_inkSpotsQ2TimeContracted q hzeta0
 
-private theorem volume_inkSpotsD2_le_zeta_sq_inv_mul_timeContracted {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (heta : 0 < eta)
+private theorem volume_inkSpotsD2_le_zeta_sq_inv_mul_timeContracted (heta : 0 < eta)
     (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) :
     volume (inkSpotsD2 Gamma xi eta) ≤
       ENNReal.ofReal ((zeta ^ 2)⁻¹) *
@@ -553,26 +249,31 @@ private theorem volume_inkSpotsD2_le_zeta_sq_inv_mul_timeContracted {d : ℕ}
         ∫⁻ v, volume (timeSection (inkSpotsD2TimeContractedUnion Gamma xi eta zeta) v) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
 
+end
+
 /-! The remaining contractions are deliberately staged by prefix.  Keeping
 the family of boxes under the union at every stage is essential: different
 boxes meeting the same section have different velocity centres. -/
 
-private def inkSpotsVelocityPrefixContraction {d : Nat}
+section
+variable {d : Nat}
+
+private def inkSpotsVelocityPrefixContraction
     (q : InkSpotsBox d) (zeta : Real) (k : Nat) (v : PDE.Vec d) : PDE.Vec d :=
   fun j => if j.1 < k then q.center j + zeta * (v j - q.center j) else v j
 
-private def inkSpotsQ2PrefixContracted {d : Nat}
+private def inkSpotsQ2PrefixContracted
     (eta zeta : Real) (k : Nat) (q : InkSpotsBox d) : Set (TimeVelocity d) :=
   {z | ∃ y ∈ inkSpotsQ2 eta q,
     z.1 = inkSpotsTimeContraction eta zeta q y.1 ∧
       z.2 = inkSpotsVelocityPrefixContraction q zeta k y.2}
 
-private def inkSpotsD2PrefixContractedUnion {d : Nat}
+private def inkSpotsD2PrefixContractedUnion
     (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (k : Nat) :
     Set (TimeVelocity d) :=
   ⋃ q ∈ inkSpotsDenseBoxes Gamma xi, inkSpotsQ2PrefixContracted eta zeta k q
 
-private theorem inkSpotsQ2PrefixContracted_zero_eq_timeContracted {d : Nat}
+private theorem inkSpotsQ2PrefixContracted_zero_eq_timeContracted
     (eta zeta : Real) (q : InkSpotsBox d) :
     inkSpotsQ2PrefixContracted eta zeta 0 q = inkSpotsQ2TimeContracted eta zeta q := by
   ext z
@@ -597,14 +298,14 @@ private theorem inkSpotsQ2PrefixContracted_zero_eq_timeContracted {d : Nat}
     · funext j
       simp only [inkSpotsVelocityPrefixContraction, Nat.not_lt_zero, if_false]
 
-private theorem inkSpotsD2PrefixContractedUnion_zero_eq_timeContracted {d : Nat}
+private theorem inkSpotsD2PrefixContractedUnion_zero_eq_timeContracted
     (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) :
     inkSpotsD2PrefixContractedUnion Gamma xi eta zeta 0 =
       inkSpotsD2TimeContractedUnion Gamma xi eta zeta := by
   simp only [inkSpotsD2PrefixContractedUnion, inkSpotsD2TimeContractedUnion,
     inkSpotsQ2PrefixContracted_zero_eq_timeContracted]
 
-private theorem inkSpotsQ2PrefixContracted_eq_Q3 {d : Nat}
+private theorem inkSpotsQ2PrefixContracted_eq_Q3
     (eta zeta : Real) (q : InkSpotsBox d) :
     inkSpotsQ2PrefixContracted eta zeta d q = inkSpotsQ3 eta zeta q := by
   ext z
@@ -631,102 +332,41 @@ private theorem inkSpotsQ2PrefixContracted_eq_Q3 {d : Nat}
       dsimp [inkSpotsContraction]
       rw [inkSpotsVelocityPrefixContraction, if_pos hj]
 
-private theorem inkSpotsD2PrefixContractedUnion_eq_D3 {d : Nat}
+private theorem inkSpotsD2PrefixContractedUnion_eq_D3
     (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) :
     inkSpotsD2PrefixContractedUnion Gamma xi eta zeta d = inkSpotsD3 Gamma xi eta zeta := by
   simp only [inkSpotsD2PrefixContractedUnion, inkSpotsD3,
     inkSpotsQ2PrefixContracted_eq_Q3]
 
-private def inkSpotsAffineHomeomorph (c zeta : Real) (hzeta : zeta ≠ 0) :
+end
+
+section
+variable (c zeta : Real) (hzeta : zeta ≠ 0)
+include c zeta hzeta
+
+private def inkSpotsAffineHomeomorph :
     Real ≃ₜ Real :=
   (Homeomorph.addLeft (-c)).trans
     ((Homeomorph.smulOfNeZero zeta hzeta).trans (Homeomorph.addLeft c))
 
-private theorem inkSpotsAffineHomeomorph_apply (c zeta : Real) (hzeta : zeta ≠ 0)
+private theorem inkSpotsAffineHomeomorph_apply
     (x : Real) :
     inkSpotsAffineHomeomorph c zeta hzeta x = c + zeta * (x - c) := by
   simp [inkSpotsAffineHomeomorph, Homeomorph.addLeft, Homeomorph.smulOfNeZero]
   ring
 
-private def inkSpotsPrefixHomeomorph {d : Nat} (eta zeta : Real) (k : Nat)
-    (q : InkSpotsBox d) (hzeta : zeta ≠ 0) : TimeVelocity d ≃ₜ TimeVelocity d :=
-  (inkSpotsAffineHomeomorph (inkSpotsTerminalTime eta q) (zeta ^ 2)
-    (pow_ne_zero _ hzeta)).prodCongr
-    (Homeomorph.piCongrRight fun j =>
-      if _ : j.1 < k then inkSpotsAffineHomeomorph (q.center j) zeta hzeta
-      else Homeomorph.refl Real)
+end
 
-private theorem inkSpotsPrefixHomeomorph_apply {d : Nat} (eta zeta : Real) (k : Nat)
-    (q : InkSpotsBox d) (hzeta : zeta ≠ 0) (y : TimeVelocity d) :
-    inkSpotsPrefixHomeomorph eta zeta k q hzeta y =
-      (inkSpotsTimeContraction eta zeta q y.1,
-        inkSpotsVelocityPrefixContraction q zeta k y.2) := by
-  apply Prod.ext
-  · change inkSpotsAffineHomeomorph (inkSpotsTerminalTime eta q) (zeta ^ 2)
-      (pow_ne_zero _ hzeta) y.1 = _
-    rw [show inkSpotsTimeContraction eta zeta q y.1 =
-      inkSpotsTerminalTime eta q + zeta ^ 2 *
-        (y.1 - inkSpotsTerminalTime eta q) by
-      unfold inkSpotsTimeContraction
-      ring]
-    exact inkSpotsAffineHomeomorph_apply _ _ _ _
-  · funext j
-    change (Homeomorph.piCongrRight fun l =>
-      if _ : l.1 < k then inkSpotsAffineHomeomorph (q.center l) zeta hzeta
-      else Homeomorph.refl Real) y.2 j =
-        inkSpotsVelocityPrefixContraction q zeta k y.2 j
-    rw [Homeomorph.piCongrRight_apply]
-    by_cases hj : j.1 < k
-    · rw [dif_pos hj, inkSpotsAffineHomeomorph_apply]
-      simp only [inkSpotsVelocityPrefixContraction, if_pos hj]
-    · rw [dif_neg hj]
-      simp only [Homeomorph.refl_apply, inkSpotsVelocityPrefixContraction, if_neg hj]
-      rfl
+section
+variable {d : Nat}
 
-private theorem inkSpotsQ2PrefixContracted_eq_homeomorph_image {d : Nat}
-    (eta zeta : Real) (k : Nat) (q : InkSpotsBox d) (hzeta : zeta ≠ 0) :
-    inkSpotsQ2PrefixContracted eta zeta k q =
-      inkSpotsPrefixHomeomorph eta zeta k q hzeta '' inkSpotsQ2 eta q := by
-  ext z
-  constructor
-  · rintro ⟨y, hy, ht, hv⟩
-    refine ⟨y, hy, ?_⟩
-    rw [inkSpotsPrefixHomeomorph_apply]
-    exact Prod.ext ht.symm hv.symm
-  · rintro ⟨y, hy, hzy⟩
-    refine ⟨y, hy, ?_, ?_⟩
-    have hcomponents := congrArg Prod.fst hzy
-    rw [inkSpotsPrefixHomeomorph_apply] at hcomponents
-    exact hcomponents.symm
-    have hcomponents := congrArg Prod.snd hzy
-    rw [inkSpotsPrefixHomeomorph_apply] at hcomponents
-    exact hcomponents.symm
-
-private theorem isOpen_inkSpotsQ2PrefixContracted {d : Nat} {eta zeta : Real}
-    (k : Nat) (q : InkSpotsBox d) (hzeta0 : 0 < zeta) :
-    IsOpen (inkSpotsQ2PrefixContracted eta zeta k q) := by
-  rw [inkSpotsQ2PrefixContracted_eq_homeomorph_image eta zeta k q hzeta0.ne']
-  exact (inkSpotsPrefixHomeomorph eta zeta k q hzeta0.ne').isOpenMap _
-    (isOpen_inkSpotsQ2 eta q)
-
-private theorem isOpen_inkSpotsD2PrefixContractedUnion {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (k : Nat)
-    (hzeta0 : 0 < zeta) :
-    IsOpen (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta k) := by
-  rw [inkSpotsD2PrefixContractedUnion]
-  apply isOpen_iUnion
-  intro q
-  apply isOpen_iUnion
-  intro _
-  exact isOpen_inkSpotsQ2PrefixContracted k q hzeta0
-
-private def inkSpotsVelocitySectionPoint {d : Nat} (j : Fin d) (x : Real)
+private def inkSpotsVelocitySectionPoint (j : Fin d) (x : Real)
     (w : Fin d → Real) : TimeVelocity d :=
   (timeVelocityCoordinateEquiv d).symm
     ((MeasurableEquiv.piFinSuccAbove (fun _ : Fin (d + 1) => Real)
       (Fin.succ j)).symm (x, w))
 
-private theorem mem_timeVelocityCoordinateSection_succ_iff {d : Nat} (j : Fin d)
+private theorem mem_timeVelocityCoordinateSection_succ_iff (j : Fin d)
     (S : Set (TimeVelocity d)) (w : Fin d → Real) (x : Real) :
     x ∈ timeVelocityCoordinateSection d (Fin.succ j) S w ↔
       inkSpotsVelocitySectionPoint j x w ∈ S := by
@@ -746,16 +386,21 @@ private theorem mem_timeVelocityCoordinateSection_succ_iff {d : Nat} (j : Fin d)
     refine ⟨e.symm (ei.symm (x, w)), hz, ?_⟩
     exact e.apply_symm_apply _
 
-private theorem timeVelocityCoordinateEquiv_sectionPoint {d : Nat} (j : Fin d)
-    (x : Real) (w : Fin d → Real) :
+end
+
+section
+variable {d : Nat} (j : Fin d) (x : Real) (w : Fin d → Real)
+
+private theorem timeVelocityCoordinateEquiv_sectionPoint :
     timeVelocityCoordinateEquiv d (inkSpotsVelocitySectionPoint j x w) =
       (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (d + 1) => Real)
         (Fin.succ j)).symm (x, w) := by
   simp [inkSpotsVelocitySectionPoint]
 
-private theorem sectionPoint_velocity_eq {d : Nat} (j : Fin d) (x : Real)
-    (w : Fin d → Real) : (inkSpotsVelocitySectionPoint j x w).2 j = x := by
+private theorem sectionPoint_velocity_eq : (inkSpotsVelocitySectionPoint j x w).2 j = x := by
   simp [inkSpotsVelocitySectionPoint, timeVelocityCoordinateEquiv, Fin.tail]
+
+end
 
 private theorem sectionPoint_velocity_eq_of_ne {d : Nat} (j l : Fin d) (x y : Real)
     (w : Fin d → Real) (h : l ≠ j) :
@@ -777,47 +422,7 @@ private theorem sectionPoint_time_eq {d : Nat} (j : Fin d) (x y : Real)
     (w : Fin d → Real) :
     (inkSpotsVelocitySectionPoint j x w).1 =
       (inkSpotsVelocitySectionPoint j y w).1 := by
-  change (timeVelocityCoordinateEquiv d (inkSpotsVelocitySectionPoint j x w)) 0 =
-    (timeVelocityCoordinateEquiv d (inkSpotsVelocitySectionPoint j y w)) 0
-  rw [timeVelocityCoordinateEquiv_sectionPoint,
-    timeVelocityCoordinateEquiv_sectionPoint]
-  simp only [MeasurableEquiv.piFinSuccAbove_symm_apply, Fin.insertNthEquiv,
-    Equiv.coe_fn_mk]
-  rw [Fin.insertNth_apply_below (by simp), Fin.insertNth_apply_below (by simp)]
-
-private def inkSpotsPrefixCoordinateSectionFamily {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (k : Nat) (j : Fin d)
-    (w : Fin d → Real) : Set (Set Real) :=
-  {I | ∃ q ∈ inkSpotsDenseBoxes Gamma xi,
-    I = timeVelocityCoordinateSection d (Fin.succ j)
-      (inkSpotsQ2PrefixContracted eta zeta k q) w ∧ I.Nonempty}
-
-private theorem timeVelocityCoordinateSection_prefixUnion_eq_sUnion_family {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (k : Nat) (j : Fin d)
-    (w : Fin d → Real) :
-    timeVelocityCoordinateSection d (Fin.succ j)
-        (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta k) w =
-      ⋃₀ inkSpotsPrefixCoordinateSectionFamily Gamma xi eta zeta k j w := by
-  ext x
-  rw [mem_timeVelocityCoordinateSection_succ_iff]
-  constructor
-  · intro hx
-    rw [inkSpotsD2PrefixContractedUnion] at hx
-    rcases mem_iUnion.1 hx with ⟨q, hx⟩
-    rcases mem_iUnion.1 hx with ⟨hq, hx⟩
-    refine mem_sUnion.2 ⟨timeVelocityCoordinateSection d (Fin.succ j)
-      (inkSpotsQ2PrefixContracted eta zeta k q) w, ?_, ?_⟩
-    · refine ⟨q, hq, rfl, ⟨x, ?_⟩⟩
-      rw [mem_timeVelocityCoordinateSection_succ_iff]
-      exact hx
-    · rw [mem_timeVelocityCoordinateSection_succ_iff]
-      exact hx
-  · rintro hx
-    rcases mem_sUnion.1 hx with ⟨I, hI, hxI⟩
-    rcases hI with ⟨q, hq, rfl, _⟩
-    rw [mem_timeVelocityCoordinateSection_succ_iff] at hxI
-    rw [inkSpotsD2PrefixContractedUnion]
-    exact mem_iUnion.2 ⟨q, mem_iUnion.2 ⟨hq, hxI⟩⟩
+  solve_by_elim
 
 private def inkSpotsHotCoordinateInterval {d : Nat} (q : InkSpotsBox d)
     (j : Fin d) : Set Real :=
@@ -833,6 +438,99 @@ private theorem inkSpotsHotCoordinateInterval_eligible {d : Nat}
     ordConnected_Ioo.inter ordConnected_Ioo, inter_subset_right⟩
   constructor <;> nlinarith
 
+section
+variable {d : ℕ} (q : InkSpotsBox d)
+include q
+
+private def prefixVelocityInterval (zeta : ℝ) (k : ℕ) (l : Fin d) :
+    Set ℝ := if l.1 < k then centeredCoordinateContraction (q.center l) zeta ''
+      inkSpotsHotCoordinateInterval q l else inkSpotsHotCoordinateInterval q l
+
+private theorem mem_hotCoordinateInterval_iff (l : Fin d) (x : ℝ) :
+    x ∈ inkSpotsHotCoordinateInterval q l ↔ |x - q.center l| < 3 * q.radius ∧ |x| < 1 := by
+  simp only [inkSpotsHotCoordinateInterval, mem_inter_iff, mem_Ioo, abs_lt]
+  constructor <;> rintro ⟨⟨h₁, h₂⟩, h₃⟩ <;> exact ⟨⟨by linarith, by linarith⟩, h₃⟩
+
+private theorem prefixVelocityInterval_image (zeta : ℝ)
+    (k : ℕ) (l : Fin d) :
+    prefixVelocityInterval q zeta k l =
+      (fun x => if l.1 < k then centeredCoordinateContraction (q.center l) zeta x else x) ''
+        inkSpotsHotCoordinateInterval q l := by
+  by_cases hl : l.1 < k <;> simp [prefixVelocityInterval, hl]
+
+end
+
+section
+variable {d : ℕ} (eta zeta : ℝ) (q : InkSpotsBox d) (k : ℕ)
+include eta zeta q k
+
+private theorem mem_prefixContracted_iff
+    (z : TimeVelocity d) : z ∈ inkSpotsQ2PrefixContracted eta zeta k q ↔
+      z.1 ∈ inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q ∧
+        ∀ l, z.2 l ∈ prefixVelocityInterval q zeta k l := by
+  simp only [prefixVelocityInterval_image]
+  constructor
+  · rintro ⟨⟨t, v⟩, hy, ht, hv⟩
+    rw [mem_inkSpotsQ2_iff] at hy
+    refine ⟨⟨t, ⟨hy.1, hy.2.1⟩, ht.symm⟩, fun l => ⟨v l, ?_, ?_⟩⟩
+    · exact (mem_hotCoordinateInterval_iff q l _).2
+        ⟨hy.2.2.1 l, by simpa only [Pi.zero_apply, sub_zero] using hy.2.2.2 l⟩
+    · exact (congrFun hv l).symm
+  · rintro ⟨⟨t, ht, htz⟩, hv⟩
+    choose v hv hz using hv
+    refine ⟨(t, v), mem_inkSpotsQ2_iff.mpr ⟨ht.1, ht.2, ?_, ?_⟩, htz.symm, ?_⟩
+    · exact fun l => ((mem_hotCoordinateInterval_iff q l _).1 (hv l)).1
+    · intro l
+      simpa only [Pi.zero_apply, sub_zero] using ((mem_hotCoordinateInterval_iff q l _).1 (hv l)).2
+    · exact funext fun l => (hz l).symm
+
+private theorem isOpen_inkSpotsQ2PrefixContracted (hzeta : 0 < zeta) :
+    IsOpen (inkSpotsQ2PrefixContracted eta zeta k q) := by
+  have he : inkSpotsQ2PrefixContracted eta zeta k q =
+      (inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q) ×ˢ
+        Set.pi univ (prefixVelocityInterval q zeta k) := by
+    ext z
+    simp only [mem_prefixContracted_iff, mem_prod, mem_pi, mem_univ, true_implies]
+  rw [he, inkSpotsTimeContraction_forwardInterval hzeta]
+  refine isOpen_Ioo.prod (isOpen_set_pi finite_univ fun l _ => ?_)
+  have ho : IsOpen (inkSpotsHotCoordinateInterval q l) := isOpen_Ioo.inter isOpen_Ioo
+  unfold prefixVelocityInterval
+  split
+  · change IsOpen ((fun a : ℝ => q.center l + zeta * (a - q.center l)) '' _)
+    simpa only [inkSpotsAffineHomeomorph_apply] using
+      (inkSpotsAffineHomeomorph (q.center l) zeta hzeta.ne').isOpenMap _ ho
+  · exact ho
+
+section
+variable (j : Fin d) (w : Fin d → ℝ)
+include j w
+
+private def hotSectionFiber : Prop :=
+  let b := inkSpotsVelocitySectionPoint j 0 w
+  b.1 ∈ inkSpotsTimeContraction eta zeta q '' windForwardInterval eta q ∧
+    ∀ l ≠ j, b.2 l ∈ prefixVelocityInterval q zeta k l
+
+private theorem mem_prefixVelocitySection (x : ℝ) :
+    x ∈ timeVelocityCoordinateSection d (Fin.succ j) (inkSpotsQ2PrefixContracted eta zeta k q) w ↔
+      x ∈ prefixVelocityInterval q zeta k j ∧ hotSectionFiber eta zeta q k j w := by
+  rw [mem_timeVelocityCoordinateSection_succ_iff, mem_prefixContracted_iff,
+    sectionPoint_time_eq j x 0 w]
+  constructor
+  · rintro ⟨ht, hv⟩
+    exact ⟨by simpa only [sectionPoint_velocity_eq] using hv j, ht, fun l hl => by
+      simpa only [sectionPoint_velocity_eq_of_ne _ _ x 0 w hl] using hv l⟩
+  · rintro ⟨hx, ht, hv⟩
+    refine ⟨ht, fun l => ?_⟩
+    by_cases hl : l = j
+    · subst l
+      simpa only [sectionPoint_velocity_eq] using hx
+    · rw [sectionPoint_velocity_eq_of_ne _ _ x 0 w hl]
+      exact hv l hl
+
+end
+
+end
+
 private theorem section_prefix_eq_hotInterval_of_nonempty {d : Nat}
     (eta zeta : Real) (q : InkSpotsBox d) (j : Fin d) (w : Fin d → Real)
     (hnonempty : (timeVelocityCoordinateSection d (Fin.succ j)
@@ -840,240 +538,94 @@ private theorem section_prefix_eq_hotInterval_of_nonempty {d : Nat}
     timeVelocityCoordinateSection d (Fin.succ j)
         (inkSpotsQ2PrefixContracted eta zeta j.1 q) w =
       inkSpotsHotCoordinateInterval q j := by
-  obtain ⟨x₀, hx₀⟩ := hnonempty
-  rw [mem_timeVelocityCoordinateSection_succ_iff] at hx₀
-  rcases hx₀ with ⟨y₀, hy₀, ht₀, hv₀⟩
-  have hy₀' := hy₀
-  rw [mem_inkSpotsQ2_iff] at hy₀'
-  ext x
-  constructor
-  · rw [mem_timeVelocityCoordinateSection_succ_iff]
-    rintro ⟨y, hy, _, hv⟩
-    rw [mem_inkSpotsQ2_iff] at hy
-    have hcoord := congrFun hv j
-    simp only [sectionPoint_velocity_eq, inkSpotsVelocityPrefixContraction,
-      lt_self_iff_false, if_false] at hcoord
-    rw [inkSpotsHotCoordinateInterval, hcoord]
-    have hc := abs_lt.mp (mem_velocityCube_iff.mp hy.2.2.1 j)
-    have hu : -1 < y.2 j ∧ y.2 j < 1 := by
-      simpa only [Pi.zero_apply, sub_zero] using
-        abs_lt.mp (mem_velocityCube_iff.mp hy.2.2.2 j)
-    exact ⟨⟨by linarith [hc.1], by linarith [hc.2]⟩, hu⟩
-  · intro hx
-    rw [inkSpotsHotCoordinateInterval] at hx
-    rw [mem_timeVelocityCoordinateSection_succ_iff]
-    let v : PDE.Vec d := fun l => if l = j then x else y₀.2 l
-    have hvcenter : v ∈ velocityCube q.center (3 * q.radius) := by
-      rw [mem_velocityCube_iff]
-      intro l
-      by_cases hlj : l = j
-      · subst l
-        simp only [v, if_pos]
-        exact abs_lt.mpr ⟨by linarith [hx.1.1], by linarith [hx.1.2]⟩
-      · simpa only [v, if_neg hlj] using mem_velocityCube_iff.mp hy₀'.2.2.1 l
-    have hvunit : v ∈ velocityCube 0 1 := by
-      rw [mem_velocityCube_iff]
-      intro l
-      by_cases hlj : l = j
-      · subst l
-        simpa only [v, if_pos, Pi.zero_apply, sub_zero] using abs_lt.mpr hx.2
-      · simpa only [v, if_neg hlj] using mem_velocityCube_iff.mp hy₀'.2.2.2 l
-    refine ⟨(y₀.1, v), ?_, ?_, ?_⟩
-    · rw [mem_inkSpotsQ2_iff]
-      exact ⟨hy₀'.1, hy₀'.2.1, hvcenter, hvunit⟩
-    · calc
-        (inkSpotsVelocitySectionPoint j x w).1 =
-            (inkSpotsVelocitySectionPoint j x₀ w).1 := sectionPoint_time_eq _ _ _ _
-        _ = inkSpotsTimeContraction eta zeta q y₀.1 := ht₀
-    · funext l
-      by_cases hlj : l = j
-      · subst l
-        simp only [sectionPoint_velocity_eq, inkSpotsVelocityPrefixContraction,
-          lt_self_iff_false, if_false, v, if_pos]
-      · calc
-          (inkSpotsVelocitySectionPoint j x w).2 l =
-              (inkSpotsVelocitySectionPoint j x₀ w).2 l :=
-                sectionPoint_velocity_eq_of_ne _ _ _ _ _ hlj
-          _ = inkSpotsVelocityPrefixContraction q zeta j.1 y₀.2 l := congrFun hv₀ l
-          _ = inkSpotsVelocityPrefixContraction q zeta j.1 v l := by
-            simp only [inkSpotsVelocityPrefixContraction, v, if_neg hlj]
+  obtain ⟨x, hx⟩ := hnonempty
+  have h := ((mem_prefixVelocitySection eta zeta q j.1 j w x).1 hx).2
+  ext y
+  simp only [mem_prefixVelocitySection, prefixVelocityInterval, lt_self_iff_false, if_false, h, and_true]
 
-private theorem section_prefix_succ_eq_contraction_image_of_nonempty {d : Nat}
-    (eta zeta : Real) (q : InkSpotsBox d) (j : Fin d) (w : Fin d → Real)
-    (hnonempty : (timeVelocityCoordinateSection d (Fin.succ j)
-      (inkSpotsQ2PrefixContracted eta zeta j.1 q) w).Nonempty) :
-    timeVelocityCoordinateSection d (Fin.succ j)
-        (inkSpotsQ2PrefixContracted eta zeta (j.1 + 1) q) w =
+private theorem section_prefix_succ_eq_contraction_image {d : ℕ}
+    (eta zeta : ℝ) (q : InkSpotsBox d) (j : Fin d) (w : Fin d → ℝ) :
+    timeVelocityCoordinateSection d (Fin.succ j) (inkSpotsQ2PrefixContracted eta zeta (j.1 + 1) q) w =
       centeredCoordinateContraction (q.center j) zeta ''
-        inkSpotsHotCoordinateInterval q j := by
-  obtain ⟨x₀, hx₀⟩ := hnonempty
-  rw [mem_timeVelocityCoordinateSection_succ_iff] at hx₀
-  rcases hx₀ with ⟨y₀, hy₀, ht₀, hv₀⟩
-  have hy₀' := hy₀
-  rw [mem_inkSpotsQ2_iff] at hy₀'
+        timeVelocityCoordinateSection d (Fin.succ j) (inkSpotsQ2PrefixContracted eta zeta j.1 q) w := by
+  have hsame (l : Fin d) (hl : l ≠ j) :
+      prefixVelocityInterval q zeta (j.1 + 1) l = prefixVelocityInterval q zeta j.1 l := by
+    simp only [prefixVelocityInterval, show l.1 < j.1 + 1 ↔ l.1 < j.1 by omega]
+  have hfiber : hotSectionFiber eta zeta q (j.1 + 1) j w ↔ hotSectionFiber eta zeta q j.1 j w := by
+    constructor <;> rintro ⟨ht, hv⟩ <;> refine ⟨ht, fun l hl => ?_⟩
+    · simpa only [hsame l hl] using hv l hl
+    · simpa only [hsame l hl] using hv l hl
   ext x
+  simp only [mem_prefixVelocitySection, prefixVelocityInterval, Nat.lt_succ_self, if_true,
+    hfiber, lt_self_iff_false, if_false, mem_image]
+  exact ⟨fun ⟨⟨y, hy, hxy⟩, h⟩ => ⟨y, ⟨hy, h⟩, hxy⟩,
+    fun ⟨y, ⟨hy, h⟩, hxy⟩ => ⟨⟨y, hy, hxy⟩, h⟩⟩
+
+section
+variable {d : Nat} (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (j : Fin d)
+  (w : Fin d → Real)
+include d Gamma xi eta zeta j w
+
+private def hotVelocitySectionBoxes : Set (InkSpotsBox d) :=
+  {q ∈ inkSpotsDenseBoxes Gamma xi | (timeVelocityCoordinateSection d (Fin.succ j)
+    (inkSpotsQ2PrefixContracted eta zeta j.1 q) w).Nonempty}
+
+private def hotVelocitySectionFamily : Set (Set ℝ) :=
+  (fun q => centeredCoordinateContraction (q.center j) zeta '' inkSpotsHotCoordinateInterval q j) ''
+    hotVelocitySectionBoxes Gamma xi eta zeta j w
+
+private theorem section_prefix_union_eq_iUnion (k : ℕ)
+    (h : ∀ q, (timeVelocityCoordinateSection d (Fin.succ j)
+        (inkSpotsQ2PrefixContracted eta zeta k q) w).Nonempty →
+      (timeVelocityCoordinateSection d (Fin.succ j)
+        (inkSpotsQ2PrefixContracted eta zeta j.1 q) w).Nonempty) :
+    timeVelocityCoordinateSection d (Fin.succ j)
+      (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta k) w =
+    ⋃ q ∈ hotVelocitySectionBoxes Gamma xi eta zeta j w,
+      timeVelocityCoordinateSection d (Fin.succ j) (inkSpotsQ2PrefixContracted eta zeta k q) w := by
+  ext x
+  simp only [mem_iUnion, mem_timeVelocityCoordinateSection_succ_iff,
+    inkSpotsD2PrefixContractedUnion, hotVelocitySectionBoxes, mem_setOf_eq]
   constructor
-  · rw [mem_timeVelocityCoordinateSection_succ_iff]
-    rintro ⟨y, hy, _, hv⟩
-    rw [mem_inkSpotsQ2_iff] at hy
-    refine ⟨y.2 j, ?_, ?_⟩
-    · rw [inkSpotsHotCoordinateInterval]
-      have hc := abs_lt.mp (mem_velocityCube_iff.mp hy.2.2.1 j)
-      have hu : -1 < y.2 j ∧ y.2 j < 1 := by
-        simpa only [Pi.zero_apply, sub_zero] using
-          abs_lt.mp (mem_velocityCube_iff.mp hy.2.2.2 j)
-      exact ⟨⟨by linarith [hc.1], by linarith [hc.2]⟩, hu⟩
-    · have hcoord := congrFun hv j
-      simp only [sectionPoint_velocity_eq, inkSpotsVelocityPrefixContraction,
-        Nat.lt_succ_self, if_true] at hcoord
-      exact hcoord.symm
-  · rintro ⟨u, hu, rfl⟩
-    rw [inkSpotsHotCoordinateInterval] at hu
-    rw [mem_timeVelocityCoordinateSection_succ_iff]
-    let v : PDE.Vec d := fun l => if l = j then u else y₀.2 l
-    have hvcenter : v ∈ velocityCube q.center (3 * q.radius) := by
-      rw [mem_velocityCube_iff]
-      intro l
-      by_cases hlj : l = j
-      · subst l
-        simp only [v, if_pos]
-        exact abs_lt.mpr ⟨by linarith [hu.1.1], by linarith [hu.1.2]⟩
-      · simpa only [v, if_neg hlj] using mem_velocityCube_iff.mp hy₀'.2.2.1 l
-    have hvunit : v ∈ velocityCube 0 1 := by
-      rw [mem_velocityCube_iff]
-      intro l
-      by_cases hlj : l = j
-      · subst l
-        simpa only [v, if_pos, Pi.zero_apply, sub_zero] using abs_lt.mpr hu.2
-      · simpa only [v, if_neg hlj] using mem_velocityCube_iff.mp hy₀'.2.2.2 l
-    refine ⟨(y₀.1, v), ?_, ?_, ?_⟩
-    · rw [mem_inkSpotsQ2_iff]
-      exact ⟨hy₀'.1, hy₀'.2.1, hvcenter, hvunit⟩
-    · calc
-        (inkSpotsVelocitySectionPoint j
-            (centeredCoordinateContraction (q.center j) zeta u) w).1 =
-            (inkSpotsVelocitySectionPoint j x₀ w).1 := sectionPoint_time_eq _ _ _ _
-        _ = inkSpotsTimeContraction eta zeta q y₀.1 := ht₀
-    · funext l
-      by_cases hlj : l = j
-      · subst l
-        simp only [sectionPoint_velocity_eq, inkSpotsVelocityPrefixContraction,
-          Nat.lt_succ_self, v, if_pos, centeredCoordinateContraction]
-      · calc
-          (inkSpotsVelocitySectionPoint j
-              (centeredCoordinateContraction (q.center j) zeta u) w).2 l =
-              (inkSpotsVelocitySectionPoint j x₀ w).2 l :=
-                sectionPoint_velocity_eq_of_ne _ _ _ _ _ hlj
-          _ = inkSpotsVelocityPrefixContraction q zeta j.1 y₀.2 l := congrFun hv₀ l
-          _ = inkSpotsVelocityPrefixContraction q zeta (j.1 + 1) v l := by
-            by_cases hl : l.1 < j.1
-            · have hls : l.1 < j.1 + 1 := hl.trans (Nat.lt_succ_self _)
-              simp only [inkSpotsVelocityPrefixContraction, if_pos hl, if_pos hls,
-                v, if_neg hlj]
-            · have hls : ¬ l.1 < j.1 + 1 := by omega
-              simp only [inkSpotsVelocityPrefixContraction, if_neg hl, if_neg hls,
-                v, if_neg hlj]
+  · rintro ⟨q, hq, hx⟩
+    exact ⟨q, ⟨hq, h q ⟨x, (mem_timeVelocityCoordinateSection_succ_iff ..).mpr hx⟩⟩, hx⟩
+  · rintro ⟨q, ⟨hq, _⟩, hx⟩
+    exact ⟨q, hq, hx⟩
 
-private theorem section_prefix_nonempty_of_succ_nonempty {d : Nat}
-    (eta zeta : Real) (q : InkSpotsBox d) (j : Fin d) (w : Fin d → Real)
-    (h : (timeVelocityCoordinateSection d (Fin.succ j)
-      (inkSpotsQ2PrefixContracted eta zeta (j.1 + 1) q) w).Nonempty) :
-    (timeVelocityCoordinateSection d (Fin.succ j)
-      (inkSpotsQ2PrefixContracted eta zeta j.1 q) w).Nonempty := by
-  obtain ⟨x, hx⟩ := h
-  rw [mem_timeVelocityCoordinateSection_succ_iff] at hx
-  rcases hx with ⟨y, hy, ht, hv⟩
-  refine ⟨y.2 j, ?_⟩
-  rw [mem_timeVelocityCoordinateSection_succ_iff]
-  refine ⟨y, hy, ?_, ?_⟩
-  · exact (sectionPoint_time_eq j (y.2 j) x w).trans ht
-  · funext l
-    by_cases hlj : l = j
-    · subst l
-      simp only [sectionPoint_velocity_eq, inkSpotsVelocityPrefixContraction,
-        lt_self_iff_false, if_false]
-    · calc
-        (inkSpotsVelocitySectionPoint j (y.2 j) w).2 l =
-            (inkSpotsVelocitySectionPoint j x w).2 l :=
-              sectionPoint_velocity_eq_of_ne _ _ _ _ _ hlj
-        _ = inkSpotsVelocityPrefixContraction q zeta (j.1 + 1) y.2 l := congrFun hv l
-        _ = inkSpotsVelocityPrefixContraction q zeta j.1 y.2 l := by
-          by_cases hl : l.1 < j.1
-          · have hls : l.1 < j.1 + 1 := hl.trans (Nat.lt_succ_self _)
-            simp only [inkSpotsVelocityPrefixContraction, if_pos hl, if_pos hls]
-          · have hls : ¬ l.1 < j.1 + 1 := by omega
-            simp only [inkSpotsVelocityPrefixContraction, if_neg hl, if_neg hls]
-
-private def hotVelocitySectionFamily {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (j : Fin d)
-    (w : Fin d → Real) : Set (Set Real) :=
-  {I | ∃ q ∈ inkSpotsDenseBoxes Gamma xi,
-    (timeVelocityCoordinateSection d (Fin.succ j)
-      (inkSpotsQ2PrefixContracted eta zeta j.1 q) w).Nonempty ∧
-    I = centeredCoordinateContraction (q.center j) zeta ''
-      inkSpotsHotCoordinateInterval q j}
-
-private theorem section_prefix_succ_union_eq_sUnion_hotVelocityFamily {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (j : Fin d)
-    (w : Fin d → Real) :
+private theorem section_prefix_succ_union_eq_sUnion_hotVelocityFamily :
     timeVelocityCoordinateSection d (Fin.succ j)
         (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta (j.1 + 1)) w =
       ⋃₀ hotVelocitySectionFamily Gamma xi eta zeta j w := by
-  rw [timeVelocityCoordinateSection_prefixUnion_eq_sUnion_family]
-  ext x
-  constructor
-  · rintro hx
-    rcases mem_sUnion.1 hx with ⟨I, ⟨q, hq, rfl, hne⟩, hxI⟩
-    have hpre := section_prefix_nonempty_of_succ_nonempty eta zeta q j w hne
-    rw [section_prefix_succ_eq_contraction_image_of_nonempty eta zeta q j w hpre] at hxI
-    exact mem_sUnion.2 ⟨_, ⟨q, hq, hpre, rfl⟩, hxI⟩
-  · rintro hx
-    rcases mem_sUnion.1 hx with ⟨I, ⟨q, hq, hpre, rfl⟩, hxI⟩
-    rw [← section_prefix_succ_eq_contraction_image_of_nonempty eta zeta q j w hpre]
-      at hxI
-    exact mem_sUnion.2 ⟨_, ⟨q, hq, rfl, ⟨x, hxI⟩⟩, hxI⟩
+  have hn (q : InkSpotsBox d) (h : (timeVelocityCoordinateSection d (Fin.succ j)
+      (inkSpotsQ2PrefixContracted eta zeta (j.1 + 1) q) w).Nonempty) := by
+    rw [section_prefix_succ_eq_contraction_image] at h
+    exact h.of_image
+  rw [section_prefix_union_eq_iUnion Gamma xi eta zeta j w (j.1 + 1) hn,
+    hotVelocitySectionFamily, sUnion_image]
+  refine iUnion_congr fun q => iUnion_congr fun hq => ?_
+  rw [section_prefix_succ_eq_contraction_image, section_prefix_eq_hotInterval_of_nonempty eta zeta q j w hq.2]
 
-private theorem section_prefix_union_eq_sUnion_expanded_hotVelocityFamily {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (j : Fin d)
-    (w : Fin d → Real) (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) :
+section
+variable (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1)
+include hzeta0 hzeta1
+
+private theorem section_prefix_union_eq_sUnion_expanded_hotVelocityFamily :
     timeVelocityCoordinateSection d (Fin.succ j)
         (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta j.1) w =
       ⋃₀ (boundaryShiftedMidpointExpansion zeta⁻¹ ''
         hotVelocitySectionFamily Gamma xi eta zeta j w) := by
-  rw [timeVelocityCoordinateSection_prefixUnion_eq_sUnion_family]
-  ext x
-  constructor
-  · rintro hx
-    rcases mem_sUnion.1 hx with ⟨I, ⟨q, hq, rfl, hpre⟩, hxI⟩
-    rw [section_prefix_eq_hotInterval_of_nonempty eta zeta q j w hpre] at hxI
-    let K := centeredCoordinateContraction (q.center j) zeta ''
-      inkSpotsHotCoordinateInterval q j
-    have hrecover : boundaryShiftedMidpointExpansion zeta⁻¹ K =
-        inkSpotsHotCoordinateInterval q j := by
-      exact boundaryShiftedMidpointExpansion_image_centeredInterval_inter
-        (q.center j) (3 * q.radius) zeta hzeta0 hzeta1
-          (strictDense_center_coord_bounds hq j) (mul_pos (by norm_num) hq.1)
-    exact mem_sUnion.2 ⟨boundaryShiftedMidpointExpansion zeta⁻¹ K,
-      ⟨K, ⟨q, hq, hpre, rfl⟩, rfl⟩, by rw [hrecover]; exact hxI⟩
-  · rintro hx
-    rcases mem_sUnion.1 hx with ⟨E, ⟨K, ⟨q, hq, hpre, rfl⟩, rfl⟩, hxE⟩
-    change x ∈ boundaryShiftedMidpointExpansion zeta⁻¹
-      ((fun u : Real => q.center j + zeta * (u - q.center j)) ''
-        (Ioo (q.center j - 3 * q.radius) (q.center j + 3 * q.radius) ∩ Ioo (-1) 1))
-      at hxE
-    rw [boundaryShiftedMidpointExpansion_image_centeredInterval_inter
-      (q.center j) (3 * q.radius) zeta hzeta0 hzeta1
-        (strictDense_center_coord_bounds hq j) (mul_pos (by norm_num) hq.1)] at hxE
-    have hxJ : x ∈ inkSpotsHotCoordinateInterval q j := hxE
-    rw [← section_prefix_eq_hotInterval_of_nonempty eta zeta q j w hpre] at hxJ
-    exact mem_sUnion.2 ⟨_, ⟨q, hq, rfl, hpre⟩, hxJ⟩
+  rw [section_prefix_union_eq_iUnion Gamma xi eta zeta j w j.1 (fun _ h => h),
+    hotVelocitySectionFamily, ← image_comp, sUnion_image]
+  refine iUnion_congr fun q => iUnion_congr fun hq => ?_
+  rw [section_prefix_eq_hotInterval_of_nonempty eta zeta q j w hq.2]
+  exact (boundaryShiftedMidpointExpansion_image_centeredInterval_inter
+    (q.center j) (3 * q.radius) zeta hzeta0 hzeta1
+      (strictDense_center_coord_bounds hq.1 j) (mul_pos (by norm_num) hq.1.1)).symm
 
-private theorem hotVelocitySectionFamily_eligible {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (j : Fin d)
-    (w : Fin d → Real) (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) :
+private theorem hotVelocitySectionFamily_eligible :
     ∀ I ∈ hotVelocitySectionFamily Gamma xi eta zeta j w,
       IsOpenSubinterval (Ioo (-1 : Real) 1) I := by
-  rintro I ⟨q, hq, _, rfl⟩
+  rintro I ⟨q, ⟨hq, _⟩, rfl⟩
   have hc := strictDense_center_coord_bounds hq j
   have hr : 0 < q.radius := hq.1
   exact (isClippedCoordinateInterval_centeredCoordinateContraction_image
@@ -1081,9 +633,21 @@ private theorem hotVelocitySectionFamily_eligible {d : Nat}
       ⟨inkSpotsHotCoordinateInterval_eligible hq j,
         ⟨⟨by nlinarith, by nlinarith⟩, hc⟩⟩).1
 
-private theorem volume_prefix_spatial_step {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real)
-    (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) {k : Nat} (hk : k < d) :
+end
+
+end
+
+private theorem isOpen_inkSpotsD2PrefixContractedUnion {d : ℕ}
+    (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) (k : ℕ) (hzeta : 0 < zeta) :
+    IsOpen (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta k) :=
+  isOpen_iUnion fun q => isOpen_iUnion fun _ => isOpen_inkSpotsQ2PrefixContracted eta zeta q k hzeta
+
+section
+variable {d : Nat} (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real) (hzeta0 : 0 < zeta)
+  (hzeta1 : zeta < 1)
+include hzeta0 hzeta1
+
+private theorem volume_prefix_spatial_step {k : Nat} (hk : k < d) :
     volume (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta k) ≤
       ENNReal.ofReal zeta⁻¹ *
         volume (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta (k + 1)) := by
@@ -1109,16 +673,14 @@ private theorem volume_prefix_spatial_step {d : Nat}
   rw [hleft, hright]
   exact hvary
 
-private theorem volume_prefix_spatial_contraction {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real)
-    (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) (k : Nat) (hk : k ≤ d) :
+private theorem volume_prefix_spatial_contraction (k : Nat) (hk : k ≤ d) :
     volume (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta 0) ≤
       (ENNReal.ofReal zeta⁻¹) ^ k *
         volume (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta k) := by
   induction k with
   | zero => simp
   | succ k ih =>
-      have hklt : k < d := Nat.lt_of_succ_le hk
+      have hklt := Nat.lt_of_succ_le hk
       calc
         volume (inkSpotsD2PrefixContractedUnion Gamma xi eta zeta 0) ≤
             (ENNReal.ofReal zeta⁻¹) ^ k *
@@ -1134,43 +696,32 @@ private theorem volume_prefix_spatial_contraction {d : Nat}
           rw [pow_succ]
           ac_rfl
 
+end
+
 private theorem inkSpotsQ2PrefixContracted_subset_Q2 {d : Nat}
     {Gamma : Set (TimeVelocity d)} {xi eta zeta : Real} {q : InkSpotsBox d}
     (hq : q ∈ inkSpotsDenseBoxes Gamma xi) (hzeta0 : 0 < zeta)
     (hzeta1 : zeta < 1) (k : Nat) :
     inkSpotsQ2PrefixContracted eta zeta k q ⊆ inkSpotsQ2 eta q := by
-  rintro z ⟨y, hy, ht, hv⟩
-  have hy' := hy
-  rw [mem_inkSpotsQ2_iff] at hy'
-  have htime : (z.1, y.2) ∈ inkSpotsQ2 eta q :=
-    inkSpotsQ2TimeContracted_subset_Q2 hzeta0 hzeta1
-      ⟨⟨y.1, ⟨hy'.1, hy'.2.1⟩, ht.symm⟩, hy'.2.2.1, hy'.2.2.2⟩
-  rw [mem_inkSpotsQ2_iff] at htime ⊢
-  refine ⟨htime.1, htime.2.1, ?_, ?_⟩
-  · rw [mem_velocityCube_iff]
-    intro l
-    rw [hv, inkSpotsVelocityPrefixContraction]
-    by_cases hl : l.1 < k
-    · rw [if_pos hl]
-      have hyc := mem_velocityCube_iff.mp hy'.2.2.1 l
-      rw [show q.center l + zeta * (y.2 l - q.center l) - q.center l =
-        zeta * (y.2 l - q.center l) by ring, abs_mul, abs_of_pos hzeta0]
-      nlinarith [abs_nonneg (y.2 l - q.center l)]
-    · rw [if_neg hl]
-      exact mem_velocityCube_iff.mp hy'.2.2.1 l
-  · rw [mem_velocityCube_iff]
-    intro l
-    rw [hv, inkSpotsVelocityPrefixContraction]
-    by_cases hl : l.1 < k
-    · rw [if_pos hl]
-      have hc := strictDense_center_coord_bounds hq l
-      have hyv : -1 < y.2 l ∧ y.2 l < 1 := by
-        simpa only [Pi.zero_apply, sub_zero] using
-          abs_lt.mp (mem_velocityCube_iff.mp hy'.2.2.2 l)
-      rw [Pi.zero_apply, sub_zero, abs_lt]
-      constructor <;> nlinarith
-    · rw [if_neg hl]
-      exact mem_velocityCube_iff.mp hy'.2.2.2 l
+  intro z hz
+  obtain ⟨ht, hv⟩ := (mem_prefixContracted_iff eta zeta q k z).mp hz
+  have ht' := contractedTime_subset_forward hzeta0 hzeta1 ht
+  have hvel (l : Fin d) : z.2 l ∈ inkSpotsHotCoordinateInterval q l := by
+    specialize hv l
+    unfold prefixVelocityInterval at hv
+    split at hv
+    · obtain ⟨x, hx, he⟩ := hv
+      rw [← he]
+      have hc : q.center l ∈ inkSpotsHotCoordinateInterval q l :=
+        (mem_hotCoordinateInterval_iff q l _).2
+          ⟨by simpa using (show 0 < 3 * q.radius from mul_pos (by norm_num) hq.1),
+            abs_lt.mpr (strictDense_center_coord_bounds hq l)⟩
+      exact ((convex_Ioo ..).inter (convex_Ioo ..) :
+        Convex ℝ (inkSpotsHotCoordinateInterval q l)).add_smul_sub_mem hc hx
+          ⟨hzeta0.le, hzeta1.le⟩
+    · exact hv
+  refine mem_inkSpotsQ2_iff.mpr ⟨ht'.1, ht'.2, fun l => ((mem_hotCoordinateInterval_iff q l _).mp (hvel l)).1, fun l => ?_⟩
+  simpa only [Pi.zero_apply, sub_zero] using ((mem_hotCoordinateInterval_iff q l _).mp (hvel l)).2
 
 private theorem inkSpotsD3_subset_D2 {d : Nat}
     (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real)
@@ -1184,26 +735,6 @@ private theorem inkSpotsD3_subset_D2 {d : Nat}
   rw [inkSpotsD2]
   exact mem_iUnion.2 ⟨q, mem_iUnion.2 ⟨hq,
     inkSpotsQ2PrefixContracted_subset_Q2 hq hzeta0 hzeta1 d hz⟩⟩
-
-private theorem isBounded_velocityCube {d : Nat} (v₀ : PDE.Vec d) (r : Real) :
-    Bornology.IsBounded (velocityCube v₀ r) := by
-  exact (isCompact_velocityClosedCube v₀ r).isBounded.subset
-    (fun _ hv i => le_of_lt (hv i))
-
-private theorem volume_inkSpotsD2_ne_top {d : Nat}
-    (Gamma : Set (TimeVelocity d)) (xi eta : Real) (heta : 0 < eta) :
-    volume (inkSpotsD2 Gamma xi eta) ≠ ∞ := by
-  have hsubset : inkSpotsD2 Gamma xi eta ⊆ windAmbient d eta := by
-    intro z hz
-    rw [inkSpotsD2] at hz
-    rcases mem_iUnion.1 hz with ⟨q, hz⟩
-    rcases mem_iUnion.1 hz with ⟨hq, hz⟩
-    exact inkSpotsQ2_subset_windAmbient heta hq hz
-  apply ne_of_lt
-  apply lt_of_le_of_lt (measure_mono hsubset)
-  apply Bornology.IsBounded.measure_lt_top
-  exact (Metric.isBounded_Ioo 0 (1 + 4 / eta)).prod
-    (isBounded_velocityCube (0 : PDE.Vec d) 1)
 
 private theorem hotWind_scalar_identity (zeta : Real) (hzeta : zeta ≠ 0) (d : Nat) :
     ((zeta ^ 2)⁻¹) * (zeta⁻¹) ^ d = zeta ^ (-((d : Int) + 2)) := by

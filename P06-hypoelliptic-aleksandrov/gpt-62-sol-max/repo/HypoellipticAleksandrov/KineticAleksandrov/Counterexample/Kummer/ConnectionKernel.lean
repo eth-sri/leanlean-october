@@ -25,7 +25,7 @@ theorem one_add_rpow_sub_one_le (q s : ℝ) (hq : 0 ≤ q) (hq1 : q ≤ 1) (hs :
       HasDerivWithinAt (fun t : ℝ => (1 + t) ^ q)
         (q * (1 + u) ^ (q - 1)) (Icc 0 s) u := by
     intro u hu
-    have hu1 : 0 < 1 + u := add_pos_of_pos_of_nonneg zero_lt_one hu.1
+    have hu1 := add_pos_of_pos_of_nonneg zero_lt_one hu.1
     have h := ((hasDerivAt_const u (1 : ℝ)).add (hasDerivAt_id u)).rpow_const
       (p := q) (Or.inl hu1.ne')
     simpa only [zero_add, one_mul, Pi.add_apply, id_eq] using h.hasDerivWithinAt
@@ -41,12 +41,16 @@ theorem one_add_rpow_sub_one_le (q s : ℝ) (hq : 0 ≤ q) (hq1 : q ≤ 1) (hs :
   simp only [add_zero, Real.one_rpow, sub_zero] at h
   exact (le_abs_self ((1 + s) ^ q - 1)).trans h
 
+section
+variable (c t : ℝ)
+include c t
+
 /-- The integrable difference used to renormalize the singular connection integral. -/
-def connectionKernel (c t : ℝ) : ℝ :=
+def connectionKernel : ℝ :=
   t ^ (c - 1) * (1 + t) ^ (1 / 3 - c) - t ^ (-(2 / 3 : ℝ))
 
 /-- The renormalized kernel is nonnegative for the shifted source parameter range. -/
-theorem connectionKernel_nonneg (c t : ℝ) (hc : c ≤ 1 / 3) (ht : 0 < t) :
+theorem connectionKernel_nonneg (hc : c ≤ 1 / 3) (ht : 0 < t) :
     0 ≤ connectionKernel c t := by
   have hp : t ^ (1 / 3 - c) ≤ (1 + t) ^ (1 / 3 - c) :=
     Real.rpow_le_rpow ht.le (by linarith) (sub_nonneg.mpr hc)
@@ -56,7 +60,7 @@ theorem connectionKernel_nonneg (c t : ℝ) (hc : c ≤ 1 / 3) (ht : 0 < t) :
   exact sub_nonneg.mpr h
 
 /-- Factorization at infinity isolates a small reciprocal argument. -/
-theorem connectionKernel_factor (c t : ℝ) (ht : 0 < t) :
+theorem connectionKernel_factor (ht : 0 < t) :
     connectionKernel c t = t ^ (-(2 / 3 : ℝ)) *
       ((1 + t⁻¹) ^ (1 / 3 - c) - 1) := by
   have hbase : 1 + t = t * (1 + t⁻¹) := by field_simp; ring
@@ -66,11 +70,11 @@ theorem connectionKernel_factor (c t : ℝ) (ht : 0 < t) :
   ring
 
 /-- The renormalized kernel has an integrable inverse-power tail. -/
-theorem connectionKernel_tail_bound (c t : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3)
+theorem connectionKernel_tail_bound (hc : 0 < c) (hc1 : c < 1 / 3)
     (ht : 0 < t) :
     connectionKernel c t ≤ (1 / 3 - c) * t ^ (-(5 / 3 : ℝ)) := by
   rw [connectionKernel_factor c t ht]
-  have hq : 0 ≤ 1 / 3 - c := (sub_pos.mpr hc1).le
+  have hq := (sub_pos.mpr hc1).le
   have hq1 : 1 / 3 - c ≤ 1 := by linarith only [hc]
   have h := mul_le_mul_of_nonneg_left
     (one_add_rpow_sub_one_le (1 / 3 - c) t⁻¹ hq hq1 (inv_pos.mpr ht).le)
@@ -80,6 +84,8 @@ theorem connectionKernel_tail_bound (c t : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3)
     congr 1
     ring
   exact h.trans_eq (by rw [mul_comm (1 / 3 - c), ← mul_assoc, heq]; ring)
+
+end
 
 /-- Continuity of the subtracted kernel away from the integration endpoint. -/
 theorem continuousOn_connectionKernel (c : ℝ) :

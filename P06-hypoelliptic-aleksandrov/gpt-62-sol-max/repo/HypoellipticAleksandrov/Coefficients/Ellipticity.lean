@@ -38,52 +38,60 @@ abbrev CoefficientField (d : ℕ) := ℝ → PDE.Vec d → PDE.Mat d
 def coefficientAt {d : ℕ} (A : CoefficientField d) (z : ℝ × PDE.Vec d) : PDE.Mat d :=
   A z.1 z.2
 
+section
+variable {d : ℕ} (A : CoefficientField d)
+include d A
+
 /-- Evaluation of a coefficient field at a pair agrees with curried evaluation. -/
-@[simp] theorem coefficientAt_apply {d : ℕ} (A : CoefficientField d)
+@[simp] theorem coefficientAt_apply
     (t : ℝ) (v : PDE.Vec d) :
     coefficientAt A (t, v) = A t v :=
   rfl
 
 /-- A coefficient field is Borel measurable on time--velocity space. -/
-def IsBorelCoefficient {d : ℕ} (A : CoefficientField d) : Prop :=
+def IsBorelCoefficient : Prop :=
   Measurable (coefficientAt A)
 
 /-- A coefficient field is continuous on time--velocity space. -/
-def IsContinuousCoefficient {d : ℕ} (A : CoefficientField d) : Prop :=
+def IsContinuousCoefficient : Prop :=
   Continuous (coefficientAt A)
 
 /-- A coefficient field is smooth on time--velocity space. -/
-def IsSmoothCoefficient {d : ℕ} (A : CoefficientField d) : Prop :=
+def IsSmoothCoefficient : Prop :=
   ContDiff ℝ ∞ (coefficientAt A)
 
 /-- Every coefficient matrix is symmetric. -/
-def IsSymmetricCoefficient {d : ℕ} (A : CoefficientField d) : Prop :=
+def IsSymmetricCoefficient : Prop :=
   ∀ t v, (A t v).IsSymm
 
+end
+
+section
+variable {d : ℕ}
+
 /-- A pointwise lower Loewner ellipticity bound. -/
-def HasLowerEllipticity {d : ℕ} (lam : ℝ) (A : CoefficientField d) : Prop :=
+def HasLowerEllipticity (lam : ℝ) (A : CoefficientField d) : Prop :=
   ∀ t v, lam • (1 : PDE.Mat d) ≤ A t v
 
 /-- A pointwise upper Loewner ellipticity bound. -/
-def HasUpperEllipticity {d : ℕ} (Lam : ℝ) (A : CoefficientField d) : Prop :=
+def HasUpperEllipticity (Lam : ℝ) (A : CoefficientField d) : Prop :=
   ∀ t v, A t v ≤ Lam • (1 : PDE.Mat d)
 
 /-- An almost-everywhere lower Loewner ellipticity bound for product volume. -/
-def HasLowerEllipticityAE {d : ℕ} (lam : ℝ) (A : CoefficientField d) : Prop :=
+def HasLowerEllipticityAE (lam : ℝ) (A : CoefficientField d) : Prop :=
   ∀ᵐ z ∂(volume : Measure (ℝ × PDE.Vec d)), lam • (1 : PDE.Mat d) ≤ coefficientAt A z
 
 /-- An almost-everywhere upper Loewner ellipticity bound for product volume. -/
-def HasUpperEllipticityAE {d : ℕ} (Lam : ℝ) (A : CoefficientField d) : Prop :=
+def HasUpperEllipticityAE (Lam : ℝ) (A : CoefficientField d) : Prop :=
   ∀ᵐ z ∂(volume : Measure (ℝ × PDE.Vec d)), coefficientAt A z ≤ Lam • (1 : PDE.Mat d)
 
 /-- The PDE coordinate dot product is Mathlib's finite dot product. -/
-theorem vecDot_eq_dotProduct {d : ℕ} (x y : PDE.Vec d) : PDE.vecDot x y = x ⬝ᵥ y :=
+theorem vecDot_eq_dotProduct (x y : PDE.Vec d) : PDE.vecDot x y = x ⬝ᵥ y :=
   rfl
 
 /-- A Loewner lower bound, with no sign condition on `lam`, gives the
 corresponding coordinate quadratic lower bound. -/
-theorem vecDot_mulVec_lower_of_loewner
-    {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+theorem vecDot_mulVec_lower_of_loewner {lam : ℝ} {A : PDE.Mat d}
     (hlo : lam • (1 : PDE.Mat d) ≤ A) (x : PDE.Vec d) :
     lam * PDE.vecNormSq x ≤ PDE.vecDot x (A *ᵥ x) := by
   have hgap : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hlo
@@ -92,14 +100,17 @@ theorem vecDot_mulVec_lower_of_loewner
     Matrix.one_mulVec, dotProduct_sub, dotProduct_smul, smul_eq_mul] at hquad
   simpa only [PDE.vecNormSq, PDE.vecDot, dotProduct, mul_comm] using sub_nonneg.mp hquad
 
-private theorem isHermitian_of_isSymm {d : ℕ} {A : PDE.Mat d} (hA : A.IsSymm) :
+theorem isHermitian_of_isSymm {A : PDE.Mat d} (hA : A.IsSymm) :
     A.IsHermitian := by
-  apply Matrix.IsHermitian.ext
-  intro i j
-  simpa using hA.apply i j
+  assumption
+
+end
+
+section
+variable {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
 
 /-- A symmetric coordinate quadratic lower bound implies the corresponding Loewner bound. -/
-theorem loewner_lower_of_quadraticForm {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+theorem loewner_lower_of_quadraticForm
     (hA : A.IsSymm)
     (hquad : ∀ x, lam * PDE.vecNormSq x ≤ PDE.vecDot x (A *ᵥ x)) :
     lam • (1 : PDE.Mat d) ≤ A := by
@@ -122,7 +133,7 @@ theorem loewner_lower_of_quadraticForm {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
       mul_comm, mul_left_comm, mul_assoc] using sub_nonneg.mpr hquad'
 
 /-- A positive lower Loewner bound makes a real matrix positive definite. -/
-theorem posDef_of_loewner_lower {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+theorem posDef_of_loewner_lower
     (hlam : 0 < lam) (hA : lam • (1 : PDE.Mat d) ≤ A) : A.PosDef := by
   have hP : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hA
   have hlamI : (lam • (1 : PDE.Mat d)).PosDef := Matrix.PosDef.one.smul hlam
@@ -132,7 +143,7 @@ theorem posDef_of_loewner_lower {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
   exact hlamI.add_posSemidef hP
 
 /-- A positive lower Loewner bound gives the sharp determinant lower bound. -/
-theorem det_lower_of_loewner {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+theorem det_lower_of_loewner
     (hlam : 0 < lam) (hlo : lam • (1 : PDE.Mat d) ≤ A) : lam ^ d ≤ A.det := by
   classical
   have hP : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hlo
@@ -159,6 +170,8 @@ theorem det_lower_of_loewner {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
     _ = A.det := by
       rw [hA.isHermitian.det_eq_prod_eigenvalues]
       simp
+
+end
 
 namespace HasLowerEllipticity
 

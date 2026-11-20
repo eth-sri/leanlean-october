@@ -38,16 +38,13 @@ private theorem reverseTimeSourceClamp_mem
 
 private theorem continuous_reverseTimeSourceClamp
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) :
-    Continuous fun τ : ℝ => (reverseTimeSourceClamp r₀ r₁ h₀₁ τ : ℝ) := by
-  exact continuous_subtype_val.comp continuous_projIcc
+    Continuous fun τ : ℝ => (reverseTimeSourceClamp r₀ r₁ h₀₁ τ : ℝ) := continuous_subtype_val.comp continuous_projIcc
 
 private theorem continuousOn_reverseTimeSourceUncurried
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     ContinuousOn
       (Function.uncurry fun (τ : ℝ) (y : PDE.Vec d) =>
         F (r₁ - (reverseTimeSourceClamp r₀ r₁ h₀₁ τ : ℝ)) y)
@@ -86,9 +83,7 @@ private theorem continuous_reverseTimeSourceContinuousCurve
     [CompactSpace (closure Ω)]
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (F : ℝ → PDE.Vec d → ℝ)
-  (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+  (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     Continuous (reverseTimeSourceContinuousCurve (Ω := Ω) r₀ r₁ h₀₁ F) := by
   exact ContinuousMap.continuous_mkD_restrict_of_uncurry
     _ _ (continuousOn_reverseTimeSourceUncurried r₀ r₁ h₀₁ F hFSmooth)
@@ -245,9 +240,7 @@ private theorem aestronglyMeasurable_reverseTimeSourceScalarRaw
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     AEStronglyMeasurable
       (reverseTimeSourceScalarRaw r₀ r₁ h₀₁ hΩ hΩbounded F)
       (reverseTimeVolume (r₁ - r₀)) := by
@@ -262,9 +255,7 @@ private theorem reverseTimeSourceScalarRaw_eq_sourceSlice
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (τ : ℝ) :
     reverseTimeSourceScalarRaw r₀ r₁ h₀₁ hΩ hΩbounded F τ =
       reverseTimeSourceSlice r₁ (reverseTimeSourceClamp r₀ r₁ h₀₁ τ : ℝ) F
@@ -289,9 +280,7 @@ private theorem reverseTimeSourceScalarRaw_eq_sourceSlice
       hSliceMem.toLp (fun y : PDE.Vec d =>
         F (r₁ - (reverseTimeSourceClamp r₀ r₁ h₀₁ τ : ℝ)) y) y
   rw [hRaw, hSlice, continuousOnClosureRaw, dif_pos (subset_closure hy)]
-  have hContinuousSlice : ContinuousOn
-      (fun z : PDE.Vec d =>
-        F (r₁ - (reverseTimeSourceClamp r₀ r₁ h₀₁ τ : ℝ)) z) (closure Ω) :=
+  have hContinuousSlice :=
     (continuousOn_reverseTimeSourceUncurried r₀ r₁ h₀₁ F hFSmooth).uncurry_left τ
       (Set.mem_univ τ)
   exact ContinuousMap.mkD_apply_of_continuousOn hContinuousSlice
@@ -303,9 +292,7 @@ noncomputable def reverseTimeNegativeSourceRaw
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     ℝ → H10HilbertGraphDual hΩ :=
   fun τ => reverseTimeSourceFunctional hΩ
     (reverseTimeSourceScalarRaw r₀ r₁ h₀₁ hΩ hΩbounded F τ)
@@ -315,9 +302,7 @@ private theorem aestronglyMeasurable_reverseTimeNegativeSourceRaw
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     AEStronglyMeasurable
       (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth)
       (reverseTimeVolume (r₁ - r₀)) :=
@@ -337,9 +322,7 @@ theorem memLp_reverseTimeNegativeSourceRaw
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     MemLp (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth)
       (2 : ℝ≥0∞) (reverseTimeVolume (r₁ - r₀)) := by
   letI : IsFiniteMeasure (reverseTimeVolume (r₁ - r₀)) := by
@@ -366,9 +349,7 @@ noncomputable def reverseTimeNegativeSource
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     ReverseTimeL2VStar hΩ (r₁ - r₀) :=
   (memLp_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).toLp
     (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth)
@@ -380,9 +361,7 @@ theorem ae_reverseTimeNegativeSource_apply
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀),
       ∀ hτ : τ ∈ Set.Ioo 0 (r₁ - r₀),
         reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ =
@@ -410,9 +389,7 @@ theorem continuous_reverseTimeNegativeSourceRaw
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
     Continuous
       (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth) := by
   letI : CompactSpace (closure Ω) :=
@@ -433,9 +410,7 @@ theorem reverseTimeNegativeSourceRaw_eq_sourceFunctional_of_mem_Icc
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ =
       reverseTimeSourceFunctional hΩ

@@ -17,12 +17,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+  (hE : IsStripEvolution A H E) (D : ℝ) (hD : 0 < D)
+  (hhalf : ∀ s z, stripSurvivingMass H E s (s + D) (le_add_of_nonneg_right hD.le) z ≤ 1 / 2)
+include lam Lam A hE hD hhalf
+
 /-- A uniform half-mass estimate iterates through actual killed-kernel composition. -/
-theorem stripSurvivingMass_geometric_of_half_mass {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (D : ℝ) (hD : 0 < D)
-    (hhalf : ∀ s z, stripSurvivingMass H E s (s + D)
-      (le_add_of_nonneg_right hD.le) z ≤ 1 / 2)
+theorem stripSurvivingMass_geometric_of_half_mass
     (s : ℝ) (z : EvolutionState (intervalDomain H) (fun _ => 0) s) (n : ℕ) :
     stripSurvivingMass H E s (s + n * D)
       (le_add_of_nonneg_right (mul_nonneg (Nat.cast_nonneg n) hD.le)) z ≤
@@ -58,11 +60,7 @@ theorem stripSurvivingMass_geometric_of_half_mass {lam Lam : ℝ}
       mul_le_mul_of_nonneg_left ih (by norm_num : (0 : ℝ) ≤ 1 / 2))
 
 /-- A geometric bound at half-mass times gives the source exponential estimate at every time. -/
-theorem stripSurvivingMass_exp_of_half_mass {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (D : ℝ) (hD : 0 < D)
-    (hhalf : ∀ s z, stripSurvivingMass H E s (s + D)
-      (le_add_of_nonneg_right hD.le) z ≤ 1 / 2)
+theorem stripSurvivingMass_exp_of_half_mass
     (s t : ℝ) (ht : 0 ≤ t)
     (z : EvolutionState (intervalDomain H) (fun _ => 0) s) :
     stripSurvivingMass H E s (s + t) (le_add_of_nonneg_right ht) z ≤
@@ -93,5 +91,7 @@ theorem stripSurvivingMass_exp_of_half_mass {lam Lam : ℝ}
     _ ≤ Real.exp (Real.log 2 + (-Real.log 2 * t / D)) := Real.exp_le_exp.mpr hx
     _ = 2 * Real.exp (-Real.log 2 * t / D) := by
       rw [Real.exp_add, Real.exp_log (by norm_num : (0 : ℝ) < 2)]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

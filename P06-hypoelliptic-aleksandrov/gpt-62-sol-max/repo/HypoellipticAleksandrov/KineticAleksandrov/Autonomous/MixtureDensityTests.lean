@@ -19,24 +19,23 @@ open scoped ENNReal
 
 /-- The one-pole density estimate bounds every positive bounded conjugate test uniformly. -/
 theorem mixture_density_conjugate_tests
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (q p : ℝ) (hpq : q.HolderConjugate p) (hq2 : q < (3 : ℝ) / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (nu : Measure Point) [IsFiniteMeasure nu] (f : BoundedBorel Point),
       MemLp f (ENNReal.ofReal p) volume → (∀ z, 0 ≤ f z) →
-      (∫ z, f z ∂enlargedActiveGreen hH hLE hlam hLam A c nu) ≤
+      (∫ z, f z ∂enlargedActiveGreen A c nu) ≤
         C * c.r ^ (6 / q - 4) * (eLpNorm f (ENNReal.ofReal p) volume).toReal *
           (nu univ).toReal := by
-  obtain ⟨C, hC, hc⟩ := one_sign_pole_density hH hLE hlam hLam q hpq.lt hq2
+  obtain ⟨C, hC, hc⟩ := one_sign_pole_density hlam hLam q hpq.lt hq2
   refine ⟨C, hC, ?_⟩
   intro A c nu _ f hfp hfn
   classical
-  let K := enlargedActiveGreenKernel hH hLE hlam hLam A c
+  let K := enlargedActiveGreenKernel A c
   let L := C * c.r ^ (6 / q - 4) * (eLpNorm f (ENNReal.ofReal p) volume).toReal
   have hL : 0 ≤ L := mul_nonneg
     (mul_nonneg hC.le (Real.rpow_nonneg c.positive.le _)) ENNReal.toReal_nonneg
-  have : IsFiniteKernel K := mixtureActiveGreenKernel_isFiniteKernel hH hLE hlam hLam A c
   have hpoint : ∀ e, (∫ z, f z ∂K e) ≤ L := by
     intro e
     by_cases he : e.velocity 0 ∈ c.active
@@ -50,12 +49,12 @@ theorem mixture_density_conjugate_tests
       have htest := abp_potential_holder volume _ g f hpq hgm hgn
         (Filter.Eventually.of_forall hfn) hgd hgp hfp hgr
       change (∫ z, f z ∂(if hv : e.velocity 0 ∈ c.active then
-        stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e hv)
+        stripGreen A c.activeInterval ⊤ (densityClockPole c e hv)
           else 0)) ≤ L
       rw [dite_eq_left he]
       exact htest
     · change (∫ z, f z ∂(if hv : e.velocity 0 ∈ c.active then
-        stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e hv)
+        stripGreen A c.activeInterval ⊤ (densityClockPole c e hv)
           else 0)) ≤ L
       rw [dite_eq_right he, integral_zero_measure]
       exact hL

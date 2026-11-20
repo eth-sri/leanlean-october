@@ -39,7 +39,7 @@ theorem enlargedVisit_power_sum_eq (nu : Measure Point) [IsFiniteMeasure nu]
 /-- The all-time active mixture of enlarged visits has the source improved band norm. -/
 theorem core_start_visit_density (hpush : PushforwardStatement) (htail : RestartTailStatement)
     (hvisits : PositionVisitsStatement) (hmasses : PositionVisitMassesStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha q : ℝ)
     (ha : enlargedAdmissibleAlpha lam Lam hlam hLam alpha) (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
@@ -47,16 +47,16 @@ theorem core_start_visit_density (hpush : PushforwardStatement) (htail : Restart
       0 < R → 0 < T → T ≤ R ^ 2 → |c.vbar| = 2 * c.r → c.r ≤ 6 * R →
       closure c.active ⊆ J.carrier → P.velocity 0 ∈ closure c.entrance →
       ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
-        enlargedActiveGreen hH hLE hlam hLam A c
-          (visitsFromZero hH hLE hlam hLam A c J T P) =
+        enlargedActiveGreen A c
+          (visitsFromZero A c J T P) =
             volume.withDensity (fun z => ENNReal.ofReal (G z)) ∧
         MemLp G (ENNReal.ofReal q) volume ∧
         (eLpNorm G (ENNReal.ofReal q) volume).toReal ≤
           (C * R ^ (6 - 4 * q) *
             (c.r / R) ^ (4 - 3 * q + (1 - alpha) * (q - 1))) ^ (1 / q) := by
-  obtain ⟨Cd, hCd, hd⟩ := position_density_sum hpush htail hH hLE hlam hLam q hq
-  obtain ⟨Cv, hCv, hv⟩ := (hvisits hH hLE lam Lam hlam hLam alpha ha).2 q hq
-  obtain ⟨Cm, _, hm⟩ := hmasses hH hLE lam Lam hlam hLam
+  obtain ⟨Cd, hCd, hd⟩ := position_density_sum hpush htail hlam hLam q hq
+  obtain ⟨Cv, hCv, hv⟩ := (hvisits lam Lam hlam hLam alpha ha).2 q hq
+  obtain ⟨Cm, _, hm⟩ := hmasses lam Lam hlam hLam
   let eta := 1 - (2 - alpha) * (q - 1)
   have hb := bellmanAdjointExponent_range (Lam / lam) ((le_div_iff₀ hlam).2
     (by simpa only [one_mul] using hLam))
@@ -66,7 +66,7 @@ theorem core_start_visit_density (hpush : PushforwardStatement) (htail : Restart
   have hC : 0 < C := mul_pos (mul_pos hCd hCv) (Real.rpow_pos_of_pos (by norm_num) _)
   refine ⟨C, hC, ?_⟩
   intro A c J R T P hR hT hTR hc hr hJ hvel
-  let nu := visitsFromZero hH hLE hlam hLam A c J T P
+  let nu := visitsFromZero A c J T P
   have hp := hm A c J R T P hR hT hTR hc hJ hvel
   have : IsFiniteMeasure nu := hp.1
   have hnu : ∀ᵐ p ∂nu, P.time ≤ p.time ∧ p.velocity 0 ∈ c.active :=

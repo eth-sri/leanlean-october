@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandShiftedPositivePartForward
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandShiftedPositivePartBackward
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ShiftedPositivePartEnergySupport
 
 /-! # Shifted-positive-part reverse-time Steklov energy identities -/
 @[expose] public section

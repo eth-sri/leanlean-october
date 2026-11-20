@@ -18,16 +18,20 @@ open scoped ENNReal
 
 namespace PDE
 
+section
+variable {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞)
+include U p
+
 /-- Scalar `L^p` membership on a restricted domain. -/
-abbrev MemLpOn {d : ℕ}
-    (U : Set (Vec d)) (p : ℝ≥0∞) (u : Vec d → ℝ) : Prop :=
+abbrev MemLpOn (u : Vec d → ℝ) : Prop :=
   MeasureTheory.MemLp u p (volumeOn U)
 
 /-- Coordinatewise gradient `L^p` membership, retained for exact LIH
 compatibility. -/
-def GradMemLpOn {d : ℕ}
-    (U : Set (Vec d)) (p : ℝ≥0∞) (Du : Vec d → Vec d) : Prop :=
+def GradMemLpOn (Du : Vec d → Vec d) : Prop :=
   ∀ i : Fin d, MemLpOn U p (fun x => Du x i)
+
+end
 
 /-- A concrete representative and a chosen coordinate weak gradient. -/
 structure W1pFunction {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞) where
@@ -41,24 +45,30 @@ instance {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} :
     CoeFun (W1pFunction U p) (fun _ => Vec d → ℝ) where
   coe u := u.toFun
 
-theorem memLpOn_mono {d : ℕ}
-    {U V : Set (Vec d)} {p : ℝ≥0∞} {u : Vec d → ℝ}
+section
+variable {d : ℕ} {U V : Set (Vec d)} {p : ℝ≥0∞}
+
+theorem memLpOn_mono {u : Vec d → ℝ}
     (hVU : V ⊆ U) (hu : MemLpOn U p u) :
     MemLpOn V p u :=
   hu.mono_measure (MeasureTheory.Measure.restrict_mono_set
     MeasureTheory.volume hVU)
 
-theorem gradMemLpOn_mono {d : ℕ}
-    {U V : Set (Vec d)} {p : ℝ≥0∞} {Du : Vec d → Vec d}
+theorem gradMemLpOn_mono {Du : Vec d → Vec d}
     (hVU : V ⊆ U) (hDu : GradMemLpOn U p Du) :
     GradMemLpOn V p Du := by
   intro i
   exact memLpOn_mono hVU (hDu i)
 
+end
+
 namespace W1pFunction
 
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+
 @[ext]
-theorem ext {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+theorem ext
     {u v : W1pFunction U p}
     (htoFun : u.toFun = v.toFun) (hgrad : u.grad = v.grad) :
     u = v := by
@@ -68,17 +78,20 @@ theorem ext {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
   cases hgrad
   rfl
 
-theorem hasWeakPartialDerivOn {d : ℕ}
-    {U : Set (Vec d)} {p : ℝ≥0∞}
-    (u : W1pFunction U p) (i : Fin d) :
+section
+variable (u : W1pFunction U p) (i : Fin d)
+
+theorem hasWeakPartialDerivOn :
     HasWeakPartialDerivOn U i u.toFun (fun x => u.grad x i) :=
   u.hasWeakGradient i
 
-theorem grad_memLp {d : ℕ}
-    {U : Set (Vec d)} {p : ℝ≥0∞}
-    (u : W1pFunction U p) (i : Fin d) :
+theorem grad_memLp :
     MemLpOn U p (fun x => u.grad x i) :=
   u.gradMemLp i
+
+end
+
+end
 
 /-- Restrict a representative-level Sobolev function to an open subset. -/
 def restrict {d : ℕ} {U V : Set (Vec d)} {p : ℝ≥0∞}

@@ -18,7 +18,7 @@ open scoped Topology
 /-- Homogeneous L2 limits have a continuous representative identified by every actual
 homogeneous approximating sequence at every point where that sequence converges. -/
 theorem exists_continuousRepresentative_identified_by_homogeneous_limits
-    (hH : HormanderHypoellipticityStatement) {d : ℕ}
+    {d : ℕ}
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (hB : IsSmoothFullKineticCoefficient B) (hb : IsSmoothDrift b)
     (lam Lam m : ℝ) (hlam : 0 < lam) (hm : 0 < m)
@@ -39,7 +39,7 @@ theorem exists_continuousRepresentative_identified_by_homogeneous_limits
   classical
   let H := boundedSourceHomogeneousL2Space B b hB hb U
   have hclosed := isClosed_boundedSourceHomogeneousL2Space B b hB hb U
-  have hrep := boundedSourceHomogeneousL2Space_hasContinuousRepresentative hH B b hB hb
+  have hrep := boundedSourceHomogeneousL2Space_hasContinuousRepresentative B b hB hb
     lam Lam m hlam hm hell hcoerc U hU
   let x : H := ⟨hu.toLp u, mem_boundedSourceHomogeneousL2Space_of_isWeak B b hB hb U u hu hw⟩
   let v := continuousWeakRepresentative volume U H hrep x

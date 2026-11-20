@@ -32,7 +32,7 @@ theorem mass_trace_probe_weighted {d : ℕ} (Lam a T : ℝ) (v₀ : PDE.Vec d) (
   · exact (hclose P hP hp).trans (le_mul_of_one_le_right hε
       ((le_add_of_nonneg_right (PDE.vecNormSq_nonneg P.position)).trans
         (massGrowthBarrier_lower Lam T P hP.2.1)))
-  · have hlp : L ^ 2 ≤ ‖P.position‖ ^ 2 :=
+  · have hlp :=
       (sq_le_sq₀ hL (norm_nonneg _)).mpr (not_le.mp hp).le
     exact ((abs_sub (φ P) (u P)).trans (add_le_add (hφ P) (hb P hP))).trans
       ((by linarith only [hsize] : M + ε + M ≤ ε * L ^ 2).trans

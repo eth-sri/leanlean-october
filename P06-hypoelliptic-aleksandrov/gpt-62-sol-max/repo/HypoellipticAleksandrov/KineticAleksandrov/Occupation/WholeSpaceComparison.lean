@@ -1,10 +1,12 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceCalculus
+public import HypoellipticAleksandrov.Parabolic.ScalarCalculus
+public import HypoellipticAleksandrov.Parabolic.ScalarDirichletComparison
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceQuadratic
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceCoefficient
 public import HypoellipticAleksandrov.Parabolic.ScalarMaximum
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativesSmooth
 
 /-! # Maximum-principle comparison with the occupation quadratic -/
 
@@ -18,7 +20,6 @@ open scoped MatrixOrder Matrix.Norms.Elementwise
 theorem occupationQuadratic_nonneg {d : ℕ} {Lam : ℝ} (hLam : 0 ≤ Lam)
     (vStar : PDE.Vec d) {z : TimeVelocity d} (hz : z.1 ≤ 1) :
     0 ≤ occupationQuadratic Lam vStar z := by
-  unfold occupationQuadratic
   exact add_nonneg (Finset.sum_nonneg fun _ _ => sq_nonneg _)
     (mul_nonneg (by positivity) (sub_nonneg.mpr hz))
 
@@ -104,7 +105,7 @@ theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
     simpa only [sub_zero, add_zero, div_mul_eq_mul_div, sub_nonpos] using hw
   have hmax := scalar_le_on_closedCylinder_of_terminal_lateral_le
     (PDE.isOpen_euclideanBall vStar R) hΩbounded hα B (fun _ _ => 0)
-    (sectionTwoCoefficient_smooth hB).continuous continuous_const
+    (_root_.HypoellipticAleksandrov.KineticAleksandrov.LocalA.sectionTwo_coefficient_smooth hB).continuous continuous_const
     (sectionTwoCoefficient_posSemidef hB) u huc hureg hsub ht hl
   intro z hz
   have hu := hmax z hz

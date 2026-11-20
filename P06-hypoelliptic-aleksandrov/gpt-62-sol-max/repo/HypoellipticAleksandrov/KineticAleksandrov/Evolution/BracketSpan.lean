@@ -53,7 +53,7 @@ theorem posDef_sqrtCoeffAt {lam Lam : ℝ} {B : FullKineticCoefficient n}
 /-- The rows of an invertible (positive-definite) matrix span `ℝ^d`. -/
 theorem exists_row_combination {β : PDE.Mat n} (hβ : β.PosDef) (u : PDE.Vec n) :
     ∃ a : PDE.Vec n, ∀ j, ∑ i, a i * β i j = u j := by
-  have hu : IsUnit β.det := (Matrix.isUnit_iff_isUnit_det β).1 hβ.isUnit
+  have hu := (Matrix.isUnit_iff_isUnit_det β).1 hβ.isUnit
   refine ⟨Matrix.vecMul u β⁻¹, fun j => ?_⟩
   have h : Matrix.vecMul (Matrix.vecMul u β⁻¹) β = u := by
     rw [Matrix.vecMul_vecMul, Matrix.nonsing_inv_mul β hu, Matrix.vecMul_one]
@@ -79,7 +79,6 @@ theorem packPoint_diffused_mem {B : FullKineticCoefficient n} {x : EvolutionVec 
 theorem packPoint_transported_mem_of_regularizing {ε : ℝ} (hε : 0 < ε) {x : EvolutionVec n}
     {W : Submodule ℝ (EvolutionVec n)} (hY : ∀ l, regularizingField ε l x ∈ W)
     (w : PDE.Vec n) : packPoint 0 0 w ∈ W := by
-  have hs : Real.sqrt ε ≠ 0 := (Real.sqrt_pos.2 hε).ne'
   have e : packPoint 0 0 w = ∑ l, (w l / Real.sqrt ε) • regularizingField ε l x := by
     refine ext_coords ?_ ?_ ?_
     · simp [regularizingField, map_sum]

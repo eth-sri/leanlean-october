@@ -62,9 +62,7 @@ noncomputable def mulContDiffMemLpTop [Fact (1 ≤ p)]
   hasWeakGradient := by
     convert u.hasWeakGradient.mul_contDiff hφ
       u.locallyIntegrable_toFun u.locallyIntegrable_grad using 1
-    funext x i
-    simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-      classicalGradient_apply]
+    rfl
 
 @[simp]
 theorem mulContDiffMemLpTop_toFun [Fact (1 ≤ p)]
@@ -128,12 +126,6 @@ theorem eLpNormOn_mulContDiffMemLpTop_grad_coord_le
     fun x => φ x * u.grad x i
   let second : Vec d → ℝ :=
     fun x => u x * classicalGradient φ x i
-  have hfirstMem : MemLpOn U p first := by
-    simpa only [first, mul_comm] using
-      (u.gradMemLp i).fun_mul hφTop
-  have hsecondMem : MemLpOn U p second := by
-    simpa only [second, mul_comm] using
-      u.memLp.fun_mul (hDφTop i)
   have hfirstBound :
       eLpNormOn U p first ≤
         eLpNormOn U ∞ φ *
@@ -207,9 +199,7 @@ theorem mulContDiffHasCompactSupport_toFun
     {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hφCompact : HasCompactSupport φ) :
     (u.mulContDiffHasCompactSupport hφ hφCompact).toFun =
-      fun x => φ x * u x := by
-  simp only [mulContDiffHasCompactSupport,
-    mulContDiffMemLpTop_toFun]
+      fun x => φ x * u x := rfl
 
 @[simp]
 theorem mulContDiffHasCompactSupport_grad
@@ -218,9 +208,7 @@ theorem mulContDiffHasCompactSupport_grad
     (hφCompact : HasCompactSupport φ) :
     (u.mulContDiffHasCompactSupport hφ hφCompact).grad =
       fun x =>
-        φ x • u.grad x + u x • classicalGradient φ x := by
-  simp only [mulContDiffHasCompactSupport,
-    mulContDiffMemLpTop_grad]
+        φ x • u.grad x + u x • classicalGradient φ x := rfl
 
 end W1pFunction
 

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierModulusLocal
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsModulusReference
 
 /-! # Reference position and velocity increments from the actual homogeneous jets -/
 
@@ -10,21 +11,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegulariz
 open HypoellipticAleksandrov Set MeasureTheory Filter
 open scoped Topology
 
-/-- Off the origin the extension has the original local germ. -/
-theorem barrierExtension_eventuallyEq (phi : (ℝ × ℝ) → ℝ) {q : ℝ × ℝ}
-    (hq : q ≠ (0, 0)) : bellmanOriginExtension phi =ᶠ[𝓝 q] phi := by
-  filter_upwards [bellmanPuncturedSet_isOpen.mem_nhds hq] with z hz
-  exact bellmanOriginExtension_eqOn phi hz
-
 /-- A gauge at least one excludes the origin. -/
 theorem barrier_gauge_one_ne_zero {q : ℝ × ℝ} (hq : 1 ≤ bellmanGauge q) : q ≠ (0, 0) := by
   intro he
   subst q
   norm_num [bellmanGauge, bellmanGaugePower] at hq
 
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi)
+include h
+
 /-- The continuous extension satisfies the same homogeneity including at the origin. -/
-theorem barrierExtension_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (r : ℝ) (hr : 0 < r) (q : ℝ × ℝ) :
+theorem barrierExtension_scaling (r : ℝ) (hr : 0 < r) (q : ℝ × ℝ) :
     bellmanOriginExtension phi (bellmanPlaneDilation r q) =
       r ^ alpha * bellmanOriginExtension phi q := by
   by_cases hq : q = (0, 0)
@@ -35,8 +33,7 @@ theorem barrierExtension_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
     exact h.2 r hr q hq
 
 /-- One constant controls every reference-scale increment in either coordinate. -/
-theorem barrier_reference_increments {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1) :
+theorem barrier_reference_increments (ha : 0 < alpha) (ha1 : alpha < 1) :
     ∃ D : ℝ, 0 ≤ D ∧ ∀ x y v : ℝ, |y - x| ≤ 1 →
       |bellmanOriginExtension phi (y, v) - bellmanOriginExtension phi (x, v)| ≤ D ∧
       |bellmanOriginExtension phi (v, y) - bellmanOriginExtension phi (v, x)| ≤ D := by
@@ -65,7 +62,7 @@ theorem barrier_reference_increments {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
     · have hq := barrier_gauge_one_ne_zero ht
       have hd := (h.1.contDiffAt (bellmanPuncturedSet_isOpen.mem_nhds hq)).differentiableAt
         (by norm_num)
-      have he := (barrierExtension_eventuallyEq phi hq).comp_tendsto
+      have he := (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrierExtension_eventuallyEq phi hq).comp_tendsto
         ((continuous_id.prodMk continuous_const).tendsto t)
       refine ⟨bellmanDx phi (t, v), (bellman_hasDerivAt_first hd).congr_of_eventuallyEq he, ?_⟩
       exact (hbX _ hq).trans (by
@@ -81,11 +78,13 @@ theorem barrier_reference_increments {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
     · have hq := barrier_gauge_one_ne_zero ht
       have hd := (h.1.contDiffAt (bellmanPuncturedSet_isOpen.mem_nhds hq)).differentiableAt
         (by norm_num)
-      have he := (barrierExtension_eventuallyEq phi hq).comp_tendsto
+      have he := (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrierExtension_eventuallyEq phi hq).comp_tendsto
         ((continuous_const.prodMk continuous_id).tendsto t)
       refine ⟨bellmanDv phi (v, t), (bellman_hasDerivAt_second hd).congr_of_eventuallyEq he, ?_⟩
       exact (hbv _ hq).trans (by
         have hh := Real.rpow_le_rpow_of_nonpos zero_lt_one ht (by linarith : alpha - 1 ≤ 0)
         simpa only [Real.one_rpow, mul_one] using mul_le_mul_of_nonneg_left hh hCv)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization

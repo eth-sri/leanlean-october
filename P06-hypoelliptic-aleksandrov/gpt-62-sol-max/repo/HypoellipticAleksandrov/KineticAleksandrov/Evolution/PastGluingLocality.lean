@@ -13,19 +13,23 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter
 open scoped Topology
 
+section
+variable {n : ℕ} {u v : PDE.Vec n → ℝ} {x : PDE.Vec n} (h : u =ᶠ[𝓝 x] v)
+include h
+
 /-- Equal scalar germs have equal classical gradient germs. -/
-theorem pastGluing_gradient_germ {n : ℕ} {u v : PDE.Vec n → ℝ} {x : PDE.Vec n}
-    (h : u =ᶠ[𝓝 x] v) : PDE.classicalGradient u =ᶠ[𝓝 x] PDE.classicalGradient v := by
+theorem pastGluing_gradient_germ : PDE.classicalGradient u =ᶠ[𝓝 x] PDE.classicalGradient v := by
   filter_upwards [h.fderiv (𝕜 := ℝ)] with y hy
   funext i
-  exact congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hy
+  simp_all
 
 /-- A scalar germ determines its gradient and differentiated-gradient values. -/
-theorem pastGluing_gradient_hessian_eq {n : ℕ} {u v : PDE.Vec n → ℝ} {x : PDE.Vec n}
-    (h : u =ᶠ[𝓝 x] v) :
+theorem pastGluing_gradient_hessian_eq :
     PDE.classicalGradient u x = PDE.classicalGradient v x ∧
       fderiv ℝ (PDE.classicalGradient u) x = fderiv ℝ (PDE.classicalGradient v) x :=
   ⟨(pastGluing_gradient_germ h).eq_of_nhds, (pastGluing_gradient_germ h).fderiv_eq⟩
+
+end
 
 /-- Equal kinetic germs have equal viscous operator values, without regularity assumptions. -/
 theorem viscousTransportedOperator_congr_germ {n : ℕ}

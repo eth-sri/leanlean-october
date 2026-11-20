@@ -12,8 +12,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
 
+section
+variable {X : Type*}
+
 /-- A finite absolutely continuous measure has a nonnegative measurable real density. -/
-theorem density_of_absolutelyContinuous {X : Type*} [MeasurableSpace X]
+theorem density_of_absolutelyContinuous [MeasurableSpace X]
     (m ν : Measure X) [SigmaFinite m] [IsFiniteMeasure ν] (hac : ν ≪ m) :
     ∃ g : X → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧
       ν = m.withDensity (fun x => ENNReal.ofReal (g x)) := by
@@ -27,7 +30,7 @@ theorem density_of_absolutelyContinuous {X : Type*} [MeasurableSpace X]
   exact (ENNReal.ofReal_toReal hx.ne).symm
 
 /-- A local density dominates the same restriction of any global nonnegative density. -/
-theorem density_local_norm_le {X : Type*} [MeasurableSpace X]
+theorem density_local_norm_le [MeasurableSpace X]
     (m : Measure X) [SigmaFinite m] (g f : X → ℝ)
     (hgm : Measurable g) (hg0 : ∀ x, 0 ≤ g x)
     (_hfm : Measurable f) (hf0 : ∀ x, 0 ≤ f x)
@@ -54,12 +57,12 @@ theorem density_local_norm_le {X : Type*} [MeasurableSpace X]
     (eLpNorm_restrict_le f p m S)
 
 /-- A source real norm bound gives the equivalent bound for its q-power integral. -/
-theorem density_power_integral_le {X : Type*} [MeasurableSpace X]
+theorem density_power_integral_le [MeasurableSpace X]
     (m : Measure X) (f : X → ℝ) (q K : ℝ) (hq : 0 < q) (hK : 0 ≤ K)
     (hf : MemLp f (ENNReal.ofReal q) m)
     (hn : (eLpNorm f (ENNReal.ofReal q) m).toReal ≤ K ^ (1 / q)) :
     ∫⁻ x, ‖f x‖ₑ ^ q ∂m ≤ ENNReal.ofReal K := by
-  have hnorm : eLpNorm f (ENNReal.ofReal q) m ≤ ENNReal.ofReal (K ^ (1 / q)) :=
+  have hnorm :=
     (ENNReal.le_ofReal_iff_toReal_le hf.ne (Real.rpow_nonneg hK _)).2 hn
   have he : ∫⁻ x, ‖f x‖ₑ ^ q ∂m = eLpNorm f (ENNReal.ofReal q) m ^ q := by
     rw [eLpNorm_eq_eLpNorm' (by positivity) ENNReal.ofReal_ne_top
@@ -71,6 +74,8 @@ theorem density_power_integral_le {X : Type*} [MeasurableSpace X]
     _ = ENNReal.ofReal K := by
       rw [ENNReal.ofReal_rpow_of_nonneg (Real.rpow_nonneg hK _) hq.le,
         ← Real.rpow_mul hK, one_div_mul_cancel hq.ne', Real.rpow_one]
+
+end
 
 /-- Local densities on a countable cover glue, with a bound by the sum of power integrals. -/
 theorem density_of_countable_cover {X ι : Type*} [MeasurableSpace X] [Countable ι]

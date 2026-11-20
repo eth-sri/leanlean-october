@@ -14,14 +14,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology
 
+section
+variable {d : ℕ} (u : KineticPoint d → ℝ) (P : KineticPoint d)
+include u P
+
 /-- The position differential encoded by the existing classical gradient. -/
-def comparisonPositionDifferential {d : ℕ} (u : KineticPoint d → ℝ)
-    (P : KineticPoint d) : PDE.Vec d →L[ℝ] ℝ :=
+def comparisonPositionDifferential : PDE.Vec d →L[ℝ] ℝ :=
   ∑ i : Fin d, kineticPositionGradient u P i • ContinuousLinearMap.proj i
 
 /-- The encoded differential agrees with the actual position-slice differential. -/
-theorem comparisonPositionDifferential_eq_fderiv {d : ℕ}
-    (u : KineticPoint d → ℝ) (P : KineticPoint d) :
+theorem comparisonPositionDifferential_eq_fderiv :
     comparisonPositionDifferential u P =
       fderiv ℝ (fun x => u ⟨P.time,x,P.velocity⟩) P.position := by
   ext v
@@ -29,6 +31,8 @@ theorem comparisonPositionDifferential_eq_fderiv {d : ℕ}
   simp only [comparisonPositionDifferential, sum_apply,
     smul_apply, ContinuousLinearMap.proj_apply, smul_eq_mul,
     kineticPositionGradient, PDE.vecDot]
+
+end
 
 /-- Continuity of the existing position gradient implies continuity of its differential. -/
 theorem continuousOn_comparisonPositionDifferential {d : ℕ}

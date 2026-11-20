@@ -40,8 +40,12 @@ theorem integrableOn_connectionMoment (c z : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3)
     exact mul_le_of_le_one_left (connectionKernel_nonneg c t hc1.le ht)
       (mul_exp_neg_le_one (z * t))
 
+section
+variable (c : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3)
+include hc hc1
+
 /-- Dominated convergence for the renormalized first moment. -/
-theorem tendsto_connectionMoment_zero (c : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3) :
+theorem tendsto_connectionMoment_zero :
     Tendsto (connectionMoment c) (𝓝[>] 0) (𝓝 0) := by
   have hl : Tendsto (connectionMoment c) (𝓝[>] 0)
       (𝓝 (∫ _t in Ioi (0 : ℝ), (0 : ℝ))) := by
@@ -64,11 +68,10 @@ theorem tendsto_connectionMoment_zero (c : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3) :
   simpa using hl
 
 /-- Moment decomposition using the same finite-part kernel. -/
-theorem laplaceIntegral_connectionMoment (c : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3)
+theorem laplaceIntegral_connectionMoment
     (z : ℝ) (hz : 0 < z) :
     z * laplaceIntegral (c + 1) (7 / 3) z =
       z ^ (-(1 / 3 : ℝ)) * Real.Gamma (4 / 3) + connectionMoment c z := by
-  have hl := integrableOn_laplaceKernelReal (c + 1) (7 / 3) z (by linarith) hz
   have hg := integrableOn_gammaKernel (4 / 3 : ℝ) z (by norm_num) hz
   have hm := integrableOn_connectionMoment c z hc hc1 hz.le
   have he : ∀ t ∈ Ioi (0 : ℝ), z * laplaceKernelReal (c + 1) (7 / 3) z t =
@@ -100,6 +103,8 @@ theorem laplaceIntegral_connectionMoment (c : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3
     ring
   rw [← mul_assoc, hp]
   rfl
+
+end
 
 /-- A scaled derivative identity where both finite-part transforms have endpoint limits. -/
 theorem UNr_scaled_deriv (a : NegThird) (z : ℝ) (hz : 0 < z) :

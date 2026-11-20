@@ -1,3 +1,0 @@
-module
-public import PDEFoundation.Ambient.EuclideanNorm
-public import Mathlib.MeasureTheory.Function.StronglyMeasurable.AEStronglyMeasurable

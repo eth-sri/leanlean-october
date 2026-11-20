@@ -15,8 +15,12 @@ Hessian direction requires exactly the source's dimension-at-least-two assumptio
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
+section
+variable (d : ℕ) (hd : 2 ≤ d)
+include hd
+
 /-- A native vector in dimension at least two has a nonzero perpendicular direction. -/
-theorem exists_native_perpendicular (d : ℕ) (hd : 2 ≤ d) (z : PDE.Vec d) :
+theorem exists_native_perpendicular (z : PDE.Vec d) :
     ∃ w : PDE.Vec d, w ≠ 0 ∧ PDE.vecDot z w = 0 := by
   let i : Fin d := ⟨0, by omega⟩
   let j : Fin d := ⟨1, by omega⟩
@@ -40,7 +44,7 @@ theorem exists_native_perpendicular (d : ℕ) (hd : 2 ≤ d) (z : PDE.Vec d) :
 
 
 /-- The seed has a strictly positive Hessian direction at every point. -/
-theorem seed_positive_direction (d : ℕ) (hd : 2 ≤ d) (alpha C₀ sigma : ℝ)
+theorem seed_positive_direction (alpha C₀ sigma : ℝ)
     (ha : 0 < alpha) (hsigma : 0 < sigma) (y e : PDE.Vec d) :
     ∃ w : PDE.Vec d,
       0 < fderiv ℝ (fun z => fderiv ℝ (fun a => seed alpha C₀ sigma a e) z w) y w := by
@@ -50,6 +54,8 @@ theorem seed_positive_direction (d : ℕ) (hd : 2 ≤ d) (alpha C₀ sigma : ℝ
   have hn : 0 < PDE.vecNormSq w :=
     (PDE.vecNormSq_nonneg w).lt_of_ne' (PDE.vecNormSq_eq_zero_iff.not.mpr hw)
   exact mul_pos (seedTangentialEigenvalue_pos alpha sigma ha hsigma y e) hn
+
+end
 
 /-- Past the source threshold the seed has a strictly negative Hessian direction. -/
 theorem seed_negative_direction {d : ℕ} (alpha C₀ sigma : ℝ)

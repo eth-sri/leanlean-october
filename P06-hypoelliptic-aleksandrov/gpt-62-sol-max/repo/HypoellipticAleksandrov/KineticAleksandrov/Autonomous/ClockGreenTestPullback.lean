@@ -1,6 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTestBoundary
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTestSupport
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripDuhamel
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripSource
 
 /-! # The literal physical C112 regularity of the clock pullback -/
 

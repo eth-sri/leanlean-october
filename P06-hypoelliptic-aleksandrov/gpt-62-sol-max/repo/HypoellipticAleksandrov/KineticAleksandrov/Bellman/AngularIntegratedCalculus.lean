@@ -12,11 +12,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+section
+variable (f : ℝ → ℝ) (y : ℝ)
+include f y
+
 /-- The oriented first angular moment from the source. -/
-def bellmanAngularFirstMoment (f : ℝ → ℝ) (y : ℝ) : ℝ := ∫ z in 0..y, z * f z
+def bellmanAngularFirstMoment : ℝ := ∫ z in 0..y, z * f z
 
 /-- The oriented second angular moment from the source. -/
-def bellmanAngularSecondMoment (f : ℝ → ℝ) (y : ℝ) : ℝ := ∫ z in 0..y, z ^ 2 * f z
+def bellmanAngularSecondMoment : ℝ := ∫ z in 0..y, z ^ 2 * f z
+
+end
 
 /-- Local absolute continuity on ordered intervals also applies to oriented intervals. -/
 theorem bellman_locallyAC_oriented {g : ℝ → ℝ}

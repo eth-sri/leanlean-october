@@ -25,37 +25,26 @@ theorem Clock.closed_active_image (c : Clock) (e p : Point)
     have hh : p.velocity 0 ≤ c.vbar + 3 * c.r / 4 := hp.2
     linarith
 
+section
+variable {lam Lam : ℝ} {A : SmoothAutonomous lam Lam} {c : Clock} {e : Point} {R T : ℝ}
+  {f : exitProbeSubmodule} (h : ClockSourcePotentialSpec A c e R T f)
+include R h
+
 /-- Actual normalized Duhamel boundary continuity transfers to the entire physical closed strip. -/
-theorem clockSourcePotential_pullback_continuous
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
-    (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
-    (hs : tsupport (exitProbePhysical f) ⊆
-      {p | p.time < T ∧ p.velocity 0 ∈ clockNormalizedInterval.carrier})
-    (hz : ∀ p, R ≤ p.time → exitProbePhysical f p = 0) :
+theorem ClockSourcePotentialSpec.pullback_continuous :
     ContinuousOn
-      ((clockSourcePotential hH hLE hlam hLam A c e T f ∘ sectionTwoPoint) ∘ c.map e)
+      ((clockSourcePotential A c e T f ∘ sectionTwoPoint) ∘ c.map e)
       {p | p.velocity 0 ∈ Icc c.activeInterval.lo c.activeInterval.hi} := by
-  have hc := (clockSourcePotential_boundary hH hLE hlam hLam A c e R T hRT
-    f hfn hs hz).1
-  apply hc.comp ((continuous_sectionTwoPoint 1).comp (c.homeomorph e).continuous).continuousOn
+  apply h.continuous_closed.comp ((continuous_sectionTwoPoint 1).comp (c.homeomorph e).continuous).continuousOn
   intro p hp
   exact c.closed_active_image e p hp
 
 /-- Each physical lateral face maps to its matching actual normalized Dirichlet face. -/
-theorem clockSourcePotential_pullback_zero_faces
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
-    (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
-    (hs : tsupport (exitProbePhysical f) ⊆
-      {p | p.time < T ∧ p.velocity 0 ∈ clockNormalizedInterval.carrier})
-    (hz : ∀ p, R ≤ p.time → exitProbePhysical f p = 0)
+theorem ClockSourcePotentialSpec.pullback_zero_faces
     (p : Point) (hp : p.velocity 0 = c.activeInterval.lo ∨
       p.velocity 0 = c.activeInterval.hi) :
-    clockSourcePotential hH hLE hlam hLam A c e T f (sectionTwoPoint (c.map e p)) = 0 := by
-  apply (clockSourcePotential_boundary hH hLE hlam hLam A c e R T hRT f hfn hs hz).2
+    clockSourcePotential A c e T f (sectionTwoPoint (c.map e p)) = 0 := by
+  apply h.lateral_zero
   change (p.velocity 0 - c.vbar) / c.r = -3 / 4 ∨
     (p.velocity 0 - c.vbar) / c.r = 3 / 4
   rcases hp with hp | hp
@@ -69,5 +58,7 @@ theorem clockSourcePotential_pullback_zero_faces
     dsimp [Clock.activeInterval]
     field_simp [ne_of_gt c.positive]
     ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

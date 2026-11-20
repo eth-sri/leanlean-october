@@ -14,9 +14,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Matrix
 open scoped MatrixOrder
 
+section
+variable {d : ℕ} {M : Matrix (Fin 2) (Fin 2) ℝ} (hM : M.PosDef) {c : ℝ} (hc : 0 < c)
+include hM hc
+
 /-- A positive scalar covariance upper bound gives the exact inverse quadratic lower bound. -/
-theorem blockQuadratic_inv_lower {d : ℕ} {M : Matrix (Fin 2) (Fin 2) ℝ}
-    (hM : M.PosDef) {c : ℝ} (hc : 0 < c)
+theorem blockQuadratic_inv_lower
     (hu : M ≤ c • (1 : Matrix (Fin 2) (Fin 2) ℝ)) (y V : PDE.Vec d) :
     PDE.vecNormSq y + PDE.vecNormSq V ≤ c * blockQuadratic M⁻¹ y V := by
   have hscalar : (c • (1 : Matrix (Fin 2) (Fin 2) ℝ)).PosDef := Matrix.PosDef.one.smul hc
@@ -28,8 +31,7 @@ theorem blockQuadratic_inv_lower {d : ℕ} {M : Matrix (Fin 2) (Fin 2) ℝ}
   simpa only [← mul_assoc, mul_inv_cancel₀ hc.ne', one_mul] using hm
 
 /-- A positive scalar covariance lower bound gives the exact inverse quadratic upper bound. -/
-theorem blockQuadratic_inv_upper {d : ℕ} {M : Matrix (Fin 2) (Fin 2) ℝ}
-    (hM : M.PosDef) {c : ℝ} (hc : 0 < c)
+theorem blockQuadratic_inv_upper
     (hl : c • (1 : Matrix (Fin 2) (Fin 2) ℝ) ≤ M) (y V : PDE.Vec d) :
     blockQuadratic M⁻¹ y V ≤ c⁻¹ * (PDE.vecNormSq y + PDE.vecNormSq V) := by
   have hscalar : (c • (1 : Matrix (Fin 2) (Fin 2) ℝ)).PosDef := Matrix.PosDef.one.smul hc
@@ -38,8 +40,13 @@ theorem blockQuadratic_inv_upper {d : ℕ} {M : Matrix (Fin 2) (Fin 2) ℝ}
   rw [covariance_scalar_one_inv hc, blockQuadratic_smul, blockQuadratic_one] at he
   exact he
 
+end
+
+section
+variable {d : ℕ}
+
 /-- The upper covariance bound controls the native squared size of scaled position and velocity. -/
-theorem qform_scaled_normSq_le {d : ℕ} {lam h sigma : ℝ}
+theorem qform_scaled_normSq_le {lam h sigma : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (hs : -(h / 128) ≤ sigma) (ht : |sigma / h| ≤ 1)
     (y V : PDE.Vec d) :
     PDE.vecNormSq ((h ^ (3 / 2 : ℝ))⁻¹ • y) +
@@ -52,7 +59,7 @@ theorem qform_scaled_normSq_le {d : ℕ} {lam h sigma : ℝ}
     (ghat_upper hlam ht) _ _
 
 /-- The endpoint covariance lower bound has the exact source constant sixteen. -/
-theorem qform_endpoint_upper {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
+theorem qform_endpoint_upper {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (y V : PDE.Vec d) :
     qform lam h h y V ≤ (16 / lam) *
       (PDE.vecNormSq ((h ^ (3 / 2 : ℝ))⁻¹ • y) +
@@ -65,7 +72,7 @@ theorem qform_endpoint_upper {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < 
   field_simp
 
 /-- The source covariance overlap gives the same quadratic contraction in physical coordinates. -/
-theorem qform_overlap {d : ℕ} {lam h sigma : ℝ} (hlam : 0 < lam) (hh : 0 < h)
+theorem qform_overlap {lam h sigma : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (hs0 : -(h / 128) ≤ sigma) (hs1 : sigma ≤ 0) (y V : PDE.Vec d) :
     qform lam h (sigma + h) y V ≤ (13 / 50 : ℝ) * qform lam h sigma y V := by
   have ht0 : -(1 / 128 : ℝ) ≤ sigma / h := by
@@ -87,5 +94,7 @@ theorem qform_overlap {d : ℕ} {lam h sigma : ℝ} (hlam : 0 < lam) (hh : 0 < h
   have ht : (sigma + h) / h = sigma / h + 1 := by field_simp
   rw [ht]
   exact hm
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

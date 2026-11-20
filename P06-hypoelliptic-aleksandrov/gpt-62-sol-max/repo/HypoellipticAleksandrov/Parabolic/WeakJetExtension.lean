@@ -20,30 +20,10 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter Function MeasureTheory Set
 open scoped ContDiff ENNReal Topology
 
-private theorem timeDerivative_tsupport {d : ℕ} (f : TimeVelocity d → ℝ) :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  unfold timeDerivative
-  change closure (Function.support (fun z => fderiv ℝ f z (1, 0))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+section
+variable {d : ℕ}
 
-private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d}
-    (f : TimeVelocity d → ℝ) :
-    tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support (fun z => fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-private theorem velocityHessian_tsupport {d : ℕ} {i j : Fin d}
+theorem velocityHessian_tsupport {i j : Fin d}
     (f : TimeVelocity d → ℝ) :
     tsupport (fun z => velocityHessian f z i j) ⊆ tsupport f := by
   refine closure_minimal ?_ (isClosed_tsupport (f := f))
@@ -58,7 +38,7 @@ private theorem velocityHessian_tsupport {d : ℕ} {i j : Fin d}
   simp
 
 /-- Support localization for extension to the full spacetime carrier. -/
-theorem tsupport_mul_timeDeriv_subset {d : ℕ}
+theorem tsupport_mul_timeDeriv_subset
     (b u du : TimeVelocity d → ℝ) :
     tsupport (fun z => b z * du z + u z * timeDerivative b z) ⊆ tsupport b := by
   refine (tsupport_add _ _).trans (union_subset ?_ ?_)
@@ -67,7 +47,7 @@ theorem tsupport_mul_timeDeriv_subset {d : ℕ}
       (timeDerivative_tsupport b)
 
 /-- Support localization for extension to the full spacetime carrier. -/
-theorem tsupport_mul_velocityGrad_subset {d : ℕ} {i : Fin d}
+theorem tsupport_mul_velocityGrad_subset {i : Fin d}
     (b u dui : TimeVelocity d → ℝ) :
     tsupport (fun z => b z * dui z + u z * velocityGradient b z i) ⊆ tsupport b := by
   refine (tsupport_add _ _).trans (union_subset ?_ ?_)
@@ -76,7 +56,7 @@ theorem tsupport_mul_velocityGrad_subset {d : ℕ} {i : Fin d}
       (velocityGradient_tsupport b)
 
 /-- Support localization for extension to the full spacetime carrier. -/
-theorem tsupport_mul_velocityHessian_subset {d : ℕ} {i j : Fin d}
+theorem tsupport_mul_velocityHessian_subset {i j : Fin d}
     (b u dui duj duij : TimeVelocity d → ℝ) :
     tsupport (fun z => b z * duij z + velocityGradient b z j * dui z +
       duj z * velocityGradient b z i + u z * velocityHessian b z i j) ⊆ tsupport b := by
@@ -92,129 +72,70 @@ theorem tsupport_mul_velocityHessian_subset {d : ℕ} {i j : Fin d}
       (velocityHessian_tsupport b)
 
 /-- Support localization for extension to the full spacetime carrier. -/
-theorem parabolicMemLpOn_univ_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+theorem parabolicMemLpOn_univ_of_support_subset {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
     {f : TimeVelocity d → ℝ}
     (hU : MeasurableSet U) (hf : ParabolicMemLpOn U p f)
     (hsupp : Function.support f ⊆ U) :
     ParabolicMemLpOn Set.univ p f := by
-  have hindicator : U.indicator f = f := Set.indicator_eq_self.mpr hsupp
+  have hindicator := Set.indicator_eq_self.mpr hsupp
   change MemLp f p ((volume : Measure (TimeVelocity d)).restrict Set.univ)
   rw [← hindicator, memLp_indicator_iff_restrict hU]
   simpa only [Measure.restrict_univ] using hf
 
-/-- Support localization for extension to the full spacetime carrier. -/
-theorem HasWeakTimeDerivOn.univ_of_compact_tsupport_subset
-    {d : ℕ} {U K : Set (TimeVelocity d)} {u du : TimeVelocity d → ℝ}
+end
+
+section
+variable {d : ℕ} {U K : Set (TimeVelocity d)}
+
+/-- A cutoff equal to one near both supports preserves the weak directional identity. -/
+private theorem weak_directional_univ {u du : TimeVelocity d → ℝ}
+    (e : TimeVelocity d) (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
+    (hu : ∀ φ : TimeVelocity d → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ →
+      tsupport φ ⊆ U →
+      (∫ z in U, u z * fderiv ℝ φ z e) = -∫ z in U, du z * φ z)
+    (huK : tsupport u ⊆ K) (hduK : tsupport du ⊆ K)
+    (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ) :
+    (∫ z, u z * fderiv ℝ φ z e) = -∫ z, du z * φ z := by
+  obtain ⟨a, ha, haOne, haU⟩ := exists_smooth_cutoff_tsupport_subset hK hU hKU
+  have hEq {z} (hz : z ∈ K) : a * φ =ᶠ[𝓝 z] φ :=
+    (cutoff_mul_eventuallyEq haOne).filter_mono (nhds_le_nhdsSet hz)
+  have hI (f : TimeVelocity d → ℝ) (hf : tsupport f ⊆ K)
+      (g g' : TimeVelocity d → ℝ) (hgg : EqOn g g' K) :
+      (∫ z, f z * g z) = ∫ z in U, f z * g' z := by
+    have hz0 {z} (hz : z ∉ K) : f z = 0 :=
+      image_eq_zero_of_notMem_tsupport (fun ht => hz (hf ht))
+    rw [← setIntegral_eq_integral_of_forall_compl_eq_zero (s := U)
+      (f := fun z => f z * g z) (fun z hz => by rw [hz0 fun h => hz (hKU h), zero_mul])]
+    apply setIntegral_congr_fun hU.measurableSet
+    intro z _
+    change f z * g z = f z * g' z
+    by_cases hz : z ∈ K
+    · rw [hgg hz]
+    · simp [hz0 hz]
+  rw [hI u huK (fun z => fderiv ℝ φ z e) (fun z => fderiv ℝ (a * φ) z e)
+    (fun _ hz => congrArg (fun A : TimeVelocity d →L[ℝ] ℝ => A e) (hEq hz).fderiv_eq.symm),
+    hI du hduK φ (a * φ) (fun _ hz => (hEq hz).eq_of_nhds.symm)]
+  exact hu (a * φ) (ha.mul hφ) hc.mul_left (tsupport_mul_subset_left.trans haU)
+
+theorem HasWeakTimeDerivOn.univ_of_compact_tsupport_subset {u du : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     (hu : HasWeakTimeDerivOn U u du)
     (huK : tsupport u ⊆ K) (hduK : tsupport du ⊆ K) :
     HasWeakTimeDerivOn Set.univ u du := by
-  intro φ hφ hφCompact _
-  obtain ⟨a, ha, haOne, haU⟩ := exists_smooth_cutoff_tsupport_subset hK hU hKU
-  obtain ⟨O, hOOpen, hKO, haO⟩ := eventually_nhdsSet_iff_exists.mp haOne
-  have haφ : ContDiff ℝ (⊤ : ℕ∞) (a * φ) := ha.mul hφ
-  have haφCompact : HasCompactSupport (a * φ) := by
-    simpa only [Pi.mul_def] using hφCompact.mul_left (f := a)
-  have haφU : tsupport (a * φ) ⊆ U :=
-    (tsupport_mul_subset_left (f := a) (g := φ)).trans haU
-  have hlocal := hu (a * φ) haφ haφCompact haφU
-  have hleft : EqOn (fun z => u z * timeDerivative φ z)
-      (fun z => u z * timeDerivative (a * φ) z) U := by
-    intro z hzU
-    by_cases hzK : z ∈ K
-    · have hza : a * φ =ᶠ[𝓝 z] φ := by
-        filter_upwards [hOOpen.mem_nhds (hKO hzK)] with y hy
-        simp only [Pi.mul_apply, haO y hy, one_mul]
-      have hderiv : timeDerivative (a * φ) z = timeDerivative φ z := by
-        unfold timeDerivative
-        rw [hza.fderiv_eq]
-      exact congrArg (fun r => u z * r) hderiv.symm
-    · have huzero : u z = 0 :=
-        image_eq_zero_of_notMem_tsupport (fun htz => hzK (huK htz))
-      simp [huzero]
-  have hright : EqOn (fun z => du z * φ z) (fun z => du z * (a * φ) z) U := by
-    intro z hzU
-    by_cases hzK : z ∈ K
-    · have hza : a * φ =ᶠ[𝓝 z] φ := by
-        filter_upwards [hOOpen.mem_nhds (hKO hzK)] with y hy
-        simp only [Pi.mul_apply, haO y hy, one_mul]
-      exact congrArg (fun r => du z * r) hza.eq_of_nhds.symm
-    · have hduzero : du z = 0 :=
-        image_eq_zero_of_notMem_tsupport (fun htz => hzK (hduK htz))
-      simp [hduzero]
-  have hvalueZero : ∀ z, z ∉ U → u z * timeDerivative φ z = 0 := by
-    intro z hzU
-    have huzero : u z = 0 :=
-      image_eq_zero_of_notMem_tsupport (fun htz => hzU (hKU (huK htz)))
-    simp [huzero]
-  have hderivZero : ∀ z, z ∉ U → du z * φ z = 0 := by
-    intro z hzU
-    have hduzero : du z = 0 :=
-      image_eq_zero_of_notMem_tsupport (fun htz => hzU (hKU (hduK htz)))
-    simp [hduzero]
-  rw [← setIntegral_eq_integral_of_forall_compl_eq_zero hvalueZero,
-    ← setIntegral_eq_integral_of_forall_compl_eq_zero hderivZero,
-    setIntegral_congr_fun hU.measurableSet hleft,
-    setIntegral_congr_fun hU.measurableSet hright]
-  simpa only [Measure.restrict_univ] using hlocal
+  intro φ hφ hc _
+  simpa only [Measure.restrict_univ, timeDerivative] using weak_directional_univ (1, 0) hU hK hKU hu huK hduK φ hφ hc
 
-/-- Support localization for extension to the full spacetime carrier. -/
-theorem HasWeakVelocityPartialDerivOn.univ_of_compact_tsupport_subset
-    {d : ℕ} {U K : Set (TimeVelocity d)} {i : Fin d}
+theorem HasWeakVelocityPartialDerivOn.univ_of_compact_tsupport_subset {i : Fin d}
     {u dui : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huK : tsupport u ⊆ K) (hduiK : tsupport dui ⊆ K) :
     HasWeakVelocityPartialDerivOn Set.univ i u dui := by
-  intro φ hφ hφCompact _
-  obtain ⟨a, ha, haOne, haU⟩ := exists_smooth_cutoff_tsupport_subset hK hU hKU
-  obtain ⟨O, hOOpen, hKO, haO⟩ := eventually_nhdsSet_iff_exists.mp haOne
-  have haφ : ContDiff ℝ (⊤ : ℕ∞) (a * φ) := ha.mul hφ
-  have haφCompact : HasCompactSupport (a * φ) := by
-    simpa only [Pi.mul_def] using hφCompact.mul_left (f := a)
-  have haφU : tsupport (a * φ) ⊆ U :=
-    (tsupport_mul_subset_left (f := a) (g := φ)).trans haU
-  have hlocal := hu (a * φ) haφ haφCompact haφU
-  have hleft : EqOn (fun z => u z * velocityGradient φ z i)
-      (fun z => u z * velocityGradient (a * φ) z i) U := by
-    intro z hzU
-    by_cases hzK : z ∈ K
-    · have hza : a * φ =ᶠ[𝓝 z] φ := by
-        filter_upwards [hOOpen.mem_nhds (hKO hzK)] with y hy
-        simp only [Pi.mul_apply, haO y hy, one_mul]
-      have hderiv : velocityGradient (a * φ) z i = velocityGradient φ z i := by
-        unfold velocityGradient
-        rw [hza.fderiv_eq]
-      exact congrArg (fun r => u z * r) hderiv.symm
-    · have huzero : u z = 0 :=
-        image_eq_zero_of_notMem_tsupport (fun htz => hzK (huK htz))
-      simp [huzero]
-  have hright : EqOn (fun z => dui z * φ z) (fun z => dui z * (a * φ) z) U := by
-    intro z hzU
-    by_cases hzK : z ∈ K
-    · have hza : a * φ =ᶠ[𝓝 z] φ := by
-        filter_upwards [hOOpen.mem_nhds (hKO hzK)] with y hy
-        simp only [Pi.mul_apply, haO y hy, one_mul]
-      exact congrArg (fun r => dui z * r) hza.eq_of_nhds.symm
-    · have hduizero : dui z = 0 :=
-        image_eq_zero_of_notMem_tsupport (fun htz => hzK (hduiK htz))
-      simp [hduizero]
-  have hvalueZero : ∀ z, z ∉ U → u z * velocityGradient φ z i = 0 := by
-    intro z hzU
-    have huzero : u z = 0 :=
-      image_eq_zero_of_notMem_tsupport (fun htz => hzU (hKU (huK htz)))
-    simp [huzero]
-  have hderivZero : ∀ z, z ∉ U → dui z * φ z = 0 := by
-    intro z hzU
-    have hduizero : dui z = 0 :=
-      image_eq_zero_of_notMem_tsupport (fun htz => hzU (hKU (hduiK htz)))
-    simp [hduizero]
-  rw [← setIntegral_eq_integral_of_forall_compl_eq_zero hvalueZero,
-    ← setIntegral_eq_integral_of_forall_compl_eq_zero hderivZero,
-    setIntegral_congr_fun hU.measurableSet hleft,
-    setIntegral_congr_fun hU.measurableSet hright]
-  simpa only [Measure.restrict_univ] using hlocal
+  intro φ hφ hc _
+  simpa only [Measure.restrict_univ, velocityGradient] using
+    weak_directional_univ (0, Pi.single i 1) hU hK hKU hu huK hduiK φ hφ hc
+
+end
 
 namespace ParabolicW12Function
 
@@ -271,47 +192,34 @@ noncomputable def mulContDiffHasCompactSupport_univ
         HasWeakVelocityPartialDerivOn.univ_of_compact_tsupport_subset hU hKCompact hbU
           (jet.hasWeakVelocitySecondPartialDeriv i j) (hgradK i) (hhessianK i j) }
 
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
+  {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b) (hbCompact : HasCompactSupport b)
+  (hU : IsOpen U) (hbU : tsupport b ⊆ U)
+
 /-- Value representative of the global cutoff-product jet. -/
-@[simp] theorem mulContDiffHasCompactSupport_univ_toFun
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) (hU : IsOpen U)
-    (hbU : tsupport b ⊆ U) :
+@[simp] theorem mulContDiffHasCompactSupport_univ_toFun :
     (w.mulContDiffHasCompactSupport_univ hp hb hbCompact hU hbU).toFun =
       fun z => b z * w.toFun z := rfl
 
 /-- Time-derivative representative of the global cutoff-product jet. -/
-@[simp] theorem mulContDiffHasCompactSupport_univ_timeDeriv
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) (hU : IsOpen U)
-    (hbU : tsupport b ⊆ U) :
+@[simp] theorem mulContDiffHasCompactSupport_univ_timeDeriv :
     (w.mulContDiffHasCompactSupport_univ hp hb hbCompact hU hbU).timeDeriv =
       fun z => b z * w.timeDeriv z + w.toFun z * timeDerivative b z := rfl
 
 /-- Velocity-gradient representative of the global cutoff-product jet. -/
-@[simp] theorem mulContDiffHasCompactSupport_univ_velocityGrad
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) (hU : IsOpen U)
-    (hbU : tsupport b ⊆ U) :
+@[simp] theorem mulContDiffHasCompactSupport_univ_velocityGrad :
     (w.mulContDiffHasCompactSupport_univ hp hb hbCompact hU hbU).velocityGrad =
       fun z i => b z * w.velocityGrad z i + w.toFun z * velocityGradient b z i := rfl
 
 /-- Ordered velocity-Hessian representative of the global cutoff-product jet. -/
-@[simp] theorem mulContDiffHasCompactSupport_univ_velocityHessian
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) (hU : IsOpen U)
-    (hbU : tsupport b ⊆ U) :
+@[simp] theorem mulContDiffHasCompactSupport_univ_velocityHessian :
     (w.mulContDiffHasCompactSupport_univ hp hb hbCompact hU hbU).velocityHessian =
       fun z i j => b z * w.velocityHessian z i j + velocityGradient b z j * w.velocityGrad z i +
         w.velocityGrad z j * velocityGradient b z i + w.toFun z *
           HypoellipticAleksandrov.Parabolic.velocityHessian b z i j := rfl
+
+end
 
 end ParabolicW12Function
 

@@ -12,8 +12,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
+section
+variable {d : ℕ} (hd : 1 ≤ d)
+include hd
+
 /-- The actual total-variation bound implies a raw, dimension-sensitive moment estimate. -/
-theorem exitL1Fourier_moment_bound {d : ℕ} (hd : 1 ≤ d)
+theorem exitL1Fourier_moment_bound
     (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν]
     {C c R : ℝ} (hC : 0 ≤ C) (hc : 0 < c) (hR : 0 < R)
     (hdecay : ∀ ξ, ((exitFourier ν ξ).variation univ).toReal ≤
@@ -40,33 +44,29 @@ theorem exitL1Fourier_moment_bound {d : ℕ} (hd : 1 ≤ d)
   exact h.trans_eq (by ring)
 
 /-- A derivative of the actual inverse is controlled by the corresponding raw Fourier moment. -/
-theorem ballExitL1Inversion_derivative_le_moment
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+theorem ballExitL1Inversion_derivative_le_moment {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (j : ℕ) (y : PDE.Vec d) :
-    let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+    let ν := ballExit hd B hB v₀ hR P T
     ‖iteratedFDeriv ℝ j (exitL1Inversion ν) y‖ ≤
       ((2 * Real.pi) ^ d)⁻¹ * (2 * Real.pi * ‖exitInversePairing d‖) ^ j *
         ∫ ξ, ‖ξ‖ ^ j * ‖exitL1Fourier ν ξ‖ := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+  let ν := ballExit hd B hB v₀ hR P T
   let L := exitInversePairing d
   let F : PDE.Vec d → ContinuousMultilinearMap ℝ (fun _ : Fin j => PDE.Vec d)
       (Lp ℂ 1 (exitMarginal ν)) :=
     fun ξ => VectorFourier.fourierPowSMulRight L (exitL1Fourier ν) ξ j
   have hm (n : ℕ) (_hn : (n : ℕ∞) ≤ ⊤) :
       Integrable (fun ξ => ‖ξ‖ ^ n * ‖exitL1Fourier ν ξ‖) :=
-    ballExitL1Fourier_integrable_moments hH hLE hd hlam hLam B hB v₀ hR P T hv hT n
+    ballExitL1Fourier_integrable_moments hd B hB v₀ hR P T hv hT n
   have hi : AEStronglyMeasurable (exitL1Fourier ν) volume :=
     (continuous_exitL1Fourier ν).aestronglyMeasurable
   have hmul := VectorFourier.integrable_fourierPowSMulRight L (hm j (by simp)) hi
   have hnon : 0 ≤ ((2 * Real.pi) ^ d)⁻¹ := by positivity
-  rw [ballExitL1Inversion_iteratedFDeriv hH hLE hd hlam hLam B hB v₀ hR P T hv hT,
+  rw [ballExitL1Inversion_iteratedFDeriv hd B hB v₀ hR P T hv hT,
     norm_smul, Real.norm_eq_abs, abs_of_nonneg hnon]
   rw [mul_assoc]
   apply mul_le_mul_of_nonneg_left _ hnon
@@ -82,10 +82,10 @@ theorem ballExitL1Inversion_derivative_le_moment
       ring
     _ = _ := by rw [integral_const_mul]
 
+end
+
 /-- Structural constants precede coefficients and pole data in the raw derivative bound. -/
 theorem ballExitL1Inversion_uniform_derivative_bound
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C_m : ℕ → ℝ, (∀ j, 0 ≤ C_m j) ∧
       ∀ (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
@@ -95,10 +95,10 @@ theorem ballExitL1Inversion_uniform_derivative_bound
       T.1 - P.1.time = R ^ 2 / 8 →
       ∀ (j : ℕ) (y : PDE.Vec d),
         ‖iteratedFDeriv ℝ j
-          (exitL1Inversion (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)) y‖ ≤
+          (exitL1Inversion (ballExit hd B hB v₀ hR P T)) y‖ ≤
           C_m j * R ^ (-3 * ((d : ℝ) + (j : ℝ))) := by
   obtain ⟨C, c, hC, hc, hdecay⟩ :=
-    ballExit_fourier_decay hH hLE d hd lam Lam hlam hLam
+    ballExit_fourier_decay d hd lam Lam hlam hLam
   let A (j : ℕ) := ((2 * Real.pi) ^ d)⁻¹ *
     (2 * Real.pi * ‖exitInversePairing d‖) ^ j
   let D (j : ℕ) := A j * C * exitFrequencyMoment (d := d) c j
@@ -106,12 +106,12 @@ theorem ballExitL1Inversion_uniform_derivative_bound
   refine ⟨D, fun j => mul_nonneg (mul_nonneg (hA j) hC.le)
     (exitFrequencyMoment_nonneg c j), ?_⟩
   intro B hB v₀ R hR P T hv hT j y
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
-  have hi := ballExitL1Fourier_integrable_moments hH hLE hd hlam hLam B hB v₀ hR
+  let ν := ballExit hd B hB v₀ hR P T
+  have hi := ballExitL1Fourier_integrable_moments hd B hB v₀ hR
     P T hv hT j
   have hb := exitL1Fourier_moment_bound hd ν hC.le hc hR
     (hdecay B hB v₀ R hR P T hv hT) j hi
-  have hdv := ballExitL1Inversion_derivative_le_moment hH hLE hd hlam hLam B hB v₀ hR
+  have hdv := ballExitL1Inversion_derivative_le_moment hd B hB v₀ hR
     P T hv hT j y
   have hp : ((R ^ 3) ^ (d + j))⁻¹ = R ^ (-3 * ((d : ℝ) + (j : ℝ))) := by
     rw [neg_mul, Real.rpow_neg hR.le]

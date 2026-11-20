@@ -19,8 +19,10 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
-private theorem square_integral_entry_le_sum {d : ℕ}
-    {S : Set (TimeVelocity d)} (G : TimeVelocity d → PDE.Vec d)
+section
+variable {d : ℕ} {S : Set (TimeVelocity d)}
+
+private theorem square_integral_entry_le_sum (G : TimeVelocity d → PDE.Vec d)
     (hG : ∀ j, MemLp (fun z => G z j) 2 (timeVelocityVolumeOn S)) (j : Fin d) :
     (∫ z in S, G z j ^ 2) ≤ ∫ z in S, ∑ k, G z k ^ 2 := by
   classical
@@ -31,8 +33,7 @@ private theorem square_integral_entry_le_sum {d : ℕ}
   exact Eventually.of_forall (fun z =>
     Finset.single_le_sum (fun k _ => sq_nonneg _) (Finset.mem_univ j))
 
-private theorem square_integral_hessian_entry_le_sum {d : ℕ}
-    {S : Set (TimeVelocity d)} (H : TimeVelocity d → PDE.Mat d)
+private theorem square_integral_hessian_entry_le_sum (H : TimeVelocity d → PDE.Mat d)
     (hH : ∀ i j, MemLp (fun z => H z i j) 2 (timeVelocityVolumeOn S)) (i j : Fin d) :
     (∫ z in S, H z i j ^ 2) ≤ ∫ z in S, ∑ k, ∑ l, H z k l ^ 2 := by
   classical
@@ -45,6 +46,8 @@ private theorem square_integral_hessian_entry_le_sum {d : ℕ}
     (fun l _ => sq_nonneg _) (Finset.mem_univ j)).trans
     (Finset.single_le_sum (fun k _ => Finset.sum_nonneg (fun l _ => sq_nonneg _))
       (Finset.mem_univ i)))
+
+end
 
 /-- The literal weight-two seed is uniformly bounded by outer value energy. -/
 theorem exists_uniform_classical_seed_constant {d : ℕ}

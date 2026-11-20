@@ -27,12 +27,14 @@ noncomputable def localizedSpatialDifferenceQuotient
     (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) : PDE.Vec d → ℝ :=
   fun y => η y * ((f (y + h • PDE.basisVec k) - f y) / h)
 
+section
+variable {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+  (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ)
+include inner outer K η k h f
+
 /-- The formal localized energy test `-Δ_{k,-h}(η² Δ_{k,h} f)`, totalized
 at zero increment. This is a pointwise formula, not an `H10` adjoint. -/
-noncomputable def localizedSpatialDifferenceQuotientEnergyTest
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) : PDE.Vec d → ℝ :=
+noncomputable def localizedSpatialDifferenceQuotientEnergyTest : PDE.Vec d → ℝ :=
   fun y =>
     (η (y - h • PDE.basisVec k) *
           HypoellipticAleksandrov.Parabolic.Dirichlet.localizedSpatialDifferenceQuotient η k h f
@@ -40,19 +42,21 @@ noncomputable def localizedSpatialDifferenceQuotientEnergyTest
         η y * localizedSpatialDifferenceQuotient η k h f y) / h
 
 /-- The literal value of the localized quotient. -/
-@[simp] theorem localizedSpatialDifferenceQuotient_apply
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) (y : PDE.Vec d) :
+@[simp] theorem localizedSpatialDifferenceQuotient_apply (y : PDE.Vec d) :
     localizedSpatialDifferenceQuotient η k h f y =
       η y * ((f (y + h • PDE.basisVec k) - f y) / h) :=
   rfl
 
+end
+
+section
+variable {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+
+section
+variable (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
+
 /-- The literal value of the localized formal energy test. -/
-@[simp] theorem localizedSpatialDifferenceQuotientEnergyTest_apply
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) (y : PDE.Vec d) :
+@[simp] theorem localizedSpatialDifferenceQuotientEnergyTest_apply (f : PDE.Vec d → ℝ) (y : PDE.Vec d) :
     localizedSpatialDifferenceQuotientEnergyTest η k h f y =
       (η (y - h • PDE.basisVec k) *
             localizedSpatialDifferenceQuotient η k h f
@@ -61,10 +65,7 @@ noncomputable def localizedSpatialDifferenceQuotientEnergyTest
   rfl
 
 /-- The localized quotient is additive in its function argument. -/
-theorem localizedSpatialDifferenceQuotient_add
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f g : PDE.Vec d → ℝ) :
+theorem localizedSpatialDifferenceQuotient_add (f g : PDE.Vec d → ℝ) :
     localizedSpatialDifferenceQuotient η k h (f + g) =
       localizedSpatialDifferenceQuotient η k h f +
         localizedSpatialDifferenceQuotient η k h g := by
@@ -72,9 +73,10 @@ theorem localizedSpatialDifferenceQuotient_add
   simp only [localizedSpatialDifferenceQuotient_apply, Pi.add_apply]
   ring
 
+end
+
 /-- The localized quotient commutes with constant scalar multiplication. -/
 theorem localizedSpatialDifferenceQuotient_smul
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
     (c : ℝ) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) :
     localizedSpatialDifferenceQuotient η k h (c • f) =
@@ -83,9 +85,13 @@ theorem localizedSpatialDifferenceQuotient_smul
   simp only [localizedSpatialDifferenceQuotient_apply, Pi.smul_apply, smul_eq_mul]
   ring
 
+end
+
+section
+variable {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+
 /-- The localized formal energy test is additive in its function argument. -/
 theorem localizedSpatialDifferenceQuotientEnergyTest_add
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f g : PDE.Vec d → ℝ) :
     localizedSpatialDifferenceQuotientEnergyTest η k h (f + g) =
@@ -98,7 +104,6 @@ theorem localizedSpatialDifferenceQuotientEnergyTest_add
 
 /-- The localized formal energy test commutes with constant scalars. -/
 theorem localizedSpatialDifferenceQuotientEnergyTest_smul
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
     (c : ℝ) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) :
     localizedSpatialDifferenceQuotientEnergyTest η k h (c • f) =
@@ -110,15 +115,14 @@ theorem localizedSpatialDifferenceQuotientEnergyTest_smul
 
 /-- Smoothness is preserved by the localized quotient. -/
 theorem ContDiff.localizedSpatialDifferenceQuotient
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
     {n : ℕ∞} {f : PDE.Vec d → ℝ} (hf : ContDiff ℝ n f)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) :
     ContDiff ℝ n (localizedSpatialDifferenceQuotient η k h f) := by
-  change ContDiff ℝ n
-    (fun y => η y * ((f (y + h • PDE.basisVec k) - f y) / h))
   exact (η.smooth.of_le (by simp)).mul
     ((hf.comp (contDiff_id.add contDiff_const)).sub hf |>.div_const h)
+
+end
 
 /-- Smoothness is preserved by the localized formal energy test. -/
 theorem ContDiff.localizedSpatialDifferenceQuotientEnergyTest
@@ -137,8 +141,6 @@ theorem ContDiff.localizedSpatialDifferenceQuotientEnergyTest
             η k h f y) / h)
   have hA : ContDiff ℝ n
       (HypoellipticAleksandrov.Parabolic.Dirichlet.localizedSpatialDifferenceQuotient η k h f) := by
-    change ContDiff ℝ n
-      (fun y => η y * ((f (y + h • PDE.basisVec k) - f y) / h))
     exact (η.smooth.of_le (by simp)).mul
       ((hf.comp (contDiff_id.add contDiff_const)).sub hf |>.div_const h)
   exact (((η.smooth.of_le (by simp)).comp (contDiff_id.sub contDiff_const)).mul
@@ -147,29 +149,30 @@ theorem ContDiff.localizedSpatialDifferenceQuotientEnergyTest
     ((η.smooth.of_le (by simp)).mul
       hA)).div_const h
 
+section
+variable {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+  (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ)
+
 /-- The cutoff factor gives the localized quotient compact support. -/
-theorem localizedSpatialDifferenceQuotient_hasCompactSupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) :
+theorem localizedSpatialDifferenceQuotient_hasCompactSupport :
     HasCompactSupport (localizedSpatialDifferenceQuotient η k h f) := by
   change HasCompactSupport
     (fun y => η y * ((f (y + h • PDE.basisVec k) - f y) / h))
   exact η.hasCompactSupport.mul_right
 
-private theorem localizedEnergyFactor_hasCompactSupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) :
+private theorem localizedEnergyFactor_hasCompactSupport :
     HasCompactSupport (fun y =>
       η y * localizedSpatialDifferenceQuotient η k h f y) :=
   η.hasCompactSupport.mul_right
 
+end
+
+section
+variable {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+  (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ)
+
 /-- The formal energy test has compact support without a premise on `f`. -/
-theorem localizedSpatialDifferenceQuotientEnergyTest_hasCompactSupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) :
+theorem localizedSpatialDifferenceQuotientEnergyTest_hasCompactSupport :
     HasCompactSupport
       (localizedSpatialDifferenceQuotientEnergyTest η k h f) := by
   let z : PDE.Vec d := h • PDE.basisVec k
@@ -188,10 +191,7 @@ theorem localizedSpatialDifferenceQuotientEnergyTest_hasCompactSupport
   exact (hqshift.sub hq).smul_left
 
 /-- The localized quotient support lies in the cutoff support. -/
-theorem tsupport_localizedSpatialDifferenceQuotient_subset
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) :
+theorem tsupport_localizedSpatialDifferenceQuotient_subset :
     tsupport (localizedSpatialDifferenceQuotient η k h f) ⊆
       tsupport η.toFun := by
   change tsupport (fun y => η y *
@@ -200,10 +200,7 @@ theorem tsupport_localizedSpatialDifferenceQuotient_subset
 
 /-- The formal energy-test support lies in the cutoff support and its forward
 translate by the signed increment. -/
-theorem tsupport_localizedSpatialDifferenceQuotientEnergyTest_subset
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ) :
+theorem tsupport_localizedSpatialDifferenceQuotientEnergyTest_subset :
     tsupport (localizedSpatialDifferenceQuotientEnergyTest η k h f) ⊆
       tsupport η.toFun ∪
         (fun y : PDE.Vec d => y + h • PDE.basisVec k) ''
@@ -236,17 +233,19 @@ theorem tsupport_localizedSpatialDifferenceQuotientEnergyTest_subset
     abel
   · exact Or.inl (hq hy)
 
+end
+
+section
+variable {d : ℕ}
+
 /-- Bundle the formal energy test as a compactly supported smooth test on a
 raw set using the exact forward signed collar. -/
-noncomputable def localizedSpatialDifferenceQuotientEnergyWeakTest
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+noncomputable def localizedSpatialDifferenceQuotientEnergyWeakTest {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f : PDE.Vec d → ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω) :
+    (hηshift : η.ShiftMapsInto k h Ω) :
     PDE.WeakTestFunction Ω where
   toFun := localizedSpatialDifferenceQuotientEnergyTest η k h f
   contDiff := ContDiff.localizedSpatialDifferenceQuotientEnergyTest hf η k h
@@ -259,8 +258,7 @@ noncomputable def localizedSpatialDifferenceQuotientEnergyWeakTest
       exact hηshift hx
 
 /-- The global discrete integration-by-parts identity for continuous inputs. -/
-theorem integral_mul_localizedSpatialDifferenceQuotientEnergyTest_eq
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+theorem integral_mul_localizedSpatialDifferenceQuotientEnergyTest_eq {inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f g : PDE.Vec d → ℝ)
     (hf : Continuous f) (hg : Continuous g) :
@@ -318,15 +316,12 @@ theorem integral_mul_localizedSpatialDifferenceQuotientEnergyTest_eq
 
 /-- The discrete pivot restricted to an arbitrary raw set containing the
 forward cutoff collar. -/
-theorem setIntegral_mul_localizedSpatialDifferenceQuotientEnergyTest_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+theorem setIntegral_mul_localizedSpatialDifferenceQuotientEnergyTest_eq {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (f g : PDE.Vec d → ℝ)
     (hf : Continuous f) (hg : Continuous g)
     (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω) :
+    (hηshift : η.ShiftMapsInto k h Ω) :
     (∫ y in Ω, f y *
         localizedSpatialDifferenceQuotientEnergyTest η k h g y ∂volume) =
       ∫ y in Ω, localizedSpatialDifferenceQuotient η k h f y *
@@ -360,5 +355,7 @@ theorem setIntegral_mul_localizedSpatialDifferenceQuotientEnergyTest_eq
           (tsupport_localizedSpatialDifferenceQuotient_subset η k h f hsupport))
       rw [image_eq_zero_of_notMem_tsupport hnot]
       ring
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

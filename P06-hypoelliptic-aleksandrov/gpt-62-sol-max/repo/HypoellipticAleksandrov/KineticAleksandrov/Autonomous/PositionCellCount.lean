@@ -3,14 +3,14 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionCellCountBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionCellsSlab
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitMassCanonical
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnTime
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TimeBinCountReturnBridge
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TimeBinCount
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStartSlabBound
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreStartBandVisits
 
 /-! # Position-cell concentration from the literal source start and time-count conclusions
 
-The two conditional inputs are exactly the source slab start inequality and
-the source time-bin count assigned to AU-14a. Box concentration is derived
+The proof combines the slab start bound and the time-bin count. Box concentration is derived
 from the return-time chain relative to its explicit preliminary P6 input.
 -/
 
@@ -19,61 +19,26 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
-/-- Every canonical observed visit count is finite, with an arbitrary positive horizon. -/
-theorem visitsFromZero_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (P : Point)
-    (hbar : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
-    (hT : 0 < T) (hvel : P.velocity 0 ∈ closure c.entrance) :
-    IsFiniteMeasure (visitsFromZero hH hLE hlam hLam A c J T P) :=
-  enlargedVisitStarts_isFiniteMeasure hH hLE hlam hLam A c J (1 + T) T P
-    (by linarith) hT (by nlinarith) hbar hJ hvel
-
 /-- Source position concentration, including the initial atom and the truncated final bin. -/
-theorem position_cell_count_of_start_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+theorem position_cell_count
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ)
-    (ha : enlargedAdmissibleAlpha lam Lam hlam hLam alpha)
-    (hp6 : SmoothAutonomousP6Statement lam Lam)
-    (hTime : ∃ Ct : ℝ, 0 < Ct ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
-      (J : Interval) (T : ℝ) (P : Point),
-      |c.vbar| = 2 * c.r → closure c.active ⊆ J.carrier → 0 < T →
-      P.velocity 0 ∈ closure c.entrance → ∀ j : ℕ,
-        enlargedTimeVisitMass (visitsFromZero hH hLE hlam hLam A c J T P) c P.time j ≤
-          Ct * (1 + (j : ℝ)) ^ (-1 / 2 : ℝ))
-    (hStart : ∃ A0 Cs : ℝ, 0 < A0 ∧ 0 < Cs ∧
-      ∀ (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (P : Point),
-      |c.vbar| = 2 * c.r → closure c.active ⊆ J.carrier → 0 < T →
-      P.velocity 0 ∈ closure c.entrance → ∀ (a b : ℝ) (k : ℤ),
-      0 ≤ a → a < b → b - a ≤ c.r ^ 2 → b ≤ T →
-      enlargedPositionSlabMass (visitsFromZero hH hLE hlam hLam A c J T P)
-        c P.time 0 a b k ≤ Cs *
-          ((kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal b)
-            (P.position 0, P.velocity 0)
-              (box A0 c.r (((k : ℝ) + 1 / 2) * c.r ^ 3))).toReal +
-           c.r ^ (-2 : ℤ) * ∫ t in Ioc a b,
-             (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t)
-               (P.position 0, P.velocity 0)
-                 (box A0 c.r (((k : ℝ) + 1 / 2) * c.r ^ 3))).toReal)) :
+    (ha : enlargedAdmissibleAlpha lam Lam hlam hLam alpha):
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (J : Interval) (T : ℝ) (P : Point),
       |c.vbar| = 2 * c.r → closure c.active ⊆ J.carrier → 0 < T →
       P.velocity 0 ∈ closure c.entrance → ∀ (j : ℕ) (k : ℤ),
-        enlargedPositionVisitMass (visitsFromZero hH hLE hlam hLam A c J T P)
+        enlargedPositionVisitMass (visitsFromZero A c J T P)
           c P.time 0 j k ≤ C * (1 + (j : ℝ)) ^ (-(2 - alpha) / 2) := by
-  obtain ⟨Ct, hCt, htime⟩ := hTime
-  obtain ⟨A0, Cs, hA0, hCs, hstart⟩ := hStart
-  obtain ⟨B, hB, hbox⟩ := box_concentration_of_return_time hH hLE lam Lam hlam hLam
-    alpha ha.1 ha.2 A0 hA0 (return_time_ambient_of_scalar hH hLE hlam hLam
-      (return_time hH hLE lam Lam hlam hLam hp6))
+  obtain ⟨Ct, hCt, htime⟩ := timeBinCount_holds hlam hLam
+  obtain ⟨A0, Cs, hA0, hCs, hstart⟩ := positionStartSlabBound_holds lam Lam hlam hLam
+  obtain ⟨B, hB, hbox⟩ := box_concentration lam Lam hlam hLam alpha ha.1 ha.2 A0 hA0
   refine ⟨Ct + 2 * Cs * B, by positivity, ?_⟩
   intro A c J T P hbar hJ hT hvel j k
-  let nu := visitsFromZero hH hLE hlam hLam A c J T P
+  let nu := visitsFromZero A c J T P
   have : IsFiniteMeasure nu :=
-    visitsFromZero_isFiniteMeasure hH hLE hlam hLam A c J T P hbar hJ hT hvel
+    visitsFromZero_isFiniteMeasure A c J T P hbar hJ hT hvel
   have hs : ∀ᵐ p ∂nu, p.time < P.time + T :=
-    (enlargedVisitStarts_ae_support hH hLE hlam hLam A c J P.time (P.time + T)
+    (enlargedVisitStarts_ae_support A c J P.time (P.time + T)
       P le_rfl (by linarith)).mono fun _ hp => hp.2.1
   have hdecay : 0 ≤ (1 + (j : ℝ)) ^ (-(2 - alpha) / 2) :=
     Real.rpow_nonneg (by positivity) _
@@ -95,12 +60,12 @@ theorem position_cell_count_of_start_time
         have h := min_le_left (((j : ℝ) + 1) * c.r ^ 2) T
         dsimp only [a, b]
         nlinarith
-      let E := fullSpaceEvolution hH hLE hlam hLam A
+      let E := fullSpaceEvolution A
       let Y := ((k : ℝ) + 1 / 2) * c.r ^ 3
       let f := fun t => (kernelXV E (Real.toNNReal t)
         (P.position 0, P.velocity 0) (box A0 c.r Y)).toReal
       have hz : |P.velocity 0| ≤ 3 * c.r := by
-        have h := (c.active_abs_bounds (enlarged_closedEntrance_subset_active c hvel)).2
+        have h := (c.active_abs_bounds (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.enlargedEntrance_subset_active c hvel)).2
         rw [hbar] at h
         linarith
       have hf (t : ℝ) (ht : 0 ≤ t) : f t ≤ B * (1 + t / c.r ^ 2) ^ (-gamma alpha / 2) := by
@@ -109,7 +74,7 @@ theorem position_cell_count_of_start_time
       have hslab := position_concentration_slab_le f B (gamma alpha) c.r b j hB.le
         (by dsimp only [gamma]; linarith [ha.2]) c.positive hab.le hlen
         (position_box_probability_integrable E (P.position 0, P.velocity 0) A0 c.r Y a b) hf
-      have hsource := hstart A c J T P hbar hJ hT hvel a b k ha0 hab hlen (min_le_right _ _)
+      have hsource := hstart A c J T P hbar hJ hT hvel a b k ha0 hab (min_le_right _ _)
       rw [enlargedPositionVisitMass_eq_truncated_slab nu c P.time 0 T j k hj hs]
       have h := hsource.trans (mul_le_mul_of_nonneg_left hslab hCs.le)
       apply h.trans

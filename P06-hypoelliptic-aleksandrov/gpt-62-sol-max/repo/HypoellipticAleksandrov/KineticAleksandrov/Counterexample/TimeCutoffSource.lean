@@ -1,6 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoffClassical
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoff
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.FlatteningSourceProfile
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.BarrierPackedJets
 import Mathlib.Tactic.Ring
 
@@ -26,10 +27,13 @@ theorem contraction_sub_right {d : ℕ} (A B C : PDE.Mat d) :
       matrixContraction A B - matrixContraction A C := by
   simp only [matrixContraction, mul_sub, Finset.sum_sub_distrib]
 
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha)
+include alpha h
+
 /-- The cutoff source representative uses the actual first and second weak jets.
 The time derivative of the stationary profile vanishes. -/
-def timeCutoffSourceRepresentative {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) (P : KineticPoint d) : ℝ :=
+def timeCutoffSourceRepresentative (r mu R : ℝ) (P : KineticPoint d) : ℝ :=
   let q := (P.position, P.velocity)
   let s := selectedFlatProfile h r q - barrier mu R P
   let w := flatProfileVelocityJet h r q - kineticVelocityGradient (barrier mu R) P
@@ -41,8 +45,7 @@ def timeCutoffSourceRepresentative {d : ℕ} {alpha : ℝ}
       deriv (deriv timeCutoffTheta) s * w i * w k)
 
 /-- The exact source identity has a nonpositive quadratic correction. -/
-theorem timeCutoff_source_identity_of_profile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R t : ℝ) :
+theorem timeCutoff_source_identity_of_profile (r mu R t : ℝ) :
     ∀ᵐ q ∂volume,
       timeCutoffSourceRepresentative h r mu R ⟨t, q.1, q.2⟩ =
         deriv timeCutoffTheta (selectedFlatProfile h r q - barrier mu R ⟨t, q.1, q.2⟩) *
@@ -67,8 +70,7 @@ theorem timeCutoff_source_identity_of_profile {d : ℕ} {alpha : ℝ}
     (deriv (deriv timeCutoffTheta)
       (selectedFlatProfile h r q - barrier mu R ⟨t, q.1, q.2⟩))
   simp only [Pi.sub_apply, Prod.mk.eta] at he ⊢
-  rw [he, contraction_sub_right]
-  rw [backwardOperator_apply, barrier_positionGradient]
+  rw [he, contraction_sub_right, backwardOperator_apply, barrier_positionGradient]
   simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero, add_zero,
     fullKineticCoefficientAt_apply] at hq ⊢
   have hdot (a : ℝ) :
@@ -82,17 +84,19 @@ theorem timeCutoff_source_identity_of_profile {d : ℕ} {alpha : ℝ}
   ring
 
 /-- The actual selected stationary source is nonnegative almost everywhere. -/
-theorem flatSource_nonneg_ae_of_profile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
+theorem flatSource_nonneg_ae_of_profile (r : ℝ) (hr : 0 < r) :
     ∀ᵐ q ∂volume, 0 ≤ flatSource (profileMatrix h) (profileFunction h)
       flatteningPsi alpha r q := by
-  obtain ⟨hlam, _, _, _, _, hA, _⟩ := selectedProfile_spec h
+  have hspec := selectedProfile_spec h
+  have hlam := hspec.lower_pos
+  have hA := hspec.elliptic
   filter_upwards [flatSource_ae_eq_jet_of_profile h r] with q hq
   rw [hq]
-  unfold flatSourceWithJet
   exact mul_nonneg
     (mul_nonneg (Real.rpow_pos_of_pos hr _).le (flatteningPsi_deriv2_nonneg _))
     (quadratic_nonneg_of_loewner _ hlam.le _ (hA q).1 _)
+
+end
 
 /-- The favorable convexity term and barrier sign bound the weak source by the shell source. -/
 theorem timeCutoff_source_le_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
@@ -102,7 +106,9 @@ theorem timeCutoff_source_le_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
       timeCutoffSourceRepresentative h r ((d : ℝ) * profileLowerEllipticity h / R ^ 2) R
         ⟨t, q.1, q.2⟩ ≤
         flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q := by
-  obtain ⟨hlam, _, _, _, _, hA, _⟩ := selectedProfile_spec h
+  have hspec := selectedProfile_spec h
+  have hlam := hspec.lower_pos
+  have hA := hspec.elliptic
   let mu := (d : ℝ) * profileLowerEllipticity h / R ^ 2
   filter_upwards [timeCutoff_source_identity_of_profile h r mu R t,
     flatSource_nonneg_ae_of_profile h r hr] with q he hf
@@ -117,7 +123,6 @@ theorem timeCutoff_source_le_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
     (selectedFlatProfile h r q - barrier mu R ⟨t, q.1, q.2⟩)) hquad
   have hfirst := mul_le_mul_of_nonneg_left (sub_le_self
     (flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q) hb) htheta.1
-  have hlast := mul_le_of_le_one_left hf htheta.2
-  exact (sub_le_self _ hterm).trans (hfirst.trans hlast)
+  exact (sub_le_self _ hterm).trans (hfirst.trans (mul_le_of_le_one_left hf htheta.2))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -60,37 +60,28 @@ theorem intervalHeat_squared_length {lam ℓ : ℝ} (hlam : 0 < lam) (hℓ : 0 <
 
 /-- Every Fourier mode contracts over one squared-length killing block. -/
 theorem interval_killing_block
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam m Lb a c : ℝ} (hac : a < c)
-    (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1)
-    (hs : SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b)
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (hr : RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-      (zIndependentCoefficient B) b S K)
-    (σ : ℝ) (ξ : PDE.Vec 1) (v : PDE.oneDimensionalAxisBox a c)
-    (ht : σ ≤ σ + (c - a) ^ 2) :
-    TV (intervalFourierKernel K σ (σ + (c - a) ^ 2) ht ξ v) ≤
+    {lam Lam m Lb : ℝ} (E : IntervalEvolution lam Lam m Lb)
+    (σ : ℝ) (ξ : PDE.Vec 1) (v : E.domain)
+    (ht : σ ≤ σ + (E.length) ^ 2) :
+    TV (intervalFourierKernel E.kernel σ (σ + (E.length) ^ 2) ht ξ v) ≤
       intervalErf (1 / (4 * Real.sqrt lam)) := by
-  have hlen : 0 < c - a := sub_pos.mpr hac
-  have hT : 0 < (c - a) ^ 2 := sq_pos_of_pos hlen
-  have hv : v.1 ∈ movingDomain (PDE.oneDimensionalAxisBox a c) stationary σ := by
+  have hlen : 0 < E.length := sub_pos.mpr E.lt
+  have hT : 0 < (E.length) ^ 2 := sq_pos_of_pos hlen
+  have hv : v.1 ∈ movingDomain (E.domain) stationary σ := by
     simpa only [movingDomain_stationary] using v.2
-  have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
-  have htv := interval_fourier_tv_le_mass hJ K B hp σ (σ + (c - a) ^ 2) ht
-    v.1 0 ξ hv _ (intervalFourierKernel_spec K _ _ ht ξ v)
-  have hkill := interval_killing hH hLE hac B b hs hJ S K hr σ (σ + (c - a) ^ 2)
+  have hp := (E.clauses).2.1
+  have htv := interval_fourier_tv_le_mass E.measurableSet E.kernel E.coefficient hp σ (σ + (E.length) ^ 2) ht
+    v.1 0 ξ hv _ (intervalFourierKernel_spec E.kernel _ _ ht ξ v)
+  have hkill := interval_killing E σ (σ + (E.length) ^ 2)
     (lt_add_of_pos_right σ hT) v.1 hv
-  have he : σ + (c - a) ^ 2 - σ = (c - a) ^ 2 := by ring
+  have he : σ + (E.length) ^ 2 - σ = (E.length) ^ 2 := by ring
   rw [he] at hkill
-  have hd : min (v.1 0 - a) (c - v.1 0) ≤ (c - a) / 2 := by
-    rcases le_total (v.1 0 - a) (c - v.1 0) with h | h
+  have hd : min (v.1 0 - E.left) (E.right - v.1 0) ≤ (E.length) / 2 := by
+    rcases le_total (v.1 0 - E.left) (E.right - v.1 0) with h | h
     · rw [min_eq_left h]; linarith
     · rw [min_eq_right h]; linarith
-  have hm := intervalHeat_mono_distance hs.1.1 hT hd
-  rw [intervalHeat_squared_length hs.1.1 hlen] at hm
+  have hm := intervalHeat_mono_distance E.setting.1.1 hT hd
+  rw [intervalHeat_squared_length E.setting.1.1 hlen] at hm
   exact htv.trans (hkill.trans hm)
 
 /-- The killing-block contraction factor belongs to `(0,1)`. -/

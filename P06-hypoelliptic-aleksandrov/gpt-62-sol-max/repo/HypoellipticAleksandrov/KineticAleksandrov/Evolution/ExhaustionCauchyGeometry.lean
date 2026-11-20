@@ -20,8 +20,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 open scoped Topology
 
+section
+variable (n : ℕ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R)
+include hr hR
+
 /-- The actual straightened ellipsoid is open. -/
-theorem isOpen_straightenedEllipsoid (n : ℕ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) :
+theorem isOpen_straightenedEllipsoid :
     IsOpen (openEllipsoid (straightenedEllipsoidMatrix n r R)) := by
   have he : openEllipsoid (straightenedEllipsoidMatrix n r R) =
       {x | PDE.vecNormSq (spatialY x) / r ^ 2 +
@@ -35,7 +39,7 @@ theorem isOpen_straightenedEllipsoid (n : ℕ) {r R : ℝ} (hr : 0 < r) (hR : 0 
 
 /-- The actual straightened ellipsoid is bounded in the inherited topology; its geometric
 characterization still uses the Euclidean block norms. -/
-theorem isBounded_straightenedEllipsoid (n : ℕ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) :
+theorem isBounded_straightenedEllipsoid :
     Bornology.IsBounded (openEllipsoid (straightenedEllipsoidMatrix n r R)) := by
   let H := terminalCoordinateHomeomorph (0 : PDE.Vec n)
   have hc : IsCompact (H ⁻¹'
@@ -60,5 +64,7 @@ theorem isBounded_straightenedEllipsoid (n : ℕ) {r R : ℝ} (hr : 0 < r) (hR :
     Metric.closedBall (0 : PDE.Vec n) r ×ˢ Metric.closedBall (0 : PDE.Vec n) R
   simp only [zero_add, mem_prod]
   exact ⟨hball hr _ hY, hball hR _ hZ⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

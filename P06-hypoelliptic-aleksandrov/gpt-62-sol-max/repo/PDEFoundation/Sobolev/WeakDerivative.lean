@@ -33,14 +33,16 @@ instance {d : ℕ} {U : Set (Vec d)} :
     CoeFun (WeakTestFunction U) (fun _ => Vec d → ℝ) where
   coe φ := φ.toFun
 
+section
+variable {d : ℕ}
+
 /-- The classical `i`th derivative of a bundled test function. -/
-noncomputable def WeakTestFunction.partialDeriv
-    {d : ℕ} {U : Set (Vec d)}
+noncomputable def WeakTestFunction.partialDeriv {U : Set (Vec d)}
     (φ : WeakTestFunction U) (i : Fin d) (x : Vec d) : ℝ :=
   (fderiv ℝ φ.toFun x) (basisVec i)
 
 /-- `gi` is the `i`th weak derivative of `u` on `U`. -/
-def HasWeakPartialDerivOn {d : ℕ} (U : Set (Vec d)) (i : Fin d)
+def HasWeakPartialDerivOn (U : Set (Vec d)) (i : Fin d)
     (u gi : Vec d → ℝ) : Prop :=
   ∀ φ : Vec d → ℝ,
     ContDiff ℝ (⊤ : ℕ∞) φ →
@@ -50,12 +52,11 @@ def HasWeakPartialDerivOn {d : ℕ} (U : Set (Vec d)) (i : Fin d)
       -∫ x in U, gi x * φ x ∂MeasureTheory.volume
 
 /-- `Du` is a coordinate weak gradient of `u` on `U`. -/
-def HasWeakGradientOn {d : ℕ}
+def HasWeakGradientOn
     (U : Set (Vec d)) (u : Vec d → ℝ) (Du : Vec d → Vec d) : Prop :=
   ∀ i : Fin d, HasWeakPartialDerivOn U i u (fun x => Du x i)
 
-theorem hasWeakPartialDerivOn_iff_forall_testFunction
-    {d : ℕ} {U : Set (Vec d)} {i : Fin d}
+theorem hasWeakPartialDerivOn_iff_forall_testFunction {U : Set (Vec d)} {i : Fin d}
     {u gi : Vec d → ℝ} :
     HasWeakPartialDerivOn U i u gi ↔
       ∀ φ : WeakTestFunction U,
@@ -70,6 +71,8 @@ theorem hasWeakPartialDerivOn_iff_forall_testFunction
         contDiff := hφSmooth
         hasCompactSupport := hφCompact
         tsupport_subset := hφSupport }
+
+end
 
 namespace HasWeakPartialDerivOn
 
@@ -159,13 +162,15 @@ theorem ae_eq {d : ℕ} {U : Set (Vec d)} (hU : IsOpen U)
 
 end HasWeakPartialDerivOn
 
-theorem HasWeakPartialDerivOn.restrict {d : ℕ}
-    {U V : Set (Vec d)} (_hVOpen : IsOpen V) (hVU : V ⊆ U)
+section
+variable {d : ℕ} {U V : Set (Vec d)}
+
+theorem HasWeakPartialDerivOn.restrict (_hVOpen : IsOpen V) (hVU : V ⊆ U)
     {i : Fin d} {u gi : Vec d → ℝ}
     (h : HasWeakPartialDerivOn U i u gi) :
     HasWeakPartialDerivOn V i u gi := by
   intro φ hφSmooth hφCompact hφSupport
-  have hφSupportU : tsupport φ ⊆ U := hφSupport.trans hVU
+  have hφSupportU := hφSupport.trans hVU
   have hWeak := h φ hφSmooth hφCompact hφSupportU
   have hValueZero :
       ∀ x, x ∉ V → u x * (fderiv ℝ φ x) (basisVec i) = 0 := by
@@ -196,16 +201,19 @@ theorem HasWeakPartialDerivOn.restrict {d : ℕ}
         hGradZeroU,
     hWeak]
 
-theorem HasWeakGradientOn.restrict {d : ℕ}
-    {U V : Set (Vec d)} (hVOpen : IsOpen V) (hVU : V ⊆ U)
+theorem HasWeakGradientOn.restrict (hVOpen : IsOpen V) (hVU : V ⊆ U)
     {u : Vec d → ℝ} {Du : Vec d → Vec d}
     (h : HasWeakGradientOn U u Du) :
     HasWeakGradientOn V u Du := by
   intro i
   exact (h i).restrict hVOpen hVU
 
-theorem HasWeakPartialDerivOn.of_contDiff {d : ℕ}
-    {U : Set (Vec d)} {i : Fin d} {f : Vec d → ℝ}
+end
+
+section
+variable {d : ℕ} {U : Set (Vec d)}
+
+theorem HasWeakPartialDerivOn.of_contDiff {i : Fin d} {f : Vec d → ℝ}
     (hf : ContDiff ℝ 1 f) :
     HasWeakPartialDerivOn U i f
       (fun x => (fderiv ℝ f x) (basisVec i)) := by
@@ -249,12 +257,13 @@ theorem HasWeakPartialDerivOn.of_contDiff {d : ℕ}
     rw [Filter.EventuallyEq.fderiv_eq hφEq]
     simp
 
-theorem HasWeakGradientOn.of_contDiff {d : ℕ}
-    {U : Set (Vec d)} {f : Vec d → ℝ}
+theorem HasWeakGradientOn.of_contDiff {f : Vec d → ℝ}
     (hf : ContDiff ℝ 1 f) :
     HasWeakGradientOn U f
       (fun x i => (fderiv ℝ f x) (basisVec i)) := by
   intro i
   exact HasWeakPartialDerivOn.of_contDiff hf
+
+end
 
 end PDE

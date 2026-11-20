@@ -19,35 +19,36 @@ open scoped BigOperators
 
 namespace TimeVelocityMultiIndex
 
+section
+variable {d : ℕ} {beta : TimeVelocityMultiIndex d} (gamma : Split beta)
+
 /-- The right side of a split is coordinatewise bounded by the original index. -/
-@[simp] theorem Split.right_le {d : ℕ} {beta : TimeVelocityMultiIndex d}
-    (gamma : Split beta) : gamma.right ≤ beta := by
+@[simp] theorem Split.right_le : gamma.right ≤ beta := by
   intro c
   exact Nat.sub_le _ _
 
 /-- The orders of the two sides of a split add to the order of the original index. -/
-@[simp] theorem Split.order_left_add_order_right {d : ℕ}
-    {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
+@[simp] theorem Split.order_left_add_order_right :
     gamma.left.order + gamma.right.order = beta.order := by
   rw [← order_add, gamma.left_add_right]
 
 /-- The parabolic weights of the two sides of a split add to the original weight. -/
-@[simp] theorem Split.parabolicWeight_left_add_parabolicWeight_right {d : ℕ}
-    {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
+@[simp] theorem Split.parabolicWeight_left_add_parabolicWeight_right :
     gamma.left.parabolicWeight + gamma.right.parabolicWeight =
       beta.parabolicWeight := by
   rw [← parabolicWeight_add, gamma.left_add_right]
 
+end
+
+section
+variable {d : ℕ} {beta : TimeVelocityMultiIndex d} (gamma : Split beta)
+
 /-- The order of the left side of a split is bounded by the original order. -/
-theorem Split.order_left_le {d : ℕ} {beta : TimeVelocityMultiIndex d}
-    (gamma : Split beta) : gamma.left.order ≤ beta.order := by
-  calc
-    gamma.left.order ≤ gamma.left.order + gamma.right.order := Nat.le_add_right _ _
-    _ = beta.order := gamma.order_left_add_order_right
+theorem Split.order_left_le : gamma.left.order ≤ beta.order := by
+  exact Trans.trans (Nat.le_add_right gamma.left.order gamma.right.order) (order_left_add_order_right gamma)
 
 /-- The parabolic weight of the left side is bounded by the original weight. -/
-theorem Split.parabolicWeight_left_le {d : ℕ}
-    {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
+theorem Split.parabolicWeight_left_le :
     gamma.left.parabolicWeight ≤ beta.parabolicWeight := by
   calc
     gamma.left.parabolicWeight ≤
@@ -55,28 +56,32 @@ theorem Split.parabolicWeight_left_le {d : ℕ}
     _ = beta.parabolicWeight := gamma.parabolicWeight_left_add_parabolicWeight_right
 
 /-- The parabolic weight of the right side is bounded by the original weight. -/
-theorem Split.parabolicWeight_right_le {d : ℕ}
-    {beta : TimeVelocityMultiIndex d} (gamma : Split beta) :
+theorem Split.parabolicWeight_right_le :
     gamma.right.parabolicWeight ≤ beta.parabolicWeight := by
   calc
     gamma.right.parabolicWeight ≤
         gamma.left.parabolicWeight + gamma.right.parabolicWeight := Nat.le_add_left _ _
     _ = beta.parabolicWeight := gamma.parabolicWeight_left_add_parabolicWeight_right
 
+end
+
 end TimeVelocityMultiIndex
 
 namespace ParabolicDerivativeIndex
 
+section
+variable {d L M : ℕ} (beta : ParabolicDerivativeIndex d L) (hbeta : beta.1.parabolicWeight ≤ M)
+include L beta hbeta
+
 /-- Lower the ambient weight bound using a proof of the sharper actual bound. -/
-def restrictLE {d L M : ℕ} (beta : ParabolicDerivativeIndex d L)
-    (hbeta : beta.1.parabolicWeight ≤ M) : ParabolicDerivativeIndex d M :=
+def restrictLE : ParabolicDerivativeIndex d M :=
   ⟨beta.1, hbeta⟩
 
 /-- Restricting the ambient bound does not change the underlying multi-index. -/
-@[simp] theorem coe_restrictLE {d L M : ℕ}
-    (beta : ParabolicDerivativeIndex d L)
-    (hbeta : beta.1.parabolicWeight ≤ M) :
+@[simp] theorem coe_restrictLE :
     (restrictLE beta hbeta).1 = beta.1 := rfl
+
+end
 
 /-- Restriction followed by inclusion recovers the original bounded index. -/
 @[simp] theorem castLE_restrictLE {d L M : ℕ} (hML : M ≤ L)
@@ -88,38 +93,43 @@ def restrictLE {d L M : ℕ} (beta : ParabolicDerivativeIndex d L)
 def sourceCast {d L : ℕ} (beta : ParabolicDerivativeIndex d (L - 2)) :
     ParabolicDerivativeIndex d L := castLE (Nat.sub_le L 2) beta
 
+section
+variable {d L : ℕ} (hL : 2 ≤ L) (beta : ParabolicDerivativeIndex d (L - 2))
+include hL beta
+
 /-- Add one time derivative to a source index. -/
-def sourceTime {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) : ParabolicDerivativeIndex d L :=
+def sourceTime : ParabolicDerivativeIndex d L :=
   timeSucc (sourceCast beta) (by
     change beta.1.parabolicWeight + 2 ≤ L
     omega)
 
 /-- Add one velocity derivative to a source index. -/
-def sourceVelocity {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) (i : Fin d) :
+def sourceVelocity (i : Fin d) :
     ParabolicDerivativeIndex d L :=
   velocitySucc (sourceCast beta) i (by
     change beta.1.parabolicWeight + 1 ≤ L
     omega)
 
 /-- Add the ordered pair of velocity derivatives `j`, then `i`, to a source index. -/
-def sourceVelocityTwo {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) (j i : Fin d) :
+def sourceVelocityTwo (j i : Fin d) :
     ParabolicDerivativeIndex d L :=
   ⟨beta.1 + Pi.single (velocityCoord j) 1 + Pi.single (velocityCoord i) 1, by
     simp only [TimeVelocityMultiIndex.parabolicWeight_add,
       TimeVelocityMultiIndex.parabolicWeight_single_velocity]
     omega⟩
 
+end
+
 /-- `sourceCast` preserves the underlying multi-index. -/
 @[simp] theorem coe_sourceCast {d L : ℕ}
     (beta : ParabolicDerivativeIndex d (L - 2)) :
     (sourceCast beta).1 = beta.1 := rfl
 
+section
+variable {d L : ℕ} (hL : 2 ≤ L) (beta : ParabolicDerivativeIndex d (L - 2))
+
 /-- The underlying index of `sourceTime` is the source plus the time unit index. -/
-@[simp] theorem coe_sourceTime {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) :
+@[simp] theorem coe_sourceTime :
     (sourceTime hL beta).1 = beta.1 + Pi.single (timeCoord d) 1 := by
   classical
   funext c
@@ -130,14 +140,12 @@ def sourceVelocityTwo {d L : ℕ} (hL : 2 ≤ L)
       TimeVelocityMultiIndex.velocity, timeCoord, velocityCoord]
 
 /-- The underlying index of `sourceVelocity` is the source plus a velocity unit index. -/
-@[simp] theorem coe_sourceVelocity {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) (i : Fin d) :
+@[simp] theorem coe_sourceVelocity (i : Fin d) :
     (sourceVelocity hL beta i).1 = beta.1 + Pi.single (velocityCoord i) 1 := by
   classical
   funext c
   rcases c with _ | j
-  · simp [sourceVelocity, sourceCast, velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,
-      TimeVelocityMultiIndex.timeOrder, timeCoord, velocityCoord]
+  · rfl
   · by_cases hji : j = i
     · subst j
       simp [sourceVelocity, sourceCast, velocitySucc,
@@ -148,47 +156,56 @@ def sourceVelocityTwo {d L : ℕ} (hL : 2 ≤ L)
         velocityCoord, hji]
 
 /-- The underlying index of `sourceVelocityTwo` has the fixed ordered pair of additions. -/
-@[simp] theorem coe_sourceVelocityTwo {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) (j i : Fin d) :
+@[simp] theorem coe_sourceVelocityTwo (j i : Fin d) :
     (sourceVelocityTwo hL beta j i).1 =
       beta.1 + Pi.single (velocityCoord j) 1 +
         Pi.single (velocityCoord i) 1 := rfl
 
+end
+
+section
+variable {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+  (gamma : TimeVelocityMultiIndex.Split beta.1)
+include beta gamma
+
 /-- Regard the left side of a split as a bounded parabolic derivative index. -/
-def splitLeft {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) :
+def splitLeft :
     ParabolicDerivativeIndex d L :=
   ⟨gamma.left, gamma.parabolicWeight_left_le.trans beta.2⟩
 
 /-- Regard the right side of a split as a bounded parabolic derivative index. -/
-def splitRight {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) :
+def splitRight :
     ParabolicDerivativeIndex d L :=
   ⟨gamma.right, gamma.parabolicWeight_right_le.trans beta.2⟩
 
 /-- `splitLeft` has the left split index as its underlying multi-index. -/
-@[simp] theorem coe_splitLeft {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) :
+@[simp] theorem coe_splitLeft :
     (splitLeft beta gamma).1 = gamma.left := rfl
 
 /-- `splitRight` has the right split index as its underlying multi-index. -/
-@[simp] theorem coe_splitRight {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) :
+@[simp] theorem coe_splitRight :
     (splitRight beta gamma).1 = gamma.right := rfl
+
+end
 
 end ParabolicDerivativeIndex
 
 namespace TimeVelocityDerivativeIndex
 
+section
+variable {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m)
+include beta
+
 /-- Embed a total-order index of bound `m` into parabolic-weight bound `2 * m`. -/
-def toParabolic {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m) :
+def toParabolic :
     ParabolicDerivativeIndex d (2 * m) :=
   ⟨beta.1, beta.1.parabolicWeight_le_two_mul beta.2⟩
 
 /-- `toParabolic` preserves the underlying multi-index. -/
-@[simp] theorem coe_toParabolic {d m : ℕ}
-    (beta : TimeVelocityDerivativeIndex d m) :
+@[simp] theorem coe_toParabolic :
     (toParabolic beta).1 = beta.1 := rfl
+
+end
 
 /-- `toParabolic` sends the zero total-order index to the zero parabolic index. -/
 @[simp] theorem toParabolic_zero (d m : ℕ) :
@@ -203,5 +220,13 @@ def toParabolic {d m : ℕ} (beta : TimeVelocityDerivativeIndex d m) :
         (Nat.mul_le_mul_left 2 hmn) (toParabolic beta) := rfl
 
 end TimeVelocityDerivativeIndex
+
+/-- A coordinate of the diffusion gradient lies in the order-`M + 1` jet. -/
+def singletonCoefficientIndex {d M : ℕ} (_hM : 1 ≤ M) (i : Fin d) :
+    ParabolicDerivativeIndex d (M + 1) :=
+  ⟨Pi.single (velocityCoord i) 1, by simp⟩
+
+theorem singletonCoefficientIndex_coe {d M : ℕ} (hM : 1 ≤ M) (i : Fin d) :
+    (singletonCoefficientIndex hM i).1 = Pi.single (velocityCoord i) 1 := rfl
 
 end HypoellipticAleksandrov.Parabolic

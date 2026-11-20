@@ -13,25 +13,31 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set Filter
 open scoped Topology
 
+section
+variable {n : ℕ} (α τ S : ℝ)
+include α τ S
+
 /-- A strict bounded whole-space cylinder, using the explicit Euclidean radial cutoff. -/
-def wholeSpaceInnerCylinder {n : ℕ} (α τ S : ℝ) : Set (KineticPoint n) :=
+def wholeSpaceInnerCylinder : Set (KineticPoint n) :=
   {p | α < p.time ∧ p.time < τ ∧ radialSq p < S ^ 2}
 
 /-- Strict bounded whole-space cylinders are open. -/
-theorem isOpen_wholeSpaceInnerCylinder {n : ℕ} (α τ S : ℝ) :
+theorem isOpen_wholeSpaceInnerCylinder :
     IsOpen (wholeSpaceInnerCylinder (n := n) α τ S) :=
   (isOpen_lt continuous_const continuous_time).inter
     ((isOpen_lt continuous_time continuous_const).inter
       (isOpen_lt continuous_radialSq continuous_const))
 
 /-- The strict whole-space cylinder lies in its compact closed counterpart. -/
-theorem wholeSpaceInnerCylinder_subset_closed {n : ℕ} (α τ S : ℝ) :
+theorem wholeSpaceInnerCylinder_subset_closed :
     wholeSpaceInnerCylinder (n := n) α τ S ⊆
       movingClosedSlab univ (fun _ => 0) α τ ∩ {p | radialSq p ≤ S ^ 2} := by
   intro p hp
   have hm : p.position ∈ movingDomain univ (fun _ : ℝ => (0 : PDE.Vec n)) p.time :=
     mem_movingDomain_iff.mpr (mem_univ _)
   exact ⟨⟨hp.1.le, hp.2.1.le, subset_closure hm⟩, hp.2.2.le⟩
+
+end
 
 /-- Compact radial cylinders are relative neighbourhoods of all points of a whole-space
 closed slab, including its time faces. -/

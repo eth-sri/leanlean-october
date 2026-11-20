@@ -12,17 +12,19 @@ open MeasureTheory Set
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
+section
+variable (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
+include g hg hc
+
 /-- A continuous compactly supported kinetic source as bounded Borel data. -/
-def duhamelSourceBorel (g : KineticPoint d → ℝ) (hg : Continuous g)
-    (hc : HasCompactSupport g) : BoundedBorel (KineticPoint d) :=
+def duhamelSourceBorel : BoundedBorel (KineticPoint d) :=
   ⟨g, hg.measurable, by
     obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hc
     refine ⟨max C 0, le_max_right _ _, fun p => ?_⟩
-    simpa only [Real.norm_eq_abs] using (hC p).trans (le_max_left _ _)⟩
+    exact LE.le.trans (hC p) (le_max_left C 0)⟩
 
 /-- A smooth source supported in the past cylinder gives smooth compact terminal slices. -/
-theorem isSmoothCompactTerminalDatum_duhamelSlice (g : KineticPoint d → ℝ)
-    (hg : Continuous g) (hc : HasCompactSupport g)
+theorem isSmoothCompactTerminalDatum_duhamelSlice
     (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
       g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
     (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) (r : ℝ) :
@@ -44,6 +46,8 @@ theorem isSmoothCompactTerminalDatum_duhamelSlice (g : KineticPoint d → ℝ)
     have hm := (hU hp).2
     change p.time = r at hpr
     simpa only [hpr] using hm
+
+end
 
 /-- The supplied terminal evolution identifies every source slice with a classical solution. -/
 theorem exists_duhamelSlice_solution (hΩ : MeasurableSet Ω)

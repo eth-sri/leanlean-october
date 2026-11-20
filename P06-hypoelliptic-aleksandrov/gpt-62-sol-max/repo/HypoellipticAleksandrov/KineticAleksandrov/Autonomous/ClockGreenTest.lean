@@ -27,29 +27,22 @@ theorem clock_extended_operator_eq {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
   rw [transportedForwardOperator_apply, transportedForwardOperator_apply, hB, hb]
 
 /-- The actual normalized compact-source test obeys the exact physical weighted source equation. -/
-theorem clockSourcePotential_physical_equation
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
-    (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
-    (hs : tsupport (exitProbePhysical f) ⊆
-      {p | p.time < T ∧ p.velocity 0 ∈ clockNormalizedInterval.carrier})
-    (hz : ∀ p, R ≤ p.time → exitProbePhysical f p = 0)
+theorem ClockSourcePotentialSpec.physical_equation
+    {lam Lam : ℝ} {A : SmoothAutonomous lam Lam} {c : Clock} {e : Point}
+    {R T : ℝ} {f : exitProbeSubmodule} (h : ClockSourcePotentialSpec A c e R T f)
     (p : Point) (hp : p.velocity 0 ∈ c.active) :
     forwardScalarOperator A.a
-      ((clockSourcePotential hH hLE hlam hLam A c e T f ∘ sectionTwoPoint) ∘ c.map e) p =
+      ((clockSourcePotential A c e T f ∘ sectionTwoPoint) ∘ c.map e) p =
         -(|p.velocity 0| / (|c.vbar| * c.r ^ 2)) * exitProbePhysical f (c.map e p) := by
-  obtain ⟨-, hsm, -, hop⟩ :=
-    clockSourcePotential_regular hH hLE hlam hLam A c e R T hRT f hfn hs hz
-  rw [c.conjugacy A.a e _ hsm p hp]
+  rw [c.conjugacy A.a e _ h.smooth p hp]
   have hi : (sectionTwoPoint (c.map e p)).position 0 ∈ normalizedActive :=
     (c.mem_active_iff (p.velocity 0)).mp hp
   rw [clock_extended_operator_eq A c e _ _ hi]
-  have heq : (clockSourcePotential hH hLE hlam hLam A c e T f ∘ sectionTwoPoint) ∘
-      sectionTwoPoint = clockSourcePotential hH hLE hlam hLam A c e T f := by
+  have heq : (clockSourcePotential A c e T f ∘ sectionTwoPoint) ∘
+      sectionTwoPoint = clockSourcePotential A c e T f := by
     funext q
     exact congrArg _ (sectionTwoPoint_involutive q)
-  rw [heq, hop]
+  rw [heq, h.equation]
   · rw [sectionTwoPoint_involutive]
     ring
   · rw [intervalDomain, PDE.mem_oneDimensionalAxisBox_iff]

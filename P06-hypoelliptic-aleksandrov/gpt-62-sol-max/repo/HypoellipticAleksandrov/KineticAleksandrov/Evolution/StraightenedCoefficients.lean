@@ -68,8 +68,7 @@ theorem isSmoothCoefficient_straightenedCoefficient
   change ContDiff ℝ (⊤ : ℕ∞)
     (fun z i j => coefficientAt (straightenedCoefficient B g ε) z i j)
   refine contDiff_pi.2 fun k => contDiff_pi.2 fun l => ?_
-  have hmap : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec (n + n) =>
-      (q.1, (g q.1 + spatialY q.2, spatialZ q.2))) :=
+  have hmap :=
     contDiff_fst.prodMk
       (((hg.comp contDiff_fst).add (contDiff_spatialY.comp contDiff_snd)).prodMk
         (contDiff_spatialZ.comp contDiff_snd))
@@ -92,23 +91,26 @@ theorem isSymm_straightenedCoefficient
     (straightenedCoefficient B g ε s x).IsSymm :=
   viscousBlockMatrix_isSymm (hB_symm s _ _) ε
 
+section
+variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ)
+  (x : PDE.Vec (n + n))
+include hB_ell
+
 /-- Lower Loewner bound `min(lam, ε) ≤ diag(B, ε I)`. -/
-theorem straightenedCoefficient_lower
-    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-    (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n)) :
+theorem straightenedCoefficient_lower :
     min lam ε • (1 : PDE.Mat (n + n)) ≤ straightenedCoefficient B g ε s x := by
   rw [← viscousBlockMatrix_smul_one (min lam ε)]
   exact viscousBlockMatrix_mono
     ((smul_one_le_smul_one (min_le_left lam ε)).trans (hB_ell s _ _).1) (min_le_right lam ε)
 
 /-- Upper Loewner bound `diag(B, ε I) ≤ max(Lam, ε)`. -/
-theorem straightenedCoefficient_upper
-    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-    (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n)) :
+theorem straightenedCoefficient_upper :
     straightenedCoefficient B g ε s x ≤ max Lam ε • (1 : PDE.Mat (n + n)) := by
   rw [← viscousBlockMatrix_smul_one (max Lam ε)]
   exact viscousBlockMatrix_mono
     ((hB_ell s _ _).2.trans (smul_one_le_smul_one (le_max_left Lam ε))) (le_max_right Lam ε)
+
+end
 
 /-- The straightened drift is smooth; no growth bound on `b` is needed. -/
 theorem contDiff_straightenedDrift (hb_smooth : IsSmoothDrift b)

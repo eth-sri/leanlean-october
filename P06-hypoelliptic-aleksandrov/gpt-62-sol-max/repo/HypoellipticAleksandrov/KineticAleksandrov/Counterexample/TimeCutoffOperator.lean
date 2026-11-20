@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoffSource
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoffDifference
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoffNativeJets
 
 /-! # The actual backward operator of the cutoff profile -/
 

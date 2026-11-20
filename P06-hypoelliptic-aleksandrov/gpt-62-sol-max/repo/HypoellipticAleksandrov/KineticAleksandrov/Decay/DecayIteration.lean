@@ -100,8 +100,7 @@ theorem fourier_decay_frequency_iteration_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
     nonzero_frequency_blocks_of_unitBlock d hd lam Lam hlam hlamLam hEvol hblock
   refine ⟨L, δ, hL, hδ, hδ1, ?_⟩
   intro B hB S K hreal ξ hξ σ τ hστ v q hq ν hν
-  have hcov := (iteration_evolution_clauses hEvol hd hlam hlamLam B hB S K hreal).2.2
-  exact fourier_floor_iteration_of_blocks K hreal.2.2.2 hcov hL hδ hδ1 ξ hξ
+  exact fourier_floor_iteration_of_blocks K hreal.2.2.2 ((iteration_evolution_clauses hEvol hd hlam hlamLam B hB S K hreal).2.2) hL hδ hδ1 ξ hξ
     (hsteps B hB S K hreal ξ hξ) σ τ hστ v q hq ν hν
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

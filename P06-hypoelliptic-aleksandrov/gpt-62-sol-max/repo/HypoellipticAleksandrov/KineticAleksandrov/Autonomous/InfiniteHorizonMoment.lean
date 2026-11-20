@@ -31,13 +31,12 @@ theorem nested_time_operator (a : ℝ → ℝ → ℝ) (p : Point) :
 
 /-- The expected exit time is the pole time plus the actual Green mass. -/
 theorem nested_exit_time_integral
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
-    (∫ p, p.time ∂stripExitOfRealization hH hlam hLam A H E hE T e) =
+    (∫ p, p.time ∂stripExitOfRealization A H E hE T e) =
       e.1.time + (stripGreenOfKernel H E.2 T e univ).toReal := by
-  have h := strip_identity_bounded_smooth_future_of_realization hH hlam hLam A H E hE
+  have h := strip_identity_bounded_smooth_future_of_realization A H E hE
     T e (fun p => p.time) (Evolution.timeCoord 1).contDiff (by
       refine ⟨max |e.1.time| |T| + 1, fun p ht hT _ => ?_⟩
       constructor

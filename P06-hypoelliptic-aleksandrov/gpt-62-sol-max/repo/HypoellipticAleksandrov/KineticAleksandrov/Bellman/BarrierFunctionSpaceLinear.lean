@@ -11,10 +11,13 @@ noncomputable section
 open Set Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ} (hf : IsBellmanHomogeneous alpha phi)
+  (hg : IsBellmanHomogeneous alpha psi) (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet)
+include alpha hf hg hq
+
 /-- The first directional derivative respects addition on the punctured carrier. -/
-theorem bellman_directional_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
-    (hf : IsBellmanHomogeneous alpha phi) (hg : IsBellmanHomogeneous alpha psi)
-    (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) (e : ℝ × ℝ) :
+theorem bellman_directional_add (e : ℝ × ℝ) :
     fderiv ℝ (phi + psi) q e = fderiv ℝ phi q e + fderiv ℝ psi q e := by
   have hfq := (hf.1.contDiffAt (bellmanPuncturedSet_isOpen.mem_nhds hq)).differentiableAt
     (by norm_num)
@@ -23,9 +26,7 @@ theorem bellman_directional_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
   rw [fderiv_add hfq hgq, add_apply]
 
 /-- The second velocity derivative respects addition on the punctured carrier. -/
-theorem bellmanDvv_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
-    (hf : IsBellmanHomogeneous alpha phi) (hg : IsBellmanHomogeneous alpha psi)
-    (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
+theorem bellmanDvv_add :
     bellmanDvv (phi + psi) q = bellmanDvv phi q + bellmanDvv psi q := by
   have he : bellmanDv (phi + psi) =ᶠ[𝓝 q] bellmanDv phi + bellmanDv psi := by
     filter_upwards [bellmanPuncturedSet_isOpen.mem_nhds hq] with z hz
@@ -39,6 +40,8 @@ theorem bellmanDvv_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
   unfold bellmanDvv
   rw [he.fderiv_eq, fderiv_add hfq hgq, add_apply]
 
+end
+
 /-- Scalar multiplication commutes with the second velocity derivative. -/
 theorem bellmanDvv_smul (c : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) :
     bellmanDvv (c • phi) q = c * bellmanDvv phi q := by
@@ -49,8 +52,12 @@ theorem bellmanDvv_smul (c : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) 
   simp only [bellmanDvv, he, fderiv_const_smul_field, Pi.smul_apply,
     smul_apply, smul_eq_mul]
 
+section
+variable (alpha lam Lam : ℝ)
+include alpha
+
 /-- The continuous operator image is a linear map from the actual homogeneous space. -/
-def bellmanImageLinearMap (alpha lam Lam : ℝ) :
+def bellmanImageLinearMap :
     bellmanHomogeneousSpace alpha →ₗ[ℝ] C(BellmanSphere × BellmanCoefficient lam Lam, ℝ) where
   toFun phi := bellmanImage lam Lam phi.val phi.property
   map_add' phi psi := by
@@ -71,12 +78,12 @@ def bellmanImageLinearMap (alpha lam Lam : ℝ) :
     ring
 
 /-- The literal image subspace in the source's uniform function space. -/
-def bellmanImageSpace (alpha lam Lam : ℝ) :
+def bellmanImageSpace :
     Submodule ℝ C(BellmanSphere × BellmanCoefficient lam Lam, ℝ) :=
   (bellmanImageLinearMap alpha lam Lam).range
 
 /-- Membership in the image means exactly that a C² homogeneous witness produces it. -/
-theorem mem_bellmanImageSpace_iff (alpha lam Lam : ℝ)
+theorem mem_bellmanImageSpace_iff
     (f : C(BellmanSphere × BellmanCoefficient lam Lam, ℝ)) :
     f ∈ bellmanImageSpace alpha lam Lam ↔
       ∃ phi : (ℝ × ℝ) → ℝ, ∃ h : IsBellmanHomogeneous alpha phi,
@@ -86,5 +93,7 @@ theorem mem_bellmanImageSpace_iff (alpha lam Lam : ℝ)
     exact ⟨phi.val, phi.property, hphi⟩
   · rintro ⟨phi, hphi, he⟩
     exact ⟨⟨phi, hphi⟩, he⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

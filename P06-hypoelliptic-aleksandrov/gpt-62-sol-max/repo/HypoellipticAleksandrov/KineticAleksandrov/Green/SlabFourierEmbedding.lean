@@ -32,12 +32,17 @@ lemma measurableEmbedding_elapsed_sub (s : ℝ) :
     (Homeomorph.subRight s).measurableEmbedding
   exact h2.comp h1
 
-lemma measurableEmbedding_slabShift (d : ℕ) (s : ℝ) :
+section
+variable (d : ℕ) (s : ℝ)
+
+lemma measurableEmbedding_slabShift :
     MeasurableEmbedding (slabShift d s) :=
   (measurableEmbedding_elapsed_sub s).prodMap MeasurableEmbedding.id
 
-lemma measurable_slabShift (d : ℕ) (s : ℝ) : Measurable (slabShift d s) :=
+lemma measurable_slabShift : Measurable (slabShift d s) :=
   (measurableEmbedding_slabShift d s).measurable
+
+end
 
 /-- Translating Lebesgue measure on an interval. -/
 lemma map_sub_restrict_Ioo (a b s : ℝ) :

@@ -41,8 +41,11 @@ theorem weightedWronskian_secondM (a z : ℝ) (hz : 0 < z) (f : ℝ → ℝ) :
           deriv (M (a + 1 / 3) b43) z)) := by ring
     _ = _ := by rw [hp, hq]; ring
 
+section
+variable (a : ℝ) (f : ℝ → ℝ) (F : ℝ)
+
 /-- Endpoint limit of the weighted Wronskian. -/
-theorem tendsto_weightedWronskian_secondM_zero (a : ℝ) (f : ℝ → ℝ) (F : ℝ)
+theorem tendsto_weightedWronskian_secondM_zero
     (hf : Tendsto f (𝓝[>] 0) (𝓝 F))
     (hf' : Tendsto (fun z : ℝ => z * deriv f z) (𝓝[>] 0) (𝓝 0)) :
     Tendsto (weightedWronskian (2 / 3) f (secondM a)) (𝓝[>] 0)
@@ -78,7 +81,7 @@ theorem tendsto_weightedWronskian_secondM_zero (a : ℝ) (f : ℝ → ℝ) (F : 
   exact (weightedWronskian_secondM a z hz f).symm
 
 /-- Evaluation of Abel's constant by the two endpoint limits. -/
-theorem weightedWronskian_secondM_eq (a : ℝ) (f : ℝ → ℝ) (F : ℝ)
+theorem weightedWronskian_secondM_eq
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f (Ioi 0))
     (ho : ∀ z > 0, z * deriv (deriv f) z + (2 / 3 - z) * deriv f z - a * f z = 0)
     (hlim : Tendsto f (𝓝[>] 0) (𝓝 F))
@@ -98,5 +101,7 @@ theorem weightedWronskian_secondM_eq (a : ℝ) (f : ℝ → ℝ) (F : ℝ)
     filter_upwards [self_mem_nhdsWithin] with x hx
     exact (hc x hx).symm
   exact tendsto_nhds_unique hconst hl
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

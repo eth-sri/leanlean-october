@@ -75,8 +75,7 @@ def compactRepresentativeMap : H →ₗ[ℝ] C(K, ℝ) := by
 theorem compactRepresentativeMap_apply_eq (u : H) (g : E → ℝ)
     (hg : ContinuousOn g U) (he : (u.1 : E → ℝ) =ᵐ[μ.restrict U] g) (z : K) :
     compactRepresentativeMap μ U K hU hKU H hrep u z = g z := by
-  have hae := (continuousWeakRepresentative_ae μ U H hrep u).symm.trans he
-  have hpoint := Measure.eqOn_open_of_ae_eq hae hU
+  have hpoint := Measure.eqOn_open_of_ae_eq ((continuousWeakRepresentative_ae μ U H hrep u).symm.trans he) hU
     (continuousWeakRepresentative_continuous μ U H hrep u) hg
   exact hpoint (hKU z.2)
 

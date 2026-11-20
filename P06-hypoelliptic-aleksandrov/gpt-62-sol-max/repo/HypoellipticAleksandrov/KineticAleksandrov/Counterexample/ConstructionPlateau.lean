@@ -18,20 +18,22 @@ theorem construction_exists_strict_velocity_margin {d : ℕ} {alpha : ℝ}
   obtain ⟨m, hm, hb⟩ := construction_exists_velocity_margin ha h R hvel
   refine ⟨(m + R ^ 2) / 2, by linarith only [hm], ?_⟩
   intro q hq
-  have hh := hb q hq
-  linarith only [hh, hm]
+  linarith only [(hb q hq), hm]
+
+section
+variable {d : ℕ} (m R : ℝ) (hm : m < R ^ 2) (x : PDE.Vec (d + d))
+  (hx : PDE.vecNormSq (spatialCoordinateCLE d x).2 < m)
+include hm hx
 
 /-- On the strict inner region the packed cutoff is locally constant one. -/
-theorem constructionPackedCutoff_eventually_one {d : ℕ} (m R : ℝ) (hm : m < R ^ 2)
-    (x : PDE.Vec (d + d)) (hx : PDE.vecNormSq (spatialCoordinateCLE d x).2 < m) :
+theorem constructionPackedCutoff_eventually_one :
     constructionPackedCutoff d m R =ᶠ[𝓝 x] (fun _ => 1) := by
   have hc := PDE.contDiff_vecNormSq.continuous.comp (spatialCoordinateCLE d).continuous.snd
   filter_upwards [hc.continuousAt.eventually (Iio_mem_nhds hx)] with y hy
   exact constructionVelocityCutoff_eq_one m R hm _ hy.le
 
 /-- Both orders of cutoff derivatives vanish on the strict inner region. -/
-theorem constructionPackedCutoff_jets_zero {d : ℕ} (m R : ℝ) (hm : m < R ^ 2)
-    (x : PDE.Vec (d + d)) (hx : PDE.vecNormSq (spatialCoordinateCLE d x).2 < m) :
+theorem constructionPackedCutoff_jets_zero :
     fderiv ℝ (constructionPackedCutoff d m R) x = 0 ∧
       ∀ k, fderiv ℝ (fun y => fderiv ℝ (constructionPackedCutoff d m R) y (PDE.basisVec k))
         x = 0 := by
@@ -49,6 +51,8 @@ theorem constructionPackedCutoff_jets_zero {d : ℕ} (m R : ℝ) (hm : m < R ^ 2
     rfl
   rw [hd.fderiv_eq]
   exact (hasFDerivAt_const (0 : ℝ) x).fderiv
+
+end
 
 /-- Throughout the profile domain the extended representatives equal the raw cutoff jets. -/
 theorem construction_extended_jets_eq_raw_on_profile {d : ℕ} {alpha : ℝ}

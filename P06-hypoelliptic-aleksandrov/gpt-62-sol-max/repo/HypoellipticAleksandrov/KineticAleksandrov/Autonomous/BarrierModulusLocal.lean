@@ -1,6 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtension
+public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtensionSlices
+public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtensionContinuous
 import Mathlib.Analysis.Calculus.MeanValue
 
 /-! # Uniform reference-scale increments of the actual Bellman extension -/

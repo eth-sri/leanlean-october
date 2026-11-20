@@ -3,7 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MinorantScaling
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
 import HypoellipticAleksandrov.Statements.ParabolicHarnack
-import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
+import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 
 /-!
 # The Harnack chain of the common terminal minorant (companion paper, Lemma 3.6)
@@ -208,26 +208,34 @@ theorem normalized_six_step_harnack (d : ℕ) (hd : 1 ≤ d)
 
 /-! ### Time reversal of the supplied scalar solutions -/
 
+section
+variable {d : ℕ}
+
 /-- The time reversal `(θ, v) ↦ (T - θ, v)`, written as an affine scalar change of variables. -/
-abbrev timeReversal {d : ℕ} (T : ℝ) : TimeVelocity d → TimeVelocity d :=
+abbrev timeReversal (T : ℝ) : TimeVelocity d → TimeVelocity d :=
   scalarAffine T (-1) 0 1
 
-theorem timeReversal_apply {d : ℕ} (T θ : ℝ) (v : PDE.Vec d) :
+theorem timeReversal_apply (T θ : ℝ) (v : PDE.Vec d) :
     timeReversal T (θ, v) = (T - θ, v) := by
   simp [timeReversal, scalarAffine, sub_eq_add_neg]
 
-theorem timeReversal_mapsTo {d : ℕ} {Ω : Set (PDE.Vec d)} (T : ℝ) :
+theorem timeReversal_mapsTo {Ω : Set (PDE.Vec d)} (T : ℝ) :
     MapsTo (timeReversal T) (Ioi (0 : ℝ) ×ˢ Ω)
       (ParabolicProbe.scalarPastOpenCylinder Ω stationary T) := by
   rintro ⟨θ, v⟩ ⟨hθ, hv⟩
   rw [mem_scalarPastOpenCylinder_stationary, timeReversal_apply]
   exact ⟨by simpa using hθ, hv⟩
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) {B : CoefficientField d} {T : ℝ}
+  {F : BoundedBorel (PDE.Vec d)} {V : TimeVelocity d → ℝ}
+  (hV : ParabolicProbe.IsClassicalScalarTerminalSolution Ω stationary (zIndependentCoefficient B) T F V)
+include hΩ B F hV
+
 /-- The time-reversed classical scalar solution is `C^{1,2}` on `(0, ∞) × Ω`. -/
-theorem timeReversed_isScalarC12On {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    {B : CoefficientField d} {T : ℝ} {F : BoundedBorel (PDE.Vec d)} {V : TimeVelocity d → ℝ}
-    (hV : ParabolicProbe.IsClassicalScalarTerminalSolution Ω stationary
-      (zIndependentCoefficient B) T F V) :
+theorem timeReversed_isScalarC12On :
     IsScalarC12On (fun p => V (timeReversal T p)) (Ioi (0 : ℝ) ×ˢ Ω) :=
   isScalarC12On_comp_scalarAffine
     (isScalarC12On_of_isOpen_contDiffOn_two (isOpen_scalarPastOpenCylinder_stationary hΩ T)
@@ -235,10 +243,7 @@ theorem timeReversed_isScalarC12On {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpe
 
 /-- The time-reversed classical scalar solution solves the forward equation with the
 reversed coefficient. -/
-theorem timeReversed_equation {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    {B : CoefficientField d} {T : ℝ} {F : BoundedBorel (PDE.Vec d)} {V : TimeVelocity d → ℝ}
-    (hV : ParabolicProbe.IsClassicalScalarTerminalSolution Ω stationary
-      (zIndependentCoefficient B) T F V) :
+theorem timeReversed_equation :
     ∀ p ∈ Ioi (0 : ℝ) ×ˢ Ω,
       scalarTimeDerivative (fun p => V (timeReversal T p)) p =
         matrixContraction (coefficientAt B (timeReversal T p))
@@ -266,6 +271,8 @@ theorem timeReversed_equation {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     linarith
   rw [hop']
   ring
+
+end
 
 /-- Smooth coefficients are jointly continuous. -/
 theorem continuous_coefficientAt_of_smooth {d : ℕ} {B : CoefficientField d}

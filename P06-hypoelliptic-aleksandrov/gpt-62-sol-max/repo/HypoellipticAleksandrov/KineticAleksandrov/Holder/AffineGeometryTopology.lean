@@ -24,9 +24,12 @@ theorem isCompact_closure_backwardCylinder {d : ℕ}
     kineticReflection_involutive P₀] at h
   exact h
 
+section
+variable {d : ℕ} (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
+include hR
+
 /-- Every positive-radius source cylinder is nonempty. -/
-theorem backwardCylinder_nonempty {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) : (backwardCylinder P₀ R).Nonempty := by
+theorem backwardCylinder_nonempty : (backwardCylinder P₀ R).Nonempty := by
   refine ⟨⟨P₀.time - R ^ 2 / 2, P₀.position - (R ^ 2 / 2) • P₀.velocity,
     P₀.velocity⟩, ?_⟩
   refine ⟨?_, ?_, PDE.center_mem_euclideanBall _ hR, ?_⟩
@@ -41,8 +44,7 @@ theorem backwardCylinder_nonempty {d : ℕ} (P₀ : KineticPoint d)
     exact PDE.center_mem_euclideanBall 0 (pow_pos hR 3)
 
 /-- The bottom centre belongs to the source kinetic boundary. -/
-theorem bottom_mem_kineticBoundary {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) :
+theorem bottom_mem_kineticBoundary :
     (⟨P₀.time-R^2, P₀.position-R^2 • P₀.velocity, P₀.velocity⟩ : KineticPoint d) ∈
       kineticBoundary P₀ R := by
   let f : ℝ → KineticPoint d := fun t =>
@@ -72,8 +74,9 @@ theorem bottom_mem_kineticBoundary {d : ℕ} (P₀ : KineticPoint d)
   exact ⟨hm, Or.inl (Or.inl rfl)⟩
 
 /-- Comparison boundaries are nonempty for every positive radius. -/
-theorem kineticBoundary_nonempty {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) : (kineticBoundary P₀ R).Nonempty :=
+theorem kineticBoundary_nonempty : (kineticBoundary P₀ R).Nonempty :=
   ⟨_, bottom_mem_kineticBoundary P₀ hR⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

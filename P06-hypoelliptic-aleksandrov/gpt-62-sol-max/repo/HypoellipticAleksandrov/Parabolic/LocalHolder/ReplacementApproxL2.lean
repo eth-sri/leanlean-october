@@ -23,7 +23,7 @@ theorem tendsto_toLp_two_of_ae_sub_le {X : Type*} [MeasurableSpace X]
     (hb : ∀ n, ∀ᵐ x ∂μ, |u n x - v x| ≤ ε n) :
     Tendsto (fun n => (hu n).toLp (u n)) atTop (𝓝 (hv.toLp v)) := by
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
-  let K : ℝ := (measureUnivNNReal μ : ℝ) ^ (2 : ℝ≥0∞).toReal⁻¹
+  let K := (measureUnivNNReal μ : ℝ) ^ (2 : ℝ≥0∞).toReal⁻¹
   have hnorm (n : ℕ) : ‖(hu n).toLp (u n) - hv.toLp v‖ ≤ K * ε n := by
     rw [← MemLp.toLp_sub (hu n) hv]
     apply Lp.norm_le_of_ae_bound (hε n)

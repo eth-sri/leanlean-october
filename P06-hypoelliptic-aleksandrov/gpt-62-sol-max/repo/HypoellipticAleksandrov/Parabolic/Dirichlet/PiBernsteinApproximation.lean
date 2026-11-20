@@ -54,7 +54,6 @@ theorem piBernsteinApproximation_uniform {d : ℕ} [LocallyConvexSpace ℝ E]
       (basis_sets _).uniformity_of_nhds_zero_swapped] at huniform
     exact huniform {z | gauge U z < 1 / 2} <| tendsto_gauge_nhds_zero hU₀
       |>.eventually_lt_const <| by positivity
-  have hdim : 0 ≤ (d : ℝ) := Nat.cast_nonneg d
   have hlimit := tendsto_const_div_atTop_nhds_zero_nat (C / δ ^ 2 * d)
   filter_upwards [hlimit.eventually_lt_const (half_pos one_pos), eventually_ne_atTop 0]
     with n hn hn₀ x

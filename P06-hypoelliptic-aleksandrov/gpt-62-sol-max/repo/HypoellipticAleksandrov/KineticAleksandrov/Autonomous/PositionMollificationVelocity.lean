@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionMollificationBasic
 import Mathlib.Analysis.Calculus.ContDiff.Deriv
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsFiber
 
 /-! # Actual velocity derivatives of the position-regularized barrier -/
 
@@ -11,10 +12,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter BarrierRegularization
 open scoped Topology
 
+section
+variable (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta)
+include heta
+
 /-- A dominated source velocity jet passes through the position integral.
 The derivative and majorant hypotheses here are discharged by the homogeneous source jets. -/
 theorem position_convolution_velocity_hasDerivAt
-    (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta)
     (f g : (ℝ × ℝ) → ℝ) (X : ℝ) (v : ℝ)
     (hf : LocallyIntegrable (fun Y => f (Y, v)) volume)
     (hg : Measurable g) (p C : ℝ) (hp : -1 < p)
@@ -47,7 +51,6 @@ theorem position_convolution_velocity_hasDerivAt
 
 /-- A uniformly dominated source velocity fiber has a continuous position integral. -/
 theorem position_convolution_velocity_continuous
-    (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta)
     (g : (ℝ × ℝ) → ℝ) (X : ℝ) (hg : Measurable g)
     (p C : ℝ) (hp : -1 < p)
     (hb : ∀ Y : ℝ, Y ≠ 0 → ∀ w : ℝ, |g (Y, w)| ≤ C * |Y| ^ p)
@@ -71,10 +74,15 @@ theorem position_convolution_velocity_continuous
   · filter_upwards [volume.ae_ne (0 : ℝ)] with Y hY
     exact (continuous_const.mul (hc Y hY)).continuousAt
 
+end
+
+section
+variable {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha Phi) (ha : 0 < alpha)
+  (ha1 : alpha < 1) (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta)
+include alpha h ha ha1 heta
+
 /-- Both actual velocity derivatives commute with position convolution, including at v=0. -/
-theorem barrier_position_convolution_velocity_jets {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha Phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta) (X v : ℝ) :
+theorem barrier_position_convolution_velocity_jets (X v : ℝ) :
     HasDerivAt (fun w => positionConvolution eta (bellmanOriginExtension Phi) (X, w))
       (positionConvolution eta (bellmanDv Phi) (X, v)) v ∧
     HasDerivAt (fun w => positionConvolution eta (bellmanDv Phi) (X, w))
@@ -88,14 +96,14 @@ theorem barrier_position_convolution_velocity_jets {alpha : ℝ} {Phi : (ℝ × 
       ((h.origin_extension_continuous ha).comp
         (continuous_id.prodMk continuous_const)).locallyIntegrable
       hmv ((alpha - 1) / 3) Cv (by linarith)
-      (fun Y hY w => barrier_position_fiber_bound (alpha - 1) (by linarith)
+      (fun Y hY w => _root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrier_position_fiber_bound (alpha - 1) (by linarith)
         _ Cv hCv hbv Y w hY)
     · intro Y hY w
       have hq : (Y, w) ∈ bellmanPuncturedSet := fun he => hY (congrArg Prod.fst he)
       have hd := (h.1.contDiffAt (bellmanPuncturedSet_isOpen.mem_nhds hq)).differentiableAt
         (by norm_num)
       exact (bellman_hasDerivAt_second hd).congr_of_eventuallyEq
-        ((barrierExtension_eventuallyEq Phi hq).comp_tendsto
+        ((_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrierExtension_eventuallyEq Phi hq).comp_tendsto
           ((continuous_const.prodMk continuous_id).tendsto w))
     · intro w
       exact (h.origin_extension_continuous ha).measurable.comp
@@ -103,7 +111,7 @@ theorem barrier_position_convolution_velocity_jets {alpha : ℝ} {Phi : (ℝ × 
   · apply position_convolution_velocity_hasDerivAt eta heta _ _ X v
       (barrier_velocity_fibers_locallyIntegrable h ha ha1 v).1
       hmvv ((alpha - 2) / 3) Cvv (by linarith)
-      (fun Y hY w => barrier_position_fiber_bound (alpha - 2) (by linarith)
+      (fun Y hY w => _root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrier_position_fiber_bound (alpha - 2) (by linarith)
         _ Cvv hCvv hbvv Y w hY)
     · intro Y hY w
       have hq : (Y, w) ∈ bellmanPuncturedSet := fun he => hY (congrArg Prod.fst he)
@@ -114,9 +122,7 @@ theorem barrier_position_convolution_velocity_jets {alpha : ℝ} {Phi : (ℝ × 
       exact hmv.comp (measurable_id.prodMk measurable_const)
 
 /-- The position-regularized barrier is C² in velocity at every position. -/
-theorem barrier_position_convolution_velocity_c2 {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha Phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta) (X : ℝ) :
+theorem barrier_position_convolution_velocity_c2 (X : ℝ) :
     ContDiff ℝ 2 (fun v => positionConvolution eta (bellmanOriginExtension Phi) (X, v)) := by
   have hj := barrier_position_convolution_velocity_jets h ha ha1 eta heta X
   have he : deriv (fun v => positionConvolution eta (bellmanOriginExtension Phi) (X, v)) =
@@ -128,7 +134,7 @@ theorem barrier_position_convolution_velocity_c2 {alpha : ℝ} {Phi : (ℝ × �
     apply position_convolution_velocity_continuous eta heta _ X
       (measurable_of_continuousOn_compl_singleton (0, 0) h.dvv_continuousOn)
       ((alpha - 2) / 3) C (by linarith)
-      (fun Y hY w => barrier_position_fiber_bound (alpha - 2) (by linarith) _ C hC hb Y w hY)
+      (fun Y hY w => _root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrier_position_fiber_bound (alpha - 2) (by linarith) _ C hC hb Y w hY)
     intro Y hY
     exact h.dvv_continuousOn.comp_continuous (continuous_const.prodMk continuous_id)
       (fun w he => hY (congrArg Prod.fst he))
@@ -136,5 +142,7 @@ theorem barrier_position_convolution_velocity_c2 {alpha : ℝ} {Phi : (ℝ × �
   refine ⟨fun v => (hj v).1.differentiableAt, (by norm_num), ?_⟩
   rw [he, contDiff_one_iff_deriv, he2]
   exact ⟨fun v => (hj v).2.differentiableAt, hc⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

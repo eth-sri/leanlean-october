@@ -236,12 +236,6 @@ theorem tendsto_eLpNorm_centered_sub_zero
     let B : α → ℝ :=
       fun _ =>
         (∫ y, f y ∂μ) - ∫ y, F i y ∂μ
-    have hA :
-        AEStronglyMeasurable A μ :=
-      (hF i).sub hf.aestronglyMeasurable
-    have hB :
-        AEStronglyMeasurable B μ :=
-      aestronglyMeasurable_const
     calc
       eLpNorm
           (fun x =>

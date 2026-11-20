@@ -20,8 +20,12 @@ noncomputable section
 
 namespace PDE
 
+section
+variable {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞)
+include d U p
+
 /-- Scalar `L^p(U)` modulo equality almost everywhere. -/
-abbrev ScalarLp {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞) :=
+abbrev ScalarLp :=
   MeasureTheory.Lp ℝ p (volumeOn U)
 
 /-- `L^p(U)` fields valued in the internal Euclidean Hilbert realization.
@@ -29,7 +33,9 @@ abbrev ScalarLp {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞) :=
 Native vector representatives are recovered through the exact bridges in
 `PDEFoundation.Ambient.HilbertVec`.
 -/
-abbrev HilbertVectorLp {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞) :=
+abbrev HilbertVectorLp :=
   MeasureTheory.Lp (HilbertVec d) p (volumeOn U)
+
+end
 
 end PDE

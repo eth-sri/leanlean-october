@@ -23,10 +23,7 @@ theorem spatial_inner_subset_outer {d : ℕ} (Z₀ : KineticPoint d) {R : ℝ} (
 
 /-- The source-local spatial derivative bound uses the actual canonical density integral. -/
 theorem spatial_forward_derivative_bound
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (Z₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
     (U : KineticPoint d → ℝ)
     (hUc : ContinuousOn U (closure (forwardCylinder Z₀ R hR)))
@@ -37,12 +34,12 @@ theorem spatial_forward_derivative_bound
     (hP : P.1 ∈ forwardCylinder Z₀ (3 * R / 4) (by positivity))
     (T : {t : ℝ // P.1.time < t}) (hT : T.1 - P.1.time = R ^ 2 / 8)
     (m : ℕ) (hm : 1 ≤ m) :
-    let G := exitL1Density (ballExit hH hLE hd hlam hLam B hB Z₀.velocity hR P T)
+    let G := exitL1Density (ballExit hd B hB Z₀.velocity hR P T)
     ‖iteratedFDeriv ℝ m (physicalPositionSlice U P.1) P.1.position‖ ≤
       Holder.oscillationOn U (forwardCylinder Z₀ R hR) *
         ∫ y, ‖iteratedFDeriv ℝ m G y‖ := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB Z₀.velocity hR P T
+  let ν := ballExit hd B hB Z₀.velocity hR P T
   let μ := exitMarginal ν
   let G := exitL1Density ν
   let M := Holder.oscillationOn U (forwardCylinder Z₀ R hR)
@@ -53,9 +50,9 @@ theorem spatial_forward_derivative_bound
   let g := G ∘ Neg.neg
   let W := f ⋆[L, volume] g
   have hGs : ContDiff ℝ (⊤ : ℕ∞) G :=
-    ballExitL1Density_contDiff hH hLE hd hlam hLam B hB Z₀.velocity hR P T hP.2.2.1 hT
+    ballExitL1Density_contDiff hd B hB Z₀.velocity hR P T hP.2.2.1 hT
   have hGc : HasCompactSupport G := spatialDensity_hasCompactSupport G (R ^ 3)
-    (ballExitL1Density_zero_outside hH hLE hd hlam hLam B hB Z₀.velocity hR
+    (ballExitL1Density_zero_outside hd B hB Z₀.velocity hR
       P T hP.2.2.1 hT)
   let e := LinearIsometryEquiv.neg ℝ (E := PDE.Vec d)
   have hgc : HasCompactSupport g := hGc.comp_homeomorph e.toHomeomorph
@@ -73,9 +70,9 @@ theorem spatial_forward_derivative_bound
   let s : PDE.Vec d → ℝ := fun x => U (boundaryPositionShift x P.1) - U P.1
   have hsW : (fun x => (s x : ℂ)) =ᶠ[𝓝 0] W := by
     filter_upwards [hmem] with x hx
-    simpa only [s, Complex.ofReal_sub] using spatial_local_convolution hH hLE hd hlam hLam
+    simpa only [s, Complex.ofReal_sub] using spatial_local_convolution hd
       B hB Z₀ hR U hUc hUs hUe P hP T hT H hHc hc M hb (U P.1) he x hx
-  have hus := spatial_forward_slice_smooth hH B hB Z₀ hR U hUs hUe P.1 hPo
+  have hus := spatial_forward_slice_smooth B hB Z₀ hR U hUs hUe P.1 hPo
   have hsu : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun x => U (boundaryPositionShift x P.1)) (0 : PDE.Vec d) := by
     have ha : ContDiffAt ℝ (⊤ : ℕ∞)

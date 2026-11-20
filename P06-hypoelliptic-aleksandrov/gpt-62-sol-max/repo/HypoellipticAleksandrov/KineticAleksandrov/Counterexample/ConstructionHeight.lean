@@ -21,7 +21,7 @@ theorem construction_smoothed_interior_height_eventually {d : ℕ} {alpha : ℝ}
     ∃ P ∈ backwardCylinder (⟨barrierTime mu, 0, 0⟩ : KineticPoint d) S,
       ∀ᶠ n in atTop, (1 / 4 : ℝ) ≤
         smoothedZeroExtendedProfile h r mu R (standardMollifierSequence n) P := by
-  obtain ⟨_, _, _, _, _, _, _, h0, _⟩ := selectedProfile_spec h
+  have h0 := (selectedProfile_spec h).at_zero
   obtain ⟨t, ht, hT, hh⟩ := timeCutoff_interior_height (profileFunction h)
     alpha r mu R h0 hr hmu hsmall
   have hq : profileFunction h (0, 0) < 1 := by

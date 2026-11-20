@@ -31,7 +31,7 @@ theorem integrable_scalar_local_spatial_value_energy_terms {d : ℕ}
       (spatialPartial i (fun y => A z.1 y i j) z.2 * scalarSpatialGradient u z j +
         A z.1 z.2 i j * scalarSpatialHessian u z i j) * (u z * ρ z ^ 2)) := by
   have hcoeff : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-    (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+    (contDiff_apply_apply ℝ ℝ i j).comp hA
   have hcoeffc := hcoeff.continuous
   have hρ12 := isScalarC12On_of_contDiff_two (hρ.of_le (by simp)) univ
   have hA12 := isScalarC12On_of_contDiff_two (hcoeff.of_le (by simp)) univ
@@ -45,18 +45,11 @@ theorem integrable_scalar_local_spatial_value_energy_terms {d : ℕ}
   have hhess : ContinuousOn (fun z => scalarSpatialHessian u z i j) U :=
     (continuous_apply j).comp_continuousOn
       ((continuous_apply i).comp_continuousOn hu.continuousOn_scalarSpatialHessian)
-  have hpowc : HasCompactSupport (fun z => ρ z ^ 2) := by
-    rw [show (fun z => ρ z ^ 2) = ρ * ρ by funext z; exact pow_two (ρ z)]
-    exact HasCompactSupport.mul_left hc
-  have hpows : tsupport (fun z => ρ z ^ 2) ⊆ U := by
-    have hp : tsupport (fun z => ρ z ^ 2) ⊆ tsupport ρ := by
-      simpa only [pow_two] using
-        (tsupport_mul_subset_right : tsupport (fun z => ρ z * ρ z) ⊆ tsupport ρ)
-    exact hp.trans hsub
+  obtain ⟨hpowc, hpows⟩ := cutoff_square_support hc
   have hp := integrable_local_cutoff_mul hU
     (fun z => A z.1 z.2 i j * scalarSpatialGradient u z j * scalarSpatialGradient u z i)
     (fun z => ρ z ^ 2) ((hcoeffc.continuousOn.mul (hgrad j)).mul (hgrad i))
-    (hρ.continuous.pow 2) hpowc hpows
+    (hρ.continuous.pow 2) hpowc (hpows.trans hsub)
   have he := integrable_local_cutoff_mul hU
     (fun z => 2 * A z.1 z.2 i j * scalarSpatialGradient u z j * u z)
     (fun z => ρ z * scalarSpatialGradient ρ z i)
@@ -68,7 +61,7 @@ theorem integrable_scalar_local_spatial_value_energy_terms {d : ℕ}
       A z.1 z.2 i j * scalarSpatialHessian u z i j) * u z)
     (fun z => ρ z ^ 2)
     (((hdA.continuousOn.mul (hgrad j)).add (hcoeffc.continuousOn.mul hhess)).mul
-      hu.continuousOn) (hρ.continuous.pow 2) hpowc hpows
+      hu.continuousOn) (hρ.continuous.pow 2) hpowc (hpows.trans hsub)
   constructor
   · exact (hp.add he).congr (Eventually.of_forall (fun z => by
       simp only [Pi.add_apply]

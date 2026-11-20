@@ -9,15 +9,20 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
+section
+variable {d : ℕ} (P : KineticPoint d) (s : ℝ) (v₀ ξ : PDE.Vec d)
+include d P s v₀ ξ
+
 /-- Centering the first time step multiplies its displacement Fourier transform by this phase. -/
-def exitFourierStepPhase {d : ℕ} (P : KineticPoint d) (s : ℝ) (v₀ ξ : PDE.Vec d) : ℂ :=
+def exitFourierStepPhase : ℂ :=
   Complex.exp (Complex.I * (PDE.vecDot ξ ((s - P.time) • v₀) : ℂ))
 
 /-- The centering step is a phase of modulus one. -/
-theorem norm_exitFourierStepPhase {d : ℕ}
-    (P : KineticPoint d) (s : ℝ) (v₀ ξ : PDE.Vec d) :
+theorem norm_exitFourierStepPhase :
     ‖exitFourierStepPhase P s v₀ ξ‖ = 1 := by
   simp [exitFourierStepPhase, Complex.norm_exp, Complex.mul_re]
+
+end
 
 /-- Physical centered Fourier tests factor at the true intermediate physical pole. -/
 theorem exitFourierTest_factor {d : ℕ} (P W Q : KineticPoint d)
@@ -52,44 +57,47 @@ theorem exitFourierTest_factor {d : ℕ} (P W Q : KineticPoint d)
   · simp only [exitFourierTest,
       indicator_of_notMem (show Q ∉ {Q | (Q.time, Q.velocity) ∈ E} from hQ), mul_zero]
 
-variable (hH : HormanderHypoellipticityStatement)
-  (hLE : LiebermanEllipsoidDirichletStatement)
+variable
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-  (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
+section
+variable (s T : ℝ) (hsT : s < T) (ξ : PDE.Vec d)
+
 /-- Position covariance identifies later poles with the zero-position Fourier family. -/
-theorem ballLaterExitFourier_eq_state (s T : ℝ) (hsT : s < T) (ξ : PDE.Vec d)
+theorem ballLaterExitFourier_eq_state
     (w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) s) :
-    ballLaterExitFourier hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ
+    ballLaterExitFourier hd B hB v₀ hR s T hsT ξ
       ⟨w.1.1, w.2.1⟩ =
-      exitFourier (ballExit hH hLE hd hlam hLam B hB v₀ hR
+      exitFourier (ballExit hd B hB v₀ hR
         (ballStateStart s w) ⟨T, hsT⟩) ξ := by
   let v : EvolutionPosition (PDE.euclideanBall v₀ R) (fun _ => 0) s := ⟨w.1.1, w.2.1⟩
   let P := ballStateStart s (positionStateZero _ _ s v)
-  have h := ballExit_translation hH hLE hd hlam hLam B hB v₀ hR w.1.2 P ⟨T, hsT⟩
-  let F (x : PDE.Vec d) := exitFourier (ballExit hH hLE hd hlam hLam B hB v₀ hR
+  have h := ballExit_translation hd B hB v₀ hR w.1.2 P ⟨T, hsT⟩
+  let F (x : PDE.Vec d) := exitFourier (ballExit hd B hB v₀ hR
     ⟨⟨s, x, w.1.1⟩, ball_state_velocity_mem s w⟩ ⟨T, hsT⟩) ξ
   have hh : F 0 = F (0 + w.1.2) := congrArg (fun μ => exitFourier μ ξ) h.symm
   exact hh.trans (congrArg F (zero_add w.1.2))
 
 /-- The zero-extended scalar test has modulus at most one on every ambient velocity. -/
-theorem norm_ballLaterExitFourierTest_le_one (s T : ℝ) (hsT : s < T) (ξ : PDE.Vec d)
+theorem norm_ballLaterExitFourierTest_le_one
     (E : Set (TimeVelocity d)) (v : PDE.Vec d) :
-    ‖ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ E v‖ ≤ 1 := by
+    ‖ballLaterExitFourierTest hd B hB v₀ hR s T hsT ξ E v‖ ≤ 1 := by
   by_cases hv : v ∈ movingDomain (PDE.euclideanBall v₀ R) (fun _ => 0) s
-  · rw [ballLaterExitFourierTest_valid hH hLE hd hlam hLam B hB v₀ hR
+  · rw [ballLaterExitFourierTest_valid hd B hB v₀ hR
       s T hsT ξ E ⟨v, hv⟩]
-    let ν := ballLaterExitFourier hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ ⟨v, hv⟩
-    have he : ν.variation E ≤ 1 := (measure_mono (subset_univ E)).trans
-      (ballLaterExitFourier_variation_le_one hH hLE hd hlam hLam B hB v₀ hR
+    let ν := ballLaterExitFourier hd B hB v₀ hR s T hsT ξ ⟨v, hv⟩
+    have he := (measure_mono (subset_univ E)).trans
+      (ballLaterExitFourier_variation_le_one hd B hB v₀ hR
         s T hsT ξ ⟨v, hv⟩)
     exact (VectorMeasure.norm_measure_le_variation
       (μ := ν) (ne_of_lt (he.trans_lt ENNReal.one_lt_top))).trans
       (by simpa only [Measure.real, ENNReal.toReal_one] using
         ENNReal.toReal_mono ENNReal.one_ne_top he)
-  · rw [ballLaterExitFourierTest_invalid hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ E v hv]
+  · rw [ballLaterExitFourierTest_invalid hd B hB v₀ hR s T hsT ξ E v hv]
     simp only [norm_zero, zero_le_one]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

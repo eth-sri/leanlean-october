@@ -27,8 +27,7 @@ theorem scalar_tail_power (s D p : ℝ) (hs : 0 < s) (hD : 0 < D) :
 
 /-- Positive cubic rescaling sends the positive scalar ray to positive infinity. -/
 theorem tendsto_scalar_tail_argument (D : ℝ) (hD : 0 < D) :
-    Tendsto (fun s : ℝ => s ^ 3 / D) atTop atTop := by
-  exact (tendsto_pow_atTop (by decide : 3 ≠ 0)).atTop_div_const hD
+    Tendsto (fun s : ℝ => s ^ 3 / D) atTop atTop := (tendsto_pow_atTop (by decide : 3 ≠ 0)).atTop_div_const hD
 
 /-- Pull back a power remainder by the positive cubic change of variable. -/
 theorem isBigO_comp_scalar_tail (e : ℝ → ℝ) (p D : ℝ) (hD : 0 < D)

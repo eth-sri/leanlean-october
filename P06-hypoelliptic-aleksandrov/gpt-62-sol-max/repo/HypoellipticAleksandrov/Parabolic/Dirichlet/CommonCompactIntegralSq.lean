@@ -43,19 +43,6 @@ theorem tendsto_integral_sq_of_common_compact_uniform_bound
       (pow_le_pow_left₀ (abs_nonneg _) ((hbound n x).trans (le_abs_self _)) 2)
   have hsqIntK (n : ℕ) : Integrable (fun x => (g n x) ^ 2) μK :=
     (hsqMemK n).integrable (by norm_num)
-  have hsqInt (n : ℕ) : Integrable (fun x => (g n x) ^ 2) μ := by
-    have hindicator : (K : Set α).indicator (fun x => (g n x) ^ 2) =
-        fun x => (g n x) ^ 2 := by
-      funext x
-      by_cases hx : x ∈ (K : Set α)
-      · rw [Set.indicator_of_mem hx]
-      · rw [Set.indicator_of_notMem hx]
-        have hgzero : g n x = 0 := by
-          by_contra hgne
-          exact hx (hgsupport n hgne)
-        rw [hgzero, zero_pow (by norm_num : 2 ≠ 0)]
-    rw [← hindicator, integrable_indicator_iff hKmeas]
-    simpa only [μK, IntegrableOn] using hsqIntK n
   have hlower (n : ℕ) : 0 ≤ ∫ x, (g n x) ^ 2 ∂μ :=
     integral_nonneg fun _ => sq_nonneg _
   have hupper (n : ℕ) :

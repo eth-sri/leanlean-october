@@ -17,7 +17,7 @@ theorem bellman_densityDegree_of_map_dilation (β : ℝ) (μ : Measure BellmanPu
       ENNReal.ofReal (r ^ (β - 4)) • μ) : HasBellmanDensityDegree β μ := by
   intro r hr E hE
   let D := bellmanDilationHomeomorph r hr
-  have hi : MeasurableSet (D '' E) := D.measurableEmbedding.measurableSet_image.mpr hE
+  have hi := D.measurableEmbedding.measurableSet_image.mpr hE
   have he := congrArg (fun ν : Measure BellmanPuncturedPlane => ν (D '' E)) (hm r hr)
   change (Measure.map D μ) (D '' E) = _ at he
   rw [Measure.map_apply D.measurable hi, D.injective.preimage_image,

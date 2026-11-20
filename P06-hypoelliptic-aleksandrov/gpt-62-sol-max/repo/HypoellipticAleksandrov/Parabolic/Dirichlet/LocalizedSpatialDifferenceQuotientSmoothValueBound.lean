@@ -43,27 +43,6 @@ private theorem zeroExtend_value_eq_smoothWeakTest_ae
     have hnot : y ∉ tsupport φ := fun hsupport => hy (φ.tsupport_subset hsupport)
     exact (image_eq_zero_of_notMem_tsupport hnot).symm
 
-private theorem localizedSpatialDifferenceQuotientL2_apply_smooth_ae
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω) :
-    ⇑(localizedSpatialDifferenceQuotientL2 hΩ.measurableSet η k h
-      (valueCLM hΩ
-        (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ))) =ᵐ[PDE.volumeOn Ω]
-      localizedSpatialDifferenceQuotient η k h φ := by
-  let f : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ
-    (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ)
-  have hambient : ⇑(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ.measurableSet f) =ᵐ[volume] φ := by
-    simpa only [f] using zeroExtend_value_eq_smoothWeakTest_ae hΩ φ
-  have hlocal := localizedSpatialDifferenceQuotientL2_apply_ae hΩ.measurableSet η k h f
-  have hshifted := (measurePreserving_add_right (volume : Measure (PDE.Vec d))
-    (h • PDE.basisVec k)).quasiMeasurePreserving.ae hambient
-  filter_upwards [hlocal, ae_restrict_of_ae hambient,
-    ae_restrict_of_ae hshifted] with y hlocal hambient hshifted
-  rw [hlocal]
-  simp only [localizedSpatialDifferenceQuotient_apply]
-  rw [hambient, hshifted]
-
 private theorem integrable_sq_smoothWeakTest_differenceQuotient
     {d : ℕ} {Ω : Set (PDE.Vec d)} (φ : PDE.WeakTestFunction Ω)
     (k : Fin d) (h : ℝ) :
@@ -86,10 +65,11 @@ private theorem integrable_sq_smoothWeakTest_differenceQuotient
     hdiffsupport.comp_left (g := fun x : ℝ => (x / h) ^ 2) (by simp)
   simpa only [z] using hqcontinuous.integrable_of_hasCompactSupport hqsupport
 
-private theorem integrable_sq_localizedSpatialDifferenceQuotient_smoothWeakTest
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (f : PDE.Vec d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+section
+variable {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+  (η : PDE.QuantitativeSmoothCutoff inner outer K) (f : PDE.Vec d → ℝ)
+
+private theorem integrable_sq_localizedSpatialDifferenceQuotient_smoothWeakTest (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (k : Fin d) (h : ℝ) :
     Integrable (fun y => localizedSpatialDifferenceQuotient η k h f y ^ 2)
       (volume : Measure (PDE.Vec d)) := by
@@ -100,16 +80,13 @@ private theorem integrable_sq_localizedSpatialDifferenceQuotient_smoothWeakTest
       (g := fun x : ℝ => x ^ 2) (by norm_num)
   exact hcont.integrable_of_hasCompactSupport hsupp
 
-private theorem sq_localizedSpatialDifferenceQuotient_le_sq_differenceQuotient
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (f : PDE.Vec d → ℝ) (y : PDE.Vec d) (k : Fin d) (h : ℝ) :
+private theorem sq_localizedSpatialDifferenceQuotient_le_sq_differenceQuotient (y : PDE.Vec d) (k : Fin d) (h : ℝ) :
     localizedSpatialDifferenceQuotient η k h f y ^ 2 ≤
       ((f (y + h • PDE.basisVec k) - f y) / h) ^ 2 := by
   rw [localizedSpatialDifferenceQuotient_apply]
   have hnonneg := η.nonneg y
   have hleone := η.le_one y
-  have hsq : η.toFun y ^ 2 ≤ (1 : ℝ) ^ 2 :=
+  have hsq :=
     (sq_le_sq₀ hnonneg zero_le_one).mpr hleone
   calc
     (η.toFun y * ((f (y + h • PDE.basisVec k) - f y) / h)) ^ 2 =
@@ -118,8 +95,12 @@ private theorem sq_localizedSpatialDifferenceQuotient_le_sq_differenceQuotient
       mul_le_mul_of_nonneg_right hsq (sq_nonneg _)
     _ = ((f (y + h • PDE.basisVec k) - f y) / h) ^ 2 := by norm_num
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+
 private theorem integral_sq_classicalGradient_eq_restrict
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (φ : PDE.WeakTestFunction Ω) :
     (∫ y, PDE.vecEuclideanNorm (PDE.classicalGradient φ y) ^ 2) =
       ∫ y, PDE.vecEuclideanNorm (PDE.classicalGradient φ y) ^ 2 ∂PDE.volumeOn Ω := by
@@ -133,8 +114,7 @@ private theorem integral_sq_classicalGradient_eq_restrict
   rw [hfderiv]
   simp [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot]
 
-private theorem ae_norm_gradientCLM_smoothWeakTest_eq_classicalGradient
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+private theorem ae_norm_gradientCLM_smoothWeakTest_eq_classicalGradient (hΩ : IsOpen Ω)
     (φ : PDE.WeakTestFunction Ω) :
     (fun y => ‖gradientCLM hΩ
       (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ) y‖)
@@ -158,6 +138,8 @@ private theorem ae_norm_gradientCLM_smoothWeakTest_eq_classicalGradient
       PDE.classicalGradient_apply, PDE.WeakTestFunction.partialDeriv] using hcoords j
   rw [hvec]
   exact PDE.norm_toHilbertVecField_apply _ _
+
+end
 
 /-- The localized quotient of an actual smooth zero-boundary test is
 controlled by its weak-gradient `L²` norm. -/
@@ -183,7 +165,18 @@ theorem norm_localizedSpatialDifferenceQuotientL2_apply_smooth_le_gradient
     PDE.vecEuclideanNorm (PDE.classicalGradient φ y)
   have hQae : ⇑Q =ᵐ[PDE.volumeOn Ω] ℓ := by
     dsimp only [Q, u, ℓ]
-    exact localizedSpatialDifferenceQuotientL2_apply_smooth_ae hΩ η k h φ
+    let f := valueCLM hΩ
+      (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ)
+    have hambient : ⇑(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ.measurableSet f) =ᵐ[volume] φ := by
+      simpa only [f] using zeroExtend_value_eq_smoothWeakTest_ae hΩ φ
+    have hlocal := localizedSpatialDifferenceQuotientL2_apply_ae hΩ.measurableSet η k h f
+    have hshifted := (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (h • PDE.basisVec k)).quasiMeasurePreserving.ae hambient
+    filter_upwards [hlocal, ae_restrict_of_ae hambient,
+      ae_restrict_of_ae hshifted] with y hlocal hambient hshifted
+    rw [hlocal]
+    simp only [localizedSpatialDifferenceQuotient_apply]
+    rw [hambient, hshifted]
   have hqint : Integrable (fun y => q y ^ 2) (volume : Measure (PDE.Vec d)) := by
     simpa only [q] using integrable_sq_smoothWeakTest_differenceQuotient φ k h
   have hℓint : Integrable (fun y => ℓ y ^ 2) (volume : Measure (PDE.Vec d)) := by

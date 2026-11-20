@@ -11,8 +11,11 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
+section
+variable {d : ℕ}
+
 /-- The full joint derivative splits into the two literal slice derivatives. -/
-theorem fderiv_uncurry_split {d : ℕ} (phi : PDE.Vec d → PDE.Vec d → ℝ)
+theorem fderiv_uncurry_split (phi : PDE.Vec d → PDE.Vec d → ℝ)
     (y e u w : PDE.Vec d) (hphi : DifferentiableAt ℝ (Function.uncurry phi) (y, e)) :
     fderiv ℝ (Function.uncurry phi) (y, e) (u, w) =
       fderiv ℝ (fun z => phi z e) y u + fderiv ℝ (fun z => phi y z) e w := by
@@ -51,11 +54,11 @@ theorem fderiv_uncurry_split {d : ℕ} (phi : PDE.Vec d → PDE.Vec d → ℝ)
     ContinuousLinearMap.id_apply, zero_apply]
 
 /-- The normalized velocity differential has the exact inverse-radius factor. -/
-theorem normalizedVelocityDifferential_apply {d : ℕ} (x v w : PDE.Vec d) (hx : x ≠ 0) :
+theorem normalizedVelocityDifferential_apply (x v w : PDE.Vec d) (hx : x ≠ 0) :
     normalizedVelocityDifferential x v w =
       (-(1 / 3 : ℝ) * (PDE.vecEuclideanNorm x)⁻¹ *
         PDE.vecDot (positionDirection x) w) • normalizedVelocity x v := by
-  have hr : 0 < PDE.vecEuclideanNorm x := PDE.vecEuclideanNorm_pos_iff.mpr hx
+  have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
   have hp : Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3 : ℝ) - 1) =
       (PDE.vecEuclideanNorm x)⁻¹ * Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3 : ℝ)) := by
     simp only [Real.rpow_eq_pow]
@@ -68,7 +71,7 @@ theorem normalizedVelocityDifferential_apply {d : ℕ} (x v w : PDE.Vec d) (hx :
   ring
 
 /-- The cube-root physical velocity is recovered exactly from the normalized velocity. -/
-theorem velocity_eq_cubeRoot_smul {d : ℕ} (x v : PDE.Vec d) (hx : x ≠ 0) :
+theorem velocity_eq_cubeRoot_smul (x v : PDE.Vec d) (hx : x ≠ 0) :
     v = Real.rpow (PDE.vecEuclideanNorm x) (1 / 3) • normalizedVelocity x v := by
   have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
   unfold normalizedVelocity
@@ -77,9 +80,13 @@ theorem velocity_eq_cubeRoot_smul {d : ℕ} (x v : PDE.Vec d) (hx : x ≠ 0) :
   rw [← Real.rpow_add hr]
   norm_num
 
+end
+
+section
+variable {d : ℕ} (alpha : ℝ) (phi : PDE.Vec d → PDE.Vec d → ℝ)
+
 /-- The exact position derivative gives the angular expression before transport contraction. -/
-theorem fderiv_homogeneousAnsatz_position {d : ℕ} (alpha : ℝ)
-    (phi : PDE.Vec d → PDE.Vec d → ℝ) (x v w : PDE.Vec d) (hx : x ≠ 0)
+theorem fderiv_homogeneousAnsatz_position (x v w : PDE.Vec d) (hx : x ≠ 0)
     (hphi : DifferentiableAt ℝ (Function.uncurry phi)
       (normalizedVelocity x v, positionDirection x)) :
     fderiv ℝ (fun z => homogeneousAnsatz alpha phi z v) x w =
@@ -112,8 +119,7 @@ theorem fderiv_homogeneousAnsatz_position {d : ℕ} (alpha : ℝ)
         (w - PDE.vecDot (positionDirection x) w • positionDirection x)) * hp
 
 /-- Transport and the velocity Hessian have the identical kinetic prefactor. -/
-theorem homogeneousAnsatz_transport {d : ℕ} (alpha : ℝ)
-    (phi : PDE.Vec d → PDE.Vec d → ℝ) (x v : PDE.Vec d) (hx : x ≠ 0)
+theorem homogeneousAnsatz_transport (x v : PDE.Vec d) (hx : x ≠ 0)
     (hphi : DifferentiableAt ℝ (Function.uncurry phi)
       (normalizedVelocity x v, positionDirection x)) :
     fderiv ℝ (fun z => homogeneousAnsatz alpha phi z v) x v =
@@ -151,5 +157,7 @@ theorem homogeneousAnsatz_transport {d : ℕ} (alpha : ℝ)
       unfold ansatzTransport
       ring
     _ = _ := by rw [hp]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

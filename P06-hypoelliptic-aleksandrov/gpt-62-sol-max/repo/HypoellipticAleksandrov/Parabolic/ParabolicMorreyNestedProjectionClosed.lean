@@ -18,16 +18,14 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
-private theorem continuous_parabolicMorreyBoxAffineProjection
+theorem continuous_parabolicMorreyBoxAffineProjection
     {d : Nat} (t : Real) (v : PDE.Vec d) (r : Real)
     (u : TimeVelocity d -> Real) :
     Continuous (parabolicMorreyBoxAffineProjection t v r u) := by
   unfold parabolicMorreyBoxAffineProjection
   apply Continuous.add continuous_const
   apply continuous_finset_sum
-  intro i _
-  exact continuous_const.mul ((continuous_apply i).comp continuous_snd |>.sub
-    continuous_const)
+  fun_prop
 
 /-- The nested comparison extends to a point in the literal closed
 small forward box, without changing its constant. -/

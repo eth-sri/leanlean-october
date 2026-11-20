@@ -22,123 +22,41 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped BigOperators ENNReal Topology
 
-private theorem parabolicELpNormOn_timeDerivative_pullbackScalar_local
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
-    (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
-    (hmap : MapsTo (parabolicAffine t0 v0 r) s U) :
-    parabolicELpNormOn d (timeDerivative (pullbackScalar u t0 v0 r)) s =
-      (‖r ^ 2‖ₑ * parabolicELpNormPullbackMeasureFactor d r) *
-        parabolicELpNormOn d (timeDerivative u) (parabolicAffine t0 v0 r '' s) := by
-  have heq : timeDerivative (pullbackScalar u t0 v0 r) =ᵐ[volume.restrict s]
-      fun x => r ^ 2 * timeDerivative u (parabolicAffine t0 v0 r x) := by
-    rw [Filter.EventuallyEq, ae_restrict_iff' hs]
-    exact Eventually.of_forall fun x hx =>
-      timeDerivative_pullbackScalar (q := u) (z := x) (t₀ := t0) (v₀ := v0) (r := r)
-        (hu.contDiffAt (hU.mem_nhds (hmap hx)))
-  calc
-    parabolicELpNormOn d (timeDerivative (pullbackScalar u t0 v0 r)) s =
-        eLpNorm (fun x => r ^ 2 * timeDerivative u (parabolicAffine t0 v0 r x))
-          (parabolicExponent d) (volume.restrict s) := eLpNorm_congr_ae heq
-    _ = ‖r ^ 2‖ₑ * parabolicELpNormOn d
-        (pullbackScalar (timeDerivative u) t0 v0 r) s := by
-      change eLpNorm ((r ^ 2) • pullbackScalar (timeDerivative u) t0 v0 r)
-        (parabolicExponent d) (volume.restrict s) = _
-      rw [eLpNorm_const_smul]
-      rfl
-    _ = _ := by
-      rw [parabolicELpNormOn_pullbackScalar t0 v0 hr]
-      ac_rfl
+private theorem parabolicLpNormOn_scaled_pullback_finite
+    {d : ℕ} {s : Set (TimeVelocity d)} {t₀ r a : ℝ} {v₀ : PDE.Vec d}
+    {f g : TimeVelocity d → ℝ} (hs : MeasurableSet s) (hr : 0 < r)
+    (he : ∀ z ∈ s, f z = a * g (parabolicAffine t₀ v₀ r z))
+    (hf : parabolicELpNormOn d g (parabolicAffine t₀ v₀ r '' s) ≠ ⊤) :
+    parabolicELpNormOn d f s ≠ ⊤ ∧ parabolicLpNormOn d f s =
+      (‖a‖ₑ * parabolicELpNormPullbackMeasureFactor d r).toReal *
+        parabolicLpNormOn d g (parabolicAffine t₀ v₀ r '' s) := by
+  have h : parabolicELpNormOn d f s =
+      parabolicELpNormOn d (fun z => a * g (parabolicAffine t₀ v₀ r z)) s :=
+    eLpNorm_congr_ae ((ae_restrict_mem hs).mono he)
+  rw [parabolicELpNormOn_const_mul_pullbackScalar t₀ v₀ hr a g s] at h
+  constructor
+  · rw [h]
+    exact ENNReal.mul_ne_top
+      (ENNReal.mul_ne_top enorm_ne_top (parabolicELpNormPullbackMeasureFactor_ne_top d r)) hf
+  · simp only [parabolicLpNormOn, h, ENNReal.toReal_mul]
 
-private theorem parabolicELpNormOn_velocityGradient_pullbackScalar_local
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
-    (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
-    (hmap : MapsTo (parabolicAffine t0 v0 r) s U) (i : Fin d) :
-    parabolicELpNormOn d (fun x => velocityGradient (pullbackScalar u t0 v0 r) x i) s =
-      (‖r‖ₑ * parabolicELpNormPullbackMeasureFactor d r) *
-        parabolicELpNormOn d (fun x => velocityGradient u x i)
-          (parabolicAffine t0 v0 r '' s) := by
-  have heq : (fun x => velocityGradient (pullbackScalar u t0 v0 r) x i) =ᵐ[volume.restrict s]
-      fun x => r * velocityGradient u (parabolicAffine t0 v0 r x) i := by
-    rw [Filter.EventuallyEq, ae_restrict_iff' hs]
-    exact Eventually.of_forall fun x hx => by
-      have h := congrFun (velocityGradient_pullbackScalar (q := u) (z := x)
-        (t₀ := t0) (v₀ := v0) (r := r)
-        ((hu.contDiffAt (hU.mem_nhds (hmap hx))).of_le (by norm_num))) i
-      simpa only [Matrix.smul_apply, Pi.smul_apply, smul_eq_mul] using h
-  calc
-    parabolicELpNormOn d (fun x => velocityGradient (pullbackScalar u t0 v0 r) x i) s =
-        eLpNorm (fun x => r * velocityGradient u (parabolicAffine t0 v0 r x) i)
-          (parabolicExponent d) (volume.restrict s) := eLpNorm_congr_ae heq
-    _ = ‖r‖ₑ * parabolicELpNormOn d
-        (pullbackScalar (fun x => velocityGradient u x i) t0 v0 r) s := by
-      change eLpNorm (r • pullbackScalar (fun x => velocityGradient u x i) t0 v0 r)
-        (parabolicExponent d) (volume.restrict s) = _
-      rw [eLpNorm_const_smul]
-      rfl
-    _ = _ := by
-      rw [parabolicELpNormOn_pullbackScalar t0 v0 hr]
-      ac_rfl
-
-private theorem parabolicELpNormOn_velocityHessian_pullbackScalar_local
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
-    (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
-    (hmap : MapsTo (parabolicAffine t0 v0 r) s U) (i j : Fin d) :
-    parabolicELpNormOn d
-        (fun x => velocityHessian (pullbackScalar u t0 v0 r) x i j) s =
-      (‖r ^ 2‖ₑ * parabolicELpNormPullbackMeasureFactor d r) *
-        parabolicELpNormOn d (fun x => velocityHessian u x i j)
-          (parabolicAffine t0 v0 r '' s) := by
-  have heq : (fun x => velocityHessian (pullbackScalar u t0 v0 r) x i j) =ᵐ[volume.restrict s]
-      fun x => r ^ 2 * velocityHessian u (parabolicAffine t0 v0 r x) i j := by
-    rw [Filter.EventuallyEq, ae_restrict_iff' hs]
-    exact Eventually.of_forall fun x hx => by
-      have h := congrFun (congrFun (velocityHessian_pullbackScalar (q := u) (z := x)
-        (t₀ := t0) (v₀ := v0) (r := r) (hu.contDiffAt (hU.mem_nhds (hmap hx)))) i) j
-      simpa only [Matrix.smul_apply, Pi.smul_apply, smul_eq_mul] using h
-  calc
-    parabolicELpNormOn d
-        (fun x => velocityHessian (pullbackScalar u t0 v0 r) x i j) s =
-        eLpNorm (fun x => r ^ 2 * velocityHessian u (parabolicAffine t0 v0 r x) i j)
-          (parabolicExponent d) (volume.restrict s) := eLpNorm_congr_ae heq
-    _ = ‖r ^ 2‖ₑ * parabolicELpNormOn d
-        (pullbackScalar (fun x => velocityHessian u x i j) t0 v0 r) s := by
-      change eLpNorm ((r ^ 2) • pullbackScalar (fun x => velocityHessian u x i j) t0 v0 r)
-        (parabolicExponent d) (volume.restrict s) = _
-      rw [eLpNorm_const_smul]
-      rfl
-    _ = _ := by
-      rw [parabolicELpNormOn_pullbackScalar t0 v0 hr]
-      ac_rfl
+section
+variable {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real} {t0 r : Real}
+  {v0 : PDE.Vec d} (hU : IsOpen U) (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
+  (hmap : MapsTo (parabolicAffine t0 v0 r) s U)
+include U hU hs hr hu hmap
 
 private theorem parabolicLpNormOn_timeDerivative_pullbackScalar_local_finite
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
-    (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
-    (hmap : MapsTo (parabolicAffine t0 v0 r) s U)
     (hfin : parabolicELpNormOn d (timeDerivative u)
       (parabolicAffine t0 v0 r '' s) ≠ ⊤) :
     parabolicELpNormOn d (timeDerivative (pullbackScalar u t0 v0 r)) s ≠ ⊤ ∧
       parabolicLpNormOn d (timeDerivative (pullbackScalar u t0 v0 r)) s =
         (‖r ^ 2‖ₑ * parabolicELpNormPullbackMeasureFactor d r).toReal *
           parabolicLpNormOn d (timeDerivative u) (parabolicAffine t0 v0 r '' s) := by
-  have hscale := parabolicELpNormOn_timeDerivative_pullbackScalar_local
-    hU hs hr hu hmap
-  constructor
-  · rw [hscale]
-    exact ENNReal.mul_ne_top
-      (ENNReal.mul_ne_top enorm_ne_top
-        (ENNReal.rpow_ne_top_of_nonneg ENNReal.toReal_nonneg ENNReal.ofReal_ne_top)) hfin
-  · unfold parabolicLpNormOn
-    rw [hscale, ENNReal.toReal_mul]
+  exact parabolicLpNormOn_scaled_pullback_finite hs hr
+    (fun _ hx => timeDerivative_pullbackScalar (hu.contDiffAt (hU.mem_nhds (hmap hx)))) hfin
 
-private theorem parabolicLpNormOn_velocityGradient_pullbackScalar_local_finite
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
-    (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
-    (hmap : MapsTo (parabolicAffine t0 v0 r) s U) (i : Fin d)
+private theorem parabolicLpNormOn_velocityGradient_pullbackScalar_local_finite (i : Fin d)
     (hfin : parabolicELpNormOn d (fun x => velocityGradient u x i)
       (parabolicAffine t0 v0 r '' s) ≠ ⊤) :
     parabolicELpNormOn d (fun x => velocityGradient (pullbackScalar u t0 v0 r) x i) s ≠ ⊤ ∧
@@ -146,21 +64,12 @@ private theorem parabolicLpNormOn_velocityGradient_pullbackScalar_local_finite
         (‖r‖ₑ * parabolicELpNormPullbackMeasureFactor d r).toReal *
           parabolicLpNormOn d (fun x => velocityGradient u x i)
             (parabolicAffine t0 v0 r '' s) := by
-  have hscale := parabolicELpNormOn_velocityGradient_pullbackScalar_local
-    hU hs hr hu hmap i
-  constructor
-  · rw [hscale]
-    exact ENNReal.mul_ne_top
-      (ENNReal.mul_ne_top enorm_ne_top
-        (ENNReal.rpow_ne_top_of_nonneg ENNReal.toReal_nonneg ENNReal.ofReal_ne_top)) hfin
-  · unfold parabolicLpNormOn
-    rw [hscale, ENNReal.toReal_mul]
+  refine parabolicLpNormOn_scaled_pullback_finite hs hr (fun x hx => ?_) hfin
+  simpa only [Pi.smul_apply, smul_eq_mul] using
+    congrFun (velocityGradient_pullbackScalar
+      ((hu.contDiffAt (hU.mem_nhds (hmap hx))).of_le (by norm_num))) i
 
-private theorem parabolicLpNormOn_velocityHessian_pullbackScalar_local_finite
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
-    (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
-    (hmap : MapsTo (parabolicAffine t0 v0 r) s U) (i j : Fin d)
+private theorem parabolicLpNormOn_velocityHessian_pullbackScalar_local_finite (i j : Fin d)
     (hfin : parabolicELpNormOn d (fun x => velocityHessian u x i j)
       (parabolicAffine t0 v0 r '' s) ≠ ⊤) :
     parabolicELpNormOn d
@@ -170,15 +79,12 @@ private theorem parabolicLpNormOn_velocityHessian_pullbackScalar_local_finite
         (‖r ^ 2‖ₑ * parabolicELpNormPullbackMeasureFactor d r).toReal *
           parabolicLpNormOn d (fun x => velocityHessian u x i j)
             (parabolicAffine t0 v0 r '' s) := by
-  have hscale := parabolicELpNormOn_velocityHessian_pullbackScalar_local
-    hU hs hr hu hmap i j
-  constructor
-  · rw [hscale]
-    exact ENNReal.mul_ne_top
-      (ENNReal.mul_ne_top enorm_ne_top
-        (ENNReal.rpow_ne_top_of_nonneg ENNReal.toReal_nonneg ENNReal.ofReal_ne_top)) hfin
-  · unfold parabolicLpNormOn
-    rw [hscale, ENNReal.toReal_mul]
+  refine parabolicLpNormOn_scaled_pullback_finite hs hr (fun x hx => ?_) hfin
+  simpa only [Matrix.smul_apply, Pi.smul_apply, smul_eq_mul] using
+    congrFun (congrFun (velocityHessian_pullbackScalar
+      (hu.contDiffAt (hU.mem_nhds (hmap hx)))) i) j
+
+end
 
 private theorem mem_parabolicAffine_inner_box_iff
     {d : Nat} {t0 r : Real} {v0 : PDE.Vec d} (hr : 0 < r)
@@ -268,7 +174,11 @@ private theorem parabolic_pullback_factor_toReal (d : Nat) {r : Real} (hr : 0 < 
   push_cast
   ring
 
-private theorem parabolic_pullback_value_factor (d : Nat) {r : Real} (hr : 0 < r) :
+section
+variable (d : Nat) {r : Real} (hr : 0 < r)
+include hr
+
+private theorem parabolic_pullback_value_factor :
     r⁻¹ ^ parabolicMorreyExponent d *
       (parabolicELpNormPullbackMeasureFactor d r).toReal = r ^ (-2 : Real) := by
   rw [parabolic_pullback_factor_toReal d hr]
@@ -278,7 +188,7 @@ private theorem parabolic_pullback_value_factor (d : Nat) {r : Real} (hr : 0 < r
   field_simp
   ring
 
-private theorem parabolic_pullback_time_factor (d : Nat) {r : Real} (hr : 0 < r) :
+private theorem parabolic_pullback_time_factor :
     r⁻¹ ^ parabolicMorreyExponent d *
       (‖r ^ 2‖ₑ * parabolicELpNormPullbackMeasureFactor d r).toReal = 1 := by
   rw [ENNReal.toReal_mul, Real.enorm_of_nonneg (sq_nonneg r),
@@ -291,7 +201,7 @@ private theorem parabolic_pullback_time_factor (d : Nat) {r : Real} (hr : 0 < r)
   push_cast
   ring_nf
 
-private theorem parabolic_pullback_gradient_factor (d : Nat) {r : Real} (hr : 0 < r) :
+private theorem parabolic_pullback_gradient_factor :
     r⁻¹ ^ parabolicMorreyExponent d *
       (‖r‖ₑ * parabolicELpNormPullbackMeasureFactor d r).toReal = r⁻¹ := by
   rw [ENNReal.toReal_mul, Real.enorm_of_nonneg hr.le,
@@ -310,6 +220,8 @@ private theorem parabolic_pullback_gradient_factor (d : Nat) {r : Real} (hr : 0 
       field_simp
       ring
     _ = r⁻¹ := by rw [Real.rpow_neg_one]
+
+end
 
 /-- Smooth local parabolic Holder control on a literal physical inner box,
 obtained by a fixed reference collar cutoff. -/
@@ -435,22 +347,6 @@ theorem exists_parabolicMorreyPhysicalLocalHolderFullJetConst
   have hqHessFin (i j : Fin d) :=
     parabolicLpNormOn_velocityHessian_pullbackScalar_local_finite hUopen hU0meas hR hu hmap i j
       (hfinHess i j)
-  have hU0open : IsOpen U0 := by
-    dsimp [U0]
-    exact isOpen_parabolicBox 1 1 0 0
-  have hD1 : ContDiffOn Real 1 (fderiv Real q) U0 :=
-    hq.fderiv_of_isOpen hU0open (by norm_num)
-  have hD2 : ContDiffOn Real 0 (fderiv Real (fderiv Real q)) U0 :=
-    hD1.fderiv_of_isOpen hU0open (by norm_num)
-  have hqTimeCont : ContinuousOn (timeDerivative q) U0 := by
-    unfold timeDerivative
-    simpa using hD1.continuousOn.clm_apply continuousOn_const
-  have hqGradCont (i : Fin d) : ContinuousOn (fun x => velocityGradient q x i) U0 := by
-    unfold velocityGradient
-    simpa using hD1.continuousOn.clm_apply continuousOn_const
-  have hqHessCont (i j : Fin d) : ContinuousOn (fun x => velocityHessian q x i j) U0 := by
-    unfold velocityHessian
-    simpa using hD2.continuousOn.clm_apply continuousOn_const |>.clm_apply continuousOn_const
   have hqMem : ParabolicMemLpOn U0 (parabolicExponent d) q :=
     lt_top_iff_ne_top.mpr hqValueFin
   have hqTimeMem : ParabolicMemLpOn U0 (parabolicExponent d) (timeDerivative q) :=

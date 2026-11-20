@@ -22,8 +22,6 @@ theorem exitFourier_exp_rate {a c x : ℝ} (hca : c ≤ a) (hx : 0 ≤ x) :
 
 /-- The actual exit Fourier measure has both short-time exponentials, uniformly over all data. -/
 theorem ballExit_fourier_two_exponentials
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
       ∀ (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
@@ -32,13 +30,13 @@ theorem ballExit_fourier_two_exponentials
         (H : {t : ℝ // P.1.time < t ∧ t < T.1}),
       P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4) →
       H.1 - P.1.time ≤ R ^ 2 / 8 → ∀ ξ : PDE.Vec d,
-      ((exitFourier (ballExit hH hLE hd hlam hLam B hB v₀ hR P T) ξ).variation univ).toReal ≤
+      ((exitFourier (ballExit hd B hB v₀ hR P T) ξ).variation univ).toReal ≤
         C * (Real.exp (-c * R ^ 2 / (H.1 - P.1.time)) +
           Real.exp (-c * (H.1 - P.1.time) * PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ))) := by
   obtain ⟨Cs, cs, hCs, hcs, hloss⟩ :=
-    ballKernel_short_time_loss hH hLE d hd lam Lam hlam hLam
+    ballKernel_short_time_loss d hd lam Lam hlam hLam
   obtain ⟨Ck, ck, hCk, hck, hkilled⟩ :=
-    ballKernel_short_time_fourier hH hLE d hd lam Lam hlam hLam
+    ballKernel_short_time_fourier d hd lam Lam hlam hLam
   let c := min cs ck
   refine ⟨Cs + Ck, c, add_pos hCs hCk, lt_min hcs hck, ?_⟩
   intro B hB v₀ R hR P T H hv hsmall ξ
@@ -62,7 +60,7 @@ theorem ballExit_fourier_two_exponentials
   have hk' := hk.trans (mul_le_mul_of_nonneg_left
     (add_le_add (exitFourier_exp_rate (min_le_right cs ck) hx)
       (exitFourier_exp_rate (min_le_right cs ck) hy)) hCk.le)
-  have hb := (ballExit_fourier_short_strip_bound hH hLE hd hlam hLam B hB v₀ hR
+  have hb := (ballExit_fourier_short_strip_bound hd B hB v₀ hR
     P T H ξ).trans (add_le_add hs' hk')
   have he := exitFourier_add_positive_bounds (B := Ck) (X := Real.exp (-c * x))
     hCs.le (Real.exp_pos (-c * y)).le

@@ -1,6 +1,5 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.MainAssembly
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.FinalA
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Setting
 
@@ -37,7 +36,7 @@ theorem kinetic_holder_timeVelocity
       ∀ P ∈ K, ∀ P' ∈ K,
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
           (quasiDistance P P' / R₀) ^ alpha := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_holder_timeVelocity_proof
-    d hd lam Lam hlam hLam
+  exact kinetic_holder_timeVelocity_relative_of_smooth
+    LocalA.smoothLocalRegularityStatement_holds d hd lam Lam hlam hLam
 
 end HypoellipticAleksandrov.KineticAleksandrov

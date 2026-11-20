@@ -13,9 +13,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 
+section
+variable {d : ℕ}
+
 /-- A global weak directional derivative transfers through the native spatial chart.
 The chart preserves measure, so no determinant or normalization factor occurs. -/
-theorem weak_directional_spatialCoordinate {d : ℕ} (u g : XV d → ℝ)
+theorem weak_directional_spatialCoordinate (u g : XV d → ℝ)
     (w : XV d) (z : PDE.Vec (d + d)) (hz : spatialCoordinateCLE d z = w)
     (hweak : ∀ test : XV d → ℝ, ContDiff ℝ (⊤ : ℕ∞) test →
       HasCompactSupport test →
@@ -52,7 +55,7 @@ theorem weak_directional_spatialCoordinate {d : ℕ} (u g : XV d → ℝ)
   exact hLn.trans ((hweak psi hp hc).trans (congrArg Neg.neg hRn.symm))
 
 /-- A global weak coordinate identity restricts to any domain for tests supported inside it. -/
-theorem weakPartial_on_of_global {d : ℕ} (D : Set (PDE.Vec d)) (i : Fin d)
+theorem weakPartial_on_of_global (D : Set (PDE.Vec d)) (i : Fin d)
     (u g : PDE.Vec d → ℝ)
     (hweak : ∀ test : PDE.Vec d → ℝ, ContDiff ℝ (⊤ : ℕ∞) test →
       HasCompactSupport test →
@@ -74,7 +77,7 @@ theorem weakPartial_on_of_global {d : ℕ} (D : Set (PDE.Vec d)) (i : Fin d)
 
 /-- A first jet has the corresponding weak derivative when first and second
 integration-by-parts identities use the same representatives. -/
-theorem weak_first_jet_of_second {d : ℕ} (u g h : XV d → ℝ) (w z : XV d)
+theorem weak_first_jet_of_second (u g h : XV d → ℝ) (w z : XV d)
     (hfirst : ∀ test : XV d → ℝ, ContDiff ℝ (⊤ : ℕ∞) test →
       HasCompactSupport test →
       (∫ q, u q * fderiv ℝ test q w) = -(∫ q, g q * test q))
@@ -94,7 +97,7 @@ theorem weak_first_jet_of_second {d : ℕ} (u g h : XV d → ℝ) (w z : XV d)
 
 /-- Weak coordinate identities on all bounded convex neighborhoods give the global
 compact-test identity, by enclosing each actual test support in a metric ball. -/
-theorem weakPartial_global_of_locals {d : ℕ} (i : Fin d) (u g : PDE.Vec d → ℝ)
+theorem weakPartial_global_of_locals (i : Fin d) (u g : PDE.Vec d → ℝ)
     (hweak : ∀ D : Set (PDE.Vec d), PDE.IsOpenBoundedConvexDomain D →
       PDE.HasWeakPartialDerivOn D i u g)
     (test : PDE.Vec d → ℝ) (ht : ContDiff ℝ (⊤ : ℕ∞) test)
@@ -117,5 +120,7 @@ theorem weakPartial_global_of_locals {d : ℕ} (i : Fin d) (u g : PDE.Vec d → 
     intro x hx
     rw [image_eq_zero_of_notMem_tsupport (fun h => hx (hR h)), mul_zero]
   rwa [hL, hR'] at he
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

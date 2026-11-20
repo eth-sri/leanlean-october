@@ -21,7 +21,6 @@ open scoped Topology MatrixOrder
 /-- Existence of a classical terminal solution, derived from viscous existence.  Hörmander's
 hypoellipticity theorem and viscous existence are explicit hypotheses. -/
 theorem exists_classical_terminalSolution_of_viscous
-    (hH : HormanderHypoellipticityStatement)
     (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
     (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
@@ -62,7 +61,6 @@ theorem exists_classical_terminalSolution_of_viscous
       constructor
       · positivity
       · exact (div_le_one (by positivity)).mpr (by
-          have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
           linarith)⟩
   let v := fun j => family (seqε j)
   let w := family ⟨1, one_pos, le_rfl⟩
@@ -73,7 +71,7 @@ theorem exists_classical_terminalSolution_of_viscous
   have hU := isOpen_evolutionPastOpenCylinder hΩo hγ.1 τ
   have hUS : U ⊆ S := fun p hp => ⟨hp.1.le, subset_closure hp.2⟩
   obtain ⟨u, V, ν, hν, hua, hub, hlim, hV, hrep, hVC, hVE⟩ :=
-    exists_smooth_viscosity_sequence_limit hH n hn lam Lam m L_b
+    exists_smooth_viscosity_sequence_limit n hn lam Lam m L_b
       hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth
       hb_lipschitz hb_coercive τ F C hC v
       (fun j => (hfamily (seqε j)).1) (fun j => (hfamily (seqε j)).2.1)
@@ -150,7 +148,6 @@ theorem exists_classical_terminalSolution_of_viscous
   have hzero := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F candidate).mpr hclass
   refine ⟨candidate, hclass, ?_, ?_⟩
   · intro D hD hFD
-    have _hD := hD
     exact classical_abs_le_const hΩo hγ.1 hlam hB_ell hb_lipschitz
       le_rfl zero_le_one hzero hFD
   · intro z hz

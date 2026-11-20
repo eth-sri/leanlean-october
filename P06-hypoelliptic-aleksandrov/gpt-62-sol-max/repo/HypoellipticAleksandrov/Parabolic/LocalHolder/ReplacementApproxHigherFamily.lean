@@ -35,10 +35,8 @@ theorem exists_homogeneous_higher_family_constant {d : ℕ}
     (hOcompact : IsCompact (closure O)) (hOO₀ : closure O ⊆ O₀)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
-    (hLower : ∀ z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω,
-      lam • (1 : PDE.Mat d) ≤ A z.1 z.2)
-    (hUpper : ∀ z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω,
-      A z.1 z.2 ≤ Lam • (1 : PDE.Mat d)) :
+    (hLower : HasLowerEllipticityOn lam A (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hUpper : HasUpperEllipticityOn Lam A (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ J : ParabolicW12Function d (Ioo q₀ q₁ ×ˢ O₀) 2,
       (∀ᵐ z ∂timeVelocityVolumeOn (Ioo q₀ q₁ ×ˢ O₀),
         J.timeDeriv z + ∑ i, ∑ j, A z.1 z.2 i j * J.velocityHessian z j i = 0) →
@@ -49,15 +47,14 @@ theorem exists_homogeneous_higher_family_constant {d : ℕ}
           (J.toWeakDerivativeFamily (isOpen_Ioo.prod hO₀open)).representative alpha) ∧
         D.squaredL2Norm ≤ C * (J.toWeakDerivativeFamily
           (isOpen_Ioo.prod hO₀open)).squaredL2Norm := by
-  have hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hA.contDiffOn⟩
+  have hAs : IsSmoothOnClosedCylinder r₀ r₁ Ω A :=
+    hA.onNeighborhood
   have hbs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : PDE.Vec d))
       (scalarParabolicClosedCylinder r₀ r₁ Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+    (ContDiff.onNeighborhood contDiff_const)
   have hcs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : ℝ))
       (scalarParabolicClosedCylinder r₀ r₁ Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+    (ContDiff.onNeighborhood contDiff_const)
   obtain ⟨C, hC, hrun⟩ :=
     Dirichlet.exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
       r₀ q₀ s₀ s₁ q₁ r₁ hr₀q₀ hq₀s₀ hs₀s₁ hs₁q₁ hq₁r₁

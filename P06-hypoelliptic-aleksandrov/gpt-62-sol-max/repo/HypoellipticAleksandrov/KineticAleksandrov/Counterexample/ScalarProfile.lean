@@ -36,19 +36,22 @@ def scalarProfile (gamma : ScalarGamma) (Lam : ℝ) (q : XV 1) : ℝ :=
 theorem aLambda_reflect (Lam x v : ℝ) : aLambda Lam (-x) (-v) = aLambda Lam x v := by
   simp only [aLambda, neg_mul_neg]
 
+section
+variable (gamma : ScalarGamma)
+
 /-- The source's common trace is invariant under velocity reflection. -/
-@[simp] theorem scalarTrace_neg (gamma : ScalarGamma) (Lam v : ℝ) :
+@[simp] theorem scalarTrace_neg (Lam v : ℝ) :
     scalarTrace gamma Lam (-v) = scalarTrace gamma Lam v := by
   simp only [scalarTrace, abs_neg]
 
 /-- The source profile vanishes at the origin. -/
-@[simp] theorem scalarProfile_zero (gamma : ScalarGamma) (Lam : ℝ) :
+@[simp] theorem scalarProfile_zero (Lam : ℝ) :
     scalarProfile gamma Lam 0 = 0 := by
   have he : (3 * gamma.1 : ℝ) ≠ 0 := (mul_pos (by norm_num) gamma.2.1).ne'
   simp [scalarProfile, scalarTrace, Real.zero_rpow he]
 
 /-- The axis trace scales with the source degree `alpha = 3 gamma`. -/
-theorem scalarTrace_dilate (gamma : ScalarGamma) (Lam r v : ℝ) (hr : 0 < r) :
+theorem scalarTrace_dilate (Lam r v : ℝ) (hr : 0 < r) :
     scalarTrace gamma Lam (r * v) = Real.rpow r (3 * gamma.1) *
       scalarTrace gamma Lam v := by
   simp only [scalarTrace, Real.rpow_eq_pow]
@@ -56,7 +59,7 @@ theorem scalarTrace_dilate (gamma : ScalarGamma) (Lam r v : ℝ) (hr : 0 < r) :
   ring
 
 /-- Positive-position ansatz homogeneity, without any regularity assumption on F. -/
-theorem scalarAnsatz_dilate (gamma : ScalarGamma) (Lam r x v : ℝ)
+theorem scalarAnsatz_dilate (Lam r x v : ℝ)
     (hr : 0 < r) (hx : 0 < x) :
     scalarAnsatz gamma Lam (r ^ 3 * x) (r * v) =
       Real.rpow r (3 * gamma.1) * scalarAnsatz gamma Lam x v := by
@@ -74,10 +77,10 @@ theorem scalarAnsatz_dilate (gamma : ScalarGamma) (Lam r x v : ℝ)
   ring
 
 /-- The full native scalar profile has exactly the source kinetic homogeneity. -/
-theorem scalarProfile_homogeneous (gamma : ScalarGamma) (Lam r : ℝ) (hr : 0 < r)
+theorem scalarProfile_homogeneous (Lam r : ℝ) (hr : 0 < r)
     (q : XV 1) : scalarProfile gamma Lam (dilate r q) =
       Real.rpow r (3 * gamma.1) * scalarProfile gamma Lam q := by
-  have h3 : 0 < r ^ 3 := pow_pos hr 3
+  have h3 := pow_pos hr 3
   simp only [scalarProfile, dilate, Pi.smul_apply, smul_eq_mul]
   rcases lt_trichotomy (q.1 0) 0 with hx | hx | hx
   · simp only [not_lt.mpr hx.le, hx, ↓reduceIte,
@@ -89,5 +92,7 @@ theorem scalarProfile_homogeneous (gamma : ScalarGamma) (Lam r : ℝ) (hr : 0 < 
     exact scalarTrace_dilate gamma Lam r _ hr
   · simp only [hx, ↓reduceIte, mul_pos h3 hx]
     exact scalarAnsatz_dilate gamma Lam r _ _ hr hx
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

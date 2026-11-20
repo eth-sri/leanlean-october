@@ -34,46 +34,47 @@ def coneCompactProbe {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ)
   expNegInvGlue (coneCoordinate α e γ P) *
     coneAmbientBump d n ((KineticPoint.equivProd d) P)
 
+section
+variable {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ)
+
 /-- The cutoff probe retains exactly the prescribed ambient smoothness. -/
-theorem coneCompactProbe_smooth {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ) :
+theorem coneCompactProbe_smooth :
     ContDiff ℝ (⊤ : ℕ∞) (coneCompactProbe α e γ n ∘ (KineticPoint.equivProd d).symm) := by
   have hs := (coneProbe_smooth α e γ).mul (coneAmbientBump d n).contDiff
   simpa only [coneCompactProbe, Function.comp_apply, Equiv.apply_symm_apply] using! hs
 
 /-- Its support is compact in the actual physical carrier. -/
-theorem coneCompactProbe_compact {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ) :
+theorem coneCompactProbe_compact :
     HasCompactSupport (coneCompactProbe α e γ n) :=
   ((coneAmbientBump d n).hasCompactSupport.comp_homeomorph
     (KineticPoint.homeomorphProd d)).mul_left
 
 /-- Every compact probe is nonnegative and below the bounded transition. -/
-theorem coneCompactProbe_bounds {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ)
-    (n : ℕ) (P : KineticPoint d) :
+theorem coneCompactProbe_bounds (P : KineticPoint d) :
     0 ≤ coneCompactProbe α e γ n P ∧
       coneCompactProbe α e γ n P ≤ expNegInvGlue (coneCoordinate α e γ P) := by
   exact ⟨mul_nonneg (expNegInvGlue.nonneg _) (coneAmbientBump d n).nonneg,
     mul_le_of_le_one_right (expNegInvGlue.nonneg _) (coneAmbientBump d n).le_one⟩
 
+end
+
 /-- Nonpositive directional speed forces the actual exit measure onto its closed half-space. -/
 theorem ballExitRaw_directional_cone
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (α : ℝ) (e : PDE.Vec d) (γ : ℝ)
     (hP : coneCoordinate α e γ P.1 = 0)
     (hdir : ∀ w ∈ PDE.euclideanBall v₀ R, α + PDE.vecDot w e ≤ 0) :
-    ∀ᵐ Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T,
+    ∀ᵐ Q ∂ballExitRaw hd B hB v₀ hR P T,
       coneCoordinate α e γ Q ≤ 0 := by
-  let μ := ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T
+  let μ := ballExitRaw hd B hB v₀ hR P T
   let χ := expNegInvGlue ∘ coneCoordinate α e γ
   have hχc := boundary_probe_continuous χ (coneProbe_smooth α e γ)
   have hi (n : ℕ) : (∫ Q, coneCompactProbe α e γ n Q ∂μ) = 0 := by
-    have hspec := (ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR P T).2.2
+    have hspec := (ballExitRaw_spec hd B hB v₀ hR P T).2.2
       _ (coneCompactProbe_smooth α e γ n) (coneCompactProbe_compact α e γ n)
-    have hb := cone_boundarySolution_le_supersolution hH hLE hd hlam hLam B hB v₀ hR
+    have hb := cone_boundarySolution_le_supersolution hd B hB v₀ hR
       P.1.time T.1 T.2 (coneCompactProbe α e γ n) χ
       (coneCompactProbe_smooth α e γ n) (coneCompactProbe_compact α e γ n)
       (coneProbe_smooth α e γ) ⟨1, fun Q _ => by

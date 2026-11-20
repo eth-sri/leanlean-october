@@ -57,9 +57,7 @@ theorem bellmanPuncturedVolume_univ : bellmanPuncturedVolume univ = ⊤ := by
       have h0 : (volume : Measure (ℝ × ℝ)) {(0, 0)} = 0 := by
         rw [Measure.volume_eq_prod]
         have hs : ({(0, 0)} : Set (ℝ × ℝ)) = ({0} : Set ℝ) ×ˢ {0} := by
-          ext q
-          simp only [mem_singleton_iff, mem_prod]
-          exact Prod.ext_iff
+          simp
         rw [hs, Measure.prod_prod, Real.volume_singleton, zero_mul]
       have hu : (volume : Measure (ℝ × ℝ)) univ = ⊤ := by
         rw [Measure.volume_eq_prod, ← univ_prod_univ, Measure.prod_prod,

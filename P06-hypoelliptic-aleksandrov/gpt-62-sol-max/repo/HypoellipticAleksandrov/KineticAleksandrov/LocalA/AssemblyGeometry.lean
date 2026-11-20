@@ -12,8 +12,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter Holder.Covering
 open scoped Topology
 
+section
+variable {d : ℕ}
+
 /-- The shifted centers preserve the free-transport position coordinate exactly. -/
-theorem borelInnerCentre_relativePosition {d : ℕ} (P₀ P : KineticPoint d)
+theorem borelInnerCentre_relativePosition (P₀ P : KineticPoint d)
     (R : ℝ) (n : ℕ) :
     relativePosition (borelInnerCentre P₀ R n) P = relativePosition P₀ P := by
   ext i
@@ -21,7 +24,7 @@ theorem borelInnerCentre_relativePosition {d : ℕ} (P₀ P : KineticPoint d)
   ring
 
 /-- Each fixed positive interior fraction is exhausted with that same fraction. -/
-theorem borel_inner_fraction_exhaustion {d : ℕ} (P₀ : KineticPoint d)
+theorem borel_inner_fraction_exhaustion (P₀ : KineticPoint d)
     (R : ℝ) (hR : 0 < R) (θ : ℝ) (hθ : 0 < θ)
     (P : KineticPoint d) (hP : P ∈ backwardCylinder P₀ (θ * R)) :
     ∀ᶠ n in atTop, P ∈ backwardCylinder (borelInnerCentre P₀ R n)
@@ -51,7 +54,7 @@ theorem borel_inner_fraction_exhaustion {d : ℕ} (P₀ : KineticPoint d)
       (by simpa only [sub_zero] using hnX)
 
 /-- Every interior point has a compactly contained cylinder with a fixed spatial margin. -/
-theorem exists_inner_margin_cylinder {d : ℕ} {D : Set (KineticPoint d)}
+theorem exists_inner_margin_cylinder {D : Set (KineticPoint d)}
     (hD : IsOpen D) {P : KineticPoint d} (hP : P ∈ D) :
     ∃ (P₁ : KineticPoint d) (r : ℝ), 0 < r ∧
       closure (backwardCylinder P₁ r) ⊆ D ∧ P ∈ backwardCylinder P₁ (3 * r / 4) := by
@@ -74,5 +77,7 @@ theorem exists_inner_margin_cylinder {d : ℕ} {D : Set (KineticPoint d)}
   · rw [relativePosition_centeredTop]
     simp only [relativePosition_self]
     exact PDE.center_mem_euclideanBall 0 (pow_pos (by positivity) 3)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

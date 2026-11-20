@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeOperator
-public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonCalculus
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.PackedSliceRegularity
 
 /-! # Anisotropic regularity from joint interior smoothness -/
 
@@ -36,20 +36,8 @@ theorem isKineticC112On_of_contDiffOn {u : KineticPoint d → ℝ}
       contDiffOn_const).continuousOn
   have hc : ContinuousOn e.symm D := e.symm.continuous.continuousOn
   have hm : MapsTo e.symm D U := hx
-  have hslice : ∀ p ∈ D, IsSliceRegularAt u p := by
-    intro p hp
-    apply IsSliceRegularAt.of_contDiffAt
-    have h := (hs (e.symm p) (hx p hp)).comp
-      (p.time, p.position, p.velocity) (evolutionProdCLE d).symm.contDiff.contDiffAt
-    have heq : (fun q => f ((evolutionProdCLE d).symm q)) = rawLift u := by
-      funext q
-      simp [f, e, evolutionHomeomorph, rawLift, KineticPoint.homeomorphProd,
-        KineticPoint.isometryEquivProd, KineticPoint.equivProd]
-      rfl
-    change ContDiffAt ℝ 2 (fun q => f ((evolutionProdCLE d).symm q))
-      (p.time, p.position, p.velocity) at h
-    rw [heq] at h
-    exact h
+  have hslice : ∀ p ∈ D, IsSliceRegularAt u p := fun p hp =>
+    .of_packed_contDiffAt p (hs (e.symm p) (hx p hp))
   refine ⟨?_, fun p hp => (hslice p hp).time,
     fun p hp => (hslice p hp).position.of_le (by norm_num),
     fun p hp => (hslice p hp).velocity, ?_, ?_, ?_, ?_⟩

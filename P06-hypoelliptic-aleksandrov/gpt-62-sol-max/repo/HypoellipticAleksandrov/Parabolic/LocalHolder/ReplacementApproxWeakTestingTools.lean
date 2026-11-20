@@ -15,8 +15,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)}
+
 /-- An actual bounded continuous multiplier preserves restricted L2 membership. -/
-theorem memLp_two_mul_of_bound {d : ℕ} {U : Set (TimeVelocity d)}
+theorem memLp_two_mul_of_bound
     (hU : MeasurableSet U) (a f : TimeVelocity d → ℝ) (ha : Continuous a)
     (hf : ParabolicMemLpOn U 2 f) (M : ℝ) (hb : ∀ z ∈ U, |a z| ≤ M) :
     ParabolicMemLpOn U 2 (fun z => a z * f z) := by
@@ -28,9 +31,11 @@ theorem memLp_two_mul_of_bound {d : ℕ} {U : Set (TimeVelocity d)}
   rw [norm_mul, Real.norm_eq_abs]
   exact mul_le_mul_of_nonneg_right (hb z hz) (norm_nonneg _)
 
+section
+variable (f φ : TimeVelocity d → ℝ)
+
 /-- A restricted L2 field pairs integrably with every ambient smooth compact test. -/
-theorem integrableOn_weak_pairing {d : ℕ} {U : Set (TimeVelocity d)}
-    (f φ : TimeVelocity d → ℝ) (hf : ParabolicMemLpOn U 2 f)
+theorem integrableOn_weak_pairing (hf : ParabolicMemLpOn U 2 f)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ) :
     IntegrableOn (fun z => f z * φ z) U := by
   have ht : MemLp φ 2 (timeVelocityVolumeOn U) :=
@@ -43,14 +48,17 @@ theorem integrableOn_weak_pairing {d : ℕ} {U : Set (TimeVelocity d)}
   simpa only [timeVelocityVolumeOn, IntegrableOn] using hi
 
 /-- Restricted pairings with compact interior tests equal their ambient integrals. -/
-theorem setIntegral_weak_pairing_eq_integral {d : ℕ}
-    {U : Set (TimeVelocity d)} (f φ : TimeVelocity d → ℝ)
+theorem setIntegral_weak_pairing_eq_integral
     (hsub : tsupport φ ⊆ U) :
     (∫ z in U, f z * φ z) = ∫ z, f z * φ z := by
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
   intro z hz
   have hzout : z ∉ tsupport φ := fun h => hz (hsub h)
   rw [image_eq_zero_of_notMem_tsupport hzout, mul_zero]
+
+end
+
+end
 
 /-- Vanishing compact-test pairings give the actual almost-everywhere equation. -/
 theorem ae_eq_zero_of_weak_pairings {d : ℕ} {U : Set (TimeVelocity d)}

@@ -17,8 +17,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Filter
 open scoped Topology
 
+section
+variable {d : ℕ}
+
 /-- The profile time derivative on the positive block strip. -/
-theorem gaussianProfile_time_deriv {d : ℕ} {lam h s : ℝ}
+theorem gaussianProfile_time_deriv {lam h s : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell sblock : ℝ)
     (hs : 0 < s - sblock) (y V : PDE.Vec d) :
     deriv (fun t => gaussianProfile lam Lam H h L ell sblock (t, (y, V))) s =
@@ -38,7 +41,7 @@ theorem gaussianProfile_time_deriv {d : ℕ} {lam h s : ℝ}
   ring
 
 /-- The profile position-line derivative at a positive block time. -/
-theorem gaussianProfile_position_deriv {d : ℕ} (lam Lam H L ell sblock : ℝ) {h s : ℝ}
+theorem gaussianProfile_position_deriv (lam Lam H L ell sblock : ℝ) {h s : ℝ}
     (hh : 0 < h) (hs : 0 < s - sblock) (y V : PDE.Vec d) :
     deriv (fun r : ℝ => gaussianProfile lam Lam H h L ell sblock
       (s, (y + r • V, V))) 0 =
@@ -61,7 +64,7 @@ theorem gaussianProfile_position_deriv {d : ℕ} (lam Lam H L ell sblock : ℝ) 
   ring
 
 /-- Transport cancellation gives the exact scalar Gaussian contribution to the operator. -/
-theorem gaussianProfile_transport {d : ℕ} {lam h s : ℝ}
+theorem gaussianProfile_transport {lam h s : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell sblock : ℝ)
     (hs : 0 < s - sblock) (y V : PDE.Vec d) :
     deriv (fun t => gaussianProfile lam Lam H h L ell sblock (t, (y, V))) s +
@@ -72,13 +75,14 @@ theorem gaussianProfile_transport {d : ℕ} {lam h s : ℝ}
         (-Xi d lam Lam H h + lam * PDE.vecNormSq (pform lam h (s - sblock) y V)) := by
   rw [gaussianProfile_time_deriv hlam hh Lam H L ell sblock hs,
     gaussianProfile_position_deriv lam Lam H L ell sblock hh hs]
-  have hstrip : -(h / 128) < s - sblock := by linarith only [hs, hh]
-  have hq := quadratic_transport_identity lam h (s - sblock) hlam hh hstrip y V
+  have hq := quadratic_transport_identity lam h (s - sblock) hlam hh (by linarith only [hs, hh]) y V
   calc
     _ = ell * Real.exp (-Xi d lam Lam H h * (s - sblock) -
         qform lam h (s - sblock) y V) *
         (-Xi d lam Lam H h - (deriv (fun t => qform lam h t y V) (s - sblock) +
           deriv (fun r : ℝ => qform lam h (s - sblock) (y + r • V) V) 0)) := by ring
     _ = _ := by rw [hq]; ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.ProperSplitIndexArithmetic
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyLeibniz
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Analysis.BoundedMultiplierLp
+import HypoellipticAleksandrov.Parabolic.SmoothScalarWeakDerivativeFamily
 
 /-!
 # Generic proper commutator residual
@@ -20,10 +21,12 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators
 
+section
+variable {d M : ℕ}
+
 /-- The source derivative minus all proper coefficient commutators at one
 bounded parabolic multi-index. -/
-noncomputable def properDifferentiatedScalarCommutatorResidual
-    {d M : ℕ} {U : Set (TimeVelocity d)}
+noncomputable def properDifferentiatedScalarCommutatorResidual {U : Set (TimeVelocity d)}
     {u : TimeVelocity d → ℝ} {F : ℝ → PDE.Vec d → ℝ}
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -62,21 +65,7 @@ noncomputable def properDifferentiatedScalarCommutatorResidual
                 beta gamma hproper) z
         else 0)
 
-private theorem coordinateIteratedFDeriv_continuousOn
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ M q U)
-    (alpha : TimeVelocityMultiIndex d) (halpha : alpha.order ≤ M) :
-    ContinuousOn (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha q) U := by
-  intro z hz
-  apply ContinuousAt.continuousWithinAt
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := (hq.contDiffAt (hU.mem_nhds hz)).iteratedFDeriv_right
-    (m := 0) (i := alpha.coordinateList.length) (by simpa using halpha)
-  exact (contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi |>.continuousAt
-
-private theorem splitLeft_order_le
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
+private theorem splitLeft_order_le (beta : ParabolicDerivativeIndex d M)
     (gamma : TimeVelocityMultiIndex.Split beta.1) :
     gamma.left.order ≤ M := by
   have horder_weight : beta.1.order ≤ beta.1.parabolicWeight := by
@@ -86,15 +75,7 @@ private theorem splitLeft_order_le
     omega
   exact gamma.order_left_le.trans (horder_weight.trans beta.2)
 
-private theorem ae_restrict_of_forall_mem
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (S : Set α) (hS : MeasurableSet S) {P : α → Prop} (hP : ∀ x ∈ S, P x) :
-    ∀ᵐ x ∂μ.restrict S, P x := by
-  filter_upwards [ae_restrict_mem hS] with x hx
-  exact hP x hx
-
-private theorem properAtom_memLp_and_eLpNorm_toReal_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+private theorem properAtom_memLp_and_eLpNorm_toReal_le (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ M q U)
     (B : ParabolicDerivativeIndex d M → ℝ)
     (hB : ∀ alpha, 0 ≤ B alpha)
@@ -135,7 +116,7 @@ private theorem properAtom_memLp_and_eLpNorm_toReal_le
     have hbound : ∀ᵐ z ∂timeVelocityVolumeOn U,
         |multiplier z| ≤ (beta.1.choose gamma.left : ℝ) *
           B (ParabolicDerivativeIndex.splitLeft beta gamma) :=
-      ae_restrict_of_forall_mem U hU.measurableSet fun z hz => by
+      ae_restrict_of_forall_mem hU.measurableSet fun z hz => by
         dsimp [multiplier]
         rw [abs_mul, abs_of_nonneg (Nat.cast_nonneg _)]
         exact mul_le_mul_of_nonneg_left
@@ -146,6 +127,8 @@ private theorem properAtom_memLp_and_eLpNorm_toReal_le
         (mul_nonneg (Nat.cast_nonneg _) (hB _)) hmeas (hf hproper) hbound
   · simp only [dif_neg hproper]
     exact ⟨MemLp.zero', by simp⟩
+
+end
 
 private theorem eLpNorm_fin_sum_toReal_le
     {α ι : Type*} [MeasurableSpace α] [Fintype ι]

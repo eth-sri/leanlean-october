@@ -24,7 +24,7 @@ private theorem memLp_two_separatedProduct
     (a : ℝ → ℝ) (ha : Continuous a) (haK : HasCompactSupport a)
     (b : PDE.Vec d → ℝ) (hb : Continuous b) (hbK : HasCompactSupport b) :
     MemLp (fun z : TimeVelocity d => a z.1 * b z.2) 2 (timeVelocityVolumeOn S) := by
-  have hcont : Continuous (fun z : TimeVelocity d => a z.1 * b z.2) :=
+  have hcont :=
     (ha.comp continuous_fst).mul (hb.comp continuous_snd)
   have hcompact : HasCompactSupport (fun z : TimeVelocity d => a z.1 * b z.2) := by
     apply HasCompactSupport.of_support_subset_isCompact (haK.isCompact.prod hbK.isCompact)
@@ -34,8 +34,10 @@ private theorem memLp_two_separatedProduct
       subset_tsupport b (fun h => hz (by simp [h]))⟩
   exact (hcont.memLp_of_hasCompactSupport hcompact).restrict S
 
+section
+variable {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+
 private theorem finiteSeparated_identity
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
     {U W : TimeVelocity d → ℝ}
     (hU : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) 2 U)
     (hW : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) 2 W)
@@ -89,18 +91,17 @@ private theorem finiteSeparated_identity
     MeasurableSet.univ, Measure.restrict_univ] using
     hseparated (q.timeFactor m) (q.spatialFactor m)
 
-private theorem finiteSeparated_toFun_continuous
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) : Continuous q.toFun := by
+section
+variable (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O)
+
+private theorem finiteSeparated_toFun_continuous : Continuous q.toFun := by
   unfold FiniteSeparatedSpacetimeTest.toFun
   apply continuous_finset_sum Finset.univ
   intro m _
   exact ((q.timeFactor m).contDiff.continuous.comp continuous_fst).mul
     ((q.spatialFactor m).contDiff.continuous.comp continuous_snd)
 
-private theorem finiteSeparated_timeDeriv_continuous
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) : Continuous q.timeDeriv := by
+private theorem finiteSeparated_timeDeriv_continuous : Continuous q.timeDeriv := by
   unfold FiniteSeparatedSpacetimeTest.timeDeriv
   apply continuous_finset_sum Finset.univ
   intro m _
@@ -108,8 +109,6 @@ private theorem finiteSeparated_timeDeriv_continuous
     continuous_fst).mul ((q.spatialFactor m).contDiff.continuous.comp continuous_snd)
 
 private theorem finiteSeparated_hasCompactSupport_of_commonCompact
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O)
     (Kt : TopologicalSpace.Compacts ℝ) (Ky : TopologicalSpace.Compacts (PDE.Vec d))
     (hq : ∀ m, tsupport (q.timeFactor m : ℝ → ℝ) ×ˢ
       tsupport (q.spatialFactor m : PDE.Vec d → ℝ) ⊆ (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d))) :
@@ -141,6 +140,10 @@ private theorem finiteSeparated_hasCompactSupport_of_commonCompact
     exact hn (hq m ⟨ht', subset_tsupport _ (fun hs => hm (by simp [hs]))⟩)
   exact ⟨HasCompactSupport.of_support_subset_isCompact (Kt.isCompact.prod Ky.isCompact) hvalue,
     HasCompactSupport.of_support_subset_isCompact (Kt.isCompact.prod Ky.isCompact) hderiv⟩
+
+end
+
+end
 
 /-- An identity against every separated test determines the weak time derivative. -/
 theorem hasWeakTimeDerivOn_of_forall_separatedProduct

@@ -17,8 +17,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 /-- Regularized absolute value with squared regularization parameter. -/
 def velocityConvexProfile (R v : ℝ) : ℝ := Real.sqrt (R + v ^ 2)
 
+section
+variable {R : ℝ} (hR : 0 < R)
+include hR
+
 /-- First derivative of the convex profile. -/
-theorem velocityConvexProfile_hasDerivAt {R : ℝ} (hR : 0 < R) (v : ℝ) :
+theorem velocityConvexProfile_hasDerivAt (v : ℝ) :
     HasDerivAt (velocityConvexProfile R) (v / Real.sqrt (R + v ^ 2)) v := by
   have hd : HasDerivAt (fun w : ℝ => R + w ^ 2) (2 * v) v := by
     have hpow : HasDerivAt (fun w : ℝ => w ^ 2) (2 * v) v := by
@@ -31,13 +35,13 @@ theorem velocityConvexProfile_hasDerivAt {R : ℝ} (hR : 0 < R) (v : ℝ) :
   · field_simp
 
 /-- The total first derivative agrees with the explicit smooth formula. -/
-theorem velocityConvexProfile_deriv {R : ℝ} (hR : 0 < R) :
+theorem velocityConvexProfile_deriv :
     deriv (velocityConvexProfile R) = fun v => v / Real.sqrt (R + v ^ 2) := by
   funext v
   exact (velocityConvexProfile_hasDerivAt hR v).deriv
 
 /-- Second derivative of the convex profile. -/
-theorem velocityConvexProfile_second_deriv {R : ℝ} (hR : 0 < R) (v : ℝ) :
+theorem velocityConvexProfile_second_deriv (v : ℝ) :
     deriv (deriv (velocityConvexProfile R)) v =
       R / Real.sqrt (R + v ^ 2) ^ 3 := by
   rw [velocityConvexProfile_deriv hR]
@@ -50,6 +54,8 @@ theorem velocityConvexProfile_second_deriv {R : ℝ} (hR : 0 < R) (v : ℝ) :
   have hsq := Real.sq_sqrt hp.le
   field_simp
   nlinarith
+
+end
 
 /-- The second derivative controls the entire velocity band with a uniform constant. -/
 theorem velocityConvexProfile_band_lower {r v : ℝ} (hr : 0 < r)
@@ -64,9 +70,6 @@ theorem velocityConvexProfile_band_lower {r v : ℝ} (hr : 0 < r)
     rw [sq_abs] at h
     nlinarith only [h]
   have hb : Real.sqrt (r ^ 2 + v ^ 2) ≤ 4 * r := by
-    nlinarith
-  have hc : Real.sqrt (r ^ 2 + v ^ 2) ^ 3 ≤ 64 * r ^ 3 := by
-    have := pow_le_pow_left₀ hs.le hb 3
     nlinarith
   apply (div_le_div_iff₀ (by positivity) (by positivity)).2
   nlinarith

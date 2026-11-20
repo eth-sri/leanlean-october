@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionTimeJet
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ExtensionContinuity
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionJetConvergence
 
 /-! # Recovery of the literal extended time representative -/
@@ -11,9 +11,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter HypoellipticAleksandrov.Parabolic
 open scoped Topology
 
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r mu R t : ℝ)
+
 /-- At fixed time the raw time derivative is continuous in the spatial parameter. -/
-theorem construction_rawTimeJet_continuous {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R t : ℝ) :
+theorem construction_rawTimeJet_continuous :
     Continuous (fun q : XV d =>
       kineticTimeDerivative (timeCutoffProfile (profileFunction h) alpha r mu R)
         ⟨t, q.1, q.2⟩) := by
@@ -25,11 +27,12 @@ theorem construction_rawTimeJet_continuous {d : ℕ} {alpha : ℝ}
       ((PDE.contDiff_vecNormSq.continuous.comp continuous_snd).div_const _)))
 
 /-- The time representative of the actual extension is locally integrable. -/
-theorem construction_extendedTimeJet_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R t : ℝ) :
+theorem construction_extendedTimeJet_locallyIntegrable :
     LocallyIntegrable (constructionExtendedTimeJet h r mu R t) volume := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
+  have hH := (selectedProfile_spec h).continuous
   exact (construction_rawTimeJet_continuous h r mu R t).locallyIntegrable.indicator
     (isOpen_lt hH continuous_const).measurableSet
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

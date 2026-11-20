@@ -23,10 +23,12 @@ def spatialCoordinateShiftCarrier {d : ℕ}
     (fun ys : PDE.Vec d × ℝ => ys.1 + ys.2 • PDE.basisVec k) ''
       (K ×ˢ Set.Icc (-ρ) ρ)
 
+section
+variable {d : ℕ} {K : Set (PDE.Vec d)}
+
 /-- Membership in the coordinate-shift carrier is witnessed by one coordinate
 and one signed shift of the original carrier. -/
-theorem mem_spatialCoordinateShiftCarrier_iff
-    {d : ℕ} {K : Set (PDE.Vec d)} {ρ : ℝ} {x : PDE.Vec d} :
+theorem mem_spatialCoordinateShiftCarrier_iff {ρ : ℝ} {x : PDE.Vec d} :
     x ∈ spatialCoordinateShiftCarrier K ρ ↔
       ∃ (y : PDE.Vec d) (k : Fin d) (s : ℝ),
         y ∈ K ∧ |s| ≤ ρ ∧ x = y + s • PDE.basisVec k := by
@@ -43,8 +45,7 @@ theorem mem_spatialCoordinateShiftCarrier_iff
 
 /-- A point of `K` shifted by an admissible signed amount in one coordinate
 belongs to its coordinate-shift carrier. -/
-theorem mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le
-    {d : ℕ} {K : Set (PDE.Vec d)} {ρ s : ℝ}
+theorem mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le {ρ s : ℝ}
     {y : PDE.Vec d} {k : Fin d}
     (hy : y ∈ K) (hs : |s| ≤ ρ) :
     y + s • PDE.basisVec k ∈ spatialCoordinateShiftCarrier K ρ :=
@@ -52,7 +53,6 @@ theorem mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le
 
 /-- A coordinate-shift carrier of a compact spatial set is compact. -/
 theorem IsCompact.spatialCoordinateShiftCarrier
-    {d : ℕ} {K : Set (PDE.Vec d)}
     (hK : IsCompact K) (ρ : ℝ) :
     IsCompact (spatialCoordinateShiftCarrier K ρ) := by
   change IsCompact (⋃ k : Fin d,
@@ -63,5 +63,7 @@ theorem IsCompact.spatialCoordinateShiftCarrier
       ys.1 + ys.2 • PDE.basisVec k) :=
     continuous_fst.add (continuous_snd.smul continuous_const)
   exact (hK.prod isCompact_Icc).image hcontinuous
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

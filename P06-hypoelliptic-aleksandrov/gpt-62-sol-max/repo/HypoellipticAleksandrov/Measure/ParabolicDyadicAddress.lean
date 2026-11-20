@@ -44,8 +44,10 @@ theorem parabolicDyadicTruncate_self {d n : Nat}
   apply congrArg index
   exact Fin.ext (by rfl)
 
-private theorem parabolicDyadicTruncate_le_succ_eq_truncate_parent {d m n : Nat}
-    (hmn : m <= n) (index : ParabolicDyadicIndex d (n + 1)) :
+section
+variable {d m n : Nat} (hmn : m <= n)
+
+theorem parabolicDyadicTruncate_le_succ_eq_truncate_parent (index : ParabolicDyadicIndex d (n + 1)) :
     parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index =
       parabolicDyadicTruncate hmn (parabolicDyadicParent index) := by
   funext j
@@ -53,8 +55,7 @@ private theorem parabolicDyadicTruncate_le_succ_eq_truncate_parent {d m n : Nat}
   apply congrArg index
   exact Fin.ext (by rfl)
 
-private theorem parabolicDyadicHalfOpenCell_subset_truncate {d m n : Nat}
-    (hmn : m <= n) (index : ParabolicDyadicIndex d n) :
+private theorem parabolicDyadicHalfOpenCell_subset_truncate (index : ParabolicDyadicIndex d n) :
     parabolicDyadicHalfOpenCell index ⊆
       parabolicDyadicHalfOpenCell (parabolicDyadicTruncate hmn index) := by
   induction n, hmn using Nat.le_induction with
@@ -72,12 +73,9 @@ private theorem parabolicDyadicHalfOpenCell_subset_truncate {d m n : Nat}
           ih (parabolicDyadicParent index)
         _ = parabolicDyadicHalfOpenCell
             (parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index) := by
-          calc
-            parabolicDyadicHalfOpenCell
-                (parabolicDyadicTruncate hmn (parabolicDyadicParent index)) =
-                parabolicDyadicHalfOpenCell
-                (parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index) := by
-                    rw [parabolicDyadicTruncate_le_succ_eq_truncate_parent]
+          rfl
+
+end
 
 /-- A cell is contained in every addressed ancestor cell. -/
 theorem parabolicDyadicHalfOpenCell_subset_of_addressPrefix {d : Nat}
@@ -114,7 +112,7 @@ theorem parabolicDyadicAddressPrefix_or_prefix_of_not_disjoint_halfOpenCell
       apply h
       exact (parabolicDyadicHalfOpenCell_disjoint_of_ne htruncate).symm.mono
         Subset.rfl (parabolicDyadicHalfOpenCell_subset_truncate hmn b)
-  · have hnm : n <= m := Nat.le_of_not_ge hmn
+  · have hnm := Nat.le_of_not_ge hmn
     by_cases htruncate : parabolicDyadicTruncate hnm a = b
     · exact Or.inr ⟨hnm, htruncate⟩
     · exfalso
@@ -122,11 +120,13 @@ theorem parabolicDyadicAddressPrefix_or_prefix_of_not_disjoint_halfOpenCell
       exact (parabolicDyadicHalfOpenCell_disjoint_of_ne htruncate).mono
         (parabolicDyadicHalfOpenCell_subset_truncate hnm a) Subset.rfl
 
+section
+variable {d : Nat} {a b : ParabolicDyadicAddress d} (hab : ¬ parabolicDyadicAddressPrefix a b)
+  (hba : ¬ parabolicDyadicAddressPrefix b a)
+include hab hba
+
 /-- Incomparable addresses determine disjoint half-open cells. -/
-theorem disjoint_parabolicDyadicHalfOpenCell_of_incomparable {d : Nat}
-    {a b : ParabolicDyadicAddress d}
-    (hab : ¬ parabolicDyadicAddressPrefix a b)
-    (hba : ¬ parabolicDyadicAddressPrefix b a) :
+theorem disjoint_parabolicDyadicHalfOpenCell_of_incomparable :
     Disjoint (parabolicDyadicHalfOpenCell a.2) (parabolicDyadicHalfOpenCell b.2) := by
   classical
   by_contra hdisjoint
@@ -136,14 +136,13 @@ theorem disjoint_parabolicDyadicHalfOpenCell_of_incomparable {d : Nat}
   · exact hba hba'
 
 /-- Incomparable addresses determine disjoint open cells. -/
-theorem disjoint_parabolicDyadicOpenCell_of_incomparable {d : Nat}
-    {a b : ParabolicDyadicAddress d}
-    (hab : ¬ parabolicDyadicAddressPrefix a b)
-    (hba : ¬ parabolicDyadicAddressPrefix b a) :
+theorem disjoint_parabolicDyadicOpenCell_of_incomparable :
     Disjoint (parabolicDyadicOpenCell a.2) (parabolicDyadicOpenCell b.2) := by
   exact (disjoint_parabolicDyadicHalfOpenCell_of_incomparable hab hba).mono
     (parabolicDyadicOpenCell_subset_halfOpenCell a.2)
     (parabolicDyadicOpenCell_subset_halfOpenCell b.2)
+
+end
 
 /-- Heterogeneous parabolic dyadic addresses form a countable type. -/
 instance parabolicDyadicAddressCountable (d : Nat) : Countable (ParabolicDyadicAddress d) := by

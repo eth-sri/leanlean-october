@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLeibniz
+public import HypoellipticAleksandrov.Parabolic.Derivatives
 
 /-!
 # Germ-local time--velocity multi-index calculus
@@ -70,14 +71,14 @@ private theorem localDirs_contDiffAt (l : List E) (m : ℕ) (f : E → ℝ) (z :
         apply ih
         convert hf using 1
         norm_num
-        exact_mod_cast (show (m + 1) + l.length = m + (l.length + 1) by omega)
+        ring
       exact (h.fderiv_right (by norm_num)).clm_apply contDiffAt_const
 
 private theorem localDirectional_comm (a b : E) (f : E → ℝ) (z : E)
     (hf : ContDiffAt ℝ 2 f z) :
     fderiv ℝ (fun y => fderiv ℝ f y a) z b =
       fderiv ℝ (fun y => fderiv ℝ f y b) z a := by
-  have hd : DifferentiableAt ℝ (fderiv ℝ f) z :=
+  have hd :=
     (hf.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   rw [fderiv_clm_apply hd (differentiableAt_const a),
     fderiv_clm_apply hd (differentiableAt_const b)]
@@ -104,55 +105,18 @@ private theorem localDirs_perm {l₁ l₂ : List E} (hperm : l₁.Perm l₂)
   | @trans l₁ l₂ l₃ h₁₂ h₂₃ ih₁₂ ih₂₃ =>
       exact (ih₁₂ f z hf).trans (ih₂₃ f z (h₁₂.length_eq ▸ hf))
 
-private theorem coordinateList_add_single_perm_local
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d) :
-    (beta + Pi.single c 1).coordinateList.Perm (c :: beta.coordinateList) := by
-  classical
-  letI : BEq (TimeVelocityCoord d) := ⟨fun a b => decide (a = b)⟩
-  letI : LawfulBEq (TimeVelocityCoord d) := ⟨by intro a b; simp⟩
-  rw [List.perm_iff_count]
-  intro a
-  have count_flat (q : TimeVelocityMultiIndex d) : ∀ l : List (TimeVelocityCoord d),
-      l.Nodup → List.count a (l.flatMap fun b => List.replicate (q b) b) =
-        if a ∈ l then q a else 0 := by
-    intro l hl
-    induction l with
-    | nil => simp
-    | cons b l ih =>
-        have hbl := (List.nodup_cons.mp hl).1
-        have hln := (List.nodup_cons.mp hl).2
-        by_cases hab : a = b
-        · subst b
-          simp [hbl, ih hln]
-        · simp [ih hln]
-          rw [List.count_replicate]
-          split <;> simp_all
-  unfold coordinateList
-  rw [count_flat _ _ (Finset.nodup_toList (Finset.univ : Finset (TimeVelocityCoord d)))]
-  simp only [List.count_cons]
-  rw [count_flat _ _ (Finset.nodup_toList (Finset.univ : Finset (TimeVelocityCoord d)))]
-  simp only [Finset.mem_toList, Finset.mem_univ, if_true, Pi.add_apply]
-  change beta a + (Pi.single c 1 : TimeVelocityMultiIndex d) a =
-    beta a + (if c == a then 1 else 0)
-  congr 1
-  by_cases h : c = a
-  · subst a
-    simp only [Pi.single_eq_same, beq_self_eq_true, if_true]
-  · rw [Pi.single_apply, if_neg (fun hac => h hac.symm)]
-    have hb : (c == a) = false := Bool.eq_false_iff.mpr fun heq => h (beq_iff_eq.mp heq)
-    rw [hb]
-    rfl
+section
+variable (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d) (f : TimeVelocity d → ℝ)
+  (z : TimeVelocity d) (hf : ContDiffAt ℝ (beta.order + 1) f z)
+include hf
 
 /-- Adding one coordinate differentiates the associated coordinate derivative
 at a point under the exact finite germ-local regularity. -/
-theorem coordinateIteratedFDeriv_add_single_at
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
-    (hf : ContDiffAt ℝ (beta.order + 1) f z) :
+theorem coordinateIteratedFDeriv_add_single_at :
     coordinateIteratedFDeriv (beta + Pi.single c 1) f z =
       fderiv ℝ (coordinateIteratedFDeriv beta f) z
         (timeVelocityBasis c) := by
-  let vecList (alpha : TimeVelocityMultiIndex d) : List (TimeVelocity d) :=
+  let vecList (alpha : TimeVelocityMultiIndex d) :=
     alpha.coordinateList.map timeVelocityBasis
   have eval_dirs (alpha : TimeVelocityMultiIndex d) (y : TimeVelocity d)
       (ha : ContDiffAt ℝ alpha.order f y) :
@@ -167,7 +131,7 @@ theorem coordinateIteratedFDeriv_add_single_at
     simpa using ha
   have hperm : (vecList (beta + Pi.single c 1)).Perm
       (timeVelocityBasis c :: vecList beta) := by
-    simpa [vecList] using (coordinateList_add_single_perm_local beta c).map timeVelocityBasis
+    simpa [vecList] using (_root_.HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndex.coordinateList_add_single_perm beta c).map timeVelocityBasis
   calc
     coordinateIteratedFDeriv (beta + Pi.single c 1) f z =
         localDirs (vecList (beta + Pi.single c 1)) f z :=
@@ -186,10 +150,7 @@ theorem coordinateIteratedFDeriv_add_single_at
 
 /-- A coordinate derivative composed before a coordinate multi-index agrees
 with addition of that coordinate, under exact finite germ-local regularity. -/
-theorem coordinateIteratedFDeriv_comp_single_at
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
-    (hf : ContDiffAt ℝ (beta.order + 1) f z) :
+theorem coordinateIteratedFDeriv_comp_single_at :
     coordinateIteratedFDeriv beta
         (coordinateIteratedFDeriv (Pi.single c 1) f) z =
       coordinateIteratedFDeriv (beta + Pi.single c 1) f z := by
@@ -218,12 +179,12 @@ theorem coordinateIteratedFDeriv_comp_single_at
     apply localDirs_contDiffAt
     simpa [vecList, add_comm] using hf
   have hsinglePerm : (vecList (Pi.single c 1)).Perm [timeVelocityBasis c] := by
-    have h := (coordinateList_add_single_perm_local
+    have h := (_root_.HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndex.coordinateList_add_single_perm
       (0 : TimeVelocityMultiIndex d) c).map timeVelocityBasis
     simpa [vecList] using h
   have hperm : (vecList beta ++ vecList (Pi.single c 1)).Perm
       (vecList (beta + Pi.single c 1)) := by
-    have h := (coordinateList_add_single_perm_local beta c).map timeVelocityBasis
+    have h := (_root_.HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndex.coordinateList_add_single_perm beta c).map timeVelocityBasis
     exact (hsinglePerm.append_left (vecList beta)).trans
       (List.perm_append_comm.trans (by simpa [vecList] using h.symm))
   calc
@@ -244,5 +205,22 @@ theorem coordinateIteratedFDeriv_comp_single_at
       symm
       apply eval_dirs
       simpa using hf
+
+end
+
+/-- The first coordinate derivative is the Fréchet derivative evaluated on the basis. -/
+theorem coordinateIteratedFDeriv_single_at
+    (c : TimeVelocityCoord d) {f : TimeVelocity d → ℝ} {z : TimeVelocity d}
+    (hf : ContDiffAt ℝ 1 f z) :
+    coordinateIteratedFDeriv (Pi.single c 1) f z = fderiv ℝ f z (timeVelocityBasis c) := by
+  have hzero : coordinateIteratedFDeriv 0 f = f := funext (coordinateIteratedFDeriv_zero f)
+  simpa only [zero_add, hzero] using coordinateIteratedFDeriv_add_single_at 0 c f z
+    (by simpa [order, VelocityMultiIndex.order, timeOrder, velocity] using hf)
+
+/-- The velocity derivative in the multi-index and product-coordinate conventions agrees. -/
+theorem velocityGradient_eq_coordinateIteratedFDeriv
+    (i : Fin d) {f : TimeVelocity d → ℝ} {z : TimeVelocity d} (hf : ContDiffAt ℝ 1 f z) :
+    velocityGradient f z i = coordinateIteratedFDeriv (Pi.single (velocityCoord i) 1) f z :=
+  (coordinateIteratedFDeriv_single_at (velocityCoord i) hf).symm
 
 end HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndex

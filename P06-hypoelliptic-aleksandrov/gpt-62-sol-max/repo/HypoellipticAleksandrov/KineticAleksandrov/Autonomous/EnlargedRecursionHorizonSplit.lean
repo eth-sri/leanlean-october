@@ -12,20 +12,20 @@ open Set MeasureTheory HypoellipticAleksandrov
 /-- Terminal occupation at `b` and any earlier exit subset together are bounded by the
 actual stopped exit at `b`. The later recursion horizon `T` remains unchanged. -/
 theorem enlarged_stripExit_cap_and_early_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
     (b T : ℝ) (hb : e.1.time < b) (hBT : b ≤ T)
     (B : Set Point) (hB : MeasurableSet B) (hsub : B ⊆ {p | p.time < b}) :
-    (stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb)).restrict
+    (stripExit A H b (stripPoleFinite H e b hb)).restrict
       {p | p.time = b} +
-    (stripExit hH hLE hlam hLam A H T
+    (stripExit A H T
       (stripPoleFinite H e T (hb.trans_le hBT))).restrict B ≤
-        stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb) := by
-  let E := stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb)
+        stripExit A H b (stripPoleFinite H e b hb) := by
+  let E := stripExit A H b (stripPoleFinite H e b hb)
   have hpre : MeasurableSet {p : Point | p.time < b} :=
     (isOpen_lt continuous_time continuous_const).measurableSet
-  have he := stripExit_horizon_consistency hH hLE hlam hLam A H e
+  have he := stripExit_horizon_consistency A H e
     T b (hb.trans_le hBT) hb b hBT le_rfl
   have heB := congrArg (fun rho : Measure Point => rho.restrict B) he
   simp only [Measure.restrict_restrict hB, inter_eq_left.mpr hsub] at heB

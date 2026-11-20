@@ -33,10 +33,7 @@ theorem cone_forward_sub {d : ℕ} (B : CoefficientField d)
 
 /-- A bounded smooth supersolution dominates the actual boundary-solution value. -/
 theorem cone_boundarySolution_le_supersolution
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (a T : ℝ) (haT : a < T) (φ v : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
@@ -47,22 +44,22 @@ theorem cone_boundarySolution_le_supersolution
       forwardKineticOperator (ofTimeVelocityCoefficient B) v P ≤ 0)
     (htr : ∀ P ∈ localTrace a T v₀ R, φ P ≤ v P) :
     ∀ P ∈ localClosedStrip a T v₀ R,
-      ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ P ≤ v P := by
-  let E := ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ
+      ballBoundarySolution hd B hB v₀ hR a T φ P ≤ v P := by
+  let E := ballBoundarySolution hd B hB v₀ hR a T φ
   obtain ⟨hs, he, hEc, hEt⟩ :=
-    ballBoundarySolution_smooth_traces hH hLE hd hlam hLam B hB v₀ hR a T haT φ hφ hc
-  obtain ⟨C, hC⟩ := ballBoundarySolution_bounded hH hLE hd hlam hLam B hB v₀ hR
+    ballBoundarySolution_smooth_traces hd B hB v₀ hR a T haT φ hφ hc
+  obtain ⟨C, hC⟩ := ballBoundarySolution_bounded hd B hB v₀ hR
     a T haT φ hφ hc
   obtain ⟨M, hM⟩ := hb
   have hvc := boundary_probe_continuous v hv
-  have hm := cone_bounded_subsolution_comparison B hB a T haT v₀ R
+  have hm := mass_boundedAbove_subsolution_comparison B hB a T haT v₀ R
     (fun P => E P - v P) (hs.sub hv.contDiffOn) (fun P hP => by
       rw [cone_forward_sub B (isOpen_localStrip a T v₀ R) E v hs hv.contDiffOn P hP,
         he P hP]
       exact sub_nonneg.mpr (hop P hP))
     (hEc.sub hvc.continuousOn)
-    ⟨C + M, fun P hP => (abs_sub (E P) (v P)).trans
-      (add_le_add (hC P hP) (hM P hP))⟩ 0 (fun P hP => by
+    ⟨C + M, fun P hP => (le_abs_self _).trans ((abs_sub _ _).trans
+      (add_le_add (hC P hP) (hM P hP)))⟩ 0 (fun P hP => by
         rw [show E P = φ P from hEt hP]
         exact sub_nonpos.mpr (htr P hP))
   intro P hP

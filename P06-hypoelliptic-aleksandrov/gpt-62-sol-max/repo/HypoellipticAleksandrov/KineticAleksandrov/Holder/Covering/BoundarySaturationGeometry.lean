@@ -21,13 +21,17 @@ open Set MeasureTheory
 /-- The unit backward cylinder used by the covering theorem. -/
 def unitCylinder (d : ℕ) : Set (KineticPoint d) := backwardCylinder ⟨0, 0, 0⟩ 1
 
+section
+variable {d : ℕ} (X : KineticPoint d)
+include X
+
 /-- Centers of a path retaining X while shrinking velocity toward the origin. -/
-def saturationCenter {d : ℕ} (X : KineticPoint d) (r : ℝ) : KineticPoint d :=
+def saturationCenter (r : ℝ) : KineticPoint d :=
   ⟨(1-r^2)*X.time, X.position+(((1-r^2)*X.time)-X.time) • ((1-r) • X.velocity),
     (1-r) • X.velocity⟩
 
 /-- Native coordinate inequalities for membership in the unit cylinder. -/
-theorem mem_unitCylinder_iff {d : ℕ} (X : KineticPoint d) :
+theorem mem_unitCylinder_iff :
     X ∈ unitCylinder d ↔ -1 < X.time ∧ X.time < 0 ∧
       PDE.vecEuclideanNorm X.velocity < 1 ∧ PDE.vecEuclideanNorm X.position < 1 := by
   simp only [unitCylinder, mem_backwardCylinder_iff, zero_sub, one_pow,
@@ -35,12 +39,14 @@ theorem mem_unitCylinder_iff {d : ℕ} (X : KineticPoint d) :
     relativePosition, smul_zero]
 
 /-- The point retained by the admissible path has zero relative position. -/
-theorem relativePosition_saturationCenter {d : ℕ} (X : KineticPoint d) (r : ℝ) :
+theorem relativePosition_saturationCenter (r : ℝ) :
     relativePosition (saturationCenter X r) X = 0 := by
   ext i
   simp only [relativePosition, saturationCenter, Pi.sub_apply, Pi.add_apply,
     Pi.smul_apply, Pi.zero_apply, smul_eq_mul]
   ring
+
+end
 
 /-- Every positive-radius path cylinder contains its point. -/
 theorem self_mem_saturationCylinder {d : ℕ} {X : KineticPoint d}
@@ -70,9 +76,12 @@ theorem saturationCylinder_time_bound {d : ℕ} {X Y : KineticPoint d}
     |Y.time-X.time| < r^2 :=
   abs_time_sub_lt_sq hY (self_mem_saturationCylinder hX hr)
 
+section
+variable {d : ℕ} {X : KineticPoint d} (hX : X ∈ unitCylinder d)
+include hX
+
 /-- The path is contained in the unit cylinder away from a spatial shell. -/
-theorem saturationCylinder_subset_unit {d : ℕ} {X : KineticPoint d}
-    (hX : X ∈ unitCylinder d) {r R : ℝ} (hr : 0 < r) (hrR : r ≤ R)
+theorem saturationCylinder_subset_unit {r R : ℝ} (hr : 0 < r) (hrR : r ≤ R)
     (hR : R ≤ 1) (hx : PDE.vecEuclideanNorm X.position < 1-2*R^2) :
     backwardCylinder (saturationCenter X r) r ⊆ unitCylinder d := by
   have hRp : 0 < R := hr.trans_le hrR
@@ -127,8 +136,7 @@ theorem saturationCylinder_subset_unit {d : ℕ} {X : KineticPoint d}
     linarith
 
 /-- A path cylinder fits in the centered kinetic cylinder of twice its radius. -/
-theorem saturationCylinder_subset_centered {d : ℕ} {X : KineticPoint d}
-    (hX : X ∈ unitCylinder d) {r : ℝ} (hr : 0 < r) :
+theorem saturationCylinder_subset_centered {r : ℝ} (hr : 0 < r) :
     backwardCylinder (saturationCenter X r) r ⊆ centeredCylinder X (2*r) := by
   have hv := ((mem_unitCylinder_iff X).mp hX).2.2.1
   intro Y hY
@@ -166,5 +174,7 @@ theorem saturationCylinder_subset_centered {d : ℕ} {X : KineticPoint d}
       have h := mul_le_mul ht.le hvc.le (PDE.vecEuclideanNorm_nonneg _) (sq_nonneg r)
       nlinarith
     nlinarith [pow_pos hr 3]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

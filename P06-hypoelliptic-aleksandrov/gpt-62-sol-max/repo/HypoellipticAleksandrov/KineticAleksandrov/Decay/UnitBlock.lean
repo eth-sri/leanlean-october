@@ -20,43 +20,69 @@ open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
-/-- The exact case-W unit-block conditions, conditional only on the authorized
-terminal-evolution existence statement. -/
-theorem unit_frequency_block_W (hEvol : IterationEvolutionStatement)
-    (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
-    UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl := by
+/-- The contraction at an interior point whose outer block ball fits in the domain. -/
+abbrev InteriorBlockContraction {d : ℕ} (lam Lam m Lb : ℝ) (D : Set (PDE.Vec d)) (δ : ℝ) : Prop :=
+  ∀ (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d),
+  SourceSetting lam Lam m Lb D B b →
+  ∀ (hD : MeasurableSet D)
+  (S : TerminalOperatorFamily D stationary)
+  (K : MovingFiberKernel D stationary),
+  RealizesTerminalEvolution D stationary hD
+    (zIndependentCoefficient B) b S K →
+  IsDomainMonotoneEvolution D stationary
+    (zIndependentCoefficient B) b K →
+  HasParabolicMarginalBundle D stationary hD
+    (zIndependentCoefficient B) K →
+  ∀ (ξ : PDE.Vec d), PDE.vecNormSq ξ = 1 →
+  ∀ (σ : ℝ) (v : PDE.Vec d)
+  (hv : v ∈ movingDomain D stationary σ),
+  PDE.euclideanBall v (blockOuter Lb) ⊆ D →
+  ∀ (hL : σ ≤ σ + blockTime m Lb) (ν : ComplexMeasure (PDE.Vec d)),
+  IsFourierProjection K (movingQuery σ (σ + blockTime m Lb) hL v 0 hv) ξ ν →
+  TV ν ≤ 1 - δ
+
+section
+variable (hEvol : IterationEvolutionStatement) (d : ℕ) (hd : 1 ≤ d)
+include hEvol hd
+
+/-- The same interior block construction serves arbitrary ambient domains. -/
+theorem interior_frequency_block (lam Lam m Lb : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+    (hm : 0 < m) (hmLb : m ≤ Lb) :
+    ∃ δ : ℝ, 0 < δ ∧ δ < 1 ∧ ∀ D : Set (PDE.Vec d), InteriorBlockContraction lam Lam m Lb D δ := by
+  have hLb : 0 < Lb := hm.trans_le hmLb
   obtain ⟨Cstar, hC, hcorr⟩ := corridors_retained_dominated d hd lam Lam hlam hlamLam
   obtain ⟨h, q0, hh, hq0, hcommon⟩ :=
     continued_common_minorant_trimming d hd lam Lam hlam hlamLam
-  let δ0 := (3 / 4) * blockMass Cstar 1 1 * h * q0
+  let δ0 := (3 / 4) * blockMass Cstar m Lb * h * q0
   have hδ0 : 0 < δ0 := by
-    exact mul_pos (mul_pos (mul_pos (by norm_num : (0 : ℝ) < 3 / 4)
-      (Real.exp_pos _)) hh) hq0
+    dsimp [δ0, blockMass]
+    positivity
   let δ := min δ0 (1 / 2)
   have hδ : 0 < δ := lt_min hδ0 (by norm_num)
   have hδ1 : δ < 1 := (min_le_right _ _).trans_lt (by norm_num)
-  have htime := (block_parameters Cstar h q0 1 1 hC hh hq0 zero_lt_one le_rfl).2.2.2.2.2.2.1
-  refine ⟨blockTime 1 1, δ, htime, hδ, hδ1, ?_⟩
-  intro D B b hsetting hDW hD S K hreal hmono hpar hcov ξ hξ σ v hv hL ν hν
-  subst D
-  let ρ := blockRho 1
-  let η := blockEta 1 1
-  let s := σ + blockL0 1
-  let T := σ + blockTime 1 1
+  refine ⟨δ, hδ, hδ1, ?_⟩
+  intro D B b hsetting hD S K hreal hmono _ ξ hξ σ v hv hfit hL ν hν
+  let ρ := blockRho Lb
+  let η := blockEta m Lb
+  let s := σ + blockL0 m
+  let T := σ + blockTime m Lb
   let Ω := PDE.euclideanBall v (4 * ρ)
-  have hρ : 0 < ρ := blockRho_pos zero_lt_one
-  have hη : 0 < η := blockEta_pos zero_lt_one zero_lt_one
-  have hηρ : η < ρ := blockEta_lt_rho zero_lt_one
-  have hστ : σ ≤ s := le_add_of_nonneg_right (blockL0_pos zero_lt_one).le
+  have hρ : 0 < ρ := blockRho_pos hLb
+  have hη : 0 < η := blockEta_pos hm hLb
+  have hηρ : η < ρ := blockEta_lt_rho hLb
+  have hστ : σ ≤ s := le_add_of_nonneg_right (blockL0_pos hm).le
   have hsT : s ≤ T := by
     dsimp only [s, T, blockTime]
     nlinarith only [sq_nonneg ρ]
-  have hfit : PDE.euclideanBall v (blockOuter 1) ⊆ (univ : Set (PDE.Vec d)) := subset_univ _
-  obtain ⟨α, -, -, hpaths⟩ := exists_opposite_paths 1 1 σ zero_lt_one le_rfl
-    univ b hsetting.2.1 hsetting.2.2.2.2.1 ξ v hξ hfit
+  have hsmallfit : Ω ⊆ D :=
+    (PDE.euclideanBall_mono (by positivity : 0 ≤ 4 * ρ)
+      (by dsimp [blockOuter]; linarith : 4 * ρ ≤ blockOuter Lb)).trans hfit
+  have hvD : v ∈ D := by simpa only [movingDomain_stationary] using hv
+  obtain ⟨α, -, -, hpaths⟩ := exists_opposite_paths m Lb σ hm hmLb
+    D b hsetting.2.1 hsetting.2.2.2.2.1 ξ v hξ hfit
   let γ1 : ℝ → PDE.Vec d := fun _ => v
   let γ2 : ℝ → PDE.Vec d := fun r =>
-    v + (α * tent (blockL0 1) (max 0 (min (blockL0 1) (r - σ)))) • ξ
+    v + (α * tent (blockL0 m) (max 0 (min (blockL0 m) (r - σ)))) • ξ
   obtain ⟨hγ1, hγ2, hstart1, hstart2, hend1, hend2,
     hspeed1, hspeed2, htube, hphase⟩ := hpaths
   change γ1 σ = v at hstart1
@@ -66,28 +92,22 @@ theorem unit_frequency_block_W (hEvol : IterationEvolutionStatement)
   have hΩadm : IsAdmissibleEvolutionDomain Ω :=
     Or.inr (Or.inl ⟨v, 4 * ρ, mul_pos (by norm_num) hρ, rfl⟩)
   obtain ⟨S1, K1, hreal1, -, hpar1, -⟩ :=
-    exists_unitBlock_evolution hEvol hd lam Lam 1 1 univ B b hsetting _ γ1 hadm hγ1
+    exists_unitBlock_evolution hEvol hd lam Lam m Lb D B b hsetting _ γ1 hadm hγ1
   obtain ⟨S2, K2, hreal2, -, hpar2, -⟩ :=
-    exists_unitBlock_evolution hEvol hd lam Lam 1 1 univ B b hsetting _ γ2 hadm hγ2
+    exists_unitBlock_evolution hEvol hd lam Lam m Lb D B b hsetting _ γ2 hadm hγ2
   obtain ⟨S0, K0, hreal0, hmono0, hpar0, -⟩ :=
-    exists_unitBlock_evolution hEvol hd lam Lam 1 1 univ B b hsetting Ω stationary
+    exists_unitBlock_evolution hEvol hd lam Lam m Lb D B b hsetting Ω stationary
       hΩadm (zeroCurve_piecewiseC1 d)
-  have hv1 : v ∈ movingDomain (PDE.euclideanBall 0 η) γ1 σ := by
-    rw [mem_movingDomain_euclideanBall_iff, hstart1]
-    simp only [add_zero, sub_self, PDE.vecNormSq, PDE.vecDot, Pi.zero_apply,
-      zero_mul, Finset.sum_const_zero]
-    exact sq_pos_of_pos hη
-  have hv2 : v ∈ movingDomain (PDE.euclideanBall 0 η) γ2 σ := by
-    rw [mem_movingDomain_euclideanBall_iff, hstart2]
-    simp only [add_zero, sub_self, PDE.vecNormSq, PDE.vecDot, Pi.zero_apply,
-      zero_mul, Finset.sum_const_zero]
-    exact sq_pos_of_pos hη
-  let q1 := movingQuery σ s hστ v 0 hv1
-  let q2 := movingQuery σ s hστ v 0 hv2
+  have hvStart (γ : ℝ → PDE.Vec d) (hγ : γ σ = v) :
+      v ∈ movingDomain (PDE.euclideanBall 0 η) γ σ := by
+    rw [mem_movingDomain_euclideanBall_iff, hγ]
+    simpa [PDE.vecNormSq, PDE.vecDot] using sq_pos_of_pos hη
+  let q1 := movingQuery σ s hστ v 0 (hvStart γ1 hstart1)
+  let q2 := movingQuery σ s hστ v 0 (hvStart γ2 hstart2)
   let qD := movingQuery σ s hστ v 0 hv
   let qT := movingQuery σ T hL v 0 hv
   obtain ⟨-, -, -, -, hsupp1, hsupp2, hmass1, hmass2, hdom⟩ :=
-    hcorr 1 1 σ univ B b hsetting S K hD hreal hmono γ1 γ2 v 0
+    hcorr m Lb σ D B b hsetting S K hD hreal hmono γ1 γ2 v 0
       hγ1 hγ2 hstart1 hstart2 hend1 hend2 hspeed1 hspeed2
       (fun r => (htube r).1) (fun r => (htube r).2)
       S1 K1 S2 K2 hreal1 hreal2 hpar1 hpar2 q1 q2 qD rfl rfl rfl
@@ -95,8 +115,8 @@ theorem unit_frequency_block_W (hEvol : IterationEvolutionStatement)
   let μ2 := K2.master q2
   have hfμ1 : IsFiniteMeasure μ1 := ⟨(K1.mass_le_one q1).trans_lt ENNReal.one_lt_top⟩
   have hfμ2 : IsFiniteMeasure μ2 := ⟨(K2.mass_le_one q2).trans_lt ENNReal.one_lt_top⟩
-  let N1 := ENNReal.ofReal (blockMass Cstar 1 1 / (2 * μ1.real univ)) • μ1
-  let N2 := ENNReal.ofReal (blockMass Cstar 1 1 / (2 * μ2.real univ)) • μ2
+  let N1 := ENNReal.ofReal (blockMass Cstar m Lb / (2 * μ1.real univ)) • μ1
+  let N2 := ENNReal.ofReal (blockMass Cstar m Lb / (2 * μ2.real univ)) • μ2
   have hfN1 : IsFiniteMeasure N1 := by
     refine ⟨?_⟩
     rw [Measure.smul_apply, smul_eq_mul]
@@ -129,13 +149,13 @@ theorem unit_frequency_block_W (hEvol : IterationEvolutionStatement)
   let M := K.master qT
   have hfM : IsFiniteMeasure M := ⟨(K.mass_le_one qT).trans_lt ENNReal.one_lt_top⟩
   have hcontinued : E1 + E2 ≤ M := by
-    apply continued_measures_dominated univ Ω hD (PDE.isOpen_euclideanBall v (4 * ρ)).measurableSet
-      B b S K S0 K0 hreal hreal0 hmono hΩadm (subset_univ _) σ s T hστ hsT qD qT
+    apply continued_measures_dominated D Ω hD (PDE.isOpen_euclideanBall v (4 * ρ)).measurableSet
+      B b S K S0 K0 hreal hreal0 hmono hΩadm hsmallfit σ s T hστ hsT qD qT
       ⟨rfl, rfl⟩ rfl R1 R2 _ E1 E2 hE1 hE2
     rw [hR1, hR2]
     exact hdom
   have hs : s = T - 4 * ρ ^ 2 := by dsimp only [s, T, blockTime]; ring
-  have ha : 0 < blockMass Cstar 1 1 / 2 := div_pos (Real.exp_pos _) (by norm_num)
+  have ha : 0 < blockMass Cstar m Lb / 2 := div_pos (Real.exp_pos _) (by norm_num)
   have hvΩ : v ∈ movingDomain Ω stationary (T - ρ ^ 2) := by
     rw [movingDomain_stationary]
     change PDE.vecNormSq (v - v) < (4 * ρ) ^ 2
@@ -143,32 +163,48 @@ theorem unit_frequency_block_W (hEvol : IterationEvolutionStatement)
       zero_mul, Finset.sum_const_zero] using sq_pos_of_pos (mul_pos (by norm_num) hρ)
   let qlate := scalarQuery (T - ρ ^ 2) T (sub_le_self _ (sq_nonneg ρ)) v hvΩ
   obtain ⟨-, -, hfloor, F1, F2, hF1, hF2, hFsum, hmap1, hmap2⟩ :=
-    hcommon 1 1 univ B b hsetting v ρ T (mem_univ _) hρ (subset_univ _)
-      S0 K0 hreal0 hpar0 hmono0 s (blockMass Cstar 1 1 / 2) η hs hsT ha hη hηρ
+    hcommon m Lb D B b hsetting v ρ T hvD hρ hsmallfit
+      S0 K0 hreal0 hpar0 hmono0 s (blockMass Cstar m Lb / 2) η hs hsT ha hη hηρ
       R1 R2 hfR1 hfR2 (hmR1.trans hmass1) (hmR2.trans hmass2) hsupport1 hsupport2
       E1 E2 M hfM hE1 hE2 hcontinued qlate rfl
-  let Θ := ENNReal.ofReal (blockMass Cstar 1 1 / 2 * h) •
+  let Θ := ENNReal.ofReal (blockMass Cstar m Lb / 2 * h) •
     P K0 (PDE.isOpen_euclideanBall v (4 * ρ)).measurableSet qlate
   have hfE1 : IsFiniteMeasure E1 := inferInstance
   have hfE2 : IsFiniteMeasure E2 := inferInstance
   have hfF1 : IsFiniteMeasure F1 := isFiniteMeasure_of_le _ hF1
   have hfF2 : IsFiniteMeasure F2 := isFiniteMeasure_of_le _ hF2
-  obtain ⟨hΦ, -, -, hf1, hf2⟩ := block_continued_phase_error hd lam Lam 1 1 Cstar σ
-    univ B b hsetting hC ξ v 0 hξ hfit γ1 γ2 hγ1 hγ2 hstart1 hstart2 hend1 hend2
-    (fun r => (htube r).1) (fun r => (htube r).2) hphase
-    S1 K1 S2 K2 S0 K0 hreal1 hreal2 hreal0 hpar1 hpar2 hpar0 q1 q2 rfl rfl
-    R1 R2 hR1 hR2 hsT E1 E2 F1 F2 hE1 hE2 hF1 hF2
+  have hf1 := (continued_phase_error hsetting hξ hγ1.1 hreal1 hreal0
+    (q := q1) rfl hR1 hsT).filter_mono (ae_mono hF1)
+  have hf2 := (continued_phase_error hsetting hξ hγ2.1 hreal2 hreal0
+    (q := q2) rfl hR2 hsT).filter_mono (ae_mono hF2)
   have hMone : M.real univ ≤ 1 := by
     simpa only [measureReal_def, ENNReal.toReal_one] using
       ENNReal.toReal_mono ENNReal.one_ne_top (K.mass_le_one qT)
-  have hmass : blockMass Cstar 1 1 * h * q0 / 2 ≤ Θ.real univ := by
+  have hmass : blockMass Cstar m Lb * h * q0 / 2 ≤ Θ.real univ := by
     convert hfloor using 1
     ring
   have hphaseν : IsPhaseProjection (phaseCoordinate ξ (0 : PDE.Vec d)) M ν := by
     intro A hA
     exact hν A hA
-  have hcancel := (block_interior_cancellation ξ 0 M F1 F2 Θ (blockMass Cstar 1 1)
-    h q0 _ _ hMone hFsum hmap1 hmap2 hmass hΦ hf1 hf2 ν hphaseν).2
+  have hcancel := (block_interior_cancellation ξ 0 M F1 F2 Θ (blockMass Cstar m Lb)
+    h q0 _ _ hMone hFsum hmap1 hmap2 hmass (by linarith only [hphase]) hf1 hf2 ν hphaseν).2
   exact hcancel.trans (sub_le_sub_left (min_le_left δ0 (1 / 2)) 1)
+
+
+/-- The exact case-W unit-block conditions, conditional only on the authorized
+terminal-evolution existence statement. -/
+theorem unit_frequency_block_W (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
+    UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl := by
+  obtain ⟨δ, hδ, hδ1, hblock⟩ := interior_frequency_block hEvol d hd lam Lam 1 1
+    hlam hlamLam zero_lt_one le_rfl
+  have ht : 0 < blockTime 1 1 := by
+    unfold blockTime
+    exact add_pos_of_pos_of_nonneg (blockL0_pos zero_lt_one) (by positivity)
+  refine ⟨blockTime 1 1, δ, ht, hδ, hδ1, ?_⟩
+  intro D B b hsetting hDW hD S K hreal hmono hpar _ ξ hξ σ v hv hL ν hν
+  subst D
+  exact hblock univ B b hsetting hD S K hreal hmono hpar ξ hξ σ v hv (subset_univ _) hL ν hν
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

@@ -76,7 +76,6 @@ theorem killed_slab_reconstruction {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 
   have hq0 : 0 ≤ q - 1 := by linarith
   obtain ⟨hqγ, hγ0⟩ := slab_q_lt_gamma (d := 1) hq hqd
   obtain ⟨hq1a, hq1b⟩ := slab_q1_bounds (d := 1) hq hqd
-  have hγ1 : 1 ≤ slabGamma 1 q := (slab_gamma_one_lt (d := 1) hq hqd).le
   have hMfin : μ univ < ⊤ := measure_lt_top μ _
   have : IsFiniteMeasure (slabMeasure 1 T Γ) := ⟨by
     rw [slabMeasure_univ]

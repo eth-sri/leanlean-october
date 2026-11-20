@@ -42,25 +42,29 @@ theorem barrierCutoff_derivative_bounds : ∃ D1 D2 : ℝ, 0 ≤ D1 ∧ 0 ≤ D2
     barrierCutoff (barrierCutoff_contDiff.of_le (by simp)) barrierCutoffBump.hasCompactSupport
   exact ⟨D1, D2, hD1, hD2, h1, h2⟩
 
+section
+variable (Y R : ℝ)
+include Y R
+
 /-- The physical rectangular cutoff, centered at the barrier's position singularity. -/
-def barrierRectCutoff (Y R : ℝ) (z : ℝ × ℝ) : ℝ :=
+def barrierRectCutoff (z : ℝ × ℝ) : ℝ :=
   barrierCutoff ((z.1 - Y) / R ^ 3) * barrierCutoff (z.2 / R)
 
 /-- The rectangular cutoff remains between zero and one. -/
-theorem barrierRectCutoff_bounds (Y R : ℝ) (z : ℝ × ℝ) :
+theorem barrierRectCutoff_bounds (z : ℝ × ℝ) :
     0 ≤ barrierRectCutoff Y R z ∧ barrierRectCutoff Y R z ≤ 1 := by
   exact ⟨mul_nonneg (barrierCutoff_bounds _).1 (barrierCutoff_bounds _).1,
     (mul_le_mul (barrierCutoff_bounds _).2 (barrierCutoff_bounds _).2
       (barrierCutoff_bounds _).1 zero_le_one).trans_eq (one_mul _)⟩
 
 /-- The literal rectangular cutoff is continuous on the physical plane. -/
-theorem barrierRectCutoff_continuous (Y R : ℝ) : Continuous (barrierRectCutoff Y R) :=
+theorem barrierRectCutoff_continuous : Continuous (barrierRectCutoff Y R) :=
   (barrierCutoff_contDiff.continuous.comp
     ((continuous_fst.sub continuous_const).div_const _)).mul
       (barrierCutoff_contDiff.continuous.comp (continuous_snd.div_const _))
 
 /-- Multiplication by the literal kinetic rectangle produces a compact physical test. -/
-theorem barrierRectCutoff_hasCompactSupport (Y R : ℝ) (hR : 0 < R) (f : ℝ × ℝ → ℝ) :
+theorem barrierRectCutoff_hasCompactSupport (hR : 0 < R) (f : ℝ × ℝ → ℝ) :
     HasCompactSupport (fun z => barrierRectCutoff Y R z * f z) := by
   apply HasCompactSupport.of_support_subset_isCompact
     ((isCompact_Icc (a := Y - 2 * R ^ 3) (b := Y + 2 * R ^ 3)).prod
@@ -76,18 +80,19 @@ theorem barrierRectCutoff_hasCompactSupport (Y R : ℝ) (hR : 0 < R) (f : ℝ ×
     have hv := (div_le_iff₀ hR).mp
       (by simpa only [abs_div, abs_of_pos hR] using hh.2)
     have hxb := abs_le.mp hx
-    have hvb := abs_le.mp hv
-    exact ⟨⟨by linarith only [hxb.1], by linarith only [hxb.2]⟩, hvb⟩
+    exact ⟨⟨by linarith only [hxb.1], by linarith only [hxb.2]⟩, (abs_le.mp hv)⟩
   apply hz
   rcases hlarge with hx | hv
   · simp only [barrierRectCutoff, (barrierCutoff_zero_jets hx).1, zero_mul]
   · simp only [barrierRectCutoff, (barrierCutoff_zero_jets hv).1, mul_zero, zero_mul]
 
 /-- The literal rectangular cutoff preserves joint C² regularity. -/
-theorem barrierRectCutoff_contDiff (Y R : ℝ) (f : ℝ × ℝ → ℝ) (hf : ContDiff ℝ 2 f) :
+theorem barrierRectCutoff_contDiff (f : ℝ × ℝ → ℝ) (hf : ContDiff ℝ 2 f) :
     ContDiff ℝ 2 (fun z => barrierRectCutoff Y R z * f z) := by
   have hc : ContDiff ℝ 2 barrierCutoff := barrierCutoff_contDiff.of_le (by simp)
   exact ((hc.comp ((contDiff_fst.sub contDiff_const).div_const (R ^ 3))).mul
     (hc.comp (contDiff_snd.div_const R))).mul hf
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

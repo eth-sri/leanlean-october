@@ -22,19 +22,18 @@ def next (b : Pos) : Pos := ⟨b.1 + 1, by linarith [b.2]⟩
 theorem poch_succ_left (a : ℝ) (n : ℕ) : poch a (n + 1) = a * poch (a + 1) n := by
   simp [poch, ascPochhammer_succ_left]
 
+section
+variable (a : ℝ) (b : Pos)
+
 /-- Differentiation recurrence for the coefficients. -/
-theorem coeff_deriv (a : ℝ) (b : Pos) (n : ℕ) :
+theorem coeff_deriv (n : ℕ) :
     (n + 1 : ℝ) * coeff a b (n + 1) = (a / b.1) * coeff (a + 1) (next b) n := by
-  have hb := ne_of_gt b.2
-  have hp := ne_of_gt (poch_pos (next b) n)
-  have hf : (n.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
-  have hn : (n + 1 : ℝ) ≠ 0 := by positivity
   simp only [coeff, poch_succ_left, Nat.factorial_succ, Nat.cast_mul, Nat.cast_add,
     Nat.cast_one, next]
   field_simp
 
 /-- The coefficient recurrence encoding Kummer's equation. -/
-theorem coeff_recurrence (a : ℝ) (b : Pos) (n : ℕ) :
+theorem coeff_recurrence (n : ℕ) :
     (n + 1 : ℝ) * (b.1 + n) * coeff a b (n + 1) = (a + n) * coeff a b n := by
   have hp := ne_of_gt (poch_pos b n)
   have hf : (n.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
@@ -46,7 +45,7 @@ theorem coeff_recurrence (a : ℝ) (b : Pos) (n : ℕ) :
   field_simp
 
 /-- The real formal power series has infinite convergence radius. -/
-theorem radius_M (a : ℝ) (b : Pos) :
+theorem radius_M :
     (FormalMultilinearSeries.ofScalars ℝ (coeff a b)).radius = ⊤ := by
   apply FormalMultilinearSeries.radius_eq_top_of_summable_norm
   intro r
@@ -54,12 +53,17 @@ theorem radius_M (a : ℝ) (b : Pos) :
   simpa only [FormalMultilinearSeries.ofScalars_norm, norm_mul, norm_pow,
     Real.norm_eq_abs, NNReal.abs_eq] using hs
 
-private theorem series_sum (a : ℝ) (b : Pos) :
+private theorem series_sum :
     (FormalMultilinearSeries.ofScalars ℝ (coeff a b)).sum = M a b := by
   funext z
   exact FormalMultilinearSeries.ofScalars_sum_eq (coeff a b) z
 
-private theorem derivative_sum (a : ℝ) (b : Pos) (z : ℝ) :
+end
+
+section
+variable (a : ℝ) (b : Pos) (z : ℝ)
+
+private theorem derivative_sum :
     (FormalMultilinearSeries.ofScalars ℝ (coeff a b)).derivSeries.sum z 1 =
       ∑' n : ℕ, ((n + 1 : ℝ) * coeff a b (n + 1)) * z ^ n := by
   have hz : z ∈ Metric.eball (0 : ℝ)
@@ -67,8 +71,7 @@ private theorem derivative_sum (a : ℝ) (b : Pos) (z : ℝ) :
     have hr := (FormalMultilinearSeries.ofScalars ℝ (coeff a b))
       |>.radius_le_radius_derivSeries
     rw [radius_M] at hr
-    have ht := top_le_iff.mp hr
-    rw [ht]
+    rw [(top_le_iff.mp hr)]
     simp
   have hs := ((FormalMultilinearSeries.ofScalars ℝ (coeff a b)).derivSeries.hasSum hz)
     |>.summable
@@ -88,7 +91,7 @@ private theorem derivative_sum (a : ℝ) (b : Pos) (z : ℝ) :
   ring
 
 /-- Termwise differentiated series, with a genuine derivative. -/
-theorem hasDerivAt_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem hasDerivAt_M :
     HasDerivAt (M a b) ((a / b.1) * M (a + 1) (next b) z) z := by
   have hz : ‖z‖ₑ < (FormalMultilinearSeries.ofScalars ℝ (coeff a b)).radius := by
     rw [radius_M]
@@ -99,12 +102,12 @@ theorem hasDerivAt_M (a : ℝ) (b : Pos) (z : ℝ) :
   simpa only [coeff_deriv, mul_assoc, tsum_mul_left, M] using hd
 
 /-- The first derivative shifts both Kummer parameters. -/
-theorem deriv_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem deriv_M :
     deriv (M a b) z = (a / b.1) * M (a + 1) ⟨b.1 + 1, by linarith [b.2]⟩ z :=
   (hasDerivAt_M a b z).deriv
 
 /-- The second derivative shifts both parameters twice. -/
-theorem deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem deriv2_M :
     deriv (deriv (M a b)) z =
       (a / b.1) * ((a + 1) / (b.1 + 1)) * M (a + 2) (next (next b)) z := by
   have he : deriv (M a b) = fun x => (a / b.1) * M (a + 1) (next b) x :=
@@ -115,7 +118,7 @@ theorem deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
   rw [he2, mul_assoc]
 
 /-- The first differentiated series. -/
-theorem hasSum_deriv_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem hasSum_deriv_M :
     HasSum (fun n : ℕ => (n + 1 : ℝ) * coeff a b (n + 1) * z ^ n)
       (deriv (M a b) z) := by
   rw [(hasDerivAt_M a b z).deriv]
@@ -123,7 +126,7 @@ theorem hasSum_deriv_M (a : ℝ) (b : Pos) (z : ℝ) :
     |>.mul_left (a / b.1)
 
 /-- The twice differentiated series. -/
-theorem hasSum_deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem hasSum_deriv2_M :
     HasSum (fun n : ℕ =>
       (n + 1 : ℝ) * (n + 2 : ℝ) * coeff a b (n + 2) * z ^ n)
       (deriv (deriv (M a b)) z) := by
@@ -133,8 +136,7 @@ theorem hasSum_deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
     have h1 := coeff_deriv a b (n + 1)
     have h2 := coeff_deriv (a + 1) (next b) n
     have he : a + 1 + 1 = a + 2 := by ring
-    have hn : n + 1 + 1 = n + 2 := by omega
-    simp only [Nat.cast_add, Nat.cast_one, hn] at h1
+    simp only [Nat.cast_add, Nat.cast_one, (by omega)] at h1
     rw [he] at h2
     calc
       _ = (n + 1 : ℝ) * ((n + 1 + 1 : ℝ) * coeff a b (n + 2)) := by ring
@@ -146,7 +148,7 @@ theorem hasSum_deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
   simpa only [hc, mul_assoc] using (hasSum_M (a + 2) (next (next b)) z)
     |>.mul_left (a / b.1 * ((a + 1) / (b.1 + 1)))
 
-private theorem hasSum_z_deriv (a : ℝ) (b : Pos) (z : ℝ) :
+private theorem hasSum_z_deriv :
     HasSum (fun n : ℕ => (n : ℝ) * coeff a b n * z ^ n)
       (z * deriv (M a b) z) := by
   have hs := (hasSum_deriv_M a b z).mul_left z
@@ -158,7 +160,7 @@ private theorem hasSum_z_deriv (a : ℝ) (b : Pos) (z : ℝ) :
   simpa only [Nat.cast_zero, zero_mul, zero_add] using
     hs.zero_add (f := fun n : ℕ => (n : ℝ) * coeff a b n * z ^ n)
 
-private theorem hasSum_z_deriv2 (a : ℝ) (b : Pos) (z : ℝ) :
+private theorem hasSum_z_deriv2 :
     HasSum (fun n : ℕ => (n : ℝ) * (n + 1 : ℝ) * coeff a b (n + 1) * z ^ n)
       (z * deriv (deriv (M a b)) z) := by
   have hs := (hasSum_deriv2_M a b z).mul_left z
@@ -173,7 +175,7 @@ private theorem hasSum_z_deriv2 (a : ℝ) (b : Pos) (z : ℝ) :
       (n : ℝ) * (n + 1 : ℝ) * coeff a b (n + 1) * z ^ n)
 
 /-- The literal entire power series solves Kummer's differential equation. -/
-theorem M_ode (a : ℝ) (b : Pos) (z : ℝ) :
+theorem M_ode :
     z * deriv (deriv (M a b)) z + (b.1 - z) * deriv (M a b) z - a * M a b z = 0 := by
   have hl := (hasSum_z_deriv2 a b z).add ((hasSum_deriv_M a b z).mul_left b.1)
   have hr := (hasSum_z_deriv a b z).add ((hasSum_M a b z).mul_left a)
@@ -185,7 +187,8 @@ theorem M_ode (a : ℝ) (b : Pos) (z : ℝ) :
       _ = ((n + 1 : ℝ) * (b.1 + n) * coeff a b (n + 1)) * z ^ n := by ring
       _ = _ := by rw [coeff_recurrence]; ring
   simp only [he] at hl
-  have h := hl.unique hr
-  linarith only [h]
+  linarith only [(hl.unique hr)]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

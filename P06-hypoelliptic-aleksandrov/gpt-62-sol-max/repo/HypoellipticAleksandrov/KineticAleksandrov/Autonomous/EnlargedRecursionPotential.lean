@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionPotentialIdentity
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionStoppedPotential
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AutonomyBoundedData
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripCoordinates
 
@@ -14,8 +14,8 @@ open SectionTwo TheoremA Evolution
 
 /-- Full-space evolution supplies every regularity and positivity premise of stopped tests. -/
 theorem enlarged_exists_fullspace_potential
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (b : ℝ)
     (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
     (hF0 : ∀ z, 0 ≤ F z) :
@@ -26,11 +26,11 @@ theorem enlarged_exists_fullspace_potential
       (∀ p, p.time ≤ b → 0 ≤ u p) ∧
       (∀ p, p.time = b → u p = F (p.velocity, p.position)) ∧
       (∀ p (hp : p.time ≤ b), u p = ∫ z, F z ∂
-        (fullSpaceEvolution hH hLE hlam hLam A).2.master
+        (fullSpaceEvolution A).2.master
           (wholeSpaceQuery p.time b hp p.velocity p.position)) := by
-  obtain ⟨v, hv, hr⟩ := fullspace_bounded_smooth_solution hH hlam hLam A
-    (fullSpaceEvolution hH hLE hlam hLam A)
-    (fullSpaceEvolution_spec hH hLE hlam hLam A) b F hF
+  obtain ⟨v, hv, hr⟩ := fullspace_bounded_smooth_solution A
+    (fullSpaceEvolution A)
+    (fullSpaceEvolution_spec A) b F hF
   have hwhole (t : ℝ) : movingDomain autonomousWholeDomain (fun _ => 0) t = univ :=
     movingDomain_wholeSpace 1 t
   let u := v ∘ sectionTwoPoint
@@ -54,7 +54,7 @@ theorem enlarged_exists_fullspace_potential
       trivial
     exact hv.2.2.1.comp hg.contDiffOn hmaps
   have hrep (p : Point) (hp : p.time ≤ b) : u p = ∫ z, F z ∂
-      (fullSpaceEvolution hH hLE hlam hLam A).2.master
+      (fullSpaceEvolution A).2.master
         (wholeSpaceQuery p.time b hp p.velocity p.position) :=
     hr (wholeSpaceQuery p.time b hp p.velocity p.position) rfl
   refine ⟨u, hs, hc, ?_, ?_, ?_, ?_, hrep⟩

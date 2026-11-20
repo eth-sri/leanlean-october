@@ -126,8 +126,7 @@ end Weighted
 /-- The mollification is the convolution with the weight, for the scalar action. -/
 theorem curveMollify_eq_convolution {n : ℕ} (ρ : ℝ → ℝ) (γ : ℝ → PDE.Vec n) :
     curveMollify ρ γ = ρ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] γ := by
-  funext s
-  simp [curveMollify, convolution_def]
+  rfl
 
 /-- **Analytic core of the curve approximation.**  A globally `L`-Lipschitz curve is uniformly
 `ε`-approximated by a smooth curve which is globally `L`-Lipschitz for the Euclidean norm. -/

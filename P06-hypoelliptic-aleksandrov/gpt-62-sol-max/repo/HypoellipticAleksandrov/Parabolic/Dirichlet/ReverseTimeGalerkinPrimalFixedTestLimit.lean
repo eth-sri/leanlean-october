@@ -19,144 +19,70 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 variable
-  (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
-  (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-  (a : CoefficientField d)
-  (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
-  (haSmooth : IsSmoothOnNeighborhood
-    (fun z : TimeVelocity d => a z.1 z.2)
-    (scalarParabolicClosedCylinder r₀ r₁ Ω))
-  (hbSmooth : IsSmoothOnNeighborhood
-    (fun z : TimeVelocity d => b z.1 z.2)
-    (scalarParabolicClosedCylinder r₀ r₁ Ω))
-  (hcSmooth : IsSmoothOnNeighborhood
-    (fun z : TimeVelocity d => c z.1 z.2)
-    (scalarParabolicClosedCylinder r₀ r₁ Ω))
-  (hFSmooth : IsSmoothOnNeighborhood
-    (fun z : TimeVelocity d => F z.1 z.2)
-    (scalarParabolicClosedCylinder r₀ r₁ Ω))
-  (hLower : ∀ z : TimeVelocity d,
-    z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-      lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-  (hcNonpos : ∀ z : TimeVelocity d,
-    z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
+  {r₀ r₁ lam : ℝ} (P : ReverseTimeGalerkinProblem Ω r₀ r₁ lam)
 
-/-- The quotient-level reverse-time identity against a fixed actual Galerkin test. -/
-def reverseTimeGalerkinPrimal_fixed_test_identity_prop
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (U : ReverseTimeL2V hΩ (r₁ - r₀))
-    (k : ℕ) (eta : ReverseTimeScalarTest (r₁ - r₀)) : Prop :=
-  reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-      (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv
-        (eta.memLp_deriv ∞) (galerkinVector hΩ k))
-      (reverseTimeGelfandCLM hΩ (r₁ - r₀) U) =
-    -reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-        (reverseTimeSeparatedVTest hΩ eta (galerkinVector hΩ k))
-        (reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth) +
-      reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-        (reverseTimeSeparatedVTest hΩ eta (galerkinVector hΩ k))
-        (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded
-          a b c haSmooth hbSmooth hcSmooth U)
+local notation "primalCurve" => reverseTimeGalerkinPrimal P
+
+/-- A separated multiplier vanishing at the terminal endpoint passes to the weak limit,
+including its initial endpoint term. -/
+theorem ReverseTimeGalerkinProblem.WeakLimit.boundaryPairing
+    {initial : PDE.ScalarLp Ω 2} {U : ReverseTimeL2V P.hΩ (r₁ - r₀)} {φ : ℕ → ℕ}
+    (hclm : P.WeakLimit initial U φ) (hφ : StrictMono φ) (k : ℕ)
+    (q dq : ℝ → ℝ) (hq : MemLp q ∞ (reverseTimeVolume (r₁ - r₀)))
+    (hdq : MemLp dq ∞ (reverseTimeVolume (r₁ - r₀)))
+    (hderiv : ∀ t ∈ Icc 0 (r₁ - r₀), HasDerivWithinAt q (dq t) (Icc 0 (r₁ - r₀)) t)
+    (hcont : ContinuousOn dq (Icc 0 (r₁ - r₀))) (hT : q (r₁ - r₀) = 0) :
+    let T := r₁ - r₀
+    let v := galerkinVector P.hΩ k
+    reverseTimeDualPairingRightCLM P.hΩ T (reverseTimeSeparatedVTestOfMemLp P.hΩ dq hdq v)
+        (reverseTimeGelfandCLM P.hΩ T U) =
+      -reverseTimeDualPairingRightCLM P.hΩ T (reverseTimeSeparatedVTestOfMemLp P.hΩ q hq v)
+        (P.residual U) - inner ℝ (valueCLM P.hΩ v) initial * q 0 := by
+  let T := r₁ - r₀
+  let v := galerkinVector P.hΩ k
+  let mass := (reverseTimeDualPairingRightCLM P.hΩ T
+    (reverseTimeSeparatedVTestOfMemLp P.hΩ dq hdq v)).comp (reverseTimeGelfandCLM P.hΩ T)
+  let pair := reverseTimeDualPairingRightCLM P.hΩ T (reverseTimeSeparatedVTestOfMemLp P.hΩ q hq v)
+  let A := reverseTimeSpatialFormBochnerAction r₀ r₁ P.h₀₁ P.hΩ P.hΩbounded
+    P.a P.b P.c P.haSmooth P.hbSmooth P.hcSmooth
+  let S := reverseTimeNegativeSource r₀ r₁ P.h₀₁ P.hΩ P.hΩbounded P.F P.hFSmooth
+  let form := pair.comp A
+  let start := inner ℝ (valueCLM P.hΩ v) initial * q 0
+  have hneg (W : ReverseTimeL2V P.hΩ T) : -pair (P.residual W) = form W - pair S := by
+    change -pair (S - A W) = pair (A W) - pair S
+    rw [map_sub, neg_sub]
+  have hFinite : (fun n => mass (primalCurve (φ n) initial)) =ᶠ[atTop]
+      fun n => form (primalCurve (φ n) initial) - pair S - start := by
+    filter_upwards [eventually_ge_atTop (k + 1)] with n hn
+    let w : galerkinSpace P.hΩ (φ n) := ⟨v,
+      Submodule.subset_span ⟨⟨k, hn.trans (hφ.id_le n)⟩, rfl⟩⟩
+    have h := reverseTimeGalerkinPrimal_boundaryPairing P (φ n) initial w q dq hq hdq hderiv hcont hT
+    change mass (primalCurve (φ n) initial) = -pair (P.residual (primalCurve (φ n) initial)) - start at h
+    rwa [hneg] at h
+  change mass U = -pair (P.residual U) - start
+  rw [hneg]
+  exact tendsto_nhds_unique_of_eventuallyEq (hclm mass)
+    (((hclm form).sub tendsto_const_nhds).sub tendsto_const_nhds) hFinite
 
 /-- One common weakly convergent Galerkin subsequence satisfies the identity for every
 fixed actual Galerkin vector and scalar time test. -/
 theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_fixedTests
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    ∃ (U : ReverseTimeL2V hΩ (r₁ - r₀)) (φ : ℕ → ℕ),
-      StrictMono φ ∧
-      (∀ ell : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ,
-        Tendsto
-          (fun n => ell
-            (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-              a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-              (φ n) initial))
-          atTop (𝓝 (ell U))) ∧
+    ∃ (U : ReverseTimeL2V P.hΩ (r₁ - r₀)) (φ : ℕ → ℕ),
+      StrictMono φ ∧ P.WeakLimit initial U φ ∧
       ∀ (k : ℕ) (eta : ReverseTimeScalarTest (r₁ - r₀)),
-        reverseTimeGalerkinPrimal_fixed_test_identity_prop
-          r₀ r₁ h₀₁ hΩ hΩbounded a b c F
-          haSmooth hbSmooth hcSmooth hFSmooth U k eta := by
-  obtain ⟨U, φ, hφ, hclm⟩ :=
-    exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal
-      r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
-  refine ⟨U, φ, hφ, hclm, ?_⟩
-  intro k eta
-  let hEtaDeriv : MemLp eta.deriv (∞ : ℝ≥0∞) (reverseTimeVolume (r₁ - r₀)) :=
-    eta.memLp_deriv ∞
-  let massEll : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ :=
-    (reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-      (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv hEtaDeriv
-        (galerkinVector hΩ k))).comp (reverseTimeGelfandCLM hΩ (r₁ - r₀))
-  let formEll : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ :=
-    (reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-      (reverseTimeSeparatedVTest hΩ eta (galerkinVector hΩ k))).comp
-      (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded
-        a b c haSmooth hbSmooth hcSmooth)
-  let source : ℝ := reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-    (reverseTimeSeparatedVTest hΩ eta (galerkinVector hΩ k))
-    (reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth)
-  have hMass := hclm massEll
-  have hForm := hclm formEll
-  have hIndex : ∀ᶠ n in atTop, k + 1 ≤ φ n := by
-    filter_upwards [eventually_ge_atTop (k + 1)] with n hn
-    exact hn.trans (hφ.id_le n)
-  have hFinite :
-      (fun n => massEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) =ᶠ[atTop]
-      fun n => -source + formEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial) := by
-    filter_upwards [hIndex] with n hn
-    let v : galerkinSpace hΩ (φ n) := ⟨galerkinVector hΩ k,
-      galerkinSpace_mono hΩ hn (by
-        change galerkinVector hΩ k ∈ Submodule.span ℝ
-          (Set.range fun i : Fin (k + 1) => galerkinVector hΩ i)
-        apply Submodule.subset_span
-        exact ⟨⟨k, Nat.lt_succ_self k⟩, rfl⟩)⟩
-    have h := reverseTimeGalerkinPrimal_pairing_identity
-      r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos (φ n) initial v eta
-    simpa only [reverseTimeGalerkinPrimal_pairing_identity_prop, massEll, formEll,
-      source, ContinuousLinearMap.comp_apply, v, hEtaDeriv] using h
-  have hMass' : Tendsto
-      (fun n => massEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) atTop (𝓝 (massEll U)) := hMass
-  have hForm' : Tendsto
-      (fun n => formEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) atTop (𝓝 (formEll U)) := hForm
-  have hRight : Tendsto
-      (fun n => -source + formEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) atTop (𝓝 (-source + formEll U)) :=
-    (tendsto_const_nhds.neg).add hForm'
-  have hLimit : massEll U = -source + formEll U :=
-    tendsto_nhds_unique_of_eventuallyEq hMass' hRight hFinite
-  simpa only [reverseTimeGalerkinPrimal_fixed_test_identity_prop, massEll, formEll,
-    source, ContinuousLinearMap.comp_apply, hEtaDeriv] using hLimit
+        P.TestEquation U (galerkinVector P.hΩ k) eta := by
+  obtain ⟨U, φ, hφ, hclm⟩ := exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal P initial
+  refine ⟨U, φ, hφ, hclm, fun k eta => ?_⟩
+  have hzero (t : ℝ) (ht : t ∉ Ioo 0 (r₁ - r₀)) : eta t = 0 :=
+    image_eq_zero_of_notMem_tsupport (fun h => ht (eta.tsupport_subset h))
+  have hd (t : ℝ) (_ : t ∈ Icc 0 (r₁ - r₀)) :
+      HasDerivWithinAt eta (eta.deriv t) (Icc 0 (r₁ - r₀)) t := by
+    rw [ReverseTimeScalarTest.deriv_apply]
+    exact ((eta.contDiff.differentiable (by simp)).differentiableAt.hasDerivAt).hasDerivWithinAt
+  simpa only [ReverseTimeGalerkinProblem.TestEquation, reverseTimeSeparatedVTest,
+    hzero 0 (by simp), mul_zero, sub_zero] using
+    ReverseTimeGalerkinProblem.WeakLimit.boundaryPairing P hclm hφ k eta eta.deriv
+      (eta.memLp ∞) (eta.memLp_deriv ∞) hd eta.contDiff_deriv.continuous.continuousOn (hzero _ (by simp))
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -12,40 +12,39 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point)
+include lam Lam A c nu
+
 /-- Integrating the canonical joint density against a physical starting measure. -/
-def positionMixtureDensity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) : Point → ℝ≥0∞ :=
-  fun z => ∫⁻ e, positionActiveDensity hH hLE hlam hLam A c e z ∂nu
+def positionMixtureDensity : Point → ℝ≥0∞ :=
+  fun z => ∫⁻ e, positionActiveDensity A c e z ∂nu
 
 /-- The actual density of a finite starting mixture is measurable. -/
-theorem measurable_positionMixtureDensity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [SFinite nu] :
-    Measurable (positionMixtureDensity hH hLE hlam hLam A c nu) := by
-  exact (measurable_positionActiveDensity hH hLE hlam hLam A c).lintegral_prod_left'
+theorem measurable_positionMixtureDensity [SFinite nu] :
+    Measurable (positionMixtureDensity A c nu) := (measurable_positionActiveDensity A c).lintegral_prod_left'
+
+end
 
 /-- Fubini identifies the actual Green mixture with its integrated joint density. -/
 theorem withDensity_positionMixtureDensity (hpush : PushforwardStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [SFinite nu] :
-    volume.withDensity (positionMixtureDensity hH hLE hlam hLam A c nu) =
-      enlargedActiveGreen hH hLE hlam hLam A c nu := by
+    volume.withDensity (positionMixtureDensity A c nu) =
+      enlargedActiveGreen A c nu := by
   have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
   ext B hB
-  change (volume.withDensity (positionMixtureDensity hH hLE hlam hLam A c nu)) B =
-    (nu.bind (enlargedActiveGreenKernel hH hLE hlam hLam A c)) B
+  change (volume.withDensity (positionMixtureDensity A c nu)) B =
+    (nu.bind (enlargedActiveGreenKernel A c)) B
   rw [withDensity_apply _ hB, Measure.bind_apply hB (Kernel.aemeasurable _)]
   unfold positionMixtureDensity
   rw [← lintegral_lintegral_swap (μ := nu) (ν := volume.restrict B)
-    (f := positionActiveDensity hH hLE hlam hLam A c)
-    (measurable_positionActiveDensity hH hLE hlam hLam A c).aemeasurable]
+    (f := positionActiveDensity A c)
+    (measurable_positionActiveDensity A c).aemeasurable]
   apply lintegral_congr
   intro e
-  rw [← withDensity_apply _ hB, withDensity_positionActiveDensity hpush hH hLE hlam hLam]
+  rw [← withDensity_apply _ hB, withDensity_positionActiveDensity hpush ]
 
 /-- A positive mixture inherits a uniform pole bound, with its total starting mass. -/
 theorem positionPositiveNorm_mixture_le {X Y : Type*}

@@ -34,22 +34,24 @@ theorem spatialPackedBarrier_fderiv (d : ℕ) (mu R t : ℝ)
   rw [div_eq_mul_inv]
   ring
 
+section
+variable {d : ℕ} (mu R t : ℝ) (x : PDE.Vec (d + d)) (i : Fin d)
+
 /-- The position gradient of the barrier is exactly zero in packed coordinates. -/
-theorem spatialPackedBarrier_positionGradient {d : ℕ} (mu R t : ℝ)
-    (x : PDE.Vec (d + d)) (i : Fin d) :
+theorem spatialPackedBarrier_positionGradient :
     PDE.classicalGradient (spatialPackedBarrier d mu R t) x (Fin.castAdd d i) = 0 := by
   change fderiv ℝ (spatialPackedBarrier d mu R t) x (PDE.basisVec (Fin.castAdd d i)) = 0
   rw [spatialPackedBarrier_fderiv, spatialCoordinate_basis_position]
   simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero]
 
 /-- The velocity gradient has the same normalization as the native barrier. -/
-theorem spatialPackedBarrier_velocityGradient {d : ℕ} (mu R t : ℝ)
-    (x : PDE.Vec (d + d)) (i : Fin d) :
+theorem spatialPackedBarrier_velocityGradient :
     PDE.classicalGradient (spatialPackedBarrier d mu R t) x (Fin.natAdd d i) =
       -(2 * Real.exp (-mu * t) / R ^ 2) * (spatialCoordinateCLE d x).2 i := by
   change fderiv ℝ (spatialPackedBarrier d mu R t) x (PDE.basisVec (Fin.natAdd d i)) = _
-  rw [spatialPackedBarrier_fderiv, spatialCoordinate_basis_velocity]
-  rw [PDE.vecDot_basisVec_right]
+  rw [spatialPackedBarrier_fderiv, spatialCoordinate_basis_velocity, PDE.vecDot_basisVec_right]
+
+end
 
 /-- The packed second velocity derivative is the exact diagonal barrier Hessian. -/
 theorem spatialPackedBarrier_velocityHessian {d : ℕ} (mu R t : ℝ)

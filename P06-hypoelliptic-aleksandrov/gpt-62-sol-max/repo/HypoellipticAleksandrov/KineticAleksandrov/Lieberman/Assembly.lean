@@ -44,7 +44,6 @@ theorem ellipsoidDirichlet_aux
           (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) v →
           Set.EqOn v u
             (scalarParabolicClosedCylinder r₀ r₁ (openEllipsoid Q)) := by
-  have _hcompact := hφCompact
   have hΩ := isOpen_openEllipsoid Q
   have hΩb := (openEllipsoid_geometry hQ).1
   have hlo : HasLowerEllipticity lam a := haLower

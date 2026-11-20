@@ -11,15 +11,18 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
+section
+variable {d : ℕ} (hd : 1 ≤ d)
+include hd
+
 /-- Every polynomial moment of stretched exponential radial decay is integrable. -/
-theorem integrable_exitFrequency_moment {d : ℕ} (hd : 1 ≤ d) (n : ℕ)
+theorem integrable_exitFrequency_moment (n : ℕ)
     {c : ℝ} (hc : 0 < c) :
     Integrable (fun ξ : PDE.Vec d =>
       ‖ξ‖ ^ n * Real.exp (-c * ‖ξ‖ ^ (1 / 3 : ℝ))) := by
   have : NeZero d := ⟨by omega⟩
   have hdim : Module.finrank ℝ (PDE.Vec d) = d := by
-    simpa only [Fintype.card_fin] using
-      (Module.finrank_fintype_fun_eq_card ℝ (η := Fin d))
+    simp
   apply (integrable_fun_norm_addHaar (volume : Measure (PDE.Vec d))
     (f := fun x : ℝ => x ^ n * Real.exp (-c * x ^ (1 / 3 : ℝ)))).mpr
   rw [hdim]
@@ -35,7 +38,7 @@ theorem integrable_exitFrequency_moment {d : ℕ} (hd : 1 ≤ d) (n : ℕ)
   ring
 
 /-- Rescaling the stretched exponential preserves every polynomial moment. -/
-theorem integrable_exitFrequency_scaled_moment {d : ℕ} (hd : 1 ≤ d) (n : ℕ)
+theorem integrable_exitFrequency_scaled_moment (n : ℕ)
     {c R : ℝ} (hc : 0 < c) (hR : 0 < R) :
     Integrable (fun ξ : PDE.Vec d =>
       ‖ξ‖ ^ n * Real.exp (-c * (R ^ 3 * ‖ξ‖) ^ (1 / 3 : ℝ))) := by
@@ -47,20 +50,16 @@ theorem integrable_exitFrequency_scaled_moment {d : ℕ} (hd : 1 ≤ d) (n : ℕ
   ring_nf
 
 /-- The upstream total-variation decay gives every moment in the complete `L¹` space. -/
-theorem ballExitL1Fourier_integrable_moments
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+theorem ballExitL1Fourier_integrable_moments {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (n : ℕ) :
     Integrable (fun ξ => ‖ξ‖ ^ n *
-      ‖exitL1Fourier (ballExit hH hLE hd hlam hLam B hB v₀ hR P T) ξ‖) := by
+      ‖exitL1Fourier (ballExit hd B hB v₀ hR P T) ξ‖) := by
   obtain ⟨C, c, hC, hc, hdecay⟩ :=
-    ballExit_fourier_decay hH hLE d hd lam Lam hlam hLam
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+    ballExit_fourier_decay d hd lam Lam hB.1 hB.2.1
+  let ν := ballExit hd B hB v₀ hR P T
   have hi := (integrable_exitFrequency_scaled_moment hd n hc hR).const_mul C
   apply hi.mono'
     (continuous_norm.pow n |>.mul (continuous_exitL1Fourier ν).norm).aestronglyMeasurable
@@ -81,5 +80,7 @@ theorem ballExitL1Fourier_integrable_moments
   have hb := he.trans (mul_le_mul_of_nonneg_left hexp hC.le)
   simpa only [mul_assoc, mul_left_comm C] using
     mul_le_mul_of_nonneg_left hb (pow_nonneg (norm_nonneg ξ) n)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

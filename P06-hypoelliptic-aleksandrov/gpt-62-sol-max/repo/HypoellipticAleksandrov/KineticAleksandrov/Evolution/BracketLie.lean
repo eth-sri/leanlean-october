@@ -78,22 +78,29 @@ section Bracket
 
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
 
-private theorem differentiableAt_diffusionField
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j)) (i : Fin n)
+section
+variable (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
+include hβ
+
+private theorem differentiableAt_diffusionField (i : Fin n)
     (x : EvolutionVec n) : DifferentiableAt ℝ (diffusionField B i) x :=
   ((contDiff_diffusionField hβ i).differentiable (by simp)) x
 
 private theorem differentiableAt_driftField
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
     (hb : ContDiff ℝ (⊤ : ℕ∞) b) (x : EvolutionVec n) :
     DifferentiableAt ℝ (driftField B b) x :=
   ((contDiff_driftField hβ hb).differentiable (by simp)) x
 
+end
+
+section
+variable (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
+  (hb : ContDiff ℝ (⊤ : ℕ∞) b) (i : Fin n) (x : EvolutionVec n)
+include hβ hb
+
 /-- The transported component of the bracket `[X_i, X_0]` is `Db(v) β_i`, where `β_i` is the
 `i`-th row of `β` (equal to its `i`-th column by symmetry). -/
-theorem transportedCoord_lieBracket
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
-    (hb : ContDiff ℝ (⊤ : ℕ∞) b) (i : Fin n) (x : EvolutionVec n) :
+theorem transportedCoord_lieBracket :
     transportedCoord n
         (VectorField.lieBracket ℝ (diffusionField B i) (driftField B b) x) =
       fderiv ℝ b (diffusedCoord n x) (fun j => sqrtCoeffAt B x i j) := by
@@ -114,9 +121,7 @@ theorem transportedCoord_lieBracket
   rw [h1, h2, sub_zero]
 
 /-- The time component of the bracket `[X_i, X_0]` vanishes. -/
-theorem timeCoord_lieBracket
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
-    (hb : ContDiff ℝ (⊤ : ℕ∞) b) (i : Fin n) (x : EvolutionVec n) :
+theorem timeCoord_lieBracket :
     timeCoord n (VectorField.lieBracket ℝ (diffusionField B i) (driftField B b) x) = 0 := by
   unfold VectorField.lieBracket
   rw [map_sub]
@@ -127,6 +132,8 @@ theorem timeCoord_lieBracket
     coord_fderiv_const (timeCoord n) (differentiableAt_diffusionField hβ i x) 0
       (fun y => by simp [diffusionField]) _
   rw [h1, h2, sub_zero]
+
+end
 
 /-- **Bracket (Lie-algebra spanning) condition for `Lop`.**  Under the standing hypotheses
 (`B` smooth with `lam • 1 ≤ B`, `0 < lam`; `b` smooth with `ξ · Db(v) ξ ≥ m` for unit `ξ`,

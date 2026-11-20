@@ -21,9 +21,12 @@ theorem contDiff_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (k : ℝ) :
   unfold PDE.vecDot Matrix.mulVec dotProduct
   fun_prop
 
+section
+variable {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm) (k : ℝ) (x : PDE.Vec d)
+include hQ
+
 /-- The native gradient of the scaled symmetric quadratic. -/
-theorem gradient_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k : ℝ) (x : PDE.Vec d) :
+theorem gradient_scaled_quadratic :
     PDE.classicalGradient (fun y => k * PDE.vecDot y (Q *ᵥ y)) x =
       (2 * k) • (Q *ᵥ x) := by
   have h := (HasFDerivAt.fun_sum (u := Finset.univ) (fun (i : Fin d) _ =>
@@ -51,11 +54,9 @@ theorem gradient_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   ring
 
 /-- The native Hessian of the scaled symmetric quadratic. -/
-theorem hessian_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k : ℝ) (x : PDE.Vec d) :
+theorem hessian_scaled_quadratic :
     sliceHessian (fun y => k * PDE.vecDot y (Q *ᵥ y)) x = (2 * k) • Q := by
-  have hg : PDE.classicalGradient (fun y => k * PDE.vecDot y (Q *ᵥ y)) =
-      fun y => (2 * k) • (Q *ᵥ y) := funext (gradient_scaled_quadratic Q hQ k)
+  have hg := funext (gradient_scaled_quadratic Q hQ k)
   have h := (hasFDerivAt_pi.mpr (fun j : Fin d =>
     (HasFDerivAt.fun_sum (u := Finset.univ) (fun (l : Fin d) _ =>
       (hasFDerivAt_apply (𝕜 := ℝ) l x).const_mul (Q j l))).const_mul (2 * k)))
@@ -71,9 +72,14 @@ theorem hessian_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   simp only [mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
   rw [hQ.apply i j]
 
+end
+
+section
+variable {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm) (k C : ℝ) (x : PDE.Vec d)
+include hQ
+
 /-- The exponential barrier's exact gradient, including its drift sign. -/
-theorem gradient_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k C : ℝ) (x : PDE.Vec d) :
+theorem gradient_exp_quadratic :
     PDE.classicalGradient
       (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))) x =
       (-2 * C * k * Real.exp (k * PDE.vecDot x (Q *ᵥ x))) • (Q *ᵥ x) := by
@@ -100,8 +106,7 @@ theorem gradient_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   ring
 
 /-- The exponential barrier's exact Hessian. -/
-theorem hessian_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
-    (k C : ℝ) (x : PDE.Vec d) (i j : Fin d) :
+theorem hessian_exp_quadratic (i j : Fin d) :
     sliceHessian
       (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))) x i j =
       -C * Real.exp (k * PDE.vecDot x (Q *ᵥ x)) *
@@ -129,6 +134,8 @@ theorem hessian_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
     gradient_scaled_quadratic Q hQ, hessian_scaled_quadratic Q hQ]
   simp only [Pi.smul_apply, Matrix.smul_apply, smul_eq_mul, neg_mul, neg_neg]
   ring
+
+end
 
 /-- Exact backward operator of the exponential ellipsoid barrier. -/
 theorem scalarOperator_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)

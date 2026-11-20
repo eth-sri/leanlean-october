@@ -14,14 +14,16 @@ This is a purely arithmetic module.
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
+section
+variable {c eta : ℝ} (hc : 0 < c) (hc1 : c < 1) (heta : 0 < eta) (heta1 : eta < 1)
+include hc hc1 heta heta1
+
 /-- Positive gain and threshold make the density factor strictly between zero and one. -/
-theorem density_factor_pos_lt_one {c eta : ℝ} (hc : 0 < c) (hc1 : c < 1)
-    (heta : 0 < eta) (heta1 : eta < 1) : 0 < 1-c*eta ∧ 1-c*eta < 1 := by
+theorem density_factor_pos_lt_one : 0 < 1-c*eta ∧ 1-c*eta < 1 := by
   constructor <;> nlinarith
 
 /-- An integer height makes the ink-spots multiplier contractive. -/
-theorem exists_contractive_stack_height {c eta : ℝ} (hc : 0 < c) (hc1 : c < 1)
-    (heta : 0 < eta) (heta1 : eta < 1) :
+theorem exists_contractive_stack_height :
     ∃ m : ℕ, 0 < m ∧ 0 < (((m : ℝ)+1)/(m : ℝ))*(1-c*eta) ∧
       (((m : ℝ)+1)/(m : ℝ))*(1-c*eta) < 1 := by
   obtain ⟨m, hm⟩ := exists_nat_gt ((1-c*eta)/(c*eta))
@@ -36,5 +38,7 @@ theorem exists_contractive_stack_height {c eta : ℝ} (hc : 0 < c) (hc1 : c < 1)
   rw [heq]
   apply (div_lt_iff₀ hmpos).mpr
   nlinarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

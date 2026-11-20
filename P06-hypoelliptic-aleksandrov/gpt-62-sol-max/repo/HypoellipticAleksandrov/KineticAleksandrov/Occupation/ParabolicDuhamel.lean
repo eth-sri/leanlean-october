@@ -28,7 +28,7 @@ open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
 /-- **Parabolic Duhamel lemma** (Lemma 2.3), without the transport data. -/
-theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
+theorem parabolic_duhamel
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ) {lam Lam : ℝ}
     {B : CoefficientField d} (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
     (K : MovingFiberKernel Ω γ)
@@ -57,8 +57,8 @@ theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
         parabolicDuhamelPotential K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) T g p =
           0) := by
   have hΩm := measurableSet_of_isAdmissibleEvolutionDomain hΩ
-  have hγc : Continuous γ := hγ.1
-  obtain ⟨hsmooth, heq⟩ := duhamel_smooth_equation K hH hΩ hγc hB hP g hg0 hgs hgc T hgU
+  have hγc := hγ.1
+  obtain ⟨hsmooth, heq⟩ := duhamel_smooth_equation K hΩ hγc hB hP g hg0 hgs hgc T hgU
   have hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v)) := fun r =>
     hgs.continuous.measurable.comp (measurable_const.prodMk measurable_id)
   obtain ⟨C, hC⟩ := hgs.continuous.bounded_above_of_compact_support hgc

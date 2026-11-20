@@ -52,7 +52,7 @@ theorem holder_neighbourhood_compact {d : ℕ}
         ⋃ P ∈ K, closure (backwardCylinder P (2 * R0)) ∧
       IsCompact (closure (holderNeighbourhood R0 K)) := by
   let r := 2 * R0
-  have hr : 0 < r := by dsimp only [r]; positivity
+  have hr : 0 < r := by positivity
   let B := closure (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1)
   let U := ⋃ P ∈ K, closure (backwardCylinder P r)
   have himage : (fun z : KineticPoint d × KineticPoint d => kineticAffine z.1 r z.2) ''

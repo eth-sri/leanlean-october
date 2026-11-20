@@ -11,18 +11,41 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+/-- The densities and flux for a pair of angular measures. -/
+structure AngularDensityPair (R β : ℝ) (F H : Measure ℝ) (f h J : ℝ → ℝ) : Prop where
+  first_measure : F = volume.withDensity (fun y => ENNReal.ofReal (f y))
+  second_measure : H = volume.withDensity (fun y => ENNReal.ofReal (h y))
+  first_locallyIntegrable : LocallyIntegrable f volume
+  first_nonneg : ∀ᵐ y ∂volume, 0 ≤ f y
+  second_ac : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval h a b
+  flux_ac : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval J a b
+  comparison : ∀ᵐ y ∂volume, f y ≤ h y ∧ h y ≤ R * f y
+  second_deriv : ∀ᵐ y ∂volume, deriv h y = J y - y ^ 2 * f y / 3
+  flux_deriv : ∀ᵐ y ∂volume, deriv J y = -(β - 2) / 3 * y * f y
+
+namespace AngularDensityPair
+
+variable {R β : ℝ} {F H : Measure ℝ} {f h J : ℝ → ℝ} (D : AngularDensityPair R β F H f h J)
+include D
+
+/-- Continuity of the second density upgrades its almost-everywhere lower bound. -/
+theorem second_nonneg : ∀ y, 0 ≤ h y :=
+  bellmanAngularDensity_nonneg D.second_ac D.first_nonneg (D.comparison.mono fun _ hy => hy.1)
+
+theorem upper_bound : ∀ᵐ y ∂volume, h y ≤ R * f y := D.comparison.mono fun _ hy => hy.2
+
+/-- Integrating the two derivative equations gives the angular moment formula. -/
+theorem integrated : ∀ y : ℝ, h y = h 0 + J 0 * y - ((β - 2) / 3) * y * bellmanAngularFirstMoment f y +
+    ((β - 3) / 3) * bellmanAngularSecondMoment f y :=
+  bellmanAngularDensity_integrated β f h J D.first_locallyIntegrable D.second_ac D.flux_ac
+    D.second_deriv D.flux_deriv
+
+end AngularDensityPair
+
 /-- The angular weak equation and ellipticity produce densities and a locally AC flux. -/
 theorem angular_has_densities (R β : ℝ) (hR : 1 ≤ R) (F H : Measure ℝ)
     (hang : IsBellmanAngularAdjointPair 1 R β F H) :
-    ∃ f h J : ℝ → ℝ,
-      F = volume.withDensity (fun y => ENNReal.ofReal (f y)) ∧
-      H = volume.withDensity (fun y => ENNReal.ofReal (h y)) ∧
-      LocallyIntegrable f volume ∧ (∀ᵐ y ∂volume, 0 ≤ f y) ∧
-      (∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval h a b) ∧
-      (∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval J a b) ∧
-      (∀ᵐ y ∂volume, f y ≤ h y ∧ h y ≤ R * f y) ∧
-      (∀ᵐ y ∂volume, deriv h y = J y - y ^ 2 * f y / 3) ∧
-      (∀ᵐ y ∂volume, deriv J y = -(β - 2) / 3 * y * f y) := by
+    ∃ f h J : ℝ → ℝ, AngularDensityPair R β F H f h J := by
   let : IsFiniteMeasureOnCompacts F := hang.1
   let : IsFiniteMeasureOnCompacts H := hang.2.2.1
   obtain ⟨j, hj⟩ := bellmanAngularFlux_weak R β F H hang
@@ -86,7 +109,7 @@ theorem angular_has_densities (R β : ℝ) (hR : 1 ≤ R) (F H : Measure ℝ)
         withDensity_smul _ hfm.ennreal_ofReal, ← hF]
     rw [← hH, he]
     exact hang.2.2.2.2.2.1
-  refine ⟨f, h, J, hF, hH, hf, hfn, hhac, hJac, ?_, ?_, ?_⟩
+  refine ⟨f, h, J, ⟨hF, hH, hf, hfn, hhac, hJac, ?_, ?_, ?_⟩⟩
   · filter_upwards [hfH, hHR] with x hx hy
     exact ⟨hx, hy⟩
   · rw [hheq]

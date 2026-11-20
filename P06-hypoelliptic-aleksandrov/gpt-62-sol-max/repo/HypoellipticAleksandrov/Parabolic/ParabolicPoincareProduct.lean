@@ -23,15 +23,18 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped ENNReal
 
-private theorem parabolicExponent_ne_zero (d : Nat) : parabolicExponent d ≠ 0 := by
+section
+variable (d : Nat)
+
+private theorem parabolicExponent_ne_zero : parabolicExponent d ≠ 0 := by
   simp [parabolicExponent]
 
-private theorem parabolicExponent_ne_top (d : Nat) : parabolicExponent d ≠ ∞ := by
+private theorem parabolicExponent_ne_top : parabolicExponent d ≠ ∞ := by
   simp [parabolicExponent]
 
 /-- Restricted time--velocity volume on the literal unit box is the time-outer
 product of the literal unit interval and velocity cube. -/
-theorem parabolicMorreyUnitBox_restrict_volume_eq_prod (d : Nat) :
+theorem parabolicMorreyUnitBox_restrict_volume_eq_prod :
     volume.restrict (parabolicMorreyUnitBox d) =
       (volume.restrict (Set.Ioo (0 : Real) 1)).prod
         (volume.restrict (velocityCube (0 : PDE.Vec d) 1)) := by
@@ -41,10 +44,15 @@ theorem parabolicMorreyUnitBox_restrict_volume_eq_prod (d : Nat) :
     (ν := (volume : Measure (PDE.Vec d))) (Set.Ioo 0 1)
     (velocityCube (0 : PDE.Vec d) 1)
 
+end
+
+section
+variable {d : Nat} (f : TimeVelocity d -> Real)
+  (hf : AEMeasurable f (volume.restrict (parabolicMorreyUnitBox d)))
+include hf
+
 /-- The time-indexed velocity-slice norm is a.e. measurable. -/
-theorem aemeasurable_parabolicMorreyUnitVelocitySlice_eLpNorm
-    {d : Nat} (f : TimeVelocity d -> Real)
-    (hf : AEMeasurable f (volume.restrict (parabolicMorreyUnitBox d))) :
+theorem aemeasurable_parabolicMorreyUnitVelocitySlice_eLpNorm :
     AEMeasurable
       (fun t : Real =>
         PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1)
@@ -81,9 +89,7 @@ theorem aemeasurable_parabolicMorreyUnitVelocitySlice_eLpNorm
   exact (eLpNorm_eq_lintegral_rpow_enorm_toReal hp_ne_zero hp_ne_top ht).symm
 
 /-- Exact time-outer disintegration of the extended parabolic norm. -/
-theorem parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice
-    {d : Nat} (f : TimeVelocity d -> Real)
-    (hf : AEMeasurable f (volume.restrict (parabolicMorreyUnitBox d))) :
+theorem parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice :
     parabolicELpNormOn d f (parabolicMorreyUnitBox d) =
       MeasureTheory.eLpNorm
         (fun t : Real =>
@@ -145,5 +151,7 @@ theorem parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice
         hslice.aestronglyMeasurable]
       simp only [enorm_eq_self]
       rfl
+
+end
 
 end HypoellipticAleksandrov.Parabolic

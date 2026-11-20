@@ -20,17 +20,17 @@ def unitCutoffVelocitySlice {d : ℕ}
     (f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (Q : KineticPoint d) : PDE.Vec d → ℝ :=
   fun w => f (Q.time, (Q.position, w))
 
+section
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+include hf
+
 /-- A source-smooth product cutoff has smooth velocity slices. -/
-theorem contDiff_unitCutoffVelocitySlice {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Q : KineticPoint d) :
+theorem contDiff_unitCutoffVelocitySlice (Q : KineticPoint d) :
     ContDiff ℝ (⊤ : ℕ∞) (unitCutoffVelocitySlice f Q) :=
   hf.comp (contDiff_const.prodMk (contDiff_const.prodMk contDiff_id))
 
 /-- The physical velocity Hessian scales by level times inverse-square radius. -/
-theorem scaledUnitCutoff_velocityHessian {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (P₀ P : KineticPoint d) (R ell : ℝ) :
+theorem scaledUnitCutoff_velocityHessian (P₀ P : KineticPoint d) (R ell : ℝ) :
     kineticVelocityHessian (scaledUnitCutoff f P₀ R ell) P =
       (ell * (R ^ 2)⁻¹) • sliceHessian
         (unitCutoffVelocitySlice f (kineticAffineInverse P₀ R P))
@@ -66,9 +66,7 @@ theorem scaledUnitCutoff_velocityHessian {d : ℕ}
   rfl
 
 /-- The physical backward operator is the exact inverse-square unit jet expression. -/
-theorem scaledUnitCutoff_backwardOperator {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (A : FullKineticCoefficient d)
+theorem scaledUnitCutoff_backwardOperator (A : FullKineticCoefficient d)
     (P₀ P : KineticPoint d) (R ell : ℝ) :
     backwardOperator A (scaledUnitCutoff f P₀ R ell) P =
       ell * (R ^ 2)⁻¹ *
@@ -80,5 +78,7 @@ theorem scaledUnitCutoff_backwardOperator {d : ℕ}
   rw [backwardOperator_apply, scaledUnitCutoff_transport hf,
     scaledUnitCutoff_velocityHessian hf, matrixContraction_smul_right]
   ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

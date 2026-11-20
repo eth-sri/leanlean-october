@@ -41,8 +41,7 @@ theorem exists_sigmaFinite_bounded_weak_subsequence
   refine ⟨u, ν, hν, hu.mono_ac hμρ, hμρ.ae_le hub, ?_⟩
   intro ψ hψ
   have hmeasure : ρ.withDensity (μ.rnDeriv ρ) = μ := by
-    have h := Measure.rnDeriv_add_singularPart μ ρ
-    simpa only [Measure.singularPart_eq_zero_of_ac hμρ, add_zero] using h
+    simpa only [Measure.singularPart_eq_zero_of_ac hμρ, add_zero] using (Measure.rnDeriv_add_singularPart μ ρ)
   let Ψ (x : α) := (μ.rnDeriv ρ x).toReal * ψ x
   have hΨ : Integrable Ψ ρ := by
     have h := (integrable_withDensity_iff_integrable_smul'

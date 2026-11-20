@@ -20,8 +20,11 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
+section
+variable {d : ℕ}
+
 /-- Localized gradient energy is bounded by value energy for a homogeneous classical solution. -/
-theorem integral_local_gradient_energy_le {d : ℕ}
+theorem integral_local_gradient_energy_le
     (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
     (u ρ : TimeVelocity d → ℝ) (hu : IsScalarC12On u (Ioo a T ×ˢ O))
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)
@@ -105,7 +108,7 @@ theorem integral_local_gradient_energy_le {d : ℕ}
   linarith only [hb, htime]
 
 /-- The smooth compact cutoff has a finite bound on the time derivative of its square. -/
-theorem exists_local_cutoff_square_timeDerivative_bound {d : ℕ}
+theorem exists_local_cutoff_square_timeDerivative_bound
     (ρ : TimeVelocity d → ℝ) (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ)
     (hc : HasCompactSupport ρ) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ z, |timeDerivative (fun y => ρ y ^ 2) z| ≤ K := by
@@ -122,7 +125,7 @@ theorem exists_local_cutoff_square_timeDerivative_bound {d : ℕ}
     (Real.norm_eq_abs _).symm.le.trans ((hK z).trans (le_max_left _ _))⟩
 
 /-- One cutoff-dependent constant bounds every homogeneous solution's gradient energy. -/
-theorem exists_local_gradient_energy_constant {d : ℕ}
+theorem exists_local_gradient_energy_constant
     (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
     (ρ : TimeVelocity d → ℝ) (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ)
     (hc : HasCompactSupport ρ) (hsub : tsupport ρ ⊆ Ioo a T ×ˢ O)
@@ -143,5 +146,7 @@ theorem exists_local_gradient_energy_constant {d : ℕ}
   intro u hu hq heq
   exact integral_local_gradient_energy_le a T O hO u ρ hu hρ hc hsub A hA
     lam K Kt hlam hK hell (fun z _ j => hrow z j) (fun z _ => ht z) hq heq
+
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

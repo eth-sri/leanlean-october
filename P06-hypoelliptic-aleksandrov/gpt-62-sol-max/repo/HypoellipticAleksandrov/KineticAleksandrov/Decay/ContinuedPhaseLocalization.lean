@@ -1,10 +1,11 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Decay.PhaseCurve
+public import HypoellipticAleksandrov.KineticAleksandrov.Decay.PhaseLocalization
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvolution
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierGeometry
 import Mathlib.Tactic.FunProp
 
-/-! # Speed-free continuous-curve phase localization for block continuation -/
+/-! # Phase localization on a continuously moving ball for block continuation -/
 
 @[expose] public section
 noncomputable section
@@ -13,35 +14,32 @@ open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
+section
+variable {d : ℕ} (lam Lam : ℝ) (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
+  (b : PDE.Vec d → PDE.Vec d) (hsetting : SourceSetting lam Lam m Lb D B b) (σ τ ρ : ℝ)
+  (c : PDE.Vec d) (γ center : ℝ → PDE.Vec d) (hρ : 0 < ρ) (hc : Continuous center)
+  (hcenter : ∀ t, center t = γ t + c) (S : TerminalOperatorFamily (PDE.euclideanBall c ρ) γ)
+  (K : MovingFiberKernel (PDE.euclideanBall c ρ) γ)
+  (hreal : RealizesTerminalEvolution (PDE.euclideanBall c ρ) γ (PDE.isOpen_euclideanBall c ρ).measurableSet (zIndependentCoefficient B) b S K)
+  (ξ z0 v : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) (hστ : σ ≤ τ)
+  (hv : v ∈ movingDomain (PDE.euclideanBall c ρ) γ σ)
+include lam Lam m D B hsetting hρ hc hcenter S hreal hξ
+
 /-- Smooth forbidden-phase tests have zero integral against the supplied moving kernel. -/
-theorem phase_test_zero_of_continuous_curve (d : ℕ)
-    (lam Lam : ℝ)
-    (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) (hsetting : SourceSetting lam Lam m Lb D B b)
-    (σ τ ρ : ℝ) (γ : ℝ → PDE.Vec d) (hρ : 0 < ρ)
-    (hγ : Continuous γ)
-    (S : TerminalOperatorFamily (PDE.euclideanBall 0 ρ) γ)
-    (K : MovingFiberKernel (PDE.euclideanBall 0 ρ) γ)
-    (hreal : RealizesTerminalEvolution (PDE.euclideanBall 0 ρ) γ
-      (PDE.isOpen_euclideanBall 0 ρ).measurableSet (zIndependentCoefficient B) b S K)
-    (ξ z0 v : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
-    (hστ : σ ≤ τ)
-    (hv : v ∈ movingDomain (PDE.euclideanBall 0 ρ) γ σ)
+private theorem phase_test_zero
     (sgn : ℝ) (hsgn : sgn = 1 ∨ sgn = -1)
     (φ : BoundedBorel (EvolutionAmbientState d))
-    (hφ : IsSmoothCompactTerminalDatum (PDE.euclideanBall 0 ρ)
+    (hφ : IsSmoothCompactTerminalDatum (PDE.euclideanBall c ρ)
       γ τ φ)
     (hbound : ∀ x, 0 ≤ φ x ∧ φ x ≤ 1)
     (hs : tsupport (φ : EvolutionAmbientState d → ℝ) ⊆
-      {x | 0 < sgn * (phaseCoordinate ξ z0 x - phaseCenter ξ b γ σ τ) -
+      {x | 0 < sgn * (phaseCoordinate ξ z0 x - phaseCenter ξ b center σ τ) -
         Lb * ρ * (τ - σ)}) :
     ∫ x, φ x ∂K.master (movingQuery σ τ hστ v z0 hv) = 0 := by
-  let Ω := PDE.euclideanBall (0 : PDE.Vec d) ρ
-  let γc := γ
-  let p : EvolutionState Ω γc σ := ⟨(v, z0), hv, mem_univ _⟩
+  let p : EvolutionState (PDE.euclideanBall c ρ) γ σ := ⟨(v, z0), hv, mem_univ _⟩
   have hi : ∫ x, φ x ∂K.master (movingQuery σ τ hστ v z0 hv) =
-      ∫ x, φ x.1 ∂K.fiberKernel (PDE.isOpen_euclideanBall 0 ρ).measurableSet σ τ hστ p :=
-    integral_master_eq_fiber K (PDE.isOpen_euclideanBall 0 ρ).measurableSet
+      ∫ x, φ x.1 ∂K.fiberKernel (PDE.isOpen_euclideanBall c ρ).measurableSet σ τ hστ p :=
+    integral_master_eq_fiber K (PDE.isOpen_euclideanBall c ρ).measurableSet
       σ τ hστ p φ φ.measurable
   by_cases ht : σ = τ
   · subst τ
@@ -61,9 +59,19 @@ theorem phase_test_zero_of_continuous_curve (d : ℕ)
       intro t v
       have hbounds := (sectionTwoCoefficient_fullBounds lam Lam B hsetting.1).2.2
       exact posSemidef_of_hasEverywhereLoewnerBounds hsetting.1.1.le hbounds t v 0
-    have hnonpos := classical_phase_test_nonpos B b γc σ τ Lb ρ ht' hρ ξ z0 hξ
-      hsetting.2.2.2.2.1.1 hγ hB sgn hsgn
-      φ hφ hbound hs u hu v hv
+    have hmove t : movingDomain (PDE.euclideanBall 0 ρ) center t =
+        movingDomain (PDE.euclideanBall c ρ) γ t := by
+      ext w
+      simp only [mem_movingDomain_euclideanBall_iff, add_zero, hcenter]
+    have hu' : IsClassicalTerminalSolution (PDE.euclideanBall 0 ρ) center
+        (zIndependentCoefficient B) b τ φ u := by
+      simpa only [IsClassicalTerminalSolution, evolutionPastClosedCylinder,
+        evolutionPastInteriorRaw, evolutionPastOpenCylinder, evolutionTerminalClosure,
+        evolutionLateralFrontier, hmove] using hu
+    have hφ' : IsSmoothCompactTerminalDatum (PDE.euclideanBall 0 ρ) center τ φ := by
+      simpa only [IsSmoothCompactTerminalDatum, evolutionStateSet, hmove] using hφ
+    have hnonpos := classical_phase_test_nonpos B b center σ τ Lb ρ ht' hρ ξ z0 hξ
+      hsetting.2.2.2.2.1.1 hc hB sgn hsgn φ hφ' hbound hs u hu' v (by rwa [hmove])
     have huintegral : ∫ x, φ x ∂K.master (movingQuery σ τ hστ v z0 hv) =
         u ⟨σ, v, z0⟩ := by
       rw [hi]
@@ -74,25 +82,13 @@ theorem phase_test_zero_of_continuous_curve (d : ℕ)
 
 
 /-- The supplied moving kernel is concentrated in the source closed phase strip. -/
-theorem phase_localization_of_continuous_curve (d : ℕ)
-    (lam Lam : ℝ)
-    (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) (hsetting : SourceSetting lam Lam m Lb D B b)
-    (σ τ ρ : ℝ) (γ : ℝ → PDE.Vec d) (hρ : 0 < ρ)
-    (hγ : Continuous γ)
-    (S : TerminalOperatorFamily (PDE.euclideanBall 0 ρ) γ)
-    (K : MovingFiberKernel (PDE.euclideanBall 0 ρ) γ)
-    (hreal : RealizesTerminalEvolution (PDE.euclideanBall 0 ρ) γ
-      (PDE.isOpen_euclideanBall 0 ρ).measurableSet (zIndependentCoefficient B) b S K)
-    (ξ z0 v : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
-    (hστ : σ ≤ τ)
-    (hv : v ∈ movingDomain (PDE.euclideanBall 0 ρ) γ σ)
+theorem phase_localization_of_center_curve
     : ∀ᵐ x ∂K.master (movingQuery σ τ hστ v z0 hv),
-      |phaseCoordinate ξ z0 x - phaseCenter ξ b γ σ τ| ≤ Lb * ρ * (τ - σ) := by
+      |phaseCoordinate ξ z0 x - phaseCenter ξ b center σ τ| ≤ Lb * ρ * (τ - σ) := by
   let μ := K.master (movingQuery σ τ hστ v z0 hv)
   have hfinite : IsFiniteMeasure μ := ⟨(K.mass_le_one _).trans_lt ENNReal.one_lt_top⟩
-  let U := evolutionStateSet (PDE.euclideanBall 0 ρ) γ τ
-  have hU : IsOpen U := (isOpen_movingDomain (PDE.isOpen_euclideanBall 0 ρ) τ).prod
+  let U := evolutionStateSet (PDE.euclideanBall c ρ) γ τ
+  have hU : IsOpen U := (isOpen_movingDomain (PDE.isOpen_euclideanBall c ρ) τ).prod
     isOpen_univ
   have hμ : μ Uᶜ = 0 := by
     have hr : μ.restrict U = μ := K.terminal_support _
@@ -101,18 +97,19 @@ theorem phase_localization_of_continuous_curve (d : ℕ)
       _ = μ (Uᶜ ∩ U) := Measure.restrict_apply hU.measurableSet.compl
       _ = 0 := by simp only [compl_inter_self, measure_empty]
   have hq : Continuous (fun x : EvolutionAmbientState d =>
-      phaseCoordinate ξ z0 x - phaseCenter ξ b γ σ τ) := by
+      phaseCoordinate ξ z0 x - phaseCenter ξ b center σ τ) := by
     unfold phaseCoordinate PDE.vecDot
     simp only [Pi.sub_apply]
     fun_prop
   apply ae_phase_strip_of_forbidden_tests hU hμ hq (Lb * ρ * (τ - σ))
-  intro sgn hsgn φ hφ hc hs hbound
+  intro sgn hsgn φ hφ hcompact hs hbound
   let φB := smoothTestDatum φ hφ hbound
-  have hdatum : IsSmoothCompactTerminalDatum (PDE.euclideanBall 0 ρ)
-      γ τ φB := ⟨hφ, hc, fun x hx => (hs hx).2⟩
-  exact phase_test_zero_of_continuous_curve d lam Lam
-    m Lb D B b hsetting σ τ ρ γ hρ hγ S K hreal
+  have hdatum : IsSmoothCompactTerminalDatum (PDE.euclideanBall c ρ)
+      γ τ φB := ⟨hφ, hcompact, fun x hx => (hs hx).2⟩
+  exact phase_test_zero lam Lam m Lb D B b hsetting σ τ ρ c γ center hρ hc hcenter S K hreal
     ξ z0 v hξ hστ hv sgn hsgn φB hdatum hbound (fun x hx => (hs hx).1)
+
+end
 
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

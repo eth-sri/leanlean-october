@@ -21,9 +21,12 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped MatrixOrder
 
+section
+variable (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+include hd hlam hlamLam
+
 /-- The measure comparison after arbitrary parabolic translation and scaling. -/
-theorem scaled_minorant_comparison (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
+theorem scaled_minorant_comparison :
     ∃ h : ℝ, 0 < h ∧
       ∀ (B : CoefficientField d), IsSectionTwoCoefficient lam Lam B →
       ∀ (v0 : PDE.Vec d) (ρ T : ℝ), 0 < ρ →
@@ -140,8 +143,7 @@ theorem scaled_minorant_comparison (d : ℕ) (hd : 1 ≤ d)
     exact key
 
 /-- The source common terminal minorant for the same supplied marginal kernel. -/
-theorem common_terminal_minorant (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
+theorem common_terminal_minorant :
     ∃ h q0 : ℝ, 0 < h ∧ 0 < q0 ∧
       ∀ (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
         (b : PDE.Vec d → PDE.Vec d), SourceSetting lam Lam m Lb D B b →
@@ -174,5 +176,7 @@ theorem common_terminal_minorant (d : ℕ) (hd : 1 ≤ d)
   have _ := And.intro hv0 (And.intro hsub (And.intro hreal hmono))
   exact ⟨hcomp B hset.1 v0 ρ T hρ K hpar qearly qlate hqe hql hv,
     hmass B hset.1 v0 ρ T (4 * ρ) hρ rfl K hpar qlate hql⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

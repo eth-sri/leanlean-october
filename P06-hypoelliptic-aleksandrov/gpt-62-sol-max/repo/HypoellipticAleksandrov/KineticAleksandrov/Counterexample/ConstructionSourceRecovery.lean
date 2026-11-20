@@ -11,17 +11,20 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter Set HypoellipticAleksandrov.Parabolic
 open scoped Topology
 
+section
+variable {d : ℕ}
+
 /-- The spacetime indicator uses exactly the fixed-time profile domain. -/
-theorem constructionIndicatorSource_apply {d : ℕ} {alpha : ℝ}
+theorem constructionIndicatorSource_apply {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r mu R t : ℝ) (q : XV d) :
     constructionIndicatorSource h r mu R (t, q) =
       {y | profileFunction h y < 1}.indicator
         (fun y => timeCutoffSourceRepresentative h r mu R ⟨t, y.1, y.2⟩) q := by
-  by_cases hp : profileFunction h q < 1 <;> simp [constructionIndicatorSource, hp]
+  rfl
 
 /-- The actual mollified operator converges almost everywhere in native spacetime
 volume to a jointly measurable version of the selected zero-extended source. -/
-theorem construction_smoothedOperator_tendsto_ae_spacetime {d : ℕ} (hd : 1 ≤ d)
+theorem construction_smoothedOperator_tendsto_ae_spacetime (hd : 1 ≤ d)
     {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
@@ -31,7 +34,7 @@ theorem construction_smoothedOperator_tendsto_ae_spacetime {d : ℕ} (hd : 1 ≤
       backwardOperator (fun _t x v => profileMatrix h (x, v))
         (smoothedZeroExtendedProfile h r mu R (standardMollifierSequence n)) P)
       atTop (𝓝 (constructionIndicatorSource h r mu R (KineticPoint.equivProd d P))) := by
-  have hA := (selectedProfile_spec h).2.2.2.2.1
+  have hA := (selectedProfile_spec h).measurable_matrix
   have hF (n : ℕ) := measurable_backwardOperator_of_joint_smooth (profileMatrix h) hA
     (smoothedZeroExtendedProfile h r mu R (standardMollifierSequence n))
     (smoothedZeroExtendedProfile_contDiff ha h r mu R hr hmu hR
@@ -52,7 +55,7 @@ theorem construction_smoothedOperator_tendsto_ae_spacetime {d : ℕ} (hd : 1 ≤
       ← heq] using! hq
 
 /-- Jointly measurable fixed-time almost-everywhere inequalities lift to spacetime. -/
-theorem construction_fixed_time_le_ae_spacetime {d : ℕ} (f g : ℝ × XV d → ℝ)
+theorem construction_fixed_time_le_ae_spacetime (f g : ℝ × XV d → ℝ)
     (hf : Measurable f) (hg : Measurable g)
     (hfg : ∀ t : ℝ, ∀ᵐ q ∂volume, f (t, q) ≤ g (t, q)) :
     ∀ᵐ P : KineticPoint d ∂volume,
@@ -61,5 +64,7 @@ theorem construction_fixed_time_le_ae_spacetime {d : ℕ} (f g : ℝ × XV d →
   have hp : ∀ᵐ z : ℝ × XV d ∂volume, f z ≤ g z :=
     (Measure.ae_prod_iff_ae_ae hs).mpr (Eventually.of_forall hfg)
   exact (KineticPoint.measurePreserving_equivProd d).quasiMeasurePreserving.ae hp
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -35,8 +35,7 @@ def secondM (a : ℝ) (z : ℝ) : ℝ :=
 
 /-- The second positive-axis solution never vanishes for the source parameter range. -/
 theorem secondM_pos (a : NegThird) (z : ℝ) (hz : 0 < z) : 0 < secondM a.1 z := by
-  let c : Pos := ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩
-  exact mul_pos (Real.rpow_pos_of_pos hz _) (lt_of_lt_of_le zero_lt_one (one_le_M c b43 z hz.le))
+  exact mul_pos (Real.rpow_pos_of_pos hz _) (lt_of_lt_of_le zero_lt_one (one_le_M ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩ b43 z hz.le))
 
 /-- Smoothness of the second solution away from the singular point. -/
 theorem contDiffOn_secondM (a : ℝ) :

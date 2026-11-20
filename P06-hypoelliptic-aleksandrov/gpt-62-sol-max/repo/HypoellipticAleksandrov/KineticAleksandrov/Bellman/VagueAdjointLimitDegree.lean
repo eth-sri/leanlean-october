@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.VagueCompactnes
 import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularDisintegrationReweight
 import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularAnnihilationReflectionMeasure
 
 /-! # Homogeneity passes through a common vague limit -/
 
@@ -12,25 +13,6 @@ noncomputable section
 open Set MeasureTheory Filter Topology
 open scoped CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
-
-/-- The pushforward characterization recovers the exact density-degree formula. -/
-theorem bellman_degree_of_map_dilation (beta : ℝ) (mu : Measure BellmanPuncturedPlane)
-    (hm : ∀ r : ℝ, ∀ hr : 0 < r,
-      Measure.map (bellmanDilation r hr) mu = ENNReal.ofReal (r ^ (beta - 4)) • mu) :
-    HasBellmanDensityDegree beta mu := by
-  intro r hr E hE
-  let D := bellmanDilationHomeomorph r hr
-  have h := congrArg (fun nu : Measure BellmanPuncturedPlane => nu (D '' E)) (hm r hr)
-  change (Measure.map D mu) (D '' E) = _ at h
-  rw [Measure.map_apply D.measurable (D.measurableEmbedding.measurableSet_image.mpr hE),
-    D.injective.preimage_image, Measure.smul_apply, smul_eq_mul] at h
-  have hc : ENNReal.ofReal (r ^ (4 - beta)) * ENNReal.ofReal (r ^ (beta - 4)) = 1 := by
-    rw [mul_comm]
-    exact bellmanRadial_degreeFactors_cancel beta r hr
-  calc mu (bellmanDilation r hr '' E) = 1 * mu (D '' E) := (one_mul _).symm
-    _ = ENNReal.ofReal (r ^ (4 - beta)) *
-        (ENNReal.ofReal (r ^ (beta - 4)) * mu (D '' E)) := by rw [← mul_assoc, hc]
-    _ = ENNReal.ofReal (r ^ (4 - beta)) * mu E := by rw [← h]
 
 /-- Vague limits of boundedly homogeneous measures retain the limiting density degree. -/
 theorem bellman_vague_limit_degree (beta : ℕ → ℝ) (betaInf : ℝ)
@@ -42,7 +24,7 @@ theorem bellman_vague_limit_degree (beta : ℕ → ℝ) (betaInf : ℝ)
   let : LocallyCompactSpace BellmanPuncturedPlane :=
     isOpen_compl_singleton.locallyCompactSpace
   let := hrad.1
-  apply bellman_degree_of_map_dilation
+  apply _root_.HypoellipticAleksandrov.KineticAleksandrov.bellman_densityDegree_of_map_dilation
   intro r hr
   let D := bellmanDilationHomeomorph r hr
   let c := ENNReal.ofReal (r ^ (betaInf - 4))

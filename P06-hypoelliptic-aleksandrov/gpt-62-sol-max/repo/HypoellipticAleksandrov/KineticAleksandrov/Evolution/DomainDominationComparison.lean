@@ -37,8 +37,7 @@ theorem IsClassicalTerminalSolution.nonneg_of_nonneg {Ω : Set (PDE.Vec n)} {γ 
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hF : ∀ q, 0 ≤ F q) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, 0 ≤ u p := by
   intro p hp
-  have h0 := IsClassicalTerminalSolution.smul hΩ hγ 0 hu
-  have hle := IsClassicalTerminalSolution.le_of_le hΩ hγ hlam hB hb h0 hu
+  have hle := IsClassicalTerminalSolution.le_of_le hΩ hγ hlam hB hb (IsClassicalTerminalSolution.smul hΩ hγ 0 hu) hu
     (fun y z _ => by simpa using hF (y, z)) p hp
   simpa using hle
 
@@ -58,48 +57,41 @@ theorem classical_le_of_subdomain {Ω Ω' : Set (PDE.Vec n)} {γ γ' : ℝ → P
     fun t => closure_mono (hsub t)
   have hu0 := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F u).2 hu
   have hu0' := (isClassicalViscousTerminalSolution_zero_iff Ω' γ' B b τ F u').2 hu'
-  have hslab' : ∀ a, movingClosedSlab Ω' γ' a τ ⊆ evolutionPastClosedCylinder Ω' γ' τ :=
-    fun a p hp => ⟨hp.2.1, hp.2.2⟩
-  have hslab : ∀ a, movingClosedSlab Ω' γ' a τ ⊆ evolutionPastClosedCylinder Ω γ τ :=
-    fun a p hp => ⟨hp.2.1, hcl _ hp.2.2⟩
-  have hact' : ∀ a, movingActiveSlab Ω' γ' a τ ⊆ evolutionPastOpenCylinder Ω' γ' τ :=
-    fun a p hp => ⟨hp.2.1, hp.2.2⟩
-  have hact : ∀ a, movingActiveSlab Ω' γ' a τ ⊆ evolutionPastOpenCylinder Ω γ τ :=
-    fun a p hp => ⟨hp.2.1, hsub _ hp.2.2⟩
+  have hclosed : evolutionPastClosedCylinder Ω' γ' τ ⊆ evolutionPastClosedCylinder Ω γ τ :=
+    fun p hp => ⟨hp.1, hcl _ hp.2⟩
+  have hopen : evolutionPastOpenCylinder Ω' γ' τ ⊆ evolutionPastOpenCylinder Ω γ τ :=
+    fun p hp => ⟨hp.1, hsub _ hp.2⟩
   obtain ⟨C', -, hC'⟩ := hu'.1
   obtain ⟨C, -, hC⟩ := hu.1
   intro p₀ hp₀
-  have hp₀slab : p₀ ∈ movingClosedSlab Ω' γ' p₀.time τ := ⟨le_rfl, hp₀.1, hp₀.2⟩
-  have hres := growth_comparison (a := p₀.time) (T := τ) (u := fun q => u' q - u q) hΩ' hγ'
-    hlam hB hb le_rfl zero_le_one ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀slab
-  · linarith
+  have hres := growth_comparison_past (T := τ) (u := fun q => u' q - u q) hΩ' hγ'
+    hlam hB hb le_rfl zero_le_one ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀
+  · exact sub_nonpos.mp hres
   · refine ⟨C' + C, fun p hp => ?_⟩
-    have h1 := hC' p (hslab' _ hp)
-    have h2 := hC p (hslab _ hp)
+    have h1 := hC' p (hp)
+    have h2 := hC p (hclosed hp)
     have := le_abs_self (u' p)
     have := neg_abs_le (u p)
     linarith
-  · exact (hu0'.2.1.mono (hslab' _)).sub (hu0.2.1.mono (hslab _))
+  · exact (hu0'.2.1).sub (hu0.2.1.mono hclosed)
   · intro p hp
-    exact (hu0'.isSliceRegularAt hΩ' hγ' (hact' _ hp)).sub
-      (hu0.isSliceRegularAt hΩ hγ (hact _ hp))
+    exact (hu0'.isSliceRegularAt hΩ' hγ' (hp)).sub
+      (hu0.isSliceRegularAt hΩ hγ (hopen hp))
   · intro p hp
-    have hr' := hu0'.isSliceRegularAt hΩ' hγ' (hact' _ hp)
-    have hr := hu0.isSliceRegularAt hΩ hγ (hact _ hp)
-    rw [viscousTransportedOperator_sub hr' hr, hu0'.2.2.2.1 p (hact' _ hp),
-      hu0.2.2.2.1 p (hact _ hp)]
+    have hr' := hu0'.isSliceRegularAt hΩ' hγ' (hp)
+    have hr := hu0.isSliceRegularAt hΩ hγ (hopen hp)
+    rw [viscousTransportedOperator_sub hr' hr, hu0'.2.2.2.1 p (hp),
+      hu0.2.2.2.1 p (hopen hp)]
     simp
-  · intro p hp hpT
-    have hterm' : p ∈ evolutionTerminalClosure Ω' γ' τ := ⟨hpT, hpT ▸ hp.2.2⟩
-    have hterm : p ∈ evolutionTerminalClosure Ω γ τ := ⟨hpT, hcl _ (hpT ▸ hp.2.2)⟩
+  · intro p hp
+    have hterm : p ∈ evolutionTerminalClosure Ω γ τ := ⟨hp.1, hcl _ hp.2⟩
     show u' p - u p ≤ 0
-    rw [hu0'.2.2.2.2.1 p hterm', hu0.2.2.2.2.1 p hterm]
+    rw [hu0'.2.2.2.2.1 p hp, hu0.2.2.2.2.1 p hterm]
     simp
-  · intro p hp hfr
-    have hlat' : p ∈ evolutionLateralFrontier Ω' γ' τ := ⟨hp.2.1, hfr⟩
+  · intro p hp
     show u' p - u p ≤ 0
-    rw [hu0'.2.2.2.2.2 p hlat']
-    have := hnn p (hslab _ hp)
+    rw [hu0'.2.2.2.2.2 p hp]
+    have := hnn p (hclosed ⟨hp.1, frontier_subset_closure hp.2⟩)
     linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

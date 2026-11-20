@@ -9,17 +9,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set
 
-/-- Averaging over `(2t,3t]` uses its length `t` and the full occupation through `3t`. -/
-theorem box_return_time_average (E : FullSpaceEvolution) (z : Z) (A0 r Y t C : ℝ)
-    (ht : 0 < t) (hC : 0 ≤ C)
-    (hcomp : ∀ s ∈ Ioc (2 * t) (3 * t),
-      (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal ≤
-        C * (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal) :
-    t * (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal ≤
-      C * ∫ s in Ioc 0 (3 * t),
-        (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal := by
-  let f := fun s : ℝ => (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal
-  have hi := box_action_integrableOn E z A0 r Y (3 * t)
+/-- Integrating a pointwise comparison on the later window bounds it by total occupation. -/
+theorem later_window_average {f : ℝ → ℝ} {t C : ℝ} (ht : 0 < t) (hC : 0 ≤ C)
+    (hi : IntegrableOn f (Ioc 0 (3 * t))) (hf : ∀ s, 0 ≤ f s)
+    (hcomp : ∀ s ∈ Ioc (2 * t) (3 * t), f t ≤ C * f s) :
+    t * f t ≤ C * ∫ s in Ioc 0 (3 * t), f s := by
   have hs : Ioc (2 * t) (3 * t) ⊆ Ioc 0 (3 * t) :=
     fun s hs => ⟨by linarith [hs.1], hs.2⟩
   have hsmall := hi.mono_set hs
@@ -31,8 +25,20 @@ theorem box_return_time_average (E : FullSpaceEvolution) (z : Z) (A0 r Y t C : �
     ring
   rw [setIntegral_const, hvol, smul_eq_mul, integral_const_mul] at hmono
   exact hmono.trans (mul_le_mul_of_nonneg_left
-    (setIntegral_mono_set hi (Filter.Eventually.of_forall (fun _ => ENNReal.toReal_nonneg))
-      (Filter.Eventually.of_forall hs)) hC)
+    (setIntegral_mono_set hi (.of_forall hf)
+      hs.eventuallyLE) hC)
+
+/-- Averaging over `(2t,3t]` uses its length `t` and the full occupation through `3t`. -/
+theorem box_return_time_average (E : FullSpaceEvolution) (z : Z) (A0 r Y t C : ℝ)
+    (ht : 0 < t) (hC : 0 ≤ C)
+    (hcomp : ∀ s ∈ Ioc (2 * t) (3 * t),
+      (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal ≤
+        C * (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal) :
+    t * (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal ≤
+      C * ∫ s in Ioc 0 (3 * t),
+        (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal :=
+  later_window_average ht hC (box_action_integrableOn E z A0 r Y (3 * t))
+    (fun _ => ENNReal.toReal_nonneg) hcomp
 
 /-- The kinetic scaling identity converts occupation decay to a dimensionless time ratio. -/
 theorem box_decay_scaling {r t alpha : ℝ} (hr : 0 < r) (ht : 0 < t) :
@@ -45,7 +51,6 @@ theorem box_decay_scaling {r t alpha : ℝ} (hr : 0 < r) (ht : 0 < t) :
     dsimp only [gamma]
     ring
   rw [hp, Real.rpow_neg hr.le]
-  have hpow := (Real.rpow_pos_of_pos hr (gamma alpha)).ne'
   field_simp
 
 /-- Negative powers yield the source's `1+t/r²` decay, with a uniform large-time factor. -/

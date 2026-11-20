@@ -45,7 +45,7 @@ include hb_smooth hb_lipschitz hb_coercive
 solutions exist and are unique on every admissible moving domain, relative
 only to the two explicit hypotheses. -/
 theorem exists_viscous_terminalSolution
-    (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement)
+    
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
     (ε : ℝ) (hε : 0 < ε) (hε1 : ε ≤ 1)
@@ -58,14 +58,14 @@ theorem exists_viscous_terminalSolution
           EqOn v u (evolutionPastClosedCylinder Ω γ τ)) := by
   rcases hΩ with hWhole | ⟨c, r, hr, hBall⟩ | ⟨hN, lo, hi, hlohi, hInterval⟩
   · rw [hWhole] at hF ⊢
-    exact exists_viscous_terminalSolution_wholeSpace hLE hH hn hlam hlamLam hm hmLb
+    exact exists_viscous_terminalSolution_wholeSpace hn hlam hlamLam hm hmLb
       hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hγ
       τ F hF ε hε hε1 C hC hFC
   · rw [hBall] at hF ⊢
-    exact exists_viscous_terminalSolution_ball hLE hH hn hlam hlamLam hm hmLb
+    exact exists_viscous_terminalSolution_ball hn hlam hlamLam hm hmLb
       hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hγ hr
       τ F hF ε hε hε1 C hC hFC
-  · exact exists_viscous_terminalSolution_interval hLE hH hn hlam hlamLam hm hmLb
+  · exact exists_viscous_terminalSolution_interval hn hlam hlamLam hm hmLb
       hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hγ
       hN Ω lo hi hlohi hInterval τ F hF ε hε hε1 C hC hFC
 

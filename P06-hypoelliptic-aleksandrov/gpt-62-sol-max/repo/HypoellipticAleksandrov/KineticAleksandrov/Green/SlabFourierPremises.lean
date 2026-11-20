@@ -31,15 +31,19 @@ open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal NNReal
 
+section
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+include K
+
 /-- The parabolic velocity marginal `P_{σ,σ+t}(v,·)` of the realized kernel, for `t ≥ 0`
 (negative `t` is clamped to `0`; only `t > 0` is used). -/
-def occupationKernel {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+def occupationKernel
     (σ t : ℝ) (v : PDE.Vec d) : Measure (PDE.Vec d) :=
   K.firstMarginal (wholeSpaceQuery σ (σ + max t 0) (le_add_of_nonneg_right (le_max_right t 0)) v 0)
 
 /-- `g` is a non-negative Borel density on `(0,S) × ℝ^d` of the occupation measure of `ρ`
 (companion paper, (4.2)), tested against all bounded Borel `φ`. -/
-def SlabOccupationDensity {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+def SlabOccupationDensity
     (σ₀ S : ℝ) (ρ : Measure (PDE.Vec d)) (g : ℝ × PDE.Vec d → ℝ) : Prop :=
   Measurable g ∧ (∀ q, 0 ≤ g q) ∧
     ∀ φ : BoundedBorel (ℝ × PDE.Vec d),
@@ -49,11 +53,16 @@ def SlabOccupationDensity {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _
               (le_add_of_nonneg_right τ.2.1.le) v 0)
           ∂elapsedVolume (ENNReal.ofReal S) ∂ρ
 
+end
+
+section
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+include d K
+
 /-- The occupation estimate of Proposition 4.2 with constants `C` (whole-space case, kernel `K`):
 nonnegative constants for `1 ≤ γ ≤ γ₀`, and for every finite `ρ`, start time and horizon an
 occupation density with `‖g‖_{L^γ} ≤ C_γ M S^{β_γ}`. -/
-def OccupationBoundedBy {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (C : ℝ → ℝ) : Prop :=
+def OccupationBoundedBy (C : ℝ → ℝ) : Prop :=
   (∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d → 0 ≤ C γ) ∧
     ∀ (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] (σ₀ S : ℝ), 0 < S →
       ∃ g : ℝ × PDE.Vec d → ℝ, SlabOccupationDensity K σ₀ S ρ g ∧
@@ -64,11 +73,12 @@ def OccupationBoundedBy {d : ℕ}
             C γ * (ρ univ).toReal * S ^ slabBeta d γ
 
 /-- The decay estimate (3.1) with constants `C, c` for the kernel `K`. -/
-def FourierDecayBoundedBy {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (C c : ℝ) : Prop :=
+def FourierDecayBoundedBy (C c : ℝ) : Prop :=
   ∀ (σ τ : ℝ) (h : σ < τ) (v ξ : PDE.Vec d),
     totalVariationNorm (fourierKernel K σ τ h.le ξ v) ≤
       ENNReal.ofReal (C * Real.exp (-(c * (τ - σ) * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))))
+
+end
 
 /-- Family form of the conclusion of Proposition 4.2 (case W): the structural constants `C_γ`
 depend on `d, λ, Λ` only and serve every coefficient with bounds `λ, Λ` and every realizing

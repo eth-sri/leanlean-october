@@ -23,7 +23,7 @@ theorem scalarJets_locallyIntegrable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0
       (fun q => scalarGx gamma Lam q i)
       ((measurable_pi_apply i).comp (measurable_scalarGx gamma Lam)) (3 * gamma.1 - 3)
       (by linarith only [gamma.2.1]) (by linarith only [gamma.2.2])
-    · intro r hr q
+    · intro r hr q _
       exact congrArg (fun w => w i) (scalarGx_homogeneous gamma Lam r hLam hr q)
     · intro K hK hz
       obtain ⟨M, hM⟩ := scalarJets_compact_bound gamma Lam hLam hmatch K hK hz
@@ -36,7 +36,7 @@ theorem scalarJets_locallyIntegrable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0
       (fun q => scalarGv gamma Lam q i)
       ((measurable_pi_apply i).comp (measurable_scalarGv gamma Lam)) (3 * gamma.1 - 1)
       (by linarith only [gamma.2.1]) (by linarith only [gamma.2.2])
-    · intro r hr q
+    · intro r hr q _
       exact congrArg (fun w => w i) (scalarGv_homogeneous gamma Lam r hLam hr q)
     · intro K hK hz
       obtain ⟨M, hM⟩ := scalarJets_compact_bound gamma Lam hLam hmatch K hK hz
@@ -48,7 +48,7 @@ theorem scalarJets_locallyIntegrable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0
     apply homogeneous_component_locallyIntegrable 1 (by omega)
       (fun q => scalarHess gamma Lam q i k) (measurable_scalarHess gamma Lam i k)
       (3 * gamma.1 - 2) (by linarith only [gamma.2.1]) (by linarith only [gamma.2.2])
-    · intro r hr q
+    · intro r hr q _
       exact congrArg (fun w => w i k) (scalarHess_homogeneous gamma Lam r hLam hr q)
     · intro K hK hz
       obtain ⟨M, hM⟩ := scalarJets_compact_bound gamma Lam hLam hmatch K hK hz

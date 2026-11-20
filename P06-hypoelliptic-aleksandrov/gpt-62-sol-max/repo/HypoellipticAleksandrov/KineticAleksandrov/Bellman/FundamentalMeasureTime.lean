@@ -12,6 +12,38 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+/-- The positive-time subtype volume pushes forward to restricted real volume. -/
+theorem map_bellmanPositiveTimeVolume_coe :
+    Measure.map (Subtype.val : BellmanPositiveTime → ℝ) bellmanPositiveTimeVolume =
+      volume.restrict (Ioi (0 : ℝ)) := by
+  unfold bellmanPositiveTimeVolume
+  convert! map_comap_subtype_coe (s := {t : ℝ | 0 < t}) measurableSet_Ioi
+    (volume.restrict (Ioi (0 : ℝ))) using 1
+  change volume.restrict (Ioi (0 : ℝ)) =
+    (volume.restrict (Ioi (0 : ℝ))).restrict (Ioi 0)
+  rw [Measure.restrict_restrict measurableSet_Ioi, inter_self]
+
+/-- Integrability on the positive-time subtype is integrability on the positive half-line. -/
+theorem integrable_bellmanPositiveTime_iff {f : ℝ → ℝ} :
+    Integrable (fun t : BellmanPositiveTime => f t.val) bellmanPositiveTimeVolume ↔
+      IntegrableOn f (Ioi 0) := by
+  rw [IntegrableOn, ← map_bellmanPositiveTimeVolume_coe]
+  exact (MeasurableEmbedding.subtype_coe measurableSet_Ioi).integrable_map_iff.symm
+
+/-- The common two-piece integrable bound for the Gaussian and its time derivative. -/
+theorem integrable_bellmanPositiveTime_majorant (c : ℝ) :
+    Integrable (fun t : BellmanPositiveTime =>
+      (Ioc (0 : ℝ) 1).indicator (fun _ => c) t.val +
+        (Ioi (1 : ℝ)).indicator (fun s => Real.sqrt 3 / (2 * Real.pi) * s ^ (-2 : ℝ)) t.val)
+      bellmanPositiveTimeVolume := by
+  have hsmall : IntegrableOn (fun _ : ℝ => c) (Ioc 0 1) :=
+    integrableOn_const measure_Ioc_lt_top.ne
+  have hlarge : IntegrableOn (fun s : ℝ => Real.sqrt 3 / (2 * Real.pi) * s ^ (-2 : ℝ)) (Ioi 1) :=
+    (integrableOn_Ioi_rpow_of_lt (by norm_num) (by norm_num)).const_mul _
+  exact integrable_bellmanPositiveTime_iff.mpr
+    ((hsmall.integrable_indicator measurableSet_Ioc).add
+      (hlarge.integrable_indicator measurableSet_Ioi)).restrict
+
 /-- Away from the pole, the time integral defining the fundamental density is finite. -/
 theorem integrable_bellmanGaussianKernel_time (q : BellmanPuncturedPlane) :
     Integrable (fun t => bellmanGaussianKernel t q.val) bellmanPositiveTimeVolume := by
@@ -52,34 +84,9 @@ theorem integrable_bellmanGaussianKernel_time (q : BellmanPuncturedPlane) :
     dsimp [C]
     rw [Real.rpow_neg hspos.le, Real.rpow_two]
     ring
-  have hunion : Ioc (0 : ℝ) 1 ∪ Ioi 1 = Ioi 0 := by
-    ext s
-    simp only [mem_union, mem_Ioc, mem_Ioi]
-    constructor
-    · rintro (h | h)
-      · exact h.1
-      · exact lt_trans (by norm_num) h
-    · intro h
-      by_cases h1 : s ≤ 1
-      · exact Or.inl ⟨h, h1⟩
-      · exact Or.inr (lt_of_not_ge h1)
-  have hall : IntegrableOn f (Ioi 0) := by
-    rw [← hunion]
-    exact hsmall.union hlarge
-  have hmap : Measure.map (Subtype.val : BellmanPositiveTime → ℝ)
-      bellmanPositiveTimeVolume = volume.restrict (Ioi (0 : ℝ)) := by
-    unfold bellmanPositiveTimeVolume
-    convert! map_comap_subtype_coe (s := Ioi (0 : ℝ)) measurableSet_Ioi
-      (volume.restrict (Ioi (0 : ℝ))) using 1
-    rw [Measure.restrict_restrict measurableSet_Ioi, inter_self]
-  have hfi : Integrable f (Measure.map (Subtype.val : BellmanPositiveTime → ℝ)
-      bellmanPositiveTimeVolume) := by
-    rw [hmap]
-    exact hall
-  change Integrable (f ∘ (Subtype.val : BellmanPositiveTime → ℝ))
-    bellmanPositiveTimeVolume
-  exact (MeasurableEmbedding.subtype_coe (s := Ioi (0 : ℝ))
-    measurableSet_Ioi).integrable_map_iff.mp hfi
+  refine (integrable_bellmanPositiveTime_iff (f := f)).mpr ?_
+  rw [← Ioc_union_Ioi_eq_Ioi (zero_le_one : (0 : ℝ) ≤ 1)]
+  exact hsmall.union hlarge
 
 /-- The literal fundamental density is finite at every punctured-plane point. -/
 theorem bellmanFundamentalDensity_ne_top (q : BellmanPuncturedPlane) :

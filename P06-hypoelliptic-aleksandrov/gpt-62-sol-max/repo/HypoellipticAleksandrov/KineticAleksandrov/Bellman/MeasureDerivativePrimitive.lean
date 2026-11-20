@@ -12,19 +12,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
-/-- The oriented interval primitive of a real measure with a continuous scalar weight. -/
-def bellmanMeasurePrimitive (μ : Measure ℝ) (g : ℝ → ℝ) (a y : ℝ) : ℝ :=
-  ∫ z in a..y, g z ∂μ
+section
+variable (μ : Measure ℝ)
+include μ
 
-/-- A continuous weight is integrable on every finite interval of a locally finite real
-measure. -/
-theorem bellmanMeasureWeight_intervalIntegrable (μ : Measure ℝ)
-    [IsFiniteMeasureOnCompacts μ] (g : ℝ → ℝ) (hg : Continuous g) (a b : ℝ) :
-    IntervalIntegrable g μ a b := hg.continuousOn.intervalIntegrable
+/-- The oriented interval primitive of a real measure with a continuous scalar weight. -/
+def bellmanMeasurePrimitive (g : ℝ → ℝ) (a y : ℝ) : ℝ :=
+  ∫ z in a..y, g z ∂μ
 
 /-- The interval primitive of an arbitrary locally finite measure is measurable, even with
 atoms. -/
-theorem bellmanMeasurePrimitive_stronglyMeasurable (μ : Measure ℝ) [SFinite μ]
+theorem bellmanMeasurePrimitive_stronglyMeasurable [SFinite μ]
     (g : ℝ → ℝ) (hg : Measurable g) (a : ℝ) :
     StronglyMeasurable (bellmanMeasurePrimitive μ g a) := by
   let A : Set (ℝ × ℝ) := {w | a < w.2 ∧ w.2 ≤ w.1}
@@ -59,15 +57,6 @@ theorem bellmanMeasurePrimitive_stronglyMeasurable (μ : Measure ℝ) [SFinite �
   rw [he]
   exact ha.sub hb
 
-/-- Oriented measure primitives have the exact additive interval increment. -/
-theorem bellmanMeasurePrimitive_sub (μ : Measure ℝ) [IsFiniteMeasureOnCompacts μ]
-    (g : ℝ → ℝ) (hg : Continuous g) (a b y : ℝ) :
-    bellmanMeasurePrimitive μ g a y - bellmanMeasurePrimitive μ g a b =
-      ∫ z in b..y, g z ∂μ := by
-  have he := intervalIntegral.integral_add_adjacent_intervals
-    (bellmanMeasureWeight_intervalIntegrable μ g hg a b)
-    (bellmanMeasureWeight_intervalIntegrable μ g hg b y)
-  change (∫ z in a..y, g z ∂μ) - (∫ z in a..b, g z ∂μ) = _
-  linarith
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

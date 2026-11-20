@@ -35,8 +35,6 @@ def SmoothEstimateFor {d : ℕ} (lam Lam : ℝ) (C_m : ℕ → ℝ) (C α : ℝ)
 
 /-- Correctors recover smoothness and quantitative estimates on a fixed inner cylinder. -/
 theorem borel_inner_joint_estimates
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (C_m : ℕ → ℝ) (hCm : ∀ m, 0 ≤ C_m m) (C α : ℝ)
     (hest : SmoothEstimateFor (d := d) lam Lam C_m C α)
@@ -61,7 +59,7 @@ theorem borel_inner_joint_estimates
   have hK := isCompact_closure_backwardCylinder P₁ r hr
   have huc := hu.continuousOn.mono hKD
   obtain ⟨B, w, O, hO, hKO, hB, hw, hew, ht⟩ :=
-    exists_backward_homogeneous_correctors hH hLE hd lam Lam hlam hLam A hA hs hlo hhi
+    exists_backward_homogeneous_correctors hd lam Lam hlam hLam A hA hs hlo hhi
       P₀ R hR u hu he (closure E) hK hKD
   have hEO : E ⊆ O := subset_closure.trans hKO
   have heQ j : ∀ᵐ P ∂volume.restrict E,
@@ -71,7 +69,7 @@ theorem borel_inner_joint_estimates
     exact hew j P (hEO hP)
   have hestj j := hest (B j) (hB j).1 (hB j).2.1 (hB j).2.2.1 (hB j).2.2.2
     P₁ r hr (w j) ((hw j).continuousOn.mono hKO)
-    (comparison_regular_mono (hw j) hEO)
+    (_root_.HypoellipticAleksandrov.Parabolic.IsKineticC112On.mono (hw j) hEO)
     (heQ j)
   have hne : E.Nonempty := backwardCylinder_nonempty P₁ hr
   have hab : BddAbove (u '' E) := (hK.bddAbove_image huc).mono (image_mono subset_closure)

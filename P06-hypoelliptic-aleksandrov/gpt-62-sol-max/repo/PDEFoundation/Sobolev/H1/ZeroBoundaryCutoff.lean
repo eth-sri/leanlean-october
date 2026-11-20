@@ -40,32 +40,34 @@ noncomputable def
     u.toW1pFunction.supportedSmoothApproximation_mulContDiffHasCompactSupport
       hU (by norm_num) (by norm_num) hφ hφCompact hφU
 
+section
+variable (u : H1Function U) (hU : IsOpenBoundedConvexDomain U) {φ : Vec d → ℝ}
+  (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφCompact : HasCompactSupport φ) (hφU : tsupport φ ⊆ U)
+include u hU φ hφ hφCompact hφU
+
 /-- LIH-compatible constructor: a globally smooth compactly supported
 multiplier turns an `H1Function` into a concrete `H10Function`. -/
-noncomputable def mulContDiffHasCompactSupportToH10
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) (hφU : tsupport φ ⊆ U) :
+noncomputable def mulContDiffHasCompactSupportToH10 :
     H10Function U :=
   (u.mulContDiffHasCompactSupport hφ hφCompact).toH10Function
     (u.supportedSmoothApproximation_mulContDiffHasCompactSupport
       hU hφ hφCompact hφU)
 
 @[simp]
-theorem mulContDiffHasCompactSupportToH10_toH1Function
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) (hφU : tsupport φ ⊆ U) :
+theorem mulContDiffHasCompactSupportToH10_toH1Function :
     (u.mulContDiffHasCompactSupportToH10
       hU hφ hφCompact hφU).toH1Function =
         u.mulContDiffHasCompactSupport hφ hφCompact :=
   rfl
 
+end
+
+section
+variable (u : H1Function U) (hU : IsOpenBoundedConvexDomain U) {φ : Vec d → ℝ}
+  (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφCompact : HasCompactSupport φ) (hφU : tsupport φ ⊆ U)
+
 @[simp]
-theorem mulContDiffHasCompactSupportToH10_toFun
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) (hφU : tsupport φ ⊆ U) :
+theorem mulContDiffHasCompactSupportToH10_toFun :
     (u.mulContDiffHasCompactSupportToH10
       hU hφ hφCompact hφU).toH1Function.toFun =
         fun x => φ x * u x := by
@@ -73,10 +75,7 @@ theorem mulContDiffHasCompactSupportToH10_toFun
     mulContDiffHasCompactSupport_toFun]
 
 @[simp]
-theorem mulContDiffHasCompactSupportToH10_grad
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) (hφU : tsupport φ ⊆ U) :
+theorem mulContDiffHasCompactSupportToH10_grad :
     (u.mulContDiffHasCompactSupportToH10
       hU hφ hφCompact hφU).toH1Function.grad =
         fun x =>
@@ -84,73 +83,81 @@ theorem mulContDiffHasCompactSupportToH10_grad
   rw [mulContDiffHasCompactSupportToH10_toH1Function,
     mulContDiffHasCompactSupport_grad]
 
+end
+
+section
+variable (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
+  (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U)
+include u hU η houter
+
 /-- A quantitative cutoff supported in `U`, packaged as a concrete
 LIH-compatible `H10Function`. -/
-noncomputable def mulCutoffToH10
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+noncomputable def mulCutoffToH10 :
     H10Function U :=
   u.mulContDiffHasCompactSupportToH10
     hU η.smooth η.hasCompactSupport (η.tsupport_subset.trans houter)
 
 @[simp]
-theorem mulCutoffToH10_toH1Function
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+theorem mulCutoffToH10_toH1Function :
     (u.mulCutoffToH10 hU η houter).toH1Function = u.mulCutoff η :=
   rfl
 
+end
+
+section
+variable (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
+  (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U)
+
 @[simp]
-theorem mulCutoffToH10_toFun
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+theorem mulCutoffToH10_toFun :
     (u.mulCutoffToH10 hU η houter).toH1Function.toFun =
       fun x => η x * u x := by
   rw [mulCutoffToH10_toH1Function, mulCutoff_toFun]
 
 @[simp]
-theorem mulCutoffToH10_grad
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+theorem mulCutoffToH10_grad :
     (u.mulCutoffToH10 hU η houter).toH1Function.grad =
       fun x =>
         η x • u.grad x +
           u x • classicalGradient η.toFun x := by
   rw [mulCutoffToH10_toH1Function, mulCutoff_grad]
 
+end
+
+section
+variable (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
+  (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U)
+include hU u k η houter
+
 /-- The exact hole-filling test `η² (u-k)`, packaged as a concrete
 LIH-compatible `H10Function`. Unlike the De Giorgi test below, this
 constructor does not truncate the value. -/
-noncomputable def mulCutoffSqSubConstToH10
-    (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+noncomputable def mulCutoffSqSubConstToH10 :
     H10Function U :=
   (u.subConst hU k).mulCutoffToH10 hU η.sq houter
 
 @[simp]
-theorem mulCutoffSqSubConstToH10_toH1Function
-    (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+theorem mulCutoffSqSubConstToH10_toH1Function :
     (mulCutoffSqSubConstToH10
       hU u k η houter).toH1Function =
         (u.subConst hU k).mulCutoff η.sq :=
   rfl
 
-@[simp]
-theorem mulCutoffSqSubConstToH10_toFun
-    (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
-    (mulCutoffSqSubConstToH10
-      hU u k η houter).toH1Function.toFun =
-        fun x => η x ^ 2 * (u.toFun x - k) := by
-  rw [mulCutoffSqSubConstToH10_toH1Function, mulCutoff_sq_toFun]
-  funext x
-  rw [subConst_apply]
+end
+
+section
+variable (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
+  (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U)
+include hU u k η houter
 
 @[simp]
-theorem mulCutoffSqSubConstToH10_grad
-    (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+theorem mulCutoffSqSubConstToH10_toFun :
+    (mulCutoffSqSubConstToH10
+      hU u k η houter).toH1Function.toFun =
+        fun x => η x ^ 2 * (u.toFun x - k) := rfl
+
+@[simp]
+theorem mulCutoffSqSubConstToH10_grad :
     (mulCutoffSqSubConstToH10
       hU u k η houter).toH1Function.grad =
         fun x =>
@@ -164,30 +171,30 @@ theorem mulCutoffSqSubConstToH10_grad
 
 /-- The exact De Giorgi test `η² (u-k)₊`, packaged as a concrete
 LIH-compatible `H10Function`. -/
-noncomputable def mulCutoffSqPositivePartSubConstToH10
-    (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+noncomputable def mulCutoffSqPositivePartSubConstToH10 :
     H10Function U :=
   (u.positivePartSubConst hU k).mulCutoffToH10 hU η.sq houter
 
+end
+
+section
+variable (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
+  (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U)
+
 @[simp]
-theorem mulCutoffSqPositivePartSubConstToH10_toH1Function
-    (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+theorem mulCutoffSqPositivePartSubConstToH10_toH1Function :
     (mulCutoffSqPositivePartSubConstToH10
       hU u k η houter).toH1Function =
         (u.positivePartSubConst hU k).mulCutoff η.sq :=
   rfl
 
 @[simp]
-theorem mulCutoffSqPositivePartSubConstToH10_toFun
-    (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (k : ℝ)
-    (η : QuantitativeSmoothCutoff inner outer K) (houter : outer ⊆ U) :
+theorem mulCutoffSqPositivePartSubConstToH10_toFun :
     (mulCutoffSqPositivePartSubConstToH10
       hU u k η houter).toH1Function.toFun =
-        fun x => η x ^ 2 * max (u.toFun x - k) 0 := by
-  rw [mulCutoffSqPositivePartSubConstToH10_toH1Function,
-    mulCutoff_sq_toFun, positivePartSubConst_toFun]
+        fun x => η x ^ 2 * max (u.toFun x - k) 0 := rfl
+
+end
 
 @[simp]
 theorem mulCutoffSqPositivePartSubConstToH10_grad

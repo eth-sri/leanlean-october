@@ -43,25 +43,31 @@ open scoped BigOperators ENNReal
 def parabolicMorreyUnitBox (d : ℕ) : Set (TimeVelocity d) :=
   parabolicBox 1 1 0 0
 
+section
+variable {d : ℕ} (f : TimeVelocity d → ℝ)
+include d f
+
 /-- The ordinary volume average on the fixed unit coordinate box. -/
-noncomputable def parabolicMorreyUnitAverage {d : ℕ}
-    (f : TimeVelocity d → ℝ) : ℝ :=
+noncomputable def parabolicMorreyUnitAverage : ℝ :=
   ((volume (parabolicMorreyUnitBox d)).toReal)⁻¹ *
     ∫ z in parabolicMorreyUnitBox d, f z
 
 /-- The moment-defined coefficient of `v_i` in the unit-box affine projection. -/
-noncomputable def parabolicMorreyUnitVelocityCoeff {d : ℕ}
-    (f : TimeVelocity d → ℝ) (i : Fin d) : ℝ :=
+noncomputable def parabolicMorreyUnitVelocityCoeff (i : Fin d) : ℝ :=
   3 * parabolicMorreyUnitAverage fun z => f z * z.2 i
 
 /-- The fixed unit-box projection onto functions constant in time and affine in velocity. -/
-noncomputable def parabolicMorreyUnitAffineProjection {d : ℕ}
-    (f : TimeVelocity d → ℝ) : TimeVelocity d → ℝ :=
+noncomputable def parabolicMorreyUnitAffineProjection : TimeVelocity d → ℝ :=
   fun z => parabolicMorreyUnitAverage f +
     ∑ i : Fin d, parabolicMorreyUnitVelocityCoeff f i * z.2 i
 
+end
+
+section
+variable (d : ℕ)
+
 /-- The real volume of the literal unit box is `2 ^ d`. -/
-theorem volume_parabolicMorreyUnitBox_toReal (d : ℕ) :
+theorem volume_parabolicMorreyUnitBox_toReal :
     (volume (parabolicMorreyUnitBox d)).toReal = (2 : ℝ) ^ d := by
   simpa only [parabolicMorreyUnitBox, one_mul, one_pow, mul_one]
     using
@@ -69,18 +75,20 @@ theorem volume_parabolicMorreyUnitBox_toReal (d : ℕ) :
         (t₀ := (0 : ℝ)) (v₀ := (0 : PDE.Vec d)) (by norm_num) (by norm_num))
 
 /-- The literal unit coordinate box has positive real volume. -/
-theorem volume_parabolicMorreyUnitBox_toReal_pos (d : ℕ) :
+theorem volume_parabolicMorreyUnitBox_toReal_pos :
     0 < (volume (parabolicMorreyUnitBox d)).toReal := by
   rw [volume_parabolicMorreyUnitBox_toReal]
   exact pow_pos (by norm_num) _
 
 /-- The literal unit coordinate box has finite volume. -/
-theorem volume_parabolicMorreyUnitBox_ne_top (d : ℕ) :
+theorem volume_parabolicMorreyUnitBox_ne_top :
     volume (parabolicMorreyUnitBox d) ≠ ∞ := by
   intro htop
   have hzero : (volume (parabolicMorreyUnitBox d)).toReal = 0 := by
     simp only [htop, ENNReal.toReal_top]
   exact (volume_parabolicMorreyUnitBox_toReal_pos d).ne' hzero
+
+end
 
 /-- A globally continuous scalar field has finite `L^(d + 1)` norm on the
 literal open unit box, without any compact-support assumption. -/

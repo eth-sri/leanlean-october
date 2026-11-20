@@ -15,9 +15,12 @@ theorem barrier_normalized_point (r : ℝ) (hr : 0 < r) (x v : ℝ) :
   simp only [bellmanPlaneDilation]
   congr 1 <;> field_simp
 
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (D : ℝ)
+include h
+
 /-- Rescaling a uniform position increment produces its exact alpha/3 power. -/
-theorem barrier_position_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (D : ℝ)
+theorem barrier_position_increment
     (hb : ∀ x y v : ℝ, |y - x| ≤ 1 →
       |bellmanOriginExtension phi (y, v) - bellmanOriginExtension phi (x, v)| ≤ D)
     (x y v : ℝ) :
@@ -51,8 +54,7 @@ theorem barrier_position_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
     (by rw [hpower, mul_comm])
 
 /-- Rescaling a uniform velocity increment produces its exact alpha power. -/
-theorem barrier_velocity_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (D : ℝ)
+theorem barrier_velocity_increment
     (hb : ∀ x y X : ℝ, |y - x| ≤ 1 →
       |bellmanOriginExtension phi (X, y) - bellmanOriginExtension phi (X, x)| ≤ D)
     (x y X : ℝ) :
@@ -64,7 +66,7 @@ theorem barrier_velocity_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
     exact mul_nonneg (le_trans (abs_nonneg _) (hb x x X (by simp)))
       (Real.rpow_nonneg (abs_nonneg _) _)
   let r := |y - x|
-  have hr : 0 < r := abs_pos.mpr (sub_ne_zero.mpr hxy)
+  have hr := abs_pos.mpr (sub_ne_zero.mpr hxy)
   have hn : |y / r - x / r| ≤ 1 := by
     rw [← sub_div, abs_div, abs_of_pos hr]
     exact le_of_eq (div_self hr.ne')
@@ -74,6 +76,8 @@ theorem barrier_velocity_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
   rw [barrier_normalized_point r hr] at hx hy
   rw [hy, hx, ← mul_sub, abs_mul, abs_of_pos (Real.rpow_pos_of_pos hr alpha)]
   exact (mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg hr.le _)).trans_eq (mul_comm _ _)
+
+end
 
 /-- The actual extended Bellman witness has the source modulus without a new analytic premise. -/
 theorem barrier_coordinate_modulus {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}

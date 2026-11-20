@@ -17,17 +17,18 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
+section
+variable {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d)
+
 /-- The scalar time derivative of a constant affine transformation. -/
-@[simp] theorem scalarTimeDerivative_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem scalarTimeDerivative_const_mul_add_const :
     scalarTimeDerivative (fun q => K * ell q + epsilon) z =
       K * scalarTimeDerivative ell z := by
   unfold scalarTimeDerivative
   rw [deriv_add_const, deriv_const_mul_field]
 
 /-- The scalar spatial gradient of a constant affine transformation. -/
-@[simp] theorem scalarSpatialGradient_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem scalarSpatialGradient_const_mul_add_const :
     scalarSpatialGradient (fun q => K * ell q + epsilon) z =
       K • scalarSpatialGradient ell z := by
   unfold scalarSpatialGradient PDE.classicalGradient
@@ -38,8 +39,7 @@ namespace HypoellipticAleksandrov.Parabolic
   rfl
 
 /-- The scalar spatial Hessian of a constant affine transformation. -/
-@[simp] theorem scalarSpatialHessian_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem scalarSpatialHessian_const_mul_add_const :
     scalarSpatialHessian (fun q => K * ell q + epsilon) z =
       K • scalarSpatialHessian ell z := by
   unfold scalarSpatialHessian
@@ -57,6 +57,8 @@ namespace HypoellipticAleksandrov.Parabolic
     rfl
   rw [hgradient, fderiv_const_smul_field]
   rfl
+
+end
 
 /-- Scalar `C¹˒²` regularity is preserved by a constant affine transformation. -/
 theorem IsScalarC12On.const_mul_add_const

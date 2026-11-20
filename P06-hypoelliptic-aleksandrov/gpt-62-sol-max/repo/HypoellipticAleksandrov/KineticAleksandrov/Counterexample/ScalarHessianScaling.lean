@@ -12,15 +12,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter Set
 open scoped Topology ContDiff
 
+section
+variable (gamma : ScalarGamma) (Lam : ℝ)
+
 /-- The velocity representative agrees locally with the native derivative off the axis. -/
-theorem scalarGv_eq_nhds (gamma : ScalarGamma) (Lam : ℝ) (q : XV 1)
+theorem scalarGv_eq_nhds (q : XV 1)
     (hx : q.1 0 ≠ 0) : scalarGv gamma Lam =ᶠ[𝓝 q] dv (scalarProfile gamma Lam) := by
   have hc : Continuous (fun z : XV 1 => z.1 0) := by fun_prop
   filter_upwards [hc.continuousAt.eventually_ne hx] with z hz
   simp only [scalarGv, hz, ↓reduceIte]
 
 /-- Each velocity component is differentiable at every off-axis point. -/
-theorem scalarGv_differentiableAt (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem scalarGv_differentiableAt (hLam : 0 < Lam)
     (q : XV 1) (hx : q.1 0 ≠ 0) (k : Fin 1) :
     DifferentiableAt ℝ (fun z => scalarGv gamma Lam z k) q := by
   have hH := scalarProfile_contDiffAt_off_axis gamma Lam hLam q hx
@@ -30,12 +33,14 @@ theorem scalarGv_differentiableAt (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < 
   exact hd.congr_of_eventuallyEq ((scalarGv_eq_nhds gamma Lam q hx).fun_comp (fun w => w k))
 
 /-- The off-axis Hessian equals the velocity selector of the representative velocity component. -/
-theorem scalarHess_eq_velocity_derivative (gamma : ScalarGamma) (Lam : ℝ)
+theorem scalarHess_eq_velocity_derivative
     (q : XV 1) (hx : q.1 0 ≠ 0) (i k : Fin 1) :
     scalarHess gamma Lam q i k = dv (fun z => scalarGv gamma Lam z k) q i := by
   simp only [scalarHess, hx, ↓reduceIte, dvv, dv]
   exact congrArg (fun T : XV 1 →L[ℝ] ℝ => T (0, Pi.single i 1))
     (((scalarGv_eq_nhds gamma Lam q hx).fun_comp (fun w => w k)).fderiv_eq.symm)
+
+end
 
 /-- The selected velocity Hessian has the exact source homogeneous degree everywhere. -/
 theorem scalarHess_homogeneous (gamma : ScalarGamma) (Lam r : ℝ) (hLam : 0 < Lam)
@@ -46,7 +51,7 @@ theorem scalarHess_homogeneous (gamma : ScalarGamma) (Lam r : ℝ) (hLam : 0 < L
       pow_ne_zero 3 hr.ne', false_or]
   by_cases hx : q.1 0 = 0
   · simp only [scalarHess, hxDil, hx, ↓reduceIte, smul_zero]
-  · have hxr : (dilate r q).1 0 ≠ 0 := mt hxDil.mp hx
+  · have hxr := mt hxDil.mp hx
     funext i k
     rw [scalarHess_eq_velocity_derivative gamma Lam (dilate r q) hxr i k]
     have hhom : ∀ z, scalarGv gamma Lam (dilate r z) k =

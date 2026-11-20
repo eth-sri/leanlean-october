@@ -13,14 +13,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory
 
+section
+variable {f g : ℝ × ℝ → ℝ}
+
 /-- A continuous factor times a continuous compactly supported test is integrable. -/
-theorem bellman_integrable_mul_test {f g : ℝ × ℝ → ℝ}
+theorem bellman_integrable_mul_test
     (hf : Continuous f) (hg : Continuous g) (hc : HasCompactSupport g) :
     Integrable (fun q => f q * g q) :=
   (hf.mul hg).integrable_of_hasCompactSupport hc.mul_left
 
 /-- Integration by parts for smooth functions with a compactly supported right factor. -/
-theorem bellman_integral_mul_direction {f g : ℝ × ℝ → ℝ}
+theorem bellman_integral_mul_direction
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
     (hc : HasCompactSupport g) (v : ℝ × ℝ) :
     (∫ q, f q * fderiv ℝ g q v) = -(∫ q, fderiv ℝ f q v * g q) := by
@@ -35,6 +38,8 @@ theorem bellman_integral_mul_direction {f g : ℝ × ℝ → ℝ}
   · exact bellman_integrable_mul_test hf.continuous hg.continuous hc
   · exact fun q _ => hf.differentiable (by simp) q
   · exact fun q _ => hg.differentiable (by simp) q
+
+end
 
 /-- Spatial transfer of the Kolmogorov generator from the test to the Gaussian. -/
 theorem bellmanGaussianKernel_integral_generator (t : BellmanPositiveTime)

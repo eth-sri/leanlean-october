@@ -32,17 +32,23 @@ def positiveSpectralIndicator (t : ℝ) : ℝ := if 0 < t then 1 else 0
 /-- Continuous approximants to the positive spectral indicator. -/
 def positiveSpectralRamp (n : ℕ) (t : ℝ) : ℝ := max 0 (min 1 ((n : ℝ) * t))
 
+section
+variable {d : ℕ} (M : PDE.Mat d)
+include M
+
 /-- The canonical strictly positive spectral projection. -/
-def positiveSpectralProjection {d : ℕ} (M : PDE.Mat d) : PDE.Mat d :=
+def positiveSpectralProjection : PDE.Mat d :=
   cfc positiveSpectralIndicator M
 
 /-- The canonical strictly negative spectral projection. -/
-def negativeSpectralProjection {d : ℕ} (M : PDE.Mat d) : PDE.Mat d :=
+def negativeSpectralProjection : PDE.Mat d :=
   positiveSpectralProjection (-M)
 
 /-- The canonical zero spectral projection. -/
-def zeroSpectralProjection {d : ℕ} (M : PDE.Mat d) : PDE.Mat d :=
+def zeroSpectralProjection : PDE.Mat d :=
   1 - positiveSpectralProjection M - negativeSpectralProjection M
+
+end
 
 /-- Each spectral ramp is continuous on the whole real line. -/
 theorem continuous_positiveSpectralRamp (n : ℕ) : Continuous (positiveSpectralRamp n) := by

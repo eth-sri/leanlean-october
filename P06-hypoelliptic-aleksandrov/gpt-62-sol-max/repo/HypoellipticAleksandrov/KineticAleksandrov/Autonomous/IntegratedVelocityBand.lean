@@ -19,14 +19,16 @@ def velocityRawBand (r : ℝ) : Set (ℝ × EvolutionAmbientState 1) :=
 /-- The raw velocity band is measurable. -/
 theorem velocityRawBand_measurable (r : ℝ) : MeasurableSet (velocityRawBand r) := by
   apply measurableSet_le
-  · exact continuous_abs.measurable.comp ((measurable_pi_apply 0).comp measurable_snd.fst)
+  · fun_prop (disch := assumption)
   · exact measurable_const
 
+section
+variable {lam Lam r T : ℝ} (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution)
+  (hE : IsFullSpaceEvolution A E) (hr : 0 < r) (hT : 0 < T) (z : Z)
+include A hE hr
+
 /-- A unit test of restricted band occupation is bounded by its actual convex source. -/
-theorem velocityGreenRaw_band_test_le (hH : HormanderHypoellipticityStatement)
-    {lam Lam r T : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (hr : 0 < r) (hT : 0 < T) (z : Z)
+theorem velocityGreenRaw_band_test_le
     (f : ℝ × EvolutionAmbientState 1 → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ {q | q.1 < T})
     (hf01 : ∀ q, 0 ≤ f q ∧ f q ≤ 1) :
@@ -41,6 +43,7 @@ theorem velocityGreenRaw_band_test_le (hH : HormanderHypoellipticityStatement)
   have hgc : HasCompactSupport g := hfc.mul_right
   have hi : Integrable g mu := hg.continuous.integrable_of_hasCompactSupport hgc
   have hfint : Integrable f mu := hf.continuous.integrable_of_hasCompactSupport hfc
+  have hlam : 0 < lam := A.positive
   have hc0 : 0 ≤ 64 * r / lam := by positivity
   have hm : (∫ q in velocityRawBand r, f q ∂mu) ≤
       (64 * r / lam) * ∫ q, g q ∂mu := by
@@ -63,15 +66,12 @@ theorem velocityGreenRaw_band_test_le (hH : HormanderHypoellipticityStatement)
       nlinarith only [hh]
     · rw [indicator_of_notMem hq]
       exact mul_nonneg hc0 (mul_nonneg (hf01 q).1
-        (mul_nonneg hlam.le (velocityOccupationDensity_nonneg r _)))
+        (mul_nonneg A.positive.le (velocityOccupationDensity_nonneg r _)))
   exact hm.trans (mul_le_mul_of_nonneg_left
-    (velocityGreenRaw_source_integral_le hH hlam hLam A E hE hr hT z f hf hfc hfU hf01) hc0)
+    (velocityGreenRaw_source_integral_le A E hE hr hT z f hf hfc hfU hf01) hc0)
 
 /-- Uniform measurable-band occupation bound, with a constant depending only on ellipticity. -/
-theorem velocityGreenRaw_band_mass_le (hH : HormanderHypoellipticityStatement)
-    {lam Lam r T : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (hr : 0 < r) (hT : 0 < T) (z : Z) :
+theorem velocityGreenRaw_band_mass_le :
     velocityGreenRaw E T hT z (velocityRawBand r) ≤
       ENNReal.ofReal ((64 * r / lam) * Real.sqrt (2 * Lam * T)) := by
   let mu := (velocityGreenRaw E T hT z).restrict (velocityRawBand r)
@@ -83,7 +83,9 @@ theorem velocityGreenRaw_band_mass_le (hH : HormanderHypoellipticityStatement)
     (isOpen_lt continuous_fst continuous_const) hs
     ((64 * r / lam) * Real.sqrt (2 * Lam * T))
     (fun f hf hfc hfU hf01 =>
-      velocityGreenRaw_band_test_le hH hlam hLam A E hE hr hT z f hf hfc hfU hf01)
+      velocityGreenRaw_band_test_le A E hE hr hT z f hf hfc hfU hf01)
   simpa only [mu, Measure.restrict_apply MeasurableSet.univ, univ_inter] using h
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

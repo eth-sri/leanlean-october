@@ -7,7 +7,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalC12Representative
 public import HypoellipticAleksandrov.Parabolic.ContDiffTwoAEGluing
-public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
+public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 public import HypoellipticAleksandrov.Parabolic.ScalarJetPointGermCongruence
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeProductRepresentativeUnique
@@ -47,24 +47,12 @@ theorem exists_smoothInteriorBootstrap
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hLower : ∀ z : TimeVelocity d,
-      z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-        lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-    (hUpper : ∀ z : TimeVelocity d,
-      z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-        a z.1 z.2 ≤ Lam • (1 : PDE.Mat d))
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
+    (hLower : HasLowerEllipticityOn lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hUpper : HasUpperEllipticityOn Lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
         c z.1 z.2 ≤ 0)
@@ -202,8 +190,7 @@ theorem exists_smoothInteriorBootstrap
     let zQ : Q := ⟨z, hz⟩
     have hEq : w =ᶠ[nhds z] v zQ :=
       (hVopen zQ).eventually_mem (hzV zQ) |>.mono (fun _ hy => hwv zQ hy)
-    have hwAt : ContDiffAt ℝ 2 w z := hwC2.contDiffAt (hQopen.mem_nhds hz)
-    obtain ⟨ht, hg, hh⟩ := scalarJet_eqAt_of_eventuallyEq hwAt (hvC2 zQ).contDiffAt hEq
+    obtain ⟨ht, hg, hh⟩ := scalarJet_eqAt_of_eventuallyEq hEq
     have hvval : w z = v zQ z := hEq.eq_of_nhds
     simpa [ht, hg, hh, hvval] using hpde zQ z (hzV zQ)
   refine ⟨w, hwmem, hwslice, hwC12, hpdeGlobal, ?_⟩
@@ -246,8 +233,7 @@ theorem exists_smoothInteriorBootstrap
     filter_upwards [ae_restrict_mem (isOpen_Ioo.prod hOopen).measurableSet] with z hz
     have hevent : w =ᶠ[nhds z] vloc :=
       (isOpen_Ioo.prod hOopen).eventually_mem hz |>.mono (fun _ hy => hwvloc hy)
-    exact scalarJet_eqAt_of_eventuallyEq
-      (hwC2.contDiffAt (hQopen.mem_nhds (hBQ hz))) hvlocC2.contDiffAt hevent
+    exact scalarJet_eqAt_of_eventuallyEq hevent
   refine ⟨J, ?_, ?_, ?_, ?_⟩
   · exact (hJw₀.filter_mono (ae_mono (Measure.restrict_mono_set volume (hBS.trans hSsub)))).trans
       (hww₀.filter_mono (ae_mono (Measure.restrict_mono_set volume hBQ))).symm

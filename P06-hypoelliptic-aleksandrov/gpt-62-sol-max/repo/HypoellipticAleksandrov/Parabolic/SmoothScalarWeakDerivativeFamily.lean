@@ -23,38 +23,12 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators ENNReal Topology
 
-private theorem order_le_parabolicWeight {d : ℕ}
-    (alpha : TimeVelocityMultiIndex d) :
-    alpha.order ≤ alpha.parabolicWeight := by
-  simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-    TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-    TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
-  omega
-
-private theorem coordinateIteratedFDeriv_contDiffOn
-    {d N m : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ N f U)
-    (alpha : TimeVelocityMultiIndex d) (horder : m + alpha.order ≤ N) :
-    ContDiffOn ℝ m
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) U := by
-  intro z hz
-  apply ContDiffAt.contDiffWithinAt
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := (hf.contDiffAt (hU.mem_nhds hz)).iteratedFDeriv_right
-    (m := m) (i := alpha.coordinateList.length) (by
-      rw [TimeVelocityMultiIndex.length_coordinateList]
-      exact_mod_cast horder)
-  exact (contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi
-
-private theorem coordinateIteratedFDeriv_continuousOn
+theorem coordinateIteratedFDeriv_continuousOn
     {d N : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ N f U)
     (alpha : TimeVelocityMultiIndex d) (horder : alpha.order ≤ N) :
     ContinuousOn
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) U := by
-  exact (coordinateIteratedFDeriv_contDiffOn (m := 0) hU f hf alpha
-    (by simpa using horder)).continuousOn
+      (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) U := (alpha.coordinateIteratedFDeriv_contDiffOn (m := 0) hU hf (by simpa)).continuousOn
 
 /-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
 theorem coordinateIteratedFDeriv_memLp
@@ -71,7 +45,7 @@ theorem coordinateIteratedFDeriv_memLp
   letI : IsFiniteMeasure (timeVelocityVolumeOn U) :=
     isFiniteMeasure_restrict.mpr hUfinite.ne
   have hcontinuous := coordinateIteratedFDeriv_continuousOn hUopen f hf alpha.1
-    ((order_le_parabolicWeight alpha.1).trans alpha.2)
+    ((TimeVelocityMultiIndex.order_le_parabolicWeight alpha.1).trans alpha.2)
   have hmeas : AEStronglyMeasurable
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 f)
       (timeVelocityVolumeOn U) :=
@@ -80,20 +54,22 @@ theorem coordinateIteratedFDeriv_memLp
   filter_upwards [ae_restrict_mem hUopen.measurableSet] with z hz
   simpa only [Real.norm_eq_abs] using hbound alpha z hz
 
+section
+variable {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U) (f : TimeVelocity d → ℝ)
+  (hf : ContDiffOn ℝ L f U) (beta : ParabolicDerivativeIndex d L)
+include hUopen hf
+
 /-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
 theorem coordinateIteratedFDeriv_timeSucc
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
-    (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ L f U)
-    (beta : ParabolicDerivativeIndex d L)
     (h : beta.1.parabolicWeight + 2 ≤ L) :
     HasWeakTimeDerivOn U
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 f)
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (ParabolicDerivativeIndex.timeSucc beta h).1 f) := by
   have horder : 1 + beta.1.order ≤ L := by
-    have hob := order_le_parabolicWeight beta.1
+    have hob := TimeVelocityMultiIndex.order_le_parabolicWeight beta.1
     omega
-  have hC1 := coordinateIteratedFDeriv_contDiffOn hUopen f hf beta.1 horder
+  have hC1 := beta.1.coordinateIteratedFDeriv_contDiffOn (m := 1) hUopen hf (by exact_mod_cast horder)
   have hweak := contDiffOn_one_hasWeakTimeDerivOn U hUopen
     (TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 f) hC1
   apply hweak.congr_ae Filter.EventuallyEq.rfl
@@ -106,19 +82,16 @@ theorem coordinateIteratedFDeriv_timeSucc
   simpa only [timeVelocityBasis_time, timeDerivative] using hadd.symm
 
 /-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
-theorem coordinateIteratedFDeriv_velocitySucc
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
-    (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ L f U)
-    (beta : ParabolicDerivativeIndex d L) (i : Fin d)
+theorem coordinateIteratedFDeriv_velocitySucc (i : Fin d)
     (h : beta.1.parabolicWeight + 1 ≤ L) :
     HasWeakVelocityPartialDerivOn U i
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 f)
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (ParabolicDerivativeIndex.velocitySucc beta i h).1 f) := by
   have horder : 1 + beta.1.order ≤ L := by
-    have hob := order_le_parabolicWeight beta.1
+    have hob := TimeVelocityMultiIndex.order_le_parabolicWeight beta.1
     omega
-  have hC1 := coordinateIteratedFDeriv_contDiffOn hUopen f hf beta.1 horder
+  have hC1 := beta.1.coordinateIteratedFDeriv_contDiffOn (m := 1) hUopen hf (by exact_mod_cast horder)
   have hweak := contDiffOn_one_hasWeakVelocityPartialDerivOn U hUopen i
     (TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 f) hC1
   apply hweak.congr_ae Filter.EventuallyEq.rfl
@@ -129,6 +102,8 @@ theorem coordinateIteratedFDeriv_velocitySucc
       ((hf.contDiffAt (hUopen.mem_nhds hz)).of_le (by
         exact_mod_cast (show beta.1.order + 1 ≤ L by omega)))
   simpa only [timeVelocityBasis_velocity, velocityGradient, PDE.basisVec] using hadd.symm
+
+end
 
 /-- The canonical coherent weak-derivative family of a classically smooth
 scalar function with bounded derivatives on a finite-volume open set. -/
@@ -150,8 +125,7 @@ noncomputable def ParabolicWeakDerivativeFamily.ofContDiffOnBounded
   representative := fun alpha ↦
     TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 f
   memLp := coordinateIteratedFDeriv_memLp hUopen hUfinite B f hf hbound
-  zero_ae := Filter.Eventually.of_forall fun z ↦ by
-    exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f z
+  zero_ae := Filter.Eventually.of_forall fun z ↦ TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero f z
   hasWeakTimeSucc := coordinateIteratedFDeriv_timeSucc hUopen f hf
   hasWeakVelocitySucc := coordinateIteratedFDeriv_velocitySucc hUopen f hf
 
@@ -251,8 +225,8 @@ theorem ParabolicWeakDerivativeFamily.squaredL2Norm_ofContDiffOnBounded_le
   by_cases hU : U = ∅
   · subst U
     simp [ParabolicWeakDerivativeFamily.squaredL2Norm,
-      timeVelocityVolumeOn]
-  · have hUne : U.Nonempty := Set.nonempty_iff_ne_empty.mpr hU
+      timeVelocityVolumeOn, Analysis.squaredL2Seminorm]
+  · have hUne := Set.nonempty_iff_ne_empty.mpr hU
     unfold ParabolicWeakDerivativeFamily.squaredL2Norm
     rw [Finset.mul_sum]
     exact Finset.sum_le_sum fun alpha _ ↦

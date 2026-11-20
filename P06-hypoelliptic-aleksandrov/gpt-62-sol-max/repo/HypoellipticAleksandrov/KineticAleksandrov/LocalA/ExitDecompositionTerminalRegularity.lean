@@ -10,19 +10,20 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic TheoremA
 
+section
+variable {d : ℕ} {a T R : ℝ} {v₀ : PDE.Vec d} {Q : KineticPoint d}
+
 /-- Swapping physical coordinates maps the local closed strip into the past closed cylinder. -/
-theorem exit_closed_into_past {d : ℕ} {a T R : ℝ} {v₀ : PDE.Vec d}
-    {Q : KineticPoint d} (hQ : Q ∈ localClosedStrip a T v₀ R) :
+theorem exit_closed_into_past (hQ : Q ∈ localClosedStrip a T v₀ R) :
     sectionTwoPoint Q ∈ evolutionPastClosedCylinder (PDE.euclideanBall v₀ R)
-      (fun _ => 0) T := by
-  exact ⟨hQ.2.1, by simpa only [sectionTwoPoint, movingDomain_ball_zero] using hQ.2.2⟩
+      (fun _ => 0) T := ⟨hQ.2.1, by simpa only [sectionTwoPoint, movingDomain_ball_zero] using hQ.2.2⟩
 
 /-- Swapping physical coordinates maps the open strip into the genuine past interior. -/
-theorem exit_open_into_past {d : ℕ} {a T R : ℝ} {v₀ : PDE.Vec d}
-    {Q : KineticPoint d} (hQ : Q ∈ localStrip a T v₀ R) :
+theorem exit_open_into_past (hQ : Q ∈ localStrip a T v₀ R) :
     sectionTwoPoint Q ∈ evolutionPastOpenCylinder (PDE.euclideanBall v₀ R)
-      (fun _ => 0) T := by
-  exact ⟨hQ.2.1, by simpa only [sectionTwoPoint, movingDomain_ball_zero] using hQ.2.2⟩
+      (fun _ => 0) T := ⟨hQ.2.1, by simpa only [sectionTwoPoint, movingDomain_ball_zero] using hQ.2.2⟩
+
+end
 
 /-- A genuine classical terminal solution retains all local physical regularity and bounds. -/
 theorem exit_terminal_physical_regular {d : ℕ} (B : CoefficientField d)

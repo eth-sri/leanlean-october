@@ -47,7 +47,7 @@ theorem intervalQueryInclusion_measurableEmbedding {a c : ℝ}
   · apply Measurable.subtype_mk
     exact measurable_subtype_coe
   · intro A hA
-    have him : MeasurableSet (Subtype.val '' A) := he.measurableSet_image.2 hA
+    have him := he.measurableSet_image.2 hA
     have heq : intervalQueryInclusion '' A =
         (Subtype.val : EvolutionQuery (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) →
           RawEvolutionQuery 1) ⁻¹' (Subtype.val '' A) := by
@@ -60,10 +60,13 @@ theorem intervalQueryInclusion_measurableEmbedding {a c : ℝ}
     rw [heq]
     exact him.preimage measurable_subtype_coe
 
+section
+variable {a c : ℝ} (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
+  (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
+include a c hJ K
+
 /-- Zero-extended master kernel, with the same ambient terminal state measure. -/
-def intervalExtensionMaster {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) :
+def intervalExtensionMaster :
     ProbabilityTheory.Kernel
       (EvolutionQuery (wholeSpace 1) (fun _ => (0 : PDE.Vec 1))) (EvolutionAmbientState 1) where
   toFun := Function.extend intervalQueryInclusion K.master (fun _ => 0)
@@ -71,9 +74,7 @@ def intervalExtensionMaster {a c : ℝ}
     K.master.measurable measurable_const
 
 /-- The zero extension agrees exactly with the interval master at interior queries. -/
-theorem intervalExtensionMaster_inside {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
+theorem intervalExtensionMaster_inside
     (q : EvolutionQuery (PDE.oneDimensionalAxisBox a c) stationary) :
     intervalExtensionMaster hJ K (intervalQueryInclusion q) = K.master q := by
   change Function.extend intervalQueryInclusion K.master (fun _ => 0)
@@ -81,9 +82,7 @@ theorem intervalExtensionMaster_inside {a c : ℝ}
   exact (intervalQueryInclusion_measurableEmbedding hJ).injective.extend_apply _ _ q
 
 /-- The adapted kernel has whole-space carriers and zero transitions outside the interval. -/
-def intervalExtension {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) :
+def intervalExtension :
     MovingFiberKernel (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) where
   master := intervalExtensionMaster hJ K
   terminal_support := by
@@ -100,5 +99,7 @@ def intervalExtension {a c : ℝ}
     · change (Function.extend intervalQueryInclusion K.master (fun _ => 0) q) univ ≤ 1
       rw [Function.extend_apply' _ _ _ hq]
       exact zero_le
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

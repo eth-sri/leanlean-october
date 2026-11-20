@@ -107,7 +107,7 @@ theorem exists_localizedHigherJetMollification
           ((Metric.cthickening_subset_of_subset ε
             ((hDlocSupport beta.toParabolic).trans (by rfl))).trans
             (Metric.cthickening_mono (hερ.le.trans hρone) (tsupport b)))
-    · apply SpacetimeMollifier.spacetimeMollification_congr_on_of_eqOn_thickening hε
+    · apply _root_.HypoellipticAleksandrov.Parabolic.SpacetimeMollifier.spacetimeMollification_congr_on_of_eqOn_thickening_aux hε
       change Set.EqOn (Dloc.ordinaryRepresentative beta)
         (D.ordinaryRepresentative beta) (Metric.thickening ε C)
       exact (hDlocEq beta).mono

@@ -58,19 +58,22 @@ private theorem parabolicWeight_timeOne (d : ℕ) :
   rw [ParabolicDerivativeIndex.parabolicWeight_timeSucc,
     parabolicWeight_zeroTwo]
 
-private theorem parabolicWeight_velocityOne {d : ℕ} (i : Fin d) :
+section
+variable {d : ℕ}
+
+private theorem parabolicWeight_velocityOne (i : Fin d) :
     (ParabolicDerivativeIndex.velocityOne i).1.parabolicWeight = 1 := by
   unfold ParabolicDerivativeIndex.velocityOne
   rw [ParabolicDerivativeIndex.parabolicWeight_velocitySucc,
     parabolicWeight_zeroTwo]
 
-private theorem parabolicWeight_velocityTwo {d : ℕ} (i j : Fin d) :
+private theorem parabolicWeight_velocityTwo (i j : Fin d) :
     (ParabolicDerivativeIndex.velocityTwo i j).1.parabolicWeight = 2 := by
   unfold ParabolicDerivativeIndex.velocityTwo
   rw [ParabolicDerivativeIndex.parabolicWeight_velocitySucc,
     parabolicWeight_velocityOne]
 
-private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
+theorem velocityTwo_comm (i j : Fin d) :
     ParabolicDerivativeIndex.velocityTwo i j =
       ParabolicDerivativeIndex.velocityTwo j i := by
   apply Subtype.ext
@@ -104,7 +107,7 @@ private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
             TimeVelocityMultiIndex.timeOrder,
             TimeVelocityMultiIndex.velocity, velocityCoord, hki, hkj]
 
-private theorem equiv_timeSucc_zero {d : ℕ}
+private theorem equiv_timeSucc_zero
     (h : (ParabolicDerivativeIndex.zeroTwo d).1.parabolicWeight + 2 ≤ 2) :
     ParabolicDerivativeIndex.equivLowOrderClass d
       (ParabolicDerivativeIndex.timeSucc
@@ -114,7 +117,7 @@ private theorem equiv_timeSucc_zero {d : ℕ}
   apply Subtype.ext
   rfl
 
-private theorem equiv_velocitySucc_zero {d : ℕ} (i : Fin d)
+private theorem equiv_velocitySucc_zero (i : Fin d)
     (h : (ParabolicDerivativeIndex.zeroTwo d).1.parabolicWeight + 1 ≤ 2) :
     ParabolicDerivativeIndex.equivLowOrderClass d
       (ParabolicDerivativeIndex.velocitySucc
@@ -124,7 +127,7 @@ private theorem equiv_velocitySucc_zero {d : ℕ} (i : Fin d)
   apply Subtype.ext
   rfl
 
-private theorem equiv_velocitySucc_velocity_of_le {d : ℕ} (j i : Fin d)
+private theorem equiv_velocitySucc_velocity_of_le (j i : Fin d)
     (hji : j ≤ i)
     (h : (ParabolicDerivativeIndex.velocityOne j).1.parabolicWeight + 1 ≤ 2) :
     ParabolicDerivativeIndex.equivLowOrderClass d
@@ -135,7 +138,7 @@ private theorem equiv_velocitySucc_velocity_of_le {d : ℕ} (j i : Fin d)
   apply Subtype.ext
   rfl
 
-private theorem equiv_velocitySucc_velocity_of_ge {d : ℕ} (j i : Fin d)
+private theorem equiv_velocitySucc_velocity_of_ge (j i : Fin d)
     (hij : i ≤ j)
     (h : (ParabolicDerivativeIndex.velocityOne j).1.parabolicWeight + 1 ≤ 2) :
     ParabolicDerivativeIndex.equivLowOrderClass d
@@ -147,8 +150,7 @@ private theorem equiv_velocitySucc_velocity_of_ge {d : ℕ} (j i : Fin d)
 
 /-- Package a selected open-domain parabolic W12 jet as one coherent family
 of all weak derivatives through parabolic weight two. -/
-noncomputable def toWeakDerivativeFamily
-    {d : ℕ} {U : Set (TimeVelocity d)}
+noncomputable def toWeakDerivativeFamily {U : Set (TimeVelocity d)}
     (hU : IsOpen U) (w : ParabolicW12Function d U 2) :
     ParabolicWeakDerivativeFamily d 2 U w.toFun where
   representative beta :=
@@ -229,26 +231,25 @@ noncomputable def toWeakDerivativeFamily
         rw [parabolicWeight_velocityTwo] at h
         omega
 
+end
+
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U) (w : ParabolicW12Function d U 2)
+
 /-- The zero-index representative is the selected root function. -/
-@[simp] theorem toWeakDerivativeFamily_representative_zeroTwo
-    {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (w : ParabolicW12Function d U 2) :
+@[simp] theorem toWeakDerivativeFamily_representative_zeroTwo :
     (toWeakDerivativeFamily hU w).representative
       (ParabolicDerivativeIndex.zeroTwo d) = w.toFun := by
   simp [toWeakDerivativeFamily, equiv_zeroTwo]
 
 /-- The one-time-derivative representative is the selected time derivative. -/
-@[simp] theorem toWeakDerivativeFamily_representative_timeOne
-    {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (w : ParabolicW12Function d U 2) :
+@[simp] theorem toWeakDerivativeFamily_representative_timeOne :
     (toWeakDerivativeFamily hU w).representative
       (ParabolicDerivativeIndex.timeOne d) = w.timeDeriv := by
   simp [toWeakDerivativeFamily, equiv_timeOne]
 
 /-- A first velocity representative is the selected velocity gradient. -/
 @[simp] theorem toWeakDerivativeFamily_representative_velocityOne
-    {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (w : ParabolicW12Function d U 2)
     (i : Fin d) :
     (toWeakDerivativeFamily hU w).representative
       (ParabolicDerivativeIndex.velocityOne i) =
@@ -257,12 +258,12 @@ noncomputable def toWeakDerivativeFamily
 
 /-- An ordered second velocity representative is the selected Hessian entry. -/
 @[simp] theorem toWeakDerivativeFamily_representative_velocityTwo
-    {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (w : ParabolicW12Function d U 2)
     (i j : Fin d) (hij : i ≤ j) :
     (toWeakDerivativeFamily hU w).representative
       (ParabolicDerivativeIndex.velocityTwo i j) =
         fun z => w.velocityHessian z i j := by
   simp [toWeakDerivativeFamily, equiv_velocityTwo i j hij]
+
+end
 
 end HypoellipticAleksandrov.Parabolic.ParabolicW12Function

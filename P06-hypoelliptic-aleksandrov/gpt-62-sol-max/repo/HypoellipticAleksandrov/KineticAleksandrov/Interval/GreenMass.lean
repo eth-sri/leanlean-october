@@ -33,40 +33,32 @@ theorem lintegral_interval_killing_profile {k : ℝ} (hk : 0 < k) :
 
 /-- Infinite-horizon interval Green mass is uniformly finite. -/
 theorem interval_green_finite_mass
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlength : 0 < length) :
     ∃ C : ℝ, 0 < C ∧
-      ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
-      SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
-      ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-      (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-      (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-      RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-        (zIndependentCoefficient B) b S K →
-      c - a = length → ∀ (σ : ℝ)
-      (μ : Measure (EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ))
+      ∀ (E : IntervalEvolution lam Lam m Lb),
+      E.length = length → ∀ (σ : ℝ)
+      (μ : Measure (EvolutionState (E.domain) stationary σ))
       [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier 1)),
-      IsGreenMeasure K σ ⊤ μ Γ → Γ univ ≤ ENNReal.ofReal C * μ univ ∧ Γ univ < ⊤ := by
+      IsGreenMeasure E.kernel σ ⊤ μ Γ → Γ univ ≤ ENNReal.ofReal C * μ univ ∧ Γ univ < ⊤ := by
   obtain ⟨C, k, hC, hk, hmass⟩ :=
-    interval_mass_decay hH hLE lam Lam m Lb length hlam hlength
+    interval_mass_decay lam Lam m Lb length hlam hlength
   refine ⟨C * k⁻¹, mul_pos hC (inv_pos.mpr hk), ?_⟩
-  intro a c hac B b hs hJ S K hr hlen σ μ _ Γ hΓ
-  have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
-  have hpoint : ∀ (p : EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ)
-      (t : ElapsedTime ⊤), K.master (elapsedQuery σ p t) univ ≤
+  intro E hlen σ μ _ Γ hΓ
+  have hp := (E.clauses).2.1
+  have hpoint : ∀ (p : EvolutionState (E.domain) stationary σ)
+      (t : ElapsedTime ⊤), E.kernel.master (elapsedQuery σ p t) univ ≤
       ENNReal.ofReal (C * Real.exp (-k * t.1)) := by
     intro p t
-    have hv : p.1.1 ∈ PDE.oneDimensionalAxisBox a c := by
+    have hv : p.1.1 ∈ E.domain := by
       simpa only [evolutionStateSet, mem_prod, movingDomain_stationary] using p.2.1
-    have hm := hmass a c hac B b hs hJ S K hr hlen σ (σ + t.1)
+    have hm := hmass E hlen σ (σ + t.1)
       (le_add_of_nonneg_right t.2.1.le) ⟨p.1.1, hv⟩
-    have he := interval_parabolic_mass_eq_master hJ K B hp σ (σ + t.1)
+    have he := interval_parabolic_mass_eq_master E.measurableSet E.kernel E.coefficient hp σ (σ + t.1)
       (le_add_of_nonneg_right t.2.1.le) p.1.1 p.1.2 p.2.1
     unfold Measure.real at hm
     rw [he] at hm
-    have hf : K.master (elapsedQuery σ p t) univ ≠ ⊤ :=
-      ne_top_of_le_ne_top ENNReal.one_ne_top (K.mass_le_one _)
+    have hf : E.kernel.master (elapsedQuery σ p t) univ ≠ ⊤ :=
+      ne_top_of_le_ne_top ENNReal.one_ne_top (E.kernel.mass_le_one _)
     rw [← ENNReal.ofReal_toReal hf]
     apply ENNReal.ofReal_le_ofReal
     simpa only [movingQuery, elapsedQuery, add_sub_cancel_left] using hm

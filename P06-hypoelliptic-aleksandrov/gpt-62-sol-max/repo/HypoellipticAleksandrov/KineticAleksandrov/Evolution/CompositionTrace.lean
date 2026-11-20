@@ -25,28 +25,14 @@ open scoped Topology
 
 section EvolutionData
 
-variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-variable (hΩ : IsAdmissibleEvolutionDomain Ω)
-variable (hγ : IsContinuousPiecewiseC1 γ)
-variable (hB_smooth : IsSmoothFullKineticCoefficient B)
-variable (hB_symm : IsSymmetricFullKineticCoefficient B)
-variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-variable (hb_smooth : IsSmoothDrift b)
-variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-variable (hEx : ClassicalTerminalExistence Ω γ B b)
-include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
-include hb_smooth hb_lipschitz hb_coercive hEx
+variable {n : ℕ} {lam Lam m L_b : ℝ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    (data : TerminalEvolutionData lam Lam m L_b Ω γ B b)
+include data
 
-local notation "κ" => terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "κ" => terminalFiberKernel data
 
-local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "P₀" => terminalOperators data
 
 /-- The terminal integral operators compose on smooth compact terminal data. -/
 theorem terminalOperators_comp_smooth
@@ -55,36 +41,33 @@ theorem terminalOperators_comp_smooth
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     P₀ σ τ (hσr.trans hrτ) (terminalStateDatum F) =
       P₀ σ r hσr (P₀ r τ hrτ (terminalStateDatum F)) := by
-  have hself (t : ℝ) := (terminalOperators_basic n hn lam Lam m L_b
-    hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-    hb_smooth hb_lipschitz hb_coercive hEx).1 t
+  have hself (t : ℝ) := (terminalOperators_basic data).1 t
   by_cases heq : r = τ
   · subst τ
     rw [hself]
     rfl
   have hrt : r < τ := lt_of_le_of_ne hrτ heq
   obtain ⟨C, hC0, hCF⟩ := F.exists_bound
-  obtain ⟨u, hu, hCu, _⟩ := hEx τ F hF
+  obtain ⟨u, hu, hCu, _⟩ := data.exists_solution τ F hF
   have hC := hCu C hC0 hCF
   have hrep (s : ℝ) (hst : s ≤ τ) (p : EvolutionState Ω γ s) :
       P₀ s τ hst (terminalStateDatum F) p = u ⟨s, p.1.1, p.1.2⟩ := by
     rw [terminalOperators_apply_smooth]
-    exact terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+    exact terminalValue_eq_of_solution data.exists_solution
       s τ hst p F hF u hu
   let ε : ℕ → ℝ := fun j => 1 / ((j : ℝ) + 1)
   have hε (j : ℕ) : 0 < ε j := by dsimp [ε]; positivity
   have hεlim : Tendsto ε atTop (𝓝 0) := tendsto_one_div_add_atTop_nhds_zero_nat
   have hex (j : ℕ) := hu.exists_compact_slice_approximation
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ) hrt hC0 hC (hε j)
+    (isOpen_of_isAdmissibleEvolutionDomain data.domain) hrt hC0 hC (hε j)
   choose G hG hGC hGerr using hex
-  have hvex (j : ℕ) := hEx r (G j) (hG j)
+  have hvex (j : ℕ) := data.exists_solution r (G j) (hG j)
   choose v hv hvbound hvuniq using hvex
   have herr (j : ℕ) (p : KineticPoint n) (hp : p ∈ evolutionPastClosedCylinder Ω γ r) :
       |u p - v j p| ≤ ε j *
         growthBarrier (growthConstant n Lam (PDE.vecEuclideanNorm (b 0)) L_b) r p := by
     apply classical_intermediate_abs_sub_le_growth
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hlam hB_ell hb_lipschitz
+      (isOpen_of_isAdmissibleEvolutionDomain data.domain) data.curve.1 data.lam_pos data.elliptic data.lipschitz
       hrτ (hε j).le hu (hv j) ?_ p hp
     intro q hq
     rw [(hv j).2.2.2.2.1 q hq]
@@ -109,9 +92,7 @@ theorem terminalOperators_comp_smooth
       (fun j => hGerr j ⟨r, x.1.1, x.1.2⟩ ⟨rfl, subset_closure x.2.1⟩)
     simpa only [zero_mul] using hεlim.mul_const
       (1 + radialSq (⟨r, x.1.1, x.1.2⟩ : KineticPoint n))
-  have := isFiniteKernel_terminalFiberKernel n hn lam Lam m L_b
-    hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-    hb_smooth hb_lipschitz hb_coercive hEx σ r hσr
+  have := isFiniteKernel_terminalFiberKernel data σ r hσr
   have hint := tendsto_integral_of_dominated_convergence (μ := κ σ r hσr p)
     (fun _ => C)
     (fun j => ((G j).measurable.comp measurable_subtype_coe).aestronglyMeasurable)
@@ -123,8 +104,7 @@ theorem terminalOperators_comp_smooth
       (𝓝 (∫ x : EvolutionState Ω γ r, u ⟨r, x.1.1, x.1.2⟩ ∂(κ σ r hσr p))) := by
     have heval (j : ℕ) : v j ⟨σ, p.1.1, p.1.2⟩ =
         ∫ x : EvolutionState Ω γ r, G j x.1 ∂(κ σ r hσr p) := by
-      rw [← terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+      rw [← terminalValue_eq_of_solution data.exists_solution
         σ r hσr p (G j) (hG j) (v j) (hv j), ← terminalOperators_apply_smooth,
         terminalOperators_apply]
       rfl

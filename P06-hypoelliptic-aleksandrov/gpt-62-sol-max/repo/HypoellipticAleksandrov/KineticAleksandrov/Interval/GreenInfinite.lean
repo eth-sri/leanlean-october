@@ -20,34 +20,26 @@ open scoped ENNReal NNReal
 
 /-- Uniform infinite-horizon interval density and norm, obtained from killed slabs. -/
 theorem interval_green_infinite_norm
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length)
     (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
     ∃ C k : ℝ, 0 < C ∧ 0 < k ∧
-    ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
-    SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
-    ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-      (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-      (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-    RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-      (zIndependentCoefficient B) b S K →
-    c - a = length → ∀ (σ : ℝ),
-    ∀ (μ : Measure (EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ))
-    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier 1)), IsGreenMeasure K σ ⊤ μ Γ →
+    ∀ (E : IntervalEvolution lam Lam m Lb),
+    E.length = length → ∀ (σ : ℝ),
+    ∀ (μ : Measure (EvolutionState (E.domain) stationary σ))
+    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier 1)), IsGreenMeasure E.kernel σ ⊤ μ Γ →
     ∃ G : GreenCarrier 1 → ℝ≥0∞, Measurable G ∧
       Γ = (greenLebesgue 1).withDensity G ∧
       eLpNorm G (ENNReal.ofReal q) (greenLebesgue 1) ≤ ENNReal.ofReal C * μ univ := by
   have hq' : q < 2 := by linarith
   have hq0 : 0 < q := by linarith
   have hδ : 0 < 3 - 2 * q := by linarith
-  obtain ⟨A, k, _hA, hk, hslab⟩ := interval_slab_density hH hLE
+  obtain ⟨A, k, _hA, hk, hslab⟩ := interval_slab_density
     lam Lam m Lb length hlam hlamLam hm hmLb hlength q hq hq'
   let N := killedGreenConstant A (3 - 2 * q) k q
   have hN : N ≠ ⊤ := killedGreenConstant_ne_top hδ hk hq0
   refine ⟨N.toReal + 1, k, by positivity, hk, ?_⟩
-  intro a c hac B b hs hJ S K hr hlen σ μ _ Γ hΓ
+  intro E hlen σ μ _ Γ hΓ
   have hloc : ∀ T : ℝ, ∃ G : GreenCarrier 1 → ℝ≥0∞, 0 < T →
       Measurable G ∧
       Γ.restrict (slabSet T) = ((greenLebesgue 1).restrict (slabSet T)).withDensity G ∧
@@ -56,11 +48,11 @@ theorem interval_green_infinite_norm
           ENNReal.ofReal (T ^ (3 - 2 * q) * Real.exp (-k * T)) := by
     intro T
     by_cases hT : 0 < T
-    · obtain ⟨G, hG⟩ := hslab a c hac B b hs hJ S K hr hlen σ T hT μ Γ hΓ
+    · obtain ⟨G, hG⟩ := hslab E hlen σ T hT μ Γ hΓ
       exact ⟨G, fun _ => hG⟩
     · exact ⟨0, fun h => absurd h hT⟩
   choose Gl hGl using hloc
-  obtain ⟨G, hGm, hGE, hGae⟩ := exists_global_density K σ μ Γ hΓ Gl
+  obtain ⟨G, hGm, hGE, hGae⟩ := exists_global_density E.kernel σ μ Γ hΓ Gl
     (fun T hT => (hGl T hT).1) (fun T hT => (hGl T hT).2.1)
   refine ⟨G, hGm, hGE, ?_⟩
   have hbd := killed_green_norm_bound G hGm A (3 - 2 * q) k q (μ univ) hq0 (by

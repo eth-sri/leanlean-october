@@ -50,20 +50,24 @@ theorem spatial_oscillation_reflection {d : ℕ} (P₀ : KineticPoint d)
     rw [image_comp, kineticReflection_image_forwardCylinder, kineticReflection_involutive]
   simp only [Holder.oscillationOn, hi]
 
+section
+variable {d : ℕ} (u : KineticPoint d → ℝ) (P : KineticPoint d)
+
 /-- The original physical position slice is the reflected slice composed with negation. -/
-theorem spatial_slice_reflection {d : ℕ} (u : KineticPoint d → ℝ) (P : KineticPoint d) :
+theorem spatial_slice_reflection :
     physicalPositionSlice u P =
       physicalPositionSlice (u ∘ kineticReflection) (kineticReflection P) ∘ Neg.neg := by
   funext x
   simp only [physicalPositionSlice, Function.comp_apply, kineticReflection, neg_neg]
 
 /-- The stipulated spatial derivative norm is unchanged by reflection, at every order. -/
-theorem spatial_derivative_norm_reflection {d : ℕ} (u : KineticPoint d → ℝ)
-    (P : KineticPoint d) (m : ℕ) :
+theorem spatial_derivative_norm_reflection (m : ℕ) :
     ‖iteratedFDeriv ℝ m (physicalPositionSlice u P) P.position‖ =
       ‖iteratedFDeriv ℝ m (physicalPositionSlice (u ∘ kineticReflection)
         (kineticReflection P)) (kineticReflection P).position‖ := by
   rw [spatial_slice_reflection]
   exact (LinearIsometryEquiv.neg ℝ (E := PDE.Vec d)).norm_iteratedFDeriv_comp_right _ _ _
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

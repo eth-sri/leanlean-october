@@ -21,43 +21,6 @@ namespace PDE.H1Function
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
-private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
-    {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
-    {μ : Measure α} {F : ℕ → α → E} {bound : α → E}
-    (hF : ∀ n, AEStronglyMeasurable (F n) μ)
-    (hboundMem : MemLp bound (2 : ℝ≥0∞) μ)
-    (hbound : ∀ n, ∀ᵐ x ∂μ, ‖F n x‖ ≤ ‖bound x‖)
-    (hzero : ∀ᵐ x ∂μ, Tendsto (fun n => F n x) atTop (𝓝 0)) :
-    Tendsto (fun n => eLpNorm (F n) (2 : ℝ≥0∞) μ) atTop (𝓝 0) := by
-  let G : ℕ → α → ℝ≥0∞ := fun n x => ‖F n x‖ₑ ^ (2 : ℝ)
-  let B : α → ℝ≥0∞ := fun x => ‖bound x‖ₑ ^ (2 : ℝ)
-  have hGMeas : ∀ n, AEMeasurable (G n) μ := fun n => (hF n).enorm.pow_const _
-  have hGBound : ∀ n, G n ≤ᵐ[μ] B := by
-    intro n
-    filter_upwards [hbound n] with x hx
-    exact ENNReal.rpow_le_rpow (by
-      simpa only [ofReal_norm_eq_enorm] using ENNReal.ofReal_le_ofReal hx) (by norm_num)
-  have hBFinite : ∫⁻ x, B x ∂μ ≠ ∞ :=
-    (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top
-      (p := (2 : ℝ≥0∞)) (by norm_num) (by norm_num) (memLp_iff.mp hboundMem)).ne
-  have hGZero : ∀ᵐ x ∂μ, Tendsto (fun n => G n x) atTop (𝓝 0) := by
-    filter_upwards [hzero] with x hx
-    have henorm : Tendsto (fun n => ‖F n x‖ₑ) atTop (𝓝 0) := by
-      simpa only [Function.comp_def, enorm_zero] using (continuous_enorm.tendsto 0).comp hx
-    simpa only [Function.comp_def, G, enorm_zero,
-      ENNReal.zero_rpow_of_pos (by norm_num : (0 : ℝ) < 2)] using
-      ((ENNReal.continuous_rpow_const :
-        Continuous (fun a : ℝ≥0∞ => a ^ (2 : ℝ))).tendsto 0).comp henorm
-  have hint : Tendsto (fun n => ∫⁻ x, G n x ∂μ) atTop (𝓝 0) := by
-    simpa only [lintegral_zero] using
-      tendsto_lintegral_of_dominated_convergence' B hGMeas hGBound hBFinite hGZero
-  simpa only [Function.comp_def, G, eLpNorm_eq_lintegral_rpow_enorm_toReal
-      (by norm_num : (2 : ℝ≥0∞) ≠ 0)
-      (by norm_num : (2 : ℝ≥0∞) ≠ ∞) (hF _), ENNReal.toReal_ofNat, one_div,
-      ENNReal.zero_rpow_of_pos (by norm_num : (0 : ℝ) < (2 : ℝ)⁻¹)] using
-    ((ENNReal.continuous_rpow_const :
-      Continuous (fun a : ℝ≥0∞ => a ^ ((2 : ℝ)⁻¹))).tendsto 0).comp hint
-
 /-- The positive part above a nonnegative constant belongs to `H¹` on an
 arbitrary open set, with the strict-superlevel representative of its weak
 gradient. -/

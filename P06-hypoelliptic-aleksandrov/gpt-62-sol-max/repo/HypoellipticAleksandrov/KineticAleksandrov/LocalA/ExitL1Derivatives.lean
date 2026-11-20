@@ -12,15 +12,12 @@ open Set MeasureTheory Parabolic SectionTwo
 
 /-- Every derivative is computed from the same inverse, rather than independent witnesses. -/
 theorem ballExitL1Inversion_iteratedFDeriv
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (j : ℕ) (y : PDE.Vec d) :
-    let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+    let ν := ballExit hd B hB v₀ hR P T
     iteratedFDeriv ℝ j (exitL1Inversion ν) y = ((2 * Real.pi) ^ d)⁻¹ •
       VectorFourier.fourierIntegral
         (E := ContinuousMultilinearMap ℝ (fun _ : Fin j => PDE.Vec d)
@@ -29,10 +26,9 @@ theorem ballExitL1Inversion_iteratedFDeriv
         (fun ξ => VectorFourier.fourierPowSMulRight
           (exitInversePairing d) (exitL1Fourier ν) ξ j) y := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
-  have hm (n : ℕ) (_hn : (n : ℕ∞) ≤ ⊤) :
-      Integrable (fun ξ => ‖ξ‖ ^ n * ‖exitL1Fourier ν ξ‖) :=
-    ballExitL1Fourier_integrable_moments hH hLE hd hlam hLam B hB v₀ hR P T hv hT n
+  let ν := ballExit hd B hB v₀ hR P T
+  have hm (n : ℕ) (_hn : (n : ℕ∞) ≤ ⊤) :=
+    ballExitL1Fourier_integrable_moments hd B hB v₀ hR P T hv hT n
   have hs := VectorFourier.contDiff_fourierIntegral (exitInversePairing d) hm
   change iteratedFDeriv ℝ j
     (fun y => ((2 * Real.pi) ^ d)⁻¹ •

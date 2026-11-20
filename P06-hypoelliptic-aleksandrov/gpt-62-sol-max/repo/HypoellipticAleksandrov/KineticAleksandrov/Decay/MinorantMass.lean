@@ -39,7 +39,6 @@ theorem minorant_mass_floor (d : ℕ) (hd : 1 ≤ d)
   obtain ⟨N, hN, _hchoice, hc⟩ := exists_retention_barrier_order d hd lam Lam hlam hlamLam
   let Cstar : ℝ := 2 * N * d * Lam
   have hLam : 0 < Lam := hlam.trans_le hlamLam
-  have hNp : 0 < (N : ℝ) := by exact_mod_cast (show 0 < N by omega)
   have hdp : 0 < (d : ℝ) := by exact_mod_cast hd
   have hC : 0 < Cstar := by dsimp [Cstar]; positivity
   refine ⟨Cstar, Real.exp (-Cstar / 9), hC, rfl, Real.exp_pos _, ?_⟩

@@ -18,10 +18,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set MeasureTheory Parabolic
 open scoped MatrixOrder
 
+section
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+include hf
+
 /-- The unit jet expression is jointly continuous in point and matrix entries. -/
-theorem continuous_unitCutoffJet {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+theorem continuous_unitCutoffJet :
     Continuous (fun z : KineticPoint d × PDE.Mat d =>
       fderiv ℝ f (KineticPoint.equivProd d z.1) (1, (z.1.velocity, 0)) -
         matrixContraction z.2 (sliceHessian (unitCutoffVelocitySlice f z.1) z.1.velocity)) := by
@@ -41,9 +43,7 @@ theorem continuous_unitCutoffJet {d : ℕ}
     ((continuous_apply j).comp ((continuous_apply i).comp hH))
 
 /-- Compact unit geometry gives a matrix-entry-uniform bound on the cutoff jet. -/
-theorem exists_unitCutoffJet_bound {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Lam : ℝ) :
+theorem exists_unitCutoffJet_bound (Lam : ℝ) :
     ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ Q ∈ closure
       (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1),
       ∀ B : PDE.Mat d, (∀ i j, |B i j| ≤ |Lam|) →
@@ -63,9 +63,7 @@ theorem exists_unitCutoffJet_bound {d : ℕ}
       simpa only [Real.norm_eq_abs] using hM (Q, B) ⟨hQ, hBS⟩).trans (le_max_left _ _)
 
 /-- Ellipticity and exact affine jets yield the source cutoff bound with uniform constants. -/
-theorem exists_scaledUnitCutoff_operator_bound {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Lam : ℝ) :
+theorem exists_scaledUnitCutoff_operator_bound (Lam : ℝ) :
     ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ lam : ℝ, 0 < lam →
       ∀ A : FullKineticCoefficient d, FullElliptic lam Lam A →
       ∀ (P₀ : KineticPoint d) (R ell : ℝ), 0 < R → 0 ≤ ell →
@@ -90,5 +88,7 @@ theorem exists_scaledUnitCutoff_operator_bound {d : ℕ}
     _ ≤ ell * (R ^ 2)⁻¹ * C₀ :=
       mul_le_mul_of_nonneg_left hb (mul_nonneg hell (inv_nonneg.mpr (sq_nonneg R)))
     _ = C₀ * ell * (R ^ 2)⁻¹ := by ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

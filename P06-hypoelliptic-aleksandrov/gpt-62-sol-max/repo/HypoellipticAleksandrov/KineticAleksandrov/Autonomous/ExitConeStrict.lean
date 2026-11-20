@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeCalculus
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ConeSupportCalculus
 
 /-! # Vanishing of both actual measures beyond every strict transport cone -/
 
@@ -12,19 +13,18 @@ open SectionTwo TheoremA Evolution
 
 /-- A strict negative transport direction kills both actual measures on its positive side. -/
 theorem reconstruction_strict_transport_cone_ae
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (alpha beta gamma delta : ℝ) (hdelta : 0 < delta)
     (he : reconstructionConeCoordinate alpha beta gamma e.1 = 0)
     (hdir : ∀ v ∈ H.carrier, alpha + v * beta ≤ -delta) :
-    (∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+    (∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       reconstructionConeCoordinate alpha beta gamma p ≤ 0) ∧
     ∀ᵐ p ∂stripGreenOfKernel H E.2 T e, reconstructionConeCoordinate alpha beta gamma p ≤ 0 := by
   let rho := reconstructionConeCoordinate alpha beta gamma
   let phi := expNegInvGlue ∘ rho
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
+  let Ω := stripExitOfRealization A H E hE T e
   let Γ := stripGreenOfKernel H E.2 T e
   let V := max |H.lo| |H.hi|
   let C := |alpha| + V * |beta|
@@ -45,13 +45,13 @@ theorem reconstruction_strict_transport_cone_ae
     exact (abs_add_le _ _).trans (add_le_add le_rfl (by
       rw [abs_mul]
       exact mul_le_mul_of_nonneg_right (hv _ hp) (abs_nonneg _)))
-  have hi := strip_identity_bounded_smooth_of_realization hH hlam hLam A H E hE T e phi
+  have hi := strip_identity_bounded_smooth_of_realization A H E hE T e phi
     (reconstructionConeProbe_smooth alpha beta gamma) (by
       refine ⟨max 1 (C * 2), fun p hp => ?_⟩
       constructor
       · change |expNegInvGlue (rho p)| ≤ _
         rw [abs_of_nonneg (expNegInvGlue.nonneg _)]
-        exact (reconstructionConeTransition_bound _).2.trans (le_max_left _ _)
+        exact (_root_.HypoellipticAleksandrov.KineticAleksandrov.LocalA.coneProbe_transition_bound _).2.trans (le_max_left _ _)
       · exact (hbd p hp).trans (le_max_right _ _))
   have hpn : ∀ p, 0 ≤ phi p := fun p => expNegInvGlue.nonneg _
   have hint : Integrable phi Ω := by
@@ -60,7 +60,7 @@ theorem reconstruction_strict_transport_cone_ae
         (reconstructionConeProbe_smooth _ _ _)).measurable.aestronglyMeasurable)
     exact Filter.Eventually.of_forall (fun p => by
       rw [Real.norm_eq_abs, abs_of_nonneg (hpn p)]
-      exact (reconstructionConeTransition_bound _).2)
+      exact (_root_.HypoellipticAleksandrov.KineticAleksandrov.LocalA.coneProbe_transition_bound _).2)
   have hkn : forwardScalarOperator A.a phi ≤ᵐ[Γ] 0 := by
     filter_upwards [stripGreenOfKernel_ae_mem_stripPast H E.2 T e] with p hp
     rw [hop]

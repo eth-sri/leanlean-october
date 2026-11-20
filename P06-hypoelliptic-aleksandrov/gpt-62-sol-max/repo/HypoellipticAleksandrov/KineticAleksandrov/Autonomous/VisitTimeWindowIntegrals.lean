@@ -12,20 +12,19 @@ open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
 /-- The localized test counts every actual entrance in the closed interval of length r squared. -/
 theorem visitTimeQuadratic_entrance_integral_lower
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
     (P : Point) (n : ℕ) :
     5 * c.r ^ 2 / 16 *
-      (visitEntrancePiece hH hLE hlam hLam A c J s T P n
+      (visitEntrancePiece A c J s T P n
         {p | p.time ∈ Icc b (b + c.r ^ 2)}).toReal ≤
       ∫ p, visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0)
-        ∂visitEntrancePiece hH hLE hlam hLam A c J s T P n := by
-  let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
+        ∂visitEntrancePiece A c J s T P n := by
   let W := {p : Point | p.time ∈ Icc b (b + c.r ^ 2)}
   have hW : MeasurableSet W := isClosed_Icc.measurableSet.preimage continuous_time.measurable
   have hi := integral_mono_ae ((integrable_const (5 * c.r ^ 2 / 16)).indicator hW)
-    (visitTimeQuadratic_integrable_entrance hH hLE hlam hLam A c J s T b P n) (by
+    (visitTimeQuadratic_integrable_entrance A c J s T b P n) (by
       filter_upwards [visitGamma_ae_closedEntrance P c J s T _ _ n] with p hp
       by_cases ht : p ∈ W
       · rw [indicator_of_mem ht, visitTimeCutoff_eq_one b c.r c.positive ht, one_mul]
@@ -39,11 +38,11 @@ theorem visitTimeQuadratic_entrance_integral_lower
 
 /-- The actual localized Green operator is controlled by occupation only in its short window. -/
 theorem visitTimeQuadratic_activeGreen_integral_bound : ∃ D : ℝ, 0 ≤ D ∧
-    ∀ (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    ∀ 
       (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
       (c : Clock) (J : Interval) (s T b : ℝ) (mu : Measure Point)
       (_hmuFinite : IsFiniteMeasure mu),
-      let G := visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu;
+      let G := visitUnionGreenKernel A (visitActiveUnion c J) s T ∘ₘ mu;
       -(∫ p, forwardScalarOperator A.a
         (fun q => visitTimeCutoff b c.r c.positive q.time *
           visitQuadratic c (q.velocity 0)) p ∂G) ≤
@@ -51,19 +50,19 @@ theorem visitTimeQuadratic_activeGreen_integral_bound : ∃ D : ℝ, 0 ≤ D ∧
           (G {p | p.time ∈ Icc (b - c.r ^ 2) (b + 2 * c.r ^ 2)}).toReal := by
   obtain ⟨D, hD, hd⟩ := visitTimeQuadratic_uniform_operator_bound
   refine ⟨D, hD, ?_⟩
-  intro hH hLE lam Lam hlam hLam A c J s T b mu hmuFinite
+  intro lam Lam hlam hLam A c J s T b mu hmuFinite
   let := hmuFinite
   dsimp only
-  let G := visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu
+  let G := visitUnionGreenKernel A (visitActiveUnion c J) s T ∘ₘ mu
   let f := fun p : Point => forwardScalarOperator A.a
     (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p
   let W := {p : Point | p.time ∈ Icc (b - c.r ^ 2) (b + 2 * c.r ^ 2)}
   have hW : MeasurableSet W := isClosed_Icc.measurableSet.preimage continuous_time.measurable
   have hi := integral_mono_ae
     (visitTimeQuadratic_operator_integrable_activeGreenMixture
-      hH hLE hlam hLam A c J s T b mu).neg
+      A c J s T b mu).neg
     ((integrable_const (9 * D / 16 + 2 * Lam)).indicator hW) (by
-      filter_upwards [visitActiveGreenMixture_ae_closedActive hH hLE hlam hLam A c J s T mu]
+      filter_upwards [visitActiveGreenMixture_ae_closedActive A c J s T mu]
         with p hp
       change -f p ≤ W.indicator (fun _ => 9 * D / 16 + 2 * Lam) p
       by_cases ht : p ∈ W

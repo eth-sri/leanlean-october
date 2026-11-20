@@ -27,20 +27,23 @@ def localHarnackTerminalApprox (j : ℕ) : ℝ :=
 def selectedLocalHarnackForwardTime (t1 : ℝ) (j : ℕ) : ℝ :=
   localHarnackTerminalApprox j - t1
 
+section
+variable {d : ℕ}
+
 /-- Lower coordinate faces for the target-dependent propagation corridor. -/
-def localHarnackCorridorLower {d : ℕ} (v1 v : PDE.Vec d) : PDE.Vec d :=
+def localHarnackCorridorLower (v1 v : PDE.Vec d) : PDE.Vec d :=
   fun i => (min (v1 i) (v i) - 3) / 2
 
 /-- Upper coordinate faces for the target-dependent propagation corridor. -/
-def localHarnackCorridorUpper {d : ℕ} (v1 v : PDE.Vec d) : PDE.Vec d :=
+def localHarnackCorridorUpper (v1 v : PDE.Vec d) : PDE.Vec d :=
   fun i => (max (v1 i) (v i) + 3) / 2
 
 /-- The open normalized work box pulled back by translation from a peak time. -/
-def localHarnackCorridorNeighborhood {d : ℕ} (t1 : ℝ) : Set (TimeVelocity d) :=
+def localHarnackCorridorNeighborhood (t1 : ℝ) : Set (TimeVelocity d) :=
   parabolicAffine t1 (0 : PDE.Vec d) 1 ⁻¹' parabolicBox 2 2 0 0
 
 /-- A terminal-inclusive backward box is the corresponding closed forward box. -/
-theorem backwardParabolicClosedBox_eq_parabolicClosedBox {d : ℕ}
+theorem backwardParabolicClosedBox_eq_parabolicClosedBox
     (s terminalTime : ℝ) (v0 : PDE.Vec d) :
     backwardParabolicClosedBox s terminalTime v0 =
       parabolicClosedBox 1 s (terminalTime - s ^ 2) v0 := by
@@ -51,7 +54,7 @@ theorem backwardParabolicClosedBox_eq_parabolicClosedBox {d : ℕ}
     refine ⟨?_, ?_, hv⟩ <;> nlinarith
 
 /-- The unit peak-selection box lies strictly inside the normalized open work box. -/
-theorem backwardParabolicClosedBox_one_four_subset_normalizedOpenBox {d : ℕ} :
+theorem backwardParabolicClosedBox_one_four_subset_normalizedOpenBox :
     backwardParabolicClosedBox 1 4 (0 : PDE.Vec d) ⊆
       parabolicBox 2 2 0 0 := by
   intro z hz
@@ -66,21 +69,19 @@ theorem backwardParabolicClosedBox_one_four_subset_normalizedOpenBox {d : ℕ} :
     have hvi := hz.2.2 i
     simpa only [Pi.zero_apply, sub_zero] using hvi.trans_lt (by norm_num : (1 : ℝ) < 2)
 
-private theorem selected_peak_radius_nonneg {d : ℕ} {t1 r0 : ℝ} {v1 : PDE.Vec d}
+private theorem selected_peak_radius_nonneg {t1 r0 : ℝ} {v1 : PDE.Vec d}
     (hr0 : r0 = backwardParabolicRadius 4 (0 : PDE.Vec d) (t1, v1)) :
     0 ≤ r0 := by
-  rw [hr0, backwardParabolicRadius]
-  exact le_max_of_le_left (by
-    rw [show velocitySupNorm (v1 - 0) = ‖v1‖ by
-      simp only [velocitySupNorm_eq_norm, sub_zero]]
-    exact norm_nonneg _)
+  simp [hr0, backwardParabolicRadius]
 
-private theorem selected_peak_time_bounds {d : ℕ} {t1 : ℝ} {v1 : PDE.Vec d}
+private theorem selected_peak_time_bounds {t1 : ℝ} {v1 : PDE.Vec d}
     (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d)) :
     3 ≤ t1 ∧ t1 ≤ 4 := by
   rw [mem_backwardParabolicClosedBox_iff] at hpoint
   norm_num at hpoint
   exact ⟨hpoint.1, hpoint.2.1⟩
+
+end
 
 /-- The selected peak velocity has strict normalized-cube margin. -/
 theorem selected_peak_velocity_mem_velocityCube_one {d : ℕ}
@@ -105,14 +106,7 @@ theorem selected_backward_radius_pos {r0 : ℝ} (hr0lt : r0 < 1) :
     0 < (1 - r0) / 2 := by
   linarith
 
-private theorem selected_backward_radius_le_half {d : ℕ} {t1 r0 : ℝ}
-    {v1 : PDE.Vec d}
-    (hr0 : r0 = backwardParabolicRadius 4 (0 : PDE.Vec d) (t1, v1)) :
-    (1 - r0) / 2 ≤ 1 / 2 := by
-  have hr0nonneg := selected_peak_radius_nonneg hr0
-  linarith
-
-private theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux {d : ℕ}
+theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux {d : ℕ}
     {t1 r0 : ℝ} {v1 : PDE.Vec d}
     (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d))
     (hr0 : r0 = backwardParabolicRadius 4 (0 : PDE.Vec d) (t1, v1))
@@ -126,11 +120,8 @@ private theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux
   have hsnonneg : 0 ≤ s := hspos.le
   have hsle : s ≤ 1 / 2 := by
     dsimp [s]
-    exact selected_backward_radius_le_half hr0
-  have hsq : s ^ 2 ≤ 1 / 4 := by
-    have hprod : 0 ≤ s * (1 / 2 - s) :=
-      mul_nonneg hsnonneg (sub_nonneg.mpr hsle)
-    nlinarith
+    have hr0nonneg := selected_peak_radius_nonneg hr0
+    linarith
   have ht1 := selected_peak_time_bounds hpoint
   have hv1 := selected_peak_velocity_mem_velocityCube_one hpoint hr0 hr0lt
   intro z hz
@@ -163,16 +154,6 @@ private theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux
         _ < 1 / 2 + 1 := add_lt_add_of_le_of_lt hsle hv1i
         _ < 2 := by norm_num
     simpa only [Pi.zero_apply, sub_zero] using hlt
-
-/-- The selected nested closed backward box lies strictly inside the open work box. -/
-theorem selected_backwardParabolicClosedBox_subset_normalizedOpenBox {d : ℕ}
-    {t1 r0 : ℝ} {v1 : PDE.Vec d}
-    (hpoint : (t1, v1) ∈ backwardParabolicClosedBox 1 4 (0 : PDE.Vec d))
-    (hr0 : r0 = backwardParabolicRadius 4 (0 : PDE.Vec d) (t1, v1))
-    (hr0lt : r0 < 1) :
-    backwardParabolicClosedBox ((1 - r0) / 2) t1 v1 ⊆
-      parabolicBox 2 2 0 0 :=
-  selected_backwardParabolicClosedBox_subset_normalizedOpenBox_aux hpoint hr0 hr0lt
 
 /-- Every interior terminal approximation is at least seven. -/
 theorem localHarnackTerminalApprox_seven_le (j : ℕ) :

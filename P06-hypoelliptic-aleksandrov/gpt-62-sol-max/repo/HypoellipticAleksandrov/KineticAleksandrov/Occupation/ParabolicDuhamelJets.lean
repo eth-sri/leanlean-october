@@ -3,7 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWeakAdjoint
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWeakRegularity
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeTransfer
-public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
+public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ScalarHessian
 
 /-!
@@ -75,10 +75,13 @@ theorem hasLineDerivAt_zIndep_time {w : TimeVelocity d → ℝ} {D : Set (TimeVe
     ContinuousLinearMap.coprod_apply, ContinuousLinearMap.smulRight_apply,
     ContinuousLinearMap.id_apply, one_smul, map_zero, add_zero] using h
 
+section
+variable {w : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)} (hw : IsScalarC12On w D)
+  {x v : EvolutionVec d} (hx : evolutionToTimeVelocity d x ∈ D) (hv : Evolution.timeCoord d v = 0)
+include D hw hx hv
+
 /-- Spatial line derivatives of a `z`-independent function. -/
-theorem hasLineDerivAt_zIndep_spatial {w : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
-    (hw : IsScalarC12On w D) {x v : EvolutionVec d} (hx : evolutionToTimeVelocity d x ∈ D)
-    (hv : Evolution.timeCoord d v = 0) :
+theorem hasLineDerivAt_zIndep_spatial :
     HasLineDerivAt ℝ (w ∘ evolutionToTimeVelocity d)
       (PDE.vecDot (scalarSpatialGradient w (evolutionToTimeVelocity d x))
         (diffusedCoord d v)) x v := by
@@ -90,9 +93,7 @@ theorem hasLineDerivAt_zIndep_spatial {w : TimeVelocity d → ℝ} {D : Set (Tim
     scalarSpatialGradient] using! h
 
 /-- Spatial line derivatives of gradient entries are scalar Hessian entries. -/
-theorem hasLineDerivAt_zIndep_gradient {w : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
-    (hw : IsScalarC12On w D) {x v : EvolutionVec d} (hx : evolutionToTimeVelocity d x ∈ D)
-    (hv : Evolution.timeCoord d v = 0) (i j : Fin d)
+theorem hasLineDerivAt_zIndep_gradient (i j : Fin d)
     (hdir : diffusedCoord d v = PDE.basisVec i) :
     HasLineDerivAt ℝ (fun y => scalarSpatialGradient w (evolutionToTimeVelocity d y) j)
       (scalarSpatialHessian w (evolutionToTimeVelocity d x) i j) x v := by
@@ -111,11 +112,13 @@ theorem hasLineDerivAt_zIndep_gradient {w : TimeVelocity d → ℝ} {D : Set (Ti
     rw [fderiv_clm_apply hd (differentiableAt_const (PDE.basisVec j))]
     erw [hz]
     simpa only [ContinuousLinearMap.comp_zero, zero_add,
-      ContinuousLinearMap.flip_apply] using! (scalarSpatialHessian_eq_secondFDeriv hc2 i j).symm
+      ContinuousLinearMap.flip_apply] using! (_root_.HypoellipticAleksandrov.Parabolic.scalarSpatialHessian_apply_eq_sndFDeriv hc2 i j).symm
   rw [he] at h
   unfold HasLineDerivAt at h ⊢
   simpa only [evolutionToTimeVelocity_line x v hv, hdir,
     scalarSpatialGradient, PDE.classicalGradient] using! h
+
+end
 
 /-- **Weak form for `z`-independent smooth functions.**  For `w` smooth on the open set `D`
 and a smooth compactly supported test `ψ` supported in `π ⁻¹' D`,

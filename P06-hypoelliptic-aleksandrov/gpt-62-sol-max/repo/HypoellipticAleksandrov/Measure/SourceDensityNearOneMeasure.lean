@@ -162,7 +162,6 @@ theorem
     have htime : rho * (z.1 - 3 / 4) ≤ rho / 4 := by
       have hbase : z.1 - 3 / 4 ≤ 1 / 4 := by
         linarith [hzQ.1.2]
-      have hmul := mul_le_mul_of_nonneg_left hbase hrho
       nlinarith
     have hweight :
         Real.exp (rho * (z.1 - 3 / 4)) ≤ Real.exp (rho / 4) :=

@@ -52,7 +52,7 @@ theorem construction_flat_source_decay_of_profile {d : ℕ} {alpha : ℝ}
       (ENNReal.ofReal p) (volume.restrict {q | profileFunction h q < 1}))
       atTop (nhds 0) := by
   obtain ⟨C, r0, hC, hr0, hb⟩ := flat_source_eLpNorm_le_of_profile d alpha p ha ha1 hp h
-  have he : ∀ᶠ j in atTop, r j < r0 := hlim.eventually (gt_mem_nhds hr0)
+  have he := hlim.eventually (gt_mem_nhds hr0)
   have hpow := (Real.continuous_rpow_const hexponent.le).tendsto (0 : ℝ) |>.comp hlim
   have hpow0 : Tendsto (fun j => Real.rpow (r j) (alpha - 2 + 4 * (d : ℝ) / p))
       atTop (nhds 0) := by
@@ -73,7 +73,6 @@ theorem construction_exists_scales (r0 : ℝ) (hr0 : 0 < r0) :
   let r : ℕ → ℝ := fun j => r0 * (1 / ((j : ℝ) + 2))
   refine ⟨r, ?_, ?_⟩
   · intro j
-    have hj : 0 ≤ (j : ℝ) := Nat.cast_nonneg _
     constructor
     · exact mul_pos hr0 (div_pos zero_lt_one (by linarith))
     · change r0 * (1 / ((j : ℝ) + 2)) < r0

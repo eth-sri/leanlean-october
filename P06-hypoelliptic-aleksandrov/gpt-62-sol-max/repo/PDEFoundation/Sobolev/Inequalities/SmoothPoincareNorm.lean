@@ -55,16 +55,15 @@ private theorem rpow_inv_le_const_mul_of_le_const_mul_rpow
         mul_le_mul_of_nonneg_right
           (Real.rpow_le_self_of_one_le hC hinvLeOne) hD
 
+section
+variable {d : ℕ} {U : Set (Vec d)} {D p : ℝ} (hU : IsOpenBoundedConvexDomain U)
+  (hUDiameter : HasEuclideanDiameterLE U D) (hD : 0 ≤ D) {u : Vec d → ℝ}
+  (hu : ContDiff ℝ (⊤ : ℕ∞) u) (hp : 1 ≤ p) (hUPos : 0 < volume U) (hUTop : volume U < ∞)
+include hU hUDiameter hD hu hp hUPos hUTop
+
 /-- Smooth diameter-only Poincaré inequality in the unnormalized extended
 `L^p` norm. The constant `2 ^ d` is independent of `p`. -/
-theorem eLpNormOn_sub_integralAverage_le_two_pow_mul_of_contDiff
-    {d : ℕ} {U : Set (Vec d)} {D p : ℝ}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hUDiameter : HasEuclideanDiameterLE U D)
-    (hD : 0 ≤ D)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
-    (hp : 1 ≤ p)
-    (hUPos : 0 < volume U) (hUTop : volume U < ∞) :
+theorem eLpNormOn_sub_integralAverage_le_two_pow_mul_of_contDiff :
     eLpNormOn U (ENNReal.ofReal p)
         (fun x => u x - integralAverage U u) ≤
       ENNReal.ofReal ((2 : ℝ) ^ d * D) *
@@ -173,14 +172,7 @@ theorem eLpNormOn_sub_integralAverage_le_two_pow_mul_of_contDiff
 
 /-- Smooth diameter-only Poincaré inequality in the normalized extended
 `L^p` norm. The constant `2 ^ d` is independent of `p`. -/
-theorem eLpMeanNormOn_sub_integralAverage_le_two_pow_mul_of_contDiff
-    {d : ℕ} {U : Set (Vec d)} {D p : ℝ}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hUDiameter : HasEuclideanDiameterLE U D)
-    (hD : 0 ≤ D)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
-    (hp : 1 ≤ p)
-    (hUPos : 0 < volume U) (hUTop : volume U < ∞) :
+theorem eLpMeanNormOn_sub_integralAverage_le_two_pow_mul_of_contDiff :
     eLpMeanNormOn U (ENNReal.ofReal p)
         (fun x => u x - integralAverage U u) ≤
       ENNReal.ofReal ((2 : ℝ) ^ d * D) *
@@ -206,5 +198,7 @@ theorem eLpMeanNormOn_sub_integralAverage_le_two_pow_mul_of_contDiff
           euclideanFieldELpNormOn U (ENNReal.ofReal p)
             (classicalGradient u)) := by
       ac_rfl
+
+end
 
 end PDE

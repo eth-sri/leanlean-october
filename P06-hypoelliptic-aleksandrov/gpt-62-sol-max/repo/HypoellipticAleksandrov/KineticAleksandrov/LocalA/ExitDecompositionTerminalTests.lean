@@ -12,10 +12,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic TheoremA
 
-variable (hH : HormanderHypoellipticityStatement)
-  (hLE : LiebermanEllipsoidDirichletStatement)
+variable
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-  (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
@@ -25,25 +23,25 @@ theorem ballExit_terminal_probe_identity
     (F : BoundedBorel (EvolutionAmbientState d))
     (hF : IsSmoothCompactTerminalDatum (PDE.euclideanBall v₀ R) (fun _ => 0) T.1 F) :
     (∫ Q, F (Q.velocity, Q.position)
-      ∂(ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T).restrict
+      ∂(ballExitRaw hd B hB v₀ hR P T).restrict
         {Q | Q.velocity ∈ PDE.euclideanBall v₀ R}) =
-      ∫ w, F w.1 ∂(localBallKernel hH hLE hd hlam hLam B hB v₀ hR).fiberKernel
+      ∫ w, F w.1 ∂(localBallKernel hd B hB v₀ hR).fiberKernel
         (PDE.isOpen_euclideanBall v₀ R).measurableSet P.1.time T.1 T.2.le
         (ballStartState P) := by
-  have hreal := localBallEvolution_realizes hH hLE hd hlam hLam B hB v₀ hR
+  have hreal := localBallEvolution_realizes hd B hB v₀ hR
   obtain ⟨u, hu, hval, _⟩ := hreal.1 T.1 F hF
   have hur := exit_terminal_physical_regular (a := P.1.time) B F u hu
-  have hi := ballExit_represents hH hLE hd hlam hLam B hB v₀ hR P T
+  have hi := ballExit_represents hd B hB v₀ hR P T
     (u ∘ sectionTwoPoint) hur.2.1
     (isKineticC112On_of_contDiffOn (isOpen_localStrip _ _ _ _)
       (boundary_physical_smooth_to_native hur.1)) hur.2.2.1 hur.2.2.2
   have hside : MeasurableSet {Q : KineticPoint d | Q.velocity ∈ PDE.euclideanBall v₀ R} :=
     (PDE.isOpen_euclideanBall v₀ R).measurableSet.preimage
       continuous_velocity.measurable
-  have heq : (u ∘ sectionTwoPoint) =ᵐ[ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T]
+  have heq : (u ∘ sectionTwoPoint) =ᵐ[ballExitRaw hd B hB v₀ hR P T]
       ({Q | Q.velocity ∈ PDE.euclideanBall v₀ R}.indicator
         (fun Q => F (Q.velocity, Q.position))) := by
-    filter_upwards [ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T] with Q hQ
+    filter_upwards [ballExitRaw_ae_trace hd B hB v₀ hR P T] with Q hQ
     by_cases hv : Q.velocity ∈ PDE.euclideanBall v₀ R
     · rw [indicator_of_mem (show Q ∈ {Q | Q.velocity ∈ PDE.euclideanBall v₀ R} from hv)]
       rcases hQ with hQ | hQ

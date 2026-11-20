@@ -18,9 +18,13 @@ namespace PDE
 
 namespace HasWeakPartialDerivOn
 
+section
+variable {d : ℕ} {U : Set (Vec d)} {i : Fin d} {u gi : Vec d → ℝ}
+  (h : HasWeakPartialDerivOn U i u gi)
+include h
+
 /-- Translate a weak partial derivative from `U` to `z + U`. -/
-theorem translate {d : ℕ} {U : Set (Vec d)} {i : Fin d}
-    {u gi : Vec d → ℝ} (h : HasWeakPartialDerivOn U i u gi)
+theorem translate
     (z : Vec d) :
     HasWeakPartialDerivOn (translateSet z U) i
       (fun x => u (x - z)) (fun x => gi (x - z)) := by
@@ -99,8 +103,7 @@ dilation
 
 The positivity hypothesis fixes the geometric orientation and every
 change-of-variables factor. -/
-theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
-    {u gi : Vec d → ℝ} (h : HasWeakPartialDerivOn U i u gi)
+theorem dilate_of_pos
     {a : ℝ} (ha : 0 < a) :
     HasWeakPartialDerivOn (a • U) i
       (fun x => a * u (a⁻¹ • x))
@@ -210,6 +213,8 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
           have hpow : a ^ d ≠ 0 := (pow_pos ha d).ne'
           rw [hChangeRight]
           field_simp [hpow]
+
+end
 
 end HasWeakPartialDerivOn
 

@@ -28,7 +28,6 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
     (E : ℝ → ℝ)
     (hEcont : ContinuousOn E (Set.Icc 0 T))
     (hEnonneg : ∀ t ∈ Set.Icc 0 T, 0 ≤ E t)
-    (hEzero : E 0 = 0)
     (hEle : ∀ t ∈ Set.Icc 0 T,
       E t ≤ K * (∫ r in Set.Ioc 0 t, E r)) :
     ∀ t ∈ Set.Icc 0 T, E t = 0 := by
@@ -39,12 +38,6 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
     dsimp [F]
     rw [Set.IccExtend_of_mem hT.le _ ht]
     rfl
-  have hEint : MeasureTheory.IntegrableOn E (Set.Icc 0 T) :=
-    hEcont.integrableOn_Icc
-  have hEintIoc {t : ℝ} (ht : t ∈ Set.Icc 0 T) :
-      MeasureTheory.IntegrableOn E (Set.Ioc 0 t) :=
-    hEint.mono_set (Set.Ioc_subset_Icc_self.trans fun r hr =>
-      ⟨hr.1, hr.2.trans ht.2⟩)
   let P : ℝ → ℝ := fun t => ∫ r in 0..t, F r
   have hPderiv (t : ℝ) : HasDerivAt P (F t) t := by
     simpa only [P] using (hFcont.integral_hasStrictDerivAt 0 t).hasDerivAt
@@ -79,15 +72,17 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
     eq_zero_of_abs_deriv_le_mul_abs_self_of_eq_zero_right hPcont.continuousOn
       (fun t ht => (hPderiv t).hasDerivWithinAt) hPzero hPbound
   intro t ht
-  by_cases htzero : t = 0
-  · subst t
-    exact hEzero
-  have hEt : E t ≤ 0 := by
-    calc
-      E t ≤ K * (∫ r in Set.Ioc 0 t, E r) := hEle t ht
-      _ = K * P t := by rw [← hP_eq ht]
-      _ ≤ K * 0 := mul_le_mul_of_nonneg_left (by rw [hPvanish t ht]) hK
-      _ = 0 := mul_zero K
+  have hEt := hEle t ht
+  rw [← hP_eq ht, hPvanish t ht, mul_zero] at hEt
   exact le_antisymm hEt (hEnonneg t ht)
+
+/-- A continuous norm-square energy satisfying the homogeneous integral bound vanishes. -/
+theorem eq_zero_on_Icc_of_norm_sq_le_mul_integral
+    {E : Type*} [NormedAddCommGroup E] {T K : ℝ} (hT : 0 < T) (hK : 0 ≤ K)
+    (F : ℝ → E) (hF : Continuous F)
+    (hle : ∀ t ∈ Icc 0 T, ‖F t‖ ^ 2 ≤ K * ∫ r in Ioc 0 t, ‖F r‖ ^ 2) :
+    ∀ t ∈ Icc 0 T, F t = 0 := fun t ht =>
+  norm_eq_zero.mp (sq_eq_zero_iff.mp (eq_zero_on_Icc_of_nonneg_le_mul_integral hT hK
+    (fun r => ‖F r‖ ^ 2) (hF.norm.pow 2).continuousOn (fun _ _ => sq_nonneg _) hle t ht))
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

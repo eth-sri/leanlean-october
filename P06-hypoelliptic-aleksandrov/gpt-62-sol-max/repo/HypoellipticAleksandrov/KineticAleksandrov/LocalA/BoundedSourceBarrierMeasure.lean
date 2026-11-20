@@ -47,20 +47,19 @@ theorem boundedSource_measure_mass_le
   exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hbound).trans_eq
     (ENNReal.toReal_ofReal hC)
 
+section
+variable {d : ℕ} (hd : 0 < d) {c : PDE.Vec d} {R : ℝ} (hR : 0 < R) {lam Lam m Lb : ℝ}
+  (hlam : 0 < lam) (hm : 0 < m) (B : FullKineticCoefficient d)
+  (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
+  (hell : HasEverywhereLoewnerBounds lam Lam B) (b : PDE.Vec d → PDE.Vec d) (hb : IsSmoothDrift b)
+  (hbounds : HasTransportBounds m Lb b)
+  (S : TerminalOperatorFamily (PDE.euclideanBall c R) (fun _ => 0))
+  (K : MovingFiberKernel (PDE.euclideanBall c R) (fun _ => 0))
+  (hreal : RealizesTerminalEvolution (PDE.euclideanBall c R) (fun _ => 0) (PDE.isOpen_euclideanBall c R).measurableSet B b S K)
+include hd hR Lam m Lb hlam hm B hB hBs hell b hb hbounds S hreal
+
 /-- The source-action measure from one starting point has quadratically controlled mass. -/
 theorem boundedSourceActionMeasure_dirac_mass_le_quadratic
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 0 < d)
-    {c : PDE.Vec d} {R : ℝ} (hR : 0 < R) {lam Lam m Lb : ℝ}
-    (hlam : 0 < lam) (hm : 0 < m)
-    (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B)
-    (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (b : PDE.Vec d → PDE.Vec d) (hb : IsSmoothDrift b)
-    (hbounds : HasTransportBounds m Lb b)
-    (S : TerminalOperatorFamily (PDE.euclideanBall c R) (fun _ => 0))
-    (K : MovingFiberKernel (PDE.euclideanBall c R) (fun _ => 0))
-    (hreal : RealizesTerminalEvolution (PDE.euclideanBall c R) (fun _ => 0)
-      (PDE.isOpen_euclideanBall c R).measurableSet B b S K)
     (T : ℝ) (p : KineticPoint d)
     (hp : p ∈ evolutionPastClosedCylinder (PDE.euclideanBall c R) (fun _ => 0) T) :
     (boundedSourceActionMeasure K (Measure.dirac p) p.time T).real univ ≤
@@ -94,26 +93,17 @@ theorem boundedSourceActionMeasure_dirac_mass_le_quadratic
     ∫ q, (∫ r in Ioo p.time T, duhamelIntegrand K g q r) ∂Measure.dirac p at hi
   rw [integral_dirac, ← duhamelPotential_eq_integral_window K g p le_rfl] at hi
   rw [hi]
-  exact duhamel_smooth_le_boundedSourceQuadratic hH hd hR hlam hm B hB hBs hell
+  exact duhamel_smooth_le_boundedSourceQuadratic hd hR hlam hm B hB hBs hell
     b hb hbounds S K hreal g hg hgc hgs hgn hgb T hgU p hp
 
+section
+variable (g : KineticPoint d → ℝ) (hg : Measurable g) (M : ℝ) (hM : 0 ≤ M) (hgb : ∀ q, |g q| ≤ M)
+  (T : ℝ) (p : KineticPoint d)
+  (hp : p ∈ evolutionPastClosedCylinder (PDE.euclideanBall c R) (fun _ => 0) T)
+include hg hM hgb hp
+
 /-- Signed bounded Borel potentials inherit the uniform quadratic barrier. -/
-theorem abs_duhamelPotential_le_boundedSourceQuadratic
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 0 < d)
-    {c : PDE.Vec d} {R : ℝ} (hR : 0 < R) {lam Lam m Lb : ℝ}
-    (hlam : 0 < lam) (hm : 0 < m)
-    (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B)
-    (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (b : PDE.Vec d → PDE.Vec d) (hb : IsSmoothDrift b)
-    (hbounds : HasTransportBounds m Lb b)
-    (S : TerminalOperatorFamily (PDE.euclideanBall c R) (fun _ => 0))
-    (K : MovingFiberKernel (PDE.euclideanBall c R) (fun _ => 0))
-    (hreal : RealizesTerminalEvolution (PDE.euclideanBall c R) (fun _ => 0)
-      (PDE.isOpen_euclideanBall c R).measurableSet B b S K)
-    (g : KineticPoint d → ℝ) (hg : Measurable g) (M : ℝ) (hM : 0 ≤ M)
-    (hgb : ∀ q, |g q| ≤ M) (T : ℝ) (p : KineticPoint d)
-    (hp : p ∈ evolutionPastClosedCylinder (PDE.euclideanBall c R) (fun _ => 0) T) :
+theorem abs_duhamelPotential_le_boundedSourceQuadratic :
     |duhamelPotential K T g p| ≤ boundedSourceQuadratic c R lam p * M := by
   let μ := boundedSourceActionMeasure K (Measure.dirac p) p.time T
   have hΩm := (PDE.isOpen_euclideanBall c R).measurableSet
@@ -127,32 +117,21 @@ theorem abs_duhamelPotential_le_boundedSourceQuadratic
     (f := fun q => g ⟨q.1, q.2.1, q.2.2⟩) (C := M)
     (Filter.Eventually.of_forall fun q => by rw [Real.norm_eq_abs]; exact hgb _)
   rw [Real.norm_eq_abs, hi] at hnorm
-  have hmass := boundedSourceActionMeasure_dirac_mass_le_quadratic hH hd hR hlam hm
+  have hmass := boundedSourceActionMeasure_dirac_mass_le_quadratic hd hR hlam hm
     B hB hBs hell b hb hbounds S K hreal T p hp
   exact hnorm.trans ((mul_le_mul_of_nonneg_left hmass hM).trans_eq (mul_comm _ _))
 
 /-- The two independent barriers give the source-needed minimum with exact normalization. -/
-theorem abs_duhamelPotential_le_time_min_quadratic
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 0 < d)
-    {c : PDE.Vec d} {R : ℝ} (hR : 0 < R) {lam Lam m Lb : ℝ}
-    (hlam : 0 < lam) (hm : 0 < m)
-    (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B)
-    (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (b : PDE.Vec d → PDE.Vec d) (hb : IsSmoothDrift b)
-    (hbounds : HasTransportBounds m Lb b)
-    (S : TerminalOperatorFamily (PDE.euclideanBall c R) (fun _ => 0))
-    (K : MovingFiberKernel (PDE.euclideanBall c R) (fun _ => 0))
-    (hreal : RealizesTerminalEvolution (PDE.euclideanBall c R) (fun _ => 0)
-      (PDE.isOpen_euclideanBall c R).measurableSet B b S K)
-    (g : KineticPoint d → ℝ) (hg : Measurable g) (M : ℝ) (hM : 0 ≤ M)
-    (hgb : ∀ q, |g q| ≤ M) (T : ℝ) (p : KineticPoint d)
-    (hp : p ∈ evolutionPastClosedCylinder (PDE.euclideanBall c R) (fun _ => 0) T) :
+theorem abs_duhamelPotential_le_time_min_quadratic :
     |duhamelPotential K T g p| ≤
       min (T - p.time) (boundedSourceQuadratic c R lam p) * M := by
   rw [min_mul_of_nonneg _ _ hM]
   exact le_min (abs_duhamelPotential_le K g M hM hgb p T hp.1)
-    (abs_duhamelPotential_le_boundedSourceQuadratic hH hd hR hlam hm B hB hBs hell
+    (abs_duhamelPotential_le_boundedSourceQuadratic hd hR hlam hm B hB hBs hell
       b hb hbounds S K hreal g hg M hM hgb T p hp)
+
+end
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

@@ -31,10 +31,8 @@ instance localTrace_secondCountableTopology {d : ℕ} (a T : ℝ) (v₀ : PDE.Ve
     (KineticPoint.homeomorphProd d).secondCountableTopology
   infer_instance
 
-variable (hH : HormanderHypoellipticityStatement)
-  (hLE : LiebermanEllipsoidDirichletStatement)
+variable
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-  (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
@@ -48,8 +46,8 @@ theorem existsUnique_ballExitMeasure
         ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
         HasCompactSupport φ →
         (∫ Q, φ Q ∂μ) =
-          ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 φ P.1 := by
-  obtain ⟨ℓ, hℓ, -⟩ := existsUnique_ballBoundaryFunctional hH hLE hd hlam hLam B hB v₀ hR P T
+          ballBoundarySolution hd B hB v₀ hR P.1.time T.1 φ P.1 := by
+  obtain ⟨ℓ, hℓ, -⟩ := existsUnique_ballBoundaryFunctional hd B hB v₀ hR P T
   obtain ⟨ν, hν, -⟩ := existsUnique_boundaryFunctional_measure ℓ hℓ.1
   let : IsFiniteMeasure ν := ⟨hν.1.trans_lt (by simp)⟩
   let μ := ν.map (Subtype.val : localTrace P.1.time T.1 v₀ R → KineticPoint d)
@@ -67,7 +65,7 @@ theorem existsUnique_ballExitMeasure
   have htests : ∀ φ : KineticPoint d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
       HasCompactSupport φ → (∫ Q, φ Q ∂μ) =
-        ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1 φ P.1 := by
+        ballBoundarySolution hd B hB v₀ hR P.1.time T.1 φ P.1 := by
     intro φ hφ hc
     let f : boundaryProbeSubmodule d := ⟨φ ∘ (KineticPoint.equivProd d).symm,
       hφ, hc.comp_homeomorph (KineticPoint.homeomorphProd d).symm⟩
@@ -79,7 +77,7 @@ theorem existsUnique_ballExitMeasure
       (boundary_probe_continuous φ hφ).measurable.aestronglyMeasurable]
     have h := (hν.2 (boundaryProbeCcLinear P.1.time T.1 v₀ R f)).trans (hℓ.2 f)
     change (∫ Q, boundaryProbePhysical f Q.1 ∂ν) =
-      ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1
+      ballBoundarySolution hd B hB v₀ hR P.1.time T.1
         (boundaryProbePhysical f) P.1 at h
     rw [heq] at h
     exact h

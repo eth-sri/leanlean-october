@@ -20,22 +20,24 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem integral_double_sum
-    {d : ℕ} {X : Type*} [MeasurableSpace X] (μ : Measure X)
+section
+variable {d : ℕ} {X : Type*}
+
+private theorem integral_double_sum [MeasurableSpace X] (μ : Measure X)
     (p : Fin d → Fin d → X → ℝ)
     (hp : ∀ i j : Fin d, Integrable (p i j) μ) :
     (∫ x, ∑ i : Fin d, ∑ j : Fin d, p i j x ∂μ) =
       ∑ i : Fin d, ∑ j : Fin d, ∫ x, p i j x ∂μ := by
-  have hpi (i : Fin d) : Integrable (fun x => ∑ j : Fin d, p i j x) μ :=
+  have hpi (i : Fin d) :=
     integrable_finset_sum Finset.univ fun j _ => hp i j
   rw [integral_finset_sum Finset.univ (fun i _ => hpi i)]
   simp_rw [integral_finset_sum Finset.univ (fun j _ => hp _ j)]
 
-private theorem integral_single_sum
-    {d : ℕ} {X : Type*} [MeasurableSpace X] (μ : Measure X)
+private theorem integral_single_sum [MeasurableSpace X] (μ : Measure X)
     (q : Fin d → X → ℝ) (hq : ∀ j : Fin d, Integrable (q j) μ) :
-    (∫ x, ∑ j : Fin d, q j x ∂μ) = ∑ j : Fin d, ∫ x, q j x ∂μ := by
-  exact integral_finset_sum Finset.univ fun j _ => hq j
+    (∫ x, ∑ j : Fin d, q j x ∂μ) = ∑ j : Fin d, ∫ x, q j x ∂μ := integral_finset_sum Finset.univ fun j _ => hq j
+
+end
 
 /-- Fixed-time integration of the literal reverse-time raw slice agrees with the three
 expanded residual scalars. -/
@@ -96,14 +98,6 @@ theorem reverseTime_raw_slice_integral_eq_residual
       integrable_finset_sum Finset.univ fun j _ => hprincipal i j
   have hqSum : Integrable (fun y => ∑ j : Fin d, q j y) (PDE.volumeOn Ω) :=
     integrable_finset_sum Finset.univ fun j _ => hdrift j
-  have hraw : Integrable (fun y =>
-      U (τ, y) * eta.deriv τ * psi y -
-        (∑ i : Fin d, ∑ j : Fin d, p i j y) -
-        (∑ j : Fin d, q j y) +
-        reverseTimeScalarCoefficient r₁ c τ y * U (τ, y) * psi y * eta τ -
-        reverseTimeScalarCoefficient r₁ F τ y * psi y * eta τ)
-      (PDE.volumeOn Ω) :=
-    (((hmass.sub hpSum).sub hqSum).add hscalar).sub hsource
   simp_rw [Finset.sum_mul]
   change (∫ y, ((((fun y => U (τ, y) * eta.deriv τ * psi y) -
       (fun y => ∑ i : Fin d, ∑ j : Fin d, p i j y)) -

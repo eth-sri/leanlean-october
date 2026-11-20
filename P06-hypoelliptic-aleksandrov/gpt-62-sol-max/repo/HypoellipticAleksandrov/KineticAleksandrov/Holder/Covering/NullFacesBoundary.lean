@@ -19,9 +19,7 @@ theorem closure_cylinder_bounds {d : ℕ} (P : KineticPoint d) (r : ℝ) :
     closure (backwardCylinder P r) ⊆ {X | P.time-r^2 ≤ X.time ∧ X.time ≤ P.time ∧
       PDE.vecNormSq (X.velocity-P.velocity) ≤ r^2 ∧
       PDE.vecNormSq (relativePosition P X) ≤ (r^3)^2} := by
-  have hx : Continuous (relativePosition P) :=
-    (continuous_position.sub continuous_const).sub
-      ((continuous_time.sub continuous_const).smul continuous_const)
+  have hx := continuous_relativePosition P
   apply closure_minimal
   · intro X hX
     have hp : PDE.vecNormSq (relativePosition P X) < (r^3)^2 := by

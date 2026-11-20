@@ -22,8 +22,11 @@ def saturationGap {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ)
   (volume (E ∩ backwardCylinder (saturationCenter X r) r)).toReal-
     (1-eta)*(volume (backwardCylinder (saturationCenter X r) r)).toReal
 
+section
+variable {d : ℕ} {E : Set (KineticPoint d)}
+
 /-- The threshold gap is continuous at every positive radius. -/
-theorem continuousAt_saturationGap {d : ℕ} {E : Set (KineticPoint d)}
+theorem continuousAt_saturationGap
     (hE : volume E ≠ ⊤) (eta : ℝ) (X : KineticPoint d) {r : ℝ} (hr : 0 < r) :
     ContinuousAt (saturationGap E eta X) r := by
   have hV : ContinuousAt
@@ -40,7 +43,7 @@ theorem continuousAt_saturationGap {d : ℕ} {E : Set (KineticPoint d)}
     (continuous_saturationCenter X) hE hr).sub (continuousAt_const.mul hV)
 
 /-- Almost every point away from the spatial shell has an admissible critical cylinder. -/
-theorem ae_exists_critical_cylinder {d : ℕ} {E : Set (KineticPoint d)}
+theorem ae_exists_critical_cylinder
     (hE : NullMeasurableSet E volume) (hbounded : Bornology.IsBounded E)
     (hEQ : E ⊆ unitCylinder d) {eta R : ℝ} (heta : 0 < eta)
     (hR : 0 < R) (hR1 : R ≤ 1)
@@ -92,5 +95,7 @@ theorem ae_exists_critical_cylinder {d : ℕ} {E : Set (KineticPoint d)}
     saturationCylinder_subset_unit (hEQ hXE) hrpos hrR.le hR1 hx, ?_⟩
   dsimp [saturationGap] at heq
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

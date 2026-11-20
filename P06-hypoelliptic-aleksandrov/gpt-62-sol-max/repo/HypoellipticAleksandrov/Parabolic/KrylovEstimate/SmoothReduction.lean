@@ -22,7 +22,7 @@ private theorem small_tolerance {η c k : ℝ} (hη : 0 < η) (hc : 0 ≤ c) (hk
 
 /-- Interior smoothing controls the residual norm and corrects the boundary. -/
 theorem exists_smooth_subsolution_close
-    (N : ℕ) (hN : 1 ≤ N) (lam : ℝ) (hlam : 0 < lam)
+    (N : ℕ) (hN : 1 ≤ N) (lam : ℝ)
     (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
     (a : TimeVelocity N → PDE.Mat N) (f u : TimeVelocity N → ℝ)
     (ha : ContinuousOn a (krylovClosedCylinder t₀ h v₀))
@@ -30,8 +30,8 @@ theorem exists_smooth_subsolution_close
       lam • (1 : PDE.Mat N) ≤ a z)
     (hf : MemLp f (parabolicExponent N)
       (volume.restrict (krylovCylinder t₀ h v₀)))
-    (hu : IsScalarC12UpTo u (krylovCylinder t₀ h v₀)
-      (krylovClosedCylinder t₀ h v₀))
+    (hu : IsScalarC12On u (krylovCylinder t₀ h v₀))
+    (huc : ContinuousOn u (krylovClosedCylinder t₀ h v₀))
     (hsub : ∀ᵐ z ∂volume.restrict (krylovCylinder t₀ h v₀), residual a u z ≤ f z)
     (hb : ∀ z ∈ krylovParabolicBoundary t₀ h v₀, u z ≤ 0)
     {ε : ℝ} (hε : 0 < ε) :
@@ -58,14 +58,14 @@ theorem exists_smooth_subsolution_close
   have hL : IsCompact L := isCompact_closedParabolicCylinder h 0
   have hSL : S ⊆ L := parabolicInterior_subset_closedParabolicCylinder h 0
   have hg : ContinuousOn (residual a u) Q :=
-    continuousOn_residual a u (ha.mono hQK) hu.isScalarC12On
+    continuousOn_residual a u (ha.mono hQK) hu
   obtain ⟨hgp, hgnorm⟩ := positive_residual_memLp_norm_le hQ.measurableSet a u f
     (hg.aestronglyMeasurable hQ.measurableSet) hf hsub
   let gp : TimeVelocity N → ℝ := fun z => max (residual a u z) 0
   let η := ε / 4
   have hη : 0 < η := div_pos hε (by norm_num)
   obtain ⟨ρ, hρ, hρ1, hvalue⟩ :=
-    exists_innerMap_value_close t₀ h v₀ hh u hu.continuousOn hη
+    exists_innerMap_value_close t₀ h v₀ hh u huc hη
   let Φ := innerMap t₀ h v₀ ρ
   let V := Φ ⁻¹' Q
   let q := u ∘ Φ
@@ -74,16 +74,16 @@ theorem exists_smooth_subsolution_close
   have hLV : L ⊆ V := innerMap_mapsTo t₀ h v₀ hh hρ hρ1
   have hVK : MapsTo Φ V K := fun z hz => hQK hz
   have hV : IsOpen V := hQ.preimage hΦ
-  obtain ⟨hq, hjet⟩ := scalarC12On_affine_pullback hQ u hu.isScalarC12On
+  obtain ⟨hq, hjet⟩ := scalarC12On_affine_pullback hQ u hu
     (t₀ - h + (1 - ρ ^ 2) * h / 2) v₀ hρ
   have har : ContinuousOn ar L := ha.comp hΦ.continuousOn (fun z hz => hVK (hLV hz))
   obtain ⟨ae, hae, he⟩ := exists_continuous_matrix_extension hL.isClosed ar har
   let A : CoefficientField N := fun t v => ae (t, v)
   let total : TimeVelocity N → ℝ := fun z => ∑ i, ∑ j, |ar z i j|
   have htotal : ContinuousOn total L := by
-    apply continuousOn_finset_sum
+    apply continuousOn_finsetSum
     intro i _
-    apply continuousOn_finset_sum
+    apply continuousOn_finsetSum
     intro j _
     exact (((continuous_apply j).comp_continuousOn
       ((continuous_apply i).comp_continuousOn har)).abs)
@@ -129,6 +129,8 @@ theorem exists_smooth_subsolution_close
     ((measure_mono hSL).trans_lt hL.measure_lt_top) F G
     (continuous_residual ae w₀ hae hw₀).aestronglyMeasurable hG.1
     (fun z _ => hG0 z) (mul_nonneg hδ.le (add_nonneg zero_le_one hM)) hFbound
+  have hval z (hz : z ∈ L) : |w₀ z - u (innerMap t₀ h v₀ 1 z)| ≤ δ + η :=
+    (abs_sub_le _ _ _).trans (add_le_add (hwjet z hz).1 (hvalue z hz))
   have hw : ContDiff ℝ 2 w := hw₀.add contDiff_const
   refine ⟨A, F, w, hae, continuous_residual ae w₀ hae hw₀, hw, ?_, ?_, ?_, ?_, ?_⟩
   · intro z hz
@@ -144,27 +146,15 @@ theorem exists_smooth_subsolution_close
       · exact ⟨⟨by rw [hz.1], by rw [hz.1]; exact hh.le⟩, hz.2⟩
       · exact ⟨hz.1, hz.2.le⟩
     have hbu := hb _ (innerMap_one_boundary t₀ h v₀ hz)
-    have hv := (hwjet z hzL).1
-    have hi := hvalue z hzL
-    have hval : |w₀ z - u (innerMap t₀ h v₀ 1 z)| ≤ δ + η :=
-      (abs_sub_le _ _ _).trans (add_le_add hv hi)
-    have hupper := (le_abs_self _).trans hval
+    have := (le_abs_self _).trans (hval z hzL)
     change w₀ z + (-2 * η) ≤ 0
     linarith
   · intro z hz
-    have hv := (hwjet z hz).1
-    have hi := hvalue z hz
-    have hval : |w₀ z - u (innerMap t₀ h v₀ 1 z)| ≤ δ + η :=
-      (abs_sub_le _ _ _).trans (add_le_add hv hi)
     have heq : w z - u (innerMap t₀ h v₀ 1 z) =
         (w₀ z - u (innerMap t₀ h v₀ 1 z)) + (-2 * η) := by dsimp [w]; ring
     rw [heq]
-    have hneg : |(-2 : ℝ) * η| = 2 * η := by
-      rw [abs_mul, abs_of_pos hη]; norm_num
-    exact (abs_add_le _ _).trans ((add_le_add hval le_rfl).trans (by
-      rw [hneg]
-      dsimp [η] at *
-      linarith))
+    have hneg : |(-2 : ℝ) * η| = 2 * η := by rw [abs_mul, abs_of_pos hη]; norm_num
+    exact (abs_add_le _ _).trans (by rw [hneg]; have hh := hval z hz; dsimp [η] at *; linarith)
   · have hbnd := add_le_add (hG.2.trans hgnorm) hδnorm
     have hηε : η ≤ ε := by change ε / 4 ≤ ε; linarith
     exact hFnorm.trans (hbnd.trans (add_le_add le_rfl hηε))

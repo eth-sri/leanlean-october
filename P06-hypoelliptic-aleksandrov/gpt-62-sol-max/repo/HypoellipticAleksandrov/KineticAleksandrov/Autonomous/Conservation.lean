@@ -17,7 +17,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped Topology ENNReal
 
 /-- The supplied whole-space kernel conserves mass for every ordered query. -/
-theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
+theorem fullspace_mass_one {lam Lam : ℝ}
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (q : EvolutionQuery autonomousWholeDomain (fun _ => 0)) : E.2.master q univ = 1 := by
   let σ := q.1.1
@@ -29,7 +29,7 @@ theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
     ⟨(E.2.mass_le_one q).trans_lt ENNReal.one_lt_top⟩
   obtain ⟨C, _hC0, hcmp⟩ := classical_sub_le_growthBarrier
     (isOpen_of_isAdmissibleEvolutionDomain autonomousWholeDomain_admissible)
-    continuous_const hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
+    continuous_const A.positive (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
   have hbd (N : ℕ) : 1 - (E.2.master q univ).toReal ≤
       ((N : ℝ) + 1)⁻¹ ^ 2 * growthBarrier C τ p := by
     obtain ⟨u, hu, hrep, _huniq⟩ := hE.1 τ (conservationDatum N)

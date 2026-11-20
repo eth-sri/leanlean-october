@@ -26,7 +26,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     (t₀ t₁ t₂ t₃ : ℝ)
     (ht₀₁ : t₀ < t₁) (ht₁₂ : t₁ < t₂) (ht₂₃ : t₂ < t₃)
     (O₀ O₁ : Set (PDE.Vec d))
-    (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
+    (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
@@ -46,47 +46,8 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
         (E : ParabolicWeakDerivativeFamily d M
           (Set.Ioo t₀ t₃ ×ˢ O₀)
           (fun z : TimeVelocity d => F z.1 z.2)),
-        (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀, (a z.1 z.2).IsSymm) →
-        (∀ z ∈ Set.Ioo t₀ t₃ ×ˢ O₀,
-          lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
-            a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)) →
-        (∀ i j, ContDiffOn ℝ (M + 1)
-          (fun z : TimeVelocity d => a z.1 z.2 i j)
-          (Set.Ioo t₀ t₃ ×ˢ O₀)) →
-        (∀ j, ContDiffOn ℝ M
-          (fun z : TimeVelocity d => b z.1 z.2 j)
-          (Set.Ioo t₀ t₃ ×ˢ O₀)) →
-        ContDiffOn ℝ M (fun z : TimeVelocity d => c z.1 z.2)
-          (Set.Ioo t₀ t₃ ×ˢ O₀) →
-        (∀ i j alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤ Ba i j alpha) →
-        (∀ j alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => b x.1 x.2 j) z| ≤ Bb j alpha) →
-        (∀ alpha z, z ∈ Set.Ioo t₀ t₃ ×ˢ O₀ →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => c x.1 x.2) z| ≤ Bc alpha) →
-        ((fun z =>
-          D.representative
-              (ParabolicDerivativeIndex.castLE
-                (by omega : 2 ≤ M + 1)
-                (ParabolicDerivativeIndex.timeOne d)) z +
-            (∑ i, ∑ j, a z.1 z.2 i j *
-              D.representative
-                (ParabolicDerivativeIndex.castLE
-                  (by omega : 2 ≤ M + 1)
-                  (ParabolicDerivativeIndex.velocityTwo j i)) z) +
-            (∑ j, b z.1 z.2 j *
-              D.representative
-                (ParabolicDerivativeIndex.castLE
-                  (by omega : 2 ≤ M + 1)
-                  (ParabolicDerivativeIndex.velocityOne j)) z) +
-            c z.1 z.2 *
-              D.representative
-                (ParabolicDerivativeIndex.castLE
-                  (by omega : 2 ≤ M + 1)
-                  (ParabolicDerivativeIndex.zeroTwo d)) z)
+        PreliftCoefficientBounds (Ioo t₀ t₃ ×ˢ O₀) lam Lam Ba Bb Bc a b c →
+        (D.backwardOperator (by omega) a b c
           =ᵐ[timeVelocityVolumeOn (Set.Ioo t₀ t₃ ×ˢ O₀)]
             fun z => F z.1 z.2) →
         ∃ H : TimeVelocity d → ParabolicDerivativeIndex d M →
@@ -115,19 +76,19 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
   classical
   obtain ⟨C_DQ, δ, hC_DQ, hδ, hmain⟩ :=
     exists_genericPrelift_gradient_spatialDifferenceQuotient_estimate
-      d M hM t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁ hO₁ne
+      d M hM t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁
         hO₁compact hO₁O₀ lam Lam hlam hlamLam Ba Bb Bc hBa hBb hBc
   let C_H : ℝ :=
     (Fintype.card (ParabolicDerivativeIndex d M) : ℝ) * (d : ℝ) ^ 2 * C_DQ
   refine ⟨C_H, mul_nonneg (mul_nonneg (by positivity) (by positivity)) hC_DQ, ?_⟩
-  intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
+  intro a b c F u D E hcoeff hEq
   let V : Set (TimeVelocity d) := Set.Ioo t₁ t₂ ×ˢ O₁
   let Etotal : ℝ := ParabolicWeakDerivativeFamily.squaredL2Norm D +
     ParabolicWeakDerivativeFamily.squaredL2Norm E
   have hEtotal : 0 ≤ Etotal := add_nonneg
     (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D)
     (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E)
-  have hDQ := hmain a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
+  have hDQ := hmain a b c F u D E hcoeff hEq
   have hlocal (beta : ParabolicDerivativeIndex d M) (j : Fin d) :
       ParabolicMemLpOn V 2
         (fun z => D.representative

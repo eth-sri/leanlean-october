@@ -74,15 +74,18 @@ theorem exists_growthConstant {n : ℕ} {Lam Lb : ℝ} {B : FullKineticCoefficie
   · intro ε _ hε1 T p
     exact viscousTransportedOperator_growthBarrier_le hε1 hLam hb T p
 
+section
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+  {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
+  (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
+  (hb : HasEuclideanLipschitzDrift Lb b) {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
+include hΩ hγ lam Lam hlam hB Lb hb hε0 hε1
+
 /-- Proposition 2.1, comparison part.  On the full moving cylinder
 `{a ≤ σ ≤ T, y ∈ closure (γ(σ) + Ω)}` (all `z`), a function that is bounded (above),
 continuous, slice regular and a subsolution of `L_ε` (`0 ≤ ε ≤ 1`) in the interior, and
 nonpositive on the terminal face and the lateral frontier, is nonpositive. -/
-theorem growth_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {a T : ℝ} {u : KineticPoint n → ℝ}
+theorem growth_comparison {a T : ℝ} {u : KineticPoint n → ℝ}
     (hbdd : ∃ M, ∀ p ∈ movingClosedSlab Ω γ a T, u p ≤ M)
     (hcont : ContinuousOn u (movingClosedSlab Ω γ a T))
     (hreg : ∀ p ∈ movingActiveSlab Ω γ a T, IsSliceRegularAt u p)
@@ -102,63 +105,66 @@ theorem growth_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
   · exact hterm p hp h
   · exact hlat p hp h
 
+/-- The same comparison on the past cylinder, by starting the slab at the time of the point. -/
+theorem growth_comparison_past {T : ℝ} {u : KineticPoint n → ℝ}
+    (hbdd : ∃ M, ∀ p ∈ evolutionPastClosedCylinder Ω γ T, u p ≤ M)
+    (hcont : ContinuousOn u (evolutionPastClosedCylinder Ω γ T))
+    (hreg : ∀ p ∈ evolutionPastOpenCylinder Ω γ T, IsSliceRegularAt u p)
+    (hsub : ∀ p ∈ evolutionPastOpenCylinder Ω γ T, 0 ≤ viscousTransportedOperator B b ε u p)
+    (hterm : ∀ p ∈ evolutionTerminalClosure Ω γ T, u p ≤ 0)
+    (hlat : ∀ p ∈ evolutionLateralFrontier Ω γ T, u p ≤ 0) :
+    ∀ p ∈ evolutionPastClosedCylinder Ω γ T, u p ≤ 0 := by
+  obtain ⟨M, hM⟩ := hbdd
+  intro q hq
+  exact growth_comparison hΩ hγ hlam hB hb hε0 hε1
+    ⟨M, fun p hp => hM p ⟨hp.2.1, hp.2.2⟩⟩
+    (hcont.mono fun p hp => ⟨hp.2.1, hp.2.2⟩)
+    (fun p hp => hreg p ⟨hp.2.1, hp.2.2⟩) (fun p hp => hsub p ⟨hp.2.1, hp.2.2⟩)
+    (fun p hp ht => hterm p ⟨ht, ht ▸ hp.2.2⟩) (fun p hp hy => hlat p ⟨hp.2.1, hy⟩)
+    q ⟨le_rfl, hq⟩
+
 /-- Comparison of viscous classical terminal solutions: ordered terminal data give ordered
 solutions on the whole past closed cylinder. -/
-theorem classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {τ : ℝ}
+theorem classical_comparison {τ : ℝ}
     {F₁ F₂ : BoundedBorel (EvolutionAmbientState n)} {u₁ u₂ : KineticPoint n → ℝ}
     (h₁ : IsClassicalViscousTerminalSolution Ω γ B b ε τ F₁ u₁)
     (h₂ : IsClassicalViscousTerminalSolution Ω γ B b ε τ F₂ u₂)
     (hF : ∀ y z, y ∈ closure (movingDomain Ω γ τ) → F₁ (y, z) ≤ F₂ (y, z)) :
     ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, u₁ p ≤ u₂ p := by
   intro p₀ hp₀
-  have hslab : ∀ a, movingClosedSlab Ω γ a τ ⊆ evolutionPastClosedCylinder Ω γ τ :=
-    fun a p hp => ⟨hp.2.1, hp.2.2⟩
-  have hact : ∀ a, movingActiveSlab Ω γ a τ ⊆ evolutionPastOpenCylinder Ω γ τ :=
-    fun a p hp => ⟨hp.2.1, hp.2.2⟩
   obtain ⟨C₁, -, hC₁⟩ := h₁.1
   obtain ⟨C₂, -, hC₂⟩ := h₂.1
-  have hp₀slab : p₀ ∈ movingClosedSlab Ω γ p₀.time τ := ⟨le_rfl, hp₀.1, hp₀.2⟩
-  have hres := growth_comparison (a := p₀.time) (T := τ) (u := fun q => u₁ q - u₂ q) hΩ hγ hlam
-    hB hb hε0 hε1 ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀slab
-  · linarith
+  have hres := growth_comparison_past (T := τ) (u := fun q => u₁ q - u₂ q) hΩ hγ hlam
+    hB hb hε0 hε1 ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀
+  · exact sub_nonpos.mp hres
   · refine ⟨C₁ + C₂, fun p hp => ?_⟩
-    have h1 := hC₁ p (hslab _ hp)
-    have h2 := hC₂ p (hslab _ hp)
+    have h1 := hC₁ p (hp)
+    have h2 := hC₂ p (hp)
     have := le_abs_self (u₁ p)
     have := neg_abs_le (u₂ p)
     linarith
-  · exact (h₁.2.1.mono (hslab _)).sub (h₂.2.1.mono (hslab _))
+  · exact (h₁.2.1).sub (h₂.2.1)
   · intro p hp
-    exact (h₁.isSliceRegularAt hΩ hγ (hact _ hp)).sub (h₂.isSliceRegularAt hΩ hγ (hact _ hp))
+    exact (h₁.isSliceRegularAt hΩ hγ (hp)).sub (h₂.isSliceRegularAt hΩ hγ (hp))
   · intro p hp
-    have hr₁ := h₁.isSliceRegularAt hΩ hγ (hact _ hp)
-    have hr₂ := h₂.isSliceRegularAt hΩ hγ (hact _ hp)
-    rw [viscousTransportedOperator_sub hr₁ hr₂, h₁.2.2.2.1 p (hact _ hp),
-      h₂.2.2.2.1 p (hact _ hp)]
+    have hr₁ := h₁.isSliceRegularAt hΩ hγ (hp)
+    have hr₂ := h₂.isSliceRegularAt hΩ hγ (hp)
+    rw [viscousTransportedOperator_sub hr₁ hr₂, h₁.2.2.2.1 p (hp),
+      h₂.2.2.2.1 p (hp)]
     simp
-  · intro p hp hpT
-    have hterm : p ∈ evolutionTerminalClosure Ω γ τ := ⟨hpT, hpT ▸ hp.2.2⟩
-    have := hF p.position p.velocity hterm.2
-    have e1 := h₁.2.2.2.2.1 p hterm
-    have e2 := h₂.2.2.2.2.1 p hterm
+  · intro p hp
+    have := hF p.position p.velocity hp.2
+    have e1 := h₁.2.2.2.2.1 p hp
+    have e2 := h₂.2.2.2.2.1 p hp
     show u₁ p - u₂ p ≤ 0
     linarith
-  · intro p hp hfr
-    have hlat : p ∈ evolutionLateralFrontier Ω γ τ := ⟨hp.2.1, hfr⟩
+  · intro p hp
     show u₁ p - u₂ p ≤ 0
-    rw [h₁.2.2.2.2.2 p hlat, h₂.2.2.2.2.2 p hlat]
+    rw [h₁.2.2.2.2.2 p hp, h₂.2.2.2.2.2 p hp]
     simp
 
 /-- Uniqueness of viscous classical terminal solutions for equal terminal data. -/
-theorem classical_unique {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
-    {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
-    {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
-    {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) {τ : ℝ}
+theorem classical_unique {τ : ℝ}
     {F : BoundedBorel (EvolutionAmbientState n)} {u₁ u₂ : KineticPoint n → ℝ}
     (h₁ : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u₁)
     (h₂ : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u₂) :
@@ -167,5 +173,7 @@ theorem classical_unique {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
   exact le_antisymm
     (classical_comparison hΩ hγ hlam hB hb hε0 hε1 h₁ h₂ (fun _ _ _ => le_rfl) p hp)
     (classical_comparison hΩ hγ hlam hB hb hε0 hε1 h₂ h₁ (fun _ _ _ => le_rfl) p hp)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

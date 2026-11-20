@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursionUnconditionalSupport
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassQuadratic
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreStartBandVisits
 
 /-! # The quadratic lower bound integrated over actual entrance pieces -/
 
@@ -36,40 +37,41 @@ theorem visitGamma_ae_closedEntrance (P : Point) (c : Clock) (J : Interval) (s T
       (measurableSet_visitBoundary s T (visitEntranceInterval c) J)).mono
         (fun _ hp => frontier_subset_closure hp.2.2.1)
 
-/-- The physical quadratic is integrable against every actual finite entrance piece. -/
-theorem visitQuadratic_integrable_entrance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (n : ℕ) :
-    Integrable (fun p => visitQuadratic c (p.velocity 0))
-      (visitEntrancePiece hH hLE hlam hLam A c J s T P n) := by
-  have hc : Continuous (fun p : Point => visitQuadratic c (p.velocity 0)) :=
-    (visitQuadratic_smooth c).continuous.comp ((continuous_apply 0).comp continuous_velocity)
-  apply Integrable.mono' (integrable_const (9 * c.r ^ 2 / 16)) hc.measurable.aestronglyMeasurable
-  filter_upwards [visitGamma_ae_closedEntrance P c J s T
-    (visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T)
-    (visitUnionExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) s T) n] with p hp
-  rw [Real.norm_eq_abs, abs_of_nonneg]
-  · exact visitQuadratic_le c _
-  · exact (by positivity : 0 ≤ 5 * c.r ^ 2 / 16).trans
-      (visitQuadratic_entrance_lower c hp)
+section
+variable (c : Clock) (mu : Measure Point)
+
+/-- The nonnegative source quadratic is bounded on the closed active interval. -/
+theorem visitQuadratic_integrable_of_active_support
+    [IsFiniteMeasure mu] (hm : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.active) :
+    Integrable (fun p => visitQuadratic c (p.velocity 0)) mu := by
+  refine (integrable_const (9 * c.r ^ 2 / 16)).mono' (((visitQuadratic_smooth c).continuous.comp
+    ((continuous_apply 0).comp continuous_velocity)).measurable.aestronglyMeasurable) ?_
+  filter_upwards [hm] with p hp
+  simpa only [Real.norm_eq_abs, abs_of_nonneg (visitQuadratic_nonneg c hp)] using
+    visitQuadratic_le c (p.velocity 0)
+
+/-- Integrating the lower bound on the closed entrance interval. -/
+theorem visitQuadratic_integral_lower_of_entrance_support
+    [IsFiniteMeasure mu] (hm : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.entrance) :
+    5 * c.r ^ 2 / 16 * (mu univ).toReal ≤ ∫ p, visitQuadratic c (p.velocity 0) ∂mu := by
+  have hi := visitQuadratic_integrable_of_active_support c mu
+    (hm.mono fun _ hp => subset_closure (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.enlargedEntrance_subset_active c hp))
+  simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using
+    integral_mono_ae (integrable_const (5 * c.r ^ 2 / 16)) hi
+      (hm.mono fun _ hp => visitQuadratic_entrance_lower c hp)
+
+end
 
 /-- The exact five-sixteenths lower bound survives integration, with the initial atom included. -/
 theorem visitQuadratic_entrance_integral_lower
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (n : ℕ) :
-    5 * c.r ^ 2 / 16 * (visitEntrancePiece hH hLE hlam hLam A c J s T P n univ).toReal ≤
+    5 * c.r ^ 2 / 16 * (visitEntrancePiece A c J s T P n univ).toReal ≤
       ∫ p, visitQuadratic c (p.velocity 0)
-        ∂visitEntrancePiece hH hLE hlam hLam A c J s T P n := by
-  have hi := visitQuadratic_integrable_entrance hH hLE hlam hLam A c J s T P n
-  have hb := integral_mono_ae (integrable_const (5 * c.r ^ 2 / 16)) hi (by
-    filter_upwards [visitGamma_ae_closedEntrance P c J s T
-      (visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T)
-      (visitUnionExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) s T) n] with p hp
-    exact visitQuadratic_entrance_lower c hp)
-  simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using hb
+        ∂visitEntrancePiece A c J s T P n := 
+  visitQuadratic_integral_lower_of_entrance_support c _
+    (visitGamma_ae_closedEntrance P c J s T _ _ n)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

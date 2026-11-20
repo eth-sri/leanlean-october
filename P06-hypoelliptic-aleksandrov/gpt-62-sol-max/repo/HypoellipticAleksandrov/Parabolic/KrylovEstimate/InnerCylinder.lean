@@ -13,14 +13,17 @@ namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set Filter
 open scoped Topology
 
+section
+variable {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N)
+include t₀ h v₀
+
 /-- Parabolic compression about the time midpoint and velocity centre. -/
-def innerMap {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (ρ : ℝ) :
+def innerMap (ρ : ℝ) :
     TimeVelocity N → TimeVelocity N :=
   parabolicAffine (t₀ - h + (1 - ρ ^ 2) * h / 2) v₀ ρ
 
 /-- Strict compression sends the closed reference cylinder into the open source cylinder. -/
-theorem innerMap_mapsTo
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+theorem innerMap_mapsTo (hh : 0 < h)
     {ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ < 1) :
     Set.MapsTo (innerMap t₀ h v₀ ρ)
       (closedParabolicCylinder h (0 : PDE.Vec N))
@@ -28,7 +31,6 @@ theorem innerMap_mapsTo
   intro z hz
   rcases hz with ⟨hztime, hzvel⟩
   have hr2 : ρ ^ 2 < 1 := by nlinarith
-  have hmargin : 0 < (1 - ρ ^ 2) * h / 2 := by positivity
   change (t₀ - h < t₀ - h + (1 - ρ ^ 2) * h / 2 + ρ ^ 2 * z.1 ∧
     t₀ - h + (1 - ρ ^ 2) * h / 2 + ρ ^ 2 * z.1 < t₀) ∧ _
   constructor
@@ -43,8 +45,7 @@ theorem innerMap_mapsTo
     exact (mul_le_mul_of_nonneg_left hzvel (sq_nonneg ρ)).trans_lt (by simpa using hr2)
 
 /-- At radius one, the forward boundary maps to the original bottom and lateral faces. -/
-theorem innerMap_one_boundary
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) :
+theorem innerMap_one_boundary :
     Set.MapsTo (innerMap t₀ h v₀ 1)
       (forwardParabolicBoundary h (0 : PDE.Vec N))
       (krylovParabolicBoundary t₀ h v₀) := by
@@ -58,7 +59,7 @@ theorem innerMap_one_boundary
     rcases hz with ⟨ht, hv⟩
     change z.1 = 0 at ht
     refine ⟨?_, ?_⟩
-    · simpa only [ht, add_zero] using (Set.mem_singleton (t₀ - h))
+    · simp_all
     · simpa only [PDE.euclideanClosedBall, PDE.euclideanSqDist, Set.mem_setOf_eq,
         add_sub_cancel_left, sub_zero] using hv
   · right
@@ -68,8 +69,7 @@ theorem innerMap_one_boundary
       add_sub_cancel_left, sub_zero] using hv
 
 /-- Compression can approximate the uncompressed values uniformly on the closed cylinder. -/
-theorem exists_innerMap_value_close
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+theorem exists_innerMap_value_close (hh : 0 < h)
     (u : TimeVelocity N → ℝ)
     (hu : ContinuousOn u (krylovClosedCylinder t₀ h v₀))
     {ε : ℝ} (hε : 0 < ε) :
@@ -113,5 +113,7 @@ theorem exists_innerMap_value_close
   dsimp [F] at hdist
   rw [hgeq _ hzρK, hgeq _ hz1K, Real.dist_eq, abs_sub_comm] at hdist
   exact hdist.le
+
+end
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

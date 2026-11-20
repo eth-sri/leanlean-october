@@ -1,6 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripBoundary
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripDuhamel
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripSource
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoundedSourceWeakAssembly
 
 /-! # Literal Green representation of the actual compact-source potential -/
@@ -11,20 +12,26 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+include lam Lam A
+
 /-- A compact physical probe is bounded Borel data on the existing physical point carrier. -/
-def nestedProbeDatum {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+def nestedProbeDatum
     (f : exitProbeSubmodule) : BoundedBorel Point :=
   ⟨exitProbePhysical f, (exitProbePhysical_continuous_compact f).1.measurable, by
     obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
     exact ⟨max M 0, le_max_right _ _, fun p => (hM p).1.trans (le_max_left _ _)⟩⟩
 
 /-- Every valid pole has the same actual Green integral as its compact-source Duhamel value. -/
-theorem nestedSourcePotential_eq_green {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem nestedSourcePotential_eq_green
     (H : Interval) (E : StripEvolution H) (T : ℝ) (f : exitProbeSubmodule)
     (e : StripPole H (T : WithTop ℝ)) :
     nestedSourcePotential H E T f e.1 =
       ∫ p, exitProbePhysical f p ∂stripGreenOfKernel H E.2 T e :=
   stripSourcePotential_eq_green H E.2 T (nestedProbeDatum A f) e
+
+end
 
 /-- The actual compact-source potential is globally Borel before any regularity argument. -/
 theorem nestedSourcePotential_measurable (H : Interval) (E : StripEvolution H) (T : ℝ)
@@ -44,9 +51,12 @@ theorem nestedProbe_integrable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (exitProbePhysical_continuous_compact f).1.measurable.aestronglyMeasurable
   exact Filter.Eventually.of_forall (fun p => by rw [Real.norm_eq_abs]; exact (hM p).1)
 
+section
+variable (H1 H2 : Interval) (hsub : H1.carrier ⊆ H2.carrier)
+include hsub
+
 /-- Smaller-strip interior points lie in the physical closed past of the larger interval. -/
-theorem nested_strip_union_exit_subset_closed (H1 H2 : Interval)
-    (hsub : H1.carrier ⊆ H2.carrier) (sMinus T : ℝ) :
+theorem nested_strip_union_exit_subset_closed (sMinus T : ℝ) :
     reconstructionStrip H1 sMinus T ∪ reconstructionExit H1 sMinus T ⊆
       {p | p.time ≤ T ∧ p.velocity 0 ∈ Icc H2.lo H2.hi} := by
   have hcl : Icc H1.lo H1.hi ⊆ Icc H2.lo H2.hi := by
@@ -65,8 +75,10 @@ theorem nested_strip_union_exit_subset_closed (H1 H2 : Interval)
       · exact ⟨H1.ordered.le, le_rfl⟩
 
 /-- A valid smaller-interval pole is a valid larger-interval pole at the same physical point. -/
-def nestedPoleInclusion (H1 H2 : Interval) (hsub : H1.carrier ⊆ H2.carrier)
+def nestedPoleInclusion
     (T : WithTop ℝ) (e : StripPole H1 T) : StripPole H2 T :=
   ⟨e.1, e.2.1, hsub e.2.2⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

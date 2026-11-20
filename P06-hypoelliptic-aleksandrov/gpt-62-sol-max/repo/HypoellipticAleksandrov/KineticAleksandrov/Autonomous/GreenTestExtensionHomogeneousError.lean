@@ -13,8 +13,7 @@ open SectionTwo TheoremA Evolution
 /-- A bounded homogeneous solution is approximated at its pole by actual compact exit
 integrals, with a proved exponentially vanishing spatial-tail error. -/
 theorem reconstruction_homogeneous_probe_error
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (lower T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : lower < e.1.time) (u : Point → ℝ)
@@ -29,7 +28,7 @@ theorem reconstruction_homogeneous_probe_error
       (∀ p, |exitProbePhysical F p| ≤ M + eps) ∧
       (∀ p ∈ reconstructionClosedSlab H e.1.time T, |p.position 0| ≤ R →
         |exitProbePhysical F p - u p| ≤ eps) ∧
-      |u e.1 - ∫ p, exitProbePhysical F p ∂stripExitOfRealization hH hlam hLam A H E hE T e| ≤
+      |u e.1 - ∫ p, exitProbePhysical F p ∂stripExitOfRealization A H E hE T e| ≤
         eps + (2 * M + eps) * Real.exp (-R) *
           reconstructionSpatialBarrier (max |H.lo| |H.hi| + 1) T (sectionTwoPoint e.1) := by
   have hT := WithTop.coe_lt_coe.mp e.2.1
@@ -43,7 +42,7 @@ theorem reconstruction_homogeneous_probe_error
       |exitProbePhysical F p| ≤ M ∧ |forwardScalarOperator A.a (exitProbePhysical F) p| ≤ M :=
     ⟨C, fun p _ => hC p⟩
   obtain ⟨v, hvform, hvs, hvop, hvc, hvexit⟩ := strip_bounded_source_reconstruction
-    hH hlam hLam A H E hE lower T (exitProbePhysical F) hFr hFc.continuousOn hFs
+    A H E hE lower T (exitProbePhysical F) hFr hFc.continuousOn hFs
   obtain ⟨Mv, _, hvb⟩ := reconstruction_uniform_bound H E A lower T e he
     (exitProbePhysical F) v hFr hFs hvform hvc
   let k := (2 * M + eps) * Real.exp (-R)
@@ -83,20 +82,20 @@ theorem reconstruction_homogeneous_probe_error
       change 2 * M + eps ≤ q (sectionTwoPoint p) at htail
       exact hh.trans ((by linarith : M + (M + eps) ≤ 2 * M + eps).trans
         (htail.trans (le_add_of_nonneg_left heps.le)))
-  have hupper := reconstruction_homogeneous_gap_le_barrier hlam A H lower T e he
+  have hupper := reconstruction_homogeneous_gap_le_barrier A H lower T e he
     u v hu hvs hop hvop hc hvc M Mv hb hvb eps q hqc hqr hqn hqo
     (fun p hp ht => (le_abs_self _).trans (hbd p hp ht))
-  have hlower := reconstruction_homogeneous_gap_le_barrier hlam A H lower T e he
+  have hlower := reconstruction_homogeneous_gap_le_barrier A H lower T e he
     v u hvs hu hvop hop hvc hc Mv M hvb hb eps q hqc hqr hqn hqo
     (fun p hp ht => by
       have hh := hbd p hp ht
       rw [abs_sub_comm] at hh
       exact (le_abs_self _).trans hh)
   have hval : v e.1 = ∫ p, exitProbePhysical F p
-      ∂stripExitOfRealization hH hlam hLam A H E hE T e := by
+      ∂stripExitOfRealization A H E hE T e := by
     have hh := hvform e he
     rw [integral_neg] at hh
-    have hi := stripExitOfRealization_probe_integral hH hlam hLam A H E hE T e F
+    have hi := stripExitOfRealization_probe_integral A H E hE T e F
     unfold exitProbeValue at hi
     linarith
   refine ⟨F, hFb, hclose, ?_⟩

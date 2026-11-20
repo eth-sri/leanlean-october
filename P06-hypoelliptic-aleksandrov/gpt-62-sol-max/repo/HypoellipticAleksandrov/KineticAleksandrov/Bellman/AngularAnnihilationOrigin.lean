@@ -29,9 +29,12 @@ theorem bellmanAngularDensity_zero_at_origin (R β : ℝ) (hR : 1 ≤ R) (hβ : 
   have hf : h 0 / R ≤ f y := (div_le_iff₀ hRp).mpr (by simpa only [mul_comm] using h0y.trans hc)
   exact mul_le_mul_of_nonneg_right hf (Real.rpow_nonneg (by have : 2 < y := hy; linarith) _)
 
+section
+variable (f : ℝ → ℝ) (hf : LocallyIntegrable f volume)
+include hf
+
 /-- The first moment tends to zero at the angular origin. -/
-theorem bellmanAngularFirstMoment_tendsto_zero (f : ℝ → ℝ)
-    (hf : LocallyIntegrable f volume) :
+theorem bellmanAngularFirstMoment_tendsto_zero :
     Tendsto (bellmanAngularFirstMoment f) (𝓝 (0 : ℝ)) (𝓝 0) := by
   have hi : LocallyIntegrable (fun z => z * f z) volume := by
     simpa only [pow_one] using bellman_polynomial_locallyIntegrable f hf 1
@@ -41,12 +44,13 @@ theorem bellmanAngularFirstMoment_tendsto_zero (f : ℝ → ℝ)
 
 /-- The normalized second moment tends to zero at the origin without pointwise regularity of
 f. -/
-theorem bellmanAngularSecondMoment_div_tendsto_zero (f : ℝ → ℝ)
-    (hf : LocallyIntegrable f volume) (hn : ∀ᵐ z ∂volume, 0 ≤ f z) :
+theorem bellmanAngularSecondMoment_div_tendsto_zero (hn : ∀ᵐ z ∂volume, 0 ≤ f z) :
     Tendsto (fun y => bellmanAngularSecondMoment f y / y) (𝓝 (0 : ℝ)) (𝓝 0) := by
   apply squeeze_zero_norm
     (fun y => bellmanAngularSecondMoment_div_norm_le hf hn y)
     (bellmanAngularFirstMoment_tendsto_zero f hf)
+
+end
 
 /-- Nonnegativity on both sides and the integrated identity force the flux at zero to vanish. -/
 theorem bellmanAngularFlux_zero_at_origin (β : ℝ) (f h J : ℝ → ℝ)

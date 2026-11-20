@@ -23,24 +23,30 @@ open scoped ENNReal ProbabilityTheory
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
+section
+variable (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
+include Ω γ
+
 /-- The open starting set `U₀ = {(s,v) : s < T, v ∈ Ω_s}` of the Duhamel potential. -/
-def duhamelFiber (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (T : ℝ) : Set (TimeVelocity d) :=
+def duhamelFiber (T : ℝ) : Set (TimeVelocity d) :=
   {p | p.1 < T ∧ p.2 ∈ movingDomain Ω γ p.1}
 
 /-- The closed region `{(s,v) : s ≤ T, v ∈ closure Ω_s}` carrying the continuous extension. -/
-def duhamelClosedFiber (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (T : ℝ) :
+def duhamelClosedFiber (T : ℝ) :
     Set (TimeVelocity d) :=
   {p | p.1 ≤ T ∧ p.2 ∈ closure (movingDomain Ω γ p.1)}
 
 /-- The open past cylinder at the source time `r`. -/
-def sliceOpenCylinder (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (r : ℝ) :
+def sliceOpenCylinder (r : ℝ) :
     Set (TimeVelocity d) :=
   ParabolicProbe.scalarPastOpenCylinder Ω γ r
 
 /-- The closed past cylinder at the source time `r`. -/
-def sliceClosedCylinder (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (r : ℝ) :
+def sliceClosedCylinder (r : ℝ) :
     Set (TimeVelocity d) :=
   ParabolicProbe.scalarPastClosedCylinder Ω γ r
+
+end
 
 /-- The fiber `U₀` is open when the curve is continuous and the base domain is open. -/
 theorem isOpen_duhamelFiber (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ) :
@@ -60,18 +66,23 @@ theorem duhamelFiber_subset_closedFiber (T : ℝ) :
     duhamelFiber Ω γ T ⊆ duhamelClosedFiber Ω γ T := fun _ hp =>
   ⟨hp.1.le, subset_closure hp.2⟩
 
+section
+variable (g : TimeVelocity d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g) (r : ℝ)
+include g hg hc r
+
 /-- The slice `v ↦ g(r,v)` of a continuous compactly supported source, as a bounded Borel
 function. -/
-def sliceBorel (g : TimeVelocity d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g) (r : ℝ) :
+def sliceBorel :
     BoundedBorel (PDE.Vec d) :=
   ⟨fun v => g (r, v), (hg.comp (continuous_const.prodMk continuous_id)).measurable, by
     obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hc
     refine ⟨max C 0, le_max_right _ _, fun v => ?_⟩
-    simpa only [Real.norm_eq_abs] using (hC (r, v)).trans (le_max_left _ _)⟩
+    exact id (LE.le.trans (hC (r, v)) (le_max_left C 0))⟩
 
-@[simp] theorem sliceBorel_apply (g : TimeVelocity d → ℝ) (hg : Continuous g)
-    (hc : HasCompactSupport g) (r : ℝ) (v : PDE.Vec d) : sliceBorel g hg hc r v = g (r, v) :=
+@[simp] theorem sliceBorel_apply (v : PDE.Vec d) : sliceBorel g hg hc r v = g (r, v) :=
   rfl
+
+end
 
 /-- Slices of a smooth compactly supported source in `U₀` are smooth compact terminal data. -/
 theorem isSmoothCompactScalarTerminalDatum_slice (g : TimeVelocity d → ℝ)

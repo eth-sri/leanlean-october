@@ -11,8 +11,12 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
+section
+variable (d : ℕ) (lam Lam b : ℝ) {T : ℝ} (hT : 0 < T)
+include hT
+
 /-- The dimensional substitution preserves the source barrier height and width. -/
-theorem propagation_barrier_scaling (d : ℕ) (lam Lam b : ℝ) {T : ℝ} (hT : 0 < T) :
+theorem propagation_barrier_scaling :
     barrierL d lam Lam (b / Real.sqrt T) T = barrierL d lam Lam b 1 ∧
       barrierW d lam Lam (b / Real.sqrt T) T = barrierW d lam Lam b 1 := by
   have hs : Real.sqrt T ≠ 0 := (Real.sqrt_pos.mpr hT).ne'
@@ -36,7 +40,7 @@ theorem propagation_barrier_scaling (d : ℕ) (lam Lam b : ℝ) {T : ℝ} (hT : 
   simp only [Real.sqrt_one, mul_one]
 
 /-- Both dimensional tube coefficients equal their normalized counterparts. -/
-theorem propagation_tube_scaling (d : ℕ) (lam Lam b : ℝ) {T : ℝ} (hT : 0 < T) :
+theorem propagation_tube_scaling :
     velocityTubeConstant d lam Lam (b / Real.sqrt T) T =
         velocityTubeConstant d lam Lam b 1 ∧
       positionTubeConstant d lam Lam (b / Real.sqrt T) T =
@@ -63,6 +67,8 @@ theorem propagation_tube_scaling (d : ℕ) (lam Lam b : ℝ) {T : ℝ} (hT : 0 <
         _ = (b / Real.sqrt T * Real.sqrt T) * barrierW d lam Lam b 1 ^ 4 := by ring
         _ = _ := by rw [he]
     rw [hm]
+
+end
 
 /-- The complete source step restriction scales linearly with the terminal time. -/
 theorem propagation_step_scaling (d : ℕ) (lam Lam a b cx cv : ℝ)

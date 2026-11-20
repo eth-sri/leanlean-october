@@ -23,8 +23,6 @@ open scoped MatrixOrder
 /-- Source c:holder-a under the classical inputs used by t:a and its p=6 comparison. -/
 theorem kinetic_holder_autonomous_relative_of_below_four_density
     (hdensity : Autonomous.BelowFourDensityStatement)
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ alpha C : ℝ, 0 < alpha ∧ alpha ≤ 1 ∧
       ∀ a : ℝ → ℝ → ℝ,
@@ -42,7 +40,7 @@ theorem kinetic_holder_autonomous_relative_of_below_four_density
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
           (quasiDistance P P' / R₀) ^ alpha := by
   obtain ⟨C_A, hadm⟩ := autonomous_admissibility_of_below_four_density
-    hdensity hH hLE lam Lam hlam hLam
+    hdensity lam Lam hlam hLam
   obtain ⟨alpha, C, ha, ha1, hholder⟩ := kinetic_holder_of_aleksandrov_aux
     1 (by norm_num) lam Lam 6 C_A hlam hLam (by norm_num)
   refine ⟨alpha, C, ha, ha1, ?_⟩

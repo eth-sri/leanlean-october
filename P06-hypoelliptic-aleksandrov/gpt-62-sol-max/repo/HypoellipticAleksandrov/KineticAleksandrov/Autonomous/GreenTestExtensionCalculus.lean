@@ -16,7 +16,7 @@ theorem reconstruction_position_cutoff_fderiv (chi : ℝ → ℝ)
     (hchi : Differentiable ℝ chi) (x w : EvolutionVec 1) :
     fderiv ℝ (fun y => chi (transportedCoord 1 y 0)) x w =
       deriv chi (transportedCoord 1 x 0) * transportedCoord 1 w 0 := by
-  let c : EvolutionVec 1 →L[ℝ] ℝ :=
+  let c :=
     (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin 1 => ℝ) 0).comp (transportedCoord 1)
   have hc := (hchi (c x)).hasDerivAt.comp_hasFDerivAt x c.hasFDerivAt
   have hh := congrArg (fun L : EvolutionVec 1 →L[ℝ] ℝ => L w) hc.fderiv

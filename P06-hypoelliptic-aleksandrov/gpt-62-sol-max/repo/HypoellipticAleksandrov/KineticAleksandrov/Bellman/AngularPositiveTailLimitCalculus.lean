@@ -60,7 +60,6 @@ theorem bellmanAngularPositiveTail_limit (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 �
   have hc : 0 ≤ (β - 2) / 3 := by linarith
   have hd : 0 ≤ (β - 3) / 3 := by linarith
   have hp := mul_nonneg (mul_nonneg hc hy.le) (sub_nonneg.mpr hIy)
-  have hq := mul_nonneg hd hMy
   nlinarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

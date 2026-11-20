@@ -1,9 +1,15 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceLocalization
+public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.WholeSpaceLocalization
+public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceComparison
+public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceGeometry
+public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovGeometry
+public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.PotentialWhole
+public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceAbsorption
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationDensity
-public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovBound
+public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.LocalizedBound
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativesSmooth
 
 /-! # The whole-space occupation source bound -/
 
@@ -16,7 +22,6 @@ variable {d : ℕ}
 
 /-- The uniform whole-space source estimate and its ball comparison. -/
 theorem occupation_whole_space_bound
-    (hH : HormanderHypoellipticityStatement)
     (hd : 0 < d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (B : CoefficientField d) (_hB : IsSectionTwoCoefficient lam Lam B)
@@ -53,7 +58,7 @@ theorem occupation_whole_space_bound
   dsimp only
   let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
   let H := sSup (W '' (Icc (0 : ℝ) 1 ×ˢ univ))
-  have hloc := wholeSpace_localization_direct hH hd hB K hP F hF0 hFs hFc hFsupp
+  have hloc := wholeSpace_localization_direct hd hB K hP F hF0 hFs hFc hFsupp
   refine ⟨?_, ?_⟩
   · intro α hα0 hα1 vStar R' hR' hRsq'
     simpa only [occupationQuadratic] using hloc α hα0 hα1 vStar R' hR' hRsq'
@@ -65,7 +70,7 @@ theorem occupation_whole_space_bound
       · have hzero : W q = 0 := by
           exact parabolicDuhamelPotential_eq_zero_of_terminal_le K MeasurableSet.univ
             1 F q ht.ge
-        have hpot := occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
+        have hpot := occupation_potential hB K hP F hF0 hFs hFc hFsupp
         have hH0 : 0 ≤ H := (hpot.1 (0, 0)).trans
           (le_csSup hpot.2.1 ⟨(0, 0), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩, rfl⟩)
         rw [hzero]
@@ -79,10 +84,10 @@ theorem occupation_whole_space_bound
         have hqc : q ∈ scalarParabolicClosedCylinder q.1 1
             (PDE.euclideanBall q.2 R) := ⟨⟨le_rfl, hq.1.2⟩, hqball⟩
         have hc := hcmp q hqc
-        have hv := (hbound B hB.2.2.2.1 (sectionTwoCoefficient_smooth hB)
+        have hv := (hbound B hB.2.2.2.1 (_root_.HypoellipticAleksandrov.KineticAleksandrov.LocalA.sectionTwo_coefficient_smooth hB)
           hB.2.2.2.2.1 hB.2.2.2.2.2 F hF0 hFs hFc hFsupp q.1 hq.1.1 htlt
           q.2 R hR hRsq V hV q hqc).2
-        have hpot := occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
+        have hpot := occupation_potential hB K hP F hF0 hFs hFc hFsupp
         have hH0 : 0 ≤ H := (hpot.1 (0, 0)).trans
           (le_csSup hpot.2.1 ⟨(0, 0), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩, rfl⟩)
         have hh := mul_le_mul_of_nonneg_left hhalf hH0

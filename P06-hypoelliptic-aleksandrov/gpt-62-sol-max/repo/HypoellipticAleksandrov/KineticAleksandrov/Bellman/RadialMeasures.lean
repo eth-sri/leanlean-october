@@ -12,17 +12,21 @@ noncomputable section
 open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable {lam Lam : ℝ} (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam))
+include lam Lam w
+
 /-- Positive radial dilation of a unit-gauge point stays away from the origin. -/
-theorem sphereRadialPoint_ne_zero {lam Lam : ℝ}
-    (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam)) :
+theorem sphereRadialPoint_ne_zero :
     bellmanPlaneDilation w.1.val w.2.1.val ≠ (0, 0) :=
   bellmanPlaneDilation_ne_zero w.1.val w.1.property w.2.1.val w.2.1.ne_zero
 
 /-- The radial projection uses the source's anisotropic dilation. -/
-def sphereRadialPoint {lam Lam : ℝ}
-    (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam)) :
+def sphereRadialPoint :
     BellmanPuncturedPlane :=
   ⟨bellmanPlaneDilation w.1.val w.2.1.val, sphereRadialPoint_ne_zero w⟩
+
+end
 
 /-- The radial weight has exponent one minus the homogeneous function degree. -/
 def bellmanRadiusWeight (alpha : ℝ) : BellmanPositiveTime → ENNReal :=
@@ -32,18 +36,22 @@ def bellmanRadiusWeight (alpha : ℝ) : BellmanPositiveTime → ENNReal :=
 def bellmanRadiusMeasure (alpha : ℝ) : Measure BellmanPositiveTime :=
   bellmanPositiveTimeVolume.withDensity (bellmanRadiusWeight alpha)
 
+section
+variable {lam Lam : ℝ} (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+include lam Lam alpha pi
+
 /-- The first radial adjoint measure is the actual radial pushforward. -/
-def radialMu {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) :
+def radialMu :
     Measure BellmanPuncturedPlane :=
   Measure.map sphereRadialPoint ((bellmanRadiusMeasure alpha).prod pi)
 
 /-- The second radial adjoint measure includes the actual diffusion coefficient density. -/
-def radialEta {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) :
+def radialEta :
     Measure BellmanPuncturedPlane :=
   Measure.map sphereRadialPoint (((bellmanRadiusMeasure alpha).prod pi).withDensity
     (fun w => ENNReal.ofReal w.2.2.val))
+
+end
 
 /-- The radial projection is continuous on its actual product carrier. -/
 theorem continuous_sphereRadialPoint (lam Lam : ℝ) :

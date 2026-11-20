@@ -11,8 +11,11 @@ noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+
 /-- The radial integrand has compact support for every fixed punctured spatial point. -/
-theorem bellman_lift_integrand_compactSupport (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_integrand_compactSupport
     (hc : HasCompactSupport zeta) (hs : tsupport zeta ⊆ bellmanPuncturedSet)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
     HasCompactSupport (fun r : BellmanPositiveTime => r.val ^ (-1 - alpha) *
@@ -30,7 +33,7 @@ theorem bellman_lift_integrand_compactSupport (alpha : ℝ) (zeta : (ℝ × ℝ)
   · exact hK.isClosed
 
 /-- Compact radial support and continuity prove absolute integrability of the lift integrand. -/
-theorem bellman_lift_integrand_integrable (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_integrand_integrable
     (hz : Continuous zeta) (hc : HasCompactSupport zeta)
     (hs : tsupport zeta ⊆ bellmanPuncturedSet)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
@@ -45,5 +48,7 @@ theorem bellman_lift_integrand_integrable (alpha : ℝ) (zeta : (ℝ × ℝ) →
     (fun r : BellmanPositiveTime => Or.inl r.property.ne')).mul (hz.comp hd)
   exact hcont.integrable_of_hasCompactSupport
     (bellman_lift_integrand_compactSupport alpha zeta hc hs q hq)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

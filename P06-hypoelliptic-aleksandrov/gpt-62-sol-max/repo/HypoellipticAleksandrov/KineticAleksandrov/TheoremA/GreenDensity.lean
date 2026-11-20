@@ -39,12 +39,15 @@ def kineticStartState (d : ℕ) (P : KineticPoint d) :
     rw [evolutionStateSet, movingDomain_wholeSpace]
     exact ⟨mem_univ _, mem_univ _⟩⟩
 
+section
+variable {d : ℕ}
+
 /-- The remaining time `S_P = s₀ + R² - s` of a point `P = (s,X,v)` in a forward cylinder
 with bottom time `s₀ = Z₀.time`. -/
-def remainingTime {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) : ℝ := Z₀.time + R ^ 2 - P.time
+def remainingTime (Z₀ P : KineticPoint d) (R : ℝ) : ℝ := Z₀.time + R ^ 2 - P.time
 
 /-- Forward cylinders are open, hence measurable. -/
-theorem measurableSet_forwardCylinder' {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem measurableSet_forwardCylinder' (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     MeasurableSet (forwardCylinder Z₀ R hR) := by
   have ht : Continuous (@KineticPoint.time d) := continuous_time
   have hv : Continuous (@KineticPoint.velocity d) := continuous_velocity
@@ -57,7 +60,7 @@ theorem measurableSet_forwardCylinder' {d : ℕ} (Z₀ : KineticPoint d) (R : �
 
 /-- Exponent algebra: with `q = p/(p-1)` and `p > 2d+1`, `S^{δ_q/q} ≤ (R²)^{δ_q/q} = R^{2-(4d+2)/p}`
 for `0 ≤ S ≤ R²`. -/
-theorem greenDelta_rpow_le {d : ℕ} {p S R : ℝ} (hp : 2 * (d : ℝ) + 1 < p) (hS : 0 ≤ S)
+theorem greenDelta_rpow_le {p S R : ℝ} (hp : 2 * (d : ℝ) + 1 < p) (hS : 0 ≤ S)
     (hSR : S ≤ R ^ 2) (hR : 0 < R) :
     S ^ ((1 - 2 * (d : ℝ) * (p / (p - 1) - 1)) / (p / (p - 1))) ≤
       R ^ (2 - (4 * (d : ℝ) + 2) / p) := by
@@ -81,7 +84,7 @@ theorem greenDelta_rpow_le {d : ℕ} {p S R : ℝ} (hp : 2 * (d : ℝ) + 1 < p) 
 is the conclusion of Lemma 5.1 for all case-W coefficients and realizing `(S,K)`, with
 structural constants `C_γ, c` fixed first; `C = greenConstant d (p/(p-1)) C_γ` depends only on
 `d, λ, Λ, p`. -/
-theorem green_density_bound_of_slabFourierBounds {d : ℕ} (hd : 1 ≤ d) (lam Lam p : ℝ)
+theorem green_density_bound_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp : 2 * (d : ℝ) + 1 < p)
     (hbounds : ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
@@ -117,9 +120,7 @@ theorem green_density_bound_of_slabFourierBounds {d : ℕ} (hd : 1 ≤ d) (lam L
             ((1 - 2 * (d : ℝ) * (p / (p - 1) - 1)) / (p / (p - 1))) ≤
           C * R ^ (2 - (4 * (d : ℝ) + 2) / p) := by
   obtain ⟨Cγ, c, hb⟩ := hbounds
-  have hd0 : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hp1 : 0 < p - 1 := by linarith
-  have hp0 : 0 < p := by linarith
   have hq : 1 < p / (p - 1) := by
     rw [lt_div_iff₀ hp1]
     linarith
@@ -154,5 +155,7 @@ theorem green_density_bound_of_slabFourierBounds {d : ℕ} (hd : 1 ≤ d) (lam L
     rfl
   · exact mul_le_mul_of_nonneg_left
       (greenDelta_rpow_le hp hSP.le hSR.le hR) (NNReal.coe_nonneg _)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

@@ -23,31 +23,31 @@ open scoped ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 theorem stationarySourceCurve_isVariationalEnergySolution {d : ℕ}
     {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (A : CoefficientField d)
+    (b : ℝ → PDE.Vec d → PDE.Vec d)
+    (hb : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2))
     (hA : IsSmoothCoefficient A) (F : TimeVelocity d → ℝ)
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (q : PDE.H10Function Ω)
     (hq : ContDiff ℝ 2 q.toH1Function.toFun)
     (heq : ∀ z ∈ Icc a T ×ˢ Ω,
-      scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
+      scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
         (fun z => q.toH1Function.toFun z.2) z = F z) :
     IsReverseTimeVariationalEnergySolution a T haT hΩ hΩb A
-      (fun _ _ => 0) (fun _ _ => 0) (fun t y => F (t, y))
-      ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩
+      b (fun _ _ => 0) (fun t y => F (t, y))
+      hF.onNeighborhood
       (valueCLM hΩ (h10HilbertGraphOfH10Function hΩ q))
       (stationarySourceCurve hΩ (T - a) (h10HilbertGraphOfH10Function hΩ q)) 0
       (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT)
         (h10HilbertGraphOfH10Function hΩ q)) := by
   let Q := h10HilbertGraphOfH10Function hΩ q
-  let hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hA.contDiffOn⟩
-  let hbs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : PDE.Vec d))
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+  let hAs : IsSmoothOnClosedCylinder a T Ω A :=
+    hA.onNeighborhood
+  let hbs : IsSmoothOnClosedCylinder a T Ω b :=
+    hb.onNeighborhood
   let hcs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : ℝ))
       (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+    (ContDiff.onNeighborhood contDiff_const)
   let hFs : IsSmoothOnNeighborhood F (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩
+    hF.onNeighborhood
   constructor
   · change reverseTimeHilbertRepresentative hΩ (T - a) (sub_pos.mpr haT)
       (stationarySourceCurve hΩ (T - a) Q) 0
@@ -60,14 +60,14 @@ theorem stationarySourceCurve_isVariationalEnergySolution {d : ℕ}
       with τ hqτ hgτ
     intro hτ v
     rw [hqτ, hgτ]
-    change 0 + reverseTimeSpatialForm hΩ T τ A (fun _ _ => 0) (fun _ _ => 0) Q v = _
+    change 0 + reverseTimeSpatialForm hΩ T τ A b (fun _ _ => 0) Q v = _
     rw [zero_add]
     have hτc : τ ∈ Icc 0 (T - a) := ⟨hτ.1.le, hτ.2.le⟩
     let fτ := reverseTimeSourceSlice T τ (fun t y => F (t, y))
       (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood a T hΩ hΩb
         (fun t y => F (t, y)) hFs τ hτc)
     let L := reverseTimeSpatialFormOperator a T haT hΩ hΩb A
-      (fun _ _ => 0) (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q
+      b (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q
     let R := reverseTimeSourceFunctional hΩ fτ
     have hLR : L = R := by
       apply ContinuousLinearMap.coeFn_injective
@@ -81,12 +81,13 @@ theorem stationarySourceCurve_isVariationalEnergySolution {d : ℕ}
         intro i j
         exact contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
           a T (T - τ) A hAs (by constructor <;> linarith [hτ.1, hτ.2]) i j
-      rw [show L _ = reverseTimeSpatialForm hΩ T τ A (fun _ _ => 0)
+      rw [show L _ = reverseTimeSpatialForm hΩ T τ A b
         (fun _ _ => 0) Q _ from reverseTimeSpatialFormOperator_apply
-          a T haT hΩ hΩb A (fun _ _ => 0) (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q _,
+          a T haT hΩ hΩb A b (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q _,
         reverseTimeSpatialForm_stationary_barrier_weakIdentity hΩ T τ A
-          (fun _ _ => 0) (fun _ _ => 0) q hq ha
-          (fun _ => continuousOn_const) continuousOn_const ψ]
+          b (fun _ _ => 0) q hq ha
+          (continuousOn_vectorEntry_spatialSlice_of_smoothOnNeighborhood
+            a T (T - τ) b hbs (by constructor <;> linarith [hτ.1, hτ.2])) continuousOn_const ψ]
       change _ = reverseTimeSourceFunctional hΩ fτ _
       rw [reverseTimeSourceFunctional_apply, L2.inner_def, ← integral_neg]
       apply integral_congr_ae
@@ -100,7 +101,7 @@ theorem stationarySourceCurve_isVariationalEnergySolution {d : ℕ}
       simp only [RCLike.inner_apply, conj_trivial]
       ring
     rw [← reverseTimeSpatialFormOperator_apply a T haT hΩ hΩb A
-      (fun _ _ => 0) (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q v]
+      b (fun _ _ => 0) hAs hbs hcs ⟨τ, hτc⟩ Q v]
     exact congrArg (fun D : H10HilbertGraphDual hΩ => D v) hLR
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

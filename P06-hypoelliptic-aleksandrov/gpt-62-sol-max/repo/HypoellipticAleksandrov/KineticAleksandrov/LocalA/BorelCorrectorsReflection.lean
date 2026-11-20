@@ -13,8 +13,6 @@ open scoped Topology Matrix.Norms.Elementwise
 
 /-- Reflection gives actual backward correctors on every compact interior set. -/
 theorem exists_backward_homogeneous_correctors
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField d) (hA : IsBorelCoefficient A)
     (hs : IsSymmetricCoefficient A) (hlo : HasLowerEllipticityAE lam A)
@@ -40,7 +38,7 @@ theorem exists_backward_homogeneous_correctors
     rw [← hi] at hP
     rcases hP with ⟨Q, hQ, rfl⟩
     simpa only [kineticReflection_involutive Q] using hQ
-  have hreg := comparison_regular_mono (isKineticC112On_kineticReflection u _ hu) hmap
+  have hreg := _root_.HypoellipticAleksandrov.Parabolic.IsKineticC112On.mono (isKineticC112On_kineticReflection u _ hu) hmap
   have hμ := (measurePreserving_kineticReflection d).quasiMeasurePreserving.restrict hmap
   have he' : ∀ᵐ P ∂volume.restrict D,
       forwardKineticOperator (ofTimeVelocityCoefficient (kineticReflectedCoefficient A))
@@ -52,7 +50,7 @@ theorem exists_backward_homogeneous_correctors
     rw [← kineticReflection_image_backwardCylinder P₀ R hR]
     exact image_mono hLD
   obtain ⟨B, W, V, hV, hKV, _, hB, hW, heW, ht⟩ :=
-    exists_borel_homogeneous_correctors hH hLE hd lam Lam hlam hLam
+    exists_borel_homogeneous_correctors hd lam Lam hlam hLam
       (kineticReflectedCoefficient A) (isBorelCoefficient_kineticReflectedCoefficient A hA)
       (isSymmetricCoefficient_kineticReflectedCoefficient A hs)
       (ellipticityAE_kineticReflectedCoefficient A lam Lam hlo hhi).1

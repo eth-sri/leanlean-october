@@ -39,33 +39,42 @@ variable {d : ℕ}
 
 /-! ## Local measure and pairing lemmas -/
 
+section
+variable {U V : Set (Vec d)} (hV : MeasurableSet V) (hVU : V ⊆ U)
+include hV hVU
+
 /-- Restricting restricted volume to a measurable subset of its domain. -/
-private theorem restrict_restrict_of_subset {U V : Set (Vec d)}
-    (hV : MeasurableSet V) (hVU : V ⊆ U) :
+private theorem restrict_restrict_of_subset :
     (volume.restrict U).restrict V = volume.restrict V := by
   rw [Measure.restrict_restrict hV, Set.inter_eq_self_of_subset_left hVU]
 
 /-- Zero extension from a measurable subdomain preserves scalar `L²` membership. -/
-theorem memL2On_indicator_of_subset {U V : Set (Vec d)}
-    (hV : MeasurableSet V) (hVU : V ⊆ U)
+theorem memL2On_indicator_of_subset
     {u : Vec d → ℝ} (hu : MemL2On V u) :
     MemL2On U (Set.indicator V u) := by
   refine (memLp_indicator_iff_restrict hV).2 ?_
   rw [restrict_restrict_of_subset hV hVU]
   exact hu
 
-private theorem indicator_coord (V : Set (Vec d)) (f : Vec d → Vec d) (i : Fin d) :
+end
+
+section
+variable (V : Set (Vec d))
+
+private theorem indicator_coord (f : Vec d → Vec d) (i : Fin d) :
     (fun x => Set.indicator V f x i) = Set.indicator V (fun x => f x i) := by
   funext x
   by_cases hx : x ∈ V
   · simp [Set.indicator_of_mem hx]
   · simp [Set.indicator_of_notMem hx]
 
-private theorem indicator_mul_right (V : Set (Vec d)) (f g : Vec d → ℝ) (x : Vec d) :
+private theorem indicator_mul_right (f g : Vec d → ℝ) (x : Vec d) :
     Set.indicator V f x * g x = Set.indicator V (fun y => f y * g y) x := by
   by_cases hx : x ∈ V
   · simp [Set.indicator_of_mem hx]
   · simp [Set.indicator_of_notMem hx]
+
+end
 
 private theorem tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto
     {V : Set (Vec d)} {g f : Vec d → ℝ} {F : ℕ → Vec d → ℝ}
@@ -122,17 +131,21 @@ private theorem tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto
   exact tendsto_integral_of_L1' (μ := μ)
     (fun x => f x * g x) (Eventually.of_forall hFn_int) hL1'
 
-private theorem approx_eq_zero_off {V : Set (Vec d)} (u : H10Function V) (n : ℕ)
-    {x : Vec d} (hx : x ∉ V) : u.approx n x = 0 :=
+section
+variable {V : Set (Vec d)} (u : H10Function V) (n : ℕ) {x : Vec d} (hx : x ∉ V)
+include hx
+
+private theorem approx_eq_zero_off : u.approx n x = 0 :=
   image_eq_zero_of_notMem_tsupport (fun hmem => hx (u.approx_support_subset n hmem))
 
-private theorem approx_fderiv_eq_zero_off {V : Set (Vec d)} (u : H10Function V) (n : ℕ)
-    {x : Vec d} (hx : x ∉ V) (i : Fin d) :
+private theorem approx_fderiv_eq_zero_off (i : Fin d) :
     (fderiv ℝ (u.approx n) x) (basisVec i) = 0 := by
   have hx' : x ∉ tsupport (fderiv ℝ (u.approx n)) := fun hmem =>
     hx (u.approx_support_subset n (tsupport_fderiv_subset ℝ hmem))
   rw [image_eq_zero_of_notMem_tsupport hx']
   rfl
+
+end
 
 private theorem setIntegral_eq_of_zero_off {U V : Set (Vec d)} (hVU : V ⊆ U)
     {h : Vec d → ℝ} (hzero : ∀ x, x ∉ V → h x = 0) :
@@ -252,19 +265,22 @@ noncomputable def zeroExtendToH1 {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpe
               · simp [Set.indicator_of_mem hx]
               · simp [Set.indicator_of_notMem hx]
 
+section
+variable {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V) (hVU : V ⊆ U) (u : H10Function V)
+
 @[simp]
-theorem zeroExtendToH1_toFun {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) :
+theorem zeroExtendToH1_toFun :
     (u.zeroExtendToH1 hU hV hVU).toFun =
       Set.indicator V u.toH1Function.toFun :=
   rfl
 
 @[simp]
-theorem zeroExtendToH1_grad {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) :
+theorem zeroExtendToH1_grad :
     (u.zeroExtendToH1 hU hV hVU).grad =
       Set.indicator V u.toH1Function.grad :=
   rfl
+
+end
 
 /-- Extend an `H¹₀(V)` function by literal zero to the larger open domain `U`.
 The original smooth compactly supported approximants remain valid, because
@@ -321,19 +337,22 @@ noncomputable def zeroExtend {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
     rw [hfun]
     exact u.tendsto_approx_grad i
 
+section
+variable {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V) (hVU : V ⊆ U) (u : H10Function V)
+
 @[simp]
-theorem zeroExtend_toFun {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) :
+theorem zeroExtend_toFun :
     (u.zeroExtend hU hV hVU).toH1Function.toFun =
       Set.indicator V u.toH1Function.toFun :=
   rfl
 
 @[simp]
-theorem zeroExtend_grad {U V : Set (Vec d)} (hU : IsOpen U) (hV : IsOpen V)
-    (hVU : V ⊆ U) (u : H10Function V) :
+theorem zeroExtend_grad :
     (u.zeroExtend hU hV hVU).toH1Function.grad =
       Set.indicator V u.toH1Function.grad :=
   rfl
+
+end
 
 end H10Function
 

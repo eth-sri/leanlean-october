@@ -75,18 +75,17 @@ theorem UIr_connection_decomposition (c : Pos) (hc1 : c.1 < 1 / 3)
     integral_gammaKernel (1 / 3 : ℝ) z (by norm_num) hz]
   rfl
 
+section
+variable (a : NegThird)
+
 /-- The finite-part constant in the negative-parameter Gamma normalization. -/
-theorem integral_connectionKernel_gamma (a : NegThird) :
+theorem integral_connectionKernel_gamma :
     (∫ t in Ioi (0 : ℝ), connectionKernel (a.1 + 1 / 3) t) =
       Real.Gamma (a.1 + 1 / 3) * Real.Gamma (-(1 / 3 : ℝ)) / Real.Gamma a.1 := by
   have hc : 0 < a.1 + 1 / 3 := by linarith [a.2.1]
   have hc1 : a.1 + 1 / 3 < 1 / 3 := by linarith [a.2.2]
   rw [integral_connectionKernel_beta _ hc hc1]
   have ha : a.1 ≠ 0 := ne_of_lt a.2.2
-  have hga : Real.Gamma a.1 ≠ 0 := by
-    have hg := Real.Gamma_pos_of_pos (show 0 < a.1 + 1 by linarith [a.2.1])
-    rw [Real.Gamma_add_one ha] at hg
-    exact right_ne_zero_of_mul (ne_of_gt hg)
   have hg := Real.Gamma_add_one (by norm_num : -(1 / 3 : ℝ) ≠ 0)
   rw [show -(1 / 3 : ℝ) + 1 = 2 / 3 by ring] at hg
   rw [show a.1 + 1 / 3 + 2 / 3 = a.1 + 1 by ring, Real.Gamma_add_one ha, hg]
@@ -94,7 +93,7 @@ theorem integral_connectionKernel_gamma (a : NegThird) :
   ring
 
 /-- Exact finite-part decomposition of the negative-parameter U solution. -/
-theorem UNr_connection_decomposition (a : NegThird) (z : ℝ) (hz : 0 < z) :
+theorem UNr_connection_decomposition (z : ℝ) (hz : 0 < z) :
     UNr a z = Real.Gamma (1 / 3) / Real.Gamma (a.1 + 1 / 3) +
       z ^ (1 / 3 : ℝ) * (Real.Gamma (a.1 + 1 / 3))⁻¹ *
         connectionIntegral (a.1 + 1 / 3) z := by
@@ -109,7 +108,7 @@ theorem UNr_connection_decomposition (a : NegThird) (z : ℝ) (hz : 0 < z) :
     _ = _ := by rw [he]; ring
 
 /-- The limiting constant of the negative-parameter solution at zero. -/
-theorem tendsto_UNr_zero (a : NegThird) :
+theorem tendsto_UNr_zero :
     Tendsto (UNr a) (𝓝[>] 0)
       (𝓝 (Real.Gamma (1 / 3) / Real.Gamma (a.1 + 1 / 3))) := by
   have hc : 0 < a.1 + 1 / 3 := by linarith [a.2.1]
@@ -127,7 +126,7 @@ theorem tendsto_UNr_zero (a : NegThird) :
   exact (UNr_connection_decomposition a z hz).symm
 
 /-- The coefficient of the fractional term at the singular endpoint. -/
-theorem tendsto_UNr_finitePart_zero (a : NegThird) :
+theorem tendsto_UNr_finitePart_zero :
     Tendsto (fun z : ℝ =>
       (UNr a z - Real.Gamma (1 / 3) / Real.Gamma (a.1 + 1 / 3)) /
         z ^ (1 / 3 : ℝ)) (𝓝[>] 0)
@@ -148,5 +147,7 @@ theorem tendsto_UNr_finitePart_zero (a : NegThird) :
   have hp := ne_of_gt (Real.rpow_pos_of_pos hz (1 / 3 : ℝ))
   field_simp [hp]
   ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

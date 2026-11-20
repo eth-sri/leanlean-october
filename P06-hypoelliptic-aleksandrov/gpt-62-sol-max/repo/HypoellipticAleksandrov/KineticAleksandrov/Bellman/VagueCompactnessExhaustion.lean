@@ -31,7 +31,7 @@ theorem bellman_compact_test_integral (K : Set X) (hK : IsCompact K)
   rw [integral_subtype_comap hK.measurableSet]
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
   intro x hx
-  exact image_eq_zero_of_notMem_tsupport (fun h => hx (hf h))
+  exact image_eq_zero_of_notMem_tsupport fun h => hx (hf h)
 
 /-- Countably many locally bounded Radon sequences have one simultaneous vague subsequence. -/
 theorem bellman_radon_family_subsequence {iota : Type*} [Countable iota]

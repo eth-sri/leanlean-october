@@ -33,8 +33,11 @@ def parabolicLinear {d : ℕ} (r : ℝ) :
     parabolicLinear r z = (r ^ 2 * z.1, r • z.2) :=
   rfl
 
+section
+variable {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ)
+
 /-- The affine parabolic map has its constant linear part as Fréchet derivative. -/
-theorem hasFDerivAt_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ)
+theorem hasFDerivAt_parabolicAffine
     (z : TimeVelocity d) :
     HasFDerivAt (parabolicAffine t₀ v₀ r) (parabolicLinear r) z := by
   change HasFDerivAt (fun z : TimeVelocity d ↦
@@ -47,84 +50,89 @@ theorem hasFDerivAt_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (r
   ext <;> simp [parabolicLinear]
 
 /-- Parabolic affine scaling is globally smooth. -/
-theorem contDiff_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) :
+theorem contDiff_parabolicAffine :
     ContDiff ℝ 2 (parabolicAffine t₀ v₀ r) := by
   change ContDiff ℝ 2 (fun z : TimeVelocity d ↦
     (t₀ + r ^ 2 * z.1, v₀ + r • z.2))
   fun_prop
 
 /-- Parabolic affine scaling is smooth at every order. -/
-theorem contDiff_infty_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
-    (r : ℝ) : ContDiff ℝ (⊤ : WithTop ℕ∞) (parabolicAffine t₀ v₀ r) := by
+theorem contDiff_infty_parabolicAffine : ContDiff ℝ (⊤ : WithTop ℕ∞) (parabolicAffine t₀ v₀ r) := by
   change ContDiff ℝ (⊤ : WithTop ℕ∞) (fun z : TimeVelocity d ↦
     (t₀ + r ^ 2 * z.1, v₀ + r • z.2))
   fun_prop
 
+end
+
+section
+variable {d : ℕ}
+
 /-- Pulls a scalar function back by parabolic affine scaling. -/
-def pullbackScalar {d : ℕ} (q : TimeVelocity d → ℝ)
+def pullbackScalar (q : TimeVelocity d → ℝ)
     (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) : TimeVelocity d → ℝ :=
   q ∘ parabolicAffine t₀ v₀ r
 
 /-- Pulls a coefficient field back by parabolic affine scaling. -/
-def pullbackCoefficient {d : ℕ} (B : CoefficientField d)
+def pullbackCoefficient (B : CoefficientField d)
     (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) : CoefficientField d :=
   fun t v ↦ B (t₀ + r ^ 2 * t) (v₀ + r • v)
 
 /-- Evaluation of a scalar pullback. -/
-@[simp] theorem pullbackScalar_apply {d : ℕ} (q : TimeVelocity d → ℝ)
+@[simp] theorem pullbackScalar_apply (q : TimeVelocity d → ℝ)
     (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) (z : TimeVelocity d) :
     pullbackScalar q t₀ v₀ r z = q (parabolicAffine t₀ v₀ r z) :=
   rfl
 
 /-- Evaluation of a coefficient pullback. -/
-@[simp] theorem coefficientAt_pullbackCoefficient {d : ℕ} (B : CoefficientField d)
+@[simp] theorem coefficientAt_pullbackCoefficient (B : CoefficientField d)
     (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) (z : TimeVelocity d) :
     coefficientAt (pullbackCoefficient B t₀ v₀ r) z =
       coefficientAt B (parabolicAffine t₀ v₀ r z) :=
   rfl
 
 /-- Local coefficient continuity is preserved by parabolic affine pullback. -/
-theorem IsContinuousCoefficientOn.pullback {d : ℕ} {B : CoefficientField d}
+theorem IsContinuousCoefficientOn.pullback {B : CoefficientField d}
     {U V : Set (TimeVelocity d)} {t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hB : IsContinuousCoefficientOn B U)
     (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
-    IsContinuousCoefficientOn (pullbackCoefficient B t₀ v₀ r) V := by
-  exact hB.comp (contDiff_parabolicAffine t₀ v₀ r).continuous.continuousOn hmap
+    IsContinuousCoefficientOn (pullbackCoefficient B t₀ v₀ r) V := hB.comp (contDiff_parabolicAffine t₀ v₀ r).continuous.continuousOn hmap
+
+end
+
+section
+variable {d : ℕ} {q : TimeVelocity d → ℝ} {U V : Set (TimeVelocity d)} {t₀ r : ℝ} {v₀ : PDE.Vec d}
 
 /-- Local `C²` regularity is preserved by parabolic affine pullback. -/
-theorem ContDiffOn.pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
-    {U V : Set (TimeVelocity d)} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+theorem ContDiffOn.pullbackScalar
     (hq : ContDiffOn ℝ 2 q U) (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
-    ContDiffOn ℝ 2 (pullbackScalar q t₀ v₀ r) V := by
-  exact hq.comp (contDiff_parabolicAffine t₀ v₀ r).contDiffOn hmap
+    ContDiffOn ℝ 2 (pullbackScalar q t₀ v₀ r) V := hq.comp (contDiff_parabolicAffine t₀ v₀ r).contDiffOn hmap
 
 /-- Local nonnegativity is preserved by parabolic affine pullback. -/
-theorem IsNonnegativeOn.pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
-    {U V : Set (TimeVelocity d)} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+theorem IsNonnegativeOn.pullbackScalar
     (hq : IsNonnegativeOn q U) (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
     IsNonnegativeOn (pullbackScalar q t₀ v₀ r) V :=
-  fun z hz => by
-    simpa only [pullbackScalar_apply] using hq (parabolicAffine t₀ v₀ r z) (hmap hz)
+  fun z hz => id (hq (parabolicAffine t₀ v₀ r z) (hmap hz))
+
+end
+
+section
+variable {d : ℕ} {B : CoefficientField d} {U V : Set (TimeVelocity d)}
 
 /-- Local lower ellipticity is preserved by parabolic affine pullback. -/
-theorem HasLowerEllipticityOn.pullback {d : ℕ} {B : CoefficientField d}
-    {U V : Set (TimeVelocity d)} {lam t₀ r : ℝ} {v₀ : PDE.Vec d}
+theorem HasLowerEllipticityOn.pullback {lam t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hB : HasLowerEllipticityOn lam B U)
     (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
     HasLowerEllipticityOn lam (pullbackCoefficient B t₀ v₀ r) V :=
-  fun z hz => by
-    simpa only [coefficientAt_pullbackCoefficient] using
-      hB (parabolicAffine t₀ v₀ r z) (hmap hz)
+  fun z hz => id (hB (parabolicAffine t₀ v₀ r z) (hmap hz))
 
 /-- Local upper ellipticity is preserved by parabolic affine pullback. -/
-theorem HasUpperEllipticityOn.pullback {d : ℕ} {B : CoefficientField d}
-    {U V : Set (TimeVelocity d)} {Lam t₀ r : ℝ} {v₀ : PDE.Vec d}
+theorem HasUpperEllipticityOn.pullback {Lam t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hB : HasUpperEllipticityOn Lam B U)
     (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
     HasUpperEllipticityOn Lam (pullbackCoefficient B t₀ v₀ r) V :=
-  fun z hz => by
-    simpa only [coefficientAt_pullbackCoefficient] using
-      hB (parabolicAffine t₀ v₀ r z) (hmap hz)
+  fun z hz => id (hB (parabolicAffine t₀ v₀ r z) (hmap hz))
+
+end
 
 private theorem fderiv_pullbackScalar_eventually {d : ℕ} {q : TimeVelocity d → ℝ}
     {z : TimeVelocity d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
@@ -142,10 +150,13 @@ private theorem fderiv_pullbackScalar_eventually {d : ℕ} {q : TimeVelocity d �
     (hasFDerivAt_parabolicAffine t₀ v₀ r y).differentiableAt,
     (hasFDerivAt_parabolicAffine t₀ v₀ r y).fderiv]
 
+section
+variable {d : ℕ} {q : TimeVelocity d → ℝ} {z : TimeVelocity d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+  (hq : ContDiffAt ℝ 2 q (parabolicAffine t₀ v₀ r z))
+include hq
+
 /-- The velocity Hessian of a scalar pullback has the exact parabolic scale. -/
-theorem velocityHessian_pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
-    {z : TimeVelocity d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
-    (hq : ContDiffAt ℝ 2 q (parabolicAffine t₀ v₀ r z)) :
+theorem velocityHessian_pullbackScalar :
     velocityHessian (pullbackScalar q t₀ v₀ r) z =
       r ^ 2 • velocityHessian q (parabolicAffine t₀ v₀ r z) := by
   let a := parabolicAffine t₀ v₀ r
@@ -182,9 +193,7 @@ theorem velocityHessian_pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
   ring
 
 /-- The time derivative of a scalar pullback has the exact parabolic scale. -/
-theorem timeDerivative_pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
-    {z : TimeVelocity d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
-    (hq : ContDiffAt ℝ 2 q (parabolicAffine t₀ v₀ r z)) :
+theorem timeDerivative_pullbackScalar :
     timeDerivative (pullbackScalar q t₀ v₀ r) z =
       r ^ 2 * timeDerivative q (parabolicAffine t₀ v₀ r z) := by
   unfold timeDerivative
@@ -197,10 +206,15 @@ theorem timeDerivative_pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
     (fderiv ℝ q (parabolicAffine t₀ v₀ r z)).map_smul (r ^ 2)
       ((1 : ℝ), (0 : PDE.Vec d))
 
+end
+
+section
+variable {d : ℕ} {B : CoefficientField d} {q : TimeVelocity d → ℝ} {z : TimeVelocity d} {t₀ r : ℝ}
+  {v₀ : PDE.Vec d} (hq : ContDiffAt ℝ 2 q (parabolicAffine t₀ v₀ r z))
+include hq
+
 /-- Matrix contraction with a pullback Hessian has the exact parabolic scale. -/
-theorem matrixContraction_pullbackScalar {d : ℕ} {B : CoefficientField d}
-    {q : TimeVelocity d → ℝ} {z : TimeVelocity d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
-    (hq : ContDiffAt ℝ 2 q (parabolicAffine t₀ v₀ r z)) :
+theorem matrixContraction_pullbackScalar :
     matrixContraction (coefficientAt (pullbackCoefficient B t₀ v₀ r) z)
       (velocityHessian (pullbackScalar q t₀ v₀ r) z) =
       r ^ 2 * matrixContraction (coefficientAt B (parabolicAffine t₀ v₀ r z))
@@ -209,14 +223,14 @@ theorem matrixContraction_pullbackScalar {d : ℕ} {B : CoefficientField d}
     HypoellipticAleksandrov.matrixContraction_smul_right]
 
 /-- The forward parabolic operator is covariant under every parabolic affine map. -/
-theorem parabolicOperator_pullbackScalar {d : ℕ} {B : CoefficientField d}
-    {q : TimeVelocity d → ℝ} {z : TimeVelocity d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
-    (hq : ContDiffAt ℝ 2 q (parabolicAffine t₀ v₀ r z)) :
+theorem parabolicOperator_pullbackScalar :
     parabolicOperator (pullbackCoefficient B t₀ v₀ r) (pullbackScalar q t₀ v₀ r) z =
       r ^ 2 * parabolicOperator B q (parabolicAffine t₀ v₀ r z) := by
   rw [parabolicOperator_apply, parabolicOperator_apply,
     timeDerivative_pullbackScalar hq, matrixContraction_pullbackScalar hq]
   ring
+
+end
 
 /-- A local supersolution pulls back with its source multiplied by the square scale. -/
 theorem IsParabolicSupersolutionOn.pullback {d : ℕ} {B : CoefficientField d}
@@ -232,23 +246,29 @@ theorem IsParabolicSupersolutionOn.pullback {d : ℕ} {B : CoefficientField d}
     (contDiffAt_of_contDiffOn_of_isOpen hU hq (hmap hz))]
   exact mul_le_mul_of_nonneg_left (h (parabolicAffine t₀ v₀ r z) (hmap hz)) (sq_nonneg r)
 
+section
+variable {d : ℕ} (A : CoefficientField d)
+include A
+
 /-- A coefficient field expressed in the absolute-time age variable. -/
-def ageCoefficient {d : ℕ} (A : CoefficientField d) (T : ℝ) : CoefficientField d :=
+def ageCoefficient (T : ℝ) : CoefficientField d :=
   fun theta v ↦ A (T - theta) v
 
 /-- Evaluation of the absolute-time age coefficient. -/
-@[simp] theorem coefficientAt_ageCoefficient {d : ℕ} (A : CoefficientField d)
+@[simp] theorem coefficientAt_ageCoefficient
     (T : ℝ) (z : TimeVelocity d) :
     coefficientAt (ageCoefficient A T) z = A (T - z.1) z.2 :=
   rfl
 
 /-- The normalized age-coefficient pullback exposes its absolute-time evaluation formula. -/
-@[simp] theorem pullbackCoefficient_ageCoefficient_zero {d : ℕ} (A : CoefficientField d)
+@[simp] theorem pullbackCoefficient_ageCoefficient_zero
     (T r : ℝ) (vStar : PDE.Vec d) (zHat : TimeVelocity d) :
     coefficientAt (pullbackCoefficient (ageCoefficient A T) 0 vStar r) zHat =
       A (T - r ^ 2 * zHat.1) (vStar + r • zHat.2) := by
   simp only [coefficientAt_pullbackCoefficient, coefficientAt_ageCoefficient,
     parabolicAffine, zero_add]
+
+end
 
 /-- The corresponding scalar pullback evaluates at forward age, without time reflection. -/
 @[simp] theorem pullbackScalar_zero_apply {d : ℕ} (q : TimeVelocity d → ℝ)

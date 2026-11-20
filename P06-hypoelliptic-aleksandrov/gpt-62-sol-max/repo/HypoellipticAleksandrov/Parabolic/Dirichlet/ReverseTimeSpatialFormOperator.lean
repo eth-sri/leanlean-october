@@ -25,12 +25,9 @@ section
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 variable (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
 variable (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-variable (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-  (scalarParabolicClosedCylinder r₀ r₁ Ω))
-variable (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-  (scalarParabolicClosedCylinder r₀ r₁ Ω))
-variable (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-  (scalarParabolicClosedCylinder r₀ r₁ Ω))
+variable (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+variable (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+variable (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
 /-- The clamped all-time representative of the local reverse-time operator. -/
 noncomputable def reverseTimeSpatialFormOperatorClamp :
     ℝ → H10HilbertGraph hΩ →L[ℝ] H10HilbertGraphDual hΩ := fun τ =>
@@ -41,8 +38,6 @@ noncomputable def reverseTimeSpatialFormOperatorClamp :
 theorem continuous_reverseTimeSpatialFormOperatorClamp :
     Continuous (reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth) := by
-  change Continuous ((reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c
-    haSmooth hbSmooth hcSmooth) ∘ Set.projIcc 0 (r₁ - r₀) (sub_nonneg.mpr h₀₁.le))
   exact (continuous_reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth).comp continuous_projIcc
 
@@ -55,8 +50,7 @@ theorem ae_reverseTimeSpatialFormOperatorClamp_apply :
   rw [reverseTimeVolume, reverseTimeOpenInterval]
   filter_upwards [ae_restrict_mem measurableSet_Ioo] with τ hτ
   intro u v
-  have hproj : Set.projIcc 0 (r₁ - r₀) (sub_nonneg.mpr h₀₁.le) τ =
-      ⟨τ, ⟨hτ.1.le, hτ.2.le⟩⟩ :=
+  have hproj :=
     Set.projIcc_of_mem (sub_nonneg.mpr h₀₁.le) ⟨hτ.1.le, hτ.2.le⟩
   unfold reverseTimeSpatialFormOperatorClamp
   rw [hproj]

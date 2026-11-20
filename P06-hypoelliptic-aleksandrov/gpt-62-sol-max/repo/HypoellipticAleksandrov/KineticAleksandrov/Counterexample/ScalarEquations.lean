@@ -47,8 +47,7 @@ theorem scalar_ode_linear_combination (f g : ℝ → ℝ) (gamma a c d s : ℝ)
     simpa only [Pi.add_def] using
       ((hf.differentiable (by norm_num) t).hasDerivAt.const_mul c).add
         ((hg.differentiable (by norm_num) t).hasDerivAt.const_mul d)
-  have he : deriv (fun t => c * f t + d * g t) =
-      fun t => c * deriv f t + d * deriv g t := funext (fun t => (hfirst t).deriv)
+  have he := funext (fun t => (hfirst t).deriv)
   have hsecond : HasDerivAt (fun t => c * deriv f t + d * deriv g t)
       (c * deriv (deriv f) s + d * deriv (deriv g) s) s := by
     simpa only [Pi.add_def] using

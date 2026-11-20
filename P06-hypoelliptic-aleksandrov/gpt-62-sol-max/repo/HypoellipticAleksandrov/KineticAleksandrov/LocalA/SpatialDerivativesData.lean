@@ -47,14 +47,17 @@ theorem spatialData_local_extension {d : ℕ} (Z₀ P : KineticPoint d) {R : ℝ
   simpa only [e, KineticPoint.homeomorphProd, KineticPoint.isometryEquivProd,
     IsometryEquiv.coe_toHomeomorph, IsometryEquiv.coe_mk] using hv
 
+section
+variable {d : ℕ} (P : KineticPoint d) (v₀ : PDE.Vec d)
+include P v₀
+
 /-- Boundary displacement and exit data give literal physical product coordinates. -/
-def spatialBoundaryCoordinates {d : ℕ} (P : KineticPoint d) (v₀ : PDE.Vec d)
+def spatialBoundaryCoordinates
     (p : PDE.Vec d × TimeVelocity d) : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (p.2.1, (P.position + p.1 + (p.2.1 - P.time) • v₀, p.2.2))
 
 /-- Centered free-transport reconstruction is uniformly continuous. -/
-theorem uniformContinuous_spatialBoundaryCoordinates {d : ℕ}
-    (P : KineticPoint d) (v₀ : PDE.Vec d) :
+theorem uniformContinuous_spatialBoundaryCoordinates :
     UniformContinuous (spatialBoundaryCoordinates P v₀) := by
   have hs : UniformContinuous (fun p : PDE.Vec d × TimeVelocity d =>
       (p.2.1 - P.time) • v₀) :=
@@ -63,5 +66,7 @@ theorem uniformContinuous_spatialBoundaryCoordinates {d : ℕ}
   exact (uniformContinuous_fst.comp uniformContinuous_snd).prodMk
     ((uniformContinuous_const.add uniformContinuous_fst).add hs |>.prodMk
       (uniformContinuous_snd.comp uniformContinuous_snd))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

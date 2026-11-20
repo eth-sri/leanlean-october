@@ -23,30 +23,30 @@ namespace H1Function
 
 variable {d : ℕ} {U : Set (Vec d)}
 
+section
+variable (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (c : ℝ)
+include hU u c
+
 /-- Positive-part truncation of an `H¹` representative at a constant level. -/
-noncomputable def positivePartSubConst
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U) (c : ℝ) :
+noncomputable def positivePartSubConst :
     H1Function U :=
   (u.toW1pFunction.positivePartSubConst
     hU (by norm_num) (by norm_num) c).toH1Function
 
 @[simp]
-theorem positivePartSubConst_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U) (c : ℝ) :
+theorem positivePartSubConst_toFun :
     (u.positivePartSubConst hU c).toFun =
       fun x => max (u.toFun x - c) 0 :=
   rfl
 
 @[simp]
-theorem positivePartSubConst_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U) (c : ℝ) :
+theorem positivePartSubConst_grad :
     (u.positivePartSubConst hU c).grad =
       fun x =>
         {y | c < u.toFun y}.indicator u.grad x :=
   rfl
+
+end
 
 end H1Function
 

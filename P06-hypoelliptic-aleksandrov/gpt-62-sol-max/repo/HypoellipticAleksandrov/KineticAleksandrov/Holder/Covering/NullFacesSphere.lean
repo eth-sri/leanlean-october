@@ -21,9 +21,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+section
+variable {d : ℕ} (x : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+include hr
+
 /-- A native Euclidean sphere is the coordinate preimage of the internal Hilbert sphere. -/
-theorem euclideanSphere_eq_hilbert_preimage {d : ℕ} (x : PDE.Vec d) {r : ℝ}
-    (hr : 0 < r) :
+theorem euclideanSphere_eq_hilbert_preimage :
     PDE.euclideanSphere x r = PDE.Vec.toHilbertVec ⁻¹'
       Metric.sphere x.toHilbertVec r := by
   ext y
@@ -38,13 +41,15 @@ theorem euclideanSphere_eq_hilbert_preimage {d : ℕ} (x : PDE.Vec d) {r : ℝ}
     rw [h]
 
 /-- Positive-radius native Euclidean spheres have zero ordinary Lebesgue volume. -/
-theorem volume_euclideanSphere {d : ℕ} (x : PDE.Vec d) {r : ℝ} (hr : 0 < r) :
+theorem volume_euclideanSphere :
     volume (PDE.euclideanSphere x r) = 0 := by
   rw [euclideanSphere_eq_hilbert_preimage x hr]
   change volume (WithLp.toLp 2 ⁻¹' Metric.sphere x.toHilbertVec r) = 0
   rw [(PiLp.volume_preserving_toLp (Fin d)).measure_preimage
     (Metric.isClosed_sphere.measurableSet.nullMeasurableSet)]
   exact Measure.addHaar_sphere_of_ne_zero volume x.toHilbertVec hr.ne'
+
+end
 
 /-- A complete kinetic velocity-sphere face is null, without bounding time or position. -/
 theorem volume_velocity_sphere_face {d : ℕ} (v : PDE.Vec d) {r : ℝ} (hr : 0 < r) :
@@ -62,8 +67,11 @@ theorem volume_velocity_sphere_face {d : ℕ} (v : PDE.Vec d) {r : ℝ} (hr : 0 
   simp only [s, Measure.volume_eq_prod, Measure.prod_prod, volume_euclideanSphere v hr,
     mul_zero]
 
+section
+variable {d : ℕ} (P : KineticPoint d)
+
 /-- A free-transport position sphere becomes a translated sphere on each time slice. -/
-theorem position_sphere_slice {d : ℕ} (P : KineticPoint d) (t R : ℝ) (x : PDE.Vec d) :
+theorem position_sphere_slice (t R : ℝ) (x : PDE.Vec d) :
     x-P.position-(t-P.time) • P.velocity ∈ PDE.euclideanSphere 0 R ↔
       x ∈ PDE.euclideanSphere (P.position+(t-P.time) • P.velocity) R := by
   have heq : x-P.position-(t-P.time) • P.velocity =
@@ -73,13 +81,11 @@ theorem position_sphere_slice {d : ℕ} (P : KineticPoint d) (t R : ℝ) (x : PD
   rfl
 
 /-- A complete free-transport position-sphere face is null. -/
-theorem volume_position_sphere_face {d : ℕ} (P : KineticPoint d) {R : ℝ} (hR : 0 < R) :
+theorem volume_position_sphere_face {R : ℝ} (hR : 0 < R) :
     volume {X : KineticPoint d | relativePosition P X ∈ PDE.euclideanSphere 0 R} = 0 := by
   let s := (KineticPoint.equivProd d).symm ⁻¹'
     {X : KineticPoint d | relativePosition P X ∈ PDE.euclideanSphere 0 R}
-  have hx : Continuous (relativePosition P) :=
-    (continuous_position.sub continuous_const).sub
-      ((continuous_time.sub continuous_const).smul continuous_const)
+  have hx := continuous_relativePosition P
   have hs : MeasurableSet s := ((PDE.isClosed_euclideanSphere 0 R).preimage hx).measurableSet
     |>.preimage (KineticPoint.measurable_equivProd_symm d)
   have hpre : (KineticPoint.equivProd d) ⁻¹' s =
@@ -99,5 +105,7 @@ theorem volume_position_sphere_face {d : ℕ} (P : KineticPoint d) {R : ℝ} (hR
   simp_rw [hslice, Measure.volume_eq_prod, Measure.prod_prod,
     volume_euclideanSphere _ hR, zero_mul]
   exact lintegral_zero
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

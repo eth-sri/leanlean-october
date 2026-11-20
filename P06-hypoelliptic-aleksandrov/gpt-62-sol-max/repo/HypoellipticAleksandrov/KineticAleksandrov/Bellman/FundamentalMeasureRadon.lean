@@ -19,8 +19,7 @@ theorem bellmanPunctured_sq_pos (q : BellmanPuncturedPlane) :
   intro h
   apply q.property
   have hx : q.val.1 = 0 := by nlinarith only [h, sq_nonneg q.val.2]
-  have hv : q.val.2 = 0 := by nlinarith only [h, sq_nonneg q.val.1]
-  exact Prod.ext hx hv
+  exact Prod.ext hx (by nlinarith only [h, sq_nonneg q.val.1])
 
 /-- A punctured compact set has a positive uniform squared-distance lower bound. -/
 theorem bellmanPunctured_compact_lower_bound (K : Set BellmanPuncturedPlane)

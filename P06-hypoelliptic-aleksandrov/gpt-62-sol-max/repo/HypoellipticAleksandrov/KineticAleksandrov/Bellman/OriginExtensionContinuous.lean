@@ -11,18 +11,24 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set Filter
 open scoped Topology
 
+section
+variable (phi : (ℝ × ℝ) → ℝ)
+include phi
+
 /-- Extend the punctured homogeneous function by its forced value zero at the origin. -/
-def bellmanOriginExtension (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanOriginExtension (q : ℝ × ℝ) : ℝ :=
   if q = (0, 0) then 0 else phi q
 
 /-- The extension has zero origin value. -/
-theorem bellmanOriginExtension_zero (phi : (ℝ × ℝ) → ℝ) :
+theorem bellmanOriginExtension_zero :
     bellmanOriginExtension phi (0, 0) = 0 := ite_eq_left rfl
 
 /-- The extension retains the given punctured function. -/
-theorem bellmanOriginExtension_eqOn (phi : (ℝ × ℝ) → ℝ) :
+theorem bellmanOriginExtension_eqOn :
     EqOn (bellmanOriginExtension phi) phi bellmanPuncturedSet :=
   fun _ hq => ite_eq_right hq
+
+end
 
 /-- Positive homogeneous degree forces continuity of the extension at the origin. -/
 theorem IsBellmanHomogeneous.origin_extension_continuous {alpha : ℝ}

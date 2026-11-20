@@ -18,21 +18,20 @@ theorem reconstruction_operator_zero_off_tsupport
     (f : EvolutionVec 1 → ℝ) (x : EvolutionVec 1) (hx : x ∉ tsupport f) :
     transportedOperator B b f x = 0 := by
   have hd := fderiv_of_notMem_tsupport (𝕜 := ℝ) hx
-  have hh (j : Fin 1) :
-      fderiv ℝ (fun y => fderiv ℝ f y (basisV j)) x = 0 :=
+  have hh (j : Fin 1) :=
     fderiv_of_notMem_tsupport (𝕜 := ℝ)
       (fun h => hx (tsupport_fderiv_apply_subset ℝ (basisV j) h))
   simp only [transportedOperator, hd, hh, zero_apply,
     mul_zero, Finset.sum_const_zero, add_zero]
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+  (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
+
 /-- The actual unique exit measure charges no point strictly before its pole. -/
-theorem stripExitOfRealization_before_pole
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
-    stripExitOfRealization hH hlam hLam A H E hE T e {p | p.time < e.1.time} = 0 := by
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
+theorem stripExitOfRealization_before_pole :
+    stripExitOfRealization A H E hE T e {p | p.time < e.1.time} = 0 := by
+  let Ω := stripExitOfRealization A H E hE T e
   let ν : Measure (EvolutionVec 1) := Ω.map reconstructionPhysicalHomeomorph.symm
   let U : Set (EvolutionVec 1) := {x | timeCoord 1 x < e.1.time}
   have hU : IsOpen U := isOpen_lt (timeCoord 1).continuous continuous_const
@@ -56,7 +55,7 @@ theorem stripExitOfRealization_before_pole
       have ht := hs hx
       change p.time < e.1.time at ht
       exact (not_lt_of_ge hp.le) ht
-    have hi := stripExitOfRealization_probe_integral hH hlam hLam A H E hE T e F
+    have hi := stripExitOfRealization_probe_integral A H E hE T e F
     have hz : exitProbeValue A H E T e F = 0 := by
       change f (reconstructionPhysicalHomeomorph.symm e.1) +
         (∫ p, forwardScalarOperator A.a (exitProbePhysical F) p
@@ -82,22 +81,18 @@ theorem stripExitOfRealization_before_pole
   exact hm.symm.trans hz
 
 /-- Almost every actual exit point has future time and velocity in the closed interval. -/
-theorem stripExitOfRealization_ae_closed_future
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
-    ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+theorem stripExitOfRealization_ae_closed_future :
+    ∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       e.1.time ≤ p.time ∧ p.time ≤ T ∧ p.velocity 0 ∈ Icc H.lo H.hi := by
-  have hb : ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+  have hb : ∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       p ∈ stripClosedExit H T := by
     rw [ae_iff]
-    exact stripExitOfRealization_compl_closedExit hH hlam hLam A H E hE T e
-  have ht : ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+    exact stripExitOfRealization_compl_closedExit A H E hE T e
+  have ht : ∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       e.1.time ≤ p.time := by
     rw [ae_iff]
     simpa only [not_le] using
-      stripExitOfRealization_before_pole hH hlam hLam A H E hE T e
+      stripExitOfRealization_before_pole A H E hE T e
   filter_upwards [hb, ht] with p hp ht
   refine ⟨ht, ?_⟩
   rcases hp with hp | hp
@@ -106,5 +101,7 @@ theorem stripExitOfRealization_ae_closed_future
     rcases hp.2 with hv | hv <;> rw [hv]
     · exact ⟨le_rfl, H.ordered.le⟩
     · exact ⟨H.ordered.le, le_rfl⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

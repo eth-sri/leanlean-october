@@ -17,10 +17,6 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 theorem gramian_inv_velocity_scaling {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (hs : -(h / 128) ≤ s) :
     (gramian lam h s)⁻¹ 1 1 = (ghat lam (s / h))⁻¹ 1 1 / h := by
-  have hstrip : -(1 / 128 : ℝ) ≤ s / h := by
-    apply (le_div_iff₀ hh).mpr
-    linarith
-  have hd := (posDef_ghat hlam hstrip).det_pos.ne'
   have hscale : covarianceDet lam h s = h ^ 4 * (ghat lam (s / h)).det := by
     rw [det_ghat]
     unfold covarianceDet covarianceXX covarianceVV covarianceXV

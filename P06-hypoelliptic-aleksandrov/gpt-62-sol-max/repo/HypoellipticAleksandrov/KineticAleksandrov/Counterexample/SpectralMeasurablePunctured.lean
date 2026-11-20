@@ -30,10 +30,13 @@ theorem continuousOn_positiveSpectralMass {X : Type*} [TopologicalSpace X] {d : 
   rw [continuousOn_iff_continuous_domRestrict] at hM ⊢
   exact continuous_positiveSpectralMass (fun x : S => M x) hM (fun x => hherm x x.property)
 
+section
+variable {d : ℕ} (M : PDE.Vec d × PDE.Vec d → PDE.Mat d) (hM : ContinuousOn M ({0}ᶜ))
+  (hherm : ∀ q, (M q).IsHermitian)
+include hM hherm
+
 /-- Positive spectral projections of punctured continuous Hermitian fields are measurable. -/
-theorem measurable_positiveSpectralProjection_punctured {d : ℕ}
-    (M : PDE.Vec d × PDE.Vec d → PDE.Mat d) (hM : ContinuousOn M ({0}ᶜ))
-    (hherm : ∀ q, (M q).IsHermitian) :
+theorem measurable_positiveSpectralProjection_punctured :
     Measurable (fun q => positiveSpectralProjection (M q)) := by
   apply measurable_of_tendsto_metrizable
     (fun n => measurable_of_continuousOn_compl_singleton 0
@@ -45,9 +48,7 @@ theorem measurable_positiveSpectralProjection_punctured {d : ℕ}
   exact tendsto_const_nhds.congr' heq.symm
 
 /-- Entries of the canonical trace solver are measurable for punctured continuous data. -/
-theorem measurable_spectralTraceMatrix_punctured {d : ℕ}
-    (M : PDE.Vec d × PDE.Vec d → PDE.Mat d) (hM : ContinuousOn M ({0}ᶜ))
-    (hherm : ∀ q, (M q).IsHermitian) (b : PDE.Vec d × PDE.Vec d → ℝ)
+theorem measurable_spectralTraceMatrix_punctured (b : PDE.Vec d × PDE.Vec d → ℝ)
     (hb : Measurable b) (cminus : ℝ) (i k : Fin d) :
     Measurable (fun q => spectralTraceMatrix (M q) (b q) cminus i k) := by
   have hp : Measurable (fun q => positiveSpectralMass (M q)) :=
@@ -68,5 +69,7 @@ theorem measurable_spectralTraceMatrix_punctured {d : ℕ}
   simp only [Matrix.add_apply, Matrix.sub_apply, Matrix.smul_apply, smul_eq_mul]
   exact ((hw.mul hproj).add (measurable_const.mul hneg)).add
     ((measurable_const.sub hproj).sub hneg)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

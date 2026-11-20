@@ -1,3 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtension
-import Mathlib.Analysis.Calculus.MeanValue

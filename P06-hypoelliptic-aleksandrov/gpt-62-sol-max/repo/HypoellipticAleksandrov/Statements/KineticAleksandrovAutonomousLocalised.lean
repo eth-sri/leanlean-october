@@ -1,6 +1,5 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.MainAssembly
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FinalAutonomous
 public import HypoellipticAleksandrov.KineticAleksandrov.Geometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
@@ -46,7 +45,7 @@ theorem kinetic_aleksandrov_autonomous_localised
             C * R ^ (2 - 6 / p) *
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_autonomous_localised_proof
-    lam Lam p hlam hLam hp
+  exact kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
+    Autonomous.belowFourDensityStatement_holds lam Lam p hlam hLam hp
 
 end HypoellipticAleksandrov.KineticAleksandrov

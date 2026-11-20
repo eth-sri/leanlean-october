@@ -21,20 +21,25 @@ instance visitUnionPoleMeasure_isFiniteMeasure (H : FiniteIntervalUnion) (T : �
   unfold visitUnionPoleMeasure
   infer_instance
 
+section
+variable (H : FiniteIntervalUnion) (s T : ℝ) (mu : Measure Point)
+  (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H s T)
+include s hmu
+
 /-- Mapping the union poles back recovers the entire supported physical source. -/
-theorem visitUnionPoleMeasure_map (H : FiniteIntervalUnion) (s T : ℝ) (mu : Measure Point)
-    (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H s T) :
+theorem visitUnionPoleMeasure_map :
     (visitUnionPoleMeasure H T mu).map Subtype.val = mu := by
   apply visitPoleMeasure_map_comap _ (measurableSet_finiteUnionPole H T)
   exact hmu.mono fun p hp => ⟨WithTop.coe_lt_coe.mpr hp.2.1, hp.2.2⟩
 
 /-- The lifted actual source has the strict lower-time support of the corrected nested theorem. -/
-theorem visitUnionPoleMeasure_ae_time_gt (H : FiniteIntervalUnion) (s T : ℝ)
-    (mu : Measure Point) (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H s T) :
+theorem visitUnionPoleMeasure_ae_time_gt :
     ∀ᵐ e ∂visitUnionPoleMeasure H T mu, s < e.1.time := by
   have ht := hmu.mono (fun p hp => hp.1)
   rw [← visitUnionPoleMeasure_map H s T mu hmu] at ht
   exact ((MeasurableEmbedding.subtype_coe (measurableSet_finiteUnionPole H T)).ae_map_iff).mp ht
+
+end
 
 /-- Any actual union-pole family has the same mixture as its strict physical zero extension. -/
 theorem visitExtendKernel_comp_unionPole (H : FiniteIntervalUnion) (s T : ℝ)
@@ -61,32 +66,34 @@ theorem visitExtendKernel_comp_unionPole (H : FiniteIntervalUnion) (s T : ℝ)
     f (visitPoleInclusion H s T ⟨e.1, ht⟩) else 0) = f e
   rw [dite_eq_left hp, hi]
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ)
+  (mu : Measure Point) (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H s T)
+include hmu
+
 /-- The actual physical Green composition is exactly the nested theorem's Green mixture. -/
-theorem visitUnionGreenKernel_comp_poles
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ) (mu : Measure Point)
-    (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H s T) :
-    visitUnionGreenKernel hH hLE hlam hLam A H s T ∘ₘ mu =
-      finiteUnionGreenMixture hH hLE hlam hLam A H T (visitUnionPoleMeasure H T mu) :=
-  visitExtendKernel_comp_unionPole H s T _ (finiteUnionGreen_measurable hH hLE hlam hLam A H T)
+theorem visitUnionGreenKernel_comp_poles :
+    visitUnionGreenKernel A H s T ∘ₘ mu =
+      finiteUnionGreenMixture A H T (visitUnionPoleMeasure H T mu) :=
+  visitExtendKernel_comp_unionPole H s T _ (finiteUnionGreen_measurable A H T)
     mu hmu
 
 /-- The actual physical exit composition is exactly the nested theorem's exit mixture. -/
-theorem visitUnionExitKernel_comp_poles
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ) (mu : Measure Point)
-    (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H s T) :
-    visitUnionExitKernel hH hLE hlam hLam A H s T ∘ₘ mu =
-      finiteUnionExitMixture hH hLE hlam hLam A H T (visitUnionPoleMeasure H T mu) :=
-  visitExtendKernel_comp_unionPole H s T _ (finiteUnionExit_measurable hH hLE hlam hLam A H T)
+theorem visitUnionExitKernel_comp_poles :
+    visitUnionExitKernel A H s T ∘ₘ mu =
+      finiteUnionExitMixture A H T (visitUnionPoleMeasure H T mu) :=
+  visitExtendKernel_comp_unionPole H s T _ (finiteUnionExit_measurable A H T)
     mu hmu
 
+end
+
+section
+variable (H1 H2 : FiniteIntervalUnion) (hsub : H1.carrier ⊆ H2.carrier) (s T : ℝ)
+  (mu : Measure Point) (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H1 s T)
+include s hmu
+
 /-- Including source poles into the larger union retains exactly their physical measure. -/
-theorem visitUnionPoleMeasure_nested_map (H1 H2 : FiniteIntervalUnion)
-    (hsub : H1.carrier ⊆ H2.carrier) (s T : ℝ) (mu : Measure Point)
-    (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H1 s T) :
+theorem visitUnionPoleMeasure_nested_map :
     ((visitUnionPoleMeasure H1 T mu).map
       (finiteUnionNestedPoleInclusion H1 H2 hsub T)).map Subtype.val = mu := by
   rw [Measure.map_map measurable_subtype_coe
@@ -94,9 +101,7 @@ theorem visitUnionPoleMeasure_nested_map (H1 H2 : FiniteIntervalUnion)
   exact visitUnionPoleMeasure_map H1 s T mu hmu
 
 /-- Mapping smaller source poles into the larger domain is exactly the larger pole pullback. -/
-theorem visitUnionPoleMeasure_nested_eq (H1 H2 : FiniteIntervalUnion)
-    (hsub : H1.carrier ⊆ H2.carrier) (s T : ℝ) (mu : Measure Point)
-    (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H1 s T) :
+theorem visitUnionPoleMeasure_nested_eq :
     (visitUnionPoleMeasure H1 T mu).map (finiteUnionNestedPoleInclusion H1 H2 hsub T) =
       visitUnionPoleMeasure H2 T mu := by
   apply (MeasurableEmbedding.subtype_coe (measurableSet_finiteUnionPole H2 T)).map_injective
@@ -104,5 +109,7 @@ theorem visitUnionPoleMeasure_nested_eq (H1 H2 : FiniteIntervalUnion)
     hmu.mono (fun p hp => ⟨hp.1, hp.2.1, hsub hp.2.2⟩)
   exact (visitUnionPoleMeasure_nested_map H1 H2 hsub s T mu hmu).trans
     (visitUnionPoleMeasure_map H2 s T mu hlarge).symm
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

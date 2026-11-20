@@ -8,6 +8,7 @@ import Mathlib.Tactic.Positivity
 import HypoellipticAleksandrov.Parabolic.MinimumPrinciple
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierProfile
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonGrowth
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.MarginalRegularityScalar
 
 /-!
 # The collar supersolution `w(d)`
@@ -28,29 +29,26 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set Matrix
 open scoped Topology MatrixOrder
 
+section
+variable {n : ℕ}
+
 /-- The collar barrier `w(r₀ - |y - m(σ)|)`, independent of the transported coordinate. -/
-def collarBarrier {n : ℕ} (κ r₀ : ℝ) (m : ℝ → PDE.Vec n) (p : KineticPoint n) : ℝ :=
+def collarBarrier (κ r₀ : ℝ) (m : ℝ → PDE.Vec n) (p : KineticPoint n) : ℝ :=
   collarProfile κ r₀ (PDE.vecNormSq (p.position - m p.time))
 
-/-- The gradient of a constant function vanishes. -/
-theorem classicalGradient_const {n : ℕ} (c : ℝ) (x : PDE.Vec n) :
-    PDE.classicalGradient (fun _ : PDE.Vec n => c) x = 0 := by
-  ext i
-  simp [PDE.classicalGradient]
-
 /-- The Hessian of a constant function vanishes. -/
-theorem sliceHessian_const {n : ℕ} (c : ℝ) (x : PDE.Vec n) :
+theorem sliceHessian_const (c : ℝ) (x : PDE.Vec n) :
     sliceHessian (fun _ : PDE.Vec n => c) x = 0 := by
   have hz : (fun y : PDE.Vec n => PDE.classicalGradient (fun _ : PDE.Vec n => c) y) =
       fun _ => (0 : PDE.Vec n) := by
     funext y
-    exact classicalGradient_const c y
+    exact _root_.HypoellipticAleksandrov.KineticAleksandrov.classicalGradient_const_eq_zero c y
   ext i j
   simp only [sliceHessian, hz]
   simp
 
 /-- `x ᵀ A x ≤ (tr A) |x|²` for positive semidefinite `A`. -/
-theorem dotProduct_mulVec_le_trace_mul {n : ℕ} {A : PDE.Mat n} (hA : A.PosSemidef)
+theorem dotProduct_mulVec_le_trace_mul {A : PDE.Mat n} (hA : A.PosSemidef)
     (x : PDE.Vec n) :
     dotProduct x (A.mulVec x) ≤ A.trace * PDE.vecNormSq x := by
   let P : PDE.Mat n := PDE.vecNormSq x • (1 : PDE.Mat n) - Matrix.vecMulVec x x
@@ -87,10 +85,10 @@ theorem dotProduct_mulVec_le_trace_mul {n : ℕ} {A : PDE.Mat n} (hA : A.PosSemi
   linarith
 
 /-- A lower Loewner bound gives `λ |x|² ≤ x ᵀ A x`. -/
-theorem mul_vecNormSq_le_dotProduct_mulVec {n : ℕ} {A : PDE.Mat n} {lam : ℝ}
+theorem mul_vecNormSq_le_dotProduct_mulVec {A : PDE.Mat n} {lam : ℝ}
     (h : lam • (1 : PDE.Mat n) ≤ A) (x : PDE.Vec n) :
     lam * PDE.vecNormSq x ≤ dotProduct x (A.mulVec x) := by
-  have h1 : (A - lam • (1 : PDE.Mat n)).PosSemidef := Matrix.le_iff.mp h
+  have h1 := Matrix.le_iff.mp h
   have h2 := h1.dotProduct_mulVec_nonneg x
   simp only [star_trivial, Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
     dotProduct_sub, dotProduct_smul, smul_eq_mul] at h2
@@ -99,7 +97,7 @@ theorem mul_vecNormSq_le_dotProduct_mulVec {n : ℕ} {A : PDE.Mat n} {lam : ℝ}
   linarith
 
 /-- The collar barrier is slice regular where the centre is differentiable and `y ≠ m(σ)`. -/
-theorem isSliceRegularAt_collarBarrier {n : ℕ} (κ r₀ : ℝ) {m : ℝ → PDE.Vec n}
+theorem isSliceRegularAt_collarBarrier (κ r₀ : ℝ) {m : ℝ → PDE.Vec n}
     {p : KineticPoint n} (hm : DifferentiableAt ℝ m p.time)
     (hS : 0 < PDE.vecNormSq (p.position - m p.time)) :
     IsSliceRegularAt (collarBarrier κ r₀ m) p := by
@@ -121,6 +119,8 @@ theorem isSliceRegularAt_collarBarrier {n : ℕ} (κ r₀ : ℝ) {m : ℝ → PD
   · exact (show ContDiffAt ℝ 2 (fun _ : PDE.Vec n => collarBarrier κ r₀ m p) p.velocity from
       contDiffAt_const)
 
+end
+
 /-- Pure algebra of the collar computation. -/
 theorem collar_algebra {E κ ρ S X t g W' W'' : ℝ} (hρ : 0 < ρ) (hS : S = ρ ^ 2)
     (hW' : W' = -(E / (2 * ρ))) (hW'' : W'' = -(E / (4 * S)) * (κ - 1 / ρ)) :
@@ -130,11 +130,13 @@ theorem collar_algebra {E κ ρ S X t g W' W'' : ℝ} (hρ : 0 < ρ) (hS : S = �
   field_simp
   ring
 
+section
+variable {n : ℕ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (ε : ℝ)
+
 /-- The exact collar identity `L_ε w(d) = w'' e·Be - (w'/|y-m|)(tr B - e·Be) + w' m'·e`
 with `w' = exp (-κ d)` and `w'' = -κ exp (-κ d)`; here `S = |y - m|²`, `X = x·Bx`,
 `x = y - m`. -/
-theorem viscousTransportedOperator_collarBarrier {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} (ε : ℝ) {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {m : ℝ → PDE.Vec n}
+theorem viscousTransportedOperator_collarBarrier {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {m : ℝ → PDE.Vec n}
     {m' : PDE.Vec n} {p : KineticPoint n} (hm : HasDerivAt m m' p.time)
     (hS : 0 < PDE.vecNormSq (p.position - m p.time)) :
     viscousTransportedOperator B b ε (collarBarrier κ r₀ m) p =
@@ -166,7 +168,7 @@ theorem viscousTransportedOperator_collarBarrier {n : ℕ} {B : FullKineticCoeff
       (Ψ := collarProfile κ r₀) (m := m p.time) (x := p.position)
       (contDiffAt_collarProfile κ r₀ hS) _
   have hgrad : kineticVelocityGradient (collarBarrier κ r₀ m) p = 0 :=
-    classicalGradient_const (collarBarrier κ r₀ m p) p.velocity
+    _root_.HypoellipticAleksandrov.KineticAleksandrov.classicalGradient_const_eq_zero (collarBarrier κ r₀ m p) p.velocity
   have hlap : ∑ i, kineticVelocityHessian (collarBarrier κ r₀ m) p i i = 0 := by
     have : kineticVelocityHessian (collarBarrier κ r₀ m) p = 0 :=
       sliceHessian_const (collarBarrier κ r₀ m p) p.velocity
@@ -191,8 +193,7 @@ theorem viscousTransportedOperator_collarBarrier {n : ℕ} {B : FullKineticCoeff
 
 /-- The collar inequality `L_ε w(d) ≤ w'(d) (L_γ - λ κ)` with `w'(d) = exp (-κ d)`, where
 `L_γ` bounds the speed `|m'|` of the centre and `λ I ≤ B`. -/
-theorem viscousTransportedOperator_collarBarrier_le {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} (ε : ℝ) {κ lam Lγ : ℝ} (hκ : 0 < κ) (hlam : 0 ≤ lam)
+theorem viscousTransportedOperator_collarBarrier_le {κ lam Lγ : ℝ} (hκ : 0 < κ) (hlam : 0 ≤ lam)
     (r₀ : ℝ) {m : ℝ → PDE.Vec n} {m' : PDE.Vec n} {p : KineticPoint n}
     (hm : HasDerivAt m m' p.time) (hm' : PDE.vecEuclideanNorm m' ≤ Lγ)
     (hS : 0 < PDE.vecNormSq (p.position - m p.time))
@@ -235,8 +236,7 @@ theorem viscousTransportedOperator_collarBarrier_le {n : ℕ} {B : FullKineticCo
   exact mul_le_mul_of_nonneg_left hbracket hEpos.le
 
 /-- The collar barrier is a supersolution: with `κ λ = 1 + L_γ` one has `L_ε w(d) ≤ 0`. -/
-theorem viscousTransportedOperator_collarBarrier_nonpos {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} (ε : ℝ) {κ lam Lγ : ℝ} (hκ : 0 < κ) (hlam : 0 ≤ lam)
+theorem viscousTransportedOperator_collarBarrier_nonpos {κ lam Lγ : ℝ} (hκ : 0 < κ) (hlam : 0 ≤ lam)
     (hκlam : κ * lam = 1 + Lγ) (r₀ : ℝ) {m : ℝ → PDE.Vec n} {m' : PDE.Vec n}
     {p : KineticPoint n} (hm : HasDerivAt m m' p.time) (hm' : PDE.vecEuclideanNorm m' ≤ Lγ)
     (hS : 0 < PDE.vecNormSq (p.position - m p.time))
@@ -247,5 +247,7 @@ theorem viscousTransportedOperator_collarBarrier_nonpos {n : ℕ} {B : FullKinet
   have : Lγ - lam * κ = -1 := by linarith
   rw [this] at h
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -19,9 +19,9 @@ open scoped Topology Matrix.Norms.Elementwise
 /-- The smooth joint local estimate implies exactly the Borel joint statement. -/
 theorem localTimeVelocityRegularity_of_smooth :
     SmoothLocalRegularityStatement → LocalTimeVelocityRegularityStatement := by
-  intro hsmooth hH hLE d hd lam Lam hlam hLam
+  intro hsmooth d hd lam Lam hlam hLam
   obtain ⟨C_m, C, α, hCm, hC, hα, hα1, hest⟩ :=
-    hsmooth hH hLE d hd lam Lam hlam hLam
+    hsmooth d hd lam Lam hlam hLam
   refine ⟨C_m, C, α, hCm, hC, hα, hα1, ?_⟩
   intro A hA hs hlo hhi P₀ R hR u hc hu he
   have hab : BddAbove (u '' backwardCylinder P₀ R) :=
@@ -36,7 +36,7 @@ theorem localTimeVelocityRegularity_of_smooth :
       (borelInnerDelta_valid R hR n).1 (borelInnerDelta_valid R hR n).2
     rw [kineticReflection_image_innerCylinder] at hh
     exact hh
-  have hi n := borel_inner_joint_estimates hH hLE hd lam Lam hlam hLam
+  have hi n := borel_inner_joint_estimates hd lam Lam hlam hLam
     C_m hCm C α hest A hA hs hlo hhi P₀ R hR u hu he
     (borelInnerCentre P₀ R n) (borelInnerRadius R hR n)
     (borelInnerRadius_pos R hR n) (hKD n)
@@ -48,7 +48,7 @@ theorem localTimeVelocityRegularity_of_smooth :
   · intro P hP
     obtain ⟨P₁, r, hr, hsub, hPin⟩ :=
       exists_inner_margin_cylinder (isOpen_backwardCylinder P₀ R hR) hP
-    exact (borel_inner_joint_estimates hH hLE hd lam Lam hlam hLam C_m hCm C α
+    exact (borel_inner_joint_estimates hd lam Lam hlam hLam C_m hCm C α
       hest A hA hs hlo hhi P₀ R hR u hu he P₁ r hr hsub).1 P hPin |>.1
   · intro m hm P hP
     have hP' : P ∈ backwardCylinder P₀ ((3 / 4 : ℝ) * R) := by

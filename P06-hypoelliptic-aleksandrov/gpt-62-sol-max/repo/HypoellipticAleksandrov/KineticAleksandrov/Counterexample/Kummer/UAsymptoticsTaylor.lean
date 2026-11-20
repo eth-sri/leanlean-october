@@ -18,18 +18,22 @@ open scoped Topology
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
+section
+variable (q : ℝ)
+include q
+
 /-- Literal Taylor polynomial of the translated power, truncated before order N. -/
-def powerTaylor (q : ℝ) (N : ℕ) (t : ℝ) : ℝ :=
+def powerTaylor (N : ℕ) (t : ℝ) : ℝ :=
   ∑ n ∈ Finset.range N, Ring.choose q n * t ^ n
 
 /-- The analytic partial sum is precisely the scalar binomial polynomial. -/
-theorem powerTaylor_eq_partialSum (q : ℝ) (N : ℕ) (t : ℝ) :
+theorem powerTaylor_eq_partialSum (N : ℕ) (t : ℝ) :
     powerTaylor q N t = (binomialSeries ℝ q).partialSum N t := by
   simp only [powerTaylor, binomialSeries, FormalMultilinearSeries.partialSum,
     FormalMultilinearSeries.ofScalars_apply_eq, smul_eq_mul, mul_comm]
 
 /-- The local analytic remainder has the exact truncation order. -/
-theorem powerTaylor_remainder_local (q : ℝ) (N : ℕ) :
+theorem powerTaylor_remainder_local (N : ℕ) :
     Asymptotics.IsBigO (𝓝 (0 : ℝ))
       (fun t => (1 + t) ^ q - powerTaylor q N t) (fun t => ‖t‖ ^ N) := by
   have h := (Real.one_add_rpow_hasFPowerSeriesAt_zero (a := q))
@@ -37,7 +41,7 @@ theorem powerTaylor_remainder_local (q : ℝ) (N : ℕ) :
   simpa only [zero_add, ← powerTaylor_eq_partialSum] using h
 
 /-- A global polynomial bound for the Taylor polynomial and the translated power. -/
-theorem powerTaylor_remainder_growth (q : ℝ) (N L : ℕ) (hq : q ≤ (L : ℝ))
+theorem powerTaylor_remainder_growth (N L : ℕ) (hq : q ≤ (L : ℝ))
     (hN : N ≤ L) (t : ℝ) (ht : 0 ≤ t) :
     ‖(1 + t) ^ q - powerTaylor q N t‖ ≤
       (1 + ∑ n ∈ Finset.range N, ‖Ring.choose q n‖) * (1 + t) ^ L := by
@@ -64,7 +68,7 @@ theorem powerTaylor_remainder_growth (q : ℝ) (N L : ℕ) (hq : q ≤ (L : ℝ)
     _ = _ := by ring
 
 /-- Every finite truncation has a global, polynomially dominated remainder. -/
-theorem exists_powerTaylor_remainder_bound (q : ℝ) (N : ℕ) :
+theorem exists_powerTaylor_remainder_bound (N : ℕ) :
     ∃ C : ℝ, ∃ L : ℕ, 0 < C ∧ ∀ t : ℝ, 0 ≤ t →
       ‖(1 + t) ^ q - powerTaylor q N t‖ ≤ C * t ^ N * (1 + t) ^ L := by
   obtain ⟨n, hn⟩ := exists_nat_gt q
@@ -95,5 +99,7 @@ theorem exists_powerTaylor_remainder_bound (q : ℝ) (N : ℕ) :
       exact hDδ.trans (mul_le_mul_of_nonneg_left hpow hC.le)
     exact (powerTaylor_remainder_growth q N L hq hN t ht).trans
       (mul_le_mul_of_nonneg_right hDC (pow_nonneg (by linarith only [ht]) L))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

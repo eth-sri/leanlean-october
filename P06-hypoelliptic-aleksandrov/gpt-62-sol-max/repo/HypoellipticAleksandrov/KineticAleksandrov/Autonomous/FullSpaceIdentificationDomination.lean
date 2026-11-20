@@ -18,33 +18,26 @@ theorem strip_subset_fullspace (H : Interval) (t : ℝ) :
   rw [movingDomain_wholeSpace]
   exact subset_univ _
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution)
+  (hE : IsFullSpaceEvolution A E)
+include hE
+
 /-- Every realizing full-space kernel inherits domain domination from the evolution theorem. -/
-theorem fullspace_domainMonotone
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) :
+theorem fullspace_domainMonotone :
     IsDomainMonotoneEvolution autonomousWholeDomain (fun _ => 0)
-      (evolutionCoefficient A.a) (identityDrift 1) E.2 := by
-  obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, hmono, -⟩ :=
-    exists_terminalEvolution_of_classical hLE hH 1 (by omega) lam Lam 1 1
-      hlam hLam one_pos le_rfl autonomousWholeDomain (fun _ => 0)
-      (evolutionCoefficient A.a) (identityDrift 1) autonomousWholeDomain_admissible
-      (zeroCurve_piecewiseC1 1) (evolutionCoefficient_smooth A)
-      (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
-      (identityDrift_smooth 1) (identityDrift_bounds 1).1 (identityDrift_bounds 1).2
-  have hpair : E = (S, K) := fullSpaceEvolution_unique A E (S, K) hE ⟨hc, hi, he, hcomp⟩
-  simpa only [hpair] using hmono
+      (evolutionCoefficient A.a) (identityDrift 1) E.2 := 
+  ((autonomous_terminalEvolution A autonomousWholeDomain_admissible).clauses hE).2.1
 
 /-- Every supplied strip realization is measure dominated by the supplied full-space one. -/
 theorem strip_kernel_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
-    (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (H : Interval) (G : StripEvolution H) (hG : IsStripEvolution A H G) :
     MovingFiberKernel.IsZeroExtensionDominatedBy G.2 E.2 (strip_subset_fullspace H) :=
   domainMonotone_of_realizes (evolutionCoefficient A.a) (identityDrift 1) E.2
-    (fullspace_domainMonotone hH hLE hlam hLam A E hE)
+    (fullspace_domainMonotone A E hE)
     (intervalDomain H) (fun _ => 0) (intervalDomain_admissible H)
     (zeroCurve_piecewiseC1 1) (strip_subset_fullspace H) G.1 G.2 hG
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

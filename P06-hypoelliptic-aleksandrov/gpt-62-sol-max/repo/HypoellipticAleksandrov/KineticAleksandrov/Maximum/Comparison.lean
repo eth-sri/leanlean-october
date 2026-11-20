@@ -12,17 +12,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Set
 
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+
 /-- The terminal face supplies an exit-boundary point for every positive-radius cylinder. -/
-theorem comparison_exitBoundary_nonempty {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem comparison_exitBoundary_nonempty :
     (exitBoundary Z₀ R hR).Nonempty := by
   let P : KineticPoint d := ⟨Z₀.time + R ^ 2,Z₀.position + R ^ 2 • Z₀.velocity,Z₀.velocity⟩
   refine ⟨P,(mem_exitBoundary_iff Z₀ P R hR).2 ⟨?_,Or.inl rfl⟩⟩
   rw [comparison_closure_forwardCylinder_eq]
   have hx : relativePosition Z₀ P = 0 := by
-    ext i
-    simp only [relativePosition,P,Pi.sub_apply,Pi.add_apply,Pi.smul_apply,Pi.zero_apply,smul_eq_mul]
-    ring
+    simp [relativePosition, P, Pi.sub_apply, Pi.add_apply, Pi.smul_apply, Pi.zero_apply, smul_eq_mul]
   change (Z₀.time ≤ Z₀.time + R ^ 2 ∧ Z₀.time + R ^ 2 ≤ Z₀.time + R ^ 2) ∧
     relativePosition Z₀ P ∈ PDE.euclideanClosedBall 0 (R ^ 3) ∧
     relativeVelocity Z₀ P ∈ PDE.euclideanClosedBall 0 R
@@ -31,8 +31,7 @@ theorem comparison_exitBoundary_nonempty {d : ℕ}
     PDE.vecNormSq,PDE.vecDot,sq_nonneg]
 
 /-- A scalar boundary bound propagates for a strict subsolution on a compact cylinder. -/
-theorem comparison_strict_compact_bound {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+theorem comparison_strict_compact_bound
     {D : Set (KineticPoint d)} (hD : IsOpen D)
     (hQD : closure (forwardCylinder Z₀ R hR) ⊆ D)
     {u : KineticPoint d → ℝ} (hu : IsKineticC112On u D)
@@ -50,13 +49,18 @@ theorem comparison_strict_compact_bound {d : ℕ}
   have hpexit := comparison_inner_maximum_exclusion Z₀ R hR hD hQD hu A hA hstrict hp hmax hpPos
   exact (not_le.mpr hpos) ((hmax hP).trans (hboundary p hpexit))
 
+end
+
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (A : FullKineticCoefficient d)
+  (u : KineticPoint d → ℝ)
+  (hA : ∀ P ∈ forwardCylinder Z₀ R hR, (A P.time P.position P.velocity).PosSemidef)
+  (hcont : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))
+  (hreg : IsKineticC112On u (forwardCylinder Z₀ R hR))
+include hA hcont hreg
+
 /-- Retractions and exhaustion pass a strict comparison bound to the original closure. -/
-theorem comparison_boundary_limit {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (A : FullKineticCoefficient d) (u : KineticPoint d → ℝ)
-    (hA : ∀ P ∈ forwardCylinder Z₀ R hR, (A P.time P.position P.velocity).PosSemidef)
-    (hcont : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))
-    (hreg : IsKineticC112On u (forwardCylinder Z₀ R hR))
+theorem comparison_boundary_limit
     (hstrict : ∀ P ∈ forwardCylinder Z₀ R hR, 0 < u P →
       0 < forwardKineticOperator A u P)
     (M : ℝ) (hM : 0 ≤ M) (hboundary : ∀ P ∈ exitBoundary Z₀ R hR, u P ≤ M) :
@@ -105,11 +109,7 @@ theorem comparison_boundary_limit {d : ℕ}
   exact le_on_closure hinterior hcont continuousOn_const
 
 /-- The source kinetic comparison principle with pointwise positive semidefinite coefficients. -/
-theorem kinetic_comparison {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (A : FullKineticCoefficient d) (u : KineticPoint d → ℝ)
-    (hA : ∀ P ∈ forwardCylinder Z₀ R hR, (A P.time P.position P.velocity).PosSemidef)
-    (hcont : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))
-    (hreg : IsKineticC112On u (forwardCylinder Z₀ R hR))
+theorem kinetic_comparison
     (hsub : ∀ P ∈ forwardCylinder Z₀ R hR, 0 < u P →
       0 ≤ forwardKineticOperator A u P) :
     ∀ P ∈ closure (forwardCylinder Z₀ R hR), u P ≤
@@ -143,5 +143,7 @@ theorem kinetic_comparison {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 <
     nlinarith only [hε.le]
   change u P + e * (P.time - Z₀.time - R ^ 2) ≤ M at hbound
   nlinarith only [hbound,ht,he.le,herr]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

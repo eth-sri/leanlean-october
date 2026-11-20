@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Realization
+public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.EvolutionConclusion
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 
 /-!
@@ -60,12 +60,15 @@ theorem integral_master_eq_fiber (K : MovingFiberKernel Ω γ) (hΩ : Measurable
   rw [← K.map_fiberKernel_eq_master hΩ σ τ hστ p,
     integral_map measurable_subtype_coe.aemeasurable hF.aestronglyMeasurable]
 
+section
+variable {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
+  {S S' : TerminalOperatorFamily Ω γ} {K K' : MovingFiberKernel Ω γ} (hΩo : IsOpen Ω)
+  (h : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S K)
+  (h' : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S' K')
+include B b S S' hΩo h h'
+
 /-- Master kernels of two realizations of the same data agree. -/
-theorem realizes_master_eq {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S S' : TerminalOperatorFamily Ω γ} {K K' : MovingFiberKernel Ω γ}
-    (hΩo : IsOpen Ω)
-    (h : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S K)
-    (h' : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S' K') :
+theorem realizes_master_eq :
     K.master = K'.master := by
   ext q : 1
   have hU : IsOpen (evolutionStateSet Ω γ q.1.2.1) :=
@@ -92,16 +95,14 @@ theorem realizes_master_eq {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE
   exact key
 
 /-- Terminal evolution for open base domain: the kernel is unique. -/
-theorem realizes_kernel_unique {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S S' : TerminalOperatorFamily Ω γ} {K K' : MovingFiberKernel Ω γ}
-    (hΩo : IsOpen Ω)
-    (h : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S K)
-    (h' : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S' K') : K = K' := by
+theorem realizes_kernel_unique : K = K' := by
   have hm := realizes_master_eq hΩo h h'
   obtain ⟨m, hs, hl⟩ := K
   obtain ⟨m', hs', hl'⟩ := K'
   cases hm
   rfl
+
+end
 
 /-- Source uniqueness extends from compact smooth data to kernels and all Borel data. -/
 theorem terminalEvolution_unique {d : ℕ} (Ω : Set (PDE.Vec d))
@@ -123,5 +124,30 @@ theorem terminalEvolution_unique {d : ℕ} (Ω : Set (PDE.Vec d))
   apply BoundedBorel.ext
   intro p
   rw [h.2.1 σ τ hστ p f, h'.2.1 σ τ hστ p f]
+
+section
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+  {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+  {hΩ : IsAdmissibleEvolutionDomain Ω} (H : TerminalEvolutionResult Ω γ B b hΩ)
+include H
+
+/-- The realizing pair is uniquely determined. -/
+theorem TerminalEvolutionResult.existsUnique_realization :
+    ∃! E : TerminalOperatorFamily Ω γ × MovingFiberKernel Ω γ,
+      RealizesTerminalEvolution Ω γ (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b E.1 E.2 := by
+  obtain ⟨S, K, hr, _⟩ := H.realizes
+  refine ⟨(S, K), hr, fun E hE => ?_⟩
+  obtain ⟨hS, hK⟩ := terminalEvolution_unique Ω γ hΩ B b E.1 S E.2 K hE hr
+  exact Prod.ext hS hK
+
+/-- By uniqueness the structural clauses hold on any realizing kernel. -/
+theorem TerminalEvolutionResult.clauses
+    {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
+    (hr : RealizesTerminalEvolution Ω γ (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S K) :
+    TerminalKernelClauses B b hΩ K := by
+  obtain ⟨P, J, hJ, hc⟩ := H.realizes
+  rwa [(terminalEvolution_unique Ω γ hΩ B b S P K J hr hJ).2]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

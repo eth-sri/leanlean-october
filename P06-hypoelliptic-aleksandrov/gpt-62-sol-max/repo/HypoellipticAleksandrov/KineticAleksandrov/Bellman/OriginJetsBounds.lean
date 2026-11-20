@@ -14,18 +14,24 @@ open Set
 def bellmanUnitPoint (q : ℝ × ℝ) : ℝ × ℝ :=
   bellmanPlaneDilation (bellmanGauge q)⁻¹ q
 
+section
+variable {q : ℝ × ℝ} (hq : q ≠ (0, 0))
+include hq
+
 /-- The normalization has gauge one. -/
-theorem bellmanUnitPoint_gauge {q : ℝ × ℝ} (hq : q ≠ (0, 0)) :
+theorem bellmanUnitPoint_gauge :
     bellmanGauge (bellmanUnitPoint q) = 1 := by
   rw [bellmanUnitPoint, bellmanGauge_dilation _ (inv_pos.mpr (bellmanGauge_pos q hq))]
   exact inv_mul_cancel₀ (bellmanGauge_pos q hq).ne'
 
 /-- Positive radial dilation recovers the original point. -/
-theorem bellmanUnitPoint_recover {q : ℝ × ℝ} (hq : q ≠ (0, 0)) :
+theorem bellmanUnitPoint_recover :
     bellmanPlaneDilation (bellmanGauge q) (bellmanUnitPoint q) = q := by
   rw [bellmanUnitPoint, bellmanPlaneDilation_comp,
     mul_inv_cancel₀ (bellmanGauge_pos q hq).ne']
   simp only [bellmanPlaneDilation, one_pow, one_mul, Prod.mk.eta]
+
+end
 
 /-- Every continuous homogeneous scalar function is bounded by its literal gauge degree. -/
 theorem bellman_homogeneous_gauge_bound (beta : ℝ) (f : (ℝ × ℝ) → ℝ)

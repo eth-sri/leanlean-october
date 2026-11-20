@@ -6,6 +6,7 @@ public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 public import Mathlib.MeasureTheory.Function.L1Space.Integrable
 public import Mathlib.MeasureTheory.Group.Measure
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+import HypoellipticAleksandrov.Parabolic.SpatialTranslationWeakDerivatives
 
 /-!
 # Spacetime spatial difference-quotient transposition
@@ -22,36 +23,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 open scoped ENNReal
-
-private theorem spatialShift_neg_comp_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
-    spatialShift k (-h) (spatialShift k h z) = z := by
-  change (spatialShift k (-h) ∘ spatialShift k h) z = z
-  rw [spatialShift_comp]
-  simp
-
-private theorem spatialShift_comp_neg_apply
-    {d : ℕ} (k : Fin d) (h : ℝ) (z : TimeVelocity d) :
-    spatialShift k h (spatialShift k (-h) z) = z := by
-  change (spatialShift k h ∘ spatialShift k (-h)) z = z
-  rw [spatialShift_comp]
-  simp
-
-private theorem spatialShift_measurableEmbedding
-    {d : ℕ} (k : Fin d) (h : ℝ) :
-    MeasurableEmbedding (spatialShift k h) := by
-  change MeasurableEmbedding (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k))
-  simpa only [Homeomorph.coe_addRight] using
-    (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
-
-private theorem spatialShift_measurePreserving
-    {d : ℕ} (k : Fin d) (h : ℝ) :
-    MeasurePreserving (spatialShift k h)
-      (volume : Measure (TimeVelocity d))
-      (volume : Measure (TimeVelocity d)) := by
-  change MeasurePreserving
-    (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k)) volume volume
-  exact measurePreserving_add_right volume _
 
 /-- A forward spatial difference quotient transposes to the negative backward
 quotient on any raw carrier containing the test support and its forward shift. -/
@@ -84,11 +55,6 @@ theorem setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQu
     rw [mem_tsupport_spatialTranslate_iff] at hz
     have hforward := hφshift hz
     simpa only [ψ, spatialShift_comp_neg_apply] using hforward
-  have hqcont : Continuous (spatialDifferenceQuotient k (-h) φ) := by
-    change Continuous (fun z => (ψ z - φ z) / (-h))
-    exact (hψcont.sub hφ).div_const _
-  have hqcompact : HasCompactSupport (spatialDifferenceQuotient k (-h) φ) := by
-    exact HasCompactSupport.spatialDifferenceQuotient hφcompact
   have hqU : tsupport (spatialDifferenceQuotient k (-h) φ) ⊆ U := by
     apply tsupport_spatialDifferenceQuotient_subset_of_mapsTo_spatialShift_neg
       k (-h) φ (fun _ hz => hz) hφU

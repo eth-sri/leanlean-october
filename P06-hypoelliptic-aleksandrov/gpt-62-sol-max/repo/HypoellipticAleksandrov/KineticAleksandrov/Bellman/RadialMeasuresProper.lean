@@ -55,9 +55,7 @@ theorem bellmanRadialEtaProduct_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)
     (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
     IsFiniteMeasureOnCompacts (((bellmanRadiusMeasure alpha).prod pi).withDensity
       (fun w => ENNReal.ofReal w.2.2.val)) := by
-  have hf : Continuous (fun w : BellmanPositiveTime ×
-      (BellmanSphere × BellmanCoefficient lam Lam) => w.2.2.val) := by fun_prop
-  exact bellman_withDensity_finiteOnCompacts ((bellmanRadiusMeasure alpha).prod pi) _ hf
+  exact bellman_withDensity_finiteOnCompacts ((bellmanRadiusMeasure alpha).prod pi) _ (by fun_prop)
 
 /-- The second radial measure is finite on compact subsets of the punctured plane. -/
 instance radialEta_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)

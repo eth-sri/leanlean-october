@@ -3,8 +3,11 @@ module
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexSplitSuccessor
 public import HypoellipticAleksandrov.Parabolic.LocalWeakTimeProduct
 public import HypoellipticAleksandrov.Parabolic.MeasurableSpatialC1WeakLeibniz
+import HypoellipticAleksandrov.Parabolic.WeakDerivativesAlgebra
+import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLocalCalculus
+import HypoellipticAleksandrov.Analysis.BoundedMultiplierLp
 
 /-! # Weak multi-index Leibniz families
 
@@ -16,7 +19,8 @@ product between a classical coefficient and a selected weak derivative family.
 
 namespace HypoellipticAleksandrov.Parabolic
 
-open MeasureTheory
+open MeasureTheory ParabolicDerivativeIndex
+open TimeVelocityMultiIndex (coordinateIteratedFDeriv)
 open scoped ENNReal BigOperators
 
 /-- The literal multi-index Leibniz representative for multiplication of a
@@ -34,26 +38,6 @@ noncomputable def parabolicWeakMulRepresentative
         TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z *
         Du.representative
           (ParabolicDerivativeIndex.splitRight beta gamma) z
-
-private theorem coordinateIteratedFDeriv_contDiffAt
-    {d : ℕ} (alpha : TimeVelocityMultiIndex d) (m : ℕ)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
-    (hf : ContDiffAt ℝ (m + alpha.order) f z) :
-    ContDiffAt ℝ m (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) z := by
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := hf.iteratedFDeriv_right
-    (m := m) (i := alpha.coordinateList.length) (by simp)
-  exact (contDiffAt_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi
-
-private theorem index_order_le {d L : ℕ} (alpha : ParabolicDerivativeIndex d L) :
-    alpha.1.order ≤ L := by
-  have heq : alpha.1.order + alpha.1.timeOrder = alpha.1.parabolicWeight := by
-    simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-    TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-    TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
-    omega
-  omega
 
 private theorem split_zero_eq {d : ℕ}
     (gamma : TimeVelocityMultiIndex.Split (0 : TimeVelocityMultiIndex d)) :
@@ -78,496 +62,186 @@ private theorem representative_zero
     have hright : ParabolicDerivativeIndex.splitRight
         (ParabolicDerivativeIndex.zero d L) default =
         ParabolicDerivativeIndex.zero d L := by
-      apply Subtype.ext
-      funext c
-      simp [ParabolicDerivativeIndex.splitRight, TimeVelocityMultiIndex.Split.right]
+      rfl
     rw [hleft, hright]
     simp [TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero]
   · intro b hb
     exact (hb (split_zero_eq b)).elim
 
-private theorem ae_restrict_of_forall_mem
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    (S : Set α) (hS : MeasurableSet S) {P : α → Prop} (hP : ∀ x ∈ S, P x) :
-    ∀ᵐ x ∂μ.restrict S, P x := by
-  filter_upwards [ae_restrict_mem hS] with x hx
-  exact hP x hx
+section
+variable {d N : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V) {q f : TimeVelocity d → ℝ}
+  (hq : ContDiffOn ℝ N q V) (B : ParabolicDerivativeIndex d N → ℝ) (hB : ∀ α, 0 ≤ B α)
+  (hbound : ∀ α z, z ∈ V → |α.1.coordinateIteratedFDeriv q z| ≤ B α)
+include N hV hq B hB hbound
 
-private theorem toReal_eLpNorm_mul_le
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {p : ℝ≥0∞} {a f : α → ℝ} {M : ℝ}
-    (hM : 0 ≤ M) (ha : AEStronglyMeasurable a μ)
-    (hf : MemLp f p μ) (haM : ∀ᵐ x ∂μ, |a x| ≤ M) :
-    MemLp (fun x => a x * f x) p μ ∧
-      ENNReal.toReal (eLpNorm (fun x => a x * f x) p μ) ≤
-        M * ENNReal.toReal (eLpNorm f p μ) := by
-  have hmeas : AEStronglyMeasurable (fun x => a x * f x) μ := ha.mul hf.aestronglyMeasurable
-  have hpoint : ∀ᵐ x ∂μ, ‖a x * f x‖ ≤ M * ‖f x‖ := by
-    filter_upwards [haM] with x hx
-    simpa only [Real.norm_eq_abs, abs_mul] using
-      mul_le_mul hx le_rfl (abs_nonneg (f x)) hM
-  have haf : MemLp (fun x => a x * f x) p μ := MemLp.of_le_mul hf hmeas hpoint
-  have hle := eLpNorm_le_mul_eLpNorm_of_ae_le_mul hmeas hpoint p
-  have htop : ENNReal.ofReal M * eLpNorm f p μ ≠ ∞ :=
-    ENNReal.mul_ne_top ENNReal.ofReal_ne_top hf.eLpNorm_ne_top
-  have hr := ENNReal.toReal_mono htop hle
-  exact ⟨haf, by simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM] using hr⟩
+/-- Multiplication by a bounded coefficient derivative preserves `L²`. -/
+theorem coordinateDerivative_mul_memLp
+    (α : ParabolicDerivativeIndex d N) (hf : ParabolicMemLpOn V 2 f) :
+    ParabolicMemLpOn V 2 (fun z => α.1.coordinateIteratedFDeriv q z * f z) :=
+  continuousOn_bounded_mul_memLp hV _ _ (B α) (hB α)
+    (α.1.coordinateIteratedFDeriv_contDiffOn (m := 0) hV hq
+      (by simpa using α.1.order_le_parabolicWeight.trans α.2)).continuousOn (hbound α) hf
 
-private theorem mulTerm_memLp_norm
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (B : ℝ) (hB : 0 ≤ B) (a f : TimeVelocity d → ℝ)
-    (ha : ContinuousOn a U) (haB : ∀ z ∈ U, |a z| ≤ B)
-    (hf : ParabolicMemLpOn U 2 f) :
-    ParabolicMemLpOn U 2 (fun z => a z * f z) ∧
-      ENNReal.toReal (eLpNorm (fun z => a z * f z) 2 (timeVelocityVolumeOn U)) ≤
-        B * ENNReal.toReal (eLpNorm f 2 (timeVelocityVolumeOn U)) := by
-  have haMeas : AEStronglyMeasurable a (timeVelocityVolumeOn U) :=
-    ha.aestronglyMeasurable hU.measurableSet
-  have haAE : ∀ᵐ z ∂timeVelocityVolumeOn U, |a z| ≤ B :=
-    ae_restrict_of_forall_mem U hU.measurableSet haB
-  exact toReal_eLpNorm_mul_le hB haMeas hf haAE
+/-- A bounded coefficient preserves `L²` under multiplication. -/
+theorem coefficient_mul_memLp
+    (hf : ParabolicMemLpOn V 2 f) : ParabolicMemLpOn V 2 (fun z => q z * f z) := by
+  simpa only [coe_zero, TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] using
+    coordinateDerivative_mul_memLp hV hq B hB hbound (zero d N) hf
 
-private def leftAddIndex {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) (c : TimeVelocityCoord d)
-    (hadd : (gamma.left + Pi.single c 1).parabolicWeight ≤ L) :
-    ParabolicDerivativeIndex d L := ⟨_, hadd⟩
+end
 
-private def rightAddIndex {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
-    (gamma : TimeVelocityMultiIndex.Split beta.1) (c : TimeVelocityCoord d)
-    (hadd : (gamma.right + Pi.single c 1).parabolicWeight ≤ L) :
-    ParabolicDerivativeIndex d L := ⟨_, hadd⟩
+section
+variable {d L : ℕ} {U : Set (TimeVelocity d)}
 
-private theorem weight_add_time_single {d : ℕ}
-    (a : TimeVelocityMultiIndex d) :
-    (a + Pi.single (timeCoord d) 1).parabolicWeight =
-      a.parabolicWeight + 2 := by
-  have ht : (a + Pi.single (timeCoord d) 1).timeOrder = a.timeOrder + 1 := by
-    simp [TimeVelocityMultiIndex.timeOrder, timeCoord]
-  have hv : (a + Pi.single (timeCoord d) 1).velocity = a.velocity := by
-    funext i
-    simp [TimeVelocityMultiIndex.velocity, velocityCoord, timeCoord]
-  rw [TimeVelocityMultiIndex.parabolicWeight,
-    VelocityMultiIndex.parabolicWeight, ht, hv]
-  simp [TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight]
-  omega
-private theorem weight_add_velocity_single {d : ℕ}
-    (a : TimeVelocityMultiIndex d) (i : Fin d) :
-    (a + Pi.single (velocityCoord i) 1).parabolicWeight =
-      a.parabolicWeight + 1 := by
-  simp only [TimeVelocityMultiIndex.parabolicWeight, VelocityMultiIndex.parabolicWeight,
-    VelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder,
-    TimeVelocityMultiIndex.velocity, Pi.add_apply]
-  rw [Finset.sum_add_distrib]
-  simp [velocityCoord, timeCoord, Pi.single_apply]
-  omega
+/-- A single coordinate successor, expressed by adding its unit multi-index. -/
+theorem ParabolicWeakDerivativeFamily.hasWeak_add_single {u : TimeVelocity d → ℝ}
+    (D : ParabolicWeakDerivativeFamily d L U u) (β : ParabolicDerivativeIndex d L)
+    (c : TimeVelocityCoord d) (h : (β.1 + Pi.single c 1).parabolicWeight ≤ L) :
+    HasWeakFDerivApplyOn U (timeVelocityBasis c) (D.representative β)
+      (D.representative ⟨β.1 + Pi.single c 1, h⟩) := by
+  rcases c with c | i
+  · cases c
+    change HasWeakFDerivApplyOn U (timeVelocityBasis (timeCoord d)) (D.representative β)
+      (D.representative ⟨β.1 + Pi.single (timeCoord d) 1, h⟩)
+    change (β.1 + Pi.single (timeCoord d) 1).parabolicWeight ≤ L at h
+    have h₂ : β.1.parabolicWeight + 2 ≤ L := by simpa using h
+    rw [show (⟨_, h⟩ : ParabolicDerivativeIndex d L) = timeSucc β h₂ from
+      Subtype.ext (coe_timeSucc_eq_add_single β h₂).symm]
+    exact D.hasWeakTimeSucc β h₂
+  · change HasWeakFDerivApplyOn U (timeVelocityBasis (velocityCoord i)) (D.representative β)
+      (D.representative ⟨β.1 + Pi.single (velocityCoord i) 1, h⟩)
+    change (β.1 + Pi.single (velocityCoord i) 1).parabolicWeight ≤ L at h
+    have h₁ : β.1.parabolicWeight + 1 ≤ L := by simpa using h
+    rw [show (⟨_, h⟩ : ParabolicDerivativeIndex d L) = velocitySucc β i h₁ from
+      Subtype.ext (coe_velocitySucc_eq_add_single β i h₁).symm]
+    exact D.hasWeakVelocitySucc β i h₁
+
+private theorem weakMulRepresentative_hasWeak_add_single (hU : IsOpen U)
+    {q u : TimeVelocity d → ℝ} (hq : ContDiffOn ℝ L q U)
+    (B : ParabolicDerivativeIndex d L → ℝ) (hB : ∀ α, 0 ≤ B α)
+    (hbound : ∀ α z, z ∈ U → |α.1.coordinateIteratedFDeriv q z| ≤ B α)
+    (D : ParabolicWeakDerivativeFamily d L U u) (β : ParabolicDerivativeIndex d L)
+    (c : TimeVelocityCoord d) (h : (β.1 + Pi.single c 1).parabolicWeight ≤ L) :
+    HasWeakFDerivApplyOn U (timeVelocityBasis c) (parabolicWeakMulRepresentative q D β)
+      (parabolicWeakMulRepresentative q D ⟨β.1 + Pi.single c 1, h⟩) := by
+  classical
+  let I := TimeVelocityMultiIndex.Split β.1
+  let s : TimeVelocityMultiIndex d := Pi.single c 1
+  have hleft (γ : I) : (γ.left + s).parabolicWeight ≤ L := by
+    simp only [TimeVelocityMultiIndex.parabolicWeight_add] at h ⊢
+    exact (Nat.add_le_add_right γ.parabolicWeight_left_le _).trans h
+  have hright (γ : I) : (γ.right + s).parabolicWeight ≤ L := by
+    simp only [TimeVelocityMultiIndex.parabolicWeight_add] at h ⊢
+    exact (Nat.add_le_add_right γ.parabolicWeight_right_le _).trans h
+  let val (γ : I) (z) := (β.1.choose γ.left : ℝ) *
+    coordinateIteratedFDeriv γ.left q z * D.representative (splitRight β γ) z
+  let der (γ : I) (z) := (β.1.choose γ.left : ℝ) *
+    (coordinateIteratedFDeriv (γ.left + s) q z * D.representative (splitRight β γ) z +
+      coordinateIteratedFDeriv γ.left q z * D.representative ⟨γ.right + s, hright γ⟩ z)
+  have hdata (γ : I) : ParabolicMemLpOn U 2 (val γ) ∧ ParabolicMemLpOn U 2 (der γ) ∧
+      HasWeakFDerivApplyOn U (timeVelocityBasis c) (val γ) (der γ) := by
+    let a := coordinateIteratedFDeriv γ.left q
+    let a' := coordinateIteratedFDeriv (γ.left + s) q
+    let v := D.representative (splitRight β γ)
+    let v' := D.representative ⟨γ.right + s, hright γ⟩
+    let K : ℝ := β.1.choose γ.left
+    let α := splitLeft β γ
+    let α' : ParabolicDerivativeIndex d L := ⟨γ.left + s, hleft γ⟩
+    have hw : 1 ≤ s.parabolicWeight := by
+      rcases c with c | i
+      · cases c
+        change 1 ≤ TimeVelocityMultiIndex.parabolicWeight (Pi.single (timeCoord d) 1)
+        simp
+      · change 1 ≤ TimeVelocityMultiIndex.parabolicWeight (Pi.single (velocityCoord i) 1)
+        simp
+    have ho : γ.left.order + 1 ≤ L := by
+      have hl := hleft γ
+      rw [TimeVelocityMultiIndex.parabolicWeight_add] at hl
+      have := γ.left.order_le_parabolicWeight
+      omega
+    have ha := γ.left.coordinateIteratedFDeriv_contDiffOn (m := 1) hU hq
+      (by exact_mod_cast (show 1 + γ.left.order ≤ L by omega))
+    have hd z (hz : z ∈ U) : fderiv ℝ a z (timeVelocityBasis c) = a' z :=
+      (TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at _ c q z
+        ((hq.contDiffAt (hU.mem_nhds hz)).of_le (by exact_mod_cast ho))).symm
+    have hp := fderivApplyC1_mul_hasWeakFDerivApplyOn_memLp_eLpNorm_le hU (timeVelocityBasis c)
+      (B α) (B α') (hB _) (hB _) a ha (hbound α)
+      (fun z hz => hd z hz ▸ hbound α' z hz) v v' (D.memLp _) (D.memLp _)
+      (D.hasWeak_add_single (splitRight β γ) c (hright γ))
+    have hv : (K • (a * v)) = val γ := by ext z; simp only [Pi.smul_apply, Pi.mul_apply, smul_eq_mul, val, K, a, v, mul_assoc]
+    have hder : (K • (a * v' + (fun z => fderiv ℝ a z (timeVelocityBasis c)) * v))
+        =ᵐ[timeVelocityVolumeOn U] der γ := by
+      filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
+      simp only [Pi.smul_apply, Pi.add_apply, Pi.mul_apply, smul_eq_mul, hd z hz, der, v, v', a, a', K]
+      rw [add_comm]
+    exact ⟨hv ▸ hp.2.1.const_smul K, (memLp_congr_ae hder).mp (hp.2.2.1.const_smul K),
+      (hp.2.2.2.1.smul K).congr_ae (.of_forall fun z => congrFun hv z) hder⟩
+  have hsum := HasWeakFDerivApplyOn.fintype_sum (u := val) (du := der) (e := timeVelocityBasis c)
+    (fun γ => (hdata γ).2.2) (fun γ => (hdata γ).1.locallyIntegrableOn (by norm_num))
+    (fun γ => (hdata γ).2.1.locallyIntegrableOn (by norm_num))
+  have heq : (fun z => ∑ γ, der γ z) = parabolicWeakMulRepresentative q D ⟨β.1 + s, h⟩ := by
+    funext z
+    let A (a b : TimeVelocityMultiIndex d) := if hb : b.parabolicWeight ≤ L then
+      coordinateIteratedFDeriv a q z * D.representative ⟨b, hb⟩ z else 0
+    calc
+      (∑ γ, der γ z) = ∑ γ : I, (β.1.choose γ.left : ℝ) *
+          (A (γ.left + s) γ.right + A γ.left (γ.right + s)) := by
+        refine Finset.sum_congr rfl fun γ _ => ?_
+        have hr : γ.right.parabolicWeight ≤ L := (splitRight β γ).2
+        simp only [A, der, dif_pos hr, dif_pos (hright γ), coe_splitRight]
+        rfl
+      _ = ∑ γ : TimeVelocityMultiIndex.Split (β.1 + s),
+          ((β.1 + s).choose γ.left : ℝ) * A γ.left γ.right :=
+        TimeVelocityMultiIndex.sum_choose_split_add_single β.1 c A
+      _ = _ := by
+        unfold parabolicWeakMulRepresentative
+        refine Finset.sum_congr rfl fun γ _ => ?_
+        simp only [A, dif_pos (γ.parabolicWeight_right_le.trans h), mul_assoc]
+        rfl
+  rw [heq] at hsum
+  exact hsum
+
+end
+
+section
+variable {d L : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+  (Bq : ParabolicDerivativeIndex d L → ℝ) (hBq : ∀ alpha, 0 ≤ Bq alpha) (q : TimeVelocity d → ℝ)
+  (hq : ContDiffOn ℝ L q U)
+  (hqBound : ∀ (alpha : ParabolicDerivativeIndex d L) z, z ∈ U → |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 q z| ≤ Bq alpha)
+  (u : TimeVelocity d → ℝ) (Du : ParabolicWeakDerivativeFamily d L U u)
+include hU Bq hBq hq hqBound Du
+
 /-- Multiplication by a bounded finite-order classical coefficient preserves a
 coherent weak parabolic derivative family on an arbitrary open carrier. -/
-noncomputable def ParabolicWeakDerivativeFamily.mulContDiffOn
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (Bq : ParabolicDerivativeIndex d L → ℝ)
-    (hBq : ∀ alpha, 0 ≤ Bq alpha)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ L q U)
-    (hqBound :
-      ∀ (alpha : ParabolicDerivativeIndex d L) z, z ∈ U →
-        |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 q z| ≤
-          Bq alpha)
-    (u : TimeVelocity d → ℝ)
-    (Du : ParabolicWeakDerivativeFamily d L U u) :
+noncomputable def ParabolicWeakDerivativeFamily.mulContDiffOn :
     ParabolicWeakDerivativeFamily d L U (fun z => q z * u z) where
   representative := parabolicWeakMulRepresentative q Du
-  memLp := by
-    intro beta
-    apply memLp_finset_sum Finset.univ
-    intro gamma hgamma
-    let a := fun z => (beta.1.choose gamma.left : ℝ) *
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z
-    have hcont : ContinuousOn a U := fun z hz => by
-      apply ContinuousAt.continuousWithinAt
-      apply continuousAt_const.mul
-      exact (coordinateIteratedFDeriv_contDiffAt gamma.left 0 q z
-        ((hq.contDiffAt (hU.mem_nhds hz)).of_le (by
-          simpa using gamma.order_left_le.trans (index_order_le beta)))).continuousAt
-    have hb : ∀ z ∈ U, |a z| ≤
-        (beta.1.choose gamma.left : ℝ) *
-          Bq (ParabolicDerivativeIndex.splitLeft beta gamma) := by
-      intro z hz
-      dsimp [a]
-      rw [abs_mul, abs_of_nonneg (Nat.cast_nonneg _)]
-      exact mul_le_mul_of_nonneg_left
-        (hqBound (ParabolicDerivativeIndex.splitLeft beta gamma) z hz)
-        (Nat.cast_nonneg _)
-    exact (mulTerm_memLp_norm hU _
-      (mul_nonneg (Nat.cast_nonneg _) (hBq _)) a _ hcont hb (Du.memLp _)).1
+  memLp beta := memLp_finsetSum Finset.univ fun gamma _ => by
+    simpa only [mul_assoc, coe_splitLeft] using
+      (coordinateDerivative_mul_memLp hU hq Bq hBq hqBound
+        (splitLeft beta gamma) (Du.memLp (splitRight beta gamma))).const_mul
+          (beta.1.choose gamma.left : ℝ)
   zero_ae := by
     filter_upwards [Du.zero_ae] with z hz
     rw [representative_zero]
     exact congrArg (fun x => q z * x) hz
-  hasWeakTimeSucc := by
-    classical
-    intro beta h
-    let c : TimeVelocityCoord d := timeCoord d
-    let I := TimeVelocityMultiIndex.Split beta.1
-    let e : I ≃ Fin (Fintype.card I) := Fintype.equivFin I
-    let val : I → TimeVelocity d → ℝ := fun gamma z ↦
-      (beta.1.choose gamma.left : ℝ) *
-        TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z *
-        Du.representative (ParabolicDerivativeIndex.splitRight beta gamma) z
-    let der : I → TimeVelocity d → ℝ := fun gamma z ↦
-      (beta.1.choose gamma.left : ℝ) *
-        (TimeVelocityMultiIndex.coordinateIteratedFDeriv
-            (gamma.left + Pi.single c 1) q z *
-            Du.representative (ParabolicDerivativeIndex.splitRight beta gamma) z +
-          TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z *
-            Du.representative (rightAddIndex beta gamma c (by
-              have hr := gamma.parabolicWeight_right_le
-              rw [show c = timeCoord d from rfl, weight_add_time_single]
-              omega)) z)
-    have hdata (gamma : I) :
-        ParabolicMemLpOn U 2 (val gamma) ∧ ParabolicMemLpOn U 2 (der gamma) ∧
-          HasWeakTimeDerivOn U (val gamma) (der gamma) := by
-      have hleft : gamma.left.order + 1 ≤ L := by
-        have hlo := gamma.order_left_le
-        have hob : beta.1.order ≤ beta.1.parabolicWeight := by
-          simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.parabolicWeight,
-            VelocityMultiIndex.parabolicWeight]
-          omega
-        omega
-      have hC1 : ContDiffOn ℝ 1
-          (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) U := by
-        intro z hz
-        have ht := coordinateIteratedFDeriv_contDiffAt gamma.left 1 q z
-          ((hq.contDiffAt (hU.mem_nhds hz)).of_le (by
-            exact_mod_cast (show 1 + gamma.left.order ≤ L by omega)))
-        simpa using ht.contDiffWithinAt
-      have hladd : (gamma.left + Pi.single c 1).parabolicWeight ≤ L := by
-        have hl := gamma.parabolicWeight_left_le
-        rw [show c = timeCoord d from rfl, weight_add_time_single]
-        omega
-      have hradd : (gamma.right + Pi.single c 1).parabolicWeight ≤ L := by
-        have hr := gamma.parabolicWeight_right_le
-        rw [show c = timeCoord d from rfl, weight_add_time_single]
-        omega
-      have hrsucc : gamma.right.parabolicWeight + 2 ≤ L := by
-        have hr := gamma.parabolicWeight_right_le
-        omega
-      have hrightEq : rightAddIndex beta gamma c hradd =
-          ParabolicDerivativeIndex.timeSucc
-            (ParabolicDerivativeIndex.splitRight beta gamma) hrsucc := by
-        apply Subtype.ext
-        rw [ParabolicDerivativeIndex.coe_timeSucc_eq_add_single
-          (ParabolicDerivativeIndex.splitRight beta gamma) hrsucc]
-        rfl
-      have hweak := Du.hasWeakTimeSucc
-        (ParabolicDerivativeIndex.splitRight beta gamma) hrsucc
-      have hprod := timeC1_mul_hasWeakTimeDerivOn_memLp_eLpNorm_le
-        hU
-        (Bq (ParabolicDerivativeIndex.splitLeft beta gamma))
-        (Bq (leftAddIndex beta gamma c hladd))
-        (hBq _) (hBq _)
-        (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) hC1
-        (by intro z hz; exact hqBound (ParabolicDerivativeIndex.splitLeft beta gamma) z hz)
-        (by
-          intro z hz
-          rw [show timeDerivative
-              (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) z =
-              TimeVelocityMultiIndex.coordinateIteratedFDeriv
-                (gamma.left + Pi.single c 1) q z by
-            rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at]
-            · simp [timeDerivative, c, timeVelocityBasis_time]
-            · exact (hq.contDiffAt (hU.mem_nhds hz)).of_le (by
-                exact_mod_cast hleft)]
-          exact hqBound (leftAddIndex beta gamma c hladd) z hz)
-        (Du.representative (ParabolicDerivativeIndex.splitRight beta gamma))
-        (Du.representative (rightAddIndex beta gamma c hradd))
-        (Du.memLp _) (Du.memLp _)
-        (by simpa only [hrightEq] using hweak)
-      have hp := hprod.2.2.2.1
-      have hs := hp.smul (beta.1.choose gamma.left : ℝ)
-      have hderAE :
-          ((beta.1.choose gamma.left : ℝ) • fun z =>
-            TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z *
-                Du.representative (rightAddIndex beta gamma c hradd) z +
-              timeDerivative
-                  (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) z *
-                Du.representative (ParabolicDerivativeIndex.splitRight beta gamma) z) =ᵐ[
-            timeVelocityVolumeOn U] der gamma := by
-        filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
-        have hd := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-          gamma.left c q z ((hq.contDiffAt (hU.mem_nhds hz)).of_le (by
-            exact_mod_cast hleft))
-        simp only [der, Pi.smul_apply, smul_eq_mul, mul_add]
-        rw [hd]
-        simp [timeDerivative, c, timeVelocityBasis_time]
-        ring
-      have hvmem : ParabolicMemLpOn U 2 (val gamma) := by
-        simpa only [val, Pi.smul_apply, smul_eq_mul, mul_assoc] using
-          hprod.2.1.const_mul (beta.1.choose gamma.left : ℝ)
-      have hdmem : ParabolicMemLpOn U 2 (der gamma) := by
-        exact (memLp_congr_ae hderAE).mp
-          (hprod.2.2.1.const_mul (beta.1.choose gamma.left : ℝ))
-      refine ⟨hvmem, hdmem, ?_⟩
-      apply hs.congr_ae
-      · filter_upwards [] with z
-        simp [val]
-        ring
-      · exact hderAE
-    have hterm (gamma : I) := (hdata gamma).2.2
-    have hvalLoc (gamma : I) : LocallyIntegrableOn (val gamma) U volume :=
-      (hdata gamma).1.locallyIntegrableOn (by norm_num)
-    have hderMem (gamma : I) : ParabolicMemLpOn U 2 (der gamma) := (hdata gamma).2.1
-    have hderLoc (gamma : I) : LocallyIntegrableOn (der gamma) U volume :=
-      (hderMem gamma).locallyIntegrableOn (by norm_num)
-    have hsum := HasWeakTimeDerivOn.fin_sum
-      (u := fun j => val (e.symm j)) (du := fun j => der (e.symm j))
-      (fun j => hterm (e.symm j)) (fun j => hvalLoc (e.symm j))
-      (fun j => hderLoc (e.symm j))
-    have hvalsum : (fun z => ∑ j, val (e.symm j) z) =
-        parabolicWeakMulRepresentative q Du beta := by
-      funext z
-      unfold parabolicWeakMulRepresentative
-      exact Equiv.sum_comp e.symm (fun gamma => val gamma z)
-    have hdersum : (fun z => ∑ j, der (e.symm j) z) =
-        parabolicWeakMulRepresentative q Du
-          (ParabolicDerivativeIndex.timeSucc beta h) := by
-      funext z
-      unfold parabolicWeakMulRepresentative
-      rw [Equiv.sum_comp e.symm (fun gamma => der gamma z)]
-      let F : TimeVelocityMultiIndex d → TimeVelocityMultiIndex d → ℝ := fun a b =>
-        if hb : b.parabolicWeight ≤ L then
-          TimeVelocityMultiIndex.coordinateIteratedFDeriv a q z *
-            Du.representative ⟨b, hb⟩ z
-        else 0
-      calc
-        (∑ gamma : I, der gamma z) =
-            ∑ gamma : I, (beta.1.choose gamma.left : ℝ) *
-              (F (gamma.left + Pi.single c 1) gamma.right +
-                F gamma.left (gamma.right + Pi.single c 1)) := by
-          apply Finset.sum_congr rfl
-          intro gamma hgamma
-          have hr0 : gamma.right.parabolicWeight ≤ L :=
-            gamma.parabolicWeight_right_le.trans beta.2
-          have hr1 : (gamma.right + Pi.single c 1).parabolicWeight ≤ L := by
-            rw [show c = timeCoord d from rfl, weight_add_time_single]
-            have hr := gamma.parabolicWeight_right_le
-            omega
-          simp only [der, F, dif_pos hr0, dif_pos hr1]
-          congr 3
-        _ = ∑ delta : TimeVelocityMultiIndex.Split
-              (ParabolicDerivativeIndex.timeSucc beta h).1,
-            ((ParabolicDerivativeIndex.timeSucc beta h).1.choose delta.left : ℝ) *
-              F delta.left delta.right :=
-          by
-            rw [ParabolicDerivativeIndex.coe_timeSucc_eq_add_single]
-            exact TimeVelocityMultiIndex.sum_choose_split_add_single beta.1 c F
-        _ = ∑ delta : TimeVelocityMultiIndex.Split
-              (ParabolicDerivativeIndex.timeSucc beta h).1,
-            ((ParabolicDerivativeIndex.timeSucc beta h).1.choose delta.left : ℝ) *
-              TimeVelocityMultiIndex.coordinateIteratedFDeriv delta.left q z *
-                Du.representative
-                  (ParabolicDerivativeIndex.splitRight
-                    (ParabolicDerivativeIndex.timeSucc beta h) delta) z := by
-          apply Finset.sum_congr rfl
-          intro delta hdelta
-          have hdr : delta.right.parabolicWeight ≤ L :=
-            delta.parabolicWeight_right_le.trans
-              (ParabolicDerivativeIndex.timeSucc beta h).2
-          simp only [F, dif_pos hdr, mul_assoc]
-          congr 2
-    rw [hvalsum, hdersum] at hsum
-    exact hsum
-
-  hasWeakVelocitySucc := by
-    classical
-    intro beta i h
-    let c : TimeVelocityCoord d := velocityCoord i
-    let I := TimeVelocityMultiIndex.Split beta.1
-    let e : I ≃ Fin (Fintype.card I) := Fintype.equivFin I
-    let val : I → TimeVelocity d → ℝ := fun gamma z ↦
-      (beta.1.choose gamma.left : ℝ) *
-        TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z *
-        Du.representative (ParabolicDerivativeIndex.splitRight beta gamma) z
-    let der : I → TimeVelocity d → ℝ := fun gamma z ↦
-      (beta.1.choose gamma.left : ℝ) *
-        (TimeVelocityMultiIndex.coordinateIteratedFDeriv
-            (gamma.left + Pi.single c 1) q z *
-            Du.representative (ParabolicDerivativeIndex.splitRight beta gamma) z +
-          TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z *
-            Du.representative (rightAddIndex beta gamma c (by
-              have hr := gamma.parabolicWeight_right_le
-              rw [show c = velocityCoord i from rfl, weight_add_velocity_single]
-              omega)) z)
-    have hdata (gamma : I) :
-        ParabolicMemLpOn U 2 (val gamma) ∧ ParabolicMemLpOn U 2 (der gamma) ∧
-          HasWeakVelocityPartialDerivOn U i (val gamma) (der gamma) := by
-      have hleft : gamma.left.order + 1 ≤ L := by
-        have hlo := gamma.order_left_le
-        have hob : beta.1.order ≤ beta.1.parabolicWeight := by
-          simp [TimeVelocityMultiIndex.order, TimeVelocityMultiIndex.parabolicWeight,
-            VelocityMultiIndex.parabolicWeight]
-          omega
-        omega
-      have hC1 : ContDiffOn ℝ 1
-          (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) U := by
-        intro z hz
-        have ht := coordinateIteratedFDeriv_contDiffAt gamma.left 1 q z
-          ((hq.contDiffAt (hU.mem_nhds hz)).of_le (by
-            exact_mod_cast (show 1 + gamma.left.order ≤ L by omega)))
-        simpa using ht.contDiffWithinAt
-      have hladd : (gamma.left + Pi.single c 1).parabolicWeight ≤ L := by
-        have hl := gamma.parabolicWeight_left_le
-        rw [show c = velocityCoord i from rfl, weight_add_velocity_single]
-        omega
-      have hradd : (gamma.right + Pi.single c 1).parabolicWeight ≤ L := by
-        have hr := gamma.parabolicWeight_right_le
-        rw [show c = velocityCoord i from rfl, weight_add_velocity_single]
-        omega
-      have hrsucc : gamma.right.parabolicWeight + 1 ≤ L := by
-        have hr := gamma.parabolicWeight_right_le
-        omega
-      have hrightEq : rightAddIndex beta gamma c hradd =
-          ParabolicDerivativeIndex.velocitySucc
-            (ParabolicDerivativeIndex.splitRight beta gamma) i (by
-              exact hrsucc) := by
-        apply Subtype.ext
-        rw [ParabolicDerivativeIndex.coe_velocitySucc_eq_add_single
-          (ParabolicDerivativeIndex.splitRight beta gamma) i hrsucc]
-        rfl
-      have hweak := Du.hasWeakVelocitySucc
-        (ParabolicDerivativeIndex.splitRight beta gamma) i
-        hrsucc
-      have hprod := velocityC1_mul_hasWeakVelocityPartialDerivOn_memLp_eLpNorm_le
-        hU i
-        (Bq (ParabolicDerivativeIndex.splitLeft beta gamma))
-        (Bq (leftAddIndex beta gamma c hladd))
-        (hBq _) (hBq _)
-        (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) hC1
-        (by intro z hz; exact hqBound (ParabolicDerivativeIndex.splitLeft beta gamma) z hz)
-        (by
-          intro z hz
-          rw [show velocityGradient
-              (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) z i =
-              TimeVelocityMultiIndex.coordinateIteratedFDeriv
-                (gamma.left + Pi.single c 1) q z by
-            rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at]
-            · simp [velocityGradient, c, timeVelocityBasis_velocity, PDE.basisVec]
-            · exact (hq.contDiffAt (hU.mem_nhds hz)).of_le (by
-                exact_mod_cast hleft)]
-          exact hqBound (leftAddIndex beta gamma c hladd) z hz)
-        (Du.representative (ParabolicDerivativeIndex.splitRight beta gamma))
-        (Du.representative (rightAddIndex beta gamma c hradd))
-        (Du.memLp _) (Du.memLp _)
-        (by simpa only [hrightEq] using hweak)
-      have hp := hprod.2.2.2.1
-      have hs := hp.smul (beta.1.choose gamma.left : ℝ)
-      have hderAE :
-          ((beta.1.choose gamma.left : ℝ) • fun z =>
-            TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q z *
-                Du.representative (rightAddIndex beta gamma c hradd) z +
-              velocityGradient
-                  (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left q) z i *
-                Du.representative (ParabolicDerivativeIndex.splitRight beta gamma) z) =ᵐ[
-            timeVelocityVolumeOn U] der gamma := by
-        filter_upwards [ae_restrict_mem hU.measurableSet] with z hz
-        have hd := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-          gamma.left c q z ((hq.contDiffAt (hU.mem_nhds hz)).of_le (by
-            exact_mod_cast hleft))
-        simp only [der, Pi.smul_apply, smul_eq_mul, mul_add]
-        rw [hd]
-        simp [velocityGradient, c, timeVelocityBasis_velocity, PDE.basisVec]
-        ring
-      have hvmem : ParabolicMemLpOn U 2 (val gamma) := by
-        simpa only [val, Pi.smul_apply, smul_eq_mul, mul_assoc] using
-          hprod.2.1.const_mul (beta.1.choose gamma.left : ℝ)
-      have hdmem : ParabolicMemLpOn U 2 (der gamma) := by
-        exact (memLp_congr_ae hderAE).mp
-          (hprod.2.2.1.const_mul (beta.1.choose gamma.left : ℝ))
-      refine ⟨hvmem, hdmem, ?_⟩
-      apply hs.congr_ae
-      · filter_upwards [] with z
-        simp [val]
-        ring
-      · exact hderAE
-    have hterm (gamma : I) := (hdata gamma).2.2
-    have hvalLoc (gamma : I) : LocallyIntegrableOn (val gamma) U volume :=
-      (hdata gamma).1.locallyIntegrableOn (by norm_num)
-    have hderMem (gamma : I) : ParabolicMemLpOn U 2 (der gamma) := (hdata gamma).2.1
-    have hderLoc (gamma : I) : LocallyIntegrableOn (der gamma) U volume :=
-      (hderMem gamma).locallyIntegrableOn (by norm_num)
-    have hsum := HasWeakVelocityPartialDerivOn.fin_sum
-      (u := fun j => val (e.symm j)) (du := fun j => der (e.symm j))
-      (fun j => hterm (e.symm j)) (fun j => hvalLoc (e.symm j))
-      (fun j => hderLoc (e.symm j))
-    have hvalsum : (fun z => ∑ j, val (e.symm j) z) =
-        parabolicWeakMulRepresentative q Du beta := by
-      funext z
-      unfold parabolicWeakMulRepresentative
-      exact Equiv.sum_comp e.symm (fun gamma => val gamma z)
-    have hdersum : (fun z => ∑ j, der (e.symm j) z) =
-        parabolicWeakMulRepresentative q Du
-          (ParabolicDerivativeIndex.velocitySucc beta i h) := by
-      funext z
-      unfold parabolicWeakMulRepresentative
-      rw [Equiv.sum_comp e.symm (fun gamma => der gamma z)]
-      let F : TimeVelocityMultiIndex d → TimeVelocityMultiIndex d → ℝ := fun a b =>
-        if hb : b.parabolicWeight ≤ L then
-          TimeVelocityMultiIndex.coordinateIteratedFDeriv a q z *
-            Du.representative ⟨b, hb⟩ z
-        else 0
-      calc
-        (∑ gamma : I, der gamma z) =
-            ∑ gamma : I, (beta.1.choose gamma.left : ℝ) *
-              (F (gamma.left + Pi.single c 1) gamma.right +
-                F gamma.left (gamma.right + Pi.single c 1)) := by
-          apply Finset.sum_congr rfl
-          intro gamma hgamma
-          have hr0 : gamma.right.parabolicWeight ≤ L :=
-            gamma.parabolicWeight_right_le.trans beta.2
-          have hr1 : (gamma.right + Pi.single c 1).parabolicWeight ≤ L := by
-            rw [show c = velocityCoord i from rfl, weight_add_velocity_single]
-            have hr := gamma.parabolicWeight_right_le
-            omega
-          simp only [der, F, dif_pos hr0, dif_pos hr1]
-          congr 3
-        _ = ∑ delta : TimeVelocityMultiIndex.Split
-              (ParabolicDerivativeIndex.velocitySucc beta i h).1,
-            ((ParabolicDerivativeIndex.velocitySucc beta i h).1.choose delta.left : ℝ) *
-              F delta.left delta.right :=
-          by
-            rw [ParabolicDerivativeIndex.coe_velocitySucc_eq_add_single]
-            exact TimeVelocityMultiIndex.sum_choose_split_add_single beta.1 c F
-        _ = ∑ delta : TimeVelocityMultiIndex.Split
-              (ParabolicDerivativeIndex.velocitySucc beta i h).1,
-            ((ParabolicDerivativeIndex.velocitySucc beta i h).1.choose delta.left : ℝ) *
-              TimeVelocityMultiIndex.coordinateIteratedFDeriv delta.left q z *
-                Du.representative
-                  (ParabolicDerivativeIndex.splitRight
-                    (ParabolicDerivativeIndex.velocitySucc beta i h) delta) z := by
-          apply Finset.sum_congr rfl
-          intro delta hdelta
-          have hdr : delta.right.parabolicWeight ≤ L :=
-            delta.parabolicWeight_right_le.trans
-              (ParabolicDerivativeIndex.velocitySucc beta i h).2
-          simp only [F, dif_pos hdr, mul_assoc]
-          congr 2
-    rw [hvalsum, hdersum] at hsum
-    exact hsum
+  hasWeakTimeSucc beta h := by
+    have hb : (beta.1 + Pi.single (timeCoord d) 1).parabolicWeight ≤ L := by simpa using h
+    rw [show timeSucc beta h = ⟨_, hb⟩ from Subtype.ext (coe_timeSucc_eq_add_single beta h)]
+    exact weakMulRepresentative_hasWeak_add_single hU hq Bq hBq hqBound Du beta (timeCoord d) hb
+  hasWeakVelocitySucc beta i h := by
+    have hb : (beta.1 + Pi.single (velocityCoord i) 1).parabolicWeight ≤ L := by simpa using h
+    rw [show velocitySucc beta i h = ⟨_, hb⟩ from Subtype.ext (coe_velocitySucc_eq_add_single beta i h)]
+    exact weakMulRepresentative_hasWeak_add_single hU hq Bq hBq hqBound Du beta (velocityCoord i) hb
 
 /-- The selected representative of `mulContDiffOn` is definitionally the
 literal multi-index Leibniz sum. -/
 @[simp] theorem ParabolicWeakDerivativeFamily.mulContDiffOn_representative
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
-    (Bq : ParabolicDerivativeIndex d L → ℝ)
-    (hBq : ∀ alpha, 0 ≤ Bq alpha)
-    (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ L q U)
-    (hqBound :
-      ∀ (alpha : ParabolicDerivativeIndex d L) z, z ∈ U →
-        |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 q z| ≤
-          Bq alpha)
-    (u : TimeVelocity d → ℝ)
-    (Du : ParabolicWeakDerivativeFamily d L U u)
     (beta : ParabolicDerivativeIndex d L) :
     (Du.mulContDiffOn hU Bq hBq q hq hqBound).representative beta =
       parabolicWeakMulRepresentative q Du beta :=
   rfl
+
+end
 
 end HypoellipticAleksandrov.Parabolic

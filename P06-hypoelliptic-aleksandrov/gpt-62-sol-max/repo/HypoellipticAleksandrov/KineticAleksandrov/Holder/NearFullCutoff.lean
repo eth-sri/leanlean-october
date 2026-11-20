@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Holder.AdmissibilityMinimum
+public import HypoellipticAleksandrov.KineticAleksandrov.Holder.AdmissibilityAffine
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Cap
 import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 public import Mathlib.Analysis.Matrix.MeasurableSpace

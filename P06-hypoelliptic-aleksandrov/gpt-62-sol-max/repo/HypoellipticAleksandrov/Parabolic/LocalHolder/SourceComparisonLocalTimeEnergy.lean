@@ -14,10 +14,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ} (hu : IsScalarC12On u U)
+include hu
+
 /-- Squaring a classical scalar solution gives its literal weak time derivative. -/
-theorem hasWeakTimeDerivOn_square_of_scalarC12 {d : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
-    (hu : IsScalarC12On u U) :
+theorem hasWeakTimeDerivOn_square_of_scalarC12 :
     HasWeakTimeDerivOn U (fun z => u z ^ 2)
       (fun z => 2 * u z * scalarTimeDerivative u z) := by
   intro φ hφ hc hsub
@@ -38,13 +40,13 @@ theorem hasWeakTimeDerivOn_square_of_scalarC12 {d : ℕ}
       zero_add, mul_one, Prod.mk.eta]
 
 /-- The local quadratic time-energy identity holds against every smooth compact cutoff. -/
-theorem integral_square_mul_timeDerivative_eq {d : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
-    (hu : IsScalarC12On u U) (χ : TimeVelocity d → ℝ)
+theorem integral_square_mul_timeDerivative_eq (χ : TimeVelocity d → ℝ)
     (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) (hc : HasCompactSupport χ)
     (hsub : tsupport χ ⊆ U) :
     (∫ z in U, u z ^ 2 * timeDerivative χ z) =
       -(∫ z in U, 2 * u z * scalarTimeDerivative u z * χ z) :=
   hasWeakTimeDerivOn_square_of_scalarC12 hu χ hχ hc hsub
+
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

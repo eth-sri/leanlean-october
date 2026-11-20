@@ -32,13 +32,19 @@ theorem euclideanBall_eq_movingDomain_const {n : ℕ} (x : PDE.Vec n) {R : ℝ} 
 /-- The geometric radii `α k = r / 2 · (1/4)ᵏ`. -/
 noncomputable def innerBallRadius (r : ℝ) (k : ℕ) : ℝ := r / 2 * (1 / 4) ^ k
 
-theorem innerBallRadius_pos {r : ℝ} (hr : 0 < r) (k : ℕ) : 0 < innerBallRadius r k := by
+section
+variable {r : ℝ} (hr : 0 < r) (k : ℕ)
+include hr
+
+theorem innerBallRadius_pos : 0 < innerBallRadius r k := by
   unfold innerBallRadius; positivity
 
-theorem innerBallRadius_lt {r : ℝ} (hr : 0 < r) (k : ℕ) : innerBallRadius r k < r := by
+theorem innerBallRadius_lt : innerBallRadius r k < r := by
   unfold innerBallRadius
   have : (1 / 4 : ℝ) ^ k ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
   nlinarith
+
+end
 
 theorem innerBallRadius_succ (r : ℝ) (k : ℕ) :
     innerBallRadius r (k + 1) = innerBallRadius r k / 4 := by
@@ -95,8 +101,7 @@ theorem exists_nested_smooth_inner_balls
     have := iUnion_movingDomain_approx (c := (0 : PDE.Vec n)) (r₀ := r) (hα) (innerBallRadius_lt hr)
       (tendsto_innerBallRadius r) (γ := fun _ => γ s) (γs := fun k _ => g k s)
       (fun k _ => hclose k s hs) 0
-    rw [euclideanBall_eq_movingDomain_const (γ s) hr]
-    rw [← this]
+    rw [euclideanBall_eq_movingDomain_const (γ s) hr, ← this]
     refine iUnion_congr fun k => ?_
     exact euclideanBall_eq_movingDomain_const _ (hk k)
 

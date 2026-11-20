@@ -11,9 +11,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+section
+variable (β : ℝ) (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ)
+include hμ
+
 /-- The actual reweighted log-coordinate measure remains finite on compact sets. -/
-theorem bellmanLogAngularMeasure_finiteOnCompacts (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ) :
+theorem bellmanLogAngularMeasure_finiteOnCompacts :
     IsFiniteMeasureOnCompacts (bellmanLogAngularMeasure β μ) := by
   let : IsFiniteMeasureOnCompacts (bellmanAngularPullback μ) :=
     bellmanAngularPullback_finiteOnCompacts μ hμ
@@ -28,13 +31,14 @@ theorem bellmanLogAngularMeasure_finiteOnCompacts (β : ℝ)
   exact bellman_map_homeomorph_finiteOnCompacts bellmanLogAngularHomeomorph _
 
 /-- Homogeneity alone produces a literal angular measure after passing to log radius. -/
-theorem bellmanLogAngularMeasure_factorization (β : ℝ)
-    (μ : Measure BellmanPuncturedPlane) (hμ : IsFiniteMeasureOnCompacts μ)
+theorem bellmanLogAngularMeasure_factorization
     (hd : HasBellmanDensityDegree β μ) :
     bellmanLogAngularMeasure β μ =
       (volume : Measure ℝ).prod (bellmanUnitSection (bellmanLogAngularMeasure β μ)) := by
   let : IsFiniteMeasureOnCompacts (bellmanLogAngularMeasure β μ) :=
     bellmanLogAngularMeasure_finiteOnCompacts β μ hμ
   exact bellman_translation_factorization _ hd.logAngularMeasure_invariant
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

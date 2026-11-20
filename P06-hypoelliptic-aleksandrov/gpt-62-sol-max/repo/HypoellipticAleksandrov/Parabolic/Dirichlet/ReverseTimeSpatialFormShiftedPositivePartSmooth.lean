@@ -28,8 +28,7 @@ theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_smoothOnNeighborh
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
     (hcNonpos : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
     (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))

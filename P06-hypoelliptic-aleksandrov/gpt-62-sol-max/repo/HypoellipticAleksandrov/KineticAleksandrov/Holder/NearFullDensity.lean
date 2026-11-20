@@ -17,8 +17,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set MeasureTheory
 
+section
+variable {d : ℕ}
+
 /-- Every compact set in physical kinetic coordinates has finite native volume. -/
-theorem kinetic_volume_compact_lt_top {d : ℕ} {K : Set (KineticPoint d)}
+theorem kinetic_volume_compact_lt_top {K : Set (KineticPoint d)}
     (hK : IsCompact K) : volume K < ⊤ := by
   let e := KineticPoint.homeomorphProd d
   have hc := hK.image e.continuous
@@ -32,13 +35,13 @@ theorem kinetic_volume_compact_lt_top {d : ℕ} {K : Set (KineticPoint d)}
   exact hc.measure_lt_top
 
 /-- Positive-radius backward cylinders have finite native volume. -/
-theorem volume_backwardCylinder_lt_top {d : ℕ} (P₀ : KineticPoint d)
+theorem volume_backwardCylinder_lt_top (P₀ : KineticPoint d)
     {R : ℝ} (hR : 0 < R) : volume (backwardCylinder P₀ R) < ⊤ :=
   (measure_mono subset_closure).trans_lt
     (kinetic_volume_compact_lt_top (isCompact_closure_backwardCylinder P₀ R hR))
 
 /-- The density hypothesis bounds the volume of the strict sublevel set. -/
-theorem near_full_sublevel_volume {d : ℕ} {O : Set (KineticPoint d)}
+theorem near_full_sublevel_volume {O : Set (KineticPoint d)}
     (hO : IsOpen O) {u : KineticPoint d → ℝ} (hu : ContinuousOn u O)
     (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
     (hQO : backwardCylinder P₀ R ⊆ O) (ell eta : ℝ)
@@ -74,5 +77,7 @@ theorem near_full_sublevel_volume {d : ℕ} {O : Set (KineticPoint d)}
   change (volume E).toReal + (volume ({P | ell ≤ u P} ∩ Q)).toReal =
     (volume Q).toReal at hsum
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

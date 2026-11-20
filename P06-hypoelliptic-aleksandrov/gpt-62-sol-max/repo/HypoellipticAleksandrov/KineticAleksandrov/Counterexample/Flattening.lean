@@ -53,14 +53,17 @@ theorem contDiff_flatteningPsi : ContDiff ℝ ∞ flatteningPsi := by
       |>.hasDerivAt.differentiableAt
   · simpa only [funext deriv_flatteningPsi] using contDiff_flatteningSlope
 
+section
+variable (s : ℝ)
+
 /-- The slope lies between zero and one everywhere. -/
-theorem flatteningPsi_deriv_bounds (s : ℝ) :
+theorem flatteningPsi_deriv_bounds :
     0 ≤ deriv flatteningPsi s ∧ deriv flatteningPsi s ≤ 1 := by
   rw [deriv_flatteningPsi]
   exact ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
 
 /-- The primitive is zero to the left of the flattening threshold. -/
-theorem flatteningPsi_eq_zero (s : ℝ) (hs : s ≤ 1) : flatteningPsi s = 0 := by
+theorem flatteningPsi_eq_zero (hs : s ≤ 1) : flatteningPsi s = 0 := by
   unfold flatteningPsi
   rw [intervalIntegral.integral_symm (a := s) (b := (1 : ℝ))]
   have he : (∫ t in s..(1 : ℝ), flatteningSlope t) = ∫ t in s..(1 : ℝ), (0 : ℝ) := by
@@ -72,7 +75,7 @@ theorem flatteningPsi_eq_zero (s : ℝ) (hs : s ≤ 1) : flatteningPsi s = 0 := 
   simp only [intervalIntegral.integral_zero, neg_zero]
 
 /-- The primitive is affine past the transition region. -/
-theorem flatteningPsi_eq_affine (s : ℝ) (hs : 2 ≤ s) :
+theorem flatteningPsi_eq_affine (hs : 2 ≤ s) :
     flatteningPsi s = s - flatteningOffset := by
   have hi := contDiff_flatteningSlope.continuous
   have hadd := intervalIntegral.integral_add_adjacent_intervals
@@ -87,6 +90,8 @@ theorem flatteningPsi_eq_affine (s : ℝ) (hs : 2 ≤ s) :
   rw [← hadd, he, intervalIntegral.integral_const]
   simp only [smul_eq_mul, mul_one]
   ring
+
+end
 
 /-- The transition primitive has strictly intermediate height at the upper threshold. -/
 theorem flatteningPsi_two_bounds : 0 < flatteningPsi 2 ∧ flatteningPsi 2 < 1 := by
@@ -113,13 +118,16 @@ theorem flatteningOffset_bounds : 1 < flatteningOffset ∧ flatteningOffset < 2 
   unfold flatteningOffset
   constructor <;> linarith only [hb.1, hb.2]
 
+section
+variable (s : ℝ)
+
 /-- The second derivative of the convex primitive is nonnegative. -/
-theorem flatteningPsi_deriv2_nonneg (s : ℝ) : 0 ≤ deriv (deriv flatteningPsi) s := by
+theorem flatteningPsi_deriv2_nonneg : 0 ≤ deriv (deriv flatteningPsi) s := by
   rw [funext deriv_flatteningPsi]
   exact monotone_flatteningSlope.deriv_nonneg
 
 /-- The second derivative vanishes below the transition interval. -/
-theorem flatteningPsi_deriv2_eq_zero_of_lt (s : ℝ) (hs : s < 1) :
+theorem flatteningPsi_deriv2_eq_zero_of_lt (hs : s < 1) :
     deriv (deriv flatteningPsi) s = 0 := by
   rw [funext deriv_flatteningPsi]
   apply HasDerivAt.deriv
@@ -128,7 +136,7 @@ theorem flatteningPsi_deriv2_eq_zero_of_lt (s : ℝ) (hs : s < 1) :
   exact Real.smoothTransition.zero_of_nonpos (sub_nonpos.mpr ht.le)
 
 /-- The second derivative vanishes above the transition interval. -/
-theorem flatteningPsi_deriv2_eq_zero_of_gt (s : ℝ) (hs : 2 < s) :
+theorem flatteningPsi_deriv2_eq_zero_of_gt (hs : 2 < s) :
     deriv (deriv flatteningPsi) s = 0 := by
   rw [funext deriv_flatteningPsi]
   apply HasDerivAt.deriv
@@ -136,14 +144,15 @@ theorem flatteningPsi_deriv2_eq_zero_of_gt (s : ℝ) (hs : 2 < s) :
   filter_upwards [Ioi_mem_nhds hs] with t ht
   exact Real.smoothTransition.one_of_one_le (by linarith only [ht.out])
 
+end
+
 /-- The second derivative has compact support in the fixed closed transition interval. -/
 theorem hasCompactSupport_flatteningPsi_deriv2 :
     HasCompactSupport (deriv (deriv flatteningPsi)) := by
   apply HasCompactSupport.of_support_subset_isCompact (isCompact_Icc (a := (1 : ℝ)) (b := 2))
   intro s hs
   by_contra h
-  have hor : s < 1 ∨ 2 < s := by simpa only [mem_Icc, not_and_or, not_le] using h
-  rcases hor with hlt | hgt
+  rcases (by simpa only [mem_Icc, not_and_or, not_le] using h) with hlt | hgt
   · exact hs (flatteningPsi_deriv2_eq_zero_of_lt s hlt)
   · exact hs (flatteningPsi_deriv2_eq_zero_of_gt s hgt)
 
@@ -171,9 +180,12 @@ noncomputable def flatProfile {d : ℕ} (H : XV d → ℝ) (Psi : ℝ → ℝ)
     (cPsi alpha r : ℝ) (q : XV d) : ℝ :=
   1 - cPsi * Real.rpow r alpha - Real.rpow r alpha * Psi (H q / Real.rpow r alpha)
 
+section
+variable {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ) (hr : 0 < r) (q : XV d)
+include hr
+
 /-- On the plateau the flattened function is constant. -/
-theorem flatProfile_eq_constant {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
-    (hr : 0 < r) (q : XV d) (hq : H q ≤ Real.rpow r alpha) :
+theorem flatProfile_eq_constant (hq : H q ≤ Real.rpow r alpha) :
     flatProfile H flatteningPsi flatteningOffset alpha r q =
       1 - flatteningOffset * Real.rpow r alpha := by
   unfold flatProfile
@@ -182,14 +194,14 @@ theorem flatProfile_eq_constant {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
   ring
 
 /-- Beyond the transition shell the flattened function equals `1 - H`. -/
-theorem flatProfile_eq_one_sub {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
-    (hr : 0 < r) (q : XV d) (hq : 2 * Real.rpow r alpha ≤ H q) :
+theorem flatProfile_eq_one_sub (hq : 2 * Real.rpow r alpha ≤ H q) :
     flatProfile H flatteningPsi flatteningOffset alpha r q = 1 - H q := by
   unfold flatProfile
   simp only [Real.rpow_eq_pow] at hq ⊢
   rw [flatteningPsi_eq_affine _ ((le_div_iff₀ (Real.rpow_pos_of_pos hr alpha)).2 hq)]
-  have hn := (Real.rpow_pos_of_pos hr alpha).ne'
-  field_simp [hn]
+  field_simp [((Real.rpow_pos_of_pos hr alpha).ne')]
   ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

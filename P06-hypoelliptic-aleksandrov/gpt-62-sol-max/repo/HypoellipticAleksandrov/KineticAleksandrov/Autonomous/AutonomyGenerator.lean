@@ -23,9 +23,11 @@ def autonomousGeneratorResidual (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p
 def autonomousPositionReflection (p : Point) : Point :=
   ⟨p.time, -p.position, p.velocity⟩
 
+section
+variable (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p : Point)
+
 /-- Position reflection converts the generator equation to the source PDE convention. -/
-theorem autonomous_generator_positionReflection (a : ℝ → ℝ → ℝ)
-    (u : Point → ℝ) (p : Point) :
+theorem autonomous_generator_positionReflection :
     autonomousScalarOperator (reflectedAutonomous a) (u ∘ autonomousPositionReflection) p =
       autonomousGeneratorResidual a u (autonomousPositionReflection p) := by
   have hg : kineticPositionGradient (u ∘ autonomousPositionReflection) p =
@@ -46,7 +48,7 @@ theorem autonomous_generator_positionReflection (a : ℝ → ℝ → ℝ)
   ring
 
 /-- The time and coordinate exchange gives the source generator with its literal sign. -/
-theorem autonomous_generator_reversal (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p : Point) :
+theorem autonomous_generator_reversal :
     autonomousGeneratorResidual a (u ∘ autonomousReversal) p =
       -transportedForwardOperator (evolutionCoefficient a) (identityDrift 1) u
         (autonomousReversal p) := by
@@ -62,6 +64,8 @@ theorem autonomous_generator_reversal (a : ℝ → ℝ → ℝ) (u : Point → �
       a (p.position 0) (p.velocity 0) * diffusedHessian u (autonomousReversal p) 0 0 = _
   dsimp only [autonomousReversal, id_eq]
   ring
+
+end
 
 /-- Physical terminal data use position first, velocity second. -/
 def physicalTerminalDatum (F : BoundedBorel (EvolutionAmbientState 1)) :

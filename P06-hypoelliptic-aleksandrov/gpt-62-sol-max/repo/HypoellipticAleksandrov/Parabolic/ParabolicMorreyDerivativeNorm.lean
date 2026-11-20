@@ -21,20 +21,24 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators ENNReal
 
+section
+variable (d : Nat) (u : TimeVelocity d -> Real)
+include d u
+
 /-- The global raw `L^(d + 1)` norm of the time derivative and all ordered
 velocity-Hessian components used by parabolic Morrey dyadic estimates. -/
-noncomputable def parabolicMorreyDerivativeLpNorm (d : Nat)
-    (u : TimeVelocity d -> Real) : Real :=
+noncomputable def parabolicMorreyDerivativeLpNorm : Real :=
   parabolicLpNorm d (timeDerivative u) +
     ∑ i : Fin d, ∑ j : Fin d,
       parabolicLpNorm d (fun z => velocityHessian u z i j)
 
 /-- The raw restricted counterpart of `parabolicMorreyDerivativeLpNorm`. -/
-noncomputable def parabolicMorreyDerivativeLpNormOn (d : Nat)
-    (u : TimeVelocity d -> Real) (Q : Set (TimeVelocity d)) : Real :=
+noncomputable def parabolicMorreyDerivativeLpNormOn (Q : Set (TimeVelocity d)) : Real :=
   parabolicLpNormOn d (timeDerivative u) Q +
     ∑ i : Fin d, ∑ j : Fin d,
       parabolicLpNormOn d (fun z => velocityHessian u z i j) Q
+
+end
 
 /-- A globally `L^(d + 1)` scalar has no larger raw restricted norm. -/
 theorem parabolicLpNormOn_le_parabolicLpNorm
@@ -59,5 +63,20 @@ theorem parabolicMorreyDerivativeLpNormOn_le
     exact Finset.sum_le_sum fun j _ =>
       parabolicLpNormOn_le_parabolicLpNorm
         (fun z => velocityHessian u z i j) Q (hu.2.2.2 i j)
+
+theorem parabolicMorreyDerivativeLpNorm_nonneg (d : ℕ) (u : TimeVelocity d → ℝ) :
+    0 ≤ parabolicMorreyDerivativeLpNorm d u := by
+  unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm
+  positivity
+
+/-- The time and Hessian contributions are bounded by the full jet norm. -/
+theorem parabolicMorreyDerivativeLpNorm_le_parabolicSmoothJetLpNorm
+    {d : ℕ} {u : TimeVelocity d → ℝ} (hu : ParabolicSmoothJetMemLp d u) :
+    parabolicMorreyDerivativeLpNorm d u ≤ parabolicSmoothJetLpNorm d u := by
+  rw [parabolicSmoothJetLpNorm_eq_components hu, parabolicMorreyDerivativeLpNorm]
+  unfold parabolicLpNorm
+  linarith [ENNReal.toReal_nonneg (a := parabolicELpNorm d u),
+    Finset.sum_nonneg (s := Finset.univ) (fun i (_ : i ∈ Finset.univ) =>
+      ENNReal.toReal_nonneg (a := parabolicELpNorm d (fun z => velocityGradient u z i)))]
 
 end HypoellipticAleksandrov.Parabolic

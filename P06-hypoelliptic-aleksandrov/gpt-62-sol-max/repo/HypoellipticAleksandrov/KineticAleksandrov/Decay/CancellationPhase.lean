@@ -67,18 +67,28 @@ theorem continuous_phaseFactor : Continuous phaseFactor := by
   unfold phaseFactor
   fun_prop
 
-theorem measurable_phaseFactor_comp {ψ : α × β → ℝ} (hψ : Measurable ψ) :
+section
+variable {ψ : α × β → ℝ} (hψ : Measurable ψ)
+include hψ
+
+theorem measurable_phaseFactor_comp :
     Measurable fun x => phaseFactor (ψ x) :=
   continuous_phaseFactor.measurable.comp hψ
 
-theorem integrable_phaseFactor_comp {ψ : α × β → ℝ} (hψ : Measurable ψ)
+theorem integrable_phaseFactor_comp
     (N : Measure (α × β)) [IsFiniteMeasure N] :
     Integrable (fun x => phaseFactor (ψ x)) N :=
   Integrable.of_bound (measurable_phaseFactor_comp hψ).aestronglyMeasurable 1
     (Filter.Eventually.of_forall fun _ => (norm_phaseFactor _).le)
 
+end
+
+section
+variable {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E)
+include hE
+
 /-- The first marginal of a measure of a measurable set is the mass of its cylinder. -/
-theorem map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E) :
+theorem map_fst_apply_eq :
     (N.map Prod.fst) E = N (E ×ˢ (univ : Set β)) := by
   rw [Measure.map_apply measurable_fst hE]
   congr 1
@@ -86,9 +96,11 @@ theorem map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableS
   simp
 
 /-- The real mass of a cylinder is the real mass of the first marginal. -/
-theorem real_map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E) :
+theorem real_map_fst_apply_eq :
     (N.map Prod.fst).real E = N.real (E ×ˢ (univ : Set β)) := by
   simp [Measure.real, map_fst_apply_eq hE]
+
+end
 
 /-- Norm of the cylinder phase integral: the phase has modulus one. -/
 theorem norm_integral_phase_le (ψ : α × β → ℝ) (N : Measure (α × β)) [IsFiniteMeasure N]

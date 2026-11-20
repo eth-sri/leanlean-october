@@ -25,20 +25,26 @@ theorem bellman_const_locallyAC (c a b : ℝ) :
   ContDiffOn.absolutelyContinuousOnInterval
     (contDiff_const : ContDiff ℝ 1 (fun _ : ℝ => c)).contDiffOn
 
+section
+variable (f : ℝ → ℝ) (hf : LocallyIntegrable f volume)
+include hf
+
 /-- Literal moments of a locally integrable angular density are locally absolutely continuous. -/
-theorem bellman_moment_locallyAC (f : ℝ → ℝ) (hf : LocallyIntegrable f volume)
+theorem bellman_moment_locallyAC
     (n : ℕ) (a b : ℝ) (hab : a ≤ b) :
     AbsolutelyContinuousOnInterval (fun x => ∫ z in 0..x, z ^ n * f z) a b :=
   bellman_lebesguePrimitive_locallyAC _ (bellman_polynomial_locallyIntegrable f hf n) a b hab
 
 /-- The flux written with its first moment has the asserted almost everywhere derivative. -/
-theorem bellman_momentFlux_deriv (f : ℝ → ℝ) (hf : LocallyIntegrable f volume) (j c : ℝ) :
+theorem bellman_momentFlux_deriv (j c : ℝ) :
     ∀ᵐ x ∂volume, deriv (fun y => j - c * (∫ z in 0..y, z * f z)) x = -c * x * f x := by
   have hi : LocallyIntegrable (fun x => x * f x) volume := by
     simpa only [pow_one] using bellman_polynomial_locallyIntegrable f hf 1
   filter_upwards [_root_.LocallyIntegrable.ae_hasDerivAt_integral hi] with x hx
   have hd := (hasDerivAt_const x j).sub ((hx 0).const_mul c)
   convert hd.deriv using 1; ring
+
+end
 
 /-- The density written with the second moment has the asserted almost everywhere derivative. -/
 theorem bellman_momentDensity_deriv (f J : ℝ → ℝ) (hf : LocallyIntegrable f volume)

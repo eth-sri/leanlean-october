@@ -53,9 +53,11 @@ private theorem integral_sq_coeFn_eq_norm_sq
     _ = inner ℝ c c := (MeasureTheory.L2.inner_def c c).symm
     _ = ‖c‖ ^ 2 := real_inner_self_eq_norm_sq c
 
+section
+variable {α β : Type*}
+
 /-- The raw lift of an outer simple `L²` function belongs to product `L²`. -/
-theorem memLp_simpleUncurry_two
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+theorem memLp_simpleUncurry_two [MeasurableSpace α] [MeasurableSpace β]
     (μ : Measure α) (ν : Measure β) [SFinite ν]
     (s : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν))
     (hs : MeasureTheory.MemLp s (2 : ℝ≥0∞) μ) :
@@ -84,8 +86,7 @@ theorem memLp_simpleUncurry_two
       _ = ‖s x‖ ^ 2 := integral_sq_coeFn_eq_norm_sq ν (s x)
 
 /-- Subtraction of raw lifts agrees almost everywhere with the raw lift of subtraction. -/
-theorem ae_simpleUncurry_sub
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+theorem ae_simpleUncurry_sub [MeasurableSpace α] [MeasurableSpace β]
     (μ : Measure α) (ν : Measure β) [SFinite ν]
     (s t : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν)) :
     simpleUncurry (s - t) =ᵐ[μ.prod ν] simpleUncurry s - simpleUncurry t := by
@@ -97,8 +98,7 @@ theorem ae_simpleUncurry_sub
   exact hy
 
 /-- The `L²` norm of the product lift equals the outer `L²` norm. -/
-theorem norm_simpleUncurry_toLp_eq
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+theorem norm_simpleUncurry_toLp_eq [MeasurableSpace α] [MeasurableSpace β]
     (μ : Measure α) (ν : Measure β) [SFinite ν]
     (s : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν))
     (hs : MeasureTheory.MemLp s (2 : ℝ≥0∞) μ) :
@@ -129,8 +129,7 @@ theorem norm_simpleUncurry_toLp_eq
         (f := s) (μ := μ) (p := (2 : NNReal)) (by norm_num) hs.aestronglyMeasurable).symm
 
 /-- The norm of the difference of two product lifts equals the outer difference norm. -/
-theorem norm_sub_simpleUncurry_toLp_eq
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
+theorem norm_sub_simpleUncurry_toLp_eq [MeasurableSpace α] [MeasurableSpace β]
     (μ : Measure α) (ν : Measure β) [SFinite ν]
     (s t : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν))
     (hs : MeasureTheory.MemLp s (2 : ℝ≥0∞) μ)
@@ -153,11 +152,9 @@ theorem norm_sub_simpleUncurry_toLp_eq
     _ = ‖(hs.sub ht).toLp (s - t)‖ :=
       norm_simpleUncurry_toLp_eq μ ν (s - t) (hs.sub ht)
     _ = ‖hs.toLp s - ht.toLp t‖ := by
-      rw [← MeasureTheory.MemLp.toLp_sub]
-      apply congrArg norm
-      apply MeasureTheory.MemLp.toLp_congr
-      filter_upwards with x
       rfl
+
+end
 
 end
 

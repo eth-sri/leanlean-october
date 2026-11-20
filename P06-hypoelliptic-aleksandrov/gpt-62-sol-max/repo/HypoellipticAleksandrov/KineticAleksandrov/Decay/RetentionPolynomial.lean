@@ -27,7 +27,11 @@ open scoped Topology
 
 private def positivePower (N : ℕ) (x : ℝ) : ℝ := (max x 0) ^ N
 
-private theorem positivePower_derivative {N : ℕ} (hN : 2 ≤ N) (x : ℝ) :
+section
+variable {N : ℕ} (hN : 2 ≤ N)
+include hN
+
+private theorem positivePower_derivative (x : ℝ) :
     HasDerivAt (positivePower N) ((N : ℝ) * positivePower (N - 1) x) x := by
   have hNm : N - 1 ≠ 0 := by omega
   rcases lt_trichotomy x 0 with hx | rfl | hx
@@ -55,13 +59,14 @@ private theorem positivePower_derivative {N : ℕ} (hN : 2 ≤ N) (x : ℝ) :
     simpa [positivePower, max_eq_left hx.le] using
       ((hasDerivAt_id x).pow N).congr_of_eventuallyEq heq
 
-private theorem positivePower_deriv {N : ℕ} (hN : 2 ≤ N) :
+private theorem positivePower_deriv :
     deriv (positivePower N) = fun x => (N : ℝ) * positivePower (N - 1) x := by
   funext x
   exact (positivePower_derivative hN x).deriv
 
+end
+
 private theorem positivePower_continuous (N : ℕ) : Continuous (positivePower N) := by
-  unfold positivePower
   exact (continuous_id.max continuous_const).pow N
 
 private theorem positivePower_contDiff_one {N : ℕ} (hN : 2 ≤ N) :
@@ -111,20 +116,22 @@ theorem retention_barrier_contDiff {d N : ℕ} (hN : 3 ≤ N) (s : ℝ) :
 
 private def radialProfile (N : ℕ) (s r : ℝ) : ℝ := positivePower N (1 - r / s ^ 2)
 
-private theorem radialProfile_derivative {N : ℕ} (hN : 2 ≤ N) (s r : ℝ) :
+section
+variable {N : ℕ}
+
+private theorem radialProfile_derivative (hN : 2 ≤ N) (s r : ℝ) :
     HasDerivAt (radialProfile N s)
       (-((N : ℝ) / s ^ 2) * positivePower (N - 1) (1 - r / s ^ 2)) r := by
-  have hw := ((hasDerivAt_id r).div_const (s ^ 2)).const_sub 1
-  have h := (positivePower_derivative hN (1 - r / s ^ 2)).comp r hw
+  have h := (positivePower_derivative hN (1 - r / s ^ 2)).comp r (((hasDerivAt_id r).div_const (s ^ 2)).const_sub 1)
   exact h.congr_deriv (by ring)
 
-private theorem radialProfile_deriv {N : ℕ} (hN : 2 ≤ N) (s : ℝ) :
+private theorem radialProfile_deriv (hN : 2 ≤ N) (s : ℝ) :
     deriv (radialProfile N s) =
       fun r => -((N : ℝ) / s ^ 2) * positivePower (N - 1) (1 - r / s ^ 2) := by
   funext r
   exact (radialProfile_derivative hN s r).deriv
 
-private theorem radialProfile_second_deriv {N : ℕ} (hN : 3 ≤ N) (s r : ℝ) :
+private theorem radialProfile_second_deriv (hN : 3 ≤ N) (s r : ℝ) :
     deriv (deriv (radialProfile N s)) r =
       ((N : ℝ) / s ^ 2) * ((N - 1 : ℕ) / s ^ 2) *
         positivePower (N - 2) (1 - r / s ^ 2) := by
@@ -138,13 +145,19 @@ private theorem radialProfile_second_deriv {N : ℕ} (hN : 3 ≤ N) (s r : ℝ) 
   rw [show N - 1 - 1 = N - 2 by omega]
   ring
 
-private theorem radialProfile_contDiff {N : ℕ} (hN : 3 ≤ N) (s : ℝ) :
+private theorem radialProfile_contDiff (hN : 3 ≤ N) (s : ℝ) :
     ContDiff ℝ 2 (radialProfile N s) :=
   (positivePower_contDiff_two hN).comp
     (contDiff_const.sub (contDiff_id.div_const _))
 
+end
+
+section
+variable {d N : ℕ} (hN : 3 ≤ N) (s : ℝ)
+include N hN
+
 /-- The global gradient formula uses the literal positive part, including the boundary. -/
-theorem retention_barrier_gradient {d N : ℕ} (hN : 3 ≤ N) (s : ℝ) (Y : PDE.Vec d) :
+theorem retention_barrier_gradient (Y : PDE.Vec d) :
     PDE.classicalGradient (barrier N s) Y =
       (-2 * N / s ^ 2 * (max (1 - PDE.vecNormSq Y / s ^ 2) 0) ^ (N - 1)) • Y := by
   have h := classicalGradient_comp_vecNormSq_sub
@@ -159,14 +172,13 @@ theorem retention_barrier_gradient {d N : ℕ} (hN : 3 ≤ N) (s : ℝ) (Y : PDE
   ring
 
 /-- The global Hessian formula uses the literal positive part through order two. -/
-theorem retention_barrier_hessian {d N : ℕ} (hN : 3 ≤ N)
-    (s : ℝ) (hs : 0 < s) (Y : PDE.Vec d) :
+theorem retention_barrier_hessian (hs : 0 < s) (Y : PDE.Vec d) :
     Hess (barrier N s) Y =
       (-2 * N / s ^ 2 * (max (1 - PDE.vecNormSq Y / s ^ 2) 0) ^ (N - 1)) • (1 : PDE.Mat d) +
       ((4 * N * (N - 1 : ℕ) / s ^ 4 *
         (max (1 - PDE.vecNormSq Y / s ^ 2) 0) ^ (N - 2)) •
           Matrix.of (fun i j => Y i * Y j) : PDE.Mat d) := by
-  have hs0 : s ≠ 0 := hs.ne'
+  have hs0 := hs.ne'
   ext i j
   change sliceHessian (fun y => radialProfile N s (PDE.vecNormSq y)) Y i j = _
   have h := sliceHessian_comp_vecNormSq_sub
@@ -180,8 +192,7 @@ theorem retention_barrier_hessian {d N : ℕ} (hN : 3 ≤ N)
   split_ifs <;> field_simp [hs0] <;> ring
 
 /-- The source retention polynomial, including its boundary jets. -/
-theorem retention_polynomial_barrier {d N : ℕ} (hN : 3 ≤ N)
-    (s : ℝ) (hs : 0 < s) :
+theorem retention_polynomial_barrier (hs : 0 < s) :
     ContDiff ℝ 2 (barrier (d := d) N s) ∧
     (∀ Y : PDE.Vec d, 0 ≤ barrier N s Y ∧ barrier N s Y ≤ 1) ∧ barrier (d := d) N s 0 = 1 ∧
     (∀ Y : PDE.Vec d, Y ∈ PDE.euclideanBall 0 s →
@@ -225,5 +236,7 @@ theorem retention_polynomial_barrier {d N : ℕ} (hN : 3 ≤ N)
       linarith
     rw [retention_barrier_gradient hN s Y, retention_barrier_hessian hN s hs Y]
     simp [barrier, max_eq_right hw, show N ≠ 0 by omega, hpow1, hpow2]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

@@ -1,6 +1,12 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeSeparatedDistribution
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.VariationalEnergy
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGelfandPairing
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeDualPairingRight
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeTests
+
+import HypoellipticAleksandrov.Parabolic.SeparatedCalculus
 
 /-!
 # Original-time separated spacetime tests
@@ -31,36 +37,39 @@ noncomputable def originalTimeSeparatedProduct
     TimeVelocity d → ℝ :=
   fun z => φ z.1 * ψ z.2
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ} (φ : OriginalTimeScalarTest r₀ r₁)
+  (ψ : PDE.WeakTestFunction Ω)
+include Ω r₀ r₁ φ ψ
+
 /-- The raw separated product has its literal pointwise value. -/
 @[simp] theorem originalTimeSeparatedProduct_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (φ : OriginalTimeScalarTest r₀ r₁) (ψ : PDE.WeakTestFunction Ω)
     (z : TimeVelocity d) :
     originalTimeSeparatedProduct φ ψ z = φ z.1 * ψ z.2 :=
   rfl
 
 /-- The canonical compact carrier of a separated original-time product. -/
-noncomputable def originalTimeSeparatedProductCompact
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (φ : OriginalTimeScalarTest r₀ r₁) (ψ : PDE.WeakTestFunction Ω) :
+noncomputable def originalTimeSeparatedProductCompact :
     TopologicalSpace.Compacts (TimeVelocity d) :=
   ⟨tsupport (φ : ℝ → ℝ) ×ˢ tsupport (ψ : PDE.Vec d → ℝ),
     (hasCompactSupport_def.mp φ.hasCompactSupport).prod
       (hasCompactSupport_def.mp ψ.hasCompactSupport)⟩
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ} (φ : OriginalTimeScalarTest r₀ r₁)
+  (ψ : PDE.WeakTestFunction Ω)
+
 /-- The canonical compact carrier lies in the scalar product cylinder. -/
-theorem originalTimeSeparatedProductCompact_subset_cylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (φ : OriginalTimeScalarTest r₀ r₁) (ψ : PDE.WeakTestFunction Ω) :
+theorem originalTimeSeparatedProductCompact_subset_cylinder :
     (originalTimeSeparatedProductCompact φ ψ : Set (TimeVelocity d)) ⊆
       scalarParabolicOpenCylinder r₀ r₁ Ω := by
   intro z hz
   exact ⟨φ.tsupport_subset hz.1, ψ.tsupport_subset hz.2⟩
 
 /-- The product as a smooth map vanishing outside its canonical compact. -/
-noncomputable def originalTimeSeparatedProductSupportedIn
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (φ : OriginalTimeScalarTest r₀ r₁) (ψ : PDE.WeakTestFunction Ω) :
+noncomputable def originalTimeSeparatedProductSupportedIn :
     ContDiffMapSupportedIn (TimeVelocity d) ℝ (⊤ : ℕ∞)
       (originalTimeSeparatedProductCompact φ ψ) where
   toFun := originalTimeSeparatedProduct φ ψ
@@ -74,9 +83,13 @@ noncomputable def originalTimeSeparatedProductSupportedIn
     · simp [image_eq_zero_of_notMem_tsupport hφ]
     · simp [image_eq_zero_of_notMem_tsupport hψ]
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
+
 /-- The fixed-compact separated product has its literal pointwise value. -/
 @[simp] theorem originalTimeSeparatedProductSupportedIn_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
     (φ : OriginalTimeScalarTest r₀ r₁) (ψ : PDE.WeakTestFunction Ω)
     (z : TimeVelocity d) :
     originalTimeSeparatedProductSupportedIn φ ψ z = φ z.1 * ψ z.2 :=
@@ -84,7 +97,6 @@ noncomputable def originalTimeSeparatedProductSupportedIn
 
 /-- The separated product as a Mathlib test on the open scalar cylinder. -/
 noncomputable def originalTimeSeparatedProductTestFunction
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
     (hΩ : IsOpen Ω) (φ : OriginalTimeScalarTest r₀ r₁)
     (ψ : PDE.WeakTestFunction Ω) :
     TestFunction (originalTimeOpenCylinderOpens r₀ r₁ Ω hΩ) ℝ (⊤ : ℕ∞) :=
@@ -92,50 +104,35 @@ noncomputable def originalTimeSeparatedProductTestFunction
     (originalTimeSeparatedProductCompact_subset_cylinder φ ψ)
     (originalTimeSeparatedProductSupportedIn φ ψ)
 
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ} (hΩ : IsOpen Ω)
+  (φ : OriginalTimeScalarTest r₀ r₁) (ψ : PDE.WeakTestFunction Ω)
+
 /-- The cylinder test has its literal pointwise value. -/
-@[simp] theorem originalTimeSeparatedProductTestFunction_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (hΩ : IsOpen Ω) (φ : OriginalTimeScalarTest r₀ r₁)
-    (ψ : PDE.WeakTestFunction Ω) (z : TimeVelocity d) :
+@[simp] theorem originalTimeSeparatedProductTestFunction_apply (z : TimeVelocity d) :
     originalTimeSeparatedProductTestFunction hΩ φ ψ z = φ z.1 * ψ z.2 :=
   rfl
 
 /-- The product test has exactly the product of the factor supports. -/
-theorem tsupport_originalTimeSeparatedProductTestFunction
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (hΩ : IsOpen Ω) (φ : OriginalTimeScalarTest r₀ r₁)
-    (ψ : PDE.WeakTestFunction Ω) :
+theorem tsupport_originalTimeSeparatedProductTestFunction :
     tsupport
         (originalTimeSeparatedProductTestFunction hΩ φ ψ :
           TimeVelocity d → ℝ) =
-      tsupport (φ : ℝ → ℝ) ×ˢ tsupport (ψ : PDE.Vec d → ℝ) := by
-  have hsupport : Function.support (fun z : TimeVelocity d => φ z.1 * ψ z.2) =
-      Function.support (φ : ℝ → ℝ) ×ˢ Function.support (ψ : PDE.Vec d → ℝ) := by
-    ext z
-    simp [Function.mem_support]
-  change closure (Function.support (fun z : TimeVelocity d => φ z.1 * ψ z.2)) = _
-  rw [hsupport, closure_prod_eq]
-  rfl
+      tsupport (φ : ℝ → ℝ) ×ˢ tsupport (ψ : PDE.Vec d → ℝ) := 
+  tsupport_separated_mul (φ : ℝ → ℝ) (ψ : PDE.Vec d → ℝ)
 
 /-- Its scalar time derivative differentiates only the time factor. -/
-@[simp] theorem scalarTimeDerivative_originalTimeSeparatedProductTestFunction
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (hΩ : IsOpen Ω) (φ : OriginalTimeScalarTest r₀ r₁)
-    (ψ : PDE.WeakTestFunction Ω) (z : TimeVelocity d) :
+@[simp] theorem scalarTimeDerivative_originalTimeSeparatedProductTestFunction (z : TimeVelocity d) :
     scalarTimeDerivative
         (originalTimeSeparatedProductTestFunction hΩ φ ψ) z =
       φ.deriv z.1 * ψ z.2 := by
   change deriv (fun r : ℝ => φ r * ψ z.2) z.1 = φ.deriv z.1 * ψ z.2
-  rw [OriginalTimeScalarTest.deriv_apply]
-  simpa only [Pi.mul_def, mul_zero, add_zero] using!
-    ((φ.contDiff.differentiable (by simp)).differentiableAt.hasDerivAt.mul
-      (hasDerivAt_const z.1 (ψ z.2))).deriv
+  simp [OriginalTimeScalarTest.deriv_apply, Pi.mul_def, mul_zero, add_zero]
 
 /-- Each spatial coordinate derivative differentiates only the spatial factor. -/
-@[simp] theorem scalarSpatialGradient_originalTimeSeparatedProductTestFunction_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {r₀ r₁ : ℝ}
-    (hΩ : IsOpen Ω) (φ : OriginalTimeScalarTest r₀ r₁)
-    (ψ : PDE.WeakTestFunction Ω) (z : TimeVelocity d) (i : Fin d) :
+@[simp] theorem scalarSpatialGradient_originalTimeSeparatedProductTestFunction_apply (z : TimeVelocity d) (i : Fin d) :
     scalarSpatialGradient
         (originalTimeSeparatedProductTestFunction hΩ φ ψ) z i =
       φ z.1 * ψ.partialDeriv i z.2 := by
@@ -146,5 +143,7 @@ theorem tsupport_originalTimeSeparatedProductTestFunction
   · simp [PDE.WeakTestFunction.partialDeriv, smul_eq_mul]
   · exact differentiableAt_const _
   · exact (ψ.contDiff.differentiable (by simp)).differentiableAt
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

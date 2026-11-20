@@ -240,28 +240,28 @@ noncomputable def ofContDiff (hU : IsOpen U)
       (tendsto_const_nhds :
         Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
 
+section
+variable (hU : IsOpen U) {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+  (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U)
+
 @[simp]
-theorem ofContDiff_toFun (hU : IsOpen U)
-    {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U) :
+theorem ofContDiff_toFun :
     (ofContDiff hU hf hcompact hsub).toH1Function.toFun = f :=
   rfl
 
 @[simp]
-theorem ofContDiff_grad (hU : IsOpen U)
-    {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U) :
+theorem ofContDiff_grad :
     (ofContDiff hU hf hcompact hsub).toH1Function.grad =
       fun x i => (fderiv ℝ f x) (basisVec i) :=
   rfl
 
 @[simp]
-theorem ofContDiff_approx (hU : IsOpen U)
-    {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U)
+theorem ofContDiff_approx
     (n : ℕ) :
     (ofContDiff hU hf hcompact hsub).approx n = f :=
   rfl
+
+end
 
 end H10Function
 

@@ -21,13 +21,14 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem piBernsteinApproximation_norm_tendsto_zero
-    {d : ℕ} {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (F : C(Fin d → I, E)) :
-    Tendsto (fun n : ℕ => ‖piBernsteinApproximation n F - F‖) atTop (nhds 0) := by
-  exact tendsto_iff_norm_sub_tendsto_zero.mp (piBernsteinApproximation_uniform F)
+section
+variable {d : ℕ}
 
-private def centeredUnitPoint {d : ℕ} (R : ℝ) (hR : 0 < R)
+private theorem piBernsteinApproximation_norm_tendsto_zero {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (F : C(Fin d → I, E)) :
+    Tendsto (fun n : ℕ => ‖piBernsteinApproximation n F - F‖) atTop (nhds 0) := tendsto_iff_norm_sub_tendsto_zero.mp (piBernsteinApproximation_uniform F)
+
+private def centeredUnitPoint (R : ℝ) (hR : 0 < R)
     (y : PDE.Vec d) (hy : y ∈ Icc (fun _ => -R) (fun _ => R)) : Fin d → I :=
   fun i => ⟨((y i / R) + 1) / 2, by
     have hlo : -1 ≤ y i / R := by
@@ -40,12 +41,14 @@ private def centeredUnitPoint {d : ℕ} (R : ℝ) (hR : 0 < R)
       rw [div_le_one (by norm_num : (0 : ℝ) < 2)]
       linarith⟩⟩
 
-private def centeredContinuousField {d : ℕ}
+private def centeredContinuousField
     (Kt : TopologicalSpace.Compacts ℝ) (R : ℝ)
     (f : TimeVelocity d → ℝ) (hf : Continuous f) :
     C(Fin d → I, C(Kt, ℝ)) :=
   ContinuousMap.curry ⟨fun p => f (p.2, fun i => R * (2 * (p.1 i : ℝ) - 1)), by
     fun_prop⟩
+
+end
 
 private theorem cutoffPiBernsteinApproximation_eq_centeredContinuousField
     {d n : ℕ} (Kt : TopologicalSpace.Compacts ℝ)

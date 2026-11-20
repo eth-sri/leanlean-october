@@ -49,18 +49,16 @@ def IsUniformMeanZeroPoincareConstant (d : ℕ) (C : ℝ) : Prop :=
 
 namespace IsUniformMeanZeroPoincareConstant
 
+section
+variable {d : ℕ} {C : ℝ} (hC : IsUniformMeanZeroPoincareConstant d C) {p : ℝ} (hp : 1 ≤ p)
+  {U : Set (Vec d)} {D : ℝ} (hU : IsOpenBoundedConvexDomain U)
+  (hUDiameter : HasEuclideanDiameterLE U D) (hD : 0 ≤ D) (hUPos : 0 < volume U)
+  (hUTop : volume U < ∞) (u : W1pFunction U (ENNReal.ofReal p)) (huMean : MeanZeroOn U u.toFun)
+include hC hp hU hUDiameter hD hUPos hUTop huMean
+
 /-- The normalized statement on a bounded open convex domain. This named
 projection is the common theorem used by the shape-specific interfaces. -/
-theorem on_domain {d : ℕ} {C : ℝ}
-    (hC : IsUniformMeanZeroPoincareConstant d C)
-    {p : ℝ} (hp : 1 ≤ p) {U : Set (Vec d)}
-    {D : ℝ}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hUDiameter : HasEuclideanDiameterLE U D)
-    (hD : 0 ≤ D) (hUPos : 0 < volume U)
-    (hUTop : volume U < ∞)
-    (u : W1pFunction U (ENNReal.ofReal p))
-    (huMean : MeanZeroOn U u.toFun) :
+theorem on_domain :
     eLpMeanNormOn U (ENNReal.ofReal p) u.toFun ≤
       ENNReal.ofReal (C * D) *
         euclideanFieldELpMeanNormOn U
@@ -70,16 +68,7 @@ theorem on_domain {d : ℕ} {C : ℝ}
 /-- The unnormalized form on a bounded open convex domain. The same exponent
 appears on both sides, so the exact volume factors cancel without changing
 the constant. -/
-theorem on_domain_unnormalized {d : ℕ} {C : ℝ}
-    (hC : IsUniformMeanZeroPoincareConstant d C)
-    {p : ℝ} (hp : 1 ≤ p) {U : Set (Vec d)}
-    {D : ℝ}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hUDiameter : HasEuclideanDiameterLE U D)
-    (hD : 0 ≤ D) (hUPos : 0 < volume U)
-    (hUTop : volume U < ∞)
-    (u : W1pFunction U (ENNReal.ofReal p))
-    (huMean : MeanZeroOn U u.toFun) :
+theorem on_domain_unnormalized :
     eLpNormOn U (ENNReal.ofReal p) u.toFun ≤
       ENNReal.ofReal (C * D) *
         euclideanFieldELpNormOn U (ENNReal.ofReal p) u.grad := by
@@ -102,6 +91,8 @@ theorem on_domain_unnormalized {d : ℕ} {C : ℝ}
           euclideanFieldELpMeanNormOn U
             (ENNReal.ofReal p) u.grad) := by
       ac_rfl
+
+end
 
 /-- Unnormalized axis-cube specialization. -/
 theorem on_axisCube_unnormalized {d : ℕ} {C : ℝ}

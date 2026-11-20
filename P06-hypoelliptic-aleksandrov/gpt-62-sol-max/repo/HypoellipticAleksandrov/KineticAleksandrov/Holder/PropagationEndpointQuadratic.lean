@@ -17,8 +17,7 @@ theorem endpoint_scaled_norm_le {d : ℕ} {a C : ℝ} (ha : 0 < a)
     PDE.vecEuclideanNorm (a⁻¹ • y) ≤ C := by
   rw [PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.mpr ha)]
   have he := mul_le_mul_of_nonneg_left hy (inv_nonneg.mpr ha.le)
-  have heq : a⁻¹ * (C * a) = C := by field_simp
-  exact he.trans_eq heq
+  exact he.trans_eq (by field_simp)
 
 /-- The source one-eighth endpoint allowance gives q_h at most L squared over two. -/
 theorem qform_endpoint_half {d : ℕ} {lam h L : ℝ}
@@ -41,7 +40,6 @@ theorem qform_endpoint_half {d : ℕ} {lam h L : ℝ}
   apply he.trans ((mul_le_mul_of_nonneg_left hn (by positivity)).trans ?_)
   dsimp only [C]
   rw [div_pow, mul_pow, Real.sq_sqrt hlam.le]
-  have hl : lam ≠ 0 := hlam.ne'
   field_simp
   nlinarith only [sq_nonneg L]
 

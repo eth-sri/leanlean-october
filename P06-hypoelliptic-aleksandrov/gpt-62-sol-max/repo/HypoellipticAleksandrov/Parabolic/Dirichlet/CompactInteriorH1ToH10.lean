@@ -1,5 +1,7 @@
 module
 
+import HypoellipticAleksandrov.Analysis.SmoothCutoff
+
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10FunctionAdd
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10FunctionAECopy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenH1ZeroLevel
@@ -26,28 +28,6 @@ namespace PDE.H1Function
 
 open Filter Function MeasureTheory Set
 
-private theorem exists_smooth_cutoff_tsupport_subset
-    {d : ℕ} {K U : Set (PDE.Vec d)}
-    (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
-    ∃ b : PDE.Vec d → ℝ,
-      ContDiff ℝ ∞ b ∧
-      (∀ᶠ x in 𝓝ˢ K, b x = 1) ∧
-      HasCompactSupport b ∧
-      tsupport b ⊆ U := by
-  obtain ⟨L, hLcompact, hLclosed, hKinterior, hLU⟩ :=
-    exists_compact_closed_between hK hU hKU
-  obtain ⟨b, hbOne, hbZero, _hbRange⟩ :=
-    exists_contMDiffMap_one_nhds_of_subset_interior
-      (I := modelWithCornersSelf ℝ (PDE.Vec d)) (n := (⊤ : ℕ∞)) hK.isClosed
-      (by simpa only [interior_interior] using hKinterior)
-  have hbL : tsupport b ⊆ L := by
-    apply closure_minimal _ hLclosed
-    intro x hx
-    by_contra hxL
-    exact (mem_support.mp hx) (hbZero x hxL)
-  exact ⟨b, b.contMDiff.contDiff, hbOne,
-    hLcompact.of_isClosed_subset isClosed_closure hbL, hbL.trans hLU⟩
-
 private noncomputable def zeroH10 {d : ℕ} {U : Set (PDE.Vec d)} :
     PDE.H10Function U where
   toH1Function := 0
@@ -71,8 +51,8 @@ theorem exists_h10Function_of_ae_zero_outside_compact
     (hK : IsCompact K) (hKΩ : K ⊆ Ω)
     (hqzero : ∀ᵐ x ∂(PDE.volumeOn Ω), x ∉ K → q.toFun x = 0) :
     ∃ w : PDE.H10Function Ω, w.toH1Function = q := by
-  obtain ⟨b, hbSmooth, hbOne, hbCompact, hbΩ⟩ :=
-    exists_smooth_cutoff_tsupport_subset hK hΩ hKΩ
+  obtain ⟨b, hbSmooth, hbCompact, hbΩ, -, hbOne⟩ :=
+    HypoellipticAleksandrov.Analysis.exists_smooth_cutoff_on_nhds hK hΩ hKΩ
   let L : Set (PDE.Vec d) := tsupport b
   have hLCompact : IsCompact L := hbCompact.isCompact
   have hballs : ∀ x : L, ∃ R : ℝ, 0 < R ∧

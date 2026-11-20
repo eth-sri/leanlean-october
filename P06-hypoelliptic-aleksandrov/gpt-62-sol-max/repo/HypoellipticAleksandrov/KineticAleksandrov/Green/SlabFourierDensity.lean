@@ -26,7 +26,7 @@ theorem ae_enorm_le_of_setIntegral_enorm_le {α : Type*} [MeasurableSpace α] (m
     [SigmaFinite m] (k : α → ℂ) (hk : Integrable k m) (G : α → ℝ≥0∞)
     (h : ∀ E, MeasurableSet E → ‖∫ y in E, k y ∂m‖ₑ ≤ ∫⁻ y in E, G y ∂m) :
     ∀ᵐ y ∂m, ‖k y‖ₑ ≤ G y := by
-  have hv : (m.withDensityᵥ k).variation = m.withDensity (fun y => ‖k y‖ₑ) :=
+  have hv :=
     Measure.variation_withDensityᵥ hk
   have hle : (m.withDensityᵥ k).variation ≤ m.withDensity G := by
     refine VectorMeasure.variation_le_of_forall_enorm_le (fun E hE => ?_)

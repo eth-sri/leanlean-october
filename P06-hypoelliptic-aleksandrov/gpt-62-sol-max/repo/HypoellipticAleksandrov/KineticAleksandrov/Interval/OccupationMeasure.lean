@@ -83,7 +83,7 @@ theorem intervalOccupationMeasure_compl_slab (K : MovingFiberKernel (PDE.oneDime
     ext q
     simp only [mem_preimage, mem_compl_iff, mem_prod, mem_Ioo, mem_univ, and_true,
       mem_empty_iff_false, iff_false, not_not]
-    exact ⟨q.1.2.2.1, ((ENNReal.ofReal_lt_ofReal_iff hT).mp q.1.2.2.2)⟩
+    exact ⟨q.1.2.property.left, (ENNReal.ofReal_lt_ofReal_iff hT).mp q.1.2.property.right⟩
   rw [he, measure_empty]
 
 include hT in

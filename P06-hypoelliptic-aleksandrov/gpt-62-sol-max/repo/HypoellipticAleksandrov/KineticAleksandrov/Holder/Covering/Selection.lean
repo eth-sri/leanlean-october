@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.Inflation
 import Mathlib.MeasureTheory.Covering.Vitali
 import Mathlib.Topology.Homeomorph.Lemmas
+import HypoellipticAleksandrov.KineticAleksandrov.Holder.AffineGeometryTopology
 
 /-! # Countable disjoint selection of kinetic cylinders
 
@@ -30,10 +31,10 @@ theorem exists_disjoint_cylinder_selection {d : ℕ} {ι : Type*}
   obtain ⟨u, hut, hdisj, hcover⟩ :=
     Vitali.exists_disjoint_subfamily_covering_enlargement
       (fun i => backwardCylinder (P i) (r i)) t r 2 (by norm_num)
-      (fun i hi => (hr i hi).le) R hR (fun i hi => cylinder_nonempty (P i) (hr i hi))
-  have hcount : u.Countable := hdisj.countable_of_nonempty_interior fun i hi => by
+      (fun i hi => (hr i hi).le) R hR (fun i hi => _root_.HypoellipticAleksandrov.KineticAleksandrov.Holder.backwardCylinder_nonempty (P i) (hr i hi))
+  have hcount := hdisj.countable_of_nonempty_interior fun i hi => by
     rw [(isOpen_cylinder (P i) (r i)).interior_eq]
-    exact cylinder_nonempty (P i) (hr i (hut hi))
+    exact _root_.HypoellipticAleksandrov.KineticAleksandrov.Holder.backwardCylinder_nonempty (P i) (hr i (hut hi))
   refine ⟨u, hut, hcount, hdisj, ?_⟩
   intro X hX
   obtain ⟨i, hi, hXi⟩ := mem_iUnion₂.mp hX

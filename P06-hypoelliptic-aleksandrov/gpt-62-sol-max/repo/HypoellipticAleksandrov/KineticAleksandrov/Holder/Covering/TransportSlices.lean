@@ -29,7 +29,7 @@ theorem measurePreserving_transport_fiber {d : ℕ} (v : PDE.Vec d) :
       ((volume : Measure ℝ).prod volume) ((volume : Measure ℝ).prod volume) := by
     refine (MeasurePreserving.id (volume : Measure ℝ)).skew_product
       (g := fun t x => x+t • v) ?_ ?_
-    · exact (continuous_snd.add (continuous_fst.smul continuous_const)).measurable
+    · fun_prop
     · exact Filter.Eventually.of_forall fun t =>
         (measurePreserving_add_right (volume : Measure (PDE.Vec d)) (t • v)).map_eq
   simpa only [Measure.volume_eq_prod, Function.comp_def, Prod.swap,
@@ -65,8 +65,12 @@ theorem measurePreserving_transportChart (d : ℕ) :
   simpa only [Measure.volume_eq_prod, Function.comp_def, transportChart,
     KineticPoint.equivProd, Equiv.coe_fn_symm_mk] using hinv.comp (hperm.comp hshear)
 
+section
+variable {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r)
+include hr
+
 /-- Backward transport slices fit in a fixed transported position ball of radius 2r³. -/
-theorem cylinder_transport_slice {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r)
+theorem cylinder_transport_slice
     (v y : PDE.Vec d) (t : ℝ)
     (h : transportChart (v, y, t) ∈ backwardCylinder P r) :
     t ∈ Ioo (P.time-r^2) P.time ∧ v ∈ PDE.euclideanBall P.velocity r ∧
@@ -96,7 +100,7 @@ theorem cylinder_transport_slice {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 
   nlinarith
 
 /-- The delayed transport product is contained in the forward stack. -/
-theorem delayed_transport_slice {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r)
+theorem delayed_transport_slice
     (m : ℕ) (v y : PDE.Vec d) (t : ℝ)
     (ht : t ∈ Ioo P.time (P.time+(m : ℝ)*r^2))
     (hv : v ∈ PDE.euclideanBall P.velocity r)
@@ -122,5 +126,7 @@ theorem delayed_transport_slice {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
     hvn.le (PDE.vecEuclideanNorm_nonneg _) (by positivity : 0 ≤ (m : ℝ)*r^2)
   push_cast
   nlinarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

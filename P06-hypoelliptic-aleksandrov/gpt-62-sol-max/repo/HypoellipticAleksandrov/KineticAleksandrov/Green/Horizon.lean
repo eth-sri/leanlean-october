@@ -29,7 +29,7 @@ def horizonInclusion (d : ℕ) (S : ℝ≥0∞) :
 
 lemma measurableEmbedding_elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) :
     MeasurableEmbedding (elapsedInclusion hTS) := by
-  have hT : MeasurableEmbedding (Subtype.val : ElapsedTime T → ℝ) :=
+  have hT :=
     MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime T)
   refine ⟨?_, measurable_elapsedInclusion hTS, ?_⟩
   · intro a b hab

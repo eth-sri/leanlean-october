@@ -86,9 +86,31 @@ lemma freq_ennreal (Co Cd a M t1 t2 A q K1 s : ℝ) (hCo : 0 ≤ Co) (hCd : 0 �
   rw [hK, hs]
   exact freq_arith Co Cd a M t1 t2 A q hCo hCd ha hM ht1 ht2 hA hq
 
+section
+variable (d : ℕ) (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ≥0∞)
+include C c M
+
+/-- The Fourier part of `SlabFourierBounds` for an explicit family `k` of densities: integrable
+densities of the Fourier marginals, the decay bound, and the integrated height bound with damping `exp(-c T δ)`. -/
+def SlabDampedFourierBounds (T δ : ℝ)
+    (Γ : Measure (GreenCarrier d)) (k : PDE.Vec d → SlabBase d → ℂ) : Prop :=
+  (∀ ξ, Integrable (k ξ) (slabBase d T) ∧
+    ∀ E : Set (SlabBase d), MeasurableSet E →
+      ∫ y in E, k ξ y ∂slabBase d T =
+        ∫ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
+          Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ) ∧
+  ∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
+    (∀ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
+      (C γ : ℝ≥0∞) * M * ENNReal.ofReal (T ^ slabBeta d γ) *
+        ENNReal.ofReal (Real.exp (-(c * T * (δ + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))))) ∧
+    ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
+        ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
+      (C γ : ℝ≥0∞) * M * ENNReal.ofReal (T ^ (slabBeta d γ - 3 * (d : ℝ) / 2)) *
+        ENNReal.ofReal (Real.exp (-(c * T * δ)))
+
 /-- The Fourier part of `SlabFourierBounds` for an explicit family `k` of densities: integrable
 densities of the Fourier marginals, the decay bound, and the integrated height bound. -/
-def SlabFourierBoundsFamily (d : ℕ) (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ≥0∞) (T : ℝ)
+def SlabFourierBoundsFamily (T : ℝ)
     (Γ : Measure (GreenCarrier d)) (k : PDE.Vec d → SlabBase d → ℂ) : Prop :=
   (∀ ξ, Integrable (k ξ) (slabBase d T) ∧
     ∀ E : Set (SlabBase d), MeasurableSet E →
@@ -103,21 +125,33 @@ def SlabFourierBoundsFamily (d : ℕ) (C : ℝ → ℝ≥0) (c : ℝ) (M : ℝ�
         ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
       (C γ : ℝ≥0∞) * M * ENNReal.ofReal (T ^ (slabBeta d γ - 3 * (d : ℝ) / 2))
 
-/-- **Lemma 5.1 for one realized kernel**, conditional on the occupation and decay
-estimates for that kernel (constants `Cocc`, `Cdec`, `cdec`).  The Fourier densities can be taken
-jointly Borel in `(ξ, y)`, so that `ξ ↦ ‖k^ξ‖_{L^γ}` is measurable. -/
-theorem slabFourierBounds_meas_of_occupation_decay_kernel {d : ℕ} (hd : 0 < d)
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
-    (hcomp : K.HasComposition MeasurableSet.univ)
-    (Cocc : ℝ → ℝ) (hocc : OccupationBoundedBy K Cocc)
-    (Cdec cdec : ℝ) (hCdec : 0 < Cdec) (hcdec : 0 < cdec) (hdec : FourierDecayBoundedBy K Cdec cdec)
+end
+
+section
+variable {d : ℕ} (hd : 0 < d) (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+  (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
+  (hcomp : K.HasComposition MeasurableSet.univ) (Cocc : ℝ → ℝ) (hocc : OccupationBoundedBy K Cocc)
+include hd hcov hcomp hocc
+
+/-- Shared slab reconstruction inputs with the half-time killing factor retained. -/
+theorem slab_fourier_of_halfMass
+    (Cdec cdec δ : ℝ) (hCdec : 0 < Cdec) (hcdec : 0 < cdec)
     (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
-    {T : ℝ} (hT : 0 < T) :
-    SlabFourierBounds d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ ∧
-      ∃ k : PDE.Vec d → SlabBase d → ℂ, Measurable (Function.uncurry k) ∧
-        SlabFourierBoundsFamily d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ k := by
+    {T : ℝ} (hT : 0 < T)
+    (hhalf : ∀ ξ : PDE.Vec d, (halfMeasure K σ₀ T hT.le μ ξ).variation univ ≤
+      μ univ * ENNReal.ofReal (Cdec * Real.exp
+        (-((cdec / 2) * T * (δ + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))))) :
+    ∃ g : SlabBase d → ℝ≥0∞, Measurable g ∧
+      (∀ E : Set (SlabBase d), MeasurableSet E →
+        Γ {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} =
+          ∫⁻ y in E, g y ∂slabBase d T) ∧
+      (∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
+        eLpNorm g (ENNReal.ofReal γ) (slabBase d T) ≤
+          (slabConstant' d Cocc Cdec cdec γ : ℝ≥0∞) * μ univ *
+            ENNReal.ofReal (T ^ slabBeta d γ)) ∧
+      ∃ f : PDE.Vec d → SlabBase d → ℂ, Measurable (Function.uncurry f) ∧
+        SlabDampedFourierBounds d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T δ Γ f := by
   obtain ⟨g, hgm, hgE, hgnorm⟩ := slab_marginal_density hd K hcov Cocc hocc σ₀ μ Γ hΓ hT
   have hΓfin : IsFiniteMeasure (Γ.restrict (slabSet (d := d) T)) := by
     refine ⟨?_⟩
@@ -130,9 +164,9 @@ theorem slabFourierBounds_meas_of_occupation_decay_kernel {d : ℕ} (hd : 0 < d)
         ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
           ENNReal.ofReal (T ^ slabBeta d γ) *
           ENNReal.ofReal (Real.exp
-            (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) :=
-    fun ξ => slab_fourier_density_bound K hd hcov hcomp Cocc hocc Cdec cdec hCdec hdec σ₀ μ Γ hΓ
-      hT ξ (kf ξ) (hkf ξ).1 (hkf ξ).2
+            (-((cdec / 2) * T * (δ + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))))) :=
+    fun ξ => slab_fourier_density_bound K hd hcov hcomp Cocc hocc Cdec _ hCdec
+      (Real.exp_pos _).le σ₀ μ Γ hΓ hT ξ (kf ξ) (hkf ξ).1 (hkf ξ).2 (hhalf ξ)
   have hCγ : ∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
       (slabConstant' d Cocc Cdec cdec γ : ℝ≥0∞) = ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) :=
     fun _ _ _ => rfl
@@ -152,8 +186,8 @@ theorem slabFourierBounds_meas_of_occupation_decay_kernel {d : ℕ} (hd : 0 < d)
       (2 : ℝ) ^ slabBeta d γ * ((1 + Cdec) *
         (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2))) := fun γ => by
     unfold slabK1; ring
-  have hfam : SlabFourierBoundsFamily d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ
-      kf := by
+  have hfam : SlabDampedFourierBounds d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ)
+      T δ Γ kf := by
     refine ⟨fun ξ => ⟨(hkf ξ).1, (hkf ξ).2⟩, fun γ h1 h2 => ⟨fun ξ => ?_, ?_⟩⟩
     · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
       have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
@@ -169,19 +203,31 @@ theorem slabFourierBounds_meas_of_occupation_decay_kernel {d : ℕ} (hd : 0 < d)
       have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
       have ht1 : 0 ≤ T ^ slabBeta d γ := Real.rpow_nonneg hT.le _
       have ht2 : 0 ≤ T ^ (-(3 * (d : ℝ) / 2)) := Real.rpow_nonneg hT.le _
+      let Q := ENNReal.ofReal (Real.exp (-((cdec / 2) * T * δ)))
+      have hsplit (ξ : PDE.Vec d) : ENNReal.ofReal (Real.exp
+          (-((cdec / 2) * T * (δ + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))))) =
+          Q * ENNReal.ofReal (Real.exp
+            (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) := by
+        rw [show -((cdec / 2) * T * (δ + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))) =
+          -((cdec / 2) * T * δ) + -((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))
+            by ring, Real.exp_add, ENNReal.ofReal_mul (Real.exp_pos _).le]
       set D : ℝ≥0∞ := ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
-        ENNReal.ofReal (T ^ slabBeta d γ) with hD
+        ENNReal.ofReal (T ^ slabBeta d γ) * Q with hD
       have hDtop : D ≠ ⊤ := by
         rw [hD]
-        exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top _ _))
-          ENNReal.ofReal_ne_top
+        exact ENNReal.mul_ne_top
+          (ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top
+            (measure_ne_top _ _)) ENNReal.ofReal_ne_top) ENNReal.ofReal_ne_top
       have hscale := lintegral_decayProfile_scaling d (cdec / 2) T hT
       calc ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
             ∫⁻ ξ, eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T)
           ≤ ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
             ∫⁻ ξ : PDE.Vec d, D * ENNReal.ofReal (Real.exp
               (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) :=
-            mul_le_mul' le_rfl (lintegral_mono (fun ξ => hk ξ γ h1 h2))
+            mul_le_mul' le_rfl (lintegral_mono (fun ξ => by
+              have h := hk ξ γ h1 h2
+              rw [hsplit ξ] at h
+              simpa only [hD, mul_assoc] using h))
         _ = ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
             (D * (ENNReal.ofReal (T ^ (-(3 * (d : ℝ) / 2))) *
               ENNReal.ofReal (slabFreqConstant d (cdec / 2)))) := by
@@ -192,11 +238,12 @@ theorem slabFourierBounds_meas_of_occupation_decay_kernel {d : ℕ} (hd : 0 < d)
                 T ^ slabBeta d γ * T ^ (-(3 * (d : ℝ) / 2)) := by
               rw [← Real.rpow_add hT, sub_eq_add_neg]
             rw [hrp]
-            exact freq_ennreal (Cocc γ) Cdec ((2 : ℝ) ^ slabBeta d γ) M (T ^ slabBeta d γ)
+            convert mul_le_mul' (freq_ennreal (Cocc γ) Cdec ((2 : ℝ) ^ slabBeta d γ) M (T ^
+              slabBeta d γ)
               (T ^ (-(3 * (d : ℝ) / 2))) (slabFreqConstant d (cdec / 2)) (((2 * Real.pi) ^ d)⁻¹)
               (slabK1 d Cdec cdec γ) _ hC0 hCdec.le h2b hM0 ht1 ht2 hA0 hq0
-              (by unfold slabK1; ring) rfl
-  refine ⟨⟨⟨g, hgm.aemeasurable, hgE, fun γ h1 h2 => ?_⟩, kf, hfam⟩, kf, hkm, hfam⟩
+              (by unfold slabK1; ring) rfl) (le_rfl : Q ≤ Q) using 1; ring
+  refine ⟨g, hgm, hgE, fun γ h1 h2 => ?_, kf, hkm, hfam⟩
   · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
     have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
     refine (hgnorm γ h1 h2).trans ?_
@@ -208,6 +255,36 @@ theorem slabFourierBounds_meas_of_occupation_decay_kernel {d : ℕ} (hd : 0 < d)
       nlinarith [mul_nonneg hC0 h2b]
     exact mul_le_mul' (mul_le_mul' hle le_rfl) le_rfl
 
+
+/-- **Lemma 5.1 for one realized kernel**, conditional on the occupation and decay
+estimates for that kernel (constants `Cocc`, `Cdec`, `cdec`).  The Fourier densities can be taken
+jointly Borel in `(ξ, y)`, so that `ξ ↦ ‖k^ξ‖_{L^γ}` is measurable. -/
+theorem slabFourierBounds_meas_of_occupation_decay_kernel
+    (Cdec cdec : ℝ) (hCdec : 0 < Cdec) (hcdec : 0 < cdec) (hdec : FourierDecayBoundedBy K Cdec cdec)
+    (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
+    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
+    {T : ℝ} (hT : 0 < T) :
+    SlabFourierBounds d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ ∧
+      ∃ k : PDE.Vec d → SlabBase d → ℂ, Measurable (Function.uncurry k) ∧
+        SlabFourierBoundsFamily d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ k := by
+  obtain ⟨g, hg, hgE, hgn, k, hk, hkb⟩ :=
+    slab_fourier_of_halfMass hd K hcov hcomp Cocc hocc Cdec cdec 0 hCdec hcdec σ₀ μ Γ hΓ hT
+      (fun ξ => halfMeasure_mass_le K hcov σ₀ μ hT ξ fun v => by
+        have := hdec σ₀ (σ₀ + T / 2) (by linarith : σ₀ < σ₀ + T / 2) v ξ
+        simpa only [show σ₀ + T / 2 - σ₀ = T / 2 by ring, zero_add,
+          show (cdec / 2) * T = cdec * (T / 2) by ring] using this)
+  have hf : SlabFourierBoundsFamily d (slabConstant' d Cocc Cdec cdec) (cdec / 2) (μ univ) T Γ k := by
+    simpa only [SlabDampedFourierBounds, SlabFourierBoundsFamily, zero_add, mul_zero, neg_zero,
+      Real.exp_zero, ENNReal.ofReal_one, mul_one] using hkb
+  exact ⟨⟨⟨g, hg.aemeasurable, hgE, hgn⟩, k, hf⟩, k, hk, hf⟩
+
+end
+
+section
+variable {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ) (hocc : ParabolicOccupationFamily d lam Lam)
+  (hdec : FourierDecayFamily d lam Lam)
+include hd hocc hdec
+
 /-- **Lemma 5.1 (case W), family level.**  Conditional on the conclusions of Proposition 4.2
 (`ParabolicOccupationFamily`) and Proposition 3.1 (`FourierDecayFamily`) for the coefficient bounds
 `λ, Λ`: there are constants `C_γ, c` (depending only on `d` and the constants of the two premises)
@@ -217,8 +294,7 @@ of `(B, id)`, every `σ₀`, finite `μ`, Green measure `Γ` of `μ` (infinite h
 in `(ξ, y)` (so `ξ ↦ ‖k^ξ‖_{L^γ}` is measurable, see `measurable_eLpNorm_family`).  The translation
 covariance and composition clauses needed by the proof are derived from the realization
 (`isTranslationCovariant_of_realizes`). -/
-theorem slabFourierBounds_meas_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ)
-    (hocc : ParabolicOccupationFamily d lam Lam) (hdec : FourierDecayFamily d lam Lam) :
+theorem slabFourierBounds_meas_of_occupation_decay :
     ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -241,8 +317,7 @@ theorem slabFourierBounds_meas_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam
 conclusion of `slabFourierBounds_meas_of_occupation_decay` without the measurability clause: the
 `hbounds` premise of `Green.green_density_of_slab_marginals` and of
 `TheoremA.green_density_bound_of_slabFourierBounds`. -/
-theorem slabFourierBounds_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ)
-    (hocc : ParabolicOccupationFamily d lam Lam) (hdec : FourierDecayFamily d lam Lam) :
+theorem slabFourierBounds_of_occupation_decay :
     ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -254,5 +329,7 @@ theorem slabFourierBounds_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam Lam 
       ∀ T : ℝ, 0 < T → SlabFourierBounds d C c (μ univ) T Γ := by
   obtain ⟨C, c, h⟩ := slabFourierBounds_meas_of_occupation_decay hd lam Lam hocc hdec
   exact ⟨C, c, fun B hB S K hreal σ₀ μ _ Γ hΓ T hT => (h B hB S K hreal σ₀ μ Γ hΓ T hT).1⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

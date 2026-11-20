@@ -13,26 +13,30 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Measure Set
 
+section
+variable (ρ : Measure (ℝ × ℝ))
+include ρ
+
 /-- The first-coordinate marginal with the second coordinate restricted to B. -/
-def bellmanFirstSlice (ρ : Measure (ℝ × ℝ)) (B : Set ℝ) : Measure ℝ :=
+def bellmanFirstSlice (B : Set ℝ) : Measure ℝ :=
   Measure.map Prod.fst (ρ.restrict (univ ×ˢ B))
 
 /-- The angular section obtained by restricting log radius to the unit interval. -/
-def bellmanUnitSection (ρ : Measure (ℝ × ℝ)) : Measure ℝ :=
+def bellmanUnitSection : Measure ℝ :=
   Measure.map Prod.snd (ρ.restrict (Ioc (0 : ℝ) 1 ×ˢ univ))
 
 /-- The first slice evaluates a rectangle of the original measure. -/
-theorem bellmanFirstSlice_apply (ρ : Measure (ℝ × ℝ)) {A B : Set ℝ}
+theorem bellmanFirstSlice_apply {A B : Set ℝ}
     (hA : MeasurableSet A) :
     bellmanFirstSlice ρ B A = ρ (A ×ˢ B) := by
   rw [bellmanFirstSlice, Measure.map_apply measurable_fst hA,
     Measure.restrict_apply (measurable_fst hA)]
   congr 1
   ext q
-  simp only [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and]
+  simp
 
 /-- The unit section evaluates the unit-radius rectangle of the original measure. -/
-theorem bellmanUnitSection_apply (ρ : Measure (ℝ × ℝ)) {B : Set ℝ}
+theorem bellmanUnitSection_apply {B : Set ℝ}
     (hB : MeasurableSet B) :
     bellmanUnitSection ρ B = ρ (Ioc (0 : ℝ) 1 ×ˢ B) := by
   rw [bellmanUnitSection, Measure.map_apply measurable_snd hB,
@@ -43,7 +47,7 @@ theorem bellmanUnitSection_apply (ρ : Measure (ℝ × ℝ)) {B : Set ℝ}
   tauto
 
 /-- A compact angular slice has finite mass on compact radial sets. -/
-theorem bellmanFirstSlice_finiteOnCompacts (ρ : Measure (ℝ × ℝ))
+theorem bellmanFirstSlice_finiteOnCompacts
     [IsFiniteMeasureOnCompacts ρ] {B : Set ℝ} (hB : IsCompact B) :
     IsFiniteMeasureOnCompacts (bellmanFirstSlice ρ B) where
   lt_top_of_isCompact A hA := by
@@ -51,7 +55,7 @@ theorem bellmanFirstSlice_finiteOnCompacts (ρ : Measure (ℝ × ℝ))
     exact (hA.prod hB).measure_lt_top
 
 /-- The unit-radius angular section is locally finite. -/
-theorem bellmanUnitSection_finiteOnCompacts (ρ : Measure (ℝ × ℝ))
+theorem bellmanUnitSection_finiteOnCompacts
     [IsFiniteMeasureOnCompacts ρ] : IsFiniteMeasureOnCompacts (bellmanUnitSection ρ) where
   lt_top_of_isCompact B hB := by
     rw [bellmanUnitSection_apply ρ hB.measurableSet]
@@ -59,7 +63,7 @@ theorem bellmanUnitSection_finiteOnCompacts (ρ : Measure (ℝ × ℝ))
       (isCompact_Icc.prod hB).measure_lt_top
 
 /-- Translating only the first coordinate commutes with restricting the angular coordinate. -/
-theorem bellmanFirstSlice_invariant (ρ : Measure (ℝ × ℝ))
+theorem bellmanFirstSlice_invariant
     (hρ : ∀ a : ℝ, Measure.map (fun q : ℝ × ℝ => (a + q.1, q.2)) ρ = ρ)
     {B : Set ℝ} (hB : MeasurableSet B) : IsAddLeftInvariant (bellmanFirstSlice ρ B) := by
   constructor
@@ -67,8 +71,7 @@ theorem bellmanFirstSlice_invariant (ρ : Measure (ℝ × ℝ))
   let τ : ℝ × ℝ → ℝ × ℝ := fun q => (a + q.1, q.2)
   have ht : Measurable τ := by fun_prop
   have hpre : τ ⁻¹' (univ ×ˢ B) = univ ×ˢ B := by
-    ext q
-    simp only [mem_preimage, mem_prod, mem_univ, true_and, τ]
+    rfl
   have hm : Measure.map τ (ρ.restrict (univ ×ˢ B)) = ρ.restrict (univ ×ˢ B) := by
     calc
       _ = (Measure.map τ ρ).restrict (univ ×ˢ B) := by
@@ -84,7 +87,7 @@ theorem bellmanFirstSlice_invariant (ρ : Measure (ℝ × ℝ))
     _ = _ := by rw [hm]; rfl
 
 /-- Haar uniqueness determines every rectangle with compact angular side. -/
-theorem bellman_translation_rectangle (ρ : Measure (ℝ × ℝ))
+theorem bellman_translation_rectangle
     [IsFiniteMeasureOnCompacts ρ]
     (hρ : ∀ a : ℝ, Measure.map (fun q : ℝ × ℝ => (a + q.1, q.2)) ρ = ρ)
     {A B : Set ℝ} (hA : MeasurableSet A) (hB : IsCompact B) :
@@ -92,7 +95,7 @@ theorem bellman_translation_rectangle (ρ : Measure (ℝ × ℝ))
   let ν := bellmanFirstSlice ρ B
   let : IsFiniteMeasureOnCompacts ν := bellmanFirstSlice_finiteOnCompacts ρ hB
   let : IsAddLeftInvariant ν := bellmanFirstSlice_invariant ρ hρ hB.measurableSet
-  have he : ν = addHaarScalarFactor ν volume • volume :=
+  have he :=
     isAddLeftInvariant_eq_smul ν volume
   have hc : addHaarScalarFactor ν volume = bellmanUnitSection ρ B := by
     have h := congrArg (fun m : Measure ℝ => m (Ioc (0 : ℝ) 1)) he
@@ -104,5 +107,7 @@ theorem bellman_translation_rectangle (ρ : Measure (ℝ × ℝ))
   rw [← bellmanFirstSlice_apply ρ hA]
   change ν A = _
   rw [he, Measure.smul_apply, ENNReal.smul_def, smul_eq_mul, hc, mul_comm]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

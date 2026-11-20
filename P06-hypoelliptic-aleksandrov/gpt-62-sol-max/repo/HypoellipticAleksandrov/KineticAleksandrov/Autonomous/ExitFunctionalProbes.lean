@@ -29,17 +29,21 @@ def exitProbeSubmodule : Submodule ℝ (EvolutionVec 1 → ℝ) where
   add_mem' := fun hf hg => ⟨hf.1.add hg.1, hf.2.add hg.2⟩
   smul_mem' := fun _c _f hf => ⟨contDiff_const.smul hf.1, hf.2.smul_left⟩
 
+section
+variable (f : exitProbeSubmodule)
+include f
+
 /-- The physical test supplied by an ambient exit probe. -/
-def exitProbePhysical (f : exitProbeSubmodule) : Point → ℝ :=
+def exitProbePhysical : Point → ℝ :=
   f.1 ∘ reconstructionPhysicalHomeomorph.symm
 
 /-- A physical probe is globally continuous and compactly supported. -/
-theorem exitProbePhysical_continuous_compact (f : exitProbeSubmodule) :
+theorem exitProbePhysical_continuous_compact :
     Continuous (exitProbePhysical f) ∧ HasCompactSupport (exitProbePhysical f) :=
   ⟨f.2.1.continuous.comp reconstructionPhysicalHomeomorph.symm.continuous,
     f.2.2.comp_homeomorph reconstructionPhysicalHomeomorph.symm⟩
 
-private theorem probe_native_smooth (f : exitProbeSubmodule) :
+private theorem probe_native_smooth :
     ContDiff ℝ (⊤ : ℕ∞) (exitProbePhysical f ∘ evolutionHomeomorph 1) := by
   have h := f.2.1.comp ((evolutionProdCLE 1).symm.contDiff.comp
     ((contDiff_fst.prodMk (contDiff_snd.snd.prodMk contDiff_snd.fst)).comp
@@ -56,17 +60,21 @@ private theorem probe_native_smooth (f : exitProbeSubmodule) :
   exact h
 
 /-- Smooth ambient probes supply genuine global physical C112 tests. -/
-theorem exitProbePhysical_isKineticC112On (f : exitProbeSubmodule) (D : Set Point)
+theorem exitProbePhysical_isKineticC112On (D : Set Point)
     (hD : IsOpen D) : IsKineticC112On (exitProbePhysical f) D :=
   isKineticC112On_of_contDiffOn hD (probe_native_smooth f).contDiffOn
+
+end
 
 private theorem probe_derivative_smooth {f : EvolutionVec 1 → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (v : EvolutionVec 1) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ f x v) :=
   (hf.contDiff_fderiv_apply (by simp)).comp (contDiff_id.prodMk contDiff_const)
 
-private theorem probe_operator_formula {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (f : exitProbeSubmodule) :
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (f : exitProbeSubmodule)
+
+private theorem probe_operator_formula :
     transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1 =
       fun x => fderiv ℝ f.1 x basisT +
         A.a (transportedCoord 1 x 0) (diffusedCoord 1 x 0) *
@@ -76,8 +84,7 @@ private theorem probe_operator_formula {lam Lam : ℝ} (A : SmoothAutonomous lam
   simp only [transportedOperator, Fin.sum_univ_one, evolutionCoefficient, identityDrift, id_eq]
 
 /-- The actual packed kinetic operator of a smooth compact probe is smooth and compact. -/
-theorem exitProbe_operator_smooth_compact {lam Lam : ℝ}
-    (A : SmoothAutonomous lam Lam) (f : exitProbeSubmodule) :
+theorem exitProbe_operator_smooth_compact :
     ContDiff ℝ (⊤ : ℕ∞) (transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1) ∧
     HasCompactSupport (transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1) := by
   have ht := probe_derivative_smooth f.2.1 basisT
@@ -99,8 +106,7 @@ theorem exitProbe_operator_smooth_compact {lam Lam : ℝ}
       (f.2.2.fderiv_apply ℝ (basisZ (0 : Fin 1))).mul_left
 
 /-- The scalar physical operator is exactly the packed probe operator under the fixed map. -/
-theorem exitProbePhysical_operator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (f : exitProbeSubmodule) (p : Point) :
+theorem exitProbePhysical_operator (p : Point) :
     forwardScalarOperator A.a (exitProbePhysical f) p =
       transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1
         (reconstructionPhysicalHomeomorph.symm p) := by
@@ -119,8 +125,7 @@ theorem exitProbePhysical_operator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
   exact hop.symm
 
 /-- A compact probe and its actual kinetic operator satisfy the bounded source hypotheses. -/
-theorem exitProbePhysical_bounded_source {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (f : exitProbeSubmodule) :
+theorem exitProbePhysical_bounded_source :
     ∃ M : ℝ, ∀ p, |exitProbePhysical f p| ≤ M ∧
       |forwardScalarOperator A.a (exitProbePhysical f) p| ≤ M := by
   obtain ⟨B, hB⟩ := f.2.2.exists_bound_of_continuous f.2.1.continuous
@@ -129,5 +134,7 @@ theorem exitProbePhysical_bounded_source {lam Lam : ℝ} (A : SmoothAutonomous l
   refine ⟨max B C, fun p => ⟨(hB _).trans (le_max_left _ _), ?_⟩⟩
   rw [exitProbePhysical_operator A f p]
   exact (hC _).trans (le_max_right _ _)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

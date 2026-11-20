@@ -32,7 +32,7 @@ private theorem intervalPrimitive_boundary_pairing
     (∫ tau, PDE.intervalPrimitive 0 f tau * etaDeriv tau
       ∂reverseTimeVolume T) =
       -(∫ tau, f tau * eta tau ∂reverseTimeVolume T) := by
-  have hEtaCont : ContinuousOn eta (Icc 0 T) := HasDerivWithinAt.continuousOn hEta
+  have hEtaCont := HasDerivWithinAt.continuousOn hEta
   have hleft :
       (∫ tau, PDE.intervalPrimitive 0 f tau * etaDeriv tau
         ∂reverseTimeVolume T) =
@@ -70,23 +70,6 @@ private theorem intervalPrimitive_boundary_pairing
         hFTC, hEtaT]
       ring
     _ = -(∫ s in Icc 0 T, f s * eta s) := by rw [integral_neg]
-
-private theorem reverseTimeVStarPrimitive_apply_eq_intervalPrimitive_on_Ioo
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
-    (v : H10HilbertGraph hΩ) {tau : ℝ} (ht : tau ∈ Ioo 0 T) :
-    reverseTimeVStarPrimitive hΩ T g tau v =
-      PDE.intervalPrimitive 0 (fun s => (g s) v) tau := by
-  rw [reverseTimeVStarPrimitive_apply hΩ T g v tau]
-  change (∫ s in Ioc 0 tau, (g s) v ∂reverseTimeVolume T) = _
-  rw [show (∫ s in Ioc 0 tau, (g s) v ∂reverseTimeVolume T) =
-      ∫ s in Ioc 0 tau, (g s) v ∂volume by
-        simp only [reverseTimeVolume, reverseTimeOpenInterval,
-          Measure.restrict_restrict measurableSet_Ioc]
-        rw [inter_eq_left.mpr]
-        intro s hs
-        exact ⟨hs.1, lt_of_le_of_lt hs.2 ht.2⟩]
-  exact (intervalIntegral.integral_of_le (le_of_lt ht.1)).symm
 
 private theorem reverseTimeVolume_affine_constant_integral
     {T a : ℝ} (hT : 0 < T) :
@@ -175,9 +158,11 @@ private theorem reverseTimeHilbertRepresentative_affine_pairing_eqOn
     Measure.eqOn_Icc_of_ae_eq volume hT.ne hPairAE hUCont hPCont
   exact hPairEqOn
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+include hT
+
 private theorem reverseTimeHilbertRepresentative_affine_pairing_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
@@ -196,8 +181,6 @@ private theorem reverseTimeHilbertRepresentative_affine_pairing_integral
     (hPairEqOn ⟨le_of_lt ht.1, le_of_lt ht.2⟩)
 
 private theorem reverseTimeVStarPrimitive_affine_initial_source_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (g : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) :
     (∫ tau, reverseTimeVStarPrimitive hΩ T g tau v * (-(T⁻¹))
       ∂reverseTimeVolume T) =
@@ -228,7 +211,7 @@ private theorem reverseTimeVStarPrimitive_affine_initial_source_pairing
           PDE.intervalPrimitive 0 (fun s => (g s) v) tau * (-(T⁻¹)) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioo] with tau ht
     exact congrArg (fun z => z * (-(T⁻¹)))
-      (reverseTimeVStarPrimitive_apply_eq_intervalPrimitive_on_Ioo hΩ T g v ht)
+      (_root_.HypoellipticAleksandrov.Parabolic.Dirichlet.primitive_apply_on_Ioo hΩ T g v ht)
   calc
     (∫ tau, reverseTimeVStarPrimitive hΩ T g tau v * (-(T⁻¹))
       ∂reverseTimeVolume T) =
@@ -237,8 +220,6 @@ private theorem reverseTimeVStarPrimitive_affine_initial_source_pairing
     _ = -(∫ tau, (g tau) v * (1 - tau / T) ∂reverseTimeVolume T) := hboundary
 
 private theorem reverseTimeGelfandAffineConstant_apply_eq_initial_trace
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
@@ -253,11 +234,9 @@ private theorem reverseTimeGelfandAffineConstant_apply_eq_initial_trace
         reverseTimeGelfandAffineConstant hΩ T hT u g v at hzero
   rw [Set.IccExtend_left, reverseTimeVStarPrimitive_zero, ContinuousLinearMap.zero_apply,
     zero_add] at hzero
-  change reverseTimeGelfandAffineConstant hΩ T hT u g v =
-    inner ℝ (valueCLM hΩ v)
-      (reverseTimeHilbertRepresentative hΩ T hT u g hderiv
-        ⟨(0 : ℝ), ⟨le_rfl, hT.le⟩⟩)
   exact hzero.symm
+
+end
 
 /-- Pairing the canonical continuous Hilbert representative with the affine
 terminal-zero cutoff recovers the reverse-time source pairing and the canonical

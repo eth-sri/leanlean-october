@@ -26,9 +26,12 @@ theorem hessian_eq_of_eventuallyEq {d : ℕ} (F G : PDE.Vec d → ℝ)
     exact congrArg (fun L => L w) hz
   exact congrArg (fun L => L u) (hh.fderiv_eq (𝕜 := ℝ))
 
+section
+variable {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R) (y e w : PDE.Vec d)
+include hR
+
 /-- The actual cutoff has the seed Hessian in the open inner ball. -/
-theorem cutoffHessian_eq_seed {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
-    (y e w : PDE.Vec d) (hy : PDE.vecEuclideanNorm y < R) :
+theorem cutoffHessian_eq_seed (hy : PDE.vecEuclideanNorm y < R) :
     cutoffHessian alpha C₀ sigma R y e w =
       fderiv ℝ (fun z => fderiv ℝ (fun a => seed alpha C₀ sigma a e) z w) y w := by
   apply hessian_eq_of_eventuallyEq
@@ -37,8 +40,7 @@ theorem cutoffHessian_eq_seed {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
   exact cutoffProfile_eq_seed alpha C₀ sigma R hR z e hz.le
 
 /-- The actual cutoff has the radial Hessian in the open outer region. -/
-theorem cutoffHessian_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
-    (y e w : PDE.Vec d) (hy : 2 * R < PDE.vecEuclideanNorm y) :
+theorem cutoffHessian_eq_radial (hy : 2 * R < PDE.vecEuclideanNorm y) :
     cutoffHessian alpha C₀ sigma R y e w =
       fderiv ℝ (fun z => fderiv ℝ (radialProfile alpha) z w) y w := by
   apply hessian_eq_of_eventuallyEq
@@ -46,9 +48,15 @@ theorem cutoffHessian_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R
     with z hz
   exact cutoffProfile_eq_radial alpha C₀ sigma R hR z e hz.le
 
+end
+
+section
+variable (d : ℕ) (hd : 2 ≤ d) (alpha C₀ sigma : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1)
+  (hsigma : 0 < sigma)
+include hd ha ha1 hsigma
+
 /-- For sufficiently large R the actual cutoff has both Hessian signs on its closed annulus. -/
-theorem eventually_cutoff_annulus_signs (d : ℕ) (hd : 2 ≤ d) (alpha C₀ sigma : ℝ)
-    (ha : 0 < alpha) (ha1 : alpha < 1) (hsigma : 0 < sigma) :
+theorem eventually_cutoff_annulus_signs :
     ∀ᶠ R : ℝ in Filter.atTop, 2 < R ∧ ∀ y e : PDE.Vec d,
       PDE.vecNormSq e = 1 → R ≤ PDE.vecEuclideanNorm y →
       PDE.vecEuclideanNorm y ≤ 2 * R →
@@ -88,8 +96,7 @@ theorem eventually_cutoff_annulus_signs (d : ℕ) (hd : 2 ≤ d) (alpha C₀ sig
     exact (mul_nonneg hp.le (le_of_not_gt hh)).not_gt hwn
 
 /-- The actual cutoff has a positive Hessian direction everywhere, once R is large. -/
-theorem eventually_cutoff_positive_direction (d : ℕ) (hd : 2 ≤ d)
-    (alpha C₀ sigma : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1) (hsigma : 0 < sigma) :
+theorem eventually_cutoff_positive_direction :
     ∀ᶠ R : ℝ in Filter.atTop, 2 < R ∧ ∀ y e : PDE.Vec d,
       PDE.vecNormSq e = 1 → ∃ w, 0 < cutoffHessian alpha C₀ sigma R y e w := by
   filter_upwards [eventually_cutoff_annulus_signs d hd alpha C₀ sigma ha ha1 hsigma]
@@ -113,6 +120,8 @@ theorem eventually_cutoff_positive_direction (d : ℕ) (hd : 2 ≤ d)
       exact hw
     · exact (hR.2 y e he (le_of_not_gt hy) (le_of_not_gt houter)).1
 
+end
+
 /-- The transport expression agrees with the seed throughout the open inner ball. -/
 theorem cutoffTransport_eq_seed {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
     (y e : PDE.Vec d) (hy : PDE.vecEuclideanNorm y < R) :
@@ -130,8 +139,12 @@ theorem cutoffTransport_eq_seed {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R
   unfold ansatzTransport
   rw [cutoffProfile_eq_seed alpha C₀ sigma R hR y e hy.le, hvel.fderiv_eq, hsphere]
 
+section
+variable (d : ℕ) (hd : 2 ≤ d)
+include hd
+
 /-- A strictly negative Hessian direction exists outside the small seed ball for large R. -/
-theorem eventually_cutoff_negative_direction (d : ℕ) (hd : 2 ≤ d)
+theorem eventually_cutoff_negative_direction
     (alpha C₀ sigma : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1) (hsigma : 0 < sigma)
     (hsq : sigma ^ 2 < (1 - alpha) / 16) :
     ∀ᶠ R : ℝ in Filter.atTop, 2 < R ∧ ∀ y e : PDE.Vec d,
@@ -163,7 +176,7 @@ theorem eventually_cutoff_negative_direction (d : ℕ) (hd : 2 ≤ d)
     · exact (hR.2 y e he (le_of_not_gt hy) (le_of_not_gt houter)).2
 
 /-- Source sign control for the actual cutoff, with all parameters chosen internally. -/
-theorem exists_cutoff_sign_parameters (d : ℕ) (hd : 2 ≤ d) (alpha : ℝ)
+theorem exists_cutoff_sign_parameters (alpha : ℝ)
     (ha : 0 < alpha) (ha1 : alpha < 1) :
     ∃ C₀ sigma R : ℝ, 0 < C₀ ∧ 0 < sigma ∧ 2 < R ∧
       ∀ y e : PDE.Vec d, PDE.vecNormSq e = 1 →
@@ -196,5 +209,7 @@ theorem exists_cutoff_sign_parameters (d : ℕ) (hd : 2 ≤ d) (alpha : ℝ)
       linarith
     rw [cutoffTransport_eq_seed alpha C₀ sigma R (lt_trans (by norm_num) hp.1) y e hinner]
     exact htransport y e he hsmall
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

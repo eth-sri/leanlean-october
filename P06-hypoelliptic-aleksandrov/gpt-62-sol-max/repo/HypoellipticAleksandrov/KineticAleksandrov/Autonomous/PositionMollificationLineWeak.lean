@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionMollificationFiber
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsModulusReference
 
 /-! # Position-fiber integration by parts without a hidden origin mass -/
 
@@ -41,9 +42,13 @@ theorem singular_line_weak_derivative (f g : ℝ → ℝ) (hf : Continuous f)
   rw [integral_add h1 h2] at hz
   linarith only [hz]
 
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha)
+  (ha1 : alpha < 1) (v : ℝ)
+include alpha h ha ha1
+
 /-- Each actual position derivative fiber is locally integrable on the full position line. -/
-theorem barrier_dx_fiber_locallyIntegrable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1) (v : ℝ) :
+theorem barrier_dx_fiber_locallyIntegrable :
     LocallyIntegrable (fun X => bellmanDx phi (X, v)) volume := by
   rw [locallyIntegrable_iff]
   intro K hK
@@ -55,9 +60,7 @@ theorem barrier_dx_fiber_locallyIntegrable {alpha : ℝ} {phi : (ℝ × ℝ) →
   exact abs_le.mp hh.le
 
 /-- The actual position convolution moves its derivative onto the source jet even at v=0. -/
-theorem barrier_position_fiber_weak_dx {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (v : ℝ) (test : ℝ → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
+theorem barrier_position_fiber_weak_dx (test : ℝ → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
     (∫ X, bellmanOriginExtension phi (X, v) * deriv test X) =
       -(∫ X, bellmanDx phi (X, v) * test X) := by
   apply singular_line_weak_derivative _ _
@@ -68,7 +71,9 @@ theorem barrier_position_fiber_weak_dx {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ
   have hd := (h.1.contDiffAt (bellmanPuncturedSet_isOpen.mem_nhds hq)).differentiableAt
     (by norm_num)
   exact (bellman_hasDerivAt_first hd).congr_of_eventuallyEq
-    ((barrierExtension_eventuallyEq phi hq).comp_tendsto
+    ((_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrierExtension_eventuallyEq phi hq).comp_tendsto
       ((continuous_id.prodMk continuous_const).tendsto X))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization

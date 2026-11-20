@@ -1,5 +1,6 @@
 module
 
+import HypoellipticAleksandrov.Parabolic.ScalarCalculus
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.TimeWeakDerivative
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.SpatialWeakDerivatives
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.CompactLp
@@ -33,11 +34,7 @@ theorem exists_compact_continuous_scalar_jet
     exists_open_between_and_isCompact_closure hK hV hKV
   have hsub : U ⊆ V := subset_closure.trans hUV
   have hlocal : IsScalarC12On q U :=
-    ⟨hq.continuousOn.mono hsub, fun z hz => hq.timeSlice_differentiableAt (hsub hz),
-      fun z hz => hq.spatialSlice_contDiffAt (hsub hz),
-      hq.continuousOn_scalarTimeDerivative.mono hsub,
-      hq.continuousOn_scalarSpatialGradient.mono hsub,
-      hq.continuousOn_scalarSpatialHessian.mono hsub⟩
+    hq.mono hsub
   let w : ParabolicW12Function N U 1 :=
     { toFun := q
       timeDeriv := scalarTimeDerivative q

@@ -51,7 +51,7 @@ theorem smooth_test_second_swap (test : G → ℝ) (ht : ContDiff ℝ 2 test)
     (q w z : G) :
     fderiv ℝ (fun x => fderiv ℝ test x z) q w =
       fderiv ℝ (fun x => fderiv ℝ test x w) q z := by
-  have hd : DifferentiableAt ℝ (fderiv ℝ test) q :=
+  have hd :=
     ((ht.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num)) q
   rw [fderiv_clm_apply hd (differentiableAt_const _),
     fderiv_clm_apply hd (differentiableAt_const _)]
@@ -59,9 +59,12 @@ theorem smooth_test_second_swap (test : G → ℝ) (ht : ContDiff ℝ 2 test)
     ContinuousLinearMap.flip_apply] using!
       ((ht.contDiffAt (x := q)).isSymmSndFDerivAt (by simp)).eq w z
 
+section
+variable (phi : ContDiffBump (0 : G))
+
 /-- A locally integrable weak derivative commutes with smoothing by a compact smooth
 kernel, pointwise at every base point. -/
-theorem mollify_weak_directional_jet (phi : ContDiffBump (0 : G))
+theorem mollify_weak_directional_jet
     (u g : G → ℝ) (hu : LocallyIntegrable u volume) (w : G)
     (hweak : ∀ test : G → ℝ, ContDiff ℝ (⊤ : ℕ∞) test → HasCompactSupport test →
       (∫ y, u y * fderiv ℝ test y w) = -(∫ y, g y * test y)) (q : G) :
@@ -97,7 +100,7 @@ theorem mollify_weak_directional_jet (phi : ContDiffBump (0 : G))
 
 /-- A second distributional jet commutes with convolution. The second weak identity
 uses the reverse order on test derivatives, as required by two integrations by parts. -/
-theorem mollify_weak_second_jet (phi : ContDiffBump (0 : G))
+theorem mollify_weak_second_jet
     (u g h : G → ℝ) (hu : LocallyIntegrable u volume) (hg : LocallyIntegrable g volume)
     (w z : G)
     (hfirst : ∀ test : G → ℝ, ContDiff ℝ (⊤ : ℕ∞) test → HasCompactSupport test →
@@ -118,5 +121,7 @@ theorem mollify_weak_second_jet (phi : ContDiffBump (0 : G))
   have hb := hsecond test ht hs
   rw [hb] at ha
   simpa only [neg_neg] using (congrArg Neg.neg ha).symm
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

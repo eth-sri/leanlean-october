@@ -17,8 +17,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Filter Set
 
+section
+variable {d : ℕ}
+
 /-- Smooth functions have the three classical punctured distributional identities. -/
-theorem smooth_punctured_weak_identities {d : ℕ} (H : XV d → ℝ)
+theorem smooth_punctured_weak_identities (H : XV d → ℝ)
     (hs : ContDiff ℝ (⊤ : ℕ∞) H)
     (test : XV d → ℝ) (ht : ContDiff ℝ 2 test) (hc : HasCompactSupport test)
     (hz : (0 : XV d) ∉ tsupport test) :
@@ -37,7 +40,7 @@ theorem smooth_punctured_weak_identities {d : ℕ} (H : XV d → ℝ)
     (fun i k => (hh i k).continuous.locallyIntegrable) test ht hc hz
 
 /-- The literal flattened function has all weak test identities away from the origin. -/
-theorem flatProfile_punctured_weak_of_profile {d : ℕ} {alpha : ℝ}
+theorem flatProfile_punctured_weak_of_profile {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (test : XV d → ℝ) (ht : ContDiff ℝ 2 test) (hs : HasCompactSupport test)
     (hz : (0 : XV d) ∉ tsupport test) :
@@ -103,7 +106,7 @@ theorem flatProfile_punctured_weak_of_profile {d : ℕ} {alpha : ℝ}
     exact tendsto_nhds_unique (hleft.congr (fun n => (hclassic n).2.2 i k)) hright
 
 /-- The literal flattened function has the three weak identities on the entire carrier. -/
-theorem flatProfile_weak_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
+theorem flatProfile_weak_of_profile (hd : 1 ≤ d) {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
     ∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, selectedFlatProfile h r q * dx test q i) =
@@ -116,5 +119,7 @@ theorem flatProfile_weak_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
   exact profile_weak_identities_extend d hd (selectedFlatProfile h r)
     (flatProfilePositionJet h r) (flatProfileVelocityJet h r) (flatProfileHessian h r)
     (continuous_selectedFlatProfile h r) hx hv hh (flatProfile_punctured_weak_of_profile h r hr)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

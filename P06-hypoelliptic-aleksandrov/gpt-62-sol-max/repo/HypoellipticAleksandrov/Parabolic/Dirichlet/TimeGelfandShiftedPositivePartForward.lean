@@ -10,8 +10,10 @@ open scoped ENNReal NNReal RealInnerProductSpace
 noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+
 private theorem forward_shifted_rate_continuous
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (hΩb : Bornology.IsBounded Ω) (T : ℝ) (M N : ℝ≥0) {h : ℝ} (hh : 0 < h)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     Continuous (shiftedPositivePartEnergyRate hΩ hΩb M N
@@ -25,8 +27,7 @@ private theorem forward_shifted_rate_continuous
   exact (hy.clm_apply hp).sub (continuous_const.mul
     ((spatialMassCLM hΩb).continuous.comp ((valueCLM hΩ).continuous.comp hp)))
 
-private theorem forward_shifted_halfEnergy_continuous
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
+private theorem forward_shifted_halfEnergy_continuous (T : ℝ) (M N : ℝ≥0)
     {h : ℝ} (hh : 0 < h) (u : ReverseTimeL2V hΩ T) :
     Continuous (fun t ↦ shiftedPositivePartHalfEnergy hΩ
       (reverseTimeForwardSteklov T h u t) (reverseTimeAffineThreshold M N t)) := by
@@ -42,7 +43,6 @@ private theorem forward_shifted_halfEnergy_continuous
     valueCLM_h10ShiftedPositivePart]
 
 private theorem hasDerivAt_forward_shifted_halfEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
     (hΩb : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T) (M N : ℝ≥0)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -56,6 +56,8 @@ private theorem hasDerivAt_forward_shifted_halfEnergy
     (continuous_reverseTimeForwardSteklov T h hh u) _ t (by linarith [ha, ht.1])
     (hasDerivAt_reverseTimeForwardSteklov_gelfand hΩ T hT u g hd hh
       (by linarith [ha, ht.1]) (by linarith [hb, ht.2]))
+
+end
 
 /-- Half-energy identity underlying the forward fixed-window formula. -/
 theorem reverseTimeForwardSteklov_shiftedPositivePart_halfEnergy_identity

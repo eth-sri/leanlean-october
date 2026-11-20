@@ -27,7 +27,6 @@ variable {d : ℕ}
 /-- The exact whole-space bound implies the occupation-duality conclusion.
 This derivation is conditional on the stated bound. -/
 theorem occupation_duality_of_whole_space_bound
-    (hH : HormanderHypoellipticityStatement)
     (hd : 0 < d) (lam Lam : ℝ) (_hlam : 0 < lam) (_hLam : lam ≤ Lam)
     (hWhole :
     ∃ C : ℝ, 0 ≤ C ∧
@@ -83,7 +82,7 @@ theorem occupation_duality_of_whole_space_bound
     intro F hFs hFc hFsupp hF0
     let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
     have hwhole := (hWhole B hB S K hreal hP F hF0 hFs hFc hFsupp).2
-    have hpot := occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
+    have hpot := occupation_potential hB K hP F hF0 hFs hFc hFsupp
     have hb (v : PDE.Vec d) : W (0, v) ≤ C₀ * parabolicLpNorm d F :=
       (le_csSup hpot.2.1 ⟨(0, v), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩, rfl⟩).trans hwhole
     have hn (v : PDE.Vec d) : ‖W (0, v)‖ ≤ C₀ * parabolicLpNorm d F := by

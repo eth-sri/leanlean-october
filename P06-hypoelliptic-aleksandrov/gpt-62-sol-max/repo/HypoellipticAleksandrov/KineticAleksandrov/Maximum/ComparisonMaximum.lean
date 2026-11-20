@@ -28,14 +28,15 @@ theorem comparison_velocity_interior {d : ℕ}
   apply hnot ((mem_exitBoundary_iff Z₀ P R hR).2 ⟨hP,Or.inr (Or.inl ?_)⟩)
   exact heq
 
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) {D : Set (KineticPoint d)}
+  (hD : IsOpen D) (hQD : closure (forwardCylinder Z₀ R hR) ⊆ D) {u : KineticPoint d → ℝ}
+  (hu : IsKineticC112On u D) (A : FullKineticCoefficient d)
+include D hD hQD hu
+
 /-- At a non-exit closed-cylinder maximum, transport plus diffusion is nonpositive.
 Only the source anisotropic regularity on an open neighbourhood is used. -/
-theorem comparison_operator_nonpos_at_max {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    {D : Set (KineticPoint d)} (hD : IsOpen D)
-    (hQD : closure (forwardCylinder Z₀ R hR) ⊆ D)
-    {u : KineticPoint d → ℝ} (hu : IsKineticC112On u D)
-    (A : FullKineticCoefficient d) {P : KineticPoint d}
+theorem comparison_operator_nonpos_at_max {P : KineticPoint d}
     (hP : P ∈ closure (forwardCylinder Z₀ R hR))
     (hnot : P ∉ exitBoundary Z₀ R hR)
     (hmax : IsMaxOn u (closure (forwardCylinder Z₀ R hR)) P)
@@ -68,12 +69,7 @@ theorem comparison_operator_nonpos_at_max {d : ℕ}
   exact add_nonpos ht hdiff
 
 /-- A positive maximum of a strict subsolution is on the exit boundary. -/
-theorem comparison_inner_maximum_exclusion {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    {D : Set (KineticPoint d)} (hD : IsOpen D)
-    (hQD : closure (forwardCylinder Z₀ R hR) ⊆ D)
-    {u : KineticPoint d → ℝ} (hu : IsKineticC112On u D)
-    (A : FullKineticCoefficient d)
+theorem comparison_inner_maximum_exclusion
     (hA : ∀ P ∈ D, (A P.time P.position P.velocity).PosSemidef)
     (hstrict : ∀ P ∈ D, 0 < u P → 0 < forwardKineticOperator A u P)
     {P : KineticPoint d} (hP : P ∈ closure (forwardCylinder Z₀ R hR))
@@ -82,5 +78,7 @@ theorem comparison_inner_maximum_exclusion {d : ℕ}
   by_contra hnot
   exact (not_le.mpr (hstrict P (hQD hP) hpos))
     (comparison_operator_nonpos_at_max Z₀ R hR hD hQD hu A hP hnot hmax (hA P (hQD hP)))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

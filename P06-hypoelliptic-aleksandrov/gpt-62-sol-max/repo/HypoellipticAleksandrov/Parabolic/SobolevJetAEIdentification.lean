@@ -16,17 +16,6 @@ open scoped ENNReal Topology
 
 noncomputable section
 
-private theorem ordinaryRepresentative_memLp_volume
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
-    (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
-    (beta : TimeVelocityDerivativeIndex d m) :
-    MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
-  have h := G.ordinaryRepresentative_memLp beta
-  change MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-    ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-  simpa only [Measure.restrict_univ] using h
-
 /-- A uniform coordinate-jet limit agrees almost everywhere with the selected
 ambient weak representative. -/
 theorem coordinateJet_aeEq_ordinaryRepresentative_of_uniformLimit
@@ -65,13 +54,7 @@ theorem coordinateJet_aeEq_ordinaryRepresentative_of_uniformLimit
       (volume : Measure (TimeVelocity d))) atTop (nhds 0) := by
     exact (G.tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub beta).comp
       (tendsto_shrinkingRadius_nhdsWithin rho hrho)
-  have hbetaMem := ordinaryRepresentative_memLp_volume G beta
-  have hfMeas : ∀ n, AEStronglyMeasurable (f n)
-      (volume : Measure (TimeVelocity d)) := by
-    intro n
-    exact (SpacetimeMollifier.contDiff_spacetimeMollification
-      (shrinkingRadius_pos rho hrho n) _
-      (hbetaMem.locallyIntegrable (by norm_num))).continuous.aestronglyMeasurable
+  have hbetaMem := _root_.HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily.ordinaryRepresentative_memLp_volume G beta
   have hmeasure : TendstoInMeasure (volume : Measure (TimeVelocity d)) f atTop
       (G.ordinaryRepresentative beta) :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num) hLp

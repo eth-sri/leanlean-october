@@ -14,7 +14,7 @@ Setting: `0 ≤ F ∈ C_c^∞((0,1) × ℝ^d)`, smooth symmetric `B` with `λ �
 * `localizedKrylov_admissible` (admissibility): the reflected and rescaled
   `u(t, y) = V(1 - R² t, v_* + R y)` on `Q = (0, h) × B_1(0)`, `h = (1 - α)/R²`, together with
   `a(t, y) = B(1 - R² t, v_* + R y)` and `f = R² F(1 - R² t, v_* + R y)`, satisfies every
-  hypothesis of the interior estimate `parabolic_aleksandrov_direct`.
+  hypothesis of the interior estimate `parabolic_aleksandrov_of_lower_ellipticity`.
 * `localizedBound` (the bound): `0 ≤ V ≤ C R^(d/(d+1)) ‖F‖_{L^{d+1}}` on the closed cylinder with
   `C` depending only on `d, λ, Λ`.
 
@@ -91,12 +91,7 @@ theorem localizedKrylov_admissible_of_one_le_direct :
     localHeight_pos hα1 hR, localHeight_le_one hα0 hR1, ?_, ?_, ?_, ?_, ?_,
     classical_solution_nonneg hlam hF0 hα1 hR hsmooth hlow hV⟩
   · have hc := (isScalarC12On_reflectScale hQV hV.2.1 hR vStar).1
-    exact ⟨hc.continuousOn.mono hQ,
-      fun z hz => hc.timeSlice_differentiableAt (hQ hz),
-      fun z hz => hc.spatialSlice_contDiffAt (hQ hz),
-      hc.continuousOn_scalarTimeDerivative.mono hQ,
-      hc.continuousOn_scalarSpatialGradient.mono hQ,
-      hc.continuousOn_scalarSpatialHessian.mono hQ⟩
+    exact hc.mono hQ
   · exact hV.1.comp (continuous_reflectScale R vStar).continuousOn hKsub
   · exact (hsmooth.continuous.comp (continuous_reflectScale R vStar)).continuousOn
   · intro z _

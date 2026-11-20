@@ -4,8 +4,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceCo
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.PotentialWhole
-public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
-public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.SourceCorrection
+public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementEnergyBoundary
+public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparison
+public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
+import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativesSmooth
 
 /-! # Localization of the whole-space occupation potential -/
 
@@ -15,7 +18,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Set
 
 /-- The whole-space potential admits the source quadratic comparison on every ball. -/
-theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityStatement)
+theorem wholeSpace_localization_direct {d : ℕ}
     (hd : 0 < d)
     {lam Lam : ℝ} {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -39,17 +42,17 @@ theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityS
   let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
   let H := sSup (W '' (Icc (0 : ℝ) 1 ×ˢ univ))
   obtain ⟨hW0, hbdd, -, hWt, hWs, hWe⟩ :=
-    occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
+    occupation_potential hB K hP F hF0 hFs hFc hFsupp
   have hH0 : 0 ≤ H := (hW0 (0, 0)).trans
     (le_csSup hbdd ⟨(0, 0), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩, rfl⟩)
   have hU : tsupport F ⊆ {p : TimeVelocity d | p.1 < 1 ∧
       p.2 ∈ movingDomain (wholeSpace d) (fun _ => (0 : PDE.Vec d)) p.1} := by
     intro p hp
     exact ⟨(hFsupp hp).1.2, by simp [movingDomain_wholeSpace]⟩
-  have hWcont := (parabolic_duhamel hH (wholeSpace_admissible d)
+  have hWcont := (parabolic_duhamel (wholeSpace_admissible d)
     (zeroCurve_piecewiseC1 d) hB K hP 1 F hF0 hFs hFc hU).2.2.2.1
   obtain ⟨V, hV⟩ := LocalHolder.exists_signed_source_ball_correction hd vStar R hR α 1
-    hα1 lam Lam hB.1 hB.2.1 B (sectionTwoCoefficient_smooth hB)
+    hα1 lam Lam hB.1 hB.2.1 B (_root_.HypoellipticAleksandrov.KineticAleksandrov.LocalA.sectionTwo_coefficient_smooth hB)
     hB.2.2.2.2.1 hB.2.2.2.2.2 (fun z => -F z) hFs.neg
   refine ⟨V, hV, ?_, occupationQuadratic_center_half (hB.1.le.trans hB.2.1)
     hα0 hR hRsq⟩

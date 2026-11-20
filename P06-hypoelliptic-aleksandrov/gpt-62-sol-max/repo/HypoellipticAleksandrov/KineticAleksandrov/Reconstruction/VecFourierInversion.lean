@@ -47,32 +47,33 @@ lemma inner_toLp (ξ x : PDE.Vec d) :
   simp only [PiLp.inner_apply, PDE.vecDot, RCLike.inner_apply, conj_trivial]
   exact Finset.sum_congr rfl fun i _ => mul_comm _ _
 
+section
+variable (μ : Measure (PDE.Vec d))
+
 /-- The Fourier transform on `ℝ^d` agrees with that of the pushforward to Euclidean space. -/
-lemma vecFourier_eq (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) :
+lemma vecFourier_eq (ξ : PDE.Vec d) :
     measureFourier (μ.map (toEuclid d)) (WithLp.toLp 2 ξ) = vecFourier μ ξ := by
   unfold measureFourier vecFourier
   rw [(toEuclid d).measurableEmbedding.integral_map]
-  refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
-  simp only [toEuclid, MeasurableEquiv.toLp_apply, inner_toLp]
+  simp [toEuclid, MeasurableEquiv.toLp_apply, inner_toLp]
 
 /-- The inversion integral agrees with that of the pushforward to Euclidean space. -/
-lemma invIntegral_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
+lemma invIntegral_eq (z : PDE.Vec d) :
     invIntegral (measureFourier (μ.map (toEuclid d))) (WithLp.toLp 2 z) =
       vecInvIntegral (vecFourier μ) z := by
   unfold invIntegral vecInvIntegral
   rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp
     (toEuclid d).measurableEmbedding]
-  refine integral_congr_ae (Filter.Eventually.of_forall fun ξ => ?_)
-  simp only [inner_toLp, vecFourier_eq]
+  simp [inner_toLp, vecFourier_eq]
 
 /-- The inversion density agrees with that of the pushforward to Euclidean space. -/
-lemma invDensity_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
+lemma invDensity_eq (z : PDE.Vec d) :
     invDensity (μ.map (toEuclid d)) (WithLp.toLp 2 z) = vecInvDensity μ z := by
   unfold invDensity vecInvDensity
   rw [invIntegral_eq, finrank_euclideanSpace_fin]
 
 /-- Integrability of the Fourier transform is preserved by the coordinate equivalence. -/
-lemma integrable_vecFourier_iff (μ : Measure (PDE.Vec d)) :
+lemma integrable_vecFourier_iff :
     Integrable (measureFourier (μ.map (toEuclid d))) ↔ Integrable (vecFourier μ) := by
   rw [← (PiLp.volume_preserving_toLp (Fin d)).integrable_comp_emb
     (toEuclid d).measurableEmbedding]
@@ -80,11 +81,13 @@ lemma integrable_vecFourier_iff (μ : Measure (PDE.Vec d)) :
   exact vecFourier_eq μ ξ
 
 /-- The `L^1` norm of the Fourier transform is preserved by the coordinate equivalence. -/
-lemma integral_norm_vecFourier (μ : Measure (PDE.Vec d)) :
+lemma integral_norm_vecFourier :
     ∫ ξ, ‖measureFourier (μ.map (toEuclid d)) ξ‖ = ∫ ξ, ‖vecFourier μ ξ‖ := by
   rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp (toEuclid d).measurableEmbedding]
   exact integral_congr_ae (Filter.Eventually.of_forall fun ξ => by
     simp only [vecFourier_eq])
+
+end
 
 section Inversion
 

@@ -12,10 +12,7 @@ open Set Filter MeasureTheory Parabolic SectionTwo
 
 /-- The actual velocity-ball exit measure represents the source's local solution class. -/
 theorem local_cone_representation
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (Z₀ : KineticPoint d) (U : KineticPoint d → ℝ)
     (hUc : ContinuousOn U (closure (forwardCylinder Z₀ R hR)))
@@ -25,7 +22,7 @@ theorem local_cone_representation
     (P : LocalBallStart v₀ R) (hPv : v₀ = Z₀.velocity)
     (hP : P.1 ∈ forwardCylinder Z₀ (3 * R / 4) (by positivity))
     (T : {t : ℝ // P.1.time < t}) (hT : T.1 - P.1.time = R ^ 2 / 8) :
-    U P.1 = ∫ Q, U Q ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T := by
+    U P.1 = ∫ Q, U Q ∂ballExitRaw hd B hB v₀ hR P T := by
   subst v₀
   obtain ⟨χ, hχ, _hχcompact, hs, _hχb, hχone⟩ := exists_local_position_cutoff (d := d) hR
   let V := localCutoffSolution Z₀ χ U
@@ -35,9 +32,7 @@ theorem local_cone_representation
   have htop : T.1 < Z₀.time + R ^ 2 := by
     have hpt := hP.2.1
     nlinarith only [hpt, hT, sq_pos_of_pos hR]
-  have hrel : Continuous (relativePosition Z₀) :=
-    (continuous_position.sub continuous_const).sub
-      ((continuous_time.sub continuous_const).smul continuous_const)
+  have hrel := continuous_relativePosition Z₀
   have hVc := localCutoffSolution_continuousOn Z₀ hR ha.le htop.le U hUc χ hχ.continuous hs
   have hUb := localRepresentation_supported_mul_bounded Z₀ hR ha.le htop.le U hUc χ hs
     (localPositionCutoff Z₀ χ) (hχ.continuous.comp hrel)
@@ -45,7 +40,7 @@ theorem local_cone_representation
       change χ (relativePosition Z₀ Q) = 0
       exact image_eq_zero_of_notMem_tsupport hx)
   obtain ⟨L, _hL, hVb⟩ := hUb
-  have hsm := mass_classical_homogeneous_smooth hH B hB
+  have hsm := mass_classical_homogeneous_smooth B hB
     (isOpen_forwardCylinder Z₀ R hR) U hUs hUe
   have hVs := localCutoffSolution_contDiffOn Z₀ hR ha htop U hsm χ hχ hs
   have hVr : IsKineticC112On V (localStrip P.1.time T.1 Z₀.velocity R) :=
@@ -80,11 +75,11 @@ theorem local_cone_representation
       (fun Q => localCutoffTransport Z₀ χ Q * U Q) Q| ≤ M
     rw [indicator_of_mem hQ]
     exact hFb Q (localStrip_subset_closed _ _ _ _ hQ)
-  have hid := localRepresentation_bounded_source_formula hH hLE hd hlam hLam B hB
+  have hid := localRepresentation_bounded_source_formula hd B hB
     Z₀.velocity hR P T V hVr hVc ⟨L, hVb⟩ F hFm hFe M hM hFbound
-  have hz := ballSourcePotential_local_cutoff_zero hH hLE hd hlam hLam B hB
+  have hz := ballSourcePotential_local_cutoff_zero hd B hB
     Z₀ hR P hP T hT χ hχone U
-  change V P.1 + ballSourcePotential hH hLE hd hlam hLam B hB Z₀.velocity hR
+  change V P.1 + ballSourcePotential hd B hB Z₀.velocity hR
     P.1.time T.1 F P.1 = _ at hid
   rw [hz, add_zero] at hid
   have hstart : V P.1 = U P.1 := by
@@ -98,7 +93,7 @@ theorem local_cone_representation
     rw [hχone _ (PDE.euclideanBall_subset_euclideanClosedBall _ _ hx), one_mul]
   rw [hstart] at hid
   refine hid.trans (integral_congr_ae ?_)
-  filter_upwards [ballExitRaw_cone hH hLE hd hlam hLam B hB Z₀.velocity hR P T]
+  filter_upwards [ballExitRaw_cone hd B hB Z₀.velocity hR P T]
     with Q hQ
   have ht : Q.time ≤ P.1.time + R ^ 2 / 8 := by linarith only [hQ.2.1, hT]
   have hx := local_cone_cutoff_mem Z₀ P.1 Q hR hP hQ.1 ht hQ.2.2

@@ -12,9 +12,12 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 
+section
+variable (c : Clock) (eta : ℝ → ℝ) (heta : ContDiff ℝ (⊤ : ℕ∞) eta)
+include heta
+
 /-- The time-localized quadratic has exactly the source transport-diffusion operator. -/
-theorem visitTimeQuadratic_operator (c : Clock) (eta : ℝ → ℝ)
-    (heta : ContDiff ℝ (⊤ : ℕ∞) eta) (a : ℝ → ℝ → ℝ) (p : Point) :
+theorem visitTimeQuadratic_operator (a : ℝ → ℝ → ℝ) (p : Point) :
     forwardScalarOperator a (fun q => eta q.time * visitQuadratic c (q.velocity 0)) p =
       deriv eta p.time * visitQuadratic c (p.velocity 0) -
         2 * a (p.position 0) (p.velocity 0) * eta p.time := by
@@ -37,11 +40,12 @@ theorem visitTimeQuadratic_operator (c : Clock) (eta : ℝ → ℝ)
   ring
 
 /-- Raw physical smoothness of the time-localized quadratic. -/
-theorem visitTimeQuadratic_smooth (c : Clock) (eta : ℝ → ℝ)
-    (heta : ContDiff ℝ (⊤ : ℕ∞) eta) :
+theorem visitTimeQuadratic_smooth :
     ContDiff ℝ (⊤ : ℕ∞)
       ((fun q : Point => eta q.time * visitQuadratic c (q.velocity 0)) ∘
         (KineticPoint.equivProd 1).symm) :=
   (heta.comp contDiff_fst).mul (capacity_velocity_smooth (visitQuadratic_smooth c))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

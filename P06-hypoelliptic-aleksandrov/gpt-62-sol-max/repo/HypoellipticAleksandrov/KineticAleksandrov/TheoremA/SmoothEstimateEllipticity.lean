@@ -11,8 +11,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.TheoremA
 open MeasureTheory Set
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
+section
+variable {d : ℕ}
+
 /-- A continuous coefficient's almost-everywhere lower bound holds everywhere. -/
-theorem lowerEllipticity_of_continuous_ae {d : ℕ} {lam : ℝ}
+theorem lowerEllipticity_of_continuous_ae {lam : ℝ}
     {A : CoefficientField d} (hA : IsContinuousCoefficient A)
     (hlo : HasLowerEllipticityAE lam A) : HasLowerEllipticity lam A := by
   have hc : IsClosed {z : ℝ × PDE.Vec d | lam • (1 : PDE.Mat d) ≤ coefficientAt A z} :=
@@ -22,7 +25,7 @@ theorem lowerEllipticity_of_continuous_ae {d : ℕ} {lam : ℝ}
   exact hc.closure_subset (hd (t, v))
 
 /-- A continuous coefficient's almost-everywhere upper bound holds everywhere. -/
-theorem upperEllipticity_of_continuous_ae {d : ℕ} {Lam : ℝ}
+theorem upperEllipticity_of_continuous_ae {Lam : ℝ}
     {A : CoefficientField d} (hA : IsContinuousCoefficient A)
     (hhi : HasUpperEllipticityAE Lam A) : HasUpperEllipticity Lam A := by
   have hc : IsClosed {z : ℝ × PDE.Vec d | coefficientAt A z ≤ Lam • (1 : PDE.Mat d)} :=
@@ -32,11 +35,13 @@ theorem upperEllipticity_of_continuous_ae {d : ℕ} {Lam : ℝ}
   exact hc.closure_subset (hd (t, v))
 
 /-- Smoothness supplies the continuity needed to recover both pointwise bounds. -/
-theorem ellipticity_of_smooth_ae {d : ℕ} {lam Lam : ℝ}
+theorem ellipticity_of_smooth_ae {lam Lam : ℝ}
     {A : CoefficientField d} (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticityAE lam A) (hhi : HasUpperEllipticityAE Lam A) :
     HasLowerEllipticity lam A ∧ HasUpperEllipticity Lam A :=
   ⟨lowerEllipticity_of_continuous_ae hA.continuous hlo,
     upperEllipticity_of_continuous_ae hA.continuous hhi⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

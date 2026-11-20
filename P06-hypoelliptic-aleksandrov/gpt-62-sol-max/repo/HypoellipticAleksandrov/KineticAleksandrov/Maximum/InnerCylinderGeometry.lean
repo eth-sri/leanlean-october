@@ -11,8 +11,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set
 
+section
+variable {d : ℕ} (Z₀ : KineticPoint d)
+include Z₀
+
 /-- Free-transport coordinates as a homeomorphism, preserving the existing carrier. -/
-def relativeHomeomorph {d : ℕ} (Z₀ : KineticPoint d) :
+def relativeHomeomorph :
     KineticPoint d ≃ₜ ℝ × (PDE.Vec d × PDE.Vec d) where
   toFun P := (P.time, (relativePosition Z₀ P, relativeVelocity Z₀ P))
   invFun q := ⟨q.1, Z₀.position + (q.1-Z₀.time) • Z₀.velocity + q.2.1,
@@ -33,13 +37,13 @@ def relativeHomeomorph {d : ℕ} (Z₀ : KineticPoint d) :
       continuous_snd.fst) (continuous_const.add continuous_snd.snd)
 
 /-- A compact closed rectangle in free-transport coordinates. -/
-def relativeClosedBox {d : ℕ} (Z₀ : KineticPoint d) (a b rv rx : ℝ) :
+def relativeClosedBox (a b rv rx : ℝ) :
     Set (KineticPoint d) :=
   (relativeHomeomorph Z₀) ⁻¹'
     (Icc a b ×ˢ (PDE.euclideanClosedBall 0 rx ×ˢ PDE.euclideanClosedBall 0 rv))
 
 /-- Closed relative-coordinate rectangles are compact for nonnegative radii. -/
-theorem isCompact_relativeClosedBox {d : ℕ} (Z₀ : KineticPoint d)
+theorem isCompact_relativeClosedBox
     (a b rv rx : ℝ) (hv : 0 ≤ rv) (hx : 0 ≤ rx) :
     IsCompact (relativeClosedBox Z₀ a b rv rx) := by
   have hc := (isCompact_Icc : IsCompact (Icc a b)).prod
@@ -47,6 +51,8 @@ theorem isCompact_relativeClosedBox {d : ℕ} (Z₀ : KineticPoint d)
       (PDE.isCompact_euclideanClosedBall (0 : PDE.Vec d) hv))
   simpa only [relativeClosedBox, Homeomorph.image_symm] using
     hc.image (relativeHomeomorph Z₀).symm.continuous
+
+end
 
 /-- Positivity and the exact squared-radius identity for inner scaling. -/
 theorem innerRatio_spec (R : ℝ) (hR : 0 < R) (δ : ℝ)
@@ -73,10 +79,12 @@ theorem innerCentre_relative {d : ℕ} (Z₀ P : KineticPoint d) (δ : ℝ) :
     ring
   · rfl
 
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ)
+  (hδlt : δ < R ^ 2 / 2)
+
 /-- Inner cylinder identification, with radius positivity supplied as part of the result. -/
-theorem innerCylinder_eq_forwardCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem innerCylinder_eq_forwardCylinder :
     ∃ hr : 0 < innerRatio R hR δ hδ0 hδlt * R,
       innerCylinder Z₀ R hR δ hδ0 hδlt =
         forwardCylinder (innerCentre Z₀ δ) (innerRatio R hR δ hδ0 hδlt * R) hr := by
@@ -95,9 +103,7 @@ theorem innerCylinder_eq_forwardCylinder {d : ℕ}
   simp only [ht, mul_pow]
 
 /-- Inner closures obey the explicit weak coordinate bounds. -/
-theorem closure_innerCylinder_bounds {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem closure_innerCylinder_bounds :
     closure (innerCylinder Z₀ R hR δ hδ0 hδlt) ⊆
       relativeClosedBox Z₀ (Z₀.time+δ) (Z₀.time+R^2-δ)
         (innerRatio R hR δ hδ0 hδlt * R)
@@ -111,10 +117,14 @@ theorem closure_innerCylinder_bounds {d : ℕ}
   · exact (isCompact_relativeClosedBox Z₀ _ _ _ _ (mul_pos hρ hR).le
       (mul_nonneg (pow_nonneg hρ.le 3) (pow_nonneg hR.le 3))).isClosed
 
+end
+
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ)
+  (hδlt : δ < R ^ 2 / 2)
+
 /-- Inner-cylinder closure is contained in the original open cylinder. -/
-theorem closure_innerCylinder_subset {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem closure_innerCylinder_subset :
     closure (innerCylinder Z₀ R hR δ hδ0 hδlt) ⊆ forwardCylinder Z₀ R hR := by
   obtain ⟨hρ,hρ1,hs⟩ := innerRatio_spec R hR δ hδ0 hδlt
   intro P hP
@@ -134,14 +144,14 @@ theorem closure_innerCylinder_subset {d : ℕ}
     nlinarith [pow_pos hR 3]
 
 /-- Inner closures are compact in the existing finite-dimensional coordinate topology. -/
-theorem isCompact_closure_innerCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem isCompact_closure_innerCylinder :
     IsCompact (closure (innerCylinder Z₀ R hR δ hδ0 hδlt)) := by
   have hρ := (innerRatio_spec R hR δ hδ0 hδlt).1
   exact (isCompact_relativeClosedBox Z₀ _ _ _ _ (mul_pos hρ hR).le
     (mul_nonneg (pow_nonneg hρ.le 3) (pow_nonneg hR.le 3))).of_isClosed_subset
       isClosed_closure (closure_innerCylinder_bounds Z₀ R hR δ hδ0 hδlt)
+
+end
 
 /-- Original forward closures satisfy the weak coordinate bounds. -/
 theorem closure_forwardCylinder_bounds {d : ℕ}
@@ -157,16 +167,17 @@ theorem closure_forwardCylinder_bounds {d : ℕ}
       PDE.euclideanSqDist] using hb
   · exact (isCompact_relativeClosedBox Z₀ _ _ _ _ hR.le (pow_nonneg hR.le 3)).isClosed
 
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+
 /-- Original forward closures are compact in the coordinate topology. -/
-theorem isCompact_closure_forwardCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem isCompact_closure_forwardCylinder :
     IsCompact (closure (forwardCylinder Z₀ R hR)) :=
   (isCompact_relativeClosedBox Z₀ _ _ _ _ hR.le (pow_nonneg hR.le 3)).of_isClosed_subset
     isClosed_closure (closure_forwardCylinder_bounds Z₀ R hR)
 
 /-- Every interior point lies in all sufficiently near-to-original inner cylinders. -/
-theorem innerCylinder_exhaustion {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem innerCylinder_exhaustion :
     ∀ P ∈ forwardCylinder Z₀ R hR, ∃ η : ℝ, 0 < η ∧
       ∀ (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2), δ < η →
         P ∈ innerCylinder Z₀ R hR δ hδ0 hδlt := by
@@ -195,5 +206,7 @@ theorem innerCylinder_exhaustion {d : ℕ}
   intro δ hδ0 hδlt hδη
   have hδE := he (show δ ∈ Metric.ball 0 η by simpa [Real.dist_eq,abs_of_pos hδ0])
   exact hδE
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -50,9 +50,12 @@ theorem firstMarginal_startingPosition {d : ℕ}
     Measure.map_map measurable_fst (measurable_evolutionAmbientStateShift z)]
   rfl
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (σ₀ : ℝ)
+  (μ : Measure (EvolutionState Ω γ σ₀))
+
 /-- A Green measure is the explicit kernel-product measure. -/
-theorem green_eq_compProd {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
+theorem green_eq_compProd
     [IsFiniteMeasure μ] (Γ : Measure (ElapsedTime ⊤ × EvolutionAmbientState d))
     (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ) :
     Γ = (((μ.prod (elapsedVolume ⊤)).compProd (elapsedKernel K σ₀ ⊤)).map
@@ -61,8 +64,7 @@ theorem green_eq_compProd {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec
 
 
 /-- A bounded Borel function supported in the slab is integrable against a Green measure. -/
-theorem integrable_green_slab {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
+theorem integrable_green_slab
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
     (hfb : ∀ p, ‖f p‖ ≤ 1) (hsupp : ∀ p, p ∉ slabSet T → f p = 0) : Integrable f Γ := by
@@ -75,6 +77,8 @@ theorem integrable_green_slab {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
   by_cases hp : p ∈ slabSet T
   · simpa [Set.indicator_of_mem hp] using hfb p
   · simp [hsupp p hp, Set.indicator_of_notMem hp]
+
+end
 
 
 /-- **Green integral calculus.**  For bounded complex Borel `f` supported in the slab,

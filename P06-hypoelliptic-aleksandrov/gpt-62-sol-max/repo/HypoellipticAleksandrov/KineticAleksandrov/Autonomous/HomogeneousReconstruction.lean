@@ -47,8 +47,7 @@ theorem reconstruction_transportedOperator_congr
 /-- A bounded C112 test has an actual smooth homogeneous reconstruction, with the prescribed
 exit values and the literal Green integral at every strictly interior pole. -/
 theorem strip_bounded_source_reconstruction
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
@@ -65,22 +64,22 @@ theorem strip_bounded_source_reconstruction
       ContinuousOn u (reconstructionStrip H sMinus T ∪ reconstructionExit H sMinus T) ∧
       EqOn u phi (reconstructionExit H sMinus T) := by
   obtain ⟨g, f, hg, hg0, hf, heq, hop⟩ :=
-    exists_reconstruction_smooth_pointwise hH hlam hLam A H E hE sMinus T phi hphi hb
+    exists_reconstruction_smooth_pointwise A H E hE sMinus T phi hphi hb
   let u := stripReconstructionCandidate H E.2 T phi g
-  let U := reconstructionPhysicalPoint ⁻¹' reconstructionStrip H sMinus T
+  let U := packedPhysicalPoint ⁻¹' reconstructionStrip H sMinus T
   have hU : IsOpen U := (isOpen_reconstructionStrip H sMinus T).preimage
-    continuous_reconstructionPhysicalPoint
-  have hus : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ reconstructionPhysicalPoint) U :=
+    continuous_packedPhysicalPoint
+  have hus : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ packedPhysicalPoint) U :=
     hf.congr (fun x hx => heq hx)
   have huop : ∀ x ∈ U, transportedOperator (evolutionCoefficient A.a) (identityDrift 1)
-      (u ∘ reconstructionPhysicalPoint) x = 0 := by
+      (u ∘ packedPhysicalPoint) x = 0 := by
     intro x hx
-    have hh : (u ∘ reconstructionPhysicalPoint) =ᶠ[𝓝 x] f :=
+    have hh : (u ∘ packedPhysicalPoint) =ᶠ[𝓝 x] f :=
       Filter.mem_of_superset (hU.mem_nhds hx) (fun y hy => heq hy)
     rw [reconstruction_transportedOperator_congr _ _ hh]
     exact hop x hx
   refine ⟨u, ?_, ?_, ?_,
-    reconstruction_candidate_continuousOn_exit hH hlam hLam A H E hE sMinus T phi hphi hc g hg,
+    reconstruction_candidate_continuousOn_exit A H E hE sMinus T phi hphi hc g hg,
     stripReconstructionCandidate_eqOn_exit H E.2 sMinus T phi g⟩
   · intro e he
     have hgAE : g =ᵐ[stripGreenOfKernel H E.2 T e] fun p => -forwardScalarOperator A.a phi p := by
@@ -95,36 +94,36 @@ theorem strip_bounded_source_reconstruction
     have hcs : ContDiff ℝ (⊤ : ℕ∞) c :=
       (evolutionProdCLE 1).symm.contDiff.comp
         (contDiff_fst.prodMk (contDiff_snd.snd.prodMk contDiff_snd.fst))
-    have hec : (fun q => reconstructionPhysicalPoint (c q)) =
+    have hec : (fun q => packedPhysicalPoint (c q)) =
         (KineticPoint.equivProd 1).symm := by
       funext q
-      simp [c, reconstructionPhysicalPoint, KineticPoint.equivProd]
+      simp [c, packedPhysicalPoint, KineticPoint.equivProd]
     have hmaps : MapsTo c (KineticPoint.equivProd 1 '' reconstructionStrip H sMinus T) U := by
       rintro q ⟨p, hp, rfl⟩
-      change reconstructionPhysicalPoint (c (KineticPoint.equivProd 1 p)) ∈
+      change packedPhysicalPoint (c (KineticPoint.equivProd 1 p)) ∈
         reconstructionStrip H sMinus T
       rw [congrFun hec, Equiv.symm_apply_apply]
       exact hp
     have hh := hus.comp hcs.contDiffOn hmaps
-    have heqf : (u ∘ reconstructionPhysicalPoint) ∘ c = u ∘ (KineticPoint.equivProd 1).symm := by
+    have heqf : (u ∘ packedPhysicalPoint) ∘ c = u ∘ (KineticPoint.equivProd 1).symm := by
       funext q
-      change u (reconstructionPhysicalPoint (c q)) = _
+      change u (packedPhysicalPoint (c q)) = _
       rw [congrFun hec]
       rfl
     rwa [heqf] at hh
   · intro p hp
     let x := (evolutionHomeomorph 1).symm (sectionTwoPoint p)
-    have hxp : reconstructionPhysicalPoint x = p := by
+    have hxp : packedPhysicalPoint x = p := by
       change sectionTwoPoint (evolutionHomeomorph 1 x) = p
       rw [Homeomorph.apply_symm_apply, sectionTwoPoint_involutive]
     have hx : x ∈ U := by
-      change reconstructionPhysicalPoint x ∈ reconstructionStrip H sMinus T
+      change packedPhysicalPoint x ∈ reconstructionStrip H sMinus T
       rwa [hxp]
     have hsm : ContDiffAt ℝ 2 ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1) x :=
       (hus.contDiffAt (hU.mem_nhds hx)).of_le (by simp)
     have hh := transportedOperator_comp (B := evolutionCoefficient A.a) (b := identityDrift 1) hsm
     change transportedOperator (evolutionCoefficient A.a) (identityDrift 1)
-      (u ∘ reconstructionPhysicalPoint) x =
+      (u ∘ packedPhysicalPoint) x =
         transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1)
           (u ∘ sectionTwoPoint) (evolutionHomeomorph 1 x) at hh
     rw [huop x hx] at hh

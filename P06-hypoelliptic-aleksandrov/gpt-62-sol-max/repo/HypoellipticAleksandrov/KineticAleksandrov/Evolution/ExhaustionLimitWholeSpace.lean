@@ -24,7 +24,6 @@ open scoped Topology MatrixOrder
 
 section Data
 
-variable (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement)
 variable {n : ℕ} (hn : 1 ≤ n) {lam Lam m Lb : ℝ}
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ Lb)
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
@@ -33,7 +32,7 @@ variable (hB : HasEverywhereLoewnerBounds lam Lam B) (hbs : IsSmoothDrift b)
 variable (hb : HasEuclideanLipschitzDrift Lb b) (hbco : HasUnitDirectionDriftCoercivity m b)
 variable {Γ : ℝ → PDE.Vec n} (hΓ : IsContinuousPiecewiseC1 Γ)
 
-include hLE hH hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ
+include hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ
 
 /-- The whole-space branch of Actual bounded classical viscous evolution,
 relative only to the two analytic hypotheses. -/
@@ -72,12 +71,12 @@ theorem exists_viscous_terminalSolution_wholeSpace
       simp only [sub_zero]
       exact ((hZ0 ⟨q, hq, rfl⟩).trans (le_max_left _ _)).trans_lt (hrZ j)
     obtain ⟨v, hv, -, -⟩ := exists_viscous_terminalSolution_innerBall
-      hLE hH hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ0 (hr j)
+      hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ0 (hr j)
       τ F hFj ε hε hε1 C hC hFC
     exact ⟨v, hv⟩
   choose v hv using hex
   obtain ⟨hf, hbound⟩ := isClassicalViscousTerminalSolution_wholeSpace_ball_limit
-    hlam hB hb hε hε1 hC F hFC r hrlim v hv hBs hBsym hbs hH
+    hlam hB hb hε hε1 hC F hFC r hrlim v hv hBs hBsym hbs
   have hsame (w : KineticPoint n → ℝ) :
       IsClassicalViscousTerminalSolution univ Γ B b ε τ F w ↔
         IsClassicalViscousTerminalSolution univ (fun _ => 0) B b ε τ F w := by

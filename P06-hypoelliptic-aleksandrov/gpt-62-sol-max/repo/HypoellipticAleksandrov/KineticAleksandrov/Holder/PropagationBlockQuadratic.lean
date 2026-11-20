@@ -15,15 +15,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Matrix
 open scoped BigOperators MatrixOrder
 
+section
+variable {d : ℕ} (M : Matrix (Fin 2) (Fin 2) ℝ)
+include M
+
 /-- Evaluation of a symmetric scalar block matrix on native Euclidean position and velocity. -/
-def blockQuadratic {d : ℕ} (M : Matrix (Fin 2) (Fin 2) ℝ) (y V : PDE.Vec d) : ℝ :=
+def blockQuadratic (y V : PDE.Vec d) : ℝ :=
   M 0 0 * PDE.vecDot y y + 2 * M 0 1 * PDE.vecDot y V + M 1 1 * PDE.vecDot V V
 
 /-- Block evaluation is the sum of its literal two-dimensional coordinate evaluations. -/
-theorem blockQuadratic_eq_sum {d : ℕ} (M : Matrix (Fin 2) (Fin 2) ℝ)
+theorem blockQuadratic_eq_sum
     (hM : M.IsSymm) (y V : PDE.Vec d) :
     blockQuadratic M y V = ∑ i, dotProduct ![y i, V i] (M.mulVec ![y i, V i]) := by
-  have h10 : M 1 0 = M 0 1 := hM.apply 0 1
+  have h10 := hM.apply 0 1
   unfold blockQuadratic PDE.vecDot
   simp only [Finset.mul_sum, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
@@ -31,6 +35,8 @@ theorem blockQuadratic_eq_sum {d : ℕ} (M : Matrix (Fin 2) (Fin 2) ℝ)
   simp only [dotProduct, Matrix.mulVec, Fin.sum_univ_two, Matrix.cons_val_zero,
     Matrix.cons_val_one, Matrix.cons_val_fin_one, h10]
   ring
+
+end
 
 /-- Scalar block Loewner order gives the actual native Euclidean quadratic order. -/
 theorem blockQuadratic_mono {d : ℕ} {A B : Matrix (Fin 2) (Fin 2) ℝ}
@@ -70,22 +76,27 @@ theorem covariance_inv_antitone {A B : Matrix (Fin 2) (Fin 2) ℝ}
     abel_nf
   exact Matrix.le_iff.mpr (he ▸ hp)
 
+section
+variable {d : ℕ}
+
 /-- The actual physical covariance quadratic is nonnegative on the source cutoff strip. -/
-theorem qform_nonneg {d : ℕ} {lam h sigma : ℝ} (hlam : 0 < lam) (hh : 0 < h)
+theorem qform_nonneg {lam h sigma : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (hs : -(h / 128) ≤ sigma) (y V : PDE.Vec d) : 0 ≤ qform lam h sigma y V :=
   blockQuadratic_nonneg (posDef_gramian hlam hh hs).inv.posSemidef y V
 
 /-- Native block evaluation commutes with scalar multiplication. -/
-theorem blockQuadratic_smul {d : ℕ} (M : Matrix (Fin 2) (Fin 2) ℝ)
+theorem blockQuadratic_smul (M : Matrix (Fin 2) (Fin 2) ℝ)
     (c : ℝ) (y V : PDE.Vec d) : blockQuadratic (c • M) y V = c * blockQuadratic M y V := by
   unfold blockQuadratic
   simp only [Matrix.smul_apply, smul_eq_mul]
   ring
 
 /-- Evaluation of the identity is the sum of the two native squared Euclidean norms. -/
-theorem blockQuadratic_one {d : ℕ} (y V : PDE.Vec d) :
+theorem blockQuadratic_one (y V : PDE.Vec d) :
     blockQuadratic (1 : Matrix (Fin 2) (Fin 2) ℝ) y V =
       PDE.vecNormSq y + PDE.vecNormSq V := by
   simp [blockQuadratic, PDE.vecNormSq]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

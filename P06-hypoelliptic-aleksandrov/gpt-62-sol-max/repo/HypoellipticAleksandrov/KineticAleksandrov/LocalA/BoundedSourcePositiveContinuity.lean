@@ -21,7 +21,6 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
 /-- The literal positive bounded Borel potential is continuous on the open past cylinder. -/
 theorem continuousOn_duhamelPotential_bounded_nonneg
-    (hH : HormanderHypoellipticityStatement)
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
@@ -91,7 +90,7 @@ theorem continuousOn_duhamelPotential_bounded_nonneg
         duhamelPotential K T f q + duhamelPotential K T g q := by
       conv_lhs => rw [hsplit]
       exact duhamelPotential_add_bounded K hΩ hγ f g hfm hgm M M hM hM hfa hga T q
-    have hfuture := continuousOn_duhamelFuture_before_source hH hΩa hΩ hγ B b S K hreal
+    have hfuture := continuousOn_duhamelFuture_before_source hΩa hΩ hγ B b S K hreal
       hB hBs hb lam Lam m hlam hm hell hcoerc s T hsT f hfm M hM hfb hfz
     have hfutureAt := hfuture.continuousAt
       ((isOpen_evolutionPastOpenCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa)

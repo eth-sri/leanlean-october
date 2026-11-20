@@ -34,7 +34,7 @@ theorem exists_positive_phase_margin {E : Type*} [TopologicalSpace E]
   by_cases he : (tsupport φ).Nonempty
   · obtain ⟨x, hx, hmin⟩ := hφ.exists_isMinOn he hq.continuousOn
     exact ⟨q x, hs hx, fun y hy => hmin hy⟩
-  · exact ⟨1, zero_lt_one, fun x hx => False.elim (he ⟨x, hx⟩)⟩
+  exact Exists.intro 1 ⟨zero_lt_one, fun x hx => False.elim (he (Exists.intro x hx))⟩
 
 /-- A smooth monotone phase cutoff dominates every `[0,1]` test in the forbidden set. -/
 theorem exists_phase_cutoff {E : Type*} [TopologicalSpace E]
@@ -47,7 +47,7 @@ theorem exists_phase_cutoff {E : Type*} [TopologicalSpace E]
   · exact Real.smoothTransition.contDiff.comp (contDiff_id.div_const δ)
   · intro r s hrs
     exact Real.smoothTransition.monotone (div_le_div_of_nonneg_right hrs hδ.le)
-  · simp only [zero_div, Real.smoothTransition.zero]
+  · simp
   · intro r
     exact ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
   · intro x
@@ -68,8 +68,11 @@ theorem phaseCutoff_isSliceRegularAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
   exact ⟨(hχ.differentiable (by norm_num)).differentiableAt.comp p.time hr.time,
     hχ.contDiffAt.comp p.position hr.position, hχ.contDiffAt.comp p.velocity hr.velocity⟩
 
+section
+variable {d : ℕ} (B : CoefficientField d)
+
 /-- The transported operator obeys the scalar chain rule on an affine phase barrier. -/
-theorem lop_phaseCutoff {d : ℕ} (B : CoefficientField d) (sgn : ℝ) (ξ z0 : PDE.Vec d)
+theorem lop_phaseCutoff (sgn : ℝ) (ξ z0 : PDE.Vec d)
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
     {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
     {χ : ℝ → ℝ} (hχ : ContDiff ℝ 2 χ) (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
@@ -116,7 +119,7 @@ theorem lop_phaseCutoff {d : ℕ} (B : CoefficientField d) (sgn : ℝ) (ξ z0 : 
   ring
 
 /-- A classical terminal solution with a forbidden-phase test is nonpositive initially. -/
-theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
+theorem classical_phase_test_nonpos
     (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d)
     (σ τ Lb ρ : ℝ) (hστ : σ < τ) (hρ : 0 < ρ)
     (ξ z0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
@@ -269,5 +272,7 @@ theorem classical_phase_test_nonpos {d : ℕ} (B : CoefficientField d)
     field_simp
   rw [hcancel] at hh
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

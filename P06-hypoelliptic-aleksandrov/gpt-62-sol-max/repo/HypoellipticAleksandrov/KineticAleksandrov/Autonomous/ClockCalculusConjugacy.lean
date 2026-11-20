@@ -10,12 +10,13 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic
 
-private theorem directional_smul (f : (Fin 3 → ℝ) → ℝ) (d q : Fin 3 → ℝ)
-    (k : ℝ) : directional f (k • d) q = k * directional f d q := by
+section
+variable (f : (Fin 3 → ℝ) → ℝ) (d q : Fin 3 → ℝ) (k : ℝ)
+
+private theorem directional_smul : directional f (k • d) q = k * directional f d q := by
   simp only [directional, map_smul, smul_eq_mul]
 
-private theorem second_directional_smul (f : (Fin 3 → ℝ) → ℝ) (d q : Fin 3 → ℝ)
-    (k : ℝ) (hf : ContDiffAt ℝ 2 f q) :
+private theorem second_directional_smul (hf : ContDiffAt ℝ 2 f q) :
     directional (directional f (k • d)) (k • d) q =
       k ^ 2 * directional (directional f d) d q := by
   have hd : DifferentiableAt ℝ (directional f d) q :=
@@ -29,15 +30,21 @@ private theorem second_directional_smul (f : (Fin 3 → ℝ) → ℝ) (d q : Fin
   simp only [smul_apply, smul_eq_mul, directional]
   ring
 
+end
+
+section
+variable (c : Clock) (a : ℝ → ℝ → ℝ)
+include c a
+
 /-- The normalized forward operator in clock field order `(sigma,z,y)`. -/
-def Clock.normalizedOperator (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point)
+def Clock.normalizedOperator (e : Point)
     (h : Point → ℝ) (q : Point) : ℝ :=
   kineticTimeDerivative h q +
     c.diffusion a e q.time (q.velocity 0) * kineticVelocityHessian h q 0 0 +
       c.drift (q.velocity 0) * kineticPositionGradient h q 0
 
 /-- Exact pointwise conjugacy; C-two at the image suffices for this internal chain-rule lemma. -/
-theorem Clock.conjugacy_at (c : Clock) (a : ℝ → ℝ → ℝ) (e p : Point)
+theorem Clock.conjugacy_at (e p : Point)
     (h : Point → ℝ) (hp : p.velocity 0 ∈ c.active)
     (hh : ContDiffAt ℝ 2 (h ∘ scalarPoint) (scalarCoordinates (c.map e p))) :
     forwardScalarOperator a (h ∘ c.map e) p =
@@ -89,5 +96,7 @@ theorem Clock.conjugacy_at (c : Clock) (a : ℝ → ℝ → ℝ) (e p : Point)
     simp only [Clock.map]
     field_simp [hr, hv, hpne]
     ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

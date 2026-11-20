@@ -18,58 +18,25 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
-private theorem timeDerivative_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ}
+section
+variable {d : ℕ} {f : TimeVelocity d → ℝ}
+
+theorem timeDerivative_contDiff_infty
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (timeDerivative f) := by
-  unfold timeDerivative
   exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
-private theorem velocityGradient_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ} (k : Fin d)
+private theorem velocityGradient_contDiff_infty (k : Fin d)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z k) := by
-  unfold velocityGradient
   exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
-private theorem timeDerivative_hasCompactSupport
-    {d : ℕ} {f : TimeVelocity d → ℝ} (hf : HasCompactSupport f) :
-    HasCompactSupport (timeDerivative f) := by
-  unfold timeDerivative
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
-
-private theorem velocityGradient_hasCompactSupport
-    {d : ℕ} {f : TimeVelocity d → ℝ} (k : Fin d)
+private theorem velocityGradient_hasCompactSupport (k : Fin d)
     (hf : HasCompactSupport f) :
     HasCompactSupport (fun z => velocityGradient f z k) := by
-  unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ)
-    ((0, Pi.single k 1) : TimeVelocity d)
+  exact id (HasCompactSupport.fderiv_apply ℝ hf (0, Pi.single k 1))
 
-private theorem timeDerivative_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  unfold timeDerivative
-  change closure (Function.support (fun z => fderiv ℝ f z (1, 0))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-private theorem velocityGradient_tsupport_subset
-    {d : ℕ} (f : TimeVelocity d → ℝ) (k : Fin d) :
-    tsupport (fun z => velocityGradient f z k) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support
-    (fun z => fderiv ℝ f z (0, Pi.single k 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+end
 
 private theorem time_velocity_derivative_commute
     {d : ℕ} (f : TimeVelocity d → ℝ)
@@ -107,12 +74,12 @@ theorem hasWeakVelocityPartialDerivOn_of_hasWeakTimeDerivOn_velocityDeriv
   intro φ hφ hφcompact hφU
   have htφ := huk (timeDerivative φ)
     (timeDerivative_contDiff_infty hφ)
-    (timeDerivative_hasCompactSupport hφcompact)
-    ((timeDerivative_tsupport_subset φ).trans hφU)
+    (_root_.HypoellipticAleksandrov.Parabolic.timeDerivative_compact hφcompact)
+    ((timeDerivative_tsupport φ).trans hφU)
   have hkφ := hut (fun z => velocityGradient φ z k)
     (velocityGradient_contDiff_infty k hφ)
     (velocityGradient_hasCompactSupport k hφcompact)
-    ((velocityGradient_tsupport_subset φ k).trans hφU)
+    ((velocityGradient_tsupport (i := k) φ).trans hφU)
   have huktφ := hukt φ hφ hφcompact hφU
   have hmixed : (∫ z in U, u z * velocityGradient (timeDerivative φ) z k
       ∂(volume : Measure (TimeVelocity d))) =

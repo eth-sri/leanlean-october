@@ -44,34 +44,6 @@ private theorem parabolicDyadicParent_indexContaining_succ
     exact Fin.ext (by rfl)
   exact hparent.trans hprefix
 
-private theorem parabolicDyadicSourceBox_radius_rpow_truncate_mul
-    {d m n : Nat} (hmn : m <= n) (index : ParabolicDyadicIndex d n)
-    (alpha : Real) :
-    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius ^ alpha *
-        ((2 : Real) ^ (-alpha)) ^ (n - m) =
-      (parabolicDyadicSourceBox index).radius ^ alpha := by
-  change ((2 : Real) ^ m)⁻¹ ^ alpha * ((2 : Real) ^ (-alpha)) ^ (n - m) =
-    ((2 : Real) ^ n)⁻¹ ^ alpha
-  have hbase (k : Nat) : ((2 : Real) ^ k)⁻¹ ^ alpha =
-      (2 : Real) ^ (-(k : Real) * alpha) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_neg (by norm_num : (0 : Real) <= 2),
-      ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
-  have hfactor : ((2 : Real) ^ (-alpha)) ^ (n - m) =
-      (2 : Real) ^ (-alpha * ((n - m : Nat) : Real)) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
-  rw [hbase m, hbase n, hfactor, ← Real.rpow_add (by norm_num : (0 : Real) < 2)]
-  congr 1
-  rw [Nat.cast_sub hmn]
-  ring
-
-private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
-    (u : TimeVelocity d -> Real) : 0 <= parabolicMorreyDerivativeLpNorm d u := by
-  unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
-  refine add_nonneg ENNReal.toReal_nonneg ?_
-  refine Finset.sum_nonneg fun i _ => ?_
-  refine Finset.sum_nonneg fun j _ => ?_
-  exact ENNReal.toReal_nonneg
-
 private theorem finite_radius_weighted_slope_tail
     {d : Nat} (C alpha D q : Real) (r : Nat -> Real) (b : Nat -> Fin d -> Real)
     (_hC : 0 < C) (_hD : 0 <= D) (hr : ∀ n, 0 < r n)
@@ -94,16 +66,8 @@ private theorem finite_radius_weighted_slope_tail
     rw [← Real.rpow_add (by norm_num : (0 : Real) < 2)]
     congr 1
     ring
-  have hgeom : ∀ n : Nat,
-      1 + q * (∑ k ∈ Finset.range n, q ^ k) =
-        ∑ k ∈ Finset.range (n + 1), q ^ k := by
-    intro n
-    induction n with
-    | zero => simp
-    | succ n ih =>
-        rw [Finset.sum_range_succ, Finset.sum_range_succ, pow_succ]
-        rw [← ih]
-        ring
+  have hgeom n : 1 + q * (∑ k ∈ Finset.range n, q ^ k) = ∑ k ∈ Finset.range (n + 1), q ^ k :=
+    (add_comm _ _).trans geom_sum_succ.symm
   intro n
   induction n with
   | zero => simp
@@ -186,22 +150,16 @@ private theorem parabolicELpNorm_le_parabolicSmoothJetELpNorm
             parabolicELpNorm d (fun z => velocityHessian u z i j) :=
       le_add_of_nonneg_right bot_le
 
-private theorem parabolicLpNorm_le_parabolicSmoothJetLpNorm
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
+section
+variable {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u)
+include hu
+
+private theorem parabolicLpNorm_le_parabolicSmoothJetLpNorm :
     parabolicLpNorm d u <= parabolicSmoothJetLpNorm d u := by
-  unfold parabolicLpNorm parabolicSmoothJetLpNorm
   exact ENNReal.toReal_mono (parabolicSmoothJetELpNorm_ne_top hu)
     (parabolicELpNorm_le_parabolicSmoothJetELpNorm d u)
 
-private theorem parabolicExponent_toReal (d : Nat) :
-    (parabolicExponent d).toReal = (d : Real) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
-
-private theorem parabolicLpMeanNormOn_root_le_parabolicSmoothJetLpNorm
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
+private theorem parabolicLpMeanNormOn_root_le_parabolicSmoothJetLpNorm :
     parabolicLpMeanNormOn d u (parabolicBox 1 1 0 (0 : PDE.Vec d))
         (memLp_parabolicNormalizedVolumeOn_of_memLp
           (volume_parabolicMorreyBox_pos 0 0 (by norm_num))
@@ -240,6 +198,8 @@ private theorem parabolicLpMeanNormOn_root_le_parabolicSmoothJetLpNorm
   change parabolicLpMeanNormOn d u Q hmean <= parabolicSmoothJetLpNorm d u
   exact hlocal.trans (parabolicLpNorm_le_parabolicSmoothJetLpNorm hu)
 
+end
+
 /-- A finite selected dyadic chain has a radius-weighted velocity-slope tail.
 This is finite only; it asserts neither convergence nor a limiting slope. -/
 theorem exists_parabolicMorreyDyadicContainingRadiusWeightedSlopeTailConst
@@ -251,16 +211,12 @@ theorem exists_parabolicMorreyDyadicContainingRadiusWeightedSlopeTailConst
         ContDiff Real 2 u ->
         HasCompactSupport u ->
         ∀ n : Nat,
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).radius *
+          (parabolicDyadicSelectedBox z hz n).radius *
             ∑ i : Fin d,
               |parabolicMorreyBoxVelocitySlope
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz n).2).baseTime
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz n).2).center
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz n).2).radius u i -
+                  (parabolicDyadicSelectedBox z hz n).baseTime
+                  (parabolicDyadicSelectedBox z hz n).center
+                  (parabolicDyadicSelectedBox z hz n).radius u i -
                 parabolicMorreyBoxVelocitySlope
                   (parabolicDyadicSourceBox
                     (parabolicDyadicAddressContaining d z hz 0).2).baseTime
@@ -269,8 +225,7 @@ theorem exists_parabolicMorreyDyadicContainingRadiusWeightedSlopeTailConst
                   (parabolicDyadicSourceBox
                     (parabolicDyadicAddressContaining d z hz 0).2).radius u i| <=
             C *
-              (parabolicDyadicSourceBox
-                (parabolicDyadicAddressContaining d z hz n).2).radius ^
+              (parabolicDyadicSelectedBox z hz n).radius ^
                 parabolicMorreyExponent d *
               (∑ k ∈ Finset.range n,
                 ((2 : Real) ^ (-(1 - parabolicMorreyExponent d))) ^ k) *

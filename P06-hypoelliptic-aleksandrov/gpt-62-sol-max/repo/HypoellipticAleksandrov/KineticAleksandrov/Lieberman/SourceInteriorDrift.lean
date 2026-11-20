@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnergyExistence
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnergyExistenceBound
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothInteriorBootstrap
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnvelope
 
@@ -32,7 +32,7 @@ theorem exists_signed_source_classicalInterior_withDrift {d : ℕ} (hd : 0 < d)
       (hdu : HasGelfandWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) u g),
       IsReverseTimeVariationalEnergySolution a T haT hΩ hΩb A
         b (fun _ _ => 0) (fun t y => F (t, y))
-        ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩ 0 u g hdu ∧
+        hF.onNeighborhood 0 u g hdu ∧
       ∃ w : TimeVelocity d → ℝ,
         MemLp w 2 (timeVelocityVolumeOn (Ioo a T ×ˢ Ω)) ∧
         (∀ᵐ t ∂volume.restrict (Ioo a T),
@@ -42,18 +42,16 @@ theorem exists_signed_source_classicalInterior_withDrift {d : ℕ} (hd : 0 < d)
           scalarTimeDerivative w z +
             matrixContraction (coefficientAt A z) (scalarSpatialHessian w z) +
             PDE.vecDot (b z.1 z.2) (scalarSpatialGradient w z) = F z := by
-  have hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hA.contDiffOn⟩
-  have hbs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hb.contDiffOn⟩
+  have hAs : IsSmoothOnClosedCylinder a T Ω A :=
+    hA.onNeighborhood
+  have hbs : IsSmoothOnClosedCylinder a T Ω b :=
+    hb.onNeighborhood
   have hcs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : ℝ))
       (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
+    (ContDiff.onNeighborhood contDiff_const)
   have hFs : IsSmoothOnNeighborhood F (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩
-  obtain ⟨u, g, hdu, hu⟩ := exists_reverseTime_variational_energy_solution a T lam Lam
+    hF.onNeighborhood
+  obtain ⟨u, g, hdu, hu, _⟩ := exists_reverseTime_variational_energy_solution_norm_le_radius a T lam Lam
     haT hlam hLam hΩ hΩb A b (fun _ _ => 0) (fun t y => F (t, y))
     hAs hbs hcs hFs (fun z _ => hlo z.1 z.2) (fun z _ => hhi z.1 z.2)
     (fun _ _ => le_rfl) 0

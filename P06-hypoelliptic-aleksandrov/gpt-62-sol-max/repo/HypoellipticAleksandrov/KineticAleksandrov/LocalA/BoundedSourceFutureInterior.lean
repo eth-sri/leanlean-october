@@ -17,7 +17,6 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 /-- A positive bounded future source has a continuous literal potential at every earlier
 interior starting point. This is pointwise continuity, rather than an AE representative. -/
 theorem continuousOn_duhamelFuture_before_source
-    (hH : HormanderHypoellipticityStatement)
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
@@ -58,7 +57,7 @@ theorem continuousOn_duhamelFuture_before_source
     have hfloor : ∀ w ∈ U, a ≤ (P w).time := by
       intro w hw
       exact (min_le_left _ _).trans (hmin (ball_subset_closedBall hw))
-    have hcont := continuousOn_duhamelFuture_compact_collar hH hΩa hΩ hγ B b S K hreal
+    have hcont := continuousOn_duhamelFuture_compact_collar hΩa hΩ hγ B b S K hreal
       hB hBs hb lam Lam m hlam hm hell hcoerc a s T (min_le_right _ _) hsT U C
       isOpen_ball hC hCi hCU hball hfloor F hF M hM hFb hFz
     exact (hcont.continuousAt (closedBall_mem_nhds z (half_pos hr))).continuousWithinAt

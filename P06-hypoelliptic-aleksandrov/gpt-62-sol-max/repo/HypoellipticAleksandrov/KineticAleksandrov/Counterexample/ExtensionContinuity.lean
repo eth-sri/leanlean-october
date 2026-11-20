@@ -13,25 +13,24 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set
 
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha)
+
 /-- For each time, the actual zero extension is continuous across the profile boundary. -/
-theorem continuous_zeroExtendedProfile_spatial_of_profile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) (hr : 0 < r)
+theorem continuous_zeroExtendedProfile_spatial_of_profile (r mu R : ℝ) (hr : 0 < r)
     (hmu : 0 < mu) (hR : 0 < R) (hscale : 2 * Real.rpow r alpha ≤ 1)
     (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2) (t : ℝ) :
     Continuous (fun q : XV d =>
       zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, q.1, q.2⟩) := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
+  have hH := (selectedProfile_spec h).continuous
   let Omega : Set (XV d) := {q | profileFunction h q < 1}
   have he : (fun q : XV d =>
       zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, q.1, q.2⟩) =
       Omega.piecewise (fun q => timeCutoffProfile (profileFunction h) alpha r mu R
         ⟨t, q.1, q.2⟩) (fun _ => 0) := by
-    funext q
-    by_cases hq : q ∈ Omega
-    · rw [piecewise_eq_of_mem Omega _ _ hq]
-      exact zeroExtendedProfile_eq_raw_on_profile _ alpha r mu R hr hmu hR hvel _ hq
-    · rw [piecewise_eq_of_notMem Omega _ _ hq]
-      exact zeroExtendedProfile_eq_zero_of_profile _ alpha r mu R _ (not_lt.mp hq)
+    classical
+    exact
+      zeroExtendedProfile_spatial_eq_indicator h r mu R hr hmu hR hvel t
   rw [he]
   apply Continuous.piecewise ?_ ?_ continuous_const
   · intro q hq
@@ -53,15 +52,16 @@ theorem continuous_zeroExtendedProfile_spatial_of_profile {d : ℕ} {alpha : ℝ
           (contDiff_nativeBarrier d mu R t).continuous)
 
 /-- The fixed compact unit profile sublevel contains the support at every time. -/
-theorem zeroExtendedProfile_tsupport_subset {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R t : ℝ) :
+theorem zeroExtendedProfile_tsupport_subset (r mu R t : ℝ) :
     tsupport (fun q : XV d =>
       zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, q.1, q.2⟩) ⊆
       {q | profileFunction h q ≤ 1} := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
+  have hH := (selectedProfile_spec h).continuous
   apply closure_minimal ?_ (isClosed_le hH continuous_const)
   intro q hq
   by_contra hn
   exact hq (zeroExtendedProfile_eq_zero_of_profile _ alpha r mu R _ (not_le.mp hn).le)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

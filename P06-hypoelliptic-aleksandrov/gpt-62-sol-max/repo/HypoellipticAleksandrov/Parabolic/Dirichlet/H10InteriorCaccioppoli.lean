@@ -16,26 +16,6 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 namespace IsReverseTimeVariationalEnergySolution
 
-private theorem integrable_norm_sq_timewise_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
-    Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
-  let Lu := L.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hLu : Lu =ᵐ[reverseTimeVolume T] fun τ => L (u τ) :=
-    ContinuousLinearMap.coeFn_compLpL L u
-  refine (show Integrable (fun τ => ‖Lu τ‖ ^ 2) (reverseTimeVolume T) by
-    simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) Lu Lu).congr ?_
-  filter_upwards [hLu] with τ hτ
-  rw [hτ]
-
-private theorem integrable_weighted
-    {T : ℝ} (ζ : ReverseTimeScalarTest T) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T)) :
-    Integrable (fun τ => ζ τ * f τ) (reverseTimeVolume T) := by
-  exact hf.bdd_mul ζ.contDiff.continuous.aestronglyMeasurable
-    (Filter.Eventually.of_forall hζunit)
-
 private theorem integral_norm_sq_toLp
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) :
@@ -166,7 +146,7 @@ private theorem temporal_measure_radius_closure
     positivity
   have hcutInt : Integrable (fun τ => ζ τ * (Lcut * ‖gradientCLM hΩ (u τ)‖ ^ 2))
       (reverseTimeVolume T) :=
-    integrable_weighted ζ hζunit (hGradUsq.const_mul Lcut)
+    ReverseTimeScalarTest.integrable_mul ζ (hGradUsq.const_mul Lcut)
   have hcutoff' : (∫ τ, ζ τ * (Lcut * ‖gradientCLM hΩ (u τ)‖ ^ 2)
       ∂reverseTimeVolume T) ≤ Lcut * ‖u‖ ^ 2 := by
     have hpoint : ∀ᵐ τ ∂reverseTimeVolume T,
@@ -192,7 +172,7 @@ private theorem temporal_measure_radius_closure
   have hsourceBase : Integrable (fun τ => C * (1 + ‖u τ‖ ^ 2)) (reverseTimeVolume T) := by
     simpa only [Pi.add_apply] using ((integrable_const (1 : ℝ)).add hUsq).const_mul C
   have hsourceInt : Integrable (fun τ => ζ τ * (C * (1 + ‖u τ‖ ^ 2)))
-      (reverseTimeVolume T) := integrable_weighted ζ hζunit hsourceBase
+      (reverseTimeVolume T) := ReverseTimeScalarTest.integrable_mul ζ hsourceBase
   have hsource : (∫ τ, ζ τ * (C * (1 + ‖u τ‖ ^ 2)) ∂reverseTimeVolume T) ≤
       C * (T + ‖u‖ ^ 2) := by
     have hpoint : ∀ᵐ τ ∂reverseTimeVolume T,
@@ -211,7 +191,7 @@ private theorem temporal_measure_radius_closure
           reverseTimeVolume_real_univ _ hT, integral_const_mul, hUenergy]
         ring
   have hhalfInt : Integrable (fun τ => ζ τ * ((lam / 2) * ‖Gv τ‖ ^ 2))
-      (reverseTimeVolume T) := integrable_weighted ζ hζunit (hGsq.const_mul (lam / 2))
+      (reverseTimeVolume T) := ReverseTimeScalarTest.integrable_mul ζ (hGsq.const_mul (lam / 2))
   have hbulk : (∫ τ, ζ τ * ((lam / 2) * ‖Gv τ‖ ^ 2 -
       Lam * Kη ^ 2 * ‖gradientCLM hΩ (u τ)‖ ^ 2) ∂reverseTimeVolume T) =
       (lam / 2) * (∫ τ, ζ τ * ‖Gv τ‖ ^ 2 ∂reverseTimeVolume T) -
@@ -255,54 +235,16 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
           ∀ (a : CoefficientField d)
             (b : ℝ → PDE.Vec d → PDE.Vec d)
             (c F : ℝ → PDE.Vec d → ℝ),
-          ∀ (haSmooth : IsSmoothOnNeighborhood
-                (fun z : TimeVelocity d => a z.1 z.2)
-                (scalarParabolicClosedCylinder r₀ r₁ Ω))
-            (hbSmooth : IsSmoothOnNeighborhood
-                (fun z : TimeVelocity d => b z.1 z.2)
-                (scalarParabolicClosedCylinder r₀ r₁ Ω))
-            (hcSmooth : IsSmoothOnNeighborhood
-                (fun z : TimeVelocity d => c z.1 z.2)
-                (scalarParabolicClosedCylinder r₀ r₁ Ω))
-            (hFSmooth : IsSmoothOnNeighborhood
-                (fun z : TimeVelocity d => F z.1 z.2)
-                (scalarParabolicClosedCylinder r₀ r₁ Ω))
-            (hLower : ∀ z : TimeVelocity d,
-                z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-                  lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-            (hUpper : ∀ z : TimeVelocity d,
-                z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-                  a z.1 z.2 ≤ Lam • (1 : PDE.Mat d))
+          ∀ (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+            (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+            (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+            (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
+            (hLower : HasLowerEllipticityOn lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
+            (hUpper : HasUpperEllipticityOn Lam a (scalarParabolicClosedCylinder r₀ r₁ Ω))
             (hcNonpos : ∀ z : TimeVelocity d,
                 z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
                   c z.1 z.2 ≤ 0)
-            (hA : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-                spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-                spatialMatrixFDerivFrobeniusNorm
-                  (fun w : TimeVelocity d =>
-                    reverseTimeCoefficient r₁ a w.1 w.2) z ≤ M)
-            (hB : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-                spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-                PDE.vecEuclideanNorm
-                  (reverseTimeDivergenceDrift r₁ a b z.1 z.2) ≤ M)
-            (hBD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-                spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-                spatialVectorFDerivFrobeniusNorm
-                  (fun w : TimeVelocity d =>
-                    reverseTimeDivergenceDrift r₁ a b w.1 w.2) z ≤ M)
-            (hq : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-                spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-                |-(reverseTimeScalarCoefficient r₁ c z.1 z.2)| ≤ M)
-            (hqD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-                spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-                spatialScalarFDerivEuclideanNorm
-                  (fun w : TimeVelocity d =>
-                    -(reverseTimeScalarCoefficient r₁ c w.1 w.2)) z ≤ M)
-            (hfD : ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-                spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-                spatialScalarFDerivEuclideanNorm
-                  (fun w : TimeVelocity d =>
-                    -(reverseTimeScalarCoefficient r₁ F w.1 w.2)) z ≤ M),
+            (hbound : ReverseTimeCoefficientMajorant r₀ r₁ (tsupport χ.toFun) δ M a b c F),
           ∀ (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
             (u : ReverseTimeL2V hΩ (r₁ - r₀))
             (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
@@ -311,20 +253,11 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
             (hu : IsReverseTimeVariationalEnergySolution
               r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu)
             (k : Fin d) (h : ℝ) (habs : 0 < |h|) (hh : |h| ≤ δ),
-            let hχshift : Set.MapsTo
-                (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-                (tsupport χ.toFun) Ω :=
+            let hχshift : χ.ShiftMapsInto k h Ω :=
               mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
                 hcarrier k hh
-            let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-              intro y hy
-              apply subset_tsupport
-              change χ y ≠ 0
-              rw [χ.eq_one_on_inner y hy]
-              exact one_ne_zero
-            let hηshift : Set.MapsTo
-                (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-                (tsupport η.toFun) Ω :=
+            let hηχ := χ.inner_subset_tsupport
+            let hηshift : η.ShiftMapsInto k h Ω :=
               hχshift.mono_left hηχ
             let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
               localizedSpatialDifferenceQuotientH10CLM
@@ -336,9 +269,7 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
               C_cac *
                 ((r₁ - r₀) +
                   (reverseTimeGalerkinPrimalRadius
-                    r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-                    haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-                    initial) ^ 2) := by
+        ⟨h₀₁, hlam, hΩ, hΩbounded, a, b, c, F, haSmooth, hbSmooth, hcSmooth, hFSmooth, hLower, hcNonpos⟩ initial) ^ 2) := by
   have hχcompact : IsCompact (tsupport χ.toFun) := χ.hasCompactSupport
   obtain ⟨delta, hdelta, hcarrier⟩ :=
     IsCompact.exists_spatialCoordinateShiftCarrier_subset_open hχcompact hΩ χ.tsupport_subset
@@ -352,19 +283,12 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
     have hsum : 0 ≤ C_lam + Kζ / 2 + Lam * Kη ^ 2 := by positivity
     exact mul_nonneg (by positivity) hsum
   intro ζ hζnonneg hζleOne hζderiv a b c F haSmooth hbSmooth hcSmooth hFSmooth
-    hLower hUpper hcNonpos hA hB hBD hq hqD hfD initial u g hdu hu k h habs hh
+    hLower hUpper hcNonpos hbound initial u g hdu hu k h habs hh
   dsimp
-  let hχshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport χ.toFun) Ω :=
+  let hχshift : χ.ShiftMapsInto k h Ω :=
     mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset hcarrier k hh
-  let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-    intro y hy
-    apply subset_tsupport
-    change χ y ≠ 0
-    rw [χ.eq_one_on_inner y hy]
-    exact one_ne_zero
-  let hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω := hχshift.mono_left hηχ
+  let hηχ := χ.inner_subset_tsupport
+  let hηshift : η.ShiftMapsInto k h Ω := hχshift.mono_left hηχ
   let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
     localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
   let Gv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
@@ -376,12 +300,12 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
   have hζae : ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀), 0 ≤ ζ τ :=
     Filter.Eventually.of_forall hζnonneg
   have hbridge' := hbridge ζ hζunit Lam hlamLam a b c F haSmooth hbSmooth hcSmooth hFSmooth
-    hLower hUpper hA hB hBD hq hqD hfD k h hh hζae initial u g hdu hu
+    hLower hUpper hbound k h hh hζae initial u g hdu hu
   have hRadius := IsReverseTimeVariationalEnergySolution.norm_le_reverseTimeGalerkinPrimalRadius
     r₀ r₁ lam Lam h₀₁ hlam hlamLam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth
       hFSmooth hLower hUpper hcNonpos initial u g hdu hu
-  let R := reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-    haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
+  let R := reverseTimeGalerkinPrimalRadius
+        ⟨h₀₁, hlam, hΩ, hΩbounded, a, b, c, F, haSmooth, hbSmooth, hcSmooth, hFSmooth, hLower, hcNonpos⟩ initial
   have hRadiusR : ‖u‖ ≤ R := by
     simpa only [R] using hRadius
   have hGsq : Integrable (fun τ => ‖Gv τ‖ ^ 2) (reverseTimeVolume (r₁ - r₀)) := by

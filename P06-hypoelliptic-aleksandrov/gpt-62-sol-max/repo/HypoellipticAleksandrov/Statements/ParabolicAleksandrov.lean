@@ -37,6 +37,10 @@ theorem parabolic_aleksandrov
         (∀ z ∈ krylovParabolicBoundary t₀ h v₀, u z ≤ 0) →
         ∀ z ∈ krylovCylinder t₀ h v₀,
           u z ≤ C * parabolicLpNormOn N f (krylovCylinder t₀ h v₀) := by
-  exact HypoellipticAleksandrov.Parabolic.parabolic_aleksandrov_aux N hN lam Lam hlam hLam
+  obtain ⟨C, hC, hK⟩ := parabolic_aleksandrov_of_lower_ellipticity N hN lam hlam
+  refine ⟨C, hC, ?_⟩
+  intro t₀ v₀ h hh hh1 a f u ha _ hell hf hu
+  exact hK t₀ v₀ h hh hh1 a f u ha (fun z hz => (hell z hz).1) hf
+    hu.isScalarC12On hu.continuousOn
 
 end HypoellipticAleksandrov.Parabolic

@@ -14,8 +14,6 @@ open scoped MatrixOrder
 /-- The exact relative Hölder conclusion conditional on the smooth joint local statement. -/
 theorem kinetic_holder_timeVelocity_relative_of_smooth
     (h : SmoothLocalRegularityStatement)
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ alpha C : ℝ, 0 < alpha ∧ alpha ≤ 1 ∧
       ∀ A : CoefficientField d,
@@ -34,6 +32,6 @@ theorem kinetic_holder_timeVelocity_relative_of_smooth
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
           (quasiDistance P P' / R₀) ^ alpha := by
   exact kinetic_holder_timeVelocity_relative_of_local
-    (localTimeVelocityRegularity_of_smooth h) hH hLE d hd lam Lam hlam hLam
+    (localTimeVelocityRegularity_of_smooth h) d hd lam Lam hlam hLam
 
 end HypoellipticAleksandrov.KineticAleksandrov

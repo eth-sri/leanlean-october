@@ -55,10 +55,7 @@ theorem addConst_apply [IsFiniteMeasure (volumeOn U)]
 @[simp]
 theorem grad_addConst [IsFiniteMeasure (volumeOn U)]
     (u : H1Function U) (c : ℝ) (x : Vec d) :
-    (u.addConst c).grad x = u.grad x := by
-  simpa only [addConst, W1pFunction.toH1Function_grad,
-    H1Function.toW1pFunction_grad] using
-      u.toW1pFunction.addConst_grad c x
+    (u.addConst c).grad x = u.grad x := id (W1pFunction.addConst_grad u.toW1pFunction c x)
 
 /-- Subtract a scalar constant on a bounded convex domain without exposing a
 finite-measure typeclass argument in the public API. -/
@@ -69,26 +66,19 @@ noncomputable def subConst
     hU.isFiniteMeasure_volumeOn
   exact u.addConst (-c)
 
-@[simp]
-theorem subConst_apply
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (c : ℝ) (x : Vec d) :
-    u.subConst hU c x = u x - c := by
-  let : IsFiniteMeasure (volumeOn U) :=
-    hU.isFiniteMeasure_volumeOn
-  rw [subConst]
-  simp only [addConst_apply]
-  ring
+section
+variable (u : H1Function U) (hU : IsOpenBoundedConvexDomain U) (c : ℝ) (x : Vec d)
 
 @[simp]
-theorem grad_subConst
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (c : ℝ) (x : Vec d) :
+theorem subConst_apply :
+    u.subConst hU c x = u x - c := rfl
+
+@[simp]
+theorem grad_subConst :
     (u.subConst hU c).grad x = u.grad x := by
-  let : IsFiniteMeasure (volumeOn U) :=
-    hU.isFiniteMeasure_volumeOn
-  rw [subConst]
-  exact grad_addConst u (-c) x
+  simp [subConst]
+
+end
 
 /-- Subtract the arithmetic integral average without changing the chosen weak
 gradient. -/
@@ -99,19 +89,12 @@ noncomputable def subAverage [IsFiniteMeasure (volumeOn U)]
 @[simp]
 theorem subAverage_apply [IsFiniteMeasure (volumeOn U)]
     (u : H1Function U) (x : Vec d) :
-    u.subAverage x = u x - integralAverage U u := by
-  simpa only [subAverage, W1pFunction.toH1Function_apply,
-    H1Function.toW1pFunction_apply,
-    H1Function.toW1pFunction_toFun] using
-      u.toW1pFunction.subAverage_apply x
+    u.subAverage x = u x - integralAverage U u := rfl
 
 @[simp]
 theorem grad_subAverage [IsFiniteMeasure (volumeOn U)]
     (u : H1Function U) (x : Vec d) :
-    u.subAverage.grad x = u.grad x := by
-  simpa only [subAverage, W1pFunction.toH1Function_grad,
-    H1Function.toW1pFunction_grad] using
-      u.toW1pFunction.subAverage_grad x
+    u.subAverage.grad x = u.grad x := id (W1pFunction.subAverage_grad u.toW1pFunction x)
 
 end H1Function
 

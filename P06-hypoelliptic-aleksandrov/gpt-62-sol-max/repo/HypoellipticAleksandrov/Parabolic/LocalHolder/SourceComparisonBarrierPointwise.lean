@@ -27,23 +27,8 @@ theorem classicalEnergyRepresentative_abs_le_continuous_barrier {d : ℕ}
     (hw : ContinuousOn w (scalarParabolicOpenCylinder a T Ω))
     (hwslice : ∀ᵐ t ∂volume.restrict (Ioo a T),
       (fun y => w (t, y)) =ᵐ[PDE.volumeOn Ω] fun y => valueCLM hΩ (u (T - t)) y) :
-    ∀ z ∈ scalarParabolicOpenCylinder a T Ω, |w z| ≤ q z.2 := by
-  have hraw : ∀ᵐ τ ∂reverseTimeVolume (T - a), ∀ hτ : τ ∈ Ioo 0 (T - a),
-      ∀ᵐ y ∂PDE.volumeOn Ω, |valueCLM hΩ (u τ) y| ≤ q y := by
-    filter_upwards [(reverseTimeHilbertRepresentative_spec hΩ (T - a)
-      (sub_pos.mpr haT) u g hdu).1] with τ hrep hτ
-    have hb := henv τ ⟨hτ.1.le, hτ.2.le⟩
-    rw [hrep hτ] at hb
-    exact hb
-  have horig := (sourceTimeReflection_measurePreserving a T).quasiMeasurePreserving.ae hraw
-  have hb : ∀ᵐ t ∂volume.restrict (Ioo a T),
-      ∀ᵐ y ∂PDE.volumeOn Ω, |w (t, y)| ≤ q y := by
-    filter_upwards [hwslice, horig, ae_restrict_mem measurableSet_Ioo] with t hs hr ht
-    have ht' : T - t ∈ Ioo 0 (T - a) := ⟨by linarith [ht.2], by linarith [ht.1]⟩
-    filter_upwards [hs, hr ht'] with y hy hby
-    rw [hy]
-    exact hby
-  exact abs_le_of_continuousOn_of_ae_slices hΩ a T w (fun z => q z.2)
-    (hq.comp continuous_snd) hw hb
+    ∀ z ∈ scalarParabolicOpenCylinder a T Ω, |w z| ≤ q z.2 := 
+  classicalEnergyRepresentative_abs_le_envelope hΩ a T haT u g hdu
+    (q ∘ Prod.snd) (hq.comp continuous_snd) henv w hw hwslice
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

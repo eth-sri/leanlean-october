@@ -10,10 +10,8 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
-variable (hH : HormanderHypoellipticityStatement)
-  (hLE : LiebermanEllipsoidDirichletStatement)
+variable
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-  (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
@@ -23,24 +21,24 @@ theorem ballExitRestart_fourier_apply
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (H : {t : ℝ // P.1.time < t ∧ t < T.1}) (ξ : PDE.Vec d)
     (E : Set (TimeVelocity d)) (hE : MeasurableSet E) :
-    exitFourier ((ballExitRestart hH hLE hd hlam hLam B hB v₀ hR P T H).map
+    exitFourier ((ballExitRestart hd B hB v₀ hR P T H).map
       (exitCoordinates P.1 v₀)) ξ E =
       exitFourierStepPhase P.1 H.1 v₀ ξ *
-        ∫ᵛ v, ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR
+        ∫ᵛ v, ballLaterExitFourierTest hd B hB v₀ hR
           H.1 T.1 H.2.2 ξ E v
           ∂[ContinuousLinearMap.mul ℝ ℂ;
-            fourierProjection (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
+            fourierProjection (localBallKernel hd B hB v₀ hR)
               (ballEvolutionQuery P ⟨H.1, H.2.1⟩) ξ] := by
-  let K := localBallKernel hH hLE hd hlam hLam B hB v₀ hR
+  let K := localBallKernel hd B hB v₀ hR
   let q := ballEvolutionQuery P ⟨H.1, H.2.1⟩
-  let f := ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR H.1 T.1 H.2.2 ξ E
-  have hfm := measurable_ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR
+  let f := ballLaterExitFourierTest hd B hB v₀ hR H.1 T.1 H.2.2 ξ E
+  have hfm := measurable_ballLaterExitFourierTest hd B hB v₀ hR
     H.1 T.1 H.2.2 ξ E hE
   have hfb : ∃ C : ℝ, ∀ v, ‖f v‖ ≤ C := ⟨1, fun v =>
-    norm_ballLaterExitFourierTest_le_one hH hLE hd hlam hLam B hB v₀ hR
+    norm_ballLaterExitFourierTest_le_one hd B hB v₀ hR
       H.1 T.1 H.2.2 ξ E v⟩
   rw [exitFourier_map_exitCoordinates_apply _ P.1 v₀ ξ E hE,
-    ballExitRestart_integral_complex hH hLE hd hlam hLam B hB v₀ hR P T H
+    ballExitRestart_integral_complex hd B hB v₀ hR P T H
       (exitFourierTest P.1 v₀ ξ E) (measurable_exitFourierTest _ _ _ hE)
       ⟨1, norm_exitFourierTest_le_one _ _ _ _⟩,
     fourierProjection_integral_complex K q ξ _ (fourierProjection_spec K q ξ) f hfm hfb]
@@ -66,11 +64,11 @@ theorem ballExitRestart_fourier_apply
   rw [integral_const_mul]
   change exitFourierStepPhase P.1 H.1 v₀ ξ * fourierPhase ξ P.1.position w.1 *
       (∫ Q, exitFourierTest W v₀ ξ E Q
-        ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR (ballStateStart H.1 w) ⟨T.1, H.2.2⟩) = _
+        ∂ballExitRaw hd B hB v₀ hR (ballStateStart H.1 w) ⟨T.1, H.2.2⟩) = _
   rw [← exitFourier_map_exitCoordinates_apply _ W v₀ ξ E hE]
-  have hfvalid := ballLaterExitFourierTest_valid hH hLE hd hlam hLam B hB v₀ hR
+  have hfvalid := ballLaterExitFourierTest_valid hd B hB v₀ hR
     H.1 T.1 H.2.2 ξ E ⟨w.1.1, w.2.1⟩
-  rw [ballLaterExitFourier_eq_state hH hLE hd hlam hLam B hB v₀ hR
+  rw [ballLaterExitFourier_eq_state hd B hB v₀ hR
     H.1 T.1 H.2.2 ξ w] at hfvalid
   change _ = exitFourierStepPhase P.1 H.1 v₀ ξ * (f w.1.1 * fourierPhase ξ P.1.position w.1)
   dsimp only [f]

@@ -22,7 +22,7 @@ theorem position_density_finite {X : Type*} [MeasurableSpace X]
       rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
     rw [← he, hd]
     exact measure_ne_top _ _
-  exact (ae_lt_top hF hi).mono (fun _ h => h.ne)
+  exact Eventually.mono (ae_lt_top hF hi) fun x h => LT.lt.ne h
 
 /-- The real representative has exactly the original positive density and power integral. -/
 theorem position_density_real {X : Type*} [MeasurableSpace X]
@@ -35,14 +35,14 @@ theorem position_density_real {X : Type*} [MeasurableSpace X]
   refine ⟨hF.ennreal_toReal, fun _ => ENNReal.toReal_nonneg, ?_, ?_⟩
   · rw [← hd]
     apply withDensity_congr_ae
-    exact hf.mono (fun _ h => (ENNReal.ofReal_toReal h).symm)
+    exact Eventually.mono hf fun x h => Eq.symm (ENNReal.ofReal_toReal h)
   · apply lintegral_congr_ae
     filter_upwards [hf] with x hx
     rw [Real.enorm_toReal hx]
 
 /-- The actual active mixture has a real density with precisely the source power bound. -/
 theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTailStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
@@ -50,27 +50,27 @@ theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTail
       (nu : Measure Point) [IsFiniteMeasure nu],
       (∀ᵐ e ∂nu, s ≤ e.time ∧ e.velocity 0 ∈ c.active) →
       ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
-        enlargedActiveGreen hH hLE hlam hLam A c nu =
+        enlargedActiveGreen A c nu =
           volume.withDensity (fun z => ENNReal.ofReal (G z)) ∧
         MemLp G (ENNReal.ofReal q) volume ∧
         (∫⁻ z, ‖G z‖ₑ ^ q ∂volume) ≤ ENNReal.ofReal (C * c.r ^ (6 - 4 * q)) *
           ∑' a : ℕ × ℤ, nu (enlargedStartCell c s x a.1 a.2) ^ q := by
-  obtain ⟨C, hC, hd⟩ := position_density_power_sum hpush htail hH hLE hlam hLam q hq
+  obtain ⟨C, hC, hd⟩ := position_density_power_sum hpush htail hlam hLam q hq
   refine ⟨C, hC, ?_⟩
   intro A c hc s x nu hfinite hnu
   have hq0 : 0 < q := by linarith [hq.1]
-  let F := positionMixtureDensity hH hLE hlam hLam A c nu
-  have hF := measurable_positionMixtureDensity hH hLE hlam hLam A c nu
-  have hm := withDensity_positionMixtureDensity hpush hH hLE hlam hLam A c nu
-  have : IsFiniteMeasure (enlargedActiveGreen hH hLE hlam hLam A c nu) := by
+  let F := positionMixtureDensity A c nu
+  have hF := measurable_positionMixtureDensity A c nu
+  have hm := withDensity_positionMixtureDensity hpush A c nu
+  have : IsFiniteMeasure (enlargedActiveGreen A c nu) := by
     unfold enlargedActiveGreen
     infer_instance
   obtain ⟨hG, hG0, hGd, hGi⟩ := position_density_real volume
-    (enlargedActiveGreen hH hLE hlam hLam A c nu) F hF hm q
+    (enlargedActiveGreen A c nu) F hF hm q
   have hbound := hd A c hc s x nu hnu
   have hsum := enlargedStartCell_power_sum_le nu c s x q hq.1.le
     (hnu.mono (fun _ h => h.1))
-  have hsumfinite : (∑' a : ℕ × ℤ, nu (enlargedStartCell c s x a.1 a.2) ^ q) < ⊤ :=
+  have hsumfinite :=
     hsum.trans_lt (ENNReal.rpow_lt_top_of_nonneg (by linarith [hq.1]) (measure_ne_top _ _))
   have hi : (∫⁻ z, ‖(F z).toReal‖ₑ ^ q ∂volume) < ⊤ := by
     rw [hGi]

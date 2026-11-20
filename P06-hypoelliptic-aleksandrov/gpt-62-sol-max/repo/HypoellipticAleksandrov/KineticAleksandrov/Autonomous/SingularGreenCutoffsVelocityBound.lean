@@ -23,13 +23,16 @@ theorem barrier_convolution_far_gauge (eta : ℝ → ℝ) (S : ℝ)
         _ ≤ _ := abs_add_le _ _
     have hY : 1 ≤ |Y| := by linarith only [hx, he, ht]
     exact (Real.one_le_rpow hY (by norm_num : 0 ≤ (1 / 3 : ℝ))).trans
-      (BarrierRegularization.barrier_position_gauge_lower (Y, q.2))
+      (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.barrier_position_gauge_lower (Y, q.2))
   · exact hv.trans (bellmanGauge_coordinate_bounds (Y, q.2)).2
 
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha)
+  (ha1 : alpha < 1) (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta)
+include alpha h ha ha1 heta
+
 /-- The actual regularized velocity derivative is bounded outside a fixed rectangle. -/
-theorem barrier_smoothed_velocity_far {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta) :
+theorem barrier_smoothed_velocity_far :
     ∃ S Cv : ℝ, 0 < S ∧ 0 ≤ Cv ∧ ∀ q : ℝ × ℝ,
       S + 1 < |q.1| ∨ 1 ≤ |q.2| →
       |deriv (fun v => positionConvolution eta (bellmanOriginExtension phi) (q.1, v)) q.2| ≤ Cv
@@ -69,9 +72,7 @@ theorem barrier_smoothed_velocity_far {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
 /-- Position regularization has a global bounded actual velocity derivative.
 The bound is proved from joint C² regularity on a compact rectangle and homogeneous decay
   outside. -/
-theorem barrier_smoothed_velocity_bounded {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
-    (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
-    (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta) :
+theorem barrier_smoothed_velocity_bounded :
     ∃ Bv : ℝ, 0 ≤ Bv ∧ ∀ q : ℝ × ℝ,
       |deriv (fun v => positionConvolution eta (bellmanOriginExtension phi) (q.1, v)) q.2| ≤ Bv
         := by
@@ -95,5 +96,7 @@ theorem barrier_smoothed_velocity_bounded {alpha : ℝ} {phi : (ℝ × ℝ) → 
       push Not at hn
       exact hq ⟨abs_le.mp hn.1, (abs_le.mp hn.2.le)⟩
     exact (hbfar q hfar).trans (le_max_right _ _)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

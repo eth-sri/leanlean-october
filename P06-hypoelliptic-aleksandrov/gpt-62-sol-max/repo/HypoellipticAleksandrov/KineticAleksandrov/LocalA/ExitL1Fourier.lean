@@ -20,14 +20,17 @@ def exitL1Fourier (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure 
     (ξ : PDE.Vec d) : Lp ℂ 1 (exitMarginal ν) :=
   (integrable_exitFourierRep ν ξ).toL1 (exitFourierRep ν ξ)
 
+section
+variable (ν : Measure (PDE.Vec d × TimeVelocity d))
+
 /-- The `L¹` Fourier element has the jointly measurable conditional representative. -/
-theorem coe_exitL1Fourier (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν]
+theorem coe_exitL1Fourier [IsFiniteMeasure ν]
     (ξ : PDE.Vec d) :
     (exitL1Fourier ν ξ : TimeVelocity d → ℂ) =ᵐ[exitMarginal ν] exitFourierRep ν ξ :=
   Integrable.coeFn_toL1 (integrable_exitFourierRep ν ξ)
 
 /-- Total variation of Fourier exit data equals the norm in the complete `L¹` space. -/
-theorem norm_exitL1Fourier (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν]
+theorem norm_exitL1Fourier [IsFiniteMeasure ν]
     (ξ : PDE.Vec d) :
     ‖exitL1Fourier ν ξ‖ = ((exitFourier ν ξ).variation univ).toReal := by
   rw [exitFourier_eq_withDensity ν ξ,
@@ -36,7 +39,7 @@ theorem norm_exitL1Fourier (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFinit
   exact Integrable.norm_toL1_eq_lintegral_enorm _ _
 
 /-- Frequency continuity holds in `L¹`, without a Banach-space structure on measures. -/
-theorem continuous_exitL1Fourier (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem continuous_exitL1Fourier
     [IsFiniteMeasure ν] : Continuous (exitL1Fourier ν) := by
   apply continuous_iff_seqContinuous.mpr
   intro ξs ξ hξs
@@ -60,6 +63,8 @@ theorem continuous_exitL1Fourier (ν : Measure (PDE.Vec d × TimeVelocity d))
       (integrable_exitFourierRep ν ξ)).aestronglyMeasurable]
   apply lintegral_congr
   intro z
-  exact (ofReal_norm (exitFourierRep ν (ξs n) z - exitFourierRep ν ξ z)).symm
+  simp
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

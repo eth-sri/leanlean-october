@@ -17,22 +17,22 @@ open scoped ENNReal
 
 /-- The source modulus controls signed endpoint differences using the actual kernel moments. -/
 theorem deterministic_barrier_endpoint_of_modulus
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (alpha B : ℝ) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) (hB : 0 ≤ B)
     (Phi : Z → ℝ) (hPhi : Continuous Phi)
     (hmod : ∀ z w : Z, |Phi z-Phi w| ≤
       B*(|z.1-w.1|^(alpha/3)+|z.2-w.2|^alpha))
     (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) (Y : ℝ) :
-    let E := fullSpaceEvolution hH hLE hlam hLam A
+    let E := fullSpaceEvolution A
     Integrable (fun w : Z => Phi (w.1-Y,w.2)-Phi (z.1-Y,z.2)) (kernelXV E T z) ∧
       (∫ w, |Phi (w.1-Y,w.2)-Phi (z.1-Y,z.2)| ∂kernelXV E T z) ≤
         B*((2*z.2^2*(T : ℝ)^2+4/3*Lam*(T : ℝ)^3)^(alpha/6)+
           (2*Lam*(T : ℝ))^(alpha/2)) := by
-  let E := fullSpaceEvolution hH hLE hlam hLam A
-  have hx := terminal_position_fractional_moment hH hLE hlam hLam A z T
+  let E := fullSpaceEvolution A
+  have hx := terminal_position_fractional_moment A z T
     (a := alpha/3) (by linarith) (by linarith)
-  have hv := terminal_velocity_fractional_moment hH hLE hlam hLam A z T ha0 (by linarith)
+  have hv := terminal_velocity_fractional_moment A z T ha0 (by linarith)
   let f := fun w : Z => Phi (w.1-Y,w.2)-Phi (z.1-Y,z.2)
   let g := fun w : Z => B*(|w.1-z.1|^(alpha/3)+|w.2-z.2|^alpha)
   have hf : Measurable f := by

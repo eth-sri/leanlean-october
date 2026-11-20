@@ -24,8 +24,7 @@ theorem interval_coefficient_lower {lam Lam : ℝ} (B : CoefficientField 1)
     (hB : IsSectionTwoCoefficient lam Lam B) (r : ℝ) (v : PDE.Vec 1) :
     lam ≤ B r v 0 0 := by
   have h := (hB.2.2.2.2.1 r v).diag_nonneg (i := (0 : Fin 1))
-  simpa only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply_eq,
-    smul_eq_mul, mul_one, sub_nonneg] using h
+  simp_all
 
 /-- Coordinates of the closure of an interval satisfy the closed endpoint bounds. -/
 theorem interval_coordinate_closure {a c : ℝ} {v : PDE.Vec 1}

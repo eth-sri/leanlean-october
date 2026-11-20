@@ -20,21 +20,18 @@ theorem norm_exitRealPart_le_one : ‖exitRealPart‖ ≤ 1 := by
 
 /-- Projection does not increase any derivative of the actual smooth inverse. -/
 theorem ballExitL1Density_derivative_le
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (j : ℕ) (y : PDE.Vec d) :
-    let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+    let ν := ballExit hd B hB v₀ hR P T
     ‖iteratedFDeriv ℝ j (exitL1Density ν) y‖ ≤
       ‖iteratedFDeriv ℝ j (exitL1Inversion ν) y‖ := by
   dsimp only
-  let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+  let ν := ballExit hd B hB v₀ hR P T
   let L := exitRealPart.compLpL 1 (exitMarginal ν)
-  have hs := ballExitL1Inversion_contDiff hH hLE hd hlam hLam B hB v₀ hR P T hv hT
+  have hs := ballExitL1Inversion_contDiff hd B hB v₀ hR P T hv hT
   have he := L.iteratedFDeriv_comp_left
     ((hs.of_le (by simp : (j : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).contDiffAt (x := y)) le_rfl
   change ‖iteratedFDeriv ℝ j (L ∘ exitL1Inversion ν) y‖ ≤ _

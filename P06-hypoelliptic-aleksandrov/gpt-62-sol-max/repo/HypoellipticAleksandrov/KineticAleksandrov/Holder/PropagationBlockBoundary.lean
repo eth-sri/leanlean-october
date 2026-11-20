@@ -14,46 +14,41 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set
 
-/-- Positivity puts the Gaussian strictly inside the velocity and position block faces. -/
-theorem gaussianBarrier_positive_lateral {d : ℕ} (hd : 1 ≤ d)
-    {lam Lam H T0 T1 kx kv h ell : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (hH : 0 ≤ H) (hT0 : 0 < T0) (hT1 : T0 ≤ T1) (hh : 0 < h)
-    (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv) (hell : 0 ≤ ell)
-    (tminus sblock : ℝ) {x v : ℝ → PDE.Vec d} (hv : Continuous v)
-    (hkin : ∀ t, HasDerivAt x (v t) t)
-    (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|)
-    (P : KineticPoint d)
-    (hP : P ∈ closure (backwardCylinder
-      ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩
-      (barrierW d lam Lam H T1 * Real.sqrt h)))
+section
+variable {d : ℕ} (hd : 1 ≤ d) {lam Lam H T0 T1 kx kv h ell : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+  (hH : 0 ≤ H) (hT0 : 0 < T0) (hT1 : T0 ≤ T1) (hh : 0 < h)
+  (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv) (hell : 0 ≤ ell) (tminus sblock : ℝ)
+  {x v : ℝ → PDE.Vec d} (hv : Continuous v) (hkin : ∀ t, HasDerivAt x (v t) t)
+  (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|) (P : KineticPoint d)
+include hd T0 kx kv hlam hLam hH hT0 hT1 hh hhstar hell hv hkin hLip
+
+/-- Positivity puts the Gaussian inside the spatial faces at a nearby later centre. -/
+theorem gaussianBarrier_positive_spatial
+    {b : ℝ} (hb : b ≤ sblock + h) (hP : P.time ≤ tminus + b)
     (hpos : 0 < gaussianBarrier lam Lam H h (barrierL d lam Lam H T1)
       ell tminus sblock x v P) :
-    P.velocity ∈ PDE.euclideanBall (v (sblock + h))
+    P.velocity ∈ PDE.euclideanBall (v b)
         (barrierW d lam Lam H T1 * Real.sqrt h) ∧
-      relativePosition ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩ P ∈
+      relativePosition ⟨tminus + b, x b, v b⟩ P ∈
         PDE.euclideanBall (0 : PDE.Vec d) ((barrierW d lam Lam H T1 * Real.sqrt h) ^ 3) := by
   let L := barrierL d lam Lam H T1
   let W := barrierW d lam Lam H T1
   let C := (3 / 2 : ℝ) * L * Real.sqrt lam
-  let b := sblock + h
   let s := P.time - tminus
   let R := W * Real.sqrt h
-  let P₀ : KineticPoint d := ⟨tminus + sblock + h, x b, v b⟩
+  let P₀ : KineticPoint d := ⟨tminus + b, x b, v b⟩
   have hW2 : 2 ≤ W := two_le_barrierW hH
   have hW : 0 < W := by linarith only [hW2]
   have hR : 0 < R := mul_pos hW (Real.sqrt_pos.mpr hh)
   have hbudget := propagation_step_damping hd hlam hLam hH hT0 hT1 hh hhstar
-  have ht := (closure_backwardCylinder_bounds P₀ hR hP).2.1
-  have hs1 : P.time - tminus - sblock ≤ h := by
-    change P.time ≤ tminus + sblock + h at ht
-    linarith only [ht]
+  have hs1 : P.time - tminus - sblock ≤ h := by linarith
   obtain ⟨hs0, _⟩ := gaussianBarrier_pos_quadratic hlam hh Lam H L ell tminus sblock
     hLam hell hbudget x v P hpos
   obtain ⟨hy, hV⟩ := gaussianBarrier_positive_set hlam hh Lam H L ell tminus sblock
     hLam hell (mul_nonneg (by norm_num) (Real.sqrt_nonneg _)) hbudget x v P hs1 hpos
   have hdelta : 0 ≤ b - s ∧ b - s ≤ 2 * h := by
-    dsimp only [b, s]
-    constructor <;> linarith only [hs0, hs1, hh]
+    dsimp only [s]
+    constructor <;> linarith only [hP, hs0, hb]
   have hhT1 : h ≤ T1 := by
     have he := (propagation_step_time hH hh hhstar).2
     linarith only [he, hT1, hh]
@@ -86,7 +81,7 @@ theorem gaussianBarrier_positive_lateral {d : ℕ} (hd : 1 ≤ d)
       (x s - x b - (s - b) • v b) := by
     ext i
     simp only [relativePosition, P₀, Pi.sub_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
-    dsimp only [b, s]
+    dsimp only [s]
     ring
   have hrem := skeleton_position_remainder_le hv hkin hLip s b (sub_nonneg.mp hdelta.1)
   have hdeltaSq : (b - s) ^ 2 ≤ (2 * h) ^ 2 :=
@@ -116,15 +111,25 @@ theorem gaussianBarrier_positive_lateral {d : ℕ} (hd : 1 ≤ d)
     exact hxb.trans_lt (mul_lt_mul_of_pos_right (hCW.trans_le hcube)
       (Real.rpow_pos_of_pos hh _))
 
+/-- Positivity puts the Gaussian strictly inside the velocity and position block faces. -/
+theorem gaussianBarrier_positive_lateral
+    (hP : P ∈ closure (backwardCylinder
+      ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩
+      (barrierW d lam Lam H T1 * Real.sqrt h)))
+    (hpos : 0 < gaussianBarrier lam Lam H h (barrierL d lam Lam H T1)
+      ell tminus sblock x v P) :
+    P.velocity ∈ PDE.euclideanBall (v (sblock + h))
+        (barrierW d lam Lam H T1 * Real.sqrt h) ∧
+      relativePosition ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩ P ∈
+        PDE.euclideanBall (0 : PDE.Vec d) ((barrierW d lam Lam H T1 * Real.sqrt h) ^ 3) := by
+  have hR : 0 < barrierW d lam Lam H T1 * Real.sqrt h :=
+    mul_pos (lt_of_lt_of_le (by norm_num) (two_le_barrierW hH)) (Real.sqrt_pos.mpr hh)
+  simpa only [add_assoc] using gaussianBarrier_positive_spatial hd hlam hLam hH hT0 hT1 hh hhstar hell
+    tminus sblock hv hkin hLip P le_rfl
+    (by simpa only [add_assoc] using (closure_backwardCylinder_bounds _ hR hP).2.1) hpos
+
 /-- The Gaussian is nonpositive on the entire kinetic boundary of a source block. -/
-theorem gaussianBarrier_nonpos_boundary {d : ℕ} (hd : 1 ≤ d)
-    {lam Lam H T0 T1 kx kv h ell : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (hH : 0 ≤ H) (hT0 : 0 < T0) (hT1 : T0 ≤ T1) (hh : 0 < h)
-    (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv) (hell : 0 ≤ ell)
-    (tminus sblock : ℝ) {x v : ℝ → PDE.Vec d} (hv : Continuous v)
-    (hkin : ∀ t, HasDerivAt x (v t) t)
-    (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|)
-    (P : KineticPoint d)
+theorem gaussianBarrier_nonpos_boundary
     (hP : P ∈ kineticBoundary
       ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩
       (barrierW d lam Lam H T1 * Real.sqrt h)) :
@@ -143,10 +148,11 @@ theorem gaussianBarrier_nonpos_boundary {d : ℕ} (hd : 1 ≤ d)
     rw [propagation_block_radius_sq hh.le] at ht
     change P.time = tminus + sblock + h - barrierW d lam Lam H T1 ^ 2 * h at ht
     have he : 4 * h ≤ barrierW d lam Lam H T1 ^ 2 * h := by
-      have hw : 4 ≤ barrierW d lam Lam H T1 ^ 2 := by nlinarith only [hW]
-      exact mul_le_mul_of_nonneg_right hw hh.le
+      exact mul_le_mul_of_nonneg_right (by nlinarith only [hW]) hh.le
     linarith only [ht, hs, he, hh]
   · exact (ne_of_lt hvball) hvface
   · exact (ne_of_lt hxball) hxface
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

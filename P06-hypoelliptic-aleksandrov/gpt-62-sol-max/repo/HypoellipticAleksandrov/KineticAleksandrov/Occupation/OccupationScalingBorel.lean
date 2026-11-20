@@ -23,15 +23,19 @@ def occupation_borelComap {α β : Type*} [MeasurableSpace α] [MeasurableSpace 
     [MeasurableSpace α] [MeasurableSpace β] (f : α → β) (hf : Measurable f)
     (g : BoundedBorel β) (x : α) : occupation_borelComap f hf g x = g (f x) := rfl
 
+section
+variable {d : ℕ} (Φ : KineticAffineScaling d)
+include Φ
+
 /-- The whole-space scalar position equivalence at the two corresponding times. -/
-def occupation_positionEquiv {d : ℕ} (Φ : KineticAffineScaling d) (t : ℝ) :
+def occupation_positionEquiv (t : ℝ) :
     EvolutionPosition (wholeSpace d) (fun _ => (0 : PDE.Vec d)) t ≃ᵐ
       EvolutionPosition (wholeSpace d) (fun _ => (0 : PDE.Vec d)) (Φ.time t) :=
   (wholeSpacePositionEquiv d t).trans
     (Φ.positionHomeo.toMeasurableEquiv.trans (wholeSpacePositionEquiv d (Φ.time t)).symm)
 
 /-- Conjugation of the original scalar operators by their fixed-time position equivalences. -/
-def occupation_pushParabolicFamily {d : ℕ} (Φ : KineticAffineScaling d)
+def occupation_pushParabolicFamily
     (Q : ParabolicOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d))) :
     ParabolicOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)) :=
   fun σ τ hστ =>
@@ -41,9 +45,14 @@ def occupation_pushParabolicFamily {d : ℕ} (Φ : KineticAffineScaling d)
         (occupation_borelComap (occupation_positionEquiv Φ τ).symm
           (occupation_positionEquiv Φ τ).symm.measurable))
 
+end
+
+section
+variable {d : ℕ} (Φ : KineticAffineScaling d)
+  (Q : ParabolicOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+
 /-- The conjugated scalar family inherits the original endpoint identity. -/
-theorem occupation_pushParabolicFamily_endpoint {d : ℕ} (Φ : KineticAffineScaling d)
-    (Q : ParabolicOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem occupation_pushParabolicFamily_endpoint
     (hQ : ∀ σ, Q σ σ le_rfl = LinearMap.id) (σ : ℝ) :
     occupation_pushParabolicFamily Φ Q σ σ le_rfl = LinearMap.id := by
   ext f y
@@ -53,8 +62,7 @@ theorem occupation_pushParabolicFamily_endpoint {d : ℕ} (Φ : KineticAffineSca
   exact congrArg f ((occupation_positionEquiv Φ σ).symm_apply_apply y)
 
 /-- The conjugated scalar family preserves positive data. -/
-theorem occupation_pushParabolicFamily_positive {d : ℕ} (Φ : KineticAffineScaling d)
-    (Q : ParabolicOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem occupation_pushParabolicFamily_positive
     (hQ : ∀ σ τ hστ f, 0 ≤ f → 0 ≤ Q σ τ hστ f)
     (σ τ : ℝ) (hστ : σ ≤ τ)
     (f : BoundedBorel (EvolutionPosition (wholeSpace d) (fun _ => 0) τ)) (hf : 0 ≤ f) :
@@ -67,14 +75,12 @@ theorem occupation_pushParabolicFamily_positive {d : ℕ} (Φ : KineticAffineSca
   have hf0 : 0 ≤ occupation_borelComap (occupation_positionEquiv Φ τ).symm
       (occupation_positionEquiv Φ τ).symm.measurable f := by
     intro x
-    change 0 ≤ f ((occupation_positionEquiv Φ τ).symm x)
     exact hf ((occupation_positionEquiv Φ τ).symm x)
   exact hQ (Φ.time σ) (Φ.time τ) (Φ.time_le_iff.mpr hστ) _ hf0
     (occupation_positionEquiv Φ σ y)
 
 /-- The conjugated scalar family retains its sub-Markov contraction. -/
-theorem occupation_pushParabolicFamily_contraction {d : ℕ} (Φ : KineticAffineScaling d)
-    (Q : ParabolicOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem occupation_pushParabolicFamily_contraction
     (hQ : ∀ σ τ hστ, Q σ τ hστ 1 ≤ 1) (σ τ : ℝ) (hστ : σ ≤ τ) :
     occupation_pushParabolicFamily Φ Q σ τ hστ 1 ≤ 1 := by
   intro y
@@ -82,8 +88,7 @@ theorem occupation_pushParabolicFamily_contraction {d : ℕ} (Φ : KineticAffine
     (occupation_positionEquiv Φ σ y)
 
 /-- The conjugated scalar family retains composition. -/
-theorem occupation_pushParabolicFamily_composition {d : ℕ} (Φ : KineticAffineScaling d)
-    (Q : ParabolicOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem occupation_pushParabolicFamily_composition
     (hQ : ∀ σ r τ hσr hrτ, Q σ τ (hσr.trans hrτ) =
       (Q σ r hσr).comp (Q r τ hrτ))
     (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ) :
@@ -98,7 +103,7 @@ theorem occupation_pushParabolicFamily_composition {d : ℕ} (Φ : KineticAffine
         (occupation_borelComap (occupation_positionEquiv Φ r)
           (occupation_positionEquiv Φ r).measurable g) = g := by
     ext x
-    exact congrArg g ((occupation_positionEquiv Φ r).apply_symm_apply x)
+    simp
   simp only [occupation_pushParabolicFamily, LinearMap.comp_apply,
     occupation_borelComap_apply]
   rw [show Q (Φ.time σ) (Φ.time τ) (Φ.time_le_iff.mpr (hσr.trans hrτ)) =
@@ -106,5 +111,7 @@ theorem occupation_pushParabolicFamily_composition {d : ℕ} (Φ : KineticAffine
         (Q (Φ.time r) (Φ.time τ) (Φ.time_le_iff.mpr hrτ)) from hQ _ _ _ _ _]
   simp only [LinearMap.comp_apply]
   rw [hcancel]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

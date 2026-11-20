@@ -24,12 +24,14 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped ENNReal MatrixOrder
 
-private def weightedDensity {d : ℕ} (A : CoefficientField d)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d) : ℝ :=
+section
+variable {d : ℕ} (A : CoefficientField d) (f : TimeVelocity d → ℝ)
+include A f
+
+private def weightedDensity (z : TimeVelocity d) : ℝ :=
   (max (f z) 0) ^ (d + 1) / (coefficientAt A z).det
 
-private theorem continuousOn_weightedDensity {d : ℕ} (A : CoefficientField d)
-    (f : TimeVelocity d → ℝ) (hAcont : IsContinuousCoefficient A)
+private theorem continuousOn_weightedDensity (hAcont : IsContinuousCoefficient A)
     (hfcont : Continuous f) {T : ℝ} {y₀ : PDE.Vec d}
     (hA : ∀ z ∈ closedParabolicCylinder T y₀, (coefficientAt A z).PosDef) :
     ContinuousOn (weightedDensity A f) (closedParabolicCylinder T y₀) := by
@@ -39,29 +41,30 @@ private theorem continuousOn_weightedDensity {d : ℕ} (A : CoefficientField d)
   intro z hz
   exact (hA z hz).det_pos.ne'
 
-private theorem weightedDensity_nonneg {d : ℕ} (A : CoefficientField d)
-    (f : TimeVelocity d → ℝ) {T : ℝ} {y₀ : PDE.Vec d}
+private theorem weightedDensity_nonneg {T : ℝ} {y₀ : PDE.Vec d}
     (hA : ∀ z ∈ closedParabolicCylinder T y₀, (coefficientAt A z).PosDef)
     {z : TimeVelocity d} (hz : z ∈ closedParabolicCylinder T y₀) :
-    0 ≤ weightedDensity A f z := by
-  unfold weightedDensity
-  exact div_nonneg (pow_nonneg (le_max_right _ _) _) (hA z hz).det_pos.le
+    0 ≤ weightedDensity A f z := div_nonneg (pow_nonneg (le_max_right _ _) _) (hA z hz).det_pos.le
 
-private theorem integrableOn_weightedDensity {d : ℕ} (A : CoefficientField d)
-    (f : TimeVelocity d → ℝ) (hAcont : IsContinuousCoefficient A)
-    (hfcont : Continuous f) {T : ℝ} {y₀ : PDE.Vec d}
-    (hA : ∀ z ∈ closedParabolicCylinder T y₀, (coefficientAt A z).PosDef) :
+end
+
+section
+variable {d : ℕ} (A : CoefficientField d) (f : TimeVelocity d → ℝ)
+  (hAcont : IsContinuousCoefficient A) (hfcont : Continuous f) {T : ℝ} {y₀ : PDE.Vec d}
+  (hA : ∀ z ∈ closedParabolicCylinder T y₀, (coefficientAt A z).PosDef)
+include hAcont hfcont hA
+
+private theorem integrableOn_weightedDensity :
     IntegrableOn (weightedDensity A f) (closedParabolicCylinder T y₀) volume :=
   (continuousOn_weightedDensity A f hAcont hfcont hA).integrableOn_compact
     (isCompact_closedParabolicCylinder T y₀)
 
-private theorem integrableOn_weightedDensity_interior {d : ℕ} (A : CoefficientField d)
-    (f : TimeVelocity d → ℝ) (hAcont : IsContinuousCoefficient A)
-    (hfcont : Continuous f) {T : ℝ} {y₀ : PDE.Vec d}
-    (hA : ∀ z ∈ closedParabolicCylinder T y₀, (coefficientAt A z).PosDef) :
+private theorem integrableOn_weightedDensity_interior :
     IntegrableOn (weightedDensity A f) (parabolicInterior T y₀) volume :=
   (integrableOn_weightedDensity A f hAcont hfcont hA).mono_set
     (parabolicInterior_subset_closedParabolicCylinder T y₀)
+
+end
 
 /-- The exact real power-form smooth parabolic ABP estimate on the unit
 velocity ball. -/
@@ -241,18 +244,8 @@ private theorem abp_root_constant_mul_rpow_pow {n : ℕ} (hn : n ≠ 0)
     Real.rpow_inv_natCast_pow homega.le hn
   have hB_root : (B ^ ((n : ℝ)⁻¹)) ^ n = B :=
     Real.rpow_inv_natCast_pow hB hn
-  calc
-    omega * ((a / omega ^ ((n : ℝ)⁻¹)) * B ^ ((n : ℝ)⁻¹)) ^ n =
-        omega * ((a / omega ^ ((n : ℝ)⁻¹)) ^ n *
-          (B ^ ((n : ℝ)⁻¹)) ^ n) := by
-      rw [mul_pow]
-    _ = omega * ((a ^ n / (omega ^ ((n : ℝ)⁻¹)) ^ n) *
-          (B ^ ((n : ℝ)⁻¹)) ^ n) := by
-      rw [div_pow]
-    _ = omega * ((a ^ n / omega) * B) := by
-      rw [homega_root, hB_root]
-    _ = a ^ n * B := by
-      field_simp [homega.ne']
+  rw [mul_pow, div_pow, homega_root, hB_root]
+  field_simp [homega.ne']
 
 /-- The determinant-weighted smooth parabolic ABP estimate in root form. -/
 theorem parabolic_abp_unit (d : ℕ) (hd : 0 < d) :
@@ -271,94 +264,48 @@ theorem parabolic_abp_unit (d : ℕ) (hd : 0 < d) :
               (max (f z) 0) ^ (d + 1) /
                 (coefficientAt A z).det ∂volume) ^
               (1 / ((d : ℝ) + 1) : ℝ) := by
-  let omega : ℝ :=
-    (volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal
-  have homega : 0 < omega := by
-    dsimp [omega]
-    exact PDE.volume_euclideanBall_toReal_pos (0 : PDE.Vec d) (by norm_num)
-  have hdimension : 0 < (d : ℝ) + 1 := by positivity
-  have hrecip :
-      1 / ((d : ℝ) + 1) = ((d + 1 : ℕ) : ℝ)⁻¹ := by
-    norm_num [Nat.cast_add, one_div]
-  refine ⟨(4 / ((d : ℝ) + 1)) /
-      omega ^ (1 / ((d : ℝ) + 1) : ℝ), ?_, ?_⟩
-  · exact div_pos (div_pos (by norm_num) hdimension)
-      (Real.rpow_pos_of_pos homega _)
-  · intro T hT hT_le_one y₀ A f u hAcont hfcont hu hA hsub hboundary zStar hzStar
-    let B : ℝ := ∫ z in parabolicInterior T y₀,
-      (max (f z) 0) ^ (d + 1) / (coefficientAt A z).det ∂volume
-    have hB : 0 ≤ B := by
-      dsimp [B]
-      apply integral_nonneg_of_ae
-      filter_upwards [ae_restrict_mem (measurableSet_parabolicInterior T y₀)] with z hz
-      exact div_nonneg (pow_nonneg (le_max_right _ _) _)
-        (hA z (parabolicInterior_subset_closedParabolicCylinder T y₀ hz)).det_pos.le
-    have hpower :
-        omega * (max (u zStar) 0) ^ (d + 1) ≤
-          (4 / ((d : ℝ) + 1)) ^ (d + 1) * B := by
-      simpa only [omega, B] using
-        parabolic_abp_unit_pow hd hT hT_le_one y₀ A f u hAcont hfcont hu hA hsub
-          hboundary hzStar
-    have hroot_power :
-        (max (u zStar) 0) ^ (d + 1) ≤
-          (((4 / ((d : ℝ) + 1)) /
-              omega ^ (1 / ((d : ℝ) + 1) : ℝ)) *
-            B ^ (1 / ((d : ℝ) + 1) : ℝ)) ^ (d + 1) := by
-      apply le_of_mul_le_mul_left ?_ homega
-      calc
-        omega * (max (u zStar) 0) ^ (d + 1) ≤
-            (4 / ((d : ℝ) + 1)) ^ (d + 1) * B := hpower
-        _ = omega *
-            (((4 / ((d : ℝ) + 1)) /
-                omega ^ (1 / ((d : ℝ) + 1) : ℝ)) *
-              B ^ (1 / ((d : ℝ) + 1) : ℝ)) ^ (d + 1) := by
-          rw [hrecip]
-          symm
-          exact abp_root_constant_mul_rpow_pow (Nat.succ_ne_zero d) homega hB
-    have hroot_nonneg :
-        0 ≤ ((4 / ((d : ℝ) + 1)) /
-              omega ^ (1 / ((d : ℝ) + 1) : ℝ)) *
-            B ^ (1 / ((d : ℝ) + 1) : ℝ) :=
-      mul_nonneg
-        (le_of_lt (div_pos (div_pos (by norm_num) hdimension)
-          (Real.rpow_pos_of_pos homega _)))
-        (Real.rpow_nonneg hB _)
-    have hroot :
-        max (u zStar) 0 ≤
-          ((4 / ((d : ℝ) + 1)) /
-              omega ^ (1 / ((d : ℝ) + 1) : ℝ)) *
-            B ^ (1 / ((d : ℝ) + 1) : ℝ) :=
-      le_of_pow_le_pow_left₀ (Nat.succ_ne_zero d) hroot_nonneg hroot_power
-    calc
-      u zStar ≤ max (u zStar) 0 := le_max_left _ _
-      _ ≤ ((4 / ((d : ℝ) + 1)) /
-              omega ^ (1 / ((d : ℝ) + 1) : ℝ)) *
-            B ^ (1 / ((d : ℝ) + 1) : ℝ) := hroot
-      _ = ((4 / ((d : ℝ) + 1)) /
-              omega ^ (1 / ((d : ℝ) + 1) : ℝ)) *
-            (∫ z in parabolicInterior T y₀,
-              (max (f z) 0) ^ (d + 1) /
-                (coefficientAt A z).det ∂volume) ^
-              (1 / ((d : ℝ) + 1) : ℝ) := by
-        rfl
+  let omega := (volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal
+  have homega : 0 < omega := PDE.volume_euclideanBall_toReal_pos _ (by norm_num)
+  let a := 4 / ((d : ℝ) + 1)
+  let e := 1 / ((d : ℝ) + 1)
+  let C := a / omega ^ e
+  have hC : 0 < C := by dsimp [C, a]; positivity
+  refine ⟨C, hC, ?_⟩
+  intro T hT hT_le_one y₀ A f u hAcont hfcont hu hA hsub hboundary zStar hzStar
+  let B := ∫ z in parabolicInterior T y₀, weightedDensity A f z ∂volume
+  have hB : 0 ≤ B := by
+    apply integral_nonneg_of_ae
+    filter_upwards [ae_restrict_mem (measurableSet_parabolicInterior T y₀)] with z hz
+    exact weightedDensity_nonneg A f hA (parabolicInterior_subset_closedParabolicCylinder T y₀ hz)
+  have hp := parabolic_abp_unit_pow hd hT hT_le_one y₀ A f u hAcont hfcont hu hA hsub hboundary hzStar
+  have heq : omega * (C * B ^ e) ^ (d + 1) = a ^ (d + 1) * B := by
+    simpa only [C, e, Nat.cast_succ, one_div] using
+      abp_root_constant_mul_rpow_pow (a := a) (Nat.succ_ne_zero d) homega hB
+  have hp' : (max (u zStar) 0) ^ (d + 1) ≤ (C * B ^ e) ^ (d + 1) := by
+    apply le_of_mul_le_mul_left ?_ homega
+    rw [heq]
+    exact hp
+  exact (le_max_left (u zStar) 0).trans
+    (le_of_pow_le_pow_left₀ (Nat.succ_ne_zero d) (mul_nonneg hC.le (Real.rpow_nonneg hB e)) hp')
 
-private theorem lower_loewner_posDef_on {d : ℕ} {lam : ℝ} {T : ℝ}
-    {y₀ : PDE.Vec d} {A : CoefficientField d} (hlam : 0 < lam)
-    (hlo : ∀ z ∈ closedParabolicCylinder T y₀,
-      lam • (1 : PDE.Mat d) ≤ coefficientAt A z) :
+section
+variable {d : ℕ} {lam : ℝ} {T : ℝ} {y₀ : PDE.Vec d} {A : CoefficientField d} (hlam : 0 < lam)
+  (hlo : ∀ z ∈ closedParabolicCylinder T y₀, lam • (1 : PDE.Mat d) ≤ coefficientAt A z)
+include lam hlam hlo
+
+private theorem lower_loewner_posDef_on :
     ∀ z ∈ closedParabolicCylinder T y₀, (coefficientAt A z).PosDef := by
   intro z hz
   exact posDef_of_loewner_lower hlam (hlo z hz)
 
-private theorem lower_loewner_det_on {d : ℕ} {lam : ℝ} {T : ℝ}
-    {y₀ : PDE.Vec d} {A : CoefficientField d} (hlam : 0 < lam)
-    (hlo : ∀ z ∈ closedParabolicCylinder T y₀,
-      lam • (1 : PDE.Mat d) ≤ coefficientAt A z) :
+private theorem lower_loewner_det_on :
     ∀ z ∈ closedParabolicCylinder T y₀, lam ^ d ≤ (coefficientAt A z).det := by
   intro z hz
   exact det_lower_of_loewner hlam (hlo z hz)
 
-private theorem parabolicExponent_eq_ofReal (d : ℕ) :
+end
+
+theorem parabolicExponent_eq_ofReal (d : ℕ) :
     parabolicExponent d = ENNReal.ofReal ((d : ℝ) + 1) := by
   rw [show ((d : ℝ) + 1) = ((d + 1 : ℕ) : ℝ) by norm_num]
   simpa only [parabolicExponent, Nat.cast_add, Nat.cast_one] using
@@ -368,8 +315,13 @@ private theorem norm_positive_part (x : ℝ) : ‖max x 0‖ = max x 0 := by
   rw [Real.norm_eq_abs, abs_of_nonneg]
   exact le_max_of_le_right le_rfl
 
-private theorem source_memLp_on_parabolicInterior {d : ℕ} {T : ℝ}
-    {y₀ : PDE.Vec d} {f : TimeVelocity d → ℝ} (hf : Continuous f) :
+section
+variable {d : ℕ}
+
+section
+variable {T : ℝ} {y₀ : PDE.Vec d} {f : TimeVelocity d → ℝ}
+
+private theorem source_memLp_on_parabolicInterior (hf : Continuous f) :
     MemLp (fun z => max (f z) 0) (parabolicExponent d)
       (volume.restrict (parabolicInterior T y₀)) := by
   have hmeasure : volume (parabolicInterior T y₀ : Set (TimeVelocity d)) < ∞ :=
@@ -386,8 +338,7 @@ private theorem source_memLp_on_parabolicInterior {d : ℕ} {T : ℝ}
   exact Eventually.of_forall fun z hz =>
     hC z (parabolicInterior_subset_closedParabolicCylinder T y₀ hz)
 
-private theorem parabolicLpNormOn_eq_integral_pow {d : ℕ} {T : ℝ}
-    {y₀ : PDE.Vec d} {f : TimeVelocity d → ℝ}
+private theorem parabolicLpNormOn_eq_integral_pow
     (hf : MemLp (fun z => max (f z) 0) (parabolicExponent d)
       (volume.restrict (parabolicInterior T y₀))) :
     parabolicLpNormOn d (fun z => max (f z) 0) (parabolicInterior T y₀) =
@@ -418,7 +369,9 @@ private theorem parabolicLpNormOn_eq_integral_pow {d : ℕ} {T : ℝ}
         show ((d : ℝ) + 1) = ((d + 1 : ℕ) : ℝ) by norm_num,
         Real.rpow_natCast]
 
-private theorem source_integrableOn {d : ℕ} {lam : ℝ} {T : ℝ}
+end
+
+private theorem source_integrableOn {lam : ℝ} {T : ℝ}
     {y₀ : PDE.Vec d} {f : TimeVelocity d → ℝ} (hlam : 0 < lam)
     (hf : Continuous f) :
     IntegrableOn (fun z => (max (f z) 0) ^ (d + 1) / lam ^ d)
@@ -430,7 +383,7 @@ private theorem source_integrableOn {d : ℕ} {lam : ℝ} {T : ℝ}
     (isCompact_closedParabolicCylinder T y₀)).mono_set
       (parabolicInterior_subset_closedParabolicCylinder T y₀)
 
-private theorem weighted_integrableOn {d : ℕ} {T : ℝ}
+private theorem weighted_integrableOn {T : ℝ}
     {y₀ : PDE.Vec d} {A : CoefficientField d} {f : TimeVelocity d → ℝ}
     (hAcont : IsContinuousCoefficient A) (hf : Continuous f)
     (hA : ∀ z ∈ closedParabolicCylinder T y₀, (coefficientAt A z).PosDef) :
@@ -447,7 +400,7 @@ private theorem weighted_integrableOn {d : ℕ} {T : ℝ}
   exact (hcont.integrableOn_compact (isCompact_closedParabolicCylinder T y₀)).mono_set
     (parabolicInterior_subset_closedParabolicCylinder T y₀)
 
-private theorem weighted_integral_le_of_lower {d : ℕ} {lam : ℝ} {T : ℝ}
+private theorem weighted_integral_le_of_lower {lam : ℝ} {T : ℝ}
     {y₀ : PDE.Vec d} {A : CoefficientField d} {f : TimeVelocity d → ℝ}
     (hlam : 0 < lam)
     (hlo : ∀ z ∈ closedParabolicCylinder T y₀,
@@ -468,7 +421,7 @@ private theorem weighted_integral_le_of_lower {d : ℕ} {lam : ℝ} {T : ℝ}
   exact lower_loewner_det_on hlam hlo z
     (parabolicInterior_subset_closedParabolicCylinder T y₀ hz)
 
-private theorem scalar_root_bound {d : ℕ} {lam C W I : ℝ}
+private theorem scalar_root_bound {lam C W I : ℝ}
     (hC : 0 ≤ C) (hlam : 0 < lam) (hW : 0 ≤ W)
     (hWI : W ≤ I / lam ^ d) (hI : 0 ≤ I) :
     C * W ^ (1 / ((d : ℝ) + 1) : ℝ) ≤
@@ -488,6 +441,8 @@ private theorem scalar_root_bound {d : ℕ} {lam C W I : ℝ}
       rw [Real.div_rpow hI hlamPow]
     _ = (C / (lam ^ d) ^ (1 / ((d : ℝ) + 1) : ℝ)) *
         I ^ (1 / ((d : ℝ) + 1) : ℝ) := by ring
+
+end
 
 /-- The smooth parabolic ABP estimate under lower Loewner ellipticity, with
 the exact restricted `L^(d + 1)` norm. -/

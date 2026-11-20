@@ -19,8 +19,11 @@ def Clock.normalizedCoefficient (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point
 def Clock.normalizedDrift (c : Clock) : PDE.Vec 1 → PDE.Vec 1 :=
   fun y _ => c.drift (y 0)
 
+section
+variable (c : Clock) (a : ℝ → ℝ → ℝ)
+
 /-- Exact field-order identification with the Section Two operator. -/
-theorem Clock.normalizedOperator_eq_transport (c : Clock) (a : ℝ → ℝ → ℝ)
+theorem Clock.normalizedOperator_eq_transport
     (e q : Point) (h : Point → ℝ) :
     c.normalizedOperator a e h q =
       transportedForwardOperator (c.normalizedCoefficient a e) c.normalizedDrift
@@ -31,7 +34,7 @@ theorem Clock.normalizedOperator_eq_transport (c : Clock) (a : ℝ → ℝ → �
   rfl
 
 /-- The source conjugacy for every function smooth on the normalized open velocity strip. -/
-theorem Clock.conjugacy (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point) (h : Point → ℝ)
+theorem Clock.conjugacy (e : Point) (h : Point → ℝ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (h ∘ scalarPoint)
       {q : Fin 3 → ℝ | q 2 ∈ normalizedActive})
     (p : Point) (hp : p.velocity 0 ∈ c.active) :
@@ -48,5 +51,7 @@ theorem Clock.conjugacy (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point) (h : P
     ((hh _ hmem).contDiffAt (hopen.mem_nhds hmem)).of_le (by norm_num)
   rw [← c.normalizedOperator_eq_transport a e (c.map e p) h]
   exact c.conjugacy_at a e p h hp hlocal
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

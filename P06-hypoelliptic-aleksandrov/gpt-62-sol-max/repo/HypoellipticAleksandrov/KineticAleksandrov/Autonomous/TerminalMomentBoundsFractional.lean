@@ -56,53 +56,52 @@ theorem integral_abs_rpow_le_second {Ω : Type*} [MeasurableSpace Ω]
   simpa only [he] using integral_subunit_rpow_le mu (fun x => (f x)^2)
     (hf.pow_const 2) (fun _ => sq_nonneg _) hfi hp0 hp1
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) {a : ℝ} (ha0 : 0 ≤ a)
+  (ha2 : a ≤ 2)
+include lam Lam A z T a ha0 ha2
+
 /-- Actual canonical velocity fractional moments, with no moment hypothesis. -/
-theorem terminal_velocity_fractional_moment
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal)
-    {a : ℝ} (ha0 : 0 ≤ a) (ha2 : a ≤ 2) :
-    let E := fullSpaceEvolution hH hLE hlam hLam A
+theorem terminal_velocity_fractional_moment :
+    let E := fullSpaceEvolution A
     Integrable (fun w : Z => |w.2-z.2|^a) (kernelXV E T z) ∧
       (∫ w, |w.2-z.2|^a ∂kernelXV E T z) ≤ (2*Lam*(T : ℝ))^(a/2) := by
-  let E := fullSpaceEvolution hH hLE hlam hLam A
+  let E := fullSpaceEvolution A
   let : IsProbabilityMeasure (kernelXV E T z) :=
-    ⟨kernelXV_mass_one hlam A E (fullSpaceEvolution_spec hH hLE hlam hLam A) T z⟩
-  have hi := (terminal_second_moments_integrable hH hLE hlam hLam A z T).1
+    ⟨kernelXV_mass_one A E (fullSpaceEvolution_spec A) T z⟩
+  have hi := (terminal_second_moments_integrable A z T).1
   obtain ⟨hfi, hle⟩ := integral_abs_rpow_le_second (kernelXV E T z)
     (fun w : Z => w.2-z.2) (by fun_prop) hi ha0 ha2
   refine ⟨hfi, hle.trans ?_⟩
   apply Real.rpow_le_rpow (integral_nonneg (fun _ => sq_nonneg _)) ?_ (by linarith)
-  have h := (terminal_second_moments hH hLE hlam hLam A z T).1
+  have h := (terminal_second_moments A z T).1
   rw [← ofReal_integral_eq_lintegral_ofReal hi
     (Eventually.of_forall (fun w : Z => sq_nonneg (w.2-z.2)))] at h
-  have hL : 0 ≤ Lam := hlam.le.trans hLam
+  have hL : 0 ≤ Lam := A.positive.le.trans A.ordered
   have hT := T.property
   exact (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp h
 
 /-- Actual canonical position fractional moments, with no moment hypothesis. -/
-theorem terminal_position_fractional_moment
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal)
-    {a : ℝ} (ha0 : 0 ≤ a) (ha2 : a ≤ 2) :
-    let E := fullSpaceEvolution hH hLE hlam hLam A
+theorem terminal_position_fractional_moment :
+    let E := fullSpaceEvolution A
     Integrable (fun w : Z => |w.1-z.1|^a) (kernelXV E T z) ∧
       (∫ w, |w.1-z.1|^a ∂kernelXV E T z) ≤
         (2*z.2^2*(T : ℝ)^2+4/3*Lam*(T : ℝ)^3)^(a/2) := by
-  let E := fullSpaceEvolution hH hLE hlam hLam A
+  let E := fullSpaceEvolution A
   let : IsProbabilityMeasure (kernelXV E T z) :=
-    ⟨kernelXV_mass_one hlam A E (fullSpaceEvolution_spec hH hLE hlam hLam A) T z⟩
-  have hi := (terminal_second_moments_integrable hH hLE hlam hLam A z T).2
+    ⟨kernelXV_mass_one A E (fullSpaceEvolution_spec A) T z⟩
+  have hi := (terminal_second_moments_integrable A z T).2
   obtain ⟨hfi, hle⟩ := integral_abs_rpow_le_second (kernelXV E T z)
     (fun w : Z => w.1-z.1) (by fun_prop) hi ha0 ha2
   refine ⟨hfi, hle.trans ?_⟩
   apply Real.rpow_le_rpow (integral_nonneg (fun _ => sq_nonneg _)) ?_ (by linarith)
-  have h := (terminal_second_moments hH hLE hlam hLam A z T).2
+  have h := (terminal_second_moments A z T).2
   rw [← ofReal_integral_eq_lintegral_ofReal hi
     (Eventually.of_forall (fun w : Z => sq_nonneg (w.1-z.1)))] at h
-  have hL : 0 ≤ Lam := hlam.le.trans hLam
+  have hL : 0 ≤ Lam := A.positive.le.trans A.ordered
   have hT := T.property
   exact (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp h
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

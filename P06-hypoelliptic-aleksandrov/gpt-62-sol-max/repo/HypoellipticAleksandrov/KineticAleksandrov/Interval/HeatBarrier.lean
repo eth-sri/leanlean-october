@@ -53,14 +53,18 @@ theorem strictMono_intervalErf : StrictMono intervalErf := by
   apply strictMono_of_deriv_pos
   intro x
   rw [(hasDerivAt_intervalErf x).deriv]
-  exact mul_pos (div_pos (by norm_num) (Real.sqrt_pos.2 Real.pi_pos)) (Real.exp_pos _)
+  positivity
+
+section
+variable {x : ℝ} (hx : 0 ≤ x)
+include hx
 
 /-- Nonnegativity of the error function on the nonnegative half-line. -/
-theorem intervalErf_nonneg {x : ℝ} (hx : 0 ≤ x) : 0 ≤ intervalErf x := by
+theorem intervalErf_nonneg : 0 ≤ intervalErf x := by
   simpa only [intervalErf_zero] using strictMono_intervalErf.monotone hx
 
 /-- Every finite nonnegative argument leaves a strictly positive Gaussian tail. -/
-theorem intervalErf_lt_one {x : ℝ} (hx : 0 ≤ x) : intervalErf x < 1 := by
+theorem intervalErf_lt_one : intervalErf x < 1 := by
   have hi : Integrable (fun t : ℝ => Real.exp (-t ^ 2)) := by
     simpa only [neg_mul, one_mul] using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)
   have : NeZero (volume.restrict (Ioi x) : Measure ℝ) := ⟨by
@@ -82,6 +86,8 @@ theorem intervalErf_lt_one {x : ℝ} (hx : 0 ≤ x) : intervalErf x < 1 := by
   have hnorm : (2 / Real.sqrt Real.pi) * (Real.sqrt Real.pi / 2) = 1 := by
     field_simp
   simpa only [intervalErf, hnorm] using hbound
+
+end
 
 /-- Gaussian normalization gives the error-function limit at positive infinity. -/
 theorem tendsto_intervalErf_atTop :
@@ -117,9 +123,12 @@ theorem deriv_intervalHeat_space (lam θ : ℝ) :
   funext x
   exact (hasDerivAt_intervalHeat_space lam θ x).deriv
 
+section
+variable {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ) (x : ℝ)
+include hlam hθ
+
 /-- Second spatial derivative of the barrier. -/
-theorem deriv2_intervalHeat_space {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
-    (x : ℝ) :
+theorem deriv2_intervalHeat_space :
     deriv (deriv (intervalHeat lam θ)) x =
       -(2 * x * (2 / Real.sqrt Real.pi) *
         Real.exp (-(x / (2 * Real.sqrt (lam * θ))) ^ 2)) /
@@ -134,8 +143,7 @@ theorem deriv2_intervalHeat_space {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
   ring
 
 /-- Time derivative of the barrier. -/
-theorem hasDerivAt_intervalHeat_time {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
-    (x : ℝ) :
+theorem hasDerivAt_intervalHeat_time :
     HasDerivAt (fun t => intervalHeat lam t x)
       (-(2 * x * lam * (2 / Real.sqrt Real.pi) *
         Real.exp (-(x / (2 * Real.sqrt (lam * θ))) ^ 2)) /
@@ -152,13 +160,14 @@ theorem hasDerivAt_intervalHeat_time {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < 
     ring
 
 /-- The barrier solves the half-line heat equation with diffusivity `lam`. -/
-theorem intervalHeat_heatEquation {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
-    (x : ℝ) :
+theorem intervalHeat_heatEquation :
     deriv (fun t => intervalHeat lam t x) θ =
       lam * deriv (deriv (intervalHeat lam θ)) x := by
   rw [(hasDerivAt_intervalHeat_time hlam hθ x).deriv,
     deriv2_intervalHeat_space hlam hθ]
   ring
+
+end
 
 /-- Concavity on the nonnegative half-line. -/
 theorem intervalHeat_secondDerivative_nonpos {lam θ x : ℝ}

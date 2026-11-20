@@ -28,8 +28,10 @@ private theorem parabolicExponent_one_le (d : Nat) :
     (1 : ENNReal) <= parabolicExponent d := by
   simp [parabolicExponent]
 
-private theorem support_parabolicConvolution_subset_common
-    {d : Nat} (g : TimeVelocity d -> Real) (n : Nat) :
+section
+variable {d : Nat} (g : TimeVelocity d -> Real)
+
+private theorem support_parabolicConvolution_subset_common (n : Nat) :
     Function.support (parabolicConvolution g (parabolicMollifier d n)) ⊆
       tsupport g + Metric.closedBall (0 : TimeVelocity d) 1 := by
   rw [show parabolicConvolution g (parabolicMollifier d n) =
@@ -37,11 +39,9 @@ private theorem support_parabolicConvolution_subset_common
   refine (support_convolution_subset (ContinuousLinearMap.mul Real Real)).trans ?_
   apply add_subset_add (subset_tsupport g)
   rw [support_parabolicMollifier]
-  exact Metric.ball_subset_closedBall.trans
-    (Metric.closedBall_subset_closedBall (by simpa using parabolicMollifierScale_le_one n))
+  exact LE.le.trans Metric.ball_subset_closedBall (Metric.closedBall_subset_closedBall (parabolicMollifierScale_le_one n))
 
-private theorem support_parabolicConvolution_sub_subset_common
-    {d : Nat} (g : TimeVelocity d -> Real) (m n : Nat) :
+private theorem support_parabolicConvolution_sub_subset_common (m n : Nat) :
     Function.support (fun z =>
       parabolicConvolution g (parabolicMollifier d m) z -
         parabolicConvolution g (parabolicMollifier d n) z) ⊆
@@ -50,8 +50,12 @@ private theorem support_parabolicConvolution_sub_subset_common
     (union_subset (support_parabolicConvolution_subset_common g m)
       (support_parabolicConvolution_subset_common g n))
 
-private theorem exists_point_not_mem_of_isCompact
-    {d : Nat} {S : Set (TimeVelocity d)} (hS : IsCompact S) :
+end
+
+section
+variable {d : Nat}
+
+private theorem exists_point_not_mem_of_isCompact {S : Set (TimeVelocity d)} (hS : IsCompact S) :
     ∃ z : TimeVelocity d, z ∉ S := by
   obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall 0).mp hS.isBounded
   refine ⟨(R + 1, 0), ?_⟩
@@ -69,8 +73,7 @@ private theorem exists_point_not_mem_of_isCompact
   rw [abs_of_nonneg (by linarith : 0 <= R + 1)] at htime'
   linarith
 
-private theorem convolution_sub_eq_zero_of_not_mem_common
-    {d : Nat} (g : TimeVelocity d -> Real)
+private theorem convolution_sub_eq_zero_of_not_mem_common (g : TimeVelocity d -> Real)
     {z : TimeVelocity d}
     (hz : z ∉ tsupport g + Metric.closedBall (0 : TimeVelocity d) 1) (m n : Nat) :
     parabolicConvolution g (parabolicMollifier d m) z -
@@ -79,15 +82,13 @@ private theorem convolution_sub_eq_zero_of_not_mem_common
   intro hsupport
   exact hz (support_parabolicConvolution_sub_subset_common g m n hsupport)
 
-private theorem open_mem_parabolicClosedBox_of_mem_parabolicBox
-    {d : Nat} {r t0 : Real} {v0 : PDE.Vec d} {z : TimeVelocity d}
+private theorem open_mem_parabolicClosedBox_of_mem_parabolicBox {r t0 : Real} {v0 : PDE.Vec d} {z : TimeVelocity d}
     (hz : z ∈ parabolicBox 1 r t0 v0) :
     z ∈ parabolicClosedBox 1 r t0 v0 := by
   rcases mem_parabolicBox_iff.mp hz with ⟨hleft, hright, hvelocity⟩
   exact mem_parabolicClosedBox_iff.mpr ⟨hleft.le, hright.le, fun i => (hvelocity i).le⟩
 
-private theorem exists_forward_box_of_isCompact
-    {d : Nat} {L : Set (TimeVelocity d)} (hL : IsCompact L) (hLnonempty : L.Nonempty) :
+private theorem exists_forward_box_of_isCompact {L : Set (TimeVelocity d)} (hL : IsCompact L) (hLnonempty : L.Nonempty) :
     ∃ (r t0 : Real) (v0 : PDE.Vec d), 0 < r ∧
       L ⊆ parabolicBox 1 r t0 v0 := by
   obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall 0).mp hL.isBounded
@@ -126,39 +127,16 @@ private theorem exists_forward_box_of_isCompact
     have hi : |z.2 i| <= R := hvelocity i
     simpa only [Pi.zero_apply, sub_zero] using hi.trans_lt (by linarith)
 
-private theorem parabolicSmoothJetLpNorm_eq_components
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
-    parabolicSmoothJetLpNorm d u =
-      parabolicLpNorm d u + parabolicLpNorm d (timeDerivative u) +
-        ∑ i : Fin d, parabolicLpNorm d (fun z => velocityGradient u z i) +
-          ∑ i : Fin d, ∑ j : Fin d,
-            parabolicLpNorm d
-              (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian u z i j) := by
-  unfold parabolicSmoothJetLpNorm parabolicSmoothJetELpNorm parabolicLpNorm parabolicELpNorm
-  rw [ENNReal.toReal_add (ENNReal.add_ne_top.mpr
-    ⟨ENNReal.add_ne_top.mpr ⟨hu.1.eLpNorm_ne_top, hu.2.1.eLpNorm_ne_top⟩,
-      ENNReal.sum_ne_top.mpr fun i _ => (hu.2.2.1 i).eLpNorm_ne_top⟩)
-    (ENNReal.sum_ne_top.mpr fun i _ => ENNReal.sum_ne_top.mpr fun j _ =>
-      (hu.2.2.2 i j).eLpNorm_ne_top)]
-  rw [ENNReal.toReal_add (ENNReal.add_ne_top.mpr
-    ⟨hu.1.eLpNorm_ne_top, hu.2.1.eLpNorm_ne_top⟩)
-    (ENNReal.sum_ne_top.mpr fun i _ => (hu.2.2.1 i).eLpNorm_ne_top)]
-  rw [ENNReal.toReal_add hu.1.eLpNorm_ne_top hu.2.1.eLpNorm_ne_top]
-  rw [ENNReal.toReal_sum fun i _ => (hu.2.2.1 i).eLpNorm_ne_top]
-  rw [ENNReal.toReal_sum fun i _ => ENNReal.sum_ne_top.mpr fun j _ =>
-    (hu.2.2.2 i j).eLpNorm_ne_top]
-  simp_rw [ENNReal.toReal_sum fun j _ => (hu.2.2.2 _ j).eLpNorm_ne_top]
+/-- The radius-weighted local jet norm appearing in the parabolic Morrey bound. -/
+private def scaledJetNorm (r : ℝ) (u : TimeVelocity d → ℝ) (Q : Set (TimeVelocity d)) : ℝ :=
+  (r ^ 2)⁻¹ * parabolicLpNormOn d u Q + parabolicLpNormOn d (timeDerivative u) Q +
+    r⁻¹ * ∑ i : Fin d, parabolicLpNormOn d (fun z => velocityGradient u z i) Q +
+    ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
+      (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian u z i j) Q
 
-private theorem parabolicMorreyPhysical_rhs_le_smoothJet
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u)
-    (Q : Set (TimeVelocity d)) {r : Real} (hr : 0 < r) :
-    (r ^ 2)⁻¹ * parabolicLpNormOn d u Q +
-        parabolicLpNormOn d (timeDerivative u) Q +
-        r⁻¹ * ∑ i : Fin d, parabolicLpNormOn d
-          (fun z => velocityGradient u z i) Q +
-        ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
-          (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian u z i j) Q <=
-      ((r ^ 2)⁻¹ + 1 + r⁻¹ + 1) * parabolicSmoothJetLpNorm d u := by
+private theorem parabolicMorreyPhysical_rhs_le_smoothJet {u : TimeVelocity d → ℝ}
+    (hu : ParabolicSmoothJetMemLp d u) (Q : Set (TimeVelocity d)) {r : ℝ} (hr : 0 < r) :
+    scaledJetNorm r u Q ≤ ((r ^ 2)⁻¹ + 1 + r⁻¹ + 1) * parabolicSmoothJetLpNorm d u := by
   have hvalue := parabolicLpNormOn_le_parabolicLpNorm u Q hu.1
   have htime := parabolicLpNormOn_le_parabolicLpNorm (timeDerivative u) Q hu.2.1
   have hgrad (i : Fin d) := parabolicLpNormOn_le_parabolicLpNorm
@@ -203,25 +181,20 @@ private theorem parabolicMorreyPhysical_rhs_le_smoothJet
   have hrInv : 0 <= r⁻¹ := inv_nonneg.mpr hr.le
   have hrSqInv : 0 <= (r ^ 2)⁻¹ := inv_nonneg.mpr (sq_nonneg r)
   calc
-    (r ^ 2)⁻¹ * parabolicLpNormOn d u Q +
-        parabolicLpNormOn d (timeDerivative u) Q +
-        r⁻¹ * ∑ i : Fin d, parabolicLpNormOn d
-          (fun z => velocityGradient u z i) Q +
-        ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
-          (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian u z i j) Q <=
+    scaledJetNorm r u Q ≤
         (r ^ 2)⁻¹ * parabolicLpNorm d u + parabolicLpNorm d (timeDerivative u) +
           r⁻¹ * ∑ i : Fin d, parabolicLpNorm d
             (fun z => velocityGradient u z i) +
           ∑ i : Fin d, ∑ j : Fin d, parabolicLpNorm d
             (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian u z i j) := by
+      unfold scaledJetNorm
       gcongr
     _ <= ((r ^ 2)⁻¹ + 1 + r⁻¹ + 1) * parabolicSmoothJetLpNorm d u := by
       nlinarith
 
 /-- Compactly supported value mollifications are uniformly Cauchy on every
 compact time--velocity carrier. -/
-theorem uniformCauchySeqOn_parabolicConvolution
-    {d : Nat} (hd : 1 <= d)
+theorem uniformCauchySeqOn_parabolicConvolution (hd : 1 <= d)
     (g : ParabolicW12Function d Set.univ (parabolicExponent d))
     (hg : HasCompactSupport g.toFun)
     (K : Set (TimeVelocity d)) (hK : IsCompact K) :
@@ -298,70 +271,24 @@ theorem uniformCauchySeqOn_parabolicConvolution
   have hphysical := hholder t0 v0 r hr z hzInner zStar hzStarInner u
     (by simpa only [Q] using huSmooth.contDiffOn) huValue huTime huGrad huHess
   have hrhs := parabolicMorreyPhysical_rhs_le_smoothJet huJet Q hr
-  have hphysicalRhsNonneg : 0 <=
-      (r ^ 2)⁻¹ * parabolicLpNormOn d u Q +
-        parabolicLpNormOn d (timeDerivative u) Q +
-        r⁻¹ * ∑ i : Fin d, parabolicLpNormOn d
-          (fun x => velocityGradient u x i) Q +
-        ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
-          (fun x => HypoellipticAleksandrov.Parabolic.velocityHessian u x i j) Q := by
-    have hvalueNonneg : 0 <= parabolicLpNormOn d u Q := ENNReal.toReal_nonneg
-    have htimeNonneg : 0 <= parabolicLpNormOn d (timeDerivative u) Q := ENNReal.toReal_nonneg
-    have hgradNonneg : 0 <= ∑ i : Fin d, parabolicLpNormOn d
-        (fun x => velocityGradient u x i) Q :=
-      Finset.sum_nonneg fun _ _ => ENNReal.toReal_nonneg
-    have hhessNonneg : 0 <= ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
-        (fun x => HypoellipticAleksandrov.Parabolic.velocityHessian u x i j) Q :=
-      Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => ENNReal.toReal_nonneg
-    exact add_nonneg (add_nonneg
-      (add_nonneg (mul_nonneg (inv_nonneg.mpr (sq_nonneg r)) hvalueNonneg) htimeNonneg)
-      (mul_nonneg (inv_nonneg.mpr hr.le) hgradNonneg)) hhessNonneg
-  have hpower : (parabolicCoordinateDist z zStar) ^ parabolicMorreyExponent d <=
-      (2 * r) ^ parabolicMorreyExponent d :=
-    Real.rpow_le_rpow (parabolicCoordinateDist_nonneg _ _) hcoord halpha
-  have hpoint : |u z| <= B * parabolicSmoothJetLpNorm d u := by
-    rw [hzero, sub_zero] at hphysical
+  have hjet : 0 ≤ scaledJetNorm r u Q := by
+    unfold scaledJetNorm parabolicLpNormOn
+    positivity
+  have hpower := Real.rpow_le_rpow (parabolicCoordinateDist_nonneg _ _) hcoord halpha
+  have hpoint : |u z| ≤ B * parabolicSmoothJetLpNorm d u := by
     calc
-      |u z| <= C * (parabolicCoordinateDist z zStar) ^ parabolicMorreyExponent d *
-          ((r ^ 2)⁻¹ * parabolicLpNormOn d u Q +
-            parabolicLpNormOn d (timeDerivative u) Q +
-            r⁻¹ * ∑ i : Fin d, parabolicLpNormOn d
-              (fun x => velocityGradient u x i) Q +
-            ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
-              (fun x => HypoellipticAleksandrov.Parabolic.velocityHessian u x i j) Q) := hphysical
-      _ <= C * (2 * r) ^ parabolicMorreyExponent d *
-          (A * parabolicSmoothJetLpNorm d u) := by
-        calc
-          C * (parabolicCoordinateDist z zStar) ^ parabolicMorreyExponent d *
-              ((r ^ 2)⁻¹ * parabolicLpNormOn d u Q +
-                parabolicLpNormOn d (timeDerivative u) Q +
-                r⁻¹ * ∑ i : Fin d, parabolicLpNormOn d
-                  (fun x => velocityGradient u x i) Q +
-                ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
-                  (fun x => HypoellipticAleksandrov.Parabolic.velocityHessian u x i j) Q) <=
-              C * (2 * r) ^ parabolicMorreyExponent d *
-                ((r ^ 2)⁻¹ * parabolicLpNormOn d u Q +
-                  parabolicLpNormOn d (timeDerivative u) Q +
-                  r⁻¹ * ∑ i : Fin d, parabolicLpNormOn d
-                    (fun x => velocityGradient u x i) Q +
-                  ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
-                    (fun x => HypoellipticAleksandrov.Parabolic.velocityHessian u x i j) Q) := by
-              apply mul_le_mul_of_nonneg_right
-              · exact mul_le_mul_of_nonneg_left hpower hCpos.le
-              · exact hphysicalRhsNonneg
-          _ <= C * (2 * r) ^ parabolicMorreyExponent d *
-              (A * parabolicSmoothJetLpNorm d u) := by
-              apply mul_le_mul_of_nonneg_left
-              · simpa only [A] using hrhs
-              · exact mul_nonneg hCpos.le (Real.rpow_nonneg (by positivity) _)
-      _ = B * parabolicSmoothJetLpNorm d u := by
-        dsimp [B]
-        ring
+      |u z| ≤ C * (parabolicCoordinateDist z zStar) ^ parabolicMorreyExponent d *
+          scaledJetNorm r u Q := by simpa only [scaledJetNorm, Q, hzero, sub_zero] using hphysical
+      _ ≤ C * (2 * r) ^ parabolicMorreyExponent d * (A * parabolicSmoothJetLpNorm d u) :=
+        mul_le_mul (mul_le_mul_of_nonneg_left hpower hCpos.le) hrhs hjet (by positivity)
+      _ = B * parabolicSmoothJetLpNorm d u := by dsimp [B]; ring
   rw [Real.dist_eq]
   change |u z| < eps
   calc
     |u z| <= B * parabolicSmoothJetLpNorm d u := hpoint
     _ < B * (eps / B) := mul_lt_mul_of_pos_left (hN m hm n hn) hBpos
     _ = eps := by field_simp [hBpos.ne']
+
+end
 
 end HypoellipticAleksandrov.Parabolic.ParabolicW12Function

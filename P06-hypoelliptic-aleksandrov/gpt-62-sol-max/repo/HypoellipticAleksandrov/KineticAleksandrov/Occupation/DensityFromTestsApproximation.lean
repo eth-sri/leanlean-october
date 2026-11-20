@@ -6,6 +6,7 @@ import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 import Mathlib.Topology.Instances.ENNReal.Lemmas
 import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
+import HypoellipticAleksandrov.Analysis.SmoothCutoff
 
 /-!
 # Compact approximation inside the smooth-test region
@@ -24,22 +25,6 @@ open scoped ENNReal
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
 
-omit [MeasurableSpace E] [BorelSpace E] in
-/-- A smooth compact cutoff equals one on a prescribed compact subset of an open set. -/
-theorem exists_test_cutoff {K U : Set E} (hK : IsCompact K)
-    (hU : IsOpen U) (hKU : K ⊆ U) :
-    ∃ χ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ HasCompactSupport χ ∧
-      tsupport χ ⊆ U ∧ (∀ x, 0 ≤ χ x ∧ χ x ≤ 1) ∧ ∀ x ∈ K, χ x = 1 := by
-  obtain ⟨δ, hδ, hdouble, χ, hs, h01, h1, h0⟩ := exists_smooth_cutoff hU hK hKU
-  have hcompact : IsCompact (cthickening δ K) := hK.cthickening
-  have hc : HasCompactSupport χ := HasCompactSupport.intro hcompact h0
-  have hsupport : tsupport χ ⊆ cthickening δ K := by
-    exact closure_minimal (fun x hx => by
-      by_contra hn
-      exact hx (h0 x hn)) isClosed_cthickening
-  refine ⟨χ, hs, hc, hsupport.trans ?_, h01, h1⟩
-  exact (cthickening_mono (by linarith) K).trans hdouble
-
 /-- A compactly supported `Lp` function admits continuous approximants supported inside `U`. -/
 theorem exists_continuous_test_approximation (η : Measure E)
     [η.Regular] {p : ℝ≥0∞} (hpt : p ≠ ∞)
@@ -48,7 +33,7 @@ theorem exists_continuous_test_approximation (η : Measure E)
     {ε : ℝ≥0∞} (hε : ε ≠ 0) :
     ∃ g : E → ℝ, Continuous g ∧ HasCompactSupport g ∧ tsupport g ⊆ U ∧
       eLpNorm (g - f) p η ≤ ε := by
-  obtain ⟨χ, hs, hc, hχU, h01, h1⟩ := exists_test_cutoff hK hU hKU
+  obtain ⟨χ, hs, hc, hχU, h01, h1⟩ := Analysis.exists_smooth_cutoff hK hU hKU
   obtain ⟨a, _hac, han, ha, _hap⟩ :=
     hfp.exists_hasCompactSupport_eLpNorm_sub_le hpt hε
   refine ⟨fun x => χ x * a x, hs.continuous.mul ha, hc.mul_right,

@@ -20,13 +20,12 @@ theorem position_moment_scale_le {v M T Lam : ℝ} (hT : 0 ≤ T)
     have h := mul_self_le_mul_self (abs_nonneg v) hv
     rw [← pow_two, ← pow_two, sq_abs, mul_pow, hs] at h
     exact h
-  have hmul := mul_le_mul_of_nonneg_right hsq (sq_nonneg T)
-  nlinarith only [hmul]
+  nlinarith only [(mul_le_mul_of_nonneg_right hsq (sq_nonneg T))]
 
 /-- The origin-extension modulus yields the exact source uniform endpoint time power.
 The constant is fixed before the coefficient, pole, terminal time and spatial shift. -/
 theorem deterministic_barrier_endpoint_uniform_of_modulus
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (alpha B M : ℝ) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) (hB : 0 ≤ B)
     (Phi : Z → ℝ) (hPhi : Continuous Phi)
@@ -34,7 +33,7 @@ theorem deterministic_barrier_endpoint_uniform_of_modulus
       B*(|z.1-w.1|^(alpha/3)+|z.2-w.2|^alpha)) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) (Y : ℝ),
       |z.2| ≤ M*Real.sqrt (T : ℝ) →
-      let E := fullSpaceEvolution hH hLE hlam hLam A
+      let E := fullSpaceEvolution A
       Integrable (fun w : Z => Phi (w.1-Y,w.2)-Phi (z.1-Y,z.2)) (kernelXV E T z) ∧
         (∫ w, |Phi (w.1-Y,w.2)-Phi (z.1-Y,z.2)| ∂kernelXV E T z) ≤
           C*(T : ℝ)^(alpha/2) := by
@@ -46,7 +45,7 @@ theorem deterministic_barrier_endpoint_uniform_of_modulus
     exact mul_nonneg hB (add_nonneg (Real.rpow_nonneg hD _) (Real.rpow_nonneg (by positivity) _))
   refine ⟨C0+1, by linarith, ?_⟩
   intro A z T Y hv
-  have h := deterministic_barrier_endpoint_of_modulus hH hLE hlam hLam
+  have h := deterministic_barrier_endpoint_of_modulus 
     alpha B ha0 ha1 hB Phi hPhi hmod A z T Y
   refine ⟨h.1, h.2.trans ?_⟩
   have hp : 0 ≤ 2*z.2^2*(T : ℝ)^2+4/3*Lam*(T : ℝ)^3 := by

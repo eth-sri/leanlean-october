@@ -28,16 +28,17 @@ variable {U inner outer : Set (Vec d)}
 variable {p : ℝ≥0∞}
 variable {K : ℝ}
 
+section
+variable (u : W1pFunction U p) (η : QuantitativeSmoothCutoff inner outer K) (hp : 1 ≤ p)
+include u η hp
+
 /-- Multiply a representative-level Sobolev function by a quantitative smooth
 cutoff.
 
 The exponent assumption is explicit. Internally it supplies the local
 integrability hypothesis needed by the existing smooth compact-support
 product rule. -/
-noncomputable def mulCutoff
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+noncomputable def mulCutoff :
     W1pFunction U p := by
   letI : Fact (1 ≤ p) := ⟨hp⟩
   exact
@@ -45,57 +46,27 @@ noncomputable def mulCutoff
       η.smooth η.hasCompactSupport
 
 @[simp]
-theorem mulCutoff_toFun
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+theorem mulCutoff_toFun :
     (u.mulCutoff η hp).toFun =
-      fun x => η.toFun x * u x := by
-  let : Fact (1 ≤ p) := ⟨hp⟩
-  change
-    (u.mulContDiffHasCompactSupport
-      η.smooth η.hasCompactSupport).toFun =
-        fun x => η.toFun x * u x
-  exact
-    u.mulContDiffHasCompactSupport_toFun
-      η.smooth η.hasCompactSupport
+      fun x => η.toFun x * u x := rfl
 
 @[simp]
-theorem mulCutoff_grad
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+theorem mulCutoff_grad :
     (u.mulCutoff η hp).grad =
       fun x =>
         η.toFun x • u.grad x +
-          u x • classicalGradient η.toFun x := by
-  let : Fact (1 ≤ p) := ⟨hp⟩
-  change
-    (u.mulContDiffHasCompactSupport
-      η.smooth η.hasCompactSupport).grad =
-        fun x =>
-          η.toFun x • u.grad x +
-            u x • classicalGradient η.toFun x
-  exact
-    u.mulContDiffHasCompactSupport_grad
-      η.smooth η.hasCompactSupport
+          u x • classicalGradient η.toFun x := rfl
 
 /-- Multiplication by the square of a cutoff has the expected squared value
 representative. -/
 @[simp]
-theorem mulCutoff_sq_toFun
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+theorem mulCutoff_sq_toFun :
     (u.mulCutoff η.sq hp).toFun =
       fun x => η x ^ 2 * u x := by
   rw [mulCutoff_toFun, QuantitativeSmoothCutoff.sq_toFun]
 
 /-- Exact product-rule gradient for multiplication by a squared cutoff. -/
-theorem mulCutoff_sq_grad
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+theorem mulCutoff_sq_grad :
     (u.mulCutoff η.sq hp).grad =
       fun x =>
         η x ^ 2 • u.grad x +
@@ -106,6 +77,8 @@ theorem mulCutoff_sq_grad
   simp only [QuantitativeSmoothCutoff.sq_apply, Pi.add_apply,
     Pi.smul_apply, smul_eq_mul]
   ring
+
+end
 
 end W1pFunction
 

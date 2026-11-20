@@ -21,9 +21,11 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+
 /-- A joint reverse-time value representative expands the fixed-time mass pairing. -/
 theorem reverseTime_raw_mass_expand_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (T : ℝ) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ T)
     (U : TimeVelocity d → ℝ)
@@ -46,13 +48,10 @@ theorem reverseTime_raw_mass_expand_ae
 
 /-- The reverse-time negative source expands to the literal negative source integral. -/
 theorem reverseTime_raw_source_expand
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (τ : ℝ) (hτ : τ ∈ Set.Ioo 0 (r₁ - r₀))
     (ψ : PDE.WeakTestFunction Ω) :
     reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ
@@ -75,7 +74,6 @@ theorem reverseTime_raw_source_expand
 
 /-- Joint reverse-time value and gradient representatives expand the spatial form. -/
 theorem reverseTime_raw_spatialForm_expand_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
     (T r₁ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -148,5 +146,7 @@ theorem reverseTime_raw_spatialForm_expand_ae
       [hU, ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hUyi hψ
     rw [← hUyi, hψ]
   simp_rw [hprincipal, hdrift, hscalar]
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

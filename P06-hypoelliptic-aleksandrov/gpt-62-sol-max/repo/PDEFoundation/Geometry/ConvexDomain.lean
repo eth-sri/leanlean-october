@@ -2,7 +2,8 @@ module
 
 public import PDEFoundation.Geometry.Affine
 public import PDEFoundation.Geometry.Domain
-public import PDEFoundation.Geometry.EuclideanBall
+public import PDEFoundation.Geometry.EuclideanBall.Basic
+public import PDEFoundation.Geometry.EuclideanBall.Topology
 public import Mathlib.Analysis.Normed.Module.Convex
 public import Mathlib.Topology.MetricSpace.Bounded
 
@@ -19,8 +20,10 @@ open scoped Pointwise
 
 namespace PDE
 
-theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
-    {U : Set (Vec d)} (hU : Bornology.IsBounded U) :
+section
+variable {d : ℕ} {U : Set (Vec d)}
+
+theorem Bornology.IsBounded.isBoundedDomain (hU : Bornology.IsBounded U) :
     IsBoundedDomain U := by
   classical
   by_cases hd : d = 0
@@ -59,8 +62,7 @@ theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
       exact Finset.le_sup' (s := Finset.univ) (f := R) (Finset.mem_univ i)
     simpa [Real.norm_eq_abs] using! hxi.trans hRi
 
-theorem IsBoundedDomain.isBounded {d : ℕ}
-    {U : Set (Vec d)} (hU : IsBoundedDomain U) :
+theorem IsBoundedDomain.isBounded (hU : IsBoundedDomain U) :
     Bornology.IsBounded U := by
   rcases hU with ⟨R, hRpos, hR⟩
   refine isBounded_iff_forall_norm_le.2 ⟨R, ?_⟩
@@ -68,6 +70,8 @@ theorem IsBoundedDomain.isBounded {d : ℕ}
   refine (pi_norm_le_iff_of_nonneg hRpos.le).2 ?_
   intro i
   simpa [Real.norm_eq_abs] using hR x hx i
+
+end
 
 /-- Bounded open convex sets in the native ambient space.
 
@@ -80,33 +84,38 @@ def IsOpenBoundedConvexDomain {d : ℕ}
 
 namespace IsOpenBoundedConvexDomain
 
-theorem isOpen {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+section
+variable {d : ℕ} {U : Set (Vec d)} (hU : IsOpenBoundedConvexDomain U)
+include hU
+
+theorem isOpen :
     IsOpen U :=
   hU.1
 
-theorem isBoundedDomain {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+theorem isBoundedDomain :
     IsBoundedDomain U :=
   hU.2.1
 
-theorem convex {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+theorem convex :
     Convex ℝ U :=
   hU.2.2
+
+end
 
 theorem measurableSet {d : ℕ} {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     MeasurableSet U :=
   hU.isOpen.measurableSet
 
-theorem isSobolevRegularDomain {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
+section
+variable {d : ℕ} {U : Set (Vec d)} (hU : IsOpenBoundedConvexDomain U)
+include hU
+
+theorem isSobolevRegularDomain :
     IsSobolevRegularDomain U :=
   ⟨hU.measurableSet, hU.isBoundedDomain⟩
 
-theorem translateSet {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) (z : Vec d) :
+theorem translateSet (z : Vec d) :
     IsOpenBoundedConvexDomain (PDE.translateSet z U) := by
   refine ⟨?_, ?_, ?_⟩
   · have hopen :
@@ -139,8 +148,7 @@ theorem translateSet {d : ℕ} {U : Set (Vec d)}
     simpa [preimage_addNeg_eq_translateSet] using hconv
 
 /-- Positive scalar dilation preserves bounded open convex domains. -/
-theorem smul_of_pos {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) {r : ℝ} (hr : 0 < r) :
+theorem smul_of_pos {r : ℝ} (hr : 0 < r) :
     IsOpenBoundedConvexDomain (r • U) := by
   refine ⟨hU.isOpen.smul₀ hr.ne', ?_, hU.convex.smul r⟩
   rcases hU.isBoundedDomain with ⟨R, hRpos, hR⟩
@@ -149,6 +157,8 @@ theorem smul_of_pos {d : ℕ} {U : Set (Vec d)}
   rcases Set.mem_smul_set.mp hx with ⟨y, hy, rfl⟩
   simpa only [Pi.smul_apply, smul_eq_mul, abs_mul, abs_of_pos hr] using
     mul_le_mul_of_nonneg_left (hR y hy i) hr.le
+
+end
 
 end IsOpenBoundedConvexDomain
 

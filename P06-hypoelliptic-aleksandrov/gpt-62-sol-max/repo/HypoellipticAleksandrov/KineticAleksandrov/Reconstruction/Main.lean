@@ -28,14 +28,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Reconstruction
 
 variable {Y : Type*} [MeasurableSpace Y] {d : ℕ}
 
+section
+variable {m : Measure Y}
+
 /-- The final Hölder step: `∫ H^{q-1} g ≤ (∫ H^γ)^{(q-1)/γ} (∫ g^{q₁})^{1/q₁}`. -/
-lemma lintegral_rpow_mul_le {m : Measure Y} {H g : Y → ℝ≥0∞} (hH : Measurable H)
+lemma lintegral_rpow_mul_le {H g : Y → ℝ≥0∞} (hH : Measurable H)
     (hg : Measurable g) {q γ q₁ : ℝ} (hq : 1 < q) (hqγ : q < γ)
     (hq₁ : (q - 1) / γ + 1 / q₁ = 1) :
     ∫⁻ y, H y ^ (q - 1) * g y ∂m ≤
       (∫⁻ y, H y ^ γ ∂m) ^ ((q - 1) / γ) * (∫⁻ y, g y ^ q₁ ∂m) ^ (1 / q₁) := by
   have hq0 : 0 < q - 1 := by linarith
-  have hγ0 : 0 < γ := by linarith
   set P : ℝ := γ / (q - 1) with hP
   have hP1 : 1 < P := by rw [hP, lt_div_iff₀ hq0]; linarith
   have hPinv : P⁻¹ = (q - 1) / γ := by rw [hP, inv_div]
@@ -51,7 +53,7 @@ lemma lintegral_rpow_mul_le {m : Measure Y} {H g : Y → ℝ≥0∞} (hH : Measu
 
 
 /-- Lemma Lemma 5.2 for a Borel-measurable density `g`. -/
-theorem reconstruction_of_measurable {m : Measure Y} [SigmaFinite m]
+theorem reconstruction_of_measurable [SigmaFinite m]
     (Γ : Measure (Y × PDE.Vec d)) [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hg : Measurable g)
     (hΓ : Γ.fst = m.withDensity g) {q γ q₁ : ℝ} (hq : 1 < q) (hqγ : q < γ)
     (hq₁ : (q - 1) / γ + 1 / q₁ = 1) (hgL : eLpNorm g (ENNReal.ofReal q₁) m < ∞)
@@ -128,7 +130,7 @@ The paper's `Y` (a Borel subset of a Euclidean space with its Borel `σ`-algebra
 case `Y = ↥S` of an arbitrary measurable space.  Here `ℝ^d` is `PDE.Vec d = Fin d → ℝ` with
 product Lebesgue measure and `ξ·z = PDE.vecDot ξ z`.
 The hypothesis that each `k ξ` lies in `L^γ(m)` is not needed beyond `𝖧 < ∞`. -/
-theorem reconstruction {m : Measure Y} [SigmaFinite m]
+theorem reconstruction [SigmaFinite m]
     (Γ : Measure (Y × PDE.Vec d)) [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hgm : AEMeasurable g m)
     (hΓ : Γ.fst = m.withDensity g) {q γ q₁ : ℝ} (hq : 1 < q) (hqγ : q < γ)
     (hq₁ : (q - 1) / γ + 1 / q₁ = 1) (hgL : eLpNorm g (ENNReal.ofReal q₁) m < ∞)
@@ -150,5 +152,7 @@ theorem reconstruction {m : Measure Y} [SigmaFinite m]
   rw [hnorm] at hgL ⊢
   exact reconstruction_of_measurable Γ hgm.measurable_mk
     (hΓ.trans (withDensity_congr_ae hae)) hq hqγ hq₁ hgL k hk hH
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Reconstruction

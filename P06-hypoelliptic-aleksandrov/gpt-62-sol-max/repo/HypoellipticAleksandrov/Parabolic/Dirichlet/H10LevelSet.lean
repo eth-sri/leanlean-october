@@ -30,7 +30,7 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 /-- The concrete representatives selected by a Hilbert `H¹₀` graph point,
 viewed as a representative-level `H¹` function. -/
-private def h1FunctionOfH10HilbertGraph
+def h1FunctionOfH10HilbertGraph
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : PDE.H1Function Ω where
   toFun := valueCLM hΩ u
   grad := fun x => (gradientCLM hΩ u x).ofLp
@@ -50,15 +50,16 @@ private def h1FunctionOfH10HilbertGraph
       PDE.volumeOn, PDE.H1HilbertGraph.toH1Graph, PDE.h1HilbertAmbientEquiv,
         WithLp.prodContinuousLinearEquiv] using! hconstraint
 
+section
+variable (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ)
+
 @[simp]
-private theorem h1FunctionOfH10HilbertGraph_toFun
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+private theorem h1FunctionOfH10HilbertGraph_toFun :
     (h1FunctionOfH10HilbertGraph hΩ u).toFun = valueCLM hΩ u :=
   rfl
 
 @[simp]
-private theorem h1FunctionOfH10HilbertGraph_grad
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+private theorem h1FunctionOfH10HilbertGraph_grad :
     (h1FunctionOfH10HilbertGraph hΩ u).grad =
       fun x => (gradientCLM hΩ u x).ofLp :=
   rfl
@@ -66,8 +67,7 @@ private theorem h1FunctionOfH10HilbertGraph_grad
 /-- On an arbitrary open domain, the selected weak gradient of a spatial
 `H¹₀` graph point vanishes almost everywhere on each fixed level set of
 its selected value representative. -/
-theorem gradientCLM_ae_zero_on_level_set
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (c : ℝ) :
+theorem gradientCLM_ae_zero_on_level_set (c : ℝ) :
     ∀ᵐ x ∂(PDE.volumeOn Ω),
       valueCLM hΩ u x = c → gradientCLM hΩ u x = 0 := by
   let w : PDE.H1Function Ω := h1FunctionOfH10HilbertGraph hΩ u
@@ -110,5 +110,7 @@ theorem gradientCLM_ae_zero_on_level_set
   have hae : ae (PDE.volumeOn Ω) =
       ae (volume.restrict (⋃ x ∈ s, B x)) := congrArg ae hmeasure
   exact hOnUnion.filter_mono hae.le
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

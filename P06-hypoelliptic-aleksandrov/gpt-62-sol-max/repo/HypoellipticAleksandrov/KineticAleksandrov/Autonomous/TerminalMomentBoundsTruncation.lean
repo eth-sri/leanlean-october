@@ -18,9 +18,12 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal Topology
 
+section
+variable (g : EvolutionAmbientState 1 → ℝ) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (N : ℕ)
+include g hg N
+
 /-- A smooth polynomial times the conservation cutoff is an actual bounded datum. -/
-def momentCutoff (g : EvolutionAmbientState 1 → ℝ)
-    (hg : ContDiff ℝ (⊤ : ℕ∞) g) (N : ℕ) : BoundedBorel (EvolutionAmbientState 1) := by
+def momentCutoff : BoundedBorel (EvolutionAmbientState 1) := by
   have hs := hg.mul (conservationDatum_smoothCompact N 0).1
   have hc : HasCompactSupport (fun x => g x * conservationDatum N x) :=
     (conservationDatum_smoothCompact N 0).2.1.mul_left
@@ -31,13 +34,14 @@ def momentCutoff (g : EvolutionAmbientState 1 → ℝ)
       by simpa only [Real.norm_eq_abs] using hC x).trans (le_max_left _ _)⟩
 
 /-- The compact polynomial truncation is admitted by the realization. -/
-theorem momentCutoff_smoothCompact (g : EvolutionAmbientState 1 → ℝ)
-    (hg : ContDiff ℝ (⊤ : ℕ∞) g) (N : ℕ) (tau : ℝ) :
+theorem momentCutoff_smoothCompact (tau : ℝ) :
     IsSmoothCompactTerminalDatum autonomousWholeDomain (fun _ => 0) tau
       (momentCutoff g hg N) := by
   refine ⟨hg.mul (conservationDatum_smoothCompact N tau).1,
     (conservationDatum_smoothCompact N tau).2.1.mul_left, ?_⟩
   exact tsupport_mul_subset_right.trans (conservationDatum_smoothCompact N tau).2.2
+
+end
 
 /-- Each fixed point eventually lies in the unit region of both coordinate cutoffs. -/
 theorem conservationDatum_eventually_one (x : EvolutionAmbientState 1) :
@@ -50,10 +54,13 @@ theorem conservationDatum_eventually_one (x : EvolutionAmbientState 1) :
   change zCutoffN 1 N x.1 * zCutoffN 1 N x.2 = 1
   rw [zCutoffN_eq_one hN1, zCutoffN_eq_one hN2, one_mul]
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution)
+  (hE : IsFullSpaceEvolution A E) (g : EvolutionAmbientState 1 → ℝ) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+include hE hg
+
 /-- Comparison bounds the integral of every actual compact polynomial test. -/
-theorem momentCutoff_integral_le {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (g : EvolutionAmbientState 1 → ℝ) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+theorem momentCutoff_integral_le
     (W : Point → ℝ) (hc : Continuous W) (hr : ∀ p, IsSliceRegularAt W p)
     (tau : ℝ) (hn : ∀ p, p.time ≤ tau → 0 ≤ W p)
     (hop : ∀ p, p.time ≤ tau →
@@ -80,7 +87,7 @@ theorem momentCutoff_integral_le {lam Lam : ℝ} (hlam : 0 < lam)
     rw [hquery] at he
     exact (hrep q.1.1 horder state).trans (hi.trans he.symm)
   rw [← huq]
-  apply terminal_polynomial_comparison hlam A tau _ u W hu hc hr hn hop
+  apply terminal_polynomial_comparison A tau _ u W hu hc hr hn hop
     (fun p hp => ?_) _ horder
   change g (p.position, p.velocity) * conservationDatum N (p.position, p.velocity) ≤ W p
   rw [ht p hp]
@@ -88,9 +95,7 @@ theorem momentCutoff_integral_le {lam Lam : ℝ} (hlam : 0 < lam)
     (by rw [mul_one])
 
 /-- Fatou transfers compact polynomial comparison to the unbounded terminal moment. -/
-theorem terminal_polynomial_lintegral_le {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (g : EvolutionAmbientState 1 → ℝ) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hg0 : ∀ x, 0 ≤ g x)
+theorem terminal_polynomial_lintegral_le (hg0 : ∀ x, 0 ≤ g x)
     (W : Point → ℝ) (hc : Continuous W) (hr : ∀ p, IsSliceRegularAt W p)
     (tau : ℝ) (hn : ∀ p, p.time ≤ tau → 0 ≤ W p)
     (hop : ∀ p, p.time ≤ tau →
@@ -118,7 +123,9 @@ theorem terminal_polynomial_lintegral_le {lam Lam : ℝ} (hlam : 0 < lam)
     (fun x => by
       change 0 ≤ g x * conservationDatum N x
       exact mul_nonneg (hg0 x) (conservationDatum_bounds N x).1))]
-  exact ENNReal.ofReal_le_ofReal (momentCutoff_integral_le hlam A E hE g hg W hc hr
+  exact ENNReal.ofReal_le_ofReal (momentCutoff_integral_le A E hE g hg W hc hr
     tau hn hop ht q hq N)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

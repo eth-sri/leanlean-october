@@ -50,16 +50,17 @@ instance occupationKernel_isFiniteMeasure {d : ℕ}
     IsFiniteMeasure (occupationKernel K σ t v) := by
   unfold occupationKernel; infer_instance
 
-lemma occupationKernel_univ_le {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ t : ℝ) (v : PDE.Vec d) :
+section
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+
+lemma occupationKernel_univ_le (σ t : ℝ) (v : PDE.Vec d) :
     occupationKernel K σ t v univ ≤ 1 := by
   unfold occupationKernel
   rw [MovingFiberKernel.firstMarginal, ProbabilityTheory.Kernel.fst_apply,
     Measure.map_apply measurable_fst MeasurableSet.univ, preimage_univ]
   exact K.mass_le_one _
 
-lemma measurable_occupationKernel_section {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ : ℝ)
+lemma measurable_occupationKernel_section (σ : ℝ)
     {A : Set (ℝ × PDE.Vec d)} (hA : MeasurableSet A) :
     Measurable (fun x : ℝ × PDE.Vec d => occupationKernel K σ x.1 x.2 {w | (x.1, w) ∈ A}) := by
   let κ : ProbabilityTheory.Kernel (ℝ × PDE.Vec d) (PDE.Vec d) :=
@@ -67,6 +68,8 @@ lemma measurable_occupationKernel_section {d : ℕ}
   have hS : MeasurableSet {z : (ℝ × PDE.Vec d) × PDE.Vec d | (z.1.1, z.2) ∈ A} :=
     hA.preimage (by fun_prop)
   exact ProbabilityTheory.Kernel.measurable_kernel_prodMk_left (κ := κ) hS
+
+end
 
 /-- Bounded Borel indicator of a measurable set. -/
 def indicatorBB {α : Type*} [MeasurableSpace α] {A : Set α} (hA : MeasurableSet A) :
@@ -77,25 +80,16 @@ def indicatorBB {α : Type*} [MeasurableSpace α] {A : Set α} (hA : MeasurableS
 lemma indicatorBB_apply {α : Type*} [MeasurableSpace α] {A : Set α} (hA : MeasurableSet A)
     (x : α) : indicatorBB hA x = A.indicator (fun _ => (1 : ℝ)) x := rfl
 
-lemma integral_indicatorBB_occupation {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ t : ℝ) (v : PDE.Vec d)
-    {A : Set (ℝ × PDE.Vec d)} (hA : MeasurableSet A) :
-    ∫ w, indicatorBB hA (t, w) ∂occupationKernel K σ t v =
-      (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal := by
-  have hs : MeasurableSet {w : PDE.Vec d | (t, w) ∈ A} := measurable_prodMk_left hA
-  have hf : (fun w => indicatorBB hA (t, w)) =
-      {w : PDE.Vec d | (t, w) ∈ A}.indicator (fun _ => (1 : ℝ)) := by
-    funext w; simp [indicatorBB_apply, Set.indicator]
-  rw [hf, integral_indicator_const _ hs]
-  simp [measureReal_def]
+section
+variable (S : ℝ) (hS : 0 < S)
+include hS
 
-
-lemma elapsed_finite_set (S : ℝ) (hS : 0 < S) :
+lemma elapsed_finite_set :
     {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < ENNReal.ofReal S} = Ioo 0 S := by
   ext τ
   simp only [mem_ofPred_eq, mem_Ioo, ENNReal.ofReal_lt_ofReal_iff hS]
 
-lemma integral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ) :
+lemma integral_elapsed_finite (F : ℝ → ℝ) :
     ∫ τ : ElapsedTime (ENNReal.ofReal S), F τ.1 ∂elapsedVolume (ENNReal.ofReal S) =
       ∫ t in Ioo 0 S, F t := by
   have h := integral_subtype_comap (μ := (volume : Measure ℝ))
@@ -103,7 +97,7 @@ lemma integral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ) :
   refine Eq.trans h ?_
   rw [elapsed_finite_set S hS]
 
-lemma lintegral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ≥0∞) :
+lemma lintegral_elapsed_finite (F : ℝ → ℝ≥0∞) :
     ∫⁻ τ : ElapsedTime (ENNReal.ofReal S), F τ.1 ∂elapsedVolume (ENNReal.ofReal S) =
       ∫⁻ t in Ioo 0 S, F t := by
   have h := lintegral_subtype_comap (μ := (volume : Measure ℝ))
@@ -111,10 +105,15 @@ lemma lintegral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ≥0∞) :
   refine Eq.trans h ?_
   rw [elapsed_finite_set S hS]
 
+end
+
+section
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ S : ℝ)
+  (hS : 0 < S) (ρ : Measure (PDE.Vec d))
+include hS
+
 /-- The right-hand side of (4.2) for an indicator, as a real number. -/
-lemma occupation_rhs_indicator {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ S : ℝ) (hS : 0 < S)
-    (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] {A : Set (ℝ × PDE.Vec d)}
+lemma occupation_rhs_indicator [IsFiniteMeasure ρ] {A : Set (ℝ × PDE.Vec d)}
     (hA : MeasurableSet A) :
     (∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal S), ∫ w, indicatorBB hA (τ.1, w)
         ∂K.firstMarginal (wholeSpaceQuery σ (σ + τ.1)
@@ -133,7 +132,12 @@ lemma occupation_rhs_indicator {d : ℕ}
         (fun t : ℝ => (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal) τ.1 := by
       intro τ
       rw [← occupationKernel_of_nonneg K σ τ.1 τ.2.1.le v]
-      exact integral_indicatorBB_occupation K σ τ.1 v hA
+      have hs : MeasurableSet {w : PDE.Vec d | (τ.1, w) ∈ A} := measurable_prodMk_left hA
+      have hf : (fun w => indicatorBB hA (τ.1, w)) =
+          {w : PDE.Vec d | (τ.1, w) ∈ A}.indicator (fun _ => (1 : ℝ)) := by
+        funext w; simp [indicatorBB_apply, Set.indicator]
+      rw [hf, integral_indicator_const _ hs]
+      simp [measureReal_def]
     refine (integral_congr_ae (Filter.Eventually.of_forall h2)).trans ?_
     refine (integral_elapsed_finite S hS
       (fun t : ℝ => (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal)).trans ?_
@@ -155,11 +159,8 @@ lemma occupation_rhs_indicator {d : ℕ}
             Real.volume_Ioo]
           simp
 
-
 /-- **Occupation identity for sets.**  (4.2) tested on `1_A`, as lower integrals. -/
-theorem occupation_set_identity {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ S : ℝ) (hS : 0 < S)
-    (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] (g : ℝ × PDE.Vec d → ℝ)
+theorem occupation_set_identity [IsFiniteMeasure ρ] (g : ℝ × PDE.Vec d → ℝ)
     (hg : SlabOccupationDensity K σ S ρ g)
     (hint : Integrable g (volume.restrict (Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d)))))
     {A : Set (ℝ × PDE.Vec d)} (hA : MeasurableSet A)
@@ -202,6 +203,7 @@ theorem occupation_set_identity {d : ℕ}
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top _ _)
   exact (ENNReal.toReal_eq_toReal_iff' hfin1 hfin2).1 h
 
+end
 
 /-- Measurability of the occupation kernel evaluated on a measurable family of sections. -/
 lemma measurable_occupationKernel_sectionGen {d : ℕ} {γ : Type*} [MeasurableSpace γ]
@@ -214,9 +216,8 @@ lemma measurable_occupationKernel_sectionGen {d : ℕ} {γ : Type*} [MeasurableS
         (le_add_of_nonneg_right (le_max_right (f x) 0)) (u x) 0) := by
     apply Measurable.subtype_mk
     fun_prop
-  let κ : ProbabilityTheory.Kernel γ (PDE.Vec d) := K.firstMarginal.comap _ hq
+  let κ := K.firstMarginal.comap _ hq
   exact ProbabilityTheory.Kernel.measurable_kernel_prodMk_left (κ := κ) hE
-
 
 lemma lintegral_slabTime (T : ℝ) (hT : 0 ≤ T) (F : ℝ → ℝ≥0∞) :
     ∫⁻ τ in slabTimeSet T, F τ.1 ∂elapsedVolume ⊤ = ∫⁻ t in Ioo T (2 * T), F t := by
@@ -244,17 +245,19 @@ lemma slabBase_ae_slab (d : ℕ) (T s : ℝ) (hT : 0 ≤ T) :
   intro h
   exact hy ⟨by linarith [h.1], by linarith [h.2]⟩
 
-
 /-- The real-line set carried by `E ⊆ SlabBase`: shift and cut to the slab. -/
 def slabImage (d : ℕ) (T s : ℝ) (E : Set (SlabBase d)) : Set (ℝ × PDE.Vec d) :=
   slabShift d s '' E ∩ (Ioo (T - s) (2 * T - s) ×ˢ (univ : Set (PDE.Vec d)))
 
-lemma measurableSet_slabImage {d : ℕ} (T s : ℝ) {E : Set (SlabBase d)} (hE : MeasurableSet E) :
+section
+variable {d : ℕ}
+
+lemma measurableSet_slabImage (T s : ℝ) {E : Set (SlabBase d)} (hE : MeasurableSet E) :
     MeasurableSet (slabImage d T s E) :=
   ((measurableEmbedding_slabShift d s).measurableSet_image.2 hE).inter
     (measurableSet_Ioo.prod MeasurableSet.univ)
 
-lemma preimage_slabImage {d : ℕ} (T s : ℝ) (E : Set (SlabBase d)) :
+lemma preimage_slabImage (T s : ℝ) (E : Set (SlabBase d)) :
     slabShift d s ⁻¹' slabImage d T s E = E ∩ {y | y.1.1 ∈ Ioo T (2 * T)} := by
   ext y
   simp only [slabImage, mem_preimage, mem_inter_iff, mem_image, mem_prod, mem_Ioo, mem_univ,
@@ -267,7 +270,7 @@ lemma preimage_slabImage {d : ℕ} (T s : ℝ) (E : Set (SlabBase d)) :
   · rintro ⟨hy, h1, h2⟩
     exact ⟨⟨y, hy, rfl⟩, by linarith, by linarith⟩
 
-lemma section_shift_image {d : ℕ} (s : ℝ) (E : Set (SlabBase d)) (τ : ElapsedTime ⊤) :
+lemma section_shift_image (s : ℝ) (E : Set (SlabBase d)) (τ : ElapsedTime ⊤) :
     {w | (τ.1 - s, w) ∈ slabShift d s '' E} = {w | (τ, w) ∈ E} := by
   ext w
   constructor
@@ -280,7 +283,7 @@ lemma section_shift_image {d : ℕ} (s : ℝ) (E : Set (SlabBase d)) (τ : Elaps
   · intro hw
     exact ⟨(τ, w), hw, rfl⟩
 
-lemma section_slabImage {d : ℕ} (T s : ℝ) (E : Set (SlabBase d)) (t : ℝ) :
+lemma section_slabImage (T s : ℝ) (E : Set (SlabBase d)) (t : ℝ) :
     {w | (t, w) ∈ slabImage d T s E} =
       if t ∈ Ioo (T - s) (2 * T - s) then {w | (t, w) ∈ slabShift d s '' E} else ∅ := by
   by_cases ht : t ∈ Ioo (T - s) (2 * T - s)
@@ -292,7 +295,7 @@ lemma section_slabImage {d : ℕ} (T s : ℝ) (E : Set (SlabBase d)) (t : ℝ) :
 /-- **Occupation identity on the slab.**  If `g` is the occupation density (at horizon `S`, start
 time `σ₁`) of `ρ`, then for measurable `E ⊆ SlabBase`, the `slabBase`-mass of `E` under the density
 `ofReal (g ∘ slabShift s)` equals the occupation of `ρ` over the slab sections of `E`. -/
-theorem slab_occupation_identity {d : ℕ}
+theorem slab_occupation_identity
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ₁ s T S : ℝ)
     (hs : s ≤ T) (hT : 0 < T) (hTS : 2 * T - s ≤ S) (hS : 0 < S)
     (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] (g : ℝ × PDE.Vec d → ℝ)
@@ -344,5 +347,7 @@ theorem slab_occupation_identity {d : ℕ}
     ← lintegral_Ioo_sub T (2 * T) s H, ← lintegral_slabTime T hT.le (fun t => H (t - s))]
   refine lintegral_congr (fun τ => ?_)
   simp only [hH, section_shift_image]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

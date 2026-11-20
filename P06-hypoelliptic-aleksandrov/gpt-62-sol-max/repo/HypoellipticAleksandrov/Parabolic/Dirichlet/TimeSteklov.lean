@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTranslation
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 public import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.Analysis.Convex.Integral
+import Mathlib.Analysis.Convex.Mul
 
 /-!
 # One-sided reverse-time Bochner averages
@@ -45,156 +47,6 @@ private theorem reverseTimeVolume_noAtoms (T : ℝ) :
     NoAtoms (reverseTimeVolume T) := by
   change NullSingletonClass (volume.restrict (Ioo (0 : ℝ) T))
   infer_instance
-
-private theorem forward_window_product_memLp
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-    (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ) :
-    MemLp (fun z : ℝ × ℝ => F (z.1 + z.2) - F z.2) (2 : ℝ≥0∞)
-      ((volume.restrict (Ioc 0 h)).prod (volume.restrict K)) := by
-  let μs : Measure ℝ := volume.restrict (Ioc 0 h)
-  let μt : Measure ℝ := volume.restrict K
-  letI : IsFiniteMeasure μs := by
-    dsimp only [μs]
-    infer_instance
-  let hzero : MemLp (fun z : ℝ × ℝ => F z.2) (2 : ℝ≥0∞) (μs.prod volume) :=
-    hF.comp_snd μs
-  let hshear : MeasurePreserving (fun z : ℝ × ℝ => (z.1, z.1 + z.2))
-      (μs.prod volume) (μs.prod volume) :=
-    measurePreserving_prod_add μs volume
-  let hplus : MemLp (fun z : ℝ × ℝ => F (z.1 + z.2)) (2 : ℝ≥0∞)
-      (μs.prod volume) := by
-    simpa only [Function.comp_def] using hzero.comp_measurePreserving hshear
-  have hzeroK : MemLp (fun z : ℝ × ℝ => F z.2) (2 : ℝ≥0∞) (μs.prod μt) := by
-    simpa only [μt, ← Measure.prod_restrict, Measure.restrict_univ] using
-      hzero.restrict (univ ×ˢ K)
-  have hplusK : MemLp (fun z : ℝ × ℝ => F (z.1 + z.2)) (2 : ℝ≥0∞) (μs.prod μt) := by
-    simpa only [μt, ← Measure.prod_restrict, Measure.restrict_univ] using
-      hplus.restrict (univ ×ˢ K)
-  exact hplusK.sub hzeroK
-
-private theorem forward_window_sqNorm_integral_swap
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-    (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
-    [IsFiniteMeasure (volume.restrict K)] :
-    (∫ s in Ioc 0 h, ∫ t in K, ‖F (s + t) - F t‖ ^ 2) =
-      ∫ t in K, ∫ s in Ioc 0 h, ‖F (s + t) - F t‖ ^ 2 := by
-  let hPhi : MemLp (fun z : ℝ × ℝ => F (z.1 + z.2) - F z.2) (2 : ℝ≥0∞)
-      ((volume.restrict (Ioc 0 h)).prod (volume.restrict K)) :=
-    forward_window_product_memLp F hF h K
-  have hPhiSq : Integrable (fun z : ℝ × ℝ => ‖F (z.1 + z.2) - F z.2‖ ^ 2)
-      ((volume.restrict (Ioc 0 h)).prod (volume.restrict K)) :=
-    hPhi.integrable_norm_pow (by norm_num)
-  simpa only [MeasureTheory.integral] using
-    integral_integral_swap hPhiSq
-
-private theorem ae_memLp_forward_window_slice
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-    (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
-    [IsFiniteMeasure (volume.restrict K)] :
-    ∀ᵐ t ∂volume.restrict K,
-      MemLp (fun s => F (s + t) - F t) (2 : ℝ≥0∞)
-        (volume.restrict (Ioc 0 h)) := by
-  let hPhi : MemLp (fun z : ℝ × ℝ => F (z.1 + z.2) - F z.2) (2 : ℝ≥0∞)
-      ((volume.restrict (Ioc 0 h)).prod (volume.restrict K)) :=
-    forward_window_product_memLp F hF h K
-  have hPhiInt : Integrable (fun z : ℝ × ℝ => F (z.1 + z.2) - F z.2)
-      ((volume.restrict (Ioc 0 h)).prod (volume.restrict K)) :=
-    hPhi.integrable (by norm_num)
-  have hPhiSq : Integrable (fun z : ℝ × ℝ => ‖F (z.1 + z.2) - F z.2‖ ^ 2)
-      ((volume.restrict (Ioc 0 h)).prod (volume.restrict K)) :=
-    hPhi.integrable_norm_pow (by norm_num)
-  filter_upwards [hPhiInt.prod_left_ae, hPhiSq.prod_left_ae] with t ht htSq
-  exact (memLp_two_iff_integrable_sq_norm ht.aestronglyMeasurable).mpr htSq
-
-private theorem sqNorm_smul_window_integral_le
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-    (h : ℝ) (hh : 0 < h) (φ : ℝ → E)
-    (hφ : MemLp φ (2 : ℝ≥0∞) (volume.restrict (Ioc 0 h))) :
-    ‖h⁻¹ • ∫ s, φ s ∂volume.restrict (Ioc 0 h)‖ ^ 2 ≤
-      h⁻¹ * ∫ s, ‖φ s‖ ^ 2 ∂volume.restrict (Ioc 0 h) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 h)
-  letI : IsFiniteMeasure μ := by
-    dsimp only [μ]
-    infer_instance
-  have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
-    Real.HolderConjugate.two_two
-    (μ := μ) (f := fun s => ‖φ s‖) (g := fun _ => (1 : ℝ))
-    (Eventually.of_forall fun _ => norm_nonneg _)
-    (Eventually.of_forall fun _ => zero_le_one)
-    (by simpa only [ENNReal.ofReal_ofNat] using hφ.norm)
-    (by simpa only [ENNReal.ofReal_ofNat] using
-      (memLp_const (1 : ℝ) : MemLp _ (2 : ℝ≥0∞) μ))
-  have hvol : μ.real univ = h := by
-    dsimp only [μ]
-    rw [MeasureTheory.measureReal_restrict_apply_univ,
-      Real.volume_real_Ioc_of_le hh.le, sub_zero]
-  have hB : 0 ≤ ∫ s, ‖φ s‖ ^ 2 ∂μ := integral_nonneg fun _ => sq_nonneg _
-  have hA : 0 ≤ ∫ s, ‖φ s‖ ∂μ := integral_nonneg fun _ => norm_nonneg _
-  have hholder' : ∫ s, ‖φ s‖ ∂μ ≤
-      (∫ s, ‖φ s‖ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) *
-        (∫ _s, (1 : ℝ) ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) := by
-    simpa only [Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _), mul_one] using hholder
-  have hholder'' : ∫ s, ‖φ s‖ ∂μ ≤
-      √(∫ s, ‖φ s‖ ^ 2 ∂μ) * √h := by
-    rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
-    simpa only [Real.rpow_two, integral_const, hvol, one_smul, smul_eq_mul,
-      Real.one_rpow, one_pow, mul_one] using hholder'
-  have hmain : (h⁻¹ * ∫ s, ‖φ s‖ ∂μ) ^ 2 ≤
-      (h⁻¹ * (√(∫ s, ‖φ s‖ ^ 2 ∂μ) * √h)) ^ 2 := by
-    exact pow_le_pow_left₀ (mul_nonneg (inv_nonneg.mpr hh.le) hA)
-      (mul_le_mul_of_nonneg_left hholder'' (inv_nonneg.mpr hh.le)) 2
-  have hcalc : (h⁻¹ * (√(∫ s, ‖φ s‖ ^ 2 ∂μ) * √h)) ^ 2 =
-      h⁻¹ * ∫ s, ‖φ s‖ ^ 2 ∂μ := by
-    rw [mul_pow, mul_pow, Real.sq_sqrt hB, Real.sq_sqrt hh.le]
-    field_simp [ne_of_gt hh]
-  calc
-    ‖h⁻¹ • ∫ s, φ s ∂μ‖ ^ 2 = (h⁻¹ * ‖∫ s, φ s ∂μ‖) ^ 2 := by
-      rw [norm_smul, Real.norm_of_nonneg (inv_nonneg.mpr hh.le)]
-    _ ≤ (h⁻¹ * ∫ s, ‖φ s‖ ∂μ) ^ 2 :=
-      pow_le_pow_left₀ (mul_nonneg (inv_nonneg.mpr hh.le) (norm_nonneg _))
-        (mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm φ)
-          (inv_nonneg.mpr hh.le)) 2
-    _ ≤ (h⁻¹ * (√(∫ s, ‖φ s‖ ^ 2 ∂μ) * √h)) ^ 2 := hmain
-    _ = h⁻¹ * ∫ s, ‖φ s‖ ^ 2 ∂μ := hcalc
-
-private theorem sqNorm_forward_window_average_le
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-    (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (hh : 0 < h) (K : Set ℝ)
-    [IsFiniteMeasure (volume.restrict K)] :
-    (∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (s + t) - F t)‖ ^ 2) ≤
-      h⁻¹ * ∫ s in Ioc 0 h, ∫ t in K, ‖F (s + t) - F t‖ ^ 2 := by
-  let μs : Measure ℝ := volume.restrict (Ioc 0 h)
-  let μt : Measure ℝ := volume.restrict K
-  letI : IsFiniteMeasure μs := by
-    dsimp only [μs]
-    infer_instance
-  letI : IsFiniteMeasure μt := by
-    exact inferInstance
-  let hPhi : MemLp (fun z : ℝ × ℝ => F (z.1 + z.2) - F z.2) (2 : ℝ≥0∞)
-      (μs.prod μt) := by
-    simpa only [μs, μt] using forward_window_product_memLp F hF h K
-  have hPhiSq : Integrable (fun z : ℝ × ℝ => ‖F (z.1 + z.2) - F z.2‖ ^ 2)
-      (μs.prod μt) := hPhi.integrable_norm_pow (by norm_num)
-  have hright : Integrable (fun t => h⁻¹ *
-      ∫ s, ‖F (s + t) - F t‖ ^ 2 ∂μs) μt :=
-    (hPhiSq.integral_prod_right).const_mul _
-  have hslice : ∀ᵐ t ∂μt,
-      MemLp (fun s => F (s + t) - F t) (2 : ℝ≥0∞) μs := by
-    simpa only [μs, μt] using ae_memLp_forward_window_slice F hF h K
-  have hbound : (∫ t, ‖h⁻¹ • ∫ s, F (s + t) - F t ∂μs‖ ^ 2 ∂μt) ≤
-      ∫ t, h⁻¹ * ∫ s, ‖F (s + t) - F t‖ ^ 2 ∂μs ∂μt := by
-    apply integral_mono_of_nonneg (Eventually.of_forall fun _ => sq_nonneg _)
-      hright
-    filter_upwards [hslice] with t ht
-    exact sqNorm_smul_window_integral_le h hh _ ht
-  calc
-    (∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (s + t) - F t)‖ ^ 2) =
-        ∫ t, ‖h⁻¹ • ∫ s, F (s + t) - F t ∂μs‖ ^ 2 ∂μt := rfl
-    _ ≤ ∫ t, h⁻¹ * ∫ s, ‖F (s + t) - F t‖ ^ 2 ∂μs ∂μt := hbound
-    _ = h⁻¹ * ∫ t, ∫ s, ‖F (s + t) - F t‖ ^ 2 ∂μs ∂μt := by
-      rw [integral_const_mul]
-    _ = h⁻¹ * ∫ s in Ioc 0 h, ∫ t in K, ‖F (s + t) - F t‖ ^ 2 := by
-      rw [← forward_window_sqNorm_integral_swap F hF h K]
 
 private theorem forwardSteklov_eq_primitive_sub
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
@@ -246,59 +98,10 @@ private theorem tendsto_inv_mul_setIntegral_Ioc_zero
       _ = ε / 2 := by field_simp [ne_of_gt hh.1]
       _ < ε := half_lt_self hε
 
-private theorem forwardSteklov_sub_eq_forward_window
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-    (T h a b : ℝ) (hh : 0 < h) (hhT : h < T - b) (ha : 0 < a) (hb : b < T)
-    (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T))
-    (t : ℝ) (ht : t ∈ Icc a b) :
-    reverseTimeForwardSteklov T h f t - f t = h⁻¹ •
-      ∫ s in Ioc 0 h, ((Ioo 0 T).indicator (f : ℝ → E) (s + t) -
-        (Ioo 0 T).indicator (f : ℝ → E) t) := by
-  let S : Set ℝ := Ioo 0 T
-  let F : ℝ → E := S.indicator f
-  let W : Set ℝ := Ioc t (t + h)
-  have hwin : W ⊆ S := by
-    intro x hx
-    constructor
-    · exact lt_of_lt_of_le ha (ht.1.trans hx.1.le)
-    · calc
-        x ≤ t + h := hx.2
-        _ ≤ b + h := by simpa only [add_comm] using add_le_add_right ht.2 h
-        _ < T := by linarith
-  have hwindow : (∫ x in W, f x ∂reverseTimeVolume T) = ∫ x in W, F x := by
-    unfold reverseTimeVolume reverseTimeOpenInterval
-    change (∫ x, f x ∂(volume.restrict S).restrict W) = ∫ x in W, F x
-    rw [Measure.restrict_restrict_of_subset hwin]
-    apply setIntegral_congr_fun measurableSet_Ioc
-    intro x hx
-    simp only [F, Set.indicator_of_mem (hwin hx)]
-  have hshift : (∫ s in Ioc 0 h, F (s + t)) = ∫ x in W, F x := by
-    calc
-      (∫ s in Ioc 0 h, F (s + t)) = ∫ s in (0 : ℝ)..h, F (s + t) :=
-        (intervalIntegral.integral_of_le hh.le).symm
-      _ = ∫ x in (0 : ℝ) + t..h + t, F x :=
-        intervalIntegral.integral_comp_add_right F t
-      _ = ∫ x in t..t + h, F x := by simp only [zero_add, add_comm h t]
-      _ = ∫ x in W, F x := intervalIntegral.integral_of_le (by linarith)
-  have htS : t ∈ S := ⟨lt_of_lt_of_le ha ht.1, lt_of_le_of_lt ht.2 hb⟩
-  have hconst : h⁻¹ • ∫ _s in Ioc 0 h, F t = f t := by
-    rw [integral_const, MeasureTheory.measureReal_restrict_apply_univ,
-      Real.volume_real_Ioc_of_le hh.le, sub_zero]
-    simp only [F, Set.indicator_of_mem htS]
-    rw [← mul_smul]
-    field_simp [ne_of_gt hh]
-    exact one_smul _ _
-  have hF : MemLp F (2 : ℝ≥0∞) volume := by
-    simpa only [F, S, reverseTimeVolume, reverseTimeOpenInterval] using
-      (memLp_indicator_iff_restrict measurableSet_Ioo).mpr (Lp.memLp f)
-  have hshiftInt : Integrable (fun s => F (s + t)) (volume.restrict (Ioc 0 h)) :=
-    ((hF.comp_measurePreserving (measurePreserving_add_right volume t)).restrict _).integrable
-      (by norm_num)
-  rw [reverseTimeForwardSteklov, hwindow, ← hshift,
-    integral_sub hshiftInt (integrable_const _), ← hconst, ← smul_sub]
+section
+variable {E : Type*}
 
-private theorem backwardSteklov_eq_primitive_sub
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+private theorem backwardSteklov_eq_primitive_sub [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (T h : ℝ) (hh : 0 < h)
     (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T)) (t : ℝ) :
     reverseTimeBackwardSteklov T h f t = h⁻¹ •
@@ -319,8 +122,7 @@ private theorem backwardSteklov_eq_primitive_sub
   rw [reverseTimeBackwardSteklov, ← intervalIntegral.integral_of_le (by linarith), hsub]
 
 /-- A positive-length forward average is an ordinary continuous `E`-curve. -/
-theorem continuous_reverseTimeForwardSteklov
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+theorem continuous_reverseTimeForwardSteklov [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (T h : ℝ) (hh : 0 < h)
     (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T)) :
     Continuous (reverseTimeForwardSteklov T h f) := by
@@ -338,8 +140,7 @@ theorem continuous_reverseTimeForwardSteklov
   exact continuous_const.smul ((hP.comp (continuous_id.add continuous_const)).sub hP)
 
 /-- A positive-length backward average is an ordinary continuous `E`-curve. -/
-theorem continuous_reverseTimeBackwardSteklov
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+theorem continuous_reverseTimeBackwardSteklov [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (T h : ℝ) (hh : 0 < h)
     (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T)) :
     Continuous (reverseTimeBackwardSteklov T h f) := by
@@ -356,61 +157,150 @@ theorem continuous_reverseTimeBackwardSteklov
   rw [hformula]
   exact continuous_const.smul (hP.sub (hP.comp (continuous_id.sub continuous_const)))
 
+end
+
+section Windows
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+
+/-- Jensen's inequality for the normalized integral over a translation window. -/
+private theorem sqNorm_windowMean_le (h : ℝ) (hh : 0 < h) (φ : ℝ → E)
+    (hφ : IntegrableOn φ (Ioc 0 h)) (hφsq : IntegrableOn (fun s => ‖φ s‖ ^ 2) (Ioc 0 h)) :
+    ‖h⁻¹ • ∫ s in Ioc 0 h, φ s‖ ^ 2 ≤ h⁻¹ * ∫ s in Ioc 0 h, ‖φ s‖ ^ 2 := by
+  have hvol : (volume.restrict (Ioc 0 h)).real univ = h := by
+    rw [measureReal_restrict_apply_univ, Real.volume_real_Ioc_of_le hh.le, sub_zero]
+  have hJ := (convexOn_pow (𝕜 := ℝ) 2).map_set_average_le
+    (continuous_pow 2).continuousOn isClosed_Ici
+    (μ := volume) (t := Ioc 0 h) (f := fun s => ‖φ s‖)
+    (by simp [Real.volume_Ioc, hh]) (by simp)
+    (Eventually.of_forall fun _ => norm_nonneg _) hφ.norm hφsq
+  rw [average_eq, average_eq, hvol, smul_eq_mul, smul_eq_mul] at hJ
+  rw [norm_smul, Real.norm_of_nonneg (inv_nonneg.mpr hh.le)]
+  exact (pow_le_pow_left₀ (by positivity)
+    (mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm φ) (inv_nonneg.mpr hh.le)) 2).trans hJ
+
+section
+variable (F : ℝ → E) (hF : MemLp F 2 volume) (K : Set ℝ)
+include hF
+
+/-- The Jensen bound, integrated in time using the measure-preserving shear. -/
+private theorem sqNorm_translationWindow_le [IsFiniteMeasure (volume.restrict K)] (δ : ℝ → ℝ)
+    (h : ℝ) (hh : 0 < h)
+    (hδ : MeasurePreserving (fun z : ℝ × ℝ => (z.1, δ z.1 + z.2))
+      ((volume.restrict (Ioc 0 h)).prod volume) ((volume.restrict (Ioc 0 h)).prod volume)) :
+    (∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (δ s + t) - F t)‖ ^ 2) ≤
+      h⁻¹ * ∫ s in Ioc 0 h, ∫ t in K, ‖F (δ s + t) - F t‖ ^ 2 := by
+  let μ := volume.restrict (Ioc 0 h)
+  let ν := volume.restrict K
+  letI : IsFiniteMeasure μ := inferInstanceAs (IsFiniteMeasure (volume.restrict (Ioc 0 h)))
+  letI : IsFiniteMeasure ν := inferInstanceAs (IsFiniteMeasure (volume.restrict K))
+  have hbase := hF.comp_snd μ
+  have hmem : MemLp (fun z : ℝ × ℝ => F (δ z.1 + z.2) - F z.2) 2 (μ.prod ν) := by
+    simpa only [μ, ν, ← Measure.prod_restrict, Measure.restrict_univ, Function.comp_def, Pi.sub_def] using
+      ((hbase.comp_measurePreserving hδ).sub hbase).restrict (univ ×ˢ K)
+  have hi := hmem.integrable (by norm_num)
+  have hi2 := hmem.integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0)
+  rw [integral_integral_swap hi2, ← integral_const_mul]
+  apply integral_mono_of_nonneg (Eventually.of_forall fun _ => sq_nonneg _)
+    (hi2.integral_prod_right.const_mul _)
+  filter_upwards [hi.prod_left_ae, hi2.prod_left_ae] with t ht ht2
+  exact sqNorm_windowMean_le h hh _ ht ht2
+
+/-- Averaging translations tending to the identity converges in `L²`. -/
+private theorem tendsto_sqNorm_translationWindow [IsFiniteMeasure (volume.restrict K)] (δ : ℝ → ℝ)
+    (hδ : Tendsto δ (𝓝 0) (𝓝 0))
+    (hpres : ∀ h : ℝ, MeasurePreserving (fun z : ℝ × ℝ => (z.1, δ z.1 + z.2))
+      ((volume.restrict (Ioc 0 h)).prod volume) ((volume.restrict (Ioc 0 h)).prod volume)) :
+    Tendsto (fun h : ℝ => ∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (δ s + t) - F t)‖ ^ 2)
+      (𝓝[>] 0) (𝓝 0) := by
+  have hq := ((tendsto_sqNorm_integral_translate_add_on_of_memLp_two F hF K).comp hδ).mono_left
+    (nhdsWithin_le_nhds (s := Ioi 0))
+  simp only [Function.comp_def, add_comm] at hq
+  apply squeeze_zero' (g := fun h : ℝ => h⁻¹ * ∫ s in Ioc 0 h, ∫ t in K, ‖F (δ s + t) - F t‖ ^ 2)
+  · exact Eventually.of_forall fun _ => integral_nonneg fun _ => sq_nonneg _
+  · filter_upwards [self_mem_nhdsWithin (a := (0 : ℝ)) (s := Ioi 0)] with h hh
+    exact sqNorm_translationWindow_le F hF K δ h hh (hpres h)
+  · exact tendsto_inv_mul_setIntegral_Ioc_zero _ (by simpa only [add_comm] using hq)
+      (fun _ => integral_nonneg fun _ => sq_nonneg _)
+
+end
+
+private theorem memLp_reverseTime_zeroExtension (T : ℝ)
+    (f : Lp E 2 (reverseTimeVolume T)) : MemLp ((Ioo 0 T).indicator f) 2 volume :=
+  (memLp_indicator_iff_restrict measurableSet_Ioo).2 (Lp.memLp f)
+
+/-- The error in the window integral after extending by zero outside reverse time. -/
+private theorem steklov_sub_eq_window (T h : ℝ) (hh : 0 < h)
+    (f : Lp E 2 (reverseTimeVolume T)) (t : ℝ) (ht : t ∈ Ioo 0 T)
+    {W : Set ℝ} (hW : MeasurableSet W) (φ : ℝ → ℝ)
+    (hp : MeasurePreserving φ volume volume)
+    (hshift : (∫ s in Ioc 0 h, (Ioo 0 T).indicator f (φ s)) =
+      ∫ s in W, (Ioo 0 T).indicator f s) :
+    h⁻¹ • (∫ s in W, f s ∂reverseTimeVolume T) - f t =
+      h⁻¹ • ∫ s in Ioc 0 h, ((Ioo 0 T).indicator f (φ s) - (Ioo 0 T).indicator f t) := by
+  rw [show (∫ s in W, f s ∂reverseTimeVolume T) = ∫ s in W, (Ioo 0 T).indicator f s by
+    unfold reverseTimeVolume reverseTimeOpenInterval
+    rw [Measure.restrict_restrict hW,
+      ← integral_indicator (μ := volume) (hW.inter measurableSet_Ioo),
+      ← integral_indicator (μ := volume) hW, Set.indicator_indicator]]
+  have hφ : IntegrableOn (fun s => (Ioo 0 T).indicator f (φ s)) (Ioc 0 h) :=
+    (((memLp_reverseTime_zeroExtension T f).comp_measurePreserving hp).restrict _).integrable (by norm_num)
+  rw [← hshift, integral_sub hφ (integrable_const _), smul_sub, integral_const,
+    measureReal_restrict_apply_univ, Real.volume_real_Ioc_of_le hh.le, sub_zero,
+    ← mul_smul, inv_mul_cancel₀ hh.ne', one_smul, Set.indicator_of_mem ht]
+
+section
+variable (T : ℝ) (f : Lp E 2 (reverseTimeVolume T)) (K : Set ℝ)
+
+/-- Forward Steklov convergence on any finite-measure subdomain of the time interval. -/
+theorem tendsto_forwardSteklov_sqNorm_integral_on [IsFiniteMeasure (volume.restrict K)]
+    (hK : ∀ᵐ t ∂volume.restrict K, t ∈ Ioo 0 T) :
+    Tendsto (fun h : ℝ => ∫ t in K, ‖reverseTimeForwardSteklov T h f t - f t‖ ^ 2)
+      (𝓝[>] 0) (𝓝 0) := by
+  refine (tendsto_sqNorm_translationWindow ((Ioo 0 T).indicator (f : ℝ → E)) (memLp_reverseTime_zeroExtension T f) K id
+    tendsto_id (fun _ => measurePreserving_prod_add _ _)).congr' ?_
+  filter_upwards [self_mem_nhdsWithin (a := (0 : ℝ)) (s := Ioi 0)] with h hh
+  apply integral_congr_ae
+  filter_upwards [hK] with t ht
+  rw [reverseTimeForwardSteklov, steklov_sub_eq_window T h hh f t ht measurableSet_Ioc
+    (fun s => s + t) (measurePreserving_add_right volume t)]
+  · rfl
+  · rw [← intervalIntegral.integral_of_le hh.le, intervalIntegral.integral_comp_add_right,
+      zero_add, add_comm h t, intervalIntegral.integral_of_le (le_add_of_nonneg_right hh.le)]
+
+/-- Backward Steklov convergence on any finite-measure subdomain of the time interval. -/
+theorem tendsto_backwardSteklov_sqNorm_integral_on [IsFiniteMeasure (volume.restrict K)]
+    (hK : ∀ᵐ t ∂volume.restrict K, t ∈ Ioo 0 T) :
+    Tendsto (fun h : ℝ => ∫ t in K, ‖reverseTimeBackwardSteklov T h f t - f t‖ ^ 2)
+      (𝓝[>] 0) (𝓝 0) := by
+  let F := (Ioo 0 T).indicator (f : ℝ → E)
+  have hp (h : ℝ) := measurePreserving_prod_sub (volume.restrict (Ioc 0 h)) (volume : Measure ℝ)
+  refine (tendsto_sqNorm_translationWindow F (memLp_reverseTime_zeroExtension T f) K Neg.neg
+    (by simpa using tendsto_neg (0 : ℝ)) (fun h => by simpa only [sub_eq_neg_add] using hp h)).congr' ?_
+  filter_upwards [self_mem_nhdsWithin (a := (0 : ℝ)) (s := Ioi 0)] with h hh
+  apply integral_congr_ae
+  filter_upwards [hK] with t ht
+  rw [reverseTimeBackwardSteklov, steklov_sub_eq_window T h hh f t ht measurableSet_Ioc
+    (fun s => t - s) (volume.measurePreserving_sub_left t)]
+  · simp only [sub_eq_neg_add, F]
+  · rw [← intervalIntegral.integral_of_le hh.le, intervalIntegral.integral_comp_sub_left,
+      sub_zero, intervalIntegral.integral_of_le (sub_le_self t hh.le)]
+
+end
+
+end Windows
+
 /-- Forward one-sided Steklov averages converge strongly in local Bochner `L²`. -/
 theorem tendsto_forwardSteklov_sqNorm_integral_on_Icc
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (T : ℝ) (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T))
-    {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) (hb : b < T) :
+    {a b : ℝ} (ha : 0 < a) (_hab : a ≤ b) (hb : b < T) :
     Filter.Tendsto
       (fun h : ℝ => ∫ t in Set.Icc a b,
         ‖reverseTimeForwardSteklov T h f t - f t‖ ^ 2)
       (𝓝[>] 0) (𝓝 0) := by
-  let S : Set ℝ := Ioo 0 T
-  let F : ℝ → E := S.indicator f
-  let K : Set ℝ := Icc a b
-  have hF : MemLp F (2 : ℝ≥0∞) volume := by
-    simpa only [F, S, reverseTimeVolume, reverseTimeOpenInterval] using
-      (memLp_indicator_iff_restrict measurableSet_Ioo).mpr (Lp.memLp f)
-  let q : ℝ → ℝ := fun s => ∫ t in K, ‖f (t + s) - f t‖ ^ 2
-  have hq : Tendsto q (𝓝[>] 0) (𝓝 0) := by
-    simpa only [q, K] using
-      tendsto_sqNorm_integral_forward_translate_on_Icc T f ha hab hb
-  have hq0 : ∀ s, 0 ≤ q s := fun s => integral_nonneg fun _ => sq_nonneg _
-  have haverage := tendsto_inv_mul_setIntegral_Ioc_zero q hq hq0
-  apply squeeze_zero'
-  · filter_upwards with h
-    exact integral_nonneg fun _ => sq_nonneg _
-  · have hpos : ∀ᶠ h : ℝ in 𝓝[>] 0, 0 < h := self_mem_nhdsWithin
-    have hsmall : ∀ᶠ h : ℝ in 𝓝[>] 0, h < T - b :=
-      (eventually_lt_nhds (sub_pos.mpr hb)).filter_mono nhdsWithin_le_nhds
-    filter_upwards [hpos, hsmall] with h hh hhT
-    have hleft : (∫ t in K, ‖reverseTimeForwardSteklov T h f t - f t‖ ^ 2) =
-        ∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (s + t) - F t)‖ ^ 2 := by
-      apply integral_congr_ae
-      filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
-      rw [forwardSteklov_sub_eq_forward_window T h a b hh hhT ha hb f t ht]
-    have hright : h⁻¹ * ∫ s in Ioc 0 h,
-        ∫ t in K, ‖F (s + t) - F t‖ ^ 2 = h⁻¹ * ∫ s in Ioc 0 h, q s := by
-      congr 1
-      apply integral_congr_ae
-      filter_upwards [ae_restrict_mem measurableSet_Ioc] with s hs
-      apply setIntegral_congr_fun measurableSet_Icc
-      intro t ht
-      have htS : t ∈ S := ⟨lt_of_lt_of_le ha ht.1, lt_of_le_of_lt ht.2 hb⟩
-      have htsS : t + s ∈ S := by
-        constructor
-        · exact add_pos (lt_of_lt_of_le ha ht.1) hs.1
-        · calc
-            t + s ≤ b + h := add_le_add ht.2 hs.2
-            _ < T := by linarith
-      have hstS : s + t ∈ S := by simpa only [add_comm] using htsS
-      simp only [F, Set.indicator_of_mem hstS, Set.indicator_of_mem htS, add_comm]
-    calc
-      (∫ t in K, ‖reverseTimeForwardSteklov T h f t - f t‖ ^ 2) =
-          ∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (s + t) - F t)‖ ^ 2 := hleft
-      _ ≤ h⁻¹ * ∫ s in Ioc 0 h, ∫ t in K, ‖F (s + t) - F t‖ ^ 2 :=
-        sqNorm_forward_window_average_le F hF h hh K
-      _ = h⁻¹ * ∫ s in Ioc 0 h, q s := hright
-  · exact haverage
+  apply tendsto_forwardSteklov_sqNorm_integral_on T f
+  filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
+  exact ⟨ha.trans_le ht.1, ht.2.trans_lt hb⟩
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

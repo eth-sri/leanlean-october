@@ -11,13 +11,16 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
+section
+variable {d : ℕ}
+
 /-- The fixed-position embedding is continuous in the literal physical coordinates. -/
-theorem continuous_fixedPosition {d : ℕ} (x : PDE.Vec d) :
+theorem continuous_fixedPosition (x : PDE.Vec d) :
     Continuous (fun z : TimeVelocity d => (⟨z.1, x, z.2⟩ : KineticPoint d)) :=
   KineticPoint.continuous_mk continuous_fst continuous_const continuous_snd
 
 /-- Restriction to a fixed position preserves the anisotropic scalar regularity. -/
-theorem kineticC112_fixedPosition {d : ℕ} {u : KineticPoint d → ℝ}
+theorem kineticC112_fixedPosition {u : KineticPoint d → ℝ}
     {D : Set (KineticPoint d)} {E : Set (TimeVelocity d)}
     (hu : IsKineticC112On u D) (x : PDE.Vec d)
     (hE : ∀ z ∈ E, (⟨z.1, x, z.2⟩ : KineticPoint d) ∈ D) :
@@ -35,7 +38,7 @@ theorem kineticC112_fixedPosition {d : ℕ} {u : KineticPoint d → ℝ}
   · exact hu.continuousOn_kineticVelocityHessian.comp hc hE
 
 /-- The source's fixed-position parabolic cylinder lies inside the unit kinetic cylinder. -/
-theorem normalized_slice_mem {d : ℕ} (x : PDE.Vec d)
+theorem normalized_slice_mem (x : PDE.Vec d)
     (hx : x ∈ PDE.euclideanBall 0 (1 / 8 : ℝ))
     (z : TimeVelocity d)
     (hz : z ∈ scalarParabolicOpenCylinder (-9 / 16) 0
@@ -53,7 +56,7 @@ theorem normalized_slice_mem {d : ℕ} (x : PDE.Vec d)
       PDE.euclideanBall_mono (by norm_num) (by norm_num : (1 / 8 : ℝ) ≤ 1) hx
 
 /-- The normalized homogeneous kinetic equation is the forced scalar slice equation. -/
-theorem normalized_slice_equation {d : ℕ}
+theorem normalized_slice_equation
     (A : CoefficientField d) (u : KineticPoint d → ℝ)
     (hu : IsKineticC112On u (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1))
     (he : ∀ P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1,
@@ -75,5 +78,7 @@ theorem normalized_slice_equation {d : ℕ}
   change kineticTimeDerivative u ⟨z.1, x, z.2⟩ -
     matrixContraction (A z.1 z.2) (kineticVelocityHessian u ⟨z.1, x, z.2⟩) = _
   linarith only [h]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

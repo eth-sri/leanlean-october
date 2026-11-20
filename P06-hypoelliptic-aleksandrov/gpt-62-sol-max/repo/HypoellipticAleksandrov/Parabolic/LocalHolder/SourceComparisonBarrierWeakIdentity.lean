@@ -15,7 +15,10 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set Dirichlet
 open scoped ENNReal
 
-private theorem integrableOn_mul_compact_test {d : ℕ} {Ω : Set (PDE.Vec d)}
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+
+private theorem integrableOn_mul_compact_test
     {f g : PDE.Vec d → ℝ} (hf : ContinuousOn f Ω) (hg : Continuous g)
     (hgc : HasCompactSupport g) (hgs : tsupport g ⊆ Ω) :
     IntegrableOn (fun y => f y * g y) Ω := by
@@ -25,8 +28,7 @@ private theorem integrableOn_mul_compact_test {d : ℕ} {Ω : Set (PDE.Vec d)}
     ((Function.support_mul_subset_right f g).trans (subset_tsupport g))).mp hK).integrableOn
 
 /-- The smooth stationary barrier form equals its negative classical operator integral. -/
-theorem reverseTimeSpatialForm_stationary_barrier_weakIdentity {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T τ : ℝ) (A : CoefficientField d)
+theorem reverseTimeSpatialForm_stationary_barrier_weakIdentity (hΩ : IsOpen Ω) (T τ : ℝ) (A : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (q : PDE.H10Function Ω) (hq : ContDiff ℝ 2 q.toH1Function.toFun)
     (ha : ∀ i j, ContDiffOn ℝ 1 (fun y => A (T - τ) y i j) Ω)
@@ -109,5 +111,7 @@ theorem reverseTimeSpatialForm_stationary_barrier_weakIdentity {d : ℕ}
   rw [reverseTimeSpatialForm_smooth_barrier_test hΩ T τ A b c q
     (hq.of_le (by norm_num)) ψ]
   exact hid
+
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

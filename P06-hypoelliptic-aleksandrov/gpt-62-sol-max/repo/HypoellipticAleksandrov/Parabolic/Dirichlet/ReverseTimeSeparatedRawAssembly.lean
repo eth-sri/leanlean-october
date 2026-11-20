@@ -31,18 +31,10 @@ theorem reverseTime_global_separated_product_distribution_of_reverseTimeVariatio
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
@@ -149,8 +141,7 @@ theorem reverseTime_global_separated_product_distribution_of_reverseTimeVariatio
             reverseTimeDivergenceDrift r₁ a b τ y j * G j (τ, y) * psi y) * eta τ +
           reverseTimeScalarCoefficient r₁ c τ y * U (τ, y) * psi y * eta τ -
           reverseTimeScalarCoefficient r₁ F τ y * psi y * eta τ
-        ∂PDE.volumeOn Ω ∂reverseTimeVolume (r₁ - r₀) := by
-      exact integral_prod _ hraw
+        ∂PDE.volumeOn Ω ∂reverseTimeVolume (r₁ - r₀) := integral_prod _ hraw
     _ = _ := (integral_congr_ae hslice).trans hresidual
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

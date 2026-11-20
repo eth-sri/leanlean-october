@@ -1,6 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.HilbertWeakSequentialCompactness
+public import Mathlib.Analysis.InnerProductSpace.Dual
+public import Mathlib.Analysis.Normed.Module.WeakDual
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.WeakCompactLocal
 
 /-! Sequential weak compactness against continuous linear functionals in separable real Hilbert
 spaces. -/
@@ -21,7 +23,7 @@ theorem exists_strictMono_tendsto_clm_of_norm_le
     ∃ (v : H) (φ : ℕ → ℕ), StrictMono φ ∧
       ∀ ell : H →L[ℝ] ℝ,
         Tendsto (fun n => ell (u (φ n))) atTop (𝓝 (ell v)) := by
-  obtain ⟨v, φ, hφ, hinner⟩ := exists_strictMono_tendsto_inner_of_norm_le u R hu
+  obtain ⟨v, φ, hφ, hinner⟩ := _root_.HypoellipticAleksandrov.KineticAleksandrov.exists_hilbert_weak_subsequence u R hu
   refine ⟨v, φ, hφ, fun ell => ?_⟩
   let z := (InnerProductSpace.toDual ℝ H).symm ell
   simp_rw [← InnerProductSpace.toDual_symm_apply]

@@ -19,10 +19,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Parabolic Scaling
 
+section
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+include hf
+
 /-- Velocity translation leaves the velocity Hessian unchanged in moving coordinates. -/
-theorem movingLift_velocityHessian {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (tminus : ℝ) (x v : ℝ → PDE.Vec d)
+theorem movingLift_velocityHessian (tminus : ℝ) (x v : ℝ → PDE.Vec d)
     (P : KineticPoint d) :
     kineticVelocityHessian (movingLift f tminus x v) P =
       kineticVelocityHessian
@@ -45,18 +47,16 @@ theorem movingLift_velocityHessian {d : ℕ}
     (hg.contDiffAt.of_le (by norm_cast))
   simpa only [one_smul, one_pow, neg_add_eq_sub] using h
 
+section
+variable (s : ℝ) (y V : PDE.Vec d)
+
 /-- The source time slice is the raw time-direction derivative. -/
-theorem deriv_raw_time_slice {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (s : ℝ) (y V : PDE.Vec d) :
+theorem deriv_raw_time_slice :
     deriv (fun r => f (r, (y, V))) s = fderiv ℝ f (s, (y, V)) (1, (0, 0)) := by
-  have hc := (hasDerivAt_id s).prodMk (hasDerivAt_const s (y, V))
-  exact ((hf.differentiable (by norm_num) _).hasFDerivAt.comp_hasDerivAt s hc).deriv
+  exact ((hf.differentiable (by norm_num) _).hasFDerivAt.comp_hasDerivAt s ((hasDerivAt_id s).prodMk (hasDerivAt_const s (y, V)))).deriv
 
 /-- The source position-line derivative is the raw transport-direction derivative. -/
-theorem deriv_raw_position_line {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (s : ℝ) (y V : PDE.Vec d) :
+theorem deriv_raw_position_line :
     deriv (fun r : ℝ => f (s, (y + r • V, V))) 0 =
       fderiv ℝ f (s, (y, V)) (0, (V, 0)) := by
   have hx : HasDerivAt (fun r : ℝ => y + r • V) V 0 := by
@@ -64,6 +64,10 @@ theorem deriv_raw_position_line {d : ℕ}
   have hc := (hasDerivAt_const 0 s).prodMk (hx.prodMk (hasDerivAt_const 0 V))
   simpa only [Function.comp_def, zero_smul, add_zero] using
     ((hf.differentiable (by norm_num) _).hasFDerivAt.comp_hasDerivAt 0 hc).deriv
+
+end
+
+end
 
 /-- The complete source chain rule, with precisely the acceleration correction. -/
 theorem movingLift_backwardOperator {d : ℕ} (A : FullKineticCoefficient d)

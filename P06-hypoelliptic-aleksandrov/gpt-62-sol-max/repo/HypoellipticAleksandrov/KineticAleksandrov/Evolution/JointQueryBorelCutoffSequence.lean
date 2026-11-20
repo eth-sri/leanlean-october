@@ -37,28 +37,29 @@ theorem accumulatedCutoffs_bounds {E : Type*} (χ : ℕ → E → ℝ)
     dsimp only [accumulatedCutoffs]
     constructor <;> nlinarith only [ha.1, hprod, hnon]
 
+section
+variable {E : Type*} (χ : ℕ → E → ℝ) (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1)
+include hχ
+
 /-- Accumulated cutoffs increase pointwise. -/
-theorem monotone_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
-    (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) (x : E) :
+theorem monotone_accumulatedCutoffs (x : E) :
     Monotone (fun j => accumulatedCutoffs χ j x) := by
   apply monotone_nat_of_le_succ
   intro j
-  change accumulatedCutoffs χ j x ≤
-    accumulatedCutoffs χ j x + (1 - accumulatedCutoffs χ j x) * χ (j + 1) x
   exact le_add_of_nonneg_right (mul_nonneg
     (sub_nonneg.mpr (accumulatedCutoffs_bounds χ hχ j x).2) (hχ (j + 1) x).1)
 
 /-- The accumulated cutoff at an index dominates that index's input cutoff. -/
-theorem le_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
-    (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) (j : ℕ) (x : E) :
+theorem le_accumulatedCutoffs (j : ℕ) (x : E) :
     χ j x ≤ accumulatedCutoffs χ j x := by
   cases j with
   | zero => exact le_rfl
   | succ j =>
-    have ha := (accumulatedCutoffs_bounds χ hχ j x).1
-    have hp := mul_nonneg ha (sub_nonneg.mpr (hχ (j + 1) x).2)
+    have hp := mul_nonneg ((accumulatedCutoffs_bounds χ hχ j x).1) (sub_nonneg.mpr (hχ (j + 1) x).2)
     dsimp only [accumulatedCutoffs]
     nlinarith only [hp]
+
+end
 
 /-- Accumulation preserves smoothness, compact support and an interior support condition. -/
 theorem accumulatedCutoffs_regular

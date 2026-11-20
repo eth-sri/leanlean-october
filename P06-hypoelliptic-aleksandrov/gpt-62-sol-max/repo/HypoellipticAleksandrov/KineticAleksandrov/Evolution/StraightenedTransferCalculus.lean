@@ -72,11 +72,16 @@ variable {n}
 @[simp] theorem embedZCLM_apply (z : PDE.Vec n) : embedZCLM n z = spatialPack 0 z :=
   rfl
 
-@[simp] theorem projYCLM_apply (x : PDE.Vec (n + n)) : projYCLM n x = spatialY x :=
+section
+variable (x : PDE.Vec (n + n))
+
+@[simp] theorem projYCLM_apply : projYCLM n x = spatialY x :=
   rfl
 
-@[simp] theorem projZCLM_apply (x : PDE.Vec (n + n)) : projZCLM n x = spatialZ x :=
+@[simp] theorem projZCLM_apply : projZCLM n x = spatialZ x :=
   rfl
+
+end
 
 theorem embedYCLM_basisVec (i : Fin n) :
     embedYCLM n (PDE.basisVec i) = PDE.basisVec (Fin.castAdd n i) := by
@@ -112,15 +117,13 @@ variable {n : ℕ}
 
 theorem hasFDerivAt_pack_left (c z y : PDE.Vec n) :
     HasFDerivAt (fun y' : PDE.Vec n => spatialPack (y' - c) z) (embedYCLM n) y := by
-  have h := (embedYCLM n).hasFDerivAt (x := y) |>.add_const (spatialPack (-c) z)
-  convert h using 1
+  convert ((embedYCLM n).hasFDerivAt (x := y) |>.add_const (spatialPack (-c) z)) using 1
   funext y'
   rw [embedYCLM_apply, ← spatialPack_add, sub_eq_add_neg, zero_add]
 
 theorem hasFDerivAt_pack_right (w z : PDE.Vec n) :
     HasFDerivAt (fun z' : PDE.Vec n => spatialPack w z') (embedZCLM n) z := by
-  have h := (embedZCLM n).hasFDerivAt (x := z) |>.add_const (spatialPack w 0)
-  convert h using 1
+  convert ((embedZCLM n).hasFDerivAt (x := z) |>.add_const (spatialPack w 0)) using 1
   funext z'
   rw [embedZCLM_apply, ← spatialPack_add, add_zero, zero_add]
 

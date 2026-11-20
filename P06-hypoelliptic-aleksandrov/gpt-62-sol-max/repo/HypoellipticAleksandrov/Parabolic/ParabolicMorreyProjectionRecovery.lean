@@ -22,24 +22,16 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped BigOperators ENNReal Topology
 
-private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
-    {d : Nat} {Q : Set (TimeVelocity d)}
-    (hQpos : 0 < volume Q) (hQtop : volume Q < ∞) :
-    IsProbabilityMeasure (parabolicNormalizedVolumeOn Q) := by
-  refine ⟨?_⟩
-  rw [parabolicNormalizedVolumeOn, Measure.smul_apply,
-    Measure.restrict_apply_univ]
-  exact ENNReal.inv_mul_cancel hQpos.ne' hQtop.ne
-
 private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
+    (1 : ENNReal) ≤ parabolicExponent d := le_add_of_nonneg_left bot_le
+
+section
+variable {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+include hr
 
 /-- The parabolic-coordinate diameter of a literal closed unit-height forward
 box is at most twice its radius. -/
 theorem parabolicCoordinateDist_le_two_mul_radius_of_mem_parabolicClosedBox
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
     {z w : TimeVelocity d}
     (hz : z ∈ parabolicClosedBox 1 r t₀ v₀)
     (hw : w ∈ parabolicClosedBox 1 r t₀ v₀) :
@@ -74,7 +66,6 @@ theorem parabolicCoordinateDist_le_two_mul_radius_of_mem_parabolicClosedBox
   · exact hvelocity
 
 private theorem parabolicLpMeanNormOn_le_of_memLp_of_forall_mem_parabolicClosedBox
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
     (f : TimeVelocity d → Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀)))
@@ -116,6 +107,8 @@ private theorem parabolicLpMeanNormOn_le_of_memLp_of_forall_mem_parabolicClosedB
   have hreal := ENNReal.toReal_mono ENNReal.ofReal_ne_top hnorm
   simpa only [parabolicLpMeanNormOn_eq_toReal, parabolicELpMeanNormOn,
     ENNReal.toReal_ofReal hδ] using hreal
+
+end
 
 /-- A canonical affine moment projection is bounded at a point of the literal
 closed forward box by a uniform closed-box bound on an integrable input. -/
@@ -167,9 +160,12 @@ theorem abs_parabolicMorreyBoxAffineProjection_apply_le_of_memLp_of_forall_mem_p
     _ ≤ (1 + 3 * (d : Real)) * δ := by
       gcongr
 
-private theorem normalized_memLp_sub_const_of_continuous
-    {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u)
-    (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) (c : Real) :
+section
+variable {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u) (t₀ : Real) (v₀ : PDE.Vec d)
+  {r : Real} (hr : 0 < r) (c : Real)
+include hu hr
+
+private theorem normalized_memLp_sub_const_of_continuous :
     MemLp (fun w => u w - c) (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀)) := by
   have hpull : Continuous (pullbackScalar (fun w => u w - c) t₀ v₀ r) := by
@@ -183,10 +179,7 @@ private theorem normalized_memLp_sub_const_of_continuous
       (ENNReal.toReal_pos_iff.mp (volume_parabolicMorreyUnitBox_toReal_pos d)).1 hraw
   exact (memLp_parabolicNormalizedVolumeOn_parabolicBox_iff t₀ v₀ hr _).mpr hunit
 
-private theorem parabolicMorreyBoxAffineProjection_sub_const_apply_of_continuous
-    {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u)
-    (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
-    (c : Real) (z : TimeVelocity d) :
+private theorem parabolicMorreyBoxAffineProjection_sub_const_apply_of_continuous (z : TimeVelocity d) :
     parabolicMorreyBoxAffineProjection t₀ v₀ r (fun w => u w - c) z =
       parabolicMorreyBoxAffineProjection t₀ v₀ r u z - c := by
   obtain ⟨w, hw⟩ := parabolicAffine_surjective (t₀ := t₀) (v₀ := v₀) hr z
@@ -230,11 +223,15 @@ private theorem parabolicMorreyBoxAffineProjection_sub_const_apply_of_continuous
   rw [hconstant]
   ring
 
+end
+
+section
+variable {d : Nat}
+
 /-- Uniform closed-forward-box oscillation controls the error of the canonical
 affine projection at a closed-box point. -/
 theorem
-  abs_parabolicMorreyBoxAffineProjection_sub_apply_le_of_continuous_of_forall_mem_parabolicClosedBox
-    {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u)
+  abs_parabolicMorreyBoxAffineProjection_sub_apply_le_of_continuous_of_forall_mem_parabolicClosedBox (u : TimeVelocity d → Real) (hu : Continuous u)
     (z : TimeVelocity d) (t₀ : Real) (v₀ : PDE.Vec d) {r : Real}
     (hr : 0 < r) (hz : z ∈ parabolicClosedBox 1 r t₀ v₀)
     (δ : Real)
@@ -251,8 +248,7 @@ theorem
     u hu t₀ v₀ hr (u z) z] at hcore
   exact hcore
 
-private theorem dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r η : Real}
+private theorem dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt (t₀ : Real) (v₀ : PDE.Vec d) {r η : Real}
     (hr : 0 < r) (hrsmall : r ≤ 1 / 2)
     {z w : TimeVelocity d}
     (hz : z ∈ parabolicClosedBox 1 r t₀ v₀)
@@ -267,7 +263,6 @@ private theorem dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt
     have hnonneg : 0 ≤ 2 * r := by positivity
     have hsquare := (sq_le_sq₀ (Real.sqrt_nonneg _) hnonneg).mpr htimeRoot
     rwa [Real.sq_sqrt (abs_nonneg _)] at hsquare
-  have htwo : 2 * r ≤ 1 := by linarith
   have htime : |w.1 - z.1| ≤ 2 * r := by
     rw [abs_sub_comm]
     calc
@@ -283,8 +278,7 @@ private theorem dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt
 
 /-- Canonical affine moment projections on literal forward boxes shrinking to
 a point recover a continuous function at that point. -/
-theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous
-    {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u)
+theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous (u : TimeVelocity d → Real) (hu : Continuous u)
     (z : TimeVelocity d) (t : Nat → Real) (v : Nat → PDE.Vec d)
     (r : Nat → Real) (hr : ∀ n : Nat, 0 < r n)
     (hz : ∀ n : Nat, z ∈ parabolicClosedBox 1 (r n) (t n) (v n))
@@ -331,8 +325,7 @@ theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous
     _ < ε := half_lt_self hε
 
 /-- Smooth shrinking-box recovery, as the direct `ContDiff` specialization. -/
-theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_contDiff
-    {d : Nat} (u : TimeVelocity d → Real) (hu : ContDiff Real 2 u)
+theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_contDiff (u : TimeVelocity d → Real) (hu : ContDiff Real 2 u)
     (z : TimeVelocity d) (t : Nat → Real) (v : Nat → PDE.Vec d)
     (r : Nat → Real) (hr : ∀ n : Nat, 0 < r n)
     (hz : ∀ n : Nat, z ∈ parabolicClosedBox 1 (r n) (t n) (v n))
@@ -342,5 +335,7 @@ theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_contDiff
       atTop (nhds (u z)) := by
   exact tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous
     u hu.continuous z t v r hr hz hr0
+
+end
 
 end HypoellipticAleksandrov.Parabolic

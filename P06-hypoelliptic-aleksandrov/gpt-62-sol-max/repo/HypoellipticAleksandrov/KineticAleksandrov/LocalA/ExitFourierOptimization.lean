@@ -67,8 +67,7 @@ theorem exitFrequency_low_bound {A c y : ℝ} (hA : 1 ≤ A) (hc : 0 ≤ c) (hy 
     1 ≤ (A * Real.exp c) * Real.exp (-c * y) := by
   rw [mul_assoc, ← Real.exp_add]
   have hs : 0 ≤ c + -c * y := by
-    have h := mul_nonneg hc (sub_nonneg.mpr hy)
-    linarith only [h]
+    linarith only [(mul_nonneg hc (sub_nonneg.mpr hy))]
   calc
     1 ≤ Real.exp (c + -c * y) := by
       simpa only [Real.exp_zero] using Real.exp_le_exp.mpr hs

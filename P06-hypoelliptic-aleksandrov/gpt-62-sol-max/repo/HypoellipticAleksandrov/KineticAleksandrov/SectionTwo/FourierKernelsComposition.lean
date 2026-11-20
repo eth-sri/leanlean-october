@@ -17,8 +17,11 @@ instance fiberKernel_isFiniteKernel {d : ℕ} {Ω : Set (PDE.Vec d)}
     (σ τ : ℝ) (hστ : σ ≤ τ) : ProbabilityTheory.IsFiniteKernel (K.fiberKernel hΩ σ τ hστ) :=
   ⟨1, ENNReal.one_lt_top, K.fiberKernel_mass_le_one hΩ σ τ hστ⟩
 
+section
+variable {d : ℕ}
+
 /-- Integrals against the ambient master measure equal integrals against the derived fiber. -/
-theorem master_integral_eq_fiber {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem master_integral_eq_fiber {Ω : Set (PDE.Vec d)}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
     (f : EvolutionAmbientState d → ℂ) (hf : Measurable f) :
@@ -28,7 +31,7 @@ theorem master_integral_eq_fiber {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact integral_map measurable_subtype_coe.aemeasurable hf.aestronglyMeasurable
 
 /-- Fourier phases factor at the intermediate position, with the source sign convention. -/
-theorem fourierPhase_factor {d : ℕ} (ξ z : PDE.Vec d)
+theorem fourierPhase_factor (ξ z : PDE.Vec d)
     (w w' : EvolutionAmbientState d) :
     fourierPhase ξ z w' = fourierPhase ξ z w * fourierPhase ξ w.2 w' := by
   have hd : PDE.vecDot ξ (w'.2 - z) =
@@ -43,7 +46,7 @@ theorem fourierPhase_factor {d : ℕ} (ξ z : PDE.Vec d)
   rw [hd, Complex.ofReal_add, mul_add, Complex.exp_add]
 
 /-- Chapman--Kolmogorov gives iterated integration of every bounded Borel complex datum. -/
-theorem master_integral_composition {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem master_integral_composition {Ω : Set (PDE.Vec d)}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (hcomp : K.HasComposition hΩ) (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ)
     (p : EvolutionState Ω γ σ) (f : EvolutionAmbientState d → ℂ)
@@ -64,9 +67,13 @@ theorem master_integral_composition {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact Filter.Eventually.of_forall fun w =>
     (master_integral_eq_fiber K hΩ r τ hrτ w f hf).symm
 
+end
+
+section
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
+
 /-- Every Fourier kernel value has norm at most one, uniformly in the Borel set. -/
-theorem fourierKernel_apply_norm_le_one {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
+theorem fourierKernel_apply_norm_le_one
     (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d) (E : Set (PDE.Vec d)) :
     ‖fourierKernel K σ τ hστ ξ v E‖ ≤ 1 := by
   have he : (fourierKernel K σ τ hστ ξ v).variation E ≤ 1 :=
@@ -78,8 +85,7 @@ theorem fourierKernel_apply_norm_le_one {d : ℕ}
     ENNReal.toReal_mono ENNReal.one_ne_top he)
 
 /-- The Fourier kernel obeys temporal composition with complex multiplication pairing. -/
-theorem fourierKernel_composition {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
+theorem fourierKernel_composition
     (hcomp : K.HasComposition MeasurableSet.univ)
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0)
       MeasurableSet.univ K)
@@ -131,5 +137,7 @@ theorem fourierKernel_composition {d : ℕ}
     rfl
   · simp only [g, indicator_of_notMem
       (show w' ∉ E ×ˢ univ from fun hw => hw' hw.1), zero_mul]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

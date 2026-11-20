@@ -22,25 +22,17 @@ open scoped ENNReal NNReal ProbabilityTheory
 
 variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
 
-/-- The mass of `|η_T^ξ|` is at most `M · C exp(-c (T/2) |ξ|^{2/3})`. -/
+/-- A uniform bound for the half-time Fourier kernel controls the evolved mass. -/
 theorem halfMeasure_mass_le
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
-    (Cdec cdec : ℝ) (hdec : FourierDecayBoundedBy K Cdec cdec) (σ₀ : ℝ)
-    (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
-    [IsFiniteMeasure μ] {T : ℝ} (hT : 0 < T) (ξ : PDE.Vec d) :
-    (halfMeasure K σ₀ T hT.le μ ξ).variation univ ≤
-      μ univ * ENNReal.ofReal (Cdec * Real.exp
-        (-(cdec * (T / 2) * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) := by
-  unfold halfMeasure
-  refine evolved_variation_le μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)
-    (measurable_halfVelocity _) _ (fun x => ?_)
-  refine (fibreMeasure_variation_le K hcov σ₀ _ (le_halfTime σ₀ T hT.le) ξ x).trans ?_
-  have hlt : σ₀ < σ₀ + T / 2 := by linarith
-  have h := hdec σ₀ (σ₀ + T / 2) hlt x.1.1 ξ
-  have he : σ₀ + T / 2 - σ₀ = T / 2 := by ring
-  rw [he] at h
-  exact h
-
+    (σ₀ : ℝ) (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
+    [IsFiniteMeasure μ] {T : ℝ} (hT : 0 < T) (ξ : PDE.Vec d) {R : ℝ≥0∞}
+    (hdec : ∀ v, totalVariationNorm
+      (fourierKernel K σ₀ (σ₀ + T / 2) (le_halfTime σ₀ T hT.le) ξ v) ≤ R) :
+    (halfMeasure K σ₀ T hT.le μ ξ).variation univ ≤ μ univ * R := by
+  exact evolved_variation_le μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)
+    (measurable_halfVelocity _) _ (fun x =>
+      (fibreMeasure_variation_le K hcov σ₀ _ (le_halfTime σ₀ T hT.le) ξ x).trans (hdec x.1.1))
 
 /-- `β_γ ≥ 0` for `1 ≤ γ ≤ γ₀`. -/
 lemma slabBeta_nonneg {d : ℕ} (hd : 0 < d) {γ : ℝ} (hγ1 : 1 ≤ γ) (hγ2 : γ ≤ slabGamma0 d) :
@@ -73,27 +65,24 @@ lemma fourier_bound_arith (Cocc Cdec M E β T ρm : ℝ) (hC : 0 ≤ Cocc) (hCd 
     _ = (Cocc * Cdec * (2 : ℝ) ^ β) * M * T ^ β * E := by ring
 
 
-/-- **Lemma 5.1.**  Any integrable density `k^ξ` of the Fourier marginal
-satisfies `‖k^ξ‖_{L^γ} ≤ C_γ C 2^{β_γ} M T^{β_γ} exp(-(c/2) T |ξ|^{2/3})` for `1 ≤ γ ≤ γ₀`
-(`C_γ` the occupation constant, `C, c` the decay constants). -/
+/-- The Fourier marginal density inherits the occupation bound and the half-time mass factor. -/
 theorem slab_fourier_density_bound (hd : 0 < d)
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
     (hcomp : K.HasComposition MeasurableSet.univ)
     (Cocc : ℝ → ℝ) (hocc : OccupationBoundedBy K Cocc)
-    (Cdec cdec : ℝ) (hCdec : 0 < Cdec) (hdec : FourierDecayBoundedBy K Cdec cdec) (σ₀ : ℝ)
+    (Cdec E : ℝ) (hCdec : 0 < Cdec) (hE : 0 ≤ E) (σ₀ : ℝ)
     (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (ξ : PDE.Vec d) (k : SlabBase d → ℂ) (hk : Integrable k (slabBase d T))
     (hkE : ∀ E : Set (SlabBase d), MeasurableSet E →
       ∫ y in E, k y ∂slabBase d T =
         ∫ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
-          Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ) :
+          Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ)
+    (hhalf : (halfMeasure K σ₀ T hT.le μ ξ).variation univ ≤ μ univ * ENNReal.ofReal (Cdec * E)) :
     ∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
       eLpNorm k (ENNReal.ofReal γ) (slabBase d T) ≤
         ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
-          ENNReal.ofReal (T ^ slabBeta d γ) *
-          ENNReal.ofReal (Real.exp
-            (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) := by
+          ENNReal.ofReal (T ^ slabBeta d γ) * ENNReal.ofReal E := by
   intro γ hγ1 hγ2
   have hρfin : IsFiniteMeasure (halfMeasure K σ₀ T hT.le μ ξ).variation :=
     evolved_variation_finite μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)
@@ -126,22 +115,13 @@ theorem slab_fourier_density_bound (hd : 0 < d)
     exact ENNReal.ofReal_le_ofReal hbd
   have h2 := eLpNorm_slabShift_le gξ hgξ.1 hgξ.2.1 (T / 2) T (3 * T / 2) γ Cn hT.le
     (by linarith) (by linarith) hbd'
-  -- step 3: arithmetic
-  set E : ℝ := Real.exp (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))) with hE
-  have hE0 : 0 ≤ E := (Real.exp_pos _).le
-  have hmass := halfMeasure_mass_le K hcov Cdec cdec hdec σ₀ μ hT ξ
   have hrho : ((halfMeasure K σ₀ T hT.le μ ξ).variation univ).toReal ≤
       (μ univ).toReal * (Cdec * E) := by
-    have hexp : Real.exp (-(cdec * (T / 2) * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))) = E := by
-      rw [hE]; congr 1; ring
-    rw [hexp] at hmass
-    have hfin : μ univ * ENNReal.ofReal (Cdec * E) ≠ ⊤ :=
-      ENNReal.mul_ne_top (measure_ne_top _ _) ENNReal.ofReal_ne_top
-    have := ENNReal.toReal_mono hfin hmass
-    rwa [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by positivity)] at this
+    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by positivity : 0 ≤ Cdec * E)] using
+      ENNReal.toReal_mono (ENNReal.mul_ne_top (measure_ne_top _ _) ENNReal.ofReal_ne_top) hhalf
   have hCnle : Cn ≤ (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * (μ univ).toReal *
       T ^ slabBeta d γ * E :=
-    fourier_bound_arith _ _ _ _ _ _ _ hC0 hCdec.le ENNReal.toReal_nonneg hE0 hT hβ hrho
+    fourier_bound_arith _ _ _ _ _ _ _ hC0 hCdec.le ENNReal.toReal_nonneg hE hT hβ hrho
   have hfinal : ENNReal.ofReal Cn ≤
       ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
         ENNReal.ofReal (T ^ slabBeta d γ) * ENNReal.ofReal E := by

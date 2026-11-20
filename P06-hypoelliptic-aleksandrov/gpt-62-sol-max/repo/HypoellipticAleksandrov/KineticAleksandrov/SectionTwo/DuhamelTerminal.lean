@@ -27,16 +27,17 @@ theorem isOpen_duhamelCylinder (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ)
   rw [PDE.mem_translateSet_iff_sub_mem]
   rfl
 
+section
+variable (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
+  (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d) (S : TerminalOperatorFamily Ω γ)
+  (K : MovingFiberKernel Ω γ) (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
+  (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
+  (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d => g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
+  (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T)
+include hΩa hΩ hγ B b S hreal hg hc hs hU
+
 /-- The source integrand tends to its terminal datum at every interior terminal state. -/
-theorem duhamelSlice_leftLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
-    (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
-    (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T)
+theorem duhamelSlice_leftLimit
     (r : ℝ) (w : EvolutionAmbientState d)
     (hw : (KineticPoint.mk r w.1 w.2) ∈ evolutionPastOpenCylinder Ω γ T) :
     Tendsto (fun t => duhamelIntegrand K g ⟨t, w.1, w.2⟩ r)
@@ -64,15 +65,7 @@ theorem duhamelSlice_leftLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
   exact (duhamelIntegrand_eq_slice_solution hΩa K g r V hV.2.2.2.2.2 hVe _ ht).symm
 
 /-- The slice times a compact test has the precise terminal limit, also outside the test support. -/
-theorem duhamelSlice_terminalLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
-    (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
-    (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) (C : ℝ)
+theorem duhamelSlice_terminalLimit (C : ℝ)
     (hub : ∀ p r, |duhamelIntegrand K g p r| ≤ C)
     {ψ : EvolutionVec d → ℝ} (hψ : Continuous ψ)
     (hψs : tsupport ψ ⊆ evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T)
@@ -95,5 +88,7 @@ theorem duhamelSlice_terminalLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
       simpa only [mem_preimage, evolutionHomeomorph_apply, packQ, timeCoord_packPoint,
         diffusedCoord_packPoint, transportedCoord_packPoint] using hw
     exact (duhamelSlice_leftLimit hΩa hΩ hγ B b S K hreal g hg hc hs T hU r w hp).mul hψt
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

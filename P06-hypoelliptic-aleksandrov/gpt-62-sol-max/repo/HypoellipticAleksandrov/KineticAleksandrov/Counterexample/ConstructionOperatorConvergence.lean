@@ -32,7 +32,7 @@ theorem construction_smoothed_operator_tendsto_ae {d : ℕ} (hd : 1 ≤ d)
     ∀ᵐ q : XV d ∂volume, Tendsto (fun n => backwardOperator (fun _t x v => A (x, v))
       (smoothedZeroExtendedProfile h r mu R (standardMollifierSequence n)) ⟨t, q.1, q.2⟩)
       atTop (𝓝 (constructionExtendedSource h r mu R m A ⟨t, q.1, q.2⟩)) := by
-  have ht := construction_spatialMollify_tendsto_ae _
+  have ht := _root_.HypoellipticAleksandrov.KineticAleksandrov.Counterexample.spatialMollify_ae_tendsto _
     (construction_extendedTimeJet_locallyIntegrable h r mu R t)
   filter_upwards [ht, construction_selected_jets_tendsto_ae h r hr mu R m t] with q hqt hq
   have hx := tendsto_finsetSum Finset.univ (fun i _ =>
@@ -42,6 +42,6 @@ theorem construction_smoothed_operator_tendsto_ae {d : ℕ} (hd : 1 ≤ d)
   have he := (hqt.add hx).sub hh
   simp_rw [construction_smoothed_operator_eq hd ha ha1 h r mu R m hr hmu hR hm
     hscale hmargin]
-  simpa only [constructionExtendedSource, PDE.vecDot, matrixContraction] using! he
+  assumption
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

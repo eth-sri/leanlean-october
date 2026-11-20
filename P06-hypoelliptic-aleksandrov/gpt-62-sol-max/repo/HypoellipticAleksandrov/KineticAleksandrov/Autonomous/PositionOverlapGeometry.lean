@@ -9,10 +9,13 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
+section
+variable (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ) (e z : Point)
+  (he : e ∈ enlargedStartCell c s x j k) (hz : z ∈ enlargedStartCell c s x i ell)
+include c s x k ell he hz
+
 /-- Strict future support forces the source time-bin index to precede the output index. -/
-theorem positionOverlap_time_index (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ)
-    (e z : Point) (he : e ∈ enlargedStartCell c s x j k)
-    (hz : z ∈ enlargedStartCell c s x i ell) (ht : e.time < z.time) : j ≤ i := by
+theorem positionOverlap_time_index (ht : e.time < z.time) : j ≤ i := by
   by_contra hji
   have hj : i < j := lt_of_not_ge hji
   have helo := enlargedTimeBin_lower_strict c.r s e.time j (by omega) he.1
@@ -21,13 +24,12 @@ theorem positionOverlap_time_index (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : 
   nlinarith only [helo, hzup, hcast, sq_nonneg c.r, ht]
 
 /-- Elapsed time on a source-output pair is bounded by the index difference plus one. -/
-theorem positionOverlap_elapsed (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ)
-    (e z : Point) (he : e ∈ enlargedStartCell c s x j k)
-    (hz : z ∈ enlargedStartCell c s x i ell) :
+theorem positionOverlap_elapsed :
     z.time - e.time ≤ ((i : ℝ) - (j : ℝ) + 1) * c.r ^ 2 := by
   have helo := (enlargedTimeBin_bounds c.r s e.time j he.1).1
-  have hzup := (enlargedTimeBin_bounds c.r s z.time i hz.1).2
-  linarith only [helo, hzup]
+  linarith only [helo, ((enlargedTimeBin_bounds c.r s z.time i hz.1).2)]
+
+end
 
 /-- Speed at most `3r` permits only linearly many position-cell differences. -/
 theorem positionOverlap_position_index (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ)

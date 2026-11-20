@@ -20,9 +20,11 @@ private theorem piecewiseC1_add_const {n : ℕ} {Γ : ℝ → PDE.Vec n}
   obtain ⟨N, t, ht, h0, hl, hpiece⟩ := hΓ.2 a b hab
   exact ⟨N, t, ht, h0, hl, fun i => (hpiece i).add contDiffOn_const⟩
 
+section
+variable {n : ℕ} (c : PDE.Vec n) (r0 : ℝ) (Γ : ℝ → PDE.Vec n)
+
 /-- A moving ball with centre c is the zero-centred ball moved by the curve Γ + c. -/
-theorem movingDomain_ball_add_const {n : ℕ} (c : PDE.Vec n) (r0 : ℝ)
-    (Γ : ℝ → PDE.Vec n) (σ : ℝ) :
+theorem movingDomain_ball_add_const (σ : ℝ) :
     movingDomain (PDE.euclideanBall c r0) Γ σ =
       movingDomain (PDE.euclideanBall 0 r0) (fun s => Γ s + c) σ := by
   ext y
@@ -30,8 +32,7 @@ theorem movingDomain_ball_add_const {n : ℕ} (c : PDE.Vec n) (r0 : ℝ)
 
 /-- Moving the constant ball centre into the centre curve preserves the entire
 classical viscous terminal-solution predicate, with coefficients and operator unchanged. -/
-theorem isClassicalViscousTerminalSolution_ball_add_const_iff {n : ℕ}
-    (c : PDE.Vec n) (r0 : ℝ) (Γ : ℝ → PDE.Vec n)
+theorem isClassicalViscousTerminalSolution_ball_add_const_iff
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) (ε τ : ℝ)
     (F : BoundedBorel (EvolutionAmbientState n)) (v : KineticPoint n → ℝ) :
     IsClassicalViscousTerminalSolution (PDE.euclideanBall c r0) Γ B b ε τ F v ↔
@@ -41,9 +42,10 @@ theorem isClassicalViscousTerminalSolution_ball_add_const_iff {n : ℕ}
     evolutionPastInteriorRaw, evolutionPastOpenCylinder, evolutionTerminalClosure,
     evolutionLateralFrontier, movingDomain_ball_add_const c r0 Γ]
 
+end
+
 section Data
 
-variable (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement)
 variable {n : ℕ} (hn : 1 ≤ n) {lam Lam m Lb : ℝ}
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ Lb)
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
@@ -53,7 +55,7 @@ variable (hb : HasEuclideanLipschitzDrift Lb b) (hbco : HasUnitDirectionDriftCoe
 variable {c : PDE.Vec n}
 variable {Γ : ℝ → PDE.Vec n} (hΓ : IsContinuousPiecewiseC1 Γ) {r0 : ℝ} (hr0 : 0 < r0)
 
-include hLE hH hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ hr0
+include hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ hr0
 
 /-- The ball branch of the exhaustion limit with arbitrary centre: actual bounded classical
 viscous evolution and uniqueness, relative to explicit Lieberman and Hörmander inputs. -/
@@ -73,7 +75,7 @@ theorem exists_viscous_terminalSolution_ball
     simpa only [IsSmoothCompactTerminalDatum, evolutionStateSet,
       movingDomain_ball_add_const c r0 Γ] using hF
   obtain ⟨v, hv, hbound, huniq⟩ := exists_viscous_terminalSolution_innerBall
-    hLE hH hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco (piecewiseC1_add_const hΓ c) hr0
+    hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco (piecewiseC1_add_const hΓ c) hr0
     τ F hF0 ε hε hε1 C hC hFC
   have hK : evolutionPastClosedCylinder (PDE.euclideanBall c r0) Γ τ =
       evolutionPastClosedCylinder (PDE.euclideanBall 0 r0) (fun s => Γ s + c) τ := by

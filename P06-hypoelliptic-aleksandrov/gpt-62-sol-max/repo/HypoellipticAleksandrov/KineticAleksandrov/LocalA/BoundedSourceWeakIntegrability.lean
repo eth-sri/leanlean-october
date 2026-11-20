@@ -11,10 +11,12 @@ open MeasureTheory Set
 open scoped ENNReal
 variable {d : ℕ}
 
+section
+variable (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ) (hc : HasCompactSupport Λ)
+include hΛ hc
+
 /-- A measurable function bounded on a compact test's support is integrable with that weight. -/
-theorem integrable_compact_weight_bounded
-    (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ)
-    (hc : HasCompactSupport Λ) (f : ℝ × EvolutionAmbientState d → ℝ)
+theorem integrable_compact_weight_bounded (f : ℝ × EvolutionAmbientState d → ℝ)
     (hf : Measurable f) (C : ℝ) (_hC : 0 ≤ C)
     (hb : ∀ q, Λ q ≠ 0 → |f q| ≤ C) : Integrable (fun q => Λ q * f q) := by
   have hi : Integrable (fun q => C * ‖Λ q‖) :=
@@ -29,15 +31,12 @@ theorem integrable_compact_weight_bounded
   · exact (mul_le_mul_of_nonneg_left (hb q hq) (norm_nonneg _)).trans_eq (mul_comm _ _)
 
 /-- Positive-part weights remain continuous with compact support. -/
-theorem positive_weight_compact (Λ : ℝ × EvolutionAmbientState d → ℝ)
-    (hΛ : Continuous Λ) (hc : HasCompactSupport Λ) :
+theorem positive_weight_compact :
     Continuous (fun q => max (Λ q) 0) ∧ HasCompactSupport (fun q => max (Λ q) 0) :=
   ⟨hΛ.max continuous_const, hc.comp_left (g := fun r : ℝ => max r 0) (max_self 0)⟩
 
 /-- Positive and negative compact weights recover the signed weighted integral. -/
-theorem integral_positive_negative_weight_sub
-    (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ)
-    (hc : HasCompactSupport Λ) (f : ℝ × EvolutionAmbientState d → ℝ)
+theorem integral_positive_negative_weight_sub (f : ℝ × EvolutionAmbientState d → ℝ)
     (hf : Measurable f) (C : ℝ) (hC : 0 ≤ C)
     (hb : ∀ q, Λ q ≠ 0 → |f q| ≤ C) :
     (∫ q, max (Λ q) 0 * f q) - (∫ q, max (-Λ q) 0 * f q) = ∫ q, Λ q * f q := by
@@ -59,5 +58,7 @@ theorem integral_positive_negative_weight_sub
   intro q
   change max (Λ q) 0 * f q - max (-Λ q) 0 * f q = Λ q * f q
   rw [← sub_mul, max_zero_sub_max_neg_zero_eq_self]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

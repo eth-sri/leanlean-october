@@ -52,8 +52,7 @@ theorem comparison_freeTransport_stays {d : ℕ}
     ∃ η : ℝ, 0 < η ∧ ∀ h : ℝ, 0 ≤ h → h < η →
       (⟨P.time + h,P.position + h • P.velocity,P.velocity⟩ : KineticPoint d) ∈
         closure (forwardCylinder Z₀ R hR) := by
-  have hb := closure_forwardCylinder_bounds Z₀ R hR hP
-  rcases hb with ⟨⟨ht0,ht1⟩,hx,hv⟩
+  rcases (closure_forwardCylinder_bounds Z₀ R hR hP) with ⟨⟨ht0,ht1⟩,hx,hv⟩
   change Z₀.time ≤ P.time at ht0
   change P.time ≤ Z₀.time + R ^ 2 at ht1
   have htime : P.time < Z₀.time + R ^ 2 := by

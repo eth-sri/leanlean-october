@@ -20,14 +20,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
-private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
-    (u : TimeVelocity d -> Real) :
-    0 <= parabolicMorreyDerivativeLpNorm d u := by
-  unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
-  refine add_nonneg ENNReal.toReal_nonneg ?_
-  refine Finset.sum_nonneg fun _ _ => ?_
-  refine Finset.sum_nonneg fun _ _ => ENNReal.toReal_nonneg
-
 /-- At the dyadic scale comparable to two reference points, the smooth value
 minus the canonical common forward-box affine projection has Morrey decay. -/
 theorem exists_parabolicMorreyDyadicNearbyAffineModuloDecayConst
@@ -38,28 +30,22 @@ theorem exists_parabolicMorreyDyadicNearbyAffineModuloDecayConst
         (w : TimeVelocity d)
         (hw : w ∈ parabolicDyadicReferenceCell d)
         (n : Nat),
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).radius ≤
+        (parabolicDyadicSelectedBox z hz n).radius ≤
             parabolicCoordinateDist z w →
         parabolicCoordinateDist z w <
-          2 * (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).radius →
+          2 * (parabolicDyadicSelectedBox z hz n).radius →
         ∀ u : TimeVelocity d -> Real, ContDiff Real 2 u ->
           HasCompactSupport u ->
           |(u z - parabolicMorreyBoxAffineProjection
               (min
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz n).2).baseTime
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d w hw n).2).baseTime)
+                (parabolicDyadicSelectedBox z hz n).baseTime
+                (parabolicDyadicSelectedBox w hw n).baseTime)
               ((z.2 + w.2) / 2)
               (3 * parabolicCoordinateDist z w) u z) -
             (u w - parabolicMorreyBoxAffineProjection
               (min
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz n).2).baseTime
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d w hw n).2).baseTime)
+                (parabolicDyadicSelectedBox z hz n).baseTime
+                (parabolicDyadicSelectedBox w hw n).baseTime)
               ((z.2 + w.2) / 2)
               (3 * parabolicCoordinateDist z w) u w)| ≤
             C * (parabolicCoordinateDist z w) ^ parabolicMorreyExponent d *
@@ -81,8 +67,6 @@ theorem exists_parabolicMorreyDyadicNearbyAffineModuloDecayConst
   have hbeta_pos : 0 < beta := by
     dsimp only [beta]
     positivity
-  have htwopow_pos : 0 < (2 : Real) ^ (-alpha) :=
-    Real.rpow_pos_of_pos (by norm_num) _
   have htwopow_lt_one : (2 : Real) ^ (-alpha) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (neg_lt_zero.mpr halpha_pos)
   have hgeom_pos : 0 < geom := by
@@ -95,190 +79,55 @@ theorem exists_parabolicMorreyDyadicNearbyAffineModuloDecayConst
   · dsimp only [C]
     positivity
   intro z hz w hw n hscale hscale_upper u hu huc
-  let rho : Real := parabolicCoordinateDist z w
-  let qz := parabolicDyadicSourceBox
-    (parabolicDyadicAddressContaining d z hz n).2
-  let qw := parabolicDyadicSourceBox
-    (parabolicDyadicAddressContaining d w hw n).2
-  let tMin : Real := min qz.baseTime qw.baseTime
-  let vMid : PDE.Vec d := (z.2 + w.2) / 2
-  have hqz_pos : 0 < qz.radius := by
-    dsimp only [qz]
-    exact parabolicDyadicSourceBox_radius_pos _
-  have hrho_pos : 0 < rho := by
-    dsimp only [rho]
-    exact lt_of_lt_of_le hqz_pos hscale
-  have hqw_radius : qz.radius = qw.radius := by
-    change ((2 : Real) ^ n)⁻¹ = ((2 : Real) ^ n)⁻¹
-    rfl
-  have hqw_pos : 0 < qw.radius := by simpa only [hqw_radius] using hqz_pos
-  have hscale_w : qw.radius ≤ rho := by simpa only [qz, qw, rho] using! hscale
-  have hscale_upper_w : rho < 2 * qw.radius := by
-    simpa only [qz, qw, rho] using! hscale_upper
-  have hbig_pos : 0 < 3 * rho := mul_pos (by norm_num) hrho_pos
-  obtain ⟨hsub_z, hsub_w, -, -⟩ :=
-    parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox d z hz w hw n hscale
-  have hz_closed : z ∈ parabolicClosedBox 1 qz.radius qz.baseTime qz.center := by
-    change z ∈ parabolicClosedBox 1
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).radius
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).baseTime
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d z hz n)).center
-    exact parabolicDyadicAddressContaining_mem_closedForwardBox d z hz n
-  have hw_closed : w ∈ parabolicClosedBox 1 qw.radius qw.baseTime qw.center := by
-    change w ∈ parabolicClosedBox 1
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).radius
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).baseTime
-      (parabolicDyadicSourceBox
-        (parabolicDyadicIndexContaining d w hw n)).center
-    exact parabolicDyadicAddressContaining_mem_closedForwardBox d w hw n
-  obtain ⟨hres, hmean⟩ := hresidual tMin vMid (3 * rho) hbig_pos u hu huc
-  have hratio_z : 3 * rho / qz.radius ≤ 6 := by
-    apply (div_le_iff₀ hqz_pos).mpr
-    nlinarith [hscale_upper]
-  have hratio_w : 3 * rho / qw.radius ≤ 6 := by
-    apply (div_le_iff₀ hqw_pos).mpr
-    nlinarith [hscale_upper_w]
-  have hratio_z_nonneg : 0 ≤ 3 * rho / qz.radius :=
-    (div_pos (mul_pos (by norm_num) hrho_pos) hqz_pos).le
-  have hratio_w_nonneg : 0 ≤ 3 * rho / qw.radius :=
-    (div_pos (mul_pos (by norm_num) hrho_pos) hqw_pos).le
-  have hratio_z_rpow : (3 * rho / qz.radius) ^ beta ≤ 6 ^ beta :=
-    Real.rpow_le_rpow hratio_z_nonneg hratio_z hbeta_pos.le
-  have hratio_w_rpow : (3 * rho / qw.radius) ^ beta ≤ 6 ^ beta :=
-    Real.rpow_le_rpow hratio_w_nonneg hratio_w hbeta_pos.le
-  have hD_nonneg : 0 ≤ parabolicMorreyDerivativeLpNorm d u :=
-    parabolicMorreyDerivativeLpNorm_nonneg d u
-  have hbig_rpow : (3 * rho) ^ alpha = 3 ^ alpha * rho ^ alpha := by
-    rw [Real.mul_rpow (by norm_num : (0 : Real) ≤ 3) hrho_pos.le]
-  have htail_z := htail z hz u hu huc n
-  have htail_w := htail w hw u hu huc n
-  have htail_z_bound :
-      |u z - parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z| ≤
-        C_tail * geom * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by
-    calc
-      |u z - parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z| ≤
-          C_tail * qz.radius ^ alpha * geom * parabolicMorreyDerivativeLpNorm d u := by
-            simpa only [qz, alpha, geom] using htail_z
-      _ ≤ C_tail * rho ^ alpha * geom * parabolicMorreyDerivativeLpNorm d u := by
-            gcongr
-      _ = C_tail * geom * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by ring
-  have htail_w_bound :
-      |u w - parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w| ≤
-        C_tail * geom * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by
-    calc
-      |u w - parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w| ≤
-          C_tail * qw.radius ^ alpha * geom * parabolicMorreyDerivativeLpNorm d u := by
-            simpa only [qw, alpha, geom] using htail_w
-      _ ≤ C_tail * rho ^ alpha * geom * parabolicMorreyDerivativeLpNorm d u := by
-            gcongr
-      _ = C_tail * geom * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by ring
-  have hcompare_z := parabolicMorreyNestedProjection_abs_sub_le_largeResidual_closed
-    tMin vMid hbig_pos qz.baseTime qz.center hqz_pos hsub_z u z hz_closed hres
-  have hcompare_w := parabolicMorreyNestedProjection_abs_sub_le_largeResidual_closed
-    tMin vMid hbig_pos qw.baseTime qw.center hqw_pos hsub_w u w hw_closed hres
-  have hmean_nonneg : 0 ≤ parabolicLpMeanNormOn d
-      (fun x => u x - parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u x)
-      (parabolicBox 1 (3 * rho) tMin vMid) hres := by
+  let rho := parabolicCoordinateDist z w
+  let qz := parabolicDyadicSelectedBox z hz n
+  let qw := parabolicDyadicSelectedBox w hw n
+  let tMin := min qz.baseTime qw.baseTime
+  let vMid := (z.2 + w.2) / 2
+  let F := parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u
+  let D := parabolicMorreyDerivativeLpNorm d u
+  have hD : 0 ≤ D := parabolicMorreyDerivativeLpNorm_nonneg d u
+  have hrho : 0 < rho := (parabolicDyadicSourceBox_radius_pos _).trans_le hscale
+  have hbig : 0 < 3 * rho := by positivity
+  obtain ⟨hsz, hsw, _, _⟩ := parabolicDyadicSelectedForwardBoxes_subset_nearbyCommonBox
+    d z hz w hw n hscale
+  obtain ⟨hres, hmean⟩ := hresidual tMin vMid (3 * rho) hbig u hu huc
+  let M := parabolicLpMeanNormOn d (fun x => u x - F x) (parabolicBox 1 (3 * rho) tMin vMid) hres
+  have hM : 0 ≤ M := by
+    dsimp only [M]
     rw [parabolicLpMeanNormOn_eq_toReal]
     exact ENNReal.toReal_nonneg
-  have hnear_z :
-      |parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z -
-          parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u z| ≤
-        K * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by
-    calc
-      |parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z -
-          parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u z| ≤
-          (1 + 3 * (d : Real)) * (3 * rho / qz.radius) ^ beta *
-            parabolicLpMeanNormOn d
-              (fun x => u x -
-                parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u x)
-              (parabolicBox 1 (3 * rho) tMin vMid) hres := by
-            simpa only [beta] using hcompare_z
-      _ ≤ (1 + 3 * (d : Real)) * 6 ^ beta *
-            (C_P * (2 : Real) ^ (-(d : Real) / ((d : Real) + 1)) *
-              (3 * rho) ^ alpha * parabolicMorreyDerivativeLpNorm d u) := by
-            gcongr
-      _ = K * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by
-            rw [hbig_rpow]
-            dsimp only [K]
-            ring
-  have hnear_w :
-      |parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w -
-          parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u w| ≤
-        K * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by
-    calc
-      |parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w -
-          parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u w| ≤
-          (1 + 3 * (d : Real)) * (3 * rho / qw.radius) ^ beta *
-            parabolicLpMeanNormOn d
-              (fun x => u x -
-                parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u x)
-              (parabolicBox 1 (3 * rho) tMin vMid) hres := by
-            simpa only [beta] using hcompare_w
-      _ ≤ (1 + 3 * (d : Real)) * 6 ^ beta *
-            (C_P * (2 : Real) ^ (-(d : Real) / ((d : Real) + 1)) *
-              (3 * rho) ^ alpha * parabolicMorreyDerivativeLpNorm d u) := by
-            gcongr
-      _ = K * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by
-            rw [hbig_rpow]
-            dsimp only [K]
-            ring
+  have hbigpow := Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 3) hrho.le (z := alpha)
+  have approx (p : TimeVelocity d) (hp : p ∈ parabolicDyadicReferenceCell d)
+      (hsub : inkSpotsSourceBox (parabolicDyadicSelectedBox p hp n) ⊆
+        parabolicBox 1 (3 * rho) tMin vMid) :
+      |u p - F p| ≤ (C_tail * geom + K) * rho ^ alpha * D := by
+    let q := parabolicDyadicSelectedBox p hp n
+    let G := parabolicMorreyBoxAffineProjection q.baseTime q.center q.radius u
+    have hq : 0 < q.radius := parabolicDyadicSourceBox_radius_pos _
+    have hs : q.radius ≤ rho := hscale
+    have hl : rho < 2 * q.radius := hscale_upper
+    have hratio : 3 * rho / q.radius ≤ 6 := (div_le_iff₀ hq).mpr (by linarith)
+    have hpow := Real.rpow_le_rpow (div_nonneg hbig.le hq.le) hratio hbeta_pos.le
+    have ht : |u p - G p| ≤ C_tail * q.radius ^ alpha * geom * D := htail p hp u hu huc n
+    have ht' : |u p - G p| ≤ C_tail * rho ^ alpha * geom * D := ht.trans (by gcongr)
+    have hc : |G p - F p| ≤ (1 + 3 * (d : ℝ)) * (3 * rho / q.radius) ^ beta * M :=
+      parabolicMorreyNestedProjection_abs_sub_le_largeResidual_closed tMin vMid hbig
+        q.baseTime q.center hq hsub u p
+        (parabolicDyadicAddressContaining_mem_closedForwardBox d p hp n) hres
+    have hc' : |G p - F p| ≤ K * rho ^ alpha * D := by
+      calc
+        _ ≤ (1 + 3 * (d : ℝ)) * (3 * rho / q.radius) ^ beta * M := hc
+        _ ≤ (1 + 3 * (d : ℝ)) * 6 ^ beta *
+            (C_P * (2 : ℝ) ^ (-(d : ℝ) / ((d : ℝ) + 1)) * (3 * rho) ^ alpha * D) := by
+          gcongr
+        _ = _ := by rw [hbigpow]; dsimp only [K]; ring
+    convert (abs_sub_le (u p) (G p) (F p)).trans (add_le_add ht' hc') using 1 <;> ring
+  change |(u z - F z) - (u w - F w)| ≤ C * rho ^ alpha * D
   calc
-    |(u z - parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u z) -
-        (u w - parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u w)| =
-        |(u z - parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z) +
-          (parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z -
-            parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u z) -
-          ((u w - parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w) +
-            (parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w -
-              parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u w))| := by
-                congr 1
-                ring
-    _ ≤ |u z - parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z| +
-          |parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z -
-            parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u z| +
-          (|u w - parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w| +
-            |parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w -
-              parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u w|) := by
-        calc
-          _ ≤ |(u z - parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z) +
-              (parabolicMorreyBoxAffineProjection qz.baseTime qz.center qz.radius u z -
-                parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u z)| +
-              |(u w - parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w) +
-                (parabolicMorreyBoxAffineProjection qw.baseTime qw.center qw.radius u w -
-                  parabolicMorreyBoxAffineProjection tMin vMid (3 * rho) u w)| := by
-                    simpa only [sub_zero, zero_sub, abs_neg] using
-                      abs_sub_le
-                        ((u z - parabolicMorreyBoxAffineProjection
-                            qz.baseTime qz.center qz.radius u z) +
-                          (parabolicMorreyBoxAffineProjection
-                            qz.baseTime qz.center qz.radius u z -
-                            parabolicMorreyBoxAffineProjection
-                              tMin vMid (3 * rho) u z))
-                        0
-                        ((u w - parabolicMorreyBoxAffineProjection
-                            qw.baseTime qw.center qw.radius u w) +
-                          (parabolicMorreyBoxAffineProjection
-                            qw.baseTime qw.center qw.radius u w -
-                            parabolicMorreyBoxAffineProjection
-                              tMin vMid (3 * rho) u w))
-          _ ≤ _ := add_le_add (abs_add_le _ _) (abs_add_le _ _)
-    _ ≤ (C_tail * geom * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u) +
-          (K * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u) +
-          ((C_tail * geom * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u) +
-            (K * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u)) :=
-        add_le_add (add_le_add htail_z_bound hnear_z)
-          (add_le_add htail_w_bound hnear_w)
-    _ = 2 * (C_tail * geom + K) * rho ^ alpha *
-          parabolicMorreyDerivativeLpNorm d u := by ring
-    _ = C * rho ^ alpha * parabolicMorreyDerivativeLpNorm d u := by
-        rfl
-    _ = _ := by
-        simp only [rho, alpha]
+    _ ≤ |u z - F z| + |u w - F w| := by
+      simpa only [sub_zero, zero_sub, abs_neg] using abs_sub_le (u z - F z) 0 (u w - F w)
+    _ ≤ _ := add_le_add (approx z hz hsz) (approx w hw hsw)
+    _ = C * rho ^ alpha * D := by dsimp only [C]; ring
 
 end HypoellipticAleksandrov.Parabolic

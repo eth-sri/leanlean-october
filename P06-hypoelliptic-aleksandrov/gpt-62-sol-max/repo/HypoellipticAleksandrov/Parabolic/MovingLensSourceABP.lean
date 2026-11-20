@@ -5,7 +5,7 @@ public import Mathlib.Analysis.Calculus.Deriv.Prod
 public import HypoellipticAleksandrov.Parabolic.MovingLensChart
 public import HypoellipticAleksandrov.Parabolic.ContactMap
 public import HypoellipticAleksandrov.Parabolic.MovingLensSign
-public import HypoellipticAleksandrov.Parabolic.JacobianLocal
+public import HypoellipticAleksandrov.Parabolic.Jacobian
 public import HypoellipticAleksandrov.Parabolic.AreaFormula
 public import Mathlib.Analysis.Calculus.LocalExtr.Basic
 public import Mathlib.Topology.Order.Compact
@@ -13,6 +13,7 @@ public import Mathlib.Topology.Order.IntermediateValue
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
+import HypoellipticAleksandrov.Parabolic.ForwardPropagationGeometry
 
 /-!
 # Physical moving-lens first contact
@@ -52,22 +53,6 @@ private theorem movingLensSignXi_nonneg {kappa : ℝ} (hkappa : 0 < kappa) :
     0 ≤ movingLensSignXi kappa := by
   unfold movingLensSignXi
   positivity
-
-private theorem movingLensDenominator_lt_kappa_sq
-    {kappa eps tau t : ℝ} (hkappa : 0 < kappa)
-    (heps_small : 2 * eps ^ 2 < kappa ^ 2) (ht : t ≤ tau)
-    (htau_kappa : tau ≤ kappa⁻¹) :
-    movingLensDenominator (movingLensSignXi kappa) eps t < kappa ^ 2 := by
-  have hxi := movingLensSignXi_nonneg hkappa
-  have hslope : movingLensSignXi kappa * t ≤ kappa ^ 2 / 2 := by
-    calc
-      movingLensSignXi kappa * t ≤ movingLensSignXi kappa * kappa⁻¹ :=
-        mul_le_mul_of_nonneg_left (ht.trans htau_kappa) hxi
-      _ = kappa ^ 2 / 2 := by
-        unfold movingLensSignXi
-        field_simp [hkappa.ne']
-  unfold movingLensDenominator
-  nlinarith
 
 private theorem vecEuclideanNorm_le_of_sq_le
     {d : ℕ} {v : PDE.Vec d} {R : ℝ}
@@ -138,79 +123,6 @@ private theorem movingLensClosed_velocity_norm_lt_footprint
     _ < kappa + Real.sqrt d * kappa ^ (-3 : ℤ) :=
       add_lt_add_of_lt_of_le hdisp htime_norm
 
-private theorem affineVelocity_pos_on_movingLens
-    {d : ℕ} {kappa tau eps M h : ℝ} {y p : PDE.Vec d}
-    (hkappa : 0 < kappa) (htau_kappa : tau ≤ kappa⁻¹)
-    (heps_small : 2 * eps ^ 2 < kappa ^ 2)
-    (hy : PDE.vecNormSq y ≤ (d : ℝ) * kappa ^ (-4 : ℤ))
-    (hM : 0 < M) (hh : M / 2 < h)
-    (hp : p ∈ PDE.euclideanBall (0 : PDE.Vec d)
-      (M / (4 * movingLensVelocityFootprint d kappa)))
-    {z : TimeVelocity d}
-    (hz : z ∈ movingLensClosed (movingLensSignXi kappa) eps tau y) :
-    0 < affineVelocity 0 h p z.2 := by
-  have hR : 0 < movingLensVelocityFootprint d kappa := by
-    unfold movingLensVelocityFootprint
-    positivity
-  have hpNorm : PDE.vecEuclideanNorm p <
-      M / (4 * movingLensVelocityFootprint d kappa) := by
-    simpa using (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt
-      (x₀ := (0 : PDE.Vec d)) (x := p)
-      (R := M / (4 * movingLensVelocityFootprint d kappa)) (by positivity)).mp hp
-  have hzNorm : PDE.vecEuclideanNorm z.2 < movingLensVelocityFootprint d kappa :=
-    movingLensClosed_velocity_norm_lt_footprint hkappa htau_kappa heps_small hy hz
-  have hprod : PDE.vecEuclideanNorm p * PDE.vecEuclideanNorm z.2 < M / 4 := by
-    calc
-      PDE.vecEuclideanNorm p * PDE.vecEuclideanNorm z.2 ≤
-          PDE.vecEuclideanNorm p * movingLensVelocityFootprint d kappa :=
-        mul_le_mul_of_nonneg_left hzNorm.le (PDE.vecEuclideanNorm_nonneg p)
-      _ < (M / (4 * movingLensVelocityFootprint d kappa)) *
-          movingLensVelocityFootprint d kappa :=
-        mul_lt_mul_of_pos_right hpNorm hR
-      _ = M / 4 := by field_simp [hR.ne']
-  have hdot : -(M / 4) < PDE.vecDot p z.2 := by
-    nlinarith [neg_abs_le (PDE.vecDot p z.2),
-      (PDE.abs_vecDot_le_vecEuclideanNorm_mul p z.2).trans_lt hprod]
-  rw [affineVelocity_apply]
-  simp only [sub_zero]
-  linarith
-
-private theorem affineVelocity_lt_on_movingLens
-    {d : ℕ} {kappa tau eps M h : ℝ} {y p : PDE.Vec d}
-    (hkappa : 0 < kappa) (htau_kappa : tau ≤ kappa⁻¹)
-    (heps_small : 2 * eps ^ 2 < kappa ^ 2)
-    (hy : PDE.vecNormSq y ≤ (d : ℝ) * kappa ^ (-4 : ℤ))
-    (hM : 0 < M) (hh : h < 3 * M / 4)
-    (hp : p ∈ PDE.euclideanBall (0 : PDE.Vec d)
-      (M / (4 * movingLensVelocityFootprint d kappa)))
-    {z : TimeVelocity d}
-    (hz : z ∈ movingLensClosed (movingLensSignXi kappa) eps tau y) :
-    affineVelocity 0 h p z.2 < M := by
-  have hR : 0 < movingLensVelocityFootprint d kappa := by
-    unfold movingLensVelocityFootprint
-    positivity
-  have hpNorm : PDE.vecEuclideanNorm p <
-      M / (4 * movingLensVelocityFootprint d kappa) := by
-    simpa using (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt
-      (x₀ := (0 : PDE.Vec d)) (x := p)
-      (R := M / (4 * movingLensVelocityFootprint d kappa)) (by positivity)).mp hp
-  have hzNorm : PDE.vecEuclideanNorm z.2 < movingLensVelocityFootprint d kappa :=
-    movingLensClosed_velocity_norm_lt_footprint hkappa htau_kappa heps_small hy hz
-  have hprod : PDE.vecEuclideanNorm p * PDE.vecEuclideanNorm z.2 < M / 4 := by
-    calc
-      PDE.vecEuclideanNorm p * PDE.vecEuclideanNorm z.2 ≤
-          PDE.vecEuclideanNorm p * movingLensVelocityFootprint d kappa :=
-        mul_le_mul_of_nonneg_left hzNorm.le (PDE.vecEuclideanNorm_nonneg p)
-      _ < (M / (4 * movingLensVelocityFootprint d kappa)) *
-          movingLensVelocityFootprint d kappa :=
-        mul_lt_mul_of_pos_right hpNorm hR
-      _ = M / 4 := by field_simp [hR.ne']
-  have hdot : PDE.vecDot p z.2 < M / 4 :=
-    lt_of_le_of_lt (le_abs_self _) ((PDE.abs_vecDot_le_vecEuclideanNorm_mul p z.2).trans_lt hprod)
-  rw [affineVelocity_apply]
-  simp only [sub_zero]
-  linarith
-
 private theorem movingLensChartInv_mem_closed
     {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d}
     (hxi : 0 ≤ xi) (heps : 0 < eps) {q : TimeVelocity d}
@@ -225,52 +137,12 @@ private theorem movingLensChartInv_mem_closed
     exact movingLensChartInv_apply_movingLensChart hxi heps hz.1
   rwa [hEq]
 
-private theorem affineVelocity_line_deriv_at_zero
-    {d : ℕ} (h : ℝ) (p v : PDE.Vec d) (i : Fin d) :
-    HasDerivAt
-      (fun r : ℝ => affineVelocity 0 h p
-        (v + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
-      (p i) 0 := by
-  let e : PDE.Vec d := Pi.single i 1
-  change HasDerivAt (fun r : ℝ => affineVelocity 0 h p (v + r • e)) (p i) 0
-  have hfun :
-      (fun r : ℝ => affineVelocity 0 h p (v + r • e)) =
-        fun r => affineVelocity 0 h p v + r * p i := by
-    classical
-    funext r
-    have hsingle : (∑ x : Fin d, p x * r * e x) = r * p i := by
-      dsimp [e]
-      rw [Fintype.sum_eq_single i]
-      · simp
-        ring
-      · intro x hxi
-        simp [hxi]
-    unfold affineVelocity PDE.vecDot
-    simp only [Pi.add_apply, Pi.smul_apply, Pi.sub_apply, Pi.zero_apply, smul_eq_mul,
-      sub_zero]
-    have hsplit :
-        h + (∑ x, p x * (v x + r * e x)) =
-          h + (∑ x, p x * v x) + (∑ x, p x * r * e x) := by
-      calc
-        h + (∑ x, p x * (v x + r * e x)) =
-            h + (∑ x, (p x * v x + p x * r * e x)) := by
-              congr 1
-              apply Finset.sum_congr rfl
-              intro x hx
-              ring
-        _ = h + (∑ x, p x * v x) + (∑ x, p x * r * e x) := by
-              rw [Finset.sum_add_distrib]
-              ring
-    rw [hsplit, hsingle]
-  rw [hfun]
-  simpa only [one_mul] using
-    ((hasDerivAt_id' (𝕜 := ℝ) 0).mul_const (p i)).const_add
-      (affineVelocity 0 h p v)
+section
+variable {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d} {z : TimeVelocity d} (hxi : 0 ≤ xi)
+  (heps : 0 < eps) (hz : z ∈ movingLensClosed xi eps tau y)
+include hxi heps hz
 
-private theorem movingLensChart_path_mem_closed
-    {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d} {z : TimeVelocity d}
-    (hxi : 0 ≤ xi) (heps : 0 < eps)
-    (hz : z ∈ movingLensClosed xi eps tau y) {s : ℝ}
+private theorem movingLensChart_path_mem_closed {s : ℝ}
     (hs : s ∈ Set.Icc 0 z.1) :
     movingLensChartInv xi eps y (s, (movingLensChart xi eps y z).2) ∈
       movingLensClosed xi eps tau y := by
@@ -287,15 +159,14 @@ private theorem movingLensChart_path_mem_closed
     exact ⟨hs.1, hs.2, hzChart.2.2⟩
   exact ⟨hpathTrunc.1, hpathTrunc.2.1.trans hz.2.1, hpathTrunc.2.2⟩
 
-private theorem movingLensChart_path_initial_mem_causalBoundary
-    {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d} {z : TimeVelocity d}
-    (hxi : 0 ≤ xi) (heps : 0 < eps)
-    (hz : z ∈ movingLensClosed xi eps tau y) :
+private theorem movingLensChart_path_initial_mem_causalBoundary :
     movingLensChartInv xi eps y (0, (movingLensChart xi eps y z).2) ∈
       movingLensClosed xi eps tau y \ movingLensActive xi eps tau y := by
   refine ⟨movingLensChart_path_mem_closed hxi heps hz ⟨le_rfl, hz.1⟩, ?_⟩
   intro hactive
   exact (ne_of_gt hactive.1) (by simp [movingLensChartInv])
+
+end
 
 end
 
@@ -306,56 +177,6 @@ noncomputable section
 
 open Filter Set
 open scoped Topology
-
-private theorem zero_between_of_continuousOn_of_neg_pos_local
-    {a b : ℝ} {f : ℝ → ℝ} (hab : a < b)
-    (hf : ContinuousOn f (Set.Icc a b))
-    (hfa : f a < 0) (hfb : 0 < f b) :
-    ∃ c ∈ Set.Ioo a b, f c = 0 := by
-  have hzero : (0 : ℝ) ∈ Set.Icc (f a) (f b) := ⟨hfa.le, hfb.le⟩
-  rcases intermediate_value_Icc hab.le hf hzero with ⟨c, hc, hfc⟩
-  refine ⟨c, ?_, hfc⟩
-  constructor
-  · by_contra hca
-    have : c = a := le_antisymm (not_lt.mp hca) hc.1
-    rw [this] at hfc
-    linarith
-  · by_contra hcb
-    have : c = b := le_antisymm hc.2 (not_lt.mp hcb)
-    rw [this] at hfc
-    linarith
-
-private theorem time_slice_hasDerivAt_of_contDiffAt_local
-    {d : ℕ} {u : TimeVelocity d → ℝ} {z : TimeVelocity d}
-    (hu : ContDiffAt ℝ 2 u z) :
-    HasDerivAt (fun t : ℝ => u (t, z.2)) (timeDerivative u z) z.1 := by
-  have hline : HasDerivAt (fun t : ℝ => (t, z.2))
-      ((1, 0) : TimeVelocity d) z.1 := by
-    exact HasDerivAt.prodMk (hasDerivAt_id' (𝕜 := ℝ) z.1)
-      (hasDerivAt_const (x := z.1) (c := z.2))
-  simpa only [timeDerivative, Function.comp_def] using
-    hu.differentiableAt (by norm_num) |>.hasFDerivAt.comp_hasDerivAt z.1 hline
-
-private theorem velocity_slice_hasDerivAt_of_contDiffAt_local
-    {d : ℕ} {u : TimeVelocity d → ℝ} {z : TimeVelocity d}
-    (hu : ContDiffAt ℝ 2 u z) (i : Fin d) :
-    HasDerivAt
-      (fun r : ℝ => u (z.1,
-        z.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
-      (velocityGradient u z i) 0 := by
-  let e : PDE.Vec d := Pi.single i 1
-  have hvline : HasDerivAt (fun r : ℝ => z.2 + r • e) e 0 := by
-    simpa only [one_smul] using
-      ((hasDerivAt_id' (𝕜 := ℝ) 0).smul_const e).const_add z.2
-  have hline : HasDerivAt (fun r : ℝ => (z.1, z.2 + r • e))
-      (((0 : ℝ), e) : TimeVelocity d) 0 :=
-    (hasDerivAt_const (x := (0 : ℝ)) (c := z.1)).prodMk hvline
-  have huAt : HasFDerivAt u (fderiv ℝ u z)
-      (z.1, z.2 + (0 : ℝ) • e) := by
-    simpa only [zero_smul, add_zero] using
-      (hu.differentiableAt (by norm_num)).hasFDerivAt
-  have hcomp := huAt.comp_hasDerivAt 0 hline
-  simpa only [e, velocityGradient, Function.comp_def] using hcomp
 
 /-- Concrete physical contact/area API for supplied-source lower-bound proof: local coverage. -/
 theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
@@ -389,16 +210,18 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
     simp only [PDE.vecNormSq, PDE.vecDot, Pi.zero_apply, mul_zero,
       Finset.sum_const_zero]
     exact (movingLensDenominator_pos hxi heps htau.le).le
-  have hellPos : ∀ z ∈ movingLensClosed xi eps tau y, 0 < ell z.2 := by
-    intro z hz
-    exact affineVelocity_pos_on_movingLens hkappa htau_kappa heps_small hy hM hhLower hp hz
-  have hellLt : ∀ z ∈ movingLensClosed xi eps tau y, ell z.2 < M := by
-    intro z hz
-    exact affineVelocity_lt_on_movingLens hkappa htau_kappa heps_small hy hM hhUpper hp hz
+  have hR : 0 < movingLensVelocityFootprint d kappa := by
+    unfold movingLensVelocityFootprint
+    positivity
+  have hell (z : TimeVelocity d) (hz : z ∈ movingLensClosed xi eps tau y) :
+      0 < ell z.2 ∧ ell z.2 < M :=
+    affineVelocity_bounds_of_wedge hM hR hhLower hhUpper hp (by simpa using
+      (movingLensClosed_velocity_norm_lt_footprint hkappa htau_kappa heps_small hy hz).le)
+  have hellPos : ∀ z ∈ movingLensClosed xi eps tau y, 0 < ell z.2 := fun z hz => (hell z hz).1
   have hgCenter : 0 < g (tau, tau • y) := by
     change 0 < u (tau, tau • y) - ell (tau • y)
     rw [← hMvalue]
-    exact sub_pos.mpr (hellLt _ hclosedCenter)
+    exact sub_pos.mpr (hell _ hclosedCenter).2
   have hgCont : ContinuousOn g (movingLensClosed xi eps tau y) := by
     have hellCont : Continuous (fun z : TimeVelocity d => ell z.2) := by
       unfold ell affineVelocity PDE.vecDot
@@ -474,7 +297,7 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
         dsimp only [path]
         exact movingLensChart_path_mem_closed hxi heps hzcClosed hs)
       simpa only [f, Function.comp_def] using hcomp
-    rcases zero_between_of_continuousOn_of_neg_pos_local htcPos hfCont
+    rcases zero_between_of_continuousOn_of_neg_pos htcPos hfCont
         (by simpa [f] using hgZero) (by simpa [f, hpathEnd] using hgcPos) with
       ⟨s, hs, hfs⟩
     have hsS : path s ∈ S := by
@@ -512,7 +335,7 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
         dsimp only [path, zT]
         exact movingLensChart_path_mem_closed hxi heps hclosedCenter hs)
       simpa only [f, Function.comp_def] using hcomp
-    rcases zero_between_of_continuousOn_of_neg_pos_local htau hfCont
+    rcases zero_between_of_continuousOn_of_neg_pos htau hfCont
         (by simpa [f] using hgZero) (by simpa [f, hpathEnd, zT] using hgCenter) with
       ⟨s, hs, hfs⟩
     have hsS : path s ∈ S := by
@@ -554,7 +377,7 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
         dsimp only [path, zv]
         exact movingLensChart_path_mem_closed hxi heps hv hs)
       simpa only [f, Function.comp_def] using hcomp
-    rcases zero_between_of_continuousOn_of_neg_pos_local htcPos hfCont
+    rcases zero_between_of_continuousOn_of_neg_pos htcPos hfCont
         (by simpa [f] using hgZero) (by simpa [f, hpathEnd, zv] using hpos) with
       ⟨s, hs, hfs⟩
     have hsS : path s ∈ S := by
@@ -597,55 +420,8 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
     change g (zc.1, v) ≤ g zc
     rw [hgcZero]
     exact hspatialNonpos v hvClosed
-  have hgrad : velocityGradient u zc = p := by
-    ext i
-    let q : PDE.Vec d := Pi.single i 1
-    let line : ℝ → PDE.Vec d := fun r => zc.2 + r • q
-    have hlineCont : ContinuousAt line 0 :=
-      (((hasDerivAt_id' (𝕜 := ℝ) 0).smul_const q).const_add zc.2).continuousAt
-    have hmaxLine : IsLocalMax
-        (fun r : ℝ => u (zc.1, line r) - ell (line r)) 0 := by
-      have hmaxAtLine : IsLocalMax
-          (fun v : PDE.Vec d => u (zc.1, v) - ell v) (line 0) := by
-        simpa [line, q] using hspatialLocalMax
-      exact hmaxAtLine.comp_continuous hlineCont
-    have hderiv : HasDerivAt
-        (fun r : ℝ => u (zc.1,
-          zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)) -
-          ell (zc.2 + r • ((Pi.single i (1 : ℝ)) : PDE.Vec d)))
-        (velocityGradient u zc i - p i) 0 :=
-      (velocity_slice_hasDerivAt_of_contDiffAt_local huz i).sub
-        (affineVelocity_line_deriv_at_zero h p zc.2 i)
-    have hzero := hmaxLine.hasDerivAt_eq_zero (by simpa [line, q] using hderiv)
-    exact sub_eq_zero.mp (by simpa using hzero)
-  have hcontact : IsLocalMax
-      (fun v : PDE.Vec d => u (zc.1, v) -
-        (u zc + PDE.vecDot p (v - zc.2))) zc.2 := by
-    have hrewrite :
-        (fun v : PDE.Vec d => u (zc.1, v) - ell v) =
-          fun v : PDE.Vec d => u (zc.1, v) -
-            (u zc + PDE.vecDot p (v - zc.2)) := by
-      funext v
-      dsimp only [ell]
-      simp only [affineVelocity_apply, sub_zero]
-      have hgcZero' := hgcZero
-      dsimp only [g, ell] at hgcZero'
-      change u zc - affineVelocity 0 h p zc.2 = 0 at hgcZero'
-      simp only [affineVelocity_apply, sub_zero] at hgcZero'
-      unfold PDE.vecDot at hgcZero' ⊢
-      have hsum : (∑ x, p x * v x) =
-          (∑ x, p x * zc.2 x) + ∑ x, p x * (v - zc.2) x := by
-        rw [← Finset.sum_add_distrib]
-        apply Finset.sum_congr rfl
-        intro x hx
-        simp only [Pi.sub_apply]
-        ring
-      rw [hsum]
-      linarith
-    rw [← hrewrite]
-    exact hspatialLocalMax
   have hhess : (-velocityHessian u zc).PosSemidef :=
-    neg_velocityHessian_posSemidef_of_spatial_localMax_affineContact_of_contDiffAt huz hcontact
+    neg_velocityHessian_posSemidef_of_spatial_localMax_affineContact_of_contDiffAt huz hspatialLocalMax
   have htimeMax : IsLocalMaxOn
       (fun t : ℝ => u (t, zc.2) - ell zc.2) (Set.Iic zc.1) zc.1 := by
     rw [IsLocalMaxOn]
@@ -660,48 +436,13 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
     have hactiveEventually : ∀ᶠ t in 𝓝[Set.Iic zc.1] zc.1,
         (t, zc.2) ∈ movingLensActive xi eps tau y := hlineTendsto.eventually hpast
     filter_upwards [hactiveEventually, eventually_mem_nhdsWithin] with t ht hle
-    have htime : g (t, zc.2) ≤ 0 := by
-      by_contra hnot
-      have hpos : 0 < g (t, zc.2) := lt_of_not_ge hnot
-      have htS : (t, zc.2) ∈ S :=
-        ⟨movingLensActive_subset_movingLensClosed xi eps tau y ht, hpos.le⟩
-      have hmin := hzcMin htS
-      change zc.1 ≤ t at hmin
-      have hne : zc.1 ≠ t := by
-        intro heq
-        subst t
-        linarith [hgcZero]
-      have hlt : zc.1 < t := lt_of_le_of_ne hmin hne
-      exact (not_lt_of_ge hle) hlt
-    change u (t, zc.2) - ell zc.2 ≤ u zc - ell zc.2
     change g (t, zc.2) ≤ g zc
     rw [hgcZero]
-    exact htime
-  have htimeDeriv : HasDerivAt
-      (fun t : ℝ => u (t, zc.2) - ell zc.2) (timeDerivative u zc) zc.1 :=
-    (time_slice_hasDerivAt_of_contDiffAt_local huz).sub_const (ell zc.2)
-  have hminusOne : (-1 : ℝ) ∈ posTangentConeAt (Set.Iic zc.1) zc.1 := by
-    have hsegment : segment ℝ zc.1 (zc.1 - 1) ⊆ Set.Iic zc.1 := by
-      intro s hs
-      rw [segment_symm] at hs
-      exact (segment_subset_Icc (sub_le_self _ (by norm_num : (0 : ℝ) ≤ 1)) hs).2
-    simpa using sub_mem_posTangentConeAt_of_segment_subset hsegment
-  have htimeNonneg : 0 ≤ timeDerivative u zc := by
-    have hnonpos := htimeMax.hasFDerivWithinAt_nonpos htimeDeriv.hasDerivWithinAt hminusOne
-    have hneg : -timeDerivative u zc ≤ 0 := by simpa using hnonpos
-    linarith
-  refine ⟨zc, ?_, ?_⟩
-  · exact ⟨htcPos, htcLt, hzcSpatial, huzcPos, htimeNonneg, hhess⟩
-  · rw [parabolicNormalMap_apply]
-    apply Prod.ext
-    · change u zc - PDE.vecDot (velocityGradient u zc) (zc.2 - 0) = h
-      simp only [sub_zero]
-      rw [hgrad]
-      dsimp only [g, ell] at hgcZero
-      change u zc - affineVelocity 0 h p zc.2 = 0 at hgcZero
-      simp only [affineVelocity_apply, sub_zero] at hgcZero
-      linarith
-    · exact hgrad
+    exact nonpos_at_or_before_firstContact hzcMin hgcZero hle
+      (movingLensActive_subset_movingLensClosed xi eps tau y ht)
+  have hdu := huz.differentiableAt (by norm_num)
+  exact ⟨zc, ⟨htcPos, htcLt, hzcSpatial, huzcPos, timeDerivative_nonneg_of_localMaxOn_past hdu htimeMax, hhess⟩,
+    parabolicNormalMap_eq_of_affineContact hdu (sub_eq_zero.mp hgcZero) hspatialLocalMax⟩
 
 end
 
@@ -709,134 +450,32 @@ end HypoellipticAleksandrov.Parabolic
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem movingLensSourceSignSet_areaFormulaData_of_localC2
-    {d : Nat} {xi eps tau : Real} {y : PDE.Vec d}
-    {u : TimeVelocity d -> Real}
-    (hlocal : ∀ z ∈ movingLensActive xi eps tau y, ContDiffAt Real 2 u z) :
-    MeasurableSet (movingLensSourceSignSet xi eps tau y u) /\
-      ∀ z ∈ movingLensSourceSignSet xi eps tau y u,
-        HasFDerivWithinAt (parabolicNormalMap u 0)
-          (parabolicNormalMapDerivative u 0 z)
-          (movingLensSourceSignSet xi eps tau y u) z := by
-  let O : Set (TimeVelocity d) := {z | 0 < z.1 /\ z.1 < tau /\
-    PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1}
-  have hO : IsOpen O := by
-    rw [show O = {z | 0 < z.1 /\
-        PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1} ∩
-          {z | z.1 < tau} by
-      ext z
-      change (0 < z.1 /\ z.1 < tau /\
-        PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1) ↔
-        ((0 < z.1 /\
-          PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1) /\
-          z.1 < tau)
-      constructor
-      · rintro ⟨ht0, httau, hspatial⟩
-        exact ⟨⟨ht0, hspatial⟩, httau⟩
-      · rintro ⟨⟨ht0, hspatial⟩, httau⟩
-        exact ⟨ht0, httau, hspatial⟩]
-    exact (isOpen_movingLensPositiveSpatialStrict xi eps y).inter
-      (isOpen_Iio.preimage continuous_fst)
-  have hO_active : O ⊆ movingLensActive xi eps tau y := by
-    rintro z ⟨hzpos, hzlt, hzspatial⟩
-    exact ⟨hzpos, hzlt.le, hzspatial⟩
-  have huO : ContDiffOn Real 2 u O := fun z hz =>
-    (hlocal z (hO_active hz)).contDiffWithinAt
-  have hDu : ContDiffOn Real 1 (fderiv Real u) O :=
-    huO.fderiv_of_isOpen hO (by norm_num)
-  have hD2u : ContDiffOn Real 0 (fderiv Real (fderiv Real u)) O :=
-    hDu.fderiv_of_isOpen hO (by norm_num)
-  have hucont : ContinuousOn u O := huO.continuousOn
-  have htime : ContinuousOn (timeDerivative u) O := by
-    unfold timeDerivative
-    simpa using hDu.continuousOn.clm_apply continuousOn_const
-  have hhess : ContinuousOn (velocityHessian u) O := by
-    unfold velocityHessian
-    apply continuousOn_pi.mpr
-    intro i
-    apply continuousOn_pi.mpr
-    intro j
-    simpa using hD2u.continuousOn.clm_apply continuousOn_const |>.clm_apply continuousOn_const
-  have hpsdclosed : IsClosed {H : PDE.Mat d | H.PosSemidef} := by
-    have hhermitian : IsClosed {H : PDE.Mat d | H.IsHermitian} := by
-      have hset :
-          {H : PDE.Mat d | H.IsHermitian} =
-            ⋂ i : Fin d, ⋂ j : Fin d, {H : PDE.Mat d | H j i = H i j} := by
-        ext H
-        simp only [Set.mem_setOf_eq, Set.mem_iInter]
-        constructor
-        · intro h i j
-          simpa using h.apply i j
-        · intro h
-          apply Matrix.IsHermitian.ext
-          intro i j
-          simpa using h i j
-      rw [hset]
-      refine isClosed_iInter fun i => isClosed_iInter fun j => ?_
-      exact isClosed_eq (continuous_id.matrix_elem j i) (continuous_id.matrix_elem i j)
-    have hset :
-        {H : PDE.Mat d | H.PosSemidef} =
-          {H : PDE.Mat d | H.IsHermitian} ∩
-            ⋂ q : PDE.Vec d, {H : PDE.Mat d | 0 ≤ dotProduct q (H.mulVec q)} := by
-      ext H
-      simp only [Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter]
-      simpa using (Matrix.posSemidef_iff_dotProduct_mulVec (M := H))
-    rw [hset]
-    refine hhermitian.inter (isClosed_iInter fun q => ?_)
-    have hquad : Continuous (fun H : PDE.Mat d => dotProduct q (H.mulVec q)) :=
-      continuous_const.dotProduct (continuous_id.matrix_mulVec continuous_const)
-    exact isClosed_le continuous_const hquad
-  have hpositive : MeasurableSet (O ∩ {z | 0 < u z}) :=
-    (hucont.isOpen_inter_preimage hO isOpen_Ioi).measurableSet
-  have hnonnegative : MeasurableSet (O ∩ {z | 0 ≤ timeDerivative u z}) := by
-    rw [show O ∩ {z | 0 ≤ timeDerivative u z} =
-        O \ (O ∩ (timeDerivative u) ⁻¹' Set.Iio 0) by
-      ext z
-      simp only [Set.mem_inter_iff, Set.mem_diff, Set.mem_preimage, Set.mem_setOf_eq,
-        Set.mem_Iio]
-      constructor
-      · rintro ⟨hz, htimez⟩
-        exact ⟨hz, fun hnegative => not_lt_of_ge htimez hnegative.2⟩
-      · rintro ⟨hz, hnotnegative⟩
-        exact ⟨hz, le_of_not_gt fun hnegative => hnotnegative ⟨hz, hnegative⟩⟩]
-    exact hO.measurableSet.diff
-      (htime.isOpen_inter_preimage hO isOpen_Iio).measurableSet
-  have hpsd : MeasurableSet (O ∩ {z | (-velocityHessian u z).PosSemidef}) := by
-    rw [show O ∩ {z | (-velocityHessian u z).PosSemidef} = O \ (O ∩
-        (fun z => -velocityHessian u z) ⁻¹' {H : PDE.Mat d | H.PosSemidef}ᶜ) by
-      ext z
-      simp only [Set.mem_inter_iff, Set.mem_diff, Set.mem_preimage, Set.mem_setOf_eq,
-        Set.mem_compl_iff]
-      constructor
-      · rintro ⟨hz, hzpsd⟩
-        exact ⟨hz, fun hnotpsd => hnotpsd.2 hzpsd⟩
-      · rintro ⟨hz, hnotpsd⟩
-        exact ⟨hz, not_not.mp fun hzpsd => hnotpsd ⟨hz, hzpsd⟩⟩]
-    exact hO.measurableSet.diff
-      ((hhess.neg).isOpen_inter_preimage hO hpsdclosed.isOpen_compl).measurableSet
-  have hmeas : MeasurableSet (movingLensSourceSignSet xi eps tau y u) := by
-    rw [show movingLensSourceSignSet xi eps tau y u =
-        (O ∩ {z | 0 < u z}) ∩ (O ∩ {z | 0 ≤ timeDerivative u z}) ∩
-          (O ∩ {z | (-velocityHessian u z).PosSemidef}) by
-      ext z
-      change (0 < z.1 /\ z.1 < tau /\
-        PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1 /\
-        0 < u z /\ 0 ≤ timeDerivative u z /\ (-velocityHessian u z).PosSemidef) ↔
-        ((z ∈ O /\ 0 < u z) /\ (z ∈ O /\ 0 ≤ timeDerivative u z)) /\
-          (z ∈ O /\ (-velocityHessian u z).PosSemidef)
-      constructor
-      · rintro ⟨ht0, httau, hspatial, hpositivez, htimez, hpsdz⟩
-        exact ⟨⟨⟨⟨ht0, httau, hspatial⟩, hpositivez⟩,
-          ⟨⟨ht0, httau, hspatial⟩, htimez⟩⟩,
-          ⟨⟨ht0, httau, hspatial⟩, hpsdz⟩⟩
-      · rintro ⟨⟨⟨hOpositive, hpositivez⟩, ⟨hOtime, htimez⟩⟩, ⟨hOpsd, hpsdz⟩⟩
-        exact ⟨hOpositive.1, hOpositive.2.1, hOpositive.2.2,
-          hpositivez, htimez, hpsdz⟩]
-    exact (hpositive.inter hnonnegative).inter hpsd
-  refine ⟨hmeas, ?_⟩
-  intro z hz
-  exact parabolicNormalMap_hasFDerivWithinAt_of_contDiffAt
-    (hlocal z (hO_active ⟨hz.1, hz.2.1, hz.2.2.1⟩))
+theorem measurable_movingLensSourceSignSet_of_localC2
+    {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d} {u : TimeVelocity d → ℝ}
+    (hlocal : ∀ z ∈ movingLensActive xi eps tau y, ContDiffAt ℝ 2 u z) :
+    MeasurableSet (movingLensSourceSignSet xi eps tau y u) := by
+  let O := {z : TimeVelocity d | 0 < z.1 ∧
+    PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1} ∩
+    (Prod.fst ⁻¹' Set.Iio tau)
+  have hO : IsOpen O := (isOpen_movingLensPositiveSpatialStrict xi eps y).inter
+    (isOpen_Iio.preimage continuous_fst)
+  have hu : ContDiffOn ℝ 2 u O := fun z hz =>
+    (hlocal z ⟨hz.1.1, hz.2.le, hz.1.2⟩).contDiffWithinAt
+  have hD := hu.fderiv_of_isOpen (m := 1) hO (by norm_num)
+  have hD₂ := hD.fderiv_of_isOpen (m := 0) hO (by norm_num)
+  have ht : ContinuousOn (timeDerivative u) O := hD.continuousOn.clm_apply continuousOn_const
+  have hH : ContinuousOn (velocityHessian u) O :=
+    continuousOn_pi.mpr fun i => continuousOn_pi.mpr fun j =>
+      (hD₂.continuousOn.clm_apply continuousOn_const).clm_apply continuousOn_const
+  have hpos := (hu.continuousOn.isOpen_inter_preimage hO (isOpen_Ioi (a := (0 : ℝ)))).measurableSet
+  have hneg := (ht.isOpen_inter_preimage hO (isOpen_Iio (a := (0 : ℝ)))).measurableSet
+  have hpsd : IsClosed {M : PDE.Mat d | M.PosSemidef} := Matrix.posSemidef_is_closed
+  have hnpsd := (hH.neg.isOpen_inter_preimage hO hpsd.isOpen_compl).measurableSet
+  convert (hpos.diff (hneg.union hnpsd)) using 1
+  ext z
+  simp only [O, movingLensSourceSignSet, Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_preimage,
+    Set.mem_Ioi, Set.mem_Iio, Set.mem_diff, Set.mem_union, Set.mem_compl_iff, Pi.neg_apply, ← not_lt]
+  tauto
 
 /-- Concrete physical contact/area API for supplied-source lower-bound proof: wedge-volume bound. -/
 theorem movingLensSlopeInterceptWedge_volume_le_lintegral_abs_det_fderiv
@@ -860,7 +499,7 @@ theorem movingLensSlopeInterceptWedge_volume_le_lintegral_abs_det_fderiv
           ∂MeasureTheory.MeasureSpace.volume :=
       MeasureTheory.addHaar_image_le_lintegral_abs_det_fderiv
         MeasureTheory.MeasureSpace.volume
-        (movingLensSourceSignSet_areaFormulaData_of_localC2 hlocal).1
+        (measurable_movingLensSourceSignSet_of_localC2 hlocal)
         (by
           intro z hz
           have hderiv := parabolicNormalMap_hasFDerivAt_of_contDiffAt (y₀ := 0)

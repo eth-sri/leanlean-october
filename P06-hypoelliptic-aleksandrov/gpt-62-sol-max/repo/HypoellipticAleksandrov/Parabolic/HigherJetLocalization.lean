@@ -15,23 +15,6 @@ compact plateau.  Its representatives are the full multi-index Leibniz sums.
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem coordinateIteratedFDeriv_tsupport_subset
-    {d : ℕ} (alpha : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) :
-    tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) ⊆
-      tsupport f := by
-  apply closure_minimal
-  · intro z hz
-    by_contra hzf
-    apply hz
-    unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-    have hi : iteratedFDeriv ℝ alpha.coordinateList.length f z = 0 := by
-      by_contra hi0
-      exact hzf (support_iteratedFDeriv_subset alpha.coordinateList.length hi0)
-    rw [hi]
-    rfl
-  · exact isClosed_closure
-
 /-- Every representative in the weak Leibniz family is supported in the
 topological support of its classical multiplier. -/
 theorem parabolicWeakMulRepresentative_tsupport_subset
@@ -51,7 +34,7 @@ theorem parabolicWeakMulRepresentative_tsupport_subset
     have hderiv :
         TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left b z = 0 := by
       by_contra hne
-      exact hzb (coordinateIteratedFDeriv_tsupport_subset gamma.left b
+      exact hzb (TimeVelocityMultiIndex.coordinateIteratedFDeriv_tsupport_subset gamma.left b
         (subset_closure hne))
     rw [hderiv, mul_zero, zero_mul]
   · exact isClosed_closure
@@ -99,67 +82,17 @@ theorem ParabolicWeakDerivativeFamily.mulContDiffOn_ordinaryRepresentative_eqOn
     have hbz : b z = (1 : ℝ) := by simpa using hbOne hz
     rw [hbz, one_mul]
   · intro gamma hne
-    have hleft_ne : gamma.left ≠ 0 := by
-      intro hleft
-      apply hne
-      funext c
-      apply Fin.ext
-      change gamma.left c = 0
-      exact congr_fun hleft c
-    have hconst := TimeVelocityMultiIndex.coordinateIteratedFDeriv_congr_of_eqOn
-      V hV gamma.left hbOne z hz
-    have hconst_zero :
-        TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left
-          (fun _ : TimeVelocity d ↦ (1 : ℝ)) z = 0 := by
-      have horder : gamma.left.order ≠ 0 := by
-        obtain ⟨c, hc⟩ := Function.ne_iff.mp hleft_ne
-        have hc' : gamma.left c ≠ 0 := by simpa using hc
-        have hcpos : 0 < gamma.left c := Nat.pos_of_ne_zero hc'
-        have hle : gamma.left c ≤ gamma.left.order := by
-          cases c with
-          | inl t =>
-            cases t
-            simp [TimeVelocityMultiIndex.order,
-              TimeVelocityMultiIndex.timeOrder,
-              TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-              timeCoord]
-          | inr i =>
-            have hsum : gamma.left (Sum.inr i) ≤
-                ∑ j, gamma.left (Sum.inr j) :=
-              Finset.single_le_sum (fun j _ ↦ Nat.zero_le
-                (gamma.left (Sum.inr j))) (Finset.mem_univ i)
-            change gamma.left (Sum.inr i) ≤
-              gamma.left (Sum.inl ()) + ∑ j, gamma.left (Sum.inr j)
-            simpa only [TimeVelocityMultiIndex.order,
-              TimeVelocityMultiIndex.timeOrder,
-              TimeVelocityMultiIndex.velocity, VelocityMultiIndex.order,
-              timeCoord] using hsum.trans (Nat.le_add_left _ _)
-        omega
-      unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-      rw [iteratedFDeriv_const_of_ne (by simpa using horder) (1 : ℝ)]
-      rfl
-    have hderiv_zero :
-        TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma.left b z = 0 :=
-      hconst.trans hconst_zero
-    rw [hderiv_zero, mul_zero, zero_mul]
+    have hleft : gamma.left ≠ 0 := fun h => hne (gamma.eq_default_of_left_eq_zero h)
+    rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_congr_of_eqOn
+      V hV gamma.left hbOne z hz,
+      show gamma.left.coordinateIteratedFDeriv 1 z = 0 from
+        TimeVelocityMultiIndex.coordinateIteratedFDeriv_const_of_ne_zero hleft 1 z]
+    simp
 
 private theorem coordinateIteratedFDeriv_continuous
     {d : ℕ} (alpha : TimeVelocityMultiIndex d)
     (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    Continuous (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) := by
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-  have hi := hf.iteratedFDeriv_right
-    (m := 0) (i := alpha.coordinateList.length) (by exact_mod_cast le_top)
-  exact ((contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi).continuous
-
-private theorem coordinateIteratedFDeriv_hasCompactSupport
-    {d : ℕ} (alpha : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
-    HasCompactSupport
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) :=
-  hf.of_isClosed_subset isClosed_closure
-    (coordinateIteratedFDeriv_tsupport_subset alpha f)
+    Continuous (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha f) := (alpha.coordinateIteratedFDeriv_contDiff f hf).continuous
 
 /-- A compact subset of an open carrier admits a smooth compact plateau whose
 full finite weak Leibniz family is supported in the plateau support and agrees
@@ -204,7 +137,7 @@ theorem exists_localizedHigherJetFamily
       ∃ M : ℝ, ∀ z,
         |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 b z| ≤ M := by
     obtain ⟨M, hM⟩ :=
-      (coordinateIteratedFDeriv_hasCompactSupport alpha.1 b hbCompact).exists_bound_of_continuous
+      (TimeVelocityMultiIndex.coordinateIteratedFDeriv_hasCompactSupport alpha.1 b hbCompact).exists_bound_of_continuous
         (coordinateIteratedFDeriv_continuous alpha.1 b hbSmooth)
     exact ⟨M, by simpa [Real.norm_eq_abs] using hM⟩
   let B : ParabolicDerivativeIndex d (2 * m) → ℝ := fun alpha ↦

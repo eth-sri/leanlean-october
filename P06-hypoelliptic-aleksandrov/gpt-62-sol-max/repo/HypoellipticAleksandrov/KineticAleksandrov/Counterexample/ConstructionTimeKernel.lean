@@ -22,15 +22,9 @@ theorem construction_deriv_cutoff_integral {d : ℕ} {A : Type*}
     ∫ a, phi.normed volume (q - y a) *
       deriv (fun s => timeCutoffTheta
         (u a - Real.exp (-mu * s) * (2 - PDE.vecNormSq (y a).2 / R ^ 2))) t ∂nu := by
-  let f : ℝ × (XV d × ℝ) → ℝ := fun z =>
-    phi.normed volume (q - z.2.1) * timeCutoffTheta
-      (z.2.2 - Real.exp (-mu * z.1) * (2 - PDE.vecNormSq z.2.1.2 / R ^ 2))
-  have hf : ContDiff ℝ (⊤ : ℕ∞) f :=
-    (phi.contDiff_normed.comp (contDiff_const.sub contDiff_snd.fst)).mul
-      (contDiff_timeCutoffTheta.comp (contDiff_snd.snd.sub
-        ((Real.contDiff_exp.comp (contDiff_const.mul contDiff_fst)).mul
-          (contDiff_const.sub
-            ((PDE.contDiff_vecNormSq.comp contDiff_snd.fst.snd).div_const (R ^ 2))))))
+  let f : ℝ × (XV d × ℝ) → ℝ := fun z => cutoffMollificationKernel phi mu R ((z.1, q), z.2)
+  have hf : ContDiff ℝ (⊤ : ℕ∞) f := (contDiff_cutoffMollificationKernel phi mu R).comp
+    ((contDiff_fst.prodMk contDiff_const).prodMk contDiff_snd)
   have he := construction_deriv_compact_parameter nu (fun a => (y a, u a)) (hy.prodMk hu)
     f hf t
   change deriv (fun s => ∫ a, f (s, (y a, u a)) ∂nu) t = _

@@ -13,9 +13,11 @@ open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
+section
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) stationary)
+
 /-- A characterized Fourier measure at a whole-space query is the canonical Fourier kernel. -/
-theorem iteration_projection_eq {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) stationary) (σ τ : ℝ) (hστ : σ ≤ τ)
+theorem iteration_projection_eq (σ τ : ℝ) (hστ : σ ≤ τ)
     (v ξ : PDE.Vec d) (q : EvolutionQuery (wholeSpace d) stationary)
     (hq : q.1 = (σ, τ, v, 0)) (ν : ComplexMeasure (PDE.Vec d))
     (hν : IsFourierProjection K q ξ ν) : ν = fourierKernel K σ τ hστ ξ v := by
@@ -26,8 +28,7 @@ theorem iteration_projection_eq {d : ℕ}
   exact (hν E hE).trans ((fourierKernel_spec K σ τ hστ ξ v E hE).symm)
 
 /-- Each full block contributes its contraction; the leftover interval contributes at most one. -/
-theorem fourier_natural_block_iteration {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) stationary)
+theorem fourier_natural_block_iteration
     (hcomp : K.HasComposition MeasurableSet.univ)
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) stationary MeasurableSet.univ K)
     (ξ : PDE.Vec d) {T c : ℝ} (hT : 0 < T) (hc : 0 ≤ c)
@@ -58,5 +59,7 @@ theorem fourier_natural_block_iteration {d : ℕ}
         fourierKernel_totalVariation_composition K hcomp hcov σ r τ hσr hrτ ξ v
       _ ≤ ENNReal.ofReal c * ENNReal.ofReal c ^ k := mul_le_mul' (hstep σ v) htail
       _ = ENNReal.ofReal c ^ (k + 1) := by rw [pow_succ, mul_comm]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

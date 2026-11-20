@@ -14,17 +14,21 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 open scoped MatrixOrder
 
+section
+variable {d : ℕ} (A : XV d → PDE.Mat d) (H : XV d → ℝ)
+include A H
+
 /-- The literal stationary source formula in the source manuscript. -/
-noncomputable def flatSource {d : ℕ} (A : XV d → PDE.Mat d)
-    (H : XV d → ℝ) (Psi : ℝ → ℝ) (alpha r : ℝ) (q : XV d) : ℝ :=
+noncomputable def flatSource (Psi : ℝ → ℝ) (alpha r : ℝ) (q : XV d) : ℝ :=
   Real.rpow r (-alpha) * deriv (deriv Psi) (H q / Real.rpow r alpha) *
     PDE.vecDot ((A q).mulVec (dv H q)) (dv H q)
 
 /-- The same source formula evaluated on an explicit selected weak velocity jet. -/
-noncomputable def flatSourceWithJet {d : ℕ} (A : XV d → PDE.Mat d)
-    (H : XV d → ℝ) (gv : XV d → PDE.Vec d) (alpha r : ℝ) (q : XV d) : ℝ :=
+noncomputable def flatSourceWithJet (gv : XV d → PDE.Vec d) (alpha r : ℝ) (q : XV d) : ℝ :=
   Real.rpow r (-alpha) * deriv (deriv flatteningPsi) (H q / Real.rpow r alpha) *
     PDE.vecDot ((A q).mulVec (gv q)) (gv q)
+
+end
 
 /-- Matrix upper order bounds the quadratic form in the source's Euclidean norm. -/
 theorem quadratic_upper_of_loewner {d : ℕ} (Lam : ℝ) (A : PDE.Mat d)
@@ -46,9 +50,11 @@ theorem quadratic_nonneg_of_loewner {d : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
   have hn := (mul_nonneg hlam (PDE.vecNormSq_nonneg w)).trans h
   simpa only [PDE.vecDot, mul_comm] using hn
 
+section
+variable {d : ℕ} (A : XV d → PDE.Mat d) (H : XV d → ℝ) (gv : XV d → PDE.Vec d) (alpha r : ℝ)
+
 /-- The fixed source vanishes outside the closed profile shell. -/
-theorem flatSourceWithJet_eq_zero_off_shell {d : ℕ} (A : XV d → PDE.Mat d)
-    (H : XV d → ℝ) (gv : XV d → PDE.Vec d) (alpha r : ℝ) (hr : 0 < r)
+theorem flatSourceWithJet_eq_zero_off_shell (hr : 0 < r)
     (q : XV d) (hq : q ∉ profileShell H alpha r) :
     flatSourceWithJet A H gv alpha r q = 0 := by
   have hp := Real.rpow_pos_of_pos hr alpha
@@ -63,8 +69,7 @@ theorem flatSourceWithJet_eq_zero_off_shell {d : ℕ} (A : XV d → PDE.Mat d)
     ring
 
 /-- The selected weak source is measurable under the source's literal coefficient assumptions. -/
-theorem measurable_flatSourceWithJet {d : ℕ} (A : XV d → PDE.Mat d)
-    (H : XV d → ℝ) (gv : XV d → PDE.Vec d) (alpha r : ℝ)
+theorem measurable_flatSourceWithJet
     (hA : ∀ i k, Measurable (fun q => A q i k)) (hH : Measurable H)
     (hgv : Measurable gv) : Measurable (flatSourceWithJet A H gv alpha r) := by
   have hpsi : Continuous (deriv (deriv flatteningPsi)) := by
@@ -77,13 +82,15 @@ theorem measurable_flatSourceWithJet {d : ℕ} (A : XV d → PDE.Mat d)
     (Finset.measurable_sum _ (fun i _ =>
       (Finset.measurable_sum _ (fun k _ => (hA i k).mul (hg k))).mul (hg i)))
 
+end
+
 /-- The classical selector source equals the selected weak-jet formula almost everywhere. -/
 theorem flatSource_ae_eq_jet_of_profile {d : ℕ} {alpha : ℝ}
     (hprofile : CounterProfileStatement d alpha) (r : ℝ) :
     flatSource (profileMatrix hprofile) (profileFunction hprofile) flatteningPsi alpha r =ᵐ[volume]
       flatSourceWithJet (profileMatrix hprofile) (profileFunction hprofile)
         (profileVelocityJet hprofile) alpha r := by
-  have he := (selectedProfile_spec hprofile).2.2.2.2.2.2.2.2.2.2.2.2.2.1
+  have he := (selectedProfile_spec hprofile).ae_jets
   filter_upwards [he] with q hq
   unfold flatSource flatSourceWithJet
   rw [hq.2.1]

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDyadicStep
 public import Mathlib.Tactic
+import HypoellipticAleksandrov.Parabolic.ParabolicMorreyNestedProjectionClosed
 
 /-!
 # Closed one-step dyadic parabolic Morrey projection estimate
@@ -19,17 +20,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open Set
 open scoped Topology
-
-private theorem continuous_parabolicMorreyBoxAffineProjection
-    {d : Nat} (t : Real) (v : PDE.Vec d) (r : Real)
-    (u : TimeVelocity d -> Real) :
-    Continuous (parabolicMorreyBoxAffineProjection t v r u) := by
-  unfold parabolicMorreyBoxAffineProjection
-  apply Continuous.add continuous_const
-  apply continuous_finset_sum
-  intro i _
-  exact continuous_const.mul ((continuous_apply i).comp continuous_snd |>.sub
-    continuous_const)
 
 /-- The open-child dyadic projection estimate extends continuously to
 the literal closed forward child box, with the same dimension-only constant. -/

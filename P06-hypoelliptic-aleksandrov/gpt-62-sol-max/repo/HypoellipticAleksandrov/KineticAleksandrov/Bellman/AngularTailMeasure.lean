@@ -11,8 +11,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Measure Set
 
+section
+variable (β : ℝ)
+
 /-- The radial reference strip has positive mass for every density degree. -/
-theorem bellmanRadialWeight_reference_ne_zero (β : ℝ) :
+theorem bellmanRadialWeight_reference_ne_zero :
     bellmanRadialWeight β {s : BellmanPositiveTime | 1 ≤ s.val ∧ s.val ≤ 2} ≠ 0 := by
   have ho : IsOpen {s : BellmanPositiveTime | 1 < s.val ∧ s.val < 2} := by
     exact (isOpen_lt continuous_const continuous_subtype_val).inter
@@ -25,16 +28,14 @@ theorem bellmanRadialWeight_reference_ne_zero (β : ℝ) :
   exact hm.trans_le (measure_mono (fun s hs => ⟨hs.1.le, hs.2.le⟩))
 
 /-- Integrating the two-sided velocity strips gives the literal angular tail factor. -/
-theorem bellmanAngularTail_strip_mass (β : ℝ) (F : Measure ℝ)
+theorem bellmanAngularTail_strip_mass (F : Measure ℝ)
     [IsFiniteMeasureOnCompacts F] :
     (bellmanRadialWeight β).prod F
       {w : BellmanPositiveTime × ℝ | 2 < |w.2| ∧
         1 ≤ |w.1.val * w.2| ∧ |w.1.val * w.2| ≤ 2} =
       bellmanRadialWeight β {s | 1 ≤ s.val ∧ s.val ≤ 2} *
         (∫⁻ y in {y : ℝ | 2 < |y|}, ENNReal.ofReal (|y| ^ (β - 4)) ∂F) := by
-  have hm : MeasurableSet {w : BellmanPositiveTime × ℝ | 2 < |w.2| ∧
-      1 ≤ |w.1.val * w.2| ∧ |w.1.val * w.2| ≤ 2} := by measurability
-  rw [Measure.prod_apply_symm hm]
+  rw [Measure.prod_apply_symm (by measurability)]
   have hf : (fun y => bellmanRadialWeight β
       ((fun s => (s, y)) ⁻¹' {w : BellmanPositiveTime × ℝ | 2 < |w.2| ∧
         1 ≤ |w.1.val * w.2| ∧ |w.1.val * w.2| ≤ 2})) =
@@ -64,12 +65,14 @@ theorem bellmanAngularTail_strip_mass (β : ℝ) (F : Measure ℝ)
   exact mul_comm _ _
 
 /-- Local finiteness of the original measure implies finite weighted angular tail mass. -/
-theorem bellmanAngularTail_lintegral_finite (β : ℝ) (μ : Measure BellmanPuncturedPlane)
+theorem bellmanAngularTail_lintegral_finite (μ : Measure BellmanPuncturedPlane)
     [IsFiniteMeasureOnCompacts μ] (F : Measure ℝ) [IsFiniteMeasureOnCompacts F]
     (hrep : μ.restrict {q | 0 < q.val.1} = bellmanAngularRep β F) :
     (∫⁻ y in {y : ℝ | 2 < |y|}, ENNReal.ofReal (|y| ^ (β - 4)) ∂F) < ⊤ := by
   have hm := bellmanAngularTail_strip_finite β μ F hrep
   rw [bellmanAngularTail_strip_mass] at hm
   exact ENNReal.lt_top_of_mul_ne_top_right hm.ne (bellmanRadialWeight_reference_ne_zero β)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

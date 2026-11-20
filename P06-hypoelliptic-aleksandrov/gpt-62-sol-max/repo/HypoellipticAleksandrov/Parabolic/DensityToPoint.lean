@@ -39,8 +39,11 @@ def DensityToPoint (d : ℕ) (lam Lam beta g : ℝ) : Prop :=
         (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ u z})).toReal →
     ∀ v ∈ velocityClosedCube (0 : PDE.Vec d) (1 / 2), g ≤ u (1, v)
 
+section
+variable {d : ℕ}
+
 /-- Eliminates a density-to-point relation at fixed local coefficient and solution data. -/
-theorem DensityToPoint.apply {d : ℕ} {lam Lam beta g : ℝ}
+theorem DensityToPoint.apply {lam Lam beta g : ℝ}
     (h : DensityToPoint d lam Lam beta g) (U : Set (TimeVelocity d))
     (B : CoefficientField d) (u : TimeVelocity d → ℝ) (hU : IsOpen U)
     (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
@@ -58,7 +61,7 @@ theorem DensityToPoint.apply {d : ℕ} {lam Lam beta g : ℝ}
   h U B u hU hclosed hB hu hnonneg hlower hupper hsuper hdensity v hv
 
 /-- Parabolic affine scaling sends the closed reference box into its translated counterpart. -/
-theorem mapsTo_parabolicAffine_parabolicClosedBox {d : ℕ} {vartheta r t₀ : ℝ}
+theorem mapsTo_parabolicAffine_parabolicClosedBox {vartheta r t₀ : ℝ}
     {v₀ : PDE.Vec d} (hr : 0 < r) :
     MapsTo (parabolicAffine t₀ v₀ r) (parabolicClosedBox vartheta 1 0 0)
       (parabolicClosedBox vartheta r t₀ v₀) := by
@@ -78,7 +81,7 @@ theorem mapsTo_parabolicAffine_parabolicClosedBox {d : ℕ} {vartheta r t₀ : �
     simpa only [mul_one] using mul_le_mul_of_nonneg_left hi' hr.le
 
 /-- Multiplying a scalar function by a constant scales the parabolic operator by that constant. -/
-theorem parabolicOperator_const_smul {d : ℕ} (B : CoefficientField d)
+theorem parabolicOperator_const_smul (B : CoefficientField d)
     (c : ℝ) (u : TimeVelocity d → ℝ) (z : TimeVelocity d) :
     parabolicOperator B (c • u) z = c * parabolicOperator B u z := by
   have hfirst : fderiv ℝ (c • u) = c • fderiv ℝ u :=
@@ -101,7 +104,7 @@ theorem parabolicOperator_const_smul {d : ℕ} (B : CoefficientField d)
   ring
 
 /-- A positive constant multiple of a local zero-source supersolution is again one. -/
-theorem IsParabolicSupersolutionOn.const_smul {d : ℕ} {B : CoefficientField d}
+theorem IsParabolicSupersolutionOn.const_smul {B : CoefficientField d}
     {u : TimeVelocity d → ℝ} {V : Set (TimeVelocity d)} {c : ℝ} (hc : 0 ≤ c)
     (h : IsParabolicSupersolutionOn B (fun _ ↦ 0) u V) :
     IsParabolicSupersolutionOn B (fun _ ↦ 0) (c • u) V := by
@@ -109,8 +112,12 @@ theorem IsParabolicSupersolutionOn.const_smul {d : ℕ} {B : CoefficientField d}
   rw [parabolicOperator_const_smul]
   exact mul_nonneg hc (h z hz)
 
+section
+variable {r : ℝ} (hr : 0 < r)
+include r hr
+
 /-- The linear part of positive-radius parabolic scaling is injective. -/
-theorem parabolicLinear_injective {d : ℕ} {r : ℝ} (hr : 0 < r) :
+theorem parabolicLinear_injective :
     Function.Injective (parabolicLinear (d := d) r) := by
   intro z w hzw
   have htime := congrArg Prod.fst hzw
@@ -124,7 +131,7 @@ theorem parabolicLinear_injective {d : ℕ} {r : ℝ} (hr : 0 < r) :
     nlinarith
 
 /-- The determinant of the positive-radius parabolic linear part is nonzero. -/
-theorem parabolicLinear_det_ne_zero {d : ℕ} {r : ℝ} (hr : 0 < r) :
+theorem parabolicLinear_det_ne_zero :
     LinearMap.det (parabolicLinear (d := d) r : TimeVelocity d →ₗ[ℝ] TimeVelocity d) ≠ 0 := by
   intro hdet
   have hker : LinearMap.ker (parabolicLinear (d := d) r : TimeVelocity d →ₗ[ℝ]
@@ -132,8 +139,10 @@ theorem parabolicLinear_det_ne_zero {d : ℕ} {r : ℝ} (hr : 0 < r) :
     (LinearMap.det_eq_zero_iff_ker_ne_bot).mp hdet
   exact hker (LinearMap.ker_eq_bot_of_injective (parabolicLinear_injective hr))
 
+end
+
 /-- Positive-radius parabolic affine scaling is surjective. -/
-theorem parabolicAffine_surjective {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+theorem parabolicAffine_surjective {t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hr : 0 < r) : Function.Surjective (parabolicAffine t₀ v₀ r) := by
   intro z
   refine ⟨((z.1 - t₀) / r ^ 2, r⁻¹ • (z.2 - v₀)), ?_⟩
@@ -146,7 +155,7 @@ theorem parabolicAffine_surjective {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
     ring
 
 /-- The affine image of any set has the determinant factor of its parabolic linear part. -/
-theorem volume_parabolicAffine_image {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ)
+theorem volume_parabolicAffine_image (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ)
     (s : Set (TimeVelocity d)) :
     (volume : Measure (TimeVelocity d)) (parabolicAffine t₀ v₀ r '' s) =
       ENNReal.ofReal |LinearMap.det (parabolicLinear (d := d) r :
@@ -168,7 +177,7 @@ theorem volume_parabolicAffine_image {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (
       exact Measure.addHaar_image_continuousLinearMap volume (parabolicLinear r) s
 
 /-- The normalized and translated open boxes are exact affine images. -/
-theorem parabolicAffine_image_parabolicBox {d : ℕ} {vartheta r t₀ : ℝ}
+theorem parabolicAffine_image_parabolicBox {vartheta r t₀ : ℝ}
     {v₀ : PDE.Vec d} (hr : 0 < r) :
     parabolicAffine t₀ v₀ r '' parabolicBox vartheta 1 0 0 =
       parabolicBox vartheta r t₀ v₀ := by
@@ -183,7 +192,7 @@ theorem parabolicAffine_image_parabolicBox {d : ℕ} {vartheta r t₀ : ℝ}
       Set.image_preimage_eq _ (parabolicAffine_surjective hr)
 
 /-- Superlevel sets in a translated box are exact affine images after amplitude normalization. -/
-theorem parabolicAffine_image_normalizedSuperlevel {d : ℕ} {r t₀ eps : ℝ}
+theorem parabolicAffine_image_normalizedSuperlevel {r t₀ eps : ℝ}
     {v₀ : PDE.Vec d} {u : TimeVelocity d → ℝ} (hr : 0 < r) (heps : 0 < eps) :
     parabolicAffine t₀ v₀ r ''
         (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ eps⁻¹ • pullbackScalar u t₀ v₀ r z}) =
@@ -210,6 +219,8 @@ theorem parabolicAffine_image_normalizedSuperlevel {d : ℕ} {r t₀ eps : ℝ}
         simpa [div_eq_mul_inv, mul_comm, pullbackScalar_apply] using hlevel
     _ = parabolicBox 1 r t₀ v₀ ∩ {z | eps ≤ u z} :=
       Set.image_preimage_eq _ (parabolicAffine_surjective hr)
+
+end
 
 end
 

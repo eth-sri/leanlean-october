@@ -15,18 +15,19 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+  (hE : IsStripEvolution A H E)
+include lam Lam A hE
+
 /-- Smooth compact native sources yield continuous physical potentials on the open strip. -/
-theorem reconstruction_compact_potential_continuousOn
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) {sMinus : ℝ}
+theorem reconstruction_compact_potential_continuousOn (T : ℝ) {sMinus : ℝ}
     (f : (ℝ × PDE.Vec 1 × PDE.Vec 1) → ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hc : HasCompactSupport f)
     (hs : tsupport f ⊆ reconstructionSourceDomain H sMinus T) :
     ContinuousOn (fun p => duhamelPotential E.2 T (f ∘ KineticPoint.equivProd 1)
       (sectionTwoPoint p)) (stripPast H T) := by
-  have hg : ContDiff ℝ (⊤ : ℕ∞) (rawLift (f ∘ KineticPoint.equivProd 1)) := hf
+  have hg := hf
   have hgc := hc.comp_homeomorph (KineticPoint.homeomorphProd 1)
   have hgs : tsupport (f ∘ KineticPoint.equivProd 1) ⊆
       evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T := by
@@ -38,7 +39,7 @@ theorem reconstruction_compact_potential_continuousOn
     apply PDE.mem_translateSet_iff_sub_mem.mpr
     simpa only [sub_zero, intervalDomain, PDE.mem_oneDimensionalAxisBox_iff,
       PDE.vecOneCoordinate, Interval.carrier] using hx.2.2
-  have hcont := reconstruction_compact_duhamel_continuousOn hH hlam hLam A H E hE T
+  have hcont := reconstruction_compact_duhamel_continuousOn A H E hE T
     (f ∘ KineticPoint.equivProd 1) hg hgc hgs
   apply hcont.comp (continuous_sectionTwoPoint 1).continuousOn
   intro p hp
@@ -49,11 +50,7 @@ theorem reconstruction_compact_potential_continuousOn
 
 /-- Continuity on each bounded position window with a positive lower-time margin follows
 from explicit uniform compact-source approximation. -/
-theorem reconstruction_source_potential_continuousOn_window
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (sMinus a T R₀ : ℝ) (ha : sMinus < a)
+theorem reconstruction_source_potential_continuousOn_window (sMinus a T R₀ : ℝ) (ha : sMinus < a)
     (g : BoundedBorel Point)
     (hg : ContinuousOn (fun x => g (sectionTwoPoint ((KineticPoint.equivProd 1).symm x)))
       (reconstructionSourceDomain H sMinus T)) :
@@ -84,7 +81,7 @@ theorem reconstruction_source_potential_continuousOn_window
   let F (n : ℕ) (p : Point) : ℝ :=
     duhamelPotential E.2 T (f n ∘ KineticPoint.equivProd 1) (sectionTwoPoint p)
   have hF (n : ℕ) : ContinuousOn (F n) (stripPast H T) :=
-    reconstruction_compact_potential_continuousOn hH hlam hLam A H E hE T
+    reconstruction_compact_potential_continuousOn A H E hE T
       (f n) (hf n) (hc n) (hs n)
   have hFG (n : ℕ) (e : StripPole H (T : WithTop ℝ)) :
       stripPotentialOfKernel H E.2 T (G n) e = F n e.1 := by
@@ -98,7 +95,7 @@ theorem reconstruction_source_potential_continuousOn_window
       (hp : a ≤ p.time ∧ p ∈ stripPast H T ∧ |p.position 0| ≤ R₀) :
       |stripSourcePotential H E.2 T g p - F n p| ≤ b n := by
     let e : StripPole H (T : WithTop ℝ) := ⟨p, WithTop.coe_lt_coe.mpr hp.2.1.1, hp.2.1.2⟩
-    have herr := reconstruction_green_potential_error hH hlam hLam A H E hE T a e hp.1
+    have herr := reconstruction_green_potential_error A H E hE T a e hp.1
       g (G n) C hC (hr n) (hR n) (hr n).le (fun z hz => by
         have hh := hclose n (KineticPoint.equivProd 1 (sectionTwoPoint z)) hz
         rw [Equiv.symm_apply_apply, sectionTwoPoint_involutive] at hh
@@ -147,11 +144,7 @@ theorem reconstruction_source_potential_continuousOn_window
 
 /-- The actual bounded-source potential is continuous at every strictly interior strip point.
 Only continuity of the source on the open strip is required. -/
-theorem reconstruction_source_potential_continuousOn
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (sMinus T : ℝ) (g : BoundedBorel Point)
+theorem reconstruction_source_potential_continuousOn (sMinus T : ℝ) (g : BoundedBorel Point)
     (hg : ContinuousOn (fun x => g (sectionTwoPoint ((KineticPoint.equivProd 1).symm x)))
       (reconstructionSourceDomain H sMinus T)) :
     ContinuousOn (stripSourcePotential H E.2 T g) (reconstructionStrip H sMinus T) := by
@@ -161,7 +154,7 @@ theorem reconstruction_source_potential_continuousOn
   have ha : sMinus < a := by dsimp only [a]; linarith only [hp.1]
   have hap : a < p.time := by dsimp only [a]; linarith only [hp.1]
   have hR : |p.position 0| < R := by dsimp only [R]; linarith
-  have hc := reconstruction_source_potential_continuousOn_window hH hlam hLam A H E hE
+  have hc := reconstruction_source_potential_continuousOn_window A H E hE
     sMinus a T R ha g hg
   have hpos : Continuous (fun q : Point => |q.position 0|) :=
     ((continuous_apply 0).comp continuous_position).abs
@@ -171,5 +164,7 @@ theorem reconstruction_source_potential_continuousOn
         ⟨⟨hap, hp.2⟩, hR⟩
     exact Filter.mem_of_superset h (fun q hq => ⟨hq.1.1.le, hq.1.2, hq.2.le⟩)
   exact (hc.continuousAt hn).continuousWithinAt
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

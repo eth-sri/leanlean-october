@@ -16,30 +16,39 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+section
+variable {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ)
+include E eta
+
 /-- Critical cylinders have exactly the prescribed density and lie inside Q. -/
-def criticalParameters {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) :
+def criticalParameters :
     Set (KineticPoint d × ℝ) :=
   {z | 0 < z.2 ∧ backwardCylinder z.1 z.2 ⊆ unitCylinder d ∧
     (volume (E ∩ backwardCylinder z.1 z.2)).toReal =
       (1-eta)*(volume (backwardCylinder z.1 z.2)).toReal}
 
 /-- The open union of all critical cylinders. -/
-def criticalUnion {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) : Set (KineticPoint d) :=
+def criticalUnion : Set (KineticPoint d) :=
   ⋃ z ∈ criticalParameters E eta, backwardCylinder z.1 z.2
 
+end
+
+section
+variable {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ)
+
 /-- The critical union is open. -/
-theorem isOpen_criticalUnion {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) :
+theorem isOpen_criticalUnion :
     IsOpen (criticalUnion E eta) := isOpen_biUnion fun z _ => isOpen_cylinder z.1 z.2
 
 /-- The critical union lies in Q. -/
-theorem criticalUnion_subset_unit {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) :
+theorem criticalUnion_subset_unit :
     criticalUnion E eta ⊆ unitCylinder d := by
   intro X hX
   obtain ⟨z, hz, hmem⟩ := mem_iUnion₂.mp hX
   exact hz.2.1 hmem
 
 /-- A countable family of critical cylinders has exactly the same union. -/
-theorem exists_countable_critical_subcover {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) :
+theorem exists_countable_critical_subcover :
     ∃ T ⊆ criticalParameters E eta, T.Countable ∧
       (⋃ z ∈ T, backwardCylinder z.1 z.2) = criticalUnion E eta := by
   let : SecondCountableTopology (KineticPoint d) :=
@@ -47,9 +56,14 @@ theorem exists_countable_critical_subcover {d : ℕ} (E : Set (KineticPoint d)) 
   exact TopologicalSpace.isOpen_biUnion_countable (criticalParameters E eta)
     (fun z => backwardCylinder z.1 z.2) (fun z _ => isOpen_cylinder z.1 z.2)
 
+end
+
+section
+variable {d : ℕ} {E : Set (KineticPoint d)} (hE : NullMeasurableSet E volume)
+include hE
+
 /-- Outside the critical union, E costs only the spatial boundary layer. -/
-theorem volume_outside_criticalUnion_le {d : ℕ} {E : Set (KineticPoint d)}
-    (hE : NullMeasurableSet E volume) (hbounded : Bornology.IsBounded E)
+theorem volume_outside_criticalUnion_le (hbounded : Bornology.IsBounded E)
     (hEQ : E ⊆ unitCylinder d) {eta R : ℝ} (heta : 0 < eta)
     (hR : 0 < R) (hRsmall : R ≤ 1/4)
     (hcutoff : ∀ P r, 0 < r → backwardCylinder P r ⊆ unitCylinder d →
@@ -79,19 +93,20 @@ theorem volume_outside_criticalUnion_le {d : ℕ} {E : Set (KineticPoint d)}
     (spatial_shell_volume d hR hRsmall)
 
 /-- Exact-density cylinders yield a fixed proportional density reduction in their union. -/
-theorem criticalUnion_density_reduction {d : ℕ} {E : Set (KineticPoint d)}
-    (hE : NullMeasurableSet E volume) {eta R : ℝ} (heta : 0 ≤ eta)
+theorem criticalUnion_density_reduction {eta R : ℝ} (heta : 0 ≤ eta)
     (hcutoff : ∀ P r, 0 < r → backwardCylinder P r ⊆ unitCylinder d →
       (1-eta)*(volume (backwardCylinder P r)).toReal ≤
         (volume (E ∩ backwardCylinder P r)).toReal → r < R) :
     (volume (E ∩ criticalUnion E eta)).toReal ≤
       (1-eta/((8 : ℝ)^(4*d+2)))*(volume (criticalUnion E eta)).toReal := by
-  have hf : volume (criticalUnion E eta) ≠ ⊤ :=
+  have hf :=
     ne_top_of_le_ne_top (volume_cylinder_pos_ne_top _ zero_lt_one).2
       (measure_mono (criticalUnion_subset_unit E eta))
   exact cylinder_union_density_reduction Prod.fst Prod.snd (criticalParameters E eta) R
     (fun _ hz => hz.1)
     (fun z hz => (hcutoff z.1 z.2 hz.1 hz.2.1 (le_of_eq hz.2.2.symm)).le)
     E hE hf heta (fun _ hz => hz.2.2.le)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

@@ -1,5 +1,7 @@
 module
 
+public import HypoellipticAleksandrov.Parabolic.ScalarCalculus
+
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementSmoothResidual
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import Mathlib.Tactic.Ring
@@ -12,16 +14,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov.Parabolic HypoellipticAleksandrov.Parabolic.LocalHolder Set Filter
 open scoped Topology Matrix
 
-private theorem scalarTimeDerivative_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
-    {z : TimeVelocity n} (hz : z ∈ D) :
-    scalarTimeDerivative (fun q => u q + v q) z =
-      scalarTimeDerivative u z + scalarTimeDerivative v z := by
-  exact ((hu.timeSlice_hasDerivAt hz).add (hv.timeSlice_hasDerivAt hz)).deriv
+section
+variable {n : ℕ} {u v : TimeVelocity n → ℝ} {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D)
+  (hv : IsScalarC12On v D) {z : TimeVelocity n} (hz : z ∈ D)
+include D hu hv hz
 
-private theorem scalarSpatialGradient_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
-    {z : TimeVelocity n} (hz : z ∈ D) :
+private theorem scalarTimeDerivative_add :
+    scalarTimeDerivative (fun q => u q + v q) z =
+      scalarTimeDerivative u z + scalarTimeDerivative v z := ((hu.timeSlice_hasDerivAt hz).add (hv.timeSlice_hasDerivAt hz)).deriv
+
+private theorem scalarSpatialGradient_add :
     scalarSpatialGradient (fun q => u q + v q) z =
       scalarSpatialGradient u z + scalarSpatialGradient v z := by
   ext i
@@ -31,31 +33,7 @@ private theorem scalarSpatialGradient_add {n : ℕ} {u v : TimeVelocity n → �
     ((hv.spatialSlice_contDiffAt hz).differentiableAt (by norm_num))]
   rfl
 
-private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
-    (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
-    (i j : Fin n) :
-    scalarSpatialHessian u z i j =
-      fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2
-        (PDE.basisVec i) (PDE.basisVec j) := by
-  let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  have hsecond : HasFDerivAt (fderiv ℝ g) (fderiv ℝ (fderiv ℝ g) z.2) z.2 :=
-    ((hu.fderiv_right (m := 1) (by norm_num)).differentiableAt
-      (by norm_num)).hasFDerivAt
-  have hdiff : ∀ j : Fin n,
-      DifferentiableAt ℝ (fun y : PDE.Vec n => fderiv ℝ g y (PDE.basisVec j)) z.2 := by
-    intro j
-    exact (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).differentiableAt
-  change (fderiv ℝ (fun y : PDE.Vec n => fun j =>
-      fderiv ℝ g y (PDE.basisVec j)) z.2 (PDE.basisVec i)) j = _
-  rw [fderiv_pi hdiff]
-  have hj := (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv
-  have hjApply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
-  simpa [ContinuousLinearMap.flip_apply] using hjApply
-
-private theorem scalarSpatialHessian_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
-    {z : TimeVelocity n} (hz : z ∈ D) :
+private theorem scalarSpatialHessian_add :
     scalarSpatialHessian (fun q => u q + v q) z =
       scalarSpatialHessian u z + scalarSpatialHessian v z := by
   let g_u : PDE.Vec n → ℝ := fun y => u (z.1, y)
@@ -90,6 +68,8 @@ private theorem scalarSpatialHessian_add {n : ℕ} {u v : TimeVelocity n → ℝ
     scalarSpatialHessian_apply_eq_sndFDeriv (hv.spatialSlice_contDiffAt hz) i j,
     hsecond]
   rfl
+
+end
 
 private theorem isScalarC12On_add {n : ℕ} {u v : TimeVelocity n → ℝ}
     {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) :
@@ -127,8 +107,7 @@ private theorem scalarParabolicZeroOrderOperator_add {n : ℕ}
       (scalarSpatialHessian u z + scalarSpatialHessian v z) =
       matrixContraction (a z.1 z.2) (scalarSpatialHessian u z) +
         matrixContraction (a z.1 z.2) (scalarSpatialHessian v z) := by
-    unfold matrixContraction
-    simp only [Matrix.add_apply, mul_add, Finset.sum_add_distrib]
+    simp
   have hGradient : PDE.vecDot (b z.1 z.2)
       (scalarSpatialGradient u z + scalarSpatialGradient v z) =
       PDE.vecDot (b z.1 z.2) (scalarSpatialGradient u z) +

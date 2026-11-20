@@ -25,8 +25,11 @@ open scoped ENNReal NNReal
 instance greenLebesgue_sigmaFinite (d : ℕ) : SigmaFinite (greenLebesgue d) := by
   unfold greenLebesgue; infer_instance
 
+section
+variable {d : ℕ}
+
 /-- Every point with positive time lies in a slab with rational parameter. -/
-lemma exists_rat_slab {d : ℕ} (p : GreenCarrier d) :
+lemma exists_rat_slab (p : GreenCarrier d) :
     ∃ r : ℚ, 0 < (r : ℝ) ∧ p ∈ slabSet (d := d) (r : ℝ) := by
   have hp : 0 < p.1.1 := p.1.2.1
   obtain ⟨r, hr1, hr2⟩ := exists_rat_btwn (show p.1.1 / 2 < p.1.1 by linarith)
@@ -35,7 +38,7 @@ lemma exists_rat_slab {d : ℕ} (p : GreenCarrier d) :
   constructor <;> linarith
 
 /-- Slabs with non-positive parameter are empty. -/
-lemma slabSet_eq_empty {d : ℕ} {T : ℝ} (hT : T ≤ 0) : slabSet (d := d) T = ∅ := by
+lemma slabSet_eq_empty {T : ℝ} (hT : T ≤ 0) : slabSet (d := d) T = ∅ := by
   ext p
   have := p.1.2.1
   simp only [slabSet, slabTimeSet, mem_preimage, mem_ofPred_eq, mem_empty_iff_false, iff_false]
@@ -43,7 +46,7 @@ lemma slabSet_eq_empty {d : ℕ} {T : ℝ} (hT : T ≤ 0) : slabSet (d := d) T =
   linarith
 
 /-- Slab gluing: local slab densities give one global density, equal to each of them a.e. -/
-theorem exists_global_density {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+theorem exists_global_density {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     (Gl : ℝ → GreenCarrier d → ℝ≥0∞)
@@ -103,5 +106,7 @@ theorem exists_global_density {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
     exact (hslab_fin T hT).ne
   exact (withDensity_eq_iff (Measure.measurable_rnDeriv _ _).aemeasurable
     (hGm T hT).aemeasurable hfin).1 h1
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

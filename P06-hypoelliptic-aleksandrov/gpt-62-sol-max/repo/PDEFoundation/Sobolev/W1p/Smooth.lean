@@ -79,50 +79,55 @@ noncomputable def ofContDiffOnIsSobolevRegularDomain
   hasWeakGradient :=
     HasWeakGradientOn.of_contDiff hf
 
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+
+section
+variable (hU : IsSobolevRegularDomain U) {f : Vec d → ℝ} (hf : ContDiff ℝ 1 f)
+include hU f hf
+
 @[simp]
-theorem ofContDiffOnIsSobolevRegularDomain_toFun
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    (hU : IsSobolevRegularDomain U) {f : Vec d → ℝ}
-    (hf : ContDiff ℝ 1 f) :
+theorem ofContDiffOnIsSobolevRegularDomain_toFun :
     (ofContDiffOnIsSobolevRegularDomain
       (p := p) hU hf).toFun = f :=
   rfl
 
 @[simp]
-theorem ofContDiffOnIsSobolevRegularDomain_grad
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    (hU : IsSobolevRegularDomain U) {f : Vec d → ℝ}
-    (hf : ContDiff ℝ 1 f) :
+theorem ofContDiffOnIsSobolevRegularDomain_grad :
     (ofContDiffOnIsSobolevRegularDomain
       (p := p) hU hf).grad = classicalGradient f :=
   rfl
 
+end
+
 /-- Bounded open convex domains provide the bounded-domain smooth
 `W^{1,p}` constructor. -/
 noncomputable def ofContDiffOnIsOpenBoundedConvexDomain
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     (hU : IsOpenBoundedConvexDomain U) {f : Vec d → ℝ}
     (hf : ContDiff ℝ 1 f) : W1pFunction U p :=
   ofContDiffOnIsSobolevRegularDomain
     hU.isSobolevRegularDomain hf
 
+end
+
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} (hU : IsOpenBoundedConvexDomain U) {f : Vec d → ℝ}
+  (hf : ContDiff ℝ 1 f)
+include d U hU f hf
+
 @[simp]
-theorem ofContDiffOnIsOpenBoundedConvexDomain_toFun
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    (hU : IsOpenBoundedConvexDomain U) {f : Vec d → ℝ}
-    (hf : ContDiff ℝ 1 f) :
+theorem ofContDiffOnIsOpenBoundedConvexDomain_toFun :
     (ofContDiffOnIsOpenBoundedConvexDomain
       (p := p) hU hf).toFun = f :=
   rfl
 
 @[simp]
-theorem ofContDiffOnIsOpenBoundedConvexDomain_grad
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    (hU : IsOpenBoundedConvexDomain U) {f : Vec d → ℝ}
-    (hf : ContDiff ℝ 1 f) :
+theorem ofContDiffOnIsOpenBoundedConvexDomain_grad :
     (ofContDiffOnIsOpenBoundedConvexDomain
       (p := p) hU hf).grad = classicalGradient f :=
   rfl
+
+end
 
 end W1pFunction
 

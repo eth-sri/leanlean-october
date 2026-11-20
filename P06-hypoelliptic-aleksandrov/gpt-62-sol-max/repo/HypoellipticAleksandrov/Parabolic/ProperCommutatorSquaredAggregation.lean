@@ -17,20 +17,23 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators
 
+section
+variable {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
+include d M beta
+
 /-- Number of splits of `beta` whose coefficient-side multi-index is nonzero. -/
-noncomputable def properSplitCard
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M) : ℕ :=
+noncomputable def properSplitCard : ℕ :=
   Fintype.card
     {gamma : TimeVelocityMultiIndex.Split beta.1 // gamma.left ≠ 0}
 
-private abbrev ProperSplit {d M : ℕ} (beta : ParabolicDerivativeIndex d M) :=
+private abbrev ProperSplit :=
   {gamma : TimeVelocityMultiIndex.Split beta.1 // gamma.left ≠ 0}
 
-private abbrev ProperAtom {d M : ℕ} (beta : ParabolicDerivativeIndex d M) :=
+private abbrev ProperAtom :=
   Unit ⊕ ((Fin d × Fin d × ProperSplit beta) ⊕
     ((Fin d × ProperSplit beta) ⊕ ProperSplit beta))
 
-private theorem properAtom_card {d M : ℕ} (beta : ParabolicDerivativeIndex d M) :
+private theorem properAtom_card :
     Fintype.card (ProperAtom beta) =
       1 + (d ^ 2 + d + 1) * properSplitCard beta := by
   simp only [ProperAtom, properSplitCard, Fintype.card_sum, Fintype.card_unit,
@@ -38,7 +41,6 @@ private theorem properAtom_card {d M : ℕ} (beta : ParabolicDerivativeIndex d M
   ring
 
 private theorem sum_dite_eq_sum_proper
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
     (f : (gamma : TimeVelocityMultiIndex.Split beta.1) → gamma.left ≠ 0 → ℝ) :
     (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
       if hproper : gamma.left ≠ 0 then f gamma hproper else 0) =
@@ -63,6 +65,8 @@ private theorem sum_dite_eq_sum_proper
       refine Finset.sum_congr rfl ?_
       intro gamma hgamma
       exact dif_pos gamma.2
+
+end
 
 private theorem properAtom_nonneg
     {d M : ℕ} {beta : ParabolicDerivativeIndex d M}

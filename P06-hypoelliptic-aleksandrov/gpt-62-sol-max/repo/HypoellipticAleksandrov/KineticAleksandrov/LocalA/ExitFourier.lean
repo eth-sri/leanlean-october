@@ -12,8 +12,6 @@ open Set MeasureTheory SectionTwo Parabolic
 
 /-- The actual exit measure retains time and velocity and has the source's optimized decay. -/
 theorem ballExit_fourier_decay
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
       ∀ (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
@@ -21,12 +19,12 @@ theorem ballExit_fourier_decay
         (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}),
       P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4) →
       T.1 - P.1.time = R ^ 2 / 8 →
-      let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
+      let ν := ballExit hd B hB v₀ hR P T
       ∀ ξ : PDE.Vec d,
         ((exitFourier ν ξ).variation univ).toReal ≤
           C * Real.exp (-c * (R ^ 3 * PDE.vecEuclideanNorm ξ) ^ (1 / 3 : ℝ)) := by
   obtain ⟨C₀, c₀, hC₀, hc₀, htwo⟩ :=
-    ballExit_fourier_two_exponentials hH hLE d hd lam Lam hlam hLam
+    ballExit_fourier_two_exponentials d hd lam Lam hlam hLam
   let c := c₀ / 16
   let A := 2 * C₀ + 1
   have hc : 0 < c := div_pos hc₀ (by norm_num)
@@ -66,7 +64,7 @@ theorem ballExit_fourier_decay
         (mul_nonneg (pow_nonneg hR.le _) hn) (le_of_not_ge hhigh)
         (by norm_num : 0 ≤ (1 / 3 : ℝ))
     have hb := ENNReal.toReal_mono ENNReal.one_ne_top
-      (ballExit_fourier_totalVariation_le_one hH hLE hd hlam hLam B hB v₀ hR P T ξ)
+      (ballExit_fourier_totalVariation_le_one hd B hB v₀ hR P T ξ)
     simp only [ENNReal.toReal_one] at hb
     exact hb.trans (exitFrequency_low_bound hA hc.le hy)
 

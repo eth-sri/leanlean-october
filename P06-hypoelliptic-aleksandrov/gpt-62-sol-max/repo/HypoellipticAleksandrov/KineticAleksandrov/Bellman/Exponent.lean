@@ -14,16 +14,22 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set
 
+section
+variable (ratio : ℝ) (hRatio : 1 ≤ ratio)
+include ratio hRatio
+
 /-- The unique real supremum of the source's admissible normalized adjoint degrees. -/
-def bellmanAdjointExponent (ratio : ℝ) (hRatio : 1 ≤ ratio) : ℝ :=
+def bellmanAdjointExponent : ℝ :=
   (existsUnique_bellmanAdjointExponent ratio hRatio).choose
 
 /-- Full characteristic property and uniqueness of the same chosen real exponent.
 This does not assert that the supremal degree is attained by an admissible pair. -/
-theorem bellmanAdjointExponent_characterization (ratio : ℝ) (hRatio : 1 ≤ ratio) :
+theorem bellmanAdjointExponent_characterization :
     IsLUB (bellmanAdmissibleDegrees ratio) (bellmanAdjointExponent ratio hRatio) ∧
       ∀ β : ℝ, IsLUB (bellmanAdmissibleDegrees ratio) β →
         β = bellmanAdjointExponent ratio hRatio := by
   exact (existsUnique_bellmanAdjointExponent ratio hRatio).choose_spec
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

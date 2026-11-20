@@ -44,7 +44,6 @@ theorem exists_capacity_test (E : Interval) :
     have hi : Integrable chi volume := hs.continuous.integrable_of_hasCompactSupport hc
     have hsupport : tsupport chi ⊆ Ioi a := fun x hx => (hsup hx).1
     obtain ⟨hlo, hhi⟩ := capacity_cumulative_bounds hi (fun x => (hn x).1) hsupport v
-    have ht : 0 ≤ ∫ x, chi x := integral_nonneg (fun x => (hn x).1)
     dsimp only [F]
     apply abs_le.mpr
     constructor <;> linarith

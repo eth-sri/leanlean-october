@@ -19,7 +19,6 @@ theorem exists_subcritical_alpha (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
     ∃ alpha : ℝ, 0 < alpha ∧ alpha < 1 ∧ 0 < alpha - 2 + 4 * (d : ℝ) / p := by
   have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
   have hratio : 1 < 4 * (d : ℝ) / p := (lt_div_iff₀ hp0).2 (by simpa using hpd)
-  have hd0 : 0 < (d : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hd)
   have hratio0 : 0 < 4 * (d : ℝ) / p := div_pos (by positivity) hp0
   obtain ⟨alpha, ha, ha1⟩ := exists_between
     (show max (0 : ℝ) (2 - 4 * (d : ℝ) / p) < 1 from

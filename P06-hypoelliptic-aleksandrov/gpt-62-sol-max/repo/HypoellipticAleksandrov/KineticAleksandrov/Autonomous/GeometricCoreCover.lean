@@ -14,12 +14,16 @@ open Set
 /-- The source geometric centre magnitudes, 8R(7/8)^j. -/
 def geometricCoreScale (R : ℝ) (j : ℕ) : ℝ := 8 * R * (7 / 8 : ℝ) ^ j
 
+section
+variable (R : ℝ) (hR : 0 < R) (j : ℕ)
+include R hR j
+
 /-- Every source centre magnitude is positive. -/
-theorem geometricCoreScale_pos (R : ℝ) (hR : 0 < R) (j : ℕ) :
+theorem geometricCoreScale_pos :
     0 < geometricCoreScale R j := by unfold geometricCoreScale; positivity
 
 /-- The source positive and negative clock data have radius half the centre magnitude. -/
-def geometricCoreClock (R : ℝ) (hR : 0 < R) (j : ℕ) (positive : Bool) : Clock where
+def geometricCoreClock (positive : Bool) : Clock where
   vbar := if positive then geometricCoreScale R j else -geometricCoreScale R j
   r := geometricCoreScale R j / 2
   nonzero := by split <;> have h := geometricCoreScale_pos R hR j <;> linarith
@@ -28,22 +32,39 @@ def geometricCoreClock (R : ℝ) (hR : 0 < R) (j : ℕ) (positive : Bool) : Cloc
     have h := geometricCoreScale_pos R hR j
     split <;> simp only [abs_of_pos h, abs_neg] <;> linarith
 
+section
+variable (s : Bool)
+
+theorem geometricCoreClock_radius_ratio :
+    (geometricCoreClock R hR j s).r / R = 4 * (7 / 8 : ℝ) ^ j := by
+  dsimp [geometricCoreClock, geometricCoreScale]
+  field_simp [hR.ne']
+  <;> ring
+
 /-- The source signed geometric clocks satisfy the band-centre relation. -/
-theorem geometricCoreClock_center (R : ℝ) (hR : 0 < R) (j : ℕ) (s : Bool) :
+theorem geometricCoreClock_center :
     |(geometricCoreClock R hR j s).vbar| = 2 * (geometricCoreClock R hR j s).r := by
   have h := geometricCoreScale_pos R hR j
   cases s <;> simp only [geometricCoreClock, Bool.false_eq_true, ↓reduceIte,
     abs_neg, abs_of_pos h] <;> ring
 
 /-- Every geometric band radius is at most 4R, hence within the allowed 6R. -/
-theorem geometricCoreClock_radius (R : ℝ) (hR : 0 < R) (j : ℕ) (s : Bool) :
+theorem geometricCoreClock_radius :
     (geometricCoreClock R hR j s).r ≤ 6 * R := by
   have hj : (7 / 8 : ℝ) ^ j ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
   change 8 * R * (7 / 8 : ℝ) ^ j / 2 ≤ 6 * R
   nlinarith
 
+end
+
+end
+
+section
+variable (R v : ℝ) (hR : 0 < R)
+include hR
+
 /-- Geometric annuli cover every positive magnitude up to 9R, including endpoints. -/
-theorem geometricCoreScale_covers (R v : ℝ) (hR : 0 < R) (hv : 0 < v)
+theorem geometricCoreScale_covers (hv : 0 < v)
     (hupper : v ≤ 9 * R) :
     ∃ j : ℕ, geometricCoreScale R j * (7 / 8) ≤ v ∧
       v ≤ geometricCoreScale R j * (9 / 8) := by
@@ -71,7 +92,7 @@ theorem geometricCoreScale_covers (R v : ℝ) (hR : 0 < R) (hv : 0 < v)
     linarith
 
 /-- The actual closed cores cover both signs of every nonzero velocity up to 9R. -/
-theorem geometricCoreClock_covers (R v : ℝ) (hR : 0 < R) (hv : v ≠ 0)
+theorem geometricCoreClock_covers (hv : v ≠ 0)
     (hupper : |v| ≤ 9 * R) :
     ∃ j : ℕ, ∃ s : Bool, v ∈ (geometricCoreClock R hR j s).core := by
   obtain ⟨j, hl, hu⟩ := geometricCoreScale_covers R |v| hR (abs_pos.mpr hv) hupper
@@ -87,6 +108,8 @@ theorem geometricCoreClock_covers (R v : ℝ) (hR : 0 < R) (hv : v ≠ 0)
     change geometricCoreScale R j - (geometricCoreScale R j / 2) / 4 ≤ v ∧
       v ≤ geometricCoreScale R j + (geometricCoreScale R j / 2) / 4
     constructor <;> linarith
+
+end
 
 /-- The characterized Bellman degree forces exactly the positive geometric exponent. -/
 theorem belowFour_exponent_range (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)

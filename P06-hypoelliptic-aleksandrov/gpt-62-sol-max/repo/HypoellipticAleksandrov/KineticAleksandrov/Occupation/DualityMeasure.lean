@@ -35,8 +35,6 @@ def unitOccupationKernel (K : WholeKernel d) :
     ProbabilityTheory.Kernel (PDE.Vec d × ElapsedTime (ENNReal.ofReal (1 : ℝ))) (PDE.Vec d) :=
   K.firstMarginal.comap (fun q => wholeSpaceQuery 0 q.2.1 q.2.2.1.le q.1 0) (by
     apply Measurable.subtype_mk
-    change Measurable (fun q : PDE.Vec d × ElapsedTime (ENNReal.ofReal (1 : ℝ)) =>
-      (0, (q.2.1, (q.1, 0))))
     fun_prop)
 
 /-- The pulled-back velocity kernel is finite. -/
@@ -87,14 +85,17 @@ instance unitOccupationMeasure_finite (K : WholeKernel d) (ρ : Measure (PDE.Vec
   unfold unitOccupationMeasure
   infer_instance
 
+section
+variable (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
+
 /-- Unit-time occupation mass is at most the initial mass. -/
-theorem unitOccupationMeasure_mass_le (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
+theorem unitOccupationMeasure_mass_le
     [IsFiniteMeasure ρ] : unitOccupationMeasure K ρ univ ≤ ρ univ := by
   rw [unitOccupationMeasure, Measure.map_apply (by fun_prop) MeasurableSet.univ, preimage_univ]
   exact unitOccupationProduct_mass_le K ρ
 
 /-- Positive elapsed time puts the entire occupation measure in the open unit slab. -/
-theorem unitOccupationMeasure_compl_slab (K : WholeKernel d) (ρ : Measure (PDE.Vec d)) :
+theorem unitOccupationMeasure_compl_slab :
     unitOccupationMeasure K ρ (Ioo (0 : ℝ) 1 ×ˢ univ)ᶜ = 0 := by
   rw [unitOccupationMeasure, Measure.map_apply (by fun_prop)
     ((measurableSet_Ioo.prod MeasurableSet.univ).compl)]
@@ -104,11 +105,11 @@ theorem unitOccupationMeasure_compl_slab (K : WholeKernel d) (ρ : Measure (PDE.
     ext q
     simp only [mem_preimage, mem_compl_iff, mem_prod, mem_Ioo, mem_univ, and_true,
       mem_empty_iff_false, iff_false, not_not]
-    exact ⟨q.1.2.2.1, ((ENNReal.ofReal_lt_ofReal_iff zero_lt_one).mp q.1.2.2.2)⟩
+    exact ⟨q.1.2.property.left, (ENNReal.ofReal_lt_ofReal_iff zero_lt_one).mp q.1.2.property.right⟩
   rw [he, measure_empty]
 
 /-- Projected occupation integration is the full iterated first-marginal characterization. -/
-theorem integral_unitOccupationMeasure (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
+theorem integral_unitOccupationMeasure
     [IsFiniteMeasure ρ] (φ : TimeVelocity d → ℝ) (hφ : Measurable φ)
     (hφb : ∃ M : ℝ, ∀ q, |φ q| ≤ M) :
     (∫ q, φ q ∂unitOccupationMeasure K ρ) =
@@ -130,5 +131,7 @@ theorem integral_unitOccupationMeasure (K : WholeKernel d) (ρ : Measure (PDE.Ve
   exact (integral_prod _ hi.integral_compProd).trans (by
     simp only [ProbabilityTheory.Kernel.prodMkLeft_apply, unitOccupationKernel,
       ProbabilityTheory.Kernel.comap_apply, ψ, zero_add])
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

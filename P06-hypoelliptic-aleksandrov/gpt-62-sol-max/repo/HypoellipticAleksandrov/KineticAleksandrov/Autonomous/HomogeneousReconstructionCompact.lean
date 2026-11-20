@@ -1,6 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionComparison
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripDuhamel
+
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassComparison
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoundedSourceWeakGreenSigned
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
 
@@ -15,8 +17,7 @@ open SectionTwo Evolution
 /-- Signed smooth compact interior sources have continuous actual Duhamel potentials.
 A smooth positive shift reduces this to the nonnegative source theorem. -/
 theorem reconstruction_compact_duhamel_continuousOn
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (g : Point → ℝ)
     (hgs : ContDiff ℝ (⊤ : ℕ∞) (rawLift g)) (hgc : HasCompactSupport g)
@@ -85,11 +86,7 @@ theorem reconstruction_compact_duhamel_continuousOn
       (huD : tsupport u ⊆ D) : ContinuousOn (duhamelPotential E.2 T u)
         (evolutionPastClosedCylinder (intervalDomain H) (fun _ => 0) T) := by
     obtain ⟨-, -, -, -, -, hcont, -⟩ :=
-      kinetic_duhamel hH (by omega) (intervalDomain_admissible H) (zeroCurve_piecewiseC1 1)
-        hlam hLam one_pos (evolutionCoefficient A.a) (evolutionCoefficient_smooth A)
-        (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
-        (identityDrift 1) (identityDrift_smooth 1) (identityDrift_bounds 1)
-        E.1 E.2 hE T u hu0 hus huc huD
+      autonomous_duhamel_properties A (intervalDomain_admissible H) E hE T u hu0 hus huc huD
     exact hcont
   have hh := (hcont (f + b) hfb0 hfbs hfbc hfbD).sub (hcont b hb0 hbs hbc hbD)
   apply hh.congr

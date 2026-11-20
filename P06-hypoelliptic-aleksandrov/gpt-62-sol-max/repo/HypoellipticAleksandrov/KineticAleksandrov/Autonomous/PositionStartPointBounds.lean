@@ -48,15 +48,15 @@ theorem positionStartQuadratic_box_bound (c : Clock) (Y : ℝ) (p : Point)
 
 /-- A finite terminal mixture has a nonnegative localized value. -/
 theorem positionStartQuadratic_terminal_integral_nonneg
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y b : ℝ)
     (mu : Measure Point) :
     0 ≤ ∫ q, positionStartCutoff Y c.r c.positive (q.position 0) *
       visitQuadratic c (q.velocity 0)
-      ∂(positionStartTerminalKernel hH hLE hlam hLam A c J b ∘ₘ mu) := by
+      ∂(positionStartTerminalKernel A c J b ∘ₘ mu) := by
   apply integral_nonneg_of_ae
-  exact (positionStartTerminalMixture_ae_closedActive hH hLE hlam hLam A c J b mu).mono
+  exact (positionStartTerminalMixture_ae_closedActive A c J b mu).mono
     fun q hq => mul_nonneg ((positionStartCutoff_properties Y c.r c.positive).2 _).1
       (visitQuadratic_nonneg c hq)
 

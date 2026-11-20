@@ -29,7 +29,11 @@ variable {d : ℕ} (Φ : KineticAffineScaling d)
 
 /-! ### Transport of quantifiers and regularity -/
 
-theorem forall_mem_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
+section
+variable {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
+include hS
+
+theorem forall_mem_iff
     {f : KineticPoint d → Prop} : (∀ p ∈ S', f (Φ.point p)) ↔ ∀ p ∈ S, f p := by
   constructor
   · intro h p hp
@@ -38,7 +42,7 @@ theorem forall_mem_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ �
   · intro h p hp
     exact h _ ((hS p).1 hp)
 
-theorem continuousOn_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
+theorem continuousOn_iff
     {u : KineticPoint d → ℝ} :
     ContinuousOn (fun p => u (Φ.point p)) S' ↔ ContinuousOn u S := by
   constructor
@@ -51,6 +55,8 @@ theorem continuousOn_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔
     simp only [Function.comp_apply, Φ.point_pointInv]
   · intro h
     exact h.comp Φ.continuous_point.continuousOn (fun p hp => (hS p).1 hp)
+
+end
 
 theorem contDiffOn_raw_iff {S S' : Set (ℝ × (PDE.Vec d × PDE.Vec d))}
     (hS : ∀ q, q ∈ S' ↔ Φ.raw q ∈ S) {g : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ} :

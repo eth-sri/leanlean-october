@@ -14,13 +14,16 @@ These identities raise the first parameter while preserving positive Euler endpo
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
+section
+variable (a : ℝ)
+
 /-- Compatibility of the two rising-factorial recurrences. -/
-theorem poch_shift (a : ℝ) (n : ℕ) :
+theorem poch_shift (n : ℕ) :
     a * poch (a + 1) n = (a + n) * poch a n := by
   rw [← poch_succ_left, poch_succ, mul_comm]
 
 /-- The coefficient identity underlying the positive-parameter continuation. -/
-theorem coeff_contiguous_succ (a : ℝ) (b : Pos) (n : ℕ) :
+theorem coeff_contiguous_succ (b : Pos) (n : ℕ) :
     coeff a b (n + 1) = coeff (a + 1) (next b) (n + 1) +
       ((a - b.1) / (b.1 * (b.1 + 1))) * coeff (a + 1) (next (next b)) n := by
   have hb := ne_of_gt b.2
@@ -45,7 +48,7 @@ theorem coeff_contiguous_succ (a : ℝ) (b : Pos) (n : ℕ) :
   nlinarith only [hsm]
 
 /-- A contiguous relation expressing all admissible parameters through positive Euler ones. -/
-theorem M_contiguous (a : ℝ) (b : Pos) (z : ℝ) :
+theorem M_contiguous (b : Pos) (z : ℝ) :
     M a b z = M (a + 1) (next b) z +
       ((a - b.1) * z / (b.1 * (b.1 + 1))) * M (a + 1) (next (next b)) z := by
   have hs := (hasSum_M (a + 1) (next (next b)) z).mul_left
@@ -77,5 +80,7 @@ theorem M_contiguous (a : ℝ) (b : Pos) (z : ℝ) :
     ring
   have h := hdiff'.unique hsum
   linarith only [h]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

@@ -20,8 +20,6 @@ open HypoellipticAleksandrov Parabolic SectionTwo Decay Set MeasureTheory
 /-- Full-space decay retains every physical starting position, with structural constants
 chosen before the coefficient and the supplied realizing kernel. -/
 theorem ballExit_full_fourier_decay
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
       ∀ (B : CoefficientField d), IsSectionTwoCoefficient lam Lam B →
@@ -33,7 +31,7 @@ theorem ballExit_full_fourier_decay
         ((fourierProjection K (wholeSpaceQuery σ τ hστ.le v z) ξ).variation
           univ).toReal ≤ C * Real.exp (-c * (τ - σ) *
             PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ)) := by
-  have hEvol : IterationEvolutionStatement := exists_terminalEvolution_of_classical hLE hH
+  have hEvol : IterationEvolutionStatement := exists_terminalEvolution_of_classical
   obtain ⟨C, c, hC, hc, hdecay⟩ := fourier_decay_whole_space_of_unitBlock
     d hd lam Lam hlam hLam hEvol (unit_frequency_block_W hEvol d hd lam Lam hlam hLam)
   refine ⟨C, c, hC, hc, ?_⟩
@@ -46,28 +44,19 @@ theorem ballExit_full_fourier_decay
 /-- A full-space evolution dominates the same canonical ball kernel, by the proved
 source domain-monotonicity clause and uniqueness of the realizing ball pair. -/
 theorem ballExit_exists_full_evolution
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d)
+    {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) :
     ∃ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => 0))
       (K : MovingFiberKernel (wholeSpace d) (fun _ => 0)),
       RealizesTerminalEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ
         (zIndependentCoefficient B) (identityDrift d) S K ∧
       ∀ q : EvolutionQuery (PDE.euclideanBall v₀ R) (fun _ => 0),
-        (localBallKernel hH hLE hd hlam hLam B hB v₀ hR).master q ≤
+        (localBallKernel hd B hB v₀ hR).master q ≤
           K.master (wholeSpaceQuery q.1.1 q.1.2.1 q.2.1 q.1.2.2.1 q.1.2.2.2) := by
-  obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
-  have hb := identityDrift_bounds d
-  obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, hmono, -⟩ :=
-    exists_terminalEvolution_of_classical hLE hH d hd lam Lam 1 1 hlam hLam
-      one_pos le_rfl (wholeSpace d) (fun _ => 0)
-      (zIndependentCoefficient B) (identityDrift d) (wholeSpace_admissible d)
-      (zeroCurve_piecewiseC1 d) hBs hBsym hBell (identityDrift_smooth d) hb.1 hb.2
-  have hreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ
-      (zIndependentCoefficient B) (identityDrift d) S K := ⟨hc, hi, he, hcomp⟩
-  refine ⟨S, K, hreal, ?_⟩
+  obtain ⟨S, K, hr, -, hmono, -⟩ :=
+    (exists_terminalEvolution_of_classical.timeVelocity hd (wholeSpace_admissible d) B hB).realizes
+  refine ⟨S, K, hr, ?_⟩
   have hsub : ∀ σ, movingDomain (PDE.euclideanBall v₀ R) (fun _ => 0) σ ⊆
       movingDomain (wholeSpace d) (fun _ => 0) σ := by
     intro σ
@@ -75,9 +64,9 @@ theorem ballExit_exists_full_evolution
     exact subset_univ _
   have hdom := domainMonotone_of_realizes (zIndependentCoefficient B) (identityDrift d)
     K hmono (PDE.euclideanBall v₀ R) (fun _ => 0) (localBall_admissible v₀ hR)
-    (zeroCurve_piecewiseC1 d) hsub (localBallEvolution hH hLE hd hlam hLam B hB v₀ hR).1
-    (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
-    (localBallEvolution_realizes hH hLE hd hlam hLam B hB v₀ hR)
+    (zeroCurve_piecewiseC1 d) hsub (localBallEvolution hd B hB v₀ hR).1
+    (localBallKernel hd B hB v₀ hR)
+    (localBallEvolution_realizes hd B hB v₀ hR)
   intro q
   exact hdom q
 

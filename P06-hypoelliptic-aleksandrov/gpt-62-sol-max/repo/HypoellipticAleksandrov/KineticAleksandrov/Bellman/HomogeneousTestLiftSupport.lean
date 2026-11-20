@@ -11,9 +11,13 @@ noncomputable section
 open Set Filter Topology MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable (zeta : (ℝ × ℝ) → ℝ) (hc : HasCompactSupport zeta)
+  (hs : tsupport zeta ⊆ bellmanPuncturedSet)
+include hc hs
+
 /-- A compact test away from zero has a positive lower and finite upper gauge bound. -/
-theorem bellman_compact_test_gauge_bounds (zeta : (ℝ × ℝ) → ℝ)
-    (hc : HasCompactSupport zeta) (hs : tsupport zeta ⊆ bellmanPuncturedSet) :
+theorem bellman_compact_test_gauge_bounds :
     ∃ a b : ℝ, 0 < a ∧ a ≤ b ∧ ∀ q ∈ tsupport zeta,
       a ≤ bellmanGauge q ∧ bellmanGauge q ≤ b := by
   by_cases hn : (tsupport zeta).Nonempty
@@ -24,8 +28,7 @@ theorem bellman_compact_test_gauge_bounds (zeta : (ℝ × ℝ) → ℝ)
   · exact ⟨1, 1, by norm_num, le_rfl, fun q hq => (hn ⟨q, hq⟩).elim⟩
 
 /-- Each punctured spatial point has a neighborhood sharing one compact positive radial window. -/
-theorem bellman_compact_test_local_radius_window (zeta : (ℝ × ℝ) → ℝ)
-    (hc : HasCompactSupport zeta) (hs : tsupport zeta ⊆ bellmanPuncturedSet)
+theorem bellman_compact_test_local_radius_window
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
     ∃ U : Set (ℝ × ℝ), IsOpen U ∧ q ∈ U ∧ U ⊆ bellmanPuncturedSet ∧
       ∃ a b : ℝ, 0 < a ∧ a ≤ b ∧
@@ -58,5 +61,7 @@ theorem bellman_compact_test_local_radius_window (zeta : (ℝ × ℝ) → ℝ)
       nlinarith [mul_pos r.property (sub_pos.mpr hx.2)]
     · apply (le_div_iff₀ hg).mpr
       nlinarith [mul_pos r.property (sub_pos.mpr hx.1)]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

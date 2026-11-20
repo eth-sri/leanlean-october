@@ -1,3 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHorizonRestriction
-import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelDense

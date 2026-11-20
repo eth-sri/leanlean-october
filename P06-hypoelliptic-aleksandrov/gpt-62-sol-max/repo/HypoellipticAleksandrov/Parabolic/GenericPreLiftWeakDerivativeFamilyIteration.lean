@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.HigherOrderNestedProductBoxChain
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftWeakDerivativeFamilyAddTwo
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2NormTruncate
+import HypoellipticAleksandrov.Coefficients.ParabolicRegularization
 
 /-!
 # Finite iteration of the generic pre-lift estimate
@@ -40,20 +41,6 @@ private theorem chainBox_subset_zero
       exact (Set.prod_mono (Set.Ioo_subset_Ioo hl.le hr.le)
         (subset_closure.trans hs)).trans (ih (by omega))
 
-private theorem matrix_isSymm_of_lower_bound
-    {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
-    (hlower : lam • (1 : PDE.Mat d) ≤ A) : A.IsSymm := by
-  have hgap : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hlower
-  refine Matrix.IsSymm.ext ?_
-  intro i j
-  by_cases hij : i = j
-  · subst j
-    rfl
-  · have hji : j ≠ i := Ne.symm hij
-    have h := hgap.isHermitian.apply i j
-    simpa only [star_trivial, Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply,
-      hij, hji, if_false, mul_zero, smul_zero, sub_zero] using h
-
 /-- Iterate exactly `N` generic pre-lift calls along the first `N` gaps of a
 higher-order nested product-box chain. -/
 theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
@@ -82,32 +69,8 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
         (Emax : ParabolicWeakDerivativeFamily d N
           (Set.Ioo (left 0) (right 0) ×ˢ spatial 0)
           (fun z : TimeVelocity d => F z.1 z.2)),
-        (∀ z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0,
-          lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
-            a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)) →
-        (∀ i j, ContDiffOn ℝ (N + 1)
-          (fun z : TimeVelocity d => a z.1 z.2 i j)
-          (Set.Ioo (left 0) (right 0) ×ˢ spatial 0)) →
-        (∀ j, ContDiffOn ℝ N
-          (fun z : TimeVelocity d => b z.1 z.2 j)
-          (Set.Ioo (left 0) (right 0) ×ˢ spatial 0)) →
-        ContDiffOn ℝ N
-          (fun z : TimeVelocity d => c z.1 z.2)
-          (Set.Ioo (left 0) (right 0) ×ˢ spatial 0) →
-        (∀ i j alpha z,
-          z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0 →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤
-              BaMax i j alpha) →
-        (∀ j alpha z,
-          z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0 →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => b x.1 x.2 j) z| ≤
-              BbMax j alpha) →
-        (∀ alpha z,
-          z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0 →
-          |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-            (fun x : TimeVelocity d => c x.1 x.2) z| ≤ BcMax alpha) →
+        PreliftCoefficientBounds (Ioo (left 0) (right 0) ×ˢ spatial 0)
+          lam Lam BaMax BbMax BcMax a b c →
         ((fun z : TimeVelocity d =>
           Dseed.representative
               (ParabolicDerivativeIndex.timeOne d) z +
@@ -142,60 +105,12 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
     BbMax j (ParabolicDerivativeIndex.castLE (by omega) alpha)
   let Bc : (k : ℕ) → k < N → ParabolicDerivativeIndex d (k + 1) → ℝ :=
     fun k hk alpha => BcMax (ParabolicDerivativeIndex.castLE (by omega) alpha)
-  have hstepConstant (k : ℕ) (hk : k < N) :
-      ∃ C : ℝ, 0 ≤ C ∧
-        ∀ (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-          (c F : ℝ → PDE.Vec d → ℝ) (u : TimeVelocity d → ℝ)
-          (D : ParabolicWeakDerivativeFamily d (k + 2)
-            (Set.Ioo (left k) (right k) ×ˢ spatial k) u)
-          (E : ParabolicWeakDerivativeFamily d (k + 1)
-            (Set.Ioo (left k) (right k) ×ˢ spatial k)
-            (fun z : TimeVelocity d => F z.1 z.2)),
-          (∀ z ∈ Set.Ioo (left k) (right k) ×ˢ spatial k,
-            (a z.1 z.2).IsSymm) →
-          (∀ z ∈ Set.Ioo (left k) (right k) ×ˢ spatial k,
-            lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
-              a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)) →
-          (∀ i j, ContDiffOn ℝ (k + 2)
-            (fun z : TimeVelocity d => a z.1 z.2 i j)
-            (Set.Ioo (left k) (right k) ×ˢ spatial k)) →
-          (∀ j, ContDiffOn ℝ (k + 1)
-            (fun z : TimeVelocity d => b z.1 z.2 j)
-            (Set.Ioo (left k) (right k) ×ˢ spatial k)) →
-          ContDiffOn ℝ (k + 1) (fun z : TimeVelocity d => c z.1 z.2)
-            (Set.Ioo (left k) (right k) ×ˢ spatial k) →
-          (∀ i j alpha z, z ∈ Set.Ioo (left k) (right k) ×ˢ spatial k →
-            |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-              (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤ Ba k hk i j alpha) →
-          (∀ j alpha z, z ∈ Set.Ioo (left k) (right k) ×ˢ spatial k →
-            |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-              (fun x : TimeVelocity d => b x.1 x.2 j) z| ≤ Bb k hk j alpha) →
-          (∀ alpha z, z ∈ Set.Ioo (left k) (right k) ×ˢ spatial k →
-            |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-              (fun x : TimeVelocity d => c x.1 x.2) z| ≤ Bc k hk alpha) →
-          ((fun z =>
-            D.representative (ParabolicDerivativeIndex.castLE (by omega)
-              (ParabolicDerivativeIndex.timeOne d)) z +
-            (∑ i, ∑ j, a z.1 z.2 i j * D.representative
-              (ParabolicDerivativeIndex.castLE (by omega)
-                (ParabolicDerivativeIndex.velocityTwo j i)) z) +
-            (∑ j, b z.1 z.2 j * D.representative
-              (ParabolicDerivativeIndex.castLE (by omega)
-                (ParabolicDerivativeIndex.velocityOne j)) z) +
-            c z.1 z.2 * D.representative
-              (ParabolicDerivativeIndex.castLE (by omega)
-                (ParabolicDerivativeIndex.zeroTwo d)) z)
-            =ᵐ[timeVelocityVolumeOn (Set.Ioo (left k) (right k) ×ˢ spatial k)]
-              fun z => F z.1 z.2) →
-          GenericPreliftAddTwoFamilyConclusion
-            (Set.Ioo (left (k + 1)) (right (k + 1)) ×ˢ spatial (k + 1))
-            a b c D E C := by
-    rcases hchain.step (by omega : k < N + 2) with
-      ⟨hl, hm, hr, hOopen, hO'open, hO'ne, hO'compact, hO'sub⟩
-    exact exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
+  let hstepConstant (k : ℕ) (hk : k < N) :=
+    let g := hchain.step (show k < N + 2 by omega)
+    exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
       d (k + 1) (by omega) (left k) (left (k + 1)) (right (k + 1))
-      (right k) hl hm hr (spatial k) (spatial (k + 1)) hOopen hO'open
-      hO'ne hO'compact hO'sub lam Lam hlam hlamLam (Ba k hk) (Bb k hk) (Bc k hk)
+      (right k) g.1 g.2.1 g.2.2.1 (spatial k) (spatial (k + 1)) g.2.2.2.1 g.2.2.2.2.1
+      g.2.2.2.2.2.2.1 g.2.2.2.2.2.2.2 lam Lam hlam hlamLam (Ba k hk) (Bb k hk) (Bc k hk)
       (fun i j alpha => hBaMax i j _) (fun j alpha => hBbMax j _)
       (fun alpha => hBcMax _)
   let Cstep : ℕ → ℝ := fun k => if hk : k < N then Classical.choose (hstepConstant k hk) else 0
@@ -217,7 +132,7 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
           mul_nonneg (hCstep_nonneg k) hsum
         simpa only [K, Nat.rec_add_one] using hprod
   refine ⟨K N, hK N, ?_⟩
-  intro a b c F u Dseed Emax hEll ha hb hc haBound hbBound hcBound hEq
+  intro a b c F u Dseed Emax hcoeff hEq
   let Q : ℕ → Set (TimeVelocity d) := fun k => Set.Ioo (left k) (right k) ×ˢ spatial k
   have hQsub (k : ℕ) (hk : k ≤ N) : Q k ⊆ Q 0 := chainBox_subset_zero hchain (by omega)
   have hiterate : ∀ k, k ≤ N →
@@ -248,72 +163,13 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
           (ParabolicWeakDerivativeFamily.squaredL2Norm_restrict_le
             (Emax.truncate (by omega)) hsub).trans
             (ParabolicWeakDerivativeFamily.squaredL2Norm_truncate_le Emax (by omega))
-        have hEqD : ((fun z =>
-            D.representative (ParabolicDerivativeIndex.castLE (by omega)
-              (ParabolicDerivativeIndex.timeOne d)) z +
-            (∑ i, ∑ j, a z.1 z.2 i j * D.representative
-              (ParabolicDerivativeIndex.castLE (by omega)
-                (ParabolicDerivativeIndex.velocityTwo j i)) z) +
-            (∑ j, b z.1 z.2 j * D.representative
-              (ParabolicDerivativeIndex.castLE (by omega)
-                (ParabolicDerivativeIndex.velocityOne j)) z) +
-            c z.1 z.2 * D.representative
-              (ParabolicDerivativeIndex.castLE (by omega)
-                (ParabolicDerivativeIndex.zeroTwo d)) z)
+        have hEqD : (D.backwardOperator (by omega) a b c
           =ᵐ[timeVelocityVolumeOn (Q k)] fun z => F z.1 z.2) := by
           filter_upwards [hEq.filter_mono
             (ae_mono (Measure.restrict_mono_set volume hsub))] with z hz
-          simpa only [hDseed] using hz
-        have hSymmStep : ∀ z ∈ Q k, (a z.1 z.2).IsSymm := by
-          intro z hz
-          exact matrix_isSymm_of_lower_bound (hEll z (hsub hz)).1
-        have hEllStep : ∀ z ∈ Q k,
-            lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
-              a z.1 z.2 ≤ Lam • (1 : PDE.Mat d) := by
-          intro z hz
-          exact hEll z (hsub hz)
-        have haStep : ∀ i j, ContDiffOn ℝ (k + 2)
-            (fun z : TimeVelocity d => a z.1 z.2 i j) (Q k) := by
-          intro i j
-          apply ((ha i j).of_le ?_).mono hsub
-          exact_mod_cast (show k + 2 ≤ N + 1 by omega)
-        have hbStep : ∀ j, ContDiffOn ℝ (k + 1)
-            (fun z : TimeVelocity d => b z.1 z.2 j) (Q k) := by
-          intro j
-          apply ((hb j).of_le ?_).mono hsub
-          exact_mod_cast (show k + 1 ≤ N by omega)
-        have hcStep : ContDiffOn ℝ (k + 1)
-            (fun z : TimeVelocity d => c z.1 z.2) (Q k) := by
-          apply (hc.of_le ?_).mono hsub
-          exact_mod_cast (show k + 1 ≤ N by omega)
-        have haBoundStep : ∀ i j
-            (alpha : ParabolicDerivativeIndex d (k + 2)) z, z ∈ Q k →
-            |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-              (fun x : TimeVelocity d => a x.1 x.2 i j) z| ≤
-                Ba k hkN i j alpha := by
-          intro i j alpha z hz
-          simpa only [Ba] using! haBound i j
-            (ParabolicDerivativeIndex.castLE (by omega) alpha) z (hsub hz)
-        have hbBoundStep : ∀ j
-            (alpha : ParabolicDerivativeIndex d (k + 1)) z, z ∈ Q k →
-            |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-              (fun x : TimeVelocity d => b x.1 x.2 j) z| ≤
-                Bb k hkN j alpha := by
-          intro j alpha z hz
-          simpa only [Bb] using! hbBound j
-            (ParabolicDerivativeIndex.castLE (by omega) alpha) z (hsub hz)
-        have hcBoundStep : ∀ (alpha : ParabolicDerivativeIndex d (k + 1)) z,
-            z ∈ Q k →
-            |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-              (fun x : TimeVelocity d => c x.1 x.2) z| ≤
-                Bc k hkN alpha := by
-          intro alpha z hz
-          simpa only [Bc] using! hcBound
-            (ParabolicDerivativeIndex.castLE (by omega) alpha) z (hsub hz)
-        have hcall := (Classical.choose_spec (hstepConstant k hkN)).2
-        have hcall' := hcall a b c F u D E
-          hSymmStep hEllStep haStep hbStep hcStep
-          haBoundStep hbBoundStep hcBoundStep hEqD
+          simpa only [ParabolicWeakDerivativeFamily.backwardOperator, hDseed] using hz
+        have hcall' := (Classical.choose_spec (hstepConstant k hkN)).2 a b c F u D E
+          (hcoeff.restrict hsub (show k + 1 ≤ N by omega)) hEqD
         have hCstep_eq : Cstep k =
             Classical.choose (hstepConstant k hkN) := by
           simp only [Cstep, dif_pos hkN]

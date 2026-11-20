@@ -11,8 +11,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
+section
+variable {d : ℕ} (Z₀ P Q : KineticPoint d)
+
 /-- Centered positions add along a cone displacement without changing the center velocity. -/
-theorem relativePosition_cone_add {d : ℕ} (Z₀ P Q : KineticPoint d) :
+theorem relativePosition_cone_add :
     relativePosition Z₀ Q = relativePosition Z₀ P +
       (Q.position - P.position - (Q.time - P.time) • Z₀.velocity) := by
   ext i
@@ -20,7 +23,7 @@ theorem relativePosition_cone_add {d : ℕ} (Z₀ P Q : KineticPoint d) :
   ring
 
 /-- The reached cone has the source's exact strict time and position margins. -/
-theorem local_cone_margins {d : ℕ} (Z₀ P Q : KineticPoint d)
+theorem local_cone_margins
     {R : ℝ} (hR : 0 < R)
     (hP : P ∈ forwardCylinder Z₀ (3 * R / 4) (by positivity))
     (htlo : P.time ≤ Q.time) (hthi : Q.time ≤ P.time + R ^ 2 / 8)
@@ -42,6 +45,8 @@ theorem local_cone_margins {d : ℕ} (Z₀ P Q : KineticPoint d)
     have hn := PDE.vecEuclideanNorm_add_le (relativePosition Z₀ P)
       (Q.position - P.position - (Q.time - P.time) • Z₀.velocity)
     nlinarith only [hx, hc, hn]
+
+end
 
 /-- A smooth compact position cutoff can be chosen between literal Euclidean radii. -/
 theorem exists_local_position_cutoff {d : ℕ} {R : ℝ} (hR : 0 < R) :

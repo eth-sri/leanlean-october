@@ -61,11 +61,13 @@ noncomputable def zeroSupportedSmoothApproximation [Fact (1 ≤ p)] :
       simpa only [hZero] using
         (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0)) }
 
+section
+variable (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞) (u : W1pFunction U p)
+include hU hp hpTop u
+
 /-- A globally smooth multiplier supported in `U` turns a finite-exponent
 Sobolev representative into one with a supported smooth approximation. -/
-noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
-    (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) {φ : Vec d → ℝ}
+noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport {φ : Vec d → ℝ}
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφCompact : HasCompactSupport φ)
     (hφU : tsupport φ ⊆ U) :
     letI : Fact (1 ≤ p) := ⟨hp⟩
@@ -219,13 +221,13 @@ noncomputable def supportedSmoothApproximation_mulContDiffHasCompactSupport
 /-- The squared-cutoff positive part has the literal expected value
 representative. -/
 @[simp]
-theorem mulCutoff_sq_positivePartSubConst_toFun
-    (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
-    (u : W1pFunction U p) (k : ℝ)
+theorem mulCutoff_sq_positivePartSubConst_toFun (k : ℝ)
     (η : QuantitativeSmoothCutoff inner outer K) :
     ((u.positivePartSubConst hU hp hpTop k).mulCutoff η.sq hp).toFun =
       fun x => η x ^ 2 * max (u.toFun x - k) 0 := by
   rw [mulCutoff_sq_toFun, positivePartSubConst_toFun]
+
+end
 
 end W1pFunction
 

@@ -38,13 +38,13 @@ theorem enlarged_physical_measure_le {mu nu : Measure Point}
 /-- Later-horizon exits up to a closed intermediate time are dominated by its stopped exit.
 This retains possible endpoint mass rather than assuming temporal atomlessness. -/
 theorem enlarged_stripExit_early_closed_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
     (b T : ℝ) (hb : e.1.time < b) (hBT : b < T) :
-    (stripExit hH hLE hlam hLam A H T
+    (stripExit A H T
       (stripPoleFinite H e T (hb.trans hBT))).restrict {p | p.time ≤ b} ≤
-        stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb) := by
+        stripExit A H b (stripPoleFinite H e b hb) := by
   let t := fun n : ℕ => b + 1 / ((n : ℝ) + 1)
   have hbt (n : ℕ) : b < t n := by dsimp [t]; exact lt_add_of_pos_right b (by positivity)
   have ht (n : ℕ) : e.1.time < t n := hb.trans (hbt n)
@@ -55,14 +55,14 @@ theorem enlarged_stripExit_early_closed_le
   have hS : MeasurableSet S := (isClosed_le continuous_time continuous_const).measurableSet
   apply enlarged_physical_measure_le
   intro f hn
-  have hconv := enlarged_exit_probe_right_limit hH hLE hlam hLam A H e b hb f
+  have hconv := enlarged_exit_probe_right_limit A H e b hb f
   apply ge_of_tendsto hconv
   filter_upwards [hsmall] with n hnT
   let R := (b + t n) / 2
   have hR : b < R := by dsimp [R]; linarith [hbt n]
   have hRt : R ≤ t n := by dsimp [R]; linarith [hbt n]
   have hRT : R ≤ T := hRt.trans hnT.le
-  have he := stripExit_horizon_consistency hH hLE hlam hLam A H e T (t n)
+  have he := stripExit_horizon_consistency A H e T (t n)
     (hb.trans hBT) (ht n) R hRT hRt
   have he' := congrArg (fun rho : Measure Point => rho.restrict S) he
   have hs : S ⊆ {p : Point | p.time < R} := fun p hp => hp.trans_lt hR

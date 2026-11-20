@@ -1,6 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsModulusLocal
+public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtensionSlices
+public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtensionContinuous
 
 /-! # Reference position and velocity increments from the actual homogeneous jets -/
 

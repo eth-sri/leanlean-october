@@ -31,47 +31,47 @@ private theorem parabolicExponent_ne_zero (d : Nat) : parabolicExponent d ≠ 0 
 private theorem parabolicExponent_ne_top (d : Nat) : parabolicExponent d ≠ ∞ := by
   simp [parabolicExponent]
 
-private theorem parabolicExponent_toReal (d : Nat) :
-    (parabolicExponent d).toReal = (d : Real) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
-
 /-- The local open ABP cylinder is measurable. -/
 theorem measurableSet_localABPInterior {d : Nat} (v0 : PDE.Vec d) :
     MeasurableSet (localABPInterior v0) := by
-  unfold localABPInterior localABPAffine
   exact (parabolicAffine_measurableEmbedding (d := d)
     (by norm_num : 0 < (1 / 2 : Real))).measurableSet_image'
       (measurableSet_parabolicInterior 1 (0 : PDE.Vec d))
 
+section
+variable (d : Nat)
+
 /-- The normalized open coordinate box has volume `2^d`. -/
-theorem volume_parabolicBox_one_toReal (d : Nat) :
+theorem volume_parabolicBox_one_toReal :
     (volume (parabolicBox 1 1 0 (0 : PDE.Vec d))).toReal = (2 : Real) ^ d := by
   simpa using (volume_parabolicBox_toReal (d := d) (vartheta := 1) (r := 1)
     (t₀ := 0) (v₀ := (0 : PDE.Vec d)) (by norm_num) (by norm_num))
 
 /-- The normalized open coordinate box has positive finite real volume. -/
-theorem volume_parabolicBox_one_toReal_pos (d : Nat) :
+theorem volume_parabolicBox_one_toReal_pos :
     0 < (volume (parabolicBox 1 1 0 (0 : PDE.Vec d))).toReal := by
   rw [volume_parabolicBox_one_toReal]
   positivity
 
 /-- The normalized open coordinate box has finite volume. -/
-theorem volume_parabolicBox_one_ne_top (d : Nat) :
+theorem volume_parabolicBox_one_ne_top :
     volume (parabolicBox 1 1 0 (0 : PDE.Vec d)) ≠ ∞ := by
   intro htop
   have hpos := volume_parabolicBox_one_toReal_pos d
   rw [htop, ENNReal.toReal_top] at hpos
   linarith
 
+end
+
+section
+variable (d : Nat) (f : TimeVelocity d → Real) (s E : Set (TimeVelocity d)) (M : Real)
+  (hf : AEStronglyMeasurable f (volume.restrict s)) (hs : MeasurableSet s) (hE : MeasurableSet E)
+  (hM : 0 ≤ M)
+include hf hs hE hM
+
 /-- A restricted parabolic norm is bounded by a constant on a measurable
 support, without a positive-dimension assumption. -/
 theorem parabolicELpNormOn_le_of_norm_le_indicator
-    (d : Nat) (f : TimeVelocity d → Real) (s E : Set (TimeVelocity d))
-    (M : Real) (hf : AEStronglyMeasurable f (volume.restrict s))
-    (hs : MeasurableSet s) (hE : MeasurableSet E) (hM : 0 ≤ M)
     (hbound : ∀ z ∈ s, ‖f z‖ ≤ E.indicator (fun _ : TimeVelocity d ↦ M) z) :
     parabolicELpNormOn d f s ≤
       ENNReal.ofReal M * volume (s ∩ E) ^ (1 / ((d : Real) + 1)) := by
@@ -97,9 +97,6 @@ theorem parabolicELpNormOn_le_of_norm_le_indicator
 
 /-- Real-valued corollary of the finite-support parabolic norm estimate. -/
 theorem parabolicLpNormOn_le_of_norm_le_indicator
-    (d : Nat) (f : TimeVelocity d → Real) (s E : Set (TimeVelocity d))
-    (M : Real) (hf : AEStronglyMeasurable f (volume.restrict s))
-    (hs : MeasurableSet s) (hE : MeasurableSet E) (hM : 0 ≤ M)
     (hfinite : volume (s ∩ E) ≠ ∞)
     (hbound : ∀ z ∈ s, ‖f z‖ ≤ E.indicator (fun _ : TimeVelocity d ↦ M) z) :
     parabolicLpNormOn d f s ≤
@@ -115,6 +112,8 @@ theorem parabolicLpNormOn_le_of_norm_le_indicator
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM,
     ← ENNReal.toReal_rpow] at hreal
   exact hreal
+
+end
 
 /-- The strict sublevel set is measurable relative to the unit box under the
 local `C²` regularity supplied to `DensityToPoint`. -/
@@ -172,15 +171,16 @@ private theorem weightedSource_nonneg {d : Nat} (rho : Real) (u : TimeVelocity d
     0 ≤ Real.exp (rho * (z.1 - 3 / 4)) * (rho * max (1 - u z) 0) := by
   positivity
 
+section
+variable (d : Nat) (rho : Real) (hrho : 0 ≤ rho) (U : Set (TimeVelocity d))
+  (u : TimeVelocity d → Real) (hQU : parabolicBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
+  (hu : ContDiffOn Real 2 u U) (hu_nonneg : IsNonnegativeOn u (parabolicBox 1 1 0 (0 : PDE.Vec d)))
+  (v0 : PDE.Vec d) (hv0 : v0 ∈ velocityClosedCube 0 (1 / 2 : Real))
+include hrho U hQU hu hu_nonneg hv0
+
 /-- The local weighted positive source is controlled by the strict low-set
 volume, with no coefficient or ABP premise. -/
-theorem parabolicLpNormOn_localABP_weighted_one_sub_le
-    (d : Nat) (rho : Real) (hrho : 0 ≤ rho)
-    (U : Set (TimeVelocity d)) (u : TimeVelocity d → Real)
-    (hQU : parabolicBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
-    (hu : ContDiffOn Real 2 u U)
-    (hu_nonneg : IsNonnegativeOn u (parabolicBox 1 1 0 (0 : PDE.Vec d)))
-    (v0 : PDE.Vec d) (hv0 : v0 ∈ velocityClosedCube 0 (1 / 2 : Real)) :
+theorem parabolicLpNormOn_localABP_weighted_one_sub_le :
     parabolicLpNormOn d
         (fun z ↦ Real.exp (rho * (z.1 - 3 / 4)) * (rho * max (1 - u z) 0))
         (localABPInterior v0) ≤
@@ -272,13 +272,7 @@ theorem parabolicLpNormOn_localABP_weighted_one_sub_le
 
 /-- The exponential factor in the local ABP conclusion cancels exactly with
 the weighted-source estimate. -/
-theorem exp_neg_quarter_mul_parabolicLpNormOn_localABP_weighted_one_sub_le
-    (d : Nat) (rho : Real) (hrho : 0 ≤ rho)
-    (U : Set (TimeVelocity d)) (u : TimeVelocity d → Real)
-    (hQU : parabolicBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
-    (hu : ContDiffOn Real 2 u U)
-    (hu_nonneg : IsNonnegativeOn u (parabolicBox 1 1 0 (0 : PDE.Vec d)))
-    (v0 : PDE.Vec d) (hv0 : v0 ∈ velocityClosedCube 0 (1 / 2 : Real)) :
+theorem exp_neg_quarter_mul_parabolicLpNormOn_localABP_weighted_one_sub_le :
     Real.exp (-rho / 4) *
         parabolicLpNormOn d
           (fun z ↦ Real.exp (rho * (z.1 - 3 / 4)) * (rho * max (1 - u z) 0))
@@ -314,8 +308,9 @@ theorem exp_neg_quarter_mul_parabolicLpNormOn_localABP_weighted_one_sub_le
           Real.rpow (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal
             (1 / ((d : Real) + 1)) := by
         ring
-      rw [hrearrange]
-      rw [hcancel]
+      rw [hrearrange, hcancel]
       ring
+
+end
 
 end HypoellipticAleksandrov.Parabolic

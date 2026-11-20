@@ -43,11 +43,6 @@ theorem ae_eq_limit_toFun_on_of_pointwiseLimit
       parabolicExponent d ≠ ∞)
   have hpNeZero : p ≠ 0 :=
     (zero_lt_one.trans_le hpOne).ne.symm
-  have hgMem : MemLp g.toFun p (volume : Measure (TimeVelocity d)) := by
-    have h := g.memLp
-    change MemLp g.toFun p
-      ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-    simpa only [Measure.restrict_univ] using h
   have hInMeasure : TendstoInMeasure (volume : Measure (TimeVelocity d))
       (fun n z => parabolicConvolution g.toFun (parabolicMollifier d n) z)
       atTop g.toFun :=

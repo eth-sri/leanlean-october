@@ -24,7 +24,7 @@ theorem boundedSource_stationary_domain {d : ℕ} (c : PDE.Vec d) (R t : ℝ) :
 
 /-- Smooth compact sources bounded by one satisfy the uniform quadratic comparison. -/
 theorem duhamel_smooth_le_boundedSourceQuadratic
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 0 < d)
+    {d : ℕ} (hd : 0 < d)
     {c : PDE.Vec d} {R : ℝ} (hR : 0 < R) {lam Lam m Lb : ℝ}
     (hlam : 0 < lam) (hm : 0 < m)
     (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
@@ -49,11 +49,7 @@ theorem duhamel_smooth_le_boundedSourceQuadratic
   have hγ : Continuous (fun _ : ℝ => (0 : PDE.Vec d)) := continuous_const
   let W := duhamelPotential K T g
   let Q := boundedSourceQuadratic c R lam
-  have hWc := continuousOn_duhamelPotential hΩ hΩm hγ B b S K hreal
-    g hgn hg hc hgs T hs
-  have hWs := duhamelPotential_contDiffOn hH hΩ hΩm hγ B b S K hreal
-    hB hBs hb g hgn hg hc hgs T hs hlam hm hell hbounds.2
-  have hWe := duhamelPotential_source_equation hH hΩ hΩm hγ B b S K hreal
+  obtain ⟨hWc, -, hWs, hWe⟩ := duhamelPotential_regular hΩ hΩm hγ B b S K hreal
     hB hBs hb g hgn hg hc hgs T hs hlam hm hell hbounds.2
   have hU := (isOpen_duhamelCylinder (PDE.isOpen_euclideanBall c R) hγ T).preimage
     (evolutionHomeomorph d).continuous

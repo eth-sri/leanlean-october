@@ -13,8 +13,8 @@ open Set MeasureTheory HypoellipticAleksandrov
 
 /-- The integral of a velocity diffusion test is bounded by its oscillation on the strip. -/
 theorem capacity_diffusion_integral_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (Phi chi : ℝ → ℝ)
     (hPhi : ContDiff ℝ (⊤ : ℕ∞) Phi) (_hchi : ContDiff ℝ (⊤ : ℕ∞) chi)
@@ -22,9 +22,9 @@ theorem capacity_diffusion_integral_le
     (hsecond : ∀ v, deriv (deriv Phi) v = 2 * chi v)
     {D : ℝ} (hD : 0 ≤ D) (hd : ∀ v, |deriv Phi v| ≤ D) :
     (∫ p, 2 * A.a (p.position 0) (p.velocity 0) * chi (p.velocity 0)
-      ∂stripGreen hH hLE hlam hLam A H T e) ≤ D * (H.hi - H.lo) := by
+      ∂stripGreen A H T e) ≤ D * (H.hi - H.lo) := by
   let phi : Point → ℝ := fun p => Phi (p.velocity 0)
-  let Ω := stripExit hH hLE hlam hLam A H T e
+  let Ω := stripExit A H T e
   have hp : e.1.velocity 0 ∈ Icc H.lo H.hi := ⟨e.2.2.1.le, e.2.2.2.le⟩
   have hdiff (v : ℝ) (hv : v ∈ Icc H.lo H.hi) :
       |Phi v - Phi (e.1.velocity 0)| ≤ D * (H.hi - H.lo) :=
@@ -38,7 +38,7 @@ theorem capacity_diffusion_integral_le
       2 * A.a (p.position 0) (p.velocity 0) * chi (p.velocity 0) := by
     rw [capacity_velocity_operator, hsecond]
     ring
-  have hLam0 : 0 ≤ Lam := (hlam.trans_le hLam).le
+  have hLam0 : 0 ≤ Lam := (A.positive.trans_le A.ordered).le
   have hsrc (p : Point) :
       |forwardScalarOperator A.a phi p| ≤ 2 * Lam := by
     rw [hop, abs_of_nonneg]
@@ -46,9 +46,9 @@ theorem capacity_diffusion_integral_le
         (A.bounds (p.position 0) (p.velocity 0)).1, (hn (p.velocity 0)).1,
         (hn (p.velocity 0)).2]
     · exact mul_nonneg (mul_nonneg (by norm_num)
-        (hlam.trans_le (A.bounds (p.position 0) (p.velocity 0)).1).le)
+        (A.positive.trans_le (A.bounds (p.position 0) (p.velocity 0)).1).le)
         (hn (p.velocity 0)).1
-  have hid := strip_identity_bounded_smooth hH hLE hlam hLam A H T e phi
+  have hid := strip_identity_bounded_smooth A H T e phi
     (capacity_velocity_smooth hPhi) (by
       refine ⟨|Phi (e.1.velocity 0)| + D * (H.hi - H.lo) + 2 * Lam, ?_⟩
       intro p hv
@@ -57,8 +57,8 @@ theorem capacity_diffusion_integral_le
         by linarith [hsrc p, abs_nonneg (Phi (e.1.velocity 0)),
           mul_nonneg hD (sub_pos.mpr H.ordered).le]⟩)
   have hΩ : ∀ᵐ p ∂Ω, p.velocity 0 ∈ Icc H.lo H.hi := by
-    filter_upwards [stripExitOfRealization_ae_closed_future hH hlam hLam A H _
-      (stripEvolution_spec hH hLE hlam hLam A H) T e] with p hp'
+    filter_upwards [stripExitOfRealization_ae_closed_future A H _
+      (stripEvolution_spec A H) T e] with p hp'
     exact hp'.2.2
   have hpc : Continuous phi :=
     hPhi.continuous.comp ((continuous_apply 0).comp continuous_velocity)

@@ -92,8 +92,7 @@ theorem laplaceMoment_tail_isBigO (a r : ℝ) (ha : 0 < a) :
       abs_mul, abs_div, div_eq_mul_inv]
     ring_nf
     rfl
-  have hh := he.mul_atTop_rpow_of_isBigO_rpow (r + a) (-a) r hp (by linarith)
-  apply IsBigO.trans ?_ hh
+  apply IsBigO.trans ?_ (he.mul_atTop_rpow_of_isBigO_rpow (r + a) (-a) r hp (by linarith))
   refine IsBigO.of_bound 1 ?_
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with X hX
   have hn : 0 ≤ ∫ t in Ioi (1 / 2 : ℝ), laplaceMoment a X t := by

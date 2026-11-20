@@ -30,8 +30,7 @@ theorem transportedForwardOperator_eq_zero_of_smooth_weak {n : ℕ}
   have hw : IsKineticWeakTransportedSolution B b U V (fun _ => 0) := by
     refine ⟨(locallyIntegrableOn_congr hrep).mp hu.1, ?_⟩
     intro ψ hψ hc hs
-    have he := hu.2 ψ hψ hc hs
-    rw [← he]
+    rw [← (hu.2 ψ hψ hc hs)]
     apply integral_congr_ae
     filter_upwards [hrep] with p hp
     rw [hp]
@@ -54,7 +53,6 @@ theorem transportedForwardOperator_eq_zero_of_smooth_weak {n : ℕ}
 /-- Interior compactness retains all integrable tests as well as a smooth representative.
 Boundary extension is handled separately by uniform trace estimates. -/
 theorem exists_smooth_viscosity_sequence_limit
-    (hH : HormanderHypoellipticityStatement)
     (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
     (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
@@ -97,14 +95,12 @@ theorem exists_smooth_viscosity_sequence_limit
     (volume.restrict U) v C hC hva hba
   have hε : Tendsto (fun j => 1 / ((ν j : ℝ) + 1)) atTop (𝓝 0) :=
     tendsto_one_div_add_atTop_nhds_zero_nat.comp hν.tendsto_atTop
-  have hw := weak_transport_equation_of_vanishing_viscosity n hn lam Lam m L_b
-    hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth
-    hb_lipschitz hb_coercive τ (fun j => 1 / ((ν j : ℝ) + 1))
-    (fun j => by positivity) hε (fun j => v (ν j)) u C hC
+  have hw := weak_transport_equation_of_vanishing_viscosity hB_smooth hb_smooth U
+    (fun j => 1 / ((ν j : ℝ) + 1)) hε (fun j => v (ν j)) u C
     (fun j => classical_viscous_terminalSolution_isWeak
       (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hB_smooth hB_symm hb_smooth (hv (ν j)))
     (fun j => hba (ν j)) hua hub hlim
-  obtain ⟨V, hV, hrep⟩ := exists_smooth_kinetic_representative hH hlam hB_smooth hB_ell
+  obtain ⟨V, hV, hrep⟩ := exists_smooth_kinetic_representative hlam hB_smooth hB_ell
     hb_smooth hm hb_coercive U hU u hw
   have hc : ContinuousOn V U := by
     have hc := hV.continuousOn.comp (evolutionHomeomorph n).symm.continuous.continuousOn

@@ -11,8 +11,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
+section
+variable (F : BoundedBorel (EvolutionAmbientState 1))
+include F
+
 /-- Multiply a bounded datum by the actual compact cutoff in both physical coordinates. -/
-def boundedConservationDatum (F : BoundedBorel (EvolutionAmbientState 1)) (N : ℕ) :
+def boundedConservationDatum (N : ℕ) :
     BoundedBorel (EvolutionAmbientState 1) := by
   refine ⟨fun x => F x * conservationDatum N x,
     F.measurable.mul (conservationDatum N).measurable, ?_⟩
@@ -24,7 +28,7 @@ def boundedConservationDatum (F : BoundedBorel (EvolutionAmbientState 1)) (N : �
     (abs_nonneg _)).trans (by simpa using hC x)
 
 /-- The compact approximation has the same absolute bound as its terminal datum. -/
-theorem boundedConservationDatum_bound (F : BoundedBorel (EvolutionAmbientState 1))
+theorem boundedConservationDatum_bound
     {C : ℝ} (hC : ∀ x, |F x| ≤ C) (N : ℕ) (x : EvolutionAmbientState 1) :
     |boundedConservationDatum F N x| ≤ C := by
   change |F x * conservationDatum N x| ≤ C
@@ -33,8 +37,7 @@ theorem boundedConservationDatum_bound (F : BoundedBorel (EvolutionAmbientState 
     (abs_nonneg _)).trans (by simpa using hC x)
 
 /-- Both-coordinate approximation preserves smoothness and has compact support. -/
-theorem boundedConservationDatum_smoothCompact
-    (F : BoundedBorel (EvolutionAmbientState 1)) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+theorem boundedConservationDatum_smoothCompact (hF : ContDiff ℝ (⊤ : ℕ∞) F)
     (N : ℕ) (τ : ℝ) :
     IsSmoothCompactTerminalDatum autonomousWholeDomain (fun _ => 0) τ
       (boundedConservationDatum F N) := by
@@ -42,9 +45,14 @@ theorem boundedConservationDatum_smoothCompact
   refine ⟨hF.mul hc.1, hc.2.1.mul_left, ?_⟩
   exact tsupport_mul_subset_right.trans hc.2.2
 
+end
+
+section
+variable (F : BoundedBorel (EvolutionAmbientState 1)) {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
+include hC0 hC
+
 /-- The approximation error is controlled by a vanishing quadratic coefficient. -/
-theorem boundedConservationDatum_error (F : BoundedBorel (EvolutionAmbientState 1))
-    {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
+theorem boundedConservationDatum_error
     (N : ℕ) (x : EvolutionAmbientState 1) :
     |F x - boundedConservationDatum F N x| ≤ C / ((N : ℝ) + 1) ^ 2 *
       (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
@@ -58,8 +66,7 @@ theorem boundedConservationDatum_error (F : BoundedBorel (EvolutionAmbientState 
   ring
 
 /-- Ordered compact approximations satisfy the quadratic Cauchy estimate. -/
-theorem boundedConservationDatum_sub (F : BoundedBorel (EvolutionAmbientState 1))
-    {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ x, |F x| ≤ C)
+theorem boundedConservationDatum_sub
     {N M : ℕ} (hNM : N ≤ M) (x : EvolutionAmbientState 1) :
     |boundedConservationDatum F M x - boundedConservationDatum F N x| ≤
       (2 * C) / ((N : ℝ) + 1) ^ 2 *
@@ -79,5 +86,7 @@ theorem boundedConservationDatum_sub (F : BoundedBorel (EvolutionAmbientState 1)
   have he : (2 * C) / ((N : ℝ) + 1) ^ 2 = 2 * (C / ((N : ℝ) + 1) ^ 2) := by ring
   rw [he]
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

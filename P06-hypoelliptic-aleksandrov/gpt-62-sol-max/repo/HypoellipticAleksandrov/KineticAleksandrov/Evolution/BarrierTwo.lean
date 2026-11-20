@@ -51,18 +51,24 @@ theorem terminalDatum_eq_zero_of_collar {n : ℕ} {c : PDE.Vec n} {r₀ dstar : 
   simp only at h1
   linarith
 
+section
+variable {κ : ℝ} (hκ : 0 < κ) {s t : ℝ}
+include hκ
+
 /-- The profile `w` is strictly increasing. -/
-theorem barrierW_strictMono {κ : ℝ} (hκ : 0 < κ) {s t : ℝ} (h : s < t) :
+theorem barrierW_strictMono (h : s < t) :
     barrierW κ s < barrierW κ t := by
   unfold barrierW
   have : Real.exp (-κ * t) < Real.exp (-κ * s) := Real.exp_lt_exp.mpr (by nlinarith)
   exact div_lt_div_of_pos_right (by linarith) hκ
 
 /-- Order reflection for the profile `w`. -/
-theorem le_of_barrierW_le {κ : ℝ} (hκ : 0 < κ) {s t : ℝ} (h : barrierW κ s ≤ barrierW κ t) :
+theorem le_of_barrierW_le (h : barrierW κ s ≤ barrierW κ t) :
     s ≤ t := by
   by_contra hst
   exact absurd (barrierW_strictMono hκ (not_le.mp hst)) (not_lt.mpr h)
+
+end
 
 /-- The `σ`-independent extension `F(y, z)` of a smooth terminal datum is slice regular. -/
 theorem isSliceRegularAt_terminalDatum {n : ℕ} {F : BoundedBorel (EvolutionAmbientState n)}

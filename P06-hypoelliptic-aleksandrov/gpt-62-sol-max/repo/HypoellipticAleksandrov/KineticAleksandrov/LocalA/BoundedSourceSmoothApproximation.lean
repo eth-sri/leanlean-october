@@ -75,7 +75,6 @@ theorem exists_boundedSourceSmoothApproximation
   have hsmooth (n : ℕ) := (hGc n).exists_contDiff_approx (⊤ : ℕ∞)
     (ε := fun _ => ε n) continuous_const (fun _ => hεp n)
   choose q hqs hqe hqsub using hsmooth
-  have hqcompact (n : ℕ) : HasCompactSupport (q n) := (hGcompact n).mono (hqsub n)
   have hχex (n : ℕ) := exists_smooth_cutoff (hGcompact n) isOpen_univ
     (subset_univ (tsupport (G n)))
   choose χ hχs hχc hχsub hχb hχone using hχex

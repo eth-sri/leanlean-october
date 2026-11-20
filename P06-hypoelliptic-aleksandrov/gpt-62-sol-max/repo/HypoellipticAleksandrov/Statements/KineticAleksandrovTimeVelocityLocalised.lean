@@ -1,7 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.MainAssembly
-public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.LocalisedFinal
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.Assembly
+public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.LocalisedFinalEvolution
 public import HypoellipticAleksandrov.KineticAleksandrov.Geometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
@@ -49,8 +49,8 @@ theorem kinetic_aleksandrov_timeVelocity_localised
             C * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_timeVelocity_localised_proof
-    d hd lam Lam p hlam hLam hp
+  exact kinetic_aleksandrov_timeVelocity_localised_of_terminalEvolution
+    d hd lam Lam p hlam hLam hp exists_terminalEvolution_of_classical
 
 end KineticAleksandrov
 

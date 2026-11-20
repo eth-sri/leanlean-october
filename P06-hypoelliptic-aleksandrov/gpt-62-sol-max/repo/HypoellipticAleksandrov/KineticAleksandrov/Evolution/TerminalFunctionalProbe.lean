@@ -39,36 +39,46 @@ def terminalProbeSubmodule : Submodule ℝ (EvolutionAmbientState n → ℝ) whe
 
 variable {Ω γ τ}
 
+section
+variable (F : terminalProbeSubmodule Ω γ τ)
+include F
+
 /-- A probe vanishes outside the terminal fiber. -/
-theorem terminalProbe_apply_eq_zero (F : terminalProbeSubmodule Ω γ τ)
+theorem terminalProbe_apply_eq_zero
     {q : EvolutionAmbientState n} (hq : q ∉ evolutionStateSet Ω γ τ) : F.1 q = 0 := by
   by_contra h
   exact hq (F.2.2.2 (subset_tsupport _ h))
 
 /-- The bounded Borel datum underlying a probe. -/
-def terminalProbeDatum (F : terminalProbeSubmodule Ω γ τ) :
+def terminalProbeDatum :
     BoundedBorel (EvolutionAmbientState n) :=
   ⟨F.1, F.2.1.continuous.measurable, by
     obtain ⟨C, hC⟩ := F.2.2.1.exists_bound_of_continuous F.2.1.continuous
     exact ⟨max C 0, le_max_right _ _, fun x => (hC x).trans (le_max_left _ _)⟩⟩
 
 /-- The datum of a probe is a smooth compactly supported terminal datum. -/
-theorem terminalProbeDatum_isSmoothCompact (F : terminalProbeSubmodule Ω γ τ) :
+theorem terminalProbeDatum_isSmoothCompact :
     IsSmoothCompactTerminalDatum Ω γ τ (terminalProbeDatum F) := F.2
 
 @[simp]
-theorem terminalProbeDatum_apply (F : terminalProbeSubmodule Ω γ τ)
+theorem terminalProbeDatum_apply
     (q : EvolutionAmbientState n) : terminalProbeDatum F q = F.1 q := rfl
 
+end
+
+section
+variable (F : BoundedBorel (EvolutionAmbientState n)) (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
+include F hF
+
 /-- Every smooth compactly supported terminal datum is the datum of a probe. -/
-def terminalProbeOfDatum (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) : terminalProbeSubmodule Ω γ τ :=
+def terminalProbeOfDatum : terminalProbeSubmodule Ω γ τ :=
   ⟨F.1, hF⟩
 
-theorem terminalProbeDatum_ofDatum (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
+theorem terminalProbeDatum_ofDatum :
     terminalProbeDatum (terminalProbeOfDatum F hF) = F :=
   BoundedBorel.ext fun _ => rfl
+
+end
 
 /-- The restriction of a smooth compactly supported function with support in `U` to the
 subtype `U` has compact support. -/

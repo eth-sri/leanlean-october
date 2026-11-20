@@ -24,9 +24,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Reconstruction
 
 variable {Y : Type*} [MeasurableSpace Y] {d : ℕ}
 
+section
+variable {m : Measure Y}
+
 /-- The `L^γ(m)` norm of the fibre height is the Minkowski integral of the `L^γ` norms of the
 Fourier representatives, for any measurable `g` and Markov kernel `κ`. -/
-lemma eLpNorm_fiberHeight_le {m : Measure Y} [SigmaFinite m] {g : Y → ℝ≥0∞}
+lemma eLpNorm_fiberHeight_le [SigmaFinite m] {g : Y → ℝ≥0∞}
     (hg : Measurable g) (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] {γ : ℝ} (hγ : 1 < γ) :
     eLpNorm (fiberHeight g κ) (ENNReal.ofReal γ) m ≤
       ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
@@ -60,7 +63,7 @@ lemma eLpNorm_fiberHeight_le {m : Measure Y} [SigmaFinite m] {g : Y → ℝ≥0�
 
 
 /-- A function in `L^γ` with `γ > 0` is finite almost everywhere. -/
-lemma ae_lt_top_of_eLpNorm_lt_top {m : Measure Y} {H : Y → ℝ≥0∞} (hH : Measurable H) {γ : ℝ}
+lemma ae_lt_top_of_eLpNorm_lt_top {H : Y → ℝ≥0∞} (hH : Measurable H) {γ : ℝ}
     (hγ : 0 < γ) (h : eLpNorm H (ENNReal.ofReal γ) m < ∞) : ∀ᵐ y ∂m, H y < ∞ := by
   have hp0 : ENNReal.ofReal γ ≠ 0 := by simpa using hγ
   rw [eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top hp0 ENNReal.ofReal_ne_top
@@ -77,7 +80,7 @@ lemma ae_lt_top_of_eLpNorm_lt_top {m : Measure Y} {H : Y → ℝ≥0∞} (hH : M
 `fiber_disintegration`, Minkowski's integral inequality gives
 `‖H‖_{L^γ(m)} ≤ 𝖧 = (2π)^{-d} ∫ ‖k ξ‖_{L^γ(m)} dξ`.  If `𝖧 < ∞` then `H(y) < ∞` and
 `ξ ↦ k̃^ξ(y)` is integrable for `m`-almost every `y`. -/
-theorem fiber_height_minkowski {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y × PDE.Vec d))
+theorem fiber_height_minkowski [SigmaFinite m] (Γ : Measure (Y × PDE.Vec d))
     [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hg : Measurable g) (hΓ : Γ.fst = m.withDensity g)
     (k : PDE.Vec d → Y → ℂ)
     (hk : ∀ ξ, Integrable (k ξ) m ∧ ∀ E, MeasurableSet E →
@@ -109,5 +112,7 @@ theorem fiber_height_minkowski {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y 
     · exact absurd h hc
     · rw [h]; exact ENNReal.zero_lt_top
   exact this
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Reconstruction

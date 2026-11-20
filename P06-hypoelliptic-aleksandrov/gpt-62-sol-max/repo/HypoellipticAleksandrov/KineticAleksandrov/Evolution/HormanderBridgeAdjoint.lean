@@ -29,9 +29,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 
 variable {n : ℕ}
 
+section
+variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+include B b
+
 /-- The formal adjoint `Lop^* ψ = -∂_σ ψ + ∑_{i,j} ∂_{v_i v_j}(B_ij ψ) - b(v) · ∇_z ψ`
 of the transported operator ((A.2)), in packed coordinates. -/
-def transportedAdjoint (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+def transportedAdjoint
     (ψ : EvolutionVec n → ℝ) (x : EvolutionVec n) : ℝ :=
   -fderiv ℝ ψ x basisT +
     ∑ i, ∑ j, fderiv ℝ (fun y => fderiv ℝ (fun w =>
@@ -41,31 +45,42 @@ def transportedAdjoint (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec
 
 /-- The formal adjoint `Lop^* ψ + ε Δ_z ψ` of the regularised operator `L_ε = Lop + ε Δ_z`
 (companion paper, (A.2)), in packed coordinates. -/
-def regularizedAdjoint (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) (ε : ℝ)
+def regularizedAdjoint (ε : ℝ)
     (ψ : EvolutionVec n → ℝ) (x : EvolutionVec n) : ℝ :=
   transportedAdjoint B b ψ x +
     ε * ∑ l, fderiv ℝ (fun y => fderiv ℝ ψ y (basisZ l)) x (basisZ l)
 
+end
+
 /-! ### Smoothness helpers -/
 
-theorem contDiff_fderiv_apply {f : EvolutionVec n → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+section
+variable {f : EvolutionVec n → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+include hf
+
+theorem contDiff_fderiv_apply
     (w : EvolutionVec n) : ContDiff ℝ (⊤ : ℕ∞) (fun y => fderiv ℝ f y w) :=
   (hf.fderiv_right (by simp)).clm_apply contDiff_const
 
-theorem differentiableAt_of_contDiff {f : EvolutionVec n → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+theorem differentiableAt_of_contDiff
     (x : EvolutionVec n) : DifferentiableAt ℝ f x :=
   hf.differentiable (by simp) x
 
+end
+
 /-! ### Divergence of the squared fields -/
 
-theorem smul_diffusionField {B : FullKineticCoefficient n} (w : ℝ) (i : Fin n)
+section
+variable {B : FullKineticCoefficient n}
+
+theorem smul_diffusionField (w : ℝ) (i : Fin n)
     (x : EvolutionVec n) :
     w • diffusionField B i x = packPoint 0 (fun j => w * sqrtCoeffAt B x i j) 0 := by
   rw [diffusionField, ← packPoint_smul]
   simp [Pi.smul_def]
 
 /-- The divergence of `w X_i` is `∑_k ∂_{v_k}(w β_ik)`. -/
-theorem euclideanDivergence_smul_diffusionField {B : FullKineticCoefficient n}
+theorem euclideanDivergence_smul_diffusionField
     (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j)) {w : EvolutionVec n → ℝ}
     {x : EvolutionVec n} (hw : DifferentiableAt ℝ w x) (i : Fin n) :
     euclideanDivergence (fun y => w y • diffusionField B i y) x =
@@ -82,7 +97,7 @@ theorem euclideanDivergence_smul_diffusionField {B : FullKineticCoefficient n}
 
 /-! ### Divergence of the drift field -/
 
-theorem smul_driftField {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (w : ℝ)
+theorem smul_driftField {b : PDE.Vec n → PDE.Vec n} (w : ℝ)
     (x : EvolutionVec n) :
     w • driftField B b x =
       packPoint w (fun k => -(w * driftCorrection B k x))
@@ -92,6 +107,8 @@ theorem smul_driftField {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Ve
   congr 1
   funext k
   simp
+
+end
 
 theorem fderiv_drift_transported_zero {b : PDE.Vec n → PDE.Vec n} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (x : EvolutionVec n) (l m : Fin n) :
@@ -139,17 +156,18 @@ section Identity
 
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {lam Lam : ℝ}
 
-theorem contDiff_divDiffusion
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
-    {φ : EvolutionVec n → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (i : Fin n) :
+section
+variable (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j)) {φ : EvolutionVec n → ℝ}
+  (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (i : Fin n)
+include hβ hφ
+
+theorem contDiff_divDiffusion :
     ContDiff ℝ (⊤ : ℕ∞) (fun y => ∑ j, fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y
       (basisV j)) :=
   ContDiff.sum fun j _ => contDiff_fderiv_apply (hφ.mul (hβ i j)) _
 
 /-- The iterated divergence `div(div(φ X_i) X_i)` in explicit form. -/
-theorem euclideanDivergence_euclideanDivergence_diffusion
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
-    {φ : EvolutionVec n → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (i : Fin n) (x : EvolutionVec n) :
+theorem euclideanDivergence_euclideanDivergence_diffusion (x : EvolutionVec n) :
     euclideanDivergence (fun y =>
         euclideanDivergence (fun q => φ q • diffusionField B i q) y • diffusionField B i y) x =
       ∑ k, fderiv ℝ (fun y => (∑ j, fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y (basisV j)) *
@@ -163,6 +181,8 @@ theorem euclideanDivergence_euclideanDivergence_diffusion
     exact differentiableAt_of_contDiff (contDiff_divDiffusion hβ hφ i) x
   rw [euclideanDivergence_smul_diffusionField hβ hwd i]
   simp only [hw']
+
+end
 
 /-- Coefficient identity: `∑_j ∂_j(B_kj φ) = φ c_k + ∑_i div(φ X_i) β_ik`. -/
 theorem sum_fderiv_coeff_mul (hlam : 0 < lam) (hell : HasEverywhereLoewnerBounds lam Lam B)
@@ -283,8 +303,12 @@ theorem euclideanDivergence_smul_regularizingField {w : EvolutionVec n → ℝ} 
     simp [hm]
   · simp
 
+section
+variable {ε : ℝ} (hε : 0 ≤ ε)
+include hε
+
 /-- The iterated divergence `div(div(φ Y_l) Y_l) = ε ∂_{z_l}² φ`. -/
-theorem euclideanDivergence_euclideanDivergence_regularizing {ε : ℝ} (hε : 0 ≤ ε)
+theorem euclideanDivergence_euclideanDivergence_regularizing
     {φ : EvolutionVec n → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (l : Fin n) (x : EvolutionVec n) :
     euclideanDivergence (fun y => euclideanDivergence (fun q => φ q • regularizingField ε l q) y •
         regularizingField ε l y) x =
@@ -305,13 +329,12 @@ theorem euclideanDivergence_euclideanDivergence_regularizing {ε : ℝ} (hε : 0
 
 /-- **Weak-form bridge for `L_ε`.**  For `ε ≥ 0` and a smooth test function `φ`, the carrier
 `hormanderAdjointTest` of `regularizedFields B b ε` (with `c = 0`) is `Lop^* φ + ε Δ_z φ`. -/
-theorem hormanderAdjointTest_regularizedFields {ε : ℝ} (hε : 0 ≤ ε) (hlam : 0 < lam)
+theorem hormanderAdjointTest_regularizedFields (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hb : IsSmoothDrift b) {φ : EvolutionVec n → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (x : EvolutionVec n) :
     hormanderAdjointTest (regularizedFields B b ε) (fun _ => 0) φ x =
       regularizedAdjoint B b ε φ x := by
-  have hβ := contDiff_sqrtCoeffAt_entry hlam hB hell
   have h0 := hormanderAdjointTest_transportedFields hlam hB hell hb hφ x
   unfold hormanderAdjointTest at h0 ⊢
   simp only [transportedFields, Fin.cons_zero, Fin.cons_succ, zero_mul, add_zero] at h0
@@ -320,6 +343,8 @@ theorem hormanderAdjointTest_regularizedFields {ε : ℝ} (hε : 0 ≤ ε) (hlam
     euclideanDivergence_euclideanDivergence_regularizing hε hφ]
   unfold regularizedAdjoint
   rw [← h0, add_assoc, ← Finset.mul_sum]
+
+end
 
 end Identity
 

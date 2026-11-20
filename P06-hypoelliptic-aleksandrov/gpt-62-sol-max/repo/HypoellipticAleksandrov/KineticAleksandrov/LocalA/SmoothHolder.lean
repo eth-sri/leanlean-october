@@ -28,14 +28,13 @@ theorem sectionTwo_of_smooth_bounds {d : ℕ} {lam Lam : ℝ}
     IsSectionTwoCoefficient lam Lam A := by
   refine ⟨hlam, hLam, ?_, hs, hlo, hhi⟩
   intro i j
-  have hentry : ContDiff ℝ ∞ (fun z : TimeVelocity d => coefficientAt A z i j) :=
+  have hentry :=
     (contDiff_apply_apply ℝ ℝ i j).comp hA
   exact hentry.comp (contDiff_fst.prodMk (contDiff_fst.comp contDiff_snd))
 
 /-- The exact joint smooth conditions follows from the sole authorized LA-08 input. -/
 theorem smoothLocalRegularityStatement_holds_of_spatial_bounds
-    (hsp : ∀ (_hH : HormanderHypoellipticityStatement)
-      (_hLE : LiebermanEllipsoidDirichletStatement)
+    (hsp : ∀
       (d : ℕ) (_hd : 1 ≤ d) (lam Lam : ℝ) (_hlam : 0 < lam) (_hLam : lam ≤ Lam),
       ∃ C_m : ℕ → ℝ, (∀ m, 0 ≤ C_m m) ∧
         ∀ (A : CoefficientField d), IsSectionTwoCoefficient lam Lam A →
@@ -51,10 +50,10 @@ theorem smoothLocalRegularityStatement_holds_of_spatial_bounds
           R ^ (3 * m) * ‖iteratedFDeriv ℝ m (physicalPositionSlice u P) P.position‖ ≤
             C_m m * oscillationOn u (backwardCylinder P₀ R)) :
     SmoothLocalRegularityStatement := by
-  intro hH hLE d hd lam Lam hlam hLam
-  obtain ⟨C_m, hCm, hspatial⟩ := hsp hH hLE d hd lam Lam hlam hLam
+  intro d hd lam Lam hlam hLam
+  obtain ⟨C_m, hCm, hspatial⟩ := hsp d hd lam Lam hlam hLam
   obtain ⟨C, α, hC, hα, hα1, hholder⟩ :=
-    normalized_holder_from_slice_jets hLE d hd lam Lam hlam hLam (C_m 1) (hCm 1)
+    normalized_holder_from_slice_jets d hd lam Lam hlam hLam (C_m 1) (hCm 1)
   refine ⟨C_m, C, α, hCm, hC, hα, hα1, ?_⟩
   intro A hA hs hloAE hhiAE P₀ R hR u hc hu he
   obtain ⟨hlo, hhi⟩ := TheoremA.ellipticity_of_smooth_ae hA hloAE hhiAE

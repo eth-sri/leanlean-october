@@ -11,8 +11,11 @@ import Mathlib.Tactic
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable (t : BellmanPositiveTime) (X v : ℝ)
+
 /-- The exponent's position derivative. -/
-theorem hasDerivAt_bellmanGaussianExponent_position (t : BellmanPositiveTime) (X v : ℝ) :
+theorem hasDerivAt_bellmanGaussianExponent_position :
     HasDerivAt (fun x => bellmanGaussianExponent t (x, v))
       (-6 * X / t.val ^ 3 + 3 * v / t.val ^ 2) X := by
   convert ((((hasDerivAt_id X).pow 2).const_mul (-3)).div_const (t.val ^ 3)).add
@@ -24,7 +27,7 @@ theorem hasDerivAt_bellmanGaussianExponent_position (t : BellmanPositiveTime) (X
     ring
 
 /-- The exponent's velocity derivative. -/
-theorem hasDerivAt_bellmanGaussianExponent_velocity (t : BellmanPositiveTime) (X v : ℝ) :
+theorem hasDerivAt_bellmanGaussianExponent_velocity :
     HasDerivAt (fun y => bellmanGaussianExponent t (X, y))
       (3 * X / t.val ^ 2 - 2 * v / t.val) v := by
   convert ((hasDerivAt_const v (-3 * X ^ 2 / t.val ^ 3)).add
@@ -36,7 +39,7 @@ theorem hasDerivAt_bellmanGaussianExponent_velocity (t : BellmanPositiveTime) (X
     ring
 
 /-- The kernel's position derivative with the explicit transport sign. -/
-theorem hasDerivAt_bellmanGaussianKernel_position (t : BellmanPositiveTime) (X v : ℝ) :
+theorem hasDerivAt_bellmanGaussianKernel_position :
     HasDerivAt (fun x => bellmanGaussianKernel t (x, v))
       ((-6 * X / t.val ^ 3 + 3 * v / t.val ^ 2) *
         bellmanGaussianKernel t (X, v)) X := by
@@ -46,7 +49,7 @@ theorem hasDerivAt_bellmanGaussianKernel_position (t : BellmanPositiveTime) (X v
   ring
 
 /-- The kernel's velocity derivative. -/
-theorem hasDerivAt_bellmanGaussianKernel_velocity (t : BellmanPositiveTime) (X v : ℝ) :
+theorem hasDerivAt_bellmanGaussianKernel_velocity :
     HasDerivAt (fun y => bellmanGaussianKernel t (X, y))
       ((3 * X / t.val ^ 2 - 2 * v / t.val) * bellmanGaussianKernel t (X, v)) v := by
   convert (hasDerivAt_bellmanGaussianExponent_velocity t X v).exp.const_mul
@@ -55,13 +58,18 @@ theorem hasDerivAt_bellmanGaussianKernel_velocity (t : BellmanPositiveTime) (X v
   ring
 
 /-- The pointwise first velocity derivative, as a function identity. -/
-theorem deriv_bellmanGaussianKernel_velocity (t : BellmanPositiveTime) (X v : ℝ) :
+theorem deriv_bellmanGaussianKernel_velocity :
     deriv (fun y => bellmanGaussianKernel t (X, y)) v =
       (3 * X / t.val ^ 2 - 2 * v / t.val) * bellmanGaussianKernel t (X, v) :=
   (hasDerivAt_bellmanGaussianKernel_velocity t X v).deriv
 
+end
+
+section
+variable (t : BellmanPositiveTime)
+
 /-- The kernel's second velocity derivative. -/
-theorem hasDerivAt_deriv_bellmanGaussianKernel_velocity (t : BellmanPositiveTime)
+theorem hasDerivAt_deriv_bellmanGaussianKernel_velocity
     (X v : ℝ) :
     HasDerivAt (fun y => deriv (fun z => bellmanGaussianKernel t (X, z)) y)
       (((3 * X / t.val ^ 2 - 2 * v / t.val) ^ 2 - 2 / t.val) *
@@ -78,16 +86,16 @@ theorem hasDerivAt_deriv_bellmanGaussianKernel_velocity (t : BellmanPositiveTime
   ring
 
 /-- The explicit Gaussian is smooth in the spatial variables. -/
-theorem contDiff_bellmanGaussianKernel (t : BellmanPositiveTime) :
+theorem contDiff_bellmanGaussianKernel :
     ContDiff ℝ (⊤ : ℕ∞) (bellmanGaussianKernel t) := by
   unfold bellmanGaussianKernel bellmanGaussianExponent
   fun_prop
 
 /-- The time derivative of the exponent, computed at a strictly positive time. -/
-theorem hasDerivAt_bellmanGaussianExponent_time (t : BellmanPositiveTime) (X v : ℝ) :
+theorem hasDerivAt_bellmanGaussianExponent_time (X v : ℝ) :
     HasDerivAt (fun s : ℝ => -3 * X ^ 2 / s ^ 3 + 3 * X * v / s ^ 2 - v ^ 2 / s)
       (9 * X ^ 2 / t.val ^ 4 - 6 * X * v / t.val ^ 3 + v ^ 2 / t.val ^ 2) t.val := by
-  have ht : t.val ≠ 0 := ne_of_gt t.property
+  have ht := ne_of_gt t.property
   convert (((hasDerivAt_const t.val (-3 * X ^ 2)).div
     ((hasDerivAt_id t.val).pow 3) (pow_ne_zero 3 ht)).add
       ((hasDerivAt_const t.val (3 * X * v)).div
@@ -99,7 +107,7 @@ theorem hasDerivAt_bellmanGaussianExponent_time (t : BellmanPositiveTime) (X v :
     ring
 
 /-- The positive-time Gaussian solves the forward Kolmogorov equation. -/
-theorem hasDerivAt_bellmanGaussianKernel_time (t : BellmanPositiveTime) (X v : ℝ) :
+theorem hasDerivAt_bellmanGaussianKernel_time (X v : ℝ) :
     HasDerivAt (fun s : ℝ => Real.sqrt 3 / (2 * Real.pi * s ^ 2) *
       Real.exp (-3 * X ^ 2 / s ^ 3 + 3 * X * v / s ^ 2 - v ^ 2 / s))
       (-v * deriv (fun x => bellmanGaussianKernel t (x, v)) X +
@@ -117,5 +125,7 @@ theorem hasDerivAt_bellmanGaussianKernel_time (t : BellmanPositiveTime) (X v : �
     dsimp
     field_simp
     ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

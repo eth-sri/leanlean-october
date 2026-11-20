@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStartIntegrated
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionCellsSlab
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreStartBandVisits
 
 /-! # The exact localized lower weight of position-resolved starts -/
 
@@ -36,7 +37,7 @@ theorem positionStartQuadratic_slab_lower (mu : Measure Point) [IsFiniteMeasure 
             (isClosed_closure.measurableSet.preimage
               ((continuous_apply 0).comp continuous_velocity).measurable)))
   have hf : Integrable f mu := positionStartQuadratic_integrable c Y mu
-    (hmu.mono fun _ hp => subset_closure (enlarged_closedEntrance_subset_active c hp))
+    (hmu.mono fun _ hp => subset_closure (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.enlargedEntrance_subset_active c hp))
   have hm : (∫ p, B.indicator (fun _ => 5 * c.r ^ 2 / 16) p ∂mu) ≤
       ∫ p, S.indicator f p ∂mu := by
     apply integral_mono_ae ((integrable_const _).indicator hB) (hf.indicator hS)
@@ -49,7 +50,7 @@ theorem positionStartQuadratic_slab_lower (mu : Measure Point) [IsFiniteMeasure 
       · rw [indicator_of_mem hs]
         exact mul_nonneg ((positionStartCutoff_properties Y c.r c.positive).2 _).1
           (visitQuadratic_nonneg c
-            (subset_closure (enlarged_closedEntrance_subset_active c hv)))
+            (subset_closure (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.enlargedEntrance_subset_active c hv)))
       · rw [indicator_of_notMem hs]
   rw [integral_indicator hB, integral_const, integral_indicator hS] at hm
   change 5 * c.r ^ 2 / 16 * (mu B).toReal ≤ ∫ p in S, f p ∂mu

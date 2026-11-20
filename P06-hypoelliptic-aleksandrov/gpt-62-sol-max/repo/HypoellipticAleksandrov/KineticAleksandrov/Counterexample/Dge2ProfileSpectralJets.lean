@@ -15,8 +15,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 theorem secondDirectional_eq_at {d : ℕ} (F : PDE.Vec d → ℝ) (y w u : PDE.Vec d)
     (hF : ContDiffAt ℝ (⊤ : ℕ∞) F y) :
     fderiv ℝ (fun z => fderiv ℝ F z w) y u = fderiv ℝ (fderiv ℝ F) y u w := by
-  have hd := (hF.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp)
-  rw [fderiv_clm_apply hd (differentiableAt_const w)]
+  rw [fderiv_clm_apply ((hF.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp)) (differentiableAt_const w)]
   simp
 
 /-- The native velocity matrix represents the literal full velocity quadratic jet. -/
@@ -24,7 +23,7 @@ theorem dvv_quadratic_eq {d : ℕ} (H : XV d → ℝ) (q : XV d) (w : PDE.Vec d)
     (hH : ContDiffAt ℝ (⊤ : ℕ∞) H q) :
     dotProduct w ((dvv H q).mulVec w) = fullVelocityQuadratic H q w := by
   let F := fun v => H (q.1, v)
-  have hF : ContDiffAt ℝ (⊤ : ℕ∞) F q.2 :=
+  have hF :=
     hH.comp q.2 (contDiffAt_const.prodMk contDiffAt_id)
   have heq : dvv H q = fun i k => fderiv ℝ (fderiv ℝ F) q.2
       (Pi.single i 1) (Pi.single k 1) := by
@@ -38,9 +37,12 @@ theorem dvv_quadratic_eq {d : ℕ} (H : XV d → ℝ) (q : XV d) (w : PDE.Vec d)
   rw [show q = (q.1, q.2) from rfl, full_velocity_hessian_eq_slice H q.1 q.2 w w hH]
   exact (secondDirectional_eq_at F q.2 w w hF).symm
 
+section
+variable {d : ℕ} (H : XV d → ℝ) (hH : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
+include hH
+
 /-- The velocity Hessian matrix of a smooth punctured profile is continuous off the origin. -/
-theorem continuousOn_dvv_off_origin {d : ℕ} (H : XV d → ℝ)
-    (hH : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ)) : ContinuousOn (dvv H) ({0}ᶜ) := by
+theorem continuousOn_dvv_off_origin : ContinuousOn (dvv H) ({0}ᶜ) := by
   have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
   have hd := hH.fderiv_of_isOpen hopen (m := (⊤ : ℕ∞)) (by simp)
   apply continuousOn_pi.mpr
@@ -52,13 +54,14 @@ theorem continuousOn_dvv_off_origin {d : ℕ} (H : XV d → ℝ)
     (continuousOn_const (c := ((0, Pi.single i 1) : XV d)))
 
 /-- The classical full transport scalar is continuous off the origin. -/
-theorem continuousOn_transport_off_origin {d : ℕ} (H : XV d → ℝ)
-    (hH : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ)) :
+theorem continuousOn_transport_off_origin :
     ContinuousOn (fun q => PDE.vecDot q.2 (dx H q)) ({0}ᶜ) := by
   have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
   have hc : Continuous (fun q : XV d => (q.2, (0 : PDE.Vec d))) := by fun_prop
   have hh := (hH.continuousOn_fderiv_of_isOpen hopen (by simp)).clm_apply hc.continuousOn
   simpa only [transport_eq_direction] using hh
+
+end
 
 /-- The actual full profile discharges the spectral solver's sign conditions off the origin. -/
 theorem exists_geometricProfile_spectral_signs (d : ℕ) (hd : 2 ≤ d) (alpha : ℝ)

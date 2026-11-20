@@ -24,8 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic
 theorem reverseTimeMap_involutive_private
     {d : ℕ} (r₁ : ℝ) (z : TimeVelocity d) :
     reverseTimeMap r₁ (reverseTimeMap r₁ z) = z := by
-  rcases z with ⟨r, y⟩
-  ext <;> simp [reverseTimeMap]
+  simp
 
 /-- The affine time reflection `(r, y) ↦ (r₁ - r, y)` as a homeomorphism. -/
 def reverseTimeHomeomorph {d : ℕ} (r₁ : ℝ) :
@@ -37,26 +36,31 @@ def reverseTimeHomeomorph {d : ℕ} (r₁ : ℝ) :
   continuous_toFun := (continuous_const.sub continuous_fst).prodMk continuous_snd
   continuous_invFun := (continuous_const.sub continuous_fst).prodMk continuous_snd
 
+section
+variable {d : ℕ} (r₁ : ℝ) (z : TimeVelocity d)
+
 /-- Evaluation of the affine reverse-time homeomorphism. -/
-@[simp] theorem reverseTimeHomeomorph_apply
-    {d : ℕ} (r₁ : ℝ) (z : TimeVelocity d) :
+@[simp] theorem reverseTimeHomeomorph_apply :
     reverseTimeHomeomorph r₁ z = reverseTimeMap r₁ z :=
   rfl
 
 /-- Evaluation of the inverse affine reverse-time homeomorphism. -/
-@[simp] theorem reverseTimeHomeomorph_symm_apply
-    {d : ℕ} (r₁ : ℝ) (z : TimeVelocity d) :
+@[simp] theorem reverseTimeHomeomorph_symm_apply :
     (reverseTimeHomeomorph r₁).symm z = reverseTimeMap r₁ z :=
   rfl
 
 /-- Affine reverse time is an involution. -/
-@[simp] theorem reverseTimeMap_involutive
-    {d : ℕ} (r₁ : ℝ) (z : TimeVelocity d) :
+@[simp] theorem reverseTimeMap_involutive :
     reverseTimeMap r₁ (reverseTimeMap r₁ z) = z :=
   reverseTimeMap_involutive_private r₁ z
 
+end
+
+section
+variable {d : ℕ} (r₁ : ℝ)
+
 /-- Affine reverse time preserves time--velocity Lebesgue measure. -/
-theorem reverseTimeMap_measurePreserving {d : ℕ} (r₁ : ℝ) :
+theorem reverseTimeMap_measurePreserving :
     MeasurePreserving (reverseTimeMap r₁)
       (volume : Measure (TimeVelocity d)) volume := by
   let htime : MeasurePreserving (fun r : ℝ => r₁ - r)
@@ -72,18 +76,17 @@ theorem reverseTimeMap_measurePreserving {d : ℕ} (r₁ : ℝ) :
       (measurePreserving_add_left (volume : Measure ℝ) r₁).comp
         hneg
   have hprod := htime.prod (MeasurePreserving.id (volume : Measure (PDE.Vec d)))
-  rw [volume_timeVelocity_eq_prod d]
-  simpa only [reverseTimeMap, Function.uncurry_def, Function.comp_def, Prod.map_def, id_eq]
-    using! hprod
+  assumption
 
 /-- Affine reverse time preserves the corresponding restricted measures. -/
-theorem reverseTimeMap_measurePreserving_restrict
-    {d : ℕ} (r₁ : ℝ) {U : Set (TimeVelocity d)}
+theorem reverseTimeMap_measurePreserving_restrict {U : Set (TimeVelocity d)}
     (hU : MeasurableSet U) :
     MeasurePreserving (reverseTimeMap r₁)
       (timeVelocityVolumeOn (reverseTimeMap r₁ ⁻¹' U))
       (timeVelocityVolumeOn U) :=
   (reverseTimeMap_measurePreserving r₁).restrict_preimage hU
+
+end
 
 private def reverseTimeLinear (d : ℕ) :
     TimeVelocity d →L[ℝ] TimeVelocity d :=
@@ -110,9 +113,11 @@ private theorem fderiv_comp_reverseTimeMap
   simpa only [Function.comp_def] using
     (hφAt.comp z (hasFDerivAt_reverseTimeMap r₁ z)).fderiv
 
-private theorem timeDerivative_comp_reverseTimeMap
-    {d : ℕ} {r₁ : ℝ} {φ : TimeVelocity d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (z : TimeVelocity d) :
+section
+variable {d : ℕ} {r₁ : ℝ} {φ : TimeVelocity d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (z : TimeVelocity d)
+include hφ
+
+private theorem timeDerivative_comp_reverseTimeMap :
     timeDerivative (φ ∘ reverseTimeMap r₁) z =
       -timeDerivative φ (reverseTimeMap r₁ z) := by
   unfold timeDerivative
@@ -124,9 +129,7 @@ private theorem timeDerivative_comp_reverseTimeMap
     ext <;> simp
   rw [hvec, map_neg]
 
-private theorem velocityGradient_comp_reverseTimeMap
-    {d : ℕ} {r₁ : ℝ} {φ : TimeVelocity d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (z : TimeVelocity d) :
+private theorem velocityGradient_comp_reverseTimeMap :
     velocityGradient (φ ∘ reverseTimeMap r₁) z =
       velocityGradient φ (reverseTimeMap r₁ z) := by
   funext i
@@ -137,6 +140,8 @@ private theorem velocityGradient_comp_reverseTimeMap
     simp [reverseTimeLinear]
   rw [hr]
 
+end
+
 private theorem tsupport_comp_reverseTimeMap
     {d : ℕ} (r₁ : ℝ) (φ : TimeVelocity d → ℝ) :
     tsupport (φ ∘ reverseTimeMap r₁) =
@@ -146,9 +151,11 @@ private theorem tsupport_comp_reverseTimeMap
   rw [Function.support_comp_eq_preimage]
   exact ((reverseTimeHomeomorph r₁).preimage_closure _).symm
 
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)}
+
 /-- Time reflection transports a weak time derivative with reversed sign. -/
-theorem hasWeakTimeDerivOn_timeReflect
-    {d : ℕ} {U : Set (TimeVelocity d)} {u du : TimeVelocity d → ℝ}
+theorem hasWeakTimeDerivOn_timeReflect {u du : TimeVelocity d → ℝ}
     (hU : MeasurableSet U) (h : HasWeakTimeDerivOn U u du) (r₁ : ℝ) :
     HasWeakTimeDerivOn (reverseTimeMap r₁ ⁻¹' U)
       (u ∘ reverseTimeMap r₁) ((fun x => -x) ∘ du ∘ reverseTimeMap r₁) := by
@@ -195,8 +202,7 @@ theorem hasWeakTimeDerivOn_timeReflect
   rw [hleft, hright, hw]
 
 /-- Time reflection transports weak velocity partial derivatives. -/
-theorem hasWeakVelocityPartialDerivOn_timeReflect
-    {d : ℕ} {U : Set (TimeVelocity d)} {u dui : TimeVelocity d → ℝ} {i : Fin d}
+theorem hasWeakVelocityPartialDerivOn_timeReflect {u dui : TimeVelocity d → ℝ} {i : Fin d}
     (hU : MeasurableSet U) (h : HasWeakVelocityPartialDerivOn U i u dui)
     (r₁ : ℝ) :
     HasWeakVelocityPartialDerivOn (reverseTimeMap r₁ ⁻¹' U) i
@@ -232,8 +238,7 @@ theorem hasWeakVelocityPartialDerivOn_timeReflect
   simpa only [Function.comp_def] using! hw
 
 /-- Pull a selected parabolic weak jet back by affine time reflection. -/
-def ParabolicW12Function.timeReflect
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+def ParabolicW12Function.timeReflect {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p)
     (r₁ : ℝ) (hU : MeasurableSet U) :
     ParabolicW12Function d (reverseTimeMap r₁ ⁻¹' U) p where
@@ -258,40 +263,36 @@ def ParabolicW12Function.timeReflect
     hasWeakVelocityPartialDerivOn_timeReflect hU
       (w.hasWeakVelocitySecondPartialDeriv i j) r₁
 
+end
+
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (r₁ : ℝ)
+  (hU : MeasurableSet U) (z : TimeVelocity d)
+
 /-- Evaluation of the reflected weak-jet value. -/
-@[simp] theorem ParabolicW12Function.timeReflect_toFun
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p)
-    (r₁ : ℝ) (hU : MeasurableSet U) (z : TimeVelocity d) :
+@[simp] theorem ParabolicW12Function.timeReflect_toFun :
     (w.timeReflect r₁ hU).toFun z =
       w.toFun (reverseTimeMap r₁ z) :=
   rfl
 
 /-- Evaluation of the reflected weak-jet time derivative. -/
-@[simp] theorem ParabolicW12Function.timeReflect_timeDeriv
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p)
-    (r₁ : ℝ) (hU : MeasurableSet U) (z : TimeVelocity d) :
+@[simp] theorem ParabolicW12Function.timeReflect_timeDeriv :
     (w.timeReflect r₁ hU).timeDeriv z =
       -w.timeDeriv (reverseTimeMap r₁ z) :=
   rfl
 
 /-- Evaluation of the reflected weak-jet spatial gradient. -/
-@[simp] theorem ParabolicW12Function.timeReflect_velocityGrad
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p)
-    (r₁ : ℝ) (hU : MeasurableSet U) (z : TimeVelocity d) :
+@[simp] theorem ParabolicW12Function.timeReflect_velocityGrad :
     (w.timeReflect r₁ hU).velocityGrad z =
       w.velocityGrad (reverseTimeMap r₁ z) :=
   rfl
 
 /-- Evaluation of the reflected weak-jet spatial Hessian. -/
-@[simp] theorem ParabolicW12Function.timeReflect_velocityHessian
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p)
-    (r₁ : ℝ) (hU : MeasurableSet U) (z : TimeVelocity d) :
+@[simp] theorem ParabolicW12Function.timeReflect_velocityHessian :
     (w.timeReflect r₁ hU).velocityHessian z =
       w.velocityHessian (reverseTimeMap r₁ z) :=
   rfl
+
+end
 
 end HypoellipticAleksandrov.Parabolic

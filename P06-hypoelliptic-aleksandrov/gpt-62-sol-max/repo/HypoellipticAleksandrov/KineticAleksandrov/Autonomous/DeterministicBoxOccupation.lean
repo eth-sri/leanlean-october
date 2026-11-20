@@ -13,7 +13,7 @@ open scoped ENNReal
 
 /-- The literal source box occupation estimate, with its constant before all dynamic data. -/
 theorem deterministic_box_occupation
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ)
     (ha : bellmanAdjointExponent (Lam / lam)
       (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) - 2 < alpha)
@@ -21,18 +21,17 @@ theorem deterministic_box_occupation
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (z : Z) (Y r : ℝ) (T : NNReal),
       0 < r → |z.2| ≤ M * Real.sqrt (T : ℝ) →
       (∫ t in Ioc 0 (T : ℝ),
-        (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t) z
+        (kernelXV (fullSpaceEvolution A) (Real.toNNReal t) z
           (box A0 r Y)).toReal) ≤ C * r ^ (gamma alpha) * (T : ℝ) ^ (alpha / 2) := by
   obtain ⟨hlo, _, _⟩ := exists_bellman_barrier lam Lam hlam hLam
-  have ha0 : 0 < alpha := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
   have hg : 0 < gamma alpha := by dsimp only [gamma]; linarith
   obtain ⟨c, B, hc, hB, hb⟩ :=
-    deterministic_barrier_occupation_uniform hH hLE lam Lam hlam hLam alpha ha ha1 M
+    deterministic_barrier_occupation_uniform lam Lam hlam hLam alpha ha ha1 M
   let D : ℝ := (A0 ^ 2 + A0 ^ 6) ^ (1 / 6 : ℝ)
   have hD : 0 < D := by dsimp only [D]; positivity
   refine ⟨D ^ (gamma alpha) * B / c, by positivity, ?_⟩
   intro A z Y r T hr hz
-  let E := fullSpaceEvolution hH hLE hlam hLam A
+  let E := fullSpaceEvolution A
   by_cases hT : (T : ℝ) = 0
   · simp only [hT, Ioc_self, Measure.restrict_empty, integral_zero_measure]
     positivity

@@ -20,8 +20,11 @@ theorem isOpen_reconstructionStrip (H : Interval) (sMinus T : ℝ) :
     IsOpen (reconstructionStrip H sMinus T) :=
   (isOpen_Ioi.preimage continuous_time).inter (isOpen_stripPast H T)
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+
 /-- A C112 test has a continuous scalar kinetic operator on its regularity set. -/
-theorem continuousOn_forwardScalarOperator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem continuousOn_forwardScalarOperator
     {D : Set Point} {phi : Point → ℝ} (hphi : IsKineticC112On phi D) :
     ContinuousOn (forwardScalarOperator A.a phi) D := by
   have hx : Continuous (fun p : Point => p.position 0) :=
@@ -38,7 +41,7 @@ theorem continuousOn_forwardScalarOperator {lam Lam : ℝ} (A : SmoothAutonomous
     (ha.continuousOn.mul hh)
 
 /-- The source assumptions supply an actual zero-extended bounded Borel negative operator. -/
-theorem exists_bounded_reconstruction_source {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem exists_bounded_reconstruction_source
     (H : Interval) (sMinus T : ℝ) (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
     (hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H sMinus T,
@@ -72,5 +75,7 @@ theorem exists_bounded_reconstruction_source {lam Lam : ℝ} (A : SmoothAutonomo
     change f p = _
     dsimp only [f]
     exact piecewise_eq_of_notMem D _ _ hp
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

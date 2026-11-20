@@ -18,7 +18,10 @@ namespace PDE
 open MeasureTheory
 open scoped Pointwise
 
-private theorem segmentBlend_eq_smul_sub_add {d : ℕ}
+section
+variable {d : ℕ}
+
+private theorem segmentBlend_eq_smul_sub_add
     (x y : Vec d) (t : ℝ) :
     segmentBlend x t y = (1 - t) • (y - x) + x := by
   rw [segmentBlend_eq_smul_add]
@@ -32,8 +35,7 @@ For `t < 1`, the map `y ↦ segmentBlend x t y` has linear part
 `(1 - t) • id`, image
 `translateSet x ((1 - t) • translateSet (-x) U)`, and inverse-Jacobian factor
 `((1 - t) ^ d)⁻¹`. -/
-theorem setIntegral_comp_segmentBlend_of_lt_one
-    {d : ℕ} {E : Type*}
+theorem setIntegral_comp_segmentBlend_of_lt_one {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (x : Vec d) {t : ℝ} (ht : t < 1) (U : Set (Vec d))
     (φ : Vec d → E) :
@@ -41,7 +43,7 @@ theorem setIntegral_comp_segmentBlend_of_lt_one
       ((1 - t) ^ d)⁻¹ •
         ∫ z in translateSet x
           ((1 - t) • translateSet (-x) U), φ z ∂volume := by
-  have hscale : 0 < 1 - t := sub_pos.mpr ht
+  have hscale := sub_pos.mpr ht
   have hIntegrand :
       (fun y : Vec d => φ (segmentBlend x t y)) =
         fun y => φ ((1 - t) • (y + -x) + x) := by
@@ -70,8 +72,7 @@ costs at most the dimensionally sharp Jacobian factor `2 ^ d`.
 
 The integrand is assumed nonnegative everywhere and integrable on `U`; no
 diameter or boundedness hypothesis is involved. -/
-theorem setIntegral_comp_segmentBlend_le_two_pow_mul
-    {d : ℕ} {U : Set (Vec d)} {φ : Vec d → ℝ}
+theorem setIntegral_comp_segmentBlend_le_two_pow_mul {U : Set (Vec d)} {φ : Vec d → ℝ}
     {x : Vec d} {t : ℝ} (hU : Convex ℝ U) (hx : x ∈ U)
     (ht0 : 0 ≤ t) (htHalf : t ≤ (1 / 2 : ℝ))
     (hφ : IntegrableOn φ U volume) (hφNonneg : ∀ y, 0 ≤ φ y) :
@@ -124,5 +125,7 @@ theorem setIntegral_comp_segmentBlend_le_two_pow_mul
       mul_le_mul_of_nonneg_right hFactor hIntegralNonneg
     _ ≤ (2 : ℝ) ^ d * ∫ y in U, φ y ∂volume :=
       mul_le_mul_of_nonneg_left hIntegralMono (pow_nonneg (by norm_num) d)
+
+end
 
 end PDE

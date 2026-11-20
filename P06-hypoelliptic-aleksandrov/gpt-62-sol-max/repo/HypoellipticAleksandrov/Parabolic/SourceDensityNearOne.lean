@@ -123,8 +123,6 @@ private theorem exists_eta_for_near_one_error
   let eta0 : Real := x ^ n / q
   let eta : Real := min (1 / 2) eta0
   have hhalf : 0 < (1 / 2 : Real) := by norm_num
-  have hpow : 0 < (1 / 2 : Real) ^ ((d : Real) / ((d : Real) + 1)) :=
-    Real.rpow_pos_of_pos hhalf _
   have hK : 0 < K := by
     dsimp only [K]
     positivity
@@ -220,7 +218,7 @@ theorem exists_sourceDensityToPoint_near_one
       ∃ C : Real, 0 < C ∧
         SourceDensityToPoint d lam Lam beta g C := by
   obtain ⟨CABP, hCABP, hABP⟩ :=
-    exists_local_abp_inner_cylinder_of_lower_ellipticity_on_closure
+    _root_.HypoellipticAleksandrov.Parabolic.exists_local_abp_inner_cylinder_core
       d hd lam hlam
   obtain ⟨a, ha, hbarrier⟩ :=
     exists_normalizedTranslatedResolventBarrier_strict_sign

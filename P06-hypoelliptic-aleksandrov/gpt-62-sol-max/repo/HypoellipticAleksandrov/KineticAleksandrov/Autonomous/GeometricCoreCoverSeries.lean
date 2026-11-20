@@ -17,8 +17,12 @@ open scoped ENNReal
 def geometricBandPower (delta : ℝ) (j : ℕ) : ℝ :=
   (4 * (7 / 8 : ℝ) ^ j) ^ delta
 
+section
+variable (delta : ℝ) (hd : 0 < delta)
+include hd
+
 /-- The geometric band powers are summable exactly in the positive-exponent regime. -/
-theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
+theorem geometricBandPower_summable :
     Summable (geometricBandPower delta) := by
   have he (j : ℕ) : geometricBandPower delta j =
       (4 : ℝ) ^ delta * ((7 / 8 : ℝ) ^ delta) ^ j := by
@@ -26,19 +30,20 @@ theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
     rw [Real.mul_rpow (by norm_num) (by positivity), ← Real.rpow_natCast,
       ← Real.rpow_mul (by norm_num), mul_comm (j : ℝ) delta,
       Real.rpow_mul (by norm_num), Real.rpow_natCast]
-  have hefun := funext he
-  rw [hefun]
+  rw [(funext he)]
   apply Summable.mul_left
   apply summable_geometric_of_lt_one
   · positivity
   · exact Real.rpow_lt_one (by norm_num) (by norm_num) hd
 
 /-- The geometric band sum is strictly positive. -/
-theorem geometricBandPower_tsum_pos (delta : ℝ) (hd : 0 < delta) :
+theorem geometricBandPower_tsum_pos :
     0 < ∑' j, geometricBandPower delta j := by
   exact (geometricBandPower_summable delta hd).tsum_pos
     (fun j => by unfold geometricBandPower; positivity) 0
     (by unfold geometricBandPower; positivity)
+
+end
 
 /-- Sum both velocity signs, retaining the source uniform power of R. -/
 theorem geometricBandPower_sum (C R delta k : ℝ) (hC : 0 ≤ C) (hR : 0 < R)

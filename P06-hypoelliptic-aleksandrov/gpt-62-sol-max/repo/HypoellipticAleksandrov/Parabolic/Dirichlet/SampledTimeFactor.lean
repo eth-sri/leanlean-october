@@ -18,7 +18,10 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem isClosedEmbedding_fixedSpatial {d : ℕ} (y : PDE.Vec d) :
+section
+variable {d : ℕ} (y : PDE.Vec d)
+
+private theorem isClosedEmbedding_fixedSpatial :
     IsClosedEmbedding (fun τ : ℝ => ((τ, y) : TimeVelocity d)) := by
   refine IsClosedEmbedding.of_continuous_injective_isClosedMap
     (continuous_id.prodMk continuous_const) (fun x z h => by
@@ -26,23 +29,18 @@ private theorem isClosedEmbedding_fixedSpatial {d : ℕ} (y : PDE.Vec d) :
   intro s hs
   have himage : (fun τ : ℝ => ((τ, y) : TimeVelocity d)) '' s =
       s ×ˢ ({y} : Set (PDE.Vec d)) := by
-    ext z
-    simp only [mem_image, mem_prod, mem_singleton_iff]
-    constructor
-    · rintro ⟨τ, hτ, rfl⟩
-      exact ⟨hτ, rfl⟩
-    · rintro ⟨hτ, hy⟩
-      exact ⟨z.1, hτ, Prod.ext rfl hy.symm⟩
+    grind
   rw [himage]
   exact hs.prod isClosed_singleton
 
-private theorem hasCompactSupport_fixedSpatial
-    {d : ℕ} (y : PDE.Vec d) (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
+private theorem hasCompactSupport_fixedSpatial (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
     HasCompactSupport (fun τ : ℝ => f (τ, y)) := by
   refine HasCompactSupport.of_support_subset_isCompact
     ((isClosedEmbedding_fixedSpatial y).isCompact_preimage hf) ?_
   intro τ hτ
   exact subset_tsupport f hτ
+
+end
 
 /-- A sampled time slice is an original-time scalar test, with its expected derivative and
 support in the compact time projection. -/

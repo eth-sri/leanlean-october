@@ -31,11 +31,14 @@ theorem position_overlap_majorant (c h k : ℝ) (hc : 0 < c) (hh : 0 ≤ h)
   apply Real.exp_le_exp.mpr
   rw [abs_of_nonneg hh]
   have hm := le_max_left (h - 1) 0
-  have hm0 := le_max_right (h - 1) 0
-  nlinarith only [hc, hh, hk, hm, hm0]
+  nlinarith only [hc, hh, hk, hm, (le_max_right (h - 1) 0)]
+
+section
+variable (d : ℝ) (hd : 0 < d)
+include hd
 
 /-- Exponential absolute-value tails on the integer grid are summable. -/
-theorem position_exp_abs_summable (d : ℝ) (hd : 0 < d) :
+theorem position_exp_abs_summable :
     Summable (fun k : ℤ => Real.exp (-d * |(k : ℝ)|)) := by
   apply summable_int_iff_summable_nat_and_neg.mpr
   constructor
@@ -47,10 +50,12 @@ theorem position_exp_abs_summable (d : ℝ) (hd : 0 < d) :
       abs_of_nonneg (Nat.cast_nonneg (α := ℝ) _), mul_comm] using h
 
 /-- The two-index majorant has finite real l1 mass. -/
-theorem positionYoungKernel_summable (d : ℝ) (hd : 0 < d) :
+theorem positionYoungKernel_summable :
     Summable (positionYoungKernel d) := by
   exact (position_exp_abs_summable d hd).mul_of_nonneg
     (position_exp_abs_summable d hd) (fun _ => (Real.exp_pos _).le)
     (fun _ => (Real.exp_pos _).le)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

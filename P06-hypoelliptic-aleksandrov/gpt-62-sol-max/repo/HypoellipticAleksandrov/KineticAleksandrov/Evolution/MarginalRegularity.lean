@@ -38,27 +38,13 @@ open scoped Topology ENNReal ProbabilityTheory
 
 section EvolutionData
 
-variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-variable (hΩ : IsAdmissibleEvolutionDomain Ω)
-variable (hγ : IsContinuousPiecewiseC1 γ)
-variable (hB_smooth : IsSmoothFullKineticCoefficient B)
-variable (hB_symm : IsSymmetricFullKineticCoefficient B)
-variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-variable (hb_smooth : IsSmoothDrift b)
-variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-variable (hEx : ClassicalTerminalExistence Ω γ B b)
-include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
-include hb_smooth hb_lipschitz hb_coercive hEx
+variable {n : ℕ} {lam Lam m L_b : ℝ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    (data : TerminalEvolutionData lam Lam m L_b Ω γ B b)
+include data
 
-local notation "S" => terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "S" => terminalValue data.exists_solution
+local notation "μ" => terminalMeasure data
 
 /-- The limit `V` of the cutoff solutions at a point of the open fiber is the integral of the
 `z`-independent datum against the terminal measure, and it is invariant under the shift of the
@@ -71,8 +57,7 @@ theorem terminalMeasure_integral_lowerDatum_limit {τ : ℝ}
     (σ : ℝ) (hστ : σ ≤ τ) (s : EvolutionState Ω γ σ) (v : ℝ)
     (hv : Tendsto (fun N => u N ⟨σ, s.1.1, s.1.2⟩) atTop (𝓝 v)) :
     v = ∫ x, lowerDatum F x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ s)) := by
-  have hspec := terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+  have hspec := terminalMeasure_spec data
     (evolutionQueryOfState Ω γ σ τ hστ s)
   have : IsFiniteMeasure (μ (evolutionQueryOfState Ω γ σ τ hστ s)) :=
     ⟨lt_of_le_of_lt hspec.1 ENNReal.one_lt_top⟩
@@ -80,8 +65,7 @@ theorem terminalMeasure_integral_lowerDatum_limit {τ : ℝ}
       ∫ x, cutoffDatum F N x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ s)) := by
     intro N
     rw [hspec.2.2 (cutoffDatum F N) (cutoffDatum_isSmoothCompact hF N)]
-    exact (terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ s _
+    exact (terminalValue_eq_of_solution data.exists_solution σ τ hστ s _
       (cutoffDatum_isSmoothCompact hF N) (u N) (hu N)).symm
   have hlim : Tendsto (fun N => ∫ x, cutoffDatum F N x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ s)))
       atTop (𝓝 (∫ x, lowerDatum F x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ s)))) := by
@@ -106,7 +90,6 @@ not depend on the transported coordinate, the canonical marginal integral
 `F` and zero lateral trace.  The Hörmander input `hH` is used for the interior smoothness
 of the cutoff limit. -/
 theorem exists_classical_terminalMarginal_of_master_eq
-    (hH : HormanderHypoellipticityStatement)
     (K : MovingFiberKernel Ω γ) (hK : ∀ q, K.master q = μ q)
     (hBz : ∀ (σ : ℝ) (y z z' : PDE.Vec n), B σ y z = B σ y z')
     (τ : ℝ) (F : BoundedBorel (PDE.Vec n))
@@ -115,32 +98,30 @@ theorem exists_classical_terminalMarginal_of_master_eq
       ParabolicProbe.IsClassicalScalarTerminalSolution Ω γ B τ F V ∧
       (∀ (σ : ℝ) (hστ : σ ≤ τ) (y : EvolutionPosition Ω γ σ),
         V (σ, y.1) = ∫ y', F y'.1 ∂(parabolicMarginalKernel K
-          (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ τ hστ y)) ∧
+          (measurableSet_of_isAdmissibleEvolutionDomain data.domain) σ τ hστ y)) ∧
       (∀ W : TimeVelocity n → ℝ,
         ParabolicProbe.IsClassicalScalarTerminalSolution Ω γ B τ F W →
           EqOn W V (ParabolicProbe.scalarPastClosedCylinder Ω γ τ)) := by
-  have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
+  have hΩo := isOpen_of_isAdmissibleEvolutionDomain data.domain
   obtain ⟨C, hC0, hC⟩ := F.exists_bound
   have hFN := fun N => cutoffDatum_isSmoothCompact hF N
-  choose u hu hub _ using fun N => hEx τ (cutoffDatum F N) (hFN N)
+  choose u hu hub _ using fun N => data.exists_solution τ (cutoffDatum F N) (hFN N)
   have hbd : ∀ N, ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u N p| ≤ C :=
     fun N => hub N C hC0 (fun q => abs_cutoffDatum_le hC hC0 N q)
-  obtain ⟨V, hVlim, hVcl⟩ := exists_cutoff_limit_classical hH n hn lam Lam m L_b hlam hlamLam hm
-    hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive τ F C hC0 hC
+  obtain ⟨V, hVlim, hVcl⟩ := exists_cutoff_limit_classical n data.dim_pos lam Lam m L_b data.lam_pos data.lam_le data.m_pos
+    data.m_le Ω γ B b data.domain data.curve data.smooth_coefficient data.symmetric data.elliptic data.smooth_drift data.lipschitz data.coercive τ F C hC0 hC
     u hu hbd
   have hint : ∀ (σ : ℝ) (hστ : σ ≤ τ) (s : EvolutionState Ω γ σ),
       V ⟨σ, s.1.1, s.1.2⟩ =
         ∫ x, lowerDatum F x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ s)) := fun σ hστ s =>
-    terminalMeasure_integral_lowerDatum_limit n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx F C hC0 hC hF u hu
+    terminalMeasure_integral_lowerDatum_limit data F C hC0 hC hF u hu
       σ hστ s _ (hVlim _ (mk_mem_evolutionPastClosedCylinder hστ s))
   have hshift : ∀ (σ : ℝ) (hστ : σ ≤ τ) (s : EvolutionState Ω γ σ) (h : PDE.Vec n),
       V ⟨σ, s.1.1, s.1.2 + h⟩ = V ⟨σ, s.1.1, s.1.2⟩ := by
     intro σ hστ s h
     have e1 := hint σ hστ (evolutionStateShift Ω γ σ h s)
     have e2 := hint σ hστ s
-    rw [← terminalMeasure_shift n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hBz σ τ hστ h s,
+    rw [← terminalMeasure_shift data hBz σ τ hστ h s,
       integral_map (measurable_ambientShift h).aemeasurable
         (lowerDatum F).measurable.aestronglyMeasurable] at e1
     exact e1.trans e2.symm
@@ -157,7 +138,7 @@ theorem exists_classical_terminalMarginal_of_master_eq
   · intro σ hστ y
     have e := hint σ hστ (positionStateZero Ω γ σ y)
     have hrhs : ∫ y', F y'.1 ∂(parabolicMarginalKernel K
-        (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ τ hστ y) =
+        (measurableSet_of_isAdmissibleEvolutionDomain data.domain) σ τ hστ y) =
         ∫ x, lowerDatum F x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ
           (positionStateZero Ω γ σ y))) := by
       rw [parabolicMarginalKernel_apply, MovingFiberKernel.fiberFirstMarginal,
@@ -166,14 +147,14 @@ theorem exists_classical_terminalMarginal_of_master_eq
           (f := fun y' : EvolutionPosition Ω γ τ => (F : PDE.Vec n → ℝ) y'.1)
           (F.measurable.comp measurable_subtype_coe).aestronglyMeasurable, ← hK,
         ← MovingFiberKernel.map_fiberKernel_eq_master K
-          (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ τ hστ (positionStateZero Ω γ σ y),
+          (measurableSet_of_isAdmissibleEvolutionDomain data.domain) σ τ hστ (positionStateZero Ω γ σ y),
         integral_map measurable_subtype_coe.aemeasurable
           (lowerDatum F).measurable.aestronglyMeasurable]
       rfl
     rw [hrhs]
     exact e
   · intro W hW q hq
-    have hEq := IsClassicalTerminalSolution.eqOn_of_lam hΩo hγ.1 hlam hB_ell hb_lipschitz
+    have hEq := IsClassicalTerminalSolution.eqOn_of_lam hΩo data.curve.1 data.lam_pos data.elliptic data.lipschitz
       (hW.toKinetic (b := b) hBz) hVcl
     exact hEq (show (⟨q.1, q.2, 0⟩ : KineticPoint n) ∈ evolutionPastClosedCylinder Ω γ τ from hq)
 

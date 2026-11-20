@@ -13,9 +13,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 open scoped ENNReal
 
+section
+variable {d : ℕ} (T S : ℝ) (hS : 0 < S)
+include hS
+
 /-- A stationary spatial source on the cylinder is bounded by its full spatial norm
 and the exact finite time factor; the spatial carrier is not renormalized. -/
-theorem construction_stationary_norm_le {d : ℕ} (T S : ℝ) (hS : 0 < S)
+theorem construction_stationary_norm_le
     (f : XV d → ℝ) (hf : Measurable f) (p : ℝ≥0∞) (hp0 : p ≠ 0) (hpTop : p ≠ ∞) :
     eLpNorm (fun P : KineticPoint d => f (P.position, P.velocity)) p
       (volume.restrict (backwardCylinder (⟨T, 0, 0⟩ : KineticPoint d) S)) ≤
@@ -39,7 +43,7 @@ theorem construction_stationary_norm_le {d : ℕ} (T S : ℝ) (hS : 0 < S)
     construction_eLpNorm_snd (volume.restrict (Ioo (T - S ^ 2) T)) volume f hf p hp0 hpTop
 
 /-- A profile-domain indicator gives the literal restricted stationary norm. -/
-theorem construction_stationary_indicator_norm_le {d : ℕ} (T S : ℝ) (hS : 0 < S)
+theorem construction_stationary_indicator_norm_le
     (D : Set (XV d)) (hD : MeasurableSet D) (f : XV d → ℝ) (hf : Measurable f)
     (p : ℝ≥0∞) (hp0 : p ≠ 0) (hpTop : p ≠ ∞) :
     eLpNorm (fun P : KineticPoint d => D.indicator f (P.position, P.velocity)) p
@@ -48,5 +52,7 @@ theorem construction_stationary_indicator_norm_le {d : ℕ} (T S : ℝ) (hS : 0 
         eLpNorm f p (volume.restrict D) := by
   simpa only [eLpNorm_indicator_eq_eLpNorm_restrict hD] using
     construction_stationary_norm_le T S hS (D.indicator f) (hf.indicator hD) p hp0 hpTop
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

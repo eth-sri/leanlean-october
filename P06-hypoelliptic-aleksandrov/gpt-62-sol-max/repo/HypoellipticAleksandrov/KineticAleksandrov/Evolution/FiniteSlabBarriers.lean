@@ -25,8 +25,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
+section
+variable {n : ℕ} {c : PDE.Vec n}
+
 /-- Lateral barrier for a viscous classical solution, in the collar, on a finite slab. -/
-theorem classical_le_collarSupersolution_of_lipschitzOn {n : ℕ} {c : PDE.Vec n}
+theorem classical_le_collarSupersolution_of_lipschitzOn
     {r₀ dstar : ℝ} (hd : 0 < dstar) (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n}
     (hγpw : IsContinuousPiecewiseC1 γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ) {a τ : ℝ} (haτ : a < τ)
     (hγL : CurveLipschitzOn γ Lγ (Icc a τ)) {lam Lam : ℝ} (hlam : 0 < lam)
@@ -76,8 +79,7 @@ theorem classical_le_collarSupersolution_of_lipschitzOn {n : ℕ} {c : PDE.Vec n
 /-- (companion paper, A.1)., finite-slab form.  The two barriers for a viscous classical
 terminal solution on the moving ball, with the Lipschitz bound of `γ` and the operator bound `M`
 required only on the finite slab `[a, τ]`. -/
-theorem two_barriers_on_finite_slab
-    {n : ℕ} {c : PDE.Vec n} {r : ℝ} (hr : 0 < r)
+theorem two_barriers_on_finite_slab {r : ℝ} (hr : 0 < r)
     {γ : ℝ → PDE.Vec n} (hγ : IsContinuousPiecewiseC1 γ)
     (a τ : ℝ) (haτ : a < τ) (L : ℝ) (hL : 0 ≤ L)
     (hγL : ∀ s ∈ Icc a τ, ∀ t ∈ Icc a τ,
@@ -200,5 +202,7 @@ theorem two_barriers_on_finite_slab
       (a := max a (τ - d / (1 + L)))
       (fun p hp => hM p ⟨(le_max_left _ _).trans hp.1, hp.2.1, hp.2.2⟩) hu hFzero p₀
       ⟨max_le hp₀.1 hδ, hp₀.2.1, hp₀.2.2⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

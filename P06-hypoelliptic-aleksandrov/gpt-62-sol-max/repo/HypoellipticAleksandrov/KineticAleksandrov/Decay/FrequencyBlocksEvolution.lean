@@ -23,19 +23,8 @@ theorem iteration_evolution_clauses (hEvol : IterationEvolutionStatement)
     HasParabolicMarginalBundle (wholeSpace d) stationary MeasurableSet.univ
       (zIndependentCoefficient B) K ∧
     IsTranslationCovariantEvolution (wholeSpace d) stationary MeasurableSet.univ K := by
-  obtain ⟨hBs, hBy, hBell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
-  obtain ⟨P, K₀, hclass, hendpointP, hpos, hcontract, hcompP, hint,
-    hsupp, hmass, hmeas, hfiber, hend, hcomp, hcov, hmono, hmargin⟩ :=
-    hEvol d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl
-      (wholeSpace d) stationary (zIndependentCoefficient B) (identityDrift d)
-      (wholeSpace_admissible d) (zeroCurve_piecewiseC1 d) hBs hBy hBell
-      (identityDrift_smooth d) (identityDrift_bounds d).1 (identityDrift_bounds d).2
-  have hr₀ : RealizesTerminalEvolution (wholeSpace d) stationary MeasurableSet.univ
-      (zIndependentCoefficient B) (identityDrift d) P K₀ :=
-    ⟨hclass, hint, hend, hcomp⟩
-  have hK := (terminalEvolution_unique (wholeSpace d) stationary (wholeSpace_admissible d)
-    (zIndependentCoefficient B) (identityDrift d) S P K K₀ hreal hr₀).2
-  subst K₀
+  obtain ⟨hcov, hmono, hmargin⟩ := TerminalEvolutionResult.clauses
+    (TerminalEvolutionConclusion.timeVelocity hEvol hd (wholeSpace_admissible d) B hB) hreal
   exact ⟨hmono, hmargin, hcov (fun _ _ _ _ => rfl)⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

@@ -54,47 +54,39 @@ theorem interval_composition_real_bound {a c F G : ℝ}
 /-- The case-I decay estimate, conditional only on Hörmander's theorem and Lieberman's Theorem 5.14.
 -/
 theorem interval_fourier_decay
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length) :
     ∃ C k : ℝ, 0 < C ∧ 0 < k ∧
-      ∀ (a c : ℝ) (_hac : a < c) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1),
-      SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b →
-      ∀ (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-      (S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary)
-      (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary),
-      RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ
-        (zIndependentCoefficient B) b S K →
-      c - a = length → ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (v ξ : PDE.Vec 1)
-      (hv : v ∈ movingDomain (PDE.oneDimensionalAxisBox a c) stationary σ)
+      ∀ (E : IntervalEvolution lam Lam m Lb),
+      E.length = length → ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (v ξ : PDE.Vec 1)
+      (hv : v ∈ movingDomain (E.domain) stationary σ)
       (ν : ComplexMeasure (PDE.Vec 1)),
-      IsFourierProjection K (movingQuery σ τ hστ v 0 hv) ξ ν →
+      IsFourierProjection E.kernel (movingQuery σ τ hστ v 0 hv) ξ ν →
       TV ν ≤ C * Real.exp (-k * (τ - σ) *
         (1 + PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ))) := by
   obtain ⟨C₁, k₁, hC₁, hk₁, hfreq⟩ := interval_frequency_decay
-    hH hLE lam Lam m Lb hlam hlamLam hm hmLb
+    lam Lam m Lb hlam hlamLam hm hmLb
   obtain ⟨C₂, k₂, hC₂, hk₂, hkill⟩ := interval_fourier_killing_decay
-    hH hLE lam Lam m Lb length hlam hlength
+    lam Lam m Lb length hlam hlength
   let k := min k₁ k₂ / 2
   have hk : 0 < k := div_pos (lt_min hk₁ hk₂) (by norm_num)
   refine ⟨C₁ * C₂, k, mul_pos hC₁ hC₂, hk, ?_⟩
-  intro a c hac B b hs hJ S K hr hlen σ τ hστ v ξ hv ν hν
-  let w : PDE.oneDimensionalAxisBox a c :=
+  intro E hlen σ τ hστ v ξ hv ν hν
+  let w : E.domain :=
     ⟨v, by simpa only [movingDomain_stationary] using hv⟩
-  have heq : ν = intervalFourierKernel K σ τ hστ ξ w := by
+  have heq : ν = intervalFourierKernel E.kernel σ τ hστ ξ w := by
     apply VectorMeasure.ext
-    intro E hE
-    exact (hν E hE).trans ((intervalFourierKernel_spec K σ τ hστ ξ w E hE).symm)
+    intro A hA
+    exact (hν A hA).trans ((intervalFourierKernel_spec E.kernel σ τ hστ ξ w A hA).symm)
   rw [heq]
   let r := (σ + τ) / 2
   have hσr : σ ≤ r := by dsimp [r]; linarith only [hστ]
   have hrτ : r ≤ τ := by dsimp [r]; linarith only [hστ]
-  have hc := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.2
-  have hb := interval_composition_real_bound K hJ hr.2.2.2 hc σ r τ hσr hrτ ξ w
+  have hc := (E.clauses).2.2
+  have hb := interval_composition_real_bound E.kernel E.measurableSet E.realizes.2.2.2 hc σ r τ hσr hrτ ξ w
     (mul_pos hC₁ (Real.exp_pos _)).le (mul_pos hC₂ (Real.exp_pos _)).le
-    (hfreq a c hac B b hs hJ S K hr σ r hσr ξ w)
-    (fun w' => hkill a c hac B b hs hJ S K hr hlen r τ hrτ ξ w')
+    (hfreq E σ r hσr ξ w)
+    (fun w' => hkill E hlen r τ hrτ ξ w')
   have hexp : -k₁ * (r - σ) * PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ) +
       -k₂ * (τ - r) ≤ -k * (τ - σ) *
         (1 + PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ)) := by

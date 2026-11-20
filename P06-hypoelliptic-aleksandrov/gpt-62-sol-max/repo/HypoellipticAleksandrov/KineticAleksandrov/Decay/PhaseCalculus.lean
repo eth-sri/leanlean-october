@@ -64,10 +64,12 @@ theorem phaseCenter_hasDerivAt {d : ℕ} (ξ : PDE.Vec d)
     (ContinuousOn.stronglyMeasurableAtFilter isOpen_Ioo
       (hf.mono Ioo_subset_Icc_self) t ht) hat
 
+section
+variable {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d)
+  (σ Lb ρ : ℝ) (p : KineticPoint d)
+
 /-- The transported gradient of the signed phase is its signed unit direction. -/
-theorem phase_velocity_gradient {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
-    (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d) (σ Lb ρ : ℝ)
-    (p : KineticPoint d) :
+theorem phase_velocity_gradient :
     kineticVelocityGradient (phaseBarrier sgn ξ z0 b γ σ Lb ρ) p = sgn • ξ := by
   let L : PDE.Vec d →L[ℝ] ℝ :=
     ∑ i, (sgn * ξ i) • (ContinuousLinearMap.proj i : PDE.Vec d →L[ℝ] ℝ)
@@ -89,9 +91,7 @@ theorem phase_velocity_gradient {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
   simp [L, PDE.basisVec_apply]
 
 /-- The signed phase is independent of the diffused coordinate. -/
-theorem phase_diffused_hessian {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
-    (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d) (σ Lb ρ : ℝ)
-    (p : KineticPoint d) :
+theorem phase_diffused_hessian :
     diffusedHessian (phaseBarrier sgn ξ z0 b γ σ Lb ρ) p = 0 := by
   have hg : (fun y : PDE.Vec d => kineticPositionGradient
       (phaseBarrier sgn ξ z0 b γ σ Lb ρ) ⟨p.time, y, p.velocity⟩) = fun _ => 0 := by
@@ -106,11 +106,16 @@ theorem phase_diffused_hessian {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
   rw [hg, fderiv_const_apply]
   rfl
 
+end
+
+section
+variable {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ}
+  (hb : HasEuclideanLipschitzDrift Lb b) {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ}
+  (hγ : ContinuousOn γ (Icc σ τ)) (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ)
+include hb τ hγ ht
+
 /-- The signed phase barrier has its explicit time derivative at interior times. -/
-theorem phaseBarrier_hasDerivAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
-    {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
-    {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
-    (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
+theorem phaseBarrier_hasDerivAt :
     HasDerivAt (fun t => phaseBarrier sgn ξ z0 b γ σ Lb ρ ⟨t, p.position, p.velocity⟩)
       (sgn * (0 - PDE.vecDot ξ (b (γ p.time))) - Lb * ρ) p.time := by
   unfold phaseBarrier
@@ -121,10 +126,7 @@ theorem phaseBarrier_hasDerivAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
     first | rfl | simp only [mul_one]
 
 /-- The phase barrier is slice regular; no derivative of the moving center is needed. -/
-theorem phaseBarrier_isSliceRegularAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
-    {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
-    {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
-    (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
+theorem phaseBarrier_isSliceRegularAt :
     IsSliceRegularAt (phaseBarrier sgn ξ z0 b γ σ Lb ρ) p := by
   refine ⟨(phaseBarrier_hasDerivAt sgn ξ z0 hb hγ p ht).differentiableAt, ?_, ?_⟩
   · change ContDiffAt ℝ 2 (fun _ : PDE.Vec d =>
@@ -136,8 +138,13 @@ theorem phaseBarrier_isSliceRegularAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
     simp only [Pi.sub_apply]
     fun_prop
 
+end
+
+section
+variable {d : ℕ}
+
 /-- The integral phase center is continuous on its defining closed time interval. -/
-theorem phaseCenter_continuousOn {d : ℕ} (ξ : PDE.Vec d)
+theorem phaseCenter_continuousOn (ξ : PDE.Vec d)
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
     {γ : ℝ → PDE.Vec d} {σ τ : ℝ} (hστ : σ ≤ τ)
     (hγ : ContinuousOn γ (Icc σ τ)) : ContinuousOn (phaseCenter ξ b γ σ) (Icc σ τ) := by
@@ -152,13 +159,12 @@ theorem phaseCenter_continuousOn {d : ℕ} (ξ : PDE.Vec d)
     intervalIntegral.continuousOn_primitive_interval' hi Set.left_mem_uIcc
 
 /-- The phase barrier is continuous on the closed time slab. -/
-theorem phaseBarrier_continuousOn {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
+theorem phaseBarrier_continuousOn (sgn : ℝ) (ξ z0 : PDE.Vec d)
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
     {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hστ : σ ≤ τ)
     (hγ : ContinuousOn γ (Icc σ τ)) :
     ContinuousOn (phaseBarrier sgn ξ z0 b γ σ Lb ρ) {p | p.time ∈ Icc σ τ} := by
   have hc : Continuous (fun p : KineticPoint d => PDE.vecDot ξ (p.velocity - z0)) := by
-    unfold PDE.vecDot
     exact continuous_finsetSum _ fun i _ => continuous_const.mul
       (((continuous_apply i).comp continuous_velocity).sub continuous_const)
   exact ((hc.continuousOn.sub ((phaseCenter_continuousOn ξ hb hστ hγ).comp
@@ -166,7 +172,7 @@ theorem phaseBarrier_continuousOn {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
     ((continuous_time.continuousOn.sub continuousOn_const).const_mul (Lb * ρ))
 
 /-- The signed affine phase barrier has nonpositive transported operator in the tube. -/
-theorem phase_barrier_drift {d : ℕ} (B : CoefficientField d)
+theorem phase_barrier_drift (B : CoefficientField d)
     (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d)
     (σ τ Lb ρ : ℝ) (hρ : 0 < ρ) (ξ z0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
     (hb : HasEuclideanLipschitzDrift Lb b) (hγ : ContinuousOn γ (Icc σ τ))
@@ -227,5 +233,7 @@ theorem phase_barrier_drift {d : ℕ} (B : CoefficientField d)
   rcases hsgn with rfl | rfl
   · nlinarith [le_abs_self (PDE.vecDot ξ (b p.position - b (γ p.time)))]
   · nlinarith [neg_le_abs (PDE.vecDot ξ (b p.position - b (γ p.time)))]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

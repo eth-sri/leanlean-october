@@ -34,7 +34,6 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
             (timeVelocityVolumeOn (Ioo a T ×ˢ O))).toReal ^ 2) := by
   classical
   let Q := Ioo a T ×ˢ O
-  have hQ : IsOpen Q := isOpen_Ioo.prod hO
   have hQc : IsCompact (closure Q) := by
     rw [closure_prod_eq]
     exact (isCompact_Icc.of_isClosed_subset isClosed_closure
@@ -49,7 +48,7 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
       ContDiffOn ℝ 1 (fun y => A t y i j) O := by
     intro t _ i j
     have hc : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+      (contDiff_apply_apply ℝ ℝ i j).comp hA
     exact ((hc.comp (contDiff_const.prodMk contDiff_id)).of_le (by simp)).contDiffOn
   obtain ⟨C, hC, hrun⟩ := exists_local_homogeneous_hessian_constant a T O hO
     (fun z => A z.1 z.2) hA.continuous.aestronglyMeasurable.restrict hAs

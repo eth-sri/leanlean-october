@@ -29,14 +29,15 @@ theorem contDiff_providerPackedCutoff (d : ℕ) (m R : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (constructionPackedCutoff d m R) :=
   (contDiff_providerVelocityCutoff d m R).comp (spatialCoordinateCLE d).contDiff
 
+section
+variable {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+  (h : CounterProfileStatement d alpha) (r mu R m : ℝ) (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R)
+  (hm : m < R ^ 2) (hscale : 2 * Real.rpow r alpha ≤ 1)
+  (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m) (t : ℝ) (i : Fin (d + d))
+include hd ha ha1 hr hmu hR hm hscale hmargin
+
 /-- The exact zero extension satisfies the first compact-test identities globally. -/
-theorem construction_zero_extension_weak_first {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
-    (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
-    (hscale : 2 * Real.rpow r alpha ≤ 1)
-    (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m)
-    (t : ℝ) (i : Fin (d + d)) (test : PDE.Vec (d + d) → ℝ)
+theorem construction_zero_extension_weak_first (test : PDE.Vec (d + d) → ℝ)
     (ht : ContDiff ℝ (⊤ : ℕ∞) test) (hs : HasCompactSupport test) :
     (∫ x, zeroExtendedProfile (profileFunction h) alpha r mu R
         ⟨t, (spatialCoordinateCLE d x).1, (spatialCoordinateCLE d x).2⟩ *
@@ -64,13 +65,7 @@ theorem construction_zero_extension_weak_first {d : ℕ} (hd : 1 ≤ d)
   simpa only [Measure.restrict_univ, constructionExtendedPackedGradient, ← hz] using! he
 
 /-- The same selected representatives satisfy the first identities on the native carrier. -/
-theorem construction_zero_extension_weak_native {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
-    (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
-    (hscale : 2 * Real.rpow r alpha ≤ 1)
-    (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 ≤ m)
-    (t : ℝ) (i : Fin (d + d)) (test : XV d → ℝ)
+theorem construction_zero_extension_weak_native (test : XV d → ℝ)
     (ht : ContDiff ℝ (⊤ : ℕ∞) test) (hs : HasCompactSupport test) :
     (∫ q, zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, q.1, q.2⟩ *
       fderiv ℝ test q (spatialCoordinateCLE d (PDE.basisVec i))) =
@@ -83,5 +78,7 @@ theorem construction_zero_extension_weak_native {d : ℕ} (hd : 1 ≤ d)
     (construction_zero_extension_weak_first hd ha ha1 h r mu R m hr hmu hR hm
       hscale hmargin t i) test ht hs
   simpa only [ContinuousLinearEquiv.apply_symm_apply] using! he
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

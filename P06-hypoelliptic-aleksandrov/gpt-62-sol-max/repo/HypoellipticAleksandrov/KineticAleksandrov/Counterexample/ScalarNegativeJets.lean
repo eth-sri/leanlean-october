@@ -125,8 +125,7 @@ theorem scalar_second_M_tail_derivatives_of_M_jets (gamma : ScalarGamma) :
   rw [he0] at h0
   rw [he1] at h1
   rw [he2] at h2
-  have hb := scalar_linear_remainder_derivatives _ (3 * gamma.1 - 4) hf h0 h1 h2
-  simpa only [show 3 * gamma.1 - 4 - 1 = 3 * gamma.1 - 5 by ring] using hb
+  simpa only [show 3 * gamma.1 - 4 - 1 = 3 * gamma.1 - 5 by ring] using (scalar_linear_remainder_derivatives _ (3 * gamma.1 - 4) hf h0 h1 h2)
 
 /-- The two differentiated negative-ray scalar remainders, with the full source coefficient. -/
 theorem Fminus_negative_ray_tail_derivatives_of_M_jets (gamma : ScalarGamma) (Lam : ℝ)

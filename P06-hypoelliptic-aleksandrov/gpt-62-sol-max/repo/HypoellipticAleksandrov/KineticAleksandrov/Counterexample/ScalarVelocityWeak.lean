@@ -24,11 +24,7 @@ open scoped Topology
 theorem scalar_position_cutoff_support (test : XV 1 → ℝ) (n : ℕ) (q : XV 1)
     (hq : q ∈ tsupport (fun z => test z * originCutoff n z.1)) : q.1 0 ≠ 0 := by
   intro hx
-  have hz : q.1 = 0 := by
-    funext i
-    have hi : i = 0 := Subsingleton.elim _ _
-    subst i
-    exact hx
+  have hz : q.1 = 0 := scalarCoordinate_eq_zero_iff.mp hx
   have ht : Tendsto (Prod.fst : XV 1 → PDE.Vec 1) (𝓝 q) (𝓝 0) := by
     simpa only [hz] using continuous_fst.tendsto q
   have he := (originCutoff_eventually_zero 1 n).comp_tendsto ht
@@ -49,15 +45,8 @@ theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
     isAddHaarMeasure_volume_pi (Fin 1)
   let : Measure.IsAddHaarMeasure (volume : Measure (XV 1)) :=
     Measure.prod.instIsAddHaarMeasure _ _
-  have hderiv : ∀ᵐ q ∂volume, fderiv ℝ f q (0, Pi.single 0 1) = g q := by
-    filter_upwards [coordinates_ne_zero_ae 1 (by omega)] with q hq
-    apply hfg q
-    intro hz
-    apply hq.1
-    funext i
-    have hi : i = 0 := Subsingleton.elim _ _
-    subst i
-    exact hz
+  have hderiv : ∀ᵐ q ∂volume, fderiv ℝ f q (0, Pi.single 0 1) = g q :=
+    scalar_off_axis_ae.mono hfg
   let cut : ℕ → XV 1 → ℝ := fun n q => originCutoff n q.1
   have he (n : ℕ) : (∫ q, (f q * dv test q 0) * cut n q) =
       -(∫ q, (g q * test q) * cut n q) := by
@@ -99,20 +88,18 @@ theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
   have hR : Integrable (fun q => g q * test q) volume := by
     simpa only [smul_eq_mul, mul_comm] using
       hgi.integrable_smul_left_of_hasCompactSupport ht.continuous hs
-  have hc (n : ℕ) : Measurable (cut n) :=
-    ((contDiff_originCutoff 1 n).continuous.comp continuous_fst).measurable
-  have hb (n : ℕ) (q : XV 1) : |cut n q| ≤ 1 := abs_originCutoff_le_one n q.1
-  have hl : ∀ᵐ q ∂volume, Tendsto (fun n => cut n q) atTop (𝓝 1) := by
-    filter_upwards [coordinates_ne_zero_ae 1 (by omega)] with q hq
-    exact originCutoff_tendsto q.1 hq.1
-  have hlimL := integral_mul_cutoff_tendsto _ hL cut hc hb hl
-  have hlimR := (integral_mul_cutoff_tendsto _ hR cut hc hb hl).neg
-  exact tendsto_nhds_unique hlimL (hlimR.congr (fun n => (he n).symm))
+  simpa only [neg_one_mul] using integral_eq_of_originCutoff hL hR (-1) continuous_fst
+    ((coordinates_ne_zero_ae 1 (by omega)).mono fun _ hq => hq.1)
+    (fun n => by simpa only [neg_one_mul] using he n)
+
+section
+variable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+  (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) = Real.rpow Lam (-gamma.1))
+  (test : XV 1 → ℝ)
+include hLam hmatch
 
 /-- The actual scalar profile has its first native velocity weak identity. -/
-theorem scalarProfile_velocity_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) (test : XV 1 → ℝ) (ht : ContDiff ℝ 1 test)
+theorem scalarProfile_velocity_weak (ht : ContDiff ℝ 1 test)
     (hs : HasCompactSupport test) :
     (∫ q, scalarProfile gamma Lam q * dv test q 0) =
       -(∫ q, scalarGv gamma Lam q 0 * test q) := by
@@ -128,9 +115,7 @@ theorem scalarProfile_velocity_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 
   · exact hs
 
 /-- The actual scalar profile has its second native velocity weak identity. -/
-theorem scalarProfile_hessian_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
-    (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
-      Real.rpow Lam (-gamma.1)) (test : XV 1 → ℝ) (ht : ContDiff ℝ 2 test)
+theorem scalarProfile_hessian_weak (ht : ContDiff ℝ 2 test)
     (hs : HasCompactSupport test) :
     (∫ q, scalarProfile gamma Lam q * dvv test q 0 0) =
       (∫ q, scalarHess gamma Lam q 0 0 * test q) := by
@@ -150,5 +135,7 @@ theorem scalarProfile_hessian_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 <
   change (∫ q, scalarProfile gamma Lam q * dvv test q 0 0) =
     -(∫ q, scalarGv gamma Lam q 0 * dv test q 0) at hfirst
   simpa only [hsecond, neg_neg] using hfirst
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

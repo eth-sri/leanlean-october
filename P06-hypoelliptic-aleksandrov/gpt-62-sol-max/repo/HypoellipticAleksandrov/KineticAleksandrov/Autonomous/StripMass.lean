@@ -26,11 +26,11 @@ theorem stripGreenOfKernel_finite_time_mass (H : Interval)
 
 /-- The finite-time mass bound for the unique autonomous killed family. -/
 theorem stripGreen_finite_time_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) :
-    stripGreen hH hLE hlam hLam A H T e univ ≤ ENNReal.ofReal (T - e.1.time) :=
+    stripGreen A H T e univ ≤ ENNReal.ofReal (T - e.1.time) :=
   stripGreenOfKernel_finite_time_mass H _ T e
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -86,12 +86,6 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
   have hφdψCompact :
       HasCompactSupport (fun x => φ x * dψ x) := by
     simpa only using! hdψCompact.mul_left (f := φ)
-  have huφdψIntegrable :
-      MeasureTheory.Integrable
-        (fun x => u x * (φ x * dψ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using
-      huLoc.integrable_smul_right_of_hasCompactSupport
-        hφdψCont hφdψCompact
   have hψdφCont : Continuous (fun x => ψ x * dφ x) :=
     hψCont.mul hdφCont
   have hψdφCompact :

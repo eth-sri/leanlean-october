@@ -35,10 +35,12 @@ theorem fourierProjection_variation_le {d : ℕ} {Ω : Set (PDE.Vec d)}
 abbrev totalVariationNorm {d : ℕ} (ν : ComplexMeasure (PDE.Vec d)) : ℝ≥0∞ :=
   ν.variation Set.univ
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
+  (q : EvolutionQuery Ω γ)
+
 /-- The projected measure has total variation at most one. -/
-theorem fourierProjection_totalVariation_le_one {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
-    (q : EvolutionQuery Ω γ) (ξ : PDE.Vec d)
+theorem fourierProjection_totalVariation_le_one (ξ : PDE.Vec d)
     (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q ξ ν) :
     totalVariationNorm ν ≤ 1 := by
   apply (Measure.le_iff.1 (fourierProjection_variation_le K q ξ ν hν) univ
@@ -48,9 +50,7 @@ theorem fourierProjection_totalVariation_le_one {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact K.mass_le_one q
 
 /-- The zero frequency is the positive velocity marginal. -/
-theorem fourierProjection_zero {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
-    (q : EvolutionQuery Ω γ) (ν : ComplexMeasure (PDE.Vec d))
+theorem fourierProjection_zero (ν : ComplexMeasure (PDE.Vec d))
     (hν : IsFourierProjection K q 0 ν) (E : Set (PDE.Vec d))
     (hE : MeasurableSet E) : ν E = ((K.firstMarginal q E).toReal : ℂ) := by
   have hz : fourierPhase (0 : PDE.Vec d) q.1.2.2.2 = fun _ => (1 : ℂ) := by
@@ -65,6 +65,8 @@ theorem fourierProjection_zero {d : ℕ} {Ω : Set (PDE.Vec d)}
     simp only [mem_preimage, mem_prod, mem_univ, and_true]
   rw [hset]
   simp only [setIntegral_const, measureReal_def, Complex.real_smul, mul_one]
+
+end
 
 /-- A full zero-mode equality usable for vector-measure rewriting. -/
 theorem fourierProjection_zero_measure {d : ℕ} {Ω : Set (PDE.Vec d)}

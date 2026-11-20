@@ -16,19 +16,23 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped Topology
 
+section
+variable {d : ℕ} {K : Set (TimeVelocity d)} (V : C(K, ℝ))
+include K V
+
 /-- Extend a continuous closed-carrier function by zero to name its ambient values. -/
-def continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity d)}
-    (V : C(K, ℝ)) (z : TimeVelocity d) : ℝ := by
+def continuousMapZeroExtension (z : TimeVelocity d) : ℝ := by
   classical
   exact if hz : z ∈ K then V ⟨z, hz⟩ else 0
 
 /-- The ambient extension retains the prescribed continuous closed-carrier restriction. -/
-theorem continuousOn_continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity d)}
-    (V : C(K, ℝ)) : ContinuousOn (continuousMapZeroExtension V) K := by
+theorem continuousOn_continuousMapZeroExtension : ContinuousOn (continuousMapZeroExtension V) K := by
   rw [continuousOn_iff_continuous_domRestrict]
   convert V.continuous using 1
   funext z
   simp only [Set.domRestrict_apply, continuousMapZeroExtension, dite_eq_left z.property]
+
+end
 
 /-- Uniform closed-carrier convergence implies strong restricted L2 convergence. -/
 theorem tendsto_local_toLp_of_continuousMap_tendsto {d : ℕ}
@@ -53,8 +57,7 @@ theorem tendsto_local_toLp_of_continuousMap_tendsto {d : ℕ}
   intro z hz
   have hzK := hSK (subset_closure hz)
   have he : u n z - continuousMapZeroExtension V z = (U n - V) ⟨z, hzK⟩ := by
-    simp only [continuousMapZeroExtension, dite_eq_left hzK, ContinuousMap.sub_apply,
-      hueq n ⟨z, hzK⟩]
+    simp [continuousMapZeroExtension, dite_eq_left hzK, ContinuousMap.sub_apply, hueq n ⟨z, hzK⟩]
   rw [he, ← Real.norm_eq_abs]
   exact (U n - V).norm_coe_le_norm ⟨z, hzK⟩
 

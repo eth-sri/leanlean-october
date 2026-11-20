@@ -36,9 +36,11 @@ theorem corrector_oscillation_le {d : ℕ} {u w : KineticPoint d → ℝ}
   dsimp only [Holder.oscillationOn] at ho ⊢
   linarith
 
+section
+variable {d : ℕ} {E : Set (KineticPoint d)} {u : KineticPoint d → ℝ}
+
 /-- Oscillation is continuous under uniform convergence on a nonempty bounded range. -/
-theorem corrector_oscillation_tendsto {d : ℕ} {E : Set (KineticPoint d)}
-    {u : KineticPoint d → ℝ} {w : ℕ → KineticPoint d → ℝ}
+theorem corrector_oscillation_tendsto {w : ℕ → KineticPoint d → ℝ}
     (hne : E.Nonempty) (hab : BddAbove (u '' E)) (hbb : BddBelow (u '' E))
     (ht : TendstoUniformlyOn w u atTop E) :
     Tendsto (fun j => Holder.oscillationOn (w j) E) atTop (𝓝 (Holder.oscillationOn u E)) := by
@@ -67,8 +69,7 @@ theorem corrector_oscillation_tendsto {d : ℕ} {E : Set (KineticPoint d)}
   constructor <;> linarith
 
 /-- Pairwise Hölder bounds pass to a uniform limit with convergent amplitudes. -/
-theorem corrector_holder_limit {d : ℕ} {E : Set (KineticPoint d)}
-    {u : KineticPoint d → ℝ} {u_j : ℕ → KineticPoint d → ℝ}
+theorem corrector_holder_limit {u_j : ℕ → KineticPoint d → ℝ}
     (hu : TendstoUniformlyOn u_j u atTop E)
     {M_j : ℕ → ℝ} {M C α R : ℝ} (hM : Tendsto M_j atTop (𝓝 M))
     (P₀ : KineticPoint d)
@@ -81,5 +82,7 @@ theorem corrector_holder_limit {d : ℕ} {E : Set (KineticPoint d)}
   have hr := (hM.const_mul C).mul_const
     ((kineticIncrement P₀ P Q / R) ^ α)
   exact le_of_tendsto_of_tendsto hl hr (Eventually.of_forall fun j => hb j P hP Q hQ)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

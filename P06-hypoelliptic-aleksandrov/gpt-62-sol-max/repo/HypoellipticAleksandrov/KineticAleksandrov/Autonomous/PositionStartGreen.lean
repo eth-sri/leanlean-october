@@ -22,23 +22,23 @@ theorem positionStartQuadratic_smooth (c : Clock) (eta : ℝ → ℝ)
 
 /-- The actual position test satisfies the Green identity, with no analytic bridge premise. -/
 theorem positionStartQuadratic_active_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y T : ℝ)
     (hc : |c.vbar| = 2 * c.r)
     (e : FiniteUnionPole (visitActiveUnion c J) (T : WithTop ℝ)) :
     let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
       visitQuadratic c (q.velocity 0)
-    f e.1 = (∫ p, f p ∂finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T e) -
+    f e.1 = (∫ p, f p ∂finiteUnionExit A (visitActiveUnion c J) T e) -
       ∫ p, forwardScalarOperator A.a f p
-        ∂finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T e := by
+        ∂finiteUnionGreen A (visitActiveUnion c J) T e := by
   dsimp only
-  apply visitUnion_identity_bounded_smooth hH hLE hlam hLam A (visitActiveUnion c J) T e
+  apply visitUnion_identity_bounded_smooth A (visitActiveUnion c J) T e
     (fun q => positionStartCutoff Y c.r c.positive (q.position 0) *
       visitQuadratic c (q.velocity 0))
   · exact positionStartQuadratic_smooth c _
       (positionStartCutoff_properties Y c.r c.positive).1
-  · obtain ⟨C, hC, hb⟩ := positionStartQuadratic_operator_bound hlam hLam
+  · obtain ⟨C, hC, hb⟩ := positionStartQuadratic_operator_bound A.positive A.ordered
     refine ⟨max (9 * c.r ^ 2 / 16) C, ?_⟩
     intro p hp
     have hv := ((visitActiveUnion_carrier c J).le hp).1

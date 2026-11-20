@@ -17,11 +17,13 @@ open Filter Set
 
 namespace HypoellipticAleksandrov.Parabolic
 
+section
+variable (d : Nat) (K U : Set (TimeVelocity d)) (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U)
+include hK hU hKU
+
 /-- A compact subset of an open set admits a positive native-metric collar
 that contains every sufficiently small mollifier scale. -/
-theorem exists_native_kernel_collar
-    (d : Nat) (K U : Set (TimeVelocity d))
-    (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
+theorem exists_native_kernel_collar :
     ∃ delta : Real, 0 < delta ∧ Metric.cthickening delta K ⊆ U ∧
       ∀ᶠ n in Filter.atTop, parabolicMollifierScale n < delta := by
   obtain ⟨delta, hdelta_pos, hdeltaU⟩ := hK.exists_cthickening_subset_open hU hKU
@@ -30,9 +32,7 @@ theorem exists_native_kernel_collar
 
 /-- Eventually, every point sampled by the translated right mollifier at a
 compact carrier lies in the surrounding open set. -/
-theorem eventually_translated_parabolicMollifier_support_subset
-    (d : Nat) (K U : Set (TimeVelocity d))
-    (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
+theorem eventually_translated_parabolicMollifier_support_subset :
     ∀ᶠ n in Filter.atTop, ∀ z ∈ K,
       {y | parabolicMollifier d n (z - y) ≠ 0} ⊆ U := by
   obtain ⟨delta, hdelta_pos, hdeltaU, hscale⟩ :=
@@ -47,5 +47,7 @@ theorem eventually_translated_parabolicMollifier_support_subset
     rw [Metric.mem_ball] at hySupport
     simpa only [dist_eq_norm, sub_zero, norm_sub_rev] using hySupport
   exact (hdist.trans hn).le
+
+end
 
 end HypoellipticAleksandrov.Parabolic

@@ -13,14 +13,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Set Filter
 
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+include hr
+
 /-- The explicit selected flattening jets are the classical jets almost everywhere. -/
-theorem flatProfile_jets_ae_of_profile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
+theorem flatProfile_jets_ae_of_profile :
     ∀ᵐ q ∂volume, flatProfilePositionJet h r q = dx (selectedFlatProfile h r) q ∧
       flatProfileVelocityJet h r q = dv (selectedFlatProfile h r) q ∧
       flatProfileHessian h r q = dvv (selectedFlatProfile h r) q := by
-  have hC2 := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2
-  have hjets := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.1
+  have hC2 := (selectedProfile_spec h).ae_contDiff
+  have hjets := (selectedProfile_spec h).ae_jets
   filter_upwards [hjets, hC2] with q hj hH
   refine ⟨?_, ?_, ?_⟩
   · ext i
@@ -43,8 +46,7 @@ theorem flatProfile_jets_ae_of_profile {d : ℕ} {alpha : ℝ}
     rw [hj.2.1, hj.2.2]
 
 /-- The literal stationary operator equals the source formula a.e. in the classical branch. -/
-theorem flatProfile_operator_ae_of_profile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
+theorem flatProfile_operator_ae_of_profile :
     ∀ᵐ q ∂volume, statOp (profileMatrix h) (selectedFlatProfile h r) q =
       flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q := by
   filter_upwards [flatProfile_jets_ae_of_profile h r hr,
@@ -52,5 +54,7 @@ theorem flatProfile_operator_ae_of_profile {d : ℕ} {alpha : ℝ}
   unfold statOp
   rw [← hj.1, ← hj.2.2]
   exact hs
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

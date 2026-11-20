@@ -25,10 +25,8 @@ theorem boundary_duhamelPotential_const_mul {d : ℕ} {Ω : Set (PDE.Vec d)}
     · exact (mul_zero c).symm
   rw [heq, integral_const_mul]
 
-variable (hH : HormanderHypoellipticityStatement)
-  (hLE : LiebermanEllipsoidDirichletStatement)
+variable
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-  (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
@@ -38,9 +36,9 @@ theorem boundary_ballSourcePotential_add (a T : ℝ) (F G : KineticPoint d → �
     (M N : ℝ) (hM : 0 ≤ M) (hN : 0 ≤ N)
     (hFb : ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M)
     (hGb : ∀ P ∈ localStrip a T v₀ R, |G P| ≤ N) (P : KineticPoint d) :
-    ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T (fun Q => F Q + G Q) P =
-      ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F P +
-      ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T G P := by
+    ballSourcePotential hd B hB v₀ hR a T (fun Q => F Q + G Q) P =
+      ballSourcePotential hd B hB v₀ hR a T F P +
+      ballSourcePotential hd B hB v₀ hR a T G P := by
   have heq : (localStrip a T v₀ R).indicator (fun Q => F Q + G Q) ∘ sectionTwoPoint =
       fun Q => (localStrip a T v₀ R).indicator F (sectionTwoPoint Q) +
         (localStrip a T v₀ R).indicator G (sectionTwoPoint Q) := by
@@ -58,8 +56,8 @@ theorem boundary_ballSourcePotential_add (a T : ℝ) (F G : KineticPoint d → �
 /-- Scalar factors pass through the canonical finite-strip source potential. -/
 theorem boundary_ballSourcePotential_const_mul (a T c : ℝ)
     (F : KineticPoint d → ℝ) (P : KineticPoint d) :
-    ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T (fun Q => c * F Q) P =
-      c * ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F P := by
+    ballSourcePotential hd B hB v₀ hR a T (fun Q => c * F Q) P =
+      c * ballSourcePotential hd B hB v₀ hR a T F P := by
   have heq : (localStrip a T v₀ R).indicator (fun Q => c * F Q) ∘ sectionTwoPoint =
       fun Q => c * (localStrip a T v₀ R).indicator F (sectionTwoPoint Q) := by
     funext Q
@@ -75,9 +73,9 @@ theorem ballBoundarySolution_add (a T : ℝ) (φ ψ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
     (hψ : ContDiff ℝ (⊤ : ℕ∞) (ψ ∘ (KineticPoint.equivProd d).symm))
     (hcφ : HasCompactSupport φ) (hcψ : HasCompactSupport ψ) (P : KineticPoint d) :
-    ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T (fun Q => φ Q + ψ Q) P =
-      ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ P +
-      ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T ψ P := by
+    ballBoundarySolution hd B hB v₀ hR a T (fun Q => φ Q + ψ Q) P =
+      ballBoundarySolution hd B hB v₀ hR a T φ P +
+      ballBoundarySolution hd B hB v₀ hR a T ψ P := by
   have hφr := isKineticC112On_of_contDiffOn isOpen_univ
     (hφ.comp (evolutionProdCLE d).contDiff).contDiffOn
   have hψr := isKineticC112On_of_contDiffOn isOpen_univ
@@ -89,7 +87,7 @@ theorem ballBoundarySolution_add (a T : ℝ) (φ ψ : KineticPoint d → ℝ)
   obtain ⟨hFc, M, hM, hFb⟩ := boundary_probe_operator_bounded B hB φ hφ hcφ
   obtain ⟨hGc, N, hN, hGb⟩ := boundary_probe_operator_bounded B hB ψ hψ hcψ
   unfold ballBoundarySolution
-  rw [heq, boundary_ballSourcePotential_add hH hLE hd hlam hLam B hB v₀ hR
+  rw [heq, boundary_ballSourcePotential_add hd B hB v₀ hR
     a T _ _ hFc.measurable hGc.measurable M N hM hN
     (fun Q _ => hFb Q) (fun Q _ => hGb Q)]
   ring
@@ -97,8 +95,8 @@ theorem ballBoundarySolution_add (a T : ℝ) (φ ψ : KineticPoint d → ℝ)
 /-- The boundary reconstruction is homogeneous under scalar multiplication of probes. -/
 theorem ballBoundarySolution_const_mul (a T c : ℝ) (φ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm)) (P : KineticPoint d) :
-    ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T (fun Q => c * φ Q) P =
-      c * ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ P := by
+    ballBoundarySolution hd B hB v₀ hR a T (fun Q => c * φ Q) P =
+      c * ballBoundarySolution hd B hB v₀ hR a T φ P := by
   have hφr := isKineticC112On_of_contDiffOn isOpen_univ
     (hφ.comp (evolutionProdCLE d).contDiff).contDiffOn
   have heq : forwardKineticOperator (ofTimeVelocityCoefficient B) (fun Q => c * φ Q) =

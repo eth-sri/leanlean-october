@@ -13,8 +13,10 @@ namespace HypoellipticAleksandrov.Parabolic
 open Set MeasureTheory
 open scoped Topology
 
-private theorem integrable_mul_test
-    {d : ℕ} {U : Set (TimeVelocity d)} {f ψ : TimeVelocity d → ℝ}
+section
+variable {d : ℕ} {U : Set (TimeVelocity d)}
+
+private theorem integrable_mul_test {f ψ : TimeVelocity d → ℝ}
     (hf : ContinuousOn f U) (hψ : Continuous ψ) (hc : HasCompactSupport ψ)
     (hsub : tsupport ψ ⊆ U) : Integrable (fun z => f z * ψ z) := by
   have hK : IntegrableOn f (tsupport ψ) volume :=
@@ -25,8 +27,7 @@ private theorem integrable_mul_test
   exact tsupport_mul_subset_right (subset_closure hz)
 
 /-- Local continuous line derivatives give integration by parts against a compact smooth test. -/
-theorem setIntegral_mul_directional_test
-    {d : ℕ} {U : Set (TimeVelocity d)} {f df φ : TimeVelocity d → ℝ}
+theorem setIntegral_mul_directional_test {f df φ : TimeVelocity d → ℝ}
     (hf : ContinuousOn f U) (hdf : ContinuousOn df U) (v : TimeVelocity d)
     (hd : ∀ z ∈ U, HasLineDerivAt ℝ f (df z) z v)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ)
@@ -53,5 +54,7 @@ theorem setIntegral_mul_directional_test
   · exact hglobal
   · rw [image_eq_zero_of_notMem_tsupport (fun h => hz (hsub h)), mul_zero]
   · rw [image_eq_zero_of_notMem_tsupport (fun h => hz ((hDsub.trans hsub) h)), mul_zero]
+
+end
 
 end HypoellipticAleksandrov.Parabolic

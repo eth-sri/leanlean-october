@@ -52,7 +52,7 @@ theorem integral_scalar_local_value_energy_eq {d : ℕ}
     (integrable_scalar_local_spatial_value_energy_terms hU u ρ hu hρ hc hsub A hA i j).2.restrict
   have hE (i j : Fin d) : IntegrableOn (E i j) U := by
     have hcoeff : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+      (contDiff_apply_apply ℝ ℝ i j).comp hA
     have hcoeff12 := isScalarC12On_of_contDiff_two (hcoeff.of_le (by simp)) univ
     have hdA : Continuous (fun z : TimeVelocity d =>
         spatialPartial i (fun y => A z.1 y i j) z.2) :=
@@ -71,9 +71,6 @@ theorem integral_scalar_local_value_energy_eq {d : ℕ}
   have hLs : IntegrableOn (fun z => ∑ i, ∑ j, L i j z) U :=
     integrable_finsetSum Finset.univ (fun i _ =>
       integrable_finsetSum Finset.univ (fun j _ => hL i j))
-  have hRs : IntegrableOn (fun z => ∑ i, ∑ j, R i j z) U :=
-    integrable_finsetSum Finset.univ (fun i _ =>
-      integrable_finsetSum Finset.univ (fun j _ => hR i j))
   have hEs : IntegrableOn (fun z => ∑ i, ∑ j, E i j z) U :=
     integrable_finsetSum Finset.univ (fun i _ =>
       integrable_finsetSum Finset.univ (fun j _ => hE i j))

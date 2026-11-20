@@ -20,12 +20,13 @@ open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 namespace HypoellipticAleksandrov.Parabolic
 
+section
+variable (d N : ℕ) (q₀ s₀ s₁ q₁ : ℝ) (Ω O₀ O : Set (PDE.Vec d))
+include N q₀ s₀ s₁ q₁ Ω O₀ O
+
 /-- The transparent geometric certificate for a full higher-order chain of
 nested time--velocity product boxes. -/
 def IsHigherOrderNestedProductBoxChain
-    (d N : ℕ)
-    (q₀ s₀ s₁ q₁ : ℝ)
-    (Ω O₀ O : Set (PDE.Vec d))
     (left right : ℕ → ℝ)
     (spatial : ℕ → Set (PDE.Vec d)) : Prop :=
   left 0 = q₀ ∧
@@ -49,9 +50,6 @@ def IsHigherOrderNestedProductBoxChain
 /-- Strictly nested outer and target product boxes supply a full finite chain
 of precompact open intermediate product boxes. -/
 theorem exists_higherOrderNestedProductBoxChain
-    (d N : ℕ)
-    (q₀ s₀ s₁ q₁ : ℝ)
-    (Ω O₀ O : Set (PDE.Vec d))
     (hq₀s₀ : q₀ < s₀)
     (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁)
@@ -155,6 +153,8 @@ theorem exists_higherOrderNestedProductBoxChain
         | succ k =>
             simpa only [left, right, spatial, Nat.succ_eq_add_one,
               Nat.add_assoc] using hsteps k (by omega)
+
+end
 
 /-- Extract the complete geometric input for one adjacent step of a
 higher-order nested product-box chain. -/

@@ -26,7 +26,6 @@ theorem stack_hermite_acceleration {d : ℕ} {r T : ℝ} (hr : 0 < r)
     (hv : PDE.vecEuclideanNorm (v1-v0) ≤ r) :
     6*PDE.vecEuclideanNorm (x1-x0-T • v0)/T^2+
       4*PDE.vecEuclideanNorm (v1-v0)/T ≤ stackAcceleration m/r := by
-  have hT : 0 < T := (by positivity : 0 < r^2/8).trans_le hTlo
   have hs : (r^2/8)^2 ≤ T^2 := by nlinarith
   have h₁ : 6*PDE.vecEuclideanNorm (x1-x0-T • v0)/T^2 ≤
       6*(((m : ℝ)+2)*r^3)/(r^2/8)^2 := by
@@ -49,7 +48,6 @@ theorem hermite_unit_coefficients {z : ℝ} (hz : z ∈ Icc 0 1) :
   have hc : 0 ≤ z^3 := pow_nonneg hz.1 3
   have hpos : 0 ≤ 3*z^2-2*z^3 := by nlinarith
   have hupper : 3*z^2-2*z^3 ≤ 1 := by
-    have h := mul_nonneg (sq_nonneg (1-z)) (by linarith only [hz.1] : 0 ≤ 1+2*z)
     nlinarith
   refine ⟨abs_le.mpr ⟨by linarith, hupper⟩,
     abs_le.mpr ⟨by nlinarith, by nlinarith⟩,

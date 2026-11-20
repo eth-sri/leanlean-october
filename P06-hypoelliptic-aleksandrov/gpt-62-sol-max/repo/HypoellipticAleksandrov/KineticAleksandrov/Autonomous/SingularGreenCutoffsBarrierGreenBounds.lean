@@ -13,8 +13,8 @@ open scoped ENNReal
 /-- Derived compact Green bounds have a vanishing, explicit inverse-radius error.
 The premises describe the actual test and its generator, and no Green identity is assumed. -/
 theorem barrier_cutoff_green_bounds
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    {lam Lam : ℝ}
+    (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (f : Z → ℝ) (hf : ContDiff ℝ 2 f) (alpha D Bv : ℝ)
     (ha : 0 ≤ alpha) (ha1 : alpha ≤ 1) (hD : 0 ≤ D) (hBv : 0 ≤ Bv)
@@ -31,7 +31,7 @@ theorem barrier_cutoff_green_bounds
         barrierRectCutoff Y R z * f z + C * (T : ℝ) / R) := by
   obtain ⟨D1, D2, hD1, hD2, hb1, hb2⟩ := barrierCutoff_derivative_bounds
   let C := (2 * D1 + Lam * D2) * (|f (Y, 0)| + 4 * D) + 2 * Lam * D1 * Bv
-  have hL : 0 ≤ Lam := hlam.le.trans hLam
+  have hL : 0 ≤ Lam := A.positive.le.trans A.ordered
   have hC : 0 ≤ C := by dsimp only [C]; positivity
   refine ⟨C, hC, fun R hR => ?_⟩
   have hR0 : 0 < R := zero_lt_one.trans_le hR
@@ -52,7 +52,7 @@ theorem barrier_cutoff_green_bounds
   have hGb (q : Z) : G q ≤ physicalSpatialOperator A.a F q + C / R := by
     have herr := barrierRectError_quantitative A.a f Lam alpha D Bv D1 D2 Y R
       hL ha ha1 hD hBv hD1 hD2 hm hbv hb1 hb2 hR q
-      (hlam.le.trans (A.bounds _ _).1) (A.bounds _ _).2
+      (A.positive.le.trans (A.bounds _ _).1) (A.bounds _ _).2
     have hid := barrierRectError_eq_operator A.a f hf Y R hR0 q
     have hlift := mul_le_mul_of_nonneg_left (hbound q) (barrierRectCutoff_bounds Y R q).1
     have heG : G q = barrierRectCutoff Y R q * (c * w q) := by dsimp only [G]; ring
@@ -72,9 +72,9 @@ theorem barrier_cutoff_green_bounds
   change (∫ q, G q ∂physicalOccupationMeasure E z T) ≤
     ∫ q, physicalSpatialOperator A.a F q + C / R ∂physicalOccupationMeasure E z T at hi
   rw [integral_add hFi (integrable_const (C / R)), integral_const,
-    smul_eq_mul, measureReal_def, physicalOccupationMeasure_mass_eq hlam A E hE,
+    smul_eq_mul, measureReal_def, physicalOccupationMeasure_mass_eq A E hE,
     ENNReal.toReal_ofReal hT.le] at hi
-  rw [fullspace_physical_green_compact_c2 hH hlam hLam A E hE F hFc hFs z T hT] at hi
+  rw [fullspace_physical_green_compact_c2 A E hE F hFc hFs z T hT] at hi
   rw [← ofReal_integral_eq_lintegral_ofReal hGi (Eventually.of_forall hGn)]
   apply ENNReal.ofReal_le_ofReal
   exact hi.trans_eq (by dsimp only [F]; ring)

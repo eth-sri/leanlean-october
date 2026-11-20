@@ -17,7 +17,6 @@ open Set
 
 /-- The forced recurrence gives uniform geometric decay on nested physical cylinders. -/
 theorem exists_forced_dyadic_range_decay
-    (hLE : KineticAleksandrov.LiebermanEllipsoidDirichletStatement)
     (N : ℕ) (hN : 1 ≤ N) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ q K : ℝ, (1 / 2 : ℝ) ≤ q ∧ q < 1 ∧ 0 < K ∧
       ∀ (A : CoefficientField N), IsSmoothCoefficient A → IsSymmetricCoefficient A →
@@ -35,7 +34,7 @@ theorem exists_forced_dyadic_range_decay
           z' ∈ scalarParabolicOpenCylinder (T - dyadicRadius r n ^ 2) T
             (PDE.euclideanBall v₀ (dyadicRadius r n)) →
           |w z - w z'| ≤ K * M * q ^ n := by
-  obtain ⟨θ, hθ, hθ1, hc⟩ := exists_forced_range_contraction hLE N hN lam Lam hlam hLam
+  obtain ⟨θ, hθ, hθ1, hc⟩ := exists_forced_range_contraction N hN lam Lam hlam hLam
   let q := (1 + θ) / 2
   have hqhalf : (1 / 2 : ℝ) ≤ q := by dsimp [q]; linarith only [hθ]
   have hq1 : q < 1 := by dsimp [q]; linarith only [hθ1]

@@ -32,12 +32,13 @@ def weakGradientLpPairOfRepresentatives
     WeakGradientLpPair U p :=
   (hu.toScalarLp, hDu.toHilbertVectorLp)
 
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} {u : Vec d → ℝ} {Du : Vec d → Vec d}
+  (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du)
+
 /-- The value component of
 `PDE.weakGradientLpPairOfRepresentatives` has the original representative. -/
-theorem coeFn_weakGradientLpPairOfRepresentatives_fst
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {u : Vec d → ℝ} {Du : Vec d → Vec d}
-    (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du) :
+theorem coeFn_weakGradientLpPairOfRepresentatives_fst :
     ⇑(weakGradientLpPairOfRepresentatives hu hDu).1
       =ᵐ[volumeOn U] u :=
   hu.coeFn_toScalarLp
@@ -45,10 +46,7 @@ theorem coeFn_weakGradientLpPairOfRepresentatives_fst
 /-- The gradient component of
 `PDE.weakGradientLpPairOfRepresentatives` has the original Euclidean Hilbert
 lift as representative. -/
-theorem coeFn_weakGradientLpPairOfRepresentatives_snd
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {u : Vec d → ℝ} {Du : Vec d → Vec d}
-    (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du) :
+theorem coeFn_weakGradientLpPairOfRepresentatives_snd :
     ⇑(weakGradientLpPairOfRepresentatives hu hDu).2
       =ᵐ[volumeOn U] toHilbertVecField Du :=
   hDu.coeFn_toHilbertVectorLp
@@ -56,18 +54,19 @@ theorem coeFn_weakGradientLpPairOfRepresentatives_snd
 /-- Coordinatewise a.e. representative identity for the gradient component
 of `PDE.weakGradientLpPairOfRepresentatives`. -/
 theorem coeFn_weakGradientLpPairOfRepresentatives_snd_apply
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {u : Vec d → ℝ} {Du : Vec d → Vec d}
-    (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du)
     (i : Fin d) :
     (fun x => (weakGradientLpPairOfRepresentatives hu hDu).2 x i)
       =ᵐ[volumeOn U] fun x => Du x i :=
   hDu.coeFn_toHilbertVectorLp_apply i
 
+end
+
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+
 /-- Concrete weak-gradient representatives determine an element of the
 closed weak-gradient graph. -/
 theorem weakGradientLpPairOfRepresentatives_mem_weakGradientGraph
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)]
     {u : Vec d → ℝ} {Du : Vec d → Vec d}
     (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du)
@@ -111,7 +110,6 @@ recovers the raw distributional weak-gradient identity.  Together with
 bridge between representative-level weak derivatives and the quotient
 closed-graph carrier. -/
 theorem hasWeakGradientOn_of_weakGradientLpPairOfRepresentatives_mem
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)]
     {u : Vec d → ℝ} {Du : Vec d → Vec d}
     (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du)
@@ -153,7 +151,6 @@ theorem hasWeakGradientOn_of_weakGradientLpPairOfRepresentatives_mem
 /-- Package concrete weak-gradient representatives as an element of the
 complete quotient-level `W^{1,p}` graph. -/
 def w1pGraphOfRepresentatives
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)]
     {u : Vec d → ℝ} {Du : Vec d → Vec d}
     (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du)
@@ -163,10 +160,14 @@ def w1pGraphOfRepresentatives
     weakGradientLpPairOfRepresentatives_mem_weakGradientGraph
       hu hDu hweak⟩
 
+end
+
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+
 /-- The value component of `PDE.w1pGraphOfRepresentatives` agrees a.e. with
 the concrete value representative. -/
 theorem coeFn_w1pGraphOfRepresentatives_fst
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)]
     {u : Vec d → ℝ} {Du : Vec d → Vec d}
     (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du)
@@ -178,7 +179,6 @@ theorem coeFn_w1pGraphOfRepresentatives_fst
 /-- The gradient component of `PDE.w1pGraphOfRepresentatives` agrees a.e.
 with the Euclidean Hilbert lift of the concrete gradient. -/
 theorem coeFn_w1pGraphOfRepresentatives_snd
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)]
     {u : Vec d → ℝ} {Du : Vec d → Vec d}
     (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du)
@@ -190,7 +190,6 @@ theorem coeFn_w1pGraphOfRepresentatives_snd
 /-- Coordinatewise a.e. representative identity for the gradient component
 of `PDE.w1pGraphOfRepresentatives`. -/
 theorem coeFn_w1pGraphOfRepresentatives_snd_apply
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)]
     {u : Vec d → ℝ} {Du : Vec d → Vec d}
     (hu : MemLpOn U p u) (hDu : GradMemLpOn U p Du)
@@ -198,6 +197,8 @@ theorem coeFn_w1pGraphOfRepresentatives_snd_apply
     (fun x => (w1pGraphOfRepresentatives hu hDu hweak).1.2 x i)
       =ᵐ[volumeOn U] fun x => Du x i :=
   coeFn_weakGradientLpPairOfRepresentatives_snd_apply hu hDu i
+
+end
 
 namespace W1pFunction
 
@@ -209,10 +210,12 @@ def toW1pGraph
     W1pGraph U p :=
   w1pGraphOfRepresentatives u.memLp u.gradMemLp u.hasWeakGradient
 
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+
 /-- The value component of `PDE.W1pFunction.toW1pGraph` agrees a.e. with the
 original concrete value representative. -/
 theorem coeFn_toW1pGraph_fst
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)] (u : W1pFunction U p) :
     ⇑u.toW1pGraph.1.1 =ᵐ[volumeOn U] u.toFun :=
   coeFn_w1pGraphOfRepresentatives_fst
@@ -221,7 +224,6 @@ theorem coeFn_toW1pGraph_fst
 /-- The gradient component of `PDE.W1pFunction.toW1pGraph` agrees a.e. with
 the Euclidean Hilbert lift of the original native gradient. -/
 theorem coeFn_toW1pGraph_snd
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)] (u : W1pFunction U p) :
     ⇑u.toW1pGraph.1.2 =ᵐ[volumeOn U] toHilbertVecField u.grad :=
   coeFn_w1pGraphOfRepresentatives_snd
@@ -230,12 +232,13 @@ theorem coeFn_toW1pGraph_snd
 /-- Coordinatewise a.e. representative identity for the gradient component
 of `PDE.W1pFunction.toW1pGraph`. -/
 theorem coeFn_toW1pGraph_snd_apply
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
     [Fact (1 ≤ p)] (u : W1pFunction U p) (i : Fin d) :
     (fun x => u.toW1pGraph.1.2 x i) =ᵐ[volumeOn U]
       fun x => u.grad x i :=
   coeFn_w1pGraphOfRepresentatives_snd_apply
     u.memLp u.gradMemLp u.hasWeakGradient i
+
+end
 
 end W1pFunction
 

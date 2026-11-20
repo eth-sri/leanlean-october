@@ -25,8 +25,7 @@ theorem bellman_density_le_of_measure_le (f h : ℝ → ℝ)
     intro s hs _
     simpa only [← withDensity_apply _ hs] using hm s
   filter_upwards [he, hnf, hnh] with x hx hfx hhx
-  have ht := ENNReal.toReal_mono (by simp) hx
-  simpa only [ENNReal.toReal_ofReal hfx, ENNReal.toReal_ofReal hhx] using ht
+  simpa only [ENNReal.toReal_ofReal hfx, ENNReal.toReal_ofReal hhx] using (ENNReal.toReal_mono (by simp) hx)
 
 /-- The Radon–Nikodym representative is an actual density of an absolutely continuous Radon
 measure. -/

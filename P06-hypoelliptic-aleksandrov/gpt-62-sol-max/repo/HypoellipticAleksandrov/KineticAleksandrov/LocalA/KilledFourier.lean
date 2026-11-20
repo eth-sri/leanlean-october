@@ -21,8 +21,6 @@ open HypoellipticAleksandrov Parabolic SectionTwo Set MeasureTheory
 /-- The killed Fourier estimate, relative only to the two analytic hypotheses (Hörmander and
 Lieberman) and with the literal valid query of the canonical ball kernel. -/
 theorem ballKernel_short_time_fourier
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
       ∀ (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
@@ -30,7 +28,7 @@ theorem ballKernel_short_time_fourier
         (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}),
       P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4) →
       T.1 - P.1.time ≤ R ^ 2 / 8 →
-      let Kb := localBallKernel hH hLE hd hlam hLam B hB v₀ hR
+      let Kb := localBallKernel hd B hB v₀ hR
       ∀ (ξ : PDE.Vec d)
         (q : EvolutionQuery (PDE.euclideanBall v₀ R) (fun _ => 0)),
         q.1 = (P.1.time, (T.1, (P.1.velocity, P.1.position))) →
@@ -39,9 +37,9 @@ theorem ballKernel_short_time_fourier
             Real.exp (-c * (T.1 - P.1.time) *
               PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ))) := by
   obtain ⟨Cs, cs, hCs, hcs, hloss⟩ :=
-    ballKernel_short_time_loss hH hLE d hd lam Lam hlam hLam
+    ballKernel_short_time_loss d hd lam Lam hlam hLam
   obtain ⟨Cf, cf, hCf, hcf, hdecay⟩ :=
-    ballExit_full_fourier_decay hH hLE d hd lam Lam hlam hLam
+    ballExit_full_fourier_decay d hd lam Lam hlam hLam
   refine ⟨max Cs Cf, min cs cf, hCs.trans_le (le_max_left _ _), lt_min hcs hcf, ?_⟩
   intro B hB v₀ R hR P T hv hsmall
   dsimp only
@@ -49,8 +47,8 @@ theorem ballKernel_short_time_fourier
   have hq0 : q = ballEvolutionQuery P T := Subtype.ext hq
   rw [hq0]
   obtain ⟨Sf, Kf, hreal, hdom⟩ :=
-    ballExit_exists_full_evolution hH hLE hd hlam hLam B hB v₀ hR
-  let Kb := localBallKernel hH hLE hd hlam hLam B hB v₀ hR
+    ballExit_exists_full_evolution hd B hB v₀ hR
+  let Kb := localBallKernel hd B hB v₀ hR
   let qf := wholeSpaceQuery P.1.time T.1 T.2.le P.1.velocity P.1.position
   have hdef := killedFourier_variation_le_full_add_loss Kb Kf (ballEvolutionQuery P T)
     qf rfl (hdom (ballEvolutionQuery P T)) ξ

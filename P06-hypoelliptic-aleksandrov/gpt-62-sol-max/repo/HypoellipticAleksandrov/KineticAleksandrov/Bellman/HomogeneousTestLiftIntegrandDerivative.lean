@@ -21,18 +21,12 @@ theorem bellmanLiftIntegrand_spatial_fderiv (alpha : ℝ) (zeta : (ℝ × ℝ) �
   have hd : DifferentiableAt ℝ (bellmanLiftIntegrand alpha zeta) (q, r) :=
     ((hf (q, r) ⟨trivial, hr⟩).contDiffAt
       ((isOpen_univ.prod isOpen_Ioi).mem_nhds ⟨trivial, hr⟩)).differentiableAt (by norm_num)
-  let L : (ℝ × ℝ) →L[ℝ] (ℝ × ℝ) × ℝ :=
-    (ContinuousLinearMap.id ℝ (ℝ × ℝ)).prod 0
-  have hpair : HasFDerivAt (fun x : ℝ × ℝ => (x, r)) L q :=
-    (hasFDerivAt_id q).prodMk (hasFDerivAt_const r q)
-  have hcomp := hd.hasFDerivAt.comp q hpair
+  have hcomp := hasFDerivAt_bellmanSpatialJet hd
   have hslice := (((hz.contDiffAt.differentiableAt (by norm_num)).hasFDerivAt).comp q
     (bellmanDilationLinear r).hasFDerivAt).const_mul (r ^ (-1 - alpha))
   change HasFDerivAt (fun x => bellmanLiftIntegrand alpha zeta (x, r)) _ q at hslice
   have he := congrArg (fun D : (ℝ × ℝ) →L[ℝ] ℝ => D e) (hcomp.unique hslice)
-  simpa only [ContinuousLinearMap.comp_apply, L, ContinuousLinearMap.prod_apply,
-    ContinuousLinearMap.id_apply, zero_apply, smul_apply, smul_eq_mul,
-    bellmanDilationLinear_apply]
-    using he
+  simpa only [bellmanSpatialJet_apply, ContinuousLinearMap.comp_apply, smul_apply, smul_eq_mul,
+    bellmanDilationLinear_apply] using he
 
 end HypoellipticAleksandrov.KineticAleksandrov

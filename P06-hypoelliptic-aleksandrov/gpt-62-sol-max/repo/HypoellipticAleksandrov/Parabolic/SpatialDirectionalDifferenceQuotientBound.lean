@@ -28,7 +28,7 @@ theorem abs_spatialDifferenceQuotient_le_of_segment_spatialFDeriv_bound
     |spatialDifferenceQuotient k h f z| ≤ M := by
   by_cases hzero : h = 0
   · subst h
-    have hMnonneg : 0 ≤ M :=
+    have hMnonneg :=
       (abs_nonneg ((fderiv ℝ f z) (0, PDE.basisVec k))).trans
         (hdir z (left_mem_segment ℝ z (spatialShift k 0 z)))
     simpa only [spatialDifferenceQuotient_apply, spatialTranslate_apply,

@@ -42,18 +42,20 @@ noncomputable instance galerkinValueSpace_completeSpace
     CompleteSpace (galerkinValueSpace hΩ N) :=
   FiniteDimensional.complete ℝ (galerkinValueSpace hΩ N)
 
+section
+variable (hΩ : IsOpen Ω) (N : ℕ)
+include N
+
 /-- The `L²` mass Gram matrix of the finite actual-test Galerkin basis. -/
-noncomputable def galerkinMassGram
-    (hΩ : IsOpen Ω) (N : ℕ) :
+noncomputable def galerkinMassGram :
     Matrix
-      (Fin (Module.finrank ℝ (galerkinSpace hΩ N)))
-      (Fin (Module.finrank ℝ (galerkinSpace hΩ N))) ℝ :=
+      (GalerkinIndex hΩ N)
+      (GalerkinIndex hΩ N) ℝ :=
   Matrix.gram ℝ (fun i =>
     valueCLM hΩ (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ))
 
 /-- The finite `L²` mass Gram matrix is positive definite. -/
-theorem galerkinMassGram_posDef
-    (hΩ : IsOpen Ω) (N : ℕ) :
+theorem galerkinMassGram_posDef :
     (galerkinMassGram hΩ N).PosDef := by
   let E := galerkinSpace hΩ N
   let L : E →ₗ[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
@@ -70,61 +72,62 @@ theorem galerkinMassGram_posDef
     Matrix.posDef_gram_of_linearIndependent hli
 
 /-- The finite `L²` mass Gram matrix is invertible, including at `N = 0`. -/
-theorem isUnit_galerkinMassGram
-    (hΩ : IsOpen Ω) (N : ℕ) :
+theorem isUnit_galerkinMassGram :
     IsUnit (galerkinMassGram hΩ N) :=
   (galerkinMassGram_posDef hΩ N).isUnit
 
 /-- A chosen preimage of the finite Galerkin value-space projection. -/
 noncomputable def galerkinInitialProjectionPreimage
-    (hΩ : IsOpen Ω) (N : ℕ)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     H10HilbertGraph hΩ :=
   Classical.choose <| Submodule.mem_map.mp
     (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)
 
+end
+
+section
+variable (hΩ : IsOpen Ω) (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+
 /-- The chosen projection preimage lies in the finite Galerkin space. -/
-theorem galerkinInitialProjectionPreimage_mem
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+theorem galerkinInitialProjectionPreimage_mem :
     galerkinInitialProjectionPreimage hΩ N initial ∈ galerkinSpace hΩ N := by
   exact (Classical.choose_spec <| Submodule.mem_map.mp
     (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)).1
 
-private theorem value_galerkinInitialProjectionPreimage
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+private theorem value_galerkinInitialProjectionPreimage :
     valueCLM hΩ (galerkinInitialProjectionPreimage hΩ N initial) =
       (galerkinValueSpace hΩ N).starProjection initial := by
   exact (Classical.choose_spec <| Submodule.mem_map.mp
     (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)).2
 
+end
+
+section
+variable (hΩ : IsOpen Ω) (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+include initial
+
 /-- The lift to the finite Galerkin space of the `L²` orthogonal projection
 of an initial datum. -/
-noncomputable def galerkinInitialProjection
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+noncomputable def galerkinInitialProjection :
     galerkinSpace hΩ N :=
   ⟨galerkinInitialProjectionPreimage hΩ N initial,
     galerkinInitialProjectionPreimage_mem hΩ N initial⟩
 
 /-- Applying the spatial value map to the lifted initial datum recovers its
 `L²` orthogonal projection onto the finite Galerkin value space. -/
-theorem value_galerkinInitialProjection
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+theorem value_galerkinInitialProjection :
     valueCLM hΩ (galerkinInitialProjection hΩ N initial :
       H10HilbertGraph hΩ) =
     (galerkinValueSpace hΩ N).starProjection initial :=
   value_galerkinInitialProjectionPreimage hΩ N initial
 
 /-- The finite Galerkin `L²` initial projection is contractive. -/
-theorem norm_value_galerkinInitialProjection_le
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+theorem norm_value_galerkinInitialProjection_le :
     ‖valueCLM hΩ (galerkinInitialProjection hΩ N initial :
       H10HilbertGraph hΩ)‖ ≤ ‖initial‖ := by
   rw [value_galerkinInitialProjection]
   exact (galerkinValueSpace hΩ N).norm_starProjection_apply_le initial
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

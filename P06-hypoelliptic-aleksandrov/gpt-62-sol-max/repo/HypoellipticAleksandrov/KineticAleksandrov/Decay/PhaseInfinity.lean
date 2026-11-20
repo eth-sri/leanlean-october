@@ -26,8 +26,11 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open Set Filter
 open scoped Topology
 
+section
+variable {d : ℕ} (η M τ : ℝ) (z0 : PDE.Vec d)
+
 /-- The quadratic infinity penalty is continuous in all source coordinates. -/
-theorem infinityBarrier_continuous {d : ℕ} (η M τ : ℝ) (z0 : PDE.Vec d) :
+theorem infinityBarrier_continuous :
     Continuous (infinityBarrier η M τ z0) := by
   have hv : Continuous (fun p : KineticPoint d => p.velocity - z0) :=
     continuous_velocity.sub continuous_const
@@ -36,15 +39,19 @@ theorem infinityBarrier_continuous {d : ℕ} (η M τ : ℝ) (z0 : PDE.Vec d) :
     (Real.continuous_exp.comp (continuous_const.mul (continuous_const.sub continuous_time)))
 
 /-- The quadratic infinity penalty is slice regular everywhere. -/
-theorem infinityBarrier_isSliceRegularAt {d : ℕ} (η M τ : ℝ) (z0 : PDE.Vec d)
+theorem infinityBarrier_isSliceRegularAt
     (p : KineticPoint d) : IsSliceRegularAt (infinityBarrier η M τ z0) p := by
   apply IsSliceRegularAt.of_contDiffAt
   unfold rawLift infinityBarrier PDE.vecNormSq PDE.vecDot
   fun_prop
 
+end
+
+section
+variable {d : ℕ} (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
+
 /-- The operator on the quadratic transported-variable penalty. -/
-theorem lop_infinityBarrier {d : ℕ} (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) (η M τ : ℝ) (z0 : PDE.Vec d) (p : KineticPoint d) :
+theorem lop_infinityBarrier (η M τ : ℝ) (z0 : PDE.Vec d) (p : KineticPoint d) :
     lop B b (infinityBarrier η M τ z0) p =
       η * Real.exp ((M + 1) * (τ - p.time)) *
         (-(M + 1) * (1 + PDE.vecNormSq (p.velocity - z0)) +
@@ -95,8 +102,7 @@ theorem lop_infinityBarrier {d : ℕ} (B : CoefficientField d)
   ring
 
 /-- A local drift bound makes the quadratic infinity penalty a strict supersolution. -/
-theorem lop_infinityBarrier_le {d : ℕ} (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) {η M τ : ℝ} (hη : 0 ≤ η) (hM : 0 ≤ M)
+theorem lop_infinityBarrier_le {η M τ : ℝ} (hη : 0 ≤ η) (hM : 0 ≤ M)
     (z0 : PDE.Vec d) (p : KineticPoint d) (hb : PDE.vecEuclideanNorm (b p.position) ≤ M) :
     lop B b (infinityBarrier η M τ z0) p ≤ -infinityBarrier η M τ z0 p := by
   have hcs := PDE.abs_vecDot_le_vecEuclideanNorm_mul (b p.position) (p.velocity - z0)
@@ -113,6 +119,8 @@ theorem lop_infinityBarrier_le {d : ℕ} (B : CoefficientField d)
     (mul_nonneg hη (Real.exp_pos ((M + 1) * (τ - p.time))).le)
   nlinarith
 
+end
+
 /-- The quadratic penalty dominates every level uniformly at transported infinity. -/
 theorem infinityBarrier_uniform_growth {d : ℕ} {η M τ : ℝ}
     (hη : 0 < η) (hM : 0 ≤ M) (z0 : PDE.Vec d) (A : ℝ) :
@@ -126,7 +134,6 @@ theorem infinityBarrier_uniform_growth {d : ℕ} {η M τ : ℝ}
   · intro p ht hp
     have htriangle := PDE.vecEuclideanNorm_add_le (p.velocity - z0) z0
     rw [sub_add_cancel] at htriangle
-    have hQ : 1 ≤ Q := by dsimp [Q]; linarith [le_max_right (A / η) 0]
     have hq : Q ≤ PDE.vecEuclideanNorm (p.velocity - z0) := by linarith
     have hsq := PDE.vecEuclideanNorm_sq (p.velocity - z0)
     have hbase : A ≤ η * (1 + PDE.vecNormSq (p.velocity - z0)) := by

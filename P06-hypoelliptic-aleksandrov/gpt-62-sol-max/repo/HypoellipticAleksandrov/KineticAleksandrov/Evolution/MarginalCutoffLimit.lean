@@ -36,9 +36,12 @@ section Cutoff
 
 variable {n : ℕ}
 
+section
+variable (n : ℕ)
+
 /-- A smooth bump in the transported coordinate: equal to one on the unit ball, supported in the
 ball of radius two, with values in `[0, 1]`. -/
-theorem exists_zCutoff (n : ℕ) :
+theorem exists_zCutoff :
     ∃ χ : PDE.Vec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ HasCompactSupport χ ∧
       (∀ z, 0 ≤ χ z ∧ χ z ≤ 1) ∧ ∀ z, ‖z‖ ≤ 1 → χ z = 1 := by
   obtain ⟨f, hs, hc, -, h01, h1⟩ := exists_smooth_bump_of_isCompact_subset_isOpen
@@ -48,42 +51,53 @@ theorem exists_zCutoff (n : ℕ) :
   exact ⟨f, hs, hc, h01, fun z hz => h1 z (by simpa using hz)⟩
 
 /-- The chosen bump. -/
-def zCutoff (n : ℕ) : PDE.Vec n → ℝ := (exists_zCutoff n).choose
+def zCutoff : PDE.Vec n → ℝ := (exists_zCutoff n).choose
 
-theorem contDiff_zCutoff (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (zCutoff n) :=
+theorem contDiff_zCutoff : ContDiff ℝ (⊤ : ℕ∞) (zCutoff n) :=
   (exists_zCutoff n).choose_spec.1
 
-theorem hasCompactSupport_zCutoff (n : ℕ) : HasCompactSupport (zCutoff n) :=
+theorem hasCompactSupport_zCutoff : HasCompactSupport (zCutoff n) :=
   (exists_zCutoff n).choose_spec.2.1
 
-theorem zCutoff_mem_Icc (n : ℕ) (z : PDE.Vec n) : 0 ≤ zCutoff n z ∧ zCutoff n z ≤ 1 :=
+theorem zCutoff_mem_Icc (z : PDE.Vec n) : 0 ≤ zCutoff n z ∧ zCutoff n z ≤ 1 :=
   (exists_zCutoff n).choose_spec.2.2.1 z
 
-theorem zCutoff_eq_one (n : ℕ) {z : PDE.Vec n} (hz : ‖z‖ ≤ 1) : zCutoff n z = 1 :=
+theorem zCutoff_eq_one {z : PDE.Vec n} (hz : ‖z‖ ≤ 1) : zCutoff n z = 1 :=
   (exists_zCutoff n).choose_spec.2.2.2 z hz
 
-/-- The cutoff at scale `N + 1`. -/
-def zCutoffN (n N : ℕ) (z : PDE.Vec n) : ℝ := zCutoff n (((N : ℝ) + 1)⁻¹ • z)
+end
 
-theorem contDiff_zCutoffN (n N : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (zCutoffN n N) :=
+section
+variable (n N : ℕ)
+include N
+
+/-- The cutoff at scale `N + 1`. -/
+def zCutoffN (z : PDE.Vec n) : ℝ := zCutoff n (((N : ℝ) + 1)⁻¹ • z)
+
+theorem contDiff_zCutoffN : ContDiff ℝ (⊤ : ℕ∞) (zCutoffN n N) :=
   (contDiff_zCutoff n).comp (contDiff_const_smul _)
 
-theorem hasCompactSupport_zCutoffN (n N : ℕ) : HasCompactSupport (zCutoffN n N) := by
+theorem hasCompactSupport_zCutoffN : HasCompactSupport (zCutoffN n N) := by
   have hne : ((N : ℝ) + 1)⁻¹ ≠ 0 := by positivity
   exact (hasCompactSupport_zCutoff n).comp_homeomorph (Homeomorph.smulOfNeZero _ hne)
 
-theorem zCutoffN_mem_Icc (n N : ℕ) (z : PDE.Vec n) : 0 ≤ zCutoffN n N z ∧ zCutoffN n N z ≤ 1 :=
+theorem zCutoffN_mem_Icc (z : PDE.Vec n) : 0 ≤ zCutoffN n N z ∧ zCutoffN n N z ≤ 1 :=
   zCutoff_mem_Icc n _
+
+end
 
 theorem zCutoffN_eq_one {n N : ℕ} {z : PDE.Vec n} (hz : ‖z‖ ≤ (N : ℝ) + 1) :
     zCutoffN n N z = 1 := by
   apply zCutoff_eq_one
-  rw [norm_smul, norm_inv, Real.norm_of_nonneg (by positivity)]
-  rw [inv_mul_le_iff₀ (by positivity)]
+  rw [norm_smul, norm_inv, Real.norm_of_nonneg (by positivity), inv_mul_le_iff₀ (by positivity)]
   linarith
 
+section
+variable (F : BoundedBorel (PDE.Vec n))
+include F
+
 /-- The cutoff datum `F(y) χ_N(z)` as a bounded Borel kinetic datum. -/
-def cutoffDatum (F : BoundedBorel (PDE.Vec n)) (N : ℕ) : BoundedBorel (EvolutionAmbientState n) :=
+def cutoffDatum (N : ℕ) : BoundedBorel (EvolutionAmbientState n) :=
   ⟨fun x => F x.1 * zCutoffN n N x.2,
     ⟨(F.measurable.comp measurable_fst).mul
       ((contDiff_zCutoffN n N).continuous.measurable.comp measurable_snd),
@@ -98,14 +112,16 @@ def cutoffDatum (F : BoundedBorel (PDE.Vec n)) (N : ℕ) : BoundedBorel (Evoluti
         _ = C := mul_one C⟩⟩
 
 /-- The `z`-independent datum `F(y)` as a bounded Borel kinetic datum. -/
-def lowerDatum (F : BoundedBorel (PDE.Vec n)) : BoundedBorel (EvolutionAmbientState n) :=
+def lowerDatum : BoundedBorel (EvolutionAmbientState n) :=
   F.pullback Prod.fst measurable_fst
 
-@[simp] theorem cutoffDatum_apply (F : BoundedBorel (PDE.Vec n)) (N : ℕ)
+@[simp] theorem cutoffDatum_apply (N : ℕ)
     (x : EvolutionAmbientState n) : cutoffDatum F N x = F x.1 * zCutoffN n N x.2 := rfl
 
-@[simp] theorem lowerDatum_apply (F : BoundedBorel (PDE.Vec n)) (x : EvolutionAmbientState n) :
+@[simp] theorem lowerDatum_apply (x : EvolutionAmbientState n) :
     lowerDatum F x = F x.1 := rfl
+
+end
 
 /-- The cutoff data are smooth compactly supported terminal data in the open fiber. -/
 theorem cutoffDatum_isSmoothCompact {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {τ : ℝ}
@@ -116,12 +132,7 @@ theorem cutoffDatum_isSmoothCompact {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec
       tsupport (F : PDE.Vec n → ℝ) ×ˢ tsupport (zCutoffN n N) := by
     have h : Function.support (cutoffDatum F N : EvolutionAmbientState n → ℝ) ⊆
         Function.support (F : PDE.Vec n → ℝ) ×ˢ Function.support (zCutoffN n N) := by
-      intro x hx
-      refine ⟨?_, ?_⟩
-      · intro h0
-        exact hx (by simp [h0])
-      · intro h0
-        exact hx (by simp [h0])
+      simp_all
     refine (closure_mono h).trans ?_
     rw [closure_prod_eq]
     exact Subset.rfl
@@ -221,58 +232,51 @@ theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
   refine ⟨C, hC0, fun τ F₁ F₂ u₁ u₂ c hc h₁ h₂ hF p₀ hp₀ => ?_⟩
   have h₁' := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F₁ u₁).2 h₁
   have h₂' := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F₂ u₂).2 h₂
-  have hslab : ∀ a, movingClosedSlab Ω γ a τ ⊆ evolutionPastClosedCylinder Ω γ τ :=
-    fun a p hp => ⟨hp.2.1, hp.2.2⟩
-  have hact : ∀ a, movingActiveSlab Ω γ a τ ⊆ evolutionPastOpenCylinder Ω γ τ :=
-    fun a p hp => ⟨hp.2.1, hp.2.2⟩
   obtain ⟨C₁, -, hC₁⟩ := h₁'.1
   obtain ⟨C₂, -, hC₂⟩ := h₂'.1
-  have hp₀slab : p₀ ∈ movingClosedSlab Ω γ p₀.time τ := ⟨le_rfl, hp₀.1, hp₀.2⟩
-  have hres := growth_comparison (a := p₀.time) (T := τ)
+  have hres := growth_comparison_past (T := τ)
     (u := fun q => u₁ q - u₂ q - c * growthBarrier C τ q) hΩ hγ hlam hB hb le_rfl zero_le_one
-    ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀slab
-  · linarith
+    ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀
+  · exact sub_nonpos.mp hres
   · refine ⟨C₁ + C₂, fun p hp => ?_⟩
-    have h1 := hC₁ p (hslab _ hp)
-    have h2 := hC₂ p (hslab _ hp)
+    have h1 := hC₁ p (hp)
+    have h2 := hC₂ p (hp)
     have h3 := le_abs_self (u₁ p)
     have h4 := neg_abs_le (u₂ p)
     have h5 : 0 ≤ c * growthBarrier C τ p := mul_nonneg hc (growthBarrier_pos C τ p).le
     show u₁ p - u₂ p - c * growthBarrier C τ p ≤ C₁ + C₂
     linarith
-  · exact ((h₁'.2.1.mono (hslab _)).sub (h₂'.2.1.mono (hslab _))).sub
+  · exact ((h₁'.2.1).sub (h₂'.2.1)).sub
       (continuousOn_const.mul (continuous_growthBarrier C τ).continuousOn)
   · intro p hp
-    exact ((h₁'.isSliceRegularAt hΩ hγ (hact _ hp)).sub
-      (h₂'.isSliceRegularAt hΩ hγ (hact _ hp))).sub
+    exact ((h₁'.isSliceRegularAt hΩ hγ (hp)).sub
+      (h₂'.isSliceRegularAt hΩ hγ (hp))).sub
       ((isSliceRegularAt_growthBarrier C τ p).const_mul c)
   · intro p hp
-    have hr₁ := h₁'.isSliceRegularAt hΩ hγ (hact _ hp)
-    have hr₂ := h₂'.isSliceRegularAt hΩ hγ (hact _ hp)
+    have hr₁ := h₁'.isSliceRegularAt hΩ hγ (hp)
+    have hr₂ := h₂'.isSliceRegularAt hΩ hγ (hp)
     have hrΦ := (isSliceRegularAt_growthBarrier C τ p).const_mul c
     rw [viscousTransportedOperator_sub (hr₁.sub hr₂) hrΦ, viscousTransportedOperator_sub hr₁ hr₂,
       viscousTransportedOperator_const_mul c (isSliceRegularAt_growthBarrier C τ p),
-      h₁'.2.2.2.1 p (hact _ hp), h₂'.2.2.2.1 p (hact _ hp)]
+      h₁'.2.2.2.1 p (hp), h₂'.2.2.2.1 p (hp)]
     have hΦ := hCΦ 0 le_rfl zero_le_one τ p
     have hΦpos := growthBarrier_pos C τ p
     nlinarith
-  · intro p hp hpT
-    have hterm : p ∈ evolutionTerminalClosure Ω γ τ := ⟨hpT, hpT ▸ hp.2.2⟩
-    have hF' := hF (p.position, p.velocity) hterm.2
-    have e1 := h₁'.2.2.2.2.1 p hterm
-    have e2 := h₂'.2.2.2.2.1 p hterm
+  · intro p hp
+    have hF' := hF (p.position, p.velocity) hp.2
+    have e1 := h₁'.2.2.2.2.1 p hp
+    have e2 := h₂'.2.2.2.2.1 p hp
     have hΦτ : growthBarrier C τ p = 1 + PDE.vecNormSq p.position + PDE.vecNormSq p.velocity := by
       unfold growthBarrier radialSq
-      rw [hpT]
+      rw [hp.1]
       simp only [sub_self, mul_zero, Real.exp_zero, one_mul]
       ring
     show u₁ p - u₂ p - c * growthBarrier C τ p ≤ 0
     rw [hΦτ]
     linarith
-  · intro p hp hfr
-    have hlat : p ∈ evolutionLateralFrontier Ω γ τ := ⟨hp.2.1, hfr⟩
+  · intro p hp
     show u₁ p - u₂ p - c * growthBarrier C τ p ≤ 0
-    rw [h₁'.2.2.2.2.2 p hlat, h₂'.2.2.2.2.2 p hlat]
+    rw [h₁'.2.2.2.2.2 p hp, h₂'.2.2.2.2.2 p hp]
     have h5 : 0 ≤ c * growthBarrier C τ p := mul_nonneg hc (growthBarrier_pos C τ p).le
     linarith
 

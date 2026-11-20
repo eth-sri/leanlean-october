@@ -15,21 +15,20 @@ open scoped ENNReal
 /-- One velocity face has the exponential early-exit estimate supplied by its literal
 classical supersolution. Parameters are internal algebraic data, not analytic inputs. -/
 theorem reconstruction_early_face_exponential_bound
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (he : sMinus ≤ e.1.time) (theta k beta face d : ℝ) (_hk : 0 ≤ k)
     (hbeta : beta ^ 2 = k ^ 2)
     (hface : ∀ v ∈ Icc H.lo H.hi, beta * (v - face) ≤ 0)
     (hd : beta * (e.1.velocity 0 - face) ≤ -k * d) :
-    stripExitOfRealization hH hlam hLam A H E hE T e
+    stripExitOfRealization A H E hE T e
       {p | p.velocity 0 = face ∧ p.time ≤ sMinus + theta} ≤
         ENNReal.ofReal (Real.exp (Lam * k ^ 2 * theta - k * d)) := by
   let c := Lam * k ^ 2
   let b := sMinus + theta
   let phi := reconstructionExponentialPlane (-c) beta (c * b - beta * face)
-  have hLam0 : 0 < Lam := hlam.trans_le hLam
+  have hLam0 : 0 < Lam := A.positive.trans_le A.ordered
   have hc : 0 ≤ c := mul_nonneg hLam0.le (sq_nonneg k)
   have hp (p : Point) : phi p = Real.exp (c * (b - p.time) + beta * (p.velocity 0 - face)) := by
     dsimp only [phi, reconstructionExponentialPlane]
@@ -55,7 +54,7 @@ theorem reconstruction_early_face_exponential_bound
     have hv' : p.velocity 0 ∈ Icc H.lo H.hi := ⟨hv.1.le, hv.2.le⟩
     have hpb := hpn p ht hv'
     have ha := A.bounds (p.position 0) (p.velocity 0)
-    have ha0 : 0 ≤ A.a (p.position 0) (p.velocity 0) := hlam.le.trans ha.1
+    have ha0 : 0 ≤ A.a (p.position 0) (p.velocity 0) := A.positive.le.trans ha.1
     have hpb0 := (hpos p).le
     constructor
     · rw [abs_of_nonneg hpb0]
@@ -71,7 +70,7 @@ theorem reconstruction_early_face_exponential_bound
     (isClosed_eq ((continuous_apply 0).comp continuous_velocity)
       continuous_const).measurableSet.inter
       (isClosed_le continuous_time continuous_const).measurableSet
-  have hmass := stripExitOfRealization_le_supersolution hH hlam hLam A H E hE T e phi
+  have hmass := stripExitOfRealization_le_supersolution A H E hE T e phi
     (reconstructionExponentialPlane_smooth _ _ _) hbound
     (fun p _ _ => by
       rw [hop]

@@ -44,7 +44,6 @@ theorem box_rho_le {A0 r Y : ℝ} (hA0 : 0 < A0) (hr : 0 < r)
     norm_num
   have hm := Real.mul_rpow (z := (1/6 : ℝ)) ha (pow_nonneg hr.le 6)
   rw [he] at hm
-  change Real.rpow ((z.1-Y)^2+z.2^6) (1/6) ≤ _
   exact hb.trans_eq hm
 
 /-- On the source box the singular weight dominates its indicator, including the origin. -/

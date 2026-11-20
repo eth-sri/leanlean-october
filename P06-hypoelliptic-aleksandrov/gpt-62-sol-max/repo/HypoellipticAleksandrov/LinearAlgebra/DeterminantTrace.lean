@@ -32,20 +32,31 @@ private theorem finite_amgm_succ (d : ℕ) (s : ℝ) (x : Fin d → ℝ) (hs : 0
   have hgm' :
       (s * ∏ i, x i) ^ (((d : ℝ) + 1)⁻¹) ≤ (s + ∑ i, x i) / ((d : ℝ) + 1) := by
     simpa [z, Fin.sum_univ_succ, Fin.prod_univ_succ] using hgm
-  have hprod_nonneg : 0 ≤ s * ∏ i, x i :=
-    mul_nonneg hs (Finset.prod_nonneg fun i _ => hx i)
-  have hn_pos : 0 < (d : ℝ) + 1 := by positivity
-  have hpow := Real.rpow_le_rpow (Real.rpow_nonneg hprod_nonneg _) hgm' hn_pos.le
-  have hn_ne : (d : ℝ) + 1 ≠ 0 := ne_of_gt hn_pos
-  calc
-    s * ∏ i, x i = (s * ∏ i, x i) ^ (((d : ℝ) + 1)⁻¹ * ((d : ℝ) + 1)) := by
-      rw [inv_mul_cancel₀ hn_ne, Real.rpow_one]
-    _ = ((s * ∏ i, x i) ^ (((d : ℝ) + 1)⁻¹)) ^ ((d : ℝ) + 1) := by
-      rw [Real.rpow_mul hprod_nonneg]
-    _ ≤ ((s + ∑ i, x i) / ((d : ℝ) + 1)) ^ ((d : ℝ) + 1) := hpow
-    _ = ((s + ∑ i, x i) / ((d : ℝ) + 1)) ^ (d + 1) := by
-      have hcast : (d : ℝ) + 1 = ((d + 1 : ℕ) : ℝ) := by norm_num
-      rw [hcast, Real.rpow_natCast]
+  have h := (Real.rpow_inv_le_iff_of_pos (mul_nonneg hs (Finset.prod_nonneg fun i _ => hx i))
+    (div_nonneg (add_nonneg hs (Finset.sum_nonneg fun i _ => hx i)) (by positivity))
+    (by positivity)).mp hgm'
+  rw [show (d : ℝ) + 1 = ((d + 1 : ℕ) : ℝ) by simp, Real.rpow_natCast] at h
+  simpa only [Nat.cast_add, Nat.cast_one] using h
+
+/-- The symmetric square-root sandwich preserves the required determinant and trace. -/
+private theorem exists_psd_sandwich {d : ℕ} (A H : PDE.Mat d)
+    (hA : A.PosSemidef) (hH : H.PosSemidef) :
+    ∃ B : PDE.Mat d, B.PosSemidef ∧ B.det = A.det * H.det ∧ B.trace = (A * H).trace := by
+  have hs := CFC.sqrt_mul_sqrt_self A hA.nonneg
+  refine ⟨CFC.sqrt A * H * CFC.sqrt A, ?_, ?_, ?_⟩
+  · have hS : (CFC.sqrt A)ᴴ = CFC.sqrt A := (CFC.sqrt_nonneg A).isSelfAdjoint.star_eq
+    simpa only [hS] using hH.conjTranspose_mul_mul_same (CFC.sqrt A)
+  · calc
+      _ = (CFC.sqrt A * CFC.sqrt A).det * H.det := by simp only [Matrix.det_mul]; ring
+      _ = _ := by rw [hs]
+  · rw [Matrix.trace_mul_cycle, hs]
+
+/-- The trace of the product of two positive semidefinite matrices is nonnegative. -/
+theorem trace_mul_nonneg_of_posSemidef {d : ℕ} (A H : PDE.Mat d)
+    (hA : A.PosSemidef) (hH : H.PosSemidef) : 0 ≤ (A * H).trace := by
+  obtain ⟨B, hB, _, ht⟩ := exists_psd_sandwich A H hA hH
+  rw [← ht]
+  exact hB.trace_nonneg
 
 /--
 For a positive-definite matrix `A`, a positive-semidefinite matrix `H`, and a
@@ -57,27 +68,7 @@ theorem det_mul_time_det_le_arith_mean_pow
     (hA : A.PosDef) (hH : H.PosSemidef) (hs : 0 ≤ s) :
     A.det * s * H.det ≤
       ((s + (A * H).trace) / ((d : ℝ) + 1)) ^ (d + 1) := by
-  let B : PDE.Mat d := CFC.sqrt A * H * CFC.sqrt A
-  have hB : B.PosSemidef := by
-    have hsqrt : (CFC.sqrt A)ᴴ = CFC.sqrt A :=
-      (CFC.sqrt_nonneg A).isSelfAdjoint.star_eq
-    simpa only [B, hsqrt] using hH.conjTranspose_mul_mul_same (CFC.sqrt A)
-  have hdet : B.det = A.det * H.det := by
-    calc
-      B.det = (CFC.sqrt A).det * H.det * (CFC.sqrt A).det := by
-        dsimp only [B]
-        rw [Matrix.det_mul, Matrix.det_mul]
-      _ = ((CFC.sqrt A).det * (CFC.sqrt A).det) * H.det := by ring
-      _ = (CFC.sqrt A * CFC.sqrt A).det * H.det := by rw [Matrix.det_mul]
-      _ = A.det * H.det := by rw [CFC.sqrt_mul_sqrt_self A hA.posSemidef.nonneg]
-  have htrace : B.trace = (A * H).trace := by
-    calc
-      B.trace = (H * CFC.sqrt A * CFC.sqrt A).trace := by
-        dsimp only [B]
-        exact (Matrix.trace_mul_cycle H (CFC.sqrt A) (CFC.sqrt A)).symm
-      _ = (H * (CFC.sqrt A * CFC.sqrt A)).trace := by rw [Matrix.mul_assoc]
-      _ = (H * A).trace := by rw [CFC.sqrt_mul_sqrt_self A hA.posSemidef.nonneg]
-      _ = (A * H).trace := Matrix.trace_mul_comm _ _
+  obtain ⟨B, hB, hdet, htrace⟩ := exists_psd_sandwich A H hA.posSemidef hH
   calc
     A.det * s * H.det = s * B.det := by rw [hdet]; ring
     _ = s * ∏ i, hB.isHermitian.eigenvalues i := by

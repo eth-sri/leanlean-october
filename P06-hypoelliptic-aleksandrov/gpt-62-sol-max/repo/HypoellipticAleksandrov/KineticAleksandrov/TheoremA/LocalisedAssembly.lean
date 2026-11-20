@@ -21,7 +21,6 @@ open scoped ENNReal NNReal MatrixOrder
 theorem kinetic_aleksandrov_timeVelocity_localised_of_slabFourierBounds
     (d : ℕ) (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp : 2 * (d : ℝ) + 1 < p)
-    (hH : HormanderHypoellipticityStatement)
     (hbounds : ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -76,8 +75,7 @@ theorem kinetic_aleksandrov_timeVelocity_localised_of_slabFourierBounds
     have _ := hpar
     exact ⟨S, K, hreal⟩
   obtain ⟨C, hC, hsmooth⟩ := smooth_estimate_of_slabFourierBounds hd lam Lam p
-    hlam hLam hp hH hbounds he
-  have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
+    hlam hLam hp hbounds he
   have hp1 : 1 ≤ p := by linarith
   have hfull : ∀ A : CoefficientField d,
       IsSmoothCoefficient A → IsSymmetricCoefficient A →
@@ -107,20 +105,9 @@ theorem kinetic_aleksandrov_timeVelocity_localised_of_slabFourierBounds
   have hQ := (isOpen_backwardCylinder P₀ R hR).measurableSet
   let f₀ := (backwardCylinder P₀ R).indicator f
   have hf₀ : Measurable f₀ := measurable_source_indicator hQ f hf
-  have hae := source_indicator_ae_eq hQ f
-  have hmax : (fun P => max (f P) 0) =ᵐ[volume.restrict (backwardCylinder P₀ R)]
-      (fun P => max (f₀ P) 0) := by
-    filter_upwards [hae] with P hP
-    change max (f P) 0 = max ((backwardCylinder P₀ R).indicator f P) 0
-    rw [hP]
-  have hLp₀ := hLp.ae_eq hmax
-  have hsub₀ : ∀ᵐ P ∂volume.restrict (backwardCylinder P₀ R),
-      backwardOperatorOfTimeVelocityCoefficient A u P ≤ f₀ P := by
-    filter_upwards [hsub, hae] with P hsub hEq
-    change backwardOperatorOfTimeVelocityCoefficient A u P ≤
-      (backwardCylinder P₀ R).indicator f P
-    rw [hEq]
-    exact hsub
+  have hae : f₀ =ᵐ[volume.restrict (backwardCylinder P₀ R)] f := source_indicator_ae_eq hQ f
+  have hLp₀ := hLp.ae_eq (hae.symm.fun_comp fun x : ℝ => max x 0)
+  have hsub₀ := Filter.EventuallyLE.trans_eq hsub hae.symm
   have hbound := kinetic_abp_smooth_to_borel lam Lam hlam hLam p hp1
     (2 - (4 * (d : ℝ) + 2) / p) C true hfull A hBorel hsym hlo hhi
     P₀ R hR u f₀ hc hr hf₀ hLp₀ hsub₀ P hP

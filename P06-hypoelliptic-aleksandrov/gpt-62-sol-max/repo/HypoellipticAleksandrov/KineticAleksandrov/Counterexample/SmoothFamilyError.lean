@@ -40,7 +40,6 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
         A (P.position, P.velocity)) (kineticVelocityHessian u P))
       p (volume.restrict (backwardCylinder P₀ R))) atTop (𝓝 0) := by
   let C := 3 * (|lam| + |Lam|)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
   obtain ⟨M, hM, hH⟩ := kineticVelocityHessian_bound_on_cylinder P₀ R hR u hu
   have hcv := continuous_kineticVelocityHessian_of_joint_smooth u hu
   have hsp : Continuous (fun P : KineticPoint d => (P.position, P.velocity)) :=
@@ -75,9 +74,9 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
     intro P hP
     have hb i k : ‖(mollifiedMatrix (standardMollifierSequence n) A (P.position, P.velocity) i k -
         A (P.position, P.velocity) i k) * kineticVelocityHessian u P i k‖ ≤ 2 * C * M := by
-      have h1 := coefficient_entry_abs_le_of_ellipticity
+      have h1 := _root_.HypoellipticAleksandrov.Parabolic.coefficient_entry_abs_le
         ((hs n).2 (P.position, P.velocity)).1 ((hs n).2 (P.position, P.velocity)).2 i k
-      have h2 := coefficient_entry_abs_le_of_ellipticity
+      have h2 := _root_.HypoellipticAleksandrov.Parabolic.coefficient_entry_abs_le
         (hbound (P.position, P.velocity)).1 (hbound (P.position, P.velocity)).2 i k
       rw [norm_mul]
       apply mul_le_mul _ (hH P hP i k) (norm_nonneg _) (by positivity)

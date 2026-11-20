@@ -45,8 +45,7 @@ theorem autonomous_fullElliptic {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
     exact autonomousCoefficient_symmetric A.a p.time p.position p.velocity
   · exact Filter.Eventually.of_forall fun p =>
       (autonomousCoefficient_bounds A p.time p.position p.velocity).1
-  · exact Filter.Eventually.of_forall fun p =>
-      (autonomousCoefficient_bounds A p.time p.position p.velocity).2
+  exact Filter.Eventually.of_forall fun p => (autonomousCoefficient_bounds A p.time p.position p.velocity).right
 
 /-- The p-six hypothesis supplies admissibility on the positive-time slab. -/
 theorem return_solution_admissible {lam Lam : ℝ}

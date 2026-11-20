@@ -12,17 +12,21 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory SectionTwo
 open scoped ENNReal
 
+section
+variable (t : ℝ) (ht : 0 ≤ t)
+include t ht
+
 /-- Shift a positive elapsed time by a nonnegative restart delay. -/
-def tailElapsedShift (t : ℝ) (ht : 0 ≤ t) (tau : ElapsedTime ⊤) : ElapsedTime ⊤ :=
+def tailElapsedShift (tau : ElapsedTime ⊤) : ElapsedTime ⊤ :=
   ⟨t + tau.1, add_pos_of_nonneg_of_pos ht tau.2.1, ENNReal.ofReal_lt_top⟩
 
 /-- The restart translation is Borel. -/
-theorem measurable_tailElapsedShift (t : ℝ) (ht : 0 ≤ t) :
+theorem measurable_tailElapsedShift :
     Measurable (tailElapsedShift t ht) :=
   (measurable_const.add measurable_subtype_coe).subtype_mk
 
 /-- Translation gives precisely the strict later-time restriction of elapsed Lebesgue measure. -/
-theorem tailElapsedShift_map (t : ℝ) (ht : 0 ≤ t) :
+theorem tailElapsedShift_map :
     (elapsedVolume ⊤).map (tailElapsedShift t ht) =
       (elapsedVolume ⊤).restrict {tau | t < tau.1} := by
   ext B hB
@@ -63,5 +67,7 @@ theorem tailElapsedShift_map (t : ℝ) (ht : 0 ≤ t) :
     · intro hx
       exact ⟨-t + x, hx, by ring⟩
   rw [hi, measure_preimage_add volume (-t)]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

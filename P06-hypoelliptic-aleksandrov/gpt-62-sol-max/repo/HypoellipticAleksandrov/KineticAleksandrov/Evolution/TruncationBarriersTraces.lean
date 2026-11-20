@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.FiniteSlabBar
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationBarriers
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierIntervalGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CurveLipschitz
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitWholeClassical
 
 /-!
 # Uniform boundary traces for the actual viscous solutions
@@ -31,9 +32,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
+section
+variable {n : ℕ}
+
 /-- The collar scale: the compact support of a terminal datum of the moving ball lies at positive
 distance from the terminal boundary, so some `d_* < r/4` has `2 d_* ≤` that distance. -/
-theorem exists_collar_scale {n : ℕ} {c : PDE.Vec n} {r : ℝ} (hr : 0 < r) {γ : ℝ → PDE.Vec n}
+theorem exists_collar_scale {c : PDE.Vec n} {r : ℝ} (hr : 0 < r) {γ : ℝ → PDE.Vec n}
     {τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
     (hF : IsSmoothCompactTerminalDatum (PDE.euclideanBall c r) γ τ F) :
     ∃ d : ℝ, 0 < d ∧ d < r / 4 ∧ ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
@@ -58,7 +62,7 @@ theorem exists_collar_scale {n : ℕ} {c : PDE.Vec n} {r : ℝ} (hr : 0 < r) {γ
 
 /-- Terminal trace from a uniform terminal window: if `|u_i - F| ≤ (τ - σ) M` for all `i` on the
 past cylinder near the terminal time, then the terminal trace at a terminal point is uniform. -/
-theorem terminal_trace_of_window {n : ℕ} {ι : Type*} {Ω : Set (PDE.Vec n)}
+theorem terminal_trace_of_window {ι : Type*} {Ω : Set (PDE.Vec n)}
     {γ : ℝ → PDE.Vec n} {τ : ℝ} (F : BoundedBorel (EvolutionAmbientState n))
     (hF : Continuous (F : EvolutionAmbientState n → ℝ)) (u : ι → KineticPoint n → ℝ)
     {M δ₀ : ℝ} (hM0 : 0 ≤ M) (hδ₀ : 0 < δ₀)
@@ -105,7 +109,7 @@ there is a neighbourhood `O` of `p₀`, independent of `ε ∈ (0, 1]`, on which
 (past cylinder), and likewise `|u_ε| ≤ η` near every lateral frontier point.  The standing premises
 (`Ω` admissible, `γ` continuous piecewise `C¹`, the Loewner bounds of `B`, the Lipschitz drift)
 are explicit. -/
-theorem uniform_viscous_boundary_traces {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem uniform_viscous_boundary_traces {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
     (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
@@ -134,7 +138,7 @@ theorem uniform_viscous_boundary_traces {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : �
         ⟨by linarith, hp.1, hp.2⟩
     · exfalso
       have h := hp₀.2
-      rw [movingDomain_univ, frontier_univ] at h
+      rw [_root_.HypoellipticAleksandrov.KineticAleksandrov.movingDomain_univ_eq, frontier_univ] at h
       exact notMem_empty _ h
   · obtain ⟨d, hd, hdr, hsupp⟩ := exists_collar_scale hr hF
     refine ⟨fun p₀ hp₀ η hη => ?_, fun p₀ hp₀ η hη => ?_⟩
@@ -202,5 +206,7 @@ theorem uniform_viscous_boundary_traces {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : �
           rw [← mul_div_assoc, div_lt_iff₀ hW]
           exact hpD'
         linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

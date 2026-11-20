@@ -34,7 +34,7 @@ theorem toReal_eLpNorm_ofReal_eq_integral_rpow_norm_rpow_inv
   have hp0 : ENNReal.ofReal p ≠ 0 := by
     intro hzero
     exact (not_le_of_gt hp) (ENNReal.ofReal_eq_zero.mp hzero)
-  have hpReal : (ENNReal.ofReal p).toReal = p :=
+  have hpReal :=
     ENNReal.toReal_ofReal hp.le
   rw [hf.eLpNorm_eq_integral_rpow_norm hp0 ENNReal.ofReal_ne_top]
   have hnonneg :

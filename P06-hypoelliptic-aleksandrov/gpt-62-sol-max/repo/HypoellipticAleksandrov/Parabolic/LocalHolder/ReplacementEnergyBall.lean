@@ -41,7 +41,7 @@ theorem exists_signed_source_ballInterior_with_bounds {d : ℕ} (hd : 0 < d)
   obtain ⟨u, g, hdu, hu, w, _, hs, hw, he⟩ := exists_signed_source_classicalInterior
     hd hΩ hΩb a T haT lam Lam hlam hLam A hA hlo hhi F hF
   have htime := classicalEnergyRepresentative_abs_le_source_time hΩ hΩb a T lam haT
-    hlam A hA hlo F hF M hM hFM u g hdu hu w hw.continuousOn hs
+    hlam A (fun _ _ => 0) contDiff_const hA hlo F hF M hM hFM u g hdu hu w hw.continuousOn hs
   obtain ⟨q, hq, hqe, hqo⟩ := exists_h10_sourceBallBarrier v₀ r lam M hr hlam hM A
   let G := sourceBallBarrierForcing lam M A
   have hG : ContDiff ℝ (⊤ : ℕ∞) G := contDiff_sourceBallBarrierForcing lam M A hA
@@ -63,7 +63,7 @@ theorem exists_signed_source_ballInterior_with_bounds {d : ℕ} (hd : 0 < d)
       exact scalarOperator_sourceBallBarrier_le hd v₀ r lam M hlam hM A hlo z
     exact hGle.trans (neg_le_neg (hFM z hz))
   have henergy := variationalEnergySolution_abs_le_stationary_barrier hΩ hΩb a T haT
-    lam hlam A hA hlo F G hF hG q (hq.of_le (by simp)) hqn hqeq hGF u g hdu hu
+    lam hlam A (fun _ _ => 0) contDiff_const hA hlo F G hF hG q (hq.of_le (by simp)) hqn hqeq hGF u g hdu hu
   have hspace := classicalEnergyRepresentative_abs_le_continuous_barrier hΩ a T haT
     u g hdu q.toH1Function.toFun hq.continuous henergy w hw.continuousOn hs
   refine ⟨w, hw, he, htime, ?_⟩

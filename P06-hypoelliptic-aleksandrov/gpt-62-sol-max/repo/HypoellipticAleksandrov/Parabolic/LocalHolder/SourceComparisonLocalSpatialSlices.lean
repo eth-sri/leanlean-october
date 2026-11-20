@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalSpatialEnergy
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalCutoff
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ScalarHessian
+import HypoellipticAleksandrov.Parabolic.ScalarCalculus
 
 /-! # Value-energy identities for classical spatial slices
 
@@ -21,7 +22,7 @@ theorem scalarSpatialHessian_eq_spatialPartial_partial {d : ℕ}
     (hu : ContDiffAt ℝ 2 (fun y => u (z.1, y)) z.2) (i j : Fin d) :
     scalarSpatialHessian u z i j =
       spatialPartial i (spatialPartial j (fun y => u (z.1, y))) z.2 := by
-  rw [scalarSpatialHessian_eq_secondFDeriv hu]
+  rw [_root_.HypoellipticAleksandrov.Parabolic.scalarSpatialHessian_apply_eq_sndFDeriv hu]
   unfold spatialPartial
   have hd : DifferentiableAt ℝ (fderiv ℝ (fun y => u (z.1, y))) z.2 :=
     (hu.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)

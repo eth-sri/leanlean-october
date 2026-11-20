@@ -1,6 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionTerminal
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCollarGeometry
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.FiniteSlabBarriersTerminal
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionTerminalGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionCauchyRadius
 
 /-!

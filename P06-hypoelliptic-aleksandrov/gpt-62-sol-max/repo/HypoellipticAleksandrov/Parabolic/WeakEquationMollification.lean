@@ -24,24 +24,24 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
+section
+variable {d : Nat} {p : ENNReal}
+
 /-- The value obtained by right-convolving a global selected weak jet. -/
 noncomputable def parabolicMollifiedValue
-    {d : Nat} {p : ENNReal}
     (g : ParabolicW12Function d Set.univ p) (n : Nat) :
     TimeVelocity d → Real :=
   parabolicConvolution g.toFun (parabolicMollifier d n)
 
 /-- The matrix made by right-convolving the selected velocity Hessian entries. -/
 noncomputable def parabolicMollifiedHessian
-    {d : Nat} {p : ENNReal}
     (g : ParabolicW12Function d Set.univ p) (n : Nat) :
     TimeVelocity d → PDE.Mat d :=
   fun z i j => parabolicConvolution
     (fun y => g.velocityHessian y i j) (parabolicMollifier d n) z
 
 /-- The explicit coefficient--Hessian residual of this mollification. -/
-noncomputable def weakEquationMollificationResidual
-    {d : Nat} {p : ENNReal} (Aext : CoefficientField d)
+noncomputable def weakEquationMollificationResidual (Aext : CoefficientField d)
     (g : ParabolicW12Function d Set.univ p) (n : Nat) :
     TimeVelocity d → Real :=
   fun z =>
@@ -53,25 +53,26 @@ noncomputable def weakEquationMollificationResidual
       (parabolicMollifiedHessian g n z)
 
 /-- Unfolding lemma for the selected-jet value mollification. -/
-@[simp] theorem parabolicMollifiedValue_apply
-    {d : Nat} {p : ENNReal} (g : ParabolicW12Function d Set.univ p)
+@[simp] theorem parabolicMollifiedValue_apply (g : ParabolicW12Function d Set.univ p)
     (n : Nat) :
     parabolicMollifiedValue g n =
       parabolicConvolution g.toFun (parabolicMollifier d n) := rfl
 
+end
+
+section
+variable {d : Nat} {p : ENNReal} (g : ParabolicW12Function d Set.univ p) (hp : 1 ≤ p) (n : Nat)
+include hp
+
 /-- A mollified global selected jet value is smooth at every finite order. -/
-theorem contDiff_parabolicMollifiedValue
-    {d : Nat} {p : ENNReal} (g : ParabolicW12Function d Set.univ p)
-    (hp : 1 ≤ p) (n : Nat) :
+theorem contDiff_parabolicMollifiedValue :
     ContDiff Real (↑(⊤ : ℕ∞)) (parabolicMollifiedValue g n) := by
   simpa only [parabolicMollifiedValue] using
     g.contDiff_convolution hp (parabolicMollifier d n)
       (contDiff_parabolicMollifier d n) (hasCompactSupport_parabolicMollifier d n)
 
 /-- Time differentiation commutes with this global selected-jet mollification. -/
-theorem timeDerivative_parabolicMollifiedValue
-    {d : Nat} {p : ENNReal} (g : ParabolicW12Function d Set.univ p)
-    (hp : 1 ≤ p) (n : Nat) :
+theorem timeDerivative_parabolicMollifiedValue :
     timeDerivative (parabolicMollifiedValue g n) =
       parabolicConvolution g.timeDeriv (parabolicMollifier d n) := by
   simpa only [parabolicMollifiedValue] using
@@ -80,9 +81,7 @@ theorem timeDerivative_parabolicMollifiedValue
 
 /-- The velocity Hessian commutes entrywise with this global selected-jet
 mollification. -/
-theorem velocityHessian_parabolicMollifiedValue
-    {d : Nat} {p : ENNReal} (g : ParabolicW12Function d Set.univ p)
-    (hp : 1 ≤ p) (n : Nat) :
+theorem velocityHessian_parabolicMollifiedValue :
     velocityHessian (parabolicMollifiedValue g n) =
       parabolicMollifiedHessian g n := by
   funext z
@@ -91,8 +90,12 @@ theorem velocityHessian_parabolicMollifiedValue
     (g.velocityHessian_convolution hp (parabolicMollifier d n)
       (contDiff_parabolicMollifier d n) (hasCompactSupport_parabolicMollifier d n) i j) z
 
-private theorem parabolicConvolution_eq_of_ae_eq_on_support
-    {d : Nat} {f g rho : TimeVelocity d → Real} {O : Set (TimeVelocity d)}
+end
+
+section
+variable {d : Nat}
+
+private theorem parabolicConvolution_eq_of_ae_eq_on_support {f g rho : TimeVelocity d → Real} {O : Set (TimeVelocity d)}
     (hO : MeasurableSet O) (z : TimeVelocity d)
     (hsupport : {y | rho (z - y) ≠ 0} ⊆ O)
     (heq : f =ᵐ[timeVelocityVolumeOn O] g) :
@@ -110,8 +113,7 @@ private theorem parabolicConvolution_eq_of_ae_eq_on_support
       exact hyO (hsupport hne)
     simp [hzero]
 
-private theorem parabolicConvolution_nonneg_of_ae_nonneg_on_support
-    {d : Nat} {f rho : TimeVelocity d → Real} {O : Set (TimeVelocity d)}
+private theorem parabolicConvolution_nonneg_of_ae_nonneg_on_support {f rho : TimeVelocity d → Real} {O : Set (TimeVelocity d)}
     (hO : MeasurableSet O) (z : TimeVelocity d)
     (hsupport : {y | rho (z - y) ≠ 0} ⊆ O)
     (hnonneg : ∀ᵐ y ∂timeVelocityVolumeOn O, 0 ≤ f y)
@@ -131,8 +133,7 @@ private theorem parabolicConvolution_nonneg_of_ae_nonneg_on_support
       exact hyO (hsupport hne)
     simp [hzero]
 
-private theorem eventually_residual_equation_of_ae_on_plateau
-    {d : Nat} {Aext : CoefficientField d}
+theorem eventually_residual_equation_of_ae_on_plateau {Aext : CoefficientField d}
     {K O : Set (TimeVelocity d)} {p : ENNReal}
     (hK : IsCompact K) (hO : IsOpen O) (hKO : K ⊆ O)
     (g : ParabolicW12Function d Set.univ p) (hp : 1 ≤ p)
@@ -160,26 +161,13 @@ private theorem eventually_residual_equation_of_ae_on_plateau
         rw [hconv]
         rfl
 
+end
+
 end HypoellipticAleksandrov.Parabolic
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Filter
-
-/-- An a.e. local equation for a global selected jet gives the eventual
-pointwise residual equation on a compact carrier. -/
-theorem eventually_residual_equation_of_ae_on
-    {d : Nat} {Aext : CoefficientField d}
-    {K O : Set (TimeVelocity d)} {p : ENNReal}
-    (hK : IsCompact K) (hO : IsOpen O) (hKO : K ⊆ O)
-    (g : ParabolicW12Function d Set.univ p) (hp : 1 ≤ p)
-    (heq : g.timeDeriv =ᵐ[timeVelocityVolumeOn O]
-      fun z => matrixContraction (coefficientAt Aext z) (g.velocityHessian z)) :
-    ∀ᶠ n in atTop, ∀ z ∈ K,
-      parabolicOperator (parabolicMollifyCoefficient Aext n)
-          (parabolicMollifiedValue g n) z =
-        weakEquationMollificationResidual Aext g n z :=
-  eventually_residual_equation_of_ae_on_plateau hK hO hKO g hp heq
 
 /-- A global selected jet which is a.e. nonnegative on an open neighborhood
 of a compact carrier has eventually pointwise nonnegative mollifications

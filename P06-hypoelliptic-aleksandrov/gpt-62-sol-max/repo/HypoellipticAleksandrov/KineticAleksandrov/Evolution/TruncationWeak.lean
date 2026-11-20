@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWeakAdjoint
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
+import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.EllipsoidGeometry
 
 /-!
 # Weak transfer of the actual straightened Dirichlet solution
@@ -21,36 +22,19 @@ open scoped Topology MatrixOrder
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Evolution
 
-section EvolutionData
-
-variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-variable (hΩ : IsAdmissibleEvolutionDomain Ω)
-variable (hγ : IsContinuousPiecewiseC1 γ)
-variable (hB_smooth : IsSmoothFullKineticCoefficient B)
-variable (hB_symm : IsSymmetricFullKineticCoefficient B)
-variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-variable (hb_smooth : IsSmoothDrift b)
-variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
-include hb_smooth hb_lipschitz hb_coercive
-
-/-- The actual classical Dirichlet solution pulls back to a
-weak regularized kinetic solution, using its supplied slice C1,2 regularity. -/
+/-- A classical homogeneous solution on the straightened cylinder pulls back to a
+weak regularized kinetic solution. No boundary values are needed. -/
 theorem weakRegularized_of_straightened_dirichlet
-    (a τ r R : ℝ) (haτ : a < τ) (hr : 0 < r) (hR : 0 < R)
-    (g : ℝ → PDE.Vec n) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
-    (ε : ℝ) (hε : 0 < ε) (F : BoundedBorel (EvolutionAmbientState n))
-    (u : TimeVelocity (n + n) → ℝ)
-    (hu : IsClassicalBackwardDirichletSolution a τ
-      (openEllipsoid (straightenedEllipsoidMatrix n r R))
-      (straightenedCoefficient B g ε) (straightenedDrift b g)
-      (fun _ _ => 0) (fun _ _ => 0)
-      (fun x => F (g τ + spatialY x, spatialZ x)) (fun _ => 0) u) :
+    {n : ℕ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    (hB_smooth : IsSmoothFullKineticCoefficient B) (hb_smooth : IsSmoothDrift b)
+    {a τ r R : ℝ} {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+    {ε : ℝ} {u : TimeVelocity (n + n) → ℝ}
+    (huc : IsScalarC12On u (scalarParabolicOpenCylinder a τ
+      (openEllipsoid (straightenedEllipsoidMatrix n r R))))
+    (hequation : ∀ z ∈ scalarParabolicOpenCylinder a τ
+      (openEllipsoid (straightenedEllipsoidMatrix n r R)),
+        scalarParabolicZeroOrderOperator (straightenedCoefficient B g ε) (straightenedDrift b g)
+          (fun _ _ => 0) u z = 0) :
     IsKineticWeakRegularizedSolution B b ε
       {p : KineticPoint n | a < p.time ∧ p.time < τ ∧
         spatialPack (p.position - g p.time) p.velocity ∈
@@ -72,20 +56,10 @@ theorem weakRegularized_of_straightened_dirichlet
     scalarSpatialHessian u (Q x) (Fin.castAdd n i) (Fin.castAdd n j)
   let K (i : Fin n) (x : EvolutionVec n) :=
     scalarSpatialHessian u (Q x) (Fin.natAdd n i) (Fin.natAdd n i)
-  have hD : IsOpen D := by
-    have he : D = {x : PDE.Vec (n + n) |
-        PDE.vecNormSq (spatialY x) / r ^ 2 + PDE.vecNormSq (spatialZ x) / R ^ 2 < 1} := by
-      ext x
-      exact (straightenedEllipsoid_characterization n r R hr hR).2 x
-    rw [he]
-    exact isOpen_lt
-      (((PDE.continuous_vecNormSq.comp (contDiff_spatialY (m := 0)).continuous).div_const _).add
-        ((PDE.continuous_vecNormSq.comp (contDiff_spatialZ (m := 0)).continuous).div_const _))
-      continuous_const
+  have hD : IsOpen D := Lieberman.isOpen_openEllipsoid _
   have hW : IsOpen W := isOpen_Ioo.prod hD
   have hQ : ContDiff ℝ (⊤ : ℕ∞) Q := contDiff_truncationPoint hg
   have hU : IsOpen U := hW.preimage hQ.continuous
-  have huc : IsScalarC12On u W := hu.2.1
   have hw : ContinuousOn w U := huc.continuousOn.comp hQ.continuous.continuousOn
     (fun x hx => hx)
   have ht0 : ContinuousOn (fun x => scalarTimeDerivative u (Q x)) U :=
@@ -146,7 +120,7 @@ theorem weakRegularized_of_straightened_dirichlet
       (∑ i, ∑ j, B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) i j * H i j x) +
       (∑ i, b (diffusedCoord n x) i * Z i x) + ε * ∑ i, K i x = 0 := by
     intro x hx
-    have h := hu.2.2.1 (Q x) hx
+    have h := hequation (Q x) hx
     simp only [scalarParabolicZeroOrderOperator, zero_mul, add_zero] at h
     rw [scalarParabolicOperator_apply] at h
     have ha : straightenedCoefficient B g ε (Q x).1 (Q x).2 =
@@ -180,7 +154,5 @@ theorem weakRegularized_of_straightened_dirichlet
     rw [heq x hx, zero_mul]
   simp only [zero_mul, integral_zero]
   exact integral_eq_zero_of_ae hz
-
-end EvolutionData
 
 end HypoellipticAleksandrov.KineticAleksandrov

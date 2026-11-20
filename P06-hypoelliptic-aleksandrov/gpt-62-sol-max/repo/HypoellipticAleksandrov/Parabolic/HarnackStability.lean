@@ -1,7 +1,13 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.HarnackPerturbation
-public import HypoellipticAleksandrov.Parabolic.HarnackStabilityLimit
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import Mathlib.Algebra.Order.GroupWithZero.Unbundled.Basic
+public import Mathlib.Algebra.Ring.GeomSum
+public import HypoellipticAleksandrov.Parabolic.HarnackChainGeometry
+public import HypoellipticAleksandrov.Parabolic.SourceLocalHarnackScaling
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Order.OrderClosed
+public import Mathlib.Topology.UniformSpace.UniformConvergence
 public import HypoellipticAleksandrov.Parabolic.WeakSolutionMollifierResidualConvergence
 
 /-!

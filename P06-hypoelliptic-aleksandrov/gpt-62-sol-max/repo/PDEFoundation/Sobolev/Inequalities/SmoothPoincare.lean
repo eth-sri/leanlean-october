@@ -21,13 +21,14 @@ namespace PDE
 open MeasureTheory
 open scoped ENNReal
 
+section
+variable {d : ℕ} {U : Set (Vec d)} (hU : IsSobolevRegularDomain U) {u : Vec d → ℝ}
+  (hu : ContDiff ℝ 0 u) {p : ℝ} (hp : 0 ≤ p)
+include hU hu hp
+
 /-- For a fixed point, the `p`th power of the smooth pairwise oscillation is
 integrable on a bounded Sobolev-regular domain. -/
-theorem integrableOn_abs_sub_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
-    (hU : IsSobolevRegularDomain U)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
-    {p : ℝ} (hp : 0 ≤ p) (x : Vec d) :
+theorem integrableOn_abs_sub_rpow_of_contDiff (x : Vec d) :
     IntegrableOn (fun y => |u x - u y| ^ p)
       U volume := by
   have huCont : Continuous u :=
@@ -44,11 +45,7 @@ theorem integrableOn_abs_sub_rpow_of_contDiff
 
 /-- The smooth mean-subtracted `p`th power is integrable on a bounded
 Sobolev-regular domain. -/
-theorem integrableOn_abs_sub_integralAverage_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
-    (hU : IsSobolevRegularDomain U)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
-    {p : ℝ} (hp : 0 ≤ p) :
+theorem integrableOn_abs_sub_integralAverage_rpow_of_contDiff :
     IntegrableOn
       (fun x => |u x - integralAverage U u| ^ p)
       U volume := by
@@ -67,11 +64,7 @@ theorem integrableOn_abs_sub_integralAverage_rpow_of_contDiff
 
 /-- The `p`th power of pairwise smooth oscillation is integrable on the
 product of a bounded Sobolev-regular domain with itself. -/
-theorem integrableOn_prod_abs_sub_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
-    (hU : IsSobolevRegularDomain U)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
-    {p : ℝ} (hp : 0 ≤ p) :
+theorem integrableOn_prod_abs_sub_rpow_of_contDiff :
     IntegrableOn
       (fun z : Vec d × Vec d =>
         |u z.1 - u z.2| ^ p)
@@ -99,6 +92,8 @@ theorem integrableOn_prod_abs_sub_rpow_of_contDiff
     hcont.continuousOn.integrableOn_compact
       hclosureCompact
   exact hprod.mono_set (Set.prod_mono subset_closure subset_closure)
+
+end
 
 /-- Integrated Jensen inequality comparing oscillation about the arithmetic
 mean with the normalized pairwise oscillation. -/
@@ -173,15 +168,15 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le
           |u x - u y| ^ p ∂volume ∂volume := by
       rw [integral_const_mul]
 
+section
+variable {d : ℕ} {U : Set (Vec d)} {D : ℝ} (hU : IsOpenBoundedConvexDomain U)
+  (hUDiameter : HasEuclideanDiameterLE U D) (hD : 0 ≤ D) {u : Vec d → ℝ}
+  (hu : ContDiff ℝ (⊤ : ℕ∞) u) {p : ℝ} (hp : 1 ≤ p)
+include hU hUDiameter hD hu hp
+
 /-- Smooth pairwise oscillation is controlled by the diameter and the
 Euclidean gradient, with a constant independent of `p`. -/
-theorem setIntegral_setIntegral_abs_sub_rpow_le
-    {d : ℕ} {U : Set (Vec d)} {D : ℝ}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hUDiameter : HasEuclideanDiameterLE U D)
-    (hD : 0 ≤ D)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
-    {p : ℝ} (hp : 1 ≤ p) :
+theorem setIntegral_setIntegral_abs_sub_rpow_le :
     (∫ x in U, ∫ y in U,
         |u x - u y| ^ p ∂volume ∂volume) ≤
       D ^ p * ((2 : ℝ) ^ d * (volume U).toReal *
@@ -405,12 +400,6 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
 
 The constant `2 ^ d` is independent of the real exponent `p ≥ 1`. -/
 theorem setIntegral_abs_sub_integralAverage_rpow_le_two_pow_mul
-    {d : ℕ} {U : Set (Vec d)} {D : ℝ}
-    (hU : IsOpenBoundedConvexDomain U)
-    (hUDiameter : HasEuclideanDiameterLE U D)
-    (hD : 0 ≤ D)
-    {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
-    {p : ℝ} (hp : 1 ≤ p)
     (hUPos : 0 < volume U) (hUTop : volume U < ∞) :
     (∫ x in U,
         |u x - integralAverage U u| ^ p ∂volume) ≤
@@ -418,7 +407,7 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le_two_pow_mul
         ∫ z in U,
           vecEuclideanNorm (classicalGradient u z) ^ p
             ∂volume := by
-  have hvolReal : (volume U).toReal ≠ 0 :=
+  have hvolReal :=
     (ENNReal.toReal_pos hUPos.ne' hUTop.ne).ne'
   have hvolInvNonneg : 0 ≤ (volume U).toReal⁻¹ := by
     positivity
@@ -447,5 +436,7 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le_two_pow_mul
           vecEuclideanNorm (classicalGradient u z) ^ p
             ∂volume := by
       field_simp [hvolReal]
+
+end
 
 end PDE

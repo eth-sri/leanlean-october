@@ -13,10 +13,7 @@ open scoped Convolution
 
 /-- The local cone representation becomes a convolution against one fixed exit density. -/
 theorem spatial_local_convolution
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
+    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (Z₀ : KineticPoint d) {R : ℝ} (hR : 0 < R)
     (U : KineticPoint d → ℝ)
     (hUc : ContinuousOn U (closure (forwardCylinder Z₀ R hR)))
@@ -33,24 +30,24 @@ theorem spatial_local_convolution
     (x : PDE.Vec d)
     (hx : boundaryPositionShift x P.1 ∈
       forwardCylinder Z₀ (3 * R / 4) (by positivity)) :
-    let ν := ballExit hH hLE hd hlam hLam B hB Z₀.velocity hR P T
+    let ν := ballExit hd B hB Z₀.velocity hR P T
     let f := spatialBoundaryLpData (exitMarginal ν) H hHc hc M hb P.1 Z₀.velocity
     let G := exitL1Density ν
     (U (boundaryPositionShift x P.1) - c : ℂ) =
       (f ⋆[spatialDensityPairing (exitMarginal ν), volume] (G ∘ Neg.neg)) x := by
   dsimp only
   let Px := boundaryStartShift x P
-  let μx := ballExitRaw hH hLE hd hlam hLam B hB Z₀.velocity hR Px T
+  let μx := ballExitRaw hd B hB Z₀.velocity hR Px T
   have : IsFiniteMeasure μx :=
-    (ballExitRaw_spec hH hLE hd hlam hLam B hB Z₀.velocity hR Px T).1
-  have hr := local_cone_representation hH hLE hd hlam hLam B hB Z₀.velocity hR
+    (ballExitRaw_spec hd B hB Z₀.velocity hR Px T).1
+  have hr := local_cone_representation hd B hB Z₀.velocity hR
     Z₀ U hUc hUs hUe Px rfl hx T hT
-  have hs := ballExitRaw_local_outer hH hLE hd hlam hLam B hB Z₀ hR Px hx T hT
+  have hs := ballExitRaw_local_outer hd B hB Z₀ hR Px hx T hT
   have hi : Integrable (fun Q => H (KineticPoint.equivProd d Q)) μx :=
     Integrable.of_bound
       (hHc.comp (KineticPoint.homeomorphProd d).continuous).aestronglyMeasurable M
       (Filter.Eventually.of_forall fun Q => hb _)
-  have hm : μx univ = 1 := ballExitRaw_mass hH hLE hd hlam hLam B hB Z₀.velocity hR Px T
+  have hm : μx univ = 1 := ballExitRaw_mass hd B hB Z₀.velocity hR Px T
   have hre : U Px.1 = (∫ Q, H (KineticPoint.equivProd d Q) ∂μx) + c := by
     calc
       _ = ∫ Q, U Q ∂μx := hr
@@ -67,13 +64,13 @@ theorem spatial_local_convolution
     rw [integral_complex_ofReal, hre, Complex.ofReal_add, add_sub_cancel_right]
   refine hre'.trans ?_
   change (∫ Q, (H (KineticPoint.equivProd d Q) : ℂ)
-    ∂ballExitRaw hH hLE hd hlam hLam B hB Z₀.velocity hR (boundaryStartShift x P) T) = _
-  rw [← ballExitRaw_translation hH hLE hd hlam hLam B hB Z₀.velocity hR x P T]
+    ∂ballExitRaw hd B hB Z₀.velocity hR (boundaryStartShift x P) T) = _
+  rw [← ballExitRaw_translation hd B hB Z₀.velocity hR x P T]
   refine (integral_map (f := fun Q => (H (KineticPoint.equivProd d Q) : ℂ))
     (boundaryPositionHomeomorph x).measurable.aemeasurable
     (Complex.continuous_ofReal.comp
       (hHc.comp (KineticPoint.homeomorphProd d).continuous)).aestronglyMeasurable).trans ?_
-  exact ballExit_boundary_convolution hH hLE hd hlam hLam B hB Z₀.velocity hR P T
+  exact ballExit_boundary_convolution hd B hB Z₀.velocity hR P T
     hP.2.2.1 hT H hHc hc M hb x
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

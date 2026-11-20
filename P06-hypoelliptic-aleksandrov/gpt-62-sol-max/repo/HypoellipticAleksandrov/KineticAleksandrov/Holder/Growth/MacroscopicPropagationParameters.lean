@@ -26,9 +26,6 @@ theorem macroscopic_propagation_scaling (m : ℕ) (r0 : ℝ) {scale : ℝ}
       (r0 / (16 * Real.sqrt ((m : ℝ) + 3))) *
         Real.sqrt (((m : ℝ) + 3) * scale ^ 2) = (r0 / 16) * scale := by
   have hM : 0 < (m : ℝ) + 3 := by positivity
-  have hs : Real.sqrt ((m : ℝ) + 3) ≠ 0 := (Real.sqrt_pos.mpr hM).ne'
-  have hp : ((m : ℝ) + 3) ^ (3 / 2 : ℝ) ≠ 0 :=
-    (Real.rpow_pos_of_pos hM _).ne'
   have hsqrt : Real.sqrt (((m : ℝ) + 3) * scale ^ 2) =
       Real.sqrt ((m : ℝ) + 3) * scale := by
     rw [Real.sqrt_mul hM.le, Real.sqrt_sq_eq_abs, abs_of_pos hscale]

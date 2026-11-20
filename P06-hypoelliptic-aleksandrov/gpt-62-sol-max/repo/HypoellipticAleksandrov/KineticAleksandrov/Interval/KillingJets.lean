@@ -78,9 +78,12 @@ theorem deriv2_intervalHeat_affine {lam θ : ℝ} (_hlam : 0 < lam) (_hθ : 0 < 
 def endpointHeat (lam τ ε s e : ℝ) (p : TimeVelocity 1) : ℝ :=
   intervalHeat lam (τ - p.1 + ε) (s * (p.2 0 - e))
 
+section
+variable {lam τ ε s e : ℝ} (hlam : 0 < lam) (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε)
+include hlam hp
+
 /-- Joint regularity of the regularized endpoint barrier. -/
-theorem contDiffAt_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
-    (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε) :
+theorem contDiffAt_endpointHeat :
     ContDiffAt ℝ (⊤ : ℕ∞) (endpointHeat lam τ ε s e) p := by
   have hg : ContDiffAt ℝ (⊤ : ℕ∞)
       (fun q : TimeVelocity 1 => (τ - q.1 + ε, s * (q.2 0 - e))) p :=
@@ -92,8 +95,7 @@ theorem contDiffAt_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
     (f := fun q : TimeVelocity 1 => (τ - q.1 + ε, s * (q.2 0 - e))) hg
 
 /-- The time derivative reverses the forward half-line time. -/
-theorem scalarTimeDerivative_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
-    (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε) :
+theorem scalarTimeDerivative_endpointHeat :
     scalarTimeDerivative (endpointHeat lam τ ε s e) p =
       -deriv (fun θ => intervalHeat lam θ (s * (p.2 0 - e))) (τ - p.1 + ε) := by
   have h := (hasDerivAt_intervalHeat_time hlam hp (s * (p.2 0 - e))).comp p.1
@@ -103,9 +105,14 @@ theorem scalarTimeDerivative_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
   rw [h.deriv, (hasDerivAt_intervalHeat_time hlam hp (s * (p.2 0 - e))).deriv]
   ring
 
+end
+
+section
+variable {lam τ ε s e : ℝ} (hlam : 0 < lam) (hs : s ^ 2 = 1)
+include hlam hs
+
 /-- The native Hessian is the scalar heat Hessian when the orientation has square one. -/
-theorem scalarSpatialHessian_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
-    (hs : s ^ 2 = 1) (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε) :
+theorem scalarSpatialHessian_endpointHeat (p : TimeVelocity 1) (hp : 0 < τ - p.1 + ε) :
     scalarSpatialHessian (endpointHeat lam τ ε s e) p 0 0 =
       deriv (deriv (intervalHeat lam (τ - p.1 + ε))) (s * (p.2 0 - e)) := by
   rw [scalarSpatialHessian_one]
@@ -114,8 +121,7 @@ theorem scalarSpatialHessian_endpointHeat {lam τ ε s e : ℝ} (hlam : 0 < lam)
   rw [deriv2_intervalHeat_affine hlam hp, hs, one_mul]
 
 /-- The endpoint barrier is a backward supersolution under the source ellipticity bound. -/
-theorem endpointHeat_operator_nonpos {lam τ ε s e : ℝ} (hlam : 0 < lam)
-    (hs : s ^ 2 = 1) (B : CoefficientField 1) (p : TimeVelocity 1)
+theorem endpointHeat_operator_nonpos (B : CoefficientField 1) (p : TimeVelocity 1)
     (hp : 0 < τ - p.1 + ε) (hx : 0 ≤ s * (p.2 0 - e))
     (hB : lam ≤ B p.1 p.2 0 0) :
     scalarParabolicOperator B 0 (endpointHeat lam τ ε s e) p ≤ 0 := by
@@ -125,5 +131,7 @@ theorem endpointHeat_operator_nonpos {lam τ ε s e : ℝ} (hlam : 0 < lam)
   rw [scalarSpatialHessian_endpointHeat hlam hs p hp]
   have h := (intervalHeat_supersolution hlam hp hx hB).2.2
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

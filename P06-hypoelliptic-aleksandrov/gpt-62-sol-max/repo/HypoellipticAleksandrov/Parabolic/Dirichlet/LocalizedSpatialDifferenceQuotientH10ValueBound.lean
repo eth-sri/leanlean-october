@@ -26,9 +26,7 @@ theorem norm_valueCLM_localizedSpatialDifferenceQuotientH10CLM_apply_le_gradient
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
+    (hηshift : η.ShiftMapsInto k h Ω)
     (u : H10HilbertGraph hΩ) :
     ‖valueCLM hΩ
         (localizedSpatialDifferenceQuotientH10CLM

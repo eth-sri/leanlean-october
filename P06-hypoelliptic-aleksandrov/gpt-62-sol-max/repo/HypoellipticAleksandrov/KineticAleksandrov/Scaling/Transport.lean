@@ -29,10 +29,14 @@ open HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo (boundedBorel_integrable)
 open scoped ENNReal
 
+section
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} (K : MovingFiberKernel Ω γ)
+  (hΩ : MeasurableSet Ω)
+include K hΩ
+
 /-- The terminal operator family obtained by integrating bounded Borel data against the
 fibre kernels of `K`. -/
-def fiberOperator {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) : TerminalOperatorFamily Ω γ :=
+def fiberOperator : TerminalOperatorFamily Ω γ :=
   fun σ τ hστ =>
     { toFun := fun f =>
         ⟨fun p => ∫ q, f q ∂K.fiberKernel hΩ σ τ hστ p,
@@ -67,10 +71,11 @@ def fiberOperator {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
         intro p
         exact integral_smul c f }
 
-theorem fiberOperator_apply {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (σ τ : ℝ) (hστ : σ ≤ τ)
+theorem fiberOperator_apply (σ τ : ℝ) (hστ : σ ≤ τ)
     (f : BoundedBorel (EvolutionState Ω γ τ)) (p : EvolutionState Ω γ σ) :
     fiberOperator K hΩ σ τ hστ f p = ∫ q, f q ∂K.fiberKernel hΩ σ τ hστ p := rfl
+
+end
 
 namespace KineticAffineScaling
 
@@ -97,15 +102,17 @@ theorem exists_datum_of_hat (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
     · intro x hx
       have hx1 := tsupport_comp_subset_preimage (F' : EvolutionAmbientState d → ℝ)
         (Φ.ambientHomeo τ).symm.continuous hx
-      have hx' := hF'.2.2 hx1
-      have := (h.stateSet_mem_iff τ _).1 hx'
+      have := (h.stateSet_mem_iff τ _).1 (hF'.2.2 hx1)
       simpa [Φ.position_positionInv, Φ.transport_transportInv] using this
   · intro x
     simp only [BoundedBorel.pullback_apply, MeasurableEquiv.symm_apply_apply]
 
+section
+variable (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
+  (hΩ' : MeasurableSet Ω') (τ τ' : ℝ) (hττ' : τ ≤ τ')
+
 /-- The fibre kernels of `K̂` are conjugates of those of `K`. -/
-theorem fiberKernel_pushKernel_eq_conj (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
-    (hΩ : MeasurableSet Ω) (hΩ' : MeasurableSet Ω') (τ τ' : ℝ) (hττ' : τ ≤ τ') :
+theorem fiberKernel_pushKernel_eq_conj :
     (pushKernel h K).fiberKernel hΩ' τ τ' hττ' =
       kernelConj (stateEquiv h τ) (stateEquiv h τ')
         (K.fiberKernel hΩ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ')) := by
@@ -114,14 +121,14 @@ theorem fiberKernel_pushKernel_eq_conj (h : Φ.MapsDomain Ω γ Ω' γ') (K : Mo
   exact fiberKernel_pushKernel h K hΩ hΩ' τ τ' hττ' p
 
 /-- Integrals against the rescaled fibre kernel are integrals against the original one. -/
-theorem integral_fiberKernel_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hΩ' : MeasurableSet Ω')
-    (τ τ' : ℝ) (hττ' : τ ≤ τ') (p : EvolutionState Ω' γ' τ)
+theorem integral_fiberKernel_pushKernel (p : EvolutionState Ω' γ' τ)
     (f : EvolutionState Ω' γ' τ' → ℝ) :
     ∫ q, f q ∂(pushKernel h K).fiberKernel hΩ' τ τ' hττ' p =
       ∫ q, f ((stateEquiv h τ').symm q)
         ∂K.fiberKernel hΩ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ') (stateEquiv h τ p) := by
   rw [fiberKernel_pushKernel h K hΩ hΩ' τ τ' hττ' p, integral_map_equiv]
+
+end
 
 /-- **Realization transport.**  If `(S, K)` realizes the terminal evolution for the data
 `(Ω, γ, B, b)` (`Ω` open, `γ` continuous), then `(Ŝ, K̂)` realizes it for the rescaled data

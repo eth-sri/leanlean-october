@@ -21,8 +21,12 @@ theorem measurable_bellmanRadialDegreeWeight (β : ℝ) :
   unfold bellmanRadialDegreeWeight
   fun_prop
 
+section
+variable (β r : ℝ) (hr : 0 < r)
+include hr
+
 /-- The exact degree weight at the inverse radial scaling. -/
-theorem bellmanRadialDegreeWeight_inverse_scale (β r : ℝ) (hr : 0 < r)
+theorem bellmanRadialDegreeWeight_inverse_scale
     (w : BellmanPositiveTime × ℝ) :
     bellmanRadialDegreeWeight β
       (((bellmanRadialScale r hr).prodCongr (Homeomorph.refl ℝ)).symm w) =
@@ -38,10 +42,12 @@ theorem bellmanRadialDegreeWeight_inverse_scale (β r : ℝ) (hr : 0 < r)
   rw [hp]
 
 /-- The reciprocal degree factors multiply to one. -/
-theorem bellmanRadial_degreeFactors_cancel (β r : ℝ) (hr : 0 < r) :
+theorem bellmanRadial_degreeFactors_cancel :
     ENNReal.ofReal (r ^ (β - 4)) * ENNReal.ofReal (r ^ (4 - β)) = 1 := by
   rw [← ENNReal.ofReal_mul (Real.rpow_nonneg hr.le _), ← Real.rpow_add hr]
-  simp only [show β - 4 + (4 - β) = 0 by ring, Real.rpow_zero, ENNReal.ofReal_one]
+  simp
+
+end
 
 /-- Reweighting the actual homogeneous coordinate measure makes radial scaling invariant. -/
 theorem HasBellmanDensityDegree.map_reweighted_angularPullback {β : ℝ}

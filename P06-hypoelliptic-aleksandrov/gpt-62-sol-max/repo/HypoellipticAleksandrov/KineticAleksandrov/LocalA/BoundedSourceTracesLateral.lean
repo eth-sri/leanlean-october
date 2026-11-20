@@ -35,7 +35,7 @@ theorem boundedSourceQuadratic_eq_zero_of_frontier {d : ℕ} (c : PDE.Vec d) (R 
 
 /-- The bounded signed potential is continuous with value zero at the lateral frontier. -/
 theorem continuousWithinAt_duhamelPotential_bounded_lateral
-    (hH : HormanderHypoellipticityStatement) {d : ℕ} (hd : 0 < d)
+    {d : ℕ} (hd : 0 < d)
     {c : PDE.Vec d} {R : ℝ} (hR : 0 < R) {lam Lam m Lb : ℝ}
     (hlam : 0 < lam) (hm : 0 < m)
     (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
@@ -69,7 +69,7 @@ theorem continuousWithinAt_duhamelPotential_bounded_lateral
   apply squeeze_zero' (Eventually.of_forall fun q => norm_nonneg _) ?_ hQt
   filter_upwards [self_mem_nhdsWithin] with q hq
   rw [Real.norm_eq_abs]
-  exact abs_duhamelPotential_le_boundedSourceQuadratic hH hd hR hlam hm B hB hBs hell
+  exact abs_duhamelPotential_le_boundedSourceQuadratic hd hR hlam hm B hB hBs hell
     b hb hbounds S K hreal g hg M hM hgb T q hq
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

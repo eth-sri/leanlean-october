@@ -24,14 +24,18 @@ noncomputable section
 
 namespace PDE
 
+section
+variable {d : ℕ} (U : Set (Vec d))
+include d U
+
 /-- The `ℓ²`-normed product ambient for the `p = 2` weak-gradient graph. -/
-abbrev H1HilbertAmbient {d : ℕ} (U : Set (Vec d)) :=
+abbrev H1HilbertAmbient :=
   WithLp 2
     (ScalarLp U (2 : ℝ≥0∞) × HilbertVectorLp U (2 : ℝ≥0∞))
 
 /-- The standard continuous linear equivalence from the `ℓ²` product
 realization to the ordinary product carrier. -/
-abbrev h1HilbertAmbientEquiv {d : ℕ} (U : Set (Vec d)) :
+abbrev h1HilbertAmbientEquiv :
     H1HilbertAmbient U ≃L[ℝ]
       WeakGradientLpPair U (2 : ℝ≥0∞) :=
   WithLp.prodContinuousLinearEquiv 2 ℝ
@@ -39,38 +43,36 @@ abbrev h1HilbertAmbientEquiv {d : ℕ} (U : Set (Vec d)) :
     (HilbertVectorLp U (2 : ℝ≥0∞))
 
 /-- The same weak-gradient graph, pulled back to the Hilbert product norm. -/
-abbrev h1HilbertClosedSubmodule {d : ℕ} (U : Set (Vec d)) :
+abbrev h1HilbertClosedSubmodule :
     ClosedSubmodule ℝ (H1HilbertAmbient U) :=
   (weakGradientGraph U (2 : ℝ≥0∞)).comap
     (h1HilbertAmbientEquiv U).toContinuousLinearMap
 
 /-- Submodule view used to inherit the Hilbert-space instances. -/
-abbrev h1HilbertSubmodule {d : ℕ} (U : Set (Vec d)) :
+abbrev h1HilbertSubmodule :
     Submodule ℝ (H1HilbertAmbient U) :=
   (h1HilbertClosedSubmodule U).toSubmodule
 
 /-- The complete Hilbert realization of `H1Graph U`. -/
-abbrev H1HilbertGraph {d : ℕ} (U : Set (Vec d)) :=
+abbrev H1HilbertGraph :=
   ↥(h1HilbertSubmodule U)
+
+end
 
 namespace H1HilbertGraph
 
 variable {d : ℕ} {U : Set (Vec d)}
 
-noncomputable instance : SeminormedAddCommGroup (H1HilbertGraph U) := by
-  exact inferInstanceAs (SeminormedAddCommGroup (h1HilbertSubmodule U))
+noncomputable instance : SeminormedAddCommGroup (H1HilbertGraph U) := inferInstanceAs (SeminormedAddCommGroup (h1HilbertSubmodule U))
 
-noncomputable instance : NormedAddCommGroup (H1HilbertGraph U) := by
-  exact inferInstanceAs (NormedAddCommGroup (h1HilbertSubmodule U))
+noncomputable instance : NormedAddCommGroup (H1HilbertGraph U) := inferInstanceAs (NormedAddCommGroup (h1HilbertSubmodule U))
 
-noncomputable instance : NormedSpace ℝ (H1HilbertGraph U) := by
-  exact inferInstanceAs (NormedSpace ℝ (h1HilbertSubmodule U))
+noncomputable instance : NormedSpace ℝ (H1HilbertGraph U) := inferInstanceAs (NormedSpace ℝ (h1HilbertSubmodule U))
 
 noncomputable instance : InnerProductSpace ℝ (H1HilbertGraph U) := by
   exact inferInstanceAs (InnerProductSpace ℝ (h1HilbertSubmodule U))
 
-noncomputable instance : CompleteSpace (H1HilbertGraph U) := by
-  exact (h1HilbertClosedSubmodule U).isClosed.completeSpace_coe
+noncomputable instance : CompleteSpace (H1HilbertGraph U) := (h1HilbertClosedSubmodule U).isClosed.completeSpace_coe
 
 /-- Forget the Hilbert product norm while retaining the same graph pair. -/
 def toH1Graph (z : H1HilbertGraph U) : H1Graph U :=
@@ -90,14 +92,12 @@ def ofH1Graph (z : H1Graph U) : H1HilbertGraph U :=
 @[simp]
 theorem toH1Graph_ofH1Graph (z : H1Graph U) :
     toH1Graph (ofH1Graph z) = z := by
-  apply Subtype.ext
-  exact (h1HilbertAmbientEquiv U).apply_symm_apply z.1
+  rfl
 
 @[simp]
 theorem ofH1Graph_toH1Graph (z : H1HilbertGraph U) :
     ofH1Graph (toH1Graph z) = z := by
-  apply Subtype.ext
-  exact (h1HilbertAmbientEquiv U).symm_apply_apply z.1
+  rfl
 
 /-- The max-norm and Hilbert-norm graph carriers have exactly the same
 elements. Their norms remain intentionally distinct. -/

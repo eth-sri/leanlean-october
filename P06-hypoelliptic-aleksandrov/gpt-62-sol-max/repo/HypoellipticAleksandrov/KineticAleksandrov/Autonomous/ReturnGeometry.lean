@@ -30,24 +30,24 @@ def scalarTerminalDatum (F : BoundedBorel Z) : BoundedBorel (EvolutionAmbientSta
 /-- The scalar physical spacetime point, with order `(t,X,v)`. -/
 def point (t X v : ℝ) : Point := ⟨t, fun _ => X, fun _ => v⟩
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (t : ℝ)
+include lam Lam A t
+
 /-- The full-space terminal measure pushed into physical scalar coordinate order. -/
-def Kphysical (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
-    (t : ℝ) (z : Z) : Measure Z :=
+def Kphysical (z : Z) : Measure Z :=
   if ht : 0 ≤ t then
-    ((fullSpaceEvolution hH hLE hlam hLam A).2.master
+    ((fullSpaceEvolution A).2.master
       (wholeSpaceQuery 0 t ht (physicalState z).2 (physicalState z).1)).map
       (fun x => scalarState x.swap)
   else Measure.dirac z
 
 /-- The literal elapsed-time action of the canonical kernel on scalar physical data. -/
-def S (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ}
-    (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
-    (t : ℝ) (F : BoundedBorel Z) (z : Z) : ℝ :=
-  fullSpaceAction (fullSpaceEvolution hH hLE hlam hLam A)
+def S (F : BoundedBorel Z) (z : Z) : ℝ :=
+  fullSpaceAction (fullSpaceEvolution A)
     (scalarTerminalDatum F) (point t z.1 z.2)
+
+end
 
 /-- Smooth scalar data remain smooth on the terminal-data carrier. -/
 theorem scalarTerminalDatum_smooth (F : BoundedBorel Z)

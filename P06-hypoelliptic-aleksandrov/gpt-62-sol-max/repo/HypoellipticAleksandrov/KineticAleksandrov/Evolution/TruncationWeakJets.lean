@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeTransfer
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeOperator
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ScalarHessian
+import HypoellipticAleksandrov.Parabolic.ScalarCalculus
 
 /-! # Directional jets of the pulled back anisotropic Dirichlet solution -/
 
@@ -41,11 +42,14 @@ theorem truncationPoint_spatial_line (g : ℝ → PDE.Vec n) (x w : EvolutionVec
     (diffusedCoord n x - g (timeCoord n x)) + t • diffusedCoord n w by abel]
   rw [spatialPack_add, spatialPack_smul]
 
+section
+variable {g : ℝ → PDE.Vec n} {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
+  (hu : IsScalarC12On u U) {x w : EvolutionVec n} (hx : truncationPoint g x ∈ U)
+  (hw : timeCoord n w = 0)
+include U hu hx hw
+
 /-- A scalar C1,2 function pulls back with the expected first spatial line derivative. -/
-theorem truncation_hasLineDerivAt_spatial {g : ℝ → PDE.Vec n}
-    {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
-    (hu : IsScalarC12On u U) {x w : EvolutionVec n}
-    (hx : truncationPoint g x ∈ U) (hw : timeCoord n w = 0) :
+theorem truncation_hasLineDerivAt_spatial :
     HasLineDerivAt ℝ (u ∘ truncationPoint g)
       (PDE.vecDot (scalarSpatialGradient u (truncationPoint g x))
         (spatialPack (diffusedCoord n w) (transportedCoord n w))) x w := by
@@ -57,10 +61,7 @@ theorem truncation_hasLineDerivAt_spatial {g : ℝ → PDE.Vec n}
     scalarSpatialGradient] using! h
 
 /-- Spatial line derivatives of gradient entries are scalar Hessian entries. -/
-theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
-    {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
-    (hu : IsScalarC12On u U) {x w : EvolutionVec n}
-    (hx : truncationPoint g x ∈ U) (hw : timeCoord n w = 0)
+theorem truncation_gradient_hasLineDerivAt
     (i j : Fin (n + n))
     (hdir : spatialPack (diffusedCoord n w) (transportedCoord n w) = PDE.basisVec i) :
     HasLineDerivAt ℝ (fun y => scalarSpatialGradient u (truncationPoint g y) j)
@@ -80,11 +81,13 @@ theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
     rw [fderiv_clm_apply hd (differentiableAt_const (PDE.basisVec j))]
     erw [hz]
     simpa only [ContinuousLinearMap.comp_zero, zero_add,
-      ContinuousLinearMap.flip_apply] using! (scalarSpatialHessian_eq_secondFDeriv hc2 i j).symm
+      ContinuousLinearMap.flip_apply] using! (_root_.HypoellipticAleksandrov.Parabolic.scalarSpatialHessian_apply_eq_sndFDeriv hc2 i j).symm
   rw [he] at h
   unfold HasLineDerivAt at h ⊢
   simpa only [truncationPoint_spatial_line g x w hw, hdir,
     scalarSpatialGradient, PDE.classicalGradient] using! h
+
+end
 
 /-- The time line derivative includes the exact moving-frame correction. -/
 theorem truncation_hasLineDerivAt_time {g : ℝ → PDE.Vec n}
@@ -96,7 +99,7 @@ theorem truncation_hasLineDerivAt_time {g : ℝ → PDE.Vec n}
         PDE.vecDot (-deriv g (timeCoord n x))
           (spatialY (scalarSpatialGradient u (truncationPoint g x)))) x basisT := by
   have hdu := scalarC12_differentiableAt hU hu hx
-  have hd : DifferentiableAt ℝ (u ∘ truncationPoint g) x :=
+  have hd :=
     hdu.comp x ((contDiff_truncationPoint hg).differentiable (by simp) x)
   have he : u ∘ truncationPoint g = straightenedPullback g u ∘ evolutionHomeomorph n := rfl
   have h := hd.hasFDerivAt.hasLineDerivAt basisT

@@ -12,8 +12,11 @@ noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable {lam Lam : ℝ} (alpha : ℝ)
+
 /-- A compact punctured test pulls back to compact radial support uniformly over the sphere. -/
-theorem bellman_radial_test_compactSupport {lam Lam : ℝ} (alpha : ℝ)
+theorem bellman_radial_test_compactSupport
     (g : (ℝ × ℝ) → ℝ) (hc : HasCompactSupport g) (hs : tsupport g ⊆ bellmanPuncturedSet)
     (weight : BellmanSphere × BellmanCoefficient lam Lam → ℝ) :
     HasCompactSupport (fun w : BellmanPositiveTime ×
@@ -34,7 +37,7 @@ theorem bellman_radial_test_compactSupport {lam Lam : ℝ} (alpha : ℝ)
   · exact hK.isClosed
 
 /-- Compact radial support proves integrability, including any continuous coefficient weight. -/
-theorem bellman_radial_test_integrable {lam Lam : ℝ} (alpha : ℝ)
+theorem bellman_radial_test_integrable
     (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi]
     (g : (ℝ × ℝ) → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
     (hs : tsupport g ⊆ bellmanPuncturedSet)
@@ -53,5 +56,7 @@ theorem bellman_radial_test_integrable {lam Lam : ℝ} (alpha : ℝ)
   have hcont := hr.mul ((hw.comp continuous_snd).mul (hg.comp hp))
   exact hcont.integrable_of_hasCompactSupport
     (bellman_radial_test_compactSupport alpha g hc hs weight)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

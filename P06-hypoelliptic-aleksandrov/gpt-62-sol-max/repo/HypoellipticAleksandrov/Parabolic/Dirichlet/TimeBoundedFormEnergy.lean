@@ -38,12 +38,12 @@ private theorem pivot_symmetric_of_factorization
     _ = inner ℝ (valueCLM hΩ y) (valueCLM hΩ (S x)) := (hfactor y x).symm
     _ = inner ℝ (valueCLM hΩ (S x)) (valueCLM hΩ y) := real_inner_comm _ _
 
-private theorem ae_pivot_factorization_rate
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-    (Su : ReverseTimeL2V hΩ T) (Sg : ReverseTimeL2VStar hΩ T)
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (u : ReverseTimeL2V hΩ T)
+  (g : ReverseTimeL2VStar hΩ T) (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
+  (Su : ReverseTimeL2V hΩ T)
+
+private theorem ae_pivot_factorization_rate (Sg : ReverseTimeL2VStar hΩ T)
     (hSu : Su =ᵐ[reverseTimeVolume T] fun r => S (u r))
     (hSg : Sg =ᵐ[reverseTimeVolume T]
       fun r => h10HilbertGraphDualPrecompose hΩ S (g r)) :
@@ -55,11 +55,6 @@ private theorem ae_pivot_factorization_rate
   ring
 
 private theorem integrable_pivot_factorization_rate
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-    (Su : ReverseTimeL2V hΩ T)
     (hSu : Su =ᵐ[reverseTimeVolume T] fun r => S (u r)) :
     Integrable (fun r => 2 * (g r) (S (u r))) (reverseTimeVolume T) := by
   refine ((integrable_reverseTimeDualPairing hΩ T
@@ -67,9 +62,12 @@ private theorem integrable_pivot_factorization_rate
   filter_upwards [hSu] with r hrSu
   rw [hrSu]
 
-private theorem continuousOn_pivot_factorization_cross_energy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (U V : C(↥(Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞))) :
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ} (U V : C(↥(Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
+
+private theorem continuousOn_pivot_factorization_cross_energy :
     ContinuousOn
       (fun t => if ht : t ∈ Icc 0 T then
         inner ℝ (U ⟨t, ht⟩) (V ⟨t, ht⟩) else 0)
@@ -87,8 +85,6 @@ private theorem continuousOn_pivot_factorization_cross_energy
   exact hinner.comp (U.continuous.prodMk V.continuous)
 
 private theorem pivot_factorization_cross_energy_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (U V : C(↥(Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
     (rate q : ℝ → ℝ)
     (hinc : ∀ s t : ℝ, ∀ hs : s ∈ Icc 0 T, ∀ ht : t ∈ Icc 0 T, s ≤ t →
       inner ℝ (U ⟨t, ht⟩) (V ⟨t, ht⟩) -
@@ -104,6 +100,8 @@ private theorem pivot_factorization_cross_energy_increment
   rw [dif_pos ht, dif_pos hs]
   exact (hinc s t hs ht hst).trans
     (integral_congr_ae (ae_restrict_of_ae hrate))
+
+end
 
 private theorem ae_pivot_factorization_cross_energy_eq_norm_sq
     {d : ℕ} {Ω : Set (PDE.Vec d)}

@@ -13,9 +13,11 @@ open MeasureTheory Set
 open scoped ENNReal
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
+section
+variable (Ψ : ℝ × EvolutionAmbientState d → ℝ)
+
 /-- Positive test weights vanish outside every set containing their closed support. -/
-theorem sourcePositiveMeasure_compl_eq_zero
-    (Ψ : ℝ × EvolutionAmbientState d → ℝ) {U : Set (ℝ × EvolutionAmbientState d)}
+theorem sourcePositiveMeasure_compl_eq_zero {U : Set (ℝ × EvolutionAmbientState d)}
     (hU : MeasurableSet U) (hs : tsupport Ψ ⊆ U) : sourcePositiveMeasure Ψ Uᶜ = 0 := by
   rw [sourcePositiveMeasure, withDensity_apply _ hU.compl]
   apply lintegral_eq_zero_of_ae_eq_zero
@@ -25,24 +27,30 @@ theorem sourcePositiveMeasure_compl_eq_zero
   rfl
 
 /-- Negating a compact weight preserves its closed support. -/
-theorem tsupport_neg_weight (Ψ : ℝ × EvolutionAmbientState d → ℝ) :
+theorem tsupport_neg_weight :
     tsupport (fun q => -Ψ q) = tsupport Ψ := by
   apply congrArg closure
   ext q
   change (-Ψ q ≠ 0) ↔ (Ψ q ≠ 0)
   exact neg_ne_zero
 
+end
+
+section
+variable (K : MovingFiberKernel Ω γ) (Λ Ψ : ℝ × EvolutionAmbientState d → ℝ) (a T : ℝ)
+include K Λ Ψ a T
+
 /-- The two positive source measures in a signed weak identity. -/
-def weakSourcePositiveMeasure (K : MovingFiberKernel Ω γ)
-    (Λ Ψ : ℝ × EvolutionAmbientState d → ℝ) (a T : ℝ) :
+def weakSourcePositiveMeasure :
     Measure (ℝ × EvolutionAmbientState d) :=
   boundedSourceActionMeasure K (sourcePositiveStartMeasure Λ) a T + sourcePositiveMeasure Ψ
 
 /-- The negative source measure uses the negative weights, without source-value cutoffs. -/
-def weakSourceNegativeMeasure (K : MovingFiberKernel Ω γ)
-    (Λ Ψ : ℝ × EvolutionAmbientState d → ℝ) (a T : ℝ) :
+def weakSourceNegativeMeasure :
     Measure (ℝ × EvolutionAmbientState d) :=
   weakSourcePositiveMeasure K (fun q => -Λ q) (fun q => -Ψ q) a T
+
+end
 
 /-- Smooth compact-source identities determine the corresponding finite source measures.
 The consumer supplies this identity from the proved smooth Duhamel theorem. -/

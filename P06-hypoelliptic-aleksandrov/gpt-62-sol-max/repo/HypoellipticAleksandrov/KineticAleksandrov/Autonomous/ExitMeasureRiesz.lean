@@ -26,7 +26,6 @@ omit [SecondCountableTopology X] [PseudoMetrizableSpace X] in
 theorem boundaryFunctional_rieszMeasure_mass (ℓ : C_c(X, ℝ) →ₚ[ℝ] ℝ)
     (hbd : ∀ (f : C_c(X, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) → |ℓ f| ≤ c) :
     RealRMK.rieszMeasure ℓ univ ≤ 1 := by
-  have hreg := RealRMK.regular_rieszMeasure ℓ
   rw [(MeasureTheory.Measure.Regular.innerRegular).measure_eq_iSup isOpen_univ]
   refine iSup_le fun K => iSup_le fun _ => iSup_le fun hKc => ?_
   obtain ⟨f, hf1, hfc, -, hf01⟩ :=

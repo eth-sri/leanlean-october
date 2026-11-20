@@ -30,9 +30,7 @@ theorem localizedSpatialDifferenceQuotientWeakTest_gradientCoord_eq
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
+    (hηshift : η.ShiftMapsInto k h Ω)
     (j : Fin d) :
     PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
       (gradientCLM hΩ

@@ -43,8 +43,6 @@ theorem velocityOccupationBarrier_regular {r Lam : ℝ} (hr : 0 < r) (hLam : 0 �
       Real.sqrt (r ^ 2 + 2 * 0 * (T - q.1) + (q.2.1 0) ^ 2)) _
   apply ContDiffAt.sub
   · apply ContDiffAt.sqrt (by fun_prop)
-    have hh := mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hLam)
-      (sub_nonneg.mpr hp)
     exact ne_of_gt (by nlinarith [sq_pos_of_pos hr, sq_nonneg (p.position 0)])
   · apply ContDiffAt.sqrt (by fun_prop)
     exact ne_of_gt (by nlinarith [sq_pos_of_pos hr, sq_nonneg (p.position 0)])
@@ -132,13 +130,13 @@ theorem velocityHeatProfile_operator_nonpos {R Lam T : ℝ} (p : Point)
   · positivity
 
 /-- The bounded cancellation has a strictly negative forcing on the velocity band. -/
-theorem velocityOccupationBarrier_operator {lam Lam r : ℝ} (hlam : 0 < lam)
+theorem velocityOccupationBarrier_operator {lam Lam r : ℝ}
     (A : SmoothAutonomous lam Lam) (hr : 0 < r) (T : ℝ) (p : Point)
     (hp : p.time ≤ T) :
     transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1)
       (velocityOccupationBarrier r Lam T) p ≤
         -lam * (r ^ 2 / Real.sqrt (r ^ 2 + (p.position 0) ^ 2) ^ 3) := by
-  have hLam : 0 ≤ Lam := (hlam.le.trans (A.bounds 0 0).1).trans (A.bounds 0 0).2
+  have hLam : 0 ≤ Lam := (A.positive.le.trans (A.bounds 0 0).1).trans (A.bounds 0 0).2
   have hR : 0 < r ^ 2 + 2 * Lam * (T - p.time) :=
     add_pos_of_pos_of_nonneg (sq_pos_of_pos hr)
       (mul_nonneg (mul_nonneg (by norm_num) hLam) (sub_nonneg.mpr hp))

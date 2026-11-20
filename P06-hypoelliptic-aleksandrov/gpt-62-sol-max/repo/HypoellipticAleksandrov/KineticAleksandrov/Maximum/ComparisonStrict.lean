@@ -10,8 +10,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Set
 
+section
+variable {d : ℕ}
+
 /-- The terminal-time affine function has unit time derivative and zero spatial derivatives. -/
-theorem comparison_time_sub_formulas {d : ℕ} (T : ℝ) (P : KineticPoint d) :
+theorem comparison_time_sub_formulas (T : ℝ) (P : KineticPoint d) :
     kineticTimeDerivative (fun Q : KineticPoint d => Q.time - T) P = 1 ∧
     kineticPositionGradient (fun Q : KineticPoint d => Q.time - T) P = 0 ∧
     kineticVelocityGradient (fun Q : KineticPoint d => Q.time - T) P = 0 ∧
@@ -34,7 +37,7 @@ theorem comparison_time_sub_formulas {d : ℕ} (T : ℝ) (P : KineticPoint d) :
     simp
 
 /-- The time-affine function is in the source classical class on every set. -/
-theorem comparison_regular_time_sub {d : ℕ} (T : ℝ) (D : Set (KineticPoint d)) :
+theorem comparison_regular_time_sub (T : ℝ) (D : Set (KineticPoint d)) :
     IsKineticC112On (fun Q : KineticPoint d => Q.time - T) D := by
   refine ⟨(continuous_time.sub continuous_const).continuousOn,
     fun _ _ => differentiableAt_id.sub_const T,
@@ -60,7 +63,7 @@ theorem comparison_regular_time_sub {d : ℕ} (T : ℝ) (D : Set (KineticPoint d
     exact continuousOn_const
 
 /-- The forward operator of the terminal-time affine function equals one. -/
-theorem comparison_forwardOperator_time_sub {d : ℕ}
+theorem comparison_forwardOperator_time_sub
     (A : FullKineticCoefficient d) (T : ℝ) (P : KineticPoint d) :
     forwardKineticOperator A (fun Q : KineticPoint d => Q.time - T) P = 1 := by
   obtain ⟨ht,hx,_,hv⟩ := comparison_time_sub_formulas T P
@@ -68,7 +71,7 @@ theorem comparison_forwardOperator_time_sub {d : ℕ}
   simp [PDE.vecDot, HypoellipticAleksandrov.matrixContraction]
 
 /-- The exact source tilt preserves regularity and is a strict subsolution at positive points. -/
-theorem comparison_strictification {d : ℕ}
+theorem comparison_strictification
     (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (A : FullKineticCoefficient d) (u : KineticPoint d → ℝ)
     (hu : IsKineticC112On u (forwardCylinder Z₀ R hR))
@@ -97,5 +100,7 @@ theorem comparison_strictification {d : ℕ}
   have hup : 0 < u P := lt_of_lt_of_le hpos (hle P (subset_closure hP))
   have hs := hsub P hP hup
   linarith only [hs]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

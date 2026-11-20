@@ -40,7 +40,7 @@ theorem abs_integral_rpow_le_integral_abs_rpow
     (hf : Integrable f μ)
     (hfp : Integrable (fun x => |f x| ^ p) μ) :
     |∫ x, f x ∂μ| ^ p ≤ ∫ x, |f x| ^ p ∂μ := by
-  have hpNonneg : 0 ≤ p :=
+  have hpNonneg :=
     zero_le_one.trans hp
   have hJensen :
       (∫ x, |f x| ∂μ) ^ p ≤

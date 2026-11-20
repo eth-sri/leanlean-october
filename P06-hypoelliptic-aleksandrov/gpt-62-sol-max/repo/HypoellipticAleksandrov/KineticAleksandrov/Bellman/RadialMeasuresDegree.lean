@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.RadialMeasuresS
 public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.ExponentSetting
 import HypoellipticAleksandrov.KineticAleksandrov.Bellman.VagueAdjointLimitDegree
 import Mathlib.Tactic
+import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularAnnihilationReflectionMeasure
 
 /-! # The radial constructions have the exact adjoint density degree two plus alpha -/
 
@@ -12,9 +13,12 @@ noncomputable section
 open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r)
+  (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+
 /-- Scaling only the radius transforms the product by its literal radial factor. -/
-theorem bellman_radial_product_scale {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem bellman_radial_product_scale [IsFiniteMeasure pi] :
     Measure.map ((bellmanRadialScale r hr).prodCongr (Homeomorph.refl
       (BellmanSphere × BellmanCoefficient lam Lam)))
       ((bellmanRadiusMeasure alpha).prod pi) =
@@ -24,8 +28,7 @@ theorem bellman_radial_product_scale {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r
     Measure.map_id, map_bellmanRadiusMeasure_radialScale, Measure.prod_smul_left]
 
 /-- The coefficient-weighted product has the same radial scaling factor. -/
-theorem bellman_radial_weighted_product_scale {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem bellman_radial_weighted_product_scale [IsFiniteMeasure pi] :
     Measure.map ((bellmanRadialScale r hr).prodCongr (Homeomorph.refl
       (BellmanSphere × BellmanCoefficient lam Lam)))
       (((bellmanRadiusMeasure alpha).prod pi).withDensity
@@ -40,6 +43,8 @@ theorem bellman_radial_weighted_product_scale {lam Lam : ℝ} (alpha r : ℝ) (h
     withDensity_smul_measure]
   rfl
 
+end
+
 /-- Dilation of the projected point equals scaling its radius before projection. -/
 theorem bellman_radial_projection_commute {lam Lam : ℝ} (r : ℝ) (hr : 0 < r) :
     bellmanDilation r hr ∘ (sphereRadialPoint (lam := lam) (Lam := Lam)) =
@@ -49,11 +54,13 @@ theorem bellman_radial_projection_commute {lam Lam : ℝ} (r : ℝ) (hr : 0 < r)
   apply Subtype.ext
   exact bellmanPlaneDilation_comp r w.1.val w.2.1.val
 
+section
+variable {lam Lam : ℝ} (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+
 /-- The first radial measure has degree two plus alpha in the source convention. -/
-theorem radialMu_densityDegree {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem radialMu_densityDegree [IsFiniteMeasure pi] :
     HasBellmanDensityDegree (2 + alpha) (radialMu alpha pi) := by
-  apply bellman_degree_of_map_dilation
+  apply _root_.HypoellipticAleksandrov.KineticAleksandrov.bellman_densityDegree_of_map_dilation
   intro r hr
   unfold radialMu
   have hf := (continuous_sphereRadialPoint lam Lam).measurable
@@ -68,10 +75,9 @@ theorem radialMu_densityDegree {lam Lam : ℝ} (alpha : ℝ)
   rw [he]
 
 /-- The second radial measure has the same degree despite its diffusion coefficient weight. -/
-theorem radialEta_densityDegree {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem radialEta_densityDegree [IsFiniteMeasure pi] :
     HasBellmanDensityDegree (2 + alpha) (radialEta alpha pi) := by
-  apply bellman_degree_of_map_dilation
+  apply _root_.HypoellipticAleksandrov.KineticAleksandrov.bellman_densityDegree_of_map_dilation
   intro r hr
   unfold radialEta
   have hf := (continuous_sphereRadialPoint lam Lam).measurable
@@ -84,5 +90,7 @@ theorem radialEta_densityDegree {lam Lam : ℝ} (alpha : ℝ)
     bellman_radial_weighted_product_scale, Measure.map_smul _ hf.aemeasurable]
   have he : 2 + alpha - 4 = alpha - 2 := by ring
   rw [he]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

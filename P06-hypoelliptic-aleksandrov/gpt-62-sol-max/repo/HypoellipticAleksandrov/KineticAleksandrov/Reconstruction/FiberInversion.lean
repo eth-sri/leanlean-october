@@ -31,15 +31,18 @@ def fiberInversionDensity (g : Y → ℝ≥0∞) (κ : Kernel Y (PDE.Vec d)) (p 
   ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹ *
     (vecInvIntegral (fun ξ => fiberDensity g κ ξ p.1) p.2).re)
 
+section
+variable (κ : Kernel Y (PDE.Vec d))
+
 /-- The Fourier transform of `g(y) • κ y` is the fibre representative `k̃^ξ(y)`. -/
-lemma vecFourier_smul_kernel (κ : Kernel Y (PDE.Vec d)) (g : Y → ℝ≥0∞) (y : Y)
+lemma vecFourier_smul_kernel (g : Y → ℝ≥0∞) (y : Y)
     (ξ : PDE.Vec d) : vecFourier ((g y) • κ y) ξ = fiberDensity g κ ξ y := by
   unfold vecFourier fiberDensity fiberFourier
   rw [integral_smul_measure, Complex.real_smul]
 
 /-- Fibre inversion at a single `y`: the measure `g(y) π_y` equals the Lebesgue measure with
 density `G(y, ·)`, and `G(y, ·) ≤ H(y)`. -/
-lemma fiber_inversion_at (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (g : Y → ℝ≥0∞) (y : Y)
+lemma fiber_inversion_at [IsMarkovKernel κ] (g : Y → ℝ≥0∞) (y : Y)
     (hy : g y < ∞) (hint : Integrable (fun ξ => fiberDensity g κ ξ y)) :
     (volume : Measure (PDE.Vec d)).withDensity (fun z => fiberInversionDensity g κ (y, z)) =
         (g y) • κ y ∧
@@ -66,6 +69,8 @@ lemma fiber_inversion_at (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (g : Y 
     congr 1
     rw [ofReal_integral_norm_eq_lintegral_enorm hint]
 
+end
+
 
 /-- The fibre inversion density is jointly measurable in `(y, z)`. -/
 lemma measurable_fiberInversionDensity {g : Y → ℝ≥0∞} (hg : Measurable g)
@@ -76,8 +81,7 @@ lemma measurable_fiberInversionDensity {g : Y → ℝ≥0∞} (hg : Measurable g
       cexp (I * ((PDE.vecDot q.1 q.2 : ℝ) : ℂ)) := by
     unfold PDE.vecDot
     fun_prop
-  have hf : Measurable fun q : (Y × PDE.Vec d) × PDE.Vec d =>
-      cexp (I * ((PDE.vecDot q.2 q.1.2 : ℝ) : ℂ)) * fiberDensity g κ q.2 q.1.1 :=
+  have hf :=
     (hc.measurable.comp (measurable_snd.prodMk (measurable_snd.comp measurable_fst))).mul
       ((measurable_fiberDensity hg κ).comp (measurable_snd.prodMk
         (measurable_fst.comp measurable_fst)))

@@ -11,18 +11,24 @@ noncomputable section
 open Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet)
+include q hq
+
 /-- Normalizing a punctured point by its literal gauge puts it on the source sphere. -/
-def bellmanSpherePoint (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) : BellmanSphere :=
+def bellmanSpherePoint : BellmanSphere :=
   ⟨bellmanPlaneDilation (bellmanGauge q)⁻¹ q, by
     rw [bellmanGauge_dilation _ (inv_pos.mpr (bellmanGauge_pos q hq)),
       inv_mul_cancel₀ (bellmanGauge_pos q hq).ne']⟩
 
 /-- Dilating the normalized sphere point by its gauge recovers the original point. -/
-theorem bellmanSpherePoint_reconstruct (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
+theorem bellmanSpherePoint_reconstruct :
     bellmanPlaneDilation (bellmanGauge q) (bellmanSpherePoint q hq).val = q := by
   rw [bellmanSpherePoint, bellmanPlaneDilation_comp,
     mul_inv_cancel₀ (bellmanGauge_pos q hq).ne']
   simp only [bellmanPlaneDilation, one_pow, one_mul, Prod.mk.eta]
+
+end
 
 /-- Positivity on the compact sphere and diffusion interval gives the global homogeneous bound. -/
 theorem positive_bellman_image_lower_bound (lam Lam : ℝ) (_hlam : 0 < lam)

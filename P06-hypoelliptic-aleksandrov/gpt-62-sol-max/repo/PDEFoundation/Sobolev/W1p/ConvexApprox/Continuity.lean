@@ -1,6 +1,6 @@
 module
 
-public import PDEFoundation.Sobolev.W1p.ConvexApprox.WeakDerivSmoothing
+public import PDEFoundation.Sobolev.W1p.ConvexApprox.WeakDerivSmoothing.Integral
 
 /-!
 # Continuity of convex-domain smoothing
@@ -118,38 +118,35 @@ theorem ae_eq_fderiv_convexApproxSmoothRepresentative_apply_basisVec
       hU.isOpen hClassicalLoc hSmoothedLoc
       hClassicalWeak hSmoothedWeak
 
-theorem continuous_convexApproxSample_right
-    {d : ℕ} (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+section
+variable {d : ℕ} (x0 : Vec d) (r ε : ℝ)
+
+theorem continuous_convexApproxSample_right (x : Vec d) :
     Continuous
       (fun z : Vec d =>
         convexApproxSample x0 z r ε x) := by
   unfold convexApproxSample
   fun_prop
 
-theorem continuous_convexApproxSample_prod
-    {d : ℕ} (x0 : Vec d) (r ε : ℝ) :
+theorem continuous_convexApproxSample_prod :
     Continuous
       (fun xz : Vec d × Vec d =>
         convexApproxSample x0 xz.2 r ε xz.1) := by
   unfold convexApproxSample
   fun_prop
 
-theorem continuous_convexApproxIntegrand_right
-    {d : ℕ} {ρ u : Vec d → ℝ}
-    (hρ : Continuous ρ) (hu : Continuous u)
-    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+end
+
+section
+variable {d : ℕ} {ρ u : Vec d → ℝ} (hρ : Continuous ρ) (hu : Continuous u) (x0 : Vec d) (r ε : ℝ)
+include hρ hu
+
+theorem continuous_convexApproxIntegrand_right (x : Vec d) :
     Continuous
       (fun z =>
-        convexApproxIntegrand ρ u x0 r ε x z) := by
-  simpa only [convexApproxIntegrand] using!
-    hρ.mul
-      (hu.comp
-        (continuous_convexApproxSample_right x0 r ε x))
+        convexApproxIntegrand ρ u x0 r ε x z) := id (Continuous.mul hρ (Continuous.comp hu (continuous_convexApproxSample_right x0 r ε x)))
 
-theorem continuous_convexApproxIntegrand_prod
-    {d : ℕ} {ρ u : Vec d → ℝ}
-    (hρ : Continuous ρ) (hu : Continuous u)
-    (x0 : Vec d) (r ε : ℝ) :
+theorem continuous_convexApproxIntegrand_prod :
     Continuous
       (fun xz : Vec d × Vec d =>
         convexApproxIntegrand
@@ -168,22 +165,12 @@ theorem continuous_convexApproxIntegrand_prod
   simpa only [convexApproxIntegrand] using!
     hρProd.mul huProd
 
-theorem hasCompactSupport_convexApproxIntegrand
-    {d : ℕ} {ρ u : Vec d → ℝ}
-    (hρ : HasCompactSupport ρ)
-    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
-    HasCompactSupport
-      (fun z =>
-        convexApproxIntegrand ρ u x0 r ε x z) := by
-  simpa only [convexApproxIntegrand] using!
-    (hρ.mul_right :
-      HasCompactSupport
-        (fun z =>
-          ρ z *
-            u (convexApproxSample x0 z r ε x)))
+end
+
+section
+variable {d : ℕ} {ρ u : Vec d → ℝ}
 
 theorem integrable_convexApproxIntegrand
-    {d : ℕ} {ρ u : Vec d → ℝ}
     (hρ : Continuous ρ)
     (hρCompact : HasCompactSupport ρ)
     (hu : Continuous u)
@@ -193,36 +180,17 @@ theorem integrable_convexApproxIntegrand
         convexApproxIntegrand ρ u x0 r ε x z) :=
   (continuous_convexApproxIntegrand_right
       hρ hu x0 r ε x).integrable_of_hasCompactSupport
-    (hasCompactSupport_convexApproxIntegrand
-      hρCompact x0 r ε x)
-
-theorem continuous_convexApproxWeightedOscillation
-    {d : ℕ} {ρ u : Vec d → ℝ}
-    (hρ : Continuous ρ) (hu : Continuous u)
-    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
-    Continuous
-      (fun z =>
-        ρ z *
-          |u (convexApproxSample x0 z r ε x) - u x|) :=
-  hρ.mul
-    (((hu.comp
-      (continuous_convexApproxSample_right
-        x0 r ε x)).sub continuous_const).abs)
+    ((id (HasCompactSupport.mul_right hρCompact)))
 
 theorem hasCompactSupport_convexApproxWeightedOscillation
-    {d : ℕ} {ρ u : Vec d → ℝ}
     (hρCompact : HasCompactSupport ρ)
     (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
     HasCompactSupport
       (fun z =>
         ρ z *
-          |u (convexApproxSample x0 z r ε x) - u x|) := by
-  simpa only using!
-    (hρCompact.mul_right :
-      HasCompactSupport
-        (fun z =>
-          ρ z *
-            |u (convexApproxSample x0 z r ε x) - u x|))
+          |u (convexApproxSample x0 z r ε x) - u x|) := HasCompactSupport.mul_right hρCompact
+
+end
 
 theorem integrable_convexApproxWeightedOscillation
     {d : ℕ} {ρ u : Vec d → ℝ}
@@ -234,8 +202,7 @@ theorem integrable_convexApproxWeightedOscillation
       (fun z =>
         ρ z *
           |u (convexApproxSample x0 z r ε x) - u x|) :=
-  (continuous_convexApproxWeightedOscillation
-      hρ hu x0 r ε x).integrable_of_hasCompactSupport
+  ((hρ.mul (((hu.comp (continuous_convexApproxSample_right x0 r ε x)).sub continuous_const).abs))).integrable_of_hasCompactSupport
     (hasCompactSupport_convexApproxWeightedOscillation
       hρCompact x0 r ε x)
 
@@ -270,9 +237,7 @@ theorem continuous_convexApproxSmoothing
         (Function.uncurry
           (fun x z =>
             convexApproxIntegrand ρ u x0 r ε x z)) := by
-    simpa only [Function.uncurry] using!
-      continuous_convexApproxIntegrand_prod
-        hρ hu x0 r ε
+    exact continuous_convexApproxIntegrand_prod hρ hu x0 r ε
   simpa only [convexApproxSmoothing] using!
     (continuous_parametric_integral_of_continuous
       (μ := MeasureTheory.volume)

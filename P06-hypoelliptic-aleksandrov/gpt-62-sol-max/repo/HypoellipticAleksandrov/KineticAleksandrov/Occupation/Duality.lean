@@ -25,7 +25,6 @@ variable {d : ℕ}
 
 /-- Unit-time occupation density with uniform constants and the full exponent range. -/
 theorem occupation_duality
-    (hH : HormanderHypoellipticityStatement)
     (hd : 0 < d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C : ℝ → ℝ,
       (∀ γ, 1 ≤ γ → γ ≤ ((d : ℝ) + 1) / d → 0 ≤ C γ) ∧
@@ -41,7 +40,7 @@ theorem occupation_duality
             MemLp g (ENNReal.ofReal γ)
               (volume.restrict (Ioo (0 : ℝ) 1 ×ˢ univ)) ∧
             occupationLpNorm 1 γ g ≤ C γ * (ρ univ).toReal := by
-  exact occupation_duality_of_whole_space_bound hH hd lam Lam hlam hLam
-    (occupation_whole_space_bound hH hd lam Lam hlam hLam)
+  exact occupation_duality_of_whole_space_bound hd lam Lam hlam hLam
+    (occupation_whole_space_bound hd lam Lam hlam hLam)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

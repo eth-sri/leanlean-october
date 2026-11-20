@@ -24,9 +24,12 @@ theorem rpow_isBigO_of_le (r s : ℝ) (hrs : r ≤ s) :
     Real.norm_of_nonneg (Real.rpow_nonneg (by linarith only [hX]) _), one_mul]
   exact Real.rpow_le_rpow_of_exponent_le hX hrs
 
+section
+variable (a : ℝ) (b : Pos) (ha : -1 < a) (hab : a < b.1) (N : ℕ)
+include ha hab
+
 /-- Continuation gives the expansion at every positive truncation order. -/
-theorem M_negative_expansion_succ (a : ℝ) (b : Pos)
-    (ha : -1 < a) (hab : a < b.1) (N : ℕ) :
+theorem M_negative_expansion_succ :
     IsBigO atTop (fun X => M a b (-X) - mExpansion a b.1 (N + 1) X)
       (fun X => X ^ (-a - ((N + 1 : ℕ) : ℝ))) := by
   have ha1 : 0 < a + 1 := by linarith only [ha]
@@ -60,8 +63,7 @@ theorem M_negative_expansion_succ (a : ℝ) (b : Pos)
   · exact Filter.Eventually.of_forall (fun _ => rfl)
 
 /-- The complete algebraic expansion with its exact remainder order. -/
-theorem M_negative_expansion (a : ℝ) (b : Pos)
-    (ha : -1 < a) (hab : a < b.1) (N : ℕ) :
+theorem M_negative_expansion :
     IsBigO atTop (fun X => M a b (-X) - mExpansion a b.1 N X)
       (fun X => Real.rpow X (-a - (N : ℝ))) := by
   cases N with
@@ -83,5 +85,7 @@ theorem M_negative_expansion (a : ℝ) (b : Pos)
     · ext X
       simp only [Nat.cast_zero, sub_zero]
       rfl
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

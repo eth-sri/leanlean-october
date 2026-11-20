@@ -136,11 +136,14 @@ theorem isDistributionalSolution_comp_iff
   simp only [Homeomorph.symm_apply_apply] at h1 h2
   rw [Function.comp_def, Function.comp_def, h1, h2]
 
+section
+variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+include B b
+
 /-- The kinetic-side weak equation for `Lop`: `u` is locally integrable on `Ω ⊆ KineticPoint n` and
 `∫_Ω u(z) · Lop^*ψ(e⁻¹ z) dz = ∫_Ω g(z) ψ(e⁻¹ z) dz` for every smooth `ψ` on `ℝ^{1+2d}`
 with compact support inside `e ⁻¹' Ω`. -/
-def IsKineticWeakTransportedSolution (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) : Prop :=
+def IsKineticWeakTransportedSolution (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) : Prop :=
   LocallyIntegrableOn u Ω volume ∧
     ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ →
       tsupport ψ ⊆ evolutionHomeomorph n ⁻¹' Ω →
@@ -148,8 +151,7 @@ def IsKineticWeakTransportedSolution (B : FullKineticCoefficient n)
         ∫ z in Ω, g z * ψ ((evolutionHomeomorph n).symm z)
 
 /-- The kinetic-side weak equation for `L_ε = Lop + ε Δ_z`. -/
-def IsKineticWeakRegularizedSolution (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+def IsKineticWeakRegularizedSolution (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
     Prop :=
   LocallyIntegrableOn u Ω volume ∧
     ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ →
@@ -157,17 +159,17 @@ def IsKineticWeakRegularizedSolution (B : FullKineticCoefficient n)
       (∫ z in Ω, u z * regularizedAdjoint B b ε ψ ((evolutionHomeomorph n).symm z)) =
         ∫ z in Ω, g z * ψ ((evolutionHomeomorph n).symm z)
 
-theorem isWeakTransportedSolution_comp_iff (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+theorem isWeakTransportedSolution_comp_iff (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
     IsWeakTransportedSolution B b (evolutionHomeomorph n ⁻¹' Ω) (u ∘ evolutionHomeomorph n)
         (g ∘ evolutionHomeomorph n) ↔ IsKineticWeakTransportedSolution B b Ω u g :=
   isDistributionalSolution_comp_iff (transportedAdjoint B b) Ω u g
 
-theorem isWeakRegularizedSolution_comp_iff (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+theorem isWeakRegularizedSolution_comp_iff (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
     IsWeakRegularizedSolution B b ε (evolutionHomeomorph n ⁻¹' Ω) (u ∘ evolutionHomeomorph n)
         (g ∘ evolutionHomeomorph n) ↔ IsKineticWeakRegularizedSolution B b ε Ω u g :=
   isDistributionalSolution_comp_iff (regularizedAdjoint B b ε) Ω u g
+
+end
 
 /-- **Kinetic weak equation ⇒ Hörmander weak equation (`ε = 0`).**  A kinetic distributional
 solution of `Lop u = g` on `Ω ⊆ KineticPoint n`, with `g ∘ e` smooth on `e ⁻¹' Ω`, gives the

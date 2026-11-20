@@ -38,7 +38,7 @@ theorem construction_positiveSource_error_tendsto {d : ℕ} (hd : 1 ≤ d)
   let F := fun n P => backwardOperator (fun _t x v => profileMatrix h (x, v))
     (smoothedZeroExtendedProfile h r mu R (standardMollifierSequence n)) P
   let g := fun P => constructionIndicatorSource h r mu R (KineticPoint.equivProd d P)
-  have hA := (selectedProfile_spec h).2.2.2.2.1
+  have hA := (selectedProfile_spec h).measurable_matrix
   have hF (n : ℕ) : Measurable (F n) :=
     measurable_backwardOperator_of_joint_smooth (profileMatrix h) hA _
       (smoothedZeroExtendedProfile_contDiff ha h r mu R hr hmu hR
@@ -48,9 +48,9 @@ theorem construction_positiveSource_error_tendsto {d : ℕ} (hd : 1 ≤ d)
   let AC := 3 * (|profileLowerEllipticity h| + |profileUpperEllipticity h|)
   have hAC : 0 ≤ AC := mul_nonneg (by norm_num) (add_nonneg (abs_nonneg _) (abs_nonneg _))
   have hAb q i k : |profileMatrix h q i k| ≤ AC :=
-    coefficient_entry_abs_le_of_ellipticity
-      ((selectedProfile_spec h).2.2.2.2.2.1 q).1
-      ((selectedProfile_spec h).2.2.2.2.2.1 q).2 i k
+    _root_.HypoellipticAleksandrov.Parabolic.coefficient_entry_abs_le
+      ((selectedProfile_spec h).elliptic q).1
+      ((selectedProfile_spec h).elliptic q).2 i k
   obtain ⟨C, hC, hb⟩ := construction_smoothedOperator_uniform_bound hd ha ha1 h
     r mu R m (T - S ^ 2) T S hr hmu hR hm hS.le hscale hmargin
     (profileMatrix h) AC hAC hAb

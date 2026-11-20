@@ -20,6 +20,11 @@ structure SmoothAutonomous (lam Lam : ℝ) where
   a : ℝ → ℝ → ℝ
   smooth : ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry a)
   bounds : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam
+  positive : 0 < lam
+
+/-- The lower ellipticity constant cannot exceed the upper one. -/
+theorem SmoothAutonomous.ordered {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) : lam ≤ Lam :=
+  (A.bounds 0 0).1.trans (A.bounds 0 0).2
 
 /-- A source velocity interval, with ordered finite endpoints. -/
 structure Interval where
@@ -53,22 +58,28 @@ def Clock.active (c : Clock) : Set ℝ :=
 /-- Normalized active velocity interval. -/
 def normalizedActive : Set ℝ := Set.Ioo (-3 / 4 : ℝ) (3 / 4)
 
+section
+variable (a : ℝ → ℝ → ℝ)
+include a
+
 /-- Lift the scalar autonomous coefficient to the full coefficient carrier. -/
-def autonomousCoefficient (a : ℝ → ℝ → ℝ) : FullKineticCoefficient 1 :=
+def autonomousCoefficient : FullKineticCoefficient 1 :=
   fun _ x v _ _ => a (x 0) (v 0)
 
 /-- Exchange physical position and velocity for the Section Two evolution carrier. -/
-def evolutionCoefficient (a : ℝ → ℝ → ℝ) : FullKineticCoefficient 1 :=
+def evolutionCoefficient : FullKineticCoefficient 1 :=
   fun _ y z _ _ => a (z 0) (y 0)
 
 /-- Source reflection of an autonomous coefficient. -/
-def reflectedAutonomous (a : ℝ → ℝ → ℝ) : ℝ → ℝ → ℝ :=
+def reflectedAutonomous : ℝ → ℝ → ℝ :=
   fun x v => a (-x) v
 
 /-- The scalar forward operator, retaining the kinetic derivative evaluators. -/
-def forwardScalarOperator (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p : Point) : ℝ :=
+def forwardScalarOperator (u : Point → ℝ) (p : Point) : ℝ :=
   Parabolic.kineticTimeDerivative u p +
     p.velocity 0 * Parabolic.kineticPositionGradient u p 0 +
       a (p.position 0) (p.velocity 0) * Parabolic.kineticVelocityHessian u p 0 0
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

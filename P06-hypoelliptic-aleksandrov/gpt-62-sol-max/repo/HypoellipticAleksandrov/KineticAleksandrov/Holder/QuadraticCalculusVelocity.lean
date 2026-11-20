@@ -46,8 +46,11 @@ theorem classicalGradient_velocity_quadratic {d : ℕ} (C b c : ℝ) (y W : PDE.
   simp [PDE.basisVec_apply, Pi.smul_apply, smul_eq_mul]
   ring
 
+section
+variable {d : ℕ} (lam : ℝ) {h : ℝ}
+
 /-- The velocity gradient is twice the velocity component of inverse covariance. -/
-theorem kineticVelocityGradient_qform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem kineticVelocityGradient_qform (hh : 0 < h)
     (sigma : ℝ) (y V : PDE.Vec d) :
     kineticVelocityGradient
       (fun P : KineticPoint d => qform lam h sigma P.position P.velocity) ⟨0, y, V⟩ =
@@ -65,7 +68,7 @@ theorem kineticVelocityGradient_qform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < 
   ring
 
 /-- The velocity Hessian is twice the velocity block of inverse covariance. -/
-theorem kineticVelocityHessian_qform {d : ℕ} (lam : ℝ) {h : ℝ}
+theorem kineticVelocityHessian_qform
     (sigma : ℝ) (y V : PDE.Vec d) :
     kineticVelocityHessian
       (fun P : KineticPoint d => qform lam h sigma P.position P.velocity) ⟨0, y, V⟩ =
@@ -92,5 +95,7 @@ theorem kineticVelocityHessian_qform {d : ℕ} (lam : ℝ) {h : ℝ}
   rw [hder]
   ext i j
   simp [PDE.basisVec_apply, Matrix.one_apply, Matrix.smul_apply, eq_comm]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

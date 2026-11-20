@@ -2,6 +2,7 @@ module
 
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.FiniteSlabBarriersTerminal
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitWholeClassical
 
 /-!
 # Whole-space terminal comparison
@@ -22,27 +23,26 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
-/-- The moving domain over the whole space is the whole space. -/
-theorem movingDomain_univ {n : ℕ} (γ : ℝ → PDE.Vec n) (σ : ℝ) :
-    movingDomain (Set.univ : Set (PDE.Vec n)) γ σ = Set.univ := by
-  ext y
-  simp [mem_movingDomain_iff]
+section
+variable {n : ℕ} (γ γ' : ℝ → PDE.Vec n)
 
 /-- Over the whole space the viscous classical-solution predicate does not depend on the curve. -/
-theorem isClassicalViscousTerminalSolution_univ_curve_congr {n : ℕ} (γ γ' : ℝ → PDE.Vec n)
+theorem isClassicalViscousTerminalSolution_univ_curve_congr
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) (ε τ : ℝ)
     (F : BoundedBorel (EvolutionAmbientState n)) (u : KineticPoint n → ℝ) :
     IsClassicalViscousTerminalSolution (Set.univ : Set (PDE.Vec n)) γ B b ε τ F u ↔
       IsClassicalViscousTerminalSolution (Set.univ : Set (PDE.Vec n)) γ' B b ε τ F u := by
   simp only [IsClassicalViscousTerminalSolution, evolutionPastClosedCylinder,
     evolutionPastInteriorRaw, evolutionPastOpenCylinder, evolutionTerminalClosure,
-    evolutionLateralFrontier, movingDomain_univ]
+    evolutionLateralFrontier, _root_.HypoellipticAleksandrov.KineticAleksandrov.movingDomain_univ_eq]
 
 /-- Over the whole space the closed moving slab does not depend on the curve. -/
-theorem movingClosedSlab_univ_curve_congr {n : ℕ} (γ γ' : ℝ → PDE.Vec n) (a τ : ℝ) :
+theorem movingClosedSlab_univ_curve_congr (a τ : ℝ) :
     movingClosedSlab (Set.univ : Set (PDE.Vec n)) γ a τ =
       movingClosedSlab (Set.univ : Set (PDE.Vec n)) γ' a τ := by
-  simp only [movingClosedSlab, movingDomain_univ]
+  simp only [movingClosedSlab, _root_.HypoellipticAleksandrov.KineticAleksandrov.movingDomain_univ_eq]
+
+end
 
 /-- **Two barriers** (companion paper, (A.1), `Ω = ℝⁿ`).  Whole-space terminal comparison on a
 finite slab: `|u_ε - F| ≤ (τ - σ) M` wherever `|L_ε F| ≤ M` on the slab.  There is no lateral
@@ -70,7 +70,7 @@ theorem wholeSpace_terminalDatum_bound {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : �
   have hfr : ∀ q : KineticPoint n,
       q.position ∉ frontier (movingDomain (Set.univ : Set (PDE.Vec n)) (fun _ => 0) q.time) := by
     intro q
-    rw [movingDomain_univ, frontier_univ]
+    rw [_root_.HypoellipticAleksandrov.KineticAleksandrov.movingDomain_univ_eq, frontier_univ]
     exact notMem_empty _
   rw [hS]
   exact classical_sub_terminalDatum_le_core_of_slab isOpen_univ continuous_const hlam hB hb hε

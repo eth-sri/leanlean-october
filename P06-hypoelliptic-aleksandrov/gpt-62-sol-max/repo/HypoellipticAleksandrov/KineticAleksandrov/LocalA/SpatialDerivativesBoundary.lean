@@ -30,9 +30,11 @@ def spatialBoundaryLpData {d : ℕ}
       (uniformContinuous_spatialBoundaryData H hH hc P v₀) M
       (fun _ => hb _) x)
 
+section
+variable {d : ℕ} (μ : Measure (TimeVelocity d))
+
 /-- The centered L-infinity data are a continuous function of spatial displacement. -/
-theorem continuous_spatialBoundaryLpData {d : ℕ}
-    (μ : Measure (TimeVelocity d)) [IsFiniteMeasure μ]
+theorem continuous_spatialBoundaryLpData [IsFiniteMeasure μ]
     (H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (hH : Continuous H)
     (hc : HasCompactSupport H) (M : ℝ) (hb : ∀ q, ‖H q‖ ≤ M)
     (P : KineticPoint d) (v₀ : PDE.Vec d) :
@@ -42,8 +44,7 @@ theorem continuous_spatialBoundaryLpData {d : ℕ}
       M (fun _ => hb _))
 
 /-- The data family is bounded by the local solution oscillation. -/
-theorem spatialBoundaryLpData_norm_le {d : ℕ}
-    (μ : Measure (TimeVelocity d)) [IsFiniteMeasure μ]
+theorem spatialBoundaryLpData_norm_le [IsFiniteMeasure μ]
     (H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (hH : Continuous H)
     (hc : HasCompactSupport H) (M : ℝ) (hM : 0 ≤ M) (hb : ∀ q, ‖H q‖ ≤ M)
     (P : KineticPoint d) (v₀ : PDE.Vec d) (x : PDE.Vec d) :
@@ -52,13 +53,14 @@ theorem spatialBoundaryLpData_norm_le {d : ℕ}
     (BoundedContinuousFunction.norm_ofNormedAddCommGroup_le _ hM _)
 
 /-- The data family has the literal centered boundary representative almost everywhere. -/
-theorem spatialBoundaryLpData_coe {d : ℕ}
-    (μ : Measure (TimeVelocity d)) [IsFiniteMeasure μ]
+theorem spatialBoundaryLpData_coe [IsFiniteMeasure μ]
     (H : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (hH : Continuous H)
     (hc : HasCompactSupport H) (M : ℝ) (hb : ∀ q, ‖H q‖ ≤ M)
     (P : KineticPoint d) (v₀ : PDE.Vec d) (x : PDE.Vec d) :
     (spatialBoundaryLpData μ H hH hc M hb P v₀ x : TimeVelocity d → ℝ) =ᵐ[μ]
       fun z => H (spatialBoundaryCoordinates P v₀ (x, z)) :=
   BoundedContinuousFunction.coeFn_toLp ∞ μ ℝ _
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

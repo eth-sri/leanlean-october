@@ -11,32 +11,32 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
 open SectionTwo TheoremA Evolution
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval)
+
 /-- The original bounded C112 class has the full actual identity at every strictly interior
 starting time, with no extra regularity or boundary-solution premise. -/
-theorem strip_identity_C112_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+theorem strip_identity_C112_of_realization (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (sMinus T : ℝ) (_hT : sMinus < T)
     (e : StripPole H (T : WithTop ℝ)) (he : sMinus < e.1.time) (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
     (hc : ContinuousOn phi (reconstructionStrip H sMinus T ∪ reconstructionExit H sMinus T))
     (hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H sMinus T,
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
-    phi e.1 = (∫ p, phi p ∂stripExitOfRealization hH hlam hLam A H E hE T e) -
+    phi e.1 = (∫ p, phi p ∂stripExitOfRealization A H E hE T e) -
       ∫ p, forwardScalarOperator A.a phi p ∂stripGreenOfKernel H E.2 T e := by
   obtain ⟨u, hform, hu, hop, huc, hexit⟩ := strip_bounded_source_reconstruction
-    hH hlam hLam A H E hE sMinus T phi hphi hc hb
+    A H E hE sMinus T phi hphi hc hb
   have hub := reconstruction_uniform_bound H E A sMinus T e he phi u hphi hb hform huc
-  have hrep := reconstruction_homogeneous_exit_representation hH hlam hLam A H E hE
+  have hrep := reconstruction_homogeneous_exit_representation A H E hE
     sMinus T e he u hu hop huc hub
-  have hclosed : ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+  have hclosed : ∀ᵐ p ∂stripExitOfRealization A H E hE T e,
       p ∈ stripClosedExit H T := by
     rw [ae_iff]
-    exact stripExitOfRealization_compl_closedExit hH hlam hLam A H E hE T e
-  have hAE : u =ᵐ[stripExitOfRealization hH hlam hLam A H E hE T e] phi := by
+    exact stripExitOfRealization_compl_closedExit A H E hE T e
+  have hAE : u =ᵐ[stripExitOfRealization A H E hE T e] phi := by
     filter_upwards [hclosed,
-      stripExitOfRealization_ae_closed_future hH hlam hLam A H E hE T e] with p hp ht
+      stripExitOfRealization_ae_closed_future A H E hE T e] with p hp ht
     apply hexit
     rcases hp with hp | hp
     · exact Or.inl hp
@@ -49,18 +49,17 @@ theorem strip_identity_C112_of_realization
   linarith
 
 /-- The canonical autonomous families satisfy the full C112 identity at an interior pole. -/
-theorem strip_identity_C112
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (sMinus T : ℝ) (hT : sMinus < T)
+theorem strip_identity_C112 (sMinus T : ℝ) (hT : sMinus < T)
     (e : StripPole H (T : WithTop ℝ)) (he : sMinus < e.1.time) (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
     (hc : ContinuousOn phi (reconstructionStrip H sMinus T ∪ reconstructionExit H sMinus T))
     (hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H sMinus T,
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
-    phi e.1 = (∫ p, phi p ∂stripExit hH hLE hlam hLam A H T e) -
-      ∫ p, forwardScalarOperator A.a phi p ∂stripGreen hH hLE hlam hLam A H T e :=
-  strip_identity_C112_of_realization hH hlam hLam A H _
-    (stripEvolution_spec hH hLE hlam hLam A H) sMinus T hT e he phi hphi hc hb
+    phi e.1 = (∫ p, phi p ∂stripExit A H T e) -
+      ∫ p, forwardScalarOperator A.a phi p ∂stripGreen A H T e :=
+  strip_identity_C112_of_realization A H _
+    (stripEvolution_spec A H) sMinus T hT e he phi hphi hc hb
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

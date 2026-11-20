@@ -2,7 +2,6 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.LocalisedAssembly
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.EvolutionConclusion
-import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.EvolutionConclusionConsumers
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.Occupation
 import HypoellipticAleksandrov.KineticAleksandrov.Decay.UnitBlock
 import HypoellipticAleksandrov.KineticAleksandrov.Decay.FourierDecay
@@ -25,7 +24,7 @@ theorem kinetic_aleksandrov_timeVelocity_localised_of_terminalEvolution
     (d : ℕ) (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp : 2 * (d : ℝ) + 1 < p)
     (hEv : SectionTwo.TerminalEvolutionConclusion)
-    (hH : HormanderHypoellipticityStatement) :
+    :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R →
       ∀ (A : CoefficientField d),
@@ -45,14 +44,12 @@ theorem kinetic_aleksandrov_timeVelocity_localised_of_terminalEvolution
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0))
                 (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  have hIter := SectionTwo.iterationEvolutionStatement_of_conclusion hEv
   have hOcc := Occupation.parabolicOccupationFamily_holds
-    (SectionTwo.occupationEvolutionStatement_of_conclusion hEv) hH hd lam Lam hlam hLam
-  have hBlock := Decay.unit_frequency_block_W hIter d hd lam Lam hlam hLam
-  have hDecay := Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hIter hBlock
+    hEv hd lam Lam hlam hLam
+  have hDecay := Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hEv (Decay.unit_frequency_block_W hEv d hd lam Lam hlam hLam)
   exact kinetic_aleksandrov_timeVelocity_localised_of_slabFourierBounds
-    d hd lam Lam p hlam hLam hp hH
+    d hd lam Lam p hlam hLam hp
     (Green.slabFourierBounds_of_occupation_decay hd lam Lam hOcc hDecay)
-    (SectionTwo.taAssemblyEvolution_of_conclusion hEv d hd lam Lam hlam hLam)
+    (fun B hB => (hEv.timeVelocity hd (SectionTwo.wholeSpace_admissible d) B hB).realizes)
 
 end HypoellipticAleksandrov.KineticAleksandrov

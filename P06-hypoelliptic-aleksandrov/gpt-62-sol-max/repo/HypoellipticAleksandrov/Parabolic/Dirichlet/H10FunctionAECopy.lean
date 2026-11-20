@@ -17,15 +17,15 @@ namespace PDE.H10Function
 
 open Filter MeasureTheory
 
+section
+variable {d : ℕ} {U : Set (PDE.Vec d)} (w : PDE.H10Function U) (q : PDE.H1Function U)
+  (hfun : w.toH1Function.toFun =ᵐ[PDE.volumeOn U] q.toFun)
+  (hgrad : ∀ i : Fin d, (fun x => w.toH1Function.grad x i) =ᵐ[PDE.volumeOn U] (fun x => q.grad x i))
+include w q hfun hgrad
+
 /-- Copy an `H10Function` approximation certificate to an almost-everywhere equal
 `H1Function` carrier. -/
-noncomputable def copyToH1Function_of_ae_eq
-    {d : ℕ} {U : Set (PDE.Vec d)}
-    (w : PDE.H10Function U) (q : PDE.H1Function U)
-    (hfun : w.toH1Function.toFun =ᵐ[PDE.volumeOn U] q.toFun)
-    (hgrad : ∀ i : Fin d,
-      (fun x => w.toH1Function.grad x i) =ᵐ[PDE.volumeOn U]
-        (fun x => q.grad x i)) : PDE.H10Function U where
+noncomputable def copyToH1Function_of_ae_eq : PDE.H10Function U where
   toH1Function := q
   approx := w.approx
   approx_smooth := w.approx_smooth
@@ -63,14 +63,10 @@ noncomputable def copyToH1Function_of_ae_eq
         rw [hx]]
     exact w.tendsto_approx_grad i
 
-@[simp] theorem copyToH1Function_of_ae_eq_toH1Function
-    {d : ℕ} {U : Set (PDE.Vec d)}
-    (w : PDE.H10Function U) (q : PDE.H1Function U)
-    (hfun : w.toH1Function.toFun =ᵐ[PDE.volumeOn U] q.toFun)
-    (hgrad : ∀ i : Fin d,
-      (fun x => w.toH1Function.grad x i) =ᵐ[PDE.volumeOn U]
-        (fun x => q.grad x i)) :
+@[simp] theorem copyToH1Function_of_ae_eq_toH1Function :
     (copyToH1Function_of_ae_eq w q hfun hgrad).toH1Function = q :=
   rfl
+
+end
 
 end PDE.H10Function

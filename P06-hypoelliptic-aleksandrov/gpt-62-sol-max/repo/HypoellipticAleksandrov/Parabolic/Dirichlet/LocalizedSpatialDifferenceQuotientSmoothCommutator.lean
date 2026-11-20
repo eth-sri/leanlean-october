@@ -4,7 +4,8 @@ public import
   HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientSmoothRepresentation
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientEnergyWeakTest
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialBounds
-public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientIntegration
+public import PDEFoundation.Ambient.Basis
+public import PDEFoundation.Measure.AffineVolume
 
 /-!
 # Smooth fixed-time localized commutator
@@ -25,7 +26,7 @@ private theorem cont_mul_local
     (hU : IsOpen U) (hp : Continuous p) (hps : tsupport p ⊆ U)
     (hq : ContinuousOn q U) : Continuous (fun x => p x * q x) := by
   refine (hp.continuousOn.mul hq).continuous_of_tsupport_subset hU ?_
-  exact (tsupport_mul_subset_left (f := p) (g := q)).trans hps
+  exact LE.le.trans tsupport_mul_subset_left hps
 
 private theorem local_transpose
     {d : ℕ} (Ω : Set (PDE.Vec d))
@@ -118,14 +119,12 @@ private theorem local_transpose
       rw [image_eq_zero_of_notMem_tsupport hnot]
       ring
 
+section
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+  (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+  (hηΩ : tsupport η.toFun ⊆ Ω) (hηshift : η.ShiftMapsInto k h Ω)
+
 private theorem energy_value_eq_backward
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
-    (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
     (y : PDE.Vec d) :
     localizedSpatialDifferenceQuotientEnergyWeakTest
       η k h φ φ.contDiff hηΩ hηshift y =
@@ -135,21 +134,13 @@ private theorem energy_value_eq_backward
   change localizedSpatialDifferenceQuotientEnergyTest η k h φ y = _
   rw [localizedSpatialDifferenceQuotientEnergyTest_apply]
   simp only [localizedSpatialDifferenceQuotient_apply]
-  rw [neg_smul]
-  rw [sub_eq_add_neg]
+  rw [neg_smul, sub_eq_add_neg]
   have hcancel : y + -(h • PDE.basisVec k) + h • PDE.basisVec k = y := by
     module
   rw [hcancel]
   ring_nf
 
 private theorem energy_deriv_eq_backward
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
-    (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
     (i : Fin d) (y : PDE.Vec d) :
     (localizedSpatialDifferenceQuotientEnergyWeakTest
       η k h φ φ.contDiff hηΩ hηshift).partialDeriv i y =
@@ -167,22 +158,18 @@ private theorem energy_deriv_eq_backward
   rw [localizedSpatialDifferenceQuotientEnergyWeakTest_partialDeriv
     η k h φ hηΩ hηshift i y]
 
-private theorem continuousOn_reverseTimeCoefficientEntry
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ τ : ℝ) (a : CoefficientField d) (i j : Fin d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+end
+
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ τ : ℝ) (a : CoefficientField d)
+
+private theorem continuousOn_reverseTimeCoefficientEntry (i j : Fin d)
+    (ha : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     ContinuousOn (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω := by
   rcases ha with ⟨V, hVopen, hKV, hV⟩
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
-    exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by
-      intro z hz
-      exact Set.mem_univ _)
   have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by
-      intro z hz
-      exact Set.mem_univ _)
+    fun_prop (disch := assumption)
   have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
     constructor <;> linarith [hτ.1, hτ.2]
   have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
@@ -192,14 +179,10 @@ private theorem continuousOn_reverseTimeCoefficientEntry
   simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
     (Continuous.prodMk_right _).continuousOn hmap
 
-private theorem continuousOn_reverseTimeDivergenceDriftEntry
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
+private theorem continuousOn_reverseTimeDivergenceDriftEntry (b : ℝ → PDE.Vec d → PDE.Vec d)
     (j : Fin d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (ha : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hb : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     ContinuousOn (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j) Ω := by
   have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
@@ -230,6 +213,8 @@ private theorem continuousOn_reverseTimeDivergenceDriftEntry
   simpa only [reverseTimeDivergenceDrift, reverseTimeVectorCoefficient_apply,
     Pi.sub_def] using hdiv.sub hbcont
 
+end
+
 /-- The fixed-time smooth localized energy test satisfies the literal
 source-minus-form spatial difference-quotient commutator identity. -/
 theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commutator
@@ -238,26 +223,16 @@ theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commut
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
     (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F)
     (τ : ℝ) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω) :
+    (hηshift : η.ShiftMapsInto k h Ω) :
     let e : PDE.Vec d := h • PDE.basisVec k
     let T : (PDE.Vec d → ℝ) → PDE.Vec d → ℝ :=
       fun q y => q (y + e)

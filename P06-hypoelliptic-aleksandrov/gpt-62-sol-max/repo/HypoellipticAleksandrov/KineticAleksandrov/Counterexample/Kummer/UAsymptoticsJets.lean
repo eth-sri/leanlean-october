@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.UAsymptoticsDerivatives
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.MAsymptotics
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.MAsymptoticsJets
 import Mathlib.Tactic
 
 /-!
@@ -34,8 +34,11 @@ theorem rpow_mul_isBigO_of_add_eq (f : ℝ → ℝ) (p r e : ℝ)
   simp only [Real.rpow_eq_pow, ← he]
   exact rpow_mul_isBigO f p r h
 
+section
+variable (a : NegThird) (N : ℕ)
+
 /-- The transformed remainder is a power times the positive integral remainder. -/
-theorem UNr_remainder_eq_power (a : NegThird) (N : ℕ) (z : ℝ) (hz : 0 < z) :
+theorem UNr_remainder_eq_power (z : ℝ) (hz : 0 < z) :
     UNr a z - uExpansion a.1 (2 / 3) N z =
       z ^ (1 / 3 : ℝ) *
         (UIr ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩ (4 / 3) z -
@@ -44,7 +47,7 @@ theorem UNr_remainder_eq_power (a : NegThird) (N : ℕ) (z : ℝ) (hz : 0 < z) :
   rfl
 
 /-- The first derivative remainder has one additional inverse power. -/
-theorem UNr_expansion_deriv (a : NegThird) (N : ℕ) :
+theorem UNr_expansion_deriv :
     IsBigO atTop (deriv (fun z => UNr a z - uExpansion a.1 (2 / 3) N z))
       (fun z => Real.rpow z (-a.1 - (N : ℝ) - 1)) := by
   let c : Pos := ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩
@@ -82,7 +85,7 @@ theorem UNr_expansion_deriv (a : NegThird) (N : ℕ) :
   exact (by convert hd.symm using 1; ring)
 
 /-- The second derivative remainder has two additional inverse powers. -/
-theorem UNr_expansion_deriv2 (a : NegThird) (N : ℕ) :
+theorem UNr_expansion_deriv2 :
     IsBigO atTop (deriv (deriv (fun z => UNr a z - uExpansion a.1 (2 / 3) N z)))
       (fun z => Real.rpow z (-a.1 - (N : ℝ) - 2)) := by
   let c : Pos := ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩
@@ -114,5 +117,7 @@ theorem UNr_expansion_deriv2 (a : NegThird) (N : ℕ) :
   have hder := heq.deriv.deriv_eq
   rw [hd] at hder
   exact (by convert hder.symm using 1; ring)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

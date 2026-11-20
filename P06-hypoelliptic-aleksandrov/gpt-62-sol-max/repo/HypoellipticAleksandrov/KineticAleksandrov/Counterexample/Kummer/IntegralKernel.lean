@@ -75,11 +75,14 @@ theorem integrableOn_gammaKernel (a z : ℝ) (ha : 0 < a) (hz : 0 < z) :
     (Real.exp (-(z * t)) * (z * t) ^ (a - 1)) =
       Real.exp (-(z * t)) * t ^ (a - 1)
   rw [Real.mul_rpow hz.le ht.le]
-  have hn := (Real.rpow_pos_of_pos hz (a - 1)).ne'
   field_simp
 
+section
+variable (a b z : ℝ) (ha : 0 < a) (hz : 0 < z)
+include ha hz
+
 /-- Absolute convergence of the full Kummer Laplace kernel. -/
-theorem integrableOn_laplaceKernelReal (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
+theorem integrableOn_laplaceKernelReal :
     IntegrableOn (laplaceKernelReal a b z) (Ioi 0) volume := by
   obtain ⟨n, hn⟩ := exists_nat_gt (b - a - 1)
   have hnshape : 0 < a + (n : ℝ) := add_pos_of_pos_of_nonneg ha (Nat.cast_nonneg n)
@@ -102,7 +105,7 @@ theorem integrableOn_laplaceKernelReal (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
     exact hmul.trans_eq (by ring)
 
 /-- The integral of the kernel is strictly positive. -/
-theorem integral_laplaceKernelReal_pos (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
+theorem integral_laplaceKernelReal_pos :
     0 < ∫ t in Ioi (0 : ℝ), laplaceKernelReal a b z t := by
   have hs : Function.support (laplaceKernelReal a b z) ∩ Ioi 0 = Ioi 0 := by
     rw [inter_eq_right]
@@ -114,5 +117,7 @@ theorem integral_laplaceKernelReal_pos (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
   · filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
     exact (laplaceKernelReal_pos a b z t ht).le
   · exact integrableOn_laplaceKernelReal a b z ha hz
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

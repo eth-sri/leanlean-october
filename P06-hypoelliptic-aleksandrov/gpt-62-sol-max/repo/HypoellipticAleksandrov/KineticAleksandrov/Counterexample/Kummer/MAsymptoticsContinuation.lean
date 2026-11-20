@@ -16,8 +16,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
 open Filter Asymptotics
 
+section
+variable (a : ℝ) (b : Pos) (hab : a < b.1)
+include hab
+
 /-- The second contiguous coefficient after Gamma cancellation. -/
-theorem expansionCoeff_contiguous_second (a : ℝ) (b : Pos) (hab : a < b.1) (n : ℕ) :
+theorem expansionCoeff_contiguous_second (n : ℕ) :
     -((a - b.1) / (b.1 * (b.1 + 1))) *
       expansionCoeff (a + 1) (b.1 + 2) n =
       Real.Gamma b.1 / Real.Gamma (b.1 - a) *
@@ -25,7 +29,6 @@ theorem expansionCoeff_contiguous_second (a : ℝ) (b : Pos) (hab : a < b.1) (n 
   have hb := ne_of_gt b.2
   have hb1 : b.1 + 1 ≠ 0 := ne_of_gt (next b).2
   have hc := ne_of_gt (sub_pos.mpr hab)
-  have hG := ne_of_gt (Real.Gamma_pos_of_pos (sub_pos.mpr hab))
   rw [expansionCoeff, show b.1 + 2 = (b.1 + 1) + 1 by ring,
     Real.Gamma_add_one hb1, Real.Gamma_add_one hb,
     show (b.1 + 1 + 1) - (a + 1) = (b.1 - a) + 1 by ring,
@@ -34,14 +37,14 @@ theorem expansionCoeff_contiguous_second (a : ℝ) (b : Pos) (hab : a < b.1) (n 
   ring
 
 /-- The constant coefficient of the contiguous expansion. -/
-theorem expansionCoeff_contiguous_zero (a : ℝ) (b : Pos) (hab : a < b.1) :
+theorem expansionCoeff_contiguous_zero :
     expansionCoeff a b.1 0 = -((a - b.1) / (b.1 * (b.1 + 1))) *
       expansionCoeff (a + 1) (b.1 + 2) 0 := by
   rw [expansionCoeff_contiguous_second a b hab]
   simp only [expansionCoeff, poch_zero, Nat.factorial_zero, Nat.cast_one, mul_one, div_one]
 
 /-- The higher coefficients of the contiguous expansion. -/
-theorem expansionCoeff_contiguous_succ (a : ℝ) (b : Pos) (hab : a < b.1) (n : ℕ) :
+theorem expansionCoeff_contiguous_succ (n : ℕ) :
     expansionCoeff a b.1 (n + 1) = expansionCoeff (a + 1) (b.1 + 1) n +
       -((a - b.1) / (b.1 * (b.1 + 1))) *
         expansionCoeff (a + 1) (b.1 + 2) (n + 1) := by
@@ -52,13 +55,11 @@ theorem expansionCoeff_contiguous_succ (a : ℝ) (b : Pos) (hab : a < b.1) (n : 
     poch_succ_left a n, poch_succ (a - b.1 + 1) n,
     poch_succ (a + 1) n, poch_succ_left (a - b.1) n,
     Nat.factorial_succ, Nat.cast_mul, Nat.cast_add, Nat.cast_one]
-  have hf : (n.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
-  have hn : (n + 1 : ℝ) ≠ 0 := by positivity
   field_simp
   ring
 
 /-- The exact matching of finite contiguous expansions at adjacent truncation orders. -/
-theorem mExpansion_contiguous (a : ℝ) (b : Pos) (hab : a < b.1) (N : ℕ)
+theorem mExpansion_contiguous (N : ℕ)
     (X : ℝ) (hX : 0 < X) :
     mExpansion a b.1 (N + 1) X = mExpansion (a + 1) (b.1 + 1) N X +
       (-((a - b.1) / (b.1 * (b.1 + 1))) * X) *
@@ -66,7 +67,7 @@ theorem mExpansion_contiguous (a : ℝ) (b : Pos) (hab : a < b.1) (N : ℕ)
   rw [mExpansion_eq_sum a b.1 (N + 1) X hX,
     mExpansion_eq_sum (a + 1) (b.1 + 1) N X hX,
     mExpansion_eq_sum (a + 1) (b.1 + 2) (N + 1) X hX]
-  let k : ℝ := -((a - b.1) / (b.1 * (b.1 + 1)))
+  let k := -((a - b.1) / (b.1 * (b.1 + 1)))
   have hx (n : ℕ) : X * Real.rpow X (-(a + 1 + n)) = Real.rpow X (-(a + n)) := by
     change X * X ^ (-(a + 1 + (n : ℝ))) = X ^ (-(a + n))
     calc
@@ -103,5 +104,7 @@ theorem mExpansion_contiguous (a : ℝ) (b : Pos) (hab : a < b.1) (N : ℕ)
   rw [expansionCoeff_contiguous_zero a b hab]
   change _ + k * _ * _ = _ + (_ + k * _ * _)
   linarith only [hs]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

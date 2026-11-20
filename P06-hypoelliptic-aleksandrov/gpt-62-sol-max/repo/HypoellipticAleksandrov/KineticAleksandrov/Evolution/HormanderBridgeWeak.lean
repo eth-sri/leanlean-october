@@ -39,27 +39,36 @@ def IsDistributionalSolution (Ladj : (EvolutionVec n → ℝ) → EvolutionVec n
     ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ → tsupport ψ ⊆ Ω →
       (∫ x in Ω, u x * Ladj ψ x) = ∫ x in Ω, g x * ψ x
 
+section
+variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+include B b
+
 /-- `u` is a distributional solution of `Lop u = g` on `Ω`
 (`∫_Ω u · Lop^* ψ = ∫_Ω g ψ`). -/
-def IsWeakTransportedSolution (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+def IsWeakTransportedSolution
     (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) : Prop :=
   IsDistributionalSolution (transportedAdjoint B b) Ω u g
 
 /-- `u` is a distributional solution of `L_ε u = g` on `Ω`
 (`∫_Ω u · (Lop^* ψ + ε Δ_z ψ) = ∫_Ω g ψ`). -/
-def IsWeakRegularizedSolution (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) (ε : ℝ)
+def IsWeakRegularizedSolution (ε : ℝ)
     (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) : Prop :=
   IsDistributionalSolution (regularizedAdjoint B b ε) Ω u g
+
+end
 
 section Iff
 
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {lam Lam : ℝ}
 
+section
+variable (hlam : 0 < lam) (hB : IsSmoothFullKineticCoefficient B)
+  (hell : HasEverywhereLoewnerBounds lam Lam B) (hb : IsSmoothDrift b)
+include hlam hB hell hb
+
 /-- For the fields of `Lop`, the Hörmander weak equation with `c = 0` is the distributional
 equation `Lop u = g` together with smoothness of `g` on `Ω`. -/
-theorem hasWeakHormanderEquation_transportedFields_iff (hlam : 0 < lam)
-    (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) :
+theorem hasWeakHormanderEquation_transportedFields_iff (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) :
     HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u ↔
       IsWeakTransportedSolution B b Ω u g ∧ ContDiffOn ℝ (⊤ : ℕ∞) g Ω := by
   have key : ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ →
@@ -75,18 +84,21 @@ theorem hasWeakHormanderEquation_transportedFields_iff (hlam : 0 < lam)
 
 /-- **Weak-form bridge for `Lop`.**  A distributional solution of `Lop u = g` (with `g` smooth on
 `Ω`) satisfies the Hörmander weak equation for `transportedFields B b`, `c = 0`. -/
-theorem hasWeakHormanderEquation_transportedFields (hlam : 0 < lam)
-    (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) {Ω : Set (EvolutionVec n)} {u g : EvolutionVec n → ℝ}
+theorem hasWeakHormanderEquation_transportedFields {Ω : Set (EvolutionVec n)} {u g : EvolutionVec n → ℝ}
     (hu : IsWeakTransportedSolution B b Ω u g) (hg : ContDiffOn ℝ (⊤ : ℕ∞) g Ω) :
     HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u :=
   (hasWeakHormanderEquation_transportedFields_iff hlam hB hell hb Ω u g).2 ⟨hu, hg⟩
 
+end
+
+section
+variable {ε : ℝ} (hε : 0 ≤ ε) (hlam : 0 < lam) (hB : IsSmoothFullKineticCoefficient B)
+  (hell : HasEverywhereLoewnerBounds lam Lam B) (hb : IsSmoothDrift b)
+include hε hlam hB hell hb
+
 /-- For the fields of `L_ε` (`ε ≥ 0`), the Hörmander weak equation with `c = 0` is the
 distributional equation `L_ε u = g` together with smoothness of `g` on `Ω`. -/
-theorem hasWeakHormanderEquation_regularizedFields_iff {ε : ℝ} (hε : 0 ≤ ε) (hlam : 0 < lam)
-    (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) :
+theorem hasWeakHormanderEquation_regularizedFields_iff (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) :
     HasWeakHormanderEquation Ω (regularizedFields B b ε) (fun _ => 0) g u ↔
       IsWeakRegularizedSolution B b ε Ω u g ∧ ContDiffOn ℝ (⊤ : ℕ∞) g Ω := by
   have key : ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ →
@@ -104,12 +116,12 @@ theorem hasWeakHormanderEquation_regularizedFields_iff {ε : ℝ} (hε : 0 ≤ �
 /-- **Weak-form bridge for `L_ε`** (Proposition 2.1).  A distributional
 solution of `L_ε u = g` (`∫ u (Lop^* ψ + ε Δ_z ψ) = ∫ g ψ`, `g` smooth on `Ω`) satisfies the
 Hörmander weak equation for `regularizedFields B b ε`, `c = 0`. -/
-theorem hasWeakHormanderEquation_regularizedFields {ε : ℝ} (hε : 0 ≤ ε) (hlam : 0 < lam)
-    (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) {Ω : Set (EvolutionVec n)} {u g : EvolutionVec n → ℝ}
+theorem hasWeakHormanderEquation_regularizedFields {Ω : Set (EvolutionVec n)} {u g : EvolutionVec n → ℝ}
     (hu : IsWeakRegularizedSolution B b ε Ω u g) (hg : ContDiffOn ℝ (⊤ : ℕ∞) g Ω) :
     HasWeakHormanderEquation Ω (regularizedFields B b ε) (fun _ => 0) g u :=
   (hasWeakHormanderEquation_regularizedFields_iff hε hlam hB hell hb Ω u g).2 ⟨hu, hg⟩
+
+end
 
 end Iff
 

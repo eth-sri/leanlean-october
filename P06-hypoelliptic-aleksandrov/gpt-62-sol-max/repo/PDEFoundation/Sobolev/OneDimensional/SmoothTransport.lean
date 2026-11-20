@@ -26,9 +26,6 @@ def scalarToVecOneContinuousLinearEquiv : ℝ ≃L[ℝ] Vec 1 :=
 
 @[simp] theorem scalarToVecOneContinuousLinearEquiv_apply (t : ℝ) :
     scalarToVecOneContinuousLinearEquiv t = scalarToVecOne t := by
-  funext i
-  rw [scalarToVecOneContinuousLinearEquiv,
-    ContinuousLinearEquiv.piUnique_symm_apply]
   rfl
 
 @[simp] theorem scalarToVecOneContinuousLinearEquiv_one :

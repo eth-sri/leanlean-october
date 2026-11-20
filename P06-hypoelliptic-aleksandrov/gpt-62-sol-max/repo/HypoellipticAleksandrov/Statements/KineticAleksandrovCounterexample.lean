@@ -1,6 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construction
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionMeasurableConstruction
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothFamily
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Setting
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
 public import HypoellipticAleksandrov.Geometry.KineticPointMeasure
@@ -53,7 +54,10 @@ theorem kinetic_aleksandrov_autonomous_counterexample
             (fun P => max (backwardOperator (fun _t x v => A j (x, v)) (U j) P) 0)
             (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)))
             atTop (nhds 0))) := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_autonomous_counterexample_aux
-    d hd p hp hpd
+  let par := Counterexample.counterParameters d p
+  have hpos := Counterexample.counterParameters_pos d hd p hp hpd
+  have hm := Counterexample.measurableFamily_holds d hd p hp hpd
+  exact ⟨par.1, par.2.1, par.2.2.1, par.2.2.2, hpos.1, hpos.2.1, hpos.2.2, hm,
+    Counterexample.smoothFamily_of_measurable hp hpos.2.2 hm⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

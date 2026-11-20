@@ -10,9 +10,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory
 
+section
+variable (r : ℝ) (hr : 0 < r) (q : BellmanPuncturedPlane)
+
 /-- Time change of variables combines degree four of the kernel with degree two of time. -/
-theorem bellmanFundamentalDensity_scaled_identity (r : ℝ) (hr : 0 < r)
-    (q : BellmanPuncturedPlane) :
+theorem bellmanFundamentalDensity_scaled_identity :
     ENNReal.ofReal ((r ^ 2)⁻¹) * bellmanFundamentalDensity (bellmanDilation r hr q) =
       ENNReal.ofReal (r⁻¹ ^ 4) * bellmanFundamentalDensity q := by
   have hf : Measurable (fun t : BellmanPositiveTime => ENNReal.ofReal
@@ -34,8 +36,7 @@ theorem bellmanFundamentalDensity_scaled_identity (r : ℝ) (hr : 0 < r)
       exact lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
 
 /-- The actual fundamental density has degree two under positive kinetic dilation. -/
-theorem bellmanFundamentalDensity_dilation (r : ℝ) (hr : 0 < r)
-    (q : BellmanPuncturedPlane) :
+theorem bellmanFundamentalDensity_dilation :
     bellmanFundamentalDensity (bellmanDilation r hr q) =
       ENNReal.ofReal (r⁻¹ ^ 2) * bellmanFundamentalDensity q := by
   have hc : ENNReal.ofReal (r ^ 2) * ENNReal.ofReal ((r ^ 2)⁻¹) = 1 := by
@@ -53,5 +54,7 @@ theorem bellmanFundamentalDensity_dilation (r : ℝ) (hr : 0 < r)
         (ENNReal.ofReal (r⁻¹ ^ 4) * bellmanFundamentalDensity q) := by
       rw [mul_assoc, bellmanFundamentalDensity_scaled_identity r hr q]
     _ = _ := by rw [← mul_assoc, hp]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

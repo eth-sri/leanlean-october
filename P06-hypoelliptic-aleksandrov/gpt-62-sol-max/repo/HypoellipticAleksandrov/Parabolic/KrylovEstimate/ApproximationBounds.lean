@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ResidualNorm
-public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.SmoothDerivatives
+public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
 public import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
 
@@ -12,8 +12,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set MeasureTheory
 
+section
+variable {N : ℕ}
+
 /-- The scalar residual is continuous wherever the coefficient and selected jet are continuous. -/
-theorem continuousOn_residual {N : ℕ} {V : Set (TimeVelocity N)}
+theorem continuousOn_residual {V : Set (TimeVelocity N)}
     (a : TimeVelocity N → PDE.Mat N) (q : TimeVelocity N → ℝ)
     (ha : ContinuousOn a V) (hq : IsScalarC12On q V) :
     ContinuousOn (residual a q) V := by
@@ -29,14 +32,14 @@ theorem continuousOn_residual {N : ℕ} {V : Set (TimeVelocity N)}
       ((continuous_apply i).comp_continuousOn hq.continuousOn_scalarSpatialHessian)))
 
 /-- Smooth functions and continuous coefficients have a continuous scalar residual. -/
-theorem continuous_residual {N : ℕ} (a : TimeVelocity N → PDE.Mat N)
+theorem continuous_residual (a : TimeVelocity N → PDE.Mat N)
     (q : TimeVelocity N → ℝ) (ha : Continuous a) (hq : ContDiff ℝ 2 q) :
     Continuous (residual a q) := by
   apply continuousOn_univ.mp
   exact continuousOn_residual a q ha.continuousOn (isScalarC12On_of_contDiff_two hq univ)
 
 /-- A bounded coefficient contraction amplifies uniform selected-jet errors by a finite factor. -/
-theorem residual_difference_le {N : ℕ} (a : PDE.Mat N)
+theorem residual_difference_le (a : PDE.Mat N)
     (q w : TimeVelocity N → ℝ) (z : TimeVelocity N) {δ M : ℝ}
     (hδ : 0 ≤ δ) (hM : (∑ i, ∑ j, |a i j|) ≤ M)
     (ht : |scalarTimeDerivative w z - scalarTimeDerivative q z| ≤ δ)
@@ -71,8 +74,7 @@ theorem residual_difference_le {N : ℕ} (a : PDE.Mat N)
   exact (abs_sub _ _).trans ((add_le_add ht hmat).trans_eq (by ring))
 
 /-- A nonnegative source plus a constant bounds the positive residual in the restricted norm. -/
-theorem positive_norm_le_add_constant
-    {N : ℕ} {Q : Set (TimeVelocity N)} (hQ : MeasurableSet Q)
+theorem positive_norm_le_add_constant {Q : Set (TimeVelocity N)} (hQ : MeasurableSet Q)
     (hfinite : volume Q < ⊤) (F G : TimeVelocity N → ℝ)
     (hF : AEStronglyMeasurable F (volume.restrict Q))
     (hG : MemLp G (parabolicExponent N) (volume.restrict Q))
@@ -101,5 +103,7 @@ theorem positive_norm_le_add_constant
     simpa only [Pi.smul_def, smul_eq_mul, mul_one, coe_nnnorm, Real.norm_eq_abs, abs_of_nonneg he]
       using! h
   exact hmono.trans (hadd.trans_eq (by rw [hconst]; rfl))
+
+end
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

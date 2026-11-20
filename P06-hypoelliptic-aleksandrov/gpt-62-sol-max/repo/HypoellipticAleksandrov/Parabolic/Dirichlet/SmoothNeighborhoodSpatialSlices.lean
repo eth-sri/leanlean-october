@@ -18,14 +18,13 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open scoped Matrix.Norms.Elementwise
 
+section
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ r : ℝ)
+
 /-- A matrix-coefficient entry is spatially `C¹` at each time in the closed
 time interval when the matrix field is smooth near the closed cylinder. -/
-theorem contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ r : ℝ) (a : CoefficientField d)
-    (ha : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+theorem contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood (a : CoefficientField d)
+    (ha : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
     (hr : r ∈ Set.Icc r₀ r₁) (i j : Fin d) :
     ContDiffOn ℝ 1 (fun y => a r y i j) Ω := by
   obtain ⟨U, _, hQU, haU⟩ := ha
@@ -46,12 +45,8 @@ theorem contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
 
 /-- A vector-field entry is continuous on each spatial slice at a time in the
 closed interval when the vector field is smooth near the closed cylinder. -/
-theorem continuousOn_vectorEntry_spatialSlice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ r : ℝ) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (hb : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+theorem continuousOn_vectorEntry_spatialSlice_of_smoothOnNeighborhood (b : ℝ → PDE.Vec d → PDE.Vec d)
+    (hb : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
     (hr : r ∈ Set.Icc r₀ r₁) (j : Fin d) :
     ContinuousOn (fun y => b r y j) Ω := by
   obtain ⟨U, _, hQU, hbU⟩ := hb
@@ -63,5 +58,7 @@ theorem continuousOn_vectorEntry_spatialSlice_of_smoothOnNeighborhood
     contDiff_const.prodMk contDiff_id
   exact (hbj.comp hembedding.contDiffOn fun y hy =>
     hQU ⟨hr, subset_closure hy⟩).continuousOn
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

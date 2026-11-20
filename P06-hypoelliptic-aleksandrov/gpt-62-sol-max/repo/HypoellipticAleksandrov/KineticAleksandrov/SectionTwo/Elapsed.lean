@@ -32,8 +32,7 @@ theorem measurableSet_elapsedTime (S : ℝ≥0∞) :
 
 /-- Comap on this subtype is ordinary Lebesgue measure of its image. -/
 theorem elapsedVolume_apply (S : ℝ≥0∞) (s : Set (ElapsedTime S))
-    (hs : MeasurableSet s) : elapsedVolume S s = volume (Subtype.val '' s) := by
-  exact (MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime S)).comap_apply volume s
+    (hs : MeasurableSet s) : elapsedVolume S s = volume (Subtype.val '' s) := (MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime S)).comap_apply volume s
 
 /-- Elapsed Lebesgue measure is sigma finite for every horizon, including infinity. -/
 instance elapsedVolume_sigmaFinite (S : ℝ≥0∞) : SigmaFinite (elapsedVolume S) := by
@@ -48,17 +47,21 @@ instance elapsedVolume_sigmaFinite (S : ℝ≥0∞) : SigmaFinite (elapsedVolume
 /-- The Green construction has an s-finite elapsed measure for every horizon. -/
 instance elapsedVolume_sFinite (S : ℝ≥0∞) : SFinite (elapsedVolume S) := inferInstance
 
+section
+variable {T S : ℝ≥0∞} (hTS : T ≤ S)
+include hTS
+
 /-- The literal inclusion of a shorter elapsed-time carrier. -/
-def elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) : ElapsedTime T → ElapsedTime S :=
+def elapsedInclusion : ElapsedTime T → ElapsedTime S :=
   fun τ => ⟨τ.1, τ.2.1, τ.2.2.trans_le hTS⟩
 
 
 /-- The shorter-horizon inclusion is measurable. -/
-theorem measurable_elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) :
+theorem measurable_elapsedInclusion :
     Measurable (elapsedInclusion hTS) := measurable_subtype_coe.subtype_mk
 
 /-- Horizon inclusion pushes Lebesgue measure to its exact time restriction. -/
-theorem elapsedInclusion_map {T S : ℝ≥0∞} (hTS : T ≤ S) :
+theorem elapsedInclusion_map :
     (elapsedVolume T).map (elapsedInclusion hTS) =
       (elapsedVolume S).restrict {τ | ENNReal.ofReal τ.1 < T} := by
   have ht : MeasurableSet {τ : ElapsedTime S | ENNReal.ofReal τ.1 < T} :=
@@ -75,18 +78,15 @@ theorem elapsedInclusion_map {T S : ℝ≥0∞} (hTS : T ≤ S) :
   · rintro ⟨τ, ⟨hτ, htτ⟩, rfl⟩
     exact ⟨⟨τ.1, τ.2.1, htτ⟩, hτ, rfl⟩
 
+end
+
 /-- Finite elapsed-time volume is exactly the unnormalized horizon length. -/
 theorem elapsedVolume_univ (S : ℝ) (hS : 0 < S) :
     elapsedVolume (ENNReal.ofReal S) univ = ENNReal.ofReal S := by
   rw [elapsedVolume_apply _ _ MeasurableSet.univ]
   have himage : (Subtype.val : ElapsedTime (ENNReal.ofReal S) → ℝ) '' univ =
       {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < ENNReal.ofReal S} := by
-    ext τ
-    constructor
-    · rintro ⟨t, ht, rfl⟩
-      exact t.2
-    · intro ht
-      exact ⟨⟨τ, ht⟩, mem_univ _, rfl⟩
+    simp
   rw [himage]
   have he : {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < ENNReal.ofReal S} = Ioo 0 S := by
     ext τ

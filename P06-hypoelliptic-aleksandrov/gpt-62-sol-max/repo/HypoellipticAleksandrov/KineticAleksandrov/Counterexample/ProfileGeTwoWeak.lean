@@ -13,8 +13,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Set
 
+section
+variable {d : ℕ}
+
 /-- Integration by parts for a locally integrable jet smooth away from the origin. -/
-theorem punctured_directional_ibp {d : ℕ} (f : XV d → ℝ) (w : XV d)
+theorem punctured_directional_ibp (f : XV d → ℝ) (w : XV d)
     (hf : LocallyIntegrable f volume)
     (hdf : LocallyIntegrable (fun q => fderiv ℝ f q w) volume)
     (hs : ∀ q : XV d, q ≠ 0 → DifferentiableAt ℝ f q)
@@ -35,14 +38,14 @@ theorem punctured_directional_ibp {d : ℕ} (f : XV d → ℝ) (w : XV d)
   · simpa only [smul_eq_mul, mul_comm] using
       hf.integrable_smul_left_of_hasCompactSupport ht.continuous hc
   · intro q hq
-    exact hs q (fun he => hz (he ▸ hq))
+    exact hs q fun he => hz (he ▸ hq)
   · intro q _
     exact ht.differentiable (by norm_num) q
 
 /-- The two constant velocity derivatives of a C2 test commute. -/
-theorem dvv_test_swap {d : ℕ} (test : XV d → ℝ) (ht : ContDiff ℝ 2 test)
+theorem dvv_test_swap (test : XV d → ℝ) (ht : ContDiff ℝ 2 test)
     (q : XV d) (i k : Fin d) : dvv test q i k = dvv test q k i := by
-  have hd : DifferentiableAt ℝ (fderiv ℝ test) q :=
+  have hd :=
     ((ht.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num)) q
   unfold dvv dv
   rw [fderiv_clm_apply hd (differentiableAt_const _),
@@ -53,7 +56,7 @@ theorem dvv_test_swap {d : ℕ} (test : XV d → ℝ) (ht : ContDiff ℝ 2 test)
       (0, Pi.single i 1) (0, Pi.single k 1)
 
 /-- The higher-dimensional classical profile has all punctured weak identities. -/
-theorem classical_punctured_weak_from_jets {d : ℕ} (H : XV d → ℝ)
+theorem classical_punctured_weak_from_jets (H : XV d → ℝ)
     (hH : Continuous H)
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d)))
     (hx : ∀ i, LocallyIntegrable (fun q => dx H q i) volume)
@@ -87,6 +90,8 @@ theorem classical_punctured_weak_from_jets {d : ℕ} (H : XV d → ℝ)
     change (∫ q, H q * dvv test q k i) = -(∫ q, dv H q k * dv test q i) at hfirst
     change (∫ q, dv H q k * dv test q i) = -(∫ q, dvv H q i k * test q) at hsecond
     simpa only [dvv_test_swap test ht _ k i, hsecond, neg_neg] using hfirst
+
+end
 
 /-- The higher-dimensional classical profile has all punctured weak identities. -/
 theorem profile_classical_punctured_weak (d : ℕ) (hd : 1 ≤ d)

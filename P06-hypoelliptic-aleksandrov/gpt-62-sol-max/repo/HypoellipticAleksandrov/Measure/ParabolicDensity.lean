@@ -93,12 +93,14 @@ theorem parabolicDyadicCheckpointAverage_tendsto_ae
     Tendsto.congr' (Eventually.of_forall fun n => (hzavg n).symm) htendsto
   simpa only [hzff'] using havgTendsto
 
+section
+variable (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d)) (hGamma : MeasurableSet Gamma)
+  (xi : ℝ) (hxi : xi ∈ Set.Ioo (0 : ℝ) 1)
+include hGamma hxi
+
 /-- At almost every point of a measurable set, every sufficiently fine addressed cell
 containing the point has density strictly above the fixed threshold. -/
-theorem ae_eventually_parabolicDyadicRestrictedCell_density_gt
-    (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d))
-    (hGamma : MeasurableSet Gamma) (xi : ℝ)
-    (hxi : xi ∈ Set.Ioo (0 : ℝ) 1) :
+theorem ae_eventually_parabolicDyadicRestrictedCell_density_gt :
     ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
       z ∈ Gamma →
         ∀ᶠ n in atTop, ∀ index : ParabolicDyadicIndex d n,
@@ -130,10 +132,7 @@ theorem ae_eventually_parabolicDyadicRestrictedCell_density_gt
 
 /-- Almost every point of a measurable set lies in an addressed generation cell on which
 that set has density strictly above the fixed threshold. -/
-theorem ae_exists_parabolicDyadicRestrictedCell_density_gt
-    (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d))
-    (hGamma : MeasurableSet Gamma) (xi : ℝ)
-    (hxi : xi ∈ Set.Ioo (0 : ℝ) 1) :
+theorem ae_exists_parabolicDyadicRestrictedCell_density_gt :
     ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
       z ∈ Gamma →
         ∃ n, ∃ index : ParabolicDyadicIndex d n,
@@ -157,6 +156,8 @@ theorem ae_exists_parabolicDyadicRestrictedCell_density_gt
     change (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index
     exact hzindex
   exact ⟨n, index, hzindex', hn index hzindex'⟩
+
+end
 
 end
 

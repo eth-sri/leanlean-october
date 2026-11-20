@@ -18,17 +18,22 @@ theorem evolutionCoefficient_smooth {lam Lam : ℝ} (A : SmoothAutonomous lam La
     (((contDiff_apply ℝ ℝ (0 : Fin 1)).comp (contDiff_snd.snd)).prodMk
       ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp (contDiff_snd.fst)))
 
+section
+variable (a : ℝ → ℝ → ℝ)
+
 /-- A one-dimensional scalar coefficient is symmetric. -/
-theorem autonomousCoefficient_symmetric (a : ℝ → ℝ → ℝ) :
+theorem autonomousCoefficient_symmetric :
     IsSymmetricFullKineticCoefficient (autonomousCoefficient a) := by
   intro t x v
   rfl
 
 /-- The evolution coefficient is symmetric too. -/
-theorem evolutionCoefficient_symmetric (a : ℝ → ℝ → ℝ) :
+theorem evolutionCoefficient_symmetric :
     IsSymmetricFullKineticCoefficient (evolutionCoefficient a) := by
   intro t y z
   rfl
+
+end
 
 private theorem scalar_matrix_le {a b : ℝ} (hab : a ≤ b) :
     Matrix.diagonal (fun _ : Fin 1 => a) ≤ Matrix.diagonal (fun _ : Fin 1 => b) := by
@@ -54,8 +59,11 @@ private theorem scalar_smul_identity (a : ℝ) :
   subst j
   simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one]
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+
 /-- Pointwise scalar ellipticity is exactly full-matrix Loewner ellipticity in dimension one. -/
-theorem autonomousCoefficient_bounds {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
+theorem autonomousCoefficient_bounds :
     HasEverywhereLoewnerBounds lam Lam (autonomousCoefficient A.a) := by
   intro t x v
   simp only [scalar_smul_identity]
@@ -67,7 +75,7 @@ theorem autonomousCoefficient_bounds {lam Lam : ℝ} (A : SmoothAutonomous lam L
     scalar_matrix_le (A.bounds (x 0) (v 0)).2⟩
 
 /-- The physical bounds survive the Section Two coordinate exchange. -/
-theorem evolutionCoefficient_bounds {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
+theorem evolutionCoefficient_bounds :
     HasEverywhereLoewnerBounds lam Lam (evolutionCoefficient A.a) := by
   intro t y z
   simp only [scalar_smul_identity]
@@ -77,5 +85,7 @@ theorem evolutionCoefficient_bounds {lam Lam : ℝ} (A : SmoothAutonomous lam La
   rw [← scalar_diagonal lam, ← scalar_diagonal Lam, heq]
   exact ⟨scalar_matrix_le (A.bounds (z 0) (y 0)).1,
     scalar_matrix_le (A.bounds (z 0) (y 0)).2⟩
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

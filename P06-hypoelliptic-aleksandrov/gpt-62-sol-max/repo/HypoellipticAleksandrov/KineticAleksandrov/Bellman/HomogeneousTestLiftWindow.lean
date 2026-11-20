@@ -8,7 +8,7 @@ import Mathlib.Tactic
 
 @[expose] public section
 noncomputable section
-open Set MeasureTheory
+open Set MeasureTheory Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- A closed interval of positive radii is compact on the source radial subtype. -/
@@ -41,17 +41,25 @@ theorem bellman_radius_window_volume_finite (K : Set BellmanPositiveTime)
     (hK : IsCompact K) :
     IsFiniteMeasure (Measure.comap (Subtype.val : K → BellmanPositiveTime)
       bellmanPositiveTimeVolume) := by
-  have hm : IsFiniteMeasure (bellmanPositiveTimeVolume.restrict K) :=
-    ⟨by rw [Measure.restrict_apply_univ]; exact hK.measure_lt_top⟩
-  let := hm
-  have he : Measure.comap (Subtype.val : K → BellmanPositiveTime)
-      bellmanPositiveTimeVolume = Measure.comap Subtype.val
-      (bellmanPositiveTimeVolume.restrict K) := by
-    apply (MeasurableEmbedding.subtype_coe hK.measurableSet).map_injective
-    rw [map_comap_subtype_coe hK.measurableSet,
-      map_comap_subtype_coe hK.measurableSet, Measure.restrict_restrict hK.measurableSet,
-      inter_self]
-  rw [he]
-  infer_instance
+  exact ⟨by rw [(MeasurableEmbedding.subtype_coe hK.measurableSet).comap_apply,
+    Subtype.coe_image_univ]; exact hK.measure_lt_top⟩
+
+/-- Near a punctured point the lift is an integral over a single compact window. -/
+theorem bellman_lift_locally_eq_subtype (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+    (hc : HasCompactSupport zeta) (hs : tsupport zeta ⊆ bellmanPuncturedSet)
+    (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
+    ∃ U : Set (ℝ × ℝ), IsOpen U ∧ q ∈ U ∧ ∃ K : Set BellmanPositiveTime, IsCompact K ∧
+      (∀ r : BellmanPositiveTime, bellmanPlaneDilation r.val q ∈ tsupport zeta → r ∈ K) ∧
+      lift alpha zeta =ᶠ[𝓝 q] fun x => ∫ r : K,
+        r.val.val ^ (-1 - alpha) * zeta (bellmanPlaneDilation r.val.val x)
+          ∂Measure.comap Subtype.val bellmanPositiveTimeVolume := by
+  obtain ⟨U, hU, hqU, _, a, b, ha, _, hwindow⟩ :=
+    bellman_compact_test_local_radius_window zeta hc hs q hq
+  have hK := bellmanRadiusWindow_isCompact a b ha
+  refine ⟨U, hU, hqU, _, hK, fun r => hwindow q hqU r, ?_⟩
+  filter_upwards [hU.mem_nhds hqU] with x hx
+  apply bellman_integral_compact_radius_subtype _ hK
+  intro r hrK
+  rw [image_eq_zero_of_notMem_tsupport (fun hs => hrK (hwindow x hx r hs)), mul_zero]
 
 end HypoellipticAleksandrov.KineticAleksandrov

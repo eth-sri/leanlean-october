@@ -32,8 +32,12 @@ theorem position_ball_slice {d : ℕ} (P : KineticPoint d) (t : ℝ)
       x - (P.position+(t-P.time) • P.velocity) := by abel
   rw [heq]
 
+section
+variable {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r)
+include hr
+
 /-- Cylinder volume is time length times the two Euclidean ball volumes. -/
-theorem volume_cylinder_product {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+theorem volume_cylinder_product :
     volume (backwardCylinder P r) = ENNReal.ofReal (r ^ 2) *
       (volume (PDE.euclideanBall (0 : PDE.Vec d) (r ^ 3)) *
         volume (PDE.euclideanBall (0 : PDE.Vec d) r)) := by
@@ -82,7 +86,7 @@ theorem volume_cylinder_product {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
   exact mul_comm _ _
 
 /-- Exact homogeneous scaling of cylinder volume, independent of the center. -/
-theorem volume_cylinder_eq_unit {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+theorem volume_cylinder_eq_unit :
     volume (backwardCylinder P r) = ENNReal.ofReal (r ^ (4*d+2)) *
       volume (backwardCylinder (⟨0,0,0⟩ : KineticPoint d) 1) := by
   rw [volume_cylinder_product P hr, volume_cylinder_product ⟨0,0,0⟩ zero_lt_one]
@@ -90,9 +94,7 @@ theorem volume_cylinder_eq_unit {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
     PDE.volume_euclideanBall_eq_unit_mul_of_pos 0 hr]
   simp only [one_pow, ENNReal.ofReal_one, one_mul]
   have hp : r ^ 2 * (r ^ 3) ^ d * r ^ d = r ^ (4*d+2) := by
-    rw [← pow_mul, ← pow_add, ← pow_add]
-    congr 1
-    omega
+    ring
   have hcoeff : ENNReal.ofReal (r ^ (4*d+2)) = ENNReal.ofReal (r ^ 2) *
       ENNReal.ofReal ((r ^ 3) ^ d) * ENNReal.ofReal (r ^ d) := by
     rw [← ENNReal.ofReal_mul (pow_nonneg hr.le 2),
@@ -101,8 +103,7 @@ theorem volume_cylinder_eq_unit {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
   ring
 
 /-- Positive-radius cylinders have positive finite volume. -/
-theorem volume_cylinder_pos_ne_top {d : ℕ} (P : KineticPoint d) {r : ℝ}
-    (hr : 0 < r) :
+theorem volume_cylinder_pos_ne_top :
     0 < volume (backwardCylinder P r) ∧ volume (backwardCylinder P r) ≠ ⊤ := by
   rw [volume_cylinder_product P hr]
   exact ⟨ENNReal.mul_pos (ENNReal.ofReal_pos.mpr (sq_pos_of_pos hr)).ne'
@@ -113,11 +114,13 @@ theorem volume_cylinder_pos_ne_top {d : ℕ} (P : KineticPoint d) {r : ℝ}
         (PDE.volume_euclideanBall_ne_top 0 hr.le))⟩
 
 /-- Eightfold centered inflation has exactly the homogeneous volume multiplier. -/
-theorem volume_inflatedCylinder {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+theorem volume_inflatedCylinder :
     volume (inflatedCylinder P r 8) = ENNReal.ofReal ((8 : ℝ) ^ (4*d+2)) *
       volume (backwardCylinder P r) := by
   rw [inflatedCylinder, volume_cylinder_eq_unit _ (mul_pos (by norm_num) hr),
     volume_cylinder_eq_unit P hr, mul_pow,
     ENNReal.ofReal_mul (by positivity), mul_assoc]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

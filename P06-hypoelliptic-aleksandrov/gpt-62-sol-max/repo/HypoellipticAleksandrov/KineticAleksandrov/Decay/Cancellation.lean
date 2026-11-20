@@ -32,9 +32,12 @@ open scoped ENNReal
 
 variable {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
 
+section
+variable {ψ : α × β → ℝ} (hψ : Measurable ψ) {M F₁ F₂ : Measure (α × β)}
+include hψ
+
 /-- Integral of the phase over a set splits along `M = (M - (F₁ + F₂)) + F₁ + F₂`. -/
-theorem integral_phase_split {ψ : α × β → ℝ} (hψ : Measurable ψ)
-    {M F₁ F₂ : Measure (α × β)} [IsFiniteMeasure M] [IsFiniteMeasure F₁]
+theorem integral_phase_split [IsFiniteMeasure M] [IsFiniteMeasure F₁]
     [IsFiniteMeasure F₂] (hF : F₁ + F₂ ≤ M) (S : Set (α × β)) :
     ∫ x in S, phaseFactor (ψ x) ∂M =
       ∫ x in S, phaseFactor (ψ x) ∂(M - (F₁ + F₂)) + ∫ x in S, phaseFactor (ψ x) ∂F₁ +
@@ -47,12 +50,11 @@ theorem integral_phase_split {ψ : α × β → ℝ} (hψ : Measurable ψ)
     (integrable_phaseFactor_comp hψ N).restrict
   conv_lhs => rw [hM]
   rw [Measure.restrict_add, Measure.restrict_add,
-    integral_add_measure (by exact (hi _).add_measure (hi _)) (hi _),
+    integral_add_measure ((hi _).add_measure (hi _)) (hi _),
     integral_add_measure (hi _) (hi _)]
 
 /-- Setwise form of the cancellation estimate. -/
-theorem norm_apply_le_cancellation {ψ : α × β → ℝ} (hψ : Measurable ψ)
-    {M F₁ F₂ : Measure (α × β)} [IsFiniteMeasure M] [IsFiniteMeasure F₁]
+theorem norm_apply_le_cancellation [IsFiniteMeasure M] [IsFiniteMeasure F₁]
     [IsFiniteMeasure F₂] (hF : F₁ + F₂ ≤ M) {Θ : Measure α}
     (hΘ₁ : F₁.map Prod.fst = Θ) (hΘ₂ : F₂.map Prod.fst = Θ) {Φ₁ Φ₂ ε : ℝ}
     (hΦ : phaseFactor Φ₁ + phaseFactor Φ₂ = 0)
@@ -85,8 +87,7 @@ theorem norm_apply_le_cancellation {ψ : α × β → ℝ} (hψ : Measurable ψ)
 /-- **Doeblin--Fourier cancellation (Lemma 3.7), domination form.**  The variation measure
 of the phase projection of `M` is dominated by the first marginal of the remainder
 `M - (F₁ + F₂)` plus `2ε Θ`. -/
-theorem variation_le_remainder_add_of_cancellation {ψ : α × β → ℝ} (hψ : Measurable ψ)
-    {M F₁ F₂ : Measure (α × β)} [IsFiniteMeasure M] [IsFiniteMeasure F₁]
+theorem variation_le_remainder_add_of_cancellation [IsFiniteMeasure M] [IsFiniteMeasure F₁]
     [IsFiniteMeasure F₂] (hF : F₁ + F₂ ≤ M) {Θ : Measure α}
     (hΘ₁ : F₁.map Prod.fst = Θ) (hΘ₂ : F₂.map Prod.fst = Θ) {Φ₁ Φ₂ ε : ℝ} (hε : 0 ≤ ε)
     (hΦ : phaseFactor Φ₁ + phaseFactor Φ₂ = 0)
@@ -110,8 +111,7 @@ theorem variation_le_remainder_add_of_cancellation {ψ : α × β → ℝ} (hψ 
 
 /-- **Doeblin--Fourier cancellation (Lemma 3.7)**, additive `ℝ≥0∞` form:
 `‖ν‖_TV + 2 (1 - ε) Θ(α) ≤ M(α × β)`. -/
-theorem totalVariation_add_le_of_cancellation {ψ : α × β → ℝ} (hψ : Measurable ψ)
-    {M F₁ F₂ : Measure (α × β)} [IsFiniteMeasure M] [IsFiniteMeasure F₁]
+theorem totalVariation_add_le_of_cancellation [IsFiniteMeasure M] [IsFiniteMeasure F₁]
     [IsFiniteMeasure F₂] (hF : F₁ + F₂ ≤ M) {Θ : Measure α}
     (hΘ₁ : F₁.map Prod.fst = Θ) (hΘ₂ : F₂.map Prod.fst = Θ) {Φ₁ Φ₂ ε : ℝ} (hε : 0 ≤ ε)
     (hε₁ : ε ≤ 1) (hΦ : phaseFactor Φ₁ + phaseFactor Φ₂ = 0)
@@ -144,8 +144,7 @@ theorem totalVariation_add_le_of_cancellation {ψ : α × β → ℝ} (hψ : Mea
 Lemma Lemma 3.7 (the phase projection `ν` of `M` being the complex measure
 `E ↦ ∫_{E × β} exp (-iψ) dM`):
 `‖ν‖_TV ≤ M(α × β) - 2 (1 - ε) Θ(α)`. -/
-theorem totalVariation_toReal_le_of_cancellation {ψ : α × β → ℝ} (hψ : Measurable ψ)
-    {M F₁ F₂ : Measure (α × β)} [IsFiniteMeasure M] [IsFiniteMeasure F₁]
+theorem totalVariation_toReal_le_of_cancellation [IsFiniteMeasure M] [IsFiniteMeasure F₁]
     [IsFiniteMeasure F₂] (hF : F₁ + F₂ ≤ M) {Θ : Measure α}
     (hΘ₁ : F₁.map Prod.fst = Θ) (hΘ₂ : F₂.map Prod.fst = Θ) {Φ₁ Φ₂ ε : ℝ} (hε : 0 ≤ ε)
     (hε₁ : ε < 1) (hΦ : phaseFactor Φ₁ + phaseFactor Φ₂ = 0)
@@ -154,12 +153,14 @@ theorem totalVariation_toReal_le_of_cancellation {ψ : α × β → ℝ} (hψ : 
     (ν.variation univ).toReal ≤ M.real univ - 2 * (1 - ε) * Θ.real univ := by
   have : IsFiniteMeasure Θ := hΘ₁ ▸ inferInstance
   have h := totalVariation_add_le_of_cancellation hψ hF hΘ₁ hΘ₂ hε hε₁.le hΦ hsupp₁ hsupp₂ hν
-  have hfin : ν.variation univ ≠ ∞ :=
+  have hfin :=
     ne_top_of_le_ne_top (measure_ne_top M univ) (le_self_add.trans h)
   have h2 := ENNReal.toReal_mono (measure_ne_top M univ) h
   rw [ENNReal.toReal_add hfin (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top _ _)),
     ENNReal.toReal_mul, ENNReal.toReal_ofReal (by linarith)] at h2
   simp only [Measure.real] at h2 ⊢
   linarith
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

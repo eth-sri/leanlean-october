@@ -17,19 +17,19 @@ theorem visitKernel_comp_dirac (k : Kernel Point Point) (P : Point) :
 
 /-- The actual initial visit satisfies both outer Green and exit decompositions. -/
 theorem visitInitial_nested
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
-    let gamma := visitEntrancePiece hH hLE hlam hLam A c J s T P 0
-    let GW := visitUnionGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) s T
-    let EW := visitUnionExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) s T
-    visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T P =
+    let gamma := visitEntrancePiece A c J s T P 0
+    let GW := visitUnionGreenKernel A (visitWaitingUnion c J) s T
+    let EW := visitUnionExitKernel A (visitWaitingUnion c J) s T
+    visitUnionGreenKernel A J.toFiniteUnion s T P =
       visitInitialGreen P (visitEntranceInterval c) GW +
-        visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T ∘ₘ gamma ∧
-    visitUnionExitKernel hH hLE hlam hLam A J.toFiniteUnion s T P =
+        visitUnionGreenKernel A J.toFiniteUnion s T ∘ₘ gamma ∧
+    visitUnionExitKernel A J.toFiniteUnion s T P =
       visitInitialExit P (visitEntranceInterval c) (finiteUnionExitSet J.toFiniteUnion s T) EW +
-        visitUnionExitKernel hH hLE hlam hLam A J.toFiniteUnion s T ∘ₘ gamma := by
+        visitUnionExitKernel A J.toFiniteUnion s T ∘ₘ gamma := by
   classical
   dsimp only
   by_cases hi : P.velocity 0 ∈ closure (visitEntranceInterval c).carrier
@@ -42,9 +42,9 @@ theorem visitInitial_nested
       refine ⟨hP.1, hP.2.1, ?_⟩
       rw [visitWaitingUnion_carrier]
       exact ⟨hP.2.2, hi⟩
-    have hmu : ∀ᵐ p ∂Measure.dirac P, p ∈ visitPoleSet (visitWaitingUnion c J) s T :=
+    have hmu :=
       (ae_dirac_iff (measurableSet_visitPoleSet _ s T)).mpr hpw
-    have h := visitUnion_nested hH hLE hlam hLam A (visitWaitingUnion c J) J.toFiniteUnion
+    have h := visitUnion_nested A (visitWaitingUnion c J) J.toFiniteUnion
       hsub s T hT (Measure.dirac P) hmu
     simpa only [visitWaiting_internalExit, visitKernel_comp_dirac, visitEntrancePiece,
       visitGamma, visitInitial, visitInitialGreen, visitInitialExit, ite_eq_right hi] using h

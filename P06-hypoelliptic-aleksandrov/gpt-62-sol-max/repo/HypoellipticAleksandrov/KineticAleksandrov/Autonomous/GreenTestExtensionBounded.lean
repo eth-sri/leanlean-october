@@ -11,30 +11,28 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+  (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) (phi : Point → ℝ)
+  (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph))
+include hphi
+
 /-- The actual identity holds for every globally smooth test bounded, together with its
 operator, on the open velocity strip. No derivative of the coefficient enters the bound. -/
 theorem strip_identity_bounded_smooth_future_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    (phi : Point → ℝ)
-    (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph))
     (hb : ∃ M : ℝ, ∀ p, e.1.time ≤ p.time → p.time ≤ T →
       p.velocity 0 ∈ H.carrier →
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
-    phi e.1 = (∫ p, phi p ∂stripExitOfRealization hH hlam hLam A H E hE T e) -
+    phi e.1 = (∫ p, phi p ∂stripExitOfRealization A H E hE T e) -
       ∫ p, forwardScalarOperator A.a phi p ∂stripGreenOfKernel H E.2 T e := by
   obtain ⟨M, hM⟩ := hb
-  have hMn : 0 ≤ M := (abs_nonneg (phi e.1)).trans (hM e.1 le_rfl (WithTop.coe_lt_coe.mp
-    e.2.1).le e.2.2).1
   have hpc := reconstruction_smooth_physical_continuous phi hphi
   let bx (n : ℕ) := reconstructionPositionBump ((n : ℝ) + 1) (by positivity)
   choose F hF hK using fun n => exists_reconstruction_position_probe A H e.1.time T phi hphi
     (bx n)
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
+  let Ω := stripExitOfRealization A H E hE T e
   let Γ := stripGreenOfKernel H E.2 T e
-  have hΩ := stripExitOfRealization_ae_closed_future hH hlam hLam A H E hE T e
+  have hΩ := stripExitOfRealization_ae_closed_future A H E hE T e
   have hΓ : ∀ᵐ p ∂Γ, e.1.time ≤ p.time ∧ p.time ≤ T ∧ p.velocity 0 ∈ Icc H.lo H.hi := by
     filter_upwards [stripGreenOfKernel_ae_mem_stripPast H E.2 T e,
       reconstruction_green_ae_time_gt H E.2 T e] with p hp ht
@@ -118,7 +116,7 @@ theorem strip_identity_bounded_smooth_future_of_realization
   have hi (n : ℕ) : exitProbePhysical (F n) e.1 =
       (∫ p, exitProbePhysical (F n) p ∂Ω) -
         ∫ p, forwardScalarOperator A.a (exitProbePhysical (F n)) p ∂Γ := by
-    have hh := stripExitOfRealization_probe_integral hH hlam hLam A H E hE T e (F n)
+    have hh := stripExitOfRealization_probe_integral A H E hE T e (F n)
     change (∫ p, exitProbePhysical (F n) p ∂Ω) =
       exitProbePhysical (F n) e.1 +
         ∫ p, forwardScalarOperator A.a (exitProbePhysical (F n)) p ∂Γ at hh
@@ -127,18 +125,14 @@ theorem strip_identity_bounded_smooth_future_of_realization
 
 /-- The bounded smooth identity under the source's time-uniform open-velocity bounds. -/
 theorem strip_identity_bounded_smooth_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    (phi : Point → ℝ)
-    (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph))
     (hb : ∃ M : ℝ, ∀ p, p.velocity 0 ∈ H.carrier →
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
-    phi e.1 = (∫ p, phi p ∂stripExitOfRealization hH hlam hLam A H E hE T e) -
+    phi e.1 = (∫ p, phi p ∂stripExitOfRealization A H E hE T e) -
       ∫ p, forwardScalarOperator A.a phi p ∂stripGreenOfKernel H E.2 T e := by
-  apply strip_identity_bounded_smooth_future_of_realization hH hlam hLam A H E hE T e phi hphi
+  apply strip_identity_bounded_smooth_future_of_realization A H E hE T e phi hphi
   obtain ⟨M, hM⟩ := hb
-  exact ⟨M, fun p _ _ hp => hM p hp⟩
+  exact Exists.intro M fun p x x_1 hp => hM p hp
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

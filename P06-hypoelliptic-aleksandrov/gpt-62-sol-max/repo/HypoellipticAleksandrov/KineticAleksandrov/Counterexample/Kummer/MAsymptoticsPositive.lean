@@ -16,8 +16,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
 open MeasureTheory Set Filter Asymptotics
 
+section
+variable (a : ℝ) (b : Pos)
+
 /-- The full Gamma polynomial equals the normalized algebraic expansion. -/
-theorem gammaPolynomial_normalized (a : ℝ) (b : Pos) (N : ℕ) (X : ℝ)
+theorem gammaPolynomial_normalized (N : ℕ) (X : ℝ)
     (ha : 0 < a) (hab : a < b.1) (hX : 0 < X) :
     Real.Gamma b.1 / (Real.Gamma a * Real.Gamma (b.1 - a)) *
       gammaPolynomial a (b.1 - a) N X = mExpansion a b.1 N X := by
@@ -37,7 +40,7 @@ theorem gammaPolynomial_normalized (a : ℝ) (b : Pos) (N : ℕ) (X : ℝ)
   ring
 
 /-- The negative-axis expansion for a positive first parameter. -/
-theorem M_negative_expansion_positive (a : ℝ) (b : Pos)
+theorem M_negative_expansion_positive
     (ha : 0 < a) (hab : a < b.1) (N : ℕ) :
     IsBigO atTop (fun X => M a b (-X) - mExpansion a b.1 N X)
       (fun X => X ^ (-a - (N : ℝ))) := by
@@ -54,6 +57,8 @@ theorem M_negative_expansion_positive (a : ℝ) (b : Pos)
         betaWeight a (b.1 - a) t * Real.exp (-(X * t))
       rw [neg_mul, mul_comm]
     rw [he, mul_sub, gammaPolynomial_normalized a b N X ha hab hX]
-  · exact Filter.Eventually.of_forall (fun _ => rfl)
+  · rfl
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

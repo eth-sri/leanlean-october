@@ -29,9 +29,11 @@ private theorem measurable_infinitePoleQuery (H : Interval) :
   apply Measurable.subtype_mk
   exact ht.prodMk ((ht.add hτ).prodMk (hv.prodMk hx))
 
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
+
 /-- Set evaluations of the infinite-horizon measure are Borel in the actual valid pole. -/
-theorem stripGreenOfKernel_infinite_measurable_apply (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (E : Set Point)
+theorem stripGreenOfKernel_infinite_measurable_apply (E : Set Point)
     (hE : MeasurableSet E) :
     Measurable (fun e : StripPole H ⊤ => stripGreenOfKernel H K ⊤ e E) := by
   let κ := K.master.comap (infinitePoleQuery H) (measurable_infinitePoleQuery H)
@@ -60,8 +62,7 @@ theorem stripGreenOfKernel_infinite_measurable_apply (H : Interval)
   exact hi
 
 /-- Every admitted terminal horizon gives Borel pole dependence, without invalid query branches. -/
-theorem stripGreenOfKernel_measurable_apply (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : WithTop ℝ)
+theorem stripGreenOfKernel_measurable_apply (T : WithTop ℝ)
     (E : Set Point) (hE : MeasurableSet E) :
     Measurable (fun e : StripPole H T => stripGreenOfKernel H K T e E) := by
   cases T with
@@ -79,13 +80,15 @@ theorem stripGreenOfKernel_measurable_apply (H : Interval)
     rw [he]
     exact hi
 
+end
+
 /-- The unique autonomous killed family has the source-required Borel pole dependence. -/
 theorem stripGreen_measurable_apply
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
     (E : Set Point) (hE : MeasurableSet E) :
-    Measurable (fun e : StripPole H T => stripGreen hH hLE hlam hLam A H T e E) :=
+    Measurable (fun e : StripPole H T => stripGreen A H T e E) :=
   stripGreenOfKernel_measurable_apply H _ T E hE
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

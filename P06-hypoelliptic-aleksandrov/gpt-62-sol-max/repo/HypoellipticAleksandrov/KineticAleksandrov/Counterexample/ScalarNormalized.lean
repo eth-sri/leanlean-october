@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarTails
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarNegativeJets
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarMatching
 import Mathlib.Tactic
 
@@ -35,12 +35,15 @@ theorem scalar_tail_ratio (f : ℝ → ℝ) (alpha c : ℝ)
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
   simp only [Real.rpow_eq_pow]
   rw [Real.rpow_neg hs.le]
-  have hpow := (Real.rpow_pos_of_pos hs alpha).ne'
   field_simp
   ring
 
+section
+variable (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+include hLam
+
 /-- The actual joined profile has its specified positive-ray normalized limit. -/
-theorem F_ratio_atTop (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem F_ratio_atTop :
     Tendsto (fun s => F gamma Lam s / Real.rpow |s| (3 * gamma.1))
       atTop (𝓝 (Real.rpow (9 * Lam) (-gamma.1))) := by
   have h := scalar_tail_ratio (Fplus gamma Lam) (3 * gamma.1)
@@ -50,7 +53,7 @@ theorem F_ratio_atTop (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
   simp only [F, hs, ↓reduceIte, abs_of_pos hs]
 
 /-- The matched joined profile has the same negative-ray normalized limit. -/
-theorem F_ratio_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem F_ratio_atBot
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) :
     Tendsto (fun s => F gamma Lam s / Real.rpow |s| (3 * gamma.1))
@@ -63,7 +66,8 @@ theorem F_ratio_atBot (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   have ht := h.comp tendsto_neg_atBot_atTop
   apply ht.congr'
   filter_upwards [eventually_lt_atBot (0 : ℝ)] with s hs
-  simp only [Function.comp_def, neg_neg, F, hs, not_lt.mpr hs.le,
-    ↓reduceIte, abs_of_neg hs]
+  simp [Function.comp_def, neg_neg, F, hs, not_lt.mpr hs.le, ↓reduceIte, abs_of_neg hs]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

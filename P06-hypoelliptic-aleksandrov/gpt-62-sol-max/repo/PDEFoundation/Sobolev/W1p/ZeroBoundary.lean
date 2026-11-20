@@ -53,7 +53,7 @@ instance : Zero (WeakTestFunction U) where
     { toFun := 0
       contDiff := contDiff_zero_fun
       hasCompactSupport := HasCompactSupport.zero
-      tsupport_subset := by simp only [tsupport_zero, Set.empty_subset] }
+      tsupport_subset := by simp }
 
 instance : Add (WeakTestFunction U) where
   add φ ψ :=
@@ -315,43 +315,7 @@ theorem smoothCompactlySupportedW1pGraph_add
         smoothCompactlySupportedW1pGraph (p := p) hU ψ := by
   apply Subtype.ext
   apply Prod.ext
-  · apply Lp.ext
-    filter_upwards [
-      (W1pFunction.coeFn_toW1pGraph_fst
-        (W1pFunction.ofContDiff hU
-          ((φ + ψ).contDiff.of_le (by simp))
-          (φ + ψ).hasCompactSupport p)),
-      Lp.coeFn_add
-        (smoothCompactlySupportedW1pGraph (p := p) hU φ).1.1
-        (smoothCompactlySupportedW1pGraph (p := p) hU ψ).1.1,
-      (W1pFunction.coeFn_toW1pGraph_fst
-        (W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p)),
-      (W1pFunction.coeFn_toW1pGraph_fst
-        (W1pFunction.ofContDiff hU
-          (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport p))]
-      with x hsum hadd hφ hψ
-    change
-      ⇑((W1pFunction.ofContDiff hU
-        (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1 +
-          (W1pFunction.ofContDiff hU
-            (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport p).toW1pGraph.1.1) x =
-        (⇑(W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1 +
-          ⇑(W1pFunction.ofContDiff hU
-            (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport p).toW1pGraph.1.1) x at hadd
-    change
-      ⇑(W1pFunction.ofContDiff hU
-        ((φ + ψ).contDiff.of_le (by simp))
-        (φ + ψ).hasCompactSupport p).toW1pGraph.1.1 x =
-        ⇑((W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1 +
-          (W1pFunction.ofContDiff hU
-            (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport p).toW1pGraph.1.1) x
-    rw [hsum, hadd]
-    simp only [Pi.add_apply]
-    rw [hφ, hψ]
-    rfl
+  · rfl
   · apply Lp.ext
     filter_upwards [
       (W1pFunction.coeFn_toW1pGraph_snd
@@ -408,33 +372,7 @@ theorem smoothCompactlySupportedW1pGraph_smul
       c • smoothCompactlySupportedW1pGraph (p := p) hU φ := by
   apply Subtype.ext
   apply Prod.ext
-  · apply Lp.ext
-    filter_upwards [
-      (W1pFunction.coeFn_toW1pGraph_fst
-        (W1pFunction.ofContDiff hU
-          ((c • φ).contDiff.of_le (by simp))
-          (c • φ).hasCompactSupport p)),
-      Lp.coeFn_smul c
-        (smoothCompactlySupportedW1pGraph (p := p) hU φ).1.1,
-      (W1pFunction.coeFn_toW1pGraph_fst
-        (W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p))]
-      with x hsmul htarget hφ
-    change
-      ⇑(c • (W1pFunction.ofContDiff hU
-        (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1) x =
-        (c • ⇑(W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1) x at htarget
-    change
-      ⇑(W1pFunction.ofContDiff hU
-        ((c • φ).contDiff.of_le (by simp))
-        (c • φ).hasCompactSupport p).toW1pGraph.1.1 x =
-        ⇑(c • (W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1) x
-    rw [hsmul, htarget]
-    simp only [Pi.smul_apply]
-    rw [hφ]
-    rfl
+  · rfl
   · apply Lp.ext
     filter_upwards [
       (W1pFunction.coeFn_toW1pGraph_snd
@@ -529,8 +467,7 @@ theorem mem_w10pGraph_of_supportedSmoothApproximation
   apply (w10pGraphClosedSubmodule (p := p) hU).isClosed.mem_of_tendsto
     (happrox.tendsto_toW1pGraph hU)
   filter_upwards with n
-  apply smoothCompactlySupportedW1pGraph_mem_w10pGraph (p := p) hU
-    (happrox.toWeakTestFunction n)
+  exact smoothCompactlySupportedW1pGraph_mem_w10pGraph hU (happrox.toWeakTestFunction n)
 
 end W1pFunction
 
@@ -567,9 +504,7 @@ theorem exists_tendsto_smooth
   rcases exists_tendsto_smooth_span hU u with ⟨v, hv, hvTendsto⟩
   have hactual : ∀ n, ∃ φ : WeakTestFunction U,
       smoothCompactlySupportedW1pGraph (p := p) hU φ = v n := by
-    intro n
-    rcases hv n with ⟨φ, hφ⟩
-    exact ⟨φ, hφ⟩
+    assumption
   choose φ hφ using hactual
   refine ⟨φ, ?_⟩
   simpa only [hφ] using hvTendsto

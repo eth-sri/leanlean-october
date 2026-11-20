@@ -12,14 +12,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped BigOperators
 
+section
+variable (q : ℝ) (hq : 1 < q) (hq2 : q < 2)
+include hq hq2
+
 /-- The literal time-decay sequence has the source power growth for `1 < q < 2`. -/
-theorem time_decay_power_sum_le (q : ℝ) (hq : 1 < q) (hq2 : q < 2) (N : ℕ) :
+theorem time_decay_power_sum_le (N : ℕ) :
     (∑ i ∈ Finset.range (N + 1), (1 + (i : ℝ)) ^ (-q / 2)) ≤
       (1 + 1 / (1 - q / 2)) * ((N : ℝ) + 1) ^ (1 - q / 2) := by
   let f := fun x : ℝ => x ^ (-q / 2)
   have hb : 0 < 1 - q / 2 := by linarith
   have he : -1 < -q / 2 := by linarith
-  have hn : 0 ≤ (N : ℝ) := Nat.cast_nonneg N
   have hf : AntitoneOn f (Icc 1 (1 + (N : ℝ))) := by
     intro x hx y hy hxy
     exact Real.rpow_le_rpow_of_nonpos (by linarith [hx.1]) hxy (by linarith)
@@ -53,7 +56,7 @@ theorem time_decay_power_sum_le (q : ℝ) (hq : 1 < q) (hq2 : q < 2) (N : ℕ) :
     _ = _ := by ring
 
 /-- The observation-horizon count converts to the source factor `(1+R/r)^(2-q)`. -/
-theorem time_decay_power_sum_horizon_le (q : ℝ) (hq : 1 < q) (hq2 : q < 2)
+theorem time_decay_power_sum_horizon_le
     (R r : ℝ) (hR : 0 ≤ R) (hr : 0 < r) (N : ℕ)
     (hN : (N : ℝ) ≤ 2 + (R / r) ^ 2) :
     (∑ i ∈ Finset.range (N + 1), (1 + (i : ℝ)) ^ (-q / 2)) ≤
@@ -73,5 +76,7 @@ theorem time_decay_power_sum_horizon_le (q : ℝ) (hq : 1 < q) (hq2 : q < 2)
   apply (time_decay_power_sum_le q hq hq2 N).trans
   have hC : 0 ≤ 1 + 1 / (1 - q / 2) := by positivity
   exact (mul_le_mul_of_nonneg_left hp hC).trans_eq (mul_assoc _ _ _).symm
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -11,6 +11,8 @@ public import HypoellipticAleksandrov.Parabolic.TimeVelocitySmoothCompactPlateau
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesCompactGlobalization
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpacetimeMollification
 public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
+import HypoellipticAleksandrov.Parabolic.WeakJetLocalization
+import HypoellipticAleksandrov.Parabolic.SpacetimeMollificationSupport
 
 /-!
 # Quotient-test energy identity
@@ -27,103 +29,55 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
-open MeasureTheory Set
+open Filter MeasureTheory Set
 open scoped Convolution ENNReal Pointwise Topology
 open HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
-open SpacetimeMollifierWeightedTimeEnergy
+open SpacetimeMollifierWeightedTimeEnergy Analysis
 
-private theorem velocityGradient_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z ↦ velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
+/-- A smooth directional derivative commutes with the spatial quotient. -/
+private theorem fderiv_spatialDifferenceQuotient
+    {d : ℕ} (k : Fin d) (h : ℝ) {f : TimeVelocity d → ℝ}
+    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z e : TimeVelocity d) :
+    fderiv ℝ (spatialDifferenceQuotient k h f) z e =
+      spatialDifferenceQuotient k h (fun y => fderiv ℝ f y e) z := by
+  have hd := hf.differentiable (by simp) z
+  have ht := (ContDiff.spatialTranslate (k := k) (h := h) hf).differentiable (by simp) z
+  rw [spatialDifferenceQuotient_eq_smul, fderiv_const_smul (ht.sub hd), fderiv_sub ht hd]
+  have htr : fderiv ℝ (spatialTranslate k h f) z = fderiv ℝ f (spatialShift k h z) :=
+    fderiv_comp_add_right (0, h • PDE.basisVec k)
+  rw [htr]
+  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply, smul_eq_mul,
+    spatialDifferenceQuotient_apply, spatialTranslate_apply, div_eq_mul_inv, mul_comm]
 
-private theorem velocityGradient_compact
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
-    (hf : HasCompactSupport f) :
-    HasCompactSupport (fun z ↦ velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
+/-- Transpose the derivative of a backward quotient using a carrier that contains
+both the compact test support and its forward shift. -/
+private theorem setIntegral_mul_fderiv_spatialDifferenceQuotient_neg
+    {d : ℕ} {S C V : Set (TimeVelocity d)}
+    (hS : MeasurableSet S) (hC : MeasurableSet C) (hCS : C ⊆ S) (hVC : V ⊆ C)
+    (H : TimeVelocity d → ℝ) (hH : ParabolicMemLpOn C 2 H)
+    (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
+    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hc : HasCompactSupport f) (hs : tsupport f ⊆ V)
+    (hshift : MapsTo (spatialShift k h) V C) (e : TimeVelocity d) :
+    (∫ z in S, H z * fderiv ℝ (spatialDifferenceQuotient k (-h) f) z e) =
+      -∫ z in V, spatialDifferenceQuotient k h H z * fderiv ℝ f z e := by
+  let g := fun z => fderiv ℝ f z e
+  have hg : tsupport g ⊆ V := (tsupport_fderiv_apply_subset ℝ e).trans hs
+  have hq := tsupport_spatialDifferenceQuotient_subset_of_mapsTo_spatialShift_neg
+    k (-h) g hg hVC (by simpa using hshift)
+  have h := setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQuotient_neg
+    C k h H g hH ((hf.continuous_fderiv (by simp)).clm_apply continuous_const)
+    (hc.fderiv_apply ℝ e) (hg.trans hVC) (fun _ hz => hshift (hg hz))
+  simp_rw [fderiv_spatialDifferenceQuotient _ _ hf]
+  rw [setIntegral_mul_eq_of_tsupport_subset hS hCS _ _ hq]
+  rw [setIntegral_mul_eq_of_tsupport_subset hC hVC _ _ hg] at h
+  linarith only [h]
 
-private theorem velocityGradient_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d} :
-    tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := by
-  unfold velocityGradient
-  change closure (Function.support (fun z ↦
-    fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-private theorem timeDerivative_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} :
-    tsupport (timeDerivative f) ⊆ tsupport f := by
-  unfold timeDerivative
-  change closure (Function.support (fun z ↦
-    fderiv ℝ f z (1, 0))) ⊆ tsupport f
-  refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
-
-/-- Time differentiation commutes exactly with a spatial difference quotient. -/
-private theorem timeDerivative_spatialDifferenceQuotient
-    {d : ℕ} (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    timeDerivative (spatialDifferenceQuotient k h f) =
-      spatialDifferenceQuotient k h (timeDerivative f) := by
-  funext z
-  have htrans : DifferentiableAt ℝ (spatialTranslate k h f) z :=
-    (ContDiff.spatialTranslate hf).differentiable (by simp) z
-  have hfd : DifferentiableAt ℝ f z := hf.differentiable (by simp) z
-  have ht := timeDerivative_spatialTranslate k h f z
-  unfold timeDerivative at ht
-  unfold timeDerivative spatialDifferenceQuotient
-  rw [show (fun z ↦ (spatialTranslate k h f z - f z) / h) =
-      fun z ↦ h⁻¹ * (spatialTranslate k h f z - f z) by
-        funext y
-        ring]
-  rw [fderiv_const_mul (a := fun y ↦ spatialTranslate k h f y - f y)
-    (htrans.sub hfd)]
-  rw [show fderiv ℝ (fun y ↦ spatialTranslate k h f y - f y) z =
-      fderiv ℝ (spatialTranslate k h f) z - fderiv ℝ f z from
-    (htrans.hasFDerivAt.sub hfd.hasFDerivAt).fderiv]
-  simp [ht, div_eq_mul_inv, mul_comm]
-
-/-- A selected velocity derivative commutes exactly with a spatial difference
-quotient of a smooth function. -/
-private theorem velocityGradient_spatialDifferenceQuotient
-    {d : ℕ} (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (i : Fin d) (z : TimeVelocity d) :
-    velocityGradient (spatialDifferenceQuotient k h f) z i =
-      spatialDifferenceQuotient k h (fun y ↦ velocityGradient f y i) z := by
-  have htrans : DifferentiableAt ℝ (spatialTranslate k h f) z :=
-    (ContDiff.spatialTranslate hf).differentiable (by simp) z
-  have hfd : DifferentiableAt ℝ f z := hf.differentiable (by simp) z
-  have hv := congrFun (velocityGradient_spatialTranslate k h f z) i
-  unfold velocityGradient at hv
-  unfold velocityGradient spatialDifferenceQuotient
-  rw [show (fun y ↦ (spatialTranslate k h f y - f y) / h) =
-      fun y ↦ h⁻¹ * (spatialTranslate k h f y - f y) by
-        funext y
-        ring]
-  rw [fderiv_const_mul (a := fun y ↦ spatialTranslate k h f y - f y)
-    (htrans.sub hfd)]
-  rw [show fderiv ℝ (fun y ↦ spatialTranslate k h f y - f y) z =
-      fderiv ℝ (spatialTranslate k h f) z - fderiv ℝ f z from
-    (htrans.hasFDerivAt.sub hfd.hasFDerivAt).fderiv]
-  simp [hv, div_eq_mul_inv, mul_comm]
+section
+variable {d : ℕ}
 
 /-- A selected velocity derivative of a backward quotient transposes from a
 smooth compact test to the forward quotient of an `L²` factor. -/
-private theorem setIntegral_mul_velocityGradient_spatialDifferenceQuotient_neg
-    {d : ℕ} {S C V : Set (TimeVelocity d)}
+private theorem setIntegral_mul_velocityGradient_spatialDifferenceQuotient_neg {S C V : Set (TimeVelocity d)}
     (hSmeas : MeasurableSet S) (hCcompact : IsCompact C)
     (hCS : C ⊆ S) (hVC : V ⊆ C)
     (H : TimeVelocity d → ℝ) (hH : ParabolicMemLpOn C 2 H)
@@ -133,53 +87,14 @@ private theorem setIntegral_mul_velocityGradient_spatialDifferenceQuotient_neg
     (hfShift : Set.MapsTo (spatialShift k h) V C) (i : Fin d) :
     (∫ z in S, H z * velocityGradient
         (spatialDifferenceQuotient k (-h) f) z i) =
-      -∫ z in V, spatialDifferenceQuotient k h H z * velocityGradient f z i := by
-  let g : TimeVelocity d → ℝ := fun z ↦ velocityGradient f z i
-  have hgSmooth : ContDiff ℝ (⊤ : ℕ∞) g :=
-    velocityGradient_contDiff_infty hfSmooth
-  have hgCompact : HasCompactSupport g :=
-    velocityGradient_compact hfCompact
-  have hgSupport : tsupport g ⊆ V :=
-    velocityGradient_tsupport_subset.trans hfSupport
-  have hquotSupport : tsupport (spatialDifferenceQuotient k (-h) g) ⊆ C :=
-    tsupport_spatialDifferenceQuotient_subset_of_mapsTo_spatialShift_neg
-      k (-h) g hgSupport hVC (by simpa using hfShift)
-  have hrestrictLeft :
-      (∫ z in S, H z * spatialDifferenceQuotient k (-h) g z) =
-        ∫ z in C, H z * spatialDifferenceQuotient k (-h) g z := by
-    exact setIntegral_eq_of_subset_of_forall_diff_eq_zero hSmeas hCS
-      (fun z hz ↦ by
-        have hzero : spatialDifferenceQuotient k (-h) g z = 0 :=
-          image_eq_zero_of_notMem_tsupport (fun hzt ↦ hz.2 (hquotSupport hzt))
-        rw [hzero]
-        simp)
-  have htranspose :=
-    setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQuotient_neg
-      C k h H g hH hgSmooth.continuous hgCompact
-      (hgSupport.trans hVC) (fun z hz ↦ hfShift (hgSupport hz))
-  have hrestrictRight :
-      (∫ z in C, spatialDifferenceQuotient k h H z * g z) =
-        ∫ z in V, spatialDifferenceQuotient k h H z * g z := by
-    exact setIntegral_eq_of_subset_of_forall_diff_eq_zero hCcompact.measurableSet hVC
-      (fun z hz ↦ by
-        have hzero : g z = 0 :=
-          image_eq_zero_of_notMem_tsupport (fun hzt ↦ hz.2 (hgSupport hzt))
-        rw [hzero]
-        simp)
-  simp_rw [velocityGradient_spatialDifferenceQuotient k (-h) f hfSmooth i]
-  rw [hrestrictLeft]
-  calc
-    (∫ z in C, H z * spatialDifferenceQuotient k (-h) g z) =
-        -(∫ z in C, spatialDifferenceQuotient k h H z * g z) := by
-      linarith
-    _ = -∫ z in V, spatialDifferenceQuotient k h H z * velocityGradient f z i := by
-      rw [hrestrictRight]
+      -∫ z in V, spatialDifferenceQuotient k h H z * velocityGradient f z i := 
+  setIntegral_mul_fderiv_spatialDifferenceQuotient_neg hSmeas hCcompact.measurableSet
+    hCS hVC H hH k h f hfSmooth hfCompact hfSupport hfShift (0, Pi.single i 1)
 
 /-- Transposition of the time derivative of a backward quotient from a smooth
 compact test to the forward quotient of the rough factor, with the latter
 pairing restricted to its shift-safe carrier. -/
-private theorem setIntegral_mul_timeDerivative_spatialDifferenceQuotient_neg
-    {d : ℕ} {S V : Set (TimeVelocity d)}
+private theorem setIntegral_mul_timeDerivative_spatialDifferenceQuotient_neg {S V : Set (TimeVelocity d)}
     (hSmeas : MeasurableSet S) (hVS : V ⊆ S)
     (q : TimeVelocity d → ℝ) (hq : ParabolicMemLpOn S 2 q)
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
@@ -188,56 +103,13 @@ private theorem setIntegral_mul_timeDerivative_spatialDifferenceQuotient_neg
     (hfShift : Set.MapsTo (spatialShift k h) V S) :
     (∫ z in S, q z * timeDerivative
         (spatialDifferenceQuotient k (-h) f) z) =
-      -∫ z in V, spatialDifferenceQuotient k h q z * timeDerivative f z := by
-  have hdtSmooth : ContDiff ℝ (⊤ : ℕ∞) (timeDerivative f) := by
-    unfold timeDerivative
-    exact (contDiff_infty_iff_fderiv.mp hfSmooth).2.clm_apply contDiff_const
-  have hdtCompact : HasCompactSupport (timeDerivative f) := by
-    unfold timeDerivative
-    simpa using hfCompact.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
-  have hdtSupport : tsupport (timeDerivative f) ⊆ V :=
-    timeDerivative_tsupport_subset.trans hfSupport
-  have htranspose :=
-    setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQuotient_neg
-      S k h q (timeDerivative f) hq hdtSmooth.continuous hdtCompact
-      (hdtSupport.trans hVS) (fun z hz ↦ hfShift (hdtSupport hz))
-  have hrestrict :
-      (∫ z in S, spatialDifferenceQuotient k h q z * timeDerivative f z) =
-        ∫ z in V, spatialDifferenceQuotient k h q z * timeDerivative f z := by
-    exact setIntegral_eq_of_subset_of_forall_diff_eq_zero hSmeas hVS
-      (fun z hz ↦ by
-        have hzero : timeDerivative f z = 0 :=
-          image_eq_zero_of_notMem_tsupport (fun hzt ↦ hz.2 (hdtSupport hzt))
-        simp [hzero])
-  rw [timeDerivative_spatialDifferenceQuotient k (-h) f hfSmooth]
-  calc
-    (∫ z in S, q z * spatialDifferenceQuotient k (-h) (timeDerivative f) z) =
-        -(∫ z in S, spatialDifferenceQuotient k h q z * timeDerivative f z) := by
-      linarith
-    _ = -∫ z in V, spatialDifferenceQuotient k h q z * timeDerivative f z := by
-      rw [hrestrict]
-
-private theorem tsupport_spacetimeMollification_subset_cthickening
-    {d : ℕ} {f : TimeVelocity d → ℝ}
-    {ε : ℝ} (hε : 0 < ε) :
-    tsupport (spacetimeMollification ε f) ⊆ Metric.cthickening ε (tsupport f) := by
-  have hsupp : Function.support (spacetimeMollification ε f) ⊆
-      Metric.thickening ε (tsupport f) := by
-    intro z hz
-    have hzsum := support_convolution_subset
-      (ContinuousLinearMap.lsmul ℝ ℝ) hz
-    rcases hzsum with ⟨x, hx, y, hy, rfl⟩
-    apply Metric.mem_thickening_iff.mpr
-    refine ⟨y, subset_tsupport f hy, ?_⟩
-    rw [dist_eq_norm]
-    simpa [spacetimeMollifier_support hε] using hx
-  exact (closure_mono hsupp).trans
-    (Metric.closure_thickening_subset_cthickening ε (tsupport f))
+      -∫ z in V, spatialDifferenceQuotient k h q z * timeDerivative f z := 
+  setIntegral_mul_fderiv_spatialDifferenceQuotient_neg hSmeas hSmeas Subset.rfl
+    hVS q hq k h f hfSmooth hfCompact hfSupport hfShift (1, 0)
 
 /-- A local `L²` representative can be globalized without changing the
 weighted time-energy pairing near the support of the smooth weight. -/
-private theorem tendsto_localized_timeEnergy_spacetimeMollification
-    {d : ℕ} {V : Set (TimeVelocity d)}
+private theorem tendsto_localized_timeEnergy_spacetimeMollification {V : Set (TimeVelocity d)}
     (hVopen : IsOpen V)
     (qh w : TimeVelocity d → ℝ) (hqh : ParabolicMemLpOn V 2 qh)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
@@ -247,102 +119,27 @@ private theorem tendsto_localized_timeEnergy_spacetimeMollification
       (nhdsWithin 0 (Set.Ioi 0))
       (nhds ((1 / 2 : ℝ) * ∫ z in V,
         timeDerivative w z * qh z ^ 2)) := by
-  obtain ⟨δ, hδ, χ, hχSmooth, hχCompact, hχSupport, hχOne⟩ :=
-    exists_contDiff_one_on_cthickening_tsupport_subset
-      hVopen hwCompact.isCompact hwSupport
-  let Q : TimeVelocity d → ℝ := fun z ↦ χ z * qh z
-  have hχTop : ParabolicMemLpOn V ∞ χ :=
-    (hχSmooth.continuous.memLp_of_hasCompactSupport hχCompact).restrict V
-  have hQV : ParabolicMemLpOn V 2 Q := by
-    simpa only [Q, mul_comm] using hqh.fun_mul hχTop
-  have hQSupport : Function.support Q ⊆ V := by
-    intro z hz
-    have hzχ : χ z ≠ 0 := by
-      intro hzero
-      apply hz
-      simp [Q, hzero]
-    exact hχSupport (subset_tsupport χ hzχ)
-  have hQ : MemLp Q 2 volume :=
-    hQV.memLp_of_support_subset hVopen.measurableSet hQSupport
-  have hχOneK : Set.EqOn χ 1 (tsupport w) := fun z hz ↦
-    hχOne (Metric.self_subset_cthickening (tsupport w) hz)
-  have hwQ : (fun z ↦ w z * Q z) = fun z ↦ w z * qh z := by
+  let Q := V.indicator qh
+  have hV := hVopen.measurableSet
+  have hQ : MemLp Q 2 volume := (memLp_indicator_iff_restrict hV).2 hqh
+  have hwQ : (fun z => w z * Q z) = fun z => w z * qh z := by
     funext z
-    by_cases hz : z ∈ tsupport w
-    · simp [Q, hχOneK hz]
-    · have hwz : w z = 0 := image_eq_zero_of_notMem_tsupport hz
-      simp [hwz]
-  have hwtQsq : (fun z ↦ timeDerivative w z * Q z ^ 2) =
-      fun z ↦ timeDerivative w z * qh z ^ 2 := by
-    funext z
-    by_cases hz : z ∈ tsupport w
-    · simp [Q, hχOneK hz]
-    · have hwtz : timeDerivative w z = 0 :=
-        image_eq_zero_of_notMem_tsupport
-          (fun hzt ↦ hz (timeDerivative_tsupport_subset hzt))
-      simp [hwtz]
-  have hglobal :=
-    tendsto_integral_mul_timeDerivative_spacetimeMollification_mul
-      Q w hQ hwSmooth hwCompact
-  have heq : ∀ᶠ ε : ℝ in nhdsWithin 0 (Set.Ioi 0),
-      (∫ z : TimeVelocity d, Q z *
-          timeDerivative (spacetimeMollification ε (fun y ↦ w y * Q y)) z) =
-        ∫ z in V, qh z *
-          timeDerivative (spacetimeMollification ε (fun y ↦ w y * qh y)) z := by
-    filter_upwards [(eventually_lt_nhds (show (0 : ℝ) < δ from hδ)).filter_mono
-        inf_le_left,
-      self_mem_nhdsWithin] with ε hεδ hεpos
-    rw [hwQ]
-    let D : TimeVelocity d → ℝ := fun z ↦ timeDerivative
-      (spacetimeMollification ε (fun y ↦ w y * qh y)) z
-    have hχ_at_D (z : TimeVelocity d) (hzD : D z ≠ 0) : χ z = 1 := by
-      have hzmoll := timeDerivative_tsupport_subset (subset_tsupport D hzD)
-      have hzthick := tsupport_spacetimeMollification_subset_cthickening hεpos hzmoll
-      have hthickSub : Metric.cthickening ε
-          (tsupport (fun y ↦ w y * qh y)) ⊆
-          Metric.cthickening ε (tsupport w) := by
-        exact Metric.cthickening_subset_of_subset ε tsupport_mul_subset_left
-      exact hχOne (Metric.cthickening_mono hεδ.le (tsupport w)
-        (hthickSub hzthick))
-    calc
-      (∫ z : TimeVelocity d, Q z * D z) = ∫ z in V, Q z * D z := by
-        have ht := setIntegral_eq_of_subset_of_forall_diff_eq_zero
-          (μ := (volume : Measure (TimeVelocity d))) MeasurableSet.univ
-          (subset_univ V) (f := fun z ↦ Q z * D z) (fun z hz ↦ by
-            by_cases hzD : D z = 0
-            · simp [hzD]
-            · have hzχ := hχ_at_D z hzD
-              have hzV : z ∈ V := hχSupport (subset_tsupport χ (by simp [hzχ]))
-              exact (hz.2 hzV).elim)
-        simpa only [Measure.restrict_univ] using ht
-      _ = ∫ z in V, qh z * D z := by
-        apply integral_congr_ae
-        filter_upwards [] with z
-        by_cases hzD : D z = 0
-        · simp [hzD]
-        · simp [Q, hχ_at_D z hzD]
-  have hlimitEq :
-      ((1 / 2 : ℝ) * ∫ z : TimeVelocity d,
-          timeDerivative w z * Q z ^ 2) =
-        (1 / 2 : ℝ) * ∫ z in V, timeDerivative w z * qh z ^ 2 := by
-    rw [hwtQsq]
-    congr 1
-    have ht := setIntegral_eq_of_subset_of_forall_diff_eq_zero
-      (μ := (volume : Measure (TimeVelocity d))) MeasurableSet.univ
-      (subset_univ V) (f := fun z ↦ timeDerivative w z * qh z ^ 2) (fun z hz ↦ by
-        have hwtz : timeDerivative w z = 0 :=
-          image_eq_zero_of_notMem_tsupport
-            (fun hzt ↦ hz.2 (hwSupport (timeDerivative_tsupport_subset hzt)))
-        rw [hwtz]
-        simp)
-    simpa only [Measure.restrict_univ] using ht
-  rw [← hlimitEq]
-  exact hglobal.congr' heq
+    by_cases hz : z ∈ V
+    · simp [Q, hz]
+    · simp [Q, hz, image_eq_zero_of_notMem_tsupport (fun hs => hz (hwSupport hs))]
+  have hleft (ε : ℝ) : (∫ z, Q z * timeDerivative (spacetimeMollification ε (fun y => w y * Q y)) z) =
+      ∫ z in V, qh z * timeDerivative (spacetimeMollification ε (fun y => w y * qh y)) z := by
+    rw [hwQ, ← integral_indicator hV]
+    exact integral_congr_ae (ae_of_all _ fun z => by by_cases hz : z ∈ V <;> simp [Q, hz])
+  have hright : (∫ z, timeDerivative w z * Q z ^ 2) = ∫ z in V, timeDerivative w z * qh z ^ 2 := by
+    rw [← integral_indicator hV]
+    exact integral_congr_ae (ae_of_all _ fun z => by by_cases hz : z ∈ V <;> simp [Q, hz])
+  simpa only [hleft, hright] using
+    tendsto_integral_mul_timeDerivative_spacetimeMollification_mul Q w hQ hwSmooth hwCompact
 
 /-- The localized quotient test and all its selected spatial derivatives have
 global `L²` representatives and ambient weak-derivative relations. -/
-private theorem exists_global_localizedQuotient_weakGradient
-    {d : ℕ} {S : Set (TimeVelocity d)} (hS : IsOpen S)
+private theorem exists_global_localizedQuotient_weakGradient {S : Set (TimeVelocity d)} (hS : IsOpen S)
     (q : TimeVelocity d → ℝ) (G : Fin d → TimeVelocity d → ℝ)
     (hq : ParabolicMemLpOn S 2 q)
     (hG : ∀ j, ParabolicMemLpOn S 2 (G j))
@@ -416,7 +213,6 @@ private theorem exists_global_localizedQuotient_weakGradient
   let qh : TimeVelocity d → ℝ := spatialDifferenceQuotient k h q
   let Gh : Fin d → TimeVelocity d → ℝ := fun i ↦
     spatialDifferenceQuotient k h (G i)
-  let ψ : TimeVelocity d → ℝ := fun z ↦ w z * qh z
   let Dψ : Fin d → TimeVelocity d → ℝ := fun i z ↦
     velocityGradient w z i * qh z + w z * Gh i z
   have hqh : ParabolicMemLpOn V 2 qh :=
@@ -427,52 +223,21 @@ private theorem exists_global_localizedQuotient_weakGradient
     exact (hWeak i).spatialDifferenceQuotient_of_subset_mapsTo
       (hq.locallyIntegrableOn (by norm_num))
       ((hG i).locallyIntegrableOn (by norm_num)) k h hVS hVshift
-  have hwTop : ParabolicMemLpOn V ∞ w :=
-    (hwSmooth.continuous.memLp_of_hasCompactSupport hwCompact).restrict V
-  have hdwTop (i : Fin d) : ParabolicMemLpOn V ∞
-      (fun z ↦ velocityGradient w z i) :=
-    ((velocityGradient_contDiff_infty (i := i) hwSmooth).continuous.memLp_of_hasCompactSupport
-      (velocityGradient_compact (i := i) hwCompact)).restrict V
-  have hψV : ParabolicMemLpOn V 2 ψ := by
-    simpa only [ψ, mul_comm] using hqh.fun_mul hwTop
-  have hDψV (i : Fin d) : ParabolicMemLpOn V 2 (Dψ i) := by
-    have hfirst : ParabolicMemLpOn V 2 (fun z ↦ velocityGradient w z i * qh z) :=
-      by simpa only [mul_comm] using hqh.fun_mul (hdwTop i)
-    have hsecond : ParabolicMemLpOn V 2 (fun z ↦ w z * Gh i z) := by
-      simpa only [mul_comm] using (hGh i).mul' hwTop
-    exact hfirst.add hsecond
-  have hψWeakV (i : Fin d) : HasWeakVelocityPartialDerivOn V i ψ (Dψ i) := by
-    have hp := (hqhWeak i).mul_contDiff hwSmooth
-      (hqh.locallyIntegrableOn (by norm_num))
-      ((hGh i).locallyIntegrableOn (by norm_num))
-    convert hp using 1
-    · funext z
-      simp only [Dψ]
-      ring
-  have hψSupport : tsupport ψ ⊆ V :=
-    (tsupport_mul_subset_left (f := w) (g := qh)).trans hKV
-  have hDψSupport (i : Fin d) : tsupport (Dψ i) ⊆ V := by
-    refine (tsupport_add _ _).trans (union_subset ?_ ?_)
-    · exact (tsupport_mul_subset_left (f := fun z ↦ velocityGradient w z i)
-        (g := qh)).trans (velocityGradient_tsupport_subset.trans hKV)
-    · exact (tsupport_mul_subset_left (f := w) (g := Gh i)).trans hKV
-  have hψGlobal : MemLp ψ 2 volume :=
-    hψV.memLp_of_support_subset hVopen.measurableSet
-      ((subset_tsupport ψ).trans hψSupport)
-  have hDψGlobal (i : Fin d) : MemLp (Dψ i) 2 volume :=
-    (hDψV i).memLp_of_support_subset hVopen.measurableSet
-      ((subset_tsupport (Dψ i)).trans (hDψSupport i))
-  have hψWeakGlobal (i : Fin d) : HasWeakVelocityPartialDerivOn Set.univ i ψ (Dψ i) :=
-    (hψWeakV i).univ_of_tsupport_subset hVopen hψSupport (hDψSupport i)
+  have hj := localized_gradient_jet_univ (b := w) (q := qh) (QG := fun z i => Gh i z)
+    hVopen hqh hGh hqhWeak hwSmooth hwCompact hKV
+  rcases hj with ⟨hψ, hDψ, hψWeak, _, hDψSupport⟩
+  have hDψeq (i : Fin d) : localizedGradient w qh (fun z i => Gh i z) i = Dψ i := by
+    funext z
+    simp only [localizedGradient, Dψ]
+    ring
+  simp only [hDψeq] at hDψ hψWeak hDψSupport
   exact ⟨V, C, hVopen, hVclosure, hKV, hVS, hCcompact, hVC, hCS, hVshiftC,
-    hqh, hGh, hqhWeak,
-    hψGlobal, hDψGlobal, hψWeakGlobal, hDψSupport⟩
+    hqh, hGh, hqhWeak, hψ, hDψ, hψWeak, hDψSupport⟩
 
 /-- Positive-radius mollification of the localized quotient gives smooth
 compact tests, their exact selected gradients, and a backward-quotient test
 whose support remains in the original open carrier. -/
-private theorem exists_mollifiedLocalizedQuotient_testPackage
-    {d : ℕ} {S V : Set (TimeVelocity d)}
+private theorem exists_mollifiedLocalizedQuotient_testPackage {S V : Set (TimeVelocity d)}
     (hVopen : IsOpen V) (hVcompact : IsCompact (closure V))
     (hVS : V ⊆ S) (k : Fin d) (h : ℝ)
     (hVshift : Set.MapsTo (spatialShift k h) V S)
@@ -492,20 +257,12 @@ private theorem exists_mollifiedLocalizedQuotient_testPackage
         HasCompactSupport
           (spatialDifferenceQuotient k (-h) (spacetimeMollification ε ψ)) ∧
         tsupport (spatialDifferenceQuotient k (-h)
-          (spacetimeMollification ε ψ)) ⊆ S) ∧
-      Filter.Tendsto (fun ε : ℝ ↦ eLpNorm (spacetimeMollification ε ψ - ψ) 2 volume)
-        (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) ∧
-      ∀ i, Filter.Tendsto (fun ε : ℝ ↦
-        eLpNorm (spacetimeMollification ε (Dψ i) - Dψ i) 2 volume)
-        (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
+          (spacetimeMollification ε ψ)) ⊆ S) := by
   have hψCompact : HasCompactSupport ψ :=
     hVcompact.of_isClosed_subset (isClosed_tsupport ψ) (hψSupport.trans subset_closure)
   obtain ⟨r, hr, hcollar⟩ := hψCompact.isCompact.exists_cthickening_subset_open
     hVopen hψSupport
-  refine ⟨r, hr, ?_,
-    SpacetimeMollifierL2.tendsto_eLpNorm_spacetimeMollification_sub ψ hψ,
-    fun i ↦ SpacetimeMollifierL2.tendsto_eLpNorm_spacetimeMollification_sub
-      (Dψ i) (hDψ i)⟩
+  refine ⟨r, hr, ?_⟩
   intro ε hε hεr
   have hsmooth := contDiff_spacetimeMollification hε ψ
     (hψ.locallyIntegrable (by norm_num))
@@ -513,7 +270,7 @@ private theorem exists_mollifiedLocalizedQuotient_testPackage
     exact (spacetimeMollifier_hasCompactSupport hε).convolution
       (ContinuousLinearMap.lsmul ℝ ℝ) hψCompact
   have hsupp : tsupport (spacetimeMollification ε ψ) ⊆ V :=
-    (tsupport_spacetimeMollification_subset_cthickening hε).trans
+    (_root_.HypoellipticAleksandrov.Parabolic.SpacetimeMollifier.tsupport_spacetimeMollification_subset_cthickening hε).trans
       ((Metric.cthickening_mono hεr.le (tsupport ψ)).trans hcollar)
   have hgrad (i : Fin d) := velocityGradient_spacetimeMollification hε i ψ (Dψ i)
     (hψ.locallyIntegrable (by norm_num))
@@ -531,116 +288,34 @@ private theorem exists_mollifiedLocalizedQuotient_testPackage
   exact ⟨hsmooth, hcompact, hsupp, fun i z ↦ congrFun (hgrad i) z,
     htestSmooth, htestCompact, htestSupport⟩
 
-/-- A fixed nonzero spatial quotient is a bounded operator on ambient `L²`,
-so it preserves strong `L²` convergence. -/
-private theorem tendsto_eLpNorm_spatialDifferenceQuotient_sub
-    {d : ℕ} {l : Filter ℝ} (k : Fin d) (h : ℝ) (hh : h ≠ 0)
-    (f : ℝ → TimeVelocity d → ℝ) (f₀ : TimeVelocity d → ℝ)
-    (hf : ∀ᶠ ε in l, MemLp (f ε) 2 volume) (hf₀ : MemLp f₀ 2 volume)
-    (hlim : Filter.Tendsto (fun ε ↦ eLpNorm (f ε - f₀) 2 volume)
-      l (nhds 0)) :
-    Filter.Tendsto (fun ε ↦ eLpNorm
-      (spatialDifferenceQuotient k h (f ε) -
-        spatialDifferenceQuotient k h f₀) 2 volume) l (nhds 0) := by
-  let g : ℝ → TimeVelocity d → ℝ := fun ε ↦ f ε - f₀
-  have hg : ∀ᶠ ε in l, MemLp (g ε) 2 volume := by
-    filter_upwards [hf] with ε hε
-    exact hε.sub hf₀
-  have hshiftNorm : ∀ᶠ ε in l,
-      eLpNorm (g ε ∘ spatialShift k h) 2 volume = eLpNorm (g ε) 2 volume := by
-    filter_upwards [hg] with ε hε
-    exact eLpNorm_comp_measurePreserving hε.aestronglyMeasurable
-      (spatialShift_measurePreserving k h)
-  have hbound : ∀ᶠ ε in l, eLpNorm
-      (spatialDifferenceQuotient k h (f ε) -
-        spatialDifferenceQuotient k h f₀) 2 volume ≤
-        ‖(1 / h : ℝ)‖ₑ * (eLpNorm (g ε) 2 volume + eLpNorm (g ε) 2 volume) := by
-    filter_upwards [hg, hshiftNorm] with ε hε hshift
-    have hshiftMeas : AEStronglyMeasurable (g ε ∘ spatialShift k h) volume :=
-      (hε.comp_measurePreserving (spatialShift_measurePreserving k h)).aestronglyMeasurable
-    have hsubMeas : AEStronglyMeasurable
-        ((g ε ∘ spatialShift k h) - g ε) volume :=
-      hshiftMeas.sub hε.aestronglyMeasurable
-    rw [show spatialDifferenceQuotient k h (f ε) -
-        spatialDifferenceQuotient k h f₀ =
-          (1 / h : ℝ) • ((g ε ∘ spatialShift k h) - g ε) by
-      funext z
-      simp only [g, spatialDifferenceQuotient_apply, spatialTranslate_apply,
-        Pi.sub_apply, Pi.smul_apply, smul_eq_mul, Function.comp_apply]
-      field_simp [hh]
-      ring]
-    rw [eLpNorm_const_smul]
-    gcongr
-    exact (eLpNorm_sub_le (by norm_num)).trans_eq
-      (by rw [hshift])
-  have hright : Filter.Tendsto (fun ε ↦
-      ‖(1 / h : ℝ)‖ₑ * (eLpNorm (g ε) 2 volume + eLpNorm (g ε) 2 volume))
-      l (nhds 0) := by
-    simpa only [zero_add, mul_zero] using
-      ENNReal.Tendsto.const_mul (hlim.add hlim)
-        (Or.inr (enorm_ne_top : ‖(1 / h : ℝ)‖ₑ ≠ ∞))
-  apply tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hright
-    (Filter.Eventually.of_forall fun _ ↦ bot_le) hbound
+/-- Fixed spatial quotients preserve strong `L²` convergence. -/
+private theorem strongL2_spatialDifferenceQuotient {ι : Type*} {l : Filter ι} {f : ι → TimeVelocity d → ℝ} {f₀ : TimeVelocity d → ℝ}
+    (hf : StrongL2Limit l volume f f₀) (k : Fin d) (h : ℝ) :
+    StrongL2Limit l volume (fun ε => spatialDifferenceQuotient k h (f ε))
+      (spatialDifferenceQuotient k h f₀) := by
+  simp only [spatialDifferenceQuotient_eq_smul]
+  exact ((hf.comp_measurePreserving (spatialShift_measurePreserving k h)).sub hf).const_mul h⁻¹
+
+end
+
+section
+variable {d : ℕ}
 
 /-- The source stays undifferenced when the mollified localized quotient is
 passed to the fixed backward quotient. -/
-private theorem tendsto_sourcePairing_mollifiedBackwardQuotient
-    {d : ℕ} (S : Set (TimeVelocity d)) (R ψ : TimeVelocity d → ℝ)
+private theorem tendsto_sourcePairing_mollifiedBackwardQuotient (S : Set (TimeVelocity d)) (R ψ : TimeVelocity d → ℝ)
     (hR : ParabolicMemLpOn S 2 R) (hψ : MemLp ψ 2 volume)
-    (k : Fin d) (h : ℝ) (hh : h ≠ 0) :
+    (k : Fin d) (h : ℝ) :
     Filter.Tendsto (fun ε : ℝ ↦ ∫ z in S, R z *
       spatialDifferenceQuotient k (-h) (spacetimeMollification ε ψ) z)
       (nhdsWithin 0 (Set.Ioi 0))
-      (nhds (∫ z in S, R z * spatialDifferenceQuotient k (-h) ψ z)) := by
-  have hmoll : ∀ᶠ ε : ℝ in nhdsWithin 0 (Set.Ioi 0),
-      MemLp (spacetimeMollification ε ψ) 2 volume := by
-    filter_upwards [self_mem_nhdsWithin] with ε hε
-    exact SpacetimeMollifierL2.spacetimeMollification_memLp hε ψ hψ
-  have hquotLim := tendsto_eLpNorm_spatialDifferenceQuotient_sub k (-h)
-    (neg_ne_zero.mpr hh) (fun ε ↦ spacetimeMollification ε ψ) ψ hmoll hψ
-    (SpacetimeMollifierL2.tendsto_eLpNorm_spacetimeMollification_sub ψ hψ)
-  have hquotMem (u : TimeVelocity d → ℝ) (hu : MemLp u 2 volume) :
-      MemLp (spatialDifferenceQuotient k (-h) u) 2 volume := by
-    rw [show spatialDifferenceQuotient k (-h) u =
-        (1 / (-h) : ℝ) • ((u ∘ spatialShift k (-h)) - u) by
-      funext z
-      simp only [spatialDifferenceQuotient_apply, spatialTranslate_apply,
-        Pi.sub_apply, Pi.smul_apply, smul_eq_mul, Function.comp_apply]
-      ring]
-    exact ((hu.comp_measurePreserving
-      (spatialShift_measurePreserving k (-h))).sub hu).const_smul _
-  have hquotLimS : Filter.Tendsto (fun ε ↦ eLpNorm
-      (spatialDifferenceQuotient k (-h) (spacetimeMollification ε ψ) -
-        spatialDifferenceQuotient k (-h) ψ) 2
-      ((volume : Measure (TimeVelocity d)).restrict S))
-      (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
-    exact tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hquotLim
-      (Filter.Eventually.of_forall fun _ ↦ bot_le)
-      (Filter.Eventually.of_forall fun ε ↦
-        eLpNorm_mono_measure _ Measure.restrict_le_self)
-  apply HypoellipticAleksandrov.Analysis.tendsto_integral_mul_of_tendsto_eLpNorm_two
-    (fun _ ↦ R) (fun ε ↦ spatialDifferenceQuotient k (-h)
-      (spacetimeMollification ε ψ)) R (spatialDifferenceQuotient k (-h) ψ)
-  · exact Filter.Eventually.of_forall fun _ ↦ hR
-  · filter_upwards [hmoll] with ε hε
-    exact (hquotMem _ hε).mono_measure Measure.restrict_le_self
-  · exact hR
-  · exact (hquotMem _ hψ).mono_measure Measure.restrict_le_self
-  · have hzero : (fun ε : ℝ ↦ eLpNorm
-        (fun _ : TimeVelocity d ↦ (0 : ℝ)) 2
-        ((volume : Measure (TimeVelocity d)).restrict S)) =
-        fun _ ↦ (0 : ℝ≥0∞) := by
-      funext ε
-      exact eLpNorm_zero
-    simpa only [sub_self, Pi.zero_apply, hzero] using
-      (tendsto_const_nhds : Filter.Tendsto
-        (fun _ : ℝ ↦ (0 : ℝ≥0∞)) (nhdsWithin 0 (Set.Ioi 0)) (nhds 0))
-  · simpa only [Pi.sub_def] using hquotLimS
+      (nhds (∫ z in S, R z * spatialDifferenceQuotient k (-h) ψ z)) := 
+  (StrongL2Limit.const hR).pairing
+    ((strongL2_spatialDifferenceQuotient (SpacetimeMollifierL2.spacetimeMollification_strongL2 hψ) k (-h)).restrict S)
 
 /-- Rearranging the supplied divergence identity for the mollified
 backward-quotient test gives the signs produced by testing with its negative. -/
-private theorem testedEquation_neg_mollifiedBackwardQuotient
-    {d : ℕ} {S : Set (TimeVelocity d)}
+private theorem testedEquation_neg_mollifiedBackwardQuotient {S : Set (TimeVelocity d)}
     (A : TimeVelocity d → PDE.Mat d) (q R : TimeVelocity d → ℝ)
     (G : Fin d → TimeVelocity d → ℝ)
     (hEq : ∀ φ : TimeVelocity d → ℝ,
@@ -675,8 +350,7 @@ private theorem testedEquation_neg_mollifiedBackwardQuotient
 
 /-- A spatial difference quotient commutes exactly with a finite sum, without
 any regularity or nonzero-step assumption. -/
-private theorem spatialDifferenceQuotient_finset_sum
-    {d : ℕ} {ι : Type*} (s : Finset ι) (k : Fin d) (h : ℝ)
+private theorem spatialDifferenceQuotient_finset_sum {ι : Type*} (s : Finset ι) (k : Fin d) (h : ℝ)
     (H : ι → TimeVelocity d → ℝ) :
     spatialDifferenceQuotient k h (fun x ↦ ∑ j ∈ s, H j x) =
       fun z ↦ ∑ j ∈ s, spatialDifferenceQuotient k h (H j) z := by
@@ -687,8 +361,7 @@ private theorem spatialDifferenceQuotient_finset_sum
 /-- The weighted time-energy density is integrable on the original carrier.
 Only local `L²` control of the quotient near the compact weight support is
 used. -/
-private theorem integrableOn_timeDerivative_mul_spatialDifferenceQuotient_sq
-    {d : ℕ} {S V : Set (TimeVelocity d)} (hVS : V ⊆ S)
+private theorem integrableOn_timeDerivative_mul_spatialDifferenceQuotient_sq {S V : Set (TimeVelocity d)} (hVS : V ⊆ S)
     (q : TimeVelocity d → ℝ) (hq : ParabolicMemLpOn V 2 q)
     (w : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
@@ -712,32 +385,21 @@ private theorem integrableOn_timeDerivative_mul_spatialDifferenceQuotient_sq
     have hdtz : timeDerivative w z ≠ 0 := by
       intro hzero
       exact hz (by simp [hzero])
-    exact hwSupport (timeDerivative_tsupport_subset (subset_tsupport _ hdtz))
+    exact hwSupport ((timeDerivative_tsupport _) (subset_tsupport _ hdtz))
   have hglobal := (integrableOn_iff_integrable_of_support_subset hsupp).mp hV
   exact (integrableOn_iff_integrable_of_support_subset (hsupp.trans hVS)).mpr hglobal
 
 /-- Pairing an `L²` source on a carrier with a fixed backward quotient of a
 global `L²` function is integrable on that carrier. -/
-private theorem integrableOn_source_mul_spatialDifferenceQuotient
-    {d : ℕ} (S : Set (TimeVelocity d))
+private theorem integrableOn_source_mul_spatialDifferenceQuotient (S : Set (TimeVelocity d))
     (R ψ : TimeVelocity d → ℝ) (hR : ParabolicMemLpOn S 2 R)
     (hψ : MemLp ψ 2 volume) (k : Fin d) (h : ℝ) :
-    IntegrableOn (fun z ↦ R z * spatialDifferenceQuotient k (-h) ψ z) S := by
-  have hquot : MemLp (spatialDifferenceQuotient k (-h) ψ) 2 volume := by
-    rw [show spatialDifferenceQuotient k (-h) ψ =
-        (1 / (-h) : ℝ) • ((ψ ∘ spatialShift k (-h)) - ψ) by
-      funext z
-      simp only [spatialDifferenceQuotient_apply, spatialTranslate_apply,
-        Pi.sub_apply, Pi.smul_apply, smul_eq_mul, Function.comp_apply]
-      ring]
-    exact ((hψ.comp_measurePreserving
-      (spatialShift_measurePreserving k (-h))).sub hψ).const_smul _
-  exact hR.integrable_mul (hquot.mono_measure Measure.restrict_le_self)
+    IntegrableOn (fun z ↦ R z * spatialDifferenceQuotient k (-h) ψ z) S := 
+  hR.integrable_mul ((memLp_spatialDifferenceQuotient hψ k (-h)).restrict S)
 
 /-- The aggregate forward flux quotient paired with a compactly supported
 global `L²` test gradient is integrable on the original carrier. -/
-private theorem integrableOn_sum_principalFluxQuotient_mul
-    {d : ℕ} {S C V : Set (TimeVelocity d)}
+private theorem integrableOn_sum_principalFluxQuotient_mul {S C V : Set (TimeVelocity d)}
     (hCcompact : IsCompact C) (hCS : C ⊆ S) (hVC : V ⊆ C)
     (A : TimeVelocity d → PDE.Mat d) (G : Fin d → TimeVelocity d → ℝ)
     (hFlux : ∀ i j, ∀ K : Set (TimeVelocity d), IsCompact K → K ⊆ S →
@@ -768,6 +430,8 @@ private theorem integrableOn_sum_principalFluxQuotient_mul
       exact hz (by simp [hzero])
     exact hDψSupport (subset_tsupport Dψ hDz)
   exact ((integrableOn_iff_integrable_of_support_subset hsupp).mp hV).restrict
+
+end
 
 /-- The quotient-test energy identity obtained from a tested divergence-form
 equation by smooth compact approximation. -/
@@ -820,7 +484,7 @@ theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
   let Dψ : Fin d → TimeVelocity d → ℝ := fun i z ↦
     velocityGradient w z i * qh z +
       w z * spatialDifferenceQuotient k h (G i) z
-  obtain ⟨r, hr, htest, hψlim, hDψlim⟩ :=
+  obtain ⟨r, hr, htest⟩ :=
     exists_mollifiedLocalizedQuotient_testPackage hVopen hVcompact hVS k h
       (fun z hz ↦ hCS (hVshift hz)) ψ Dψ hψ hDψ hψWeak
       (tsupport_mul_subset_left.trans hwV)
@@ -842,9 +506,6 @@ theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
     filter_upwards [self_mem_nhdsWithin,
       (eventually_lt_nhds hr).filter_mono inf_le_left] with ε hε hεr
     exact ⟨hε, hεr⟩
-  have hfMem : ∀ᶠ ε in l, MemLp (f ε) 2 volume := by
-    filter_upwards [hevent] with ε hε
-    exact SpacetimeMollifierL2.spacetimeMollification_memLp hε.1 ψ hψ
   have htimeLim : Filter.Tendsto (fun ε ↦ ∫ z in V, qh z *
       timeDerivative (f ε) z) l
       (nhds ((1 / 2 : ℝ) * ∫ z in V, timeDerivative w z * qh z ^ 2)) := by
@@ -853,7 +514,7 @@ theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
   have hsourceLim : Filter.Tendsto (fun ε ↦ ∫ z in S, R z *
       spatialDifferenceQuotient k (-h) (f ε) z) l
       (nhds (∫ z in S, R z * spatialDifferenceQuotient k (-h) ψ z)) := by
-    exact tendsto_sourcePairing_mollifiedBackwardQuotient S R ψ hR hψ k h hh
+    exact tendsto_sourcePairing_mollifiedBackwardQuotient S R ψ hR hψ k h
   have hfluxLim (i j : Fin d) : Filter.Tendsto (fun ε ↦
       ∫ z in V, spatialDifferenceQuotient k h
         (fun x ↦ A x i j * G j x) z * spacetimeMollification ε (Dψ i) z) l
@@ -863,23 +524,8 @@ theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
         (spatialDifferenceQuotient k h (fun z ↦ A z i j * G j z)) :=
       (hFlux i j C hCcompact hCS).spatialDifferenceQuotient_of_subset_mapsTo
         k h hVC hVshift
-    apply HypoellipticAleksandrov.Analysis.tendsto_integral_mul_of_tendsto_eLpNorm_two
-      (fun _ ↦ spatialDifferenceQuotient k h (fun z ↦ A z i j * G j z))
-      (fun ε ↦ spacetimeMollification ε (Dψ i))
-      (spatialDifferenceQuotient k h (fun z ↦ A z i j * G j z)) (Dψ i)
-    · exact Filter.Eventually.of_forall fun _ ↦ hentry
-    · filter_upwards [self_mem_nhdsWithin] with ε hε
-      exact (SpacetimeMollifierL2.spacetimeMollification_memLp hε (Dψ i)
-        (hDψ i)).mono_measure Measure.restrict_le_self
-    · exact hentry
-    · exact (hDψ i).mono_measure Measure.restrict_le_self
-    · convert (tendsto_const_nhds : Filter.Tendsto
-        (fun _ : ℝ ↦ (0 : ℝ≥0∞)) l (nhds 0)) using 1
-      simp
-    · exact tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds
-        (hDψlim i) (Filter.Eventually.of_forall fun _ ↦ bot_le)
-        (Filter.Eventually.of_forall fun ε ↦
-          eLpNorm_mono_measure _ Measure.restrict_le_self)
+    exact (StrongL2Limit.const hentry).pairing
+      ((SpacetimeMollifierL2.spacetimeMollification_strongL2 (hDψ i)).restrict V)
   have heqEventually : ∀ᶠ ε in l,
       -(∫ z in V, qh z * timeDerivative (f ε) z) -
           ∑ i, ∑ j, ∫ z in V, spatialDifferenceQuotient k h
@@ -898,34 +544,9 @@ theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
         hS.measurableSet hCcompact hCS hVC (fun z ↦ A z i j * G j z)
         (hFlux i j C hCcompact hCS) k h (f ε) hp.1 hp.2.1 hp.2.2.1
         hVshift i
-    dsimp only [f] at he ht hf ⊢
-    rw [ht] at he
-    have hfsum : (∑ i, ∑ j, ∫ z in S, A z i j * G j z *
-        velocityGradient (spatialDifferenceQuotient k (-h)
-          (spacetimeMollification ε ψ)) z i) =
-        ∑ i, ∑ j, -(∫ z in V, spatialDifferenceQuotient k h
-          (fun x ↦ A x i j * G j x) z *
-            velocityGradient (spacetimeMollification ε ψ) z i) := by
-      exact Finset.sum_congr rfl (fun i _ ↦ Finset.sum_congr rfl
-        (fun j _ ↦ hf i j))
-    rw [hfsum] at he
-    have hgradsum : (∑ i, ∑ j, -(∫ z in V,
-        spatialDifferenceQuotient k h (fun x ↦ A x i j * G j x) z *
-          velocityGradient (spacetimeMollification ε ψ) z i)) =
-        ∑ i, ∑ j, -(∫ z in V,
-          spatialDifferenceQuotient k h (fun x ↦ A x i j * G j x) z *
-            spacetimeMollification ε (Dψ i) z) := by
-      apply Finset.sum_congr rfl
-      intro i hi
-      apply Finset.sum_congr rfl
-      intro j hj
-      congr 2
-      funext z
-      rw [hp.2.2.2.1 i z]
-    rw [hgradsum] at he
-    simp only [Finset.sum_neg_distrib] at he
-    dsimp only [qh] at ⊢
-    linarith
+    dsimp only [f] at ht hf ⊢
+    simp_rw [ht, hf, hp.2.2.2.1, Finset.sum_neg_distrib] at he
+    linarith only [he]
   have hleftLim : Filter.Tendsto (fun ε ↦
       -(∫ z in V, qh z * timeDerivative (f ε) z) -
         ∑ i, ∑ j, ∫ z in V, spatialDifferenceQuotient k h
@@ -938,25 +559,11 @@ theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
       tendsto_finset_sum _ fun j _ ↦
         hfluxLim i j)
   have hrightLim := hsourceLim.neg
-  have heqEventually' : (λ ε ↦
-      -(∫ z in S, R z * spatialDifferenceQuotient k (-h) (f ε) z)) =ᶠ[l]
-      fun ε ↦ -(∫ z in V, qh z * timeDerivative (f ε) z) -
-        ∑ i, ∑ j, ∫ z in V, spatialDifferenceQuotient k h
-          (fun x ↦ A x i j * G j x) z *
-            spacetimeMollification ε (Dψ i) z := by
-    filter_upwards [heqEventually] with ε he
-    exact he.symm
-  have hlimEq := tendsto_nhds_unique hleftLim
-    (hrightLim.congr' heqEventually')
-  rw [show (∫ z in V, timeDerivative w z * qh z ^ 2) =
-      ∫ z in S, timeDerivative w z * qh z ^ 2 by
-        exact (setIntegral_eq_of_subset_of_forall_diff_eq_zero hS.measurableSet hVS
-          (fun z hz ↦ by
-            have hzero : timeDerivative w z = 0 :=
-              image_eq_zero_of_notMem_tsupport
-                (fun hzt ↦ hz.2 (hwV (timeDerivative_tsupport_subset hzt)))
-            simp [hzero])).symm
-    ] at hlimEq
+  have hlimEq := tendsto_nhds_unique hleftLim (hrightLim.congr' (heqEventually.mono fun _ h => h.symm))
+  have ht := setIntegral_mul_eq_of_tsupport_subset hS.measurableSet hVS
+    (fun z => qh z ^ 2) _ ((timeDerivative_tsupport _).trans hwV)
+  simp_rw [mul_comm (_ ^ 2) (timeDerivative _ _)] at ht
+  rw [← ht] at hlimEq
   have hfluxEq (i : Fin d) :
       (∫ z in S, spatialDifferenceQuotient k h
           (fun x ↦ ∑ j, A x i j * G j x) z * Dψ i z) =
@@ -968,29 +575,9 @@ theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
       exact ((hFlux i j C hCcompact hCS).spatialDifferenceQuotient_of_subset_mapsTo
         k h hVC hVshift).integrable_mul
           ((hDψ i).mono_measure Measure.restrict_le_self)
-    calc
-      (∫ z in S, spatialDifferenceQuotient k h
-          (fun x ↦ ∑ j, A x i j * G j x) z * Dψ i z) =
-          ∫ z in V, spatialDifferenceQuotient k h
-            (fun x ↦ ∑ j, A x i j * G j x) z * Dψ i z := by
-        exact setIntegral_eq_of_subset_of_forall_diff_eq_zero hS.measurableSet hVS
-          (fun z hz ↦ by
-            have hzero : Dψ i z = 0 := image_eq_zero_of_notMem_tsupport
-              (fun hzt ↦ hz.2 (hDψSupport i hzt))
-            simp [hzero])
-      _ = ∫ z in V, (∑ j, spatialDifferenceQuotient k h
-            (fun x ↦ A x i j * G j x) z) * Dψ i z := by
-        rw [spatialDifferenceQuotient_finset_sum Finset.univ k h
-          (fun j x ↦ A x i j * G j x)]
-      _ = ∑ j, ∫ z in V, spatialDifferenceQuotient k h
-          (fun x ↦ A x i j * G j x) z * Dψ i z := by
-        rw [show (fun z ↦ (∑ j, spatialDifferenceQuotient k h
-            (fun x ↦ A x i j * G j x) z) * Dψ i z) =
-          fun z ↦ ∑ j, spatialDifferenceQuotient k h
-              (fun x ↦ A x i j * G j x) z * Dψ i z by
-          funext z
-          rw [Finset.sum_mul]]
-        exact integral_finset_sum _ (fun j _ ↦ hentryInt j)
+    rw [setIntegral_mul_eq_of_tsupport_subset hS.measurableSet hVS _ _ (hDψSupport i),
+      spatialDifferenceQuotient_finset_sum, ← integral_finset_sum _ (fun j _ => hentryInt j)]
+    exact integral_congr_ae (ae_of_all _ fun z => by simp only [Finset.sum_mul, Dψ, qh])
   rw [show (∑ i, ∫ z in S, spatialDifferenceQuotient k h
       (fun x ↦ ∑ j, A x i j * G j x) z * Dψ i z) =
       ∑ i, ∑ j, ∫ z in V, spatialDifferenceQuotient k h

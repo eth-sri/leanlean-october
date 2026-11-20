@@ -19,7 +19,6 @@ variable {d : ℕ}
 /-- The localized smooth estimate, with its constant fixed before all coefficient and PDE data. -/
 theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp : 2 * (d : ℝ) + 1 < p)
-    (hH : HormanderHypoellipticityStatement)
     (hbounds : ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -52,7 +51,6 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
             (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R))).toReal := by
   obtain ⟨C, hC, hgreen⟩ := green_density_bound_of_slabFourierBounds hd lam Lam p
     hlam hLam hp hbounds
-  have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hp1 : 1 < p := by linarith
   let q := p / (p - 1)
   have hq : 1 < q := by
@@ -88,7 +86,7 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
   have hApos : ∀ P ∈ Q,
       ((ofTimeVelocityCoefficient B) P.time P.position P.velocity).PosSemidef :=
     fun P _ => (posDef_of_loewner_lower hlam (hBlo P.time P.velocity)).posSemidef
-  have hpotential := green_potentials hH hlam hLam B hBs hBsym hBlo hBhi S K hreal Z₀ R hR
+  have hpotential := green_potentials hlam hLam B hBs hBsym hBlo hBhi S K hreal Z₀ R hR
   have hdensity : ∀ P ∈ Q, ∃ G : KineticPoint d → ℝ, Measurable G ∧
       (∀ z, 0 ≤ G z) ∧ Γ P = (volume.restrict Q).withDensity (fun z => ENNReal.ofReal (G z)) ∧
       (eLpNorm G (ENNReal.ofReal q) (volume.restrict Q)).toReal ≤ (C + 1) * R ^ α ∧

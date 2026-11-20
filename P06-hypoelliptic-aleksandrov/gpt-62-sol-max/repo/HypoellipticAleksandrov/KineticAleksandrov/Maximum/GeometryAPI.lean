@@ -21,15 +21,18 @@ open Set MeasureTheory
 open scoped MatrixOrder Matrix.Norms.Elementwise
 open HypoellipticAleksandrov.Parabolic
 
+section
+variable {d : ℕ}
+
 /-- The forward cylinder in physical `(s,X,v)` coordinates, with positive radius. -/
-def forwardCylinder {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+def forwardCylinder (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     Set (KineticPoint d) :=
   {P | Z₀.time < P.time ∧ P.time < Z₀.time + R ^ 2 ∧
     P.velocity ∈ PDE.euclideanBall Z₀.velocity R ∧
     relativePosition Z₀ P ∈ PDE.euclideanBall (0 : PDE.Vec d) (R ^ 3)}
 
 /-- Complete literal membership characterization of the forward cylinder. -/
-theorem mem_forwardCylinder_iff {d : ℕ} (Z₀ P : KineticPoint d)
+theorem mem_forwardCylinder_iff (Z₀ P : KineticPoint d)
     (R : ℝ) (hR : 0 < R) :
     P ∈ forwardCylinder Z₀ R hR ↔
       Z₀.time < P.time ∧ P.time < Z₀.time + R ^ 2 ∧
@@ -37,7 +40,7 @@ theorem mem_forwardCylinder_iff {d : ℕ} (Z₀ P : KineticPoint d)
         relativePosition Z₀ P ∈ PDE.euclideanBall (0 : PDE.Vec d) (R ^ 3) := Iff.rfl
 
 /-- Terminal, velocity, and outgoing or grazing position faces of the forward cylinder. -/
-def exitBoundary {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+def exitBoundary (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     Set (KineticPoint d) :=
   closure (forwardCylinder Z₀ R hR) ∩
     ({P | P.time = Z₀.time + R ^ 2} ∪
@@ -47,7 +50,7 @@ def exitBoundary {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
         0 ≤ PDE.vecDot (relativeVelocity Z₀ P) (relativePosition Z₀ P)})
 
 /-- Complete face-by-face characterization of the exit boundary. -/
-theorem mem_exitBoundary_iff {d : ℕ} (Z₀ P : KineticPoint d)
+theorem mem_exitBoundary_iff (Z₀ P : KineticPoint d)
     (R : ℝ) (hR : 0 < R) :
     P ∈ exitBoundary Z₀ R hR ↔
       P ∈ closure (forwardCylinder Z₀ R hR) ∧
@@ -58,40 +61,49 @@ theorem mem_exitBoundary_iff {d : ℕ} (Z₀ P : KineticPoint d)
   simp only [exitBoundary, mem_inter_iff, mem_union, mem_ofPred_eq, or_assoc]
 
 /-- Source reflection of time and position, leaving velocity fixed. -/
-def kineticReflection {d : ℕ} (P : KineticPoint d) : KineticPoint d :=
+def kineticReflection (P : KineticPoint d) : KineticPoint d :=
   ⟨-P.time, -P.position, P.velocity⟩
 
 /-- Reflection is an involution on the same kinetic carrier. -/
-theorem kineticReflection_involutive {d : ℕ} :
+theorem kineticReflection_involutive :
     Function.Involutive (kineticReflection (d := d)) := by
   intro P
   ext <;> simp [kineticReflection]
 
 /-- Pull back a time-velocity coefficient by the source time reflection about zero. -/
-def kineticReflectedCoefficient {d : ℕ} (A : CoefficientField d) : CoefficientField d :=
+def kineticReflectedCoefficient (A : CoefficientField d) : CoefficientField d :=
   fun s v => A (-s) v
 
+end
+
+section
+variable {d : ℕ} (A : FullKineticCoefficient d) (U : KineticPoint d → ℝ) (P : KineticPoint d)
+include d A U P
+
 /-- The general forward kinetic operator in literal `(s,X,v)` field order. -/
-def forwardKineticOperator {d : ℕ} (A : FullKineticCoefficient d)
-    (U : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ :=
+def forwardKineticOperator : ℝ :=
   kineticTimeDerivative U P + PDE.vecDot P.velocity (kineticPositionGradient U P) +
     matrixContraction (fullKineticCoefficientAt A P) (kineticVelocityHessian U P)
 
 /-- Complete literal characterization of the general forward kinetic operator. -/
-theorem forwardKineticOperator_apply {d : ℕ} (A : FullKineticCoefficient d)
-    (U : KineticPoint d → ℝ) (P : KineticPoint d) :
+theorem forwardKineticOperator_apply :
     forwardKineticOperator A U P =
       kineticTimeDerivative U P + PDE.vecDot P.velocity (kineticPositionGradient U P) +
         matrixContraction (A P.time P.position P.velocity) (kineticVelocityHessian U P) :=
   rfl
+
+end
 
 /-- Literal inner scaling factor, restricted to the source parameter carrier. -/
 def innerRatio (R : ℝ) (hR : 0 < R) (δ : ℝ)
     (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) : ℝ :=
   Real.sqrt (1 - 2 * δ / R ^ 2)
 
+section
+variable {d : ℕ}
+
 /-- The explicit inner cylinder in the original centre's relative coordinates. -/
-def innerCylinder {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+def innerCylinder (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) : Set (KineticPoint d) :=
   let ρ := innerRatio R hR δ hδ0 hδlt
   {P | Z₀.time + δ < P.time ∧ P.time < Z₀.time + R ^ 2 - δ ∧
@@ -99,7 +111,7 @@ def innerCylinder {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     relativePosition Z₀ P ∈ PDE.euclideanBall (0 : PDE.Vec d) (ρ ^ 3 * R ^ 3)}
 
 /-- Complete membership characterization of the literal inner cylinder. -/
-theorem mem_innerCylinder_iff {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R)
+theorem mem_innerCylinder_iff (Z₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R)
     (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
     P ∈ innerCylinder Z₀ R hR δ hδ0 hδlt ↔
       Z₀.time + δ < P.time ∧ P.time < Z₀.time + R ^ 2 - δ ∧
@@ -109,12 +121,18 @@ theorem mem_innerCylinder_iff {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) (hR 
           ((innerRatio R hR δ hδ0 hδlt) ^ 3 * R ^ 3) := Iff.rfl
 
 /-- The inner cylinder's centre as a genuine forward kinetic cylinder. -/
-def innerCentre {d : ℕ} (Z₀ : KineticPoint d) (δ : ℝ) : KineticPoint d :=
+def innerCentre (Z₀ : KineticPoint d) (δ : ℝ) : KineticPoint d :=
   ⟨Z₀.time + δ, Z₀.position + δ • Z₀.velocity, Z₀.velocity⟩
 
+end
+
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ)
+  (hδlt : δ < R ^ 2 / 2)
+include Z₀ R hR δ hδ0 hδlt
+
 /-- Literal affine retraction converted from relative to physical coordinates. -/
-def innerRetraction {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2)
+def innerRetraction
     (P : KineticPoint d) : KineticPoint d :=
   let ρ := innerRatio R hR δ hδ0 hδlt
   let s := Z₀.time + δ + ρ ^ 2 * (P.time - Z₀.time)
@@ -122,14 +140,15 @@ def innerRetraction {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     Z₀.velocity + ρ • relativeVelocity Z₀ P⟩
 
 /-- The inner exit boundary is the exit boundary of the identified inner cylinder. -/
-def innerExitBoundary {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) : Set (KineticPoint d) :=
+def innerExitBoundary : Set (KineticPoint d) :=
   let ρ := innerRatio R hR δ hδ0 hδlt
   closure (innerCylinder Z₀ R hR δ hδ0 hδlt) ∩
     ({P | P.time = Z₀.time + R ^ 2 - δ} ∪
       {P | relativeVelocity Z₀ P ∈ PDE.euclideanSphere (0 : PDE.Vec d) (ρ * R)} ∪
       {P | relativePosition Z₀ P ∈ PDE.euclideanSphere (0 : PDE.Vec d) (ρ ^ 3 * R ^ 3) ∧
         0 ≤ PDE.vecDot (relativeVelocity Z₀ P) (relativePosition Z₀ P)})
+
+end
 
 /-- Complete literal membership characterization of the inner exit boundary. -/
 theorem mem_innerExitBoundary_iff {d : ℕ}

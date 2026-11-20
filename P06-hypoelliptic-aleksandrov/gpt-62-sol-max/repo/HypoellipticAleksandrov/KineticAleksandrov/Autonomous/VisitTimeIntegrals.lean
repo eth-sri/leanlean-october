@@ -55,10 +55,11 @@ theorem visitTimeQuadratic_operator_continuous {lam Lam : ℝ}
     ((continuous_const.mul (visitCoefficient_continuous A)).mul
       (he.continuous.comp continuous_time))
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (c : Clock)
+
 /-- Closed active support makes the bounded localized operator integrable. -/
-theorem visitTimeQuadratic_operator_integrable_of_active_support
-    {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
-    (c : Clock) (b : ℝ) (mu : Measure Point) [IsFiniteMeasure mu]
+theorem visitTimeQuadratic_operator_integrable_of_active_support (b : ℝ) (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.active) :
     Integrable (fun p => forwardScalarOperator A.a
       (fun q => visitTimeCutoff b c.r c.positive q.time *
@@ -70,15 +71,12 @@ theorem visitTimeQuadratic_operator_integrable_of_active_support
   change ‖forwardScalarOperator A.a
     (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p‖ ≤ _
   rw [Real.norm_eq_abs]
-  exact hd c b lam Lam hlam A p hp
+  exact hd c b lam Lam A.positive A p hp
 
 /-- The actual active Green mixture has closed active velocity support. -/
-theorem visitActiveGreenMixture_ae_closedActive
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+theorem visitActiveGreenMixture_ae_closedActive (J : Interval) (s T : ℝ)
     (mu : Measure Point) :
-    ∀ᵐ q ∂(visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu),
+    ∀ᵐ q ∂(visitUnionGreenKernel A (visitActiveUnion c J) s T ∘ₘ mu),
       q.velocity 0 ∈ closure c.active := by
   classical
   apply Measure.ae_comp_of_ae_ae
@@ -87,38 +85,37 @@ theorem visitActiveGreenMixture_ae_closedActive
   apply Filter.Eventually.of_forall
   intro p
   change ∀ᵐ q ∂(if hp : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-    finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
+    finiteUnionGreen A (visitActiveUnion c J) T
       (visitPoleInclusion _ s T ⟨p, hp⟩) else 0), q.velocity 0 ∈ closure c.active
   split
   · rename_i hp
-    exact (visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
+    exact (visitUnionGreen_ae_velocity A (visitActiveUnion c J) T
       (visitPoleInclusion _ s T ⟨p, hp⟩)).mono fun q hq =>
         subset_closure ((visitActiveUnion_carrier c J).le hq).1
   · simp
 
 /-- The actual active exit mixture discharges the localized test's support condition. -/
-theorem visitTimeQuadratic_integrable_activeExitMixture
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
+theorem visitTimeQuadratic_integrable_activeExitMixture (J : Interval) (s T b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun p => visitTimeCutoff b c.r c.positive p.time *
       visitQuadratic c (p.velocity 0))
-      (visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu) :=
+      (visitUnionExitKernel A (visitActiveUnion c J) s T ∘ₘ mu) :=
   visitTimeQuadratic_integrable_of_active_support c b _
-    (visitActiveExitMixture_ae_velocity hH hLE hlam hLam A c J s T mu)
+    (visitActiveExitMixture_ae_velocity A c J s T mu)
+
+end
 
 /-- The actual active Green mixture discharges the localized operator's support condition. -/
 theorem visitTimeQuadratic_operator_integrable_activeGreenMixture
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun p => forwardScalarOperator A.a
       (fun q => visitTimeCutoff b c.r c.positive q.time *
         visitQuadratic c (q.velocity 0)) p)
-      (visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu) :=
-  visitTimeQuadratic_operator_integrable_of_active_support hlam A c b _
-    (visitActiveGreenMixture_ae_closedActive hH hLE hlam hLam A c J s T mu)
+      (visitUnionGreenKernel A (visitActiveUnion c J) s T ∘ₘ mu) :=
+  visitTimeQuadratic_operator_integrable_of_active_support A c b _
+    (visitActiveGreenMixture_ae_closedActive A c J s T mu)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

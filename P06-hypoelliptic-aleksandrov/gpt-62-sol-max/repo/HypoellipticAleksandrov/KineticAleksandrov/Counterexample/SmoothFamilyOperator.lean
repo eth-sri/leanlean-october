@@ -41,8 +41,11 @@ theorem measurable_backwardOperator_of_joint_smooth {d : ℕ}
         (hv i k)))
   exact (ht.add hT).sub hC
 
+section
+variable {d : ℕ} (A B : XV d → PDE.Mat d)
+
 /-- The full backward-operator change is minus the exact coefficient Hessian error. -/
-theorem backwardOperator_coefficient_change {d : ℕ} (A B : XV d → PDE.Mat d)
+theorem backwardOperator_coefficient_change
     (u : KineticPoint d → ℝ) (P : KineticPoint d) :
     backwardOperator (fun _t x v => B (x, v)) u P =
       backwardOperator (fun _t x v => A (x, v)) u P -
@@ -53,8 +56,7 @@ theorem backwardOperator_coefficient_change {d : ℕ} (A B : XV d → PDE.Mat d)
   ring
 
 /-- The positive source norm increases by at most the full contraction-error norm. -/
-theorem positive_source_norm_le_coefficient_error {d : ℕ}
-    (A B : XV d → PDE.Mat d)
+theorem positive_source_norm_le_coefficient_error
     (hA : ∀ i k, Measurable (fun q => A q i k))
     (hB : ∀ i k, Measurable (fun q => B q i k))
     (u : KineticPoint d → ℝ)
@@ -89,5 +91,7 @@ theorem positive_source_norm_le_coefficient_error {d : ℕ}
           (le_max_right _ _) (le_max_left _ _)))
   exact hm.trans ((eLpNorm_add_le hp).trans_eq
     (by rw [eLpNorm_norm E he.aestronglyMeasurable]))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

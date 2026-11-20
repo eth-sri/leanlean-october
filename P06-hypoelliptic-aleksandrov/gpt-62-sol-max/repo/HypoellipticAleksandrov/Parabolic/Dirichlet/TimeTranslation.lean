@@ -1,5 +1,7 @@
 module
 
+import HypoellipticAleksandrov.Analysis.L2Convergence
+
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBochner
 public import Mathlib.MeasureTheory.Function.LpSpace.DomAct.Continuous
 public import Mathlib.MeasureTheory.Function.L1Space.Integrable
@@ -23,20 +25,13 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem sqNorm_integral_eq_norm_sq_toLp
+theorem sqNorm_integral_eq_norm_sq_toLp
     {E : Type*} [NormedAddCommGroup E]
     {μ : Measure ℝ} (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) μ) :
-    ∫ t, ‖F t‖ ^ 2 ∂μ = ‖hF.toLp F‖ ^ 2 := by
-  rw [Lp.norm_def, eLpNorm_congr_ae hF.coeFn_toLp,
-    hF.eLpNorm_eq_integral_rpow_norm]
-  · simp
-    rw [ENNReal.toReal_ofReal (Real.rpow_nonneg (integral_nonneg fun _ => sq_nonneg _) _)]
-    exact (Real.rpow_inv_natCast_pow
-      (integral_nonneg fun _ => sq_nonneg _) (by norm_num)).symm
-  · norm_num
-  · simp
+    ∫ t, ‖F t‖ ^ 2 ∂μ = ‖hF.toLp F‖ ^ 2 := Analysis.integral_sq_eq_norm_toLp_sq hF
 
-private theorem tendsto_sqNorm_integral_translate_add_on_of_memLp_two
+/-- Strong `L²` continuity of translations, restricted to any time set. -/
+theorem tendsto_sqNorm_integral_translate_add_on_of_memLp_two
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (s : Set ℝ) :
     Tendsto (fun h : ℝ => ∫ t in s, ‖F (t + h) - F t‖ ^ 2) (𝓝 0) (𝓝 0) := by
@@ -82,60 +77,5 @@ private theorem tendsto_sqNorm_integral_translate_add_on_of_memLp_two
     rw [htS, ht, add_comm]
   rw [hsq]
   exact pow_le_pow_left₀ (norm_nonneg _) (norm_Lp_toLp_restrict_le s q) 2
-
-/-- Forward local translation continuity on a compact interval inside reverse time. -/
-theorem tendsto_sqNorm_integral_forward_translate_on_Icc
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-    (T : ℝ)
-    (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T))
-    {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) (hb : b < T) :
-    Filter.Tendsto
-      (fun h : ℝ => ∫ t in Set.Icc a b, ‖f (t + h) - f t‖ ^ 2)
-      (𝓝[>] 0) (𝓝 0) := by
-  let S : Set ℝ := Ioo 0 T
-  let F : ℝ → E := S.indicator f
-  have hS : MeasurableSet S := by
-    simp only [S]
-    exact measurableSet_Ioo
-  have hF : MemLp F (2 : ℝ≥0∞) volume := by
-    simpa only [F, S, reverseTimeVolume, reverseTimeOpenInterval] using
-      (memLp_indicator_iff_restrict hS).mpr (Lp.memLp f)
-  have hmax : max a b < T := by
-    rw [max_eq_right hab]
-    exact hb
-  have hglobal := tendsto_sqNorm_integral_translate_add_on_of_memLp_two F hF (Icc a b)
-  have hlocal : Tendsto
-      (fun h : ℝ => ∫ t in Icc a b, ‖F (t + h) - F t‖ ^ 2)
-      (𝓝[Ioi 0] 0) (𝓝 0) :=
-    hglobal.mono_left (by
-      exact nhdsWithin_le_nhds (a := (0 : ℝ)) (s := Ioi (0 : ℝ)))
-  apply Filter.Tendsto.congr' ?_ hlocal
-  have hpos : ∀ᶠ h : ℝ in 𝓝[>] 0, 0 < h := self_mem_nhdsWithin
-  have hsmall : ∀ᶠ h : ℝ in 𝓝[>] 0, h < T - b :=
-    (eventually_lt_nhds (sub_pos.mpr hb)).filter_mono nhdsWithin_le_nhds
-  filter_upwards [hpos, hsmall] with h hh hsmall
-  apply setIntegral_congr_fun measurableSet_Icc
-  intro t ht
-  have htS : t ∈ S := by
-    change 0 < t ∧ t < T
-    constructor
-    · exact lt_of_lt_of_le ha ht.1
-    · calc
-        t ≤ b := ht.2
-        _ ≤ max a b := le_max_right _ _
-        _ < T := hmax
-  have hthS : t + h ∈ S := by
-    change 0 < t + h ∧ t + h < T
-    constructor
-    · exact add_pos (lt_of_lt_of_le ha ht.1) hh
-    · have hbh : b + h < T := by
-        rw [add_comm]
-        exact lt_sub_iff_add_lt.mp hsmall
-      calc
-        t + h = h + t := add_comm _ _
-        _ ≤ h + b := add_le_add_right ht.2 _
-        _ = b + h := add_comm _ _
-        _ < T := hbh
-  simp only [F, Set.indicator_of_mem hthS, Set.indicator_of_mem htS]
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

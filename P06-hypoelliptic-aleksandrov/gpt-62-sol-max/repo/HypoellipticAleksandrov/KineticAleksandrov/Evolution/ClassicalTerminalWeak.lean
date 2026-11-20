@@ -24,16 +24,18 @@ theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : Set (PDE.Vec n))
   · rintro ⟨p, hp, rfl⟩
     exact hp
 
+section
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+include hΩ hγ
+
 /-- The past kinetic interior is open for an open domain and a continuous curve. -/
-theorem isOpen_evolutionPastOpenCylinder {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (τ : ℝ) :
+theorem isOpen_evolutionPastOpenCylinder (τ : ℝ) :
     IsOpen (evolutionPastOpenCylinder Ω γ τ) := by
   exact (isOpen_evolutionPastInteriorRaw hΩ hγ τ).preimage
     (KineticPoint.homeomorphProd n).continuous
 
 /-- A classical viscous terminal solution satisfies the literal weak adjoint equation. -/
-theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n)}
-    (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+theorem classical_viscous_terminalSolution_isWeak
     {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
     (hb : IsSmoothDrift b) {ε τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
@@ -42,8 +44,7 @@ theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n
     IsKineticWeakRegularizedSolution B b ε (evolutionPastOpenCylinder Ω γ τ) u
       (fun _ => 0) := by
   let U := evolutionPastOpenCylinder Ω γ τ
-  have hU := isOpen_evolutionPastOpenCylinder hΩ hγ τ
-  have hP := (evolutionHomeomorph n).continuous.isOpen_preimage U hU
+  have hP := (evolutionHomeomorph n).continuous.isOpen_preimage U (isOpen_evolutionPastOpenCylinder hΩ hγ τ)
   have hs : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph n)
       (evolutionHomeomorph n ⁻¹' U) := by
     apply contDiffOn_comp_evolutionHomeomorph_iff.mpr
@@ -64,5 +65,7 @@ theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n
     rw [hu.2.2.2.1 _ hx, zero_mul]
   rw [heq]
   simp only [Function.comp_apply, zero_mul, integral_zero]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

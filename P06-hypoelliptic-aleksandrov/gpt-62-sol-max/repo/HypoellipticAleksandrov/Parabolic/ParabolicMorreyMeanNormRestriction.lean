@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyMeanNorm
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+import HypoellipticAleksandrov.Parabolic.ScalingMeasure
 
 /-!
 # Restriction for normalized parabolic Morrey mean norms
@@ -21,14 +22,6 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 open scoped ENNReal
-
-private theorem parabolicExponent_toReal (d : Nat) :
-    (parabolicExponent d).toReal = (d : Real) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by
-    norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
 
 private theorem parabolicMorreyBox_volume_ratio_rpow_toReal
     {d : Nat}
@@ -83,13 +76,15 @@ theorem parabolicELpMeanNormOn_mono_set
       simp only [div_eq_mul_inv]
       ac_rfl
 
+section
+variable {d : Nat} (tᵦ : Real) (vᵦ : PDE.Vec d) {rᵦ : Real} (hrᵦ : 0 < rᵦ) (tₛ : Real)
+  (vₛ : PDE.Vec d) {rₛ : Real} (hrₛ : 0 < rₛ)
+  (hsub : parabolicBox 1 rₛ tₛ vₛ ⊆ parabolicBox 1 rᵦ tᵦ vᵦ)
+include hrᵦ hrₛ hsub
+
 /-- Normalized `MemLp` on a larger literal forward physical box restricts to
 a contained smaller such box. -/
 theorem memLp_parabolicNormalizedVolumeOn_mono_parabolicBox
-    {d : Nat}
-    (tᵦ : Real) (vᵦ : PDE.Vec d) {rᵦ : Real} (hrᵦ : 0 < rᵦ)
-    (tₛ : Real) (vₛ : PDE.Vec d) {rₛ : Real} (hrₛ : 0 < rₛ)
-    (hsub : parabolicBox 1 rₛ tₛ vₛ ⊆ parabolicBox 1 rᵦ tᵦ vᵦ)
     {f : TimeVelocity d -> Real}
     (hᵦ : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 rᵦ tᵦ vᵦ))) :
@@ -98,8 +93,7 @@ theorem memLp_parabolicNormalizedVolumeOn_mono_parabolicBox
   have hrawᵦ := memLp_restrict_of_memLp_parabolicNormalizedVolumeOn
     (volume_parabolicMorreyBox_pos tᵦ vᵦ hrᵦ)
     (volume_parabolicMorreyBox_lt_top tᵦ vᵦ hrᵦ) hᵦ
-  have hrawₛ : MemLp f (parabolicExponent d)
-      (volume.restrict (parabolicBox 1 rₛ tₛ vₛ)) :=
+  have hrawₛ :=
     hrawᵦ.mono_measure (Measure.restrict_mono_set volume hsub)
   exact memLp_parabolicNormalizedVolumeOn_of_memLp
     (volume_parabolicMorreyBox_pos tₛ vₛ hrₛ) hrawₛ
@@ -107,10 +101,6 @@ theorem memLp_parabolicNormalizedVolumeOn_mono_parabolicBox
 /-- The guarded real normalized mean norm on a smaller contained forward box
 is bounded by that on the larger box with the exact parabolic radius factor. -/
 theorem parabolicLpMeanNormOn_mono_parabolicBox
-    {d : Nat}
-    (tᵦ : Real) (vᵦ : PDE.Vec d) {rᵦ : Real} (hrᵦ : 0 < rᵦ)
-    (tₛ : Real) (vₛ : PDE.Vec d) {rₛ : Real} (hrₛ : 0 < rₛ)
-    (hsub : parabolicBox 1 rₛ tₛ vₛ ⊆ parabolicBox 1 rᵦ tᵦ vᵦ)
     (f : TimeVelocity d -> Real)
     (hₛ : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 rₛ tₛ vₛ)))
@@ -145,5 +135,7 @@ theorem parabolicLpMeanNormOn_mono_parabolicBox
   have hreal := ENNReal.toReal_mono hright_top hmean
   simpa only [parabolicLpMeanNormOn_eq_toReal, ENNReal.toReal_mul,
     parabolicMorreyBox_volume_ratio_rpow_toReal tᵦ vᵦ hrᵦ tₛ vₛ hrₛ] using hreal
+
+end
 
 end HypoellipticAleksandrov.Parabolic

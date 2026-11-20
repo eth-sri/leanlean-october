@@ -17,19 +17,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
 open scoped Topology
 
-variable (hH : HormanderHypoellipticityStatement)
-  (hLE : LiebermanEllipsoidDirichletStatement)
+variable
   {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ}
-  (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
 /-- The literal boundary extension obtained by correcting the actual probe source. -/
 def ballBoundarySolution (a T : ℝ) (φ : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ :=
-  φ P + ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T
+  φ P + ballSourcePotential hd B hB v₀ hR a T
     (forwardKineticOperator (ofTimeVelocityCoefficient B) φ) P
 
-omit hH hLE hd hlam hLam B hB v₀ hR in
+omit hd B hB v₀ hR in
 /-- Physical product-coordinate smoothness supplies the unswapped native regularity API. -/
 theorem boundary_physical_smooth_to_native {D : Set (KineticPoint d)}
     {u : KineticPoint d → ℝ}
@@ -46,26 +44,26 @@ theorem ballBoundarySolution_smooth_traces
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm))
     (hc : HasCompactSupport φ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
-      ((ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ) ∘
+      ((ballBoundarySolution hd B hB v₀ hR a T φ) ∘
         (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' localStrip a T v₀ R) ∧
     (∀ P ∈ localStrip a T v₀ R,
       forwardKineticOperator (ofTimeVelocityCoefficient B)
-        (ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ) P = 0) ∧
-    ContinuousOn (ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ)
+        (ballBoundarySolution hd B hB v₀ hR a T φ) P = 0) ∧
+    ContinuousOn (ballBoundarySolution hd B hB v₀ hR a T φ)
       (localClosedStrip a T v₀ R) ∧
-    EqOn (ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ) φ
+    EqOn (ballBoundarySolution hd B hB v₀ hR a T φ) φ
       (localTrace a T v₀ R) := by
   let F := forwardKineticOperator (ofTimeVelocityCoefficient B) φ
-  let W := ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F
+  let W := ballSourcePotential hd B hB v₀ hR a T F
   let D := localStrip a T v₀ R
   let D' := sectionTwoPoint '' D
   have hD : IsOpen D := isOpen_localStrip a T v₀ R
   have hD' : IsOpen D' := (sectionTwoHomeomorph d).isOpenMap _ hD
   obtain ⟨hFc, M, hM, hFb⟩ := boundary_probe_operator_bounded B hB φ hφ hc
-  obtain ⟨hWc, hWtr, hWb⟩ := ballSourcePotential_bounded_traces hH hLE hd hlam hLam
+  obtain ⟨hWc, hWtr, hWb⟩ := ballSourcePotential_bounded_traces hd
     B hB v₀ hR a T M haT hM F hFc.measurable (fun P _ => hFb P)
-  have hweak := ballSourcePotential_weak hH hLE hd hlam hLam B hB v₀ hR a T haT
+  have hweak := ballSourcePotential_weak hd B hB v₀ hR a T haT
     F hFc.measurable ⟨M, fun P _ => hFb P⟩
   have hWsc : ContinuousOn (W ∘ sectionTwoPoint) D' :=
     (hWc.mono (localStrip_subset_closed a T v₀ R)).comp
@@ -86,11 +84,11 @@ theorem ballBoundarySolution_smooth_traces
       exact congrArg Neg.neg (boundary_probe_operator_native B φ hφ x)
     rw [heq]
     exact hsm.neg
-  obtain ⟨hWsm, hWop⟩ := boundary_continuous_weak_smooth hH B hB D' hD'
+  obtain ⟨hWsm, hWop⟩ := boundary_continuous_weak_smooth B hB D' hD'
     (W ∘ sectionTwoPoint) (fun Q => -F (sectionTwoPoint Q)) hWsc hweak hsource
   have hWp := boundary_native_smooth_to_physical D W hWsm
   have hEsm : ContDiffOn ℝ (⊤ : ℕ∞)
-      ((ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ) ∘
+      ((ballBoundarySolution hd B hB v₀ hR a T φ) ∘
         (KineticPoint.equivProd d).symm) ((KineticPoint.equivProd d) '' D) :=
     hφ.contDiffOn.add hWp
   refine ⟨hEsm, ?_, (boundary_probe_continuous φ hφ).continuousOn.add hWc, ?_⟩

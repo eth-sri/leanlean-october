@@ -1,8 +1,9 @@
 module
 
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnTime
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoxConcentrationAveraging
 
-/-! # Box concentration conditional on the full source return-time conclusion -/
+/-! # Box concentration from the return-time comparison -/
 
 @[expose] public section
 noncomputable section
@@ -10,29 +11,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set
 
 /-- Concentration follows from occupation and the full bounded-Borel return-time conclusion.
-The explicit conditional input quantifies over every coefficient field and every nonnegative
-bounded Borel datum; it is not a box-specific comparison assumption. -/
-theorem box_concentration_of_return_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+ -/
+theorem box_concentration
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ)
     (ha : bellmanAdjointExponent (Lam / lam)
       (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) - 2 < alpha)
-    (ha1 : alpha < 1) (A0 : ℝ) (hA0 : 0 < A0)
-    (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
-      (F : BoundedBorel (EvolutionAmbientState 1)), (∀ p, 0 ≤ F p) →
-      ∀ (t s : NNReal) (z : Z), 0 < (t : ℝ) →
-        2 * (t : ℝ) ≤ (s : ℝ) → (s : ℝ) ≤ 3 * (t : ℝ) →
-        |z.2| ≤ Real.sqrt (t : ℝ) →
-        let E := fullSpaceEvolution hH hLE hlam hLam A
-        fullSpaceAction E F ⟨t, fun _ => z.1, fun _ => z.2⟩ ≤
-          C * fullSpaceAction E F ⟨s, fun _ => z.1, fun _ => z.2⟩) :
+    (ha1 : alpha < 1) (A0 : ℝ) (hA0 : 0 < A0):
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (z : Z) (Y r : ℝ) (t : NNReal),
       0 < r → |z.2| ≤ 3 * r →
-      (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) t z (box A0 r Y)).toReal ≤
+      (kernelXV (fullSpaceEvolution A) t z (box A0 r Y)).toReal ≤
         C * (1 + (t : ℝ) / r ^ 2) ^ (-gamma alpha / 2) := by
-  obtain ⟨CR, hCR, hreturn⟩ := hReturn
+  obtain ⟨CR, hCR, hreturn⟩ := return_time_ambient hlam hLam
   obtain ⟨B, hB, hocc⟩ :=
-    deterministic_box_occupation hH hLE lam Lam hlam hLam alpha ha ha1 A0 1 hA0
+    deterministic_box_occupation lam Lam hlam hLam alpha ha ha1 A0 1 hA0
   have hg : 0 < gamma alpha := by dsimp only [gamma]; linarith
   let K := CR * B * (3 : ℝ) ^ (alpha / 2)
   have hK : 0 < K := by dsimp only [K]; positivity
@@ -40,7 +31,7 @@ theorem box_concentration_of_return_time
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, hC, ?_⟩
   intro A z Y r t hr hz
-  let E := fullSpaceEvolution hH hLE hlam hLam A
+  let E := fullSpaceEvolution A
   let f := fun s : ℝ => (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal
   let x := (t : ℝ) / r ^ 2
   have hx : 0 ≤ x := div_nonneg t.property (sq_nonneg r)
@@ -61,9 +52,9 @@ theorem box_concentration_of_return_time
         (by simpa only [Real.coe_toNNReal s hs0] using hs.2) hv
       dsimp only at hh
       rw [← box_action_eq_fullSpaceAction A E
-        (fullSpaceEvolution_spec hH hLE hlam hLam A) z t A0 r Y,
+        (fullSpaceEvolution_spec A) z t A0 r Y,
         ← box_action_eq_fullSpaceAction A E
-        (fullSpaceEvolution_spec hH hLE hlam hLam A) z (Real.toNNReal s) A0 r Y] at hh
+        (fullSpaceEvolution_spec A) z (Real.toNNReal s) A0 r Y] at hh
       simpa only [f, Real.toNNReal_coe] using hh
     have hav := box_return_time_average E z A0 r Y t CR ht hCR.le hfcomp
     have htime : 0 ≤ 3 * (t : ℝ) := by positivity

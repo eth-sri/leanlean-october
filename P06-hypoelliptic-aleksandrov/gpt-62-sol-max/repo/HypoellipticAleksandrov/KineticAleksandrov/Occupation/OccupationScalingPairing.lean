@@ -10,13 +10,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set
 
+section
+variable {d : ℕ} {T : ℝ} (hT : 0 < T)
+include hT
+
 /-- Pairing after inverse dilation picks up exactly the time length. -/
-theorem occupation_integral_scaled_pullback {d : ℕ} {T : ℝ} (hT : 0 < T)
+theorem occupation_integral_scaled_pullback
     (f : TimeVelocity d → ℝ) :
     ∫ q in Ioo (0 : ℝ) T ×ˢ univ,
       T ^ (-(d : ℝ) / 2) * f (parabolicAffine 0 0 (Real.sqrt T)⁻¹ q) =
       T * ∫ q in Ioo (0 : ℝ) 1 ×ˢ univ, f q := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hT
+  have hs := Real.sqrt_pos.mpr hT
   have he := parabolicAffine_measurableEmbedding (d := d) (t₀ := 0) (v₀ := 0)
     (inv_pos.mpr hs)
   rw [integral_const_mul, ← he.integral_map,
@@ -26,11 +30,10 @@ theorem occupation_integral_scaled_pullback {d : ℕ} {T : ℝ} (hT : 0 < T)
     smul_eq_mul, ← mul_assoc, occupation_density_jacobian hT]
 
 /-- Forward and inverse parabolic dilations cancel with radius sqrt(T). -/
-theorem occupation_forward_inverse {d : ℕ} {T : ℝ} (hT : 0 < T)
+theorem occupation_forward_inverse
     (q : TimeVelocity d) :
     parabolicAffine 0 0 (Real.sqrt T)
       (parabolicAffine 0 0 (Real.sqrt T)⁻¹ q) = q := by
-  have hs : Real.sqrt T ≠ 0 := (Real.sqrt_pos.mpr hT).ne'
   apply Prod.ext
   · change 0 + (Real.sqrt T) ^ 2 * (0 + (Real.sqrt T)⁻¹ ^ 2 * q.1) = q.1
     rw [inv_pow]
@@ -42,7 +45,7 @@ theorem occupation_forward_inverse {d : ℕ} {T : ℝ} (hT : 0 < T)
     simp only [zero_add, zero_mul]
 
 /-- The density pairing transforms with exactly one factor of T. -/
-theorem occupation_scaledDensity_pairing {d : ℕ} {T : ℝ} (hT : 0 < T)
+theorem occupation_scaledDensity_pairing
     (φ g : TimeVelocity d → ℝ) :
     ∫ q in Ioo (0 : ℝ) T ×ˢ univ,
       φ q * (T ^ (-(d : ℝ) / 2) *
@@ -57,5 +60,7 @@ theorem occupation_scaledDensity_pairing {d : ℕ} {T : ℝ} (hT : 0 < T)
     dsimp only
     rw [occupation_forward_inverse hT]
     ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

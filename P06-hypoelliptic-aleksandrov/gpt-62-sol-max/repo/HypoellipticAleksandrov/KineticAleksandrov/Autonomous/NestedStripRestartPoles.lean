@@ -23,20 +23,20 @@ theorem measurableSet_finiteUnionPole (H : FiniteIntervalUnion) (T : ℝ) :
 
 /-- The restart measure on valid larger-strip poles is the actual subtype pullback. -/
 def finiteUnionRestartPoleMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ)
     (nu : Measure (FiniteUnionPole H1 (T : WithTop ℝ))) :
     Measure (FiniteUnionPole H2 (T : WithTop ℝ)) :=
-  (finiteUnionRestartMeasure hH hLE hlam hLam A H1 H2 sMinus T nu).comap Subtype.val
+  (finiteUnionRestartMeasure A H1 H2 sMinus T nu).comap Subtype.val
 
 /-- Subtype pullback preserves finiteness of the internal-exit measure. -/
 instance finiteUnionRestartPoleMeasure_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ)
     (nu : Measure (FiniteUnionPole H1 (T : WithTop ℝ))) [IsFiniteMeasure nu] :
-    IsFiniteMeasure (finiteUnionRestartPoleMeasure hH hLE hlam hLam A H1 H2 sMinus T nu) := by
+    IsFiniteMeasure (finiteUnionRestartPoleMeasure A H1 H2 sMinus T nu) := by
   unfold finiteUnionRestartPoleMeasure
   infer_instance
 

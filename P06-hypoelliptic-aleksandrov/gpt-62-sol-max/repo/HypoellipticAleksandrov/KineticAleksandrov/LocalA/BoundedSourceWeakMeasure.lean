@@ -19,14 +19,20 @@ open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
+section
+variable (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
+include Ω γ
+
 /-- Starting-point/source-time pairs on which the existing master query is valid. -/
-def boundedSourcePairSet (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) :
+def boundedSourcePairSet :
     Set (KineticPoint d × ℝ) :=
   {q | q.1.time ≤ q.2 ∧ q.1.position ∈ movingDomain Ω γ q.1.time}
 
 /-- The valid-pair carrier excludes invalid kernel queries. -/
-abbrev BoundedSourcePair (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) :=
+abbrev BoundedSourcePair :=
   {q : KineticPoint d × ℝ // q ∈ boundedSourcePairSet Ω γ}
+
+end
 
 /-- The valid pair set is Borel. -/
 theorem measurableSet_boundedSourcePairSet (hΩ : MeasurableSet Ω) (hγ : Continuous γ) :

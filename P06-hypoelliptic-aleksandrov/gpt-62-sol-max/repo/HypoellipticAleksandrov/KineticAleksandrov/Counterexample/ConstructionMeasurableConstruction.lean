@@ -63,7 +63,7 @@ theorem construction_measurableFamily_of_geometry {d : ℕ} (hd : 1 ≤ d)
     exact ⟨hn, P, hP, hhP⟩
   obtain ⟨scale, hs, heLim⟩ := construction_diagonal_choice error herr good hgood
   refine ⟨profileMatrix h, fun j => U j (scale j),
-    (selectedProfile_spec h).2.2.2.2.1, (selectedProfile_spec h).2.2.2.2.2.1,
+    (selectedProfile_spec h).measurable_matrix, (selectedProfile_spec h).elliptic,
     ?_, ?_, ?_, ?_, ?_⟩
   · intro j
     exact smoothedZeroExtendedProfile_contDiff ha h (r j) mu R (hr j).1 hmu hR hvel _

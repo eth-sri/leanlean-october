@@ -13,8 +13,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
 open Set
 
+section
+variable {d : ℕ} (P0 P : KineticPoint d)
+
 /-- Affine composition identifies the physical source cap center without coordinate changes. -/
-theorem physical_cap_center {d : ℕ} (P0 P : KineticPoint d) (scale r : ℝ) :
+theorem physical_cap_center (scale r : ℝ) :
     kineticAffine P0 scale
         (⟨stackStartTime P r, stackStartPosition P r, P.velocity⟩ : KineticPoint d) =
       ⟨stackStartTime (kineticAffine P0 scale P) (scale * r),
@@ -26,7 +29,7 @@ theorem physical_cap_center {d : ℕ} (P0 P : KineticPoint d) (scale r : ℝ) :
   exact hc.trans (cap_center_affine _ _)
 
 /-- The fixed macroscopic initial tube is contained in the cap of any larger sampling radius. -/
-theorem macroscopic_initial_subset_cap {d : ℕ} (P0 P : KineticPoint d)
+theorem macroscopic_initial_subset_cap
     {scale r0 r : ℝ} (hscale : 0 < scale) (hr0 : 0 < r0) (hr : r0 ≤ r)
     (x v : ℝ → PDE.Vec d)
     (hleft : ∀ s ≤ 0,
@@ -62,5 +65,7 @@ theorem macroscopic_initial_subset_cap {d : ℕ} (P0 P : KineticPoint d)
     norm_num
     nlinarith [mul_le_mul_of_nonneg_right hcube (pow_nonneg hscale.le 3)]
   · nlinarith [mul_le_mul_of_nonneg_left hr hscale.le]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

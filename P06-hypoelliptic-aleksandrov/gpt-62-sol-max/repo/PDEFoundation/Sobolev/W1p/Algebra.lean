@@ -46,10 +46,7 @@ instance : Zero (W1pFunction U p) where
     { toFun := 0
       grad := 0
       memLp := MeasureTheory.MemLp.zero
-      gradMemLp := by
-        intro i
-        exact (MeasureTheory.MemLp.zero :
-            MeasureTheory.MemLp (0 : Vec d → ℝ) p (volumeOn U))
+      gradMemLp := fun i => MeasureTheory.MemLp.zero
       hasWeakGradient := HasWeakGradientOn.zero }
 
 instance [Fact (1 ≤ p)] : Add (W1pFunction U p) where
@@ -138,15 +135,20 @@ theorem sub_grad [Fact (1 ≤ p)] (u v : W1pFunction U p) :
     (u - v).grad = fun x => u.grad x - v.grad x :=
   rfl
 
+section
+variable (c : ℝ) (u : W1pFunction U p)
+
 @[simp]
-theorem smul_toFun (c : ℝ) (u : W1pFunction U p) :
+theorem smul_toFun :
     (c • u).toFun = fun x => c * u x :=
   rfl
 
 @[simp]
-theorem smul_grad (c : ℝ) (u : W1pFunction U p) :
+theorem smul_grad :
     (c • u).grad = fun x => c • u.grad x :=
   rfl
+
+end
 
 instance [Fact (1 ≤ p)] : SMul ℕ (W1pFunction U p) where
   smul n u := (n : ℝ) • u
@@ -158,11 +160,7 @@ instance [Fact (1 ≤ p)] : SMul ℤ (W1pFunction U p) where
 additional data. -/
 theorem toFunGrad_injective :
     Function.Injective
-      (fun u : W1pFunction U p => (u.toFun, u.grad)) := by
-  intro u v h
-  exact W1pFunction.ext
-    (by simpa only using congrArg Prod.fst h)
-    (by simpa only using congrArg Prod.snd h)
+      (fun u : W1pFunction U p => (u.toFun, u.grad)) := fun ⦃u v⦄ h => ext (congrArg Prod.fst h) (congrArg Prod.snd h)
 
 instance [Fact (1 ≤ p)] : AddCommGroup (W1pFunction U p) :=
   Function.Injective.addCommGroup

@@ -24,7 +24,7 @@ theorem bellmanGauge_nonneg (q : ℝ × ℝ) : 0 ≤ bellmanGauge q :=
 private theorem abs_le_of_even_pow_bound (x C : ℝ) (hC : 0 ≤ C) (n : ℕ)
     (hn : n ≠ 0) (he : Even n) (hx : x ^ n ≤ C) : |x| ≤ C + 1 := by
   rcases le_or_gt |x| 1 with h | h
-  · exact h.trans (by linarith only [hC])
+  · linarith
   · have hp := le_self_pow₀ h.le hn
     rw [he.pow_abs] at hp
     exact hp.trans (hx.trans (by linarith))
@@ -64,7 +64,6 @@ theorem bellmanGauge_shell_isCompact (a b : ℝ) :
   exact (pow_le_pow_left₀ (bellmanGauge_nonneg q) hq.2 6).trans (le_max_right _ _)
 
 /-- The polynomial gauge is smooth on the whole ambient plane. -/
-theorem bellmanGaugePower_contDiff : ContDiff ℝ (⊤ : ℕ∞) bellmanGaugePower := by
-  exact (contDiff_fst.pow 2).add (contDiff_snd.pow 6)
+theorem bellmanGaugePower_contDiff : ContDiff ℝ (⊤ : ℕ∞) bellmanGaugePower := (contDiff_fst.pow 2).add (contDiff_snd.pow 6)
 
 end HypoellipticAleksandrov.KineticAleksandrov

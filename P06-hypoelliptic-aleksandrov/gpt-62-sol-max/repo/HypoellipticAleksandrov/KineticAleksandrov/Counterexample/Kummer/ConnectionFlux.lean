@@ -20,8 +20,12 @@ open scoped Topology
 def connectionFlux (c t : ℝ) : ℝ :=
   t ^ c * (1 + t) ^ (1 / 3 - c) - t ^ (1 / 3 : ℝ)
 
+section
+variable (c : ℝ) (hc : 0 < c)
+include hc
+
 /-- The flux has a continuous zero endpoint extension. -/
-theorem continuousAt_connectionFlux_zero (c : ℝ) (hc : 0 < c) :
+theorem continuousAt_connectionFlux_zero :
     ContinuousAt (connectionFlux c) 0 := by
   exact ((Real.continuousAt_rpow_const 0 c (Or.inr hc.le)).mul
     ((continuousAt_const.add continuousAt_id).rpow_const
@@ -29,8 +33,10 @@ theorem continuousAt_connectionFlux_zero (c : ℝ) (hc : 0 < c) :
     (Real.continuousAt_rpow_const 0 (1 / 3 : ℝ) (Or.inr (by norm_num)))
 
 /-- The flux vanishes at the lower endpoint. -/
-theorem connectionFlux_zero (c : ℝ) (hc : 0 < c) : connectionFlux c 0 = 0 := by
+theorem connectionFlux_zero : connectionFlux c 0 = 0 := by
   simp [connectionFlux, Real.zero_rpow hc.ne']
+
+end
 
 /-- Factoring the flux at infinity. -/
 theorem connectionFlux_factor (c t : ℝ) (ht : 0 < t) :
@@ -70,7 +76,7 @@ theorem hasDerivAt_connectionFlux (c t : ℝ) (ht : 0 < t) :
     HasDerivAt (connectionFlux c)
       ((1 / 3 : ℝ) * connectionKernel c t +
         (c - 1 / 3) * (t ^ (c - 1) * (1 + t) ^ (-c - 2 / 3))) t := by
-  have hp : 0 < 1 + t := add_pos zero_lt_one ht
+  have hp := add_pos zero_lt_one ht
   have hd := (((hasDerivAt_id t).rpow_const (p := c) (Or.inl ht.ne')).mul
     (((hasDerivAt_const t 1).add (hasDerivAt_id t)).rpow_const
       (p := 1 / 3 - c) (Or.inl hp.ne'))).sub
@@ -107,8 +113,7 @@ theorem integral_connectionKernel_beta (c : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3) 
     ((hk.const_mul (1 / 3 : ℝ)).add (hb.const_mul (c - 1 / 3)))
     (tendsto_connectionFlux_atTop c hc hc1)
   rw [connectionFlux_zero c hc, sub_self] at hf
-  have hs := integral_add (hk.const_mul (1 / 3 : ℝ)) (hb.const_mul (c - 1 / 3))
-  rw [hs, integral_const_mul, integral_const_mul, integral_betaHalf c (2 / 3) hc
+  rw [(integral_add (hk.const_mul (1 / 3 : ℝ)) (hb.const_mul (c - 1 / 3))), integral_const_mul, integral_const_mul, integral_betaHalf c (2 / 3) hc
     (by norm_num)] at hf
   linarith only [hf]
 

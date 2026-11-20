@@ -20,45 +20,11 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open scoped BigOperators
 
-private theorem parabolicDyadicTruncate_le_succ_eq_truncate_parent
-    {d m n : Nat} (hmn : m <= n) (index : ParabolicDyadicIndex d (n + 1)) :
-    parabolicDyadicTruncate (Nat.le_succ_of_le hmn) index =
-      parabolicDyadicTruncate hmn (parabolicDyadicParent index) := by
-  funext j
-  simp only [parabolicDyadicTruncate, parabolicDyadicParent]
-  apply congrArg index
-  exact Fin.ext (by rfl)
+section
+variable (d : Nat) (hd : 1 <= d)
+include hd
 
-private theorem parabolicDyadicSourceBox_radius_rpow_truncate_mul
-    {d m n : Nat} (hmn : m <= n) (index : ParabolicDyadicIndex d n)
-    (alpha : Real) :
-    (parabolicDyadicSourceBox (parabolicDyadicTruncate hmn index)).radius ^ alpha *
-        ((2 : Real) ^ (-alpha)) ^ (n - m) =
-      (parabolicDyadicSourceBox index).radius ^ alpha := by
-  change ((2 : Real) ^ m)⁻¹ ^ alpha * ((2 : Real) ^ (-alpha)) ^ (n - m) =
-    ((2 : Real) ^ n)⁻¹ ^ alpha
-  have hbase (k : Nat) : ((2 : Real) ^ k)⁻¹ ^ alpha =
-      (2 : Real) ^ (-(k : Real) * alpha) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_neg (by norm_num : (0 : Real) <= 2),
-      ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
-  have hfactor : ((2 : Real) ^ (-alpha)) ^ (n - m) =
-      (2 : Real) ^ (-alpha * ((n - m : Nat) : Real)) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : Real) <= 2)]
-  rw [hbase m, hbase n, hfactor, ← Real.rpow_add (by norm_num : (0 : Real) < 2)]
-  congr 1
-  rw [Nat.cast_sub hmn]
-  ring
-
-private theorem parabolicMorreyDerivativeLpNorm_nonneg (d : Nat)
-    (u : TimeVelocity d -> Real) : 0 <= parabolicMorreyDerivativeLpNorm d u := by
-  unfold parabolicMorreyDerivativeLpNorm parabolicLpNorm parabolicELpNorm
-  refine add_nonneg ENNReal.toReal_nonneg ?_
-  refine Finset.sum_nonneg fun i _ => ?_
-  refine Finset.sum_nonneg fun j _ => ?_
-  exact ENNReal.toReal_nonneg
-
-private theorem parabolicMorreyDyadicTruncateProjectionClosedFiniteTail
-    (d : Nat) (hd : 1 <= d) :
+private theorem parabolicMorreyDyadicTruncateProjectionClosedFiniteTail :
     ∃ C : Real, 0 < C ∧
       ∀ (m n : Nat) (hmn : m <= n) (index : ParabolicDyadicIndex d n)
         (u : TimeVelocity d -> Real),
@@ -135,8 +101,6 @@ private theorem parabolicMorreyDyadicTruncateProjectionClosedFiniteTail
               (parabolicDyadicSourceBox_radius_pos parent).le _))))
       have hparentRadius := parabolicDyadicSourceBox_radius_rpow_truncate_mul
         hmn parent (parabolicMorreyExponent d)
-      have hraw : 0 <= parabolicMorreyDerivativeLpNorm d u :=
-        parabolicMorreyDerivativeLpNorm_nonneg d u
       rw [htrunc]
       rw [hindex]
       rw [Nat.succ_sub hmn, Finset.sum_range_succ]
@@ -209,8 +173,7 @@ private theorem parabolicMorreyDyadicTruncateProjectionClosedFiniteTail
               ring
 
 /-- A finite closed dyadic address tail is bounded by the geometric Morrey tail. -/
-theorem exists_parabolicMorreyDyadicAddressPrefixProjectionClosedTailConst
-    (d : Nat) (hd : 1 <= d) :
+theorem exists_parabolicMorreyDyadicAddressPrefixProjectionClosedTailConst :
     ∃ C : Real, 0 < C ∧
       ∀ (a b : ParabolicDyadicAddress d) (u : TimeVelocity d -> Real),
         parabolicDyadicAddressPrefix a b ->
@@ -241,7 +204,6 @@ theorem exists_parabolicMorreyDyadicAddressPrefixProjectionClosedTailConst
   rw [htruncate] at hfinite'
   have halpha : 0 < parabolicMorreyExponent d := by
     unfold parabolicMorreyExponent
-    have hd' : 0 < (d : Real) := by exact_mod_cast hd
     positivity
   have hqpos : 0 < (2 : Real) ^ (-parabolicMorreyExponent d) :=
     Real.rpow_pos_of_pos (by norm_num) _
@@ -301,5 +263,7 @@ theorem exists_parabolicMorreyDyadicAddressPrefixProjectionClosedTailConst
         (1 - (2 : Real) ^ (-parabolicMorreyExponent d))⁻¹ :=
         mul_le_mul_of_nonneg_left hgeom hleft
     _ = _ := by ring
+
+end
 
 end HypoellipticAleksandrov.Parabolic

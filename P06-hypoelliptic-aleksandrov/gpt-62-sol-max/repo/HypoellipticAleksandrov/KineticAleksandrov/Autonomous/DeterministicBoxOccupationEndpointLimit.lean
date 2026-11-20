@@ -12,21 +12,21 @@ open scoped Topology ENNReal
 
 /-- Actual mollification preserves uniform integrability of signed endpoint differences. -/
 theorem barrier_mollifier_endpoint_tendsto
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam alpha : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam alpha : ℝ} 
     {phi : Z → ℝ} (h : IsBellmanHomogeneous alpha phi)
     (ha : 0 < alpha) (ha1 : alpha < 1)
     (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) (Y : ℝ) :
-    let E := fullSpaceEvolution hH hLE hlam hLam A
+    let E := fullSpaceEvolution A
     Tendsto (fun n : ℕ =>
       (∫ q, positionConvolution (barrierMollifier n) (bellmanOriginExtension phi)
         (q.1 - Y, q.2) ∂kernelXV E T z) -
       positionConvolution (barrierMollifier n) (bellmanOriginExtension phi) (z.1 - Y, z.2))
       atTop (𝓝 (∫ q, bellmanOriginExtension phi (q.1 - Y, q.2) -
         bellmanOriginExtension phi (z.1 - Y, z.2) ∂kernelXV E T z)) := by
-  let E := fullSpaceEvolution hH hLE hlam hLam A
-  have hE := fullSpaceEvolution_spec hH hLE hlam hLam A
-  let : IsProbabilityMeasure (kernelXV E T z) := ⟨kernelXV_mass_one hlam A E hE T z⟩
+  let E := fullSpaceEvolution A
+  have hE := fullSpaceEvolution_spec A
+  let : IsProbabilityMeasure (kernelXV E T z) := ⟨kernelXV_mass_one A E hE T z⟩
   obtain ⟨D, hD, hm⟩ := BarrierRegularization.barrier_coordinate_modulus h ha ha1
   let Phi := fun n : ℕ => positionConvolution (barrierMollifier n) (bellmanOriginExtension phi)
   have hc (n : ℕ) : Continuous (Phi n) :=
@@ -35,9 +35,9 @@ theorem barrier_mollifier_endpoint_tendsto
     (bellmanOriginExtension phi) (h.origin_extension_continuous ha) alpha D hD hm
   let f := fun n : ℕ => fun q : Z => Phi n (q.1 - Y, q.2) - Phi n (z.1 - Y, z.2)
   let g := fun q : Z => D * (|q.1 - z.1| ^ (alpha / 3) + |q.2 - z.2| ^ alpha)
-  have hx := terminal_position_fractional_moment hH hLE hlam hLam A z T
+  have hx := terminal_position_fractional_moment A z T
     (a := alpha / 3) (by linarith) (by linarith)
-  have hv := terminal_velocity_fractional_moment hH hLE hlam hLam A z T ha.le (by linarith)
+  have hv := terminal_velocity_fractional_moment A z T ha.le (by linarith)
   have hgi : Integrable g (kernelXV E T z) := (hx.1.add hv.1).const_mul D
   have hfm (n : ℕ) : Measurable (f n) :=
     ((hc n).measurable.comp ((measurable_fst.sub_const Y).prodMk measurable_snd)).sub_const _
@@ -63,6 +63,6 @@ theorem barrier_mollifier_endpoint_tendsto
     ring
   change (∫ q, Phi n (q.1 - Y, q.2) - Phi n (z.1 - Y, z.2) ∂kernelXV E T z) = _
   rw [integral_sub hi (integrable_const _), integral_const, smul_eq_mul, measureReal_def,
-    kernelXV_mass_one hlam A E hE, ENNReal.toReal_one, one_mul]
+    kernelXV_mass_one A E hE, ENNReal.toReal_one, one_mul]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStartDomination
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionCellCountBounds
+import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisitMassCapacity
 
 /-! # The literal source box actions of full-space terminal and occupation measures -/
 
@@ -11,28 +12,25 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical ENNReal
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point)
+
 /-- Full-space terminal mass in the physical source box is its elapsed box probability. -/
-theorem positionStartFullSpaceTerminal_box
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (Y b : ℝ) :
-    enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b) (positionStartBox c Y) =
-      kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal b)
+theorem positionStartFullSpaceTerminal_box (Y b : ℝ) :
+    enlargedFullSpaceTerminal A P (P.time + b) (positionStartBox c Y) =
+      kernelXV (fullSpaceEvolution A) (Real.toNNReal b)
         (P.position 0, P.velocity 0) (box 4 c.r Y) := by
   unfold enlargedFullSpaceTerminal
-  rw [Measure.map_apply (enlargedTerminalPoint_measurable _)
+  rw [Measure.map_apply (_root_.HypoellipticAleksandrov.KineticAleksandrov.Autonomous.measurable_enlargedTerminalPoint _)
     (measurableSet_positionStartBox c Y), add_sub_cancel_left]
   rfl
 
 /-- The full-space occupation mass in a physical slab is the source iterated box action. -/
-theorem positionStartFullSpaceOccupation_box_slab
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (Y a b T : ℝ)
+theorem positionStartFullSpaceOccupation_box_slab (Y a b T : ℝ)
     (ha : 0 ≤ a) (hb : b ≤ T) :
-    enlargedFullSpaceOccupation hH hLE hlam hLam A P T
+    enlargedFullSpaceOccupation A P T
       ({q : Point | P.time + a < q.time ∧ q.time ≤ P.time + b} ∩ positionStartBox c Y) =
-      ∫⁻ t in Ioc a b, kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t)
+      ∫⁻ t in Ioc a b, kernelXV (fullSpaceEvolution A) (Real.toNNReal t)
         (P.position 0, P.velocity 0) (box 4 c.r Y) := by
   let S := {q : Point | P.time + a < q.time ∧ q.time ≤ P.time + b}
   let W := positionStartBox c Y
@@ -43,12 +41,12 @@ theorem positionStartFullSpaceOccupation_box_slab
   let F : Point → ℝ≥0∞ := (S ∩ W).indicator 1
   have hF : Measurable F := measurable_one.indicator (hS.inter hW)
   rw [← lintegral_indicator_one (hS.inter hW)]
-  change (∫⁻ p, F p ∂enlargedFullSpaceOccupation hH hLE hlam hLam A P T) = _
-  rw [enlargedFullSpaceOccupation_lintegral hH hLE hlam hLam A P T F hF]
+  change (∫⁻ p, F p ∂enlargedFullSpaceOccupation A P T) = _
+  rw [enlargedFullSpaceOccupation_lintegral A P T F hF]
   have he (t : ℝ) : (∫⁻ z, F (enlargedTerminalPoint (P.time + t) z)
-      ∂kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t)
+      ∂kernelXV (fullSpaceEvolution A) (Real.toNNReal t)
         (P.position 0, P.velocity 0)) =
-      (Ioc a b).indicator (fun u => kernelXV (fullSpaceEvolution hH hLE hlam hLam A)
+      (Ioc a b).indicator (fun u => kernelXV (fullSpaceEvolution A)
         (Real.toNNReal u) (P.position 0, P.velocity 0) (box 4 c.r Y)) t := by
     by_cases ht : t ∈ Ioc a b
     · rw [indicator_of_mem ht, ← lintegral_indicator_one (box_measurable 4 c.r Y)]
@@ -78,6 +76,8 @@ theorem positionStartFullSpaceOccupation_box_slab
   have hs : Ioc a b ∩ Ioc 0 T = Ioc a b :=
     inter_eq_left.mpr (fun _ ht => ⟨ha.trans_lt ht.1, ht.2.trans hb⟩)
   rw [hs]
+
+end
 
 /-- The extended slab box action equals the ofReal of the actual integrable real action. -/
 theorem positionStartBox_slab_ofReal_integral (E : FullSpaceEvolution) (z : Z)

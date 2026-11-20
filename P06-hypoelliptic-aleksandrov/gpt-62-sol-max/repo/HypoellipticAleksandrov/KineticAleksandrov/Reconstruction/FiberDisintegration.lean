@@ -32,14 +32,20 @@ variable {Y : Type*} [MeasurableSpace Y] {d : ℕ}
 def fiberFourier (κ : Kernel Y (PDE.Vec d)) (ξ : PDE.Vec d) (y : Y) : ℂ :=
   ∫ z, cexp (-((PDE.vecDot ξ z : ℝ) * I)) ∂(κ y)
 
+section
+variable (g : Y → ℝ≥0∞) (κ : Kernel Y (PDE.Vec d))
+include g κ
+
 /-- The fibre representative `k̃^ξ(y) = g(y) ∫ e^{-i ξ·z} π_y(dz)` of the Fourier-marginal
 density. -/
-def fiberDensity (g : Y → ℝ≥0∞) (κ : Kernel Y (PDE.Vec d)) (ξ : PDE.Vec d) (y : Y) : ℂ :=
+def fiberDensity (ξ : PDE.Vec d) (y : Y) : ℂ :=
   ((g y).toReal : ℂ) * fiberFourier κ ξ y
 
 /-- The fibre height `H(y) = (2π)^{-d} ∫ |k̃^ξ(y)| dξ`. -/
-def fiberHeight (g : Y → ℝ≥0∞) (κ : Kernel Y (PDE.Vec d)) (y : Y) : ℝ≥0∞ :=
+def fiberHeight (y : Y) : ℝ≥0∞ :=
   ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) * ∫⁻ ξ, ‖fiberDensity g κ ξ y‖ₑ
+
+end
 
 /-- The character `ξ ↦ e^{-i ξ·z}` is continuous. -/
 lemma continuous_exp_vecDot (z : PDE.Vec d) :
@@ -52,8 +58,11 @@ lemma norm_exp_vecDot (ξ z : PDE.Vec d) : ‖cexp (-((PDE.vecDot ξ z : ℝ) * 
   rw [Complex.norm_exp]
   simp
 
+section
+variable (κ : Kernel Y (PDE.Vec d))
+
 /-- The fibre Fourier transform is jointly measurable in `(ξ, y)`. -/
-lemma measurable_fiberFourier (κ : Kernel Y (PDE.Vec d)) [IsSFiniteKernel κ] :
+lemma measurable_fiberFourier [IsSFiniteKernel κ] :
     Measurable fun p : PDE.Vec d × Y => fiberFourier κ p.1 p.2 := by
   have hc : Continuous fun q : PDE.Vec d × PDE.Vec d =>
       cexp (-((PDE.vecDot q.1 q.2 : ℝ) * I)) := by
@@ -67,7 +76,7 @@ lemma measurable_fiberFourier (κ : Kernel Y (PDE.Vec d)) [IsSFiniteKernel κ] :
   exact this.measurable
 
 /-- The fibre Fourier transform is continuous in `ξ` for fixed `y`. -/
-lemma continuous_fiberFourier (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (y : Y) :
+lemma continuous_fiberFourier [IsMarkovKernel κ] (y : Y) :
     Continuous fun ξ => fiberFourier κ ξ y := by
   unfold fiberFourier
   refine continuous_of_dominated (bound := fun _ => 1) (fun ξ => ?_)
@@ -77,35 +86,45 @@ lemma continuous_fiberFourier (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (y
   · exact (norm_exp_vecDot ξ z).le
 
 /-- The fibre Fourier transform of a probability kernel is bounded by one. -/
-lemma norm_fiberFourier_le (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (ξ : PDE.Vec d)
+lemma norm_fiberFourier_le [IsMarkovKernel κ] (ξ : PDE.Vec d)
     (y : Y) : ‖fiberFourier κ ξ y‖ ≤ 1 := by
   unfold fiberFourier
   refine (norm_integral_le_of_norm_le_const (C := 1) (Filter.Eventually.of_forall fun z =>
     (norm_exp_vecDot ξ z).le)).trans ?_
   simp
 
+end
+
+section
+variable {g : Y → ℝ≥0∞}
+
+section
+variable (hg : Measurable g) (κ : Kernel Y (PDE.Vec d))
+include hg
+
 /-- The fibre representatives are jointly measurable in `(ξ, y)`. -/
-lemma measurable_fiberDensity {g : Y → ℝ≥0∞} (hg : Measurable g) (κ : Kernel Y (PDE.Vec d))
+lemma measurable_fiberDensity
     [IsSFiniteKernel κ] :
     Measurable fun p : PDE.Vec d × Y => fiberDensity g κ p.1 p.2 :=
   (Complex.measurable_ofReal.comp (hg.comp measurable_snd).ennreal_toReal).mul
     (measurable_fiberFourier κ)
 
 /-- The fibre representative is measurable in `y` for fixed `ξ`. -/
-lemma measurable_fiberDensity_right {g : Y → ℝ≥0∞} (hg : Measurable g)
-    (κ : Kernel Y (PDE.Vec d)) [IsSFiniteKernel κ] (ξ : PDE.Vec d) :
+lemma measurable_fiberDensity_right [IsSFiniteKernel κ] (ξ : PDE.Vec d) :
     Measurable (fiberDensity g κ ξ) :=
   (measurable_fiberDensity hg κ).comp measurable_prodMk_left
 
+end
+
 /-- The fibre representative is bounded by `g(y)`. -/
-lemma norm_fiberDensity_le {g : Y → ℝ≥0∞} (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ]
+lemma norm_fiberDensity_le (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ]
     (ξ : PDE.Vec d) (y : Y) : ‖fiberDensity g κ ξ y‖ ≤ (g y).toReal := by
   unfold fiberDensity
   rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ENNReal.toReal_nonneg]
   exact mul_le_of_le_one_right ENNReal.toReal_nonneg (norm_fiberFourier_le κ ξ y)
 
 /-- The fibre height is measurable. -/
-lemma measurable_fiberHeight {g : Y → ℝ≥0∞} (hg : Measurable g) (κ : Kernel Y (PDE.Vec d))
+lemma measurable_fiberHeight (hg : Measurable g) (κ : Kernel Y (PDE.Vec d))
     [IsSFiniteKernel κ] : Measurable (fiberHeight g κ) := by
   unfold fiberHeight
   refine Measurable.const_mul ?_ _
@@ -113,9 +132,14 @@ lemma measurable_fiberHeight {g : Y → ℝ≥0∞} (hg : Measurable g) (κ : Ke
     ((measurable_fiberDensity hg κ).comp measurable_swap).enorm
   exact this.lintegral_prod_right'
 
+end
+
+section
+variable {m : Measure Y} {g : Y → ℝ≥0∞}
+
 /-- The Fourier marginal of `(m.withDensity g) ⊗ₘ κ` over `E × ℝ^d` is the integral of the
 representative `k̃^ξ` over `E`. -/
-lemma setIntegral_fiberDensity {m : Measure Y} {g : Y → ℝ≥0∞} (hg : Measurable g)
+lemma setIntegral_fiberDensity (hg : Measurable g)
     (hgtop : ∀ᵐ y ∂m, g y < ∞) (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ]
     [IsFiniteMeasure ((m.withDensity g) ⊗ₘ κ)] [SFinite m] (ξ : PDE.Vec d) {E : Set Y}
     (hE : MeasurableSet E) :
@@ -139,7 +163,7 @@ lemma setIntegral_fiberDensity {m : Measure Y} {g : Y → ℝ≥0∞} (hg : Meas
   simp only [fiberDensity, fiberFourier, Complex.real_smul]
 
 /-- The density `g` of the marginal of a finite measure has finite integral. -/
-lemma lintegral_ne_top_of_fst_eq {m : Measure Y} {g : Y → ℝ≥0∞}
+lemma lintegral_ne_top_of_fst_eq
     (Γ : Measure (Y × PDE.Vec d)) [IsFiniteMeasure Γ] (hΓ : Γ.fst = m.withDensity g) :
     ∫⁻ y, g y ∂m ≠ ∞ := by
   have h : (m.withDensity g) univ = Γ.fst univ := by rw [hΓ]
@@ -148,13 +172,15 @@ lemma lintegral_ne_top_of_fst_eq {m : Measure Y} {g : Y → ℝ≥0∞}
   exact measure_ne_top _ _
 
 /-- The fibre representatives are integrable. -/
-lemma integrable_fiberDensity {m : Measure Y} {g : Y → ℝ≥0∞} (hg : Measurable g)
+lemma integrable_fiberDensity (hg : Measurable g)
     (hg1 : ∫⁻ y, g y ∂m ≠ ∞) (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (ξ : PDE.Vec d) :
     Integrable (fiberDensity g κ ξ) m :=
   (integrable_toReal_of_lintegral_ne_top hg.aemeasurable hg1).mono'
     (measurable_fiberDensity_right hg κ ξ).aestronglyMeasurable
     (Filter.Eventually.of_forall fun y => by
       simpa only [Real.norm_of_nonneg ENNReal.toReal_nonneg] using norm_fiberDensity_le κ ξ y)
+
+end
 
 /-- **Step Lemma 5.2.**  Let `Γ` be a finite measure on
 `Y × ℝ^d` with `Y`-marginal `g dm`, and suppose that for each `ξ` the measure
@@ -181,7 +207,7 @@ theorem fiber_disintegration {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y ×
   have hdis : Γ = (m.withDensity g) ⊗ₘ Γ.condKernel := by
     rw [← hΓ]; exact (Measure.disintegrate Γ Γ.condKernel).symm
   have hg1 := lintegral_ne_top_of_fst_eq Γ hΓ
-  have hgtop : ∀ᵐ y ∂m, g y < ∞ := ae_lt_top hg hg1
+  have hgtop := ae_lt_top hg hg1
   have hae : ∀ ξ, fiberDensity g Γ.condKernel ξ =ᵐ[m] k ξ := by
     intro ξ
     refine ae_eq_of_forall_setIntegral_eq_of_sigmaFinite

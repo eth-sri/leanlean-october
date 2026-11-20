@@ -73,11 +73,7 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
     change 0 < q.time
     linarith [hr.1.1]
   have hO := returnBox_isOpen v b
-  have hreg : IsKineticC112On u O := by
-    rcases hu.2.2.1 with ⟨hc, ht, hx, hv, hct, hcx, hcv, hcvv⟩
-    exact ⟨hc.mono hOpos, fun q hq => ht q (hOpos hq), fun q hq => hx q (hOpos hq),
-      fun q hq => hv q (hOpos hq), hct.mono hOpos, hcx.mono hOpos,
-      hcv.mono hOpos, hcvv.mono hOpos⟩
+  have hreg := hu.2.2.1.mono hOpos
   have hadmiss : IsAdmissibleSolution (autonomousCoefficient A.a) O 6 C_A u :=
     hadm A O hO u hreg
       (ae_restrict_of_forall_mem hO.measurableSet (fun q hq => hu.2.2.2 q (hOpos hq)))

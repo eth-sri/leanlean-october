@@ -16,7 +16,6 @@ open scoped Topology MatrixOrder
 
 section Data
 
-variable (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement)
 variable {n : ℕ} (hn : 1 ≤ n) {lam Lam m Lb : ℝ}
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ Lb)
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
@@ -25,7 +24,7 @@ variable (hB : HasEverywhereLoewnerBounds lam Lam B) (hbs : IsSmoothDrift b)
 variable (hb : HasEuclideanLipschitzDrift Lb b) (hbco : HasUnitDirectionDriftCoercivity m b)
 variable {Γ : ℝ → PDE.Vec n} (hΓ : IsContinuousPiecewiseC1 Γ)
 
-include hLE hH hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ
+include hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ
 
 /-- The interval branch of the exhaustion limit follows from its exact Euclidean-ball
 identification, with the source constants, operator and terminal datum preserved. -/
@@ -45,7 +44,7 @@ theorem exists_viscous_terminalSolution_interval
   cases hN
   have hΩ' : Ω = PDE.oneDimensionalAxisBox lo hi := by simpa using hΩ
   rw [hΩ', oneDimensionalAxisBox_eq_euclideanBall hlohi] at hF ⊢
-  exact exists_viscous_terminalSolution_ball hLE hH hn hlam hlamLam hm hmLb
+  exact exists_viscous_terminalSolution_ball hn hlam hlamLam hm hmLb
     hBs hBsym hB hbs hb hbco hΓ (show 0 < (hi - lo) / 2 by linarith)
     τ F hF ε hε hε1 C hC hFC
 

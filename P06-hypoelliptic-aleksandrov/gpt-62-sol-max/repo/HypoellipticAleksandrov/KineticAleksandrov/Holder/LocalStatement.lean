@@ -20,8 +20,7 @@ open scoped MatrixOrder
 
 /-- Exact planned type of `local_timeVelocity_regularities_of_externals`. -/
 def LocalTimeVelocityRegularityStatement : Prop :=
-    ∀ (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
+    ∀
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam),
     ∃ (C_m : ℕ → ℝ) (C α : ℝ), (∀ m, 0 ≤ C_m m) ∧ 0 < C ∧ 0 < α ∧ α < 1 ∧
       ∀ (A : CoefficientField d),

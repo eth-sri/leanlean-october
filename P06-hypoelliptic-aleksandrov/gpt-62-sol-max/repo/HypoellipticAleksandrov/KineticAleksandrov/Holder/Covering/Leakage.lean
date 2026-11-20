@@ -34,7 +34,6 @@ theorem criticalUnion_delay_bound {d : ℕ} {E F : Set (KineticPoint d)}
   have hs (z : T) : r z < R ∧ forwardStack (P z) (r z) m ⊆ F :=
     hstack (P z) (r z) (hz z).1 (hz z).2.1 (hz z).2.2.symm.le
   let J := ⋃ z : T, openForwardStack (P z) (r z) m
-  have hJopen : IsOpen J := isOpen_iUnion fun z => isOpen_openForwardStack (P z) (r z) m
   have hJF : J ⊆ F := by
     intro X hX
     obtain ⟨z, hz⟩ := mem_iUnion.mp hX

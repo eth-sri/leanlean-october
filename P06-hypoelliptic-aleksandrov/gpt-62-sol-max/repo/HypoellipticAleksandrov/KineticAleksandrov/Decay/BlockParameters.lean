@@ -26,18 +26,23 @@ source constants and enter only as positive reals.
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
-theorem blockL0_pos {m : ℝ} (hm : 0 < m) : 0 < blockL0 m := by
+section
+variable {m : ℝ} (hm : 0 < m)
+include hm
+
+theorem blockL0_pos : 0 < blockL0 m := by
   unfold blockL0
   have : 0 < 2 * Real.pi / m := by positivity
   linarith
 
-theorem two_le_blockL0 {m : ℝ} (hm : 0 < m) : 2 ≤ blockL0 m := by
+theorem two_le_blockL0 : 2 ≤ blockL0 m := by
   unfold blockL0
   have : 0 < 2 * Real.pi / m := by positivity
   linarith
+
+end
 
 theorem blockRho_pos {Lb : ℝ} (hLb : 0 < Lb) : 0 < blockRho Lb := by
-  unfold blockRho
   exact lt_min one_pos (Real.rpow_pos_of_pos (by positivity) _)
 
 theorem blockRho_le_one (Lb : ℝ) : blockRho Lb ≤ 1 := min_le_left _ _
@@ -61,18 +66,21 @@ theorem blockEta_pos {m Lb : ℝ} (hm : 0 < m) (hLb : 0 < Lb) : 0 < blockEta m L
 theorem blockEta_le_rho_div_four (m Lb : ℝ) : blockEta m Lb ≤ blockRho Lb / 4 :=
   min_le_left _ _
 
-theorem blockEta_lt_rho {m Lb : ℝ} (hLb : 0 < Lb) :
+section
+variable {m Lb : ℝ}
+
+theorem blockEta_lt_rho (hLb : 0 < Lb) :
     blockEta m Lb < blockRho Lb := by
   have := blockRho_pos hLb
   have := blockEta_le_rho_div_four m Lb
   linarith
 
-theorem blockEta_le_quarter {m Lb : ℝ} : blockEta m Lb ≤ 1 / 4 := by
+theorem blockEta_le_quarter : blockEta m Lb ≤ 1 / 4 := by
   have := blockRho_le_one Lb
   have := blockEta_le_rho_div_four m Lb
   linarith
 
-theorem Lb_mul_blockEta_mul_blockL0_le {m Lb : ℝ} (hm : 0 < m) (hLb : 0 < Lb) :
+theorem Lb_mul_blockEta_mul_blockL0_le (hm : 0 < m) (hLb : 0 < Lb) :
     Lb * blockEta m Lb * blockL0 m ≤ 1 / 8 := by
   have hL0 := blockL0_pos hm
   have hη : blockEta m Lb ≤ 1 / (8 * Lb * blockL0 m) := min_le_right _ _
@@ -82,33 +90,13 @@ theorem Lb_mul_blockEta_mul_blockL0_le {m Lb : ℝ} (hm : 0 < m) (hLb : 0 < Lb) 
         mul_le_mul_of_nonneg_right hη (by positivity)
     _ = 1 / 8 := by field_simp
 
+end
+
 theorem sixteen_Lb_mul_blockRho_pow_three_le {Lb : ℝ} (hLb : 0 < Lb) :
     16 * Lb * blockRho Lb ^ 3 ≤ 1 / 8 := by
   have h := blockRho_pow_three_le hLb
   calc 16 * Lb * blockRho Lb ^ 3 ≤ 16 * Lb * (1 / (128 * Lb)) :=
         mul_le_mul_of_nonneg_left h (by positivity)
     _ = 1 / 8 := by field_simp; norm_num
-
-/-- Proposition 3.9, (3.15), (3.16): positivity and the
-smallness inequalities of the source block constants. -/
-theorem block_parameters (Cstar h q0 m Lb : ℝ)
-    (hC : 0 < Cstar) (hh : 0 < h) (hq : 0 < q0) (hm : 0 < m) (hmLb : m ≤ Lb) :
-    0 < blockRho Lb ∧ blockRho Lb ≤ 1 ∧
-    0 < blockEta m Lb ∧ blockEta m Lb ≤ blockRho Lb / 4 ∧
-    blockEta m Lb < blockRho Lb ∧ blockEta m Lb ≤ 1 / 4 ∧
-    0 < blockTime m Lb ∧ 0 < blockOuter Lb ∧ 0 < blockMass Cstar m Lb ∧
-    Lb * blockEta m Lb * blockL0 m ≤ 1 / 8 ∧ 16 * Lb * blockRho Lb ^ 3 ≤ 1 / 8 ∧
-    Lb * blockEta m Lb * blockL0 m + 16 * Lb * blockRho Lb ^ 3 ≤ 1 / 4 ∧
-    0 < (3 / 4) * blockMass Cstar m Lb * h * q0 := by
-  have hLb : 0 < Lb := hm.trans_le hmLb
-  have hρ := blockRho_pos hLb
-  have hmass : 0 < blockMass Cstar m Lb := Real.exp_pos _
-  have h1 := Lb_mul_blockEta_mul_blockL0_le hm hLb
-  have h2 := sixteen_Lb_mul_blockRho_pow_three_le hLb
-  refine ⟨hρ, blockRho_le_one Lb, blockEta_pos hm hLb, blockEta_le_rho_div_four m Lb,
-    blockEta_lt_rho hLb, blockEta_le_quarter, ?_, ?_, hmass, h1, h2, by linarith, ?_⟩
-  · unfold blockTime; have := blockL0_pos hm; positivity
-  · unfold blockOuter; positivity
-  · positivity
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

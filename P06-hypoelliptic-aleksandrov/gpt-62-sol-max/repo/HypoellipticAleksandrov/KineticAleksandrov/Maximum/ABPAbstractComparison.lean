@@ -39,7 +39,7 @@ theorem abp_potential_comparison {d : ℕ}
     dsimp only [Q]
     rw [← heq]
     exact hc
-  have hQi : Q ⊆ forwardCylinder Z₀ R hR := subset_closure.trans hcl
+  have hQi := subset_closure.trans hcl
   have hsub : ∀ P ∈ Q, 0 < w P → 0 ≤ forwardKineticOperator A w P := by
     intro P hP hpos
     have hPQ := hQi hP
@@ -64,7 +64,7 @@ theorem abp_potential_comparison {d : ℕ}
     linarith only [hm,hd]
   have hcompare := kinetic_comparison (innerCentre Z₀ δ) _ hr A w
     (fun P hP => hA P (hQi hP)) (hw.continuousOn.mono hcl)
-    (comparison_regular_mono hw hQi) hsub
+    (_root_.HypoellipticAleksandrov.Parabolic.IsKineticC112On.mono hw hQi) hsub
   have hb : sSup ((fun P => max (w P) 0) '' exitBoundary (innerCentre Z₀ δ)
       (innerRatio R hR δ hδ0 hδlt * R) hr) ≤ M := by
     apply csSup_le ((comparison_exitBoundary_nonempty (innerCentre Z₀ δ) _ hr).image _)

@@ -61,7 +61,7 @@ theorem exists_smooth_uniform_approx (μ : Measure E) [μ.IsAddHaarMeasure]
   obtain ⟨δ', hδ', hu⟩ := Metric.uniformContinuous_iff.1
     (hHc.uniformContinuous_of_continuous hH) η hη
   set rad : ℝ := min r δ' with hrad
-  have hrad_pos : 0 < rad := lt_min hr hδ'
+  have hrad_pos := lt_min hr hδ'
   let φ : ContDiffBump (0 : E) := ⟨rad / 2, rad, half_pos hrad_pos, half_lt_self hrad_pos⟩
   refine ⟨φ.normed μ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] H, ?_, ?_, ?_, ?_⟩
   · exact φ.hasCompactSupport_normed.contDiff_convolution_left _ φ.contDiff_normed

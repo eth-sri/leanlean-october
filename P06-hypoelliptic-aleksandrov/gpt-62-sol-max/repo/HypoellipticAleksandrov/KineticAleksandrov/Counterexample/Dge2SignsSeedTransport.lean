@@ -37,8 +37,12 @@ theorem isCompact_smallSeedBall (d : ℕ) : IsCompact (smallSeedBall d) := by
   rw [Metric.mem_closedBall, dist_zero_right, Prod.norm_def, max_le_iff]
   constructor <;> linarith
 
+section
+variable {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+include hsigma
+
 /-- Increasing the additive seed constant has exactly the source's transport effect. -/
-theorem ansatzTransport_seed_shift {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+theorem ansatzTransport_seed_shift
     (y e : PDE.Vec d) :
     ansatzTransport alpha (seed alpha C₀ sigma) y e =
       ansatzTransport alpha (seed alpha 0 sigma) y e +
@@ -48,7 +52,7 @@ theorem ansatzTransport_seed_shift {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 
   ring
 
 /-- The seed transport is continuous in both vector variables. -/
-theorem continuous_seed_transport {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma) :
+theorem continuous_seed_transport :
     Continuous (fun q : PDE.Vec d × PDE.Vec d =>
       ansatzTransport alpha (seed alpha C₀ sigma) q.1 q.2) := by
   have hb : ContDiff ℝ (⊤ : ℕ∞)
@@ -63,6 +67,8 @@ theorem continuous_seed_transport {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0
   simp_rw [ansatzTransport_seed alpha C₀ sigma hsigma]
   unfold PDE.vecDot
   fun_prop
+
+end
 
 /-- A single positive additive seed constant makes transport at least one on the small ball. -/
 theorem seed_transport_pos (d : ℕ) (alpha sigma : ℝ) (ha : 0 < alpha)

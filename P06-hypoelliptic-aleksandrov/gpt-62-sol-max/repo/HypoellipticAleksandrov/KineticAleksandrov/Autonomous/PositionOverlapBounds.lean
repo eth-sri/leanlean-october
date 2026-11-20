@@ -52,7 +52,7 @@ theorem positionPositiveNorm_of_density_le {X : Type*} [MeasurableSpace X]
 /-- The canonical active density obeys precisely the source restarted tail estimate. -/
 theorem positionActiveDensity_tail (hpush : PushforwardStatement)
     (htail : RestartTailStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C c₀ : ℝ, 0 < C ∧ 0 < c₀ ∧ ∀ (A : SmoothAutonomous lam Lam)
@@ -60,17 +60,17 @@ theorem positionActiveDensity_tail (hpush : PushforwardStatement)
       0 ≤ t →
       positionPositiveNorm
         (volume.restrict {p | e.time + t ≤ p.time ∧ p.velocity 0 ∈ c.active}) q
-        (positionActiveDensity hH hLE hlam hLam A c e) ≤
+        (positionActiveDensity A c e) ≤
           ENNReal.ofReal (C * Real.exp (-c₀ * t / c.r ^ 2) * c.r ^ (6 / q - 4)) := by
   have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
-  obtain ⟨C, c₀, hC, hc, hd⟩ := htail hH hLE lam Lam hlam hLam q hq
+  obtain ⟨C, c₀, hC, hc, hd⟩ := htail lam Lam hlam hLam q hq
   refine ⟨C, c₀, hC, hc, ?_⟩
   intro A c e he t ht
   obtain ⟨G, hG, hGt⟩ := hd A c e he
-  have hdens := (withDensity_positionActiveDensity hpush hH hLE hlam hLam A c e).trans
-    ((enlargedActiveGreenKernel_apply hH hLE hlam hLam A c e he).trans hG.2.2)
+  have hdens := (withDensity_positionActiveDensity hpush A c e).trans
+    ((enlargedActiveGreenKernel_apply A c e he).trans hG.2.2)
   apply positionPositiveNorm_of_density_le volume _
-    ((measurable_positionActiveDensity hH hLE hlam hLam A c).comp
+    ((measurable_positionActiveDensity A c).comp
       (measurable_const.prodMk measurable_id)) (densityClockStrip c e) _
       (by
         exact (isOpen_lt continuous_const continuous_time).measurableSet.inter

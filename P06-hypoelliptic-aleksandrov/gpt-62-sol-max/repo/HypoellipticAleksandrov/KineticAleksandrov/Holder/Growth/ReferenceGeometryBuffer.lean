@@ -17,13 +17,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
 open Set
 
+section
+variable (d m : ℕ)
+include m
+
 /-- The author-reference box with one extra unit of lower-time buffer. -/
-def referenceRegion (d m : ℕ) (L : ℝ) : Set (KineticPoint d) :=
+def referenceRegion (L : ℝ) : Set (KineticPoint d) :=
   {P | -((m : ℝ) + 5) < P.time ∧ P.time < 0 ∧
     PDE.vecEuclideanNorm P.position < L ∧ PDE.vecEuclideanNorm P.velocity < L}
 
 /-- A sufficiently small scale places the buffered reference set inside the unit cylinder. -/
-theorem referenceRegion_scaled_subset_unit (d m : ℕ) {L eps : ℝ}
+theorem referenceRegion_scaled_subset_unit {L eps : ℝ}
     (heps : 0 < eps) (heps1 : eps ≤ 1) (ht : eps * ((m : ℝ) + 5) < 1)
     (hspace : eps * L < 1) :
     kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps '' referenceRegion d m L ⊆
@@ -59,7 +63,7 @@ theorem referenceRegion_scaled_subset_unit (d m : ℕ) {L eps : ℝ}
       (mul_lt_mul_of_pos_left hx heps)).trans hspace
 
 /-- Every finite positive spatial bound admits a scale preserving the unit domain. -/
-theorem exists_buffered_reference_scale (d m : ℕ) {L : ℝ} (hL : 0 < L) :
+theorem exists_buffered_reference_scale {L : ℝ} (hL : 0 < L) :
     ∃ eps : ℝ, 0 < eps ∧ eps < 1 ∧
       kineticAffine (⟨0, 0, 0⟩ : KineticPoint d) eps '' referenceRegion d m L ⊆
         backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
@@ -82,6 +86,8 @@ theorem exists_buffered_reference_scale (d m : ℕ) {L : ℝ} (hL : 0 < L) :
     exact (mul_lt_mul_of_pos_left hd heps).trans_eq heq
   exact ⟨eps, heps, heps1,
     referenceRegion_scaled_subset_unit d m heps heps1.le htime hspace⟩
+
+end
 
 /-- Reference-set containment automatically preserves the admissibility domain. -/
 theorem buffered_reference_preserves_domain {d : ℕ} (P0 : KineticPoint d) {R eps L : ℝ}

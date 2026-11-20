@@ -11,13 +11,16 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 open KineticAleksandrov.LocalA
 
+section
+variable {N : ℕ} (z z' : TimeVelocity N)
+
 /-- The literal parabolic distance is nonnegative. -/
-theorem parabolicDistance_nonneg {N : ℕ} (z z' : TimeVelocity N) :
+theorem parabolicDistance_nonneg :
     0 ≤ parabolicDistance z z' :=
   add_nonneg (Real.rpow_nonneg (abs_nonneg _) _) (PDE.vecEuclideanNorm_nonneg _)
 
 /-- The time difference is bounded by the square of the parabolic distance. -/
-theorem abs_time_sub_le_parabolicDistance_sq {N : ℕ} (z z' : TimeVelocity N) :
+theorem abs_time_sub_le_parabolicDistance_sq :
     |z.1 - z'.1| ≤ parabolicDistance z z' ^ 2 := by
   have hnorm := PDE.vecEuclideanNorm_nonneg (z.2 - z'.2)
   have hs := Real.sqrt_nonneg |z.1 - z'.1|
@@ -27,12 +30,17 @@ theorem abs_time_sub_le_parabolicDistance_sq {N : ℕ} (z z' : TimeVelocity N) :
   nlinarith only [hnorm, hs, he]
 
 /-- The velocity difference is bounded by the parabolic distance. -/
-theorem velocity_sub_le_parabolicDistance {N : ℕ} (z z' : TimeVelocity N) :
+theorem velocity_sub_le_parabolicDistance :
     PDE.vecEuclideanNorm (z.2 - z'.2) ≤ parabolicDistance z z' :=
   le_add_of_nonneg_left (Real.rpow_nonneg (abs_nonneg _) _)
 
+end
+
+section
+variable {N : ℕ} {z z' : TimeVelocity N}
+
 /-- Distinct points have strictly positive parabolic distance. -/
-theorem parabolicDistance_pos {N : ℕ} {z z' : TimeVelocity N} (hne : z ≠ z') :
+theorem parabolicDistance_pos (hne : z ≠ z') :
     0 < parabolicDistance z z' := by
   have hnon := parabolicDistance_nonneg z z'
   by_contra h
@@ -48,7 +56,7 @@ theorem parabolicDistance_pos {N : ℕ} {z z' : TimeVelocity N} (hne : z ≠ z')
   exact hne (Prod.ext ht0 hv0)
 
 /-- A positive future margin can always be chosen below the fixed top time zero. -/
-theorem exists_pair_top {N : ℕ} {z z' : TimeVelocity N}
+theorem exists_pair_top
     (hz : z.1 < 0) (hz' : z'.1 < 0) {δ : ℝ} (hδ : 0 < δ) :
     ∃ T : ℝ, max z.1 z'.1 < T ∧ T < 0 ∧ T - max z.1 z'.1 ≤ δ ^ 2 := by
   let t := max z.1 z'.1
@@ -64,5 +72,7 @@ theorem exists_pair_top {N : ℕ} {z z' : TimeVelocity N}
     linarith only [hmin, ht]
   exact ⟨t + e, lt_add_of_pos_right t he, by linarith only [het],
     by simpa only [t, add_sub_cancel_left] using heδ⟩
+
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

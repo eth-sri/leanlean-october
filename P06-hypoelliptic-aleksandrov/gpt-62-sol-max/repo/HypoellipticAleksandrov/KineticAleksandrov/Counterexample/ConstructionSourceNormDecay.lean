@@ -12,11 +12,14 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter Set
 open scoped Topology ENNReal
 
+section
+variable {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+  (h : CounterProfileStatement d alpha)
+include hd ha ha1
+
 /-- Shell domination lifts to the literal spacetime source norm, with the finite time
 factor and no change to the selected profile witnesses. -/
-theorem construction_indicatorSource_norm_le {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (r mu R m T S : ℝ)
+theorem construction_indicatorSource_norm_le (r mu R m T S : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2) (hS : 0 < S)
     (hrate : mu = (d : ℝ) * profileLowerEllipticity h / R ^ 2)
     (hscale : 2 * Real.rpow r alpha ≤ 1)
@@ -28,7 +31,10 @@ theorem construction_indicatorSource_norm_le {d : ℕ} (hd : 1 ≤ d)
       (volume (Ioo (T - S ^ 2) T)) ^ (1 / p.toReal) *
         eLpNorm (flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r)
           p (volume.restrict {q | profileFunction h q < 1}) := by
-  obtain ⟨_, _, _, _, hAm, _, hH, _, _, _, _, hgv, _⟩ := selectedProfile_spec h
+  have hspec := selectedProfile_spec h
+  have hAm := hspec.measurable_matrix
+  have hH := hspec.continuous
+  have hgv := hspec.measurable_velocity
   let f := flatSourceWithJet (profileMatrix h) (profileFunction h)
     (profileVelocityJet h) alpha r
   let D := {q | profileFunction h q < 1}
@@ -71,9 +77,7 @@ theorem construction_indicatorSource_norm_le {d : ℕ} (hd : 1 ≤ d)
 
 /-- Positive selected sources tend to zero on the fixed cylinder as the flattening
 scales tend to zero in the full subcritical range. -/
-theorem construction_indicatorSource_norm_tendsto {d : ℕ} (hd : 1 ≤ d)
-    {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
-    (h : CounterProfileStatement d alpha) (mu R m T S p : ℝ)
+theorem construction_indicatorSource_norm_tendsto (mu R m T S p : ℝ)
     (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2) (hS : 0 < S)
     (hrate : mu = (d : ℝ) * profileLowerEllipticity h / R ^ 2)
     (hmargin : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < m)
@@ -100,5 +104,7 @@ theorem construction_indicatorSource_norm_tendsto {d : ℕ} (hd : 1 ≤ d)
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hu0
     (fun _ => bot_le) (fun j => construction_indicatorSource_norm_le hd ha ha1 h
       (r j) mu R m T S (hr j) hmu hR hm hS hrate (hs j) hmargin _ hp0 hpTop)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

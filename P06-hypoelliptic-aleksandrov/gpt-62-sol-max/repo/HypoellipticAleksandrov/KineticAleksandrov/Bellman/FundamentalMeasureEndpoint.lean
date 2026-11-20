@@ -21,7 +21,7 @@ theorem bellmanGaussianTimeChart_tendsto_zero (q : BellmanPuncturedPlane) :
     Tendsto (fun s => bellmanGaussianTimeChart s q.val) (𝓝[>] (0 : ℝ)) (𝓝 0) := by
   let a := q.val.1 ^ 2 + q.val.2 ^ 2
   let C := 360 * 8 ^ 6 * Real.sqrt 3 / (Real.pi * a ^ 6)
-  have ha : 0 < a := bellmanPunctured_sq_pos q
+  have ha := bellmanPunctured_sq_pos q
   have hlim : Tendsto (fun s : ℝ => C * s ^ 4) (𝓝[>] 0) (𝓝 0) := by
     simpa using (tendsto_const_nhds.mul ((tendsto_id.mono_left inf_le_left).pow 4) :
       Tendsto (fun s : ℝ => C * s ^ 4) (𝓝[>] 0) (𝓝 (C * 0 ^ 4)))
@@ -43,7 +43,7 @@ theorem bellmanGaussianTimeChart_tendsto_atTop (q : ℝ × ℝ) :
   · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with s hs
     exact (bellmanGaussianKernel_pos ⟨s, hs⟩ q).le
   · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with s hs
-    have hspos : 0 < s := hs
+    have hspos := hs
     calc
       bellmanGaussianTimeChart s q = bellmanGaussianKernel ⟨s, hspos⟩ q := rfl
       _ ≤ Real.sqrt 3 / (2 * Real.pi * s ^ 2) := bellmanGaussianKernel_le _ _
@@ -51,15 +51,18 @@ theorem bellmanGaussianTimeChart_tendsto_atTop (q : ℝ × ℝ) :
         rw [Real.rpow_neg hspos.le, Real.rpow_two]
         ring
 
+section
+variable (q : BellmanPuncturedPlane)
+
 /-- At the pole-free initial endpoint, the time chart is right-continuous. -/
-theorem bellmanGaussianTimeChart_continuousWithinAt_zero (q : BellmanPuncturedPlane) :
+theorem bellmanGaussianTimeChart_continuousWithinAt_zero :
     ContinuousWithinAt (fun s => bellmanGaussianTimeChart s q.val) (Ici 0) 0 := by
   apply continuousWithinAt_Ioi_iff_Ici.mp
   simpa [ContinuousWithinAt, bellmanGaussianTimeChart] using
     bellmanGaussianTimeChart_tendsto_zero q
 
 /-- The time derivative is integrable for each punctured-plane point. -/
-theorem integrable_bellmanGaussianTimeDerivative (q : BellmanPuncturedPlane) :
+theorem integrable_bellmanGaussianTimeDerivative :
     Integrable (fun t : BellmanPositiveTime =>
       bellmanGaussianTimeCoefficient t.val q.val * bellmanGaussianKernel t q.val)
       bellmanPositiveTimeVolume := by
@@ -73,7 +76,7 @@ theorem integrable_bellmanGaussianTimeDerivative (q : BellmanPuncturedPlane) :
     (bellmanPunctured_sq_pos q) q.val le_rfl t
 
 /-- The integrated time derivative of the Gaussian is zero away from its pole. -/
-theorem integral_bellmanGaussianTimeDerivative_eq_zero (q : BellmanPuncturedPlane) :
+theorem integral_bellmanGaussianTimeDerivative_eq_zero :
     (∫ t : BellmanPositiveTime,
       bellmanGaussianTimeCoefficient t.val q.val * bellmanGaussianKernel t q.val
         ∂bellmanPositiveTimeVolume) = 0 := by
@@ -91,5 +94,7 @@ theorem integral_bellmanGaussianTimeDerivative_eq_zero (q : BellmanPuncturedPlan
   rw [← map_bellmanPositiveTimeVolume_coe, he.integral_map] at h
   simpa [f', bellmanGaussianTimeChart, bellmanGaussianKernel,
     bellmanGaussianExponent] using h
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

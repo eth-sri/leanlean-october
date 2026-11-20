@@ -22,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-! The reflection `r ↦ r₁ - r` sends the original-time restricted volume to
 the corresponding reverse-time restricted volume. -/
-private theorem originalTimeReflection_measurePreserving_toReverseTime (r₀ r₁ : ℝ) :
+theorem originalTimeReflection_measurePreserving_toReverseTime (r₀ r₁ : ℝ) :
     MeasurePreserving (fun r : ℝ => r₁ - r)
       (volume.restrict (Set.Ioo r₀ r₁)) (reverseTimeVolume (r₁ - r₀)) := by
   have hreflection : MeasurePreserving (fun r : ℝ => r₁ - r)

@@ -31,13 +31,16 @@ theorem gaussianProfile_velocitySlice {d : ℕ} (lam Lam H L ell sblock : ℝ) {
       (fun V => (ell * Real.exp (-Xi d lam Lam H h * (s - sblock))) *
         Real.exp (-qform lam h (s - sblock) y V) + (-ell * Real.exp (-L ^ 2))) := by
   funext V
-  rw [gaussianProfile_of_pos lam Lam H L ell sblock hh hs]
-  rw [sub_eq_add_neg (-Xi d lam Lam H h * (s - sblock)), Real.exp_add]
+  rw [gaussianProfile_of_pos lam Lam H L ell sblock hh hs, sub_eq_add_neg (-Xi d lam Lam H h * (s - sblock)), Real.exp_add]
   ring
 
+section
+variable {d : ℕ} (lam Lam H L ell sblock : ℝ) {h s : ℝ} (hh : 0 < h) (hs : 0 < s - sblock)
+  (y V : PDE.Vec d)
+include hh hs
+
 /-- The profile velocity gradient is exactly minus twice amplitude times Gaussian times `p`. -/
-theorem gaussianProfile_velocityGradient {d : ℕ} (lam Lam H L ell sblock : ℝ) {h s : ℝ}
-    (hh : 0 < h) (hs : 0 < s - sblock) (y V : PDE.Vec d) :
+theorem gaussianProfile_velocityGradient :
     PDE.classicalGradient
       (fun W => gaussianProfile lam Lam H h L ell sblock (s, (y, W))) V =
       (-2 * ell * Real.exp (-Xi d lam Lam H h * (s - sblock) -
@@ -65,8 +68,7 @@ theorem gaussianProfile_velocityGradient {d : ℕ} (lam Lam H L ell sblock : ℝ
   ring
 
 /-- The profile velocity Hessian has the exact Gaussian rank-one minus covariance form. -/
-theorem gaussianProfile_velocityHessian {d : ℕ} (lam Lam H L ell sblock : ℝ) {h s : ℝ}
-    (hh : 0 < h) (hs : 0 < s - sblock) (y V : PDE.Vec d) (i j : Fin d) :
+theorem gaussianProfile_velocityHessian (i j : Fin d) :
     sliceHessian (fun W => gaussianProfile lam Lam H h L ell sblock (s, (y, W))) V i j =
       ell * Real.exp (-Xi d lam Lam H h * (s - sblock) -
         qform lam h (s - sblock) y V) *
@@ -102,5 +104,7 @@ theorem gaussianProfile_velocityHessian {d : ℕ} (lam Lam H L ell sblock : ℝ)
   simp only [Pi.smul_apply, smul_eq_mul, Matrix.smul_apply]
   rw [sub_eq_add_neg (-Xi d lam Lam H h * (s - sblock)), Real.exp_add]
   ring
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

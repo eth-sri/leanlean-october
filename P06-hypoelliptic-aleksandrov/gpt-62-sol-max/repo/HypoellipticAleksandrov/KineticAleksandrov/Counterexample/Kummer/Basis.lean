@@ -17,15 +17,19 @@ open scoped Topology ContDiff
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
+section
+variable (f : ℝ → ℝ) (p z : ℝ) (hz : 0 < z)
+include hz
+
 /-- First derivative of a power times a differentiable function. -/
-theorem hasDerivAt_power_mul (f : ℝ → ℝ) (p z : ℝ) (hz : 0 < z)
+theorem hasDerivAt_power_mul
     (hf : HasDerivAt f (deriv f z) z) :
     HasDerivAt (fun w => w ^ p * f w)
       (p * z ^ (p - 1) * f z + z ^ p * deriv f z) z :=
   (Real.hasDerivAt_rpow_const (Or.inl hz.ne')).mul hf
 
 /-- Exact second derivative of a power product on the positive half-line. -/
-theorem deriv_deriv_power_mul (f : ℝ → ℝ) (p z : ℝ) (hz : 0 < z)
+theorem deriv_deriv_power_mul
     (hf : ∀ w ∈ Ioi (0 : ℝ), HasDerivAt f (deriv f w) w)
     (hf' : HasDerivAt (deriv f) (deriv (deriv f) z) z) :
     deriv (deriv (fun w => w ^ p * f w)) z =
@@ -41,6 +45,8 @@ theorem deriv_deriv_power_mul (f : ℝ → ℝ) (p z : ℝ) (hz : 0 < z)
   have h := ((h1.add h2).congr_of_eventuallyEq heq).deriv
   rw [show p - 1 - 1 = p - 2 by ring] at h
   exact h.trans (by ring)
+
+end
 
 /-- Power transformation of Kummer's equation on the nonsingular domain. -/
 theorem power_mul_kummer_ode (f : ℝ → ℝ) (c p z : ℝ) (hz : 0 < z)

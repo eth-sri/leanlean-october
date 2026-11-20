@@ -70,9 +70,13 @@ theorem sliceHessian_affine {g : PDE.Vec d → ℝ} {y₀ : PDE.Vec d} {c : ℝ}
     ContinuousLinearMap.id_apply, map_smul, smul_eq_mul]
   ring
 
+section
+variable {u : KineticPoint d → ℝ} {p : KineticPoint d}
+  (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p))
+include hu
+
 /-- Time derivative at a point of differentiability of the raw lift. -/
-theorem kineticTimeDerivative_eq_fderiv {u : KineticPoint d → ℝ} {p : KineticPoint d}
-    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) :
+theorem kineticTimeDerivative_eq_fderiv :
     kineticTimeDerivative u p = fderiv ℝ (rawLift u) (rawPoint p) (1, (0, 0)) := by
   have hcurve : HasDerivAt (fun r : ℝ => ((r, (p.position, p.velocity)) :
       ℝ × (PDE.Vec d × PDE.Vec d))) ((1 : ℝ), ((0 : PDE.Vec d × PDE.Vec d))) p.time :=
@@ -80,8 +84,7 @@ theorem kineticTimeDerivative_eq_fderiv {u : KineticPoint d → ℝ} {p : Kineti
   exact (hu.hasFDerivAt.comp_hasDerivAt p.time hcurve).deriv
 
 /-- The velocity slice is differentiable, with the derivative of the raw lift. -/
-theorem hasFDerivAt_velocitySlice {u : KineticPoint d → ℝ} {p : KineticPoint d}
-    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) :
+theorem hasFDerivAt_velocitySlice :
     HasFDerivAt (fun v : PDE.Vec d => u ⟨p.time, p.position, v⟩)
       ((fderiv ℝ (rawLift u) (rawPoint p)).comp
         ((0 : PDE.Vec d →L[ℝ] ℝ).prod ((0 : PDE.Vec d →L[ℝ] PDE.Vec d).prod
@@ -94,22 +97,28 @@ theorem hasFDerivAt_velocitySlice {u : KineticPoint d → ℝ} {p : KineticPoint
       ((hasFDerivAt_const p.position p.velocity).prodMk (hasFDerivAt_id p.velocity))
   exact hu.hasFDerivAt.comp p.velocity hι
 
+end
+
+section
+variable {u : KineticPoint d → ℝ} {p : KineticPoint d}
+  (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) (x : PDE.Vec d)
+include hu
+
 /-- The velocity slice has the directional derivative of the raw lift. -/
-theorem fderiv_velocitySlice {u : KineticPoint d → ℝ} {p : KineticPoint d}
-    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) (x : PDE.Vec d) :
+theorem fderiv_velocitySlice :
     fderiv ℝ (fun v : PDE.Vec d => u ⟨p.time, p.position, v⟩) p.velocity x =
       fderiv ℝ (rawLift u) (rawPoint p) (0, (0, x)) := by
   rw [(hasFDerivAt_velocitySlice hu).fderiv]
   simp
 
 /-- The dot product with the velocity gradient is a directional derivative. -/
-theorem vecDot_kineticVelocityGradient {u : KineticPoint d → ℝ} {p : KineticPoint d}
-    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) (x : PDE.Vec d) :
+theorem vecDot_kineticVelocityGradient :
     PDE.vecDot x (kineticVelocityGradient u p) =
       fderiv ℝ (rawLift u) (rawPoint p) (0, (0, x)) := by
-  rw [← fderiv_velocitySlice hu x, PDE.fderiv_apply_eq_vecDot_classicalGradient]
-  rw [PDE.vecDot_comm]
+  rw [← fderiv_velocitySlice hu x, PDE.fderiv_apply_eq_vecDot_classicalGradient, PDE.vecDot_comm]
   rfl
+
+end
 
 theorem vecDot_sub_left (x y z : PDE.Vec d) :
     PDE.vecDot (x - y) z = PDE.vecDot x z - PDE.vecDot y z := by
@@ -130,9 +139,12 @@ namespace KineticAffineScaling
 
 variable (Φ : KineticAffineScaling d) {u : KineticPoint d → ℝ} {p : KineticPoint d}
 
+section
+variable (hu : DifferentiableAt ℝ (rawLift u) (rawPoint (Φ.point p)))
+include hu
+
 /-- The time derivative of `u ∘ Φ`: `a (∂_σ u + w · ∇_z u)`, as a directional derivative. -/
-theorem kineticTimeDerivative_comp_point
-    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint (Φ.point p))) :
+theorem kineticTimeDerivative_comp_point :
     kineticTimeDerivative (fun p => u (Φ.point p)) p =
       fderiv ℝ (rawLift u) (rawPoint (Φ.point p)) (Φ.a, (0, Φ.a • Φ.w)) := by
   have hid : HasDerivAt (fun r : ℝ => Φ.a * r) Φ.a p.time := by
@@ -151,8 +163,7 @@ theorem kineticTimeDerivative_comp_point
   exact (hu.hasFDerivAt.comp_hasDerivAt p.time hcurve).deriv
 
 /-- The velocity gradient of `u ∘ Φ` scales by `e`, tested against any vector. -/
-theorem vecDot_kineticVelocityGradient_comp_point
-    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint (Φ.point p))) (x : PDE.Vec d) :
+theorem vecDot_kineticVelocityGradient_comp_point (x : PDE.Vec d) :
     PDE.vecDot x (kineticVelocityGradient (fun p => u (Φ.point p)) p) =
       Φ.e * PDE.vecDot x (kineticVelocityGradient u (Φ.point p)) := by
   have hs := hasFDerivAt_velocitySlice hu
@@ -169,6 +180,8 @@ theorem vecDot_kineticVelocityGradient_comp_point
         Φ.transport p.time := rfl
   rw [hfun, hc.fderiv, vecDot_kineticVelocityGradient hu x]
   simp
+
+end
 
 /-- The diffused Hessian of `u ∘ Φ` is `c²` times that of `u`. -/
 theorem diffusedHessian_comp_point

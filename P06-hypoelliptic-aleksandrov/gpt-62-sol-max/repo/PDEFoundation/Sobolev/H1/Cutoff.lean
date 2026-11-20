@@ -30,44 +30,27 @@ noncomputable def mulCutoff
     H1Function U :=
   (u.toW1pFunction.mulCutoff η (by norm_num)).toH1Function
 
-@[simp]
-theorem mulCutoff_toFun
-    (u : H1Function U)
-    (η : QuantitativeSmoothCutoff inner outer K) :
-    (u.mulCutoff η).toFun = fun x => η.toFun x * u x := by
-  simpa only [mulCutoff,
-    W1pFunction.toH1Function_toFun,
-    H1Function.toW1pFunction_apply] using
-    u.toW1pFunction.mulCutoff_toFun η (by norm_num)
+section
+variable (u : H1Function U) (η : QuantitativeSmoothCutoff inner outer K)
 
 @[simp]
-theorem mulCutoff_grad
-    (u : H1Function U)
-    (η : QuantitativeSmoothCutoff inner outer K) :
+theorem mulCutoff_toFun :
+    (u.mulCutoff η).toFun = fun x => η.toFun x * u x := rfl
+
+@[simp]
+theorem mulCutoff_grad :
     (u.mulCutoff η).grad =
       fun x =>
         η.toFun x • u.grad x +
-          u x • classicalGradient η.toFun x := by
-  simpa only [mulCutoff,
-    W1pFunction.toH1Function_grad,
-    H1Function.toW1pFunction_grad,
-    H1Function.toW1pFunction_apply] using
-    u.toW1pFunction.mulCutoff_grad η (by norm_num)
+          u x • classicalGradient η.toFun x := rfl
 
 /-- Exact value representative for multiplication by a squared cutoff. -/
 @[simp]
-theorem mulCutoff_sq_toFun
-    (u : H1Function U)
-    (η : QuantitativeSmoothCutoff inner outer K) :
-    (u.mulCutoff η.sq).toFun = fun x => η x ^ 2 * u x := by
-  simpa only [mulCutoff, W1pFunction.toH1Function_toFun,
-    H1Function.toW1pFunction_apply] using
-    u.toW1pFunction.mulCutoff_sq_toFun η (by norm_num)
+theorem mulCutoff_sq_toFun :
+    (u.mulCutoff η.sq).toFun = fun x => η x ^ 2 * u x := rfl
 
 /-- Exact gradient representative for multiplication by a squared cutoff. -/
-theorem mulCutoff_sq_grad
-    (u : H1Function U)
-    (η : QuantitativeSmoothCutoff inner outer K) :
+theorem mulCutoff_sq_grad :
     (u.mulCutoff η.sq).grad =
       fun x =>
         η x ^ 2 • u.grad x +
@@ -76,6 +59,8 @@ theorem mulCutoff_sq_grad
     H1Function.toW1pFunction_grad,
     H1Function.toW1pFunction_apply] using
     u.toW1pFunction.mulCutoff_sq_grad η (by norm_num)
+
+end
 
 end H1Function
 

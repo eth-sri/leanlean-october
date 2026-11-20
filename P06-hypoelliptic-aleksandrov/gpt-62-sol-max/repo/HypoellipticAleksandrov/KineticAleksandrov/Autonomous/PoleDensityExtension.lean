@@ -21,21 +21,30 @@ theorem poleDensityExtend_measurable {G : GreenCarrier 1 → ℝ≥0∞} (hG : M
     Measurable (poleDensityExtend G) :=
   poleDensityElapsed_measurableEmbedding.measurable_extend hG measurable_const
 
+section
+variable (G : GreenCarrier 1 → ℝ≥0∞)
+
 /-- The extension equals the native density at every genuine elapsed point. -/
-theorem poleDensityExtend_apply (G : GreenCarrier 1 → ℝ≥0∞) (q : GreenCarrier 1) :
+theorem poleDensityExtend_apply (q : GreenCarrier 1) :
     poleDensityExtend G (elapsedPhysicalPoint 0 q) = G q :=
   poleDensityElapsed_measurableEmbedding.injective.extend_apply _ _ _
 
 /-- The physical zero extension has support only at strictly positive physical clock times. -/
-theorem poleDensityExtend_support (G : GreenCarrier 1 → ℝ≥0∞) :
+theorem poleDensityExtend_support :
     Function.support (poleDensityExtend G) ⊆ {p : Point | 0 < p.time} := by
   intro p hp
   by_contra ht
   apply hp
   exact Function.extend_apply' _ _ _ (fun h => ht (poleDensityElapsed_range ▸ h))
 
+end
+
+section
+variable {G : GreenCarrier 1 → ℝ≥0∞} (hG : Measurable G)
+include hG
+
 /-- Exact zero extension preserves the full ambient physical Lebesgue norm. -/
-theorem poleDensityExtend_eLpNorm {G : GreenCarrier 1 → ℝ≥0∞} (hG : Measurable G)
+theorem poleDensityExtend_eLpNorm
     (q : ℝ≥0∞) :
     eLpNorm (poleDensityExtend G) q (volume : Measure Point) =
       eLpNorm G q (greenLebesgue 1) := by
@@ -51,7 +60,7 @@ theorem poleDensityExtend_eLpNorm {G : GreenCarrier 1 → ℝ≥0∞} (hG : Meas
         eLpNorm f q (greenLebesgue 1)) heq)))
 
 /-- Mapping a native density through the actual elapsed embedding yields its physical extension. -/
-theorem poleDensityExtend_map_withDensity {G : GreenCarrier 1 → ℝ≥0∞} (hG : Measurable G) :
+theorem poleDensityExtend_map_withDensity :
     ((greenLebesgue 1).withDensity G).map (elapsedPhysicalPoint 0) =
       (volume : Measure Point).withDensity (poleDensityExtend G) := by
   have hmap : ((greenLebesgue 1).withDensity G).map (elapsedPhysicalPoint 0) =
@@ -90,5 +99,7 @@ theorem poleDensityExtend_map_withDensity {G : GreenCarrier 1 → ℝ≥0∞} (h
 
   exact hmap.trans ((congrArg (fun μ : Measure Point => μ.withDensity (poleDensityExtend G))
     poleDensityElapsed_map_volume).trans hres)
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

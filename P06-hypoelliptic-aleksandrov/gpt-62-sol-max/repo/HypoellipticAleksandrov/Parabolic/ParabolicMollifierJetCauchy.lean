@@ -29,38 +29,41 @@ private theorem parabolicExponent_ne_top (d : Nat) :
     parabolicExponent d ≠ ⊤ := by
   simp [parabolicExponent]
 
-private theorem toFun_memLp_global {d : Nat} {p : ENNReal}
-    (w : ParabolicW12Function d Set.univ p) :
+section
+variable {d : Nat} {p : ENNReal} (w : ParabolicW12Function d Set.univ p)
+
+private theorem toFun_memLp_global :
     MemLp w.toFun p volume := by
   have h := w.memLp
   change MemLp w.toFun p ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
   simpa only [Measure.restrict_univ] using h
 
-private theorem timeDeriv_memLp_global {d : Nat} {p : ENNReal}
-    (w : ParabolicW12Function d Set.univ p) :
+private theorem timeDeriv_memLp_global :
     MemLp w.timeDeriv p volume := by
   have h := w.timeDeriv_memLp
   change MemLp w.timeDeriv p ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
   simpa only [Measure.restrict_univ] using h
 
-private theorem velocityGrad_memLp_global {d : Nat} {p : ENNReal}
-    (w : ParabolicW12Function d Set.univ p) (i : Fin d) :
+private theorem velocityGrad_memLp_global (i : Fin d) :
     MemLp (fun z => w.velocityGrad z i) p volume := by
   have h := w.velocityGrad_memLp i
-  change MemLp (fun z => w.velocityGrad z i) p
-    ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-  simpa only [Measure.restrict_univ] using h
+  grind [Measure.restrict_univ]
 
-private theorem velocityHessian_memLp_global {d : Nat} {p : ENNReal}
-    (w : ParabolicW12Function d Set.univ p) (i j : Fin d) :
+private theorem velocityHessian_memLp_global (i j : Fin d) :
     MemLp (fun z => w.velocityHessian z i j) p volume := by
   have h := w.velocityHessian_memLp i j
-  change MemLp (fun z => w.velocityHessian z i j) p
-    ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-  simpa only [Measure.restrict_univ] using h
+  grind [Measure.restrict_univ]
 
-private theorem timeDerivative_sub_of_contDiff {d : Nat} {f g : TimeVelocity d -> Real}
-    (hf : ContDiff Real 1 f) (hg : ContDiff Real 1 g) :
+end
+
+section
+variable {d : Nat} {f g : TimeVelocity d -> Real}
+
+section
+variable (hf : ContDiff Real 1 f) (hg : ContDiff Real 1 g)
+include hf hg
+
+private theorem timeDerivative_sub_of_contDiff :
     timeDerivative (f - g) = timeDerivative f - timeDerivative g := by
   funext z
   unfold timeDerivative
@@ -68,8 +71,7 @@ private theorem timeDerivative_sub_of_contDiff {d : Nat} {f g : TimeVelocity d -
     (hg.differentiable (by norm_num) z)]
   rfl
 
-private theorem velocityGradient_sub_of_contDiff {d : Nat} {f g : TimeVelocity d -> Real}
-    (hf : ContDiff Real 1 f) (hg : ContDiff Real 1 g) (i : Fin d) :
+private theorem velocityGradient_sub_of_contDiff (i : Fin d) :
     (fun z => velocityGradient (f - g) z i) =
       fun z => velocityGradient f z i - velocityGradient g z i := by
   funext z
@@ -78,7 +80,9 @@ private theorem velocityGradient_sub_of_contDiff {d : Nat} {f g : TimeVelocity d
     (hg.differentiable (by norm_num) z)]
   rfl
 
-private theorem velocityHessian_sub_of_contDiff {d : Nat} {f g : TimeVelocity d -> Real}
+end
+
+private theorem velocityHessian_sub_of_contDiff
     (hf : ContDiff Real (⊤ : ENat) f) (hg : ContDiff Real (⊤ : ENat) g) (i j : Fin d) :
     (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian (f - g) z i j) =
       fun z => HypoellipticAleksandrov.Parabolic.velocityHessian f z i j -
@@ -103,14 +107,18 @@ private theorem velocityHessian_sub_of_contDiff {d : Nat} {f g : TimeVelocity d 
   rw [hfirst, fderiv_sub hff hgf]
   rfl
 
-private theorem timeDerivative_convolution_sub {d : Nat}
-    (w : ParabolicW12Function d Set.univ (parabolicExponent d)) (m n : Nat) :
+end
+
+section
+variable {d : Nat} (w : ParabolicW12Function d Set.univ (parabolicExponent d)) (m n : Nat)
+
+private theorem timeDerivative_convolution_sub :
     timeDerivative
         (fun z => parabolicConvolution w.toFun (parabolicMollifier d m) z -
           parabolicConvolution w.toFun (parabolicMollifier d n) z) =
       fun z => parabolicConvolution w.timeDeriv (parabolicMollifier d m) z -
         parabolicConvolution w.timeDeriv (parabolicMollifier d n) z := by
-  let p : ENNReal := parabolicExponent d
+  let p := parabolicExponent d
   have hpOne : (1 : ENNReal) <= p := by
     simpa only [p] using parabolicExponent_one_le d
   have hmf := w.contDiff_convolution hpOne (parabolicMollifier d m)
@@ -127,14 +135,13 @@ private theorem timeDerivative_convolution_sub {d : Nat}
       (contDiff_parabolicMollifier d n) (hasCompactSupport_parabolicMollifier d n)]
   rfl
 
-private theorem velocityGradient_convolution_sub {d : Nat}
-    (w : ParabolicW12Function d Set.univ (parabolicExponent d)) (m n : Nat) (i : Fin d) :
+private theorem velocityGradient_convolution_sub (i : Fin d) :
     (fun z => velocityGradient
       (fun z => parabolicConvolution w.toFun (parabolicMollifier d m) z -
         parabolicConvolution w.toFun (parabolicMollifier d n) z) z i) =
       fun z => parabolicConvolution (fun y => w.velocityGrad y i) (parabolicMollifier d m) z -
         parabolicConvolution (fun y => w.velocityGrad y i) (parabolicMollifier d n) z := by
-  let p : ENNReal := parabolicExponent d
+  let p := parabolicExponent d
   have hpOne : (1 : ENNReal) <= p := by
     simpa only [p] using parabolicExponent_one_le d
   have hmf := w.contDiff_convolution hpOne (parabolicMollifier d m)
@@ -152,8 +159,7 @@ private theorem velocityGradient_convolution_sub {d : Nat}
     congrFun (w.velocityGradient_convolution hpOne (parabolicMollifier d n)
       (contDiff_parabolicMollifier d n) (hasCompactSupport_parabolicMollifier d n) i) z]
 
-private theorem velocityHessian_convolution_sub {d : Nat}
-    (w : ParabolicW12Function d Set.univ (parabolicExponent d)) (m n : Nat)
+private theorem velocityHessian_convolution_sub
     (i j : Fin d) :
     (fun z => HypoellipticAleksandrov.Parabolic.velocityHessian
       (fun z => parabolicConvolution w.toFun (parabolicMollifier d m) z -
@@ -162,7 +168,7 @@ private theorem velocityHessian_convolution_sub {d : Nat}
           (parabolicMollifier d m) z -
         parabolicConvolution (fun y => w.velocityHessian y i j)
           (parabolicMollifier d n) z := by
-  let p : ENNReal := parabolicExponent d
+  let p := parabolicExponent d
   have hpOne : (1 : ENNReal) <= p := by
     simpa only [p] using parabolicExponent_one_le d
   have hmf := w.contDiff_convolution hpOne (parabolicMollifier d m)
@@ -178,6 +184,8 @@ private theorem velocityHessian_convolution_sub {d : Nat}
       (contDiff_parabolicMollifier d m) (hasCompactSupport_parabolicMollifier d m) i j) z,
     congrFun (w.velocityHessian_convolution hpOne (parabolicMollifier d n)
       (contDiff_parabolicMollifier d n) (hasCompactSupport_parabolicMollifier d n) i j) z]
+
+end
 
 private theorem tendsto_eLpNorm_convolution_pair_sub
     {d : Nat} {p : ENNReal} {g : TimeVelocity d -> Real}
@@ -206,14 +214,6 @@ private theorem tendsto_eLpNorm_convolution_pair_sub
       rw [← prod_atTop_atTop_eq]
       exact tendsto_snd.eventually hsmall
   filter_upwards [hfirst, hsecond] with mn hm hn
-  have hmemM : MemLp (fun z => parabolicConvolution g (parabolicMollifier d mn.1) z - g z)
-      p volume :=
-    (memLp_parabolicConvolution_parabolicMollifier hpOne
-      hpTop hmem mn.1).sub hmem
-  have hmemN : MemLp (fun z => parabolicConvolution g (parabolicMollifier d mn.2) z - g z)
-      p volume :=
-    (memLp_parabolicConvolution_parabolicMollifier hpOne
-      hpTop hmem mn.2).sub hmem
   have hdecomp :
       (fun z => parabolicConvolution g (parabolicMollifier d mn.1) z -
         parabolicConvolution g (parabolicMollifier d mn.2) z) =
@@ -231,10 +231,12 @@ private theorem tendsto_eLpNorm_convolution_pair_sub
     _ <= eta / 2 + eta / 2 := add_le_add hm hn
     _ = eta := ENNReal.add_halves eta
 
+section
+variable {d : Nat} (w : ParabolicW12Function d Set.univ (parabolicExponent d))
+
 /-- Every difference of two value mollifications has a finite selected
 smooth-jet `L^(d+1)` norm. -/
-theorem parabolicSmoothJetMemLp_convolution_sub {d : Nat}
-    (w : ParabolicW12Function d Set.univ (parabolicExponent d)) (m n : Nat) :
+theorem parabolicSmoothJetMemLp_convolution_sub (m n : Nat) :
     ParabolicSmoothJetMemLp d (fun z => parabolicConvolution w.toFun (parabolicMollifier d m) z -
       parabolicConvolution w.toFun (parabolicMollifier d n) z) := by
   let p : ENNReal := parabolicExponent d
@@ -269,12 +271,11 @@ theorem parabolicSmoothJetMemLp_convolution_sub {d : Nat}
 
 /-- The full extended-real selected smooth-jet norm of two mollifications
 tends to zero as both mollifier indices tend to infinity. -/
-theorem tendsto_parabolicSmoothJetELpNorm_convolution_sub {d : Nat}
-    (w : ParabolicW12Function d Set.univ (parabolicExponent d)) :
+theorem tendsto_parabolicSmoothJetELpNorm_convolution_sub :
     Tendsto (fun mn : Nat × Nat => parabolicSmoothJetELpNorm d
       (fun z => parabolicConvolution w.toFun (parabolicMollifier d mn.1) z -
         parabolicConvolution w.toFun (parabolicMollifier d mn.2) z)) atTop (nhds 0) := by
-  let p : ENNReal := parabolicExponent d
+  let p := parabolicExponent d
   have hpOne : (1 : ENNReal) <= p := by
     simpa only [p] using parabolicExponent_one_le d
   have hpTop : p ≠ ⊤ := by
@@ -324,8 +325,7 @@ theorem tendsto_parabolicSmoothJetELpNorm_convolution_sub {d : Nat}
     (((hvalue.add htime').add hgradSum).add hhessSum)
 
 /-- The real selected smooth-jet norm of two value mollifications is Cauchy. -/
-theorem parabolicSmoothJetLpNorm_convolution_cauchy {d : Nat}
-    (w : ParabolicW12Function d Set.univ (parabolicExponent d)) :
+theorem parabolicSmoothJetLpNorm_convolution_cauchy :
     forall eps : Real, 0 < eps -> exists N : Nat, forall m : Nat, N <= m -> forall n : Nat,
       N <= n -> parabolicSmoothJetLpNorm d
         (fun z => parabolicConvolution w.toFun (parabolicMollifier d m) z -
@@ -351,5 +351,7 @@ theorem parabolicSmoothJetLpNorm_convolution_cauchy {d : Nat}
   unfold parabolicSmoothJetLpNorm
   rw [← ENNReal.toReal_ofReal heps.le]
   exact (ENNReal.toReal_lt_toReal htop ENNReal.ofReal_ne_top).2 hstrict
+
+end
 
 end HypoellipticAleksandrov.Parabolic.ParabolicW12Function

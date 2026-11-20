@@ -13,9 +13,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 open Set MeasureTheory
 open scoped Topology
 
+section
+variable {n : ℕ} {U : Set (EvolutionVec n)} {f ψ : EvolutionVec n → ℝ}
+
+/-- Compactly supported continuous tests can be multiplied by a locally integrable function. -/
+theorem integrable_weak_mul_test
+    (hf : LocallyIntegrableOn f U volume) (hψ : Continuous ψ) (hc : HasCompactSupport ψ)
+    (hs : tsupport ψ ⊆ U) : Integrable (fun z => f z * ψ z) :=
+  (integrableOn_iff_integrable_of_support_subset (fun _ hx =>
+    tsupport_mul_subset_right (subset_tsupport _ hx))).mp
+    ((hf.integrableOn_compact_subset hs hc.isCompact).mul_continuousOn hψ.continuousOn hc.isCompact)
+
 /-- Multiplication by a compactly supported test is integrable locally. -/
 theorem integrable_evolution_mul_test
-    {n : ℕ} {U : Set (EvolutionVec n)} {f ψ : EvolutionVec n → ℝ}
     (hf : ContinuousOn f U) (hψ : Continuous ψ) (hc : HasCompactSupport ψ)
     (hsub : tsupport ψ ⊆ U) : Integrable (fun z => f z * ψ z) := by
   have hK : IntegrableOn f (tsupport ψ) volume :=
@@ -25,9 +35,13 @@ theorem integrable_evolution_mul_test
   intro z hz
   exact tsupport_mul_subset_right (subset_closure hz)
 
+end
+
+section
+variable {n : ℕ}
+
 /-- Local continuous line derivatives give integration by parts against a compact smooth test. -/
-theorem setIntegral_mul_evolution_directional_test
-    {n : ℕ} {U : Set (EvolutionVec n)} {f df φ : EvolutionVec n → ℝ}
+theorem setIntegral_mul_evolution_directional_test {U : Set (EvolutionVec n)} {f df φ : EvolutionVec n → ℝ}
     (hf : ContinuousOn f U) (hdf : ContinuousOn df U) (v : EvolutionVec n)
     (hd : ∀ z ∈ U, HasLineDerivAt ℝ f (df z) z v)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ)
@@ -56,7 +70,7 @@ theorem setIntegral_mul_evolution_directional_test
   · rw [image_eq_zero_of_notMem_tsupport (fun h => hz ((hDsub.trans hsub) h)), mul_zero]
 
 /-- A directional derivative does not enlarge the support of a smooth test. -/
-theorem tsupport_evolution_fderiv_apply {n : ℕ} (φ : EvolutionVec n → ℝ)
+theorem tsupport_evolution_fderiv_apply (φ : EvolutionVec n → ℝ)
     (v : EvolutionVec n) :
     tsupport (fun x => fderiv ℝ φ x v) ⊆ tsupport φ := by
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
@@ -66,8 +80,7 @@ theorem tsupport_evolution_fderiv_apply {n : ℕ} (φ : EvolutionVec n → ℝ)
   exact hx (by simp [hz])
 
 /-- Two compactly supported integrations by parts transfer two spatial derivatives. -/
-theorem setIntegral_mul_evolution_second_test
-    {n : ℕ} {U : Set (EvolutionVec n)} {f df ddf φ : EvolutionVec n → ℝ}
+theorem setIntegral_mul_evolution_second_test {U : Set (EvolutionVec n)} {f df ddf φ : EvolutionVec n → ℝ}
     (hf : ContinuousOn f U) (hdf : ContinuousOn df U) (hddf : ContinuousOn ddf U)
     (v w : EvolutionVec n)
     (hd : ∀ x ∈ U, HasLineDerivAt ℝ f (df x) x v)
@@ -81,5 +94,7 @@ theorem setIntegral_mul_evolution_second_test
   rw [setIntegral_mul_evolution_directional_test hf hdf v hd hD
     (hc.fderiv_apply (𝕜 := ℝ) w) ((tsupport_evolution_fderiv_apply φ w).trans hsub),
     setIntegral_mul_evolution_directional_test hdf hddf w hdd hφ hc hsub, neg_neg]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

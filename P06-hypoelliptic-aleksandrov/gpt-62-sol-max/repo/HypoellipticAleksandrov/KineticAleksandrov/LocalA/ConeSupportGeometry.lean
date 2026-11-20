@@ -11,8 +11,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Filter Parabolic
 open scoped Topology
 
+section
+variable {d : ℕ}
+
 /-- The Euclidean ball controls every directional transport speed. -/
-theorem cone_directional_speed {d : ℕ} (e v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+theorem cone_directional_speed (e v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (w : PDE.Vec d) (hw : w ∈ PDE.euclideanBall v₀ R) :
     -(PDE.vecEuclideanNorm e * R) - PDE.vecDot e v₀ + PDE.vecDot w e ≤ 0 := by
   have hv := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hR).mp hw
@@ -24,7 +27,7 @@ theorem cone_directional_speed {d : ℕ} (e v₀ : PDE.Vec d) {R : ℝ} (hR : 0 
   linarith only [hd, hb]
 
 /-- The chosen affine coordinate is exactly a centered directional cone defect. -/
-theorem coneCoordinate_centered {d : ℕ} (P Q : KineticPoint d)
+theorem coneCoordinate_centered (P Q : KineticPoint d)
     (e v₀ : PDE.Vec d) (R : ℝ) :
     coneCoordinate (-(PDE.vecEuclideanNorm e * R) - PDE.vecDot e v₀) e
       (-(-(PDE.vecEuclideanNorm e * R) - PDE.vecDot e v₀) * P.time -
@@ -36,7 +39,7 @@ theorem coneCoordinate_centered {d : ℕ} (P Q : KineticPoint d)
   ring
 
 /-- Countably many dense directions upgrade almost-everywhere directional bounds to a norm bound. -/
-theorem cone_norm_of_directional_ae {d : ℕ} (μ : Measure (KineticPoint d))
+theorem cone_norm_of_directional_ae (μ : Measure (KineticPoint d))
     (P : KineticPoint d) (v₀ : PDE.Vec d) (R : ℝ) (hR : 0 ≤ R)
     (ht : ∀ᵐ Q ∂μ, P.time ≤ Q.time)
     (hd : ∀ e : PDE.Vec d, ∀ᵐ Q ∂μ,
@@ -64,5 +67,7 @@ theorem cone_norm_of_directional_ae {d : ℕ} (μ : Measure (KineticPoint d))
     exact mul_nonneg hR (sub_nonneg.mpr hqt)
   · exact le_of_mul_le_mul_left hy
       (lt_of_le_of_ne (PDE.vecEuclideanNorm_nonneg y) (Ne.symm hz))
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

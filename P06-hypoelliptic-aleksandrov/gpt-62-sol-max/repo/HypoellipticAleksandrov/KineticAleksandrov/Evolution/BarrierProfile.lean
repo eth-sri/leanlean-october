@@ -30,11 +30,14 @@ open scoped Topology
 def collarProfile (κ r₀ s : ℝ) : ℝ :=
   (1 - Real.exp (-κ * (r₀ - Real.sqrt s))) / κ
 
+section
+variable {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s)
+include hκ hs
+
 /-- First derivative of the collar profile in the squared distance. -/
-theorem hasDerivAt_collarProfile {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
+theorem hasDerivAt_collarProfile :
     HasDerivAt (collarProfile κ r₀) (-(Real.exp (-κ * (r₀ - Real.sqrt s)) /
       (2 * Real.sqrt s))) s := by
-  have hsq : Real.sqrt s ≠ 0 := (Real.sqrt_pos.mpr hs).ne'
   have h1 : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt s)) s := Real.hasDerivAt_sqrt hs.ne'
   have h2 : HasDerivAt (fun s => -κ * (r₀ - Real.sqrt s))
       (-κ * (-(1 / (2 * Real.sqrt s)))) s := (h1.const_sub r₀).const_mul (-κ)
@@ -45,13 +48,13 @@ theorem hasDerivAt_collarProfile {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : �
   ring
 
 /-- The first derivative of the collar profile. -/
-theorem deriv_collarProfile {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
+theorem deriv_collarProfile :
     deriv (collarProfile κ r₀) s =
       -(Real.exp (-κ * (r₀ - Real.sqrt s)) / (2 * Real.sqrt s)) :=
   (hasDerivAt_collarProfile hκ r₀ hs).deriv
 
 /-- Second derivative of the collar profile in the squared distance. -/
-theorem hasDerivAt_collarProfile_deriv {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) {s : ℝ} (hs : 0 < s) :
+theorem hasDerivAt_collarProfile_deriv :
     HasDerivAt (deriv (collarProfile κ r₀))
       (-(Real.exp (-κ * (r₀ - Real.sqrt s)) / (4 * s)) * (κ - 1 / Real.sqrt s)) s := by
   have hsq : Real.sqrt s ≠ 0 := (Real.sqrt_pos.mpr hs).ne'
@@ -72,6 +75,8 @@ theorem hasDerivAt_collarProfile_deriv {κ : ℝ} (hκ : κ ≠ 0) (r₀ : ℝ) 
   subst hs2
   field_simp
   ring
+
+end
 
 /-- The collar profile is `C²` away from the centre. -/
 theorem contDiffAt_collarProfile (κ r₀ : ℝ) {s : ℝ} (hs : 0 < s) :

@@ -19,8 +19,7 @@ abbrev BellmanSphere := {q : ℝ × ℝ // bellmanGauge q = 1}
 abbrev BellmanCoefficient (lam Lam : ℝ) := {b : ℝ // b ∈ Icc lam Lam}
 
 /-- The gauge polynomial is continuous. -/
-theorem bellmanGaugePower_continuous : Continuous bellmanGaugePower := by
-  exact (continuous_fst.pow 2).add (continuous_snd.pow 6)
+theorem bellmanGaugePower_continuous : Continuous bellmanGaugePower := (continuous_fst.pow 2).add (continuous_snd.pow 6)
 
 /-- The source gauge is continuous, including at the origin. -/
 theorem bellmanGauge_continuous : Continuous bellmanGauge := by

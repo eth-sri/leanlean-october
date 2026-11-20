@@ -33,11 +33,16 @@ def halfPhase (d : ℕ) (ξ : PDE.Vec d) (r : ℝ) :
 def halfVelocity (d : ℕ) (r : ℝ) :
     EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) r → PDE.Vec d := fun w => w.1.1
 
-lemma measurable_halfPhase (ξ : PDE.Vec d) (r : ℝ) : Measurable (halfPhase d ξ r) :=
+section
+variable (ξ : PDE.Vec d) (r : ℝ)
+
+lemma measurable_halfPhase : Measurable (halfPhase d ξ r) :=
   (continuous_fourierPhase ξ 0).measurable.comp measurable_subtype_coe
 
-lemma norm_halfPhase (ξ : PDE.Vec d) (r : ℝ) (w) : ‖halfPhase d ξ r w‖ = 1 :=
+lemma norm_halfPhase (w) : ‖halfPhase d ξ r w‖ = 1 :=
   norm_fourierPhase ξ 0 w.1
+
+end
 
 lemma measurable_halfVelocity (r : ℝ) : Measurable (halfVelocity d r) :=
   measurable_fst.comp measurable_subtype_coe
@@ -74,11 +79,14 @@ lemma master_phase_integral
     exact fourierPhase_factor ξ 0 (v, z) w
   · simp only [Set.indicator_of_notMem hw]
 
+section
+variable (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
+  (σ₀ r : ℝ) (hσr : σ₀ ≤ r) (ξ : PDE.Vec d)
+  (x : EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀)
+include hcov
+
 /-- The fibre measure of the half-time evolution is the Fourier kernel times a unimodular phase. -/
 lemma fibreMeasure_halfKernel
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
-    (σ₀ r : ℝ) (hσr : σ₀ ≤ r) (ξ : PDE.Vec d)
-    (x : EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀)
     {E : Set (PDE.Vec d)} (hE : MeasurableSet E) :
     fibreMeasure (halfKernel K σ₀ r hσr) (halfPhase d ξ r) (halfVelocity d r) x E =
       fourierPhase ξ 0 x.1 * fourierKernel K σ₀ r hσr ξ x.1.1 E := by
@@ -111,10 +119,7 @@ lemma fibreMeasure_halfKernel
 
 
 /-- Each fibre of the half-time evolution has the total variation of the Fourier kernel. -/
-lemma fibreMeasure_variation_le
-    (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
-    (σ₀ r : ℝ) (hσr : σ₀ ≤ r) (ξ : PDE.Vec d)
-    (x : EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀) :
+lemma fibreMeasure_variation_le :
     (fibreMeasure (halfKernel K σ₀ r hσr) (halfPhase d ξ r) (halfVelocity d r) x).variation univ ≤
       totalVariationNorm (fourierKernel K σ₀ r hσr ξ x.1.1) := by
   have hle : (fibreMeasure (halfKernel K σ₀ r hσr) (halfPhase d ξ r)
@@ -125,6 +130,8 @@ lemma fibreMeasure_variation_le
     rw [fibreMeasure_halfKernel K hcov σ₀ r hσr ξ x hE, enorm_mul, h1, one_mul]
     exact VectorMeasure.enorm_measure_le_variation _ E
   exact Measure.le_iff.1 hle univ MeasurableSet.univ
+
+end
 
 
 /-- The phase `e^{-iξ·z'}` cut to the velocity set `E`. -/
@@ -168,24 +175,28 @@ theorem slab_pairing
   exact this
 
 
+section
+variable (σ₀ T : ℝ)
+
 /-- The half time `σ₀ + T/2`. -/
-lemma le_halfTime (σ₀ T : ℝ) (hT : 0 ≤ T) : σ₀ ≤ σ₀ + T / 2 :=
+lemma le_halfTime (hT : 0 ≤ T) : σ₀ ≤ σ₀ + T / 2 :=
   le_add_of_nonneg_right (by positivity)
 
 /-- The complex velocity measure `η_T^ξ` of the half-time evolution of `μ`. -/
-def halfMeasure (σ₀ T : ℝ) (hT : 0 ≤ T)
+def halfMeasure (hT : 0 ≤ T)
     (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀)) (ξ : PDE.Vec d) :
     VectorMeasure (PDE.Vec d) ℂ :=
   evolvedMeasure μ (halfKernel K σ₀ (σ₀ + T / 2) (le_halfTime σ₀ T hT))
     (halfPhase d ξ (σ₀ + T / 2)) (halfVelocity d (σ₀ + T / 2))
 
 /-- At a time `τ` in the slab, `occupationKernel` from the half time is the velocity marginal. -/
-lemma occupationKernel_half (σ₀ T : ℝ) (τ : ℝ) (hτ : T < τ) (hT : 0 < T) (v : PDE.Vec d) :
+lemma occupationKernel_half (τ : ℝ) (hτ : T < τ) (hT : 0 < T) (v : PDE.Vec d) :
     occupationKernel K (σ₀ + T / 2) (τ - T / 2) v =
       K.firstMarginal (wholeSpaceQuery (σ₀ + T / 2) (σ₀ + τ)
         (by linarith) v 0) := by
-  rw [occupationKernel_of_nonneg K _ _ (by linarith) v]
-  rw [wholeSpaceQuery_congr (σ₀ + T / 2) _ (σ₀ + τ) _ (by linarith) (by ring) v 0]
+  rw [occupationKernel_of_nonneg K _ _ (by linarith) v, wholeSpaceQuery_congr (σ₀ + T / 2) _ (σ₀ + τ) _ (by linarith) (by ring) v 0]
+
+end
 
 /-- **Per-section bound.**  For `τ` in the slab, the section integral is dominated by the occupation
 of `|η_T^ξ|`. -/
@@ -218,29 +229,39 @@ theorem slab_section_bound
 def greenPhase (d : ℕ) (ξ : PDE.Vec d) (p : GreenCarrier d) : ℂ :=
   Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I))
 
-lemma greenPhase_eq (ξ : PDE.Vec d) (τ : ElapsedTime ⊤) (w : EvolutionAmbientState d) :
+section
+variable (ξ : PDE.Vec d)
+
+lemma greenPhase_eq (τ : ElapsedTime ⊤) (w : EvolutionAmbientState d) :
     greenPhase d ξ (τ, w) = fourierPhase ξ 0 w := by
   unfold greenPhase fourierPhase
   rw [sub_zero, neg_mul, mul_comm]
 
-lemma measurable_greenPhase (ξ : PDE.Vec d) : Measurable (greenPhase d ξ) := by
+lemma measurable_greenPhase : Measurable (greenPhase d ξ) := by
   unfold greenPhase PDE.vecDot
   fun_prop
 
-lemma norm_greenPhase (ξ : PDE.Vec d) (p : GreenCarrier d) : ‖greenPhase d ξ p‖ = 1 := by
+lemma norm_greenPhase (p : GreenCarrier d) : ‖greenPhase d ξ p‖ = 1 := by
   rw [greenPhase_eq ξ p.1 p.2]
   exact norm_fourierPhase ξ 0 p.2
 
+end
+
+section
+variable {d : ℕ} (T : ℝ)
+
 /-- The slab set of a measurable `E ⊆ SlabBase`. -/
-lemma slabPreimage_eq {d : ℕ} (T : ℝ) (E : Set (SlabBase d)) :
+lemma slabPreimage_eq (E : Set (SlabBase d)) :
     {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} =
       (fun p : GreenCarrier d => (p.1, p.2.1)) ⁻¹' E ∩ slabSet T := by
-  ext p; simp [slabSet, slabTimeSet]
+  rfl
 
-lemma measurableSet_slabPreimage {d : ℕ} (T : ℝ) {E : Set (SlabBase d)} (hE : MeasurableSet E) :
+lemma measurableSet_slabPreimage {E : Set (SlabBase d)} (hE : MeasurableSet E) :
     MeasurableSet {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} := by
   rw [slabPreimage_eq]
   exact (hE.preimage (by fun_prop)).inter (measurableSet_slabSet T)
+
+end
 
 /-- **Domination of the Fourier marginal (`#fourier-domination`, inequality for sets).** -/
 theorem slab_domination_ineq

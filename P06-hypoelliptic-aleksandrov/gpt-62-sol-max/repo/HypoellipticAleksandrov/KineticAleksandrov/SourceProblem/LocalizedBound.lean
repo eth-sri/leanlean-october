@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.LocalizedAdmissibility
-public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.InteriorEstimate
+public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.Assembly
 
 /-!
 # The localized bound `0 ≤ V ≤ C R^(d/(d+1)) ‖F‖_{L^{d+1}}` (companion paper, Proposition 4.2)
@@ -43,10 +43,10 @@ theorem localizedBound_cylinder_direct
             parabolicLpNormOn d F
               (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) := by
   obtain ⟨C, hC0, hK⟩ :=
-    LsuFree.parabolic_aleksandrov_direct d hd lam Lam hlam hLam
+    parabolic_aleksandrov_of_lower_ellipticity d hd lam hlam
   refine ⟨C, hC0, ?_⟩
   intro B hsymm hsmooth hlow hup F hF0 hFs hFc hFsupp α hα0 hα1 vStar R hR hRsq V hV
-  obtain ⟨hInterior, hValue, hcoef, hsy, hbd, hpos, hle, hmem, hpde, -, hzero, hnorm, hnonneg⟩ :=
+  obtain ⟨hInterior, hValue, hcoef, -, hbd, hpos, hle, hmem, hpde, -, hzero, hnorm, hnonneg⟩ :=
     localizedKrylov_admissible_direct hd hlam hLam hsymm hsmooth hlow hup hF0 hFs hFc hFsupp
       hα0 hα1 hR hRsq hV
   set Qk := krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) with hQk
@@ -56,7 +56,7 @@ theorem localizedBound_cylinder_direct
   -- Krylov's estimate on the open cylinder
   have hqk := hK (localHeight α R) (0 : PDE.Vec d) (localHeight α R) hpos hle
     (localizedCoefficient R vStar B) (localizedSource R vStar F) (localizedScaled R vStar V)
-    hcoef hsy hbd hmem hInterior hValue
+    hcoef (fun z hz => (hbd z hz).1) hmem hInterior hValue
     (ae_restrict_of_forall_mem (isOpen_krylovCylinder _ _ _).measurableSet
       (fun z hz => (hpde z hz).le))
     (fun z hz => (hzero z hz).le)

@@ -22,71 +22,6 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 
-private theorem parabolicMorreyDerivativeLpNorm_le_parabolicSmoothJetLpNorm
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
-    parabolicMorreyDerivativeLpNorm d u <= parabolicSmoothJetLpNorm d u := by
-  let E : ENNReal := parabolicELpNorm d (timeDerivative u) +
-    ∑ i : Fin d, ∑ j : Fin d,
-      parabolicELpNorm d (fun z => velocityHessian u z i j)
-  have hE : E <= parabolicSmoothJetELpNorm d u := by
-    dsimp only [E, parabolicSmoothJetELpNorm]
-    calc
-      parabolicELpNorm d (timeDerivative u) +
-          ∑ i : Fin d, ∑ j : Fin d,
-            parabolicELpNorm d (fun z => velocityHessian u z i j) <=
-          (parabolicELpNorm d u + parabolicELpNorm d (timeDerivative u) +
-            ∑ i : Fin d, parabolicELpNorm d (fun z => velocityGradient u z i)) +
-              ∑ i : Fin d, ∑ j : Fin d,
-                parabolicELpNorm d (fun z => velocityHessian u z i j) := by
-              apply add_le_add_left
-              exact (self_le_add_left _ _).trans (self_le_add_right _ _)
-      _ = _ := by ac_rfl
-  have hreal : E.toReal <= (parabolicSmoothJetELpNorm d u).toReal :=
-    ENNReal.toReal_mono (parabolicSmoothJetELpNorm_ne_top hu) hE
-  have htoadd : E.toReal = (parabolicELpNorm d (timeDerivative u)).toReal +
-      (∑ i : Fin d, ∑ j : Fin d,
-        parabolicELpNorm d (fun z => velocityHessian u z i j)).toReal := by
-    apply ENNReal.toReal_add
-    · exact hu.2.1.eLpNorm_ne_top
-    · apply ENNReal.sum_ne_top.mpr
-      intro i _
-      apply ENNReal.sum_ne_top.mpr
-      intro j _
-      exact (hu.2.2.2 i j).eLpNorm_ne_top
-  have htosum : (∑ i : Fin d, ∑ j : Fin d,
-      parabolicELpNorm d (fun z => velocityHessian u z i j)).toReal =
-      ∑ i : Fin d, ∑ j : Fin d,
-        (parabolicELpNorm d (fun z => velocityHessian u z i j)).toReal := by
-    calc
-      (∑ i : Fin d, ∑ j : Fin d,
-          parabolicELpNorm d (fun z => velocityHessian u z i j)).toReal =
-          ∑ i : Fin d, (∑ j : Fin d,
-            parabolicELpNorm d (fun z => velocityHessian u z i j)).toReal := by
-              apply ENNReal.toReal_sum
-              intro i _
-              apply ENNReal.sum_ne_top.mpr
-              intro j _
-              exact (hu.2.2.2 i j).eLpNorm_ne_top
-      _ = ∑ i : Fin d, ∑ j : Fin d,
-          (parabolicELpNorm d (fun z => velocityHessian u z i j)).toReal := by
-            apply Finset.sum_congr rfl
-            intro i _
-            apply ENNReal.toReal_sum
-            intro j _
-            exact (hu.2.2.2 i j).eLpNorm_ne_top
-  have hleft : E.toReal = parabolicMorreyDerivativeLpNorm d u := by
-    calc
-      E.toReal = (parabolicELpNorm d (timeDerivative u)).toReal +
-          (∑ i : Fin d, ∑ j : Fin d,
-            parabolicELpNorm d (fun z => velocityHessian u z i j)).toReal := htoadd
-      _ = (parabolicELpNorm d (timeDerivative u)).toReal +
-          ∑ i : Fin d, ∑ j : Fin d,
-            (parabolicELpNorm d (fun z => velocityHessian u z i j)).toReal := by rw [htosum]
-      _ = parabolicMorreyDerivativeLpNorm d u := rfl
-  calc
-    parabolicMorreyDerivativeLpNorm d u = E.toReal := hleft.symm
-    _ <= parabolicSmoothJetLpNorm d u := hreal
-
 /-- The common nearby forward-box affine projection has an increment bounded by the full norm
  at reference-carrier scales at most one. -/
 theorem exists_parabolicMorreyDyadicNearbyAffineIncrementFullNormConst
@@ -97,29 +32,23 @@ theorem exists_parabolicMorreyDyadicNearbyAffineIncrementFullNormConst
         (w : TimeVelocity d)
         (hw : w ∈ parabolicDyadicReferenceCell d)
         (n : Nat),
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz n).2).radius <=
+        (parabolicDyadicSelectedBox z hz n).radius <=
             parabolicCoordinateDist z w ->
         parabolicCoordinateDist z w <
-          2 * (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).radius ->
+          2 * (parabolicDyadicSelectedBox z hz n).radius ->
         parabolicCoordinateDist z w <= 1 ->
         ∀ u : TimeVelocity d -> Real, ContDiff Real 2 u ->
           HasCompactSupport u ->
           |parabolicMorreyBoxAffineProjection
               (min
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz n).2).baseTime
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d w hw n).2).baseTime)
+                (parabolicDyadicSelectedBox z hz n).baseTime
+                (parabolicDyadicSelectedBox w hw n).baseTime)
               ((z.2 + w.2) / 2)
               (3 * parabolicCoordinateDist z w) u z -
             parabolicMorreyBoxAffineProjection
               (min
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz n).2).baseTime
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d w hw n).2).baseTime)
+                (parabolicDyadicSelectedBox z hz n).baseTime
+                (parabolicDyadicSelectedBox w hw n).baseTime)
               ((z.2 + w.2) / 2)
               (3 * parabolicCoordinateDist z w) u w| <=
             C * (parabolicCoordinateDist z w) ^ parabolicMorreyExponent d *
@@ -178,10 +107,8 @@ theorem exists_parabolicMorreyDyadicNearbyAffineIncrementFullNormConst
   refine ⟨C, by dsimp only [C]; positivity, ?_⟩
   intro z hz w hw n hscale hscale_upper hrho_one u hu huc
   let rho : Real := parabolicCoordinateDist z w
-  let qz := parabolicDyadicSourceBox
-    (parabolicDyadicAddressContaining d z hz n).2
-  let qw := parabolicDyadicSourceBox
-    (parabolicDyadicAddressContaining d w hw n).2
+  let qz := parabolicDyadicSelectedBox z hz n
+  let qw := parabolicDyadicSelectedBox w hw n
   let tMin : Real := min qz.baseTime qw.baseTime
   let vMid : PDE.Vec d := (z.2 + w.2) / 2
   let D : Real := parabolicMorreyDerivativeLpNorm d u
@@ -260,109 +187,50 @@ theorem exists_parabolicMorreyDyadicNearbyAffineIncrementFullNormConst
         rw [hbig_rpow]
         dsimp only [K_compare]
         ring
-  have hgeom : ∀ N : Nat, (∑ k ∈ Finset.range N, q ^ k) <= geom := by
-    intro N
-    have hclear : (∑ k ∈ Finset.range N, q ^ k) * (1 - q) = 1 - q ^ N := by
-      calc
-        (∑ k ∈ Finset.range N, q ^ k) * (1 - q) =
-            -((∑ k ∈ Finset.range N, q ^ k) * (q - 1)) := by ring
-        _ = -(q ^ N - 1) := by rw [geom_sum_mul]
-        _ = 1 - q ^ N := by ring
-    dsimp only [geom]
-    rw [inv_eq_one_div]
-    apply (le_div_iff₀ (sub_pos.mpr hq_lt_one)).mpr
-    rw [hclear]
-    linarith [pow_nonneg hq_pos.le N]
+  have hgeom N : (∑ k ∈ Finset.range N, q ^ k) ≤ geom := by
+    simpa only [geom, Finset.range_eq_Ico, pow_zero, one_div] using
+      geom_sum_Ico_le_of_lt_one (m := 0) (n := N) hq_pos.le hq_lt_one
   have htail_raw := htail z hz u hu huc n
+  simp only [parabolicDyadicAddressContaining, parabolicDyadicSourceBox_zero] at htail_raw
   have htail : rho * ∑ i : Fin d,
       |parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i -
-        parabolicMorreyBoxVelocitySlope
-          (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-          (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).center
-          (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).radius u i| <=
+        parabolicMorreyBoxVelocitySlope 0 0 1 u i| <=
       K_tail * rho ^ alpha * D := by
     have hrpow : qz.radius ^ alpha <= rho ^ alpha :=
       Real.rpow_le_rpow hqz_pos.le hqz_le_rho halpha_pos.le
     calc
       rho * ∑ i : Fin d,
           |parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i -
-            parabolicMorreyBoxVelocitySlope
-              (parabolicDyadicSourceBox
-                (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-              (parabolicDyadicSourceBox
-                (parabolicDyadicAddressContaining d z hz 0).2).center
-              (parabolicDyadicSourceBox
-                (parabolicDyadicAddressContaining d z hz 0).2).radius u i| =
+            parabolicMorreyBoxVelocitySlope 0 0 1 u i| =
           (rho / qz.radius) *
             (qz.radius * ∑ i : Fin d,
               |parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i -
-                parabolicMorreyBoxVelocitySlope
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz 0).2).center
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz 0).2).radius u i|) := by
+                parabolicMorreyBoxVelocitySlope 0 0 1 u i|) := by
               field_simp [hqz_pos.ne']
-      _ <= 2 * (C_tail * qz.radius ^ alpha *
-          (∑ k ∈ Finset.range n, q ^ k) * D) := by
-            gcongr
-            apply (div_le_iff₀ hqz_pos).mpr
-            linarith
+      _ <= 2 * (C_tail * qz.radius ^ alpha * (∑ k ∈ Finset.range n, q ^ k) * D) :=
+        mul_le_mul ((div_le_iff₀ hqz_pos).mpr (by linarith)) htail_raw (by positivity) (by norm_num)
       _ <= 2 * (C_tail * rho ^ alpha * geom * D) := by
             gcongr
             exact hgeom n
       _ = K_tail * rho ^ alpha * D := by
             dsimp only [K_tail]
             ring
-  have hroot_box_radius :
-      (parabolicDyadicSourceBox
-        (parabolicDyadicAddressContaining d z hz 0).2).radius = 1 := by
-    change ((2 : Real) ^ 0)⁻¹ = 1
-    norm_num
-  have hroot_box_time :
-      (parabolicDyadicSourceBox
-        (parabolicDyadicAddressContaining d z hz 0).2).baseTime = 0 := by
-    change (parabolicDyadicTimeCode 0
-      (parabolicDyadicAddressContaining d z hz 0).2 : Real) / (4 : Real) ^ 0 = 0
-    simp only [parabolicDyadicTimeCode, Nat.cast_zero, zero_div, pow_zero]
-  have hroot_box_center :
-      (parabolicDyadicSourceBox
-        (parabolicDyadicAddressContaining d z hz 0).2).center = 0 := by
-    funext i
-    change -1 + 2 *
-      (parabolicDyadicVelocityCode 0
-        (parabolicDyadicAddressContaining d z hz 0).2 i : Real) / (2 : Real) ^ 0 +
-        ((2 : Real) ^ 0)⁻¹ = 0
-    norm_num [parabolicDyadicVelocityCode]
   have hroot_coefficient :=
     parabolicMorreyRootAffineCoefficient_le_parabolicSmoothJetLpNorm d u hu huc
   have hroot_slope : ∑ i : Fin d,
-      |parabolicMorreyBoxVelocitySlope
-        (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-        (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).center
-        (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).radius u i| <=
+      |parabolicMorreyBoxVelocitySlope 0 0 1 u i| <=
       K_root * J := by
-    simpa only [hroot_box_radius, hroot_box_time, hroot_box_center, K_root, J] using
+    simpa only [K_root, J] using
       (le_add_of_nonneg_left (abs_nonneg _)).trans hroot_coefficient
   have hrho_rpow : rho <= rho ^ alpha := by
     simpa only [Real.rpow_one] using
       (Real.rpow_le_rpow_of_exponent_ge hrho_pos hrho_one halpha_le_one)
   have hroot : rho * ∑ i : Fin d,
-      |parabolicMorreyBoxVelocitySlope
-        (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-        (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).center
-        (parabolicDyadicSourceBox (parabolicDyadicAddressContaining d z hz 0).2).radius u i| <=
+      |parabolicMorreyBoxVelocitySlope 0 0 1 u i| <=
       K_root * rho ^ alpha * J := by
     calc
       rho * ∑ i : Fin d,
-          |parabolicMorreyBoxVelocitySlope
-            (parabolicDyadicSourceBox
-              (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-            (parabolicDyadicSourceBox
-              (parabolicDyadicAddressContaining d z hz 0).2).center
-            (parabolicDyadicSourceBox
-              (parabolicDyadicAddressContaining d z hz 0).2).radius u i| <=
+          |parabolicMorreyBoxVelocitySlope 0 0 1 u i| <=
           rho * (K_root * J) := mul_le_mul_of_nonneg_left hroot_slope hrho_pos.le
       _ <= rho ^ alpha * (K_root * J) :=
         mul_le_mul_of_nonneg_right hrho_rpow
@@ -378,40 +246,16 @@ theorem exists_parabolicMorreyDyadicNearbyAffineIncrementFullNormConst
             parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i| +
         ∑ i : Fin d,
           |parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i -
-            parabolicMorreyBoxVelocitySlope
-              (parabolicDyadicSourceBox
-                (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-              (parabolicDyadicSourceBox
-                (parabolicDyadicAddressContaining d z hz 0).2).center
-              (parabolicDyadicSourceBox
-                (parabolicDyadicAddressContaining d z hz 0).2).radius u i| +
+            parabolicMorreyBoxVelocitySlope 0 0 1 u i| +
         ∑ i : Fin d,
-          |parabolicMorreyBoxVelocitySlope
-            (parabolicDyadicSourceBox
-              (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-            (parabolicDyadicSourceBox
-              (parabolicDyadicAddressContaining d z hz 0).2).center
-            (parabolicDyadicSourceBox
-              (parabolicDyadicAddressContaining d z hz 0).2).radius u i| := by
+          |parabolicMorreyBoxVelocitySlope 0 0 1 u i| := by
       rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
       refine Finset.sum_le_sum fun i _ => ?_
       let a := parabolicMorreyBoxVelocitySlope tMin vMid (3 * rho) u i -
         parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i
       let b := parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i -
-        parabolicMorreyBoxVelocitySlope
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz 0).2).center
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz 0).2).radius u i
-      let c := parabolicMorreyBoxVelocitySlope
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz 0).2).center
-        (parabolicDyadicSourceBox
-          (parabolicDyadicAddressContaining d z hz 0).2).radius u i
+        parabolicMorreyBoxVelocitySlope 0 0 1 u i
+      let c := parabolicMorreyBoxVelocitySlope 0 0 1 u i
       have habc : a + b + c =
           parabolicMorreyBoxVelocitySlope tMin vMid (3 * rho) u i := by
         dsimp only [a, b, c]
@@ -430,42 +274,18 @@ theorem exists_parabolicMorreyDyadicNearbyAffineIncrementFullNormConst
               parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i| +
             ∑ i : Fin d,
               |parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i -
-                parabolicMorreyBoxVelocitySlope
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz 0).2).center
-                  (parabolicDyadicSourceBox
-                    (parabolicDyadicAddressContaining d z hz 0).2).radius u i| +
+                parabolicMorreyBoxVelocitySlope 0 0 1 u i| +
             ∑ i : Fin d,
-              |parabolicMorreyBoxVelocitySlope
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).center
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).radius u i|) :=
+              |parabolicMorreyBoxVelocitySlope 0 0 1 u i|) :=
         mul_le_mul_of_nonneg_left htriangle hrho_pos.le
       _ = (rho * ∑ i : Fin d,
           |parabolicMorreyBoxVelocitySlope tMin vMid (3 * rho) u i -
             parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i|) +
           (rho * ∑ i : Fin d,
             |parabolicMorreyBoxVelocitySlope qz.baseTime qz.center qz.radius u i -
-              parabolicMorreyBoxVelocitySlope
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).center
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).radius u i|) +
+              parabolicMorreyBoxVelocitySlope 0 0 1 u i|) +
             rho * ∑ i : Fin d,
-              |parabolicMorreyBoxVelocitySlope
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).baseTime
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).center
-                (parabolicDyadicSourceBox
-                  (parabolicDyadicAddressContaining d z hz 0).2).radius u i| := by ring
+              |parabolicMorreyBoxVelocitySlope 0 0 1 u i| := by ring
       _ <= K_compare * rho ^ alpha * D + K_tail * rho ^ alpha * D +
           K_root * rho ^ alpha * J :=
         add_le_add (add_le_add hcompare htail) hroot
@@ -534,17 +354,13 @@ theorem exists_parabolicMorreyDyadicNearbyAffineIncrementFullNormConst
   calc
     |parabolicMorreyBoxAffineProjection
         (min
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).baseTime
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d w hw n).2).baseTime)
+          (parabolicDyadicSelectedBox z hz n).baseTime
+          (parabolicDyadicSelectedBox w hw n).baseTime)
         ((z.2 + w.2) / 2) (3 * parabolicCoordinateDist z w) u z -
       parabolicMorreyBoxAffineProjection
         (min
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d z hz n).2).baseTime
-          (parabolicDyadicSourceBox
-            (parabolicDyadicAddressContaining d w hw n).2).baseTime)
+          (parabolicDyadicSelectedBox z hz n).baseTime
+          (parabolicDyadicSelectedBox w hw n).baseTime)
         ((z.2 + w.2) / 2) (3 * parabolicCoordinateDist z w) u w| <=
         rho * ∑ i : Fin d, |parabolicMorreyBoxVelocitySlope tMin vMid (3 * rho) u i| := by
           simpa only [qz, qw, tMin, vMid, rho] using hprojection

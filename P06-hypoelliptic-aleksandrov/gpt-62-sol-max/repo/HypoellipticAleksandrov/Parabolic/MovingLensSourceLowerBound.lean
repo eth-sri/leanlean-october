@@ -1,5 +1,7 @@
 module
 
+import HypoellipticAleksandrov.Analysis.CompactLp
+
 public import HypoellipticAleksandrov.Parabolic.MovingLensSourceABP
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
 public import HypoellipticAleksandrov.Measure.TimeVelocity
@@ -8,6 +10,7 @@ public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Ring
+import HypoellipticAleksandrov.Parabolic.ABP
 
 /-!
 # Supplied-source lower bound on a physical moving lens
@@ -32,36 +35,20 @@ private def movingLensSourceConstant (d : Nat) (lam kappa : Real) : Real :=
       ((volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal * lam ^ d)) ^
         (1 / ((d : Real) + 1) : Real)
 
-private theorem parabolicExponent_eq_ofReal (d : Nat) :
-    parabolicExponent d = ENNReal.ofReal ((d : Real) + 1) := by
-  rw [show ((d : Real) + 1) = ((d + 1 : Nat) : Real) by norm_num]
-  simpa only [parabolicExponent, Nat.cast_add, Nat.cast_one] using
-    (ENNReal.ofReal_natCast (d + 1)).symm
+section
+variable {d : Nat} {kappa eps tau : Real} {y : PDE.Vec d}
 
 private theorem source_memLp_movingLensClosed
-    {d : Nat} {kappa eps tau : Real} {y : PDE.Vec d}
     (hkappa : 0 < kappa) (heps : 0 < eps) (htau : 0 < tau)
     (F : TimeVelocity d -> Real)
     (hF : ContinuousOn F
       (movingLensClosed (movingLensSignXi kappa) eps tau y)) :
     MemLp F (parabolicExponent d)
-      (volume.restrict (movingLensClosed (movingLensSignXi kappa) eps tau y)) := by
-  let L := movingLensClosed (movingLensSignXi kappa) eps tau y
-  have hxi : 0 <= movingLensSignXi kappa := by
-    unfold movingLensSignXi
-    positivity
-  have hLcompact : IsCompact L :=
-    isCompact_movingLensClosed hxi heps htau.le
-  have hLmeas : MeasurableSet L := hLcompact.measurableSet
-  letI : IsFiniteMeasure (volume.restrict L) :=
-    ⟨by rw [Measure.restrict_apply_univ]; exact hLcompact.measure_lt_top⟩
-  obtain ⟨C, hC⟩ := hLcompact.exists_bound_of_continuousOn hF
-  refine MemLp.of_bound (hF.aestronglyMeasurable hLmeas) C ?_
-  filter_upwards [ae_restrict_mem hLmeas] with z hz
-  exact hC z hz
+      (volume.restrict (movingLensClosed (movingLensSignXi kappa) eps tau y)) := 
+  Analysis.memLp_restrict_of_isCompact
+    (isCompact_movingLensClosed (by unfold movingLensSignXi; positivity) heps htau.le) hF _
 
 private theorem parabolicLpNormOn_movingLensClosed_eq_integral_abs_pow
-    {d : Nat} {kappa eps tau : Real} {y : PDE.Vec d}
     {F : TimeVelocity d -> Real}
     (hFmem : MemLp F (parabolicExponent d)
       (volume.restrict (movingLensClosed (movingLensSignXi kappa) eps tau y))) :
@@ -90,6 +77,8 @@ private theorem parabolicLpNormOn_movingLensClosed_eq_integral_abs_pow
         show ((d : Real) + 1) = ((d + 1 : Nat) : Real) by norm_num,
         Real.rpow_natCast]
 
+end
+
 private theorem movingLensSourceConstant_pos
     (d : Nat) {lam kappa : Real} (hlam : 0 < lam) (hkappa : 0 < kappa) :
     0 < movingLensSourceConstant d lam kappa := by
@@ -105,129 +94,10 @@ private theorem movingLensSourceConstant_pos
   exact mul_pos (div_pos (by norm_num) hp)
     (Real.rpow_pos_of_pos (div_pos (pow_pos hR d) (mul_pos homega hlamPow)) _)
 
-private theorem measurable_movingLensSourceSignSet_of_localC2
-    {d : Nat} {xi eps tau : Real} {y : PDE.Vec d}
-    {u : TimeVelocity d -> Real}
-    (hlocal : ∀ z ∈ movingLensActive xi eps tau y, ContDiffAt Real 2 u z) :
-    MeasurableSet (movingLensSourceSignSet xi eps tau y u) := by
-  let O : Set (TimeVelocity d) := {z | 0 < z.1 /\ z.1 < tau /\
-    PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1}
-  have hO : IsOpen O := by
-    rw [show O = {z | 0 < z.1 /\
-        PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1} ∩
-          {z | z.1 < tau} by
-      ext z
-      change (0 < z.1 /\ z.1 < tau /\
-          PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1) ↔
-        ((0 < z.1 /\
-          PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1) /\
-          z.1 < tau)
-      constructor
-      · rintro ⟨ht0, httau, hspatial⟩
-        exact ⟨⟨ht0, hspatial⟩, httau⟩
-      · rintro ⟨⟨ht0, hspatial⟩, httau⟩
-        exact ⟨ht0, httau, hspatial⟩]
-    exact (isOpen_movingLensPositiveSpatialStrict xi eps y).inter
-      (isOpen_Iio.preimage continuous_fst)
-  have hO_active : O ⊆ movingLensActive xi eps tau y := by
-    rintro z ⟨hzpos, hzlt, hzspatial⟩
-    exact ⟨hzpos, hzlt.le, hzspatial⟩
-  have huO : ContDiffOn Real 2 u O := fun z hz =>
-    (hlocal z (hO_active hz)).contDiffWithinAt
-  have hDu : ContDiffOn Real 1 (fderiv Real u) O :=
-    huO.fderiv_of_isOpen hO (by norm_num)
-  have hD2u : ContDiffOn Real 0 (fderiv Real (fderiv Real u)) O :=
-    hDu.fderiv_of_isOpen hO (by norm_num)
-  have hucont : ContinuousOn u O := huO.continuousOn
-  have htime : ContinuousOn (timeDerivative u) O := by
-    unfold timeDerivative
-    simpa using hDu.continuousOn.clm_apply continuousOn_const
-  have hhess : ContinuousOn (velocityHessian u) O := by
-    change ContinuousOn (fun z i j => velocityHessian u z i j) O
-    unfold velocityHessian
-    apply continuousOn_pi.mpr
-    intro i
-    apply continuousOn_pi.mpr
-    intro j
-    simpa using hD2u.continuousOn.clm_apply continuousOn_const |>.clm_apply continuousOn_const
-  have hpsdclosed : IsClosed {H : PDE.Mat d | H.PosSemidef} := by
-    have hhermitian : IsClosed {H : PDE.Mat d | H.IsHermitian} := by
-      have hset :
-          {H : PDE.Mat d | H.IsHermitian} =
-            ⋂ i : Fin d, ⋂ j : Fin d, {H : PDE.Mat d | H j i = H i j} := by
-        ext H
-        simp only [Set.mem_setOf_eq, Set.mem_iInter]
-        constructor
-        · intro h i j
-          simpa using h.apply i j
-        · intro h
-          apply Matrix.IsHermitian.ext
-          intro i j
-          simpa using h i j
-      rw [hset]
-      refine isClosed_iInter fun i => isClosed_iInter fun j => ?_
-      exact isClosed_eq (continuous_id.matrix_elem j i) (continuous_id.matrix_elem i j)
-    have hset :
-        {H : PDE.Mat d | H.PosSemidef} =
-          {H : PDE.Mat d | H.IsHermitian} ∩
-            ⋂ q : PDE.Vec d, {H : PDE.Mat d | 0 ≤ dotProduct q (H.mulVec q)} := by
-      ext H
-      simp only [Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter]
-      simpa using (Matrix.posSemidef_iff_dotProduct_mulVec (M := H))
-    rw [hset]
-    refine hhermitian.inter (isClosed_iInter fun q => ?_)
-    have hquad : Continuous (fun H : PDE.Mat d => dotProduct q (H.mulVec q)) :=
-      continuous_const.dotProduct (continuous_id.matrix_mulVec continuous_const)
-    exact isClosed_le continuous_const hquad
-  have hpositive : MeasurableSet (O ∩ {z | 0 < u z}) :=
-    (hucont.isOpen_inter_preimage hO isOpen_Ioi).measurableSet
-  have hnonnegative : MeasurableSet (O ∩ {z | 0 ≤ timeDerivative u z}) := by
-    rw [show O ∩ {z | 0 ≤ timeDerivative u z} =
-        O \ (O ∩ (timeDerivative u) ⁻¹' Set.Iio 0) by
-      ext z
-      simp only [Set.mem_inter_iff, Set.mem_diff, Set.mem_preimage, Set.mem_setOf_eq,
-        Set.mem_Iio]
-      constructor
-      · rintro ⟨hz, htimez⟩
-        exact ⟨hz, fun hnegative => not_lt_of_ge htimez hnegative.2⟩
-      · rintro ⟨hz, hnotnegative⟩
-        exact ⟨hz, le_of_not_gt fun hnegative => hnotnegative ⟨hz, hnegative⟩⟩]
-    exact hO.measurableSet.diff
-      (htime.isOpen_inter_preimage hO isOpen_Iio).measurableSet
-  have hpsd : MeasurableSet (O ∩ {z | (-velocityHessian u z).PosSemidef}) := by
-    rw [show O ∩ {z | (-velocityHessian u z).PosSemidef} = O \ (O ∩
-        (fun z => -velocityHessian u z) ⁻¹' {H : PDE.Mat d | H.PosSemidef}ᶜ) by
-      ext z
-      simp only [Set.mem_inter_iff, Set.mem_diff, Set.mem_preimage, Set.mem_setOf_eq,
-        Set.mem_compl_iff]
-      constructor
-      · rintro ⟨hz, hzpsd⟩
-        exact ⟨hz, fun hnotpsd => hnotpsd.2 hzpsd⟩
-      · rintro ⟨hz, hnotpsd⟩
-        exact ⟨hz, not_not.mp fun hzpsd => hnotpsd ⟨hz, hzpsd⟩⟩]
-    exact hO.measurableSet.diff
-      ((hhess.neg).isOpen_inter_preimage hO hpsdclosed.isOpen_compl).measurableSet
-  rw [show movingLensSourceSignSet xi eps tau y u =
-      (O ∩ {z | 0 < u z}) ∩ (O ∩ {z | 0 ≤ timeDerivative u z}) ∩
-        (O ∩ {z | (-velocityHessian u z).PosSemidef}) by
-    ext z
-    change (0 < z.1 /\ z.1 < tau /\
-      PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1 /\
-      0 < u z /\ 0 ≤ timeDerivative u z /\ (-velocityHessian u z).PosSemidef) ↔
-      ((z ∈ O /\ 0 < u z) /\ (z ∈ O /\ 0 ≤ timeDerivative u z)) /\
-        (z ∈ O /\ (-velocityHessian u z).PosSemidef)
-    constructor
-    · rintro ⟨ht0, httau, hspatial, hpositivez, htimez, hpsdz⟩
-      exact ⟨⟨⟨⟨ht0, httau, hspatial⟩, hpositivez⟩,
-        ⟨⟨ht0, httau, hspatial⟩, htimez⟩⟩,
-        ⟨⟨ht0, httau, hspatial⟩, hpsdz⟩⟩
-    · rintro ⟨⟨⟨hOpositive, hpositivez⟩, ⟨hOtime, htimez⟩⟩, ⟨hOpsd, hpsdz⟩⟩
-      exact ⟨hOpositive.1, hOpositive.2.1, hOpositive.2.2,
-        hpositivez, htimez, hpsdz⟩]
-  exact (hpositive.inter hnonnegative).inter hpsd
+section
+variable {d : Nat}
 
-private theorem movingLens_wedge_le_source_lintegral
-    {d : Nat} {lam kappa eps tau : Real} {y : PDE.Vec d}
+private theorem movingLens_wedge_le_source_lintegral {lam kappa eps tau : Real} {y : PDE.Vec d}
     {A : CoefficientField d} {F u : TimeVelocity d -> Real} {M : Real}
     (hlam : 0 < lam)
     (hFcont : ContinuousOn F
@@ -313,8 +183,7 @@ private theorem movingLens_wedge_le_source_lintegral
         (q * lam ^ d)) ∂volume := MeasureTheory.lintegral_mono_set hSL
     _ = _ := by rfl
 
-private theorem movingLensSourceConstant_mul_rpow_pow
-    {d : Nat} {lam kappa I : Real}
+private theorem movingLensSourceConstant_mul_rpow_pow {lam kappa I : Real}
     (hlam : 0 < lam) (hkappa : 0 < kappa) (hI : 0 <= I) :
     (movingLensSourceConstant d lam kappa *
       I ^ (1 / ((d : Real) + 1) : Real)) ^ (d + 1) =
@@ -332,8 +201,6 @@ private theorem movingLensSourceConstant_mul_rpow_pow
   have hratio : 0 <= movingLensVelocityFootprint d kappa ^ d /
       ((volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal * lam ^ d) :=
     div_nonneg (pow_nonneg hR.le _) (mul_nonneg homega.le hlamPow.le)
-  have hrecip : 1 / ((d : Real) + 1) = ((d + 1 : Nat) : Real)⁻¹ := by
-    norm_num [Nat.cast_add, one_div]
   have hpcast : (d : Real) + 1 = ((d + 1 : Nat) : Real) := by norm_num
   unfold movingLensSourceConstant
   rw [hpcast, mul_pow, mul_pow, one_div,
@@ -342,8 +209,7 @@ private theorem movingLensSourceConstant_mul_rpow_pow
   rw [div_pow]
   field_simp [hp.ne', homega.ne', hlamPow.ne', hR.ne']
 
-private theorem movingLens_source_height_le_constant_mul_norm
-    {d : Nat} {lam kappa tau eps : Real} {y : PDE.Vec d}
+private theorem movingLens_source_height_le_constant_mul_norm {lam kappa tau eps : Real} {y : PDE.Vec d}
     {A : CoefficientField d} {F u : TimeVelocity d -> Real}
     (hd : 0 < d) (hlam : 0 < lam) (hkappa : 0 < kappa)
     (hkappa_one : kappa <= 1) (htau : 0 < tau) (htau_kappa : tau <= kappa⁻¹)
@@ -375,8 +241,6 @@ private theorem movingLens_source_height_le_constant_mul_norm
   have hLcompact : IsCompact L := isCompact_movingLensClosed hxi heps htau.le
   have hLmeas : MeasurableSet L := hLcompact.measurableSet
   have hFmem := source_memLp_movingLensClosed hkappa heps htau F hFcont
-  have hFtop : parabolicELpNormOn d F L ≠ ∞ := by
-    simpa only [parabolicELpNormOn] using hFmem.eLpNorm_ne_top
   have hnorm : parabolicLpNormOn d F L = I ^ (1 / ((d : Real) + 1) : Real) := by
     dsimp [I, L]
     exact parabolicLpNormOn_movingLensClosed_eq_integral_abs_pow hFmem
@@ -470,6 +334,8 @@ private theorem movingLens_source_height_le_constant_mul_norm
     _ <= movingLensSourceConstant d lam kappa * I ^ (1 / ((d : Real) + 1) : Real) := hroot
     _ = movingLensSourceConstant d lam kappa * parabolicLpNormOn d F L := by rw [hnorm]
 
+end
+
 /-- A nonnegative supplied source bounds the lower terminal height on a
 physical moving lens by its finite restricted parabolic `L^(d + 1)` norm. -/
 theorem exists_movingLens_source_lower_bound
@@ -533,7 +399,4 @@ theorem exists_movingLens_source_lower_bound
   change -movingLensSourceConstant d lam kappa *
       parabolicLpNormOn d F (movingLensClosed (movingLensSignXi kappa) eps tau y) <=
       w (tau, tau • y)
-  have hheight' : -w (tau, tau • y) <= movingLensSourceConstant d lam kappa *
-      parabolicLpNormOn d F (movingLensClosed (movingLensSignXi kappa) eps tau y) := by
-    simpa only [u] using hheight
   linarith

@@ -10,8 +10,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open HypoellipticAleksandrov Parabolic Set
 
+section
+variable {d : ℕ} (B : CoefficientField d)
+
 /-- The zero-drift scalar operator is additive on smooth functions. -/
-theorem ballExit_operator_add {d : ℕ} (B : CoefficientField d)
+theorem ballExit_operator_add
     (f g : TimeVelocity d → ℝ) (hf : ContDiff ℝ 2 f) (hg : ContDiff ℝ 2 g)
     (p : TimeVelocity d) :
     scalarParabolicOperator B 0 (fun q => f q + g q) p =
@@ -33,7 +36,7 @@ theorem ballExit_operator_add {d : ℕ} (B : CoefficientField d)
   ring
 
 /-- Constant scalar functions have zero operator. -/
-theorem ballExit_operator_const {d : ℕ} (B : CoefficientField d) (c : ℝ)
+theorem ballExit_operator_const (c : ℝ)
     (p : TimeVelocity d) : scalarParabolicOperator B 0 (fun _ => c) p = 0 := by
   unfold scalarParabolicOperator scalarTimeDerivative
   have hh : scalarSpatialHessian (fun _ : TimeVelocity d => c) p = 0 :=
@@ -43,7 +46,7 @@ theorem ballExit_operator_const {d : ℕ} (B : CoefficientField d) (c : ℝ)
     Pi.zero_apply, PDE.vecDot, zero_mul, add_zero]
 
 /-- Scalar multiplication commutes with the zero-drift scalar operator. -/
-theorem ballExit_operator_mul {d : ℕ} (B : CoefficientField d) (c : ℝ)
+theorem ballExit_operator_mul (c : ℝ)
     (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ 2 f) (p : TimeVelocity d) :
     scalarParabolicOperator B 0 (fun q => c * f q) p =
       c * scalarParabolicOperator B 0 f p := by
@@ -60,6 +63,8 @@ theorem ballExit_operator_mul {d : ℕ} (B : CoefficientField d) (c : ℝ)
   simp_rw [show ∀ a b : ℝ, a * (c * b) = c * (a * b) from fun a b => by ring]
   simp_rw [← Finset.mul_sum]
   ring
+
+end
 
 /-- The zero-drift scalar operator commutes with finite smooth sums. -/
 theorem ballExit_operator_sum {d : ℕ} {ι : Type*} (B : CoefficientField d)

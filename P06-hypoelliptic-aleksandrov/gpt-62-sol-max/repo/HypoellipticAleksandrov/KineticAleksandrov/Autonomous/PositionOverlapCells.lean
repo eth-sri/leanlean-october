@@ -11,8 +11,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped Classical
 
+section
+variable (r s t : ℝ)
+
 /-- Each time bin lies between its two literal grid endpoints. -/
-theorem enlargedTimeBin_bounds (r s t : ℝ) (j : ℕ)
+theorem enlargedTimeBin_bounds (j : ℕ)
     (ht : t ∈ enlargedTimeBin r s j) :
     s + (j : ℝ) * r ^ 2 ≤ t ∧ t ≤ s + ((j : ℝ) + 1) * r ^ 2 := by
   by_cases hj : j = 0
@@ -24,7 +27,7 @@ theorem enlargedTimeBin_bounds (r s t : ℝ) (j : ℕ)
     exact ⟨ht'.1.le, ht'.2⟩
 
 /-- A later noninitial bin excludes its lower time endpoint. -/
-theorem enlargedTimeBin_lower_strict (r s t : ℝ) (j : ℕ) (hj : j ≠ 0)
+theorem enlargedTimeBin_lower_strict (j : ℕ) (hj : j ≠ 0)
     (ht : t ∈ enlargedTimeBin r s j) : s + (j : ℝ) * r ^ 2 < t := by
   have ht' : s + (j : ℝ) * r ^ 2 < t ∧
       t ≤ s + ((j : ℝ) + 1) * r ^ 2 := by
@@ -32,7 +35,7 @@ theorem enlargedTimeBin_lower_strict (r s t : ℝ) (j : ℕ) (hj : j ≠ 0)
   exact ht'.1
 
 /-- The source time bins cover precisely the half line from their time origin. -/
-theorem enlargedTimeBin_covers (r s t : ℝ) (hr : 0 < r) (ht : s ≤ t) :
+theorem enlargedTimeBin_covers (hr : 0 < r) (ht : s ≤ t) :
     ∃ j : ℕ, t ∈ enlargedTimeBin r s j := by
   have hr2 : 0 < r ^ 2 := sq_pos_of_pos hr
   have hex : ∃ n : ℕ, t ≤ s + ((n : ℝ) + 1) * r ^ 2 := by
@@ -54,6 +57,8 @@ theorem enlargedTimeBin_covers (r s t : ℝ) (hr : 0 < r) (ht : s ≤ t) :
       rw [hc] at hn
       exact not_le.mp hn
     simpa [enlargedTimeBin, hj] using ⟨hl, hu⟩
+
+end
 
 /-- Distinct time bins are disjoint, including the initial atom convention. -/
 theorem enlargedTimeBin_disjoint (r s : ℝ) (_hr : 0 < r) :

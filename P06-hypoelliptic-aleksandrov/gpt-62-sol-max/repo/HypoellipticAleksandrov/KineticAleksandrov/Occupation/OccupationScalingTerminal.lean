@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationScalingBorel
-public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
+public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
 
 /-! # Scaling classical scalar terminal solutions on the whole space -/
@@ -11,23 +11,30 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Scaling Set
 
-private theorem pastOpen_wholeSpace {d : ℕ} (τ : ℝ) :
+section
+variable {d : ℕ} (τ : ℝ)
+
+private theorem pastOpen_wholeSpace :
     ParabolicProbe.scalarPastOpenCylinder (wholeSpace d) (fun _ => (0 : PDE.Vec d)) τ =
       {q : TimeVelocity d | q.1 < τ} := by
   ext q
   simp only [ParabolicProbe.scalarPastOpenCylinder, movingDomain_wholeSpace,
     mem_univ, and_true]
 
-private theorem pastClosed_wholeSpace {d : ℕ} (τ : ℝ) :
+private theorem pastClosed_wholeSpace :
     ParabolicProbe.scalarPastClosedCylinder (wholeSpace d) (fun _ => (0 : PDE.Vec d)) τ =
       {q : TimeVelocity d | q.1 ≤ τ} := by
   ext q
   simp only [ParabolicProbe.scalarPastClosedCylinder, movingDomain_wholeSpace,
     closure_univ, mem_univ, and_true]
 
+end
+
+section
+variable {d : ℕ} (σ₀ τ : ℝ) (r : {r : ℝ // 0 < r})
+
 /-- Classical scalar solutions pull back by the literal source radius scaling. -/
-theorem occupation_scalarTerminal_pullback {d : ℕ} (σ₀ τ : ℝ)
-    (r : {r : ℝ // 0 < r}) (B : CoefficientField d)
+theorem occupation_scalarTerminal_pullback (B : CoefficientField d)
     (F : BoundedBorel (PDE.Vec d)) (V : TimeVelocity d → ℝ)
     (hV : ParabolicProbe.IsClassicalScalarTerminalSolution (wholeSpace d)
       (fun _ => (0 : PDE.Vec d)) (zIndependentCoefficient B) (σ₀ + r.1 ^ 2 * τ) F V) :
@@ -97,8 +104,7 @@ theorem occupation_scalarTerminal_pullback {d : ℕ} (σ₀ τ : ℝ)
     simp only [movingDomain_wholeSpace, frontier_univ, mem_empty_iff_false] at hf
 
 /-- Inverse-radius pullback preserves smooth compact scalar terminal data. -/
-theorem occupation_scalarDatum_inverse {d : ℕ} (σ₀ τ : ℝ)
-    (r : {r : ℝ // 0 < r}) (F : BoundedBorel (PDE.Vec d))
+theorem occupation_scalarDatum_inverse (F : BoundedBorel (PDE.Vec d))
     (hF : ParabolicProbe.IsSmoothCompactScalarTerminalDatum (wholeSpace d)
       (fun _ => (0 : PDE.Vec d)) τ F) :
     ParabolicProbe.IsSmoothCompactScalarTerminalDatum (wholeSpace d)
@@ -111,6 +117,8 @@ theorem occupation_scalarDatum_inverse {d : ℕ} (σ₀ τ : ℝ)
     exact hc.comp_homeomorph (Homeomorph.smulOfNeZero r.1⁻¹ (inv_ne_zero r.2.ne'))
   · intro v _
     simp only [movingDomain_wholeSpace, mem_univ]
+
+end
 
 /-- Pulling the inverse datum back by the forward radius recovers the given datum. -/
 theorem occupation_scalarDatum_cancel {d : ℕ} (r : {r : ℝ // 0 < r})
@@ -167,8 +175,11 @@ theorem occupation_scalarTerminal_inverse {d : ℕ} (σ₀ τ : ℝ)
   rw [occupation_inverse_scaledCoefficient] at hh
   exact hh
 
+section
+variable {d : ℕ} (σ₀ : ℝ) (r : {r : ℝ // 0 < r})
+
 /-- Inverse spacetime radius scaling cancels the forward affine map. -/
-theorem occupation_inverse_forward {d : ℕ} (σ₀ : ℝ) (r : {r : ℝ // 0 < r})
+theorem occupation_inverse_forward
     (q : TimeVelocity d) :
     parabolicAffine (-σ₀ / r.1 ^ 2) 0 r.1⁻¹ (parabolicAffine σ₀ 0 r.1 q) = q := by
   apply Prod.ext
@@ -179,8 +190,7 @@ theorem occupation_inverse_forward {d : ℕ} (σ₀ : ℝ) (r : {r : ℝ // 0 < 
     simp only [zero_add, ← mul_assoc, inv_mul_cancel₀ r.2.ne', one_mul]
 
 /-- A scalar terminal existence and uniqueness clause transports with the same operator family. -/
-theorem occupation_scalarTerminalClause_scale {d : ℕ} (σ₀ : ℝ)
-    (r : {r : ℝ // 0 < r}) (B : CoefficientField d)
+theorem occupation_scalarTerminalClause_scale (B : CoefficientField d)
     (Q : ParabolicOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
     (hQ : ∀ τ F, ParabolicProbe.IsSmoothCompactScalarTerminalDatum (wholeSpace d)
       (fun _ => (0 : PDE.Vec d)) τ F →
@@ -229,8 +239,7 @@ theorem occupation_scalarTerminalClause_scale {d : ℕ} (σ₀ : ℝ)
     rw [hf] at hh
     exact hh
   · intro W hW q hq
-    have hWi := occupation_scalarTerminal_inverse σ₀ τ r B F W hW
-    have heq := huniq (W ∘ parabolicAffine (-σ₀ / r.1 ^ 2) 0 r.1⁻¹) hWi
+    have heq := huniq (W ∘ parabolicAffine (-σ₀ / r.1 ^ 2) 0 r.1⁻¹) (occupation_scalarTerminal_inverse σ₀ τ r B F W hW)
       (show parabolicAffine σ₀ 0 r.1 q ∈
         ParabolicProbe.scalarPastClosedCylinder (wholeSpace d) (fun _ => 0)
           (σ₀ + r.1 ^ 2 * τ) from by
@@ -238,5 +247,7 @@ theorem occupation_scalarTerminalClause_scale {d : ℕ} (σ₀ : ℝ)
         change σ₀ + r.1 ^ 2 * q.1 ≤ σ₀ + r.1 ^ 2 * τ
         linarith only [mul_le_mul_of_nonneg_left hq (sq_nonneg r.1)])
     simpa only [Function.comp_apply, occupation_inverse_forward] using heq
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

@@ -38,8 +38,7 @@ theorem preliminary_core_power_le (C R r : ℝ) (hC : 0 < C) (hR : 0 < R)
     field_simp
   rw [he, he']
   have hp : 0 ≤ C ^ (6 / 5 : ℝ) * r ^ (1 / 5 : ℝ) := by positivity
-  have hh : r + R ≤ 7 * R := by linarith only [hrR]
-  simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hh hp
+  simpa only [mul_assoc] using mul_le_mul_of_nonneg_left (by linarith only [hrR]) hp
 
 /-- A real norm bound also bounds its positive power integral. -/
 theorem preliminary_density_power_le {X : Type*} [MeasurableSpace X]

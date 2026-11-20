@@ -29,20 +29,25 @@ variable {d : ℕ}
 def packQ (d : ℕ) (q : ℝ × (PDE.Vec d × PDE.Vec d)) : EvolutionVec d :=
   packPoint q.1 q.2.1 q.2.2
 
-@[simp] theorem timeCoord_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+section
+variable (q : ℝ × (PDE.Vec d × PDE.Vec d))
+
+@[simp] theorem timeCoord_packQ :
     Evolution.timeCoord d (packQ d q) = q.1 := timeCoord_packPoint _ _ _
 
-@[simp] theorem diffusedCoord_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+@[simp] theorem diffusedCoord_packQ :
     diffusedCoord d (packQ d q) = q.2.1 := diffusedCoord_packPoint _ _ _
 
-@[simp] theorem evolutionToTimeVelocity_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+@[simp] theorem evolutionToTimeVelocity_packQ :
     evolutionToTimeVelocity d (packQ d q) = (q.1, q.2.1) :=
   Prod.ext (timeCoord_packQ q) (diffusedCoord_packQ q)
 
-theorem packQ_eq_symm (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+theorem packQ_eq_symm :
     packQ d q = (evolutionProdMeasurableEquiv d).symm q := by
   rw [MeasurableEquiv.eq_symm_apply, evolutionProdMeasurableEquiv_apply]
   simp [packQ]
+
+end
 
 theorem continuous_packQ : Continuous (packQ d) := by
   have : packQ d = (evolutionProdCLE d).symm := by
@@ -66,6 +71,34 @@ theorem hasCompactSupport_comp_packQ {f : EvolutionVec d → ℝ} (hf : HasCompa
   rw [this]
   exact hf.comp_homeomorph _
 
+/-- From a homogeneous adjoint identity to the weak statement including a terminal trace. -/
+theorem evolution_layer_slice_identity {B : FullKineticCoefficient d}
+    (hB : IsSmoothFullKineticCoefficient B) {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
+    {U : Set (EvolutionVec d)} (hU : MeasurableSet U) {V u : EvolutionVec d → ℝ}
+    (hweak : AnnihilatesAdjointOn (B := B) (b := b) U V)
+    (huV : EqOn u V U) (hum : Measurable u) {C : ℝ} (hC : 0 ≤ C)
+    (hub : ∀ x, |u x| ≤ C)
+    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ)
+    {r : ℝ} (hψU : ∀ x ∈ tsupport ψ, timeCoord d x < r → x ∈ U)
+    {m₀ : EvolutionAmbientState d → ℝ}
+    (hlim : ∀ w, Tendsto (fun t => u (packQ d (t, w)) * ψ (packQ d (t, w)))
+      (𝓝[<] r) (𝓝 (m₀ w))) :
+    (∫ q : ℝ × EvolutionAmbientState d, {q : ℝ × EvolutionAmbientState d | q.1 < r}.indicator
+      (fun q => u (packQ d q) * transportedAdjoint B b ψ (packQ d q)) q) +
+      ∫ w, m₀ w = 0 := by
+  have hLc := (contDiff_transportedAdjoint hB hb hψ).continuous
+  have hLcs := hasCompactSupport_transportedAdjoint (B := B) (b := b) hc
+  refine layer_slice_identity (volume : Measure (EvolutionAmbientState d)) r
+    (fun q => u (packQ d q)) (fun q => ψ (packQ d q))
+    (fun q => transportedAdjoint B b ψ (packQ d q))
+    (hum.comp continuous_packQ.measurable) C hC (fun q => hub _)
+    (hψ.continuous.comp continuous_packQ) (hasCompactSupport_comp_packQ hc)
+    (hLc.comp continuous_packQ) (hasCompactSupport_comp_packQ hLcs) ?_ m₀ hlim
+  intro h hh
+  have h := cutoff_identity_of_adjoint hB hb hU hweak huV hum hub hψ hc hh hψU
+  rw [integral_evolution_eq_prod, integral_evolution_eq_prod] at h
+  simpa only [Measure.volume_eq_prod ℝ (EvolutionAmbientState d), timeCoord_packQ, mul_left_comm, mul_assoc] using h
+
 /-- **The weak identity of one source slice.**  In product coordinates the integral of the bounded
 Borel extension `u` of the slice solution against `Lop^* ψ` over the slab `σ < r` equals minus the
 terminal boundary term `∫ m₀`, where `m₀` is the left limit of `u ψ` at `σ = r`. -/
@@ -87,24 +120,21 @@ theorem slice_weak_identity {B' : CoefficientField d}
         (fun q => u (q.1, q.2.1) *
           transportedAdjoint (zIndependentCoefficient B') b ψ (packQ d q)) q) +
       ∫ w : PDE.Vec d × PDE.Vec d, m₀ w = 0 := by
-  have hLc : Continuous (transportedAdjoint (zIndependentCoefficient B') b ψ) :=
-    (contDiff_transportedAdjoint hB hb hψ).continuous
-  have hLcs := hasCompactSupport_transportedAdjoint (B := zIndependentCoefficient B') (b := b) hc
-  refine layer_slice_identity (volume : Measure (PDE.Vec d × PDE.Vec d)) r
-    (fun q => u (q.1, q.2.1)) (fun q => ψ (packQ d q))
-    (fun q => transportedAdjoint (zIndependentCoefficient B') b ψ (packQ d q))
-    (hum.comp (measurable_fst.prodMk (measurable_snd.fst))) C hC0 (fun q => hub _)
-    (hψ.continuous.comp continuous_packQ) (hasCompactSupport_comp_packQ hc)
-    (hLc.comp continuous_packQ) (hasCompactSupport_comp_packQ hLcs) ?_ m₀ hlim
-  intro h hh
-  have h1 := slice_cutoff_identity hB hb hD hV hVeq huV hum C hub hψ hc r hψD h hh
-  rw [integral_evolution_eq_prod, integral_evolution_eq_prod] at h1
-  simp only [evolutionToTimeVelocity_packQ, timeCoord_packQ] at h1
-  rw [← h1]
-  congr 1
-  · refine integral_congr_ae (Eventually.of_forall fun q => ?_)
-    ring
-  · refine integral_congr_ae (Eventually.of_forall fun q => ?_)
-    ring
+  let Q := evolutionToTimeVelocity d
+  have hU := (hD.preimage Q.continuous).measurableSet
+  have hweak : AnnihilatesAdjointOn (B := zIndependentCoefficient B') (b := b) (Q ⁻¹' D) (V ∘ Q) := by
+    intro φ hφ hφc hφs
+    rw [show (∫ x in Q ⁻¹' D, (V ∘ Q) x * transportedAdjoint (zIndependentCoefficient B') b φ x)
+        = ∫ x in Q ⁻¹' D, scalarParabolicOperator B' (fun _ _ => 0) V (Q x) * φ x from
+          integral_transportedAdjoint_zIndep hB hb hD hV hφ hφc hφs]
+    rw [setIntegral_congr_fun hU (g := fun _ => (0 : ℝ))]
+    · exact integral_zero _ _
+    · intro x hx
+      simp only [hVeq (Q x) hx, zero_mul]
+  have ht := evolution_layer_slice_identity hB hb hU hweak
+    (show EqOn (u ∘ Q) (V ∘ Q) (Q ⁻¹' D) from fun x hx => huV (Q x) hx)
+    (hum.comp Q.continuous.measurable) hC0 (fun x => hub (Q x)) hψ hc hψD
+    (by simpa only [Function.comp_apply, Q, evolutionToTimeVelocity_packQ] using hlim)
+  simpa only [Function.comp_apply, Q, evolutionToTimeVelocity_packQ] using ht
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

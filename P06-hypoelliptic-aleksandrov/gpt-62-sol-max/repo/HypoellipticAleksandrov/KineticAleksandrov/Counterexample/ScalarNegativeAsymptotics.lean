@@ -2,7 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarAsymptotics
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarGammaRatios
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.MAsymptotics
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.MAsymptoticsJets
 import Mathlib.Tactic
 
 /-!
@@ -53,8 +53,6 @@ theorem scalar_negative_leading (gamma : ScalarGamma) (Lam s : ℝ)
   have ha := gammaA_leading_ratio gamma
   have hb := gammaB_leading_ratio gamma
   rw [hpow, hroot, Real.rpow_neg hLam.le]
-  have h9 : (9 : ℝ) ^ (1 / 3 : ℝ) ≠ 0 := (Real.rpow_pos_of_pos (by norm_num) _).ne'
-  have hL : Lam ^ (1 / 3 : ℝ) ≠ 0 := (Real.rpow_pos_of_pos hLam _).ne'
   have he : gammaA gamma.1 *
       (Real.Gamma (2 / 3) / Real.Gamma (2 / 3 + gamma.1)) = Pgamma gamma.1 := by
     simpa only [mul_div_assoc] using ha

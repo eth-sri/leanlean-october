@@ -18,14 +18,20 @@ open scoped ENNReal
 
 variable {d : ℕ}
 
+section
+variable (ν : Measure (PDE.Vec d × TimeVelocity d))
+include ν
+
 /-- The actual time--velocity marginal of an exit-coordinate measure. -/
-def exitMarginal (ν : Measure (PDE.Vec d × TimeVelocity d)) : Measure (TimeVelocity d) :=
+def exitMarginal : Measure (TimeVelocity d) :=
   ν.map Prod.snd
 
 /-- Position conditioned on exit time and velocity, using the standard Borel kernel. -/
-def exitPositionKernel (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν] :
+def exitPositionKernel [IsFiniteMeasure ν] :
     Kernel (TimeVelocity d) (PDE.Vec d) :=
   (ν.map Prod.swap).condKernel
+
+end
 
 /-- The conditional position kernel is Markov, including at exceptional exit data. -/
 instance exitPositionKernel_isMarkov (ν : Measure (PDE.Vec d × TimeVelocity d))
@@ -39,38 +45,51 @@ instance exitMarginal_isFinite (ν : Measure (PDE.Vec d × TimeVelocity d))
   unfold exitMarginal
   infer_instance
 
+section
+variable (ν : Measure (PDE.Vec d × TimeVelocity d))
+
 /-- Disintegration reconstructs the full exit measure in the swapped coordinate order. -/
-theorem exitPositionKernel_disintegrate (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem exitPositionKernel_disintegrate
     [IsFiniteMeasure ν] :
     exitMarginal ν ⊗ₘ exitPositionKernel ν = ν.map Prod.swap := by
   simpa only [exitMarginal, exitPositionKernel, Measure.fst_map_swap, Measure.snd] using
     (Measure.disintegrate (ν.map Prod.swap) (ν.map Prod.swap).condKernel)
 
 /-- Jointly measurable Fourier representatives from the conditional position kernel. -/
-def exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν]
+def exitFourierRep [IsFiniteMeasure ν]
     (ξ : PDE.Vec d) (z : TimeVelocity d) : ℂ :=
   fiberFourier (exitPositionKernel ν) ξ z
 
+end
+
+section
+variable (ν : Measure (PDE.Vec d × TimeVelocity d))
+
 /-- The conditional Fourier representatives are jointly measurable. -/
-theorem measurable_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem measurable_exitFourierRep
     [IsFiniteMeasure ν] :
     Measurable (fun p : PDE.Vec d × TimeVelocity d => exitFourierRep ν p.1 p.2) :=
   measurable_fiberFourier (exitPositionKernel ν)
 
 /-- Each conditional characteristic function is continuous in frequency. -/
-theorem continuous_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem continuous_exitFourierRep
     [IsFiniteMeasure ν] (z : TimeVelocity d) :
     Continuous (fun ξ => exitFourierRep ν ξ z) :=
   continuous_fiberFourier (exitPositionKernel ν) z
 
 /-- Conditional characteristic functions have modulus at most one. -/
-theorem norm_exitFourierRep_le_one (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem norm_exitFourierRep_le_one
     [IsFiniteMeasure ν] (ξ : PDE.Vec d) (z : TimeVelocity d) :
     ‖exitFourierRep ν ξ z‖ ≤ 1 :=
   norm_fiberFourier_le (exitPositionKernel ν) ξ z
 
+end
+
+section
+variable (ν : Measure (PDE.Vec d × TimeVelocity d))
+
 /-- The Fourier representative is integrable over the actual finite marginal. -/
-theorem integrable_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem integrable_exitFourierRep
     [IsFiniteMeasure ν] (ξ : PDE.Vec d) :
     Integrable (exitFourierRep ν ξ) (exitMarginal ν) :=
   Integrable.of_bound
@@ -78,7 +97,7 @@ theorem integrable_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
     (Filter.Eventually.of_forall (norm_exitFourierRep_le_one ν ξ))
 
 /-- Integration of the disintegrated representative equals the actual Fourier exit measure. -/
-theorem setIntegral_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem setIntegral_exitFourierRep
     [IsFiniteMeasure ν] (ξ : PDE.Vec d) {E : Set (TimeVelocity d)} (hE : MeasurableSet E) :
     (∫ z in E, exitFourierRep ν ξ z ∂exitMarginal ν) = exitFourier ν ξ E := by
   have hd := exitPositionKernel_disintegrate ν
@@ -109,11 +128,13 @@ theorem setIntegral_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
     exact (hc.measurable.indicator (hE.prod MeasurableSet.univ)).aestronglyMeasurable
 
 /-- The disintegrated representative is the Radon--Nikodym density of exit Fourier data. -/
-theorem exitFourier_eq_withDensity (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem exitFourier_eq_withDensity
     [IsFiniteMeasure ν] (ξ : PDE.Vec d) :
     exitFourier ν ξ = (exitMarginal ν).withDensityᵥ (exitFourierRep ν ξ) := by
   ext E hE
   rw [withDensityᵥ_apply (integrable_exitFourierRep ν ξ) hE,
     setIntegral_exitFourierRep ν ξ hE]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

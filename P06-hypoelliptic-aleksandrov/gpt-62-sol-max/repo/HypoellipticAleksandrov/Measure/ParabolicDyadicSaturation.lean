@@ -26,15 +26,17 @@ def parabolicDyadicD1Entry {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real) 
     Set (ParabolicDyadicAddress d) :=
   parabolicDyadicFirstEntry (inkSpotsD1 Gamma xi)
 
-private theorem parabolicDyadicD1_subset_unit
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi : Real) :
+section
+variable (d : Nat)
+
+private theorem parabolicDyadicD1_subset_unit (Gamma : Set (TimeVelocity d)) (xi : Real) :
     inkSpotsD1 Gamma xi ⊆ inkSpotsUnitBox d := by
   intro z hz
   simp only [inkSpotsD1, Set.mem_iUnion] at hz
   obtain ⟨q, hqDense, hzq⟩ := hz
   exact hzq.2
 
-private theorem parabolicDyadicRoot_openCell_eq_inkSpotsUnitBox (d : Nat) :
+private theorem parabolicDyadicRoot_openCell_eq_inkSpotsUnitBox :
     parabolicDyadicOpenCell (fun i => Fin.elim0 i : ParabolicDyadicIndex d 0) =
       inkSpotsUnitBox d := by
   ext z
@@ -47,7 +49,7 @@ private theorem parabolicDyadicRoot_openCell_eq_inkSpotsUnitBox (d : Nat) :
   · exact ⟨(hvelocity coordinate).1, by linarith [(hvelocity coordinate).2]⟩
   · exact ⟨(hvelocity coordinate).1, by linarith [(hvelocity coordinate).2]⟩
 
-private theorem volume_inkSpotsUnitBox_ne_top (d : Nat) :
+private theorem volume_inkSpotsUnitBox_ne_top :
     volume (inkSpotsUnitBox d) ≠ ∞ := by
   intro htop
   have hformula : (volume (inkSpotsUnitBox d)).toReal =
@@ -59,18 +61,20 @@ private theorem volume_inkSpotsUnitBox_ne_top (d : Nat) :
   norm_num at hformula
   exact (ne_of_gt (pow_pos (by norm_num : (0 : Real) < 2) d)) hformula.symm
 
-private theorem parabolicDyadicD1Entry_openCell_subset
-    {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real)
-    (a : {a : ParabolicDyadicAddress d // a ∈ parabolicDyadicD1Entry Gamma xi}) :
+end
+
+section
+variable {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real)
+  (a : {a : ParabolicDyadicAddress d // a ∈ parabolicDyadicD1Entry Gamma xi})
+
+private theorem parabolicDyadicD1Entry_openCell_subset :
     parabolicDyadicOpenCell a.1.2 ⊆ inkSpotsD1 Gamma xi := by
   rcases a with ⟨⟨n, index⟩, ha⟩
   cases n with
   | zero => exact False.elim ha
   | succ n => exact ha.1
 
-private theorem parabolicDyadicD1_entry_density_le
-    {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real)
-    (a : {a : ParabolicDyadicAddress d // a ∈ parabolicDyadicD1Entry Gamma xi}) :
+private theorem parabolicDyadicD1_entry_density_le :
     (volume (Gamma ∩ parabolicDyadicOpenCell a.1.2)).toReal ≤
       xi * (volume (parabolicDyadicOpenCell a.1.2)).toReal := by
   rcases a with ⟨⟨n, index⟩, ha⟩
@@ -80,11 +84,12 @@ private theorem parabolicDyadicD1_entry_density_le
       change parabolicDyadicOpenCell index ⊆ inkSpotsD1 Gamma xi ∧
         ¬ parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆ inkSpotsD1 Gamma xi at ha
       by_contra hle
-      have hstrict : xi * (volume (parabolicDyadicOpenCell index)).toReal <
-          (volume (Gamma ∩ parabolicDyadicOpenCell index)).toReal :=
+      have hstrict :=
         lt_of_not_ge hle
       exact ha.2
         (parabolicDyadicOpenCell_parent_subset_inkSpotsD1_of_density_gt Gamma xi index hstrict)
+
+end
 
 theorem volume_Gamma_le_xi_volume_inkSpotsD1
     (d : Nat) (Gamma : Set (TimeVelocity d)) (xi : Real)
@@ -146,8 +151,6 @@ theorem volume_Gamma_le_xi_volume_inkSpotsD1
       volume_inkSpotsUnitBox_ne_top d
     have hU_ne_top : volume U ≠ ∞ :=
       measure_ne_top_of_subset hUUnit hunit_ne_top
-    have hGamma_ne_top : volume Gamma ≠ ∞ :=
-      measure_ne_top_of_subset hGammaUnit hunit_ne_top
     have hC_ne_top : ∀ a : E, volume (C a) ≠ ∞ := by
       intro a
       apply measure_ne_top_of_subset

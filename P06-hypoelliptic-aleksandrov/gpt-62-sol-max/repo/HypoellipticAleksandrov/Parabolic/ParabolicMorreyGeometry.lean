@@ -20,36 +20,38 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
+section
+variable {d : Nat}
+
 /-- The coordinate parabolic distance: square-root time separation and native
 velocity-norm separation. -/
-noncomputable def parabolicCoordinateDist {d : Nat}
+noncomputable def parabolicCoordinateDist
     (z w : TimeVelocity d) : Real :=
   max (Real.sqrt |z.1 - w.1|) ‖z.2 - w.2‖
 
 /-- The open coordinate box of parabolic radius `r` about `z0`. -/
-def parabolicCoordinateBox {d : Nat} (z0 : TimeVelocity d) (r : Real) :
+def parabolicCoordinateBox (z0 : TimeVelocity d) (r : Real) :
     Set (TimeVelocity d) :=
   {z | parabolicCoordinateDist z z0 < r}
 
 /-- A pointwise parabolic Hölder-seminorm upper bound on a set. -/
-def ParabolicHolderSeminormLE {d : Nat} (S : Set (TimeVelocity d))
+def ParabolicHolderSeminormLE (S : Set (TimeVelocity d))
     (u : TimeVelocity d -> Real) (alpha K : Real) : Prop :=
   ∀ z ∈ S, ∀ w ∈ S,
     |u z - u w| <= K * parabolicCoordinateDist z w ^ alpha
 
 /-- The parabolic coordinate distance is nonnegative. -/
-theorem parabolicCoordinateDist_nonneg {d : Nat} (z w : TimeVelocity d) :
+theorem parabolicCoordinateDist_nonneg (z w : TimeVelocity d) :
     0 ≤ parabolicCoordinateDist z w := by
-  unfold parabolicCoordinateDist
   exact le_trans (Real.sqrt_nonneg _) (le_max_left _ _)
 
 /-- The parabolic coordinate distance from a point to itself vanishes. -/
-@[simp] theorem parabolicCoordinateDist_self {d : Nat} (z : TimeVelocity d) :
+@[simp] theorem parabolicCoordinateDist_self (z : TimeVelocity d) :
     parabolicCoordinateDist z z = 0 := by
   simp [parabolicCoordinateDist]
 
 /-- The parabolic coordinate distance separates points. -/
-@[simp] theorem parabolicCoordinateDist_eq_zero_iff {d : Nat}
+@[simp] theorem parabolicCoordinateDist_eq_zero_iff
     (z w : TimeVelocity d) : parabolicCoordinateDist z w = 0 ↔ z = w := by
   constructor
   · intro h
@@ -71,7 +73,7 @@ theorem parabolicCoordinateDist_nonneg {d : Nat} (z w : TimeVelocity d) :
     exact parabolicCoordinateDist_self z
 
 /-- The parabolic coordinate distance is continuous in the inherited product topology. -/
-theorem continuous_parabolicCoordinateDist {d : Nat} :
+theorem continuous_parabolicCoordinateDist :
     Continuous (fun p : TimeVelocity d × TimeVelocity d =>
       parabolicCoordinateDist p.1 p.2) := by
   have htime : Continuous (fun p : TimeVelocity d × TimeVelocity d =>
@@ -83,7 +85,7 @@ theorem continuous_parabolicCoordinateDist {d : Nat} :
   simpa only [parabolicCoordinateDist] using htime.max hvelocity
 
 /-- The parabolic coordinate distance to a fixed point tends to zero there. -/
-theorem tendsto_parabolicCoordinateDist_nhds_self {d : Nat} (z : TimeVelocity d) :
+theorem tendsto_parabolicCoordinateDist_nhds_self (z : TimeVelocity d) :
     Tendsto (fun w => parabolicCoordinateDist w z) (nhds z) (nhds 0) := by
   have hpair : Tendsto (fun w : TimeVelocity d => (w, z)) (nhds z) (nhds (z, z)) :=
     tendsto_id.prodMk_nhds tendsto_const_nhds
@@ -91,12 +93,12 @@ theorem tendsto_parabolicCoordinateDist_nhds_self {d : Nat} (z : TimeVelocity d)
   simpa only [Function.comp_def, parabolicCoordinateDist_self] using hdist.comp hpair
 
 /-- Membership in a parabolic coordinate box is its defining strict inequality. -/
-@[simp] theorem mem_parabolicCoordinateBox_iff {d : Nat} {z z0 : TimeVelocity d} {r : Real} :
+@[simp] theorem mem_parabolicCoordinateBox_iff {z z0 : TimeVelocity d} {r : Real} :
     z ∈ parabolicCoordinateBox z0 r ↔ parabolicCoordinateDist z z0 < r :=
   Iff.rfl
 
 /-- Parabolic affine maps scale the coordinate distance by the absolute radius. -/
-theorem parabolicCoordinateDist_parabolicAffine {d : Nat} (t0 : Real) (v0 : PDE.Vec d)
+theorem parabolicCoordinateDist_parabolicAffine (t0 : Real) (v0 : PDE.Vec d)
     (r : Real) (z w : TimeVelocity d) :
     parabolicCoordinateDist (parabolicAffine t0 v0 r z) (parabolicAffine t0 v0 r w) =
       |r| * parabolicCoordinateDist z w := by
@@ -120,6 +122,8 @@ theorem parabolicCoordinateDist_parabolicAffine {d : Nat} (t0 : Real) (v0 : PDE.
       norm_smul, Real.norm_eq_abs]
   unfold parabolicCoordinateDist
   rw [htime, hvelocity, ← mul_max_of_nonneg _ _ (abs_nonneg r)]
+
+end
 
 namespace ParabolicHolderSeminormLE
 

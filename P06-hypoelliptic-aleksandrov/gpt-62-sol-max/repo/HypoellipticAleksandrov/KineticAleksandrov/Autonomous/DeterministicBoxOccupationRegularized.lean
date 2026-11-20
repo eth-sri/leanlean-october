@@ -16,28 +16,28 @@ open scoped ENNReal
 /-- The actual position-regularized homogeneous Bellman barrier satisfies occupation Green.
 No modulus, joint regularity, bounded jet or Green identity is taken as a premise. -/
 theorem deterministic_regularized_barrier_green
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam alpha c : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam alpha c : ℝ} 
     {phi : Z → ℝ} (h : IsBellmanHomogeneous alpha phi)
     (ha : 0 < alpha) (ha1 : alpha < 1) (hc : 0 < c)
     (hbound : ∀ q ∈ bellmanPuncturedSet, ∀ b ∈ Icc lam Lam,
       c * bellmanGauge q ^ (alpha - 2) ≤ bellmanOperator b phi q)
     (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta)
     (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) (hT : 0 < (T : ℝ)) (Y : ℝ) :
-    let E := fullSpaceEvolution hH hLE hlam hLam A
+    let E := fullSpaceEvolution A
     let Phi := positionConvolution eta (bellmanOriginExtension phi)
     ENNReal.ofReal c *
       (∫⁻ q, ENNReal.ofReal (positionConvolution eta
         (fun w => bellmanGauge w ^ (alpha - 2)) (q.1 - Y, q.2))
           ∂physicalOccupationMeasure E z T) ≤
       ENNReal.ofReal ((∫ q, Phi (q.1 - Y, q.2) ∂kernelXV E T z) - Phi (z.1 - Y, z.2)) := by
-  let E := fullSpaceEvolution hH hLE hlam hLam A
+  let E := fullSpaceEvolution A
   let Phi := positionConvolution eta (bellmanOriginExtension phi)
   let f := fun q : Z => Phi (q.1 - Y, q.2)
   let w := fun q : Z => positionConvolution eta
     (fun u => bellmanGauge u ^ (alpha - 2)) (q.1 - Y, q.2)
-  have hE := fullSpaceEvolution_spec hH hLE hlam hLam A
-  let : IsProbabilityMeasure (kernelXV E T z) := ⟨kernelXV_mass_one hlam A E hE T z⟩
+  have hE := fullSpaceEvolution_spec A
+  let : IsProbabilityMeasure (kernelXV E T z) := ⟨kernelXV_mass_one A E hE T z⟩
   have hPhi := barrier_position_regularization_joint h ha ha1 eta heta
   have hf : ContDiff ℝ 2 f := hPhi.comp
     ((contDiff_fst.sub contDiff_const).prodMk contDiff_snd)
@@ -57,7 +57,7 @@ theorem deterministic_regularized_barrier_green
     (fun X => mul_nonneg (heta.2.2.1 _) (Real.rpow_nonneg (bellmanGauge_nonneg _) _))
   have hfbound (q : Z) : c * w q ≤ physicalSpatialOperator A.a f q :=
     (barrier_position_regularization_of_positive_degree ha ha1 h hbound eta heta).2 A Y q
-  have hdiff := (deterministic_barrier_endpoint_of_modulus hH hLE hlam hLam alpha D
+  have hdiff := (deterministic_barrier_endpoint_of_modulus alpha D
     ha.le ha1.le hD Phi hPhi.continuous hconvmod A z T Y).1
   have hfi : Integrable f (kernelXV E T z) := by
     convert hdiff.add (integrable_const (Phi (z.1 - Y, z.2))) using 1
@@ -65,7 +65,7 @@ theorem deterministic_regularized_barrier_green
     simp only [Pi.add_apply, f]
     rw [show q.1 - Y = -Y + q.1 by ring]
     ring
-  exact barrier_green_cutoff_removal hH hlam hLam A E hE f hf alpha D Bv
+  exact barrier_green_cutoff_removal A E hE f hf alpha D Bv
     ha.le ha1.le hD hBv hfm hfbv c hc w hw hwn hfbound Y z T hT hfi
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

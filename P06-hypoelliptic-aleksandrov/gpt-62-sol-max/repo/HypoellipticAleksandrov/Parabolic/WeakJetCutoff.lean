@@ -52,42 +52,20 @@ theorem exists_smooth_compact_cutoff_mul_eventuallyEq_jet
   have hbCompact : HasCompactSupport b :=
     hasCompactSupport_of_tsupport_subset_of_isCompact_closure hbV hVCompact
   obtain ⟨O, hOOpen, hKO, hbO⟩ := eventually_nhdsSet_iff_exists.mp hbOne
-  refine ⟨b, hb, hbCompact, hbOne, hbV, cutoff_mul_eventuallyEq hbOne, ?_, ?_, ?_⟩
-  · filter_upwards [hOOpen.mem_nhdsSet.mpr hKO] with z hzO
-    have hbz : b =ᶠ[𝓝 z] fun _ : TimeVelocity d => (1 : ℝ) :=
-      (show ∀ᶠ y in 𝓝 z, y ∈ O from hOOpen.mem_nhds hzO).mono
-        fun y hy => hbO y hy
-    have hdb : timeDerivative b z = 0 := by
-      unfold timeDerivative
-      rw [hbz.fderiv_eq]
-      simp
-    simp [hdb, hbO z hzO]
-  · filter_upwards [hOOpen.mem_nhdsSet.mpr hKO] with z hzO
-    have hbz : b =ᶠ[𝓝 z] fun _ : TimeVelocity d => (1 : ℝ) :=
-      (show ∀ᶠ y in 𝓝 z, y ∈ O from hOOpen.mem_nhds hzO).mono
-        fun y hy => hbO y hy
-    have hgrad : velocityGradient b z = 0 := by
-      funext i
-      unfold velocityGradient
-      rw [hbz.fderiv_eq]
-      simp
-    simp [hgrad, hbO z hzO]
-  · filter_upwards [hOOpen.mem_nhdsSet.mpr hKO] with z hzO
-    have hbz : b =ᶠ[𝓝 z] fun _ : TimeVelocity d => (1 : ℝ) :=
-      (show ∀ᶠ y in 𝓝 z, y ∈ O from hOOpen.mem_nhds hzO).mono
-        fun y hy => hbO y hy
-    have hhess : velocityHessian b z = 0 := by
-      ext i j
-      unfold velocityHessian
-      rw [hbz.fderiv.fderiv_eq, fderiv_fun_const]
-      simp
-    have hgrad : velocityGradient b z = 0 := by
-      funext i
-      unfold velocityGradient
-      rw [hbz.fderiv_eq]
-      simp
-    simp [hgrad, hhess, hbO z hzO]
-    funext i j
-    rfl
+  have hjet : ∀ᶠ z in 𝓝ˢ K, b z = 1 ∧ timeDerivative b z = 0 ∧
+      velocityGradient b z = 0 ∧ velocityHessian b z = 0 := by
+    filter_upwards [hOOpen.mem_nhdsSet.mpr hKO] with z hzO
+    have hz : b =ᶠ[𝓝 z] fun _ => (1 : ℝ) :=
+      (show ∀ᶠ y in 𝓝 z, y ∈ O from hOOpen.mem_nhds hzO).mono fun y hy => hbO y hy
+    refine ⟨hbO z hzO, ?_, ?_, ?_⟩
+    · simp [timeDerivative, hz.fderiv_eq]
+    · funext i
+      simp [velocityGradient, hz.fderiv_eq]
+    · ext i j
+      simp [velocityHessian, hz.fderiv.fderiv_eq, fderiv_fun_const]
+  refine ⟨b, hb, hbCompact, hbOne, hbV, cutoff_mul_eventuallyEq hbOne, ?_, ?_, ?_⟩ <;>
+    filter_upwards [hjet] with z ⟨h, ht, hv, hh⟩ <;> simp [h, ht, hv, hh]
+  funext i j
+  rfl
 
 end HypoellipticAleksandrov.Parabolic

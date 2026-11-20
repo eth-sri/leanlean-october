@@ -20,6 +20,23 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Set
 open scoped BigOperators Matrix.Norms.Elementwise
 
+/-- Common bounds on the reflected coefficients on a spatial shift carrier. -/
+structure ReverseTimeCoefficientMajorant {d : ℕ} (r₀ r₁ : ℝ) (S : Set (PDE.Vec d))
+    (δ M : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
+    (c F : ℝ → PDE.Vec d → ℝ) : Prop where
+  diffusionDeriv : ∀ z ∈ Icc 0 (r₁ - r₀) ×ˢ spatialCoordinateShiftCarrier S δ,
+    spatialMatrixFDerivFrobeniusNorm (fun w => reverseTimeCoefficient r₁ a w.1 w.2) z ≤ M
+  drift : ∀ z ∈ Icc 0 (r₁ - r₀) ×ˢ spatialCoordinateShiftCarrier S δ,
+    PDE.vecEuclideanNorm (reverseTimeDivergenceDrift r₁ a b z.1 z.2) ≤ M
+  driftDeriv : ∀ z ∈ Icc 0 (r₁ - r₀) ×ˢ spatialCoordinateShiftCarrier S δ,
+    spatialVectorFDerivFrobeniusNorm (fun w => reverseTimeDivergenceDrift r₁ a b w.1 w.2) z ≤ M
+  scalar : ∀ z ∈ Icc 0 (r₁ - r₀) ×ˢ spatialCoordinateShiftCarrier S δ,
+    |reverseTimeScalarCoefficient r₁ c z.1 z.2| ≤ M
+  scalarDeriv : ∀ z ∈ Icc 0 (r₁ - r₀) ×ˢ spatialCoordinateShiftCarrier S δ,
+    spatialScalarFDerivEuclideanNorm (fun w => reverseTimeScalarCoefficient r₁ c w.1 w.2) z ≤ M
+  sourceDeriv : ∀ z ∈ Icc 0 (r₁ - r₀) ×ˢ spatialCoordinateShiftCarrier S δ,
+    spatialScalarFDerivEuclideanNorm (fun w => reverseTimeScalarCoefficient r₁ F w.1 w.2) z ≤ M
+
 private theorem IsSmoothOnNeighborhood.reverseTimeNormed
     {d : ℕ} {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {S K : Set (TimeVelocity d)} (r₁ : ℝ) {f : TimeVelocity d → E}
@@ -34,13 +51,6 @@ private theorem IsSmoothOnNeighborhood.reverseTimeNormed
       ((contDiff_reverseTimeMap r₁).of_le (by exact_mod_cast le_top)).contDiffOn
       fun _ hz => hz
 
-private theorem IsSmoothOnNeighborhood.negScalar
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {K : Set E} {f : E → ℝ} (hf : IsSmoothOnNeighborhood f K) :
-    IsSmoothOnNeighborhood (-f) K := by
-  rcases hf with ⟨V, hVopen, hKV, hV⟩
-  exact ⟨V, hVopen, hKV, hV.neg⟩
-
 private theorem IsSmoothOnNeighborhood.continuousOn
     {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -49,8 +59,10 @@ private theorem IsSmoothOnNeighborhood.continuousOn
   rcases hf with ⟨V, _hVopen, hKV, hV⟩
   exact hV.continuousOn.mono hKV
 
-private theorem IsSmoothOnNeighborhood.divergenceDrift
-    {d : ℕ} {K : Set (TimeVelocity d)}
+section
+variable {d : ℕ}
+
+private theorem IsSmoothOnNeighborhood.divergenceDrift {K : Set (TimeVelocity d)}
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2) K) :
@@ -84,8 +96,7 @@ private theorem IsSmoothOnNeighborhood.divergenceDrift
       (((hentry i).contDiffAt (hVaopen.mem_nhds hz)).differentiableAt (by simp))
   · exact hVb.mono Set.inter_subset_right
 
-private theorem reverseTimeImage_subset_closedCylinder
-    {d : ℕ} {r₀ r₁ : ℝ} {Ω K : Set (PDE.Vec d)}
+theorem reverseTimeImage_subset_closedCylinder {r₀ r₁ : ℝ} {Ω K : Set (PDE.Vec d)}
     (hKΩ : K ⊆ Ω) :
     reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ K) ⊆
       scalarParabolicClosedCylinder r₀ r₁ Ω := by
@@ -99,8 +110,7 @@ private theorem reverseTimeImage_subset_closedCylinder
 
 /-- Smooth data have one common finite majorant for all coefficient and source
 quantities used by the interior difference-quotient estimate. -/
-theorem exists_reverseTimeInteriorCoefficientMajorant
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
+theorem exists_reverseTimeInteriorCoefficientMajorant {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
     (r₀ r₁ : ℝ)
     (χ : PDE.QuantitativeSmoothCutoff inner Ω Kχ)
     (δ : ℝ)
@@ -109,46 +119,11 @@ theorem exists_reverseTimeInteriorCoefficientMajorant
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
-    ∃ M : ℝ, 0 ≤ M ∧
-      (∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-          spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-        spatialMatrixFDerivFrobeniusNorm
-          (fun w : TimeVelocity d =>
-            reverseTimeCoefficient r₁ a w.1 w.2) z ≤ M) ∧
-      (∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-          spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-        PDE.vecEuclideanNorm
-          (reverseTimeDivergenceDrift r₁ a b z.1 z.2) ≤ M) ∧
-      (∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-          spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-        spatialVectorFDerivFrobeniusNorm
-          (fun w : TimeVelocity d =>
-            reverseTimeDivergenceDrift r₁ a b w.1 w.2) z ≤ M) ∧
-      (∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-          spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-        |-(reverseTimeScalarCoefficient r₁ c z.1 z.2)| ≤ M) ∧
-      (∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-          spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-        spatialScalarFDerivEuclideanNorm
-          (fun w : TimeVelocity d =>
-            -(reverseTimeScalarCoefficient r₁ c w.1 w.2)) z ≤ M) ∧
-      ∀ z ∈ Set.Icc 0 (r₁ - r₀) ×ˢ
-          spatialCoordinateShiftCarrier (tsupport χ.toFun) δ,
-        spatialScalarFDerivEuclideanNorm
-          (fun w : TimeVelocity d =>
-            -(reverseTimeScalarCoefficient r₁ F w.1 w.2)) z ≤ M := by
+    (haSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω a)
+    (hbSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω b)
+    (hcSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω c)
+    (hFSmooth : IsSmoothOnClosedCylinder r₀ r₁ Ω F) :
+    ∃ M : ℝ, 0 ≤ M ∧ ReverseTimeCoefficientMajorant r₀ r₁ (tsupport χ.toFun) δ M a b c F := by
   classical
   let Q : Set (TimeVelocity d) := Set.Icc 0 (r₁ - r₀) ×ˢ
     spatialCoordinateShiftCarrier (tsupport χ.toFun) δ
@@ -171,17 +146,11 @@ theorem exists_reverseTimeInteriorCoefficientMajorant
     exact IsSmoothOnNeighborhood.reverseTimeNormed r₁ himage
       (IsSmoothOnNeighborhood.divergenceDrift a b haSmooth hbSmooth)
   have hcR : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => -(reverseTimeScalarCoefficient r₁ c z.1 z.2)) Q := by
-    change IsSmoothOnNeighborhood
-      (-((fun z : TimeVelocity d => c z.1 z.2) ∘ reverseTimeMap r₁)) Q
-    exact IsSmoothOnNeighborhood.negScalar
-      (IsSmoothOnNeighborhood.reverseTime r₁ himage hcSmooth)
+      (fun z : TimeVelocity d => reverseTimeScalarCoefficient r₁ c z.1 z.2) Q :=
+    IsSmoothOnNeighborhood.reverseTime r₁ himage hcSmooth
   have hFR : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => -(reverseTimeScalarCoefficient r₁ F z.1 z.2)) Q := by
-    change IsSmoothOnNeighborhood
-      (-((fun z : TimeVelocity d => F z.1 z.2) ∘ reverseTimeMap r₁)) Q
-    exact IsSmoothOnNeighborhood.negScalar
-      (IsSmoothOnNeighborhood.reverseTime r₁ himage hFSmooth)
+      (fun z : TimeVelocity d => reverseTimeScalarCoefficient r₁ F z.1 z.2) Q :=
+    IsSmoothOnNeighborhood.reverseTime r₁ himage hFSmooth
   have hBvalue : ContinuousOn (fun z : TimeVelocity d =>
       PDE.vecEuclideanNorm (reverseTimeDivergenceDrift r₁ a b z.1 z.2)) Q := by
     unfold PDE.vecEuclideanNorm PDE.vecNormSq
@@ -203,28 +172,15 @@ theorem exists_reverseTimeInteriorCoefficientMajorant
   obtain ⟨C₆, hC₆⟩ := hQcompact.exists_bound_of_continuousOn
     hFR.continuousOn_spatialScalarFDerivEuclideanNorm
   let M := max 0 (max C₁ (max C₂ (max C₃ (max C₄ (max C₅ C₆)))))
-  refine ⟨M, le_max_left _ _, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro z hz
-    exact (le_abs_self _).trans <| (hC₁ z hz).trans <|
-      (le_max_left C₁ _).trans (le_max_right 0 _)
-  · intro z hz
-    exact (le_abs_self _).trans <| (hC₂ z hz).trans <| (le_max_left C₂ _).trans
-      ((le_max_right C₁ _).trans (le_max_right 0 _))
-  · intro z hz
-    exact (le_abs_self _).trans <| (hC₃ z hz).trans <| (le_max_left C₃ _).trans
-      ((le_max_right C₂ _).trans ((le_max_right C₁ _).trans (le_max_right 0 _)))
-  · intro z hz
-    simpa only [Real.norm_eq_abs, abs_abs, Function.comp_apply] using
-      (hC₄ z hz).trans ((le_max_left C₄ _).trans
-      ((le_max_right C₃ _).trans ((le_max_right C₂ _).trans
-        ((le_max_right C₁ _).trans (le_max_right 0 _)))))
-  · intro z hz
-    exact (le_abs_self _).trans <| (hC₅ z hz).trans <| (le_max_left C₅ _).trans
-      ((le_max_right C₄ _).trans ((le_max_right C₃ _).trans
-        ((le_max_right C₂ _).trans ((le_max_right C₁ _).trans (le_max_right 0 _)))))
-  · intro z hz
-    exact (le_abs_self _).trans <| (hC₆ z hz).trans <| (le_max_right C₅ C₆).trans
-      ((le_max_right C₄ _).trans ((le_max_right C₃ _).trans
-        ((le_max_right C₂ _).trans ((le_max_right C₁ _).trans (le_max_right 0 _)))))
+  refine ⟨M, le_max_left _ _, ⟨?_, ?_, ?_, ?_, ?_, ?_⟩⟩
+  all_goals intro z hz
+  · exact (le_abs_self _).trans ((hC₁ z hz).trans (by simp [M, le_max_iff]))
+  · exact (le_abs_self _).trans ((hC₂ z hz).trans (by simp [M, le_max_iff]))
+  · exact (le_abs_self _).trans ((hC₃ z hz).trans (by simp [M, le_max_iff]))
+  · exact (le_abs_self _).trans ((hC₄ z hz).trans (by simp [M, le_max_iff]))
+  · exact (le_abs_self _).trans ((hC₅ z hz).trans (by simp [M, le_max_iff]))
+  · exact (le_abs_self _).trans ((hC₆ z hz).trans (by simp [M, le_max_iff]))
+
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

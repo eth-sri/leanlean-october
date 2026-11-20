@@ -37,8 +37,7 @@ theorem bellmanGaussianExponent_le_smallTime (t : BellmanPositiveTime) (ht : t.v
 /-- Exponential decay dominates the quadratic inverse-power singularity. -/
 theorem bellman_exp_neg_le_inv_sq (y : ℝ) (hy : 0 < y) :
     Real.exp (-y) ≤ 2 / y ^ 2 := by
-  have h := Real.pow_div_factorial_le_exp y hy.le 2
-  have hm := mul_le_mul_of_nonneg_right h (Real.exp_pos (-y)).le
+  have hm := mul_le_mul_of_nonneg_right (Real.pow_div_factorial_le_exp y hy.le 2) (Real.exp_pos (-y)).le
   have hexp : Real.exp y * Real.exp (-y) = 1 := by
     rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
   rw [hexp] at hm

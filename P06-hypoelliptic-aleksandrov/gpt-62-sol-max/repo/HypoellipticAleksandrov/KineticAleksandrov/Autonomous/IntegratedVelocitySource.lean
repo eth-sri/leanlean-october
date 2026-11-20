@@ -1,6 +1,7 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.IntegratedVelocityComparison
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.IntegratedVelocityBarrier
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripDuhamel
 import Mathlib.Tactic
 
 /-! # Actual compact convex-profile source tests -/
@@ -31,8 +32,8 @@ theorem velocityOccupationDensity_nonneg (r v : ℝ) : 0 ≤ velocityOccupationD
   positivity
 
 /-- A smooth compact unit probe multiplied by the density is a valid compact source. -/
-theorem velocity_profile_source_bound (hH : HormanderHypoellipticityStatement)
-    {lam Lam r : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+theorem velocity_profile_source_bound
+    {lam Lam r : ℝ} 
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (hr : 0 < r) (T : ℝ)
     (f : ℝ × EvolutionAmbientState 1 → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
@@ -59,23 +60,23 @@ theorem velocity_profile_source_bound (hH : HormanderHypoellipticityStatement)
     change q.position ∈ movingDomain (wholeSpace 1) (fun _ => 0) q.time
     rw [movingDomain_wholeSpace]
     trivial
-  have hLn : 0 ≤ Lam := hlam.le.trans hLam
+  have hLn : 0 ≤ Lam := A.positive.le.trans A.ordered
   have hpoint : p ∈ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T := by
     refine ⟨hp, ?_⟩
     change p.position ∈ movingDomain (wholeSpace 1) (fun _ => 0) p.time
     rw [movingDomain_wholeSpace]
     trivial
-  have hb := velocity_duhamel_le_barrier hH hlam hLam A E hE T g
+  have hb := autonomous_duhamel_le_barrier A autonomousWholeDomain_admissible E hE T g
     (velocityOccupationBarrier r Lam T)
     (fun q => mul_nonneg (hf01 _).1
-      (mul_nonneg hlam.le (velocityOccupationDensity_nonneg r _))) hgs hc hu
+      (mul_nonneg A.positive.le (velocityOccupationDensity_nonneg r _))) hgs hc hu
     (velocityOccupationBarrier_continuous r Lam T)
     (velocityOccupationBarrier_regular hr hLn T)
     (fun q hq => (velocityOccupationBarrier_bounds hr hLn T q hq.1).1)
     (fun q hq => by
-      have he := velocityOccupationBarrier_operator hlam A hr T q hq.1.le
+      have he := velocityOccupationBarrier_operator A hr T q hq.1.le
       have hm := mul_le_mul_of_nonneg_right (hf01 (q.time, q.position, q.velocity)).2
-        (mul_nonneg hlam.le (velocityOccupationDensity_nonneg r (q.position 0)))
+        (mul_nonneg A.positive.le (velocityOccupationDensity_nonneg r (q.position 0)))
       change _ ≤ -(f _ * (lam * velocityOccupationDensity r (q.position 0)))
       change _ ≤ -lam * velocityOccupationDensity r (q.position 0) at he
       linarith) p hpoint

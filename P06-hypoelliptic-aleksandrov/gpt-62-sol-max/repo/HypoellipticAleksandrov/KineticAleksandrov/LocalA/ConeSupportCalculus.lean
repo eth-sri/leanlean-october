@@ -1,9 +1,10 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ConeSupportComparison
+public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentationComparison
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 import Mathlib.Analysis.Calculus.FDeriv.Comp
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierCollar
+import HypoellipticAleksandrov.KineticAleksandrov.Evolution.MarginalRegularityScalar
 
 /-! # Smooth bounded probes of affine physical transport coordinates -/
 
@@ -12,22 +13,25 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
+section
+variable {d : ℕ}
+
 /-- Continuous linear dot product with a fixed raw Euclidean vector. -/
-def coneDotLinear {d : ℕ} (e : PDE.Vec d) : PDE.Vec d →L[ℝ] ℝ :=
+def coneDotLinear (e : PDE.Vec d) : PDE.Vec d →L[ℝ] ℝ :=
   ∑ i, e i • ContinuousLinearMap.proj i
 
 /-- The dot-product functional uses exactly the finite Euclidean sum. -/
-theorem coneDotLinear_apply {d : ℕ} (e x : PDE.Vec d) :
+theorem coneDotLinear_apply (e x : PDE.Vec d) :
     coneDotLinear e x = PDE.vecDot e x := by
   simp only [coneDotLinear, sum_apply, smul_apply,
     ContinuousLinearMap.proj_apply, smul_eq_mul, PDE.vecDot]
 
 /-- An affine physical transport coordinate. -/
-def coneCoordinate {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (P : KineticPoint d) : ℝ :=
+def coneCoordinate (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (P : KineticPoint d) : ℝ :=
   α * P.time + PDE.vecDot e P.position + γ
 
 /-- The bounded transition of an affine transport coordinate is globally smooth. -/
-theorem coneProbe_smooth {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) :
+theorem coneProbe_smooth (α : ℝ) (e : PDE.Vec d) (γ : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) ((expNegInvGlue ∘ coneCoordinate α e γ) ∘
       (KineticPoint.equivProd d).symm) := by
   apply expNegInvGlue.contDiff.comp
@@ -37,7 +41,7 @@ theorem coneProbe_smooth {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) :
   fun_prop
 
 /-- The transport probe has zero velocity Hessian and the exact directional operator. -/
-theorem coneProbe_operator {d : ℕ} (B : CoefficientField d)
+theorem coneProbe_operator (B : CoefficientField d)
     (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (P : KineticPoint d) :
     forwardKineticOperator (ofTimeVelocityCoefficient B)
       (expNegInvGlue ∘ coneCoordinate α e γ) P =
@@ -79,7 +83,7 @@ theorem coneProbe_operator {d : ℕ} (B : CoefficientField d)
         P.velocity (PDE.basisVec i)) j) = 0
     have hg : (fun v : PDE.Vec d =>
         PDE.classicalGradient (fun _ : PDE.Vec d => χ (coneCoordinate α e γ P)) v) =
-        fun _ => 0 := funext (fun v => classicalGradient_const _ v)
+        fun _ => 0 := funext (fun v => _root_.HypoellipticAleksandrov.KineticAleksandrov.classicalGradient_const_eq_zero _ v)
     rw [hg]
     have hf : fderiv ℝ (fun _ : PDE.Vec d => (0 : PDE.Vec d)) P.velocity = 0 :=
       congrFun (fderiv_const (0 : PDE.Vec d)) P.velocity
@@ -95,6 +99,8 @@ theorem coneProbe_operator {d : ℕ} (B : CoefficientField d)
   rw [← Finset.sum_mul]
   dsimp only [χ]
   ring
+
+end
 
 /-- The smooth transition is nonnegative and at most one. -/
 theorem coneProbe_transition_bound (x : ℝ) :

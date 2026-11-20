@@ -20,7 +20,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators ENNReal
 
-private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
+theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
     {d : Nat} {Q : Set (TimeVelocity d)}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞) :
     IsProbabilityMeasure (parabolicNormalizedVolumeOn Q) := by
@@ -30,19 +30,18 @@ private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
   exact ENNReal.inv_mul_cancel hQpos.ne' hQtop.ne
 
 private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
+    (1 : ENNReal) ≤ parabolicExponent d := le_add_of_nonneg_left bot_le
 
-private theorem parabolicMorreyUnitAverage_eq_integral_normalizedVolume
-    {d : Nat} (f : TimeVelocity d -> Real) :
+section
+variable {d : Nat}
+
+private theorem parabolicMorreyUnitAverage_eq_integral_normalizedVolume (f : TimeVelocity d -> Real) :
     parabolicMorreyUnitAverage f =
       ∫ z, f z ∂(parabolicNormalizedVolumeOn (parabolicMorreyUnitBox d)) := by
   simp only [parabolicMorreyUnitAverage, parabolicNormalizedVolumeOn,
     integral_smul_measure, ENNReal.toReal_inv, smul_eq_mul]
 
-private theorem abs_integral_le_parabolicLpMeanNormOn
-    {d : Nat} {Q : Set (TimeVelocity d)} {f : TimeVelocity d -> Real}
+private theorem abs_integral_le_parabolicLpMeanNormOn {Q : Set (TimeVelocity d)} {f : TimeVelocity d -> Real}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞)
     (hf : MemLp f (parabolicExponent d) (parabolicNormalizedVolumeOn Q)) :
     |∫ z, f z ∂(parabolicNormalizedVolumeOn Q)| ≤
@@ -65,8 +64,7 @@ private theorem abs_integral_le_parabolicLpMeanNormOn
   simpa only [μ, p, toReal_enorm, Real.norm_eq_abs,
     parabolicLpMeanNormOn_eq_toReal, parabolicELpMeanNormOn] using hreal
 
-private theorem abs_parabolicMorreyUnitVelocityCoeff_le_parabolicLpMeanNormOn
-    {d : Nat} (g : TimeVelocity d -> Real)
+private theorem abs_parabolicMorreyUnitVelocityCoeff_le_parabolicLpMeanNormOn (g : TimeVelocity d -> Real)
     (hg : MemLp g (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicMorreyUnitBox d)))
     (i : Fin d) :
@@ -128,8 +126,7 @@ private theorem abs_parabolicMorreyUnitVelocityCoeff_le_parabolicLpMeanNormOn
   rw [abs_mul, abs_of_nonneg (by norm_num)]
   exact mul_le_mul_of_nonneg_left (hintegral.trans hweighted_real) (by norm_num)
 
-private theorem parabolicLpMeanNormOn_parabolicBox_eq_unit
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+private theorem parabolicLpMeanNormOn_parabolicBox_eq_unit (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
     (f : TimeVelocity d -> Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀))) :
@@ -140,14 +137,16 @@ private theorem parabolicLpMeanNormOn_parabolicBox_eq_unit
   rw [parabolicLpMeanNormOn_eq_toReal, parabolicLpMeanNormOn_eq_toReal,
     parabolicELpMeanNormOn_parabolicBox_eq t₀ v₀ hr f]
 
+end
+
+section
+variable {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) (f : TimeVelocity d -> Real)
+  (hf : MemLp f (parabolicExponent d) (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀)))
+include hr
+
 /-- The normalized constant coefficient of the canonical affine moment
 projection is bounded by the normalized mean norm on the same forward box. -/
-theorem abs_parabolicMorreyBoxAverage_le_parabolicLpMeanNormOn
-    {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
-    (f : TimeVelocity d -> Real)
-    (hf : MemLp f (parabolicExponent d)
-      (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀))) :
+theorem abs_parabolicMorreyBoxAverage_le_parabolicLpMeanNormOn :
     |parabolicMorreyBoxAverage t₀ v₀ r f| <=
       parabolicLpMeanNormOn d f (parabolicBox 1 r t₀ v₀) hf := by
   let g : TimeVelocity d -> Real := pullbackScalar f t₀ v₀ r
@@ -167,12 +166,7 @@ theorem abs_parabolicMorreyBoxAverage_le_parabolicLpMeanNormOn
 
 /-- The radius-weighted `l¹` velocity slopes of the canonical affine moment
 projection are bounded by the normalized mean norm on the same forward box. -/
-theorem radius_sum_abs_parabolicMorreyBoxVelocitySlope_le_parabolicLpMeanNormOn
-    {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
-    (f : TimeVelocity d -> Real)
-    (hf : MemLp f (parabolicExponent d)
-      (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀))) :
+theorem radius_sum_abs_parabolicMorreyBoxVelocitySlope_le_parabolicLpMeanNormOn :
     r * ∑ i : Fin d, |parabolicMorreyBoxVelocitySlope t₀ v₀ r f i| <=
       (3 * (d : Real)) *
         parabolicLpMeanNormOn d f (parabolicBox 1 r t₀ v₀) hf := by
@@ -202,6 +196,8 @@ theorem radius_sum_abs_parabolicMorreyBoxVelocitySlope_le_parabolicLpMeanNormOn
       rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul,
         ← parabolicLpMeanNormOn_parabolicBox_eq_unit t₀ v₀ hr f hf]
       ring
+
+end
 
 /-- The combined constant and radius-weighted velocity coefficient bound for
 the canonical affine moment projection on one forward physical box. -/

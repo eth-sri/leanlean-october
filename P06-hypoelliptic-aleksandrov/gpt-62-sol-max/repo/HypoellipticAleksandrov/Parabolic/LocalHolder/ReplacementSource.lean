@@ -1,9 +1,10 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.SourceCorrection
+public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementEnergyBoundary
+public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
 
-public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApprox
-public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonCalculus
+public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
+public import HypoellipticAleksandrov.Parabolic.ScalarCalculus
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparison
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity

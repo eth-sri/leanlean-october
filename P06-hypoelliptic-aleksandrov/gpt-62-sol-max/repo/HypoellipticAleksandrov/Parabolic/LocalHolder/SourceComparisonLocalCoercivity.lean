@@ -56,10 +56,7 @@ theorem local_value_energy_flux_coercivity {d : ℕ}
       simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) hK).2 (hB j)
     have hbq : (q * B j) ^ 2 / (2 * lam) ≤ K ^ 2 * q ^ 2 / (2 * lam) := by
       apply div_le_div_of_nonneg_right ?_ (by positivity)
-      calc
-        _ = q ^ 2 * B j ^ 2 := mul_pow _ _ _
-        _ ≤ q ^ 2 * K ^ 2 := mul_le_mul_of_nonneg_left hbsq (sq_nonneg q)
-        _ = _ := mul_comm _ _
+      exact Trans.trans (Trans.trans (mul_pow q (B j) 2) (mul_le_mul_of_nonneg_left hbsq (sq_nonneg q))) (mul_comm (q ^ 2) (K ^ 2))
     have hy' : -(lam / 2) * ρ ^ 2 * G j ^ 2 ≤
         q * ρ * (B j * G j) + (q * B j) ^ 2 / (2 * lam) := by
       convert hy using 1 <;> ring

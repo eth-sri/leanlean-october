@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2Spectral
 public import Mathlib.Topology.Order.Compact
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ShellGeometry
 import Mathlib.Tactic.Positivity
 
 /-!
@@ -60,22 +61,6 @@ theorem exists_spectral_weight_on_compact {X : Type*} [TopologicalSpace X]
       have hlow : -B ≤ b x := (abs_le.mp (hbound x hx)).1
       linarith
   · refine ⟨1, le_rfl, ?_⟩
-    intro x hx
-    exact (hne ⟨x, hx⟩).elim
-
-/-- A positive continuous scalar weight on a compact set has joint positive finite bounds. -/
-theorem exists_positive_bounds_on_compact {X : Type*} [TopologicalSpace X]
-    (K : Set X) (hK : IsCompact K) (w : X → ℝ) (hw : ContinuousOn w K)
-    (hpos : ∀ x ∈ K, 0 < w x) :
-    ∃ lower upper : ℝ, 0 < lower ∧ lower ≤ upper ∧
-      ∀ x ∈ K, lower ≤ w x ∧ w x ≤ upper := by
-  by_cases hne : K.Nonempty
-  · obtain ⟨a, ha, hmin⟩ := hK.exists_isMinOn hne hw
-    obtain ⟨b, hb, hmax⟩ := hK.exists_isMaxOn hne hw
-    refine ⟨w a, w b, hpos a ha, hmin hb, ?_⟩
-    intro x hx
-    exact ⟨hmin hx, hmax hx⟩
-  · refine ⟨1, 1, zero_lt_one, le_rfl, ?_⟩
     intro x hx
     exact (hne ⟨x, hx⟩).elim
 

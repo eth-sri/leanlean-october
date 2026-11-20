@@ -27,51 +27,34 @@ def validTerminalProbeIntegral (n : ℕ) (Ω : Set (PDE.Vec n)) (γ : ℝ → PD
 
 section EvolutionData
 
-variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
-variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
-variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
-variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
-variable (hΩ : IsAdmissibleEvolutionDomain Ω)
-variable (hγ : IsContinuousPiecewiseC1 γ)
-variable (hB_smooth : IsSmoothFullKineticCoefficient B)
-variable (hB_symm : IsSymmetricFullKineticCoefficient B)
-variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-variable (hb_smooth : IsSmoothDrift b)
-variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
-variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
-variable (hEx : ClassicalTerminalExistence Ω γ B b)
-include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
-include hb_smooth hb_lipschitz hb_coercive hEx
+variable {n : ℕ} {lam Lam m L_b : ℝ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    (data : TerminalEvolutionData lam Lam m L_b Ω γ B b)
+include data
 
-local notation "μT" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-local notation "κ" => terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "μT" => terminalMeasure data
+local notation "κ" => terminalFiberKernel data
 
-local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "P₀" => terminalOperators data
 
 /-- At every query where a fixed smooth compact datum is admissible, its upper-time
 measurable probe approximations converge to the terminal measure integral. -/
 theorem tendsto_upper_terminal_probe
     (q : EvolutionQuery Ω γ) (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F) :
-    Tendsto (fun j => extendedTerminalProbe n Ω γ B b hEx
+    Tendsto (fun j => extendedTerminalProbe n Ω γ B b data.exists_solution
       (terminalTimeMesh j q.1.2.1) F (evolutionQueryPoint q)) atTop
       (𝓝 (∫ x, F x ∂(μT q))) := by
   let τ := q.1.2.1
   let σ := q.1.1
   let p : EvolutionState Ω γ σ := ⟨q.1.2.2, q.2.2⟩
   obtain ⟨δ, hδ, hwindow⟩ := hF.exists_terminal_window
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1
-  obtain ⟨M, hM0, herr⟩ := terminalOperators_terminal_time_error n hn lam Lam m L_b
-    hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-    hb_smooth hb_lipschitz hb_coercive hEx τ F hF
-  have hnear : ∀ᶠ j in atTop, dist (terminalTimeMesh j τ) τ < δ :=
+    (isOpen_of_isAdmissibleEvolutionDomain data.domain) data.curve.1
+  obtain ⟨M, hM0, herr⟩ := terminalOperators_terminal_time_error data τ F hF
+  have hnear :=
     (tendsto_terminalTimeMesh τ).eventually (Metric.ball_mem_nhds τ hδ)
   have hevent : ∀ᶠ j in atTop,
-      |extendedTerminalProbe n Ω γ B b hEx (terminalTimeMesh j τ) F (evolutionQueryPoint q) -
+      |extendedTerminalProbe n Ω γ B b data.exists_solution (terminalTimeMesh j τ) F (evolutionQueryPoint q) -
         P₀ σ τ q.2.1 (terminalStateDatum F) p| ≤ (terminalTimeMesh j τ - τ) * M := by
     filter_upwards [hnear] with j hj
     have hτj := le_terminalTimeMesh j τ
@@ -85,16 +68,14 @@ theorem tendsto_upper_terminal_probe
         exact sub_le_sub_right ht.2 τ
       exact (hwindow t (hd.trans_lt hj)).2.2
     have hh := herr (terminalTimeMesh j τ) hτj hFj
-      (terminalDatum_zero_lateral_of_support (isOpen_of_isAdmissibleEvolutionDomain hΩ) hs)
+      (terminalDatum_zero_lateral_of_support (isOpen_of_isAdmissibleEvolutionDomain data.domain) hs)
       σ q.2.1 p
-    change |extendedTerminalProbe n Ω γ B b hEx (terminalTimeMesh j τ) F
+    change |extendedTerminalProbe n Ω γ B b data.exists_solution (terminalTimeMesh j τ) F
       ⟨σ, p.1.1, p.1.2⟩ - P₀ σ τ q.2.1 (terminalStateDatum F) p| ≤ _
-    rw [extendedTerminalProbe_eq_operator n hn lam Lam m L_b
-      hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-      hb_smooth hb_lipschitz hb_coercive hEx σ (terminalTimeMesh j τ)
+    rw [extendedTerminalProbe_eq_operator data σ (terminalTimeMesh j τ)
       (q.2.1.trans hτj) p F hFj]
     exact hh
-  have hlim : Tendsto (fun j => extendedTerminalProbe n Ω γ B b hEx
+  have hlim : Tendsto (fun j => extendedTerminalProbe n Ω γ B b data.exists_solution
       (terminalTimeMesh j τ) F (evolutionQueryPoint q)) atTop
       (𝓝 (P₀ σ τ q.2.1 (terminalStateDatum F) p)) := by
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
@@ -103,31 +84,27 @@ theorem tendsto_upper_terminal_probe
     simpa only [sub_self, zero_mul] using ((tendsto_terminalTimeMesh τ).sub_const τ).mul_const M
   have heq : P₀ σ τ q.2.1 (terminalStateDatum F) p = ∫ x, F x ∂(μT q) := by
     rw [terminalOperators_apply_smooth]
-    exact ((terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q).2.2 F hF).symm
+    exact ((terminalMeasure_spec data q).2.2 F hF).symm
   rw [heq] at hlim
   exact hlim
 
+section
+variable (F : BoundedBorel (EvolutionAmbientState n))
+
 /-- Fixed compact smooth test integrals are jointly measurable on the subtype of queries
 where the test datum is supported in the terminal fiber. -/
-theorem measurable_terminal_probe_on_admissible_queries
-    (F : BoundedBorel (EvolutionAmbientState n)) :
+theorem measurable_terminal_probe_on_admissible_queries :
     Measurable (fun q : {q : EvolutionQuery Ω γ //
       IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F} => ∫ x, F x ∂(μT q.1)) := by
   apply measurable_of_tendsto_metrizable
-    (fun j => (measurable_upper_terminal_probe n hn lam Lam m L_b
-      hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-      hb_smooth hb_lipschitz hb_coercive hEx j F).comp measurable_subtype_coe)
+    (fun j => (measurable_upper_terminal_probe data j F).comp measurable_subtype_coe)
   apply tendsto_pi_nhds.mpr
   intro q
-  exact tendsto_upper_terminal_probe n hn lam Lam m L_b
-    hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-    hb_smooth hb_lipschitz hb_coercive hEx q.1 F q.2
+  exact tendsto_upper_terminal_probe data q.1 F q.2
 
 /-- A fixed smooth compact test integral, taken as zero when the test is not admissible,
 is jointly measurable on the entire valid query space. -/
 theorem measurable_valid_terminal_probe
-    (F : BoundedBorel (EvolutionAmbientState n))
     (hFs : ContDiff ℝ (⊤ : ℕ∞) F) (hFc : HasCompactSupport F) :
     Measurable (validTerminalProbeIntegral n Ω γ μT F) := by
   classical
@@ -136,16 +113,14 @@ theorem measurable_valid_terminal_probe
     {q | IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F}
   have hs : MeasurableSet D := by
     have hopen := IsCompact.isOpen_terminal_support_times
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hFc
+      (isOpen_of_isAdmissibleEvolutionDomain data.domain) data.curve.1 hFc
     have hm : Measurable (fun q : EvolutionQuery Ω γ => q.1.2.1) :=
       measurable_fst.comp (measurable_snd.comp measurable_subtype_coe)
     simpa only [D, IsSmoothCompactTerminalDatum, hFs, hFc, true_and,
       Set.preimage, Set.mem_ofPred_eq] using
       hopen.measurableSet.preimage hm
   apply measurable_of_restrict_of_restrict_compl hs
-  · convert measurable_terminal_probe_on_admissible_queries n hn lam Lam m L_b
-      hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-      hb_smooth hb_lipschitz hb_coercive hEx F using 1
+  · convert measurable_terminal_probe_on_admissible_queries data F using 1
     funext q
     exact ite_eq_left q.2
   · have hf : Dᶜ.domRestrict (fun q : EvolutionQuery Ω γ =>
@@ -155,6 +130,8 @@ theorem measurable_valid_terminal_probe
       exact ite_eq_right q.2
     rw [hf]
     exact measurable_const
+
+end
 
 end EvolutionData
 

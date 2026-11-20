@@ -11,8 +11,6 @@ open Set MeasureTheory Parabolic SectionTwo
 
 /-- Smooth time-velocity coefficients give all spatial derivatives with structural constants. -/
 theorem smooth_timeVelocity_spatial_bounds
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C_m : ℕ → ℝ, (∀ m, 0 ≤ C_m m) ∧
       ∀ (A : CoefficientField d), IsSectionTwoCoefficient lam Lam A →
@@ -28,7 +26,7 @@ theorem smooth_timeVelocity_spatial_bounds
         R ^ (3 * m) * ‖iteratedFDeriv ℝ m (physicalPositionSlice u P) P.position‖ ≤
           C_m m * Holder.oscillationOn u (backwardCylinder P₀ R) := by
   obtain ⟨C, hC, hkernel⟩ :=
-    spatialDensity_uniform_integral_bound hH hLE d hd lam Lam hlam hLam
+    spatialDensity_uniform_integral_bound d hd lam Lam hlam hLam
   refine ⟨C, hC, ?_⟩
   intro A hA P₀ R hR u huc hus hue
   let B := kineticReflectedCoefficient A
@@ -41,7 +39,7 @@ theorem smooth_timeVelocity_spatial_bounds
     have hp : kineticReflection P ∈ forwardCylinder Z₀ R hR := by
       rw [← kineticReflection_image_backwardCylinder P₀ R hR]
       exact ⟨P, hP, rfl⟩
-    have hs := spatial_forward_slice_smooth hH B hB Z₀ hR U hUs hUe
+    have hs := spatial_forward_slice_smooth B hB Z₀ hR U hUs hUe
       (kineticReflection P) hp
     rw [spatial_slice_reflection]
     exact hs.comp P.position contDiffAt_id.neg
@@ -56,7 +54,7 @@ theorem smooth_timeVelocity_spatial_bounds
     let T : {t : ℝ // p.1.time < t} :=
       ⟨p.1.time + R ^ 2 / 8, by nlinarith only [sq_pos_of_pos hR]⟩
     have hT : T.1 - p.1.time = R ^ 2 / 8 := by dsimp only [T]; ring
-    have hfb := spatial_forward_derivative_bound hH hLE hd hlam hLam B hB Z₀ hR
+    have hfb := spatial_forward_derivative_bound hd B hB Z₀ hR
       U hUc hUs hUe p hQi T hT m hm
     have hki := hkernel B hB Z₀.velocity R hR p T hQi.2.2.1 hT m
     have hM : 0 ≤ Holder.oscillationOn U (forwardCylinder Z₀ R hR) :=

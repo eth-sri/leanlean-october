@@ -22,61 +22,61 @@ theorem entranceSlabTerminal_guard_measurable (c : Clock) (J : Interval) (b : �
     ((visitActiveUnion c J).isOpen_carrier.measurableSet.preimage
       ((continuous_apply 0).comp continuous_velocity).measurable)
 
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+include lam Lam A c J b
+
 /-- The existing terminal family, packaged as a measurable finite kernel. -/
-def entranceSlabTerminalKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
+def entranceSlabTerminalKernel :
     Kernel Point Point :=
   Kernel.piecewise (entranceSlabTerminal_guard_measurable c J b) Kernel.id
-    ((enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b).restrict
+    ((enlargedVisitExitKernel A (visitActiveUnion c J) b).restrict
       (show MeasurableSet {p : Point | p.time = b} from
         (isClosed_eq continuous_time continuous_const).measurableSet))
 
 /-- The finite kernel is exactly the canonical terminal family at every pole. -/
-theorem entranceSlabTerminalKernel_apply
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (p : Point) :
-    entranceSlabTerminalKernel hH hLE hlam hLam A c J b p =
-      enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p := rfl
+theorem entranceSlabTerminalKernel_apply (p : Point) :
+    entranceSlabTerminalKernel A c J b p =
+      enlargedActiveTerminalFamily A c J b p := rfl
+
+end
 
 /-- Each actual terminal family has a uniform finite mass bound. -/
 instance entranceSlabTerminalKernel_isFiniteKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
-    IsFiniteKernel (entranceSlabTerminalKernel hH hLE hlam hLam A c J b) := by
+    IsFiniteKernel (entranceSlabTerminalKernel A c J b) := by
   unfold entranceSlabTerminalKernel
   infer_instance
 
 /-- The actual terminal family is measurable, including its initial-value branch. -/
 theorem entranceSlabTerminalFamily_measurable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
-    Measurable (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b) :=
-  (entranceSlabTerminalKernel hH hLE hlam hLam A c J b).measurable
+    Measurable (enlargedActiveTerminalFamily A c J b) :=
+  (entranceSlabTerminalKernel A c J b).measurable
 
 /-- A mixture of actual terminal families is finite for any finite starting measure. -/
 instance entranceSlabTerminal_bind_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
-    IsFiniteMeasure (mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b)) :=
+    IsFiniteMeasure (mu.bind (enlargedActiveTerminalFamily A c J b)) :=
   inferInstanceAs (IsFiniteMeasure
-    (entranceSlabTerminalKernel hH hLE hlam hLam A c J b ∘ₘ mu))
+    (entranceSlabTerminalKernel A c J b ∘ₘ mu))
+
+section
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+  (mu : Measure Point)
 
 /-- Actual terminal mixtures remain in the closed active velocity interval. -/
-theorem entranceSlabTerminal_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
-    (mu : Measure Point) :
-    ∀ᵐ q ∂mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b),
+theorem entranceSlabTerminal_ae_velocity :
+    ∀ᵐ q ∂mu.bind (enlargedActiveTerminalFamily A c J b),
       q.velocity 0 ∈ closure c.active := by
-  change ∀ᵐ q ∂(entranceSlabTerminalKernel hH hLE hlam hLam A c J b ∘ₘ mu), _
+  change ∀ᵐ q ∂(entranceSlabTerminalKernel A c J b ∘ₘ mu), _
   apply Measure.ae_comp_of_ae_ae
     (isClosed_closure.measurableSet.preimage
       ((continuous_apply 0).comp continuous_velocity).measurable)
@@ -88,29 +88,21 @@ theorem entranceSlabTerminal_ae_velocity
   · rename_i hp
     apply (ae_dirac_iff (isClosed_closure.measurableSet.preimage
       ((continuous_apply 0).comp continuous_velocity).measurable)).mpr
-    exact subset_closure (((visitActiveUnion_carrier c J).le hp.2).1)
-  · have hz := enlargedActiveExitMixture_ae_velocity hH hLE hlam hLam A c J b
+    exact subset_closure (Eq.le (visitActiveUnion_carrier c J) hp.right).left
+  · have hz := enlargedActiveExitMixture_ae_velocity A c J b
       (Measure.dirac p)
     rw [Measure.dirac_bind
-      (enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b).measurable p]
+      (enlargedVisitExitKernel A (visitActiveUnion c J) b).measurable p]
       at hz
     exact hz.filter_mono (ae_mono Measure.restrict_le_self)
 
 /-- The source quadratic is integrable on every finite actual terminal mixture. -/
-theorem entranceSlabTerminal_quadratic_integrable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
-    (mu : Measure Point) [IsFiniteMeasure mu] :
+theorem entranceSlabTerminal_quadratic_integrable [IsFiniteMeasure mu] :
     Integrable (fun q => visitQuadratic c (q.velocity 0))
-      (mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b)) := by
-  apply Integrable.mono' (integrable_const (9 * c.r ^ 2 / 16))
-    (((visitQuadratic_smooth c).continuous.comp
-      ((continuous_apply 0).comp continuous_velocity)).measurable.aestronglyMeasurable)
-  filter_upwards [entranceSlabTerminal_ae_velocity hH hLE hlam hLam A c J b mu] with q hq
-  change ‖visitQuadratic c (q.velocity 0)‖ ≤ 9 * c.r ^ 2 / 16
-  rw [Real.norm_eq_abs, abs_of_nonneg (visitQuadratic_nonneg c hq)]
-  exact visitQuadratic_le c _
+      (mu.bind (enlargedActiveTerminalFamily A c J b)) := 
+  visitQuadratic_integrable_of_active_support c _ (entranceSlabTerminal_ae_velocity A c J b mu)
+
+end
 
 /-- Outside the open active interval the source quadratic is nonpositive. -/
 theorem entranceSlabQuadratic_nonpos (c : Clock) (v : ℝ) (hv : v ∉ c.active) :
@@ -145,18 +137,18 @@ theorem entranceSlabQuadratic_integral_le_active (c : Clock) (mu : Measure Point
 
 /-- Removing starts can only decrease the actual terminal mixture. -/
 theorem entranceSlabTerminal_restrict_bind_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
+    {lam Lam : ℝ} 
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
     (mu : Measure Point) (D : Set Point) :
-    (mu.restrict D).bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b) ≤
-      mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b) := by
+    (mu.restrict D).bind (enlargedActiveTerminalFamily A c J b) ≤
+      mu.bind (enlargedActiveTerminalFamily A c J b) := by
   apply Measure.le_iff.mpr
   intro B hB
   rw [Measure.bind_apply hB
-    (entranceSlabTerminalFamily_measurable hH hLE hlam hLam A c J b).aemeasurable,
+    (entranceSlabTerminalFamily_measurable A c J b).aemeasurable,
     Measure.bind_apply hB
-      (entranceSlabTerminalFamily_measurable hH hLE hlam hLam A c J b).aemeasurable]
+      (entranceSlabTerminalFamily_measurable A c J b).aemeasurable]
   exact lintegral_mono' Measure.restrict_le_self le_rfl
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

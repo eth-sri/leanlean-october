@@ -6,6 +6,7 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Positivity
+import HypoellipticAleksandrov.Parabolic.ResolventBarrier
 
 /-!
 # Elliptic contraction bounds for the retention barrier
@@ -21,19 +22,6 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Matrix
 open scoped MatrixOrder BigOperators
-
-private theorem trace_upper {d : ℕ} {Lam : ℝ} {A : PDE.Mat d}
-    (hhi : A ≤ Lam • (1 : PDE.Mat d)) : A.trace ≤ (d : ℝ) * Lam := by
-  have hgap : (Lam • (1 : PDE.Mat d) - A).PosSemidef := Matrix.le_iff.mp hhi
-  have htrace := hgap.trace_nonneg
-  simp only [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one,
-    Fintype.card_fin, smul_eq_mul] at htrace
-  linarith
-
-private theorem contraction_one {d : ℕ} (A : PDE.Mat d) :
-    matrixContraction A 1 = A.trace := by
-  classical
-  simp [matrixContraction, Matrix.trace, Matrix.diag, Matrix.one_apply]
 
 private theorem contraction_outer {d : ℕ} (A : PDE.Mat d) (Y : PDE.Vec d) :
     matrixContraction A (Matrix.of (fun i j => Y i * Y j)) = PDE.vecDot Y (A *ᵥ Y) := by
@@ -70,11 +58,11 @@ theorem retention_barrier_second_order {d N : ℕ} (hN : 3 ≤ N)
   have hw1 : w ≤ 1 := by
     have := div_nonneg hR hs2.le
     dsimp [w]; linarith
-  have htrace := trace_upper hhi
+  have htrace := _root_.HypoellipticAleksandrov.Parabolic.trace_le_natCast_mul_of_loewner_upper hhi
   have hquad := vecDot_mulVec_lower_of_loewner hlo Y
   have hgradH := (retention_polynomial_barrier hN s hs).2.2.2.1 Y hY
   rw [hgradH.2, matrixContraction_add_right, matrixContraction_smul_right,
-    matrixContraction_smul_right, contraction_one, contraction_outer]
+    matrixContraction_smul_right, _root_.HypoellipticAleksandrov.Parabolic.matrixContraction_one_eq_trace, contraction_outer]
   change _ ≤ (-2 * N / s ^ 2 * w ^ (N - 1)) * A.trace +
     (4 * N * (N - 1 : ℕ) / s ^ 4 * w ^ (N - 2)) * PDE.vecDot Y (A *ᵥ Y)
   have hneg : -2 * (N : ℝ) / s ^ 2 * w ^ (N - 1) ≤ 0 := by
@@ -109,13 +97,15 @@ theorem retention_barrier_second_order {d N : ℕ} (hN : 3 ≤ N)
       ring
     _ ≤ _ := sub_le_self _ hrem
 
-
 private theorem young_of_square {X U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V)
     (hX : X ^ 2 ≤ 4 * U * V) : X ≤ U + V := by
   nlinarith [sq_nonneg (U - V)]
 
-private theorem barrier_drift_absorption {d N : ℕ} (hN : 3 ≤ N)
-    (lam Lam s H : ℝ) (hs : 0 < s) (hc : 0 < barrierC d N lam Lam)
+section
+variable {d N : ℕ} (hN : 3 ≤ N) (lam Lam s H : ℝ) (hs : 0 < s)
+include hN hs
+
+private theorem barrier_drift_absorption (hc : 0 < barrierC d N lam Lam)
     (a Y : PDE.Vec d) (ha : PDE.vecEuclideanNorm a ≤ H)
     (hY : Y ∈ PDE.euclideanBall 0 s) :
     PDE.vecDot a (PDE.classicalGradient (barrier N s) Y) ≤
@@ -169,8 +159,7 @@ private theorem barrier_drift_absorption {d N : ℕ} (hN : 3 ≤ N)
   exact hsq
 
 /-- Young absorption gives the source global drift inequality. -/
-theorem retention_barrier_drift_inequality {d N : ℕ} (hN : 3 ≤ N)
-    (lam Lam s H : ℝ) (hs : 0 < s) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+theorem retention_barrier_drift_inequality (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hc : 0 < barrierC d N lam Lam) (A : PDE.Mat d) (hA : A.IsSymm)
     (hlo : lam • (1 : PDE.Mat d) ≤ A) (hhi : A ≤ Lam • (1 : PDE.Mat d))
     (a Y : PDE.Vec d) (ha : PDE.vecEuclideanNorm a ≤ H) :
@@ -186,5 +175,7 @@ theorem retention_barrier_drift_inequality {d N : ℕ} (hN : 3 ≤ N)
   · obtain ⟨hψ, hgrad, hHess⟩ := (retention_polynomial_barrier hN s hs).2.2.2.2 Y hY
     rw [hψ, hgrad, hHess]
     simp [matrixContraction, PDE.vecDot]
+
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay
