@@ -19,19 +19,19 @@ def affineResidueScale (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) : ℝ :=
   (FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 F)⁰ F) : ℝ) ^
     (-(Module.finrank ℚ F : ℝ)⁻¹)
 
-def affineResidueTheta (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (u : ℝ) (h : RayCoset.logHyperplane F) : ℂ :=
+section
+
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+  (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) (u : ℝ)
+include m hm I x u
+
+def affineResidueTheta (h : RayCoset.logHyperplane F) : ℂ :=
   ∑' l : {l : F // l ∈
       ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)},
     RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u h)
       (affineResidueScale I • Theta.traceEmbedding F (x.val + l.val)))
 
-def affineResidueDualTheta (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)})
-    (u : ℝ) (h : RayCoset.logHyperplane F) : ℂ :=
+def affineResidueDualTheta (h : RayCoset.logHyperplane F) : ℂ :=
   ∑' β : {β : F // β ∈
       (Theta.traceDualIdealUnit F (I * rayIdealFractionalIdeal F m hm) :
         FractionalIdeal (𝓞 F)⁰ F)},
@@ -40,17 +40,15 @@ def affineResidueDualTheta (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         ((affineResidueScale I)⁻¹ •
           Theta.traceConjugation F (Theta.traceEmbedding F β.val)))
 
-def affineResidueAverage (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) (u : ℝ) : ℂ :=
+def affineResidueAverage : ℂ :=
   ∫ h in RayCoset.rayUnitHalfOpenDomain F m hm,
     affineResidueTheta m hm I x u h ∂Theta.normalizedLogHaar F
 
-def affineResidueDualAverage (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
-    (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) (u : ℝ) : ℂ :=
+def affineResidueDualAverage : ℂ :=
   ∫ h in RayCoset.rayUnitHalfOpenDomain F m hm,
     affineResidueDualTheta m hm I x u h ∂Theta.normalizedLogHaar F
+
+end
 
  theorem residue_trace_phase_congr
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)

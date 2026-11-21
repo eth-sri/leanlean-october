@@ -79,7 +79,7 @@ local instance exactDisintegrationRoots : Fintype (rootsOfUnity 3 F) := Fintype.
         unfold KPMsFixedHaarDisintegration.cuspEnds
         rw [hy]
         exact Set.mem_iUnion.mpr ⟨j,hj⟩
-      exact mul_eq_zero_of_right _ (source.descent.off_ends s hs x hx').2)
+      exact mul_eq_zero_of_right _ (source.descent.off_ends s hs x hx'))
   refine ⟨Y,hY,a,rfl,ha,?_,?_⟩
   · intro x
     rw [he,pairing_centralAverage]

@@ -11,76 +11,8 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.SphericalReseeding
 
 namespace UniformAssembly
-section
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
- def diagonalUnit (x : ℂ) : ℂˣ := if h : x = 0 then 1 else Units.mk0 x h
-
- def sectionTuple (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
-    KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ :=
-  ⟨fun v => match v with
-    | Sum.inl w => KPLocalCover.sectionMap F ζ hζ (Sum.inl w)
-        (Matrix.GeneralLinearGroup.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom (r w))
-    | Sum.inr _ => 1,
-    Filter.Eventually.of_forall (by
-      intro v; cases v <;> simp [KPAdelicCoverRestrictedProduct.compact])⟩
-
-private theorem tuple_prod (a : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
-    (ha : ∀ q, a (Sum.inr q) = 1) :
-    a = ((Finset.univ : Finset (InfinitePlace F)).toList.map
-      (fun w => KPAdelicCoverRestrictedProduct.localToRestricted F ζ hζ (Sum.inl w)
-        (a (Sum.inl w)))).prod := by
-  apply RestrictedProduct.ext
-  intro v
-  change a v = (RestrictedProduct.evalMonoidHom _ v) _
-  rw [map_list_prod, List.map_map]
-  cases v with
-  | inl w =>
-    simp only [Function.comp_def, KPAdelicCoverRestrictedProduct.localToRestricted,
-      RestrictedProduct.mulSingleMonoidHom_apply]
-    simp only [RestrictedProduct.evalMonoidHom_apply, RestrictedProduct.coe_mulSingle_apply]
-    have he : (fun x : InfinitePlace F => Pi.mulSingle (Sum.inl x) (a (Sum.inl x)) (Sum.inl w)) =
-        fun x => if x = w then a (Sum.inl w) else 1 := by
-      funext x
-      by_cases h : x = w
-      · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
-    rw [he]
-    rw [List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
-    rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
-      (Nat.succ_le_of_lt (List.count_pos_iff.mpr (by simp)))]
-    simp
-  | inr q =>
-    simp [ha, KPAdelicCoverRestrictedProduct.localToRestricted, Function.comp_def,
-      RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
-
-private theorem sectionTuple_insertion
-    (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
-    KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-        (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (sectionTuple F ζ hζ r)) =
-      KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
-        (fun w => Matrix.ProjGenLinGroup.mk (r w)) := by
-  rw [tuple_prod F ζ hζ (sectionTuple F ζ hζ r) (by intro q; rfl)]
-  rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
-  exact (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.2.2 r |>.symm
-
-private theorem mapped_diagonalUnit (w : InfinitePlace F) (x : ℂ) :
-    Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom (diagonalUnit x) =
-      (if h : x = 0 then (1 : (w.Completion)ˣ) else Units.mk0
-        ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F ζ hζ w)).symm x)
-        (by
-          intro hx
-          apply h
-          simpa using congrArg (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-            (KPHilbert.infinite_isComplex F ζ hζ w)) hx)) := by
-  by_cases hx : x = 0
-  · simp [diagonalUnit, hx]
-  · simp only [diagonalUnit, hx, ↓reduceDIte]
-    apply Units.ext; rfl
-
-end
+export KPLiteralChamber (diagonalUnit sectionTuple)
+open KPLiteralChamber (sectionTuple_insertion mapped_diagonalUnit)
 
 private theorem update_left_mul
     (F : Type) [Field F] [NumberField F] (w : InfinitePlace F)
@@ -137,7 +69,7 @@ private theorem unipotent_insertion
       Function.update (fun _ => 1) w (Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.upperUnipotent u)) := by
     funext v
     by_cases hv : v = w
-    · subst v; simp [r]
+    · grind
     · have hzero : KPCplxCharacterHaar.upperUnipotent 0 = 1 := by
         apply Matrix.GeneralLinearGroup.ext
         intro i j
@@ -248,36 +180,7 @@ private theorem slice_covariance
   unfold KPCplxPrincipalSeriesCharts.inductionWeight KPCplxPrincipalSeriesCharts.complexAbs
   norm_num [KPCplxPrincipalSeriesCharts.positiveParameter]
 
- theorem su2_fixes (u : KPCplxCharacterHaar.ComplexSU2) :
-    KPArch.action (KPCplxCharacterHaar.complexSU2Embedding u) (0, 0) = (0, 0) := by
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.mem_specialUnitaryGroup_iff.mp u.property).1
-  have hb := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 1 1) hu
-  have hz := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 0 1) hu
-  have hd := (Matrix.mem_specialUnitaryGroup_iff.mp u.property).2
-  simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Matrix.one_apply, ite_true, show (0 : Fin 2) ≠ 1 by decide, ite_false] at hb hz
-  have hn : ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-      ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 1 := by
-    simpa [Complex.mul_conj, Complex.normSq_eq_norm_sq, ← Complex.ofReal_pow] using congrArg Complex.re hb
-  have hn' : ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 +
-      ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 = 1 := by simpa [add_comm] using hn
-  ext
-  · simpa [KPArch.action, KPArch.actionDenominator, KPArch.height,
-      KPCplxCharacterHaar.complexSU2Embedding, hn', add_comm] using hz
-  · simp [KPArch.action, KPArch.actionDenominator, KPArch.height,
-      KPCplxCharacterHaar.complexSU2Embedding, hn', hd]
-
- def compactTuple (F : Type) [Field F] [NumberField F]
-    (u : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
-    KPContSectorArchSphericalFibers.KInfinity F :=
-  ⟨fun w => Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding (u w)), by
-    rw [KPContSectorArchSphericalFibers.KInfinity, Subgroup.mem_comap,
-      MulAction.mem_stabilizer_iff]
-    funext i
-    change Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding
-      (u (KPCusp.complexPlace F i))) • ((0, 0) : KPArch.H3) = (0, 0)
-    rw [Matrix.ProjGenLinGroup.mk_smul KPArch.scalar_action]
-    exact su2_fixes _⟩
+export UniformCompactSeparation (su2_fixes compactTuple)
 
 private theorem section_mk_eq (s : ℝ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)

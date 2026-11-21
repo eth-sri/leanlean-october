@@ -1,5 +1,7 @@
 module
 
+public import DedekindZetaZeroFree.Algebra.RationalEvaluation
+
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalMellin.TestFunctionPole
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.CubicBetaAndMellinEvaluation
 
@@ -19,15 +21,13 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   [TopologicalSpace K] [IsNonarchimedeanLocalField K]
   [MeasurableSpace K] [BorelSpace K]
 local instance : BorelSpace Kˣ := ⟨by
-  change MeasurableSpace.comap Units.val ‹MeasurableSpace K› = borel Kˣ
-  rw [@BorelSpace.measurable_eq K _ _ _,
-    Units.isEmbedding_val₀.isInducing.eq_induced, borel_comap]⟩
+  simp [MeasurableSpace.comap, Units.val, MeasurableSpace, borel, BorelSpace.measurable_eq, Units.isEmbedding_val₀.isInducing.eq_induced, borel_comap]⟩
 private lemma exponent_nonneg_iff (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (y : Kˣ) :
     0 ≤ KPCubicExpansion.valuationExponent K y ↔ (y : K) ∈ (valuation K).integer := by
   let iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   have hne : iso (valuation K (y : K)) ≠ 0 := by
-    exact (map_ne_zero_iff iso iso.injective).mpr ((Valuation.ne_zero_iff _).mpr y.ne_zero)
+    simp
   rw [Valuation.mem_integer_iff]
   rw [← map_le_map_iff iso, map_one]
   rw [← WithZero.exp_log hne, ← WithZero.exp_zero, WithZero.exp_le_exp]
@@ -50,13 +50,12 @@ private lemma shell_measure (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     simp [h] at hp
     exact uniformizer_ne_zero hp.symm
   let π : Kˣ := Units.mk0 p hpne
-  have hπ : valuation K (π : K) = uniformizer K := hp
+  have hπ := hp
   let ν := KPCubicHaar.multiplicativeHaar K dx
   have hhaar := kp_rankone_cubic_haar_power_measure K dx m hm hvol
   letI : ν.IsHaarMeasure := hhaar.1
   let U : Set Kˣ := {y | (y : K) ∈ (valuation K).integer ∧ ((y⁻¹ : Kˣ) : K) ∈ (valuation K).integer}
-  have hU : MeasurableSet U := by
-    exact ((valuation K).isOpen_integer.preimage Units.continuous_val).measurableSet.inter
+  have hU : MeasurableSet U := ((valuation K).isOpen_integer.preimage Units.continuous_val).measurableSet.inter
       ((valuation K).isOpen_integer.preimage (Units.continuous_val.comp continuous_inv)).measurableSet
   have hUeq (y : Kˣ) : y ∈ U ↔ KPCubicExpansion.valuationExponent K y = 0 := by
     change ((y : K) ∈ (valuation K).integer ∧ ((y⁻¹ : Kˣ) : K) ∈ (valuation K).integer) ↔ _
@@ -122,7 +121,7 @@ private lemma shell_character_integral
         exact hy
       rw [hyu, map_mul, map_zpow]
       change (↑((χ π)^k * χ (KPRankOneCubicProjection.unitInclusion K u)) : ℂ) = _
-      rw [hu u, mul_one, hj, Units.val_zpow_eq_zpow_val]
+      simp_all
     rw [setIntegral_congr_fun hS he, integral_const]
     change (μ.restrict S).real Set.univ • (χ π : ℂ)^j = _
     rw [Measure.real_def, Measure.restrict_apply_univ, (shell_measure K dx m hm hvol j).2,
@@ -279,82 +278,7 @@ private lemma twisted_series
   · simpa [hu] using heq
   · simpa [hu] using heq
 
- def Regular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
-  r.denom.eval u ≠ 0
-
-private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c) := by
-  simp [Regular]
-private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
-  simp [Regular]
-private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
-private lemma regular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
-private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  intro h
-  have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
-  apply hv
-  simp [RatFunc.eval, Polynomial.eval₂_at_apply, hn]
-private lemma eval_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
-    RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  have hm := RatFunc.eval_mul (f := RingHom.id F) (a := u) hr (regular_inv hr hv)
-  rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
-  exact eq_inv_of_mul_eq_one_right hm.symm
-
- def Evaluates {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F) : Prop :=
-  Regular u r ∧ RatFunc.eval (RingHom.id F) u r = v
-private lemma Evaluates.const {F : Type*} [Field F] (u v : F) : Evaluates u (RatFunc.C v) v :=
-  ⟨regular_C u v, by simp⟩
-private lemma Evaluates.var {F : Type*} [Field F] (u : F) : Evaluates u RatFunc.X u :=
-  ⟨regular_X u, by simp⟩
-private lemma Evaluates.add {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r+s) (a+b) := by
-  refine ⟨regular_add hr.1 hs.1, ?_⟩
-  rw [RatFunc.eval_add (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma Evaluates.mul {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r*s) (a*b) := by
-  refine ⟨regular_mul hr.1 hs.1, ?_⟩
-  rw [RatFunc.eval_mul (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma Evaluates.neg {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) : Evaluates u (-r) (-a) := by
-  simpa only [map_neg, map_one, neg_one_mul] using (Evaluates.const u (-1)).mul hr
-private lemma Evaluates.sub {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : Evaluates u r a) (hs : Evaluates u s b) : Evaluates u (r-s) (a-b) := by
-  simpa only [sub_eq_add_neg] using hr.add hs.neg
-private lemma Evaluates.inv {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) (ha : a ≠ 0) : Evaluates u r⁻¹ a⁻¹ := by
-  have hv : RatFunc.eval (RingHom.id F) u r ≠ 0 := hr.2 ▸ ha
-  exact ⟨regular_inv hr.1 hv, by rw [eval_inv hr.1 hv, hr.2]⟩
-private lemma Evaluates.div {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : Evaluates u r a) (hs : Evaluates u s b) (hb : b ≠ 0) : Evaluates u (r/s) (a/b) := by
-  simpa only [div_eq_mul_inv] using hr.mul (hs.inv hb)
-private lemma Evaluates.pow {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) (n : ℕ) : Evaluates u (r^n) (a^n) := by
-  induction n with
-  | zero => simpa only [pow_zero, map_one] using Evaluates.const u 1
-  | succ n ih => simpa only [pow_succ] using ih.mul hr
-private lemma Evaluates.zpow {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : Evaluates u r a) (ha : a ≠ 0) (n : ℤ) : Evaluates u (r^n) (a^n) := by
-  cases n with
-  | ofNat n => simpa using hr.pow n
-  | negSucc n => simpa only [zpow_negSucc] using (hr.pow (n+1)).inv (pow_ne_zero _ ha)
-private lemma Evaluates.sum {F I : Type*} [Field F] {u : F} (s : Finset I)
-    {r : I → RatFunc F} {a : I → F} (h : ∀ i ∈ s, Evaluates u (r i) (a i)) :
-    Evaluates u (∑ i ∈ s, r i) (∑ i ∈ s, a i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sum_empty, map_zero] using Evaluates.const u 0
-  | @insert i s hi ih =>
-    simp only [Finset.sum_insert hi]
-    exact (h i (Finset.mem_insert_self i s)).add (ih (fun j hj => h j (Finset.mem_insert_of_mem hj)))
+open RationalEvaluation
 
 private lemma exp_weight (ρ : ℂ) (y : Kˣ) :
     Complex.exp (ρ * (Real.log (KPCubicHaar.abs K (y : K)) : ℂ)) =
@@ -547,16 +471,16 @@ theorem actual_twisted_profile_geometric_tail
     have he := TwistedMellinProof.rational_residue_trivial a D n₀
     rw [hM]
     exact ⟨he.1,by simpa [hχ1] using he.2,fun hn => (hn hχ1).elim⟩
-  · have he : TwistedMellinProof.Evaluates 1 M
+  · have he : RationalEvaluation.Evaluates 1 M
         ((∑ n ∈ a.support, a n*(1:ℂ)^n) + if unram then D*b^n₀/(1-b) else 0) := by
       by_cases hu : unram
       · have hb1 : b ≠ 1 := fun h => hχ1 (TwistedMellinProof.character_eq_one K π hπ χ hu h)
         simpa only [mul_one] using TwistedMellinProof.rational_eval a D b 1 n₀ unram hb one_ne_zero
           (by simpa only [mul_one] using sub_ne_zero.mpr (Ne.symm hb1))
       · simpa [M,hu] using TwistedMellinProof.laurent_eval a 1 one_ne_zero
-    have hp := ((TwistedMellinProof.Evaluates.const (1:ℂ) 1).sub
-      (TwistedMellinProof.Evaluates.var 1)).mul he
-    exact ⟨by simpa only [map_one, TwistedMellinProof.Regular] using hp.1,
+    have hp := ((RationalEvaluation.Evaluates.const (1:ℂ) 1).sub
+      (RationalEvaluation.Evaluates.var 1)).mul he
+    exact ⟨by simpa only [map_one, Polynomial.eval₂_id] using hp.1,
       by simpa [map_one,hχ1] using hp.2,fun _ => he.1⟩
 
 end DedekindZetaZeroFree

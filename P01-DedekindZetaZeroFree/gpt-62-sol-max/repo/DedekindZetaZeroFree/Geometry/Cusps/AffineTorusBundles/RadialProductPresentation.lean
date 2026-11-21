@@ -69,7 +69,7 @@ def actualCrossHomeomorph (F : Type*) [Field F] [NumberField F]
     rw [he]
     have h := congrArg (fun f : Coordinates F ≃ₜ Coordinates F => f (p, 0))
       ((coordinatesAction F (positive_dimension F hF) S).map_mul g⁻¹ g).symm
-    simpa using congrArg Prod.fst h
+    simp
   right_inv p := by
     have he : ((coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0)).1, 0) =
       coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0) := by
@@ -80,7 +80,7 @@ def actualCrossHomeomorph (F : Type*) [Field F] [NumberField F]
     rw [he]
     have h := congrArg (fun f : Coordinates F ≃ₜ Coordinates F => f (p, 0))
       ((coordinatesAction F (positive_dimension F hF) S).map_mul g g⁻¹).symm
-    simpa using congrArg Prod.fst h
+    simp
   continuous_toFun := (coordinatesAction F (positive_dimension F hF) S g).continuous.fst.comp
     (continuous_id.prodMk continuous_const)
   continuous_invFun := (coordinatesAction F (positive_dimension F hF) S g⁻¹).continuous.fst.comp

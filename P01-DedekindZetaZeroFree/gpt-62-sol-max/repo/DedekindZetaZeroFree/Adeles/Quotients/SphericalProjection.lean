@@ -288,19 +288,6 @@ private theorem archBasepoint_continuous : Continuous (archBasepoint F) := by
   intro i
   exact (projectiveOrbit_continuous (0,0)).comp (continuous_apply (KPCusp.complexPlace F i))
 
- def forgetMap (V U : Level F ζ hζ)
-    (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup) : Spherical F ζ hζ V → Spherical F ζ hζ U :=
-  Quotient.lift (fun p => Quotient.mk _ p) (by
-    intro p q hpq
-    obtain ⟨γ, ε, u, hx, hc⟩ := hpq
-    apply Quotient.sound
-    exact ⟨γ, ε, ⟨u.val, h u.property⟩, hx, hc⟩)
-
-private theorem forgetMap_continuous (V U : Level F ζ hζ)
-    (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup) : Continuous (forgetMap F ζ hζ V U h) := by
-  apply isQuotientMap_quotient_mk'.continuous_iff.mpr
-  exact continuous_quotient_mk'
-
  def rawProjection (U : Level F ζ hζ)
     (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ Cover F ζ hζ)
     (g : Cover F ζ hζ) : Spherical F ζ hζ U :=
@@ -371,22 +358,9 @@ theorem spherical_transport_exists
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     Nonempty (SphericalTransport F ζ hζ) := by
   obtain ⟨e, he⟩ := actual_split F ζ hζ
-  refine ⟨{
-    projection := fun U => projection F ζ hζ U e he
-    continuous := fun U => projection_continuous F ζ hζ U e he
-    formula := ?_
-    forget := fun V U h => forgetMap F ζ hζ V U h
-    forget_formula := ?_
-    forget_continuous := fun V U h => forgetMap_continuous F ζ hζ V U h
-    compatible := ?_
-  }⟩
-  · intro U a c
-    exact rawProjection_formula F ζ hζ U e he a c
-  · intro V U h x c
-    rfl
-  · intro V U h x
-    induction x using Quotient.inductionOn with
-    | h g => rfl
+  exact ⟨⟨fun U => projection F ζ hζ U e he,
+    fun U => projection_continuous F ζ hζ U e he,
+    fun U => rawProjection_formula F ζ hζ U e he⟩⟩
 
 end DedekindZetaZeroFree.KPMsFixedHaar
 

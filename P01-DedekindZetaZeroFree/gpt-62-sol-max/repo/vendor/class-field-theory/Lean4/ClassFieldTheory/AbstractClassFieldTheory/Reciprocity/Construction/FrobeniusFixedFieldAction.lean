@@ -46,17 +46,18 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+  [TotallyDisconnectedSpace G] (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] (σ : D.FrobeniusElements K L hLK)
+  (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) (hq : q * σ.1 = σ.1 * q)
+include hLnormal q hq
+
 /-- The action on a Frobenius fixed field induced by an element commuting
 with its defining generator. -/
-noncomputable def frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q) :
+noncomputable def frobeniusFixedFieldAction :
     ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ) →+
       ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ) := by
   let k : K.field.toSubgroup := Quotient.out q
@@ -92,15 +93,7 @@ noncomputable def frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
 
 /-- The fixed-field action has the expected ambient automorphism after coercion. -/
 @[simp]
-theorem frobeniusFixedFieldAction_coe (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
+theorem frobeniusFixedFieldAction_coe
     (a : ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) :
     ((D.frobeniusFixedFieldAction A K L hLK σ q hq a :
       ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) : A.V) =
@@ -108,15 +101,7 @@ theorem frobeniusFixedFieldAction_coe (D : DegreeData G) (A : Rep ℤ G)
   rfl
 
 /-- On a quotient representative, the fixed-field action coerces to the represented action. -/
-theorem frobeniusFixedFieldAction_coe_of_mk (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
+theorem frobeniusFixedFieldAction_coe_of_mk
     (k : K.field.toSubgroup) (hkq : QuotientGroup.mk k = q)
     (a : ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) :
     ((D.frobeniusFixedFieldAction A K L hLK σ q hq a :
@@ -146,15 +131,6 @@ theorem frobeniusFixedFieldAction_coe_of_mk (D : DegreeData G) (A : Rep ℤ G)
 
 /-- The fixed-field action coincides with the conjugation-stable action. -/
 theorem frobeniusFixedFieldAction_eq_conjugateStableAction
-    (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
     (a : ambientFixedAddSubgroup A (D.frobeniusFixedField K L hLK σ)) :
     let k : K.field.toSubgroup := Quotient.out q
     let hstable : conjugateClosedSubgroup
@@ -169,14 +145,19 @@ theorem frobeniusFixedFieldAction_eq_conjugateStableAction
   rw [D.frobeniusFixedFieldAction_coe, conjugateStableAction_coe]
   simp
 
+end
+
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+  [TotallyDisconnectedSpace G] (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+include hLnormal
+
 /-- Relative norm in a power-fixed-field tower is equivariant for every
 quotient element commuting with both defining powers. -/
-theorem relativeNorm_frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem relativeNorm_frobeniusFixedFieldAction
     (σ σ' : D.FrobeniusElements K L hLK)
     (hTS : (D.frobeniusFixedField K L hLK σ').toSubgroup ≤
       (D.frobeniusFixedField K L hLK σ).toSubgroup)
@@ -207,12 +188,7 @@ theorem relativeNorm_frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G
 
 /-- Inclusion of a stabilized Frobenius fixed field intertwines its action
 with the actual quotient action on the maximal unramified field. -/
-theorem frobeniusFixedFieldAction_inclusion (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem frobeniusFixedFieldAction_inclusion
     (σ : D.FrobeniusElements K L hLK)
     (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
     (hq : q * σ.1 = σ.1 * q)
@@ -246,12 +222,7 @@ theorem frobeniusFixedFieldAction_inclusion (D : DegreeData G) (A : Rep ℤ G)
 
 /-- A Frobenius power sum commutes with the relative norm in a fixed-field
 tower whenever the quotient element stabilizes both fields. -/
-theorem fixedFieldPowerSum_relativeNorm (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem fixedFieldPowerSum_relativeNorm
     (σ σ' : D.FrobeniusElements K L hLK)
     (hTS : (D.frobeniusFixedField K L hLK σ').toSubgroup ≤
       (D.frobeniusFixedField K L hLK σ).toSubgroup)
@@ -282,12 +253,7 @@ theorem fixedFieldPowerSum_relativeNorm (D : DegreeData G) (A : Rep ℤ G)
 
 /-- The fixed-field power sum becomes the global Frobenius power sum after
 inclusion into the maximal unramified field. -/
-theorem fixedFieldPowerSum_inclusion (D : DegreeData G) (A : Rep ℤ G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+theorem fixedFieldPowerSum_inclusion
     (σ : D.FrobeniusElements K L hLK)
     (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
     (hq : q * σ.1 = σ.1 * q) (n : ℕ)
@@ -317,6 +283,8 @@ theorem fixedFieldPowerSum_inclusion (D : DegreeData G) (A : Rep ℤ G)
   exact congrArg Subtype.val
     (D.frobeniusFixedFieldAction_inclusion A K L hLK σ
       (q ^ i.1) (Commute.pow_left hq i.1) a)
+
+end
 
 end DegreeData
 

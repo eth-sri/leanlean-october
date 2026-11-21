@@ -23,9 +23,9 @@ private lemma card_paperShell_le (F : Type) [Field F] [NumberField F]
     (count : ∀ X : ℝ, 1 ≤ X → ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F X).card : ℝ) ≤ A * X)
     (hT : 1 ≤ 2 * T) :
     ((paperShell F c T).card : ℝ) ≤ A * (2 * T) := by
-  have h1 : (paperShell F c T).card ≤ (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (2 * T)).card :=
+  have h1 :=
     Finset.card_le_card (paperShell_subset_boundedNormIdeals F c T)
-  have h2 : ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (2 * T)).card : ℝ) ≤ A * (2 * T) := count (2 * T) hT
+  have h2 := count (2 * T) hT
   exact le_trans (by exact_mod_cast h1) h2
 
 private lemma paperShell_subset_singleton_top (F : Type) [Field F] [NumberField F]
@@ -35,12 +35,12 @@ private lemma paperShell_subset_singleton_top (F : Type) [Field F] [NumberField 
   rw [Finset.mem_singleton]
   rw [mem_paperShell] at hI
   obtain ⟨hsf, hcop, -, hle⟩ := hI
-  have hmem : I ∈ idealAdmissibleFinset F c (2 * T) :=
+  have hmem :=
     (mem_idealAdmissibleFinset F c (2 * T) I).mpr ⟨hsf, hcop, hle⟩
   have hne : I ≠ ⊥ := fun h => bot_not_mem_idealAdmissibleFinset F c (2 * T) (h ▸ hmem)
   have hne' : Ideal.absNorm I ≠ 0 := fun h0 =>
     hne ((Ideal.absNorm_eq_zero_iff).mp h0)
-  have hpos : 1 ≤ Ideal.absNorm I := Nat.one_le_iff_ne_zero.mpr hne'
+  have hpos := Nat.one_le_iff_ne_zero.mpr hne'
   have hlt2 : Ideal.absNorm I < 2 := by
     have h : (Ideal.absNorm I : ℝ) < 2 := lt_of_le_of_lt hle (by linarith)
     exact_mod_cast h

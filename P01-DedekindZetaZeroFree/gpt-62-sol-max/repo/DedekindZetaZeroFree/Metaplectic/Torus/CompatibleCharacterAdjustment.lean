@@ -21,8 +21,6 @@ open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport ren
 open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming trivialAdjustment → trivialAdjustment
 open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming rawProjection_coord → rawProjection_coord
 open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming pD_one_center → pD_one_center
-open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming toRawData → toRawData
-open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming fromRawAdjustment → fromRawAdjustment
 
 private theorem adjustment_product_frozen (P : CompatibleLocalData F ζ hζ)
     (ψ : ((q : A.Sf) → (P.localData (Sum.inr q.val)).L) →* ℂˣ) :
@@ -98,7 +96,7 @@ theorem exists_adjustment
       (r : KPGlobalCenterRationalCharacter.R F ζ hζ), b.val = r.val →
       KPGlobalProductPolarizationCharacter.lambdaB F ζ hζ P₀ T b =
         KPGlobalCenterRationalCharacter.lambdaR F ζ hζ r := by
-  let P := toRawData F ζ hζ P₀
+  let P := P₀
   let T₀ := trivialAdjustment F ζ hζ P
   let H := KPGlobalCenterRationalCharacter.R F ζ hζ ⊓ B F ζ hζ P
   let b : H →* B F ζ hζ P := Subgroup.inclusion inf_le_right
@@ -178,7 +176,7 @@ theorem exists_adjustment
       (KPGlobalCenterRationalCharacter.lambdaR F ζ hζ (r h) / lambdaB F ζ hζ P T₀ (b h)) = _
     rw [mul_comm, div_mul_cancel]
     rfl
-  refine ⟨fromRawAdjustment F ζ hζ P₀ T, hTS, ?_⟩
+  refine ⟨T, hTS, ?_⟩
   intro b r hbr
   obtain ⟨x, hx⟩ := KPGlobalProductPolarizationCharacter.B_has_raw_lift F ζ hζ P₀ b
   rw [KPGlobalProductPolarizationCharacter.lambdaB_raw_formula F ζ hζ P₀ _ b x hx]

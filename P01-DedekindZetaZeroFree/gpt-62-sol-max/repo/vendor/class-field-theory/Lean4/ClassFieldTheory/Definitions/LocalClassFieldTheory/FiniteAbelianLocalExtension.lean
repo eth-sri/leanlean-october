@@ -1,6 +1,6 @@
 module
 
-public import ClassFieldTheory.Definitions.LocalClassFieldTheory.FieldNormSubgroup
+public import Mathlib.RingTheory.Norm.Basic
 public import Mathlib.FieldTheory.Galois.Abelian
 public import Mathlib.FieldTheory.IsSepClosed
 
@@ -49,9 +49,6 @@ instance isAbelianGalois (E : FiniteAbelianLocalExtension K) :
     IsAbelianGalois K E.1 :=
   E.2.2
 
-/-- The norm subgroup belonging to a packaged finite abelian extension. -/
-def normSubgroup (E : FiniteAbelianLocalExtension K) : Subgroup Kˣ :=
-  fieldNormSubgroup K E.1
 
 end FiniteAbelianLocalExtension
 

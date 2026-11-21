@@ -95,14 +95,16 @@ structure FiniteRankTorsionData
   finrankFree :
     Module.finrank R (M ⧸ Submodule.torsion R M) = d
 
+section
+
+variable {R M Q : Type*} [CommRing R] [IsDomain R] [IsPrincipalIdealRing R] [AddCommGroup M]
+  [AddCommGroup Q] [Module R M] [Module R Q]
+
 /-- Algebraic bookkeeping for a finite torsion quotient of a finite free
 kernel.  This is the PID step used in the mixed-characteristic field-unit structure theorem: it proves finite
 generation and rank of the middle term, and embeds its torsion into the
 finite quotient. -/
 theorem finite_rank_and_torsion_projection_of_surjective
-    {R M Q : Type*} [CommRing R] [IsDomain R]
-    [IsPrincipalIdealRing R]
-    [AddCommGroup M] [AddCommGroup Q] [Module R M] [Module R Q]
     (f : M →ₗ[R] Q) (hf : Function.Surjective f)
     [Finite Q] [Module.Finite R Q]
     [Module.Finite R (LinearMap.ker f)] [Module.Free R (LinearMap.ker f)]
@@ -175,9 +177,6 @@ theorem finite_rank_and_torsion_projection_of_surjective
 /-- Consume a finite quotient setup and forget the concrete quotient map
 from the result type. -/
 noncomputable def finite_rank_torsion_data_of_setup
-    {R M Q : Type*} [CommRing R] [IsDomain R]
-    [IsPrincipalIdealRing R]
-    [AddCommGroup M] [AddCommGroup Q] [Module R M] [Module R Q]
     [Finite Q] [Module.Finite R Q]
     (d : ℕ) (setup : FiniteQuotientSetup R M Q d) :
     FiniteRankTorsionData R M Q d := by
@@ -196,6 +195,8 @@ noncomputable def finite_rank_torsion_data_of_setup
       torsionProjection_injective := core.torsionProjection_injective
       finrankMiddle := core.finrankMiddle
       finrankFree := core.finrankFree }
+
+end
 
 /-- The proof-relevant algebraic package used to assemble the topological
 classification of the first principal units. -/
@@ -265,18 +266,20 @@ structure FiniteFreeSubmoduleData
   /-- The submodule `N` has `R`-finrank `d`. -/
   finrank : Module.finrank R N = d
 
-/-- The deep logarithmic lattice, viewed inside `U¹`, is finite free of the
-field degree. -/
-theorem mixed_principalUnitSuccKernelData
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
-    (hv : Function.Surjective v)
-    (n : ℕ)
-    (hlevel :
+section
+
+variable (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+  [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
+  [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
+  (hv : Function.Surjective v) (n : ℕ) (hlevel :
       (ramificationIndexOfWithZeroValuation v : ℚ) /
           (((ofWithZeroValuation v).residueCharacteristic : ℚ) - 1) <
-        (n : ℚ)) :
+        (n : ℚ))
+include hv n hlevel
+
+/-- The deep logarithmic lattice, viewed inside `U¹`, is finite free of the
+field degree. -/
+theorem mixed_principalUnitSuccKernelData :
     let F : LocalField.{u, 0} K := ofWithZeroValuation v
     let p := F.residueCharacteristic
     let R := ℤ_[p]
@@ -331,16 +334,7 @@ theorem mixed_principalUnitSuccKernelData
 
 /-- The finite quotient map in the mixed-characteristic field-unit structure theorem, with the deep logarithmic
 lattice identified as its finite free kernel. -/
-noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
-    (hv : Function.Surjective v)
-    (n : ℕ)
-    (hlevel :
-      (ramificationIndexOfWithZeroValuation v : ℚ) /
-          (((ofWithZeroValuation v).residueCharacteristic : ℚ) - 1) <
-        (n : ℚ)) :
+noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup :
     let F : LocalField.{u, 0} K := ofWithZeroValuation v
     let p := F.residueCharacteristic
     let R := ℤ_[p]
@@ -413,16 +407,7 @@ noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup
 /-- Algebraic data for the first principal units in the mixed-characteristic field-unit structure theorem.
 The deep logarithmic lattice supplies the free kernel; the finite-level
 principal-unit quotient detects all torsion. -/
-noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
-    (hv : Function.Surjective v)
-    (n : ℕ)
-    (hlevel :
-      (ramificationIndexOfWithZeroValuation v : ℚ) /
-          (((ofWithZeroValuation v).residueCharacteristic : ℚ) - 1) <
-        (n : ℚ)) :
+noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData :
     let F : LocalField.{u, 0} K := ofWithZeroValuation v
     let p := F.residueCharacteristic
     let R := ℤ_[p]
@@ -499,16 +484,7 @@ noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
 /-- The mixed-characteristic field-unit structure theorem, principal-unit factor in its literal algebraic and
 topological form.  The finite torsion is a cyclic `p`-group and the free
 factor has rank `[K : Q_p]`. -/
-noncomputable def mixed_firstPrincipalUnitStructure
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
-    (hv : Function.Surjective v)
-    (n : ℕ)
-    (hlevel :
-      (ramificationIndexOfWithZeroValuation v : ℚ) /
-          (((ofWithZeroValuation v).residueCharacteristic : ℚ) - 1) <
-        (n : ℚ)) :
+noncomputable def mixed_firstPrincipalUnitStructure :
     let F : LocalField.{u, 0} K := ofWithZeroValuation v
     letI : MixedWithZeroValuationContext v :=
       mixedWithZeroValuationContext v
@@ -546,6 +522,8 @@ noncomputable def mixed_firstPrincipalUnitStructure
     CompleteDVF.higherPrincipalUnitGroup.chosenPadicModuleContinuousAddEquivZModProdFinPi
       p M data.a d data.cyclicTorsion data.cardTorsion data.finrankFree
   exact ⟨data.a, continuousMulEquivOfAdditiveTarget eAdd⟩
+
+end
 
 /-- The mixed-characteristic field-unit structure theorem, principal-unit factor with the logarithmic depth
 chosen internally.  Thus the statement retains only the hypotheses attached

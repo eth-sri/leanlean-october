@@ -402,8 +402,8 @@ private theorem exists_sobolev_value (μG : Measure (KPMsFixedHaarDisintegration
       Space (3 * KPContCotangentActualOverlap.d F) := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e
   let B := reindexedBall e A
   have hB := canonical_ball_inside F ζ hζ U R P H i A a ha
-  obtain ⟨s, r, hs, hr, hw⟩ := (kp_cont_actual_sector_form_weak_localization
-    F ζ hζ μG hμG U R hR P H realization).closed_gradient v
+  obtain ⟨s, r, hs, hr, hw⟩ := KPContActualSectorFormWeakLocalization.closedGradient_isActualWeak
+    F ζ hζ U R P H μG hμG hR realization v
   obtain ⟨ε,hε⟩ := QuotientGroup.mk_surjective m
   change phaseClass F ζ hζ U ε = m at hε
   obtain ⟨h, hv, hd⟩ := hw a B hB ε
@@ -522,8 +522,9 @@ theorem exists_xi (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
       (fun p j => if (finProdFinEquiv.symm j).2 = 2 then 1 else
         Real.exp (2 * (coordinates F p (finProdFinEquiv.symm j).1).2)) hρ hg
     intro φ
-    obtain ⟨f,_,_,hs,hg'⟩ := KPContFriedrichsChartProjectedPairings.projected_test_pairings
+    have hpair := KPContFriedrichsChartProjectedPairings.projected_test_pairings
       F ζ hζ U R P H μG hμG hR realization i x O m A hA φ
+    obtain ⟨f,_,_,hs,hg'⟩ := hpair
     have he := congrArg star (hvar
       (KPContActualSectorFriedrichsSynthesis.formTest F ζ hζ U R P H μG hμG hR realization f))
     change star (closedGradientForm

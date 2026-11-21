@@ -40,10 +40,9 @@ theorem product_quadratic_on_tensor {ι : Type*} [Fintype ι]
         productChirp (fun i => -1 / (4 * a i))
           (productDilation (fun i => 1 / (2 * a i))
             (productFourier (productChirp (fun i => -1 / (4 * a i)) (⇑f)))) y := by
-  have hfg : (⇑f : (ι → ℂ) → ℂ) = fun z => ∏ i, g i (z i) := funext hf
+  have hfg := funext hf
   rw [hfg]
-  have hF : productFourier (fun z => ∏ i, g i (z i)) =
-      fun z => ∏ i, ComplexWeil.F 2 (⇑(g i)) (z i) :=
+  have hF :=
     funext (productFourier_tensor (fun i => ⇑(g i)))
   rw [hF, productChirp_tensor, productFourier_tensor, productChirp_tensor]
   unfold productChirp productDilation
@@ -53,14 +52,8 @@ theorem product_quadratic_on_tensor {ι : Type*} [Fintype ι]
   rw [mul_assoc]
   congr 1
   congr 1
-  · apply Finset.prod_congr rfl
-    intro i hi
-    congr 1
-    ring
-  · apply Finset.prod_congr rfl
-    intro i hi
-    congr 1
-    ring
+  · grind only
+  ring
 
 end DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps
 
@@ -95,8 +88,7 @@ private lemma freq_apply (y : ι → ℂ) (i : ι) :
   ((prodMeasure ι).map (coords (ι := ι)).symm).addHaarScalarFactor volume
 private lemma measure_eq :
     (prodMeasure ι).map (coords (ι := ι)).symm = scalar ι • volume := by
-  letI := (coords (ι := ι)).symm.isAddHaarMeasure_map (prodMeasure ι)
-  exact Measure.isAddLeftInvariant_eq_smul _ _
+  exact Measure.isAddLeftInvariant_eq_smul ..
 private lemma kernel_eq (z : PiLp 2 (fun _ : ι => ℂ)) (y : ι → ℂ) :
     (∏ i, ComplexWeil.psi 2 (-z i * y i)) =
       (Real.fourierChar (- inner ℝ z (freq y)) : ℂ) := by

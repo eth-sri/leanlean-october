@@ -39,7 +39,7 @@ theorem idealMellinWeight_hasFiniteSupport (a : Ideal (𝓞 F) → ℂ)
   · exact absurd rfl hI
   have hne : h ((Ideal.absNorm I : ℝ) / X) ≠ 0 := fun hc => hI (by rw [hc, mul_zero])
   have hmem := hR (by simpa [Function.mem_support] using hne)
-  have hle : (Ideal.absNorm I : ℝ) / X ≤ R := hmem.2
+  have hle := hmem.2
   rw [div_le_iff₀ hX] at hle
   exact hle
 
@@ -81,7 +81,7 @@ private theorem countable_ideal (F : Type*) [Field F] [NumberField F] :
       ⋃ n : ℕ, {I | (Ideal.absNorm I : ℝ) ≤ (n : ℝ)} := by
     ext I
     simp only [Set.mem_univ, Set.mem_iUnion, Set.mem_setOf_eq, true_iff]
-    exact ⟨Ideal.absNorm I, by push_cast; exact le_refl _⟩
+    tauto
   rw [← Set.countable_univ_iff, h]
   exact Set.countable_iUnion fun n => (finite_ideals_absNorm_le F (n : ℝ)).countable
 
@@ -105,8 +105,7 @@ theorem idealMellin_verticalIntegrable (a : Ideal (𝓞 F) → ℂ)
   have hCLsum : Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>
       ‖a I.val * (Ideal.absNorm I.val : ℂ) ^ (-(σ : ℂ))‖) :=
     (idealCoefficientLSeries_summable a ha0 ha hσ).1
-  have hCLnn : 0 ≤ CL := by
-    rw [hCL]; exact tsum_nonneg fun _ => norm_nonneg _
+  
 
   have hLcont : Continuous (fun t : ℝ => idealCoefficientLSeries a (σ + t * Complex.I)) := by
     refine continuous_tsum (f := fun (I : {I : Ideal (𝓞 F) // I ≠ ⊥}) (t : ℝ) =>
@@ -129,7 +128,7 @@ theorem idealMellin_verticalIntegrable (a : Ideal (𝓞 F) → ℂ)
         simp
       rw [norm_mul, h1]
       rw [norm_mul, h2]
-  have hint : Integrable (fun t : ℝ => mellin h (σ + t * Complex.I)) :=
+  have hint :=
     (Vendor.mellin_inversion_positive_line h hh hcompact σ (lt_trans zero_lt_one hσ)).1
   have hcontX : Continuous (fun t : ℝ => (X : ℂ) ^ (σ + t * Complex.I)) := by
     have hne : (X : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt hX

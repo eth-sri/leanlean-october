@@ -425,65 +425,9 @@ theorem cuspCoefficient_transition (s : Sections F ζ hζ U R P H)
   exact liftCoefficient_transition F ζ hζ U R P H s i γ
     (cuspPoint F ζ hζ U R P H i j (p,t))
 
-theorem actual_cusp_atlas_overlap (s : Sections F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount)
-    (j : Fin ((H.atlas U).cuspAtlas i).cuspCount) :
-    let D := ((H.atlas U).cuspAtlas i).parabolic j
-    let G := ((H.atlas U).cuspAtlas i).geometry j
-    ∀ (a b : Fin G.atlas.chartCount)
-      (u : G.atlas.shapeLift a) (v : G.atlas.shapeLift b),
-      (QuotientAddGroup.mk u.val : KPCuspCharts.Base F H.totallyComplex
-        D.E D.integralUnits) = QuotientAddGroup.mk v.val →
-      ∃ g : KPCuspArithmetic.conjugatedStabilizer F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
-        (((H.atlas U).cuspAtlas i).cusp j) (((H.atlas U).cuspAtlas i).representative j),
-        v.val = u.val + KPCuspLogShape.logarithm F H.totallyComplex D.E
-          D.integralUnits (Additive.ofMul (D.ratio g)) ∧
-        (∀ z : KPCuspCharts.Torus F D.L,
-          G.atlas.lift (z,u.val) = G.atlas.lift (G.torusAction (D.ratio g) z,v.val)) ∧
-        (∀ (p : KPCuspCharts.Cross F) (t : ℝ),
-          ‖cuspCoefficient F ζ hζ U R P H s i j (G.crossAction g p,t)‖ =
-            ‖cuspCoefficient F ζ hζ U R P H s i j (p,t)‖) := by
-  dsimp only
-  intro a b u v huv
-  obtain ⟨g, hv, hg⟩ := (((H.atlas U).cuspAtlas i).geometry j).atlas.transitions
-    a b u v huv
-  exact ⟨g, hv, hg, fun p t =>
-    (cuspCoefficient_transition F ζ hζ U R P H s i j g p t).2⟩
 
-def IsSmoothOrbifoldCuspSections (s : Sections F ζ hζ U R P H) : Prop :=
-  (∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i x),
-      ContDiffOn ℝ (⊤ : ℕ∞) (s i).val O.neighborhood) ∧
-  (∀ (i : Fin (H.atlas U).componentCount)
-    (j : Fin ((H.atlas U).cuspAtlas i).cuspCount),
-      ContDiff ℝ (⊤ : ℕ∞) (fun p : KPCuspCharts.Coordinates F =>
-        (cuspCoefficient F ζ hζ U R P H s i j p : ℂ)))
 
-theorem smooth_sections_iff_lifts (s : Sections F ζ hζ U R P H) :
-    IsSmoothSections F ζ hζ U R P H s ↔
-      IsSmoothOrbifoldCuspSections F ζ hζ U R P H s := by
-  constructor
-  · intro hs
-    exact ⟨fun i _ _ => (hs i).contDiffOn,
-      fun i j => cuspCoefficient_smooth F ζ hζ U R P H s hs i j⟩
-  · intro hs i
-    apply contDiff_iff_contDiffAt.mpr
-    intro x
-    obtain ⟨O⟩ := KPContSectorPhaseComponentCharts.orbifoldChart_exists F ζ hζ U R P H i x
-    exact (hs.1 i x O).contDiffAt (O.isOpen.mem_nhds O.center_mem)
 
-theorem cusp_restriction_commutes (f : GenuineCoveredScalars F ζ hζ U)
-    (i : Fin (H.atlas U).componentCount)
-    (j : Fin ((H.atlas U).cuspAtlas i).cuspCount) (p : KPCuspCharts.Cross F) (t : ℝ) :
-    (cuspCoefficient F ζ hζ U R P H (S F ζ hζ U R P H f) i j (p,t) : ℂ) =
-      (J F ζ hζ U f).val
-        (((H.atlas U).cuspAtlas i).representative j • KPCuspCharts.toArch F (p,t),
-          (H.atlas U).representative i) := by
-  show ((S F ζ hζ U R P H f) i).val (cuspPoint F ζ hζ U R P H i j (p,t)) =
-    (J F ζ hζ U f).val (cuspPoint F ζ hζ U R P H i j (p,t),
-      (H.atlas U).representative i)
-  rw [S_apply, J_apply]
 
 def componentNorm (s : Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) :
@@ -604,37 +548,6 @@ namespace DedekindZetaZeroFree
 open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra
 open KPContSectorSmoothFramesSupport
 
-theorem kp_cont_sector_smooth_frames_support
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P) :
-    (∃ E : smoothCovered F ζ hζ U ≃ₗ[ℂ] smoothSections F ζ hζ U R P H,
-      ∀ f, (E f).val = S F ζ hζ U R P H f.val) ∧
-    (∀ s : Sections F ζ hζ U R P H,
-      IsSmoothSections F ζ hζ U R P H s ↔
-        IsSmoothOrbifoldCuspSections F ζ hζ U R P H s) ∧
-    (∀ (f : GenuineCoveredScalars F ζ hζ U)
-      (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F)
-      (x : SymmetricSpace F),
-      f.val (KPContSectorPhaseComponentCharts.componentHomeomorph F ζ hζ U R P H
-        ⟨i, Quotient.mk _ (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ U ε,x)⟩) =
-        (chi F ζ hζ ε : ℂ) * (S F ζ hζ U R P H f i).val x) ∧
-    (∀ f : GenuineCoveredScalars F ζ hζ U,
-      tsupport (sectionNorm F ζ hζ U R P H (S F ζ hζ U R P H f)) =
-        q F ζ hζ U '' tsupport f.val) ∧
-    (∀ f : GenuineCoveredScalars F ζ hζ U,
-      HasCompactSupport f.val ↔
-        HasCompactSupport (sectionNorm F ζ hζ U R P H (S F ζ hζ U R P H f))) := by
-  refine ⟨⟨smoothS F ζ hζ U R P H, fun f => smoothS_apply F ζ hζ U R P H f⟩, ?_, ?_, ?_, ?_⟩
-  · intro s; exact smooth_sections_iff_lifts F ζ hζ U R P H s
-  · intro f i ε x
-    rw [phase_component_restriction F ζ hζ U R P H f i
-        (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ U ε) x,
-      phaseCoefficient_class F ζ hζ U R P H (S F ζ hζ U R P H f) i ε x]
-  · intro f; exact tsupport_sectionNorm F ζ hζ U R P H f
-  · intro f; exact hasCompactSupport_iff F ζ hζ U R P H f
 
 end DedekindZetaZeroFree
 

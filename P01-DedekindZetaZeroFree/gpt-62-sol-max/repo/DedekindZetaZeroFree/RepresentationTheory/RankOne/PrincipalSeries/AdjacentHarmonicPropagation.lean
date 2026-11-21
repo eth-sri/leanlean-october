@@ -8,8 +8,8 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HarishChandra.De
 open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming raw_derivative → raw_derivative
 open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming cartanMatrix → cartanMatrix
 open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming rawNoncompactPath → rawNoncompactPath
-open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming noncompactCoefficient → noncompactCoefficient
-open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming noncompactAxis → noncompactAxis
+open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming rawCoefficient → noncompactCoefficient
+open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming rawAxis → noncompactAxis
 
 open _root_.DedekindZetaZeroFree.KPCplxHarmonicPropagation renaming compact_polynomial_ne_zero_lowering → compact_polynomial_ne_zero_lowering
 

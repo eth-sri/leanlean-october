@@ -74,8 +74,7 @@ private theorem finiteKernel_compact_support_periods {G : Type*} [AddCommGroup G
       neg_mem' := by
         intro u hu x
         simpa using (hu (-u + x)).symm }
-  have hn : IsOpen {p : G × G | φ (p.1 + p.2) = φ p.2} := by
-    exact ((hlocal.comp_continuous (continuous_fst.add continuous_snd)).prodMk
+  have hn : IsOpen {p : G × G | φ (p.1 + p.2) = φ p.2} := ((hlocal.comp_continuous (continuous_fst.add continuous_snd)).prodMk
       (hlocal.comp_continuous continuous_snd)) {q : ℂ × ℂ | q.1 = q.2}
   obtain ⟨V, W, hVo, hWo, h0V, hKW, hVW⟩ :=
     generalized_tube_lemma (isCompact_singleton (x := (0 : G))) hsupport.isCompact hn
@@ -87,7 +86,7 @@ private theorem finiteKernel_compact_support_periods {G : Type*} [AddCommGroup G
     intro u hu x
     by_cases hx : φ x = 0
     · by_cases hux : φ (u + x) = 0
-      · rw [hx, hux]
+      · grind
       · have hK : u + x ∈ tsupport φ := subset_closure hux
         have heq := hVW (show (-u, u + x) ∈ V ×ˢ W from ⟨hu.2, hKW hK⟩)
         simpa using heq.symm

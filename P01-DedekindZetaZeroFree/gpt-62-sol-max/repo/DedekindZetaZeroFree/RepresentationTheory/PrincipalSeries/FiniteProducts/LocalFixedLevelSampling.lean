@@ -31,7 +31,12 @@ local instance (q : S) : AddCommGroup (Source F ζ hζ M S q) :=
 local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
   FourierContinuation.SourceReconstruction.localPlusModule F ζ hζ M (Sum.inr q.val)
 
- def localFixedLevel (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
+section
+
+variable (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S)
+include U q
+
+ def localFixedLevel :
     Submodule ℂ (Source F ζ hζ M S q) where
   carrier := { f | ∀ j ∈ U q, ∀ g, f.val (g * j) = f.val g }
   zero_mem' := by
@@ -45,12 +50,11 @@ local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
     intro c f hf j hj g
     exact congrArg (c • ·) (hf j hj g)
 
- abbrev LocalCosets (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :=
+ abbrev LocalCosets :=
   (M q.val).iwasawa.compact.toOpenSubgroup ⧸
     (compactSlotStabilizer F ζ hζ M S U q).toSubgroup
 
- theorem localCosets_finite
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
+ theorem localCosets_finite :
     Finite (LocalCosets F ζ hζ M S U q) := by
   let : CompactSpace (M q.val).iwasawa.compact.toOpenSubgroup :=
     isCompact_iff_compactSpace.mp (M q.val).iwasawa.compact.isCompact
@@ -61,7 +65,7 @@ local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
   exact Subgroup.quotient_finite_of_isOpen _
     (compactSlotStabilizer F ζ hζ M S U q).isOpen
 
- def localSampling (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
+ def localSampling :
     localFixedLevel F ζ hζ M S U q →ₗ[ℂ]
       (LocalCosets F ζ hζ M S U q → Fiber F ζ hζ M S q) where
   toFun f c := f.val.val (c.out : Cover F ζ hζ S q)
@@ -69,7 +73,6 @@ local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
   map_smul' _ _ := rfl
 
 private theorem localSampling_representative
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S)
     (f : localFixedLevel F ζ hζ M S U q)
     (k : (M q.val).iwasawa.compact.toOpenSubgroup) :
     localSampling F ζ hζ M S U q f (QuotientGroup.mk k) = f.val.val k := by
@@ -80,8 +83,7 @@ private theorem localSampling_representative
   rw [hj]
   exact f.property (j.val : Cover F ζ hζ S q) j.property k
 
- theorem localSampling_injective
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
+ theorem localSampling_injective :
     Function.Injective (localSampling F ζ hζ M S U q) := by
   intro f h he
   apply Subtype.ext
@@ -96,26 +98,29 @@ private theorem localSampling_representative
   have hd := (M q.val).iwasawa.decomposition g
   rw [hd, f.val.property.1, h.val.property.1, hk]
 
+end
+
 local instance (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
     Finite (LocalCosets F ζ hζ M S U q) := localCosets_finite F ζ hζ M S U q
 
- def localSamplingFinsupp
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
+section
+
+variable (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
+
+ def localSamplingFinsupp (q : S) :
     localFixedLevel F ζ hζ M S U q →ₗ[ℂ]
       (LocalCosets F ζ hζ M S U q →₀ Fiber F ζ hζ M S q) :=
   (Finsupp.linearEquivFunOnFinite ℂ (Fiber F ζ hζ M S q)
     (LocalCosets F ζ hζ M S U q)).symm.toLinearMap.comp
       (localSampling F ζ hζ M S U q)
 
-private theorem localSamplingFinsupp_injective
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
+private theorem localSamplingFinsupp_injective (q : S) :
     Function.Injective (localSamplingFinsupp F ζ hζ M S U q) :=
   (Finsupp.linearEquivFunOnFinite ℂ (Fiber F ζ hζ M S q)
     (LocalCosets F ζ hζ M S U q)).symm.injective.comp
       (localSampling_injective F ζ hζ M S U q)
 
- def tensorCosetSampling
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
+ def tensorCosetSampling :
     PiTensorProduct ℂ (fun q => localFixedLevel F ζ hζ M S U q) →ₗ[ℂ]
       (CompactCosets F ζ hζ M S U → ProductFiber F ζ hζ M S) :=
   (Finsupp.linearEquivFunOnFinite ℂ (ProductFiber F ζ hζ M S)
@@ -123,8 +128,7 @@ private theorem localSamplingFinsupp_injective
       (PiTensorProduct.ofFinsuppEquiv.toLinearMap.comp
         (PiTensorProduct.map (fun q => localSamplingFinsupp F ζ hζ M S U q)))
 
-private theorem tensorCosetSampling_injective
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
+private theorem tensorCosetSampling_injective :
     Function.Injective (tensorCosetSampling F ζ hζ M S U) := by
   have hmap : Function.Injective
       (PiTensorProduct.map (fun q => localSamplingFinsupp F ζ hζ M S U q)) := by
@@ -159,7 +163,6 @@ private theorem tensorCosetSampling_injective
       (PiTensorProduct.ofFinsuppEquiv.injective.comp hmap)
 
  theorem tensorCosetSampling_formula
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
     (x : PiTensorProduct ℂ (fun q => localFixedLevel F ζ hζ M S U q))
     (c : CompactCosets F ζ hζ M S U) :
     tensorCosetSampling F ζ hζ M S U x c =
@@ -184,8 +187,7 @@ private theorem tensorCosetSampling_injective
   | add x y hx hy =>
     simp only [map_add, Pi.add_apply, hx, hy]
 
- theorem fixedTensorEvaluation_injective
-    (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
+ theorem fixedTensorEvaluation_injective :
     Function.Injective ((tensorEvaluation F ζ hζ M S).comp
       (PiTensorProduct.mapIncl (fun q => localFixedLevel F ζ hζ M S U q))) := by
   intro x y he
@@ -194,24 +196,25 @@ private theorem tensorCosetSampling_injective
   rw [tensorCosetSampling_formula, tensorCosetSampling_formula]
   exact congrFun he (fun q => ((c q).out : Cover F ζ hζ S q))
 
- theorem localFixedLevel_antitone
-    (U V : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
-    (hUV : ∀ q, U q ≤ V q) (q : S) :
+end
+
+section
+
+variable (U V : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (hUV : ∀ q, U q ≤ V q)
+include hUV
+
+ theorem localFixedLevel_antitone (q : S) :
     localFixedLevel F ζ hζ M S V q ≤ localFixedLevel F ζ hζ M S U q := by
   intro f hf j hj g
   exact hf j (hUV q hj) g
 
- def fixedTensorInclusion
-    (U V : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
-    (hUV : ∀ q, U q ≤ V q) :
+ def fixedTensorInclusion :
     PiTensorProduct ℂ (fun q => localFixedLevel F ζ hζ M S V q) →ₗ[ℂ]
       PiTensorProduct ℂ (fun q => localFixedLevel F ζ hζ M S U q) :=
   PiTensorProduct.map (fun q => Submodule.inclusion
     (localFixedLevel_antitone F ζ hζ M S U V hUV q))
 
- theorem fixedTensorInclusion_comp
-    (U V : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
-    (hUV : ∀ q, U q ≤ V q) :
+ theorem fixedTensorInclusion_comp :
     (PiTensorProduct.mapIncl (fun q => localFixedLevel F ζ hζ M S U q)).comp
       (fixedTensorInclusion F ζ hζ M S U V hUV) =
         PiTensorProduct.mapIncl (fun q => localFixedLevel F ζ hζ M S V q) := by
@@ -219,6 +222,8 @@ private theorem tensorCosetSampling_injective
   simp only [LinearMap.compMultilinearMap_apply, LinearMap.comp_apply,
     fixedTensorInclusion, PiTensorProduct.mapIncl, PiTensorProduct.map_tprod,
     Submodule.inclusion_apply, Submodule.subtype_apply]
+
+end
 
 private theorem tensor_mem_local_fixed_level
     (x : PiTensorProduct ℂ (Source F ζ hζ M S)) :

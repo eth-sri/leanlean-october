@@ -39,7 +39,7 @@ noncomputable def liftCharacter {f m : Ideal (𝓞 F)} (hfm : f ∣ m)
     · have hIf : I ⊔ f = ⊤ := by
         have hmf : m ≤ f := Ideal.dvd_iff_le.mp hfm
         exact top_unique (le_trans (le_of_eq hIm.symm) (sup_le_sup_left hmf I))
-      simp only [hIm, if_pos, not_true_eq_false, or_false]
+      simp only [hIm, if_pos]
       simpa [ψ.eq_zero_iff' I, hIf]
     · simp [hIm]
   map_span' := fun α hα hmem hpos => by

@@ -10,9 +10,6 @@ open scoped TensorProduct Classical
 namespace DedekindZetaZeroFree.KPLiteralScalarArchTensor
 open KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 
-local instance {ι : Type} : AddCommGroup
-    (PiTensorProduct ℂ (fun _ : ι => KPLiteralTensor.harmonicPlus)) :=
-  Module.addCommMonoidToAddCommGroup ℂ
 
 def compactAction (k : compactSubgroup) :
     KPLiteralTensor.harmonicPlus →ₗ[ℂ] KPLiteralTensor.harmonicPlus where

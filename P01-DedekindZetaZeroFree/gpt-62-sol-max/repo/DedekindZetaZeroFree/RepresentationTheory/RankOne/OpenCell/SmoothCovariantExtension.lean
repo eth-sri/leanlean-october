@@ -96,7 +96,7 @@ theorem open_cell_decomposition_unique (B : Binding F ζ hζ q A P)
   have h11 := congrArg (fun g : KubotaRankTwo.GL2 (LocalField F q) =>
       (g : Matrix (Fin 2) (Fin 2) (LocalField F q)) 1 1) hu
 
-  simp [Matrix.GeneralLinearGroup.coe_mul, muMat, KubotaRankTwo.coe_n,
+  simp [muMat, KubotaRankTwo.coe_n,
     KubotaRankTwo.coe_d, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
     Fin.sum_univ_two] at h10 h11
   have hu1 : (u : LocalField F q) = 1 := by rw [h10]; simp
@@ -342,9 +342,9 @@ private theorem borel_eq (B : Binding F ζ hζ q A P) :
       apply Matrix.ext
       intro i j
       fin_cases i <;> fin_cases j <;>
-        simp [KubotaRankTwo.d, KubotaRankTwo.n, Units.val_mul, Matrix.mul_apply,
+        simp [KubotaRankTwo.d, KubotaRankTwo.n, Matrix.mul_apply,
           Fin.sum_univ_two, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-          Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal_apply,
+          Matrix.scalar, Matrix.diagonal_apply,
           y, h10] <;> try field_simp [ha, hh]
     have hp : A.projection b = A.projection (b' : Cover F ζ hζ q) := by
       rw [projection_eq_concrete F ζ hζ q A P B] at ⊢
@@ -366,7 +366,7 @@ private theorem orbit_lc {G V : Type*} [Group G] [TopologicalSpace G]
   intro g
   refine ⟨{x | g⁻¹ * x ∈ J},
     J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
+  · simp
   · intro x hx
     have he := congrArg (fun w => ρ g w) (hJ (g⁻¹ * x) hx)
     simpa only [← Module.End.mul_apply, ← map_mul, mul_inv_cancel_left] using he
@@ -415,9 +415,7 @@ private theorem chart_local_constancy
     change f (q0.1.val * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
         upperRoot F ζ hζ q (Multiplicative.ofAdd q0.2)) = _
     rw [mul_assoc, hcov, hvalues]
-    change ρ q0.1 (ψ q0.2) = _
     rw [hqx]
-    change ρ q0.1 (ψ p.2) = _
     rw [hqb]
     change _ = f (p.1.val * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
         upperRoot F ζ hζ q (Multiplicative.ofAdd p.2))
@@ -476,7 +474,6 @@ private theorem chart_local_constancy
           change f (p.1.val * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
             upperRoot F ζ hζ q (Multiplicative.ofAdd p.2)) = 0
           rw [mul_assoc, hcov, hvalues]
-          change ρ p.1 (ψ p.2) = 0
           rw [image_eq_zero_of_notMem_tsupport hxS, map_zero]
         · have hrB : r.val ∈ Borel F ζ hζ q := by
             change r.val ∈ (Borel F ζ hζ q : Set (FiniteCover F ζ hζ q))

@@ -1,3 +1,0 @@
-module
-public import DedekindZetaZeroFree.Moments.Comparison.GoodDyadContourEstimate
-public import DedekindZetaZeroFree.Moments.Comparison.ContourExponentMargins

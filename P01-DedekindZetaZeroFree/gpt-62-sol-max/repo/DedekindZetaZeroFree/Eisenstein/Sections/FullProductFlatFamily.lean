@@ -14,13 +14,6 @@ namespace DedekindZetaZeroFree.KPContFlatFullProductIwasawa
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
- def rawIwasawa (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ) :
-    KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ where
-  K := D.K
-  compact := D.compact
-  decomposition := D.decomposition
-  overlap := D.overlap
-
 def iwasawaData : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ where
   K := PrincipalOfKP.iwasawaCompactSubgroupMax F ζ hζ
   compact := PrincipalOfKP.iwasawaCompactSubgroupMax_compact F ζ hζ
@@ -53,7 +46,7 @@ theorem alpha_borel_mul
           KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
             (iwasawaData F ζ hζ) g :=
     KPGlobalTorusBorelNormTwistTransport.iwasawaNorm_borel_mul F ζ hζ
-      (rawIwasawa F ζ hζ (iwasawaData F ζ hζ)) h x g
+      (iwasawaData F ζ hζ) h x g
   have hd : (((KPGlobalTorusFunctionData.delta F ζ hζ h : ℝ≥0) : ℝ)) ≠ 0 :=
     NNReal.coe_ne_zero.mpr (Units.ne_zero _)
   have hn : (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
@@ -72,7 +65,7 @@ theorem alpha_mul_compact
         KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
           (iwasawaData F ζ hζ) g :=
     KPGlobalTorusBorelNormTwistTransport.iwasawaNorm_right_compact F ζ hζ
-      (rawIwasawa F ζ hζ (iwasawaData F ζ hζ)) g k
+      (iwasawaData F ζ hζ) g k
   simp only [alpha, hnorm]
 
 end DedekindZetaZeroFree.KPContFlatFullProductIwasawa
@@ -98,7 +91,7 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   have hnorm :
       KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ (iwasawaData F ζ hζ) 1 = 1 :=
     KPGlobalTorusBorelNormTwistTransport.iwasawaNorm_compact F ζ hζ
-      (rawIwasawa F ζ hζ (iwasawaData F ζ hζ)) (1 : (iwasawaData F ζ hζ).K)
+      (iwasawaData F ζ hζ) (1 : (iwasawaData F ζ hζ).K)
   simp only [alpha, hnorm]
   norm_num
 

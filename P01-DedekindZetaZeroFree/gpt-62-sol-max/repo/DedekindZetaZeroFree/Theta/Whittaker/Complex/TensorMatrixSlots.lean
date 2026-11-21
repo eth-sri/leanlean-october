@@ -30,10 +30,6 @@ abbrev Plus : KPHilbert.Place F → Type
   | Sum.inl _ => KPLiteralTensor.harmonicPlus
   | Sum.inr q => KPLocalPrincipalSeries.sectionSpace (C.canonical q).borel (C.polarization q) .plus 0
 
-instance plusAdd (v : KPHilbert.Place F) : AddCommGroup (Plus A P C v) := by
-  cases v <;> dsimp [Plus] <;> infer_instance
-instance plusModule (v : KPHilbert.Place F) : Module ℂ (Plus A P C v) := by
-  cases v <;> dsimp [Plus] <;> infer_instance
 
 def matrix (w : InfinitePlace F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) : ComplexGL2 :=

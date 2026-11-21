@@ -185,7 +185,9 @@ theorem injective_idealElementDecompositionMap
       ((⟨v, hv⟩ : torsion K), (0 : unitShiftIndex K)) =
         (1, z' + -z) := by
     apply (unitDecompositionEquiv K).injective
-    simp_all
+    change v * fundamentalUnitForShift (0 : unitShiftIndex K) =
+      1 * fundamentalUnitForShift (z' + -z)
+    simpa using hvshift
   have : z' = z := by grind
   subst z'
   apply Prod.ext
@@ -230,10 +232,8 @@ theorem surjective_idealElementDecompositionMap
   let ζ : torsion K := p.1
   let z : unitShiftIndex K := p.2
   have huDecomp :
-      (ζ : (𝓞 K)ˣ) * fundamentalUnitForShift z = u := by
-    have hp := (unitDecompositionEquiv K).apply_symm_apply u
-    change unitDecompositionEquiv K (ζ, z) = u at hp
-    simp_all
+      (ζ : (𝓞 K)ˣ) * fundamentalUnitForShift z = u :=
+    (unitDecompositionEquiv K).apply_symm_apply u
   have hζinv : ((ζ : (𝓞 K)ˣ)⁻¹) ∈ torsion K :=
     (torsion K).inv_mem ζ.prop
   let b : idealSet K J :=

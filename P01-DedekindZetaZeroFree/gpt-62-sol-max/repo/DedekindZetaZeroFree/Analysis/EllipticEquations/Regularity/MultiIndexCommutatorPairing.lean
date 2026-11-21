@@ -29,12 +29,6 @@ def commutatorSource {n r : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
         coefficientJet (counts β) (b i j) x *
           jet u (counts α - counts β + unitCount i + unitCount j) x))
 
-private theorem counts_first {n : ℕ} (i : Fin n) :
-    counts (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex i) = unitCount i := by
-  classical
-  funext j
-  by_cases hji : j = i <;> simp [counts, KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex, unitCount, hji]
-
 theorem coordinateDerivativeList_star {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
     coordinateDerivativeList l (fun x => star (f x)) =
       fun x => star (coordinateDerivativeList l f x) := by
@@ -76,8 +70,7 @@ theorem differentiated_pairing_shifted {n r : ℕ} {B : LocalBall n}
   classical
   have hj (j : Fin n) : jet u (unitCount j) = KPContLocalEnergy.SobolevEnergyEstimates.Raw.gradient u₁ j := by
     rw [← counts_first]
-    exact (jet_unique_of_represents u u₁ hu _ (by
-      exact (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j).property.trans (by omega))
+    exact (jet_unique_of_represents u u₁ hu _ ((KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j).property.trans (by omega))
       (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j).property).trans (jet_index u₁ _)
   let ψ := coordinateDerivativeTest α φ
   have htest (i : Fin n) :
@@ -88,8 +81,7 @@ theorem differentiated_pairing_shifted {n r : ℕ} {B : LocalBall n}
     rw [coordinateDerivative, ← coordinateDerivativeList_star α.directions,
       ← coordinateDerivativeList_star [i]]
     rfl
-  have htest0 : (fun x => star (ψ x)) = coordinateDerivative α (fun y => star (φ y)) := by
-    exact (coordinateDerivativeList_star α.directions (fun y => φ y)).symm
+  have htest0 : (fun x => star (ψ x)) = coordinateDerivative α (fun y => star (φ y)) := (coordinateDerivativeList_star α.directions (fun y => φ y)).symm
   have hw := heq ψ
   have hv : (∫ x in B.carrier, (D.density x : ℂ) * KPContLocalEnergy.SobolevEnergyEstimates.Raw.value u₁ x * star (ψ x)) =
       ∫ x in B.carrier, (D.density x : ℂ) * jet u 0 x * star (ψ x) := by

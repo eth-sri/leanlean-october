@@ -136,19 +136,8 @@ theorem actual_boundary_zero_buffer
     (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (τ T : ℝ) (hτ : A.threshold ≤ τ) (hT : τ < T) :
-    let I := Σ i : Fin A.componentCount, Fin (A.cuspAtlas i).cuspCount
-    let L := fun (a : I) (z : KPCuspCharts.Coordinates F) =>
-      Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
-        (((A.cuspAtlas a.1).representative a.2 • KPCuspCharts.toArch F z),
-          A.representative a.1)
-    let E := fun a : I =>
-      KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative a.1) ''
-        KPFiniteCuspAtlas.endSet F
-          (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative a.1))
-          ((A.cuspAtlas a.1).representative a.2) τ
-    let t := fun (a : I) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) =>
-      if h : ∃ z : KPCuspCharts.Coordinates F, τ < z.2 ∧ L a z = x
-      then (Classical.choose h).2 else 0
+    let E := endSet A τ
+    let t := height A τ
     (∀ a x, x ∈ frontier (E a) →
       ∃ V : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), IsOpen V ∧ x ∈ V ∧
         ∀ y ∈ V, y ∈ E a → t a y < T) ∧
@@ -159,20 +148,11 @@ theorem actual_boundary_zero_buffer
           (E a).indicator (fun y => deriv χ.toFun (t a y)) y = 0 ∧
           (E a).indicator (fun y => deriv (deriv χ.toFun) (t a y)) y = 0) := by
   dsimp only
-  let I := Σ i : Fin A.componentCount, Fin (A.cuspAtlas i).cuspCount
-  let L := fun (a : I) (z : KPCuspCharts.Coordinates F) =>
-    Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
-      (((A.cuspAtlas a.1).representative a.2 • KPCuspCharts.toArch F z), A.representative a.1)
-  let E := fun a : I => KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative a.1) ''
-    KPFiniteCuspAtlas.endSet F
-      (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative a.1))
-      ((A.cuspAtlas a.1).representative a.2) τ
-  let t := fun (a : I) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) =>
-    if h : ∃ z : KPCuspCharts.Coordinates F, τ < z.2 ∧ L a z = x
-    then (Classical.choose h).2 else 0
-  obtain ⟨hrange, hcoord, -, -, -, -⟩ := actual_height_descent F ζ hζ hF U A τ hτ
+  let E := endSet A τ
+  let t := height A τ
+  let L := chartLift A
   have hd := KPCuspCharts.positive_dimension F hF
-  have hbuffer : ∀ (a : I) x, x ∈ frontier (E a) →
+  have hbuffer : ∀ (a : CuspIndex A) x, x ∈ frontier (E a) →
       ∃ V : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), IsOpen V ∧ x ∈ V ∧
         ∀ y ∈ V, y ∈ E a → t a y < T := by
     intro a x hx
@@ -193,7 +173,7 @@ theorem actual_boundary_zero_buffer
         simpa only [A.components_formula] using hpq
       cases A.components.injective he
       rfl
-    have hopenE : IsOpen (E a) := hopenc _ (KPFiniteAdelicCuspEnds.component_open_end F Γ σ τ)
+    have hopenE : IsOpen (E a) := end_open A τ a
     have hxnot : x ∉ E a := by
       simpa only [hopenE.interior_eq] using hx.2
     have hxrange : x ∈ Set.range c :=
@@ -225,8 +205,8 @@ theorem actual_boundary_zero_buffer
       ⟨_, ⟨z, hzW, rfl⟩, hxz⟩, ?_⟩
     intro y hy hye
     obtain ⟨p', ⟨w, hw, hwp⟩, hpy⟩ := hy
-    obtain ⟨q, hq, hqy⟩ := (show y ∈ L a '' {q | τ < q.2} from (hrange a).symm ▸ hye)
-    have hval : t a y = q.2 := hqy ▸ hcoord a q hq
+    obtain ⟨q, hq, hqy⟩ := (show y ∈ L a '' {q | τ < q.2} from (chartLift_range A τ a).symm ▸ hye)
+    have hval : t a y = q.2 := hqy ▸ height_coordinates A hτ a q hq
     rw [hval]
     have he : KPCuspSiegel.projection F Γ (σ • KPCuspCharts.toArch F q) =
         KPCuspSiegel.projection F Γ w := by

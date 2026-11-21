@@ -42,25 +42,23 @@ abbrev finitePlaceKummerBaseCompletion
     (v : HeightOneSpectrum (𝓞 K)) :=
   (NumberField.HeightOneSpectrum.adicAbv K v).Completion
 
-/-- The localized completion of the chosen global simple Kummer extension. -/
-abbrev finitePlaceKummerLocalizedCompletion
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
-    (w : AbsoluteValueExtension
+section
+
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
+  (w : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenSimpleKummerExtension K n hnK b)) :=
+      (chosenSimpleKummerExtension K n hnK b))
+include n hnK v b w
+
+/-- The localized completion of the chosen global simple Kummer extension. -/
+abbrev finitePlaceKummerLocalizedCompletion :=
   LocalizedCompletion
     (NumberField.HeightOneSpectrum.adicAbv K v) w
 
 /-- The canonical completion algebra for the localized global Kummer
 extension. -/
 @[reducible]
-noncomputable def finitePlaceKummerLocalizedAlgebra
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenSimpleKummerExtension K n hnK b)) :
+noncomputable def finitePlaceKummerLocalizedAlgebra :
     Algebra (finitePlaceKummerBaseCompletion K v)
       (finitePlaceKummerLocalizedCompletion K n hnK v b w) :=
   finitePlaceLocalArtinLocalizedAlgebra
@@ -68,12 +66,7 @@ noncomputable def finitePlaceKummerLocalizedAlgebra
 
 /-- The named finite-dimensional certificate for the localized global
 Kummer extension. -/
-theorem finitePlaceKummerLocalizedFiniteDimensional
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenSimpleKummerExtension K n hnK b)) :
+theorem finitePlaceKummerLocalizedFiniteDimensional :
     letI : Algebra (finitePlaceKummerBaseCompletion K v)
         (finitePlaceKummerLocalizedCompletion K n hnK v b w) :=
       finitePlaceKummerLocalizedAlgebra K n hnK v b w
@@ -86,12 +79,7 @@ theorem finitePlaceKummerLocalizedFiniteDimensional
 
 /-- The image of the global chosen radical as a unit of the localized
 completion. -/
-noncomputable def finitePlaceKummerLocalizedRootUnit
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenSimpleKummerExtension K n hnK b)) :
+noncomputable def finitePlaceKummerLocalizedRootUnit :
     (finitePlaceKummerLocalizedCompletion K n hnK v b w)ˣ :=
   Units.map
     (AbsoluteValue.toAlgebraicLocalization
@@ -100,12 +88,7 @@ noncomputable def finitePlaceKummerLocalizedRootUnit
 
 /-- The localized global radical is an `n`-th root of the image of `b` in
 the finite-place completion. -/
-theorem finitePlaceKummerLocalizedRootUnit_pow
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenSimpleKummerExtension K n hnK b)) :
+theorem finitePlaceKummerLocalizedRootUnit_pow :
     letI : Algebra (finitePlaceKummerBaseCompletion K v)
         (finitePlaceKummerLocalizedCompletion K n hnK v b w) :=
       finitePlaceKummerLocalizedAlgebra K n hnK v b w
@@ -150,12 +133,7 @@ theorem finitePlaceKummerLocalizedRootUnit_pow
 
 /-- The localized image of the global chosen radical generates the whole
 localized extension over the base completion. -/
-theorem finitePlaceKummerLocalizedRoot_adjoin_eq_top
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenSimpleKummerExtension K n hnK b)) :
+theorem finitePlaceKummerLocalizedRoot_adjoin_eq_top :
     letI : Algebra (finitePlaceKummerBaseCompletion K v)
         (finitePlaceKummerLocalizedCompletion K n hnK v b w) :=
       finitePlaceKummerLocalizedAlgebra K n hnK v b w
@@ -180,6 +158,8 @@ theorem finitePlaceKummerLocalizedRoot_adjoin_eq_top
     vK w
     (((chosenSimpleKummerRootUnit K n hnK b : Lˣ) : L))
     (chosenSimpleKummerExtension_adjoin_root_eq_top K n hnK b)
+
+end
 
 /-- The localized global simple Kummer extension is a splitting field for
 the local Kummer polynomial. -/

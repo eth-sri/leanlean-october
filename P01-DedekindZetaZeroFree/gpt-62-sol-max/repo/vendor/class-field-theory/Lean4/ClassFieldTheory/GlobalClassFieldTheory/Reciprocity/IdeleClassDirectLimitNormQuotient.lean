@@ -237,50 +237,6 @@ private theorem rationalTowerRelativeClass_norm
   Additive
     (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F E).range)
 
-@[instance_reducible]  noncomputable instance
-    rationalOrdinaryNormQuotientAdditiveTypeAddCommGroup
-    (K L : ClosedSubgroup
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    [hKfinite : Finite
-      ((baseField
-        (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)).toSubgroup ⧸
-        extensionSubgroup
-          (baseField
-            (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-          K (le_baseField K))]
-    [hfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
-    AddCommGroup
-      (rationalOrdinaryNormQuotientAdditiveType
-        K L hLK hnormal) := by
-  let F := abstractFixedField ℚ (SeparableClosure ℚ) K
-  let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  letI := hnormal
-  letI : FiniteDimensional ℚ F :=
-    abstractFixedField_finiteDimensional
-      ℚ (SeparableClosure ℚ) K hKfinite
-  letI : FiniteDimensional F E :=
-    abstractRelativeFixedField_finiteDimensional
-      ℚ (SeparableClosure ℚ) K L hLK hKfinite hfinite
-  letI : IsScalarTower ℚ F E :=
-    IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
-  letI : FiniteDimensional ℚ E := FiniteDimensional.trans ℚ F E
-  letI : NumberField F :=
-    rationalNormQuotientNumberFieldOfFiniteDimensional F
-  letI : NumberField E :=
-    rationalNormQuotientNumberFieldOfFiniteDimensional E
-  letI : IsGalois F E :=
-    abstractRelativeFixedField_isGalois
-      ℚ (SeparableClosure ℚ) K L hLK hnormal
-  letI : CommGroup (IdeleClassGroup F) :=
-    rationalNormQuotientIdeleClassCommGroup F
-  change
-    AddCommGroup
-      (Additive
-        (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F E).range))
-  infer_instance
 
  def quotientAddEquivOfEquivMapEq
     {A B : Type*} [AddCommGroup A] [AddCommGroup B]
@@ -328,27 +284,6 @@ private theorem rationalTowerRelativeClass_norm
         rw [e.symm_apply_apply]
       map_add' := f.map_add }
 
-private theorem quotientAddEquivOfEquivMapEq_mk
-    {A B : Type*} [AddCommGroup A] [AddCommGroup B]
-    (S : AddSubgroup A) (T : AddSubgroup B)
-    (e : B ≃+ A)
-    (hmap : S.map e.symm.toAddMonoidHom = T)
-    (x : A) :
-    quotientAddEquivOfEquivMapEq S T e hmap
-        (QuotientAddGroup.mk' S x) =
-      QuotientAddGroup.mk' T (e.symm x) := by
-  have hforward :
-      S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
-    intro y hy
-    change e.symm y ∈ T
-    rw [← hmap]
-    exact ⟨y, hy, rfl⟩
-  change
-    QuotientAddGroup.map S T e.symm.toAddMonoidHom hforward
-        (QuotientAddGroup.mk' S x) =
-      QuotientAddGroup.mk' T (e.symm x)
-  rw [QuotientAddGroup.map_mk']
-  rfl
 
  noncomputable def additiveQuotientEquiv
     {G : Type*} [CommGroup G] (H : Subgroup G) :

@@ -46,7 +46,6 @@ theorem finite_norm_compensation (S : Finset (HeightOneSpectrum (𝓞 F)))
       apply Multiset.count_eq_zero.mpr
       exact fun h => hn (Ideal.mem_normalizedFactors_iff hI |>.mp h |>.2 |> Ideal.dvd_iff_le.mpr)
     apply hv
-    change g v = 1
     simp only [g, HeightOneSpectrum.maxPowDividing_eq_pow_multiset_count _ hI]
     change (Ideal.absNorm (v.asIdeal ^ idealPrimeExponent v.asIdeal I) : ℝ) = 1
     rw [hzero, pow_zero]

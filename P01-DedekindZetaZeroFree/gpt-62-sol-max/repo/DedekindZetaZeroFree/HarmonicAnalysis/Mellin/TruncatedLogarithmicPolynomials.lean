@@ -25,7 +25,7 @@ private lemma laplace_integrable (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
   have heq : (fun t : ℝ => ‖(t : ℂ)^k * Complex.exp (-s * t)‖) =ᶠ[ae (volume.restrict (Ioi 0))]
       (fun t : ℝ => Real.exp (-s.re * t) • t^k) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    simp [norm_mul, norm_pow, Complex.norm_exp, Complex.norm_real, abs_of_pos (mem_Ioi.mp ht), mul_comm]
+    simp [norm_pow, Complex.norm_exp, Complex.norm_real, abs_of_pos (mem_Ioi.mp ht), mul_comm]
   exact (integrable_norm_iff (by fun_prop)).mp ((hi.mono_set Ioi_subset_Ici_self).congr heq.symm)
 
 private lemma laplace_tendsto (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
@@ -34,7 +34,7 @@ private lemma laplace_tendsto (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
   have h := tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (k : ℝ) s.re hs
   apply h.congr'
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht
-  simp [norm_mul, norm_pow, Complex.norm_exp, Complex.norm_real, abs_of_pos ht, Real.rpow_natCast]
+  simp [norm_pow, Complex.norm_exp, Complex.norm_real, abs_of_pos ht, Real.rpow_natCast]
 
 private lemma laplace_integral (k : ℕ) (s : ℂ) (hs : 0 < s.re) :
     (∫ t in Ioi (0 : ℝ), (t : ℂ)^k * Complex.exp (-s * t)) = (k.factorial : ℂ) / s^(k+1) := by

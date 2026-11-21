@@ -85,10 +85,13 @@ instance padicCompletedLevelField_padicScalarTower
       (padicCompletedLevelField p n) :=
   IsScalarTower.of_algebraMap_eq' rfl
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+
 /-- The canonical coefficient map from the p-adic valuation ring directly
 into the field underlying a completed Lubin--Tate level. -/
-noncomputable def padicCompletedLevelPadicFieldCoefficientHom
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedLevelPadicFieldCoefficientHom :
     (padicLocalField p).valuationSubring →+*
       padicCompletedLevelField p n :=
   ((algebraMap (padicCompletedUnramifiedField p)
@@ -98,8 +101,7 @@ noncomputable def padicCompletedLevelPadicFieldCoefficientHom
 
 /-- The same p-adic coefficient map with codomain restricted to the
 valuation ring of the completed level. -/
-noncomputable def padicCompletedLevelPadicIntegerCoefficientHom
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedLevelPadicIntegerCoefficientHom :
     (padicLocalField p).valuationSubring →+*
       (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   (padicCompletedLevelWittCoefficientHom p n).comp
@@ -109,7 +111,6 @@ noncomputable def padicCompletedLevelPadicIntegerCoefficientHom
 field gives the canonical field-valued coefficient map. -/
 @[simp]
 theorem padicCompletedLevelPadicIntegerCoefficientHom_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : (padicLocalField p).valuationSubring) :
     ((padicCompletedLevelPadicIntegerCoefficientHom p n a :
         (padicCompletedLevelCompleteDVF p n).valuationSubring) :
@@ -154,7 +155,6 @@ theorem padicCompletedLevelPadicIntegerCoefficientHom_coe
 /-- Polynomial evaluation through the integral coefficient map agrees,
 after coercion, with evaluation through the field coefficient map. -/
 theorem padicCompletedLevelPadicIntegerPolynomialEval_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (P : Polynomial (padicLocalField p).valuationSubring) :
     ((Polynomial.eval₂
@@ -180,8 +180,7 @@ theorem padicCompletedLevelPadicIntegerPolynomialEval_coe
         (padicCompletedLevelPadicFieldCoefficientHom p n) (i x) P
   rw [Polynomial.hom_eval₂, hcomp]
 
-private theorem padicCompletedPrimitiveRoot_standardPrimitivePolynomial
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+private theorem padicCompletedPrimitiveRoot_standardPrimitivePolynomial :
     Polynomial.eval₂
         (padicCompletedLevelPadicFieldCoefficientHom p n)
         (padicCompletedPrimitiveRoot p n)
@@ -197,8 +196,7 @@ private theorem padicCompletedPrimitiveRoot_standardPrimitivePolynomial
 
 /-- The chosen primitive point in the completed level is killed by the
 `n + 1`-fold standard p-adic Lubin--Tate iterate. -/
-theorem padicCompletedPrimitiveRoot_iterate_succ_eq_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRoot_iterate_succ_eq_zero :
     Polynomial.eval₂
         (padicCompletedLevelPadicFieldCoefficientHom p n)
         (padicCompletedPrimitiveRoot p n)
@@ -220,8 +218,7 @@ theorem padicCompletedPrimitiveRoot_iterate_succ_eq_zero
   simpa only [F, π, φ, x] using hfactor
 
 /-- The chosen completed primitive point is not killed one level early. -/
-theorem padicCompletedPrimitiveRoot_iterate_ne_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRoot_iterate_ne_zero :
     Polynomial.eval₂
         (padicCompletedLevelPadicFieldCoefficientHom p n)
         (padicCompletedPrimitiveRoot p n)
@@ -278,8 +275,7 @@ theorem padicCompletedPrimitiveRoot_iterate_ne_zero
 
 /-- Integral form of the exact completed primitive-point torsion
 relation at level `n + 1`. -/
-theorem padicCompletedPrimitiveRootInteger_iterate_succ_eq_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRootInteger_iterate_succ_eq_zero :
     Polynomial.eval₂
         (padicCompletedLevelPadicIntegerCoefficientHom p n)
         (padicCompletedPrimitiveRootInteger p n)
@@ -303,8 +299,7 @@ theorem padicCompletedPrimitiveRootInteger_iterate_succ_eq_zero
 
 /-- The integral completed primitive point is not killed by the
 level-`n` standard iterate. -/
-theorem padicCompletedPrimitiveRootInteger_iterate_ne_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRootInteger_iterate_ne_zero :
     Polynomial.eval₂
         (padicCompletedLevelPadicIntegerCoefficientHom p n)
         (padicCompletedPrimitiveRootInteger p n)
@@ -324,7 +319,6 @@ theorem padicCompletedPrimitiveRootInteger_iterate_ne_zero
 /-- Completed-level power-series evaluation is independent of the proof
 that its evaluation point is topologically nilpotent. -/
 theorem padicCompletedLevelPowerSeriesEval_congr_point
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     {x y : (padicCompletedLevelCompleteDVF p n).valuationSubring}
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
     (hxy : x = y)
@@ -338,7 +332,6 @@ theorem padicCompletedLevelPowerSeriesEval_congr_point
 coefficient and a unit linear coefficient is injective on convergent points. -/
 theorem
     padicCompletedLevelPowerSeriesEval_injective_of_unitLinearCoefficient
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (f : PowerSeries (padicCompletedUnramifiedWittRing p))
     (hconstant : PowerSeries.constantCoeff f = 0)
     (hlinear : IsUnit (PowerSeries.coeff 1 f))
@@ -413,6 +406,8 @@ theorem
         padicCompletedLevelPowerSeriesEval_X p n y hy
   exact hxback.symm.trans
     ((congrArg evalInverse hpacked).trans hyback)
+
+end
 
 end LubinTate
 

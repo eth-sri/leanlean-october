@@ -106,8 +106,7 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
   rintro _ ⟨x, rfl⟩
   refine ⟨localToRestricted F ζ hζ (Sum.inr q) x, ?_, rfl⟩
   intro w
-  simp [localToRestricted, RestrictedProduct.mulSingleMonoidHom,
-    RestrictedProduct.mulSingle_eq_of_ne]
+  simp [localToRestricted, RestrictedProduct.mulSingleMonoidHom]
 
  theorem tupleFactor_le_finiteSubgroup : tupleFactor F ζ hζ ≤ finiteSubgroup F ζ hζ := by
   rintro _ ⟨x, hx, rfl⟩
@@ -138,7 +137,6 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
     apply Subgroup.mul_mem _ _ ih
     cases a with
     | inl w =>
-      change f (localToRestricted F ζ hζ (Sum.inl w) (x (Sum.inl w))) ∈ _
       rw [hx w, map_one, map_one]
       exact Subgroup.one_mem _
     | inr q =>

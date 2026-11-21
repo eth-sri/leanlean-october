@@ -91,7 +91,7 @@ theorem exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
         ·
           refine hi'not ⟨i₀, hlt, ⟨(⟨v * y⁻¹, hmemΓ⟩ : Γ) * γ'⁻¹, ?_⟩⟩
           have hprod : (((⟨v * y⁻¹, hmemΓ⟩ : Γ) * γ'⁻¹ : Γ) : G) * ((γ' : G) * y) = v := by
-            simp only [Subgroup.coe_mul, Subgroup.coe_inv, Subtype.coe_mk, mul_assoc,
+            simp only [Subgroup.coe_mul, Subgroup.coe_inv, mul_assoc,
               inv_mul_cancel_left, inv_mul_cancel, mul_one]
           rwa [hprod]
       rw [hii] at hi'V
@@ -100,7 +100,7 @@ theorem exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
         have h1 : ((γ' : G) : G ⧸ Γ) = 1 := (QuotientGroup.eq_one_iff (γ' : G)).mpr γ'.2
         simpa only [QuotientGroup.mk_mul, h1, one_mul] using hqv.symm
       have hvy : ((⟨v * y⁻¹, hmemΓ⟩ : Γ) : G) * y = v := by
-        simp only [Subtype.coe_mk, mul_assoc, inv_mul_cancel, mul_one]
+        simp only [mul_assoc, inv_mul_cancel, mul_one]
       exact Subtype.ext (mul_right_cancel (hEq.trans hvy.symm))
 
 end DedekindZetaZeroFree

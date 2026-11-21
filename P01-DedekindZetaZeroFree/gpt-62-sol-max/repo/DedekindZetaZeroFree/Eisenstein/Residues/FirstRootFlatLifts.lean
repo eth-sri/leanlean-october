@@ -7,17 +7,7 @@ public import DedekindZetaZeroFree.RepresentationTheory.Smooth.FirstRootHarishCh
 @[expose] public section
 
 noncomputable section
-namespace DedekindZetaZeroFree.ThetaExpansion
-open MomentSources NumberField MeasureTheory
-open scoped NumberField Classical Topology
-set_option synthInstance.maxHeartbeats 400000
-set_option maxHeartbeats 4000000
-set_option maxRecDepth 4000
-set_option backward.isDefEq.respectTransparency false
-variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-end DedekindZetaZeroFree.ThetaExpansion
 
 end
 

@@ -9,7 +9,7 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.TameValuationCoordinates
 section
 open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
-namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+namespace DedekindZetaZeroFree.KPGlobalCubicIdelePairing
 noncomputable section
 set_option autoImplicit false
 set_option maxHeartbeats 1000000
@@ -200,6 +200,6 @@ theorem tame_arithmetic_unit_valuation_duality (q : HeightOneSpectrum (𝓞 F))
     | H a => exact heq u.val a
   simpa only [heq'] using hh
 end
-end DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+end DedekindZetaZeroFree.KPGlobalCubicIdelePairing
 
 end

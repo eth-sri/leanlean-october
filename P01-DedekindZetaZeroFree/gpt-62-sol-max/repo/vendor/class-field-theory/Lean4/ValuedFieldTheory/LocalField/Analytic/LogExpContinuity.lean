@@ -36,21 +36,21 @@ open scoped Topology
 
 variable {K : Type u} [Field K]
 
+section
+
+variable [Algebra ℚ K] (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+  [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v] {p : ℕ}
+  [Fact p.Prime] (e n : ℕ) {π : (completeDVFOfWithZeroValuation v).valuationSubring}
+  (hπval : v (π : K) = WithZero.exp (-1 : ℤ)) (hn : 1 ≤ n)
+  (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ)) (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
+  (hnval : ∀ m : ℕ,
+      v (((m.factorial : ℕ) : K)) =
+        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
+include p e n π hπval hn hlevel hnK hnval
+
 /-- The endpoint exponential of the deep exponential–logarithm equivalence, as a homomorphism from the
 additive ideal (written multiplicatively) to the higher principal units. -/
 noncomputable def principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -86,18 +86,6 @@ principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled (v := v) (p := 
 a.toAdd`.
 -/
 @[simp] theorem principalUnitExpSeriesHomOfMaximalIdealPow_apply
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K)
@@ -118,18 +106,6 @@ a.toAdd`.
 The proof is the valuation estimate `v(Exp(a) - 1) = v(a)`: membership in `m^n`
 puts every nonzero `a` above the ramified convergence threshold. -/
 theorem continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -217,18 +193,6 @@ theorem continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWith
 Translation in `m^n`, exponential additivity, and continuity of multiplication
 reduce this to the preceding continuity statement at zero. -/
 theorem continuous_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -292,18 +256,6 @@ theorem continuous_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWithZeroVal
 The unit topology records both a unit and its inverse; the inverse component is
 the same continuous exponential evaluated at `-a`. -/
 theorem continuous_principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
-    (hnK : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ m : ℕ,
-      v (((m.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p m.factorial : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -365,18 +317,21 @@ theorem continuous_principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuation
   apply Continuous.subtype_mk
   exact hUnits
 
+end
+
+section
+
+variable [Algebra ℚ K] (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+  [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v] {p : ℕ}
+  [Fact p.Prime] (e n : ℕ) {π : (completeDVFOfWithZeroValuation v).valuationSubring}
+  (hπval : v (π : K) = WithZero.exp (-1 : ℤ)) (hn : 1 ≤ n)
+  (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
+include π hπval hn hlevel
+
 /-- The logarithm endpoint `U^n → m^n` of the deep exponential–logarithm equivalence is continuous.
 It is the restriction of the continuous logarithm on `U^1`; the two subtype
 lifts merely record the already-proved fact that its value lies in `m^n`. -/
 theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
     (hnK : ∀ m : ℕ, (((m + 1 : ℕ) : K) ≠ 0))
     (hnval : ∀ m : ℕ,
       v (((m + 1 : ℕ) : K)) =
@@ -441,14 +396,6 @@ theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroVal
 series-composition identities have been supplied.  Continuity of both maps is
 not an assumption: it is furnished by the endpoint theorems above. -/
 noncomputable def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e n : ℕ)
-    {π : (completeDVFOfWithZeroValuation v).valuationSubring}
-    (hπval : v (π : K) = WithZero.exp (-1 : ℤ))
-    (hn : 1 ≤ n)
-    (hlevel : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ))
     (hnKexp : ∀ m : ℕ, (((m.factorial : ℕ) : K) ≠ 0))
     (hnvalExp : ∀ m : ℕ,
       v (((m.factorial : ℕ) : K)) =
@@ -508,6 +455,8 @@ noncomputable def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuati
           (continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
             (v := v) (p := p) e n (π := π) hπval hn hlevel
             hnKlog hnvalLog hcomplete) }
+
+end
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

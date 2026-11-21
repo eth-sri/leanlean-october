@@ -113,7 +113,7 @@ theorem actual_principal_continuation
     ext I
     by_cases hI : I = ⊥
     · subst I
-      simp [(principalCharacter F).eq_zero_iff', Complex.zero_cpow
+      simp [Complex.zero_cpow
         (show -z ≠ 0 by intro h; have := congrArg Complex.re h; simp at this; linarith)]
     · rw [principalCharacter_principal F I hI (by simp), one_mul]
 
@@ -126,7 +126,7 @@ theorem exterior_zeta_at_two_pos
   have hs := (actual_principal_continuation  F ζ hζ).2.2.2.2.2.2.2 2 (by norm_num)
   have hterm (I : Ideal (𝓞 F)) :
       (Ideal.absNorm I : ℂ) ^ (-(2 : ℂ)) = (((Ideal.absNorm I : ℝ) ^ 2)⁻¹ : ℝ) := by
-    simp [Complex.cpow_neg, Complex.cpow_two]
+    simp [Complex.cpow_neg]
   have hre := Complex.hasSum_re hs
   have him := Complex.hasSum_im hs
   simp_rw [hterm, Complex.ofReal_re] at hre

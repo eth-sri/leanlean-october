@@ -15,7 +15,6 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming e
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming component_continuous → component_continuous
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming end_measurable → end_measurable
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming end_preimage → end_preimage
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 
 namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
 
@@ -111,7 +110,7 @@ private theorem actual_cusp_shell_mass
         Set.univ * (ENNReal.ofReal (2 * Y / (cuspOffset F ζ hζ R P S V j).val))⁻¹ := by
   let A := nativeAtlas F ζ hζ R P S V
   let U := S.atlasLevel (cofinalLevel F ζ hζ V)
-  let D := (KPMsActualNativeHaarFamily.rawFamily F ζ hζ R P).disintegration U
+  let D := (KPMsActualNativeHaarFamily.family F ζ hζ R P).disintegration U
   let Z := Y / (cuspOffset F ζ hζ R P S V j).val
   let E := (component A j.1 '' ends A j (KPMsFixedHaar.logHeight (F := F) Z)) ∩
     {x | Z < D.modulus x ∧ D.modulus x ≤ 2 * Z}
@@ -126,13 +125,11 @@ private theorem actual_cusp_shell_mass
     congr 1
     ext x
     rw [mul_div_assoc]
-    rfl
   rw [heq, ← Measure.map_apply (P.continuous U).measurable hE]
-  have hi := pinned_cusp_shell_mass A R (toRawTransport F ζ hζ P) D j Z (hY j)
-  change KPMsFixedHaar.sphericalMeasure F ζ hζ R (toRawTransport F ζ hζ P) U E = _
+  have hi := pinned_cusp_shell_mass A R P D j Z (hY j)
+  change KPMsFixedHaar.sphericalMeasure F ζ hζ R P U E = _
   convert hi using 1
   rw [mul_div_assoc]
-  rfl
 
  theorem forward_offset_factor (Y c : ℝ) (hY : 0 < Y) (hc : 0 < c) :
     ENNReal.ofReal (2 * Y) * (ENNReal.ofReal (2 * Y / c))⁻¹ = ENNReal.ofReal c := by

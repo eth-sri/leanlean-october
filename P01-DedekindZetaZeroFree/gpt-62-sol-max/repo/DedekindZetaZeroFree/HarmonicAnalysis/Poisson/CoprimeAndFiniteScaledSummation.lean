@@ -1,7 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.PrincipalHeckeSummation
-public import DedekindZetaZeroFree.Arithmetic.Ideals.NonzeroMultiplesEquivalence
+public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import DedekindZetaZeroFree.Arithmetic.Ideals.MoebiusCoprimality
 
 @[expose] public section

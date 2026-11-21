@@ -47,22 +47,24 @@ open LubinTate.Valuations
 
 variable {K : Type u} [Field K]
 
+section
+
+variable (F : CompleteDVF.{u, v} K)
+include F
+
 /-- A fixed uniformizer used only to invoke the direct quotient form of
 the adic inverse-limit equivalence.  The resulting p-adic action is characterized below by its
 ordinary integral powers. -/
-noncomputable def chosenPrincipalUnitPadicUniformizer
-    (F : CompleteDVF.{u, v} K) : F.valuationSubring :=
+noncomputable def chosenPrincipalUnitPadicUniformizer : F.valuationSubring :=
   Classical.choose F.exists_uniformizer
 
 /-- The chosen principal-unit parameter has valuation one and is a uniformizer. -/
-theorem chosenPrincipalUnitPadicUniformizer_isUniformizer
-    (F : CompleteDVF.{u, v} K) :
+theorem chosenPrincipalUnitPadicUniformizer_isUniformizer :
     F.valuation.IsUniformizer (chosenPrincipalUnitPadicUniformizer F : K) :=
   Classical.choose_spec F.exists_uniformizer
 
 /-- The chosen valuation-ring uniformizer is irreducible. -/
-theorem chosenPrincipalUnitPadicUniformizer_irreducible
-    (F : CompleteDVF.{u, v} K) :
+theorem chosenPrincipalUnitPadicUniformizer_irreducible :
     Irreducible (chosenPrincipalUnitPadicUniformizer F) := by
   rw [IsDiscreteValuationRing.irreducible_iff_uniformizer]
   exact F.maximalIdeal_eq_span_uniformizer
@@ -70,8 +72,7 @@ theorem chosenPrincipalUnitPadicUniformizer_irreducible
 
 /-- For the chosen uniformizer, the higher-unit subgroup `1 + pi^n O` is the
 intrinsic `n`-th higher principal-unit group. -/
-theorem higherUnitSubgroup_chosenPrincipalUnitPadicUniformizer
-    (F : CompleteDVF.{u, v} K) (n : ℕ) :
+theorem higherUnitSubgroup_chosenPrincipalUnitPadicUniformizer (n : ℕ) :
     higherUnitSubgroup (chosenPrincipalUnitPadicUniformizer F) n =
       (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) n := by
   ext x
@@ -91,27 +92,31 @@ theorem higherUnitSubgroup_chosenPrincipalUnitPadicUniformizer
   rw [hideal]
 
 /-- Transition on the intrinsic quotients `O^*/U^(n+1)`. -/
-def Internal.higherUnitQuotientTransition
-    (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
+def Internal.higherUnitQuotientTransition {m n : ℕ} (hmn : m ≤ n) :
     F.valuationSubringˣ ⧸ (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) (n + 1) →*
       F.valuationSubringˣ ⧸ (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) (m + 1) :=
   (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).quotient_principalUnitSubgroup_mapOfLe
     (Nat.succ_le_succ hmn)
 
 /-- The intrinsic full unit inverse limit `lim O^*/U^(n+1)`. -/
-abbrev Internal.higherUnitInverseLimitCarrier
-    (F : CompleteDVF.{u, v} K) : Type u :=
+abbrev Internal.higherUnitInverseLimitCarrier : Type u :=
   compatibleGroupFamilies
     (fun n : ℕ =>
       F.valuationSubringˣ ⧸ (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) (n + 1))
     (fun {_ _} hmn => Internal.higherUnitQuotientTransition F hmn)
 
+end
+
 open Internal
+
+section
+
+variable (F : CompleteDVF.{u, v} K)
+include F
 
 /-- Changing from the uniformizer presentation of a level quotient to the
 intrinsic principal-unit presentation. -/
-noncomputable def Internal.uniformizerHigherUnitQuotientEquiv
-    (F : CompleteDVF.{u, v} K) (n : ℕ) :
+noncomputable def Internal.uniformizerHigherUnitQuotientEquiv (n : ℕ) :
     F.valuationSubringˣ ⧸
         higherUnitSubgroup (chosenPrincipalUnitPadicUniformizer F) (n + 1) ≃*
       F.valuationSubringˣ ⧸ (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) (n + 1) :=
@@ -122,16 +127,14 @@ noncomputable def Internal.uniformizerHigherUnitQuotientEquiv
 Establishes the identity `uniformizerHigherUnitQuotientEquiv F n (QuotientGroup.mk x) =
 QuotientGroup.mk x`.
 -/
-@[simp] theorem Internal.uniformizerHigherUnitQuotientEquiv_mk
-    (F : CompleteDVF.{u, v} K) (n : ℕ) (x : F.valuationSubringˣ) :
+@[simp] theorem Internal.uniformizerHigherUnitQuotientEquiv_mk (n : ℕ) (x : F.valuationSubringˣ) :
     uniformizerHigherUnitQuotientEquiv F n (QuotientGroup.mk x) =
       QuotientGroup.mk x := by
   exact QuotientGroup.quotientMulEquivOfEq_mk _ x
 
 /-- The uniformizer and intrinsic presentations give the same full inverse
 limit. -/
-noncomputable def Internal.uniformizerHigherUnitInverseLimitEquiv
-    (F : CompleteDVF.{u, v} K) :
+noncomputable def Internal.uniformizerHigherUnitInverseLimitEquiv :
     dvrHigherUnitQuotientInverseLimit
         (chosenPrincipalUnitPadicUniformizer F) ≃*
       Internal.higherUnitInverseLimitCarrier F :=
@@ -158,8 +161,7 @@ noncomputable def Internal.uniformizerHigherUnitInverseLimitEquiv
 
 /-- The direct quotient isomorphism of the adic inverse-limit equivalence, rewritten using the
 intrinsic higher principal-unit filtration. -/
-noncomputable def Internal.unitsEquivHigherUnitQuotientInverseLimit
-    (F : CompleteDVF.{u, v} K) :
+noncomputable def Internal.unitsEquivHigherUnitQuotientInverseLimit :
     F.valuationSubringˣ ≃* Internal.higherUnitInverseLimitCarrier F := by
   let pi := chosenPrincipalUnitPadicUniformizer F
   have hpi : Irreducible pi := chosenPrincipalUnitPadicUniformizer_irreducible F
@@ -178,8 +180,7 @@ noncomputable def Internal.unitsEquivHigherUnitQuotientInverseLimit
 The defining evaluation formula for `Internal.unitsEquivHigherUnitQuotientInverseLimit` is
 `(unitsEquivHigherUnitQuotientInverseLimit F x).1 n = QuotientGroup.mk x`.
 -/
-theorem Internal.unitsEquivHigherUnitQuotientInverseLimit_apply
-    (F : CompleteDVF.{u, v} K) (x : F.valuationSubringˣ) (n : ℕ) :
+theorem Internal.unitsEquivHigherUnitQuotientInverseLimit_apply (x : F.valuationSubringˣ) (n : ℕ) :
     (unitsEquivHigherUnitQuotientInverseLimit F x).1 n =
       QuotientGroup.mk x := by
   let pi := chosenPrincipalUnitPadicUniformizer F
@@ -202,8 +203,7 @@ theorem Internal.unitsEquivHigherUnitQuotientInverseLimit_apply
 /-- The change from the uniformizer presentation of the full unit inverse
 limit to the intrinsic presentation is a homeomorphism when all quotient
 coordinates are discrete. -/
-noncomputable def Internal.uniformizerHigherUnitInverseLimitHomeomorphIntrinsic
-    (F : CompleteDVF.{u, v} K) :
+noncomputable def Internal.uniformizerHigherUnitInverseLimitHomeomorphIntrinsic :
     letI : (n : ℕ) → TopologicalSpace
         (F.valuationSubringˣ ⧸
           higherUnitSubgroup (chosenPrincipalUnitPadicUniformizer F) (n + 1)) :=
@@ -281,8 +281,7 @@ noncomputable def Internal.uniformizerHigherUnitInverseLimitHomeomorphIntrinsic
           ((continuous_apply n).comp continuous_subtype_val))
 
 /-- Topological full-unit form of the adic inverse-limit equivalence, rewritten intrinsically. -/
-noncomputable def Internal.unitsHomeomorphHigherUnitQuotientInverseLimit
-    (F : CompleteDVF.{u, v} K) :
+noncomputable def Internal.unitsHomeomorphHigherUnitQuotientInverseLimit :
     letI : TopologicalSpace F.valuationSubring :=
       (uniformizerPowerIdeal (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
     letI : (n : ℕ) → TopologicalSpace
@@ -317,8 +316,7 @@ noncomputable def Internal.unitsHomeomorphHigherUnitQuotientInverseLimit
 The unit-to-inverse-limit homeomorphism sends a unit to its canonical class at every higher-unit
 quotient level.
 -/
-theorem Internal.unitsHomeomorphHigherUnitQuotientInverseLimit_apply
-    (F : CompleteDVF.{u, v} K) (x : F.valuationSubringˣ) (n : ℕ) :
+theorem Internal.unitsHomeomorphHigherUnitQuotientInverseLimit_apply (x : F.valuationSubringˣ) (n : ℕ) :
     letI : TopologicalSpace F.valuationSubring :=
       (uniformizerPowerIdeal (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
     letI : (n : ℕ) → TopologicalSpace
@@ -356,14 +354,12 @@ theorem Internal.unitsHomeomorphHigherUnitQuotientInverseLimit_apply
 /-! ## Restriction of the adic inverse-limit equivalence to first principal units -/
 
 /-- The raw carrier of the `n`-th coordinate `U^1/U^(n+1)`. -/
-abbrev Internal.principalUnitQuotientCarrier
-    (F : CompleteDVF.{u, v} K) (n : ℕ) : Type u :=
+abbrev Internal.principalUnitQuotientCarrier (n : ℕ) : Type u :=
   (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotient
     1 (n + 1)
 
 /-- Transition `U^1/U^(n+1) -> U^1/U^(m+1)` for `m <= n`. -/
-def Internal.principalUnitQuotientCarrierTransition
-    (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
+def Internal.principalUnitQuotientCarrierTransition {m n : ℕ} (hmn : m ≤ n) :
     Internal.principalUnitQuotientCarrier F n →*
       Internal.principalUnitQuotientCarrier F m := by
   let U := higherPrincipalUnitGroup.toPrincipalUnitFiltration F
@@ -384,8 +380,7 @@ Establishes the identity `principalUnitQuotientCarrierTransition F hmn
 ((higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotientMk 1 (n + 1) x) =
 (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotientMk 1 (m + 1) x`.
 -/
-@[simp] theorem Internal.principalUnitQuotientCarrierTransition_mk
-    (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n)
+@[simp] theorem Internal.principalUnitQuotientCarrierTransition_mk {m n : ℕ} (hmn : m ≤ n)
     (x : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) :
     principalUnitQuotientCarrierTransition F hmn
         ((higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotientMk
@@ -395,15 +390,13 @@ Establishes the identity `principalUnitQuotientCarrierTransition F hmn
   rfl
 
 /-- The projective limit `lim_n U^1/U^(n+1)`. -/
-abbrev Internal.principalUnitInverseLimitCarrier
-    (F : CompleteDVF.{u, v} K) : Type u :=
+abbrev Internal.principalUnitInverseLimitCarrier : Type u :=
   compatibleGroupFamilies
     (Internal.principalUnitQuotientCarrier F)
     (fun {_ _} hmn => principalUnitQuotientCarrierTransition F hmn)
 
 /-- Evaluation of a principal-unit compatible family at level `n`. -/
-def Internal.principalUnitInverseLimitCarrierEval
-    (F : CompleteDVF.{u, v} K) (n : ℕ) :
+def Internal.principalUnitInverseLimitCarrierEval (n : ℕ) :
     Internal.principalUnitInverseLimitCarrier F →*
       Internal.principalUnitQuotientCarrier F n :=
   compatibleGroupFamiliesEval
@@ -415,35 +408,24 @@ The defining evaluation formula for `Internal.principalUnitInverseLimitCarrierEv
 `principalUnitInverseLimitCarrierEval F n x = x.1 n`.
 -/
 @[simp]
-theorem Internal.principalUnitInverseLimitCarrierEval_apply
-    (F : CompleteDVF.{u, v} K) (n : ℕ)
+theorem Internal.principalUnitInverseLimitCarrierEval_apply (n : ℕ)
     (x : Internal.principalUnitInverseLimitCarrier F) :
     principalUnitInverseLimitCarrierEval F n x = x.1 n :=
   rfl
 
-/-- Named compatibility law for a principal-unit inverse-limit family. -/
-theorem Internal.principalUnitInverseLimitCarrier_compatible
-    (F : CompleteDVF.{u, v} K)
-    (x : Internal.principalUnitInverseLimitCarrier F)
-    {m n : ℕ} (hmn : m ≤ n) :
-    principalUnitQuotientCarrierTransition F hmn
-        (principalUnitInverseLimitCarrierEval F n x) =
-      principalUnitInverseLimitCarrierEval F m x :=
-  compatibleGroupFamilies_transition
-    (Internal.principalUnitQuotientCarrier F)
-    (fun {_ _} hij => principalUnitQuotientCarrierTransition F hij) x hmn
 
 /-- Principal-unit inverse-limit families are determined by their
 coordinates. -/
 @[ext]
 theorem Internal.principalUnitInverseLimitCarrier_ext
-    (F : CompleteDVF.{u, v} K)
     {x y : Internal.principalUnitInverseLimitCarrier F}
     (h : ∀ n, principalUnitInverseLimitCarrierEval F n x =
       principalUnitInverseLimitCarrierEval F n y) : x = y :=
   compatibleGroupFamilies_ext
     (Internal.principalUnitQuotientCarrier F)
     (fun {_ _} hij => principalUnitQuotientCarrierTransition F hij) h
+
+end
 end higherPrincipalUnitGroup
 end CompleteDVF
 end LocalFieldTheory.DiscreteValuationField

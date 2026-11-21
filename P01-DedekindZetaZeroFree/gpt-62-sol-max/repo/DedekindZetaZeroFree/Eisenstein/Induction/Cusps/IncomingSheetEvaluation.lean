@@ -95,7 +95,7 @@ theorem atlasLevel_mem_globalLevel
     (u.val : KPGlobalTorusFunctionData.G F ζ hζ) ∈
       KPGlobalTorusFunctionData.globalLevel F ζ hζ U := by
   rw [EisensteinSmoothGerms.ScalarSource.level_matching F ζ hζ U]
-  exact Subgroup.mem_map.mpr ⟨u.val, u.property, rfl⟩
+  simp
 
 theorem finiteRepresentative_stabilizer
     (g : stabilizer F ζ hζ C R P H U a) (ε : rootsOfUnity 3 F) :

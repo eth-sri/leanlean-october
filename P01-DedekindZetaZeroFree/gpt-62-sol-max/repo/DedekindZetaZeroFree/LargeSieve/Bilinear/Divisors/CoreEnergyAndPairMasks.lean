@@ -96,7 +96,7 @@ private lemma column_spec_local (C : Context Q) {u : Ideal (𝓞 F)} (hu : u ∈
   have hrel := (squarefree_mul_iff.mp hdusf).1
   exact Ideal.isUnit_iff.mp (hrel (Ideal.dvd_iff_le.mpr le_sup_left)
     (Ideal.dvd_iff_le.mpr le_sup_right))
-private lemma finite_coprime_sum_bound
+theorem finite_coprime_sum_bound
     (R U V : Finset (Ideal (𝓞 F)))
     (hU : ∀ u ∈ U, u ≠ ⊥) (hV : ∀ v ∈ V, v ≠ ⊥)
     (A B : ℝ) (hA : 0 ≤ A) (hB : 0 ≤ B)

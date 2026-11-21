@@ -1,11 +1,11 @@
 module
 
-public import DedekindZetaZeroFree.Moments.Comparison.FarDyadSummability
+public import DedekindZetaZeroFree.Moments.Comparison.FiniteRowContourDecay
 public import DedekindZetaZeroFree.LFunctions.Hecke.RayContinuationData
 public import DedekindZetaZeroFree.CharacterSums.Gauss.ResidueRowFourierTransform
 public import DedekindZetaZeroFree.ZeroDetection.Conductors.FrequencyDyadCounts
 public import DedekindZetaZeroFree.Moments.Probes.AnnularWeightsAndCancellingProfiles
-public import DedekindZetaZeroFree.Moments.Principal.MellinContourDecomposition
+public import DedekindZetaZeroFree.Moments.Comparison.TripleMellinKernel
 
 @[expose] public section
 

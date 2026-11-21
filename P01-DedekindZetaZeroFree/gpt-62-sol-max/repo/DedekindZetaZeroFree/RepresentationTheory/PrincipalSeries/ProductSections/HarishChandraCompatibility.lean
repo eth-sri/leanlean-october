@@ -19,8 +19,6 @@ local notation "hζ" => A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 attribute [local instance] KPGlobalTorusPeriodizationInverse.modelTopology
-local instance (Q : Polarization F ζ hζ) : TopologicalSpace (KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ Q) :=
-  inducedTopology F ζ hζ Q
 
 theorem originalProductFiber_HC (K : Subgroup (KPLiteralRaw.G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)

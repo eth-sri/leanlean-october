@@ -26,23 +26,31 @@ private lemma div_rpow_neg_two {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
     (x / Y) ^ (-(2 : ℝ)) = Y ^ 2 * x ^ (-(2 : ℝ)) := by
   rw [Real.div_rpow hx.le hY.le, Real.rpow_neg hY.le, div_inv_eq_mul, Real.rpow_two, mul_comm]
 
-noncomputable def nearScaled (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+section
+
+variable (F : Type*) [Field F] [NumberField F] (Y : ℝ) (I : Ideal (𝓞 F))
+include Y I
+
+noncomputable def nearScaled : ℝ :=
   if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y then (Ideal.absNorm I : ℝ) ^ (-(1 / 2 : ℝ)) else 0
 
-noncomputable def farScaled (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+noncomputable def farScaled : ℝ :=
   if I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ) then (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ)) else 0
 
-noncomputable def nearPart (F : Type*) [Field F] [NumberField F] (Y : ℝ)
-    (I : Ideal (𝓞 F)) : ℝ :=
+noncomputable def nearPart : ℝ :=
   if I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y then ((Ideal.absNorm I : ℝ) / Y) ^ (-(1 / 2 : ℝ)) else 0
 
-noncomputable def farPart (F : Type*) [Field F] [NumberField F] (Y : ℝ)
+end
+
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+noncomputable def farPart (Y : ℝ)
     (I : Ideal (𝓞 F)) : ℝ :=
   if I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ) then ((Ideal.absNorm I : ℝ) / Y) ^ (-(2 : ℝ)) else 0
 
-private lemma nearPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
+private lemma nearPart_eq_mul {Y : ℝ} (hY : 0 < Y)
     (I : Ideal (𝓞 F)) : nearPart F Y I = Y ^ (1 / 2 : ℝ) * nearScaled F Y I := by
   unfold nearPart nearScaled
   by_cases hc : I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y
@@ -50,7 +58,7 @@ private lemma nearPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (h
     exact div_rpow_neg_half (absNorm_pos_of_ne_bot hc.1) hY
   · rw [if_neg hc, if_neg hc, mul_zero]
 
-private lemma farPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
+private lemma farPart_eq_mul {Y : ℝ} (hY : 0 < Y)
     (I : Ideal (𝓞 F)) : farPart F Y I = Y ^ 2 * farScaled F Y I := by
   unfold farPart farScaled
   by_cases hc : I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ)
@@ -58,7 +66,7 @@ private lemma farPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY
     exact div_rpow_neg_two (absNorm_pos_of_ne_bot hc.1) hY
   · rw [if_neg hc, if_neg hc, mul_zero]
 
-theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
+theorem initial_two_ended_ideal_sum :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ Y : ℝ, 0 < Y →
       ∀ g : Ideal (𝓞 F) → ℂ, g ⊥ = 0 →
         (∀ I : Ideal (𝓞 F), I ≠ ⊥ →
@@ -237,5 +245,7 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
   have hnorm : Summable (fun I : Ideal (𝓞 F) => ‖g I‖) :=
     summable_of_sum_le (fun I => norm_nonneg _) key
   exact ⟨hnorm, Summable.of_norm hnorm, Real.tsum_le_of_sum_le (fun I => norm_nonneg _) key⟩
+
+end
 
 end DedekindZetaZeroFree.LargeSieve.Sieve

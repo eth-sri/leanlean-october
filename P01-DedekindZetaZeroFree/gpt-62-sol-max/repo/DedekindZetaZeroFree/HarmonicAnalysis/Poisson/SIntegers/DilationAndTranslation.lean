@@ -19,8 +19,7 @@ private theorem scalarAction_eq (F : Type) [Field F] [NumberField F]
   apply Prod.ext
   · apply (mixedEmbedding.euclidean.toMixed F).injective
     simp only [scalarAction, Covolume.fieldDilation, PoissonArch.fieldMul,
-      PoissonArch.infiniteAdeleToSpace_coordinates, map_mul,
-      ContinuousLinearEquiv.apply_symm_apply]
+      PoissonArch.infiniteAdeleToSpace_coordinates, map_mul]
     rw [← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
     rw [← PoissonArch.infiniteAdeleToSpace_coordinates]
     simp
@@ -56,7 +55,6 @@ theorem tsum_scalar_lattice
       congr 1
       funext m
       congr 1
-      change scalarAction F S (a : F) (m : Space F S) = (e m : Space F S)
       rw [scalarAction_eq]
       rfl
     _ = _ := e.toEquiv.tsum_eq (fun m : lattice F S ((a : F) * c) => f m)
@@ -212,9 +210,7 @@ theorem scalar_pullback_tensor
         ((PoissonArch.fieldModule F (a : F))⁻¹ : ℂ) *
           ∏ v : S, ((FinitePlace.mk v.val (a : F))⁻¹ : ℂ) := by
       simp only [productModule, ← Covolume.DilationArch.fieldModule_eq F,
-        mul_inv, Complex.ofReal_mul, Complex.ofReal_inv,
-        ← Finset.prod_inv_distrib, ← Complex.ofReal_prod,
-        Finset.prod_coe_sort]
+        mul_inv, Complex.ofReal_mul, ← Finset.prod_inv_distrib, ← Complex.ofReal_prod]
       rw [← Finset.prod_coe_sort S (fun v => FinitePlace.mk v (a : F)),
         Complex.ofReal_prod, Finset.prod_inv_distrib]
     rw [hmodule]
@@ -684,8 +680,7 @@ private theorem localArchEquiv_abs_det (F : Type) [Field F] [NumberField F]
     change (mixedEmbedding.euclidean.toMixed F) (localArchEquiv F d x) = _
     rw [localArchEquiv_apply]
     simp only [PoissonArch.infiniteAdeleToSpace_coordinates, map_mul,
-      LinearMap.prodMap_apply, ContinuousLinearEquiv.coe_coe,
-      LinearMap.comp_apply, ContinuousLinearEquiv.apply_symm_apply]
+      LinearMap.prodMap_apply, LinearMap.comp_apply]
     have hx := PoissonArch.infiniteAdeleToSpace_coordinates F
       ((PoissonArch.infiniteAdeleToSpace F).symm x)
     rw [ContinuousLinearEquiv.apply_symm_apply] at hx
@@ -773,8 +768,7 @@ theorem traceFourier_local_unit_scale (F : Type) [Field F] [NumberField F]
     ∫ x, g (A.symm x) ∂(volume : Measure (PoissonArch.Space F)) at hi
   simp_rw [hp] at hi
   unfold PoissonArch.traceFourier PoissonArch.traceMeasure
-  simp only [integral_smul_measure, ENNReal.toReal_ofReal (PoissonArch.haarScalar_pos F).le,
-    smul_eq_mul]
+  simp only [integral_smul_measure, ENNReal.toReal_ofReal (PoissonArch.haarScalar_pos F).le]
   rw [← hi]
   simp only [g, A, localArchEquiv_apply, Complex.real_smul]
   ring

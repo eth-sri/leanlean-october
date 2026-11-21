@@ -1,6 +1,20 @@
 module
 
-public import ClassFieldTheory.Definitions.HilbertSymbols.All
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingFamily
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingFiniteFactor
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingProperties
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalInfinitePlaceHilbertSymbol
+public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairing
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingLaws
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingNormResidueCriterion
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingSymbol
+public import ClassFieldTheory.Definitions.HilbertSymbols.IsKummerNorm
+public import ClassFieldTheory.Definitions.HilbertSymbols.IsLocalHilbertPairing
+public import ClassFieldTheory.Definitions.HilbertSymbols.KummerAlgebra
+public import Mathlib.RingTheory.Norm.Basic
+public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClass
+public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClassGroup
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.HilbertProductFormula
 public import Mathlib.Algebra.BigOperators.Finprod
 

@@ -14,6 +14,27 @@ noncomputable def su2HarmonicCharacter (ℓ : ℕ) (k : ComplexSU2) : ℂ :=
     ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
       (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩
 
+theorem continuous_su2HarmonicCharacter (ℓ : ℕ) :
+    Continuous (su2HarmonicCharacter ℓ) := by
+  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
+      KPCompactHarmonic.symmetricPowerTrace n
+        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
+          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
+    intro n
+    induction n using Nat.twoStepInduction with
+    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
+        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
+    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
+    | more n hn hn1 =>
+        simp only [KPCompactHarmonic.symmetricPowerTrace]
+        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
+            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
+          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
+            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
+  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
+  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
+  exact htrace (2 * ℓ)
+
 noncomputable def characterAverage (s : ℝ) (μ : Measure ComplexSU2)
     (ℓ : ℕ) (f : PrincipalSeries s) (g : ComplexGL2) : ℂ :=
   ((2 * ℓ + 1 : ℕ) : ℂ) *

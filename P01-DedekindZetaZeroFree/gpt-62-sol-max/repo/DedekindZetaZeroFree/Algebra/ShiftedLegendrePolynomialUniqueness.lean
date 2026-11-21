@@ -70,8 +70,8 @@ private lemma coeff_op {K : Type*} [Field K] (c : K) (R : Polynomial K) (k : ℕ
         = Polynomial.X * R.derivative - Polynomial.X ^ 2 * R.derivative := by ring
     rw [e]
     simp only [coeff_add, coeff_sub, coeff_derivative, coeff_C_mul, pow_two, mul_assoc,
-      coeff_X_mul, coeff_X_mul_zero, Nat.cast_zero, Nat.cast_one, zero_mul, one_mul, mul_one,
-      mul_zero, sub_zero, zero_add]
+      coeff_X_mul, coeff_X_mul_zero, Nat.cast_zero, Nat.cast_one, one_mul, mul_one,
+      sub_zero, zero_add]
     ring
   · have e : Polynomial.X * (1 - Polynomial.X) * R.derivative
         = Polynomial.X * R.derivative - Polynomial.X ^ 2 * R.derivative := by ring
@@ -92,7 +92,7 @@ theorem polynomial_shiftedLegendre_ode_unique {K : Type*} [Field K] [CharZero K]
         (1 - 2 * Polynomial.X) * Q.derivative
       = Polynomial.derivative (Polynomial.X * (1 - Polynomial.X) * Q.derivative) := by
     simp only [Polynomial.derivative_mul, Polynomial.derivative_sub, Polynomial.derivative_one,
-      Polynomial.derivative_X, Polynomial.derivative_C]
+      Polynomial.derivative_X]
     ring
   have hQrec : ∀ k, ((k + 1 : ℕ) : K) ^ 2 * Q.coeff (k + 1)
       = (((k : ℕ) : K) * ((k + 1 : ℕ) : K) - (ℓ : K) * ((ℓ : K) + 1)) * Q.coeff k := by

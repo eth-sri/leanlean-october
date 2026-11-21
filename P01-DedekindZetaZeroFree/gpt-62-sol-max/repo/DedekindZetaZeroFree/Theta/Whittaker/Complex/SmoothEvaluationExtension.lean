@@ -13,9 +13,6 @@ set_option backward.isDefEq.respectTransparency true
 set_option maxHeartbeats 8000000
 set_option diagnostics true
 attribute [local irreducible] CanonicalStageSlot.negative
-local instance : AddCommGroup complexCore := Submodule.addCommGroup complexCore
-local instance : Module ℂ complexCore := Submodule.module complexCore
-local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
 variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)

@@ -192,23 +192,6 @@ theorem sUnitFullLogMulHom_equivariant
       (x : SUnitGroup (K := L) S),
       sUnitFullLogMulHom L S (σ • x) =
         σ • sUnitFullLogMulHom L S x := by
-  let sUnitAction :=
-    sUnitMulDistribMulAction K L S hS
-  let additiveSUnitAction :=
-    additiveSUnitDistribMulAction K L S hS
-  let logPlaceAction :=
-    logPlaceMulAction K L S hS
-  let fullLogSpaceAction :=
-    fullLogSpaceDistribMulAction K L S hS
-  let logHyperplaneAction :=
-    logHyperplaneDistribMulAction K L S hS
-  let latticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
-  let multiplicativeLatticeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S)) :=
-    multiplicativeDistribMulAction
   intro σ x
   apply Multiplicative.toAdd.injective
   apply Subtype.ext
@@ -772,22 +755,6 @@ theorem extendedFullLogLatticeEquivProdInt_equivariant
   dsimp only
   let ρ :=
     logPlacePermutationHom K L S hS
-  let indexAction :
-      MulAction (L ≃ₐ[K] L)
-        (SUnitGroup.LogPlace (K := L) S) :=
-    permutationMulAction ρ
-  let sUnitAction :=
-    sUnitMulDistribMulAction K L S hS
-  let additiveSUnitAction :=
-    additiveSUnitDistribMulAction K L S hS
-  let logPlaceAction :=
-    logPlaceMulAction K L S hS
-  let fullLogSpaceAction :=
-    fullLogSpaceDistribMulAction K L S hS
-  let logHyperplaneAction :=
-    logHyperplaneDistribMulAction K L S hS
-  let fullLogLatticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
   let extendedAction :
       DistribMulAction (L ≃ₐ[K] L)
         (extendedFullLogLattice L S) :=
@@ -898,22 +865,6 @@ theorem extendedFullLogLatticeMulEquivProdInt_equivariant
   dsimp only
   let ρ :=
     logPlacePermutationHom K L S hS
-  let indexAction :
-      MulAction (L ≃ₐ[K] L)
-        (SUnitGroup.LogPlace (K := L) S) :=
-    permutationMulAction ρ
-  let sUnitAction :=
-    sUnitMulDistribMulAction K L S hS
-  let additiveSUnitAction :=
-    additiveSUnitDistribMulAction K L S hS
-  let logPlaceAction :=
-    logPlaceMulAction K L S hS
-  let fullLogSpaceAction :=
-    fullLogSpaceDistribMulAction K L S hS
-  let logHyperplaneAction :=
-    logHyperplaneDistribMulAction K L S hS
-  let fullLogLatticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
   let extendedAction :
       DistribMulAction (L ≃ₐ[K] L)
         (extendedFullLogLattice L S) :=
@@ -921,20 +872,10 @@ theorem extendedFullLogLatticeMulEquivProdInt_equivariant
       ρ (extendedFullLogLattice L S)
       (extendedFullLogLattice_permutation_stable
         K L hS)
-  let extendedMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (extendedFullLogLattice L S)) :=
-    multiplicativeDistribMulAction
   let productAction :
       DistribMulAction (L ≃ₐ[K] L)
         (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
     fullLogLatticeProdIntDistribMulAction K L S hS
-  let productMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S × ℤ)) :=
-    multiplicativeDistribMulAction
   intro σ x
   apply Multiplicative.toAdd.injective
   change
@@ -978,22 +919,6 @@ theorem fullLogLatticeProdIntIncl_equivariant
           (SUnitGroup.fullLogLattice (K := L) S)),
       fullLogLatticeProdIntIncl L S (σ • z) =
         σ • fullLogLatticeProdIntIncl L S z := by
-  let latticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
-  let latticeMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S)) :=
-    multiplicativeDistribMulAction
-  let productAction :
-      DistribMulAction (L ≃ₐ[K] L)
-        (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
-    fullLogLatticeProdIntDistribMulAction K L S hS
-  let productMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S × ℤ)) :=
-    multiplicativeDistribMulAction
   intro σ z
   rfl
 
@@ -1026,21 +951,6 @@ theorem fullLogLatticeProdIntProj_equivariant
           (SUnitGroup.fullLogLattice (K := L) S × ℤ)),
       fullLogLatticeProdIntProj L S (σ • z) =
         σ • fullLogLatticeProdIntProj L S z := by
-  let latticeAction :=
-    fullLogLatticeDistribMulAction K L S hS
-  let productAction :
-      DistribMulAction (L ≃ₐ[K] L)
-        (SUnitGroup.fullLogLattice (K := L) S × ℤ) :=
-    fullLogLatticeProdIntDistribMulAction K L S hS
-  let productMultiplicativeAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative
-          (SUnitGroup.fullLogLattice (K := L) S × ℤ)) :=
-    multiplicativeDistribMulAction
-  let integerAction :
-      MulDistribMulAction (L ≃ₐ[K] L)
-        (Multiplicative ℤ) :=
-    trivialIntMulDistribMulAction (L ≃ₐ[K] L)
   intro σ z
   rfl
 
@@ -1609,8 +1519,6 @@ theorem finitePlace_stabilizer_eq_idealStabilizer
       finitePlaceMulAction K L
     MulAction.stabilizer (L ≃ₐ[K] L) P =
       MulAction.stabilizer (L ≃ₐ[K] L) P.asIdeal := by
-  let finitePlaceAction :=
-    finitePlaceMulAction K L
   ext σ
   simp only [MulAction.mem_stabilizer_iff]
   change
@@ -1656,19 +1564,11 @@ theorem finitePlace_stabilizer_card_eq_localDegree
     Nat.card
         (MulAction.stabilizer (L ≃ₐ[K] L) P) =
       finiteLogPlaceLocalDegree K L P := by
-  let finitePlaceAction :=
-    finitePlaceMulAction K L
   rw [finitePlace_stabilizer_eq_idealStabilizer K L P]
   unfold finiteLogPlaceLocalDegree
   let p := P.asIdeal.under (𝓞 K)
   have hp : p ≠ ⊥ :=
     Ideal.under_ne_bot (𝓞 K) P.ne_bot
-  let quotientFinite : Finite ((𝓞 K) ⧸ p) :=
-    Ring.HasFiniteQuotients.finiteQuotient hp
-  let residueFinite : Finite p.ResidueField :=
-    inferInstance
-  let residuePerfect : PerfectField p.ResidueField :=
-    inferInstance
   exact
     Ideal.card_stabilizer_eq p P.asIdeal
 

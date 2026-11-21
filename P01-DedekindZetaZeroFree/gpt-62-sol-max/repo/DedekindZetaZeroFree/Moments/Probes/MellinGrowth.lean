@@ -1,3 +1,0 @@
-module
-public import DedekindZetaZeroFree.Moments.Comparison.NonprincipalFrequencySum
-public import DedekindZetaZeroFree.Moments.Principal.FixedMellinWeightErrorEstimates

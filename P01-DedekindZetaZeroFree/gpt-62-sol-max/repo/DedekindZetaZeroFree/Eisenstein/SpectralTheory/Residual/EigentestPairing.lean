@@ -63,7 +63,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 theorem actual_simple_germs_zero_eigentest_pairing
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (hΩopen : IsOpen Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (hf : DifferentiableOn ℂ f Ω) (hc : (0 : ℂ) ∈ Ω) :
     ∃ r : ℝ, 0 < r ∧ Metric.ball (0 : ℂ) r ⊆ Ω ∧
@@ -74,7 +73,7 @@ theorem actual_simple_germs_zero_eigentest_pairing
           inner ℂ t (source.h 0) = deriv a 0 * inner ℂ t (w 0)) := by
   obtain ⟨r, hr, hb, w, hw, he, hg⟩ :=
     actual_simple_germs_first_graph F ζ hζ C R P H U μG hμG hR realization
-      ι buffer Ω f χ source hι hStage hΩopen hΩ hf 0 hc
+      ι buffer Ω f χ source hι hΩopen hΩ hf 0 hc
   refine ⟨r,hr,hb,w,hw,?_,?_⟩
   · simpa only [sub_zero] using he
   · intro t ht

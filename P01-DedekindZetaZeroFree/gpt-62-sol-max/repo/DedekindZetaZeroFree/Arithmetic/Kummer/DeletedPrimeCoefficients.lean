@@ -10,20 +10,6 @@ open scoped Classical NumberField
 open IsDedekindDomain LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
 
- def rawValuationIdeal (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ A.Sf) : Ideal A.R where
-  carrier := {r | v.valuation F (r : F) < 1}
-  zero_mem' := by simp
-  add_mem' := by
-    intro x y hx hy
-    change v.valuation F ((x : F) + (y : F)) < 1
-    exact (ValuationClass.map_add_le_max _ _ _).trans_lt (max_lt hx hy)
-  smul_mem' := by
-    intro x y hy
-    change v.valuation F ((x : F) * (y : F)) < 1
-    rw [map_mul]
-    exact (mul_le_mul_of_nonneg_right (x.property v hv) zero_le).trans_lt (by simpa using hy)
-
 theorem source_kummer_raw_prime_values
     (A : SArithmeticData F) (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
@@ -94,25 +80,9 @@ theorem source_kummer_raw_prime_values
         rw [map_sub, map_pow] at hzero
         exact (sub_eq_zero.mp hzero).symm
 
-      have hmap_extend_le : A.extendIdeal (primeIdeal p) ≤ rawValuationIdeal A p.val hvSf := by
-        apply Ideal.map_le_iff_le_comap.mpr
-        intro a ha
-        change p.val.valuation F (((algebraMap (𝓞 F) A.R) a : A.R) : F) < 1
-        have hcoe : (((algebraMap (𝓞 F) A.R) a : A.R) : F) = algebraMap (𝓞 F) F a := rfl
-        rw [hcoe]
-        exact (p.val.valuation_lt_one_iff_mem (K := F) a).mpr ha
-      have hunit : IsUnit (q U.u) := by
-        have hmax : (A.extendIdeal (primeIdeal p)).IsMaximal := by
-          apply Ideal.Quotient.maximal_of_isField
-          exact (A.exteriorLocalResidueEquiv (primeIdeal p) p.val rfl).toMulEquiv.isField
-            (Field.toIsField (SArithmeticData.exteriorLocalResidue p.val))
-        haveI := hmax
-        rw [isUnit_iff_ne_zero]
-        intro hz0
-        have hmem : U.u ∈ A.extendIdeal (primeIdeal p) := Ideal.Quotient.eq_zero_iff_mem.mp hz0
-        have hlt' : p.val.valuation F (U.u : F) < 1 := hmap_extend_le hmem
-        rw [huval] at hlt'
-        exact lt_irrefl 1 hlt'
+      have hunit : IsUnit (q U.u) :=
+        FrequencyCharacterMasks.quotient_mk_isUnit_of_valuation_eq_one A
+          (primeIdeal p) p.val rfl hvSf U.u huval
       obtain ⟨u, hu⟩ := hunit
       obtain ⟨k, hk, hkchar, hkred⟩ :=
         A.sexticResidueFamily_normalized.2.1 (primeIdeal p) p.val rfl u

@@ -25,7 +25,7 @@ lemma actedRow_contDiffOn {n : ℕ} (U : Set (Fin n → ℝ))
   apply ContDiffOn.sum
   intro a _
   apply ContDiffOn.mul
-  · exact ((contDiff_apply ℝ ℂ a).comp contDiff_fst).contDiffOn
+  · fun_prop
   · have he : ContDiffOn ℝ (⊤ : ℕ∞)
         (fun u => (k u : Matrix (Fin 2) (Fin 2) ℂ) a i) U :=
       ((contDiff_apply ℝ ℂ i).contDiffOn.comp

@@ -7,29 +7,30 @@ public import Mathlib.NumberTheory.JacobiSum.Basic
 
 namespace DedekindZetaZeroFree.Eisenstein
 
-abbrev redq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E)) :
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E))
+
+abbrev redq :
     R E →+* (R E ⧸ q) := Ideal.Quotient.mk q
 
-@[instance_reducible] noncomputable def residueField (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E)) (hq0 : q ≠ ⊥)
+@[instance_reducible] noncomputable def residueField (hq0 : q ≠ ⊥)
     (hqp : q.IsPrime) : Field (R E ⧸ q) := by
   letI : q.IsMaximal := hqp.isMaximal hq0
   exact Ideal.Quotient.field q
 
-@[instance_reducible] noncomputable def residueFintype (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E)) (hq0 : q ≠ ⊥) :
+@[instance_reducible] noncomputable def residueFintype (hq0 : q ≠ ⊥) :
     Fintype (R E ⧸ q) := by
   letI : Finite (R E ⧸ q) := Ring.HasFiniteQuotients.finiteQuotient hq0
   exact Fintype.ofFinite _
 
-noncomputable def residueCard (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E)) (hq0 : q ≠ ⊥) : ℕ :=
+noncomputable def residueCard (hq0 : q ≠ ⊥) : ℕ :=
   @Fintype.card (R E ⧸ q) (residueFintype E q hq0)
 
-noncomputable def cubicResidueExponent (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E)) (hq0 : q ≠ ⊥) : ℕ :=
+noncomputable def cubicResidueExponent (hq0 : q ≠ ⊥) : ℕ :=
   (residueCard E q hq0 - 1) / 3
+
+end
 
 theorem redq_η_isPrimitiveRoot (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
@@ -57,10 +58,13 @@ theorem redq_η_isPrimitiveRoot (E : Type) [Field E] [NumberField E]
   exact isPrimitiveRoot_of_mem_nthRootsFinset (by decide : Nat.Prime 3)
     ((Polynomial.mem_nthRootsFinset (by decide : 0 < 3) 1).mpr hpow) hne
 
-theorem three_dvd_residueCard_sub_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E))
-    (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E))
+  (hq0 : q ≠ ⊥) (hqp : q.IsPrime) (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤)
+include hqp hq6
+
+theorem three_dvd_residueCard_sub_one :
     3 ∣ residueCard E q hq0 - 1 := by
   letI := residueField E q hq0 hqp
   letI := residueFintype E q hq0
@@ -70,10 +74,7 @@ theorem three_dvd_residueCard_sub_one (E : Type) [Field E] [NumberField E]
   exact hp.dvd_of_pow_eq_one _ (FiniteField.pow_card_sub_one_eq_one _
     (hp.ne_zero (by decide : 3 ≠ 0)))
 
-theorem cubicResidueExponent_pos (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E))
-    (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem cubicResidueExponent_pos :
     0 < cubicResidueExponent E q hq0 := by
   letI := residueField E q hq0 hqp
   letI := residueFintype E q hq0
@@ -82,10 +83,7 @@ theorem cubicResidueExponent_pos (E : Type) [Field E] [NumberField E]
   unfold cubicResidueExponent
   exact Nat.div_pos (Nat.le_of_dvd (by omega) hd) (by decide)
 
-theorem twice_cubicResidueExponent_lt (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E))
-    (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem twice_cubicResidueExponent_lt :
     2 * cubicResidueExponent E q hq0 < residueCard E q hq0 - 1 := by
   have hp := cubicResidueExponent_pos E q hq0 hqp hq6
   have hd := three_dvd_residueCard_sub_one E q hq0 hqp hq6
@@ -93,10 +91,16 @@ theorem twice_cubicResidueExponent_lt (E : Type) [Field E] [NumberField E]
     Nat.div_mul_cancel hd
   omega
 
-private theorem roots_red_bijective (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+end
+
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (ω : E)
+  (hω : IsPrimitiveRoot ω 3) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
+  (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤)
+include ω hω hq0 hqp hq6
+
+private theorem roots_red_bijective :
     Function.Bijective (restrictRootsOfUnity (redq E q) 3) := by
   letI := residueField E q hq0 hqp
   have hp := hω.toInteger_isPrimitiveRoot
@@ -119,10 +123,7 @@ private theorem roots_red_bijective (E : Type) [Field E] [NumberField E]
       change redq E q (η E ω hω ^ i) = (a.val : R E ⧸ q)
       simpa only [map_pow] using hai
 
-theorem existsUnique_cubicResidueCharacter (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem existsUnique_cubicResidueCharacter :
     ∃! ρ : MulChar (R E ⧸ q) (R E),
       ρ 0 = 0 ∧ ∀ x : R E ⧸ q, x ≠ 0 →
         ρ x ∈ ({1, η E ω hω, η E ω hω ^ 2} : Set (R E)) ∧
@@ -177,40 +178,25 @@ theorem existsUnique_cubicResidueCharacter (E : Type) [Field E] [NumberField E]
     exact congrArg (fun z : rootsOfUnity 3 (R E) => (z.val : R E))
       ((roots_red_bijective E ω hω q hq0 hqp hq6).1 he)
 
-noncomputable def ρq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) : MulChar (R E ⧸ q) (R E) :=
+noncomputable def ρq : MulChar (R E ⧸ q) (R E) :=
   Classical.choose (existsUnique_cubicResidueCharacter E ω hω q hq0 hqp hq6)
 
-@[simp] theorem ρq_zero (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+@[simp] theorem ρq_zero :
     ρq E ω hω q hq0 hqp hq6 0 = 0 := by
   exact MulChar.map_zero _
 
-theorem ρq_mem (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) (x : R E ⧸ q) (hx : x ≠ 0) :
+theorem ρq_mem (x : R E ⧸ q) (hx : x ≠ 0) :
     ρq E ω hω q hq0 hqp hq6 x ∈ ({1, η E ω hω, η E ω hω ^ 2} : Set (R E)) := by
   exact (Classical.choose_spec (existsUnique_cubicResidueCharacter E ω hω q hq0 hqp hq6)).1.2 x hx |>.1
 
-theorem redq_ρq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) (x : R E ⧸ q) :
+theorem redq_ρq (x : R E ⧸ q) :
     redq E q (ρq E ω hω q hq0 hqp hq6 x) = x ^ cubicResidueExponent E q hq0 := by
   by_cases hx : x = 0
   · subst x
     simp [cubicResidueExponent_pos E q hq0 hqp hq6 |>.ne']
   · exact (Classical.choose_spec (existsUnique_cubicResidueCharacter E ω hω q hq0 hqp hq6)).1.2 x hx |>.2
 
-theorem orderOf_ρq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem orderOf_ρq :
     orderOf (ρq E ω hω q hq0 hqp hq6) = 3 := by
   letI := residueField E q hq0 hqp
   letI := residueFintype E q hq0
@@ -240,40 +226,34 @@ theorem orderOf_ρq (E : Type) [Field E] [NumberField E]
     omega
   exact orderOf_eq_prime hc hn
 
-theorem ρq_cube (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem ρq_cube :
     ρq E ω hω q hq0 hqp hq6 ^ 3 = 1 := by
   simpa [orderOf_ρq E ω hω q hq0 hqp hq6] using pow_orderOf_eq_one (ρq E ω hω q hq0 hqp hq6)
 
-theorem ρq_sq_ne_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem ρq_sq_ne_one :
     ρq E ω hω q hq0 hqp hq6 ^ 2 ≠ 1 := by
   intro h
   have := orderOf_dvd_of_pow_eq_one h
   rw [orderOf_ρq E ω hω q hq0 hqp hq6] at this
   norm_num at this
 
-@[simp] theorem ρq_neg_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+@[simp] theorem ρq_neg_one :
     ρq E ω hω q hq0 hqp hq6 (-1) = 1 := by
   exact MulChar.val_neg_one_eq_one_of_odd_order (by decide : Odd 3) (ρq_cube E ω hω q hq0 hqp hq6)
 
-noncomputable def ρqC (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (ι : E →+* ℂ) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) : MulChar (R E ⧸ q) ℂ :=
+end
+
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (ω : E)
+  (hω : IsPrimitiveRoot ω 3) (ι : E →+* ℂ) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
+  (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤)
+include ω hω ι hq0 hqp hq6
+
+noncomputable def ρqC : MulChar (R E ⧸ q) ℂ :=
   (ρq E ω hω q hq0 hqp hq6).ringHomComp (ιR E ι)
 
-theorem ρqC_facts (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (ι : E →+* ℂ) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem ρqC_facts :
     orderOf (ρqC E ω hω ι q hq0 hqp hq6) = 3 ∧
       ρqC E ω hω ι q hq0 hqp hq6 ^ 3 = 1 ∧
       ρqC E ω hω ι q hq0 hqp hq6 ^ 2 ≠ 1 ∧
@@ -286,5 +266,7 @@ theorem ρqC_facts (E : Type) [Field E] [NumberField E]
   · simpa only [ρqC, MulChar.ringHomComp_pow, MulChar.ringHomComp_ne_one_iff hi] using
       ρq_sq_ne_one E ω hω q hq0 hqp hq6
   · simp only [ρqC, MulChar.ringHomComp_apply, ρq_neg_one, map_one]
+
+end
 
 end DedekindZetaZeroFree.Eisenstein

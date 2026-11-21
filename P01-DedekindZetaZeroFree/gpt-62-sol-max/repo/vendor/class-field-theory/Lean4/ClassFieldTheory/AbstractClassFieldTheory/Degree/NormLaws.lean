@@ -96,7 +96,11 @@ theorem conjugateFixedElement_coe [ContinuousMul G]
       A.ρ σ⁻¹ a.1 :=
   rfl
 
- def absoluteConjugationEquiv {G : Type*} [Group G] [TopologicalSpace G]
+section
+
+variable {G : Type*} [Group G] [TopologicalSpace G]
+
+ def absoluteConjugationEquiv
     (σ : G) :
     (baseField G).toSubgroup ≃
       (baseField G).toSubgroup where
@@ -109,7 +113,7 @@ theorem conjugateFixedElement_coe [ContinuousMul G]
     apply Subtype.ext
     simp [mul_assoc]
 
- theorem mem_absoluteExtension {G : Type*} [Group G] [TopologicalSpace G]
+ theorem mem_absoluteExtension
     (K : ClosedSubgroup G)
     (x : (baseField G).toSubgroup) :
     x ∈ extensionSubgroup (baseField G) K
@@ -117,8 +121,7 @@ theorem conjugateFixedElement_coe [ContinuousMul G]
   Iff.rfl
 
 /-- Conjugation identifies the absolute coset spaces for `K^σ` and `K`. -/
-noncomputable def absoluteConjugateCosetEquiv
-    {G : Type*} [Group G] [TopologicalSpace G] [ContinuousMul G]
+noncomputable def absoluteConjugateCosetEquiv [ContinuousMul G]
     (K : ClosedSubgroup G) (σ : G) :
     ((baseField G).toSubgroup ⧸
         extensionSubgroup (baseField G)
@@ -141,13 +144,14 @@ Establishes the identity `absoluteConjugateCosetEquiv K σ (QuotientGroup.mk x) 
 (absoluteConjugationEquiv σ x)`.
 -/
 @[simp]
-theorem absoluteConjugateCosetEquiv_mk
-    {G : Type*} [Group G] [TopologicalSpace G] [ContinuousMul G]
+theorem absoluteConjugateCosetEquiv_mk [ContinuousMul G]
     (K : ClosedSubgroup G) (σ : G)
     (x : (baseField G).toSubgroup) :
     absoluteConjugateCosetEquiv K σ (QuotientGroup.mk x) =
       QuotientGroup.mk (absoluteConjugationEquiv σ x) :=
   rfl
+
+end
 
 private theorem relativeCosetAction_absoluteConjugate [ContinuousMul G]
     (A : Rep ℤ G) (K : ClosedSubgroup G) (σ : G)
@@ -251,13 +255,16 @@ theorem relativeNorm_absoluteConjugate_apply [ContinuousMul G]
           (le_baseField K) a q) := by
             rw [(absoluteConjugateCosetEquiv K σ).sum_comp]
 
+section
+
+variable (A : Rep ℤ G) (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
+  (hnormal : (extensionSubgroup K L hLK).Normal)
+include hLK hnormal
+
 /-- The action of an element of `G_K` on `A_L`, when `L | K` is Galois.
 
 Normality is used only to prove that the translate is still fixed by `G_L`. -/
 def normalExtensionAction
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
     (k : K.toSubgroup) (a : ambientFixedAddSubgroup A L) :
     ambientFixedAddSubgroup A L := by
   refine ⟨A.ρ k.1 a.1, ?_⟩
@@ -280,9 +287,6 @@ A L) : A.V) = A.ρ k.1 a.1`.
 -/
 @[simp]
 theorem normalExtensionAction_coe
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
     (k : K.toSubgroup) (a : ambientFixedAddSubgroup A L) :
     ((normalExtensionAction A K L hLK hnormal k a : ambientFixedAddSubgroup A L) : A.V) =
       A.ρ k.1 a.1 :=
@@ -291,9 +295,6 @@ theorem normalExtensionAction_coe
 /-- For a finite Galois abstract extension, the relative norm is invariant under
 the `G_K`-conjugacy action on `A_L`. -/
 theorem relativeNorm_normalExtensionAction
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (k : K.toSubgroup) (a : ambientFixedAddSubgroup A L) :
     relativeNorm A K L hLK (normalExtensionAction A K L hLK hnormal k a) =
@@ -318,6 +319,8 @@ theorem relativeNorm_normalExtensionAction
   simp only [relativeNorm_apply_coe, relativeNormValue]
   simp_rw [hterm]
   exact e.sum_comp (relativeCosetAction A K L hLK a)
+
+end
 
 /-- Finiteness is closed under composition in a tower of closed subgroups. -/
 theorem relativeTowerQuotientFinite
@@ -452,15 +455,6 @@ theorem norm_trans_apply (A : Rep ℤ G)
   exact finiteTowerNormTransApplyAux A T.base T.middle T.top
     T.top_le_middle T.middle_le_base a
 
-/-- Homomorphism form of norm transitivity along a finite tower. -/
-theorem norm_trans (A : Rep ℤ G) :
-    (relativeNorm A T.base T.middle T.middle_le_base).comp
-        (relativeNorm A T.middle T.top T.top_le_middle) =
-      relativeNorm A T.base T.top
-        (T.top_le_middle.trans T.middle_le_base) := by
-  apply AddMonoidHom.ext
-  intro a
-  exact T.norm_trans_apply A a
 
 end DegreeData.FiniteTower
 

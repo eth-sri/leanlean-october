@@ -51,7 +51,6 @@ private theorem smooth_arch_orbit
   have hn : ∀ᶠ b in 𝓝 a, a⁻¹ * b ∈ E.target :=
     (show ContinuousAt (fun b : KPSmoothActualFlowData.GInfinity F => a⁻¹ * b) a from
       continuousAt_const.mul continuousAt_id).preimage_mem_nhds (by
-        change E.target ∈ 𝓝 (a⁻¹ * a)
         rw [inv_mul_cancel]
         exact E.open_target.mem_nhds (h1 ▸ E.map_source h0))
   filter_upwards [hn] with b hb
@@ -87,8 +86,7 @@ private theorem matrixClass_contMDiffAt
   have hc := (matrixClass_continuousAt (M x) hx).comp hM.continuousAt
   apply contMDiffAt_iff.mpr
   refine ⟨hc, ?_⟩
-  simp only [extChartAt_model_space_eq_id, PartialEquiv.refl_coe, Function.comp_id,
-    extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp]
+  simp only [extChartAt_model_space_eq_id, PartialEquiv.refl_coe, extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp]
   rw [hC]
   let g := matrixClass (M x)
   let m := g.out⁻¹

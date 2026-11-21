@@ -11,9 +11,13 @@ open scoped NumberField Classical
 open ExteriorIdealEuler
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem primeTerm_bound {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
-    (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) (p : PrimeIndex cS) :
+section
+
+variable {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (σ : ℝ)
+  (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) (p : PrimeIndex cS)
+include ha hσ hs
+
+private theorem primeTerm_bound :
     ‖primeTerm a s p‖ ≤ (idealNorm p.val.val) ^ (-σ) ∧
       (idealNorm p.val.val) ^ (-σ) ≤ 1 / 2 := by
   have hq : 2 ≤ idealNorm p.val.val := idealNorm_prime_ge_two _ p.property
@@ -36,9 +40,7 @@ private theorem primeTerm_bound {cS : Ideal (𝓞 F)}
       _ = (idealNorm p.val.val)⁻¹ := Real.rpow_neg_one _
       _ ≤ 1 / 2 := by simpa using inv_anti₀ (by norm_num : (0 : ℝ) < 2) hq
 
-private theorem primeLog_bound {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
-    (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) (p : PrimeIndex cS) :
+private theorem primeLog_bound :
     ‖-Complex.log (1 - primeTerm a s p)‖ ≤
       (3 / 2 : ℝ) * (idealNorm p.val.val) ^ (-σ) := by
   have h := primeTerm_bound a ha σ hσ s hs p
@@ -46,6 +48,8 @@ private theorem primeLog_bound {cS : Ideal (𝓞 F)}
   have hb := Complex.norm_log_one_add_half_le_self (z := -primeTerm a s p) (by simpa using h.1.trans h.2)
   simp only [norm_neg, ← sub_eq_add_neg] at hb
   exact hb.trans (mul_le_mul_of_nonneg_left h.1 (by norm_num))
+
+end
 
  def primeToNonzero {cS : Ideal (𝓞 F)} (p : PrimeIndex cS) : NonzeroIdeal F :=
   ⟨p.val.val, p.val.property.1⟩
@@ -61,21 +65,23 @@ private theorem primeMajorant_summable {cS : Ideal (𝓞 F)} (σ : ℝ) (hσ : 1
     Summable (fun p : PrimeIndex cS => (3 / 2 : ℝ) * (idealNorm p.val.val) ^ (-σ)) := by
   exact ((ideal_norm_rpow_summable F σ hσ).comp_injective primeToNonzero_injective).mul_left _
 
-private theorem primeLog_summable_norm {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
+section
+
+variable {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ)
+include cS a
+
+private theorem primeLog_summable_norm (ha : IsCoefficient a)
     (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) :
     Summable (fun p : PrimeIndex cS => ‖-Complex.log (1 - primeTerm a s p)‖) := by
   exact (primeMajorant_summable σ hσ).of_nonneg_of_le (fun _ => norm_nonneg _) (primeLog_bound a ha σ hσ s hs)
 
-private theorem primeTerm_differentiable {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (p : PrimeIndex cS) :
+private theorem primeTerm_differentiable (p : PrimeIndex cS) :
     Differentiable ℂ (fun s => primeTerm a s p) := by
   have hn : (Ideal.absNorm p.val.val : ℂ) ≠ 0 := by
     exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr p.val.property.1)
   exact ((differentiable_id (𝕜 := ℂ)).neg.const_cpow (Or.inl hn)).const_mul (a p.val)
 
-private theorem primeLog_differentiable {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (σ : ℝ) (hσ : 1 < σ)
+private theorem primeLog_differentiable (ha : IsCoefficient a) (σ : ℝ) (hσ : 1 < σ)
     (p : PrimeIndex cS) :
     DifferentiableOn ℂ (fun s => -Complex.log (1 - primeTerm a s p)) {s : ℂ | σ < s.re} := by
   apply DifferentiableOn.neg
@@ -85,11 +91,10 @@ private theorem primeLog_differentiable {cS : Ideal (𝓞 F)}
   have hb : ‖-primeTerm a s p‖ < 1 := by rw [norm_neg]; linarith [h.1.trans h.2]
   simpa only [← sub_eq_add_neg] using Complex.mem_slitPlane_of_norm_lt_one hb
 
-def eulerLog {cS : Ideal (𝓞 F)} (a : ExteriorIdeal cS → ℂ) (s : ℂ) : ℂ :=
+def eulerLog (s : ℂ) : ℂ :=
   ∑' p : PrimeIndex cS, -Complex.log (1 - primeTerm a s p)
 
-theorem eulerLog_differentiableOn {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) :
+theorem eulerLog_differentiableOn (ha : IsCoefficient a) :
     DifferentiableOn ℂ (eulerLog a) {s : ℂ | 1 < s.re} := by
   intro s hs
   change 1 < s.re at hs
@@ -103,8 +108,7 @@ theorem eulerLog_differentiableOn {cS : Ideal (𝓞 F)}
       (fun p z hz => primeLog_bound a ha σ hσ z hz.le p)
   exact (hd.differentiableAt (hopen.mem_nhds hsσ)).differentiableWithinAt
 
-theorem eulerLog_norm_le {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
+theorem eulerLog_norm_le (ha : IsCoefficient a)
     (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) :
     ‖eulerLog a s‖ ≤ (3 / 2 : ℝ) * ∑' I : NonzeroIdeal F, (idealNorm I.val) ^ (-σ) := by
   have hmaj := primeMajorant_summable (cS := cS) σ hσ
@@ -116,8 +120,7 @@ theorem eulerLog_norm_le {cS : Ideal (𝓞 F)}
     (fun I _ => mul_nonneg (by norm_num) (Real.rpow_nonneg (by dsimp [idealNorm]; positivity) _)) (fun _ => le_rfl)
     ((ideal_norm_rpow_summable F σ hσ).mul_left _)
 
-theorem exp_eulerLog {cS : Ideal (𝓞 F)}
-    (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (s : ℂ) (hs : 1 < s.re) :
+theorem exp_eulerLog (ha : IsCoefficient a) (s : ℂ) (hs : 1 < s.re) :
     Complex.exp (eulerLog a s) = ∑' I : ExteriorIdeal cS, summand a s I := by
   have hn := primeLog_summable_norm a ha s.re hs s le_rfl
   have hp := hn.of_norm.hasSum.cexp
@@ -138,6 +141,8 @@ theorem exp_eulerLog {cS : Ideal (𝓞 F)}
       exact (hlocal p).symm
     · rfl
   exact hp'.unique (exterior_ideal_euler a ha s hs).2.1
+
+end
 
 theorem ray_isCoefficient (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (ω : RayClassCharacter F 𝔪) :
     IsCoefficient (fun I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) => ω I.val) := by

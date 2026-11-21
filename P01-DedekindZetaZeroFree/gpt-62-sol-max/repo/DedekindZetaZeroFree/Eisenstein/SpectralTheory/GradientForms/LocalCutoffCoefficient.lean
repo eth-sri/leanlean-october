@@ -23,7 +23,7 @@ variable (K : Set (X_U F ζ hζ U)) (hK : IsCompact K)
 
 def actualLocalCoefficient (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
     (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H) :
-    KPCoreChartLocalizers.E (A.chart i).n → ℂ := fun x =>
+    CoreChartLocalizers.E (A.chart i).n → ℂ := fun x =>
   (A.cutoff i x : ℂ) * (KPContActualSectorSmoothTestModules.scalarSections f (A.chart i).component).val
     ((A.chart i).coordinates x)
 

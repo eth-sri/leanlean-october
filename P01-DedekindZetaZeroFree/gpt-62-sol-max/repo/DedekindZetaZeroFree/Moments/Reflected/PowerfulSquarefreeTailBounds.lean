@@ -74,8 +74,8 @@ private theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
   have hf : A.exteriorNorm T.f ^ 2 ≤ A.exteriorNorm h := by
     have := (squarefree_radical_divisor_pow_two_le_powerful T.h.val T.h.property.1
       T.powerful T.f.val T.f_squarefree T.f_divides_radical).2
-    simpa only [hT] using this
-  have hfp : A.exteriorNorm T.f ^ 2 < 2 * P := hf.trans_lt hh.2.2
+    grind
+  have hfp := hf.trans_lt hh.2.2
   have hdD : A.exteriorNorm d.val < 2 * D := hd.2.1
   have hnum : A.exteriorNorm d.val ^ 2 * A.exteriorNorm T.f ^ 2 ≤ 8 * D ^ 2 * P := by
     have hd2 : A.exteriorNorm d.val ^ 2 ≤ (2 * D) ^ 2 := by
@@ -84,12 +84,11 @@ private theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
     nlinarith
   let t := (A.exteriorNorm d.val ^ 2 * A.exteriorNorm T.f ^ 2) / Z
   have ht : 0 < t := by dsimp [t]; positivity
-  have htL : t ≤ length Z P D := by
-    exact div_le_div_of_nonneg_right hnum hZ0.le
+  have htL : t ≤ length Z P D := div_le_div_of_nonneg_right hnum hZ0.le
   have hx : profileArgument A T d.val c.val Z = frozenNorm A T c / t := by
     dsimp [profileArgument, frozenNorm, rowNorm, t]
     field_simp
-  have hl : 0 < length Z P D := ht.trans_le htL
+  have hl := ht.trans_le htL
   rw [hx]
   refine ⟨div_pos hQ0 ht, ?_, ?_⟩
   · rw [inv_div]

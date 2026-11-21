@@ -93,8 +93,7 @@ private theorem localArchEquiv_abs_det (F : Type) [Field F] [NumberField F]
     change (mixedEmbedding.euclidean.toMixed F) (localArchEquiv F d x) = _
     rw [localArchEquiv_apply]
     simp only [PoissonArch.infiniteAdeleToSpace_coordinates, map_mul,
-      LinearMap.prodMap_apply, ContinuousLinearEquiv.coe_coe,
-      LinearMap.comp_apply, ContinuousLinearEquiv.apply_symm_apply]
+      LinearMap.prodMap_apply, LinearMap.comp_apply]
     have hx := PoissonArch.infiniteAdeleToSpace_coordinates F
       ((PoissonArch.infiniteAdeleToSpace F).symm x)
     rw [ContinuousLinearEquiv.apply_symm_apply] at hx

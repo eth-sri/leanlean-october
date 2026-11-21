@@ -47,9 +47,9 @@ theorem finiteRayModulusIdeal_ne_bot
         simp [hpq, hne, Multiset.mem_replicate]
   rw [finiteRayModulusIdeal, hcount]
   by_cases hp : p ∈ f.support
-  · simp [Finset.sum_eq_single p, hp]
+  · simp [hp]
   · have hz : f p = 0 := Finsupp.notMem_support_iff.mp hp
-    simp [Finset.sum_eq_single p, hp, hz]
+    simp [hp, hz]
 
 theorem finiteRayModulusIdeal_coprime
     (K : Type) [Field K] [NumberField K]

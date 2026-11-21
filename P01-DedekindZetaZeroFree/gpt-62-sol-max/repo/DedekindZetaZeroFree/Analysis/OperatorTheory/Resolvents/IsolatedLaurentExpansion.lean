@@ -13,25 +13,23 @@ open Filter Topology
 
 def poleLocation (β : ℝ) : ℝ := β⁻¹ - 1
 
-def complementProjection
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) : H →L[ℂ] H :=
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  (B : H →L[ℂ] H) (β : ℝ)
+include B β
+
+def complementProjection : H →L[ℂ] H :=
   1 - KPIsolatedProjection.projection B β
 
-def correctedPencil
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) (z : ℂ) : H →L[ℂ] H :=
+def correctedPencil (z : ℂ) : H →L[ℂ] H :=
   KPResolventPencil.shiftedPencil B z + KPIsolatedProjection.projection B β
 
-def holomorphicComplement
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) (z : ℂ) : H →L[ℂ] H :=
+def holomorphicComplement (z : ℂ) : H →L[ℂ] H :=
   B * complementProjection B β * Ring.inverse (correctedPencil B β z) *
     complementProjection B β
 
-private lemma pencil_decomposition
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (β : ℝ) (hβ : β ≠ 0) (z : ℂ)
+private lemma pencil_decomposition (hβ : β ≠ 0) (z : ℂ)
     (hz : z ≠ (poleLocation β : ℂ))
     (hPP : KPIsolatedProjection.projection B β * KPIsolatedProjection.projection B β =
       KPIsolatedProjection.projection B β)
@@ -130,10 +128,16 @@ private lemma pencil_decomposition
   rw [mul_add, mul_smul_comm, hBP, smul_smul, hs]
   rfl
 
-theorem exists_laurent_disk
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ) (hβ : β ≠ 0)
-    (hiso : KPIsolatedProjection.IsIsolatedSpectralPoint B β) :
+end
+
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ) (hβ : β ≠ 0)
+  (hiso : KPIsolatedProjection.IsIsolatedSpectralPoint B β)
+include hB hβ hiso
+
+theorem exists_laurent_disk :
     ∃ r : ℝ, 0 < r ∧
       (∀ z : ℂ, ‖z - (poleLocation β : ℂ)‖ < r →
         IsUnit (correctedPencil B β z)) ∧
@@ -168,10 +172,7 @@ theorem exists_laurent_disk
     exact pencil_decomposition B β hβ z (sub_ne_zero.mp (norm_pos_iff.mp hz)) hPP hBP hPB
       (hball (by simpa [Metric.mem_ball, dist_eq_norm] using hzr))
 
-theorem simplePole
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (β : ℝ) (hβ : β ≠ 0)
-    (hiso : KPIsolatedProjection.IsIsolatedSpectralPoint B β) :
+theorem simplePole :
     KPIsolatedProjection.projection B β ≠ 0 ∧
       MeromorphicAt (KPResolventPencil.shiftedResolvent B) (poleLocation β : ℂ) ∧
       meromorphicOrderAt (KPResolventPencil.shiftedResolvent B) (poleLocation β : ℂ) =
@@ -234,6 +235,8 @@ theorem simplePole
   · intro hfin
     letI := hfin
     exact KPIsolatedProjection.projection_finiteRank B β
+
+end
 
 end
 end DedekindZetaZeroFree.KPIsolatedLaurent

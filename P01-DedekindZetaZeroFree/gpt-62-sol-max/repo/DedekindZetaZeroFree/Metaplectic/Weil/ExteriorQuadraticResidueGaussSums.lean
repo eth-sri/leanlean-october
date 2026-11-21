@@ -31,7 +31,7 @@ private theorem residue_average
   let O := v.adicCompletionIntegers F
   let κ := IsLocalRing.ResidueField O
   let r : κ → O := fun z => (IsLocalRing.residue_surjective (R := O) z).choose
-  have hr (z : κ) : IsLocalRing.residue O (r z) = z :=
+  have hr (z : κ) :=
     (IsLocalRing.residue_surjective (R := O) z).choose_spec
   let U : Set (v.adicCompletion F) := {x | ‖x‖ < 1}
   let b : κ → v.adicCompletion F := fun z => r z
@@ -57,7 +57,7 @@ private theorem residue_average
       have hn : ‖x - b z‖ < 1 := by
         change ‖y‖ < 1 at hy
         have heq : x - b z = y := by change b z + y = x at hxy; rw [← hxy]; abel
-        simpa only [heq] using hy
+        grind
       have hm : (⟨x, mem_adicCompletionIntegers_of_norm_le_one v hx⟩ : O) - r z ∈
           IsLocalRing.maximalIdeal O := (hmax _).mpr hn
       have heq := (IsLocalRing.residue_eq_zero_iff _).mpr hm
@@ -99,7 +99,7 @@ private theorem residue_average
     rw [hfg ⟨x, mem_adicCompletionIntegers_of_norm_le_one v hxB⟩,
       (hcoset x hxB z).mp hx]
   have hfin (z : κ) : μ (b z +ᵥ U) ≠ ⊤ := by simpa only [measure_vadd] using hUfin
-  have hint (z : κ) : IntegrableOn f (b z +ᵥ U) μ :=
+  have hint (z : κ) :=
     (integrableOn_const (hfin z) (C := g z)).congr_fun (he z).symm (hU.const_vadd (b z))
   have hcard : Fintype.card κ = Ideal.absNorm v.asIdeal := by
     let e := (finitePlaceIdealResidueEquivCompletion v).trans
@@ -485,8 +485,7 @@ private theorem local_order (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Ex
    letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
    have hchi (u : (A.R ⧸ A.extendIdeal I)ˣ) :
        A.sexticResiduePowerChar σ I 1 u = σ (A.sexticResidueFamily I u : F) := by
-     simp [ SArithmeticData.sexticResiduePowerChar, SArithmeticData.sexticExponent,
-       MulChar.ofUnitHom_coe]
+     simp [ SArithmeticData.sexticResiduePowerChar, SArithmeticData.sexticExponent]
    have h6 : A.sexticResiduePowerChar σ I 1 ^ 6 = 1 := by
      apply MulChar.ext
      intro u

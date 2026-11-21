@@ -62,13 +62,8 @@ theorem continuous_torusFamily {d P : Type*} [TopologicalSpace P]
 section Haar
 variable {d : Type*} [Fintype d]
 
-local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 
-local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
 
-local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
 
 def coordinateMap (e : finiteLevelAdditiveQuotient K ≃ₜ+ UnitAddTorus d) :
     SmoothAdeleQuotient F →+ UnitAddTorus d :=

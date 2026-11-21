@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.Eisenstein.Residues.ScalarGermUniqueness
+public import DedekindZetaZeroFree.Eisenstein.Continuation.ScalarAndSmoothGerms
 public import DedekindZetaZeroFree.Eisenstein.Continuation.CompactRestrictionUpperRootPeriods
 
 @[expose] public section

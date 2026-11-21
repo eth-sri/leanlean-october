@@ -28,7 +28,7 @@ private theorem inv_real_even (b : SchwartzMap W ℂ)
       filter_upwards [] with v
       simp only [smul_eq_mul, map_mul, hr, he, ← Complex.exp_conj,
         inner_neg_left, mul_neg, Complex.ofReal_neg, Complex.conj_ofReal, Complex.conj_I]
-      congr 2 <;> ring
+      simp
     _ = _ := integral_neg_eq_self
       (fun v : W => Complex.exp ((↑(2 * Real.pi * inner ℝ v w) * Complex.I)) • b v) volume
 
@@ -40,7 +40,7 @@ private theorem build :
   obtain ⟨f, hf, hc, hd, hn, h0⟩ :=
     exists_contDiff_tsupport_subset (n := (⊤ : ℕ∞)) (ball_mem_nhds (0 : W) (by norm_num : (0 : ℝ) < 1))
   let g : W → ℝ := fun z => (f z + f (-z)) / 2
-  have gd : ContDiff ℝ (⊤ : ℕ∞) g := (hd.add (hd.comp contDiff_neg)).div_const 2
+  have gd := (hd.add (hd.comp contDiff_neg)).div_const 2
   have gc : HasCompactSupport g := by
     have h := (hc.add (hc.comp_homeomorph (Homeomorph.neg W))).comp_left
       (g := fun x : ℝ => x / 2) (by simp)
@@ -53,7 +53,7 @@ private theorem build :
   have g0 : g 0 = 1 := by simp [g, h0]
   have gi : 0 < ∫ z, g z := gd.continuous.integral_pos_of_hasCompactSupport_nonneg_nonzero
     gc gn (x := 0) (by simp [g0])
-  let b : SchwartzMap W ℂ := (gc.comp_left (g := Complex.ofReal) (by simp)).toSchwartzMap
+  let b := (gc.comp_left (g := Complex.ofReal) (by simp)).toSchwartzMap
     (Complex.ofRealCLM.contDiff.comp gd)
   have hb : ∀ z, b z = (g z : ℂ) := fun z => rfl
   refine ⟨b, ?_, ?_, ?_, ?_⟩
@@ -62,8 +62,8 @@ private theorem build :
     by_contra hnz
     have hz1 : z ∉ ball (0 : W) 1 := fun h => hnz (ball_subset_closedBall h)
     have hz2 : -z ∉ ball (0 : W) 1 := by simpa [mem_ball, dist_zero_right] using hz1
-    have h1 : f z = 0 := not_ne_iff.mp (fun h => hz1 (hf (subset_tsupport f (by exact h))))
-    have h2 : f (-z) = 0 := not_ne_iff.mp (fun h => hz2 (hf (subset_tsupport f (by exact h))))
+    have h1 := not_ne_iff.mp (fun h => hz1 (hf (subset_tsupport f (h))))
+    have h2 := not_ne_iff.mp (fun h => hz2 (hf (subset_tsupport f (h))))
     simpa [Function.mem_support, hb, g, h1, h2] using hz
   · intro z; simp [hb]
   · intro z; simp [hb, g, add_comm]

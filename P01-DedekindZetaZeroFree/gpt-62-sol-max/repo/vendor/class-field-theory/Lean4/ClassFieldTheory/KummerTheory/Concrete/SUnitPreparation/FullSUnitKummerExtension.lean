@@ -144,13 +144,15 @@ theorem fullSUnitKummerExtension_isGalois
   KummerTheory.kummerRadicalExtension_isGalois n
     (fullSUnitKummerSubgroup (K := K) n S).1
 
+section
+
+variable {Omega : Type*} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega] (n : ℕ+)
+  (hn : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+  (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n hn hmu S
+
 /-- The Galois group of `N/K` is finite. -/
-theorem finite_fullSUnitKummerExtension_galois
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem finite_fullSUnitKummerExtension_galois :
     Finite
       Gal(fullSUnitKummerExtension
         (K := K) (Omega := Omega) n S/K) := by
@@ -177,12 +179,7 @@ theorem finite_fullSUnitKummerExtension_galois
     e.symm.toEquiv
 
 /-- The extension `N = K(√[n]{Kˢ})` is finite-dimensional. -/
-theorem fullSUnitKummerExtension_finiteDimensional
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem fullSUnitKummerExtension_finiteDimensional :
     FiniteDimensional K
       (fullSUnitKummerExtension
         (K := K) (Omega := Omega) n S) := by
@@ -196,81 +193,11 @@ theorem fullSUnitKummerExtension_finiteDimensional
       (K := K) (Omega := Omega) n hn hmu S
   exact IsGalois.finiteDimensional_of_finite K E
 
-/-- A finite set of the actual Kummer roots generates the full `S`-unit
-Kummer extension.  Finiteness is obtained from Kummer duality, and the
-finite root set is extracted from a primitive element of the resulting
-finite separable extension. -/
-theorem exists_finset_fullSUnitKummerRootSet_adjoin_eq
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    ∃ T : Finset Omega,
-      (T : Set Omega) ⊆
-          KummerTheory.kummerRootSet
-            (K := K) (Omega := Omega) n
-            (fullSUnitKummerSubgroup (K := K) n S).1 ∧
-        IntermediateField.adjoin K (T : Set Omega) =
-          fullSUnitKummerExtension
-            (K := K) (Omega := Omega) n S := by
-  let E :=
-    fullSUnitKummerExtension
-      (K := K) (Omega := Omega) n S
-  let _ : IsGalois K E :=
-    fullSUnitKummerExtension_isGalois
-      (K := K) (Omega := Omega) n S
-  let _ : FiniteDimensional K E :=
-    fullSUnitKummerExtension_finiteDimensional
-      (K := K) (Omega := Omega) n hn hmu S
-  obtain ⟨theta, htheta⟩ :=
-    Field.exists_primitive_element K E
-  obtain ⟨T, hT, hthetaT⟩ :=
-    KummerTheory.exists_finset_kummerRootSet_of_mem_kummerRadicalExtension
-      n (fullSUnitKummerSubgroup (K := K) n S).1 theta.property
-  refine ⟨T, hT, ?_⟩
-  let R := IntermediateField.adjoin K (T : Set Omega)
-  have hRE : R ≤ E := by
-    apply IntermediateField.adjoin_le_iff.mpr
-    intro x hx
-    apply IntermediateField.subset_adjoin K
-      (KummerTheory.kummerRootSet
-        (K := K) (Omega := Omega) n
-        (fullSUnitKummerSubgroup (K := K) n S).1)
-    exact hT hx
-  have hall : ∀ x : E, (x : Omega) ∈ R := by
-    intro x
-    have hx :
-        x ∈ (⊤ : IntermediateField K E) :=
-      trivial
-    rw [← htheta] at hx
-    induction hx using IntermediateField.adjoin_induction with
-    | mem y hy =>
-        have hy' : y = theta :=
-          Set.mem_singleton_iff.mp hy
-        subst y
-        exact hthetaT
-    | algebraMap a =>
-        exact R.algebraMap_mem a
-    | add x y hx hy ihx ihy =>
-        exact R.add_mem ihx ihy
-    | inv x hx ihx =>
-        exact R.inv_mem ihx
-    | mul x y hx hy ihx ihy =>
-        exact R.mul_mem ihx ihy
-  apply le_antisymm hRE
-  intro x hx
-  exact hall ⟨x, hx⟩
 
 /-- The finite generating roots may be regarded as elements of the full
 Kummer extension itself; internally they adjoin to the top field.  This is
 the form consumed by finite inertia-restriction arguments. -/
-theorem exists_finset_fullSUnitKummerExtensionRoots_adjoin_eq_top
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem exists_finset_fullSUnitKummerExtensionRoots_adjoin_eq_top :
     let E :=
       fullSUnitKummerExtension
         (K := K) (Omega := Omega) n S
@@ -365,12 +292,7 @@ theorem exists_finset_fullSUnitKummerExtensionRoots_adjoin_eq_top
   exact hthetaR
 
 /-- The Galois group of `N/K` has cardinality `n ^ s`. -/
-theorem card_fullSUnitKummerExtension_galois
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem card_fullSUnitKummerExtension_galois :
     Nat.card
         Gal(fullSUnitKummerExtension
           (K := K) (Omega := Omega) n S/K) =
@@ -399,6 +321,8 @@ theorem card_fullSUnitKummerExtension_galois
     _ = (n : ℕ) ^ totalPlaceCard (K := K) S :=
       card_fullSUnitRadicalQuotient (K := K) n S hmu
 
+end
+
 /-- Every automorphism of the full `S`-unit Kummer extension has
 `n`-th power one. -/
 theorem fullSUnitKummerExtension_galois_pow_eq_one
@@ -414,15 +338,17 @@ theorem fullSUnitKummerExtension_galois_pow_eq_one
   KummerTheory.kummerRadicalExtension_galois_pow_eq_one
     n hmu (fullSUnitKummerSubgroup (K := K) n S).1 sigma
 
+section
+
+variable {Omega : Type*} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega] (n : ℕ+)
+  (hn : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+  (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n hn hmu S
+
 /-- A chosen Kummer-duality equivalence identifies the Galois group of the full
 `S`-unit extension with the actual `S`-unit quotient. -/
 noncomputable def
-    chosenFullSUnitKummerExtensionGaloisEquivSUnitQuotient
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+    chosenFullSUnitKummerExtensionGaloisEquivSUnitQuotient :
     Gal(fullSUnitKummerExtension
         (K := K) (Omega := Omega) n S/K) ≃*
       SUnitGroup (K := K) S ⧸
@@ -453,12 +379,7 @@ noncomputable def
 
 /-- `ZMod n` coordinates derived from the chosen duality equivalence on the Galois
 group of the full `S`-unit Kummer extension. -/
-noncomputable def fullSUnitKummerExtensionGaloisCoordinates
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def fullSUnitKummerExtensionGaloisCoordinates :
     Gal(fullSUnitKummerExtension
         (K := K) (Omega := Omega) n S/K) ≃*
       Multiplicative (ZMod (n : ℕ)) ×
@@ -474,12 +395,7 @@ noncomputable def fullSUnitKummerExtensionGaloisCoordinates
 coordinate for every finite place in `S` and every infinite place.
 This chosen coordinate form is consumed by the global norm-index
 theorem. -/
-noncomputable def fullSUnitKummerExtensionGaloisEquivPiZMod
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def fullSUnitKummerExtensionGaloisEquivPiZMod :
     Gal(fullSUnitKummerExtension
         (K := K) (Omega := Omega) n S/K) ≃*
       (Fin (totalPlaceCard (K := K) S) →
@@ -515,12 +431,7 @@ noncomputable def fullSUnitKummerExtensionGaloisEquivPiZMod
 
 /-- With its canonical exponent-`n` module structure, the full
 `S`-unit Kummer Galois group is a free `ZMod n`-module. -/
-theorem fullSUnitKummerExtension_galois_moduleFree
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem fullSUnitKummerExtension_galois_moduleFree :
     letI : IsMulCommutative
         Gal(fullSUnitKummerExtension
           (K := K) (Omega := Omega) n S/K) :=
@@ -556,6 +467,8 @@ theorem fullSUnitKummerExtension_galois_moduleFree
       (fullSUnitKummerExtensionGaloisCoordinates
         (K := K) (Omega := Omega) n hn hmu S)
   exact Module.Free.of_equiv e.symm
+
+end
 
 end KummerTheory
 

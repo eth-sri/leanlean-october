@@ -20,9 +20,6 @@ def literalZeroProfileEquiv (hK : IwasawaCompact F ζ hζ K) :
     literalFlatModule K ≃ₗ[ℂ] literalZeroProfiles K :=
   LinearEquiv.ofInjective (literalFlatZero K) (literalFlatZero_injective hK)
 
-@[simp] theorem literalZeroProfileEquiv_val (hK : IwasawaCompact F ζ hζ K)
-    (f : literalFlatModule K) :
-    (literalZeroProfileEquiv hK f).val = f.val 0 := rfl
 
 theorem literalZeroProfiles_finite_mem (hK : IwasawaCompact F ζ hζ K)
     (q : KPFinitePlace F) (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))

@@ -39,13 +39,16 @@ universe u
 open scoped ValuativeRel
 open _root_.LocalFieldTheory.IsNonarchimedeanLocalField
 
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L]
+
 /-- Arithmetic Frobenius of the actual residue-field extension supplied by a
 valuation extension. This is finite Galois ramification theory's finite-field Frobenius,
 applied to the canonical residue extension `𝓀[L]/𝓀[K]`. -/
 noncomputable def residueExtensionArithmeticFrobeniusOfValuationExtension
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)] :
     𝓀[L] ≃ₐ[𝓀[K]] 𝓀[L] := by
   letI := Fintype.ofFinite 𝓀[K]
@@ -55,9 +58,6 @@ noncomputable def residueExtensionArithmeticFrobeniusOfValuationExtension
 /-- The arithmetic Frobenius of a finite residue extension raises each residue element to the size
 of the base residue field. -/
 theorem residueExtensionArithmeticFrobeniusOfValuationExtension_apply
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     (x : 𝓀[L]) :
     residueExtensionArithmeticFrobeniusOfValuationExtension K L x =
@@ -69,25 +69,9 @@ theorem residueExtensionArithmeticFrobeniusOfValuationExtension_apply
       x ^ Nat.card 𝓀[K]
   simp [Nat.card_eq_fintype_card]
 
-/-- Arithmetic Frobenius fixes the image of the base residue field. -/
-theorem residueExtensionArithmeticFrobeniusOfValuationExtension_preserves_base
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    (x : 𝓀[K]) :
-    residueExtensionArithmeticFrobeniusOfValuationExtension K L
-        (algebraMap 𝓀[K] 𝓀[L] x) =
-      algebraMap 𝓀[K] 𝓀[L] x := by
-  let := Fintype.ofFinite 𝓀[K]
-  let : Algebra.IsAlgebraic 𝓀[K] 𝓀[L] := inferInstance
-  simp [residueExtensionArithmeticFrobeniusOfValuationExtension]
 
 /-- The order of residue arithmetic Frobenius is the degree of the finite residue-field extension. -/
 theorem orderOf_residueExtensionArithmeticFrobeniusOfValuationExtension
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)] :
     orderOf (residueExtensionArithmeticFrobeniusOfValuationExtension K L) =
       Module.finrank 𝓀[K] 𝓀[L] := by
@@ -100,9 +84,6 @@ theorem orderOf_residueExtensionArithmeticFrobeniusOfValuationExtension
 /-- For an unramified valued extension, residue arithmetic Frobenius has order equal to the
 field-extension degree. -/
 theorem orderOf_residueExtensionArithmeticFrobeniusOfUnramifiedValuation
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
     [FiniteDimensional K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [Module.Finite 𝒪[K] 𝒪[L]]
@@ -114,9 +95,6 @@ theorem orderOf_residueExtensionArithmeticFrobeniusOfUnramifiedValuation
 
 /-- Arithmetic Frobenius generates the automorphism group of a finite residue-field extension. -/
 theorem residueExtensionArithmeticFrobeniusOfValuationExtension_generates
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)] :
     ∀ σ : 𝓀[L] ≃ₐ[𝓀[K]] 𝓀[L],
       σ ∈ Subgroup.zpowers (residueExtensionArithmeticFrobeniusOfValuationExtension K L) := by
@@ -131,17 +109,21 @@ theorem residueExtensionArithmeticFrobeniusOfValuationExtension_generates
   rw [← hn]
   simp [residueExtensionArithmeticFrobeniusOfValuationExtension]
 
+end
+
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
+  [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
+
 /-- Actual arithmetic Frobenius in `Gal(L / K)`, obtained by lifting the residue
 finite-field Frobenius through the already constructed unramified residue-action
 isomorphism. -/
-noncomputable def arithmeticFrobeniusOfUnramifiedValuation
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+noncomputable def arithmeticFrobeniusOfUnramifiedValuation :
     Gal(L / K) :=
   (galoisGroupEquivResidueAlgEquivOfUnramifiedValuationOfIsIntegralClosure K L).symm
     (residueExtensionArithmeticFrobeniusOfValuationExtension K L)
@@ -149,14 +131,7 @@ noncomputable def arithmeticFrobeniusOfUnramifiedValuation
 /-- The unramified Galois-residue equivalence lifts residue arithmetic Frobenius to field arithmetic
 Frobenius. -/
 @[simp]
-theorem galoisGroupEquivResidueAlgEquivOfUnramifiedValuationOfIsIntegralClosure_arithmeticFrobenius
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+theorem galoisGroupEquivResidueAlgEquivOfUnramifiedValuationOfIsIntegralClosure_arithmeticFrobenius :
     galoisGroupEquivResidueAlgEquivOfUnramifiedValuationOfIsIntegralClosure K L
         (arithmeticFrobeniusOfUnramifiedValuation K L) =
       residueExtensionArithmeticFrobeniusOfValuationExtension K L := by
@@ -164,14 +139,7 @@ theorem galoisGroupEquivResidueAlgEquivOfUnramifiedValuationOfIsIntegralClosure_
 
 /-- The residue action of field arithmetic Frobenius is residue arithmetic Frobenius. -/
 @[simp]
-theorem galoisGroupResidueAlgEquivOfIsIntegralClosure_arithmeticFrobenius
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+theorem galoisGroupResidueAlgEquivOfIsIntegralClosure_arithmeticFrobenius :
     galoisGroupResidueAlgEquivOfIsIntegralClosure K L
         (arithmeticFrobeniusOfUnramifiedValuation K L) =
       residueExtensionArithmeticFrobeniusOfValuationExtension K L := by
@@ -183,19 +151,14 @@ theorem galoisGroupResidueAlgEquivOfIsIntegralClosure_arithmeticFrobenius
 /-- Field arithmetic Frobenius acts on residues by raising them to the size of the base residue
 field. -/
 theorem galoisGroupResidueAlgEquivOfIsIntegralClosure_arithmeticFrobenius_apply
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
     (x : 𝓀[L]) :
     galoisGroupResidueAlgEquivOfIsIntegralClosure K L
         (arithmeticFrobeniusOfUnramifiedValuation K L) x =
       x ^ Nat.card 𝓀[K] := by
   rw [galoisGroupResidueAlgEquivOfIsIntegralClosure_arithmeticFrobenius]
-  exact residueExtensionArithmeticFrobeniusOfValuationExtension_apply K L x
+  exact residueExtensionArithmeticFrobeniusOfValuationExtension_apply ..
+
+end
 
 /-- Two simple roots over a local domain with the same residue are equal. -/
 theorem eq_of_simple_roots_of_residue_eq
@@ -214,7 +177,7 @@ theorem eq_of_simple_roots_of_residue_eq
     simpa [q] using
       ValuationTheory.DiscreteValuationField.divByMonic_X_sub_C_eval_eq_derivative_eval f a
   have hqUnit : IsUnit (q.eval a) := by
-    simpa [hqEval] using hderiv
+    grind
   have hqResidue :
       IsLocalRing.residue R (q.eval b) =
         IsLocalRing.residue R (q.eval a) := by
@@ -231,10 +194,10 @@ theorem eq_of_simple_roots_of_residue_eq
           (f := IsLocalRing.residue R) (p := q) a
   have hqResidueNe : IsLocalRing.residue R (q.eval b) ≠ 0 := by
     rw [hqResidue]
-    exact (IsLocalRing.residue_ne_zero_iff_isUnit (q.eval a)).2 hqUnit
+    simp_all
   have hqNe : q.eval b ≠ 0 := by
     intro hzero
-    exact hqResidueNe (by rw [hzero, map_zero])
+    solve_by_elim [hqResidueNe]
   have hmul : (b - a) * q.eval b = 0 := by
     have hbEval : ((Polynomial.X - Polynomial.C a) * q).eval b = 0 := by
       rw [hfactor]
@@ -242,16 +205,18 @@ theorem eq_of_simple_roots_of_residue_eq
     simpa [Polynomial.eval_mul, Polynomial.eval_sub] using hbEval
   exact sub_eq_zero.mp ((mul_eq_zero.mp hmul).resolve_right hqNe)
 
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
+  [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
+
 /-- Arithmetic Frobenius sends a primitive root of unity of order prime to the
 base residue cardinality to its residue-cardinality power. -/
 theorem arithmeticFrobeniusOfUnramifiedValuation_apply_primitiveRoot
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
     {n : Nat} {ζ : L} (hζ : IsPrimitiveRoot ζ n)
     (hcoprime : (Nat.card 𝓀[K]).Coprime n) :
     arithmeticFrobeniusOfUnramifiedValuation K L ζ =
@@ -320,9 +285,7 @@ theorem arithmeticFrobeniusOfUnramifiedValuation_apply_primitiveRoot
     calc
       IsLocalRing.residue 𝒪[L] b =
           galoisGroupResidueAlgEquivOfIsIntegralClosure K L φ
-            (IsLocalRing.residue 𝒪[L] a) := by
-        exact
-          (galoisGroupResidueFieldEquivOfIsIntegralClosure_residue
+            (IsLocalRing.residue 𝒪[L] a) := (galoisGroupResidueFieldEquivOfIsIntegralClosure_residue
             K L φ a).symm
       _ = (IsLocalRing.residue 𝒪[L] a) ^ Nat.card 𝓀[K] := by
         simpa [φ] using
@@ -352,14 +315,7 @@ theorem arithmeticFrobeniusOfUnramifiedValuation_apply_primitiveRoot
     _ = ζ ^ Nat.card 𝓀[K] := by rw [ha]
 
 /-- Arithmetic Frobenius in an unramified Galois extension has order equal to the extension degree. -/
-theorem orderOf_arithmeticFrobeniusOfUnramifiedValuation
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+theorem orderOf_arithmeticFrobeniusOfUnramifiedValuation :
     orderOf (arithmeticFrobeniusOfUnramifiedValuation K L) =
       Module.finrank K L := by
   have horder :=
@@ -371,14 +327,7 @@ theorem orderOf_arithmeticFrobeniusOfUnramifiedValuation
     (orderOf_residueExtensionArithmeticFrobeniusOfUnramifiedValuation K L)
 
 /-- Arithmetic Frobenius generates the Galois group of a finite unramified extension. -/
-theorem arithmeticFrobeniusOfUnramifiedValuation_generates
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+theorem arithmeticFrobeniusOfUnramifiedValuation_generates :
     ∀ σ : Gal(L / K),
       σ ∈ Subgroup.zpowers (arithmeticFrobeniusOfUnramifiedValuation K L) := by
   intro σ
@@ -392,27 +341,13 @@ theorem arithmeticFrobeniusOfUnramifiedValuation_generates
     using hi
 
 /-- The subgroup of integral powers of arithmetic Frobenius is the full Galois group. -/
-theorem arithmeticFrobeniusOfUnramifiedValuation_zpowers_eq_top
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+theorem arithmeticFrobeniusOfUnramifiedValuation_zpowers_eq_top :
     Subgroup.zpowers (arithmeticFrobeniusOfUnramifiedValuation K L) = ⊤ := by
   ext σ
   simp [arithmeticFrobeniusOfUnramifiedValuation_generates K L σ]
 
 /-- The Galois group of a finite unramified extension is cyclic. -/
-theorem isCyclic_galoisGroup_of_unramifiedValuation
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+theorem isCyclic_galoisGroup_of_unramifiedValuation :
     IsCyclic Gal(L / K) := by
   rw [isCyclic_iff_exists_zpowers_eq_top]
   exact ⟨arithmeticFrobeniusOfUnramifiedValuation K L,
@@ -421,43 +356,26 @@ theorem isCyclic_galoisGroup_of_unramifiedValuation
 /-- The order of the actual unramified Galois group is the degree. This is the
 cardinality consequence of the normalized Frobenius construction: arithmetic
 Frobenius has order `[L : K]` and generates `Gal(L/K)`. -/
-theorem galoisGroup_card_eq_finrank_of_unramifiedValuation
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+theorem galoisGroup_card_eq_finrank_of_unramifiedValuation :
     Nat.card Gal(L / K) = Module.finrank K L := by
   have hcard :=
     orderOf_eq_card_of_zpowers_eq_top
       (arithmeticFrobeniusOfUnramifiedValuation_zpowers_eq_top K L)
   exact hcard.symm.trans (orderOf_arithmeticFrobeniusOfUnramifiedValuation K L)
 
-/-- A `ZMod` model of the unramified Galois group obtained from cyclicity and
-the order of arithmetic Frobenius. This equivalence does not prescribe which
-generator maps to `1`; the normalized model below does. -/
-noncomputable def galoisGroupEquivZModOfUnramifiedValuation
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    Gal(L / K) ≃* Multiplicative (ZMod (Module.finrank K L)) := by
-  letI : IsCyclic Gal(L / K) :=
-    isCyclic_galoisGroup_of_unramifiedValuation K L
-  exact (galoisGroup_card_eq_finrank_of_unramifiedValuation K L) ▸
-    (zmodCyclicMulEquiv (G := Gal(L / K)) inferInstance).symm
+end
+
+
+section
+
+variable {A : Type*} [AddGroup A] (g : A) {n : Nat} (horder : addOrderOf g = n)
+  (hgen : AddSubgroup.zmultiples g = ⊤)
+include g horder hgen
 
 /-- Internal quotient construction for a specified additive generator. The
 public local-field API below supplies `horder` and `hgen` from the already proved
 Frobenius source lemmas, so these hypotheses are not exposed as new endpoints. -/
- noncomputable def zmodAddEquivOfGenerator {A : Type*} [AddGroup A]
-    (g : A) {n : Nat} (horder : addOrderOf g = n)
-    (hgen : AddSubgroup.zmultiples g = ⊤) :
+ noncomputable def zmodAddEquivOfGenerator :
     ZMod n ≃+ A := by
   let f : { f : ℤ →+ A // f n = 0 } :=
     ⟨zmultiplesHom A g, by
@@ -477,9 +395,7 @@ Frobenius source lemmas, so these hypotheses are not exposed as new endpoints. -
     rcases hx with ⟨i, hi⟩
     exact ⟨(i : ZMod n), by simpa [f, ZMod.lift_coe] using hi⟩
 
-private theorem zmodAddEquivOfGenerator_apply_one {A : Type*} [AddGroup A]
-    (g : A) {n : Nat} (horder : addOrderOf g = n)
-    (hgen : AddSubgroup.zmultiples g = ⊤) :
+private theorem zmodAddEquivOfGenerator_apply_one :
     zmodAddEquivOfGenerator g horder hgen (1 : ZMod n) = g := by
   unfold zmodAddEquivOfGenerator
   dsimp [AddEquiv.ofBijective, Equiv.ofBijective]
@@ -492,6 +408,8 @@ private theorem zmodAddEquivOfGenerator_apply_one {A : Type*} [AddGroup A]
     simp [Int.castAddHom]
   rw [← hcast, ZMod.lift_castAddHom]
   simp [f, zmultiplesHom_apply]
+
+end
 
  lemma additive_zmultiples_eq_top_of_zpowers_eq_top {G : Type*} [Group G]
     (g : G) (hgen : Subgroup.zpowers g = ⊤) :
@@ -507,18 +425,20 @@ private theorem zmodAddEquivOfGenerator_apply_one {A : Type*} [AddGroup A]
     rw [hgen]
     exact Subgroup.mem_top (Additive.toMul x)
 
- noncomputable def zmodCyclicMulEquivOfGenerator {G : Type*} [Group G]
-    (g : G) {n : Nat} (horder : orderOf g = n)
-    (hgen : Subgroup.zpowers g = ⊤) :
+section
+
+variable {G : Type*} [Group G] (g : G) {n : Nat} (horder : orderOf g = n)
+  (hgen : Subgroup.zpowers g = ⊤)
+include g horder hgen
+
+ noncomputable def zmodCyclicMulEquivOfGenerator :
     Multiplicative (ZMod n) ≃* G :=
   AddEquiv.toMultiplicative <|
     zmodAddEquivOfGenerator (Additive.ofMul g)
       (by simpa [addOrderOf_ofMul_eq_orderOf] using horder)
       (additive_zmultiples_eq_top_of_zpowers_eq_top g hgen)
 
-private theorem zmodCyclicMulEquivOfGenerator_apply_one {G : Type*} [Group G]
-    (g : G) {n : Nat} (horder : orderOf g = n)
-    (hgen : Subgroup.zpowers g = ⊤) :
+private theorem zmodCyclicMulEquivOfGenerator_apply_one :
     zmodCyclicMulEquivOfGenerator g horder hgen
       (Multiplicative.ofAdd (1 : ZMod n)) = g := by
   unfold zmodCyclicMulEquivOfGenerator
@@ -529,17 +449,21 @@ private theorem zmodCyclicMulEquivOfGenerator_apply_one {G : Type*} [Group G]
   rw [zmodAddEquivOfGenerator_apply_one]
   rfl
 
+end
+
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
+  [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
+
 /-- The generator-normalized ZMod model of the actual unramified Galois group.
 Unlike `galoisGroupEquivZModOfUnramifiedValuation`, this quotient construction uses
 the specified arithmetic Frobenius as the generator, following the normalized Frobenius construction before the uniformizer/Frobenius calculation. -/
-noncomputable def galoisGroupEquivZModOfUnramifiedValuationNormalized
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+noncomputable def galoisGroupEquivZModOfUnramifiedValuationNormalized :
     Gal(L / K) ≃* Multiplicative (ZMod (Module.finrank K L)) :=
   (zmodCyclicMulEquivOfGenerator
     (arithmeticFrobeniusOfUnramifiedValuation K L)
@@ -549,14 +473,7 @@ noncomputable def galoisGroupEquivZModOfUnramifiedValuationNormalized
 /-- The normalized equivalence from the unramified Galois group to `ZMod` sends arithmetic Frobenius
 to one. -/
 @[simp]
-theorem galoisGroupEquivZModOfUnramifiedValuationNormalized_arithmeticFrobenius
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
+theorem galoisGroupEquivZModOfUnramifiedValuationNormalized_arithmeticFrobenius :
     galoisGroupEquivZModOfUnramifiedValuationNormalized K L
         (arithmeticFrobeniusOfUnramifiedValuation K L) =
       Multiplicative.ofAdd (1 : ZMod (Module.finrank K L)) := by
@@ -577,20 +494,15 @@ theorem galoisGroupEquivZModOfUnramifiedValuationNormalized_arithmeticFrobenius
 Frobenius-side model used before composing with the
 valuation quotient. -/
 @[simp]
-theorem galoisGroupEquivZModOfUnramifiedValuationNormalized_arithmeticFrobenius_zpow
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (m : Int) :
+theorem galoisGroupEquivZModOfUnramifiedValuationNormalized_arithmeticFrobenius_zpow (m : Int) :
     galoisGroupEquivZModOfUnramifiedValuationNormalized K L
         ((arithmeticFrobeniusOfUnramifiedValuation K L) ^ m) =
       Multiplicative.ofAdd (m : ZMod (Module.finrank K L)) := by
   rw [map_zpow, galoisGroupEquivZModOfUnramifiedValuationNormalized_arithmeticFrobenius]
   rw [← ofAdd_zsmul]
   simp [zsmul_eq_mul]
+
+end
 
 end
 end LocalFieldTheory

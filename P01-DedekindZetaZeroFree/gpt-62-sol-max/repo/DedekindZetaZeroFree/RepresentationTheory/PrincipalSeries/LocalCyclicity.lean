@@ -31,7 +31,7 @@ theorem complexWordSpan_generator (v : complexCore) (a : ComplexGenerator)
   | mem x hx =>
     obtain ⟨w, rfl⟩ := hx
     exact Submodule.subset_span ⟨a :: w, rfl⟩
-  | zero => simpa using (complexWordSpan v).zero_mem
+  | zero => simp
   | add x y hx hy ihx ihy =>
     simpa using (complexWordSpan v).add_mem ihx ihy
   | smul c x hx ih =>

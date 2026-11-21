@@ -284,7 +284,6 @@ private theorem allowed_translate (A : SArithmeticData F)
       Units.val_div_eq_div_val] at hh
     exact (eq_div_iff a.ne_zero).mp hh
   apply Subtype.ext
-  change (r' : F) = _
   rw [← ha']
   exact hv.symm.trans (by rw [ha]; rfl)
 

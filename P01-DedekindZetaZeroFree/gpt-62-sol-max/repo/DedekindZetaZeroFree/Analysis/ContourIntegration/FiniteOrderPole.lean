@@ -98,7 +98,7 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
         = fun z : ℂ => ∑ m ∈ Finset.Icc 2 r,
             (fun w : ℂ => c m * (1 / (w - (p : ℂ)) ^ m)) z := by
       funext z
-      simp only [div_eq_mul_inv, one_div, one_mul]
+      simp only [div_eq_mul_inv, one_mul]
     rw [hfun]
     exact verticalIntegrable_finset_sum _ fun m hm =>
       verticalIntegrable_const_mul_one_div_pow (c m) hc₀ (Finset.mem_Icc.mp hm).1
@@ -118,7 +118,7 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
         = fun z : ℂ => ∑ m ∈ Finset.Icc 2 r,
             (fun w : ℂ => c m * (1 / (w - (p : ℂ)) ^ m)) z := by
       funext z
-      simp only [div_eq_mul_inv, one_div, one_mul]
+      simp only [div_eq_mul_inv, one_mul]
     rw [hfun, verticalIntegral_finset_sum (Finset.Icc 2 r) c₀
       (fun m w => c m * (1 / (w - (p : ℂ)) ^ m)) (fun m hm =>
         verticalIntegrable_const_mul_one_div_pow (c m) hc₀ (Finset.mem_Icc.mp hm).1)]

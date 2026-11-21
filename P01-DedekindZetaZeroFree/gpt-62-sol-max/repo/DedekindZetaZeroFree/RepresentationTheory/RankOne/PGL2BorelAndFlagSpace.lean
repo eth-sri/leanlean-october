@@ -43,7 +43,7 @@ private lemma mul_scalar_apply (A : GL2 F v) (u : (LocalField F v)ˣ) (i j : Fin
   rw [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two]
 
  lemma diag_ne_zero {A : GL2 F v} (hu : A 1 0 = 0) : A 0 0 ≠ 0 ∧ A 1 1 ≠ 0 := by
-  have hdet : (A : Matrix (Fin 2) (Fin 2) (LocalField F v)).det ≠ 0 :=
+  have hdet :=
     Matrix.GeneralLinearGroup.det_ne_zero A
   rw [Matrix.det_fin_two] at hdet
   rw [show (A : Matrix (Fin 2) (Fin 2) (LocalField F v)) 1 0 = 0 from hu,

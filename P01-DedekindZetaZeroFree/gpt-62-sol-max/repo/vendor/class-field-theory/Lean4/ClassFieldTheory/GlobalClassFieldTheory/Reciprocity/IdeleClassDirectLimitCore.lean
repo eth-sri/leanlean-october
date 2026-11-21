@@ -147,18 +147,19 @@ theorem rationalAbsoluteGaloisIdeleClass_smul_mk
         ((AlgEquiv.restrictNormalHom E σ) • a) :=
   rfl
 
+section
+
+variable {E : IntermediateField ℚ (SeparableClosure ℚ)} [FiniteDimensional ℚ E]
+  {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
+  (h : E ≤ (F : IntermediateField ℚ (SeparableClosure ℚ)))
+  (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ) (τ : E ≃ₐ[ℚ] E) (hστ : ∀ x : E,
+      ((τ x : E) : SeparableClosure ℚ) =
+        σ (x : SeparableClosure ℚ))
+include hστ
+
 /-- Relative-adele scalar extension intertwines conjugation with the
 restriction of an absolute Galois automorphism. -/
 theorem rationalRelativeAdeleEmbedding_conjugation_of_restrict
-    {E : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ E]
-    {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
-    (h : E ≤ (F : IntermediateField ℚ (SeparableClosure ℚ)))
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (τ : E ≃ₐ[ℚ] E)
-    (hστ : ∀ x : E,
-      ((τ x : E) : SeparableClosure ℚ) =
-        σ (x : SeparableClosure ℚ))
     (z : RelativeAdeleRing ℚ E) :
     RelativeIdeleGroup.adeleEmbedding (IntermediateField.inclusion h)
         (RelativeIdeleGroup.conjugation ℚ E τ z) =
@@ -190,15 +191,6 @@ theorem rationalRelativeAdeleEmbedding_conjugation_of_restrict
 /-- Relative-idele scalar extension intertwines conjugation with the
 restriction of an absolute Galois automorphism. -/
 theorem rationalRelativeIdeleEmbedding_conjugation_of_restrict
-    {E : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ E]
-    {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
-    (h : E ≤ (F : IntermediateField ℚ (SeparableClosure ℚ)))
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (τ : E ≃ₐ[ℚ] E)
-    (hστ : ∀ x : E,
-      ((τ x : E) : SeparableClosure ℚ) =
-        σ (x : SeparableClosure ℚ))
     (a : RelativeIdeleGroup ℚ E) :
     RelativeIdeleGroup.ideleEmbedding (IntermediateField.inclusion h)
         (τ • a) =
@@ -214,15 +206,6 @@ theorem rationalRelativeIdeleEmbedding_conjugation_of_restrict
 the restriction of an absolute Galois automorphism. -/
 theorem
     rationalRelativeIdeleClassEmbedding_conjugation_of_restrict
-    {E : IntermediateField ℚ (SeparableClosure ℚ)}
-    [FiniteDimensional ℚ E]
-    {F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
-    (h : E ≤ (F : IntermediateField ℚ (SeparableClosure ℚ)))
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (τ : E ≃ₐ[ℚ] E)
-    (hστ : ∀ x : E,
-      ((τ x : E) : SeparableClosure ℚ) =
-        σ (x : SeparableClosure ℚ))
     (c : RelativeIdeleGroup.ClassGroup ℚ E) :
     RelativeIdeleGroup.classEmbedding (IntermediateField.inclusion h) (τ • c) =
       σ • RelativeIdeleGroup.classEmbedding (IntermediateField.inclusion h) c := by
@@ -233,6 +216,8 @@ theorem
       (RelativeIdeleGroup.principalSubgroup ℚ F))
     (rationalRelativeIdeleEmbedding_conjugation_of_restrict
       h σ τ hστ a)
+
+end
 
 /-- The transition map between finite Galois relative idele class groups
 is equivariant for the rational absolute Galois action. -/

@@ -48,7 +48,7 @@ private theorem compact_level_right_invariant
       (ψ.val.val (I.compactPart (k' : Cover F ζ hζ q))) = _
     rw [I.borelPart_compact, I.compactPart_compact, map_one]
     rfl
-  have he : ψ.val.val k' = ψ.val.val k := ψ.property ⟨j, hj⟩ k k' rfl
+  have he := ψ.property ⟨j, hj⟩ k k' rfl
   change f.val (g * j) = f.val g
   conv_lhs => rw [I.decomposition g, mul_assoc]
   change f.val ((I.borelPart g : Cover F ζ hζ q) * (k' : Cover F ζ hζ q)) = _
@@ -67,7 +67,7 @@ private theorem small_region_subset_nhds (U : Set (LocalField F q))
   apply e.toOrderIso.lt_iff_lt.mp
   have hv0 : e (valuation (LocalField F q) (v : LocalField F q)) ≠ 0 :=
     (map_ne_zero e).2 (by simpa using v.ne_zero)
-  have hγ0 : e γ ≠ 0 := (map_ne_zero e).2 hγ
+  have hγ0 := (map_ne_zero e).2 hγ
   apply (WithZero.log_lt_log hv0 hγ0).mp
   change valuationIndex F q v < m
   have hm : -(m.natAbs : ℤ) ≤ m := by omega
@@ -100,8 +100,7 @@ theorem uniform_forward_germ (I : IwasawaData A) (μ : Measure (LocalField F q))
     change (A.upperRoot 1 : Cover F ζ hζ q) = 1
     simp
   have hU : {x : LocalField F q | nLift F ζ hζ q x ∈ L.toOpenSubgroup} ∈
-      nhds (0 : LocalField F q) := by
-    exact hn.continuousAt.preimage_mem_nhds
+      nhds (0 : LocalField F q) := hn.continuousAt.preimage_mem_nhds
       (L.toOpenSubgroup.isOpen.mem_nhds (by rw [hn0]; exact L.toOpenSubgroup.one_mem))
   obtain ⟨N, hN⟩ := small_region_subset_nhds F q _ hU
   refine ⟨N, ?_⟩
@@ -166,30 +165,7 @@ private theorem block_measurable (N n : ℕ) :
   exact (isClosed_le continuous_const hc.continuous).measurableSet.inter
     (isOpen_lt hc.continuous continuous_const).measurableSet
 
-private lemma norm_mul (x y : (LocalField F q)ˣ) (z : ℂ) :
-    normPower (LocalField F q) (x * y) z =
-      normPower (LocalField F q) x z * normPower (LocalField F q) y z := by
-  rw [normPower, localAbs_mul, Real.log_mul (ne_of_gt (localAbs_pos _ x))
-    (ne_of_gt (localAbs_pos _ y)), Complex.ofReal_add, mul_add, Complex.exp_add]
-  rfl
-private lemma norm_pow (x : (LocalField F q)ˣ) (n : ℕ) (z : ℂ) :
-    normPower (LocalField F q) (x ^ n) z = normPower (LocalField F q) x (n * z) := by
-  have ha : localAbs (LocalField F q) (x ^ n) = localAbs (LocalField F q) x ^ n := by
-    induction n with
-    | zero => simp [localAbs_one]
-    | succ n ih => rw [pow_succ, localAbs_mul, ih, pow_succ]
-  simp only [normPower, ha, Real.log_pow, Complex.ofReal_mul, Complex.ofReal_natCast]
-  congr 1
-  ring
-private lemma norm_inv (x : (LocalField F q)ˣ) (z : ℂ) :
-    normPower (LocalField F q) x⁻¹ z = (normPower (LocalField F q) x z)⁻¹ := by
-  have ha : localAbs (LocalField F q) x⁻¹ = (localAbs (LocalField F q) x)⁻¹ := by
-    apply eq_inv_of_mul_eq_one_left
-    rw [← localAbs_mul, inv_mul_cancel, localAbs_one]
-  simp [normPower, ha, Real.log_inv, Complex.exp_neg, mul_neg]
-private lemma norm_add (x : (LocalField F q)ˣ) (z w : ℂ) :
-    normPower (LocalField F q) x (z + w) = normPower (LocalField F q) x z * normPower (LocalField F q) x w := by
-  simp [normPower, add_mul, Complex.exp_add]
+open SignedBlockAlgebra (norm_mul norm_pow norm_inv norm_add)
 
 theorem rootTorus_cube_translate (B : Binding F ζ hζ q A P)
     (v y : (LocalField F q)ˣ) :

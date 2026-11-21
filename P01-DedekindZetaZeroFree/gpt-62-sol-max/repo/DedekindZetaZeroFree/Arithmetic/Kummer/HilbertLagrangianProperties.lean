@@ -34,10 +34,9 @@ private lemma selfOrth_of_split {G C : Type*} [CommGroup G] [CommGroup C]
     have hb1 : (b : G) = 1 := hn b (by
       intro y
       obtain ⟨u, v, rfl⟩ := hsplit y
-      change P ((u : G) * v) (b : G) = 1
       rw [map_mul, MonoidHom.mul_apply, hb u u.property, hM v v.property b b.property,
         one_mul])
-    simpa [hb1] using e.property
+    simp [hb1]
 
 private lemma primary_mem (A : SArithmeticData F) (ℓ : ℕ) (L : Subgroup A.V)
     (x : A.PrimarySpace ℓ) : x ∈ A.primarySubspace ℓ L ↔ x.val.toMul ∈ L := Iff.rfl

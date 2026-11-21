@@ -8,15 +8,17 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-theorem bot_not_mem_idealAdmissibleFinset (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (X : ℝ) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F)) (X : ℝ)
+
+theorem bot_not_mem_idealAdmissibleFinset :
     (⊥ : Ideal (𝓞 F)) ∉ idealAdmissibleFinset F c X := by
   rw [mem_idealAdmissibleFinset]
   rintro ⟨hsf, -⟩
   exact not_squarefree_zero (R := Ideal (𝓞 F)) (by simpa [Ideal.zero_eq_bot] using hsf)
 
-theorem top_mem_idealAdmissibleFinset_iff (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (X : ℝ) :
+theorem top_mem_idealAdmissibleFinset_iff :
     (⊤ : Ideal (𝓞 F)) ∈ idealAdmissibleFinset F c X ↔ 1 ≤ X := by
   rw [mem_idealAdmissibleFinset]
   constructor
@@ -27,7 +29,6 @@ theorem top_mem_idealAdmissibleFinset_iff (F : Type) [Field F] [NumberField F]
       top_sup_eq c, by simpa using h⟩
 
 theorem one_le_absNorm_of_mem_idealAdmissibleFinset
-    (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F)) (X : ℝ)
     (I : Ideal (𝓞 F)) (hI : I ∈ idealAdmissibleFinset F c X) :
     1 ≤ (Ideal.absNorm I : ℝ) := by
   rw [mem_idealAdmissibleFinset] at hI
@@ -38,7 +39,6 @@ theorem one_le_absNorm_of_mem_idealAdmissibleFinset
   exact_mod_cast hpos
 
 theorem idealAdmissibleFinset_eq_empty_of_lt_one
-    (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F)) (X : ℝ)
     (hX : X < 1) : idealAdmissibleFinset F c X = ∅ := by
   ext I
   simp
@@ -48,7 +48,6 @@ theorem idealAdmissibleFinset_eq_empty_of_lt_one
   linarith [hI.2.2]
 
 theorem idealAdmissibleFinset_eq_singleton_of_one_le_of_lt_two
-    (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F)) (X : ℝ)
     (hX : 1 ≤ X) (hX2 : X < 2) : idealAdmissibleFinset F c X = {⊤} := by
   rw [Finset.eq_singleton_iff_unique_mem]
   constructor
@@ -61,6 +60,8 @@ theorem idealAdmissibleFinset_eq_singleton_of_one_le_of_lt_two
     have h1n : (1 : ℕ) ≤ Ideal.absNorm I := by exact_mod_cast h1
     have h5 : Ideal.absNorm I = 1 := by omega
     exact Ideal.absNorm_eq_one_iff.mp h5
+
+end
 
 theorem idealAdmissibleFinset_bot (F : Type) [Field F] [NumberField F] (X : ℝ) :
     idealAdmissibleFinset F ⊥ X = if 1 ≤ X then {⊤} else ∅ := by

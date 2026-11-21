@@ -14,7 +14,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   ![p.1 q 0 + p.1 q 1 * p.2 q 0 / (1 + p.1 q 2 * p.2 q 0),
     p.1 q 1 * p.2 q 1 / (1 + p.1 q 2 * p.2 q 0)^2,
     p.2 q 2 + p.1 q 2 * p.2 q 1 / (1 + p.1 q 2 * p.2 q 0)]
-private theorem product_coordinate (y x : Fin 3 → ℂ) (hy : y 1 ≠ 0) (hx : x 1 ≠ 0)
+theorem product_coordinate (y x : Fin 3 → ℂ) (hy : y 1 ≠ 0) (hx : x 1 ≠ 0)
     (hden : 1+y 2*x 0 ≠ 0) :
     rightCoordinates (rightMatrix y * rightMatrix x).val =
     ![y 0+y 1*x 0/(1+y 2*x 0), y 1*x 1/(1+y 2*x 0)^2,

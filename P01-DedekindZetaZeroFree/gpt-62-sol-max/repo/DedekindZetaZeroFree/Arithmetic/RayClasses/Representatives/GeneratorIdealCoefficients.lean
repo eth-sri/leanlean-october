@@ -349,7 +349,7 @@ theorem integralElementIdeal_trace_residue_coefficient
           (p := fractionalResidueDenominator m (L : FractionalIdeal (𝓞 F)⁰ F)) y
     rw [fractionalResidueModule_mk_smul_mk]
     simp only [fractionalIdealQuotientMk, Submodule.mkQ_apply, Submodule.Quotient.eq,
-      Submodule.mem_comap, Submodule.coe_sub, Submodule.coe_smul]
+      Submodule.mem_comap]
     rw [hden]
     rfl
   have hgen' : Function.Surjective (fun r : 𝓞 F ⧸ m => r •

@@ -394,8 +394,6 @@ private theorem vectorization_right_stabilizer
   map_add' f h := Subtype.ext (map_add (scalarization F ζ hζ M S) f.val h.val)
   map_smul' a f := Subtype.ext (map_smul (scalarization F ζ hζ M S) a f.val)
 
-local instance (q : S) : AddCommGroup (Source F ζ hζ M S q) :=
-  FourierContinuation.SourceReconstruction.localPlusAdd F ζ hζ M (Sum.inr q.val)
 local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
   FourierContinuation.SourceReconstruction.localPlusModule F ζ hζ M (Sum.inr q.val)
 

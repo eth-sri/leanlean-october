@@ -29,7 +29,6 @@ private theorem partialJets_smooth (f : E → X → ℂ)
  ContDiff ℝ (⊤ : ℕ∞) (fun p : E × X => iteratedFDeriv ℝ n (fun g => f g p.2) p.1) := by
  induction n with
  | zero =>
-   simp only [iteratedFDeriv_zero_eq_comp, Function.comp_def]
    exact (continuousMultilinearCurryFin0 ℝ E ℂ).symm.contDiff.comp hf
  | succ n ih =>
    letI : TopologicalSpace (E [×(n+1)]→L[ℝ] ℂ) :=
@@ -57,8 +56,7 @@ private theorem periodic_integral_smooth [FiniteDimensional ℝ E]
       ∀ n g, iteratedFDeriv ℝ n (fun g => ∫ q, f g (Quotient.out q) ∂μ) g =
         ∫ q, iteratedFDeriv ℝ n (fun g => f g (Quotient.out q)) g ∂μ := by
   apply DedekindZetaZeroFree.KPCompactPeriod.compact_integral_smooth
-  · intro q
-    exact hf.comp (contDiff_id.prodMk contDiff_const)
+  · fun_prop
   · intro n
     have hm := (IsOpenQuotientMap.id (X := E)).prodMap
       (QuotientAddGroup.isOpenQuotientMap_mk (N := L))
@@ -189,99 +187,6 @@ private theorem wholeJet_smooth (k : ℕ) (s : ℂ) (hs : s ∈ V) :
       (KPContActualChamberCasimirJets.lineJet_smooth F ζ hζ C R P H U ι f hι hf k s hs))
         (KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1)
 
-private theorem integral_extension {B T : Type*}
-    [TopologicalSpace B] [CompactSpace B] [TopologicalSpace T] [CompactSpace T]
-    [MeasurableSpace T] [BorelSpace T]
-    (μ : Measure T) [IsProbabilityMeasure μ]
-    (π : C(B,T)) (hπ : Function.Surjective π) :
-    ∃ I : C(B,ℂ) →L[ℂ] ℂ, ∀ u : C(T,ℂ), I (u.comp π) = ∫ q, u q ∂μ := by
-  let J : C(T,ℂ) →L[ℂ] ℂ := LinearMap.mkContinuous
-    { toFun := fun u => ∫ q, u q ∂μ
-      map_add' := fun u v => integral_add
-        (u.continuous.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
-        (v.continuous.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
-      map_smul' := fun c u => integral_smul c u }
-    1 (by
-      intro u
-      simpa using norm_integral_le_of_norm_le_const (μ := μ)
-        (Filter.Eventually.of_forall (u.norm_coe_le_norm)))
-  let j : C(T,ℂ) →ₗᵢ[ℂ] C(B,ℂ) :=
-    { toLinearMap := (ContinuousMap.compCLM ℂ ℂ π).toLinearMap
-      norm_map' := by
-        intro u
-        apply le_antisymm
-        · exact (ContinuousMap.norm_le _ (norm_nonneg u)).mpr (fun x => u.norm_coe_le_norm (π x))
-        · exact (ContinuousMap.norm_le _ (norm_nonneg (u.comp π))).mpr (fun q => by
-            obtain ⟨x, rfl⟩ := hπ q
-            exact (u.comp π).norm_coe_le_norm x) }
-  obtain ⟨I,hI,_⟩ := exists_extension_norm_eq j.toLinearMap.range
-    (J.comp j.equivRange.symm.toContinuousLinearEquiv.toContinuousLinearMap)
-  refine ⟨I, fun u => ?_⟩
-  have h := hI (j.equivRange u)
-  have hi : (j.equivRange u).val = u.comp π := by
-    rw [LinearIsometry.equivRange_apply_coe]; rfl
-  have hj : (J.comp j.equivRange.symm.toContinuousLinearEquiv.toContinuousLinearMap) (j.equivRange u) = J u := by
-    change J (j.equivRange.symm (j.equivRange u)) = J u
-    rw [LinearIsometryEquiv.symm_apply_apply]
-  rw [hi, hj] at h
-  exact h
-
-private theorem kernel_integral_holomorphic (hι : Function.Injective ι)
-    (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
-    (t : ℝ) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
-    DifferentiableOn ℂ (fun s => ∫ z : KernelTorus F ζ hζ C R P H U a,
-      KPContActualChamberNormalSeries.E F ζ hζ U ι f s
-        (KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a t (Quotient.out z) b ε)
-      ∂fiberMeasure F ζ hζ C R P H U a) V := by
-  letI := (KPContFlatCuspIncomingEvaluation.monodromy F ζ hζ C R P H U a).compact
-  letI := KPContActualChamberOutgoingAdapter.kernelTorus_borelSpace F ζ hζ C R P H U a
-  letI := KPContActualChamberOutgoingAdapter.fiber_probability F ζ hζ C R P H U a
-  obtain ⟨B,hB,hrep⟩ := KPContinuation.ChamberModerateGrowth.compact_kernel_representatives F ζ hζ C R P H U a
-  letI : CompactSpace B := isCompact_iff_compactSpace.mp hB
-  let π : C(B,KernelTorus F ζ hζ C R P H U a) :=
-    ⟨fun x => QuotientAddGroup.mk x.val, QuotientAddGroup.continuous_mk.comp continuous_subtype_val⟩
-  have hπ : Function.Surjective π := fun q => by
-    obtain ⟨x,hx,he⟩ := hrep q
-    exact ⟨⟨x,hx⟩,he⟩
-  obtain ⟨I,hI⟩ := integral_extension (fiberMeasure F ζ hζ C R P H U a) π hπ
-  let c : KPCuspCharts.Horizontal F → KPContActualChamberNormalSeries.G F ζ hζ :=
-    fun x => KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a t x b ε
-  have hc : Continuous c := by
-    have harch : Continuous (fun x : KPCuspCharts.Horizontal F => KPCuspCharts.toArch F ((x,b),t)) :=
-      (KPCuspCharts.toArch_contDiff F).continuous.comp
-        ((continuous_id.prodMk continuous_const).prodMk continuous_const)
-    have hsec := (KPContSectorArchSphericalFibers.section_continuous F ζ hζ).comp harch
-    have hins := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp hsec
-    exact continuous_const.mul (hins.mul continuous_const)
-  let A := c '' B
-  have hA : IsCompact A := hB.image hc
-  letI : CompactSpace A := isCompact_iff_compactSpace.mp hA
-  let cB : C(B,A) := ⟨fun x => ⟨c x.val, ⟨x.val,x.property,rfl⟩⟩,
-    (hc.comp continuous_subtype_val).subtype_mk _⟩
-  let g : ℂ → C(B,ℂ) := fun s =>
-    (KPContActualChamberNormalSeries.compactMixedJet F ζ hζ U ι f hι hf 0 [] A s).comp cB
-  have hg : DifferentiableOn ℂ g V :=
-    (ContinuousMap.compCLM ℂ ℂ cB).differentiable.comp_differentiableOn
-      (KPContActualChamberNormalSeries.compactMixedJet_holomorphic F ζ hζ U ι f hι hf 0 [] A hA)
-  apply (I.differentiable.comp_differentiableOn hg).congr
-  intro s hs
-  let u : C(KernelTorus F ζ hζ C R P H U a,ℂ) :=
-    ⟨fun q => KPContActualChamberNormalSeries.E F ζ hζ U ι f s
-      (KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a t (Quotient.out q) b ε), by
-      simpa only [KPContActualChamberCasimirJets.cuspSheet, KPContActualChamberCasimirJets.jet,
-        iteratedDerivWithin_zero] using
-        KPContinuation.ChamberModerateGrowth.actualCuspSheet_kernel_continuous F ζ hζ C R P H U ι hι f hf a s hs t b ε⟩
-  have he : g s = u.comp π := by
-    ext x
-    have hp := KPContinuation.ChamberModerateGrowth.actualCuspSheet_kernel_representative F ζ hζ C R P H U
-      ι hι f hf a s hs t x.val (Quotient.out (π x)) b ε (Quotient.out_eq (π x)).symm
-    simpa [g, KPContActualChamberNormalSeries.compactMixedJet, hs, cB, c,
-      KPContActualChamberNormalSeries.mixedJet, KPContActualChamberNormalSeries.rightWord,
-      KPContActualChamberCasimirJets.cuspSheet, KPContActualChamberCasimirJets.jet, u] using hp
-  change (∫ z, u z ∂fiberMeasure F ζ hζ C R P H U a) = I (g s)
-  rw [he]
-  exact (hI u).symm
-
 include hι hf in
 private theorem projection_holomorphic (t : ℝ) (b : KPCuspCharts.Shape F)
     (q : KernelTorus F ζ hζ C R P H U a) :
@@ -296,7 +201,8 @@ private theorem projection_holomorphic (t : ℝ) (b : KPCuspCharts.Shape F)
       KPContActualChamberNormalSeries.E F ζ hζ U ι f z
         (KPContFlatCuspIncomingEvaluation.cuspGroup F ζ hζ C R P H U a t (Quotient.out q) b ε)
       ∂fiberMeasure F ζ hζ C R P H U a) V :=
-    differentiableOn_pi.mpr (fun ε => kernel_integral_holomorphic F ζ hζ C R P H U ι f a hι hf t b ε)
+    differentiableOn_pi.mpr (fun ε => KPContActualChamberOutgoingAdapter.kernel_integral_holomorphic
+      F ζ hζ C R P H U a ι f hι hf t b ε)
   exact J.toContinuousLinearMap.differentiable.comp_differentiableOn he
 
 include hι hf in
@@ -334,7 +240,7 @@ private theorem complement_jet (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ)
     KPContActualChamberCasimirJets.cusp_restriction_commute F ζ hζ C R P H U ι f hι hf] <;> exact hs
 
 include hι hf in
-private theorem parameterScalar_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V)
+theorem parameterScalar_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (p : KPCuspCharts.Coordinates F) :
     parameterScalar F ζ hζ C R P H U a ι f k s (KPCuspCharts.toArch F p) =
       meanZeroJetSheet F ζ hζ C R P H U a ι f k s p.2 p.1.1 p.1.2 1 := by

@@ -34,6 +34,36 @@ def arch (d : ℕ) (p : HyperbolicChart.Space d) : KPArch.Space d :=
 def real (d : ℕ) (p : KPArch.Space d) : HyperbolicChart.Space d :=
   WithLp.toLp 2 (fun j => ![(p j.1).1.re, (p j.1).1.im, (p j.1).2] j.2)
 
+theorem arch_real_eq (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := rfl
+
+theorem arch_contDiff (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
+  apply contDiff_pi.mpr
+  intro i
+  apply ContDiff.prodMk
+  · exact Complex.equivRealProdCLM.symm.contDiff.comp
+      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
+       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
+  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+
+theorem real_contDiff (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
+  apply (contDiff_piLp 2).mpr
+  intro j
+  rcases j with ⟨i, k⟩
+  fin_cases k
+  · simpa [real, Function.comp_def] using
+      Complex.reCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
+  · simpa [real, Function.comp_def] using
+      Complex.imCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
+  · simpa [real, Function.comp_def] using
+      contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+
+theorem meanHeight_contDiff (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
+  unfold KPCuspLogShape.meanHeight
+  apply ContDiff.div_const
+  apply ContDiff.sum
+  intro i hi
+  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+
 namespace Representative
 variable {T : ℝ} (v : Representative ζ hζ S ρ V T)
 

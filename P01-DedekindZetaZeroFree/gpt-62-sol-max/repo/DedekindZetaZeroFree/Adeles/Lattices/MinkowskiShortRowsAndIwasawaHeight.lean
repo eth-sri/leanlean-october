@@ -60,7 +60,12 @@ def height (d : ℕ) (r : Space d)
     (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) : ℝ :=
   (∏ i : Fin d, rowNormSq d r T i)⁻¹
 
-private def linT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
+section
+
+variable (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ)
+include T
+
+private def linT :
     (Fin d × Fin 2 → ℂ) →ₗ[ℂ] (Fin d × Fin 2 → ℂ) where
   toFun r := fun ij => ∑ k, r (ij.1, k) * (T ij.1 : Matrix (Fin 2) (Fin 2) ℂ) k ij.2
   map_add' r s := by
@@ -71,11 +76,11 @@ private def linT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ)
     simp [Pi.smul_apply, smul_eq_mul, Finset.mul_sum, mul_assoc]
     ring
 
-private def curT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
+private def curT :
     (Fin d → Fin 2 → ℂ) →ₗ[ℂ] (Fin d → Fin 2 → ℂ) :=
   (LinearEquiv.curry ℂ ℂ (Fin d) (Fin 2)).conj (linT d T)
 
-private theorem curT_eq (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
+private theorem curT_eq :
     curT d T = LinearMap.pi
       (fun i => (Matrix.toLin' ((T i : Matrix (Fin 2) (Fin 2) ℂ).transpose)).comp
         (LinearMap.proj i)) := by
@@ -88,22 +93,22 @@ private theorem curT_eq (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 
     Matrix.transpose_apply]
   exact Finset.sum_congr rfl fun k _ => mul_comm _ _
 
-private theorem det_curT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
+private theorem det_curT :
     LinearMap.det (curT d T) = 1 := by
   rw [curT_eq, LinearMap.det_pi]
   simp [LinearMap.det_toLin', Matrix.det_transpose, Matrix.SpecialLinearGroup.det_coe]
 
-private def transform (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
+private def transform :
     Space d →ₗ[ℂ] Space d :=
   (WithLp.linearEquiv 2 ℂ (Fin d × Fin 2 → ℂ)).symm.conj (linT d T)
 
-private theorem transform_apply (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ)
+private theorem transform_apply
     (r : Space d) :
     transform d T r = WithLp.toLp 2
       (fun ij => ∑ k, WithLp.ofLp r (ij.1, k) *
         (T ij.1 : Matrix (Fin 2) (Fin 2) ℂ) k ij.2) := rfl
 
-private theorem transform_det (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
+private theorem transform_det :
     LinearMap.det (transform d T) = 1 := by
   have h1 : LinearMap.det
       ((WithLp.linearEquiv 2 ℂ (Fin d × Fin 2 → ℂ)).symm.conj (linT d T)) =
@@ -113,10 +118,12 @@ private theorem transform_det (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup
   exact (LinearMap.det_conj (linT d T) (LinearEquiv.curry ℂ ℂ (Fin d) (Fin 2))).symm.trans
     (det_curT d T)
 
-private theorem transform_det_real (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
+private theorem transform_det_real :
     LinearMap.det ((transform d T).restrictScalars ℝ) = 1 := by
   rw [LinearMap.det_restrictScalars, transform_det]
   simp
+
+end
 
 private theorem sum_rowNormSq_eq (d : ℕ) (r : Space d)
     (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :

@@ -426,17 +426,6 @@ noncomputable def
       (localCompleteDVF M).valuation ambient.valuation
       inclusion hEquiv
 
-/-- The ambient residue comparison for the finite standard/changed
-compositum is injective. -/
-theorem
-    padicCompletedStandardChangedCompositumResidueEmbedding_injective
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
-    Function.Injective
-      (padicCompletedStandardChangedCompositumResidueEmbedding
-        p u n) :=
-  (padicCompletedStandardChangedCompositumResidueEmbedding
-    p u n).injective
 
 /-- The finite standard/changed compositum is finite-dimensional over its
 changed-uniformizer fixed subfield. -/

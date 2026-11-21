@@ -13,74 +13,80 @@ namespace DedekindZetaZeroFree.KPStandardLocalRootLifts
 noncomputable section
 set_option autoImplicit false
 
-def lowerN (K : Type*) [Field K] (t : K) : KubotaRankTwo.GL2 K :=
+section
+
+variable (K : Type*) [Field K]
+
+def lowerN (t : K) : KubotaRankTwo.GL2 K :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![1, 0; t, 1] (by
     simp [Matrix.det_fin_two])
 
-def weylSwap (K : Type*) [Field K] : KubotaRankTwo.GL2 K :=
+def weylSwap : KubotaRankTwo.GL2 K :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![0, 1; 1, 0] (by
     simp [Matrix.det_fin_two])
 
-private theorem n_zero_matrix (K : Type*) [Field K] : KubotaRankTwo.n K 0 = 1 := by
+private theorem n_zero_matrix : KubotaRankTwo.n K 0 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.n]
 
-private theorem n_add_matrix (K : Type*) [Field K] (t u : K) :
+private theorem n_add_matrix (t u : K) :
     KubotaRankTwo.n K t * KubotaRankTwo.n K u = KubotaRankTwo.n K (t + u) := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, add_comm]
 
-private theorem lower_zero_matrix (K : Type*) [Field K] : lowerN K 0 = 1 := by
+private theorem lower_zero_matrix : lowerN K 0 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [lowerN]
 
-private theorem lower_add_matrix (K : Type*) [Field K] (t u : K) :
+private theorem lower_add_matrix (t u : K) :
     lowerN K t * lowerN K u = lowerN K (t + u) := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [lowerN, Matrix.mul_apply]
 
-theorem d_mul_matrix (K : Type*) [Field K] (x y : Kˣ) :
+theorem d_mul_matrix (x y : Kˣ) :
     KubotaRankTwo.d K x 1 * KubotaRankTwo.d K y 1 = KubotaRankTwo.d K (x * y) 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
 
-private theorem d_one_matrix (K : Type*) [Field K] : KubotaRankTwo.d K 1 1 = 1 := by
+private theorem d_one_matrix : KubotaRankTwo.d K 1 1 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp
 
-private theorem swap_sq_matrix (K : Type*) [Field K] : weylSwap K * weylSwap K = 1 := by
+private theorem swap_sq_matrix : weylSwap K * weylSwap K = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [weylSwap, Matrix.mul_apply]
 
-private theorem signed_sq_matrix (K : Type*) [Field K] :
+private theorem signed_sq_matrix :
     KubotaRankTwo.w K * KubotaRankTwo.w K = KubotaRankTwo.d K (-1) (-1) := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
 
-private theorem lower_det (K : Type*) [Field K] (t : K) : KubotaRankTwo.det K (lowerN K t) = 1 := by
+private theorem lower_det (t : K) : KubotaRankTwo.det K (lowerN K t) = 1 := by
   apply Units.ext
   simp [KubotaRankTwo.det, lowerN, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
 
-private theorem swap_det (K : Type*) [Field K] : KubotaRankTwo.det K (weylSwap K) = -1 := by
+private theorem swap_det : KubotaRankTwo.det K (weylSwap K) = -1 := by
   apply Units.ext
   simp [KubotaRankTwo.det, weylSwap, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
 
-private theorem swap_X (K : Type*) [Field K] : KubotaRankTwo.X K (weylSwap K) = 1 := by
+private theorem swap_X : KubotaRankTwo.X K (weylSwap K) = 1 := by
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, weylSwap]
 
-private theorem lower_X (K : Type*) [Field K] (t : K) (ht : t ≠ 0) :
+private theorem lower_X (t : K) (ht : t ≠ 0) :
     KubotaRankTwo.X K (lowerN K t) = Units.mk0 t ht := by
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, lowerN, ht]
+
+end
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

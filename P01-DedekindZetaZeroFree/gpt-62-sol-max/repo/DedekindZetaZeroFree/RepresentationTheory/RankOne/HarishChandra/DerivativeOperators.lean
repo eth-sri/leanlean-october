@@ -54,21 +54,8 @@ open scoped Matrix.Norms.Operator in
 
 theorem hasDerivAt_flow (s : ℝ) (X : Mat) (f : PrincipalSeries s) (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X)))
-      (derivative s X f g) 0 := by
-  have hm : HasDerivAt (fun t : ℝ => (g : Mat) * NormedSpace.exp ((t : ℂ) • X))
-      ((g : Mat) * X) 0 := by
-    have h := (((hasDerivAt_exp_smul_const (𝕂 := ℂ) X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt)
-    have ht := h.const_mul (g : Mat)
-    change HasDerivAt (fun t : ℝ => (g : Mat) * NormedSpace.exp ((t : ℂ) • X))
-      ((g : Mat) * ((1 : ℂ) • (NormedSpace.exp ((0 : ℂ) • X) * X))) 0 at ht
-    simpa only [one_smul, zero_smul, NormedSpace.exp_zero, one_mul] using ht
-  have hc := (mf_diff s f g).hasFDerivAt.comp_hasDerivAt_of_eq 0 hm (by simp)
-  have heq : (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) =
-      matrixFunction f ∘ (fun t : ℝ => (g : Mat) * NormedSpace.exp ((t : ℂ) • X)) := by
-    funext t
-    exact (mf_gl f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))).symm
-  rw [heq]
-  exact hc
+      (derivative s X f g) 0 :=
+  KPCplxHarmonicExtraction.CasimirTransfer.Transfer.hasDerivAt_rightExp s f g X
 
 def direction (s : ℝ) (f : PrincipalSeries s) : Mat →ₗ[ℝ] PrincipalSeries s where
   toFun X := derivative s X f

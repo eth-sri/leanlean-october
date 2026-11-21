@@ -8,7 +8,7 @@ namespace DedekindZetaZeroFree.Quantitative.EulerGoodPrime
 
 noncomputable section
 
-open DedekindZetaZeroFree NumberField DedekindZetaZeroFree.Quantitative.EulerDomain
+open DedekindZetaZeroFree NumberField LocalFiniteSums DedekindZetaZeroFree.Quantitative.EulerDomain
 
 section Helpers
 
@@ -16,26 +16,26 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-lemma Q_ge_two (p : LocalFiniteSums.ExteriorPrime A) : 2 ≤ LocalFiniteSums.Q p := by
+lemma Q_ge_two (p : ExteriorPrime A) : 2 ≤ Q p := by
   change 2 ≤ (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 
-lemma Q_pos (p : LocalFiniteSums.ExteriorPrime A) : 0 < LocalFiniteSums.Q p :=
+lemma Q_pos (p : ExteriorPrime A) : 0 < Q p :=
   lt_of_lt_of_le (by norm_num) (Q_ge_two p)
 
-lemma norm_qPower_rpow (p : LocalFiniteSums.ExteriorPrime A) (s : ℂ) :
-    ‖LocalFiniteSums.qPower p s‖ = LocalFiniteSums.Q p ^ s.re := by
+lemma norm_qPower_rpow (p : ExteriorPrime A) (s : ℂ) :
+    ‖LocalFiniteSums.qPower p s‖ = Q p ^ s.re := by
   rw [Real.rpow_def_of_pos (Q_pos p)]
   simp [LocalFiniteSums.qPower, Complex.norm_exp, mul_comm]
 
-lemma norm_V_eq (p : LocalFiniteSums.ExteriorPrime A) (z : ℂ) :
-    ‖CorrectionFactors.V p z‖ = LocalFiniteSums.Q p ^ (-(6 * z.re)) := by
+lemma norm_V_eq (p : ExteriorPrime A) (z : ℂ) :
+    ‖CorrectionFactors.V p z‖ = Q p ^ (-(6 * z.re)) := by
   unfold CorrectionFactors.V
   rw [norm_qPower_rpow]
   congr 1
   simp <;> ring
 
-lemma chi_norm_le (p : LocalFiniteSums.ExteriorPrime A) (u : A.R) :
+lemma chi_norm_le (p : ExteriorPrime A) (u : A.R) :
     ‖LocalFiniteSums.chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (LocalFiniteSums.primeIdeal p)) u)‖ ≤ 1 := by
   letI := A.exteriorResidue_finite (LocalFiniteSums.primeIdeal p)
   letI := Fintype.ofFinite (A.R ⧸ A.extendIdeal (LocalFiniteSums.primeIdeal p))ˣ
@@ -47,31 +47,31 @@ lemma chi_norm_le (p : LocalFiniteSums.ExteriorPrime A) (u : A.R) :
     simpa only [MulChar.coe_equivToUnitHom] using h.le
   · simp [MulChar.map_nonunit _ hu]
 
-lemma norm_W_le (p : LocalFiniteSums.ExteriorPrime A) (u : A.R) (w : ℂ) :
-    ‖CorrectionFactors.W (σ := σ) p u w‖ ≤ LocalFiniteSums.Q p ^ (-w.re) := by
+lemma norm_W_le (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
+    ‖CorrectionFactors.W (σ := σ) p u w‖ ≤ Q p ^ (-w.re) := by
   unfold CorrectionFactors.W
   rw [norm_mul, norm_qPower_rpow]
   simp only [Complex.neg_re]
   exact mul_le_of_le_one_left (Real.rpow_nonneg (Q_pos p).le _) (chi_norm_le p u)
 
-lemma eta_norm_le (p : LocalFiniteSums.ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
+lemma eta_norm_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
   by_cases h : η p.val.asIdeal = 0
   · simp [h]
   · exact (RayClassBridge.rayClassCharacter_norm_of_ne_zero F
       (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
       A.modulus A.modulus_ne_zero η p.val.asIdeal h).le
 
-lemma norm_D_le (p : LocalFiniteSums.ExteriorPrime A) (u : A.R) (ξ : ℂ) :
-    ‖CorrectionFactors.D (σ := σ) (η := η) p u ξ‖ ≤ LocalFiniteSums.Q p ^ (-ξ.re) := by
+lemma norm_D_le (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
+    ‖CorrectionFactors.D (σ := σ) (η := η) p u ξ‖ ≤ Q p ^ (-ξ.re) := by
   unfold CorrectionFactors.D
   rw [norm_mul, norm_mul, norm_star, norm_qPower_rpow]
   simp only [Complex.neg_re]
   have h := mul_le_one₀ (eta_norm_le (η := η) p) (norm_nonneg _) (chi_norm_le (σ := σ) p u)
   exact mul_le_of_le_one_left (Real.rpow_nonneg (Q_pos p).le _) h
 
-lemma norm_E_eq (C : A.GeneralArithmeticContext σ η hS) (p : LocalFiniteSums.ExteriorPrime A)
+lemma norm_E_eq (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (ξ z : ℂ) :
-    ‖CorrectionFactors.E C p ξ z‖ = LocalFiniteSums.Q p ^ (4 - 6 * ξ.re - 6 * z.re) := by
+    ‖CorrectionFactors.E C p ξ z‖ = Q p ^ (4 - 6 * ξ.re - 6 * z.re) := by
   have hθ : ‖LocalFiniteSums.vartheta C p‖ = 1 := Circle.norm_coe _
   unfold CorrectionFactors.E
   rw [norm_mul, norm_mul, norm_pow, hθ, one_pow, one_mul, norm_qPower_rpow, norm_V_eq,
@@ -161,7 +161,7 @@ lemma numerator_norm_le (q : ℝ) (hq : 2 ≤ q) (v w d e : ℂ) (hv : ‖v‖ �
   linarith
 
 lemma goodFactor_sub_one_eq (C : A.GeneralArithmeticContext σ η hS)
-    (pr : LocalFiniteSums.ExteriorPrime A) (uu : A.R) (ξ w z : ℂ)
+    (pr : ExteriorPrime A) (uu : A.R) (ξ w z : ℂ)
     (hnv : 1 - CorrectionFactors.V pr z ≠ 0)
     (hnw : 1 - CorrectionFactors.W (σ := σ) pr uu w ≠ 0)
     (hnd : 1 - CorrectionFactors.D (σ := σ) (η := η) pr uu ξ ≠ 0)
@@ -170,12 +170,12 @@ lemma goodFactor_sub_one_eq (C : A.GeneralArithmeticContext σ η hS)
       (-CorrectionFactors.V pr z * CorrectionFactors.W (σ := σ) pr uu w +
         CorrectionFactors.D (σ := σ) (η := η) pr uu ξ * CorrectionFactors.V pr z +
         CorrectionFactors.D (σ := σ) (η := η) pr uu ξ * CorrectionFactors.W (σ := σ) pr uu w -
-        ((LocalFiniteSums.Q pr : ℝ) : ℂ) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
+        ((Q pr : ℝ) : ℂ) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
           CorrectionFactors.W (σ := σ) pr uu w * CorrectionFactors.V pr z +
-        (((LocalFiniteSums.Q pr : ℝ) : ℂ) - 1) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
+        (((Q pr : ℝ) : ℂ) - 1) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 * CorrectionFactors.V pr z +
-        CorrectionFactors.E C pr ξ z * ((1 - ((LocalFiniteSums.Q pr : ℝ) : ℂ)⁻¹) +
-          ((LocalFiniteSums.Q pr : ℝ) : ℂ)⁻¹ * CorrectionFactors.W (σ := σ) pr uu w -
+        CorrectionFactors.E C pr ξ z * ((1 - ((Q pr : ℝ) : ℂ)⁻¹) +
+          ((Q pr : ℝ) : ℂ)⁻¹ * CorrectionFactors.W (σ := σ) pr uu w -
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 +
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 * CorrectionFactors.V pr z -
           CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)) /
@@ -183,24 +183,24 @@ lemma goodFactor_sub_one_eq (C : A.GeneralArithmeticContext σ η hS)
   unfold CorrectionFactors.goodFactor CorrectionFactors.goodRational
   exact good_algebra _ _ _ _ _ hnv hnw hnd hne
 
-lemma good_bound (C : A.GeneralArithmeticContext σ η hS) (pr : LocalFiniteSums.ExteriorPrime A)
+lemma good_bound (C : A.GeneralArithmeticContext σ η hS) (pr : ExteriorPrime A)
     (uu : A.R) (ξ w z : ℂ) (ρ : ℝ) (hρ : ρ < 1)
-    (hv : LocalFiniteSums.Q pr ^ (-(6 * z.re)) ≤ ρ)
-    (hw : LocalFiniteSums.Q pr ^ (-w.re) ≤ ρ)
-    (hd : LocalFiniteSums.Q pr ^ (-ξ.re) ≤ ρ)
-    (he : LocalFiniteSums.Q pr ^ (4 - 6 * ξ.re - 6 * z.re) ≤ ρ) :
+    (hv : Q pr ^ (-(6 * z.re)) ≤ ρ)
+    (hw : Q pr ^ (-w.re) ≤ ρ)
+    (hd : Q pr ^ (-ξ.re) ≤ ρ)
+    (he : Q pr ^ (4 - 6 * ξ.re - 6 * z.re) ≤ ρ) :
     ‖CorrectionFactors.goodFactor C pr uu ξ w z - 1‖ ≤
       6 / ((1 - ρ) * (1 - ρ)) *
-        (LocalFiniteSums.Q pr ^ (-(6 * z.re)) * LocalFiniteSums.Q pr ^ (-w.re) +
-          LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-(6 * z.re)) +
-          LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) +
-          LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) *
-            LocalFiniteSums.Q pr ^ (-(6 * z.re))) +
-          LocalFiniteSums.Q pr ^ (4 - 6 * ξ.re - 6 * z.re)) := by
+        (Q pr ^ (-(6 * z.re)) * Q pr ^ (-w.re) +
+          Q pr ^ (-ξ.re) * Q pr ^ (-(6 * z.re)) +
+          Q pr ^ (-ξ.re) * Q pr ^ (-w.re) +
+          Q pr * (Q pr ^ (-ξ.re) * Q pr ^ (-w.re) *
+            Q pr ^ (-(6 * z.re))) +
+          Q pr ^ (4 - 6 * ξ.re - 6 * z.re)) := by
   have hQ2 := Q_ge_two pr
   have hQ0 := Q_pos pr
-  have hq0 : (0 : ℝ) ≤ LocalFiniteSums.Q pr := hQ0.le
-  have hpow : ∀ a : ℝ, 0 ≤ LocalFiniteSums.Q pr ^ a := fun a => Real.rpow_nonneg hq0 a
+  have hq0 : (0 : ℝ) ≤ Q pr := hQ0.le
+  have hpow : ∀ a : ℝ, 0 ≤ Q pr ^ a := fun a => Real.rpow_nonneg hq0 a
   have hvn := norm_V_eq pr z
   have hwn := norm_W_le (σ := σ) (A := A) pr uu w
   have hdn := norm_D_le (σ := σ) (η := η) pr uu ξ
@@ -219,27 +219,27 @@ lemma good_bound (C : A.GeneralArithmeticContext σ η hS) (pr : LocalFiniteSums
   have hne : 1 - CorrectionFactors.E C pr ξ z ≠ 0 :=
     ne_zero_of_norm_lt_one _ (lt_of_le_of_lt hen1 hρ)
   rw [goodFactor_sub_one_eq C pr uu ξ w z hnv hnw hnd hne, norm_div, norm_mul]
-  have hN := numerator_norm_le (LocalFiniteSums.Q pr) hQ2 (CorrectionFactors.V pr z)
+  have hN := numerator_norm_le (Q pr) hQ2 (CorrectionFactors.V pr z)
     (CorrectionFactors.W (σ := σ) pr uu w) (CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)
     (CorrectionFactors.E C pr ξ z) (by linarith) (by linarith) (by linarith)
   have t1 : ‖CorrectionFactors.V pr z‖ * ‖CorrectionFactors.W (σ := σ) pr uu w‖ ≤
-      LocalFiniteSums.Q pr ^ (-(6 * z.re)) * LocalFiniteSums.Q pr ^ (-w.re) := by
+      Q pr ^ (-(6 * z.re)) * Q pr ^ (-w.re) := by
     rw [hvn]; exact mul_le_mul_of_nonneg_left hwn (hpow _)
   have t2 : ‖CorrectionFactors.D (σ := σ) (η := η) pr uu ξ‖ * ‖CorrectionFactors.V pr z‖ ≤
-      LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-(6 * z.re)) := by
+      Q pr ^ (-ξ.re) * Q pr ^ (-(6 * z.re)) := by
     rw [hvn]; exact mul_le_mul_of_nonneg_right hdn (hpow _)
   have t3 : ‖CorrectionFactors.D (σ := σ) (η := η) pr uu ξ‖ *
       ‖CorrectionFactors.W (σ := σ) pr uu w‖ ≤
-      LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) :=
+      Q pr ^ (-ξ.re) * Q pr ^ (-w.re) :=
     mul_le_mul hdn hwn (norm_nonneg _) (hpow _)
-  have t4 : LocalFiniteSums.Q pr * (‖CorrectionFactors.D (σ := σ) (η := η) pr uu ξ‖ *
+  have t4 : Q pr * (‖CorrectionFactors.D (σ := σ) (η := η) pr uu ξ‖ *
       ‖CorrectionFactors.W (σ := σ) pr uu w‖ * ‖CorrectionFactors.V pr z‖) ≤
-      LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) *
-        LocalFiniteSums.Q pr ^ (-(6 * z.re))) := by
+      Q pr * (Q pr ^ (-ξ.re) * Q pr ^ (-w.re) *
+        Q pr ^ (-(6 * z.re))) := by
     apply mul_le_mul_of_nonneg_left _ hq0
     rw [hvn]
     exact mul_le_mul t3 (le_refl _) (hpow _) (mul_nonneg (hpow _) (hpow _))
-  have t5 : ‖CorrectionFactors.E C pr ξ z‖ ≤ LocalFiniteSums.Q pr ^ (4 - 6 * ξ.re - 6 * z.re) :=
+  have t5 : ‖CorrectionFactors.E C pr ξ z‖ ≤ Q pr ^ (4 - 6 * ξ.re - 6 * z.re) :=
     hen.le
   have n1 := mul_nonneg (hpow (-(6 * z.re))) (hpow (-w.re))
   have n2 := mul_nonneg (hpow (-ξ.re)) (hpow (-(6 * z.re)))
@@ -250,21 +250,21 @@ lemma good_bound (C : A.GeneralArithmeticContext σ η hS) (pr : LocalFiniteSums
   have hNS : ‖-CorrectionFactors.V pr z * CorrectionFactors.W (σ := σ) pr uu w +
         CorrectionFactors.D (σ := σ) (η := η) pr uu ξ * CorrectionFactors.V pr z +
         CorrectionFactors.D (σ := σ) (η := η) pr uu ξ * CorrectionFactors.W (σ := σ) pr uu w -
-        ((LocalFiniteSums.Q pr : ℝ) : ℂ) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
+        ((Q pr : ℝ) : ℂ) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
           CorrectionFactors.W (σ := σ) pr uu w * CorrectionFactors.V pr z +
-        (((LocalFiniteSums.Q pr : ℝ) : ℂ) - 1) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
+        (((Q pr : ℝ) : ℂ) - 1) * CorrectionFactors.D (σ := σ) (η := η) pr uu ξ *
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 * CorrectionFactors.V pr z +
-        CorrectionFactors.E C pr ξ z * ((1 - ((LocalFiniteSums.Q pr : ℝ) : ℂ)⁻¹) +
-          ((LocalFiniteSums.Q pr : ℝ) : ℂ)⁻¹ * CorrectionFactors.W (σ := σ) pr uu w -
+        CorrectionFactors.E C pr ξ z * ((1 - ((Q pr : ℝ) : ℂ)⁻¹) +
+          ((Q pr : ℝ) : ℂ)⁻¹ * CorrectionFactors.W (σ := σ) pr uu w -
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 +
           CorrectionFactors.W (σ := σ) pr uu w ^ 2 * CorrectionFactors.V pr z -
           CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)‖ ≤
-      6 * (LocalFiniteSums.Q pr ^ (-(6 * z.re)) * LocalFiniteSums.Q pr ^ (-w.re) +
-          LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-(6 * z.re)) +
-          LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) +
-          LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) *
-            LocalFiniteSums.Q pr ^ (-(6 * z.re))) +
-          LocalFiniteSums.Q pr ^ (4 - 6 * ξ.re - 6 * z.re)) := by
+      6 * (Q pr ^ (-(6 * z.re)) * Q pr ^ (-w.re) +
+          Q pr ^ (-ξ.re) * Q pr ^ (-(6 * z.re)) +
+          Q pr ^ (-ξ.re) * Q pr ^ (-w.re) +
+          Q pr * (Q pr ^ (-ξ.re) * Q pr ^ (-w.re) *
+            Q pr ^ (-(6 * z.re))) +
+          Q pr ^ (4 - 6 * ξ.re - 6 * z.re)) := by
     linarith
   have hA : 1 - ρ ≤ ‖1 - CorrectionFactors.E C pr ξ z‖ := by
     have := norm_sub_norm_le (1 : ℂ) (CorrectionFactors.E C pr ξ z)
@@ -272,112 +272,96 @@ lemma good_bound (C : A.GeneralArithmeticContext σ η hS) (pr : LocalFiniteSums
   have hB : 1 - ρ ≤ ‖1 - CorrectionFactors.D (σ := σ) (η := η) pr uu ξ‖ := by
     have := norm_sub_norm_le (1 : ℂ) (CorrectionFactors.D (σ := σ) (η := η) pr uu ξ)
     rw [norm_one] at this; linarith
-  have hS0 : 0 ≤ LocalFiniteSums.Q pr ^ (-(6 * z.re)) * LocalFiniteSums.Q pr ^ (-w.re) +
-          LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-(6 * z.re)) +
-          LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) +
-          LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) *
-            LocalFiniteSums.Q pr ^ (-(6 * z.re))) +
-          LocalFiniteSums.Q pr ^ (4 - 6 * ξ.re - 6 * z.re) := by linarith
-  calc _ ≤ (6 * (LocalFiniteSums.Q pr ^ (-(6 * z.re)) * LocalFiniteSums.Q pr ^ (-w.re) +
-          LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-(6 * z.re)) +
-          LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) +
-          LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-ξ.re) * LocalFiniteSums.Q pr ^ (-w.re) *
-            LocalFiniteSums.Q pr ^ (-(6 * z.re))) +
-          LocalFiniteSums.Q pr ^ (4 - 6 * ξ.re - 6 * z.re))) /
+  have hS0 : 0 ≤ Q pr ^ (-(6 * z.re)) * Q pr ^ (-w.re) +
+          Q pr ^ (-ξ.re) * Q pr ^ (-(6 * z.re)) +
+          Q pr ^ (-ξ.re) * Q pr ^ (-w.re) +
+          Q pr * (Q pr ^ (-ξ.re) * Q pr ^ (-w.re) *
+            Q pr ^ (-(6 * z.re))) +
+          Q pr ^ (4 - 6 * ξ.re - 6 * z.re) := by linarith
+  calc _ ≤ (6 * (Q pr ^ (-(6 * z.re)) * Q pr ^ (-w.re) +
+          Q pr ^ (-ξ.re) * Q pr ^ (-(6 * z.re)) +
+          Q pr ^ (-ξ.re) * Q pr ^ (-w.re) +
+          Q pr * (Q pr ^ (-ξ.re) * Q pr ^ (-w.re) *
+            Q pr ^ (-(6 * z.re))) +
+          Q pr ^ (4 - 6 * ξ.re - 6 * z.re))) /
           ((1 - ρ) * (1 - ρ)) := by
         refine div_le_div₀ (by linarith) ?_ (mul_pos hρ0 hρ0) ?_
         · linarith
         · exact mul_le_mul hA hB hρ0.le (norm_nonneg _)
     _ = _ := by ring
 
-end Helpers
-
-variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-variable (D : FixedData S η)
-
-theorem localFactor_sub_one_le_five_terms (δ' : ℝ) (hδ' : 0 < δ') :
-    ∃ C : ℝ, 0 < C ∧ ∀ (u : D.Row) (pr : LocalFiniteSums.ExteriorPrime D.recipe.A),
-      (↑(u.toFrequency.j pr) : ℕ) = (0 : ℕ) → ∀ p ∈ OmegaStarMargin δ',
-        ‖CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2 - 1‖ ≤
-          C * (LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re)) * LocalFiniteSums.Q pr ^ (-p.2.1.re) +
-            LocalFiniteSums.Q pr ^ (-p.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re)) +
-            LocalFiniteSums.Q pr ^ (-p.1.re) * LocalFiniteSums.Q pr ^ (-p.2.1.re) +
-            LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-p.1.re) *
-              LocalFiniteSums.Q pr ^ (-p.2.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re))) +
-            LocalFiniteSums.Q pr ^ (4 - 6 * p.1.re - 6 * p.2.2.re)) := by
+theorem goodFactor_sub_one_le_five_terms (δ' : ℝ) (hδ' : 0 < δ') :
+    ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ (C : A.GeneralArithmeticContext σ η hS)
+      (pr : ExteriorPrime A) (uu : A.R), ∀ p ∈ OmegaStarMargin δ',
+        ‖CorrectionFactors.goodFactor C pr uu p.1 p.2.1 p.2.2 - 1‖ ≤
+          C₀ * (Q pr ^ (-(6 * p.2.2.re)) * Q pr ^ (-p.2.1.re) +
+            Q pr ^ (-p.1.re) * Q pr ^ (-(6 * p.2.2.re)) +
+            Q pr ^ (-p.1.re) * Q pr ^ (-p.2.1.re) +
+            Q pr * (Q pr ^ (-p.1.re) *
+              Q pr ^ (-p.2.1.re) * Q pr ^ (-(6 * p.2.2.re))) +
+            Q pr ^ (4 - 6 * p.1.re - 6 * p.2.2.re)) := by
   have hρ : ((2 : ℝ) ^ δ')⁻¹ < 1 := inv_two_rpow_lt_one δ' hδ'
   have hρ0 : 0 < 1 - ((2 : ℝ) ^ δ')⁻¹ := by linarith
   refine ⟨6 / ((1 - ((2 : ℝ) ^ δ')⁻¹) * (1 - ((2 : ℝ) ^ δ')⁻¹)),
     div_pos (by norm_num) (mul_pos hρ0 hρ0), ?_⟩
-  intro u pr hj p hp
+  intro C pr uu p hp
   simp only [OmegaStarMargin, Set.mem_setOf_eq] at hp
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩ := hp
   have hQ2 := Q_ge_two pr
-  unfold CorrectionFactors.localFactor
-  rw [if_pos hj]
-  exact good_bound D.context pr _ p.1 p.2.1 p.2.2 _ hρ
+  exact good_bound C pr uu p.1 p.2.1 p.2.2 _ hρ
       (rpow_le_two_inv δ' hδ' _ hQ2 _ (by linarith))
       (rpow_le_two_inv δ' hδ' _ hQ2 _ (by linarith))
       (rpow_le_two_inv δ' hδ' _ hQ2 _ (by linarith))
       (rpow_le_two_inv δ' hδ' _ hQ2 _ (by linarith))
 
-theorem localFactor_sub_one_le (δ' : ℝ) (hδ' : 0 < δ') :
-    ∃ C δ : ℝ, 0 < C ∧ 0 < δ ∧
-      ∀ (u : D.Row) (pr : LocalFiniteSums.ExteriorPrime D.recipe.A),
-        (↑(u.toFrequency.j pr) : ℕ) = (0 : ℕ) → ∀ p ∈ OmegaStarMargin δ',
-          ‖CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2 - 1‖ ≤
-            C * LocalFiniteSums.Q pr ^ (-1 - δ) := by
-  obtain ⟨C0, hC0, hspec⟩ := localFactor_sub_one_le_five_terms D δ' hδ'
-  refine ⟨5 * C0, δ', by linarith, hδ', ?_⟩
-  intro u pr hj p hp
+theorem goodFactor_sub_one_le (δ' : ℝ) (hδ' : 0 < δ') :
+    ∃ C : ℝ, 0 < C ∧ ∀ (C' : A.GeneralArithmeticContext σ η hS)
+      (pr : ExteriorPrime A) (uu : A.R), ∀ p ∈ OmegaStarMargin δ',
+        ‖CorrectionFactors.goodFactor C' pr uu p.1 p.2.1 p.2.2 - 1‖ ≤
+          C * Q pr ^ (-1 - δ') := by
+  obtain ⟨C0, hC0, hspec⟩ := goodFactor_sub_one_le_five_terms (A := A) (σ := σ) (η := η)
+    (hS := hS) δ' hδ'
+  refine ⟨5 * C0, by linarith, ?_⟩
+  intro C' pr uu p hp
   have hQ2 := Q_ge_two pr
   have hQ0 := Q_pos pr
-  have hQ1 : (1 : ℝ) ≤ LocalFiniteSums.Q pr := by linarith
+  have hQ1 : (1 : ℝ) ≤ Q pr := by linarith
   have hm : ∀ a : ℝ, a ≤ -1 - δ' →
-      LocalFiniteSums.Q pr ^ a ≤ LocalFiniteSums.Q pr ^ (-1 - δ') :=
+      Q pr ^ a ≤ Q pr ^ (-1 - δ') :=
     fun a ha => Real.rpow_le_rpow_of_exponent_le hQ1 ha
-  simp only [OmegaStarMargin, Set.mem_setOf_eq] at hp
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩ := hp
-  have T1 : LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re)) * LocalFiniteSums.Q pr ^ (-p.2.1.re) ≤
-      LocalFiniteSums.Q pr ^ (-1 - δ') := by
+  have hp' := hp
+  simp only [OmegaStarMargin, Set.mem_setOf_eq] at hp'
+  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩ := hp'
+  have T1 : Q pr ^ (-(6 * p.2.2.re)) * Q pr ^ (-p.2.1.re) ≤
+      Q pr ^ (-1 - δ') := by
     rw [← Real.rpow_add hQ0]; exact hm _ (by linarith)
-  have T2 : LocalFiniteSums.Q pr ^ (-p.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re)) ≤
-      LocalFiniteSums.Q pr ^ (-1 - δ') := by
+  have T2 : Q pr ^ (-p.1.re) * Q pr ^ (-(6 * p.2.2.re)) ≤
+      Q pr ^ (-1 - δ') := by
     rw [← Real.rpow_add hQ0]; exact hm _ (by linarith)
-  have T3 : LocalFiniteSums.Q pr ^ (-p.1.re) * LocalFiniteSums.Q pr ^ (-p.2.1.re) ≤
-      LocalFiniteSums.Q pr ^ (-1 - δ') := by
+  have T3 : Q pr ^ (-p.1.re) * Q pr ^ (-p.2.1.re) ≤
+      Q pr ^ (-1 - δ') := by
     rw [← Real.rpow_add hQ0]; exact hm _ (by linarith)
-  have e4 : LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-p.1.re) *
-      LocalFiniteSums.Q pr ^ (-p.2.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re))) =
-      LocalFiniteSums.Q pr ^ (1 + (-p.1.re + -p.2.1.re + -(6 * p.2.2.re))) := by
+  have e4 : Q pr * (Q pr ^ (-p.1.re) *
+      Q pr ^ (-p.2.1.re) * Q pr ^ (-(6 * p.2.2.re))) =
+      Q pr ^ (1 + (-p.1.re + -p.2.1.re + -(6 * p.2.2.re))) := by
     rw [Real.rpow_add hQ0, Real.rpow_add hQ0, Real.rpow_add hQ0, Real.rpow_one]
-  have T4 : LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-p.1.re) *
-      LocalFiniteSums.Q pr ^ (-p.2.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re))) ≤
-      LocalFiniteSums.Q pr ^ (-1 - δ') := by
+  have T4 : Q pr * (Q pr ^ (-p.1.re) *
+      Q pr ^ (-p.2.1.re) * Q pr ^ (-(6 * p.2.2.re))) ≤
+      Q pr ^ (-1 - δ') := by
     rw [e4]; exact hm _ (by linarith)
-  have T5 : LocalFiniteSums.Q pr ^ (4 - 6 * p.1.re - 6 * p.2.2.re) ≤
-      LocalFiniteSums.Q pr ^ (-1 - δ') := hm _ (by linarith)
-  have hS : LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re)) * LocalFiniteSums.Q pr ^ (-p.2.1.re) +
-      LocalFiniteSums.Q pr ^ (-p.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re)) +
-      LocalFiniteSums.Q pr ^ (-p.1.re) * LocalFiniteSums.Q pr ^ (-p.2.1.re) +
-      LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-p.1.re) *
-        LocalFiniteSums.Q pr ^ (-p.2.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re))) +
-      LocalFiniteSums.Q pr ^ (4 - 6 * p.1.re - 6 * p.2.2.re) ≤
-      5 * LocalFiniteSums.Q pr ^ (-1 - δ') := by linarith
-  have hmem : p ∈ OmegaStarMargin δ' := by
-    simp only [OmegaStarMargin, Set.mem_setOf_eq]
-    exact ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩
-  calc _ ≤ C0 * (LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re)) * LocalFiniteSums.Q pr ^ (-p.2.1.re) +
-            LocalFiniteSums.Q pr ^ (-p.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re)) +
-            LocalFiniteSums.Q pr ^ (-p.1.re) * LocalFiniteSums.Q pr ^ (-p.2.1.re) +
-            LocalFiniteSums.Q pr * (LocalFiniteSums.Q pr ^ (-p.1.re) *
-              LocalFiniteSums.Q pr ^ (-p.2.1.re) * LocalFiniteSums.Q pr ^ (-(6 * p.2.2.re))) +
-            LocalFiniteSums.Q pr ^ (4 - 6 * p.1.re - 6 * p.2.2.re)) :=
-        hspec u pr hj p hmem
-    _ ≤ C0 * (5 * LocalFiniteSums.Q pr ^ (-1 - δ')) := mul_le_mul_of_nonneg_left hS hC0.le
-    _ = 5 * C0 * LocalFiniteSums.Q pr ^ (-1 - δ') := by ring
+  have T5 : Q pr ^ (4 - 6 * p.1.re - 6 * p.2.2.re) ≤
+      Q pr ^ (-1 - δ') := hm _ (by linarith)
+  have hS5 : Q pr ^ (-(6 * p.2.2.re)) * Q pr ^ (-p.2.1.re) +
+      Q pr ^ (-p.1.re) * Q pr ^ (-(6 * p.2.2.re)) +
+      Q pr ^ (-p.1.re) * Q pr ^ (-p.2.1.re) +
+      Q pr * (Q pr ^ (-p.1.re) *
+        Q pr ^ (-p.2.1.re) * Q pr ^ (-(6 * p.2.2.re))) +
+      Q pr ^ (4 - 6 * p.1.re - 6 * p.2.2.re) ≤
+      5 * Q pr ^ (-1 - δ') := by linarith
+  calc _ ≤ _ := hspec C' pr uu p hp
+    _ ≤ C0 * (5 * Q pr ^ (-1 - δ')) := mul_le_mul_of_nonneg_left hS5 hC0.le
+    _ = 5 * C0 * Q pr ^ (-1 - δ') := by ring
 
+end Helpers
 end
-
 end DedekindZetaZeroFree.Quantitative.EulerGoodPrime

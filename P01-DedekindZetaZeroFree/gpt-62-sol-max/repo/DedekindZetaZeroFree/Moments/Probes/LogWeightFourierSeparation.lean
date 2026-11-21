@@ -26,7 +26,7 @@ private theorem local_norm_fourierCoeffOn_le {a b M : ℝ} (hab : a < b) (f : �
     apply intervalIntegral.norm_integral_le_of_norm_le_const
     intro u hu
     rw [norm_smul, fourier_apply, Circle.norm_coe, one_mul]
-    exact hbound u (Set.Ioc_subset_Icc_self (by simpa only [Set.uIoc_of_le hab.le] using hu))
+    grind
   calc
     (1 / (b - a)) * ‖∫ u in a..b, fourier (-j) (u : AddCircle (b - a)) • f u‖
       ≤ (1 / (b - a)) * (M * |b - a|) := mul_le_mul_of_nonneg_left hh (by positivity)
@@ -59,7 +59,7 @@ theorem quadratic_coefficient_bound {Y : Type*} (f : Y → ℝ → ℂ)
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (j : ℤ) (y : Y),
       ‖normalizedCoefficient (f y) a L j‖ ≤ C / (1 + (j : ℝ) ^ 2) := by
   obtain ⟨B, hB, hbound⟩ := hbound
-  have hab : a < a + L := lt_add_of_pos_right a hL
+  have hab := lt_add_of_pos_right a hL
   have heq (g : ℝ → ℂ) (j : ℤ) :
       normalizedCoefficient g a L j = fourierCoeffOn hab g j := by
     letI : Fact (0 < L) := ⟨hL⟩
@@ -74,7 +74,7 @@ theorem quadratic_coefficient_bound {Y : Type*} (f : Y → ℝ → ℂ)
     intro u hu
     dsimp only
     rw [fourier_coe_apply, smul_eq_mul]
-    simp only [Int.cast_neg, mul_neg, neg_mul, mul_comm, add_sub_cancel_left]
+    grind only
   let D : ℝ := ‖(L : ℂ) / (2 * Real.pi * Complex.I)‖ ^ 2 * B
   refine ⟨B + 2 * D, by dsimp [D]; positivity, ?_⟩
   intro j y

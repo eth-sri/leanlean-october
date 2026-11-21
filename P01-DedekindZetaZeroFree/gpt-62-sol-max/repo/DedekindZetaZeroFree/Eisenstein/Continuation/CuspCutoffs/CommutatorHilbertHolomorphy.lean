@@ -56,24 +56,10 @@ variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
 variable (D : Descent F ζ hζ C R P H U ι B Ω f χ)
 
 structure Conclusions where
-  g : ℂ → ScalarSpace F ζ hζ C R P H U B
-  restriction : ∀ s ∈ Ω, ∀ x : (compactDomain F ζ hζ C R P H U B).compact,
-    (g s).val x = scalar F ζ hζ C R P H U (D.commutator s) x.val
-  off_domain : ∀ s ∉ Ω, g s = 0
-  scalar_holomorphic : DifferentiableOn ℂ g Ω
-  J_L : ScalarSpace F ζ hζ C R P H U B →L[ℂ] HilbertSpace F ζ hζ C R P H U
-  extension_bound : ‖J_L‖ ≤ Real.sqrt
-    ((coveredMeasure F ζ hζ R (level F ζ hζ C R P H U)).real
-      (compactDomain F ζ hζ C R P H U B).compact)
-  zero_extension : ∀ v : ScalarSpace F ζ hζ C R P H U B,
-    (((J_L v : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R
-      (level F ζ hζ C R P H U)) : Covered F ζ hζ C R P H U → ℂ) =ᵐ[
-        coveredMeasure F ζ hζ R (level F ζ hζ C R P H U)]
-      KPContActualCompactSectorL2Map.zeroExtension F ζ hζ
-        (level F ζ hζ C R P H U) R (compactDomain F ζ hζ C R P H U B) v)
-  hilbert_holomorphic : DifferentiableOn ℂ (fun s => J_L (g s)) Ω
+  h : ℂ → HilbertSpace F ζ hζ C R P H U
+  holomorphic : DifferentiableOn ℂ h Ω
   inclusion : ∀ s ∈ Ω,
-    (((J_L (g s) : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R
+    (((h s : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R
       (level F ζ hζ C R P H U)) : Covered F ζ hζ C R P H U → ℂ) =ᵐ[
         coveredMeasure F ζ hζ R (level F ζ hζ C R P H U)]
       scalar F ζ hζ C R P H U (D.commutator s))
@@ -81,20 +67,10 @@ structure Conclusions where
   representative : ∀ s ∈ Ω, ∃ b : KPContSectorLineL2Isometry.BorelL2Scalars F ζ hζ
       (level F ζ hζ C R P H U) R,
     b.val.val = scalar F ζ hζ C R P H U (D.commutator s) ∧
-    KPContSectorLineL2Isometry.sectorLineIsometry F ζ hζ
-      (level F ζ hζ C R P H U) R P H (J_L (g s)) =
-        KPContSectorLineL2Isometry.mk F ζ hζ (level F ζ hζ C R P H U) R P H
-          (KPContSectorLineL2Isometry.borelS F ζ hζ (level F ζ hζ C R P H U) R P H b) ∧
+    KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ
+      (level F ζ hζ C R P H U) R P H b = h s ∧
     (KPContSectorLineL2Isometry.borelS F ζ hζ (level F ζ hζ C R P H U) R P H b).val =
-      (D.commutator s).val ∧
-    (∀ i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount,
-      ∀ q : KPContActualCutoffChartJetHolomorphy.Chart F ζ hζ C R P H U i,
-      ∀ x ∈ KPContActualCutoffChartJetHolomorphy.chartDomain F ζ hζ C R P H U q,
-        q.coefficient
-          (KPContSectorLineL2Isometry.borelS F ζ hζ (level F ζ hζ C R P H U) R P H b).val
-          (KPContActualCutoffChartJetHolomorphy.coordinates F x) =
-        KPContActualCutoffChartJetHolomorphy.framePullback F ζ hζ C R P H U q
-          (D.commutator s) x)
+      (D.commutator s).val
 
 end DedekindZetaZeroFree.KPContActualCommutatorHilbertHolomorphy
 
@@ -114,7 +90,6 @@ theorem kp_cont_actual_commutator_hilbert_holomorphy
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (hΩopen : IsOpen Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (hf : DifferentiableOn ℂ f Ω)
     (χ : KPContActualCutoffSmoothDescent.Cusps F ζ hζ C R P H U →
@@ -187,7 +162,7 @@ theorem kp_cont_actual_commutator_hilbert_holomorphy
               simpa only [KPContCotangentActualOverlap.d, ← B.dimension_formula] using hd
             omega }
       have hj := kp_cont_actual_cutoff_chart_jet_holomorphy F ζ hζ C R P H U _hR B
-        ι hι _hStage Ω hΩ hΩopen f hf χ D (A.component j) (A.chart j) ball
+        ι hι Ω hΩ hΩopen f hf χ D (A.component j) (A.chart j) ball
         ((Metric.closedBall_subset_ball (by dsimp [ball]; linarith)).trans hball)
       obtain ⟨jet, hjet, hformula, _⟩ := hj.compact_jets true (A.piece j) (A.piece j).isCompact
         hcontained 0
@@ -219,17 +194,11 @@ theorem kp_cont_actual_commutator_hilbert_holomorphy
         exact isEmptyElim x
       rw [he]
       exact differentiableOn_const _
-  obtain ⟨J, hbound, hJ⟩ := kp_cont_actual_compact_sector_l2_map F ζ hζ
+  obtain ⟨J, _, hJ⟩ := kp_cont_actual_compact_sector_l2_map F ζ hζ
     (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H _hR L
   refine ⟨{
-    g := g
-    restriction := hrestrict
-    off_domain := fun s hs => if_neg hs
-    scalar_holomorphic := hhol
-    J_L := J
-    extension_bound := hbound
-    zero_extension := fun w => (hJ w).2.2.1
-    hilbert_holomorphic := J.differentiable.comp_differentiableOn hhol
+    h := fun s => J (g s)
+    holomorphic := J.differentiable.comp_differentiableOn hhol
     inclusion := ?_
     representative := ?_ }⟩
   · intro s hs
@@ -249,10 +218,13 @@ theorem kp_cont_actual_commutator_hilbert_holomorphy
         ((KPContSectorSmoothFramesSupport.smoothS F ζ hζ
           (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H).apply_symm_apply
             (D.commutator s))
-    refine ⟨b, hb.trans (hext s hs), hline, hsections, ?_⟩
-    intro i q x hx
-    rw [hsections]
-    rfl
+    refine ⟨b, hb.trans (hext s hs), ?_, hsections⟩
+    let V := KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U
+    apply (KPContSectorLineL2Isometry.sectorLineIsometry F ζ hζ V R P H).injective
+    change KPContSectorLineL2Isometry.sectorLineIsometry F ζ hζ V R P H
+      (KPContSectorLineL2Isometry.toSector F ζ hζ V R P H
+        (KPContSectorLineL2Isometry.borelS F ζ hζ V R P H b)) = _
+    rw [KPContSectorLineL2Isometry.sectorLineIsometry_toSector, hline]
 
 end DedekindZetaZeroFree
 

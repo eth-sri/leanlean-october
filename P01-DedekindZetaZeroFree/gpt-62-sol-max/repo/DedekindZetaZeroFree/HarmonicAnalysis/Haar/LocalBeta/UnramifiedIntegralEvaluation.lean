@@ -73,7 +73,7 @@ private lemma zero_shell : {y : Kˣ | KPCubicExpansion.valuationExponent K y = 0
   simp only [Set.mem_setOf_eq, he, Valuation.mem_integer_iff, Units.val_inv_eq_inv_val,
     map_inv₀]
   constructor
-  · intro h; simp [h]
+  · aesop
   · rintro ⟨h1, h2⟩
     exact le_antisymm h1 ((inv_le_one₀ ((Valuation.ne_zero_iff (valuation K)).mpr y.ne_zero).bot_lt).mp h2)
 

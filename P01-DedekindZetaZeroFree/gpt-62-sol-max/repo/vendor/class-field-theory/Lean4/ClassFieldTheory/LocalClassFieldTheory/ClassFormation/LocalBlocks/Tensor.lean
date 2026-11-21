@@ -93,7 +93,7 @@ theorem localTensorConjugation_one
     localTensorConjugation vK (1 : L ≃ₐ[K] L) z = z := by
   induction z using TensorProduct.inductionOn with
   | tmul b x => simp
-  | add x y hx hy => simp [hx, hy]
+  | add x y hx hy => grind
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 theorem localTensorConjugation_mul
@@ -104,7 +104,7 @@ theorem localTensorConjugation_mul
         (localTensorConjugation vK τ z) := by
   induction z using TensorProduct.inductionOn with
   | tmul b x => simp
-  | add x y hx hy => simp [hx, hy]
+  | add x y hx hy => grind
 
 /-- The natural Galois action on the unit group of the local tensor
 algebra. -/
@@ -117,12 +117,10 @@ noncomputable def localTensorUnitsAction
     Units.mapEquiv (localTensorConjugation vK σ).toMulEquiv z
   one_smul z := by
     apply Units.ext
-    exact localTensorConjugation_one vK
-      (z : LocalTensorAlgebra (L := L) vK)
+    exact localTensorConjugation_one ..
   mul_smul σ τ z := by
     apply Units.ext
-    exact localTensorConjugation_mul vK σ τ
-      (z : LocalTensorAlgebra (L := L) vK)
+    exact localTensorConjugation_mul ..
   smul_mul σ x y := by
     apply Units.ext
     exact (localTensorConjugation vK σ).map_mul
@@ -1040,38 +1038,6 @@ theorem localTensorUnitsEquivLocalPlaceBlock_smul
     localTensorUnitsEquivLocalPlaceBlock_eq_orbitHom_apply]
   exact localTensorOrbitHom_smul vK hvK w τ z
 
-/-- The inverse of the induced local-block equivalence is equivariant as well. -/
-theorem localTensorUnitsEquivLocalPlaceBlock_symm_smul
-    (τ : L ≃ₐ[K] L)
-    (f : LocalPlaceBlock vK hvK w) :
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI : ∀ w' : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w'.1.Completion :=
-      fun w' ↦ AbsoluteValue.completionAlgebra vK w'.1 w'.2
-    letI := localTensorUnitsAction (K := K) (L := L) vK
-    (localTensorUnitsEquivLocalPlaceBlock vK hvK w).symm
-        (τ • f) =
-      τ •
-        (localTensorUnitsEquivLocalPlaceBlock vK hvK w).symm f := by
-  let _ :=
-    decompositionGroupLocalUnitsAction vK hvK w
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let _ : SMul K w.1.Completion := hK.toSMul
-  let _ := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let _ : ∀ w' : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w'.1.Completion :=
-    fun w' ↦ AbsoluteValue.completionAlgebra vK w'.1 w'.2
-  let _ := localTensorUnitsAction (K := K) (L := L) vK
-  apply
-    (localTensorUnitsEquivLocalPlaceBlock
-      vK hvK w).injective
-  rw [MulEquiv.apply_symm_apply,
-    localTensorUnitsEquivLocalPlaceBlock_smul,
-    MulEquiv.apply_symm_apply]
 
 end ProductEquivalences
 

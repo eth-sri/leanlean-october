@@ -43,13 +43,16 @@ private theorem subgroup_map_toAddSubgroup_mulEquiv
         (MulEquiv.toAdditive e).toAddMonoidHom := by
   exact (MonoidHom.coe_toAdditive_map e.toMonoidHom S).symm
 
+section
+
+variable (H : Subgroup (IdeleClassGroup K)) (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
+  [H.FiniteIndex]
+include H hclosed
+
 /-- The idèle-class transport attached to the selected base equivalence.
 Naming this endpoint once keeps the fixed-field instance tower out of
 downstream definitional-equality checks. -/
- noncomputable def closedFiniteIndexClassFieldIdeleClassEquiv
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+ noncomputable def closedFiniteIndexClassFieldIdeleClassEquiv :
     IdeleClassGroup K ≃*
       IdeleClassGroup
         (closedFiniteIndexClassFieldBase
@@ -60,10 +63,7 @@ downstream definitional-equality checks. -/
 
 /-- Additive form of the selected class-field norm-range computation, with
 the concrete idèle-class endpoint hidden behind one typed definition. -/
-private theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+private theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup :
     (_root_.ideleClassNorm
       (closedFiniteIndexClassFieldBase
         (K := K) H hclosed)
@@ -87,10 +87,7 @@ private theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
 range.  This wrapper uses the lightweight named-field API, avoiding the
 dependent `letI` tower in the raw fixed-field comparison theorem. -/
 private theorem
-    ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassField_eq_range
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+    ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassField_eq_range :
     ordinaryIdeleClassNormSubgroup
         (closedFiniteIndexClassFieldReciprocityFiniteAbstractField
           (K := K) H hclosed)
@@ -112,10 +109,7 @@ private theorem
 
 /-- Over the canonical fixed-field base, the determinant-norm range of
 the selected class field is the transport of `H`. -/
-theorem closedFiniteIndexClassField_ideleClassNorm_range_over_base
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+theorem closedFiniteIndexClassField_ideleClassNorm_range_over_base :
     (_root_.ideleClassNorm
       (closedFiniteIndexClassFieldBase
         (K := K) H hclosed)
@@ -169,10 +163,7 @@ theorem closedFiniteIndexClassField_ideleClassNorm_range_over_base
 closed finite-index subgroup under the ordinary norm-subgroup
 correspondence. -/
 theorem
-    ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassFieldSubextension
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+    ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassFieldSubextension :
     ordinaryIdeleClassNormSubgroup
         (closedFiniteIndexClassFieldReciprocityFiniteAbstractField
           (K := K) H hclosed)
@@ -213,6 +204,8 @@ theorem
               (K := K) H hclosed)).toAddMonoidHom :=
       closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
         (K := K) H hclosed
+
+end
 end GlobalClassFields
 end GlobalClassFieldTheory
 

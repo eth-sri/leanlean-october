@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicExhaustion
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.CompactPolynomialApproximation
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.CharacterAverageJetBounds
@@ -244,16 +245,7 @@ theorem embedding_continuous : Continuous complexSU2Embedding := by
     simp_rw [he]
     exact continuous_subtype_val.star
 
-theorem eval_continuous (s : ℝ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => f g) := by
-  have hc := (evalOne s).continuous.comp ((pi_continuous s).comp
-    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s =>
-      (Matrix.ProjGenLinGroup.mk g, f))))
-  convert hc using 1
-  funext f
-  dsimp only [Function.comp_def, evalOne]
-  change f g = f (1 * g)
-  rw [one_mul]
+alias eval_continuous := DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder.principalSeries_scalarEvaluation_continuous_of_chartSeminorms
 
 theorem average_eval_continuous (s : ℝ) (μ : Measure ComplexSU2)
     (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (g : ComplexGL2) :
@@ -437,20 +429,7 @@ private lemma lowerUnipotent_zero_eq_identity : lowerUnipotent 0 = 1 := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [lowerUnipotent]
 
-private lemma principalSeries_identity_eval_norm_le_chartSeminorm_zero (s : ℝ) (f : PrincipalSeries s) :
-    ‖f 1‖ ≤ chartSeminorm s 0 f := by
-  have hc : Continuous (fun u : ℂ => ‖infinityCoordinate f u‖) :=
-    f.property.2.2.continuous.norm
-  have hb := (isCompact_closedBall (0 : ℂ) 1).image hc
-  have hh : ‖infinityCoordinate f 0‖ ≤
-      sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1) := by
-    apply le_csSup hb.bddAbove
-    exact ⟨0, by simp, rfl⟩
-  change ‖f 1‖ ≤ chartSeminormValue s 0 f
-  simpa only [chartSeminormValue, norm_iteratedFDeriv_zero, infinityCoordinate,
-    lowerUnipotent_zero_eq_identity] using hh.trans (le_max_right
-      (sSup ((fun x : ℂ => ‖openCoordinate f x‖) '' Metric.closedBall 0 1))
-      (sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1)))
+private alias principalSeries_identity_eval_norm_le_chartSeminorm_zero := DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder.principalSeries_identityEvaluation_norm_le_chartSeminorm_zero
 
 private lemma eval_one_continuous (s : ℝ) :
     Continuous (fun f : PrincipalSeries s => f 1) := by
@@ -464,80 +443,14 @@ private lemma eval_one_continuous (s : ℝ) :
   intro f
   simpa [e] using principalSeries_identity_eval_norm_le_chartSeminorm_zero s f
 
-private lemma principalSeries_complexGL2_evaluation_continuous (s : ℝ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => f g) := by
-  have h := (eval_one_continuous s).comp ((pi_continuous s).comp
-    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s =>
-      (Matrix.ProjGenLinGroup.mk g, f))))
-  have he : (fun f : PrincipalSeries s => pi s (Matrix.ProjGenLinGroup.mk g) f 1) =
-      (fun f : PrincipalSeries s => f g) := by
-    funext f
-    change f (1 * g) = f g
-    rw [one_mul]
-  exact he ▸ h
+private alias principalSeries_complexGL2_evaluation_continuous := DedekindZetaZeroFree.KPCplxInverseTopology.eval_continuous
 
-private lemma embedding_continuous : Continuous complexSU2Embedding := by
-  apply Units.continuous_iff.mpr
-  constructor
-  · exact continuous_subtype_val
-  · have he (k : ComplexSU2) :
-        (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) =
-          star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
-      rw [← map_inv]
-      rfl
-    simp_rw [he]
-    exact continuous_subtype_val.star
+private alias embedding_continuous := DedekindZetaZeroFree.KPCplxInverseTopology.embedding_continuous
 
-private lemma character_continuous (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := by
-  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
-      KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
-          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
-    intro n
-    induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
-    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
-    | more n hn hn1 =>
-        simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
-  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
-  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
+private lemma character_continuous (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) :=
+  continuous_su2HarmonicCharacter ℓ
 
-private lemma average_continuous (s : ℝ) (μ : Measure ComplexSU2)
-    (hprob : IsProbabilityMeasure μ) (ℓ : ℕ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => characterAverage s μ ℓ f g) := by
-  letI : IsProbabilityMeasure μ := hprob
-  letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
-    convert complexSU2_isCompact using 1
-    exact Subtype.range_coe.symm)
-  have hj : Continuous (fun p : PrincipalSeries s × ComplexSU2 =>
-      p.1 (g * complexSU2Embedding p.2)) := by
-    have hproj : Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
-      continuous_coinduced_rng
-    have h := (eval_one_continuous s).comp ((pi_continuous s).comp
-      ((hproj.comp ((continuous_const : Continuous (fun _ : PrincipalSeries s × ComplexSU2 => g)).mul
-          (embedding_continuous.comp continuous_snd))).prodMk
-        continuous_fst))
-    have he : (fun p : PrincipalSeries s × ComplexSU2 =>
-        pi s (Matrix.ProjGenLinGroup.mk (g * complexSU2Embedding p.2)) p.1 1) =
-        (fun p : PrincipalSeries s × ComplexSU2 => p.1 (g * complexSU2Embedding p.2)) := by
-      funext p
-      change p.1 (1 * (g * complexSU2Embedding p.2)) = _
-      rw [one_mul]
-    exact he ▸ h
-  have hi : Continuous (fun f : PrincipalSeries s => ∫ t : ComplexSU2,
-      star (su2HarmonicCharacter ℓ t) * f (g * complexSU2Embedding t) ∂μ) := by
-    apply continuousOn_univ.mp
-    apply continuousOn_integral_of_compact_support (k := Set.univ) isCompact_univ
-    · exact (((character_continuous ℓ).comp continuous_snd).star.mul hj).continuousOn
-    · intro p x hp hx
-      exact (hx (Set.mem_univ x)).elim
-  exact continuous_const.mul hi
+private alias average_continuous := DedekindZetaZeroFree.KPCplxInverseTopology.average_eval_continuous
 
 private lemma average_partialSum_harmonic (s : ℝ) (μ : Measure ComplexSU2)
     (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ)
@@ -622,23 +535,7 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalue
 open MeasureTheory Set
 open scoped BigOperators Topology Matrix.Norms.Elementwise
 
-theorem su2HarmonicCharacter_continuous (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := by
-  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
-      KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
-          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
-    intro n
-    induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
-    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
-    | more n hn hn1 =>
-        simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 => Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 => Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
-  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
-  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
+alias su2HarmonicCharacter_continuous := DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder.character_continuous
 private theorem matrixFunction_eval (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
     matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
   rw [matrixFunction, dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
@@ -678,46 +575,13 @@ private lemma lower_zero : lowerUnipotent 0 = 1 := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [lowerUnipotent]
 
-private lemma eval_one_bound (s : ℝ) (f : PrincipalSeries s) : ‖f 1‖ ≤ chartSeminorm s 0 f := by
-  have hc : Continuous (fun u : ℂ => ‖infinityCoordinate f u‖) := f.property.2.2.continuous.norm
-  have hb := (isCompact_closedBall (0 : ℂ) 1).image hc
-  have hh : ‖infinityCoordinate f 0‖ ≤ sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1) := by
-    apply le_csSup hb.bddAbove
-    exact ⟨0, by simp, rfl⟩
-  change ‖f 1‖ ≤ chartSeminormValue s 0 f
-  simpa only [chartSeminormValue, norm_iteratedFDeriv_zero, infinityCoordinate, lower_zero] using hh.trans (le_max_right
-    (sSup ((fun x : ℂ => ‖openCoordinate f x‖) '' Metric.closedBall 0 1))
-    (sSup ((fun u : ℂ => ‖infinityCoordinate f u‖) '' Metric.closedBall 0 1)))
+private alias eval_one_bound := DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder.principalSeries_identity_eval_norm_le_chartSeminorm_zero
 
-private lemma eval_one_cont (s : ℝ) : Continuous (fun f : PrincipalSeries s => f 1) := by
-  let e : PrincipalSeries s →ₗ[ℂ] ℂ :=
-    { toFun := fun f => f 1, map_add' := fun _ _ => rfl, map_smul' := fun _ _ => rfl }
-  apply WithSeminorms.continuous_normedSpace_rng ℂ (show WithSeminorms (chartSeminorm s) from ⟨rfl⟩) e
-  refine ⟨{0}, 1, ?_⟩
-  intro f
-  simpa [e] using eval_one_bound s f
+private alias eval_one_cont := DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartRemainder.eval_one_continuous
 
-theorem principalSeries_evaluation_continuous (s : ℝ) (g : ComplexGL2) :
-    Continuous (fun f : PrincipalSeries s => f g) := by
-  have h := (eval_one_cont s).comp ((pi_continuous s).comp
-    (continuous_const.prodMk continuous_id : Continuous (fun f : PrincipalSeries s => (Matrix.ProjGenLinGroup.mk g, f))))
-  have he : (fun f : PrincipalSeries s =>
-      pi s (Matrix.ProjGenLinGroup.mk g) f 1) = (fun f : PrincipalSeries s => f g) := by
-    funext f
-    change f (1 * g) = f g
-    rw [one_mul]
-  exact he ▸ h
+alias principalSeries_evaluation_continuous := DedekindZetaZeroFree.KPCplxInverseTopology.eval_continuous
 
-private lemma su2_embed_cont : Continuous complexSU2Embedding := by
-  apply Units.continuous_iff.mpr
-  constructor
-  · exact continuous_subtype_val
-  · have he (k : ComplexSU2) : (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) = star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
-      have hk : complexSU2Embedding k⁻¹ = (complexSU2Embedding k)⁻¹ := map_inv _ _
-      rw [← hk]
-      rfl
-    simp_rw [he]
-    exact continuous_subtype_val.star
+private alias su2_embed_cont := DedekindZetaZeroFree.KPCplxInverseTopology.embedding_continuous
 
 theorem principalSeries_su2_section_orbit_continuous (s : ℝ) (f : PrincipalSeries s) :
     Continuous (fun k : ComplexSU2 => rightTranslate s (complexSU2Embedding k) f) := by

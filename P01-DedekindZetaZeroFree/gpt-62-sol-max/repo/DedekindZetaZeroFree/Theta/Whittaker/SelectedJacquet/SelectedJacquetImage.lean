@@ -2,7 +2,13 @@ module
 
 public import DedekindZetaZeroFree.Theta.Whittaker.SelectedJacquet.OpenCellIntegration
 public import DedekindZetaZeroFree.Theta.Whittaker.SelectedJacquet.SelectedFourierContinuation
-public import DedekindZetaZeroFree.Analysis.Complex.AnalyticFunctionImages
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Meromorphic.Basic
+public import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+import DedekindZetaZeroFree.Algebra.LinearAlgebra.FunctionInterpolation
+import Mathlib.Analysis.Meromorphic.Order
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.ComplexEvaluation
 public import DedekindZetaZeroFree.Eisenstein.Residues.FiniteAnalyticSourceImage
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.FiniteEvaluationSeparation

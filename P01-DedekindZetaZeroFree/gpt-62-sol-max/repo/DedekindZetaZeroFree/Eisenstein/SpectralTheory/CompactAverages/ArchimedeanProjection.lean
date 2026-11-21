@@ -21,7 +21,6 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (U : CompactOpenLevel (FiniteCover F ζ hζ))
 local instance : MeasurableSpace (K_U F ζ hζ U) := borel _
 local instance : BorelSpace (K_U F ζ hζ U) := ⟨rfl⟩
-local instance : CompactSpace (K_U F ζ hζ U) := isCompact_iff_compactSpace.mp (K_U_compact F ζ hζ U)
 local instance : CompactSpace KPCplxPrincipalSeriesCharts.compactSubgroup :=
   isCompact_iff_compactSpace.mp KPCplxPrincipalSeriesCharts.compactSubgroup_isCompact
 

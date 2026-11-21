@@ -140,12 +140,11 @@ theorem finiteSlotPeriod_root (s : RestrictedTensorSimple.Level D.bad)
   dsimp only [i] at hu ⊢
   rw [he, (hg t).eq]
   unfold finitePeriodLift
-  rw [ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R]
+  rw [MomentSources.finite_root_injection R]
   letI := Q.quotientHaar
-  have h := ExteriorWhittakerValues.StoredWhittaker.fourier_left_root R Q.dq (D.coreMap c)
+  have h := MomentSources.fourier_left_root R Q.dq (D.coreMap c)
     (ExteriorWhittakerValues.StoredWhittaker.core_rational_root R D c)
     (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t) g
-    (tensor_period_integrable R D c g)
   have ht : adelicTraceQuotientCharacter F (QuotientAddGroup.mk
       (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t)) = localFiniteCharacter F q t :=
     (adelicTraceQuotientCharacter_mk F _).trans (adelicTraceCharacter_finite_single F q t)

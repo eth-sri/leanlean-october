@@ -60,10 +60,6 @@ def rawCentralCharacter : Cover A w →* ℂˣ :=
 def centralCharacter : Group A w →* ℂˣ :=
   QuotientGroup.lift _ (rawCentralCharacter A w) (splitScalars_central_kernel A w)
 
-@[simp] theorem centralCharacter_quotient (g : Cover A w) :
-    centralCharacter A w (KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12
-      (Sum.inl w) g) =
-    KPSourceConvention.ordinaryGenuineCharacter F A.zeta12 A.primitive_zeta12 g.epsilon := rfl
 
 def rawMatrix : Cover A w →* ComplexPGL2 :=
   Matrix.ProjGenLinGroup.mk.comp
@@ -84,10 +80,6 @@ def rawMatrix : Cover A w →* ComplexPGL2 :=
 def matrix : Group A w →* ComplexPGL2 :=
   QuotientGroup.lift _ (rawMatrix A w) (splitScalars_matrix_kernel A w)
 
-@[simp] theorem matrix_quotient (g : Cover A w) :
-    matrix A w (KPPGLLocalCover.coverQuotient F A.zeta12 A.primitive_zeta12 (Sum.inl w) g) =
-      Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map
-        (coordinate A w).toRingHom g.g) := rfl
 
 def action (g : Group A w) (h : Theta frequency) : Theta frequency :=
   (centralCharacter A w g : ℂ) • imageAction frequency (matrix A w g) h
@@ -192,14 +184,8 @@ theorem standard_diagonal (y : (KPHilbert.Completion F (Sum.inl w))ˣ) :
   intro i j
   fin_cases i <;> fin_cases j <;> simp [diagonal, KubotaRankTwo.d]
 
-def compactLift : ComplexSU2 →* Group A w := (splitMatrix A w).comp complexSU2Embedding
 
-@[simp] theorem compact_scalar_one (k : ComplexSU2) :
-    centralCharacter A w (compactLift A w k) = 1 := centralCharacter_splitMatrix A w _
 
-@[simp] theorem compact_matrix (k : ComplexSU2) :
-    matrix A w (compactLift A w k) = Matrix.ProjGenLinGroup.mk (complexSU2Embedding k) :=
-  matrix_splitMatrix A w _
 
 end DedekindZetaZeroFree.KPReferenceChange.StandardComplexImage
 

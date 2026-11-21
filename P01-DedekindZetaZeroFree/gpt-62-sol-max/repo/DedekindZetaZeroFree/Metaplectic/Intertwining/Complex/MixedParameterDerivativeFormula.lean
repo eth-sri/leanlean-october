@@ -32,10 +32,9 @@ theorem joints_spatial_jets_at (F : ℂ × E → V) (U : Set E) (hU : IsOpen U)
   | succ n ih =>
     simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
     have hd : ContDiffAt ℝ (⊤ : ℕ∞) (fun p : ℂ × E =>
-        fderiv ℝ (iteratedFDeriv ℝ n (fun x => F (p.1, x))) p.2) p := by
-      exact ((ih (p.1,p.2) hp).comp (p,p.2) (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
+        fderiv ℝ (iteratedFDeriv ℝ n (fun x => F (p.1, x))) p.2) p := ((ih (p.1,p.2) hp).comp (p,p.2) (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
         (m := (⊤ : ℕ∞)) contDiffAt_snd (by simp)
-    exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) V).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.contDiffAt.comp p hd
+    fun_prop
 
 private lemma direction_commute (F : E → V) (x : E) (hF : ContDiffAt ℝ (⊤ : ℕ∞) F x)
     (a b : E) :

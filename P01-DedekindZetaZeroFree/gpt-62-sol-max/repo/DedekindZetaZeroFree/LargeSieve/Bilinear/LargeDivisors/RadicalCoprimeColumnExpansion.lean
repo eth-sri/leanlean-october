@@ -15,40 +15,6 @@ private lemma rel {a b : Ideal (𝓞 F)} (h : a ⊔ b = ⊤) : IsRelPrime a b :=
 
 open UniqueFactorizationMonoid
 
-private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
-    q.radical = UniqueFactorizationMonoid.radical q := by
-  let r := UniqueFactorizationMonoid.radical q
-  have hr : r ≠ ⊥ := radical_ne_zero
-  have hsf : Squarefree r := squarefree_radical
-  obtain ⟨hp, hprod, _, _, _, _⟩ := Vendor.CutoffDifference.squarefree_divisor_dictionary r hr hsf
-  let P := (factors r).toFinset
-  have heq : P.inf (fun p => p) = r := by
-    have h := IsDedekindDomain.inf_prime_pow_eq_prod P (fun p => p) (fun _ => 1)
-      hp (by intro i hi j hj hij; exact hij)
-    calc
-      P.inf (fun p => p) = ∏ p ∈ P, p := by simpa only [pow_one] using h
-      _ = r := hprod
-  have hgen : ∀ S : Finset (Ideal (𝓞 F)), (∀ p ∈ S, Prime p) →
-      (S.inf (fun p => p)).IsRadical := by
-    intro S
-    induction S using Finset.induction_on with
-    | empty => simp [Ideal.IsRadical]
-    | insert p S hnot ih =>
-      intro hpr
-      rw [Finset.inf_insert]
-      apply Ideal.IsRadical.inf
-      · exact (Ideal.isPrime_of_prime (hpr p (by simp))).isRadical
-      · exact ih (by intro t ht; exact hpr t (by simp [ht]))
-  have hR : r.IsRadical := heq ▸ hgen P hp
-  apply le_antisymm
-  · exact (hR.radical_le_iff).mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
-  · obtain ⟨n, hn⟩ := exists_dvd_radical_self_pow hq
-    have hle : r ^ n ≤ q := Ideal.dvd_iff_le.mp hn
-    have : r ≤ (r ^ n).radical := by
-      intro x hx
-      exact ⟨n, Ideal.pow_mem_pow hx n⟩
-    exact this.trans (Ideal.radical_mono hle)
-
 lemma sum_divisors_mul (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ ⊥)
     (hab : a ⊔ b = ⊤) (H : Ideal (𝓞 F) → ℂ) :
     ∑ f ∈ idealDivisors (a * b), H f =
@@ -86,7 +52,7 @@ lemma sum_moebius_radical (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (H : Ideal (𝓞 F) → ℂ) :
     ∑ f ∈ idealDivisors a, (moebius f : ℂ) * H f =
       ∑ f ∈ idealDivisors a.radical, (moebius f : ℂ) * H f := by
-  have hrad : a.radical = UniqueFactorizationMonoid.radical a := ideal_radical_eq a ha
+  have hrad : a.radical = UniqueFactorizationMonoid.radical a := Vendor.CutoffDifference.ideal_radical_eq a ha
   have hr0 : a.radical ≠ ⊥ := by rw [hrad]; exact radical_ne_zero
   have hsub : idealDivisors a.radical ⊆ idealDivisors a := by
     intro f hf

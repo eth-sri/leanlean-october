@@ -8,7 +8,7 @@ public import DedekindZetaZeroFree.Moments.Probes.Poisson.CompactScaleBound
 
 @[expose] public section
 
-namespace DedekindZetaZeroFree.Quantitative.RawOmittedRowsAssembly31
+namespace DedekindZetaZeroFree.Quantitative.RawNonprincipalRowsAssembly
 
 open DedekindZetaZeroFree
 open DedekindZetaZeroFree.PrincipalMellinComparison
@@ -89,9 +89,9 @@ theorem large_norm_le (D : DedekindZetaZeroFree.Quantitative.FixedData S η) :
     _ ≤ (C0 * Ct) * Z ^ ((717 : ℝ) / 2000) :=
         mul_le_mul_of_nonneg_left hfin (by positivity)
 
-theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S η) :
+theorem nonprincipalSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S η) :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
-      ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤ C * Z ^ (717 / 2000 : ℝ) := by
+      ‖RawInitialKernel31.nonprincipalSum D Z‖ ≤ C * Z ^ (717 / 2000 : ℝ) := by
   obtain ⟨A, ρ, hA, hconv, hρ, -⟩ := RawDetector31.detector_exists D
   obtain ⟨Cs, hCs, hs⟩ := RawSmallRowsSum31.smallRows_norm_tsum_le D
   obtain ⟨Ce, hCe, Ze, hZe, he⟩ :=
@@ -99,7 +99,7 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
   obtain ⟨Cg, hCg, Zg, hZg, hg⟩ := RawGoodRowsSum31.raw_good_rows_sum_abs D A ρ hA hconv hρ
   obtain ⟨Cl, hCl, hl⟩ := large_norm_le D
   have hbd : ∀ Z : ℝ, max Ze Zg ≤ Z →
-      ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤
+      ‖RawInitialKernel31.nonprincipalSum D Z‖ ≤
         (Cs + Ce + Cg + Cl) * Z ^ ((717 : ℝ) / 2000) := by
     intro Z hZ
     have hZ2 : 2 ≤ Z := le_trans hZe (le_trans (le_max_left _ _) hZ)
@@ -110,12 +110,6 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
     obtain ⟨hsG, hG⟩ := hg Z hZg'
     obtain ⟨hsS, hS⟩ := hs Z hZ2
     obtain ⟨hsL, hL⟩ := hl Z hZ2
-    have hrow : ∀ u : Frequency D.recipe,
-        RawInitialKernel31.rawinitialRowIntegral D u Z =
-          RawFixed.FixedData.initialRowIntegral D u Z :=
-      fun u => (RawInitialKernel31.initialRowIntegral_eq D u Z hZpos).symm
-    rw [RawInitialKernel31.omittedSum_eq_twisted D Z hZpos]
-    simp only [hrow]
     set G : Frequency D.recipe → ℝ := fun u => ‖RawFixed.FixedData.initialRowIntegral D u Z‖
       with hGdef
     have hG0 : ∀ u, 0 ≤ G u := fun u => norm_nonneg _
@@ -161,20 +155,7 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
         lg.indicator G u) := ((hsmS.add hexS).add hgdS).add hlgS
     have hTS : Summable (T.indicator G) :=
       Summable.of_nonneg_of_le (fun u => hI T u) hcover hsumFour
-    have hVS : Summable (fun f : TwistedProbeRowDefinitions.TwistedRow D => G f.val) := by
-      refine Summable.of_nonneg_of_le (fun f => hG0 f.val) (fun f => ?_)
-        (hTS.comp_injective Subtype.val_injective)
-      have hmem : f.val ∈ T := RawInitialKernel31.twisted_ne_principal D f
-      show G f.val ≤ T.indicator G f.val
-      rw [Set.indicator_of_mem hmem]
-    have hle1 : ∑' f : TwistedProbeRowDefinitions.TwistedRow D, G f.val ≤ ∑' u, T.indicator G u :=
-      Summable.tsum_le_tsum_of_inj Subtype.val Subtype.val_injective
-        (fun c hc => hI T c)
-        (fun f => by
-          have hmem : f.val ∈ T := RawInitialKernel31.twisted_ne_principal D f
-          show G f.val ≤ T.indicator G f.val
-          rw [Set.indicator_of_mem hmem])
-        hVS hTS
+    have hTS' := (summable_subtype_iff_indicator (s := T)).mpr hTS
     have hS' : ∑' u : ↥sm, G u ≤ Cs * Z ^ ((717 : ℝ) / 2000) := hS
     have hE' : ∑' u : ↥ex, G u ≤ Ce * Z ^ ((717 : ℝ) / 2000) := hE
     have hG' : ∑' u : ↥gd, G u ≤ Cg * Z ^ ((717 : ℝ) / 2000) := hG
@@ -192,10 +173,9 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
         ∑' u, gd.indicator G u + ∑' u, lg.indicator G u := by
       rw [← hsplit]
       exact hTS.tsum_le_tsum hcover hsumFour
-    have hnormle : ‖∑' f : TwistedProbeRowDefinitions.TwistedRow D,
-        RawFixed.FixedData.initialRowIntegral D f.val Z‖ ≤ ∑' f : TwistedProbeRowDefinitions.TwistedRow D, G f.val :=
-      norm_tsum_le_tsum_norm (f := fun f : TwistedProbeRowDefinitions.TwistedRow D =>
-        RawFixed.FixedData.initialRowIntegral D f.val Z) hVS
+    have hnormle : ‖RawInitialKernel31.nonprincipalSum D Z‖ ≤ ∑' u, T.indicator G u := by
+      rw [← tsum_subtype]
+      exact norm_tsum_le_tsum_norm hTS'
     have hfin : ∑' u, sm.indicator G u + ∑' u, ex.indicator G u +
         ∑' u, gd.indicator G u + ∑' u, lg.indicator G u ≤
         (Cs + Ce + Cg + Cl) * Z ^ ((717 : ℝ) / 2000) := by
@@ -206,8 +186,8 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
       rw [this]
       linarith
     linarith
-  obtain ⟨C', hC', h'⟩ := RawCompactScale31.omittedSum_bound_all_of_bound_ge D
+  obtain ⟨C', hC', h'⟩ := RawCompactScale31.nonprincipalSum_bound_all_of_bound_ge D
     (by norm_num : (0 : ℝ) < 717 / 2000) (le_max_of_le_left hZe) hbd
   exact ⟨C', hC', h'⟩
 
-end DedekindZetaZeroFree.Quantitative.RawOmittedRowsAssembly31
+end DedekindZetaZeroFree.Quantitative.RawNonprincipalRowsAssembly

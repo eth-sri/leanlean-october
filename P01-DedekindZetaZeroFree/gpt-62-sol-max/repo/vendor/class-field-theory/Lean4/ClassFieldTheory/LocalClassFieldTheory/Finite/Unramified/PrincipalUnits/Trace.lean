@@ -119,19 +119,22 @@ theorem quotientNorm_oneAdd_uniformizerPow_eq_trace
 
 end UnramifiedPrincipalUnits
 
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
+  [Module.Finite 𝒪[K] 𝒪[L]]
+  [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat)
+  (hn : 1 ≤ n)
+include n hn
+
 /-- Actual integral-closure version: for the base-uniformizer representative
 `1 + rϖ_L^n`, the norm on `U_L^n/U_L^(n+1)` is the residue-field trace class
 on `U_K^n/U_K^(n+1)`. -/
-theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_oneAdd_uniformizer_pow_eq_trace
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) (r : 𝒪[L]) :
+theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_oneAdd_uniformizer_pow_eq_trace (r : 𝒪[L]) :
     let πK := chosenIntegerRingUniformizer K
     let πL := integerRingMapOfValuationExtension K L πK
     let hπL := integerRingMap_uniformizer_irreducible_of_unramifiedValuation K L
@@ -183,16 +186,7 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_oneAd
 
 /-- Actual integral-closure version: in residue coordinates, the norm on the
 successive principal-unit quotient is the finite residue-field trace. -/
-theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_trace_coord
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) (x : 𝓀[L]) :
+theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_trace_coord (x : 𝓀[L]) :
     let πK := chosenIntegerRingUniformizer K
     let πL := integerRingMapOfValuationExtension K L πK
     let hπL := integerRingMap_uniformizer_irreducible_of_unramifiedValuation K L
@@ -213,16 +207,22 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_trace
   change Additive.ofMul _ = _
   simpa only [eK, eL, πK, πL, hπL, toMul_ofMul] using hrep
 
+end
+
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [Module.Finite 𝒪[K] 𝒪[L]]
+  [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat)
+  (hn : 1 ≤ n)
+include hn
+
 /-- The residue-trace model for the actual unramified norm on
 `U^n/U^(n+1)`, written in the base-uniformizer coordinates. -/
-noncomputable def principalUnitsSuccQuotTraceOfUnramifiedValuation (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) :
+noncomputable def principalUnitsSuccQuotTraceOfUnramifiedValuation :
     Additive (PrincipalUnitsSuccQuot L n) →+ Additive (PrincipalUnitsSuccQuot K n) :=
   let πK := chosenIntegerRingUniformizer K
   let πL := integerRingMapOfValuationExtension K L πK
@@ -234,15 +234,7 @@ noncomputable def principalUnitsSuccQuotTraceOfUnramifiedValuation (K L : Type u
 
 /-- States the theorem `principalUnitsSuccQuotTraceOfUnramifiedValuation_apply`. -/
 @[simp]
-theorem principalUnitsSuccQuotTraceOfUnramifiedValuation_apply
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) (x : Additive (PrincipalUnitsSuccQuot L n)) :
+theorem principalUnitsSuccQuotTraceOfUnramifiedValuation_apply (x : Additive (PrincipalUnitsSuccQuot L n)) :
     let πK := chosenIntegerRingUniformizer K
     let πL := integerRingMapOfValuationExtension K L πK
     let hπL := integerRingMap_uniformizer_irreducible_of_unramifiedValuation K L
@@ -255,15 +247,7 @@ theorem principalUnitsSuccQuotTraceOfUnramifiedValuation_apply
 
 /-- The residue-trace model on successive principal-unit quotients is
 surjective in the unramified valuation case. -/
-theorem principalUnitsSuccQuotTraceOfUnramifiedValuation_surjective
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) :
+theorem principalUnitsSuccQuotTraceOfUnramifiedValuation_surjective :
     Function.Surjective (principalUnitsSuccQuotTraceOfUnramifiedValuation K L n hn) := by
   classical
   intro y
@@ -282,19 +266,24 @@ theorem principalUnitsSuccQuotTraceOfUnramifiedValuation_surjective
       (eL.symm x)) = y
   simp [hx]
 
+end
+
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
+  [Module.Finite 𝒪[K] 𝒪[L]]
+  [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat)
+  (hn : 1 ≤ n)
+include hn
+
 /-- Actual integral-closure version: the unramified norm on every successive
 principal-unit quotient is the finite residue-field trace in base-uniformizer
 coordinates. -/
-theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_eq_trace
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) :
+theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_eq_trace :
     MonoidHom.toAdditive
         (principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure K L n) =
       principalUnitsSuccQuotTraceOfUnramifiedValuation K L n hn := by
@@ -313,16 +302,7 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_eq_tr
 /-- Actual integral-closure version: on every successive principal-unit
 quotient, the unramified norm is surjective after writing the quotient
 additively. -/
-theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_toAdditive_surjective
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) :
+theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_toAdditive_surjective :
     Function.Surjective
       (MonoidHom.toAdditive
         (principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure K L n)) := by
@@ -332,16 +312,7 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_toAdd
 
 /-- Actual integral-closure version: on every successive principal-unit
 quotient, the unramified norm is surjective. -/
-theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_surjective
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) :
+theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_surjective :
     Function.Surjective
       (principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure K L n) := by
   intro y
@@ -354,6 +325,8 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_surje
       (principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure K L n)
       (Additive.ofMul (Additive.toMul x)) = Additive.ofMul y
   simpa using hx
+
+end
 
 end LocalClassFieldTheory
 

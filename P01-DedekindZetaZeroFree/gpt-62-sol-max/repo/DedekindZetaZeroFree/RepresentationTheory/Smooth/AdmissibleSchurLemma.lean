@@ -48,7 +48,7 @@ private theorem average_action_invariant
   let a : U.toOpenSubgroup := Quotient.out (q * QuotientGroup.mk u)
   let b : U.toOpenSubgroup := Quotient.out q * u
   have hab : (a : U.toOpenSubgroup ⧸ K.subgroup) = (b : U.toOpenSubgroup ⧸ K.subgroup) := by
-    simp [a, b, QuotientGroup.mk_mul, QuotientGroup.out_eq']
+    simp [a, b, QuotientGroup.mk_mul]
   have hk : a⁻¹ * b ∈ K.subgroup := QuotientGroup.eq.mp hab
   have hfix := K.fixes ⟨a⁻¹ * b, hk⟩
   change ρ ((Quotient.out q : U.toOpenSubgroup) : G) (ρ (u : G) v) = ρ (a : G) v

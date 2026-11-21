@@ -25,7 +25,6 @@ open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming n
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFrameInvariant → nativeFrameInvariant
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.ComponentFiber renaming spherical_fiber_formula → spherical_fiber_formula
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 
 def point
     (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
@@ -128,7 +127,7 @@ theorem modulus_on_point
     rw [Real.log_exp,mul_div_cancel_left₀ _ hd.ne']
   have hchart := D.chart_formula Z (hY j) j q r
   simp only [q, hlog, sub_add_cancel] at hchart
-  have hproj := spherical_fiber_formula F ζ hζ (toRawTransport F ζ hζ P)
+  have hproj := spherical_fiber_formula F ζ hζ P
     (S.atlasLevel (cofinalLevel F ζ hζ V))
     ((nativeAtlas F ζ hζ R P S V).representative j.1) z.2 hz
     (e.symm ((((nativeAtlas F ζ hζ R P S V).cuspAtlas j.1).representative j.2) •

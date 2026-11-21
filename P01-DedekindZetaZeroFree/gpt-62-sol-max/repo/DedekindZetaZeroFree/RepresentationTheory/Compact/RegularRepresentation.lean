@@ -9,7 +9,7 @@ public import Mathlib.MeasureTheory.Function.LpSpace.ContinuousCompMeasurePreser
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CompactProbabilityMeasure
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.UnitaryActions
-public import DedekindZetaZeroFree.MeasureTheory.Lp.MeasurePreservingEquivalences
+public import Mathlib.MeasureTheory.Function.LpSpace.ContinuousFunctions
 public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.MeasureTheory.Function.LpSpace.DomAct.Continuous
 

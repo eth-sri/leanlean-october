@@ -118,19 +118,19 @@ local instance inducedAddGroup (P : Polarization F ζ hζ) :
     AddCommGroup (Induced F ζ hζ P) := @Submodule.addCommGroup ℂ (InducedFunctions F ζ hζ P)
       inferInstance inferInstance inferInstance (Induced F ζ hζ P)
 
-def inducedJetBound (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (g : G F ζ hζ) (n : ℕ)
-    (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
+section
+
+variable (P : Polarization F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+  (g : G F ζ hζ) (n : ℕ) (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
+include g n K
+
+def inducedJetBound
     (f : InducedLevel F ζ hζ P J) : ℝ :=
   sSup ((fun z => ‖iteratedFDerivWithin ℝ n
     (fun y => (f.val.val (groupArchChart F ζ hζ y * g)).val.val 1)
     (groupArchDomain F) z‖) '' K.set)
 
-private theorem jet_image_bdd (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (g : G F ζ hζ) (n : ℕ)
-    (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
+ theorem jet_image_bdd
     (f : InducedLevel F ζ hζ P J) :
     BddAbove ((fun z => ‖iteratedFDerivWithin ℝ n
       (fun y => (f.val.val (groupArchChart F ζ hζ y * g)).val.val 1)
@@ -140,10 +140,7 @@ private theorem jet_image_bdd (P : Polarization F ζ hζ)
   exact ((f.property.1 g).continuousOn_iteratedFDerivWithin (by simp)
     (groupArchDomain_open F).uniqueDiffOn).norm
 
- theorem inducedJetBound_add_le (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (g : G F ζ hζ) (n : ℕ)
-    (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
+ theorem inducedJetBound_add_le
     (f h : InducedLevel F ζ hζ P J) :
     inducedJetBound F ζ hζ P J g n K (f + h) ≤
       inducedJetBound F ζ hζ P J g n K f + inducedJetBound F ζ hζ P J g n K h := by
@@ -165,6 +162,8 @@ private theorem jet_image_bdd (P : Polarization F ζ hζ)
   · have hE : K.set = ∅ := Set.not_nonempty_iff_eq_empty.mp hK
     simp [inducedJetBound, hE, Real.sSup_empty]
 
+end
+
 private theorem norm_jet_smul {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     {s : Set V} {v : V} {n : ℕ} {f : V → ℂ} (c : ℂ)
     (hf : ContDiffWithinAt ℝ n f s v) (hs : UniqueDiffOn ℝ s) (hv : v ∈ s) :
@@ -172,8 +171,11 @@ private theorem norm_jet_smul {V : Type*} [NormedAddCommGroup V] [NormedSpace �
       ‖c‖ * ‖iteratedFDerivWithin ℝ n f s v‖ := by
   rw [iteratedFDerivWithin_const_smul_apply (R := ℂ) hf hs hv, norm_smul]
 
- theorem inducedJetBound_smul (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+section
+
+variable (P : Polarization F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+
+ theorem inducedJetBound_smul
     (g : G F ζ hζ) (n : ℕ)
     (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
     (c : ℂ) (f : InducedLevel F ζ hζ P J) :
@@ -202,25 +204,24 @@ private theorem norm_jet_smul {V : Type*} [NormedAddCommGroup V] [NormedSpace �
   rw [hEq]
   exact Real.sSup_smul_of_nonneg (α := ℝ) (norm_nonneg c) _
 
-def inducedJet (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+def inducedJet
     (g : G F ζ hζ) (n : ℕ)
     (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F)) :
     Seminorm ℂ (InducedLevel F ζ hζ P J) :=
   Seminorm.of (inducedJetBound F ζ hζ P J g n K)
     (inducedJetBound_add_le F ζ hζ P J g n K) (inducedJetBound_smul F ζ hζ P J g n K)
 
-def inducedLevelTopology (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+def inducedLevelTopology :
     TopologicalSpace (InducedLevel F ζ hζ P J) :=
   (SeminormFamily.moduleFilterBasis
     (fun i : G F ζ hζ × ℕ × KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
       inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)).topology
 
-def inducedStageInclusion (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+def inducedStageInclusion :
     InducedLevel F ζ hζ P J →ₗ[ℂ] Induced F ζ hζ P :=
   Submodule.inclusion (le_iSup (fun J => InducedLevel F ζ hζ P J) J)
+
+end
 
 def inducedFinalSeminorms (P : Polarization F ζ hζ) :=
   {q : Seminorm ℂ (Induced F ζ hζ P) // ∀ J,

@@ -68,8 +68,8 @@ private lemma B_gamma_formula (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (s : ℂ)
         ((1 - s).Gammaℂ * Vendor.originMellinQ h (1 - s)) := by
   have hg : (1 - s).Gammaℂ ≠ 0 := gamma_ne_zero_im (by simpa using neg_ne_zero.mpr hs)
   obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : r ≠ 0)
-  simp only [B, Nat.add_sub_cancel, div_pow, pow_succ]
-  simp only [Nat.succ_sub_one, inv_pow, div_pow]
+  simp only [B, div_pow, pow_succ]
+  simp only [Nat.succ_sub_one, inv_pow]
   field_simp
 
 private lemma D_strip_bound (D u v : ℝ) (hD : 0 < D) :
@@ -245,7 +245,7 @@ theorem B_negative_line_uniform_integral_bound
   have hsre (t : ℝ) : -1 < (s t).re := by simp [s]; linarith
   have hnorm (t : ℝ) : ‖s t‖ ≤ (1 + δ) * (1 + |t|) := by
     calc ‖s t‖ ≤ ‖(-δ : ℂ)‖ + ‖(t : ℂ) * Complex.I‖ := norm_add_le _ _
-      _ = δ + |t| := by simp [norm_mul, abs_of_pos hδ]
+      _ = δ + |t| := by simp [abs_of_pos hδ]
       _ ≤ (1 + δ) * (1 + |t|) := by nlinarith [abs_nonneg t]
   have hweighted (t : ℝ) : (1 + |t|) ^ 2 * ‖f t‖ ≤ C₀ * Vendor.S b N h := by
     have ht0 : 0 ≤ 1 + |t| := by positivity

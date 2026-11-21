@@ -123,7 +123,7 @@ private lemma square_ratio {G : Type*} [CommGroup G] {a b : G} (h : IsSquare (a 
   refine ⟨t, ?_⟩
   have : a / b = t ^ 2 := by simpa only [pow_two] using ht
   calc
-    a = b * (a / b) := by simp [div_eq_mul_inv, mul_comm, mul_left_comm]
+    a = b * (a / b) := by simp [div_eq_mul_inv, mul_left_comm]
     _ = b * t ^ 2 := by rw [this]
 private lemma phase_class (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     {a b : (v.adicCompletion F)ˣ} (h : IsSquare (a / b)) :

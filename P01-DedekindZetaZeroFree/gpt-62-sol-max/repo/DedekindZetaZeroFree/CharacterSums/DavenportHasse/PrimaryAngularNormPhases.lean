@@ -43,12 +43,12 @@ theorem exists_prime_below_exterior
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
     ∃ q : HeightOneSpectrum (𝓞 E), v.asIdeal.LiesOver q.asIdeal ∧
       q.asIdeal ⊔ Ideal.span {(6 : 𝓞 E)} = ⊤ := by
-  let q : Ideal (𝓞 E) := v.asIdeal.under (𝓞 E)
-  have hq_ne : q ≠ ⊥ := Ideal.IsIntegral.under_ne_bot (𝓞 E) v.ne_bot
+  let q := v.asIdeal.under (𝓞 E)
+  have hq_ne := Ideal.IsIntegral.under_ne_bot (𝓞 E) v.ne_bot
   have hq_prime : q.IsPrime := Ideal.IsPrime.under (𝓞 E) v.asIdeal
   have hq_max : q.IsMaximal := Ideal.IsMaximal.under (𝓞 E) v.asIdeal
   refine ⟨⟨q, hq_prime, hq_ne⟩, ?_, ?_⟩
-  · exact Ideal.over_under (A := 𝓞 E) v.asIdeal
+  · exact Ideal.over_under ..
   · by_contra h
     have heq : q = q ⊔ Ideal.span {(6 : 𝓞 E)} :=
       Ideal.IsMaximal.eq_of_le hq_max h le_sup_left
@@ -805,8 +805,7 @@ private theorem norm_primary_congruence (E F : Type) [Field E] [NumberField E]
     ext i j
     have h3 : r (3 : 𝓞 E) = 0 := Ideal.Quotient.eq_zero_iff_mem.mpr
       (Ideal.subset_span (show (3 : 𝓞 E) ∈ ({3} : Set (𝓞 E)) by simp))
-    simp only [RingHom.mapMatrix_apply, Matrix.add_apply, Matrix.smul_apply, smul_eq_mul,
-      map_add, map_mul, h3, zero_mul, add_zero]
+    simp only [RingHom.mapMatrix_apply, Matrix.add_apply, map_add]
     by_cases hij : i = j <;> simp [Matrix.one_apply, hij, h3]
   rw [hm, Matrix.det_one, sub_self]
 private theorem auxiliary_embedding_not_real (E : Type) [Field E] [NumberField E]
@@ -877,8 +876,7 @@ private theorem angular_norm_eq_infinity_product (E F : Type) [Field E] [NumberF
     ComplexEmbedding.conjugate w.embedding) x) = _
   split_ifs with h
   · simp [infinityComponent, h]
-  · simp [infinityComponent, h, angular, ComplexEmbedding.conjugate_coe_eq,
-      map_div₀, Complex.norm_conj]
+  · simp [infinityComponent, h, angular, ComplexEmbedding.conjugate_coe_eq]
 
 theorem lambdaF_principal_congruence (E F : Type) [Field E] [NumberField E]
     [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]

@@ -45,17 +45,18 @@ namespace MultiplicativeIntegerValuation
 
 variable {K : Type u} [Field K]
 
+section
+
+variable [Algebra ℚ K] (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) {p : ℕ}
+  [Fact p.Prime] (e : ℕ) (x : K) (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0)) (hnval : ∀ n : ℕ,
+      v (((n + 1 : ℕ) : K)) =
+        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+  (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
+include p e x hnK hnval hvx
+
 /-- The scaled field logarithm series, written as evaluation of the positive
 coefficients of the formal series `log (1 + X)`. -/
 theorem hasSum_powerSeries_log_eval_logOnePlusSeriesField_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -76,14 +77,6 @@ theorem hasSum_powerSeries_log_eval_logOnePlusSeriesField_ofWithZeroValuation_sc
 /-- The scaled one-variable formal logarithm evaluation, including its zero
 constant coefficient. -/
 theorem hasSum_powerSeries_log_eval_nat_logOnePlusSeriesField_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -107,16 +100,19 @@ theorem hasSum_powerSeries_log_eval_nat_logOnePlusSeriesField_ofWithZeroValuatio
       (g := logOnePlusSeriesFieldOfWithZeroValuation v x hnK) 1).1 htail
   simpa [f, PowerSeries.coeff_log] using hfull
 
+end
+
+section
+
+variable [Algebra ℚ K] (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) {p : ℕ}
+  [Fact p.Prime] (e : ℕ) (x y : K) (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0)) (hnval : ∀ n : ℕ,
+      v (((n + 1 : ℕ) : K)) =
+        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+include p e hnK hnval
+
 /-- Scaled evaluation of the left-axis series in the two-variable formal
 product formula. -/
 theorem hasSum_formalLogOnePlusLeftVariableLogSubst_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
@@ -158,13 +154,6 @@ theorem hasSum_formalLogOnePlusLeftVariableLogSubst_monomialValue_pair_ofWithZer
 /-- Scaled evaluation of the right-axis series in the two-variable formal
 product formula. -/
 theorem hasSum_formalLogOnePlusRightVariableLogSubst_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
@@ -205,13 +194,6 @@ theorem hasSum_formalLogOnePlusRightVariableLogSubst_monomialValue_pair_ofWithZe
 
 /-- Scaled evaluation of the formal product formula's right-hand side. -/
 theorem hasSum_formalLogOnePlusProductRightSide_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
     (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
@@ -236,6 +218,8 @@ theorem hasSum_formalLogOnePlusProductRightSide_monomialValue_pair_ofWithZeroVal
   intro d
   rw [formalLogOnePlusProductRightSide_coeff]
   ring
+
+end
 
 /-- Natural-number coefficients have valuation at most one under a scaled
 `p`-adic denominator formula. -/
@@ -372,21 +356,22 @@ theorem valuation_formalLogOnePlusProductArgument_sigmaTerm_le_max
           (v (PowerSeries.coeff q (PowerSeries.log K)) * v y ^ q) := by
         simp [mul_max]
 
+section
+
+variable [Algebra ℚ K] (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) {p : ℕ}
+  [Fact p.Prime] (e : ℕ) (x y : K) (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0)) (hnval : ∀ n : ℕ,
+      v (((n + 1 : ℕ) : K)) =
+        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+  (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
+  (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
+include p e x y hnK hnval hvx hvy
+
 /-- The full Sigma-family obtained by expanding every power of
 `X + Y + XY` in the scaled logarithm substitution is unconditionally
 summable.  No rearrangement hypothesis is exposed: nonzero terms in each
 fixed outer degree have finite polynomial support, while their values are
 bounded by the convergent one-variable logarithm terms. -/
 theorem summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
-    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -492,15 +477,6 @@ theorem summable_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_of
 /-- The expanded product-argument Sigma-family has sum equal to the scaled
 logarithm of `x + y + xy`. -/
 theorem hasSum_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_sigma_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
-    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -550,15 +526,6 @@ theorem hasSum_formalLogOnePlusProductArgument_logDegree_monomialValue_pair_sigm
 substituted formal logarithm itself.  The inner sum is finite for every fixed
 monomial, by the degree bound in power-series substitution. -/
 theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
-    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -641,15 +608,6 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
 evaluating the formal product identity after the unconditional regrouping
 above. -/
 theorem logOnePlusSeriesField_mul_argument_eq_add_ofWithZeroValuation_scaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
-    (hvx : v x < (1 : WithZero (Multiplicative ℤ)))
-    (hvy : v y < (1 : WithZero (Multiplicative ℤ)))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -666,6 +624,8 @@ theorem logOnePlusSeriesField_mul_argument_eq_add_ofWithZeroValuation_scaled
       (v := v) (p := p) e x y hnK hnval hvx hvy hcomplete
   exact formalLogOnePlusProductFormula_hasSum_monomialValue_eq
     (A := K) hleft hright
+
+end
 
 /-- Scaled logarithm-series additivity on first principal units.  Unlike the
 earlier endpoint reduction, this theorem has no defect-convergence hypothesis. -/
@@ -697,17 +657,18 @@ theorem principalUnitLogSeries_mul_eq_add_ofWithZeroValuation_scaled
   rw [principalUnitLogSeries_mul_argument_ofWithZeroValuation]
   simpa [principalUnitLogSeriesOfWithZeroValuation, x, y] using hadd
 
+section
+
+variable [Algebra ℚ K] (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+  [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v] {p : ℕ}
+  [Fact p.Prime] (e : ℕ) (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0)) (hnval : ∀ n : ℕ,
+      v (((n + 1 : ℕ) : K)) =
+        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
+include p e hnK hnval
+
 /-- The scaled logarithm series as a genuine homomorphism on first principal
 units, with no supplied additivity or defect theorem. -/
 noncomputable def principalUnitLogSeriesHomOfWithZeroValuationScaled
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e : ℕ)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K) :
@@ -731,14 +692,6 @@ Establishes the identity `Multiplicative.toAdd (principalUnitLogSeriesHomOfWithZ
 (v := v) (p := p) e hnK hnval hcomplete u) = principalUnitLogSeriesOfWithZeroValuation v u hnK`.
 -/
 @[simp] theorem principalUnitLogSeriesHomOfWithZeroValuationScaled_apply_toAdd
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (e : ℕ)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p (n + 1) : ℤ))))
     (hcomplete :
       letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
       CompleteSpace K)
@@ -748,6 +701,8 @@ Establishes the identity `Multiplicative.toAdd (principalUnitLogSeriesHomOfWithZ
           (v := v) (p := p) e hnK hnval hcomplete u) =
       principalUnitLogSeriesOfWithZeroValuation v u hnK := by
   rfl
+
+end
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

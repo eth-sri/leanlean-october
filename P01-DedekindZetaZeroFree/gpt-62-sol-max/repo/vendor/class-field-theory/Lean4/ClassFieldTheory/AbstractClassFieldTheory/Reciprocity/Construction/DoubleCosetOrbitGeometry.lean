@@ -39,11 +39,14 @@ noncomputable section
 
 open MulAction
 
+section
+
+variable {Q : Type u} [Group Q] (S H : Subgroup Q)
+
 /-- Orbits of `S` on `Q/H` are the double cosets `S \\ Q / H`.
 This makes the indexing set in Mathlib's transfer formula literally the
 double-coset set used by the abstract class-field construction. -/
-noncomputable def orbitQuotientEquivDoubleCoset
-    {Q : Type u} [Group Q] (S H : Subgroup Q) :
+noncomputable def orbitQuotientEquivDoubleCoset :
     Quotient (orbitRel S (Q ⧸ H)) ≃
       DoubleCoset.Quotient (S : Set Q) (H : Set Q) where
   toFun z := Quotient.liftOn' z
@@ -99,8 +102,7 @@ noncomputable def orbitQuotientEquivDoubleCoset
 `x` to its double coset.  This exposes that the definition is independent
 of the representative selected by `Quotient.out`. -/
 @[simp]
-theorem orbitQuotientEquivDoubleCoset_mk
-    {Q : Type u} [Group Q] (S H : Subgroup Q) (x : Q) :
+theorem orbitQuotientEquivDoubleCoset_mk (x : Q) :
     orbitQuotientEquivDoubleCoset S H
         (Quotient.mk'' (QuotientGroup.mk x : Q ⧸ H)) =
       DoubleCoset.mk S H x := by
@@ -120,15 +122,13 @@ theorem orbitQuotientEquivDoubleCoset_mk
 /-- The inverse double-coset equivalence sends a represented double coset
 to the corresponding represented orbit. -/
 @[simp]
-theorem orbitQuotientEquivDoubleCoset_symm_mk
-    {Q : Type u} [Group Q] (S H : Subgroup Q) (x : Q) :
+theorem orbitQuotientEquivDoubleCoset_symm_mk (x : Q) :
     (orbitQuotientEquivDoubleCoset S H).symm (DoubleCoset.mk S H x) =
       Quotient.mk'' (QuotientGroup.mk x : Q ⧸ H) :=
   rfl
 
 /-- Inversion exchanges the two sides of a double-coset space. -/
-noncomputable def doubleCosetInversionEquiv
-    {Q : Type u} [Group Q] (S H : Subgroup Q) :
+noncomputable def doubleCosetInversionEquiv :
     DoubleCoset.Quotient (S : Set Q) (H : Set Q) ≃
       DoubleCoset.Quotient (H : Set Q) (S : Set Q) where
   toFun z := Quotient.liftOn' z
@@ -161,8 +161,7 @@ noncomputable def doubleCosetInversionEquiv
 /-- Orbit sets on the two quotient spaces are exchanged by inversion.
 This is the reindexing between the transfer and norm double-coset
 decompositions in the proof of transfer--norm naturality. -/
-noncomputable def orbitQuotientSwapEquiv
-    {Q : Type u} [Group Q] (S H : Subgroup Q) :
+noncomputable def orbitQuotientSwapEquiv :
     Quotient (orbitRel S (Q ⧸ H)) ≃
       Quotient (orbitRel H (Q ⧸ S)) :=
   (orbitQuotientEquivDoubleCoset S H).trans
@@ -173,8 +172,7 @@ noncomputable def orbitQuotientSwapEquiv
 represented by `x⁻¹`; this proposition records that fact independently of
 the representatives selected by `Quotient.out`. -/
 @[simp]
-theorem orbitQuotientSwapEquiv_mk
-    {Q : Type u} [Group Q] (S H : Subgroup Q) (x : Q) :
+theorem orbitQuotientSwapEquiv_mk (x : Q) :
     orbitQuotientSwapEquiv S H
         (Quotient.mk'' (QuotientGroup.mk x : Q ⧸ H)) =
       Quotient.mk'' (QuotientGroup.mk x⁻¹ : Q ⧸ S) := by
@@ -195,13 +193,18 @@ theorem orbitQuotientSwapEquiv_mk
     (QuotientGroup.mk u⁻¹ : Q ⧸ S)
   simp [mul_assoc]
 
+end
+
+section
+
+variable {M : Type*} {N : Type*} {X : Type*} {Y : Type*} [Group M] [Group N] [MulAction M X]
+  [MulAction N Y] (f : M →* N) (hf : Function.Surjective f) (e : X ≃ Y)
+  (he : ∀ (m : M) (x : X), e (m • x) = f m • e x)
+include f hf e he
+
 /-- A surjective homomorphism and an equivariant equivalence of the acted-on
 sets induce an equivalence of orbit sets. -/
-noncomputable def orbitQuotientEquivOfSurjectiveEquivariant
-    {M : Type*} {N : Type*} {X : Type*} {Y : Type*} [Group M] [Group N]
-    [MulAction M X] [MulAction N Y]
-    (f : M →* N) (hf : Function.Surjective f) (e : X ≃ Y)
-    (he : ∀ (m : M) (x : X), e (m • x) = f m • e x) :
+noncomputable def orbitQuotientEquivOfSurjectiveEquivariant :
     Quotient (orbitRel M X) ≃ Quotient (orbitRel N Y) :=
   { toFun := Quotient.map' e (by
       intro x y hxy
@@ -232,25 +235,19 @@ noncomputable def orbitQuotientEquivOfSurjectiveEquivariant
 
 /-- The orbit-quotient equivalence sends a represented orbit to the image representative. -/
 @[simp]
-theorem orbitQuotientEquivOfSurjectiveEquivariant_mk
-    {M : Type*} {N : Type*} {X : Type*} {Y : Type*} [Group M] [Group N]
-    [MulAction M X] [MulAction N Y]
-    (f : M →* N) (hf : Function.Surjective f) (e : X ≃ Y)
-    (he : ∀ (m : M) (x : X), e (m • x) = f m • e x) (x : X) :
+theorem orbitQuotientEquivOfSurjectiveEquivariant_mk (x : X) :
     orbitQuotientEquivOfSurjectiveEquivariant f hf e he
         (Quotient.mk'' x) = Quotient.mk'' (e x) :=
   rfl
 
 /-- The inverse orbit-quotient equivalence lifts a representative to its source orbit. -/
 @[simp]
-theorem orbitQuotientEquivOfSurjectiveEquivariant_symm_mk
-    {M : Type*} {N : Type*} {X : Type*} {Y : Type*} [Group M] [Group N]
-    [MulAction M X] [MulAction N Y]
-    (f : M →* N) (hf : Function.Surjective f) (e : X ≃ Y)
-    (he : ∀ (m : M) (x : X), e (m • x) = f m • e x) (y : Y) :
+theorem orbitQuotientEquivOfSurjectiveEquivariant_symm_mk (y : Y) :
     (orbitQuotientEquivOfSurjectiveEquivariant f hf e he).symm
         (Quotient.mk'' y) = Quotient.mk'' (e.symm y) :=
   rfl
+
+end
 
 /-- A group equivalence transports left cosets along the image of a
 subgroup; no normality hypothesis is required. -/
@@ -295,13 +292,17 @@ theorem leftCosetEquivOfMulEquiv_mk
       QuotientGroup.mk (e x) :=
   rfl
 
+section
+
+variable {Q : Type u} [Group Q] [TopologicalSpace Q] [IsTopologicalGroup Q] (H : Subgroup Q)
+  [H.FiniteIndex] (hHclosed : IsClosed (H : Set Q))
+include hHclosed
+
 /-- Closing a cyclic subgroup does not change its double cosets against a
 closed finite-index subgroup.  This is the density/open-subgroup step which
 passes from the algebraic powers of a Frobenius to its closed procyclic
 subgroup in the classical argument. -/
 theorem doubleCoset_closedCyclic_eq
-    {Q : Type u} [Group Q] [TopologicalSpace Q] [IsTopologicalGroup Q]
-    (H : Subgroup Q) [H.FiniteIndex] (hHclosed : IsClosed (H : Set Q))
     (g x y : Q) :
     DoubleCoset.mk H (Subgroup.zpowers g) x =
         DoubleCoset.mk H (Subgroup.zpowers g) y ↔
@@ -346,8 +347,6 @@ theorem doubleCoset_closedCyclic_eq
 
 /-- Double-coset equivalence induced by the preceding density argument. -/
 noncomputable def doubleCosetClosedCyclicEquiv
-    {Q : Type u} [Group Q] [TopologicalSpace Q] [IsTopologicalGroup Q]
-    (H : Subgroup Q) [H.FiniteIndex] (hHclosed : IsClosed (H : Set Q))
     (g : Q) :
     DoubleCoset.Quotient (H : Set Q) (Subgroup.zpowers g : Set Q) ≃
       DoubleCoset.Quotient (H : Set Q)
@@ -376,8 +375,6 @@ noncomputable def doubleCosetClosedCyclicEquiv
 an equivalence whenever the subgroup acting on the other side has finite
 index and is closed. -/
 noncomputable def orbitQuotientClosedCyclicEquiv
-    {Q : Type u} [Group Q] [TopologicalSpace Q] [IsTopologicalGroup Q]
-    (H : Subgroup Q) [H.FiniteIndex] (hHclosed : IsClosed (H : Set Q))
     (g : Q) :
     Quotient (orbitRel H (Q ⧸ Subgroup.zpowers g)) ≃
       Quotient (orbitRel H
@@ -391,8 +388,6 @@ noncomputable def orbitQuotientClosedCyclicEquiv
 represented by every literal group element. -/
 @[simp]
 theorem orbitQuotientClosedCyclicEquiv_mk
-    {Q : Type u} [Group Q] [TopologicalSpace Q] [IsTopologicalGroup Q]
-    (H : Subgroup Q) [H.FiniteIndex] (hHclosed : IsClosed (H : Set Q))
     (g x : Q) :
     orbitQuotientClosedCyclicEquiv H hHclosed g
         (Quotient.mk'' (QuotientGroup.mk x : Q ⧸ Subgroup.zpowers g)) =
@@ -417,6 +412,8 @@ theorem orbitQuotientClosedCyclicEquiv_mk
   apply congrArg Quotient.mk''
   apply QuotientGroup.eq.mpr
   exact haC
+
+end
 
 end
 

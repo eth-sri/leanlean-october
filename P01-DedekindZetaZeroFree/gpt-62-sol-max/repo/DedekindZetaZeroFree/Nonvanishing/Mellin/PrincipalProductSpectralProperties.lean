@@ -1,10 +1,11 @@
 module
 
+public import DedekindZetaZeroFree.Moments.Probes.PrincipalThetaContext
 public import DedekindZetaZeroFree.Nonvanishing.Mellin.NormalizedProbeArithmeticData
 public import DedekindZetaZeroFree.Moments.Principal.Corrections.SummableMajorants
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrincipalRayContinuation
 public import DedekindZetaZeroFree.LFunctions.Hecke.DirichletSeriesRightEdgeBounds
-public import DedekindZetaZeroFree.LFunctions.Hecke.EulerLogarithm
+public import DedekindZetaZeroFree.Moments.Principal.Numerator.RightHalfPlaneBounds
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrincipalIncompleteEulerNonvanishing
 
 @[expose] public section
@@ -22,8 +23,7 @@ private theorem product_analytic {ι : Type} (f : ι → ℂ → ℂ) (U : Set �
   have hd : DifferentiableOn ℂ
       (fun z => ∑' T : Finset ι, ∏ i ∈ T, (f i z - 1)) U := by
     apply Complex.differentiableOn_tsum_of_summable_norm hs
-    · intro T
-      exact DifferentiableOn.fun_finset_prod fun i _ => (hf i).sub_const 1
+    · fun_prop
     · exact hU
     · intro T z hz
       refine (Finset.norm_prod_le _ _).trans ?_
@@ -75,25 +75,13 @@ private theorem primeOutside_injective {S : SArithmeticData F} {η : RayClassCha
   apply Subtype.ext
   apply Subtype.ext
   exact congrArg (fun v => v.val.asIdeal) h
-private theorem exterior_modulus {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-    (R : ActualRecipe S η) (I : R.A.Exterior) : I.val ⊔ R.A.modulus = ⊤ := by
-  by_contra h
-  obtain ⟨p, hp, hle⟩ := Ideal.exists_le_maximal (I.val ⊔ R.A.modulus) h
-  have hmod : R.A.modulus ≤ p := le_sup_right.trans hle
-  have hp0 : p ≠ ⊥ := ne_bot_of_le_ne_bot R.A.modulus_ne_zero hmod
-  let v : HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, hp0⟩
-  have hIv : I.val ⊔ p = ⊤ := (R.A.exterior_iff ⟨I.val, I.property.1⟩).mp
-    I.property.2 v (R.A.modulus_support v hmod)
-  have : (⊤ : Ideal (𝓞 F)) ≤ p := by
-    rw [← hIv]; exact sup_le (le_sup_left.trans hle) le_rfl
-  exact hp.ne_top (top_unique this)
 private theorem local_phases {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
     ‖R.target p.val.val‖ = 1 ∧
       ‖R.probe.coefficients.theta (R.probe.coefficients.generator p.val) ^ 6‖ = 1 := by
   constructor
   · exact RayUnitary.ray_character_norm_eq_one F R.A.modulus R.A.modulus_ne_zero
-      R.target _ p.val.property.1 (exterior_modulus R p.val)
+      R.target _ p.val.property.1 (PrincipalProbeConstruction.Inputs.exterior_coprime R.A p.val)
   · rw [norm_pow, NormalizedProbe.principal_theta_norm R.probe
       ⟨R.probe.coefficients.generator p.val, (R.probe.coefficients.generates p.val).1⟩]
     simp
@@ -210,92 +198,11 @@ theorem actual_principal_H_bound {S : SArithmeticData F} {η : RayClassCharacter
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem spectral_full_L_inv_bounded (R : ActualRecipe S η) (a : ℝ) (ha : 1 < a) :
- ∃ M : ℝ, 0 < M ∧ ∀ s : ℂ, a ≤ s.re → ‖(R.continuation.L s)⁻¹‖ ≤ M := by
- let coeff : ExteriorIdeal (⊤ : Ideal (𝓞 F)) → ℂ := fun I => R.target I.val
- let M := (3 / 2 : ℝ) * ∑' I : NonzeroIdeal F, (idealNorm I.val) ^ (-a)
- refine ⟨Real.exp M, Real.exp_pos _, ?_⟩
- intro s hs
- have hexp : Complex.exp (HeckeLogProof.eulerLog coeff s) = R.continuation.L s := by
-  rw [HeckeLogProof.exp_eulerLog _
-   (HeckeLogProof.ray_isCoefficient R.A.modulus R.A.modulus_ne_zero R.target) s (ha.trans_le hs)]
-  have hsupport : Function.support (fun I : Ideal (𝓞 F) =>
-   R.target I * (Ideal.absNorm I : ℂ) ^ (-s)) ⊆
-   {I : Ideal (𝓞 F) | I ≠ ⊥ ∧ I ⊔ ⊤ = ⊤} := by
-   intro I hI
-   simp only [Function.mem_support] at hI
-   refine ⟨?_, by simp⟩
-   intro hzero
-   have hη : R.target I = 0 := (R.target.eq_zero_iff' I).mpr (Or.inl hzero)
-   exact hI (by simpa only [hη, zero_mul])
-  exact ((hasSum_subtype_iff_of_support_subset hsupport).mpr
-   (R.continuation.series s (ha.trans_le hs))).tsum_eq
- rw [← hexp, ← Complex.exp_neg, Complex.norm_exp]
- apply Real.exp_le_exp.mpr
- have h := HeckeLogProof.eulerLog_norm_le coeff
-  (HeckeLogProof.ray_isCoefficient R.A.modulus R.A.modulus_ne_zero R.target) a ha s hs
- rw [Complex.neg_re]
- exact ((neg_le_abs _).trans (Complex.abs_re_le_norm _)).trans h
-private theorem spectral_L_inv_bounded (R : ActualRecipe S η) (a : ℝ) (ha : 1 < a) :
- ∃ M : ℝ, 0 < M ∧ ∀ s : ℂ, a ≤ s.re → ‖(R.L s)⁻¹‖ ≤ M := by
- obtain ⟨M, hM, hb⟩ := spectral_full_L_inv_bounded R a ha
- let u : HeightOneSpectrum (𝓞 F) → ℝ := fun v =>
-  (1 - Real.exp (-a * Real.log (idealNorm v.asIdeal)))⁻¹
- have hupos : ∀ v, 0 < u v := by
-  intro v
-  have hQ : 1 < idealNorm v.asIdeal := by
-   dsimp [idealNorm]
-   exact_mod_cast NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
-  have hlog := Real.log_pos hQ
-  dsimp [u]
-  apply inv_pos.mpr
-  apply sub_pos.mpr
-  rw [Real.exp_lt_one_iff]
-  nlinarith
- refine ⟨M * ∏ v ∈ R.A.Sf, u v, mul_pos hM (Finset.prod_pos (fun v hv => hupos v)), ?_⟩
- intro s hs
- have hlocal : ∀ v, ‖(1 - R.target v.asIdeal *
-    comparisonRealPower (idealNorm v.asIdeal) (-s))⁻¹‖ ≤ u v := by
-  intro v
-  have hQ : 1 < idealNorm v.asIdeal := by
-   dsimp [idealNorm]
-   exact_mod_cast NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
-  have hlog := Real.log_pos hQ
-  have hpow : ‖R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s)‖ ≤
-   Real.exp (-a * Real.log (idealNorm v.asIdeal)) := by
-   rw [norm_mul]
-   have hn := RayUnitary.ray_character_norm_le_one F R.A.modulus R.A.modulus_ne_zero R.target v.asIdeal
-   calc
-    _ ≤ 1 * ‖comparisonRealPower (idealNorm v.asIdeal) (-s)‖ :=
-     mul_le_mul_of_nonneg_right hn (norm_nonneg _)
-    _ = Real.exp (-s.re * Real.log (idealNorm v.asIdeal)) := by
-     rw [one_mul, MellinZeroFree.norm_comparisonRealPower, Complex.neg_re]
-    _ ≤ _ := Real.exp_le_exp.mpr (by nlinarith)
-  rw [norm_inv]
-  apply inv_anti₀ (inv_pos.mp (hupos v))
-  have ht := norm_sub_norm_le (1 : ℂ)
-   (R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s))
-  rw [norm_one] at ht
-  dsimp [u] at *
-  linarith
- change ‖(R.continuation.L s * ∏ v ∈ R.A.Sf,
-  (1 - R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s)))⁻¹‖ ≤ _
- rw [mul_inv_rev, norm_mul]
- calc
-  _ ≤ (∏ v ∈ R.A.Sf, u v) * M := by
-   apply mul_le_mul
-   · rw [← Finset.prod_inv_distrib, norm_prod]
-     exact Finset.prod_le_prod₀ (fun v hv => norm_nonneg _) (fun v hv => hlocal v)
-   · exact hb s hs
-   · exact norm_nonneg _
-   · exact (Finset.prod_pos (fun v hv => hupos v)).le
-  _ = _ := mul_comm _ _
-
 private theorem spectral_strip_bound (R : ActualRecipe S η) (a b : ℝ) (ha : 1 < a) (hab : a ≤ b) :
  ∃ C : ℝ, 0 ≤ C ∧ ∀ r ∈ Set.Icc a b, ∀ t : ℝ,
   ‖R.G ((r : ℂ) + t * Complex.I)‖ ≤ C / (1 + t ^ 2) := by
  obtain ⟨M, hM, hH⟩ := actual_principal_H_bound R a (by linarith)
- obtain ⟨B, hB, hL⟩ := spectral_L_inv_bounded R a ha
+ obtain ⟨B, hB, hL⟩ := PrincipalNumerator.rightHalfPlane_reciprocal_bound R a ha
  let C := Real.exp ((b - 5 / 6) ^ 2) * (M * B)
  refine ⟨C, by dsimp [C]; positivity, ?_⟩
  intro r hr t

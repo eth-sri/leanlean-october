@@ -170,7 +170,7 @@ private lemma conj_energy_lower_bound (d : ℝ) (hd : 0 < d) (a : ℝ → ℝ)
       (hasCompactSupport_mul_norm_sq d w hc))
     (integrable_conj_integrand d a (fun _ => 0) ha continuous_const w hw hc)
     (fun t => ?_)
-  simp only [Pi.zero_apply, sub_zero]
+  simp only [sub_zero]
   nlinarith [hapos t, sq_nonneg (‖w t‖), norm_nonneg (deriv w t), inv_pos.mpr hd]
 
 theorem scalar_zero_mode_lower_bound (d : ℝ) (hd : 0 < d)

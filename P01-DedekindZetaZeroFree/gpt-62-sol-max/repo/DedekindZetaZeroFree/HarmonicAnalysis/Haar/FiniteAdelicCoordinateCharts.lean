@@ -1,6 +1,11 @@
 module
 
-public import DedekindZetaZeroFree.Adeles.Characters.CanonicalTraceCharacterSpecifications
+public import DedekindZetaZeroFree.Arithmetic.LocalFields.TraceCharacterConductor
+public import DedekindZetaZeroFree.Adeles.Lattices.CompactOpenLevelLattices
+public import DedekindZetaZeroFree.Adeles.Characters.TraceCharacterNondegeneracy
+public import DedekindZetaZeroFree.Adeles.Characters.TracePairingNondegeneracy
+public import DedekindZetaZeroFree.Adeles.Characters.TraceCharacter
+public import Mathlib.Algebra.Order.Archimedean.Real.Hom
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.TraceBaseChange.DifferentComparison
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.NormalizedFiniteAdelicMeasure
 
@@ -36,7 +41,6 @@ private theorem integers (v : Places F) :
   exists_of_le_one {x} hx := ⟨(ringEquiv F v).symm ⟨x,hx⟩,rfl⟩
 private theorem val_integerMap (v : Places F) (x : 𝓞 F) :
     Valued.v (TraceBaseChange.integerMap F v x : v.adicCompletion F) = v.intValuation x := by
-  change Valued.v (algebraMap (𝓞 F) (v.adicCompletion F) x) = _
   exact (v.valuedAdicCompletion_eq_valuation (K := F) x).trans (v.valuation_of_algebraMap (K := F) x)
 private theorem integerMap_irreducible (v : Places F) (x : 𝓞 F)
     (hx : v.intValuation x = WithZero.exp (-1)) :

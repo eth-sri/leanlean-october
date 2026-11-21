@@ -34,18 +34,18 @@ namespace ValuedExtension
 variable {K : Type u} {L : Type w} [Field K] [Field L]
 variable [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
 
+section
+
+variable {M : Type y} [Field M] {GammaL : Type x} {GammaM : Type z}
+  [LinearOrderedCommGroupWithZero GammaL] [LinearOrderedCommGroupWithZero GammaM]
+  (vL : _root_.Valuation L GammaL) (vM : _root_.Valuation M GammaM) (ι : L →+* M)
+  (hEquiv : vL.IsEquiv (vM.comap ι))
+include vL vM ι hEquiv
+
 /-- An embedding into an ambient valued field restricts to valuation rings
 whenever the chosen source valuation is equivalent to the pulled-back
 ambient valuation. -/
-noncomputable def valuationSubringMapOfIsEquivComap
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+noncomputable def valuationSubringMapOfIsEquivComap :
     vL.valuationSubring →+* vM.valuationSubring where
   toFun a :=
     ⟨ι (a : L), by
@@ -76,14 +76,6 @@ noncomputable def valuationSubringMapOfIsEquivComap
 through the original field embedding. -/
 @[simp]
 theorem valuationSubringMapOfIsEquivComap_apply
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι))
     (a : vL.valuationSubring) :
     ((valuationSubringMapOfIsEquivComap vL vM ι hEquiv a :
       vM.valuationSubring) : M) =
@@ -92,15 +84,7 @@ theorem valuationSubringMapOfIsEquivComap_apply
 
 /-- The valuation-ring map induced by an equivalent ambient pullback is a
 local homomorphism. -/
-theorem valuationSubringMapOfIsEquivComap_isLocalHom
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+theorem valuationSubringMapOfIsEquivComap_isLocalHom :
     IsLocalHom
       (valuationSubringMapOfIsEquivComap vL vM ι hEquiv) := by
   let f := valuationSubringMapOfIsEquivComap vL vM ι hEquiv
@@ -120,15 +104,7 @@ theorem valuationSubringMapOfIsEquivComap_isLocalHom
 
 /-- The induced injection from the chosen residue field into the ambient
 residue field. -/
-noncomputable def residueFieldMapOfIsEquivComap
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι)) :
+noncomputable def residueFieldMapOfIsEquivComap :
     IsLocalRing.ResidueField vL.valuationSubring →+*
       IsLocalRing.ResidueField vM.valuationSubring := by
   letI :
@@ -144,14 +120,6 @@ automorphisms of the source and ambient valuation rings.  This is the
 residue-field naturality needed when a finite valued subfield is realized
 inside a larger complete discrete valuation field. -/
 theorem residueFieldMapOfIsEquivComap_mapEquiv
-    {M : Type y} [Field M]
-    {GammaL : Type x} {GammaM : Type z}
-    [LinearOrderedCommGroupWithZero GammaL]
-    [LinearOrderedCommGroupWithZero GammaM]
-    (vL : _root_.Valuation L GammaL)
-    (vM : _root_.Valuation M GammaM)
-    (ι : L →+* M)
-    (hEquiv : vL.IsEquiv (vM.comap ι))
     (σL : vL.valuationSubring ≃+* vL.valuationSubring)
     (σM : vM.valuationSubring ≃+* vM.valuationSubring)
     (hcompat :
@@ -187,6 +155,8 @@ theorem residueFieldMapOfIsEquivComap_mapEquiv
   exact congrArg
     (IsLocalRing.residue vM.valuationSubring)
     (hcompat b)
+
+end
 
 /-- Let `L / K` be finite separable with a chosen complete discrete valuation
 extending the one on `K`.  If a field embedding of `L` into another complete

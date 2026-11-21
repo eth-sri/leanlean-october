@@ -120,7 +120,7 @@ theorem shell_inverse_cutoff (U : Set (LocalField F q)) (hU : U ∈ nhds 0) :
     simp only [KPCubicHaar.abs_zero] at this
     exact (not_lt_of_ge (zpow_pos (lt_trans zero_lt_one hQ) _).le) this
   have hex : e (valuation (LocalField F q) x) ≠ 0 := by simpa [e] using hx0
-  have heγ : e (γ : ValueGroupWithZero (LocalField F q)) ≠ 0 := by simpa [e] using γ.ne_zero
+  have heγ : e (γ : ValueGroupWithZero (LocalField F q)) ≠ 0 := by simp [e]
   have hlog : (m : ℤ) - 1 < WithZero.log (e (valuation (LocalField F q) x)) := by
     have hh := hx.1
     simp only [actualShell, Set.mem_setOf_eq] at hx

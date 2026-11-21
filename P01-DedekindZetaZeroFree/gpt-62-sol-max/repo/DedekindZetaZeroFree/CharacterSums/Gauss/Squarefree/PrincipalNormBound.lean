@@ -48,8 +48,7 @@ private lemma gauss_parseval {R : Type*} [CommRing R] [Fintype R]
     rw [show a * (x - y) = a * x + -(a * y) by ring, ψ.map_add_eq_mul]
     ring
   simp_rw [hterm, ← Finset.mul_sum, AddChar.sum_mulShift _ hψ]
-  simp only [sub_eq_zero, Nat.cast_ite, Nat.cast_zero, mul_ite, mul_zero,
-    Finset.sum_ite_eq', Finset.mem_univ, if_true]
+  simp only [sub_eq_zero, Nat.cast_ite, Nat.cast_zero, mul_ite, mul_zero]
   rw [Finset.sum_ite_eq]
   simp only [Finset.mem_univ, if_true]
   ring
@@ -133,7 +132,7 @@ private lemma additiveCharacter_eq_fieldTrace (A : SArithmeticData F) (ι : F �
       NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
     rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
     congr 1
-    simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
+    simp only [Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
     apply Finset.sum_congr rfl
     intro w hw
     ring

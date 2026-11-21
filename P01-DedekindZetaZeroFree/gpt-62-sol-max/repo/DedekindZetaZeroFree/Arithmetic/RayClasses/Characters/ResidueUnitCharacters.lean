@@ -80,7 +80,7 @@ theorem residueRayCharacter_lift_compatible
   rw [← Ideal.span_singleton_mul_span_singleton, η.map_mul'] at hαδ hβδ
   have hηδ : η (Ideal.span {δ}) ≠ 0 := by
     rw [ne_eq, η.eq_zero_iff']
-    simp [Ideal.span_singleton_eq_bot, hδ, hδcop]
+    simp [hδ, hδcop]
   exact mul_right_cancel₀ hηδ (hαδ.trans hβδ.symm)
 
  def residueLift (hmt : m ≠ ⊤) (u : (𝓞 F ⧸ m)ˣ) : 𝓞 F :=
@@ -95,7 +95,7 @@ theorem residueRayCharacter_lift_compatible
     (η : DedekindZetaZeroFree.RayClassCharacter F m) (u : (𝓞 F ⧸ m)ˣ) : ℂˣ :=
   Units.mk0 (η (Ideal.span {residueLift hmt u})) (by
     rw [ne_eq, η.eq_zero_iff']
-    simp [Ideal.span_singleton_eq_bot, (residueLift_spec hmt u).1,
+    simp [(residueLift_spec hmt u).1,
       (residueLift_spec hmt u).2.1])
 
  theorem residueValue_apply

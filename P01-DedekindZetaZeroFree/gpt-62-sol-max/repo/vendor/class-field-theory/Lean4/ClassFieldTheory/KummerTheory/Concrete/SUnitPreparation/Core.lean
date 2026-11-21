@@ -41,22 +41,21 @@ namespace KummerTheory
 variable {K : Type*} [Field K]
     [numberFieldK : NumberField K]
 
+section
+
+variable {Omega : Type*} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
+  (E : IntermediateField K Omega) [FiniteDimensional K E] [IsGalois K E]
+  [IsMulCommutative Gal(E/K)] (n : ℕ+) (hn : 1 < (n : ℕ))
+  (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (r : ℕ) (eG :
+      Gal(E/K) ≃*
+        (Fin r → Multiplicative (ZMod (n : ℕ))))
+  (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n hn hmu r eG S
+
 /-- The cardinal comparison in the finite S-unit preparation argument: if
 `Gal(E/K) ≃ (Z/nZ)^r`, then `r ≤ s` for the source-produced enlarged
 set of places. -/
-theorem galoisRank_le_totalPlaceCard_enlargedS
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+) (hn : 1 < (n : ℕ))
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem galoisRank_le_totalPlaceCard_enlargedS :
     r ≤
       totalPlaceCard (K := K)
         (enlargeByFiniteKummerRadicalSupport
@@ -102,19 +101,7 @@ theorem galoisRank_le_totalPlaceCard_enlargedS
 /-- The restriction kernel in the finite S-unit preparation argument has the expected
 cardinality `n ^ (s - r)`.  Both fields and the restriction map are the
 concrete objects constructed above. -/
-theorem card_enlargedSUnitKummerRestrictionHom_ker
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+) (hn : 1 < (n : ℕ))
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem card_enlargedSUnitKummerRestrictionHom_ker :
     Nat.card
         (enlargedSUnitKummerRestrictionHom
           (K := K) (Omega := Omega) E n hmu
@@ -189,25 +176,24 @@ theorem card_enlargedSUnitKummerRestrictionHom_ker
   exact Nat.eq_of_mul_eq_mul_left
     (pow_pos n.pos r) hcancel
 
+end
+
+section
+
+variable {Omega : Type*} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
+  (E : IntermediateField K Omega) [FiniteDimensional K E] [IsGalois K E]
+  [IsMulCommutative Gal(E/K)] (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (p v : ℕ)
+  (hp : p.Prime) (hv : 0 < v) (hn : (n : ℕ) = p ^ v) (r : ℕ) (eG :
+      Gal(E/K) ≃*
+        (Fin r → Multiplicative (ZMod (n : ℕ))))
+  (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n hmu p v hp hv hn r eG S
+
 /-- In the prime-power case, the actual relative Galois group
 `Gal(N/E)` is a free `ZMod n`-module of rank `s - r`.  This is the
 concrete basis source used to choose the fields `N_i` in the finite S-unit preparation argument. -/
 theorem
-    exists_enlargedSUnitKummerRestrictionKernelEquivPiZMod
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+    exists_enlargedSUnitKummerRestrictionKernelEquivPiZMod :
     Nonempty
       ((enlargedSUnitKummerRestrictionHom
           (K := K) (Omega := Omega) E n hmu
@@ -288,21 +274,7 @@ theorem
 /-- A chosen coordinate equivalence for the actual relative Galois
 group in the finite S-unit preparation argument. -/
 noncomputable def
-    chosenEnlargedSUnitKummerRestrictionKernelEquivPiZMod
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+    chosenEnlargedSUnitKummerRestrictionKernelEquivPiZMod :
     (enlargedSUnitKummerRestrictionHom
         (K := K) (Omega := Omega) E n hmu
         (galois_pow_eq_one_of_equiv_pi_zmod E n r eG)
@@ -316,6 +288,8 @@ noncomputable def
     (exists_enlargedSUnitKummerRestrictionKernelEquivPiZMod
       (K := K) (Omega := Omega) E n hmu
       p v hp hv hn r eG S)
+
+end
 
 end KummerTheory
 

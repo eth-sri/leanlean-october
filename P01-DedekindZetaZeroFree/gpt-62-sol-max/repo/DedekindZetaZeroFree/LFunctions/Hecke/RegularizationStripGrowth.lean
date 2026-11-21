@@ -22,10 +22,10 @@ theorem heckeNonprincipalRegularization_quadratic_strip_growth
   obtain ⟨GC, _hGCpos, hGC⟩ := gammaC_inverse_strip_exp_bound a b hab
   set m : ℝ := max |a| |b| with hm
   have hm0 : 0 ≤ m := by
-    rw [hm]; exact le_trans (abs_nonneg a) (le_max_left _ _)
+    rw [hm]; simp
   set Qb : ℝ := max (Q ^ (-a / 2)) (Q ^ (-b / 2)) with hQb
   have hQb0 : 0 ≤ Qb := by
-    rw [hQb]; exact le_trans (Real.rpow_nonneg hQ.le _) (le_max_left _ _)
+    rw [hQb]; positivity
   refine ⟨Qb * GC ^ r * max C 1, 2 * (m ^ 2 + 1) + r * Real.pi, ?_, ?_, ?_⟩
   · positivity
   · positivity

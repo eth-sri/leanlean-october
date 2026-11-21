@@ -58,15 +58,7 @@ instance intrinsicCompleteSpace : CompleteSpace (IntrinsicHilbert cover) :=
         rw [LinearEquiv.symm_apply_apply] }
   e.toIsometryEquiv.symm.completeSpace
 
-def realizationIsometry : PieceHilbert cover ≃ₗᵢ[ℂ] IntrinsicHilbert cover where
-  __ := realizationEquiv cover
-  norm_map' := fun x => by
-    show ‖(realizationEquiv cover).symm (realizationEquiv cover x)‖ = ‖x‖
-    rw [LinearEquiv.symm_apply_apply]
 
-theorem realizationIsometry_toLinearEquiv :
-    (realizationIsometry cover).toLinearEquiv = realizationEquiv cover := by
-  rfl
 
 theorem norm_eq_extraction (v : IntrinsicHilbert cover) :
     ‖v‖ = ‖Ext cover (intrinsicClass cover v)‖ := by
@@ -275,41 +267,10 @@ theorem norm_sq_eq_integral (v : IntrinsicHilbert cover)
   exact (ENNReal.ofReal_eq_ofReal_iff (by positivity)
     (integral_nonneg fun x => by positivity)).mp key
 
-def changeCover (other : CountableCover F ζ hζ U R P H) :
-    IntrinsicHilbert cover ≃ₗᵢ[ℂ] IntrinsicHilbert other where
-  __ := (intrinsicClass cover).trans (intrinsicClass other).symm
-  norm_map' := fun v => by
-    obtain ⟨r, hr⟩ := toAeQuotient_surjective (U := U) (H := H) v
-    have h1 := KPContActualCotangentIntrinsicHilbertIntegral.norm_sq_eq_integral cover v r hr
-    have h2 := KPContActualCotangentIntrinsicHilbertIntegral.norm_sq_eq_integral other
-      (((intrinsicClass cover).trans (intrinsicClass other).symm) v) r (by rw [hr]; rfl)
-    have hsq : ‖((intrinsicClass cover).trans (intrinsicClass other).symm) v‖ ^ 2 =
-        ‖v‖ ^ 2 := by rw [h2, h1]
-    exact (pow_left_inj₀ (norm_nonneg _) (norm_nonneg _) (by norm_num)).mp hsq
 
-theorem changeCover_class (other : CountableCover F ζ hζ U R P H)
-    (v : IntrinsicHilbert cover) :
-    intrinsicClass other (changeCover cover other v) = intrinsicClass cover v := by
-  rfl
 
-theorem scalarSector_isClosed :
-    IsClosed (KPContSectorClosedLpSubspace.H F ζ hζ R U :
-      Set (KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U)) :=
-  KPContSectorClosedLpSubspace.H_isClosed F ζ hζ R U
 
 structure Properties : Prop where
-  reconstruction_isometry :
-    (realizationIsometry cover).toLinearEquiv = realizationEquiv cover
-  extraction_norm : ∀ v : IntrinsicHilbert cover,
-    ‖v‖ = ‖Ext cover (intrinsicClass cover v)‖
-  extraction_inner : ∀ v w : IntrinsicHilbert cover,
-    inner ℂ v w = inner ℂ (Ext cover (intrinsicClass cover v))
-      (Ext cover (intrinsicClass cover w))
-  pairing_integrable : ∀ r s : SquareFiniteFamily (U := U) (H := H),
-    Integrable (pair r.val s.val) (baseMeasure (R := R) (P := P) (U := U))
-  square_integrable : ∀ r : SquareFiniteFamily (U := U) (H := H),
-    Integrable (fun x => (normSquare r.val x : ℝ))
-      (baseMeasure (R := R) (P := P) (U := U))
   inner_integral : ∀ (v w : IntrinsicHilbert cover)
     (r s : SquareFiniteFamily (U := U) (H := H)),
     toAeQuotient r = intrinsicClass cover v →
@@ -321,11 +282,6 @@ structure Properties : Prop where
     toAeQuotient r = intrinsicClass cover v →
     ‖v‖ ^ 2 = ∫ x, (normSquare r.val x : ℝ)
       ∂(baseMeasure (R := R) (P := P) (U := U))
-  cover_independent : ∀ (other : CountableCover F ζ hζ U R P H)
-    (v : IntrinsicHilbert cover),
-    intrinsicClass other (changeCover cover other v) = intrinsicClass cover v
-  scalar_closed : IsClosed (KPContSectorClosedLpSubspace.H F ζ hζ R U :
-    Set (KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U))
 
 end DedekindZetaZeroFree.KPContActualCotangentIntrinsicHilbertIntegral
 
@@ -340,15 +296,8 @@ theorem kp_cont_actual_cotangent_intrinsic_hilbert_integral
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
     (cover : KPContActualCotangentCountableShrinking.CountableCover F ζ hζ U R P H) :
     KPContActualCotangentIntrinsicHilbertIntegral.Properties cover :=
-  { reconstruction_isometry := KPContActualCotangentIntrinsicHilbertIntegral.realizationIsometry_toLinearEquiv cover
-    extraction_norm := KPContActualCotangentIntrinsicHilbertIntegral.norm_eq_extraction cover
-    extraction_inner := KPContActualCotangentIntrinsicHilbertIntegral.inner_eq_extraction cover
-    pairing_integrable := KPContActualCotangentIntrinsicHilbertIntegral.integrable_pair
-    square_integrable := KPContActualCotangentIntrinsicHilbertIntegral.integrable_normSquare
-    inner_integral := KPContActualCotangentIntrinsicHilbertIntegral.inner_eq_integral cover
-    norm_integral := KPContActualCotangentIntrinsicHilbertIntegral.norm_sq_eq_integral cover
-    cover_independent := KPContActualCotangentIntrinsicHilbertIntegral.changeCover_class cover
-    scalar_closed := KPContActualCotangentIntrinsicHilbertIntegral.scalarSector_isClosed }
+  ⟨KPContActualCotangentIntrinsicHilbertIntegral.inner_eq_integral cover,
+    KPContActualCotangentIntrinsicHilbertIntegral.norm_sq_eq_integral cover⟩
 
 end DedekindZetaZeroFree
 

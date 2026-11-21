@@ -72,19 +72,6 @@ theorem normSubgroup_algEquiv
     refine ⟨Units.mapEquiv e.toMulEquiv x, ?_⟩
     exact normUnits_algEquiv K L M e x
 
-/-- An algebra embedding of finite extensions reverses inclusion of their
-norm subgroups. -/
-theorem normSubgroup_le_of_algHom
-    (K M D : Type) [Field K] [Field M] [Field D]
-    [Algebra K M] [Algebra K D]
-    [FiniteDimensional K M] [FiniteDimensional K D]
-    (i : M →ₐ[K] D) :
-    localNormSubgroup K D ≤ localNormSubgroup K M := by
-  let : Algebra M D := i.toRingHom.toAlgebra
-  let : IsScalarTower K M D := IsScalarTower.of_algebraMap_eq fun x => by
-    exact (i.commutes x).symm
-  let : FiniteDimensional M D := FiniteDimensional.right K M D
-  exact normSubgroup_le_of_tower K M D
 
 end LocalFieldTheory
 

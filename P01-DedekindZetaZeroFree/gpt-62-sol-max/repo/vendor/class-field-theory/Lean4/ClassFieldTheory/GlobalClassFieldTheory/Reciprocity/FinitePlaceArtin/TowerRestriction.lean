@@ -95,9 +95,7 @@ theorem absoluteValueCompletionMap_comp_of_isScalarTower
         (((WithAbs.equiv vK).symm
           (WithAbs.equiv vK a) : WithAbs vK) :
             vK.Completion)
-      exact congrArg
-        (fun z : WithAbs vK => (z : vK.Completion))
-        ((WithAbs.equiv vK).symm_apply_apply a).symm
+      rfl
     rw [ha]
     change
       AbsoluteValue.completionMap vE vL hEL

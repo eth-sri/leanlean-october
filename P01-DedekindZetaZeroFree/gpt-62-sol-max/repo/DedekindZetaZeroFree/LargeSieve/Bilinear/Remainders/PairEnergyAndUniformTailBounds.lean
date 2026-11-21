@@ -193,8 +193,12 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailAux
 
-lemma cutoff_inner_bound (F : Type*) [Field F] [NumberField F]
-    (p : ℝ) (hp : 1 < p) :
+section
+
+variable (F : Type*) [Field F] [NumberField F] (p : ℝ) (hp : 1 < p)
+include hp
+
+lemma cutoff_inner_bound :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (k : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x : ℝ, 0 < x → ‖k x‖ ≤ P * Real.rpow x (-p)) →
       ∀ (T L : ℝ) (d : Ideal (𝓞 F)), 0 < T → 1 ≤ L → d ≠ ⊥ →
@@ -236,8 +240,7 @@ lemma cutoff_inner_bound (F : Type*) [Field F] [NumberField F]
         ((T / (Ideal.absNorm d : ℝ)) * (T / (Ideal.absNorm d : ℝ)) ^ (-p)) := by ring
     _ = _ := by rw [he]; ring
 
-theorem primal_tail_all_scale (F : Type*) [Field F] [NumberField F]
-    (p : ℝ) (hp : 1 < p) :
+theorem primal_tail_all_scale :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (g : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x : ℝ, 0 < x → ‖g x‖ ≤ P * Real.rpow x (-p)) →
       ∀ (T Z : ℝ), 0 < T → 0 < Z →
@@ -278,8 +281,7 @@ theorem primal_tail_all_scale (F : Type*) [Field F] [NumberField F]
     _ ≤ ∑ _d ∈ D, C * P * Real.rpow (Z / T) (-p) := Finset.sum_le_sum hterm
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]; ring
 
-theorem small_dual_tail_all_scale (F : Type*) [Field F] [NumberField F]
-    (p : ℝ) (hp : 1 < p) :
+theorem small_dual_tail_all_scale :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (k : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x : ℝ, 0 < x → ‖k x‖ ≤ P * Real.rpow x (-p)) →
       ∀ (T Y : ℝ), 0 < T → 0 < Y →
@@ -338,8 +340,7 @@ theorem small_dual_tail_all_scale (F : Type*) [Field F] [NumberField F]
     _ ≤ ∑ _d ∈ D, C * P * Real.rpow (T / Y) (1-p) := Finset.sum_le_sum hterm
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]; ring
 
-theorem dual_cutoff_tail_all_scale (F : Type*) [Field F] [NumberField F]
-    (p : ℝ) (hp : 1 < p) :
+theorem dual_cutoff_tail_all_scale :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (k : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x : ℝ, 0 < x → ‖k x‖ ≤ P * Real.rpow x (-p)) →
       ∀ (T Z L : ℝ), 0 < T → 0 < Z → 1 ≤ L →
@@ -374,6 +375,8 @@ theorem dual_cutoff_tail_all_scale (F : Type*) [Field F] [NumberField F]
         ∑' b, ReflectedTails.dualCutoffSummand F k T L d b‖ := norm_sum_le _ _
     _ ≤ ∑ _d ∈ D, C * P * Real.rpow (L * T / Z) (1-p) := Finset.sum_le_sum hterm
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]; ring
+
+end
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailAux
 
@@ -549,9 +552,14 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 
 open ExplicitTerms
 
-def localBlockKernel {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p)
+section
+
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+  {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q)
+  (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p)
+include c Q C p hp
+
+def localBlockKernel
     (B : ℝ) (unit : Bool := false) : ℂ :=
   (∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       ∑ a ∈ C.reflectedRows B unit,
@@ -563,13 +571,17 @@ def localBlockKernel {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
         C.originalRemainder (c * C.d * (p.1 * p.2))
           (Real.sqrt (C.M / norm a)) (C.Y2 B) (C.Z2 B) C.L2
 
-def localTailMajorant {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p) : ℝ :=
+def localTailMajorant : ℝ :=
   ‖localBlockKernel C p hp 1 true‖ +
     ∑ B ∈ dyadicScales C, ‖localBlockKernel C p hp B‖
 
-private lemma mu_norm {F : Type} [Field F] [NumberField F] (j : Ideal (𝓞 F)) :
+end
+
+section
+
+variable {F : Type} [Field F] [NumberField F]
+
+private lemma mu_norm (j : Ideal (𝓞 F)) :
     ‖(UniqueFactorizationMonoid.moebius j : ℂ)‖ ≤ 1 := by
   by_cases h : Squarefree j
   · rw [Squarefree.moebius_eq h]
@@ -579,7 +591,7 @@ private lemma mu_norm {F : Type} [Field F] [NumberField F] (j : Ideal (𝓞 F)) 
   · rw [UniqueFactorizationMonoid.moebius_of_not_squarefree h]
     simp
 
-private lemma three_tail_bound {F : Type} [Field F] [NumberField F]
+private lemma three_tail_bound
     (a : ℝ) (ha : 1 < a) :
     ∃ H : ℝ, 0 ≤ H ∧ ∀ (g k : ℝ → ℂ) (P : ℝ), 0 ≤ P →
       (∀ x, 0 < x → ‖g x‖ ≤ P * Real.rpow x (-a)) →
@@ -633,12 +645,12 @@ private lemma three_tail_bound {F : Type} [Field F] [NumberField F]
     mul_nonneg (mul_nonneg hCk hm) h1, mul_nonneg (mul_nonneg hCk hm) h3,
     mul_nonneg (mul_nonneg hCl hm) h1, mul_nonneg (mul_nonneg hCl hm) h2]
 
-private lemma norm_pos {F : Type} [Field F] [NumberField F] {j : Ideal (𝓞 F)}
+private lemma norm_pos {j : Ideal (𝓞 F)}
     (hj : j ≠ ⊥) : 0 < norm j := by
   unfold ExplicitTerms.norm
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hj)
 
-private lemma original_row_pos {F : Type} [Field F] [NumberField F]
+private lemma original_row_pos
     {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
     (C : Context Q) (B : ℝ) (unit : Bool) {r : Ideal (𝓞 F)}
     (hr : r ∈ C.originalRows B unit) : 0 < norm r := by
@@ -648,15 +660,20 @@ private lemma original_row_pos {F : Type} [Field F] [NumberField F]
   · have he : r = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
     simp [he, ExplicitTerms.norm]
 
-private lemma reflected_row_pos {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+end
+
+section
+
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+  {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+
+private lemma reflected_row_pos
     (C : Context Q) (B : ℝ) (unit : Bool) {r : Ideal (𝓞 F)}
     (hr : r ∈ C.reflectedRows B unit) : 0 < norm r := by
   obtain ⟨tr, ht, rfl⟩ := Finset.mem_image.mp hr
   exact norm_pos (Finset.mem_filter.mp ht).2.2.2
 
-private lemma thresholds_pos {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+private lemma thresholds_pos
     (C : Context Q) (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hδ : 0 < C.δ)
     (B : ℝ) (hB : 0 < B) :
     (0 < C.Y2 B ∧ 0 < C.Z2 B ∧ 1 ≤ C.L2) ∧
@@ -687,8 +704,7 @@ private lemma thresholds_pos {F : Type} [Field F] [NumberField F]
       simp only [Real.rpow_eq_pow]
       positivity
 
-private lemma local_block_budget {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
+private lemma local_block_budget
     (W : ℝ → ℝ) (a : ℝ) (ha : 1 < a) :
     ∃ J : ℝ, 0 ≤ J ∧ ∀ C : Context Q, C.W = W →
       1 ≤ C.M → 1 ≤ C.N → 0 < C.δ →
@@ -768,8 +784,6 @@ private lemma local_block_budget {F : Type} [Field F] [NumberField F]
     ring))
 
 theorem uniform_local_tail_pair
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
     (D : Sieve.AllIndexNormalizedFamilyData Q) (W : ℝ → ℝ)
     (ε : ℝ) (hε : 0 < ε) (δ : ℝ) (hδ : 0 < δ) (hδε : δ ≤ ε / 100) :
     ∃ B, 0 ≤ B ∧
@@ -804,6 +818,8 @@ theorem uniform_local_tail_pair
   have hg := hgeom C hD heδ hM hN hKlo hKhi hd1 hd2 p hp hpair
   rw [hexp] at hg
   exact hmajor.trans ((mul_le_mul_of_nonneg_left hg hJ).trans_eq (by ring))
+
+end
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly
 

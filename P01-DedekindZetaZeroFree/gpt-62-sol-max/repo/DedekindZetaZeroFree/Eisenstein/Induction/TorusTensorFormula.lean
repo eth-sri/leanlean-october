@@ -118,43 +118,6 @@ private theorem productUnit_arch_only
   rw [mul_div_cancel_right]
   exact map_prod (Units.coeHom ℂ) _ _
 
-theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
-    (x : RestrictedCover F ζ hζ)
-    (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x) = g.val) :
-    ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0 := by
-  obtain ⟨A, hA, h10, h01⟩ := g.property
-  have he : QuotientGroup.mk' (scalarSubgroup F) (restrictedProjection F ζ hζ x) =
-      QuotientGroup.mk' (scalarSubgroup F) A := by
-    change pglProjection F ζ hζ (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) = _
-    rw [hx, hA]
-  obtain ⟨s, ⟨u, hu⟩, hs⟩ := (QuotientGroup.mk'_eq_mk' (scalarSubgroup F)).mp he
-  have hm : restrictedProjection F ζ hζ x = A * (Matrix.GeneralLinearGroup.scalar (Fin 2) u)⁻¹ := by
-    rw [← hu] at hs
-    exact eq_mul_inv_of_mul_eq hs
-  have hd : (restrictedProjection F ζ hζ x) 1 0 = 0 ∧
-      (restrictedProjection F ζ hζ x) 0 1 = 0 := by
-    rw [hm]
-    simp [← map_inv, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
-  intro v
-  have h := congrArg (adeleEval F v) hd.1
-  have h' := congrArg (adeleEval F v) hd.2
-  have hev := restrictedProjection_eval F ζ hζ x v
-  have hh := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 1 0) hev
-  have hh' := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 0 1) hev
-  exact ⟨hh.symm.trans (by simpa [matrixEval] using h),
-    hh'.symm.trans (by simpa [matrixEval] using h')⟩
-
-theorem raw_image_torus (x : RestrictedCover F ζ hζ)
-    (hd : ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0) :
-    scalarQuotient F ζ hζ (amalgamation F ζ hζ x) ∈ KPGlobalTorusFunctionData.E F ζ hζ := by
-  refine ⟨restrictedProjection F ζ hζ x, rfl, ?_, ?_⟩
-  · apply Prod.ext
-    · funext w; exact (hd (Sum.inl w)).1
-    · apply RestrictedProduct.ext; intro q; exact (hd (Sum.inr q)).1
-  · apply Prod.ext
-    · funext w; exact (hd (Sum.inl w)).2
-    · apply RestrictedProduct.ext; intro q; exact (hd (Sum.inr q)).2
-
 private theorem arch_mem_product (raw : RestrictedCover F ζ hζ)
     (e : KPGlobalTorusFunctionData.E F ζ hζ)
     (he : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) = e.val)
@@ -187,35 +150,22 @@ theorem finiteTensorRealization_full_raw_formula
       (∏ w, (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ (raw (Sum.inl w)).epsilon : ℂ)) *
       ∏ᶠ q, KPGlobalTorusFiniteStages.localUntwistedEvaluation F ζ hζ P C q
         (if h : q ∈ S then f ⟨q, h⟩ else KPGlobalTorusFiniteStages.localReference F ζ hζ P C q) (t q) := by
-  have hd := raw_diagonal F ζ hζ e raw he
-  let xi : RestrictedCover F ζ hζ :=
-    ⟨fun v => match v with | Sum.inl w => raw (Sum.inl w) | Sum.inr _ => 1,
-      Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact])⟩
-  let xf : RestrictedCover F ζ hζ :=
-    ⟨fun v => match v with | Sum.inl _ => 1 | Sum.inr q => raw (Sum.inr q),
-      raw.property.mono (by intro v hv; cases v with | inl w => trivial | inr q => exact hv)⟩
-  have hdi : ∀ v, (xi v).g 1 0 = 0 ∧ (xi v).g 0 1 = 0 := by
-    intro v; cases v with
-    | inl w => exact hd (Sum.inl w)
-    | inr q => simp [xi, KPLocalCover.one_g]
-  have hdf : ∀ v, (xf v).g 1 0 = 0 ∧ (xf v).g 0 1 = 0 := by
-    intro v; cases v with
-    | inl w => simp [xf, KPLocalCover.one_g]
-    | inr q => exact hd (Sum.inr q)
+  let xi := KPGlobalTorusTensorFibers.rawArchPart F ζ hζ raw
+  let xf := KPGlobalTorusTensorFibers.rawFinitePart F ζ hζ raw
+  have hd := KPGlobalTorusTensorFibers.raw_diagonal F ζ hζ e raw he
   let ei : KPGlobalTorusFunctionData.E F ζ hζ :=
-    ⟨scalarQuotient F ζ hζ (amalgamation F ζ hζ xi), raw_image_torus F ζ hζ xi hdi⟩
+    ⟨scalarQuotient F ζ hζ (amalgamation F ζ hζ xi),
+      KPGlobalTorusTensorFibers.raw_image_torus F ζ hζ xi
+        (KPGlobalTorusTensorFibers.raw_arch_diagonal F ζ hζ raw hd)⟩
   let ef : KPGlobalTorusFunctionData.E F ζ hζ :=
-    ⟨scalarQuotient F ζ hζ (amalgamation F ζ hζ xf), raw_image_torus F ζ hζ xf hdf⟩
+    ⟨scalarQuotient F ζ hζ (amalgamation F ζ hζ xf),
+      KPGlobalTorusTensorFibers.raw_image_torus F ζ hζ xf
+        (KPGlobalTorusTensorFibers.raw_finite_diagonal F ζ hζ raw hd)⟩
   have hsplit : e = ei * ef := by
     apply Subtype.ext
     change e.val = scalarQuotient F ζ hζ (amalgamation F ζ hζ xi) *
       scalarQuotient F ζ hζ (amalgamation F ζ hζ xf)
-    rw [← map_mul, ← map_mul, ← he]
-    congr 2
-    apply RestrictedProduct.ext
-    intro v
-    change raw v = xi v * xf v
-    cases v <;> simp [xi, xf]
+    rw [← map_mul, ← map_mul, KPGlobalTorusTensorFibers.raw_parts_mul, he]
   let b : B F ζ hζ P.localData := ⟨ei, arch_mem_product F ζ hζ P xi ei rfl (fun _ => rfl)⟩
   let x : rawB F ζ hζ P.localData := ⟨xi, by
     change scalarQuotient F ζ hζ (amalgamation F ζ hζ xi) ∈ (B F ζ hζ P.localData).map _

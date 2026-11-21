@@ -48,14 +48,16 @@ open LocalFieldTheory.IsNonarchimedeanLocalField
 open CyclicCohomology
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L] [Algebra K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [IsIntegralClosure 𝒪[L] 𝒪[K] L] (n : Nat)
+
 /-- The actual integral-closure Galois action on `U_L^n`, packaged as the
 multiplicative action used by low-degree Tate cohomology. -/
 @[implicit_reducible]
-def galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] (n : Nat) :
+def galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure :
     MulDistribMulAction Gal(L / K) (principalUnits L n) where
   smul sigma a := galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n sigma a
   one_smul := by
@@ -80,14 +82,12 @@ def galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure
 /-- States the theorem `galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure_smul`. -/
 @[simp]
 theorem galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure_smul
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] (n : Nat)
     (sigma : Gal(L / K)) (a : principalUnits L n) :
     letI := galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure K L n
     sigma • a = galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n sigma a :=
   rfl
+
+end
 
 /-- Inclusion in the actual short exact sequence
 `1 → U_L^n → 𝒪_Lˣ → 𝒪_Lˣ/U_L^n → 1`. -/
@@ -253,17 +253,17 @@ private theorem herbrandHMinusOne_subsingleton_of_h0_subsingleton_of_quotient_eq
     exact_mod_cast hcardQ.symm
   exact (Nat.card_eq_one_iff_unique.mp hcard).1
 
+section
+
+variable (K L : Type) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+  [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K] [ValuativeRel L]
+  [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]] [IsUnramifiedValuedExtension K L]
+
 /-- The unramified unit-cohomology theorem for the actual integer-unit module: both low-degree Tate
 groups are trivial in an unramified extension. -/
 private theorem unramified_integerUnits_herbrand_subsingleton
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
-    [IsNonarchimedeanLocalField L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L]
     (g : Gal(L / K)) (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g) :
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     Subsingleton (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) ∧
@@ -300,14 +300,6 @@ private theorem unramified_integerUnits_herbrand_subsingleton
 uses the actual sequence `1 → U_L^n → 𝒪_Lˣ → 𝒪_Lˣ/U_L^n → 1`,
 Herbrand-quotient multiplicativity, and the actual unramified norm lifting. -/
 private theorem unramified_principalUnits_herbrand_subsingleton
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
-    [IsNonarchimedeanLocalField L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L]
     (n : Nat) (hn : 1 ≤ n) (g : Gal(L / K))
     (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g) :
     letI := galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure K L n
@@ -401,14 +393,6 @@ private theorem unramified_principalUnits_herbrand_subsingleton
 /-- Generator-explicit form of the unramified unit-cohomology theorem.  The canonical
 endpoint below supplies the canonical unramified arithmetic Frobenius. -/
 theorem unramified_units_tateCohomology_and_norm_surjective_for_generator
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
-    [IsNonarchimedeanLocalField L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L]
     (g : Gal(L / K)) (hg : ∀ sigma : Gal(L / K), sigma ∈ Subgroup.zpowers g) :
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     (Subsingleton (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) ∧
@@ -432,33 +416,8 @@ theorem unramified_units_tateCohomology_and_norm_surjective_for_generator
       (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_surjective
         K L n hn)
 
-/-- The unramified unit-cohomology theorem.  The arithmetic Frobenius and its generation
-property are constructed from unramifiedness, so the canonical endpoint has no
-extra chosen-generator argument. -/
-theorem unramified_units_tateCohomology_and_norm_surjective
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
-    [IsNonarchimedeanLocalField L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] :
-    let phi := arithmeticFrobeniusOfUnramifiedValuation K L
-    letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
-    (Subsingleton (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) ∧
-      Subsingleton (HerbrandHMinusOne Gal(L / K) 𝒪[L]ˣ phi)) ∧
-      (∀ n : Nat, 1 ≤ n →
-        letI := galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure K L n
-        Subsingleton (HerbrandH0 Gal(L / K) (principalUnits L n)) ∧
-          Subsingleton
-            (HerbrandHMinusOne Gal(L / K) (principalUnits L n) phi)) ∧
-      MonoidHom.range (normIntegerUnits K L) = ⊤ ∧
-      ∀ n : Nat, 1 ≤ n → MonoidHom.range
-        (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L n) = ⊤ := by
-  exact unramified_units_tateCohomology_and_norm_surjective_for_generator K L
-    (arithmeticFrobeniusOfUnramifiedValuation K L)
-    (arithmeticFrobeniusOfUnramifiedValuation_generates K L)
+end
+
 
 end LocalClassFieldTheory
 

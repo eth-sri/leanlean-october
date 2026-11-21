@@ -30,23 +30,22 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
+section
+
+variable (K F E : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field F] [ValuativeRel F] [TopologicalSpace F]
+  [IsNonarchimedeanLocalField F] [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
+  [IsScalarTower K F E] [FiniteDimensional K F] [Algebra.IsSeparable K F]
+  [Valuation.HasExtension
+      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
+  [FiniteDimensional F E] [IsGalois F E] (j : E →ₐ[K] SeparableClosure K)
+include j
+
 /-- Under the embedded-field base equivalence, membership in intrinsic
 extension inertia for `E / F` is equivalent to membership in the corresponding
 ambient extension-inertia subgroup. -/
 theorem
-    intrinsicExtensionInertia_iff_ambientEmbeddedField
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+    intrinsicExtensionInertia_iff_ambientEmbeddedField :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -193,19 +192,7 @@ theorem
 /-- The embedded-field base equivalence maps the intrinsic extension-inertia
 subgroup for `E / F` onto the corresponding ambient extension-inertia subgroup. -/
 theorem
-    map_intrinsicExtensionInertia_eq_ambientEmbeddedField
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsGalois F E]
-    (j : E →ₐ[K] SeparableClosure K) :
+    map_intrinsicExtensionInertia_eq_ambientEmbeddedField :
     let i :=
       j.comp (IsScalarTower.toAlgHom K F E)
     letI : Algebra F (SeparableClosure F) :=
@@ -286,6 +273,8 @@ theorem
       psi.apply_symm_apply sigma
     rw [htauImage]
     exact hsigma
+
+end
 
 end LocalClassFieldTheory
 

@@ -52,13 +52,6 @@ structure SphericalTransport where
     projection U (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
       (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ g * c)) =
         Quotient.mk _ (archBasepoint F g, c)
-  forget : ∀ (V U : Level F ζ hζ),
-    V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup →
-      Spherical F ζ hζ V → Spherical F ζ hζ U
-  forget_formula : ∀ V U h x c,
-    forget V U h (Quotient.mk _ (x,c)) = Quotient.mk _ (x,c)
-  forget_continuous : ∀ V U h, Continuous (forget V U h)
-  compatible : ∀ V U h x, forget V U h (projection V x) = projection U x
 
 def sphericalMeasure (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) (U : Level F ζ hζ) :
@@ -180,11 +173,6 @@ structure GeometricDisintegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F 
       (KPFiniteCuspAtlas.quotientVolume F
         (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative i))
         (A.cuspAtlas i).fundamentalDomain)
-  induced_beta : ∀ E, MeasurableSet E →
-    beta E = ∑ j : CuspIndex A,
-      (componentWeight j.1 / ENNReal.ofReal (2 * (KPCuspLogShape.dimension F : ℝ))) *
-      (Geometry A j).sectionMeasure
-        ((fun x => (⟨j, (Geometry A j).atlas.projection x⟩ : Omega A)) ⁻¹' E)
   section_disintegration : ∀ f : CrossSection A → ℝ≥0∞, Measurable f →
     (∑ j : CuspIndex A,
       (componentWeight j.1 / ENNReal.ofReal (2 * (KPCuspLogShape.dimension F : ℝ))) *
@@ -209,73 +197,18 @@ structure GeometricDisintegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F 
               ((p.1, p.2 + sectionShape F hF radial.slot
                 ⟨r.val, lt_trans hY.1 r.property⟩), logHeight (F := F) r.val)))
 
-structure RadialIntegration (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : SphericalTransport F ζ hζ) (D : GeometricDisintegration A R P) : Prop where
-
-  cusp_integral : ∀ Y (hY : AdmissibleCutoff A Y)
-      (φ : Spherical F ζ hζ U → ℝ≥0∞), Measurable φ →
-    (∫⁻ x in cuspEnds A Y, φ x ∂sphericalMeasure F ζ hζ R P U) =
-      D.beta Set.univ *
-        ∫⁻ r : Set.Ioi Y, ∫⁻ ω, ∫⁻ x,
-          φ (D.chart Y hY (x,r)) ∂D.unipotent ω ∂probability A D.beta
-          ∂Measure.comap (Subtype.val : Set.Ioi Y → ℝ) radialMeasure
-
-  shell_coefficient : ∀ Y, AdmissibleCutoff A Y →
-    D.beta Set.univ = ENNReal.ofReal (2 * Y) *
-      sphericalMeasure F ζ hζ R P U
-        (cuspEnds A Y ∩ {x | Y < D.modulus x ∧ D.modulus x ≤ 2 * Y})
-  open_positive : (sphericalMeasure F ζ hζ R P U).IsOpenPosMeasure
-
 def kappa (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) (D : GeometricDisintegration A R P) : ℝ :=
   (D.beta Set.univ).toReal
 
 end Atlas
 
-structure LevelCompatibility
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : SphericalTransport F ζ hζ) {V U : Level F ζ hζ}
-    (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
-    (AV : KPFiniteCuspAtlas.Atlas F ζ hζ hF V)
-    (AU : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (DV : GeometricDisintegration AV R P) (DU : GeometricDisintegration AU R P) where
-  cuspForget : CuspIndex AV → CuspIndex AU
-  radiusScale : CuspIndex AV → Radius
-  angularForget : Omega AV → Omega AU
-  measurable_angularForget : Measurable angularForget
-  angular_label : ∀ ω, (angularForget ω).1 = cuspForget ω.1
-  crossForget : CrossSection AV → CrossSection AU
-  measurable_crossForget : Measurable crossForget
-  cross_label : ∀ x, (crossForget x).1 = cuspForget x.1
-  projection_commutes : ∀ x,
-    angularProjection AU (crossForget x) = angularForget (angularProjection AV x)
-  induced_angular : Measure.map angularForget
-      (DV.beta.withDensity (fun ω => ENNReal.ofReal (radiusScale ω.1).val)) = DU.beta
-  induced_probability : Measure.map angularForget
-      (probability AV (DV.beta.withDensity
-        (fun ω => ENNReal.ofReal (radiusScale ω.1).val))) = probability AU DU.beta
-  coefficient : kappa AU R P DU =
-    ((DV.beta.withDensity (fun ω => ENNReal.ofReal (radiusScale ω.1).val)) Set.univ).toReal
-  common_slot : DV.radial.slot = DU.radial.slot
-  chart_commutes : ∀ YV YU (hV : AdmissibleCutoff AV YV) (hU : AdmissibleCutoff AU YU)
-      (x : CrossSection AV) (r : Set.Ioi YV)
-      (hr : YU < (radiusScale x.1).val * r.val),
-    P.forget V U h (DV.chart YV hV (x,r)) =
-      DU.chart YU hU (crossForget x, ⟨(radiusScale x.1).val * r.val,hr⟩)
-  induced_kernel : ∀ f : CrossSection AU → ℝ≥0∞, Measurable f →
-    (∫⁻ ω, ENNReal.ofReal (radiusScale ω.1).val *
-      ∫⁻ x, f (crossForget x) ∂DV.unipotent ω ∂DV.beta) =
-      ∫⁻ ω, ∫⁻ x, f x ∂DU.unipotent ω ∂DU.beta
-
 structure AllLevels (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) where
   totallyComplex : NumberField.InfinitePlace.nrRealPlaces F = 0
   atlas : ∀ U : Level F ζ hζ, KPFiniteCuspAtlas.Atlas F ζ hζ totallyComplex U
   disintegration : ∀ U, GeometricDisintegration (atlas U) R P
-  compatible : ∀ V U h, Nonempty
-    (LevelCompatibility F ζ hζ R P h (atlas V) (atlas U)
-      (disintegration V) (disintegration U))
+  radial_slot_eq : ∀ U V, (disintegration U).radial.slot = (disintegration V).radial.slot
 
 end DedekindZetaZeroFree.KPMsFixedHaar
 

@@ -51,7 +51,7 @@ private theorem global_private_native_bottom_row_jet_bound (c d : ℂ) (r : ℝ)
     nlinarith [sq_abs ((c * star d).im), sq_nonneg ((c * star d).re),
       sq_nonneg (Complex.normSq c - Complex.normSq d), abs_nonneg ((c * star d).im)]
   have hdiff : |Complex.normSq c - Complex.normSq d| ≤ Complex.normSq c + Complex.normSq d := by
-    exact abs_sub_le_iff.mpr ⟨by linarith, by linarith⟩
+    grind
   fin_cases i <;> simp only [bottomRowJet, Matrix.cons_val_zero, Matrix.cons_val_one,
     Matrix.cons_val, Fin.reduceFinMk, abs_zero, abs_div, abs_mul,
     abs_of_pos h, abs_of_nonneg hr, abs_of_nonneg (show (0 : ℝ) ≤ 4 by norm_num), abs_neg] <;>
@@ -449,7 +449,7 @@ private theorem global_end_closure_subset_lower
   let t := fun (a : Cusps A) (x : KPMsFixedHaarDisintegration.Spherical F ζ hζ U) =>
     if h : ∃ z : KPCuspCharts.Coordinates F, τ < z.2 ∧ L a z = x
     then (Classical.choose h).2 else 0
-  obtain ⟨hrange, hcoord, -, -, -, -⟩ :=
+  obtain ⟨hrange, hcoord, -⟩ :=
     KPActualCollarBuffer.actual_height_descent F ζ hζ hF U A τ hτ
   have hrangeT := (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U A T
     (hτ.trans hT.le)).1

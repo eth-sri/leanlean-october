@@ -29,10 +29,14 @@ noncomputable def Jq (E : Type) [Field E] [NumberField E]
   letI := residueFintype E q hq0
   jacobiSum (ρq E ω hω q hq0 hqp hq6) (ρq E ω hω q hq0 hqp hq6)
 
-theorem ιR_Jq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (ι : E →+* ℂ) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (ω : E)
+  (hω : IsPrimitiveRoot ω 3) (ι : E →+* ℂ) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
+  (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤)
+include ω hω ι q hq0 hqp hq6
+
+theorem ιR_Jq :
     letI := residueFintype E q hq0
     ιR E ι (Jq E ω hω q hq0 hqp hq6) =
       jacobiSum (ρqC E ω hω ι q hq0 hqp hq6) (ρqC E ω hω ι q hq0 hqp hq6) := by
@@ -40,10 +44,7 @@ theorem ιR_Jq (E : Type) [Field E] [NumberField E]
   simp only [Jq, ρqC]
   rw [jacobiSum_ringHomComp]
 
-theorem normSq_Jq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (ι : E →+* ℂ) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem normSq_Jq :
     Complex.normSq (ιR E ι (Jq E ω hω q hq0 hqp hq6)) =
       (residueCard E q hq0 : ℝ) := by
   letI : Field (R E ⧸ q) := residueField E q hq0 hqp
@@ -64,20 +65,22 @@ theorem normSq_Jq (E : Type) [Field E] [NumberField E]
   rw [ιR_Jq E ω hω ι q hq0 hqp hq6]
   exact main
 
-theorem absNorm_span_Jq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+end
+
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (ω : E)
+  (hω : IsPrimitiveRoot ω 3) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
+  (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤)
+
+theorem absNorm_span_Jq :
     Ideal.absNorm (Ideal.span {Jq E ω hω q hq0 hqp hq6}) = residueCard E q hq0 := by
   obtain ⟨ι⟩ : Nonempty (E →+* ℂ) := inferInstance
   have h1 := absNorm_span_eq_normSq E ι (Jq E ω hω q hq0 hqp hq6)
   have h2 := normSq_Jq E ω hω ι q hq0 hqp hq6
   exact Nat.cast_injective (h1.trans h2)
 
-theorem Jq_add_one_mem_m3 (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem Jq_add_one_mem_m3 :
     Jq E ω hω q hq0 hqp hq6 + 1 ∈ m3 E := by
   letI : Field (R E ⧸ q) := residueField E q hq0 hqp
   letI : Fintype (R E ⧸ q) := residueFintype E q hq0
@@ -92,15 +95,14 @@ theorem Jq_add_one_mem_m3 (E : Type) [Field E] [NumberField E]
   rw [hJq, hzJ, hη]
   exact Ideal.mem_span_singleton.mpr ⟨-(z * η E ω hω), by ring⟩
 
-theorem red3_Jq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem red3_Jq :
     red3 E (Jq E ω hω q hq0 hqp hq6) = -1 := by
   have h := Jq_add_one_mem_m3 E ω hω q hq0 hqp hq6
   have h0 : red3 E (Jq E ω hω q hq0 hqp hq6 + 1) = 0 :=
     Ideal.Quotient.eq_zero_iff_mem.mpr h
   rw [map_add, map_one] at h0
   exact eq_neg_iff_add_eq_zero.mpr h0
+
+end
 
 end DedekindZetaZeroFree.Eisenstein

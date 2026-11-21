@@ -1,7 +1,10 @@
 module
 
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.IdealMap
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Principal
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalCore
+public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.EquivariantEquiv
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.Herbrand
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.Valuation
 public import Mathlib.NumberTheory.NumberField.ProductFormula
 
 @[expose] public section

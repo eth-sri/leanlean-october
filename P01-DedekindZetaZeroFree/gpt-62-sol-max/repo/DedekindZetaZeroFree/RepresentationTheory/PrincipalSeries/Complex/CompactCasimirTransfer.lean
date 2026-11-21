@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.SU2CharacterBounds
 
 @[expose] public section
@@ -45,27 +46,6 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 open scoped Matrix.Norms.Elementwise
 
-private theorem su2HarmonicCharacter_continuous_aux (ℓ : ℕ) :
-    Continuous (su2HarmonicCharacter ℓ) := by
-  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
-      KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
-          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
-    intro n
-    induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
-    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
-    | more n hn hn1 =>
-        simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
-  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
-  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
-
 private theorem orbit_continuous (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) :
     Continuous (fun k : ComplexSU2 => f (g * complexSU2Embedding k)) := by
   have hfd : ContDiffOn ℝ (⊤ : ℕ∞) (matrixFunction (f : ComplexGL2 → ℂ))
@@ -99,7 +79,7 @@ private theorem characterAverage_integrable_finite (s : ℝ) (μ : Measure Compl
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
     convert complexSU2_isCompact using 1
     exact Subtype.range_coe.symm)
-  exact (((su2HarmonicCharacter_continuous_aux ℓ).star.mul
+  exact (((KPCplxHarmonicExtraction.continuous_su2HarmonicCharacter ℓ).star.mul
     (orbit_continuous s f g)).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _))
 
@@ -332,15 +312,7 @@ private theorem first_transfer
     _ = - (-(∫ k, a k * db k ∂μ)) := (neg_neg _).symm
     _ = _ := congrArg Neg.neg h.symm
 open scoped Matrix.Norms.Elementwise in
-private theorem section_cont (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) :
-    Continuous (fun k : ComplexSU2 => f (g * complexSU2Embedding k)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2.continuousOn
-  have hm : Continuous (fun k : ComplexSU2 => ((g * complexSU2Embedding k : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    simp only [Matrix.GeneralLinearGroup.coe_mul]
-    change Continuous (fun k : ComplexSU2 => g.val * k.val)
-    fun_prop
-  have hc := hf.comp_continuous hm (fun k => Matrix.GeneralLinearGroup.det_ne_zero (g * complexSU2Embedding k))
-  simpa only [Function.comp_def, section_eval] using hc
+private alias section_cont := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer.orbit_continuous
 open scoped Matrix.Norms.Elementwise in
 
 theorem characterAverage_compact_second_derivative_transfer
@@ -408,15 +380,7 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 open scoped BigOperators Matrix.Norms.Elementwise
 
-private theorem rawSymmetricPowerTrace_eq_sym (n : ℕ)
-    (u : RepresentationTheory.KPCompactHarmonicTruncation.RawU2) :
-    RepresentationTheory.KPCompactHarmonicTruncation.rawSymmetricPowerTrace n u =
-      KPCompactHarmonic.symmetricPowerTrace n u := by
-  induction n using Nat.twoStepInduction with
-  | zero => rfl
-  | one => rfl
-  | more n h0 h1 => simp only [RepresentationTheory.KPCompactHarmonicTruncation.rawSymmetricPowerTrace,
-      KPCompactHarmonic.symmetricPowerTrace, h0, h1]
+private alias rawSymmetricPowerTrace_eq_sym := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer.raw_sym
 
 private theorem rawRankOneCharacter_eq_sym (ℓ : ℕ)
     (u : RepresentationTheory.KPCompactHarmonicTruncation.RawU2) :
@@ -436,25 +400,9 @@ private theorem compactBasis_orth (j : Fin 1) (a b : Fin 3) :
       Complex.mul_re, Complex.I_mul_I]
   all_goals nlinarith [Real.sq_sqrt (show (0:ℝ) ≤ 2 by norm_num)]
 
-private theorem matrixFunction_eval_here (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
-    matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
-  rw [matrixFunction, dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
-  congr 1
-  apply Units.ext
-  rfl
+private alias matrixFunction_eval_here := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer.section_eval
 
-private theorem orbit_continuous_here (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) :
-    Continuous (fun k : ComplexSU2 => f (g * complexSU2Embedding k)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2.continuousOn
-  have hm : Continuous (fun k : ComplexSU2 =>
-      ((g * complexSU2Embedding k : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    simp only [Matrix.GeneralLinearGroup.coe_mul]
-    change Continuous (fun k : ComplexSU2 =>
-      (g : Matrix (Fin 2) (Fin 2) ℂ) * (k : Matrix (Fin 2) (Fin 2) ℂ))
-    fun_prop
-  have hc := hf.comp_continuous hm (fun k =>
-    Matrix.GeneralLinearGroup.det_ne_zero (g * complexSU2Embedding k))
-  simpa only [Function.comp_def, matrixFunction_eval_here] using hc
+private alias orbit_continuous_here := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer.section_cont
 
 private theorem characterSecondDerivative_one_eq (ℓ : ℕ) (j : Fin 3) (k : ComplexSU2) :
     RepresentationTheory.KPCompactHarmonicTruncation.Casimir.characterSecondDerivative
@@ -586,23 +534,7 @@ private theorem matExp_coe (M : Matrix (Fin 2) (Fin 2) ℂ) :
   IsUnit.unit_spec _
 
 open scoped Matrix.Norms.Operator in
-private theorem matrix_path_diff (g : ComplexGL2)
-    (M : Matrix (Fin 2) (Fin 2) ℂ) :
-    ∀ i j, DifferentiableAt ℝ
-      (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) *
-        NormedSpace.exp ((t : ℂ) • M)) i j) 0 := by
-  have hmat : DifferentiableAt ℝ
-      (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) *
-        NormedSpace.exp ((t : ℂ) • M)) 0 := by
-    exact (differentiableAt_const _).mul
-      ((differentiable_exp_smul_const ℂ M).differentiableAt.restrictScalars ℝ |>.comp 0
-        Complex.ofRealCLM.differentiableAt)
-  intro i j
-  exact (ContinuousLinearMap.proj j).differentiableAt.comp 0
-    ((ContinuousLinearMap.proj i).differentiableAt.comp 0 hmat)
-
-open scoped Matrix.Norms.Operator in
-private theorem matrix_path_hasDeriv_components (g : ComplexGL2)
+theorem matrix_path_hasDeriv_components (g : ComplexGL2)
     (M : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, HasDerivAt
       (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) *
@@ -649,29 +581,11 @@ private theorem path_eq (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2)
   apply Units.ext
   rfl
 
-private theorem path_differentiable (s : ℝ) (f : PrincipalSeries s)
+theorem hasDerivAt_rightExp (s : ℝ) (f : PrincipalSeries s)
     (g : ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
-    DifferentiableAt ℝ (fun t : ℝ => f (g * matExp ((t : ℂ) • M))) 0 := by
-  have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
-  have hmat : DifferentiableAt ℝ
-      (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) *
-        NormedSpace.exp ((t : ℂ) • M)) 0 :=
-    differentiableAt_pi.mpr (fun i => differentiableAt_pi.mpr (matrix_path_diff g M i))
-  have hdet : ((g : Matrix (Fin 2) (Fin 2) ℂ) *
-      NormedSpace.exp (((0 : ℝ) : ℂ) • M)).det ≠ 0 := by
-    simpa using Matrix.GeneralLinearGroup.det_ne_zero g
-  have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
-  have hh := (hf.differentiableOn (by simp)).differentiableAt
-    ((isOpen_ne.preimage hcont).mem_nhds hdet)
-  have hc := hh.comp 0 hmat
-  convert hc using 1
-  exact path_eq s f g M
-
-private theorem raw_derivative_eq (s : ℝ) (f : PrincipalSeries s)
-    (g : ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
-    deriv (fun t : ℝ => f (g * matExp ((t : ℂ) • M))) 0 =
-      fderiv ℝ (matrixFunction f.val) (g : Matrix (Fin 2) (Fin 2) ℂ)
-        ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) := by
+    HasDerivAt (fun t : ℝ => f (g * matExp ((t : ℂ) • M)))
+      (fderiv ℝ (matrixFunction f.val) (g : Matrix (Fin 2) (Fin 2) ℂ)
+        ((g : Matrix (Fin 2) (Fin 2) ℂ) * M)) 0 := by
   have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
   have hmat : HasDerivAt
       (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) *
@@ -683,9 +597,9 @@ private theorem raw_derivative_eq (s : ℝ) (f : PrincipalSeries s)
     ((isOpen_ne.preimage hcont).mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))
   have hc := hh.hasFDerivAt.comp_hasDerivAt_of_eq 0 hmat (by simp)
   rw [path_eq s f g M]
-  exact hc.deriv
+  exact hc
 
-private theorem local_derivative_mem (s : ℝ) (M : Matrix (Fin 2) (Fin 2) ℂ)
+theorem local_derivative_mem (s : ℝ) (M : Matrix (Fin 2) (Fin 2) ℂ)
     (f : PrincipalSeries s) :
     (fun g => deriv (fun t : ℝ => f (g * matExp ((t : ℂ) • M))) 0) ∈
       principalSeriesSubmodule s := by
@@ -701,7 +615,7 @@ private theorem local_derivative_mem (s : ℝ) (M : Matrix (Fin 2) (Fin 2) ℂ)
     dsimp only
     rw [he]
     exact deriv_const_smul (inductionWeight s a d : ℂ)
-      (path_differentiable s f g M)
+      (hasDerivAt_rightExp s f g M).differentiableAt
   · have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
     have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
     have hs : IsOpen {m : Matrix (Fin 2) (Fin 2) ℂ | m.det ≠ 0} :=
@@ -716,7 +630,7 @@ private theorem local_derivative_mem (s : ℝ) (M : Matrix (Fin 2) (Fin 2) ℂ)
     intro m hm
     unfold KPCplxPrincipalSeriesCharts.matrixFunction
     rw [dif_pos (show m.det ≠ 0 from hm)]
-    exact raw_derivative_eq s f (Matrix.GeneralLinearGroup.mkOfDetNeZero m hm) M
+    exact (hasDerivAt_rightExp s f (Matrix.GeneralLinearGroup.mkOfDetNeZero m hm) M).deriv
 
 theorem compactRawDerivative_section_exists (s : ℝ) (j : Fin 3)
     (f : PrincipalSeries s) :
@@ -727,7 +641,7 @@ theorem compactRawDerivative_section_exists (s : ℝ) (j : Fin 3)
   show deriv (fun t : ℝ => f (g * matExp ((t : ℂ) • compactBasis 0 j))) 0 =
     compactRawDerivative j f g
   unfold compactRawDerivative
-  exact raw_derivative_eq s f g (compactBasis 0 j)
+  exact (hasDerivAt_rightExp s f g (compactBasis 0 j)).deriv
 
 end DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer
 

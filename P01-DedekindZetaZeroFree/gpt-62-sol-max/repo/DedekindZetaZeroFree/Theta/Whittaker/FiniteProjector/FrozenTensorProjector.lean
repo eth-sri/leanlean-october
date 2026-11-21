@@ -49,7 +49,7 @@ theorem tensor_rootSlotSum (s : RestrictedTensorSimple.Level D.bad)
       (KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) (t i)) (x j))) g = _
   have hi := D.finite_intertwining q.val
     (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) (t i)) s hq x g
-  rw [ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R] at hi
+  rw [MomentSources.finite_root_injection R] at hi
   exact hi
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors

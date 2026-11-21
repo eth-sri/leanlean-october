@@ -14,8 +14,13 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-lemma orbitMass_reverse_joint_bound (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+section
+
+variable (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R} (T : Realization R Q)
+  (P : Packet R Q)
+include N Q T P
+
+lemma orbitMass_reverse_joint_bound
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (H : SameResidueProfiles R Q T P) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ v m d (l : PositiveAxis),
@@ -37,8 +42,7 @@ lemma orbitMass_reverse_joint_bound (N : TraceHaarTransport R)
   exact Summable.tsum_le_tsum (fun ξ => (hb v m ξ d l).2) hξ
     ((frequencyMajorant_summable R m).mul_left (K * l.val ^ 2))
 
-lemma orbitMass_reverse_smoothed (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+lemma orbitMass_reverse_smoothed
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (H : SameResidueProfiles R Q T P)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
@@ -69,8 +73,7 @@ lemma orbitMass_reverse_smoothed (N : TraceHaarTransport R)
     field_simp
   · exact (kernel_square_moment_integrable R N P).const_mul C
 
-lemma orbitMass_weighted_eq (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+lemma orbitMass_weighted_eq
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) b i d
     (t : PositiveAxis) (l : PositiveAxis) :
     letI := N.groupHaar_isHaar;
@@ -81,8 +84,7 @@ lemma orbitMass_weighted_eq (N : TraceHaarTransport R)
   letI := N.groupHaar_isHaar
   simp only [norm_mul, ← integral_const_mul, orbitMass]
 
-theorem reverse_orbit_product_integrable (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+theorem reverse_orbit_product_integrable
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (H : SameResidueProfiles R Q T P)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) Z (hZ : 0 < Z)
@@ -114,8 +116,7 @@ theorem reverse_orbit_product_integrable (N : TraceHaarTransport R)
     simp_rw [he, orbitMass_weighted_eq R N T P]
     exact hi
 
-theorem reverse_orbit_pregrouping (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
+theorem reverse_orbit_pregrouping
     (D : SourceFactorization R Q T) (E : ExteriorCoefficients R Q T D)
     (H : SameResidueProfiles R Q T P)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) Z (hZ : 0 < Z) :
@@ -129,5 +130,7 @@ theorem reverse_orbit_pregrouping (N : TraceHaarTransport R)
   letI := N.groupHaar_isHaar
   simp_rw [orbitMass_weighted_eq R N T P]
   exact summable_sum (fun d _ => (orbitMass_reverse_smoothed R N T P D E H v m d Z hZ).2)
+
+end
 end DedekindZetaZeroFree.OrbitFrequencies
 end

@@ -112,13 +112,7 @@ theorem relativeIdeleCongr_principalIdele
     relativeIdeleCongr (K := K) e
         (RelativeIdeleGroup.principalIdele K L x) =
       RelativeIdeleGroup.principalIdele K M
-        (Units.mapEquiv e.toMulEquiv x) := by
-  apply Units.ext
-  change
-    relativeAdeleCongr (K := K) e
-        ((1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K] (x : L)) =
-      (1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K] e (x : L)
-  rfl
+        (Units.mapEquiv e.toMulEquiv x) := rfl
 
 /-- The canonical transport identifies the two principal-relative-idele
 subgroups. -/
@@ -210,10 +204,6 @@ theorem RelativeIdeleGroup.classEmbedding_relativeIdeleClassCongr
   induction (a : RelativeAdeleRing K L) using
       TensorProduct.inductionOn with
   | tmul x y =>
-      simp only [relativeAdeleCongr_tmul,
-        RelativeIdeleGroup.adeleEmbedding,
-        RelativeIdeleGroup.scalarEmbedding_tmul,
-        AlgHom.coe_comp, Function.comp_apply]
       rfl
   | add x y hx hy =>
       simpa only [map_add] using congrArg₂ (· + ·) hx hy
@@ -409,8 +399,12 @@ theorem finitePlaceCongr_asIdeal
   ext x
   exact Ideal.symm_apply_mem_of_equiv_iff
 
+section
+
+variable (e : K ≃ₐ[ℚ] M)
+include e
+
  theorem finitePlaceBelow_eq_finitePlaceCongr_symm
-    (e : K ≃ₐ[ℚ] M)
     (W : HeightOneSpectrum (𝓞 M)) :
     letI : Algebra K M := e.toRingHom.toAlgebra
     finitePlaceBelow (K := K) W =
@@ -421,7 +415,6 @@ theorem finitePlaceCongr_asIdeal
 /-- The canonical map between corresponding finite completions induced by
 an equivalence of number fields. -/
 noncomputable def finitePlaceAdicCompletionCongrHom
-    (e : K ≃ₐ[ℚ] M)
     (W : HeightOneSpectrum (𝓞 M)) :
     ((finitePlaceCongr e).symm W).adicCompletion K →+*
       W.adicCompletion M := by
@@ -434,7 +427,6 @@ noncomputable def finitePlaceAdicCompletionCongrHom
 /-- On finite coordinates, canonical adelic transport is the completion
 map at the corresponding finite places. -/
 theorem adeleCongr_finiteComponent
-    (e : K ≃ₐ[ℚ] M)
     (a : NumberField.AdeleRing (𝓞 K) K)
     (W : HeightOneSpectrum (𝓞 M)) :
     (adeleCongr e a).2 W =
@@ -547,8 +539,7 @@ theorem adeleCongr_finiteComponent
 /-- The canonical transport of ordinary ideles along an equivalence of
 number fields.  It is obtained from the existing relative-idele transport
 over `ℚ` and the canonical relative-to-ordinary base-change equivalences. -/
-noncomputable def ideleCongr
-    (e : K ≃ₐ[ℚ] M) :
+noncomputable def ideleCongr :
     IdeleGroup K ≃* IdeleGroup M :=
   (IdeleGroup.equivAdeleRingUnits (K := K)).trans
     ((Units.mapEquiv (adeleCongr e).toMulEquiv).trans
@@ -557,7 +548,6 @@ noncomputable def ideleCongr
 /-- The relative-to-ordinary scalar-extension comparison is natural for
 transport of relative ideles along an equivalence of their top fields. -/
 theorem relativeIdeleBaseChangeMulEquiv_relativeIdeleCongr
-    (e : K ≃ₐ[ℚ] M)
     (a : RelativeIdeleGroup ℚ K) :
     relativeIdeleBaseChangeMulEquiv
         (K := ℚ) (L := M)
@@ -577,6 +567,8 @@ theorem relativeIdeleBaseChangeMulEquiv_relativeIdeleCongr
     relativeAdeleBaseChangeRingEquiv_relativeAdeleCongr
       e (a : RelativeAdeleRing ℚ K)
 
+end
+
 /-- Under the actual Galois action on relative ideles, the
 relative-to-ordinary scalar-extension comparison is equivariant for the
 canonical transport of ordinary ideles. -/
@@ -594,11 +586,15 @@ theorem relativeIdeleBaseChangeMulEquiv_smul_congr
     relativeIdeleBaseChangeMulEquiv_relativeIdeleCongr
       σ a
 
+section
+
+variable (e : K ≃ₐ[ℚ] M)
+include e
+
 /-- On finite coordinates, canonical idelic transport is the completion
 map at the corresponding finite places. -/
 @[simp]
 theorem ideleCongr_finiteComponent
-    (e : K ≃ₐ[ℚ] M)
     (a : IdeleGroup K)
     (W : HeightOneSpectrum (𝓞 M)) :
     IdeleGroup.finiteComponent W (ideleCongr e a) =
@@ -615,137 +611,14 @@ theorem ideleCongr_finiteComponent
         NumberField.AdeleRing (𝓞 K) K))
       W
 
-omit [NumberField K] in
-private theorem finitePlaceCongr_ramificationIdx
-    (e : K ≃ₐ[ℚ] M)
-    (W : HeightOneSpectrum (𝓞 M)) :
-    letI : Algebra K M := e.toRingHom.toAlgebra
-    ((finitePlaceCongr e).symm W).asIdeal.ramificationIdx'
-        W.asIdeal = 1 := by
-  let : Algebra K M := e.toRingHom.toAlgebra
-  let w : HeightOneSpectrum (𝓞 K) :=
-    (finitePlaceCongr e).symm W
-  have hmap :
-      w.asIdeal.map (algebraMap (𝓞 K) (𝓞 M)) =
-        W.asIdeal := by
-    change
-      w.asIdeal.map
-          (NumberField.RingOfIntegers.mapRingEquiv
-            e.toRingEquiv) =
-        W.asIdeal
-    rw [← finitePlaceCongr_asIdeal e w]
-    simp [w]
-  rw [← hmap]
-  exact
-    Ideal.ramificationIdx'_map_self_eq_one
-      (p := w.asIdeal)
-      (by rw [hmap]; exact W.isPrime.ne_top)
-      (by rw [hmap]; exact W.ne_bot)
 
-/-- Normalized local orders are unchanged by transport along a
-number-field equivalence. -/
-theorem ideleCongr_localOrder
-    (e : K ≃ₐ[ℚ] M)
-    (a : IdeleGroup K)
-    (W : HeightOneSpectrum (𝓞 M)) :
-    (FiniteIdeleGroup.localOrder W
-        (IdeleGroup.finiteComponent W
-          (ideleCongr e a))).toAdd =
-      (FiniteIdeleGroup.localOrder
-        ((finitePlaceCongr e).symm W)
-        (IdeleGroup.finiteComponent
-          ((finitePlaceCongr e).symm W) a)).toAdd := by
-  let : Algebra K M := e.toRingHom.toAlgebra
-  let w : HeightOneSpectrum (𝓞 K) :=
-    (finitePlaceCongr e).symm W
-  have hW :
-      finitePlaceBelow (K := K) W = w :=
-    finitePlaceBelow_eq_finitePlaceCongr_symm e W
-  rw [ideleCongr_finiteComponent]
-  have hr :
-      w.asIdeal.ramificationIdx' W.asIdeal = 1 :=
-    finitePlaceCongr_ramificationIdx e W
-  change
-    (FiniteIdeleGroup.localOrder W
-      (Units.map
-        (finitePlaceAdicCompletionMap K M w ⟨W, hW⟩).toMonoidHom
-        (IdeleGroup.finiteComponent w a))).toAdd =
-      (FiniteIdeleGroup.localOrder w
-        (IdeleGroup.finiteComponent w a)).toAdd
-  simpa only [hr, Nat.cast_one, one_mul] using
-    localOrder_finitePlaceAdicCompletionMap K M w
-      ⟨W, hW⟩
-      (IdeleGroup.finiteComponent w a)
 
-/-- An idele is integral at every finite place exactly when its transport
-along a number-field equivalence is. -/
-theorem ideleCongr_mem_integralAtFinitePlaces_iff
-    (e : K ≃ₐ[ℚ] M)
-    (a : IdeleGroup K) :
-    ideleCongr e a ∈
-        IdeleGroup.integralAtFinitePlaces (K := M) ↔
-      a ∈ IdeleGroup.integralAtFinitePlaces (K := K) := by
-  change
-    (∀ W : HeightOneSpectrum (𝓞 M),
-        IdeleGroup.finiteComponent W (ideleCongr e a) ∈
-          (W.adicCompletionIntegers M).units) ↔
-      ∀ w : HeightOneSpectrum (𝓞 K),
-        IdeleGroup.finiteComponent w a ∈
-          (w.adicCompletionIntegers K).units
-  constructor
-  · intro h w
-    let W : HeightOneSpectrum (𝓞 M) :=
-      finitePlaceCongr e w
-    apply
-      (FiniteIdeleGroup.localOrder_eq_zero_iff w
-        (IdeleGroup.finiteComponent w a)).1
-    have horder := ideleCongr_localOrder e a W
-    rw [show (finitePlaceCongr e).symm W = w by
-      simp [W]] at horder
-    rw [← horder]
-    exact
-      (FiniteIdeleGroup.localOrder_eq_zero_iff W
-        (IdeleGroup.finiteComponent W
-          (ideleCongr e a))).2 (h W)
-  · intro h W
-    apply
-      (FiniteIdeleGroup.localOrder_eq_zero_iff W
-        (IdeleGroup.finiteComponent W
-          (ideleCongr e a))).1
-    rw [ideleCongr_localOrder]
-    exact
-      (FiniteIdeleGroup.localOrder_eq_zero_iff
-        ((finitePlaceCongr e).symm W)
-        (IdeleGroup.finiteComponent
-          ((finitePlaceCongr e).symm W) a)).2
-        (h ((finitePlaceCongr e).symm W))
 
-/-- Transport along a number-field equivalence identifies the subgroups
-of ideles integral at every finite place. -/
-theorem ideleIntegralAtFinitePlaces_map_congr
-    (e : K ≃ₐ[ℚ] M) :
-    (IdeleGroup.integralAtFinitePlaces (K := K)).map
-        (ideleCongr e).toMonoidHom =
-      IdeleGroup.integralAtFinitePlaces (K := M) := by
-  ext b
-  constructor
-  · rintro ⟨a, ha, rfl⟩
-    exact
-      (ideleCongr_mem_integralAtFinitePlaces_iff
-        e a).2 ha
-  · intro hb
-    let a : IdeleGroup K := (ideleCongr e).symm b
-    refine ⟨a, ?_, ?_⟩
-    · exact
-        (ideleCongr_mem_integralAtFinitePlaces_iff
-          e a).1 (by simpa [a] using hb)
-    · exact (ideleCongr e).apply_symm_apply b
 
 /-- Transport along a number-field equivalence carries the diagonal idele
 to the diagonal idele of the transported field unit. -/
 @[simp]
 theorem ideleCongr_principalIdele
-    (e : K ≃ₐ[ℚ] M)
     (x : Kˣ) :
     ideleCongr e (IdeleGroup.principalIdele K x) =
       IdeleGroup.principalIdele M
@@ -758,8 +631,7 @@ theorem ideleCongr_principalIdele
 
 /-- The ordinary principal-idele subgroups are identified by transport
 along a number-field equivalence. -/
-theorem idelePrincipalSubgroup_map_congr
-    (e : K ≃ₐ[ℚ] M) :
+theorem idelePrincipalSubgroup_map_congr :
     (IdeleGroup.principalSubgroup K).map
         (ideleCongr e) =
       IdeleGroup.principalSubgroup M := by
@@ -778,31 +650,11 @@ theorem idelePrincipalSubgroup_map_congr
         ⟨x, rfl⟩,
         ideleCongr_principalIdele e x⟩
 
-/-- Transport along a number-field equivalence identifies the subgroups
-defining the ordinary ideal-class quotients. -/
-theorem ordinaryIdealClassSubgroup_map_congr
-    (e : K ≃ₐ[ℚ] M) :
-    (IdeleGroup.ordinaryIdealClassSubgroup (K := K)).map
-        (ideleCongr e).toMonoidHom =
-      IdeleGroup.ordinaryIdealClassSubgroup (K := M) := by
-  rw [IdeleGroup.ordinaryIdealClassSubgroup,
-    IdeleGroup.ordinaryIdealClassSubgroup,
-    Subgroup.map_sup,
-    ideleIntegralAtFinitePlaces_map_congr]
-  apply congrArg
-    (fun H =>
-      IdeleGroup.integralAtFinitePlaces (K := M) ⊔ H)
-  change
-    (IdeleGroup.principalSubgroup K).map
-        (ideleCongr e) =
-      IdeleGroup.principalSubgroup M
-  exact idelePrincipalSubgroup_map_congr e
 
 /-- The canonical transport of ordinary idele classes along an equivalence
 of number fields.  This descends `ideleCongr`; it does not introduce a
 second idele-class quotient. -/
-noncomputable def ideleClassCongr
-    (e : K ≃ₐ[ℚ] M) :
+noncomputable def ideleClassCongr :
     IdeleClassGroup K ≃* IdeleClassGroup M :=
   QuotientGroup.congr
     (IdeleGroup.principalSubgroup K)
@@ -814,7 +666,6 @@ noncomputable def ideleClassCongr
 quotient representatives. -/
 @[simp]
 theorem ideleClassCongr_mk
-    (e : K ≃ₐ[ℚ] M)
     (a : IdeleGroup K) :
     ideleClassCongr e
         (QuotientGroup.mk'
@@ -829,7 +680,6 @@ transport of relative idèle classes along an equivalence of their top
 fields. -/
 theorem
     relativeIdeleClassBaseChangeMulEquiv_relativeIdeleClassCongr
-    (e : K ≃ₐ[ℚ] M)
     (c : RelativeIdeleGroup.ClassGroup ℚ K) :
     relativeIdeleClassBaseChangeMulEquiv
         (K := ℚ) (L := M)
@@ -854,6 +704,8 @@ theorem
     relativeIdeleClassBaseChangeMulEquiv_mk,
     ideleClassCongr_mk,
     relativeIdeleBaseChangeMulEquiv_relativeIdeleCongr]
+
+end
 
 section GaloisBaseChangeNaturality
 
@@ -895,31 +747,6 @@ theorem relativeIdeleClassBaseChangeMulEquiv_smul_congr
 
 end GaloisBaseChangeNaturality
 
-/-- On idele class groups, transport identifies the images of the
-ordinary ideal-class subgroups.  This is the subgroup-level naturality
-used by the small Hilbert class field. -/
-theorem ordinaryIdealClassSubgroup_image_map_ideleClassCongr
-    (e : K ≃ₐ[ℚ] M) :
-    (Subgroup.map
-        (QuotientGroup.mk'
-          (IdeleGroup.principalSubgroup K))
-        (IdeleGroup.ordinaryIdealClassSubgroup (K := K))).map
-          (ideleClassCongr e).toMonoidHom =
-      Subgroup.map
-        (QuotientGroup.mk'
-          (IdeleGroup.principalSubgroup M))
-        (IdeleGroup.ordinaryIdealClassSubgroup (K := M)) := by
-  have hcomp :
-      (ideleClassCongr e).toMonoidHom.comp
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K)) =
-        (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup M)).comp
-          (ideleCongr e).toMonoidHom := by
-    ext a
-    exact ideleClassCongr_mk e a
-  rw [Subgroup.map_map, hcomp, ← Subgroup.map_map,
-    ordinaryIdealClassSubgroup_map_congr]
 
 omit [Algebra ℚ K] in
 private theorem
@@ -1050,25 +877,27 @@ variable
     [Field K'] [NumberField K']
     [Field L'] [NumberField L'] [Algebra K' L']
 
-/-- The tensor-product map induced by compatible equivalences of both
-fields in a finite extension.  The coefficient-ring equivalence is kept
-explicit so the inverse uses that exact equivalence rather than a second
-choice. -/
- noncomputable def relativeAdeleMapOfCompatibleEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eA :
+section
+
+variable (eK : K ≃ₐ[ℚ] K') (eA :
       NumberField.AdeleRing (𝓞 K) K ≃+*
         NumberField.AdeleRing (𝓞 K') K')
-    (hA : ∀ x : K,
+  (hA : ∀ x : K,
       eA
           (algebraMap K
             (NumberField.AdeleRing (𝓞 K) K) x) =
         algebraMap K'
           (NumberField.AdeleRing (𝓞 K') K') (eK x))
-    (eL : L ≃ₐ[ℚ] L')
-    (hL : ∀ x : K,
+  (eL : L ≃ₐ[ℚ] L') (hL : ∀ x : K,
       eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+        algebraMap K' L' (eK x))
+include eK eA hA eL hL
+
+/-- The tensor-product map induced by compatible equivalences of both
+fields in a finite extension.  The coefficient-ring equivalence is kept
+explicit so the inverse uses that exact equivalence rather than a second
+choice. -/
+ noncomputable def relativeAdeleMapOfCompatibleEquiv :
     RelativeAdeleRing K L →+*
       RelativeAdeleRing K' L' := by
   letI : Algebra K (RelativeAdeleRing K' L') :=
@@ -1110,20 +939,6 @@ choice. -/
 
 @[simp]
  theorem relativeAdeleMapOfCompatibleEquiv_tmul
-    (eK : K ≃ₐ[ℚ] K')
-    (eA :
-      NumberField.AdeleRing (𝓞 K) K ≃+*
-        NumberField.AdeleRing (𝓞 K') K')
-    (hA : ∀ x : K,
-      eA
-          (algebraMap K
-            (NumberField.AdeleRing (𝓞 K) K) x) =
-        algebraMap K'
-          (NumberField.AdeleRing (𝓞 K') K') (eK x))
-    (eL : L ≃ₐ[ℚ] L')
-    (hL : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
     (a : NumberField.AdeleRing (𝓞 K) K)
     (x : L) :
     relativeAdeleMapOfCompatibleEquiv
@@ -1144,14 +959,18 @@ choice. -/
     Algebra.TensorProduct.tmul_mul_tmul,
     mul_one, one_mul]
 
+end
+
+section
+
+variable (eK : K ≃ₐ[ℚ] K') (eL : L ≃ₐ[ℚ] L') (h : ∀ x : K,
+      eL (algebraMap K L x) =
+        algebraMap K' L' (eK x))
+include eK eL h
+
 /-- Compatible equivalences of number-field extensions induce the
 canonical equivalence of their relative adele rings. -/
-noncomputable def relativeAdeleCongrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+noncomputable def relativeAdeleCongrOfAlgEquiv :
     RelativeAdeleRing K L ≃+*
       RelativeAdeleRing K' L' := by
   let eA := adeleCongr eK
@@ -1262,11 +1081,6 @@ noncomputable def relativeAdeleCongrOfAlgEquiv
 
 @[simp]
 theorem relativeAdeleCongrOfAlgEquiv_tmul
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
     (a : NumberField.AdeleRing (𝓞 K) K)
     (x : L) :
     relativeAdeleCongrOfAlgEquiv eK eL h
@@ -1278,12 +1092,7 @@ theorem relativeAdeleCongrOfAlgEquiv_tmul
 
 /-- Compatible equivalences of number-field extensions induce the
 canonical equivalence of their relative idele groups. -/
-noncomputable def relativeIdeleCongrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+noncomputable def relativeIdeleCongrOfAlgEquiv :
     RelativeIdeleGroup K L ≃*
       RelativeIdeleGroup K' L' :=
   Units.mapEquiv
@@ -1291,11 +1100,6 @@ noncomputable def relativeIdeleCongrOfAlgEquiv
 
 @[simp]
 theorem relativeIdeleCongrOfAlgEquiv_principalIdele
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
     (x : Lˣ) :
     relativeIdeleCongrOfAlgEquiv eK eL h
         (RelativeIdeleGroup.principalIdele K L x) =
@@ -1311,12 +1115,7 @@ theorem relativeIdeleCongrOfAlgEquiv_principalIdele
 
 /-- The semilinear relative-idele transport identifies the principal
 subgroups. -/
-theorem relativeIdelePrincipalSubgroup_map_congrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+theorem relativeIdelePrincipalSubgroup_map_congrOfAlgEquiv :
     (RelativeIdeleGroup.principalSubgroup K L).map
         (relativeIdeleCongrOfAlgEquiv eK eL h) =
       RelativeIdeleGroup.principalSubgroup K' L' := by
@@ -1339,12 +1138,7 @@ theorem relativeIdelePrincipalSubgroup_map_congrOfAlgEquiv
 
 /-- Compatible equivalences of number-field extensions induce the
 canonical equivalence of their existing relative idele class groups. -/
-noncomputable def relativeIdeleClassCongrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x)) :
+noncomputable def relativeIdeleClassCongrOfAlgEquiv :
     RelativeIdeleGroup.ClassGroup K L ≃*
       RelativeIdeleGroup.ClassGroup K' L' :=
   QuotientGroup.congr
@@ -1356,11 +1150,6 @@ noncomputable def relativeIdeleClassCongrOfAlgEquiv
 
 @[simp]
 theorem relativeIdeleClassCongrOfAlgEquiv_mk
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
     (a : RelativeIdeleGroup K L) :
     relativeIdeleClassCongrOfAlgEquiv eK eL h
         (QuotientGroup.mk'
@@ -1369,6 +1158,8 @@ theorem relativeIdeleClassCongrOfAlgEquiv_mk
         (RelativeIdeleGroup.principalSubgroup K' L')
         (relativeIdeleCongrOfAlgEquiv eK eL h a) :=
   rfl
+
+end
 
 section Norm
 

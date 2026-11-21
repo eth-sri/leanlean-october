@@ -2,7 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.CompactPicture.IndependentSlicesAndUniformBands
 public import DedekindZetaZeroFree.Algebra.TensorProducts.SeparatingEvaluations
-public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.CompactPicture.TensorSectionSamplingGeneration
+public import DedekindZetaZeroFree.Eisenstein.Induction.ScalarCompactPicturesAndLocalQuotientTensors
 
 @[expose] public section
 

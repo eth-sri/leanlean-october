@@ -95,7 +95,7 @@ theorem completedGrowth
     have hn := Complex.norm_le_abs_re_add_abs_im s
     rw [hre, him] at hn
     nlinarith [abs_nonneg t]
-  have hS : 0 ≤ (1 + |t|) ^ (3 / 2 : ℝ) := by positivity
+  
   have htS : |t| ≤ (1 + |t|) ^ (3 / 2 : ℝ) := by
     calc |t| ≤ 1 + |t| := by linarith
       _ ≤ (1 + |t|) ^ (3 / 2 : ℝ) := by
@@ -501,11 +501,14 @@ open scoped NumberField Classical Topology
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-theorem principalLogMellinProduct_boundary_integrable
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H)
-    (X : ℝ) (hX : 0 < X) (a b : ℝ)
+section
+
+variable (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) {f : ℝ → ℂ}
+  {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) (X : ℝ)
+  (hX : 0 < X)
+include f P hf hX
+
+theorem principalLogMellinProduct_boundary_integrable (a b : ℝ)
     (haδ : -δ < a) (ha : a < 0) (hb : 1 < b) :
     Complex.VerticalIntegrable
         (Vendor.logMellinProduct H (principalZetaContinuation F hF) X)
@@ -549,11 +552,7 @@ theorem principalLogMellinProduct_boundary_integrable
   intro t
   convert hbound (-t) using 1 <;> congr 1 <;> push_cast <;> ring
 
-theorem principalLogMellinProduct_subquadratic_growth
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H)
-    (X : ℝ) (hX : 0 < X) (a b : ℝ)
+theorem principalLogMellinProduct_subquadratic_growth (a b : ℝ)
     (haδ : -δ < a) (ha : a < 0) (hb : 1 < b) :
     ∃ C A : ℝ, 0 ≤ C ∧ 0 ≤ A ∧
       ∀ σ t : ℝ, σ ∈ Set.Icc a b → 1 ≤ |t| →
@@ -569,10 +568,7 @@ theorem principalLogMellinProduct_subquadratic_growth
     (principalHeckeData F hF).E_growth hf X hX a b haδ
   linarith
 
-theorem principalLogMellinProduct_contour_data
-    (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
-    {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
-    (hf : Vendor.LogMellinAdmissible f δ P H) (X : ℝ) (hX : 0 < X) :
+theorem principalLogMellinProduct_contour_data :
     DifferentiableOn ℂ
         (Vendor.logMellinProduct H (principalZetaContinuation F hF) X)
         {s : ℂ | -δ < s.re ∧ s ≠ 0 ∧ s ≠ 1} ∧
@@ -600,6 +596,8 @@ theorem principalLogMellinProduct_contour_data
     (principalZetaContinuation F hF)
     (principalZetaContinuation_analyticOnNhd F hF)
     (principalZetaResidueCoefficient F hF) hp hf X hX
+
+end
 
 end DedekindZetaZeroFree.LargeSieve
 

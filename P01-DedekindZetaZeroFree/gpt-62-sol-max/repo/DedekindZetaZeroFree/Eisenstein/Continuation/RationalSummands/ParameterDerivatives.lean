@@ -2,6 +2,8 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.Continuation.RationalSummands.RightFlowDerivatives
 
+public import DedekindZetaZeroFree.Analysis.Calculus.ParameterJets
+
 @[expose] public section
 
 noncomputable section
@@ -11,101 +13,9 @@ namespace DedekindZetaZeroFree.KPContinuation.ChamberNormalTerm
 
 open KPContActualChamberNormalSeries
 
-section GenericChart
-open scoped Topology
-variable {A E Y : Type*} [NormedAddCommGroup A] [NormedSpace ℝ A]
-  [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup Y] [NormedSpace ℝ Y]
-
-set_option backward.isDefEq.respectTransparency.types false in
-
-theorem chartPartialEq (h : A → E → Y) (s : A) (z : E)
-    (hh : DifferentiableAt ℝ (Function.uncurry h) (s, z)) :
-    fderiv ℝ (h s) z =
-      (fderiv ℝ (Function.uncurry h) (s, z)).comp (ContinuousLinearMap.inr ℝ A E) := by
-  exact (hh.hasFDerivAt.comp z (hasFDerivAt_prodMk_right s z)).fderiv
-
-set_option backward.isDefEq.respectTransparency.types false in
-
-theorem chartMixedPartial (h : A → E → Y) (s : A) (z : E)
-    (hh : ContDiffAt ℝ (⊤ : ℕ∞) (Function.uncurry h) (s, z)) (v : A) (w : E) :
-    (fderiv ℝ (fun t => fderiv ℝ (h t) z) s) v w =
-      (fderiv ℝ (fun x => fderiv ℝ (fun t => h t x) s) z) w v := by
-  let H := Function.uncurry h
-  let D := fderiv ℝ H
-  let L := ContinuousLinearMap.inl ℝ A E
-  let R := ContinuousLinearMap.inr ℝ A E
-  let CR := (ContinuousLinearMap.compL ℝ E (A × E) Y).flip R
-  let CL := (ContinuousLinearMap.compL ℝ A (A × E) Y).flip L
-  have hD : HasFDerivAt D (fderiv ℝ D (s, z)) (s, z) :=
-    (hh.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp) |>.hasFDerivAt
-  have hs : (fun t => fderiv ℝ (h t) z) =ᶠ[𝓝 s]
-      (fun t => CR (D (t, z))) := by
-    have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-    filter_upwards [(continuous_id.prodMk continuous_const).continuousAt.eventually hn] with t ht
-    exact chartPartialEq h t z (ht.differentiableAt (by simp))
-  have hz : (fun x => fderiv ℝ (fun t => h t x) s) =ᶠ[𝓝 z]
-      (fun x => CL (D (s, x))) := by
-    have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-    filter_upwards [(continuous_const.prodMk continuous_id).continuousAt.eventually hn] with x hx
-    have hd : HasFDerivAt H (D (s, x)) (s, x) := (hx.differentiableAt (by simp)).hasFDerivAt
-    have hleft : HasFDerivAt (fun t : A => H (t, x)) (CL (D (s, x))) s :=
-      by convert hd.comp s (hasFDerivAt_prodMk_left (𝕜 := ℝ) s x) using 1 <;> rfl
-    exact hleft.fderiv
-  have hsd := CR.hasFDerivAt.comp s (hD.comp s (hasFDerivAt_prodMk_left s z))
-  have hzd := CL.hasFDerivAt.comp z (hD.comp z (hasFDerivAt_prodMk_right s z))
-  have hsde := hsd.fderiv
-  have hzde := hzd.fderiv
-  dsimp only [Function.comp_def] at hsde hzde
-  rw [hs.fderiv_eq, hz.fderiv_eq, hsde, hzde]
-  exact (hh.isSymmSndFDerivAt (by simp)).eq (v, 0) (0, w)
-
-end GenericChart
-
 namespace ParameterChart
-open Filter
-variable {A E Y : Type*} [NormedAddCommGroup A] [NormedSpace ℝ A]
-  [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup Y] [NormedSpace ℝ Y]
-variable [NormedSpace ℂ Y] [IsScalarTower ℝ ℂ Y]
-set_option backward.isDefEq.respectTransparency.types false in
-private lemma partial_snd_hasDeriv (h k : ℂ → E → Y) (Ω : Set ℂ) (hΩ : IsOpen Ω) (U : Set E) (hU : IsOpen U)
- (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Ω ×ˢ U))
- (hk : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry k) (Ω ×ˢ U))
- (hd : ∀ s ∈ Ω, ∀ z, z ∈ U → HasDerivAt (fun t => h t z) (k s z) s)
- (s : ℂ) (hs : s ∈ Ω) (z : E) (hz : z ∈ U) :
- HasDerivAt (fun t => fderiv ℝ (h t) z) (fderiv ℝ (k s) z) s := by
- have hlocal := hh.contDiffAt ((hΩ.prod hU).mem_nhds (show (s,z) ∈ Ω ×ˢ U from ⟨hs,hz⟩))
- have hcomp : ContDiffAt ℝ (⊤ : ℕ∞)
-     (fun q : ℂ × E => h q.1 q.2) (s,z) := hlocal
- have hder : DifferentiableAt ℝ (fun t => fderiv ℝ (h t) z) s := by
-   have h2 : ContDiffAt ℝ (⊤ : ℕ∞)
-       (Function.uncurry (fun t x => h t x)) (s,z) := hlocal
-   exact (h2.fderiv (g := fun _ : ℂ => z) (m := (⊤ : ℕ∞)) contDiffAt_const (by simp)).differentiableAt (by simp)
- have heq : (ContinuousLinearMap.toSpanSingleton ℂ (fderiv ℝ (k s) z)).restrictScalars ℝ =
-     fderiv ℝ (fun t => fderiv ℝ (h t) z) s := by
-   ext d w
-   rw [chartMixedPartial h s z hlocal d w]
-   have ht : (fun x => (fderiv ℝ (fun t => h t x) s) d) =ᶠ[𝓝 z]
-       (fun x => d • k s x) := by
-     filter_upwards [hU.mem_nhds hz] with x hx
-     rw [((hd s hs x hx).hasFDerivAt.restrictScalars ℝ).fderiv]
-     rfl
-   have hp := (hk.contDiffAt ((hΩ.prod hU).mem_nhds (show (s,z) ∈ Ω ×ˢ U from ⟨hs,hz⟩))).comp
-     z (contDiffAt_const.prodMk contDiffAt_id)
-   have hf := hp.differentiableAt (by simp)
-   have hswap : ContDiffAt ℝ (⊤ : ℕ∞) (Function.uncurry (fun x t => h t x)) (z,s) :=
-     hlocal.comp (z,s) (contDiff_snd.prodMk contDiff_fst).contDiffAt
-   have happ := (ContinuousLinearMap.apply ℝ Y d).hasFDerivAt.comp z
-     ((hswap.fderiv (g := fun _ : E => s) (m := (⊤ : ℕ∞)) contDiffAt_const (by simp)).differentiableAt (by simp)).hasFDerivAt
-   have he : (fderiv ℝ (fun x => (fderiv ℝ (fun t => h t x) s) d) z) w =
-       ((fderiv ℝ (fun x => fderiv ℝ (fun t => h t x) s) z) w) d := by
-     have he := happ.fderiv
-     dsimp only [Function.comp_def] at he
-     convert congrArg (fun T : E →L[ℝ] Y => T w) he using 1 <;> rfl
-   rw [← he, ht.fderiv_eq]
-   have hf' : DifferentiableAt ℝ (k s) z := hf
-   change (d • fderiv ℝ (k s) z) w = (fderiv ℝ (d • k s) z) w
-   rw [fderiv_const_smul hf' d]
- exact hasFDerivAt_of_restrictScalars ℝ hder.hasFDerivAt heq
+open Filter ParameterJets
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 section Words
 variable {B : Type*}
@@ -141,7 +51,7 @@ theorem word_hasDeriv (Ω : Set ℂ) (hΩ : IsOpen Ω) (O : Set E) (hO : IsOpen 
   induction w generalizing s x with
   | nil => exact hd s hs x hx
   | cons b w ih =>
-    have hp := partial_snd_hasDeriv
+    have hp := hasDerivAt_fderiv_space
       (fun z x => directionalWord fields w (h z) x)
       (fun z x => directionalWord fields w (k z) x) Ω hΩ O hO
       (joint_word Ω hΩ O hO fields hfields h hh w)

@@ -49,22 +49,11 @@ instance tail_compactSpace : CompactSpace (Tail F T) := by
     isCompact_iff_compactSpace.mp (KPAdelicTopology.completionIntegers_isCompact F v)
   infer_instance
 
-instance placesCountable : Countable (HeightOneSpectrum (𝓞 F)) := by
-  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
-  letI : Countable (𝓞 F) := Function.Injective.countable RingOfIntegers.coe_injective
-  letI : Countable (Ideal (𝓞 F)) := by
-    have h : Function.Surjective (fun s : Finset (𝓞 F) => Ideal.span (↑s : Set (𝓞 F))) :=
-      fun I => IsNoetherian.noetherian I
-    exact h.countable
-  exact Function.Injective.countable (fun _ _ h => HeightOneSpectrum.ext h)
+instance placesCountable : Countable (HeightOneSpectrum (𝓞 F)) :=
+  KPAdelicTopology.finitePlace_countable F
 
 instance completionSecondCountable (v : HeightOneSpectrum (𝓞 F)) :
-    SecondCountableTopology (v.adicCompletion F) := by
-  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
-  letI : SeparableSpace (v.adicCompletion F) :=
-    ⟨⟨Set.range (algebraMap F (v.adicCompletion F)), Set.countable_range _,
-      HeightOneSpectrum.denseRange_algebraMap F v⟩⟩
-  infer_instance
+    SecondCountableTopology (v.adicCompletion F) := KPAdelicTopology.completion_secondCountable F v
 
 instance tail_borelSpace : BorelSpace (Tail F T) := by
   infer_instance

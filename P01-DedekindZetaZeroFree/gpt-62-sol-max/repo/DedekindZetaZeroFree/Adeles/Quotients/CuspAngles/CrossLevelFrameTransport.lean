@@ -36,17 +36,6 @@ local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogSha
   apply Subtype.ext
   simp only [framedRadius, inv_mul_cancel_left, hslot]
 
- theorem all_level_radial_slot_eq
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (U V : KPMsFixedHaarDisintegration.Level F ζ hζ) :
-    (H.disintegration U).radial.slot = (H.disintegration V).radial.slot := by
-  let W : KPMsFixedHaarDisintegration.Level F ζ hζ :=
-    ⟨U.toOpenSubgroup ⊓ V.toOpenSubgroup,
-      U.isCompact.inter_right V.toOpenSubgroup.isClosed⟩
-  obtain ⟨CU⟩ := H.compatible W U inf_le_left
-  obtain ⟨CV⟩ := H.compatible W V inf_le_right
-  exact CU.common_slot.symm.trans CV.common_slot
-
  theorem framed_iwasawaNorm_eq_of_delta_one
     (D : Iwasawa F ζ hζ) (σ g h : KPMsActualAngularSource.G F ζ hζ)
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (n : KPGlobalTorusFunctionData.Adeles F)

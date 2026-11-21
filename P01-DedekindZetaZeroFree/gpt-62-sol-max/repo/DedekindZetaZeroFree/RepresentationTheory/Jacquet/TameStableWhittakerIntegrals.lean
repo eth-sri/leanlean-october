@@ -61,8 +61,7 @@ private theorem scalar_borel_root_invariant
       KPPGLLocalCover.N F ζ hζ (Sum.inr q) x =
       KPPGLLocalCover.N F ζ hζ (Sum.inr q) x * (S.borel.upperRoot s : ActualCover F ζ hζ q) := by
     rw [hn, ← KPPGLLocalCover.N_add, ← KPPGLLocalCover.N_add, add_comm]
-  have hb : b.val = h.val * (S.borel.upperRoot s : ActualCover F ζ hζ q) := by
-    exact congrArg Subtype.val hs |>.trans (by
+  have hb : b.val = h.val * (S.borel.upperRoot s : ActualCover F ζ hζ q) := congrArg Subtype.val hs |>.trans (by
       change (S.borel.torus h : ActualCover F ζ hζ q) * _ = _
       rw [he])
   change h.val * KPPGLLocalCover.N F ζ hζ (Sum.inr q) x * h.val⁻¹ =
@@ -206,66 +205,6 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 
 variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
 
-private theorem valuation_norm_le (x y : LocalField F q) :
-    valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
-  rw [← Valuation.Compatible.vle_iff_le]
-  change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
-
-private theorem expandingBall_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
-    x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
-  let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
-  have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
-  have hn : ‖a‖ = ‖(π : LocalField F q)‖⁻¹ ^ r := by
-    simp [a, norm_inv, norm_pow, inv_pow]
-  have hm : ∀ y : LocalField F q, y ∈ (valuation (LocalField F q)).integer ↔ ‖y‖ ≤ 1 := by
-    intro y
-    rw [Valuation.mem_integer_iff, ← map_one (valuation (LocalField F q)), valuation_norm_le]
-    simp
-  change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
-  rw [← hn]
-  constructor
-  · rintro ⟨u, rfl⟩
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
-  · intro hx
-    refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
-    rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
-    exact hx
-
-private theorem eventually_mem_ball (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (t : LocalField F q) :
-    ∃ r₀ : ℕ, ∀ r ≥ r₀, t ∈ expandingBall F q π r := by
-  have hv : valuation (LocalField F q) (π : LocalField F q) < 1 := by
-    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
-    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) <
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
-    rw [hπ, map_one]
-    norm_num
-  have hn : ‖(π : LocalField F q)‖ < 1 := by
-    have hh := not_le.mpr hv
-    rw [← map_one (valuation (LocalField F q)), valuation_norm_le] at hh
-    simpa using not_le.mp hh
-  have hp : 0 < ‖(π : LocalField F q)‖ := norm_pos_iff.mpr π.ne_zero
-  have ht := tendsto_pow_atTop_atTop_of_one_lt (one_lt_inv₀ hp |>.mpr hn)
-  obtain ⟨r₀, hr₀⟩ := Filter.eventually_atTop.mp (ht.eventually (Filter.eventually_ge_atTop ‖t‖))
-  exact ⟨r₀, fun r hr => (expandingBall_norm F q π r t).mpr (hr₀ r hr)⟩
-
-private theorem ball_translate (π : (LocalField F q)ˣ) (r : ℕ)
-    (t : LocalField F q) (ht : t ∈ expandingBall F q π r) :
-    (fun x => x + t) ⁻¹' expandingBall F q π r = expandingBall F q π r := by
-  ext x
-  simp only [Set.mem_preimage, expandingBall_norm] at *
-  constructor
-  · intro hx
-    have h := IsUltrametricDist.norm_add_le_max (x + t) (-t)
-    simpa using h.trans (max_le hx (by simpa using ht))
-  · intro hx
-    exact (IsUltrametricDist.norm_add_le_max x t).trans (max_le hx ht)
-
 theorem shell_vanishing_of_tail_translation
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
     (π : (LocalField F q)ˣ)
@@ -283,13 +222,7 @@ theorem shell_vanishing_of_tail_translation
     ∃ R : ℕ, ∀ r ≥ R,
       (∫ x in expandingBall F q π (r + 1) \ expandingBall F q π r,
         φ x * (ψ (Multiplicative.ofAdd (-x)) : ℂ) ∂μ) = 0 := by
-  have hv : valuation (LocalField F q) (π : LocalField F q) < 1 := by
-    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
-    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) <
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
-    rw [hπ, map_one]
-    norm_num
+  have hv := uniformizer_valuation_lt_one F q π hπ
   have hni : (π : LocalField F q)⁻¹ ∉ (valuation (LocalField F q)).integer := by
     rw [Valuation.mem_integer_iff, map_inv₀]
     exact not_le.mpr (one_lt_inv₀ ((Valuation.pos_iff (valuation (LocalField F q))).mpr π.ne_zero) |>.mpr hv)
@@ -304,27 +237,12 @@ theorem shell_vanishing_of_tail_translation
     simpa [t] using h
   obtain ⟨R, hR⟩ := htail t
   obtain ⟨T, hT⟩ := eventually_mem_ball F q π hπ t
-  have hn : 1 ≤ ‖(π : LocalField F q)‖⁻¹ := by
-    have hh := not_le.mpr hv
-    rw [← map_one (valuation (LocalField F q)), valuation_norm_le] at hh
-    have hp : 0 < ‖(π : LocalField F q)‖ := norm_pos_iff.mpr π.ne_zero
-    exact le_of_lt (one_lt_inv₀ hp |>.mpr (by simpa using not_le.mp hh))
-  have hmeas : ∀ r, MeasurableSet (expandingBall F q π r) := by
-    intro r
-    have hset : expandingBall F q π r =
-        (fun x : LocalField F q => ‖x‖) ⁻¹' Set.Iic (‖(π : LocalField F q)‖⁻¹ ^ r) := by
-      ext x
-      exact expandingBall_norm F q π r x
-    rw [hset]
-    exact measurableSet_Iic.preimage (by fun_prop)
+  have hmeas := ball_measurable F q π
   refine ⟨max R T, ?_⟩
   intro r hr
   have hRr : R ≤ r := (le_max_left _ _).trans hr
   have hTr : T ≤ r := (le_max_right _ _).trans hr
-  have hsub : expandingBall F q π R ⊆ expandingBall F q π r := by
-    intro x hx
-    rw [expandingBall_norm] at hx ⊢
-    exact hx.trans (pow_le_pow_right₀ hn hRr)
+  have hsub := expandingBall_mono F q π hπ hRr
   let shell := expandingBall F q π (r + 1) \ expandingBall F q π r
   let g := fun x : LocalField F q => φ x * (ψ (Multiplicative.ofAdd (-x)) : ℂ)
   have hs : (fun x => x + t) ⁻¹' shell = shell := by
@@ -370,61 +288,6 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries Raw
 
-private theorem pi_mem_integer
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
-    (π : LocalField F q) ∈ (valuation (LocalField F q)).integer := by
-  have hv : valuation (LocalField F q) (π : LocalField F q) < 1 := by
-    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
-    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) <
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
-    rw [hπ, map_one]
-    norm_num
-  exact (Valuation.mem_integer_iff (valuation (LocalField F q)) (π : LocalField F q)).mpr
-    (le_of_lt hv)
-
-private theorem ball_subset_succ
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (r : ℕ) : expandingBall F q π r ⊆ expandingBall F q π (r + 1) := by
-  have hπO := pi_mem_integer F q π hπ
-  rintro x ⟨o, rfl⟩
-  refine ⟨⟨(π : LocalField F q) * (o : LocalField F q),
-    (valuation (LocalField F q)).integer.mul_mem hπO o.2⟩, ?_⟩
-  have hval : ((π ^ (r + 1) : (LocalField F q)ˣ) : LocalField F q) =
-      ((π ^ r : (LocalField F q)ˣ) : LocalField F q) * (π : LocalField F q) := by
-    rw [pow_succ, Units.val_mul]
-  rw [hval]
-  field_simp
-
-private theorem ball_measurable
-    (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-    (π : (LocalField F q)ˣ) (r : ℕ) :
-    MeasurableSet (expandingBall F q π r) := by
-  have hset : expandingBall F q π r =
-      (fun x : LocalField F q =>
-        ((π ^ r : (LocalField F q)ˣ) : LocalField F q) * x) ⁻¹' (𝒪[LocalField F q]) := by
-    ext x
-    constructor
-    · rintro ⟨o, rfl⟩
-      simp only [Set.mem_preimage]
-      have : ((π ^ r : (LocalField F q)ˣ) : LocalField F q) *
-          (((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹ * (o : LocalField F q)) =
-          (o : LocalField F q) := by
-        field_simp
-      rw [this]
-      exact o.2
-    · intro hx
-      exact ⟨⟨_, hx⟩, by field_simp⟩
-  rw [hset]
-  exact MeasurableSet.preimage (valuation (LocalField F q)).isOpen_integer.measurableSet
-    (measurable_const.mul measurable_id)
-
 theorem integrals_stabilize_of_shell_vanishing
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
     (π : (LocalField F q)ˣ)
@@ -448,7 +311,7 @@ theorem integrals_stabilize_of_shell_vanishing
     | zero => simp
     | succ k ih =>
       have hsd := setIntegral_sdiff (ball_measurable F q π (R + k))
-        (hint (R + k + 1)) (ball_subset_succ F q π hπ (R + k))
+        (hint (R + k + 1)) (expandingBall_mono F q π hπ (Nat.le_succ (R + k)))
       have hz : (∫ x in expandingBall F q π (R + k + 1) \ expandingBall F q π (R + k),
           g x ∂μ) = 0 := hR (R + k) (Nat.le_add_right R k)
       rw [hz] at hsd
@@ -528,66 +391,6 @@ private theorem stable_smul
   obtain ⟨hint, hval⟩ := hr r hrr
   rw [he]
   exact ⟨hint.const_mul _, by rw [integral_const_mul, hval]⟩
-
-private theorem valuation_norm_le (x y : LocalField F q) :
-    valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
-  rw [← Valuation.Compatible.vle_iff_le]
-  change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
-
-private theorem expandingBall_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
-    x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
-  let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
-  have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
-  have hn : ‖a‖ = ‖(π : LocalField F q)‖⁻¹ ^ r := by
-    simp [a, norm_inv, norm_pow, inv_pow]
-  have hm : ∀ y : LocalField F q, y ∈ (valuation (LocalField F q)).integer ↔ ‖y‖ ≤ 1 := by
-    intro y
-    rw [Valuation.mem_integer_iff, ← map_one (valuation (LocalField F q)), valuation_norm_le]
-    simp
-  change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
-  rw [← hn]
-  constructor
-  · rintro ⟨u, rfl⟩
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
-  · intro hx
-    refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
-    rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
-    exact hx
-
-private theorem eventually_mem_ball (π : (LocalField F q)ˣ)
-    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
-    (t : LocalField F q) :
-    ∃ r₀ : ℕ, ∀ r ≥ r₀, t ∈ expandingBall F q π r := by
-  have hv : valuation (LocalField F q) (π : LocalField F q) < 1 := by
-    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
-    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) <
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
-    rw [hπ, map_one]
-    norm_num
-  have hn : ‖(π : LocalField F q)‖ < 1 := by
-    have hh := not_le.mpr hv
-    rw [← map_one (valuation (LocalField F q)), valuation_norm_le] at hh
-    simpa using not_le.mp hh
-  have hp : 0 < ‖(π : LocalField F q)‖ := norm_pos_iff.mpr π.ne_zero
-  have ht := tendsto_pow_atTop_atTop_of_one_lt (one_lt_inv₀ hp |>.mpr hn)
-  obtain ⟨r₀, hr₀⟩ := Filter.eventually_atTop.mp (ht.eventually (Filter.eventually_ge_atTop ‖t‖))
-  exact ⟨r₀, fun r hr => (expandingBall_norm F q π r t).mpr (hr₀ r hr)⟩
-
-private theorem ball_translate (π : (LocalField F q)ˣ) (r : ℕ)
-    (t : LocalField F q) (ht : t ∈ expandingBall F q π r) :
-    (fun x => x + t) ⁻¹' expandingBall F q π r = expandingBall F q π r := by
-  ext x
-  simp only [Set.mem_preimage, expandingBall_norm] at *
-  constructor
-  · intro hx
-    have h := IsUltrametricDist.norm_add_le_max (x + t) (-t)
-    simpa using h.trans (max_le hx (by simpa using ht))
-  · intro hx
-    exact (IsUltrametricDist.norm_add_le_max x t).trans (max_le hx ht)
 
 private theorem integrand_root
     (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
@@ -692,23 +495,10 @@ theorem scalar_section_continuous
 theorem expanding_ball_compact (π : (LocalField F q)ˣ) (r : ℕ) :
     IsCompact (expandingBall F q π r) := by
   let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
-  have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
-  have he : expandingBall F q π r =
-      {x | valuation (LocalField F q) x ≤ valuation (LocalField F q) a} := by
-    ext x
-    constructor
-    · rintro ⟨o, rfl⟩
-      change valuation (LocalField F q) (a * o) ≤ valuation (LocalField F q) a
-      rw [map_mul]
-      exact mul_le_of_le_one_right (show 0 ≤ valuation (LocalField F q) a from bot_le)
-        o.property
-    · intro hx
-      have ho : valuation (LocalField F q) (a⁻¹ * x) ≤ 1 := by
-        rw [map_mul, map_inv₀]
-        exact (inv_mul_le_one₀ ((valuation (LocalField F q)).pos_iff.mpr ha)).mpr hx
-      exact ⟨⟨a⁻¹ * x, ho⟩, by dsimp [a]; simp [ha]⟩
-  rw [he]
-  exact IsNonarchimedeanLocalField.isCompact_closedBall _ _
+  convert IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) (valuation (LocalField F q) a) using 1
+  ext x
+  rw [expandingBall_norm, Set.mem_setOf_eq, valuation_norm_le]
+  simp [a, norm_inv, norm_pow, inv_pow]
 
 theorem jacquet_integrable_on_expanding_ball
     (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)

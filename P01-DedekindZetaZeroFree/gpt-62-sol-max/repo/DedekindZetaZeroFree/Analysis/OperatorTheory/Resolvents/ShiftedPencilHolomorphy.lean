@@ -8,30 +8,40 @@ namespace DedekindZetaZeroFree.KPResolventPencil
 
 noncomputable section
 
-def GenuineInverse {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+def GenuineInverse
     (D : H →ₗ.[ℂ] H) (z : ℂ) (R : H →L[ℂ] H) : Prop :=
   ∃ hR : ∀ x : H, R x ∈ D.domain,
     (∀ x : H, D ⟨R x, hR x⟩ - z • R x = x) ∧
     (∀ y : D.domain, R (D y - z • (y : H)) = (y : H))
 
-def shiftedPencil {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+def shiftedPencil
     (B : H →L[ℂ] H) (z : ℂ) : H →L[ℂ] H :=
   1 - (z + 1) • B
 
-def resolventSet {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+def resolventSet
     (D : H →ₗ.[ℂ] H) : Set ℂ :=
   {z | ∃ R : H →L[ℂ] H, GenuineInverse D z R}
 
-def shiftedResolvent {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+def shiftedResolvent
     (B : H →L[ℂ] H) (z : ℂ) : H →L[ℂ] H :=
   B * Ring.inverse (shiftedPencil B z)
+
+end
 
 section Algebra
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
-private lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) :
+section
+
+variable (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B)
+include hB
+
+private lemma base_left :
     ∃ h : ∀ x : H, B x ∈ D.domain,
       (∀ x, D ⟨B x, h x⟩ = x - B x) ∧
       (∀ y : D.domain, B (D y + (y : H)) = (y : H)) := by
@@ -43,8 +53,7 @@ private lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     exact eq_sub_of_add_eq hx
   · simpa only [neg_smul, one_smul, sub_neg_eq_add] using h2
 
-private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) (z : ℂ)
+private lemma genuine_formula (z : ℂ)
     (hz : IsUnit (shiftedPencil B z)) :
     GenuineInverse D z (shiftedResolvent B z) := by
   rcases base_left D B hB with ⟨h, h1, h2⟩
@@ -86,8 +95,7 @@ private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     rw [he]
     exact DFunLike.congr_fun hCA (y : H)
 
-private lemma genuine_unit (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
-    (hB : GenuineInverse D (-1) B) (z : ℂ) (R : H →L[ℂ] H)
+private lemma genuine_unit (z : ℂ) (R : H →L[ℂ] H)
     (hR : GenuineInverse D z R) : IsUnit (shiftedPencil B z) := by
   rcases base_left D B hB with ⟨h, h1, h2⟩
   rcases hR with ⟨hr, hr1, hr2⟩
@@ -118,6 +126,8 @@ private lemma genuine_unit (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
   · rw [add_mul, one_mul, smul_mul_assoc, hRA]
     simp [shiftedPencil]
 
+end
+
 private lemma genuine_unique (D : H →ₗ.[ℂ] H) (z : ℂ)
     (R S : H →L[ℂ] H) (hR : GenuineInverse D z R) (hS : GenuineInverse D z S) :
     R = S := by
@@ -130,10 +140,14 @@ private lemma genuine_unique (D : H →ₗ.[ℂ] H) (z : ℂ)
 
 end Algebra
 
-theorem isUnit_shiftedPencil_iff
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H))
-    (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B) (z : ℂ) :
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H)) (B : H →L[ℂ] H)
+  (hB : GenuineInverse D (-1) B) (z : ℂ)
+include hDense hB
+
+theorem isUnit_shiftedPencil_iff :
     IsUnit (shiftedPencil B z) ↔ z ∈ resolventSet D := by
   constructor
   · intro hz
@@ -141,15 +155,13 @@ theorem isUnit_shiftedPencil_iff
   · rintro ⟨R, hR⟩
     exact genuine_unit D B hB z R hR
 
-theorem shiftedResolvent_genuine_unique
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (D : H →ₗ.[ℂ] H) (hDense : Dense (D.domain : Set H))
-    (B : H →L[ℂ] H) (hB : GenuineInverse D (-1) B)
-    (z : ℂ) (hz : IsUnit (shiftedPencil B z)) :
+theorem shiftedResolvent_genuine_unique (hz : IsUnit (shiftedPencil B z)) :
     GenuineInverse D z (shiftedResolvent B z) ∧
       ∀ R : H →L[ℂ] H, GenuineInverse D z R → R = shiftedResolvent B z := by
   have hg := genuine_formula D B hB z hz
   exact ⟨hg, fun R hR => genuine_unique D z R (shiftedResolvent B z) hR hg⟩
+
+end
 
 @[simp] theorem shiftedPencil_neg_one
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]

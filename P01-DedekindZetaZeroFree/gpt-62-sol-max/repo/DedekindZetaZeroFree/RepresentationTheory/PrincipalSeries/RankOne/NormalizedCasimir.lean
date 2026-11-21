@@ -579,54 +579,13 @@ theorem pauli_square_sum :
       Matrix.smul_apply, Matrix.one_apply] <;> field_simp <;>
     simp [Complex.I_sq, hsq] <;> norm_num
 
-open scoped Matrix.Norms.Operator in
-private theorem casimir_path_hasDeriv_components (g : KPCplxCharacterHaar.ComplexGL2)
-    (M : Matrix (Fin 2) (Fin 2) ℂ) :
-    ∀ i j, HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
-  have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) M ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
-  have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
-  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero, mul_one, one_mul] at hmat
-  intro i j
-  have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
-  have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
-  change HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j)
-    (((g : Matrix (Fin 2) (Fin 2) ℂ) *
-      (ContinuousLinearMap.restrictScalars ℝ (ContinuousLinearMap.toSpanSingleton ℂ (NormedSpace.exp (((0 : ℝ) : ℂ) • M) * M))) 1) i j) 0 at hj
-  simpa using hj
-
 open scoped Matrix.Norms.Elementwise in
 theorem rightDerivative_fderiv (s : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
     deriv (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) 0 =
       fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val) (g : Matrix (Fin 2) (Fin 2) ℂ)
-        ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) := by
-  have hf := ((KPCplxPrincipalSeriesCharts.principalSeries_mem_iff s f.val).mp f.property).2
-  have hmat : HasDerivAt (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M))
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) 0 :=
-    hasDerivAt_pi.mpr (fun i => hasDerivAt_pi.mpr (casimir_path_hasDeriv_components g M i))
-  have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
-  have hh := (hf.differentiableOn (by simp)).differentiableAt
-    ((isOpen_ne.preimage hcont).mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g))
-  have hc := hh.hasFDerivAt.comp_hasDerivAt_of_eq 0 hmat (by simp)
-  have heq : (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) =
-      KPCplxPrincipalSeriesCharts.matrixFunction f.val ∘ (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) := by
-    funext t
-    have hu := Matrix.GeneralLinearGroup.det_ne_zero (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))
-    have he : ((g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M)) : Matrix (Fin 2) (Fin 2) ℂ) =
-        (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M) := by congr 1
-    dsimp only [Function.comp_def]
-    rw [← he]
-    unfold KPCplxPrincipalSeriesCharts.matrixFunction
-    rw [dif_pos (show ((g : Matrix (Fin 2) (Fin 2) ℂ) *
-      (KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M) : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 from by
-        simpa only [Units.val_mul] using hu)]
-    apply congrArg f.val
-    apply Units.ext
-    rfl
-  rw [heq]
-  exact hc.deriv
-
-open scoped Matrix.Norms.Elementwise in
+        ((g : Matrix (Fin 2) (Fin 2) ℂ) * M) :=
+  (KPCplxHarmonicExtraction.CasimirTransfer.Transfer.hasDerivAt_rightExp s f g M).deriv
 
 open scoped Matrix.Norms.Elementwise in
 

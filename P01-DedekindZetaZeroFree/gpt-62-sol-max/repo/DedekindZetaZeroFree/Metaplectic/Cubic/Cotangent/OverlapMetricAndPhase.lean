@@ -118,7 +118,7 @@ private theorem labeledA_labeledAInv
   funext k
   simp [labeledAInv, labeledA]
 
-private theorem continuous_labeledA
+theorem labeledA_continuous
     (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) : Continuous (labeledA p) := by
   apply continuous_pi
   intro k
@@ -131,7 +131,7 @@ private theorem continuous_labeledA
 
 theorem LiftedChart.isOpen_omega {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) i) : IsOpen a.omega := by
-  apply IsOpen.preimage (continuous_labeledA a.places)
+  apply IsOpen.preimage (labeledA_continuous a.places)
   cases a.kind with
   | orbifold x O => exact O.isOpen
   | cusp j k =>
@@ -162,7 +162,7 @@ def identity {i} (a : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
   apply continuous_pi_iff.mpr
   intro k
   exact (continuous_apply (b.places k)).comp
-    ((KPCuspSiegel.continuous_action F _).comp (continuous_labeledA a.places))
+    ((KPCuspSiegel.continuous_action F _).comp (labeledA_continuous a.places))
 
  theorem coordinateMap_mul {i}
     (a b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
@@ -337,7 +337,7 @@ private theorem phase_norm {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := h�
     (fun _ => 1) (IsLocallyConstant.const 1)).1 _
 
 set_option maxHeartbeats 1000000 in
-private theorem root_ambiguity {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
+theorem root_ambiguity {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b)
     (v : KPCuspGenuineMonodromy.scalarFiber F ζ hζ U) :
     (KPCuspGenuineMonodromy.chi F ζ hζ (((H.atlas U).line i).rho e.gamma) : ℂ) * v.val =

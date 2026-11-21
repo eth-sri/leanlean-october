@@ -246,10 +246,6 @@ lemma projectiveRowWeight_mk (B : LocalGL) :
     Complex.mul_conj, Complex.normSq_eq_norm_sq, ← Complex.ofReal_pow,
     ← Complex.ofReal_add, ← Complex.ofReal_div, Complex.ofReal_re]
 
-@[simp] lemma projectiveRowWeight_one :
-    projectiveRowWeight (1 : Matrix.ProjGenLinGroup (Fin 2) ℂ) = 1 := by
-  rw [← map_one (Matrix.ProjGenLinGroup.mk : LocalGL →* _), projectiveRowWeight_mk]
-  norm_num
 
 lemma projectiveRowWeight_coe (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
     (projectiveRowWeight g : ℂ) = projectiveGram 1 1 g := by

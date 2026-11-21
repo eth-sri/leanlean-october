@@ -95,8 +95,7 @@ theorem corePeriod_left_root (z : RestrictedTensorSimple.Core (LiteralSource.Plu
     (LiteralSource.plusReference R.A P C) (LiteralSource.bad R.A P C)) (a : KPAdeles F) :
     corePeriod R P C (KPGlobalTorusFunctionData.N F ζ hζ a*g) z=
       (adelicTraceQuotientCharacter F (QuotientAddGroup.mk a):ℂ)*corePeriod R P C g z := by
-  apply ExteriorWhittakerValues.StoredWhittaker.fourier_left_root R dq _ ?_ a g
-    (core_period_integrable R P C z g)
+  apply MomentSources.fourier_left_root R dq _ ?_ a g
   intro t g
   rw [←KPLiteralExceptionalResidue.rationalLift_unipotent]
   exact (LiteralSource.coreResidue_raw_automorphic R P C z).2.1 _ _

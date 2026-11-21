@@ -27,10 +27,7 @@ private theorem transport_apply_mk (J K : Ideal A.R) (h : J = K)
   subst h; rfl
 
 private theorem sexticExponent_intNat (n : ℕ) :
-    SArithmeticData.sexticExponent (n : ℤ) = n % 6 := by
-  simp only [SArithmeticData.sexticExponent]
-  have h : ((n : ℤ) % 6) = ((n % 6 : ℕ) : ℤ) := by norm_num
-  rw [h, Int.toNat_natCast]
+    SArithmeticData.sexticExponent (n : ℤ) = n % 6 := rfl
 
 private theorem gaussCRT_char_base (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (x : A.R) :

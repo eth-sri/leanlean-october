@@ -39,13 +39,13 @@ theorem conductor_matrix_constraints {K : Type*} [Field K]
   have hd := congrArg Matrix.GeneralLinearGroup.det hc
   have detd (r s : Kˣ) : Matrix.GeneralLinearGroup.det (KubotaRankTwo.d K r s) = r * s := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detn (t : K) : Matrix.GeneralLinearGroup.det (KubotaRankTwo.n K t) = 1 := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detw : Matrix.GeneralLinearGroup.det (KubotaRankTwo.w K) = 1 := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, KubotaRankTwo.w]
+    simp
   have dets : Matrix.GeneralLinearGroup.det (KPStandardLocalRootLifts.weylSwap K) = -1 := by
     apply Units.ext
     simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, KPStandardLocalRootLifts.weylSwap]

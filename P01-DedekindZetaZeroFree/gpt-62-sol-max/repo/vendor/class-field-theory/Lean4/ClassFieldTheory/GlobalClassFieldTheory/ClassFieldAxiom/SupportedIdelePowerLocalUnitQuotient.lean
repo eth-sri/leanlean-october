@@ -44,11 +44,14 @@ variable {K : Type*} [Field K] [NumberField K]
   (QuotientGroup.quotientMulEquivOfEq hker.symm).trans
     (QuotientGroup.quotientKerEquivOfSurjective f hf)
 
+section
+
+variable (n : ℕ+) (S T : Finset (HeightOneSpectrum (𝓞 K)))
+include n S T
+
 /-- The power/local-unit subgroup `h(S,T)`, regarded inside
 `I_K^{S ∪ T}`. -/
-def supportedIdelePowerLocalUnitSubgroup
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+def supportedIdelePowerLocalUnitSubgroup :
     Subgroup
       (IdeleGroup.supportedAt
         (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K)))) :=
@@ -58,9 +61,7 @@ def supportedIdelePowerLocalUnitSubgroup
 
 /-- Membership in `h(S,T)` automatically supplies the restricted-product
 condition defining `I_K^{S ∪ T}`. -/
-theorem idelePowerLocalUnitSubgroup_le_supportedAt
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem idelePowerLocalUnitSubgroup_le_supportedAt :
     idelePowerLocalUnitSubgroup (K := K) n S T ≤
       IdeleGroup.supportedAt
         (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) := by
@@ -75,9 +76,7 @@ theorem idelePowerLocalUnitSubgroup_le_supportedAt
 /-- Reduction modulo local `n`-th powers at all infinite places and at the
 finite places in `S`.  The coordinates in `T` and the integral coordinates
 away from `S ∪ T` disappear in the supported-idele index calculation. -/
-def supportedIdelePowerClassMap
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+def supportedIdelePowerClassMap :
     IdeleGroup.supportedAt
         (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) →*
       ((
@@ -136,9 +135,7 @@ def supportedIdelePowerClassMap
 
 /-- The kernel of the local-power class map is precisely `h(S,T)` inside
 `I_K^{S ∪ T}`. -/
-theorem supportedIdelePowerClassMap_ker
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem supportedIdelePowerClassMap_ker :
     (supportedIdelePowerClassMap (K := K) n S T).ker =
       supportedIdelePowerLocalUnitSubgroup (K := K) n S T := by
   ext a
@@ -181,9 +178,7 @@ theorem supportedIdelePowerClassMap_ker
 /-- The local-power class map is onto: choose representatives independently
 at the finitely many constrained finite places and at all archimedean
 places, then extend the finite family by `1`. -/
-theorem supportedIdelePowerClassMap_surjective
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem supportedIdelePowerClassMap_surjective :
     Function.Surjective
       (supportedIdelePowerClassMap (K := K) n S T) := by
   intro q
@@ -249,9 +244,7 @@ theorem supportedIdelePowerClassMap_surjective
 
 `I_K^{S ∪ T} / h(S,T)` is the product of the local `n`-power class
 groups at all infinite places and at the finite places in `S`. -/
-noncomputable def supportedIdeleQuotientEquivLocalPowerClasses
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def supportedIdeleQuotientEquivLocalPowerClasses :
     IdeleGroup.supportedAt
           (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) ⧸
         supportedIdelePowerLocalUnitSubgroup (K := K) n S T ≃*
@@ -285,9 +278,7 @@ noncomputable def supportedIdeleQuotientEquivLocalPowerClasses
 /-- Cardinal form of the supported-idele index decomposition.  The subsequent
 local power-index and product-formula calculation evaluates the right-hand
 side. -/
-theorem card_supportedIdeleQuotient_eq_localPowerClasses
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem card_supportedIdeleQuotient_eq_localPowerClasses :
     Nat.card
         (IdeleGroup.supportedAt
               (K := K) (S ∪ T : Set (HeightOneSpectrum (𝓞 K))) ⧸
@@ -306,6 +297,8 @@ theorem card_supportedIdeleQuotient_eq_localPowerClasses
   Nat.card_congr
     (supportedIdeleQuotientEquivLocalPowerClasses
       (K := K) n S T).toEquiv
+
+end
 
 
 end GlobalClassFieldTheory.ClassFieldAxiom

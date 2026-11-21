@@ -1,9 +1,20 @@
 module
 
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalInitialContourRegularity
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalFirstPoleContour
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalResidueKernelContourBounds
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalContourRemainderDecomposition
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.InitialFrequencyDecomposition
+public import DedekindZetaZeroFree.Moments.Principal.EulerCorrectionsAndDoubleResidue
+public import DedekindZetaZeroFree.Moments.Comparison.PoissonMellinKernelData
+public import DedekindZetaZeroFree.Moments.Comparison.TripleMellinKernel
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalProductSpectralProperties
+public import DedekindZetaZeroFree.Moments.Comparison.FiniteRowContourDecay
+public import DedekindZetaZeroFree.LFunctions.Hecke.EulerCorrectionAndQuotientContinuation
+public import DedekindZetaZeroFree.LFunctions.Hecke.KummerConductorStripBounds
+public import DedekindZetaZeroFree.Moments.Principal.Numerator.RightHalfPlaneBounds
+public import DedekindZetaZeroFree.ZeroDetection.ExceptionalZeros.PrimitiveDenominatorRectanglesAndDyadicCounts
+public import DedekindZetaZeroFree.Moments.Principal.Numerator.StripRegularization
+public import DedekindZetaZeroFree.LFunctions.Hecke.UniformRegularizationBoundaryBounds
+public import DedekindZetaZeroFree.LFunctions.Hecke.RegularizationStripGrowth
+public import DedekindZetaZeroFree.Analysis.PhragmenLindelof.PolynomialBoundaryBounds
+
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrincipalResidueNonvanishing
 
 @[expose] public section
@@ -19,8 +30,12 @@ open MeasureTheory
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-@[simp] theorem frequencyNorm_principalFrequency
-    (R : PrincipalMellin.ActualRecipe S η) :
+section
+
+variable (R : PrincipalMellin.ActualRecipe S η)
+include R
+
+@[simp] theorem frequencyNorm_principalFrequency :
     frequencyNorm R (principalFrequency R) = 1 := by
   simp only [frequencyNorm, principalFrequency, FiniteTransform.exteriorNorm,
     FiniteTransform.Residue, Ideal.span_singleton_one]
@@ -28,24 +43,22 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     Ideal.Quotient.subsingleton_iff.mpr rfl
   simp
 
-def principalRegularization (R : PrincipalMellin.ActualRecipe S η) (s : ℂ) : ℂ :=
+def principalRegularization (s : ℂ) : ℂ :=
   R.continuation.R s * ∏ v ∈ R.A.Sf,
     (1 - R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s))
 
-@[simp] theorem principalRegularization_at_one
-    (R : PrincipalMellin.ActualRecipe S η) :
+@[simp] theorem principalRegularization_at_one :
     principalRegularization R 1 =
       comparisonPrincipalResidue F R.A R.target R.probe.principal R.continuation := rfl
 
-theorem principal_coefficient_field_trace
-    (R : PrincipalMellin.ActualRecipe S η) (x : F) :
+theorem principal_coefficient_field_trace (x : F) :
     R.probe.coefficients.additiveCharacter x = (R.A.fieldTraceCharacter x : ℂ) := by
   rw [R.probe.sameTrace, PrincipalProbeConstruction.Inputs.fieldTrace_phase]
   congr 1
   funext v
   exact R.normalization.sameFiniteTrace v
 
-def principalArithmeticContext (R : PrincipalMellin.ActualRecipe S η) :
+def principalArithmeticContext :
     R.A.GeneralArithmeticContext R.σ R.target R.traceBad := by
   let A := R.A
   let D := R.probe.correction
@@ -73,7 +86,7 @@ def principalArithmeticContext (R : PrincipalMellin.ActualRecipe S η) :
     prime_target := fun I v hIv p hp a ha hap x hx =>
       D.prime_theta I v hIv p hp a ha hap x hx }
 
-theorem principal_arithmetic_binding (R : PrincipalMellin.ActualRecipe S η)
+theorem principal_arithmetic_binding
     (C : R.A.GeneralArithmeticContext R.σ R.target R.traceBad)
     (hC : R.probe.correction = C.correction) :
     PrincipalProbeConstruction.ArithmeticBinding R.A R.σ R.target R.traceBad
@@ -87,7 +100,7 @@ theorem principal_arithmetic_binding (R : PrincipalMellin.ActualRecipe S η)
     rw [principal_coefficient_field_trace R,
       PrincipalProbeConstruction.Inputs.fieldTrace_phase]
 
-theorem principal_arithmetic_compatibility (R : PrincipalMellin.ActualRecipe S η)
+theorem principal_arithmetic_compatibility
     (C : R.A.GeneralArithmeticContext R.σ R.target R.traceBad)
     (hC : R.probe.correction = C.correction) :
     WeightedFiniteCoefficient.ArithmeticCompatibility R.A R.probe.coefficients
@@ -95,13 +108,12 @@ theorem principal_arithmetic_compatibility (R : PrincipalMellin.ActualRecipe S �
   exact PrincipalCorrection.probe_arithmetic_compatibility C R.probe hC
     (principal_arithmetic_binding R C hC)
 
-theorem principal_actual_arithmetic_compatibility
-    (R : PrincipalMellin.ActualRecipe S η) :
+theorem principal_actual_arithmetic_compatibility :
     WeightedFiniteCoefficient.ArithmeticCompatibility R.A R.probe.coefficients
       R.σ R.target R.traceBad (principalArithmeticContext R).correction := by
   exact principal_arithmetic_compatibility R (principalArithmeticContext R) rfl
 
-def principalEulerFrequency (R : PrincipalMellin.ActualRecipe S η) :
+def principalEulerFrequency :
     CorrectionFactors.Frequency (principalArithmeticContext R) where
   u := 1
   ideal := ⟨⊤, top_ne_bot, by simp⟩
@@ -109,9 +121,6 @@ def principalEulerFrequency (R : PrincipalMellin.ActualRecipe S η) :
     constructor
     · exact one_ne_zero
     · simp [SArithmeticData.extendIdeal, Ideal.map_top]
-  allowed := by
-    convert (principalArithmeticContext R).correction.B.one_mem using 1
-    simp [SArithmeticData.IsAllowed]
   sixthFree := by
     intro p
     simp only [idealPrimeExponent]
@@ -123,12 +132,12 @@ def principalEulerFrequency (R : PrincipalMellin.ActualRecipe S η) :
     rw [ht]
     simp
 
-def principalContourCorrection (R : PrincipalMellin.ActualRecipe S η) (ξ w z : ℂ) : ℂ :=
+def principalContourCorrection (ξ w z : ℂ) : ℂ :=
   ∏' p : LocalFiniteSums.ExteriorPrime R.A,
     CorrectionFactors.localFactor (principalArithmeticContext R) (principalEulerFrequency R)
       p ξ w z
 
-theorem principalContourCorrection_principal_specialization (R : PrincipalMellin.ActualRecipe S η)
+theorem principalContourCorrection_principal_specialization
     (ξ : ℂ) (hξ : (499 / 500 : ℝ) - 1 / 100000 < ξ.re) :
     principalContourCorrection R ξ 1 (1 / 6) =
       CorrectionFactors.H_eta (principalArithmeticContext R) ξ := by
@@ -137,7 +146,7 @@ theorem principalContourCorrection_principal_specialization (R : PrincipalMellin
       (principalEulerFrequency R) rfl).2 ξ hξ
   exact hh
 
-theorem principal_theta_at_euler_generator (R : PrincipalMellin.ActualRecipe S η)
+theorem principal_theta_at_euler_generator
     (p : LocalFiniteSums.ExteriorPrime R.A) :
     R.probe.coefficients.theta (R.probe.coefficients.generator (LocalFiniteSums.primeIdeal p)) =
       LocalFiniteSums.vartheta (principalArithmeticContext R) p := by
@@ -153,7 +162,7 @@ theorem principal_theta_at_euler_generator (R : PrincipalMellin.ActualRecipe S �
     ((D.generates _).2.trans (LocalFiniteSums.generator_generates C p).2.symm)]
   rfl
 
-def principalEulerPrimeEquiv (R : PrincipalMellin.ActualRecipe S η) :
+def principalEulerPrimeEquiv :
     LocalFiniteSums.ExteriorPrime R.A ≃ ExteriorIdealEuler.PrimeIndex R.A.cS where
   toFun p := ⟨LocalFiniteSums.primeIdeal p, p.val.prime⟩
   invFun p := ⟨⟨p.val.val, (Ideal.prime_iff_isPrime p.val.property.1).mp p.property,
@@ -161,7 +170,7 @@ def principalEulerPrimeEquiv (R : PrincipalMellin.ActualRecipe S η) :
   left_inv p := by rfl
   right_inv p := by rfl
 
-theorem principal_localCorrection_eq_h_p (R : PrincipalMellin.ActualRecipe S η)
+theorem principal_localCorrection_eq_h_p
     (p : LocalFiniteSums.ExteriorPrime R.A) (s : ℂ) :
     R.localCorrection (principalEulerPrimeEquiv R p) s =
       CorrectionFactors.h_p (principalArithmeticContext R) p s := by
@@ -205,7 +214,7 @@ theorem principal_localCorrection_eq_h_p (R : PrincipalMellin.ActualRecipe S η)
   rw [h2, hm, ← he2]
   ring
 
-theorem principal_H_eq_H_eta (R : PrincipalMellin.ActualRecipe S η) (s : ℂ) :
+theorem principal_H_eq_H_eta (s : ℂ) :
     R.H s = CorrectionFactors.H_eta (principalArithmeticContext R) s := by
   unfold PrincipalMellin.ActualRecipe.H CorrectionFactors.H_eta
   rw [← (principalEulerPrimeEquiv R).tprod_eq]
@@ -213,17 +222,16 @@ theorem principal_H_eq_H_eta (R : PrincipalMellin.ActualRecipe S η) (s : ℂ) :
   intro p
   exact principal_localCorrection_eq_h_p R p s
 
-theorem principalContourCorrection_at_double_residue
-    (R : PrincipalMellin.ActualRecipe S η) (ξ : ℂ)
+theorem principalContourCorrection_at_double_residue (ξ : ℂ)
     (hξ : (499 / 500 : ℝ) - 1 / 100000 < ξ.re) :
     principalContourCorrection R ξ 1 (1 / 6) = R.H ξ := by
   rw [principal_H_eq_H_eta]
   exact principalContourCorrection_principal_specialization R ξ hξ
 
-theorem principal_real_weight_measurable (R : PrincipalMellin.ActualRecipe S η) : Measurable R.W.W1Hat :=
+theorem principal_real_weight_measurable : Measurable R.W.W1Hat :=
   (ProbeSheet.MellinProof.realWeight_mellin_differentiable R.probe.W1).continuous.measurable
 
-theorem principal_real_weight_rapid_strip_decay (R : PrincipalMellin.ActualRecipe S η) (a b : ℝ) :
+theorem principal_real_weight_rapid_strip_decay (a b : ℝ) :
     comparisonRapidStripDecay R.W.W1Hat a b := by
   intro N hN
   obtain ⟨C, hC, hb⟩ :=
@@ -234,6 +242,8 @@ theorem principal_real_weight_rapid_strip_decay (R : PrincipalMellin.ActualRecip
   have heq : (s.re : ℂ) + (s.im : ℂ) * Complex.I = s := Complex.re_add_im s
   rw [heq] at h
   exact h.trans (mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg (by positivity) _))
+
+end
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison

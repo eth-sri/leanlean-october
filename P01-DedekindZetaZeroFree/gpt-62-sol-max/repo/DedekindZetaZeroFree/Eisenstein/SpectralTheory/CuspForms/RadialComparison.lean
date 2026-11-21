@@ -54,9 +54,6 @@ def endChart (c : Cusp F ζ hζ U R P H) (T : ℝ) :
       (((H.atlas U).cuspAtlas c.1).representative c.2) T
       ((((H.atlas U).cuspAtlas c.1).geometry c.2).highPresentation T z))
 
-abbrev ActualLine (c : Cusp F ζ hζ U R P H) :=
-  KPCuspGenuineMonodromy.OrbifoldLine F ζ hζ U ((H.atlas U).representative c.1)
-    ((H.atlas U).line c.1).rho
 
 def transverseLineRelation (c : Cusp F ζ hζ U R P H) :
     Setoid (KPCuspCharts.Cross F × Coefficient F ζ hζ U) :=
@@ -67,19 +64,8 @@ def transverseLineRelation (c : Cusp F ζ hζ U R P H) :
 
 abbrev L_c (c : Cusp F ζ hζ U R P H) := Quotient (transverseLineRelation F ζ hζ U R P H c)
 
-def endLineRelation (c : Cusp F ζ hζ U R P H) (T : ℝ) :
-    Setoid ((KPCuspCharts.Cross F × Set.Ioi T) × Coefficient F ζ hζ U) :=
-  Setoid.comap (fun z => (cuspPoint F ζ hζ U R P H c.1 c.2 (z.1.1, z.1.2.val), z.2))
-    (KPCuspGenuineMonodromy.flatLineRelation F ζ hζ U
-      ((H.atlas U).representative c.1) ((H.atlas U).line c.1).rho)
 
-abbrev EndLine (c : Cusp F ζ hζ U R P H) (T : ℝ) :=
-  Quotient (endLineRelation F ζ hζ U R P H c T)
 
-def endLineToActual (c : Cusp F ζ hζ U R P H) (T : ℝ) :
-    EndLine F ζ hζ U R P H c T → ActualLine F ζ hζ U R P H c :=
-  Quotient.map (fun z => (cuspPoint F ζ hζ U R P H c.1 c.2 (z.1.1, z.1.2.val), z.2))
-    (fun _ _ h => h)
 
  theorem smul_toArch_crossAction (c : Cusp F ζ hζ U R P H)
     (g : Stabilizer F ζ hζ U R P H c) (p : KPCuspCharts.Cross F) (t : ℝ) :
@@ -340,7 +326,7 @@ private theorem transverse_norm_eq (c : Cusp F ζ hζ U R P H)
     chi_norm_one F ζ hζ (((H.atlas U).line c.1).rho γ), one_mul]
   rfl
 
-private theorem hermitian_norm_proof (c : Cusp F ζ hζ U R P H)
+theorem hermitian_norm_proof (c : Cusp F ζ hζ U R P H)
     (p : KPCuspCharts.Cross F) (a : Coefficient F ζ hζ U) :
     lineNormSq F ζ hζ U R P H c (Quotient.mk _ (p,a)) = ‖a‖ ^ 2 := by
   unfold lineNormSq
@@ -348,7 +334,7 @@ private theorem hermitian_norm_proof (c : Cusp F ζ hζ U R P H)
   exact (transverse_norm_eq F ζ hζ U R P H c _ _
     (Quotient.mk_out (s := transverseLineRelation F ζ hζ U R P H c) (p, a))).symm
 
-private theorem positive_dimension_proof : 0 < d F := by
+theorem positive_dimension_proof : 0 < d F := by
   unfold d
   have : (0 : ℝ) < Module.finrank ℚ F := by
     exact_mod_cast Module.finrank_pos (R := ℚ) (M := F)
@@ -617,7 +603,7 @@ private theorem compact_transverse_proof (c : Cusp F ζ hζ U R P H) :
     CompactSpace (Y_c F ζ hζ U R P H c) :=
   (((H.atlas U).cuspAtlas c.1).geometry c.2).compact_cross
 
-private theorem finite_transverse_proof (c : Cusp F ζ hζ U R P H) :
+theorem finite_transverse_proof (c : Cusp F ζ hζ U R P H) :
     IsFiniteMeasure (nu_c F ζ hζ U R P H c) := by
   unfold nu_c
   refine ⟨?_⟩
@@ -625,69 +611,11 @@ private theorem finite_transverse_proof (c : Cusp F ζ hζ U R P H) :
   refine ENNReal.mul_lt_top ((H.disintegration U).finite_componentWeight c.1) ?_
   exact (((H.atlas U).cuspAtlas c.1).geometry c.2).finite_sectionMeasure.measure_univ_lt_top
 
-private theorem positive_transverse_proof (c : Cusp F ζ hζ U R P H) :
-    0 < nu_c F ζ hζ U R P H c Set.univ := by
-  unfold nu_c
-  rw [Measure.smul_apply]
-  refine ENNReal.mul_pos ?_ ?_
-  · exact ne_of_gt ((H.disintegration U).positive_componentWeight c.1)
-  · exact (((H.atlas U).cuspAtlas c.1).geometry c.2).positive_sectionMeasure
 
-private theorem section_base_proof (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
-    (t : ℝ) (y : Y_c F ζ hζ U R P H c) :
-    lineBase F ζ hζ U R P H c (v_c F ζ hζ U R P H f c t y) = y ∧
-    lineBase F ζ hζ U R P H c (nabla_t F ζ hζ U R P H f c t y) = y := by
-  constructor <;> induction y using Quotient.inductionOn with
-  | h p => rfl
 
-private theorem core_inclusion_proof (f : S_U F ζ hζ U R P H) :
-    j_U F ζ hζ U R P H μG hμG hR realization
-      (coreLift F ζ hζ U R P H μG hμG hR realization f) = iota f := by
-  simp [j_U, coreLift, closedGradientEmbedding]
 
-private theorem core_energy_proof (f : S_U F ζ hζ U R P H) :
-    q_U F ζ hζ U R P H μG hμG hR realization
-      (coreLift F ζ hζ U R P H μG hμG hR realization f) =
-    KPContActualSectorFriedrichsSynthesis.energy F ζ hζ U R P H μG hμG hR realization
-      (KPContActualSectorFriedrichsSynthesis.formTest F ζ hζ U R P H μG hμG hR realization f) := by
-  simp [q_U, coreLift, closedGradient, closedGradientCoordinate,
-    KPContActualSectorFriedrichsSynthesis.energy, closedGradientEnergy]
 
-private theorem transition_coefficient (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
-    (g : Stabilizer F ζ hζ U R P H c) (p : KPCuspCharts.Cross F) (t : ℝ) :
-    coefficient F ζ hζ U R P H f c
-        ((((H.atlas U).cuspAtlas c.1).geometry c.2).crossAction g p) t =
-      phaseTransport F ζ hζ U (((H.atlas U).line c.1).rho
-        (KPCuspGenuineMonodromy.cuspInclusion F
-          (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative c.1))
-          (((H.atlas U).cuspAtlas c.1).cusp c.2)
-          (((H.atlas U).cuspAtlas c.1).representative c.2) g))
-        (coefficient F ζ hζ U R P H f c p t) :=
-  (cuspCoefficient_transition F ζ hζ U R P H (scalarSections f) c.1 c.2 g p t).1
 
-private theorem transition_radialDerivative (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
-    (g : Stabilizer F ζ hζ U R P H c) (p : KPCuspCharts.Cross F) (t : ℝ) :
-    radialDerivative F ζ hζ U R P H f c
-        ((((H.atlas U).cuspAtlas c.1).geometry c.2).crossAction g p) t =
-      (KPCuspGenuineMonodromy.chi F ζ hζ (((H.atlas U).line c.1).rho
-        (KPCuspGenuineMonodromy.cuspInclusion F
-          (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative c.1))
-          (((H.atlas U).cuspAtlas c.1).cusp c.2)
-          (((H.atlas U).cuspAtlas c.1).representative c.2) g)) : ℂ) *
-        radialDerivative F ζ hζ U R P H f c p t := by
-  have hfun : (fun s => (coefficient F ζ hζ U R P H f c
-        ((((H.atlas U).cuspAtlas c.1).geometry c.2).crossAction g p) s : ℂ)) =
-      fun s => (KPCuspGenuineMonodromy.chi F ζ hζ (((H.atlas U).line c.1).rho
-          (KPCuspGenuineMonodromy.cuspInclusion F
-            (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative c.1))
-            (((H.atlas U).cuspAtlas c.1).cusp c.2)
-            (((H.atlas U).cuspAtlas c.1).representative c.2) g)) : ℂ) *
-        (coefficient F ζ hζ U R P H f c p s : ℂ) := by
-    funext s
-    rw [transition_coefficient F ζ hζ U R P H f c g p s]
-    rfl
-  simp only [radialDerivative]
-  rw [hfun, deriv_const_mul_field]
 
 private theorem componentMap_isEmbedding (c : Cusp F ζ hζ U R P H) :
     Topology.IsEmbedding
@@ -699,7 +627,7 @@ private theorem componentMap_isEmbedding (c : Cusp F ζ hζ U R P H) :
   rw [h1]
   exact (H.atlas U).components.isEmbedding.comp Topology.IsEmbedding.sigmaMk
 
-private theorem base_embedding_proof (c : Cusp F ζ hζ U R P H) (T : ℝ)
+theorem base_embedding_proof (c : Cusp F ζ hζ U R P H) (T : ℝ)
     (hT : ((H.atlas U).cuspAtlas c.1).threshold < T) :
     Topology.IsEmbedding (endChart F ζ hζ U R P H c T) ∧
     Set.range (endChart F ζ hζ U R P H c T) = endSet F ζ hζ U R P H c T := by
@@ -1357,378 +1285,15 @@ theorem radial_energy_comparison
     (KPContActualCotangentMeasurableFamilies.normSquare _ x).coe_nonneg) hNi.aestronglyMeasurable]
   exact hreal
 
-theorem high_cusp_relation_parallel
-    (c : Cusp F ζ hζ U R P H) (γ : KPCuspGenuineMonodromy.Component F ζ hζ U
-      ((H.atlas U).representative c.1))
-    (p q : KPCuspCharts.Cross F) (t s : ℝ)
-    (ht : ((H.atlas U).cuspAtlas c.1).threshold < t)
-    (hs : ((H.atlas U).cuspAtlas c.1).threshold < s)
-    (he : cuspPoint F ζ hζ U R P H c.1 c.2 (q,s) =
-      (γ : KPCuspArithmetic.PGL2 F) • cuspPoint F ζ hζ U R P H c.1 c.2 (p,t)) :
-    s = t ∧ ∀ r : ℝ, cuspPoint F ζ hζ U R P H c.1 c.2 (q,r) =
-      (γ : KPCuspArithmetic.PGL2 F) • cuspPoint F ζ hζ U R P H c.1 c.2 (p,r) := by
-  let At := H.atlas U
-  let σ := (At.cuspAtlas c.1).representative c.2
-  let Γ := KPCuspGenuineMonodromy.Component F ζ hζ U (At.representative c.1)
-  have hd := (At.cuspAtlas c.1).geometry c.2 |>.positive_dimension
-  have hz : σ • KPCuspCharts.toArch F (p,t) ∈
-      KPCuspSiegel.highCusp F σ (At.cuspAtlas c.1).threshold := by
-    refine ⟨KPCuspCharts.toArch F (p,t), ?_, rfl⟩
-    change (At.cuspAtlas c.1).threshold < KPCuspLogShape.meanHeight _ _
-    rw [KPCuspCharts.toArch_meanHeight F hd]
-    exact ht
-  have hγz : (γ : KPCuspArithmetic.PGL2 F) • (σ • KPCuspCharts.toArch F (p,t)) ∈
-      KPCuspSiegel.highCusp F σ (At.cuspAtlas c.1).threshold := by
-    change (γ : KPCuspArithmetic.PGL2 F) • cuspPoint F ζ hζ U R P H c.1 c.2 (p,t) ∈ _
-    rw [← he]
-    refine ⟨KPCuspCharts.toArch F (q,s), ?_, rfl⟩
-    change (At.cuspAtlas c.1).threshold < KPCuspLogShape.meanHeight _ _
-    rw [KPCuspCharts.toArch_meanHeight F hd]
-    exact hs
-  have hp := KPContGenericEndMapRigidity.actual_high_intersection_of_endMap_injective
-    F hd Γ ((At.cuspAtlas c.1).cusp c.2) σ (At.cuspAtlas c.1).threshold
-    ((At.cuspAtlas c.1).end_embedding c.2).injective γ _ hz hγz
-  let g : Stabilizer F ζ hζ U R P H c :=
-    ⟨σ⁻¹ * (γ : KPCuspArithmetic.PGL2 F) * σ,
-      Subgroup.mem_map.mpr ⟨γ, hp, by
-        change σ⁻¹ * (γ : KPCuspArithmetic.PGL2 F) * (σ⁻¹)⁻¹ = _
-        rw [inv_inv]⟩⟩
-  have hg : (KPCuspGenuineMonodromy.cuspInclusion F Γ
-      ((At.cuspAtlas c.1).cusp c.2) σ g : KPCuspArithmetic.PGL2 F) = γ := by
-    rw [KPCuspGenuineMonodromy.cuspInclusion_formula]
-    change σ * (σ⁻¹ * (γ : KPCuspArithmetic.PGL2 F) * σ) * σ⁻¹ = _
-    group
-  have hflat : KPCuspCharts.toArch F (q,s) =
-      KPCuspCharts.toArch F ((((At.cuspAtlas c.1).geometry c.2).crossAction g p),t) := by
-    have h := he
-    have ht' := cuspPoint_transition F ζ hζ U R P H c g p t
-    have hg' : KPCuspGenuineMonodromy.cuspInclusion F Γ
-        ((At.cuspAtlas c.1).cusp c.2) σ g = γ := Subtype.ext hg
-    change cuspPoint F ζ hζ U R P H c.1 c.2
-        ((((At.cuspAtlas c.1).geometry c.2).crossAction g p),t) =
-      (KPCuspGenuineMonodromy.cuspInclusion F Γ
-        ((At.cuspAtlas c.1).cusp c.2) σ g : KPCuspArithmetic.PGL2 F) •
-        cuspPoint F ζ hζ U R P H c.1 c.2 (p,t) at ht'
-    rw [hg'] at ht'
-    rw [← ht'] at h
-    exact MulAction.injective σ h
-  have hcoord := (KPCuspCharts.toArchHomeomorph F hd).injective hflat
-  refine ⟨(Prod.ext_iff.mp hcoord).2, ?_⟩
-  intro r
-  have hq : q = ((At.cuspAtlas c.1).geometry c.2).crossAction g p := (Prod.ext_iff.mp hcoord).1
-  rw [hq, cuspPoint_transition]
-  have hg' : KPCuspGenuineMonodromy.cuspInclusion F Γ
-      ((At.cuspAtlas c.1).cusp c.2) σ g = γ := Subtype.ext hg
-  exact congrArg (fun δ : Γ => (δ : KPCuspArithmetic.PGL2 F) •
-    cuspPoint F ζ hζ U R P H c.1 c.2 (p,r)) hg'
 
-theorem endLineRelation_iff_parallel
-    (c : Cusp F ζ hζ U R P H) (T : ℝ)
-    (hT : ((H.atlas U).cuspAtlas c.1).threshold < T)
-    (z z' : (KPCuspCharts.Cross F × Set.Ioi T) × Coefficient F ζ hζ U) :
-    endLineRelation F ζ hζ U R P H c T z z' ↔
-      transverseLineRelation F ζ hζ U R P H c (z.1.1,z.2) (z'.1.1,z'.2) ∧
-      z.1.2 = z'.1.2 := by
-  constructor
-  · rintro ⟨γ, hp, hc⟩
-    have hh := high_cusp_relation_parallel F ζ hζ U R P H c γ z.1.1 z'.1.1
-      z.1.2.val z'.1.2.val (lt_trans hT z.1.2.property) (lt_trans hT z'.1.2.property) hp
-    exact ⟨⟨γ, hh.2 _, hc⟩, Subtype.ext hh.1.symm⟩
-  · rintro ⟨⟨γ, hp, hc⟩, ht⟩
-    have hh := high_cusp_relation_parallel F ζ hζ U R P H c γ z.1.1 z'.1.1
-      (((H.atlas U).cuspAtlas c.1).threshold + 1)
-      (((H.atlas U).cuspAtlas c.1).threshold + 1) (by linarith) (by linarith) hp
-    refine ⟨γ, ?_, hc⟩
-    change cuspPoint F ζ hζ U R P H c.1 c.2 (z'.1.1,z'.1.2.val) =
-      (γ : KPCuspArithmetic.PGL2 F) • cuspPoint F ζ hζ U R P H c.1 c.2 (z.1.1,z.1.2.val)
-    rw [← ht]
-    exact hh.2 _
 
- def radialLineForward (c : Cusp F ζ hζ U R P H) (T : ℝ)
-    (hT : ((H.atlas U).cuspAtlas c.1).threshold < T)
-    (z : L_c F ζ hζ U R P H c × Set.Ioi T) : EndLine F ζ hζ U R P H c T :=
-  Quotient.lift (fun w : KPCuspCharts.Cross F × Coefficient F ζ hζ U =>
-    Quotient.mk _ ((w.1,z.2),w.2)) (fun w w' hw => Quotient.sound
-      ((endLineRelation_iff_parallel F ζ hζ U R P H c T hT _ _).mpr ⟨hw,rfl⟩)) z.1
 
- def radialLineBackward (c : Cusp F ζ hζ U R P H) (T : ℝ)
-    (hT : ((H.atlas U).cuspAtlas c.1).threshold < T) :
-    EndLine F ζ hζ U R P H c T → L_c F ζ hζ U R P H c × Set.Ioi T :=
-  Quotient.lift (fun w => (Quotient.mk _ (w.1.1,w.2),w.1.2)) (fun w w' hw => by
-    obtain ⟨hl,ht⟩ := (endLineRelation_iff_parallel F ζ hζ U R P H c T hT w w').mp hw
-    exact Prod.ext (Quotient.sound hl) ht)
 
-def radialLineHomeomorph (c : Cusp F ζ hζ U R P H) (T : ℝ)
-    (hT : ((H.atlas U).cuspAtlas c.1).threshold < T) :
-    L_c F ζ hζ U R P H c × Set.Ioi T ≃ₜ EndLine F ζ hζ U R P H c T where
-  toFun := radialLineForward F ζ hζ U R P H c T hT
-  invFun := radialLineBackward F ζ hζ U R P H c T hT
-  left_inv := by
-    rintro ⟨y,t⟩
-    induction y using Quotient.inductionOn with
-    | h p => rfl
-  right_inv := by
-    intro y
-    induction y using Quotient.inductionOn with
-    | h p => rfl
-  continuous_toFun := by
-    letI : LocallyCompactSpace (Set.Ioi T) := isOpen_Ioi.locallyCompactSpace
-    apply (isQuotientMap_quotient_mk'
-      (s := transverseLineRelation F ζ hζ U R P H c)).continuous_lift_prod_left
-    have he : (fun z : (KPCuspCharts.Cross F × Coefficient F ζ hζ U) × Set.Ioi T =>
-        radialLineForward F ζ hζ U R P H c T hT (Quotient.mk _ z.1,z.2)) =
-        fun z => Quotient.mk (endLineRelation F ζ hζ U R P H c T) ((z.1.1,z.2),z.1.2) := rfl
-    change Continuous (fun z : (KPCuspCharts.Cross F × Coefficient F ζ hζ U) × Set.Ioi T =>
-      radialLineForward F ζ hζ U R P H c T hT (Quotient.mk _ z.1,z.2))
-    rw [he]
-    exact continuous_quotient_mk'.comp
-      ((continuous_fst.fst.prodMk continuous_snd).prodMk continuous_fst.snd)
-  continuous_invFun := by
-    apply Continuous.quotient_lift
-    exact ((continuous_quotient_mk'.comp (continuous_fst.fst.prodMk continuous_snd)).prodMk
-      continuous_fst.snd)
 
-@[simp] theorem radialLineHomeomorph_mk
-    (c : Cusp F ζ hζ U R P H) (T : ℝ)
-    (hT : ((H.atlas U).cuspAtlas c.1).threshold < T)
-    (p : KPCuspCharts.Cross F) (a : Coefficient F ζ hζ U) (t : Set.Ioi T) :
-    radialLineHomeomorph F ζ hζ U R P H c T hT (Quotient.mk _ (p,a),t) =
-      Quotient.mk _ ((p,t),a) := rfl
 
-private theorem actualLine_quotient_open (c : Cusp F ζ hζ U R P H) :
-    IsOpenMap (Quotient.mk (KPCuspGenuineMonodromy.flatLineRelation F ζ hζ U
-      ((H.atlas U).representative c.1) ((H.atlas U).line c.1).rho)) := by
-  letI := KPFiniteAdelicCuspEnds.canonicalAction_continuousConstSMul F
-  let Γ := KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative c.1)
-  let Q := Quotient.mk (KPCuspGenuineMonodromy.flatLineRelation F ζ hζ U
-    ((H.atlas U).representative c.1) ((H.atlas U).line c.1).rho)
-  let act : Γ → (KPCuspGenuineMonodromy.SymmetricSpace F × Coefficient F ζ hζ U ≃ₜ
-      KPCuspGenuineMonodromy.SymmetricSpace F × Coefficient F ζ hζ U) := fun γ =>
-    (Homeomorph.smul (γ : KPCuspArithmetic.PGL2 F)).prodCongr
-      (phaseTransport F ζ hζ U (((H.atlas U).line c.1).rho γ)).toHomeomorph
-  intro V hV
-  change IsOpen (Q '' V)
-  rw [isOpen_coinduced]
-  have hsat : Q ⁻¹' (Q '' V) = ⋃ γ : Γ, act γ '' V := by
-    ext z
-    constructor
-    · rintro ⟨w, hw, he⟩
-      obtain ⟨γ, hp, hc⟩ := Quotient.exact he
-      apply Set.mem_iUnion.mpr
-      refine ⟨γ, w, hw, ?_⟩
-      apply Prod.ext hp.symm
-      apply Subtype.ext
-      exact hc.symm
-    · intro hz
-      obtain ⟨γ,w,hw,he⟩ := Set.mem_iUnion.mp hz
-      refine ⟨w,hw,Quotient.sound ⟨γ, ?_, ?_⟩⟩
-      · exact (congrArg Prod.fst he).symm
-      · exact (congrArg (fun z => (z.2 : ℂ)) he).symm
-  change IsOpen (Q ⁻¹' (Q '' V))
-  rw [hsat]
-  exact isOpen_iUnion (fun γ => (act γ).isOpenMap V hV)
 
-private theorem rawEndLine_openEmbedding (c : Cusp F ζ hζ U R P H) (T : ℝ) :
-    IsOpenEmbedding (fun z : (KPCuspCharts.Cross F × Set.Ioi T) × Coefficient F ζ hζ U =>
-      (cuspPoint F ζ hζ U R P H c.1 c.2 (z.1.1,z.1.2.val),z.2)) := by
-  letI := KPFiniteAdelicCuspEnds.canonicalAction_continuousConstSMul F
-  let E := (KPCuspCharts.toArchHomeomorph F
-    (((H.atlas U).cuspAtlas c.1).geometry c.2).positive_dimension).trans
-      (Homeomorph.smul (((H.atlas U).cuspAtlas c.1).representative c.2))
-  have hsub : IsOpenEmbedding (fun z : KPCuspCharts.Cross F × Set.Ioi T => (z.1,z.2.val)) :=
-    IsOpenEmbedding.id.prodMap isOpen_Ioi.isOpenEmbedding_subtypeVal
-  have he : IsOpenEmbedding (fun z : KPCuspCharts.Cross F × Set.Ioi T =>
-      cuspPoint F ζ hζ U R P H c.1 c.2 (z.1,z.2.val)) := by
-    exact E.isOpenEmbedding.comp hsub
-  exact he.prodMap IsOpenEmbedding.id
 
-theorem endLineToActual_isEmbedding (c : Cusp F ζ hζ U R P H) (T : ℝ) :
-    IsEmbedding (endLineToActual F ζ hζ U R P H c T) := by
-  let raw := fun z : (KPCuspCharts.Cross F × Set.Ioi T) × Coefficient F ζ hζ U =>
-    (cuspPoint F ζ hζ U R P H c.1 c.2 (z.1.1,z.1.2.val),z.2)
-  let Q := Quotient.mk (KPCuspGenuineMonodromy.flatLineRelation F ζ hζ U
-    ((H.atlas U).representative c.1) ((H.atlas U).line c.1).rho)
-  have hraw := rawEndLine_openEmbedding F ζ hζ U R P H c T
-  have hcont : Continuous (endLineToActual F ζ hζ U R P H c T) := by
-    apply Continuous.quotient_lift
-    exact continuous_quotient_mk'.comp hraw.continuous
-  have hinj : Function.Injective (endLineToActual F ζ hζ U R P H c T) := by
-    intro z z' he
-    induction z using Quotient.inductionOn with
-    | h w =>
-      induction z' using Quotient.inductionOn with
-      | h w' =>
-        change Q (raw w) = Q (raw w') at he
-        have hrel : KPCuspGenuineMonodromy.flatLineRelation F ζ hζ U
-            ((H.atlas U).representative c.1) ((H.atlas U).line c.1).rho (raw w) (raw w') :=
-          Quotient.exact he
-        exact Quotient.sound hrel
-  have hopen : IsOpenMap (endLineToActual F ζ hζ U R P H c T) := by
-    intro V hV
-    have hpre : IsOpen (Quotient.mk (endLineRelation F ζ hζ U R P H c T) ⁻¹' V) :=
-      hV.preimage continuous_quotient_mk'
-    have he : endLineToActual F ζ hζ U R P H c T '' V =
-        Q '' (raw '' (Quotient.mk (endLineRelation F ζ hζ U R P H c T) ⁻¹' V)) := by
-      ext z
-      constructor
-      · rintro ⟨w,hw,rfl⟩
-        obtain ⟨v,rfl⟩ := Quotient.exists_rep w
-        exact ⟨raw v, ⟨v,hw,rfl⟩,rfl⟩
-      · rintro ⟨_,⟨v,hv,rfl⟩,rfl⟩
-        exact ⟨Quotient.mk _ v,hv,rfl⟩
-    rw [he]
-    exact actualLine_quotient_open F ζ hζ U R P H c _ (hraw.isOpenMap _ hpre)
-  exact (IsOpenEmbedding.of_continuous_injective_isOpenMap hcont hinj hopen).isEmbedding
-
-structure Properties : Prop where
-  positive_dimension : 0 < d F
-  dimension_eq : d F = (KPCuspLogShape.dimension F : ℝ)
-  compact_transverse : ∀ c : Cusp F ζ hζ U R P H, CompactSpace (Y_c F ζ hζ U R P H c)
-  finite_transverse : ∀ c : Cusp F ζ hζ U R P H, IsFiniteMeasure (nu_c F ζ hζ U R P H c)
-  positive_transverse : ∀ c : Cusp F ζ hζ U R P H, 0 < nu_c F ζ hζ U R P H c Set.univ
-  hermitian_norm : ∀ (c : Cusp F ζ hζ U R P H) (p : KPCuspCharts.Cross F)
-      (a : Coefficient F ζ hζ U),
-    lineNormSq F ζ hζ U R P H c (Quotient.mk _ (p,a)) = ‖a‖ ^ 2
-  section_base : ∀ (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H) t y,
-    lineBase F ζ hζ U R P H c (v_c F ζ hζ U R P H f c t y) = y ∧
-    lineBase F ζ hζ U R P H c (nabla_t F ζ hζ U R P H f c t y) = y
-  core_inclusion : ∀ f : S_U F ζ hζ U R P H,
-    j_U F ζ hζ U R P H μG hμG hR realization
-      (coreLift F ζ hζ U R P H μG hμG hR realization f) = iota f
-  core_energy : ∀ f : S_U F ζ hζ U R P H,
-    q_U F ζ hζ U R P H μG hμG hR realization
-      (coreLift F ζ hζ U R P H μG hμG hR realization f) =
-    KPContActualSectorFriedrichsSynthesis.energy F ζ hζ U R P H μG hμG hR realization
-      (KPContActualSectorFriedrichsSynthesis.formTest F ζ hζ U R P H μG hμG hR realization f)
-
-  radial_pullback : ∀ (c : Cusp F ζ hζ U R P H) (T : ℝ),
-    ((H.atlas U).cuspAtlas c.1).threshold < T →
-      ∃ e : L_c F ζ hζ U R P H c × Set.Ioi T ≃ₜ EndLine F ζ hζ U R P H c T,
-        (∀ (p : KPCuspCharts.Cross F) (a : Coefficient F ζ hζ U) (t : Set.Ioi T),
-          e (Quotient.mk _ (p,a),t) = Quotient.mk _ ((p,t),a)) ∧
-        Topology.IsEmbedding (endLineToActual F ζ hζ U R P H c T)
-  base_embedding : ∀ (c : Cusp F ζ hζ U R P H) (T : ℝ),
-    ((H.atlas U).cuspAtlas c.1).threshold < T →
-    Topology.IsEmbedding (endChart F ζ hζ U R P H c T) ∧
-    Set.range (endChart F ζ hζ U R P H c T) = endSet F ζ hζ U R P H c T
-
-  fixed_haar : ∀ (c : Cusp F ζ hζ U R P H) (T : ℝ),
-    ((H.atlas U).cuspAtlas c.1).threshold < T →
-    Measure.map (endChart F ζ hζ U R P H c T)
-      ((nu_c F ζ hζ U R P H c).prod
-        (Measure.comap (Subtype.val : Set.Ioi T → ℝ)
-          (KPCuspCharts.radialMeasure (KPCuspLogShape.dimension F)))) =
-      (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict
-        (endSet F ζ hζ U R P H c T)
-
-  transition : ∀ (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
-      (g : Stabilizer F ζ hζ U R P H c) (p : KPCuspCharts.Cross F) (t : ℝ),
-    let γ := KPCuspGenuineMonodromy.cuspInclusion F
-      (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative c.1))
-      (((H.atlas U).cuspAtlas c.1).cusp c.2)
-      (((H.atlas U).cuspAtlas c.1).representative c.2) g
-    coefficient F ζ hζ U R P H f c
-      ((((H.atlas U).cuspAtlas c.1).geometry c.2).crossAction g p) t =
-      phaseTransport F ζ hζ U (((H.atlas U).line c.1).rho γ)
-        (coefficient F ζ hζ U R P H f c p t) ∧
-    radialDerivative F ζ hζ U R P H f c
-      ((((H.atlas U).cuspAtlas c.1).geometry c.2).crossAction g p) t =
-      (KPCuspGenuineMonodromy.chi F ζ hζ (((H.atlas U).line c.1).rho γ) : ℂ) *
-        radialDerivative F ζ hζ U R P H f c p t
-
-  finite_integrals : ∀ (c : Cusp F ζ hζ U R P H) (T : ℝ),
-    ((H.atlas U).cuspAtlas c.1).threshold < T →
-    ∀ f : S_U F ζ hζ U R P H,
-      scalarSupport f.val ⊆ endSet F ζ hζ U R P H c T →
-      (∀ y, IntegrableOn (scalarDensity F ζ hζ U R P H f c y) (Set.Ioi T) volume ∧
-        IntegrableOn (gradientDensity F ζ hζ U R P H f c y) (Set.Ioi T) volume) ∧
-      Integrable (fun y => ∫ t in Set.Ioi T, scalarDensity F ζ hζ U R P H f c y t ∂volume)
-        (nu_c F ζ hζ U R P H c) ∧
-      Integrable (fun y => ∫ t in Set.Ioi T, gradientDensity F ζ hζ U R P H f c y t ∂volume)
-        (nu_c F ζ hζ U R P H c)
-
-  comparison : ∀ (c : Cusp F ζ hζ U R P H) (T : ℝ),
-    ((H.atlas U).cuspAtlas c.1).threshold < T →
-    ∀ f : S_U F ζ hζ U R P H,
-      scalarSupport f.val ⊆ endSet F ζ hζ U R P H c T →
-      Integrable (fun z : Y_c F ζ hζ U R P H c × ℝ =>
-        scalarDensity F ζ hζ U R P H f c z.1 z.2)
-        ((nu_c F ζ hζ U R P H c).prod (volume.restrict (Set.Ioi T))) ∧
-      Integrable (fun z : Y_c F ζ hζ U R P H c × ℝ =>
-        gradientDensity F ζ hζ U R P H f c z.1 z.2)
-        ((nu_c F ζ hζ U R P H c).prod (volume.restrict (Set.Ioi T))) ∧
-      ‖iota f‖ ^ 2 =
-        ∫ y, ∫ t in Set.Ioi T, scalarDensity F ζ hζ U R P H f c y t
-          ∂volume ∂nu_c F ζ hζ U R P H c ∧
-      (d F)⁻¹ * (∫ y, ∫ t in Set.Ioi T, gradientDensity F ζ hζ U R P H f c y t
-          ∂volume ∂nu_c F ζ hζ U R P H c) ≤
-        q_U F ζ hζ U R P H μG hμG hR realization
-          (coreLift F ζ hζ U R P H μG hμG hR realization f)
 
 end DedekindZetaZeroFree.KPContActualCuspRadialFormComparison
-
-namespace DedekindZetaZeroFree
-
-theorem kp_cont_actual_cusp_radial_form_comparison
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) (hR : R.adelicHaar = μG)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
-    (friedrichs : KPContActualSectorTestFriedrichs.Properties F ζ hζ U R P H
-      μG hμG hR realization) :
-    KPContActualCuspRadialFormComparison.Properties F ζ hζ U R P H μG hμG hR realization := by
-  refine
-    { positive_dimension :=
-        KPContActualCuspRadialFormComparison.positive_dimension_proof F
-      dimension_eq :=
-        KPContActualCuspRadialFormComparison.dimension_eq_proof F ζ hζ
-      compact_transverse := fun c =>
-        KPContActualCuspRadialFormComparison.compact_transverse_proof F ζ hζ U R P H c
-      finite_transverse := fun c =>
-        KPContActualCuspRadialFormComparison.finite_transverse_proof F ζ hζ U R P H c
-      positive_transverse := fun c =>
-        KPContActualCuspRadialFormComparison.positive_transverse_proof F ζ hζ U R P H c
-      hermitian_norm := fun c p a =>
-        KPContActualCuspRadialFormComparison.hermitian_norm_proof F ζ hζ U R P H c p a
-      section_base := fun f c t y =>
-        KPContActualCuspRadialFormComparison.section_base_proof F ζ hζ U R P H f c t y
-      core_inclusion := fun f =>
-        KPContActualCuspRadialFormComparison.core_inclusion_proof F ζ hζ U R P H μG hμG hR
-          realization f
-      core_energy := fun f =>
-        KPContActualCuspRadialFormComparison.core_energy_proof F ζ hζ U R P H μG hμG hR
-          realization f
-      radial_pullback := by
-        intro c T hT
-        refine ⟨KPContActualCuspRadialFormComparison.radialLineHomeomorph F ζ hζ U R P H c T hT,
-          fun p a t => rfl,
-          KPContActualCuspRadialFormComparison.endLineToActual_isEmbedding F ζ hζ U R P H c T⟩
-      base_embedding := fun c T hT =>
-        KPContActualCuspRadialFormComparison.base_embedding_proof F ζ hζ U R P H c T hT
-      fixed_haar := fun c T hT =>
-        KPContActualCuspRadialFormComparison.fixed_haar_proof F ζ hζ U R P H c T hT
-      transition := fun f c g p t =>
-        ⟨KPContActualCuspRadialFormComparison.transition_coefficient F ζ hζ U R P H f c g p t,
-          KPContActualCuspRadialFormComparison.transition_radialDerivative F ζ hζ U R P H f c g p t⟩
-      finite_integrals := by
-        intro c T hT f hf
-        letI := KPContActualCuspRadialFormComparison.finite_transverse_proof F ζ hζ U R P H c
-        have hi := KPContActualCuspRadialFormComparison.radialDensities_integrable
-          F ζ hζ U R P H realization c T hT f hf
-        exact ⟨hi.1, hi.2.1.integral_prod_left, hi.2.2.integral_prod_left⟩
-      comparison := by
-        intro c T hT f hf
-        have hi := KPContActualCuspRadialFormComparison.radialDensities_integrable
-          F ζ hζ U R P H realization c T hT f hf
-        refine ⟨hi.2.1, hi.2.2,
-          KPContActualCuspRadialFormComparison.scalar_radial_norm
-            F ζ hζ U R P H realization c T hT f hf, ?_⟩
-        exact KPContActualCuspRadialFormComparison.radial_energy_comparison
-          F ζ hζ U R P H μG hμG hR realization c T hT f hf }
-
-end DedekindZetaZeroFree
 
 end

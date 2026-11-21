@@ -30,12 +30,15 @@ noncomputable section
 
 namespace KummerTheory
 
+section
+
+variable {G K : Type*} [Group G] [Field K] (n : ℕ+) (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
+  (φ : G →* Kˣ)
+include hexponent φ
+
 /-- Restrict a unit-valued character to `μₙ` when its source is killed by
 `n`. -/
-def characterToNthRoots
-    {G K : Type*} [Group G] [Field K]
-    (n : ℕ+) (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
-    (φ : G →* Kˣ) : G →* nthRootsSubgroup K (n : ℕ) where
+def characterToNthRoots : G →* nthRootsSubgroup K (n : ℕ) where
   toFun g :=
     ⟨φ g, by
       calc
@@ -50,12 +53,11 @@ def characterToNthRoots
     exact map_mul φ g h
 
 /-- A finite character evaluates in the subgroup of `n`th roots of unity. -/
-@[simp] theorem characterToNthRoots_apply
-    {G K : Type*} [Group G] [Field K]
-    (n : ℕ+) (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
-    (φ : G →* Kˣ) (g : G) :
+@[simp] theorem characterToNthRoots_apply (g : G) :
     (characterToNthRoots n hexponent φ g : Kˣ) = φ g :=
   rfl
+
+end
 
 /-- Characters with values in the actual `n`-th roots of unity of `K`
 separate points of a finite abelian group killed by `n`. -/
@@ -179,13 +181,15 @@ def unitCharactersEquivNthRoots
     apply Subtype.ext
     rfl
 
+section
+
+variable {G K L : Type*} [CommGroup G] [Finite G] [Field K] [Field L] [Algebra K L] (n : ℕ+)
+  (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
+include hmu hexponent
+
 /-- Finite abelian duality with the character codomain restricted to the
 actual `n`-th roots of unity in an extension field. -/
-theorem finiteNthRootsCharacterDuality
-    {G K L : Type*} [CommGroup G] [Finite G]
-    [Field K] [Field L] [Algebra K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (hexponent : ∀ g : G, g ^ (n : ℕ) = 1) :
+theorem finiteNthRootsCharacterDuality :
     Nonempty ((G →* nthRootsSubgroup L (n : ℕ)) ≃* G) := by
   let rootsEquiv := nthRootsSubgroupEquivOfPrimitiveRoots K L n hmu
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
@@ -207,10 +211,6 @@ theorem finiteNthRootsCharacterDuality
 /-- The same separation result with values in the roots of unity of an
 extension field `L`. -/
 theorem exists_nthRoots_character_apply_ne_one_in_extension
-    {G K L : Type*} [CommGroup G] [Finite G]
-    [Field K] [Field L] [Algebra K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
     {g : G} (hg : g ≠ 1) :
     ∃ χ : G →* nthRootsSubgroup L (n : ℕ), χ g ≠ 1 := by
   obtain ⟨χ, hχ⟩ :=
@@ -220,6 +220,8 @@ theorem exists_nthRoots_character_apply_ne_one_in_extension
   apply hχ
   apply nthRootsSubgroupMap_injective K L (n : ℕ)
   simpa using h
+
+end
 
 /-- Transpose a character equivalence by evaluation. -/
 def transposeCharacterEquiv
@@ -248,15 +250,17 @@ def transposeCharacterEquiv
     transposeCharacterEquiv e g r = e r g :=
   rfl
 
+section
+
+variable {G R K L : Type*} [CommGroup G] [Finite G] [CommGroup R] [Field K] [Field L]
+  [Algebra K L] (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+  (hexponent : ∀ g : G, g ^ (n : ℕ) = 1) (e : R ≃* (G →* nthRootsSubgroup L (n : ℕ)))
+include hmu hexponent e
+
 /-- Nondegeneracy on the Galois side of the finite Kummer pairing.  This is
 the injectivity source needed before the cardinality step can upgrade the
 transpose to the canonical isomorphism in the Kummer correspondence. -/
-theorem transposeCharacterEquiv_injective
-    {G R K L : Type*} [CommGroup G] [Finite G] [CommGroup R]
-    [Field K] [Field L] [Algebra K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
-    (e : R ≃* (G →* nthRootsSubgroup L (n : ℕ))) :
+theorem transposeCharacterEquiv_injective :
     Function.Injective (transposeCharacterEquiv e) := by
   intro g h hgh
   apply div_eq_one.mp
@@ -277,12 +281,7 @@ theorem transposeCharacterEquiv_injective
 /-- The finite cardinality step upgrades nondegeneracy of the transposed
 Kummer pairing to surjectivity.  The needed equality of cardinalities is
 produced by finite abelian duality; it is not assumed. -/
-theorem transposeCharacterEquiv_surjective
-    {G R K L : Type*} [CommGroup G] [Finite G] [CommGroup R]
-    [Field K] [Field L] [Algebra K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
-    (e : R ≃* (G →* nthRootsSubgroup L (n : ℕ))) :
+theorem transposeCharacterEquiv_surjective :
     Function.Surjective (transposeCharacterEquiv e) := by
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
   let : Finite (G →* nthRootsSubgroup L (n : ℕ)) :=
@@ -311,16 +310,13 @@ theorem transposeCharacterEquiv_surjective
 /-- The canonical finite Kummer transpose equivalence.  This is the finite
 perfect-pairing equivalence underlying the Galois-group isomorphism; it
 does not yet assert the subgroup/extension lattice endpoint. -/
-def transposeCharacterMulEquiv
-    {G R K L : Type*} [CommGroup G] [Finite G] [CommGroup R]
-    [Field K] [Field L] [Algebra K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (hexponent : ∀ g : G, g ^ (n : ℕ) = 1)
-    (e : R ≃* (G →* nthRootsSubgroup L (n : ℕ))) :
+def transposeCharacterMulEquiv :
     G ≃* (R →* nthRootsSubgroup L (n : ℕ)) :=
   MulEquiv.ofBijective (transposeCharacterEquiv e)
     ⟨transposeCharacterEquiv_injective n hmu hexponent e,
       transposeCharacterEquiv_surjective n hmu hexponent e⟩
+
+end
 
 end KummerTheory
 

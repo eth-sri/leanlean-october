@@ -135,7 +135,11 @@ theorem fourierIntegral_tensorFunction
   exact integral_fintype_prod_eq_prod (μ := μ)
     (fun v x => φ v x * (e v (-x * y.2 v) : ℂ))
 
-private theorem unique_fourier (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem unique_fourier
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) [Unique S]
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → Measure (v.val.adicCompletion F)) [∀ v, (μ v).IsAddHaarMeasure]
@@ -167,7 +171,7 @@ private theorem unique_fourier (F : Type) [Field F] [NumberField F]
       (fun x => φ x * (e default (-x*y) : ℂ))
   rw [← heq]
   exact ⟨hf.comp_continuous h.symm.continuous, hg.comp_homeomorph h.symm⟩
-private theorem local_fourier (F : Type) [Field F] [NumberField F]
+theorem local_fourier
     (v : HeightOneSpectrum (RingOfIntegers F))
     (e : AddChar (v.adicCompletion F) Circle)
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
@@ -212,7 +216,6 @@ private theorem local_fourier (F : Type) [Field F] [NumberField F]
   exact h
 
 theorem fourierIntegral_tensor_bruhatSchwartz
-    (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : S) → Measure (v.val.adicCompletion F))
@@ -237,11 +240,11 @@ theorem fourierIntegral_tensor_bruhatSchwartz
   rw [fourierIntegral_tensorFunction F S e μ he fArch φ hlocal hsupport y]
   simp only [tensorFunction, hgArch, ψ]
 
-private theorem mk_injective (F : Type) [Field F] [NumberField F] :
+private theorem mk_injective :
     Function.Injective (PoissonArch.minkowskiEmbedding F) :=
   (NumberField.mixedEmbedding.euclidean.toMixed F).symm.injective.comp
     (NumberField.mixedEmbedding_injective (K := F))
-private theorem coset_sum (F : Type) [Field F] [NumberField F]
+private theorem coset_sum
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (f : 𝓢(PoissonArch.Space F, ℂ))
     (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) (t a : F) (ha : a ≠ 0) :
@@ -280,12 +283,17 @@ private theorem coset_sum (F : Type) [Field F] [NumberField F]
   intro m
   by_cases hm : (m : F)-t ∈ I <;>
     simp [P, Set.indicator_apply, PoissonFinite.idealCosetIndicator, hm]
-private theorem field_sum (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (fArch : 𝓢(PoissonArch.Space F, ℂ))
-    (φ : (v : S) → v.val.adicCompletion F → ℂ)
-    (hlocal : ∀ v, IsLocallyConstant (φ v))
-    (hsupport : ∀ v, HasCompactSupport (φ v)) (a : F) (ha : a ≠ 0) :
+
+end
+section
+
+variable (F : Type) [Field F] [NumberField F]
+  (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (fArch : 𝓢(PoissonArch.Space F, ℂ))
+  (φ : (v : S) → v.val.adicCompletion F → ℂ) (hlocal : ∀ v, IsLocallyConstant (φ v))
+  (hsupport : ∀ v, HasCompactSupport (φ v)) (a : F) (ha : a ≠ 0)
+include hlocal hsupport ha
+
+private theorem field_sum :
     Summable (fun m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F =>
       ‖tensorFunction F S fArch φ ((diagonalHom F S) (a*m))‖) := by
   let φa : (v : S) → v.val.adicCompletion F → ℂ :=
@@ -317,13 +325,7 @@ private theorem field_sum (F : Type) [Field F] [NumberField F]
   rw [ht]
   exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul])
 
-theorem summable_norm_tensorFunction_lattice
-    (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
-    (fArch : 𝓢(PoissonArch.Space F, ℂ))
-    (φ : (v : S) → v.val.adicCompletion F → ℂ)
-    (hlocal : ∀ v, IsLocallyConstant (φ v))
-    (hsupport : ∀ v, HasCompactSupport (φ v)) (a : F) (ha : a ≠ 0) :
+theorem summable_norm_tensorFunction_lattice :
     Summable (fun m : lattice F S a => ‖tensorFunction F S fArch φ m‖) := by
   let R := (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F
   have hex (m : lattice F S a) : ∃ x : R, (diagonalHom F S) (a*x) = m.val := by
@@ -337,6 +339,8 @@ theorem summable_norm_tensorFunction_lattice
     rw [← hi m, ← hi n, h]
   have hs := (field_sum F S fArch φ hlocal hsupport a ha).comp_injective hinj
   simpa only [Function.comp_def, hi] using hs
+
+end
 
 theorem summable_norm_fourierIntegral_tensorFunction_lattice
     (F : Type) [Field F] [NumberField F]

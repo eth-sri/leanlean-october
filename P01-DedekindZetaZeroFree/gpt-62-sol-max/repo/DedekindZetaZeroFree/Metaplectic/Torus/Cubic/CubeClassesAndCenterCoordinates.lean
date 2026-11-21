@@ -44,7 +44,7 @@ def ordinaryMu3 : rootsOfUnity 3 F →* rootsOfUnity 3 ℂ :=
     change ordinaryIota F ζ hζ e ^ 3 = 1
     rw [← map_pow]
     have he : e ^ 3 = 1 := Subtype.ext e.property
-    rw [he, map_one])
+    grind)
 
 def coordinate : H F ζ hζ q →* (K F q)ˣ :=
   (KPRankOneInduction.borelRatio F q).comp
@@ -76,9 +76,9 @@ private lemma normalWord_projection (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
     have hh : KPPGLLocalCover.projection F ζ hζ (Sum.inr q)
       (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e) = 1 := by
       have hh : KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e ∈
-        (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).ker := by rw [← hk]; exact ⟨e, rfl⟩
+        (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).ker := by rw [← hk]; simp
       exact hh
-    rw [hh, map_one]
+    rfl
   rw [hz, one_mul]
   rfl
 private lemma normalWord_mem (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
@@ -94,7 +94,7 @@ private lemma normalWord_coordinate (e : rootsOfUnity 3 F) (y : (K F q)ˣ) (h : 
   · simp [KubotaRankTwo.d]
   · change Matrix.ProjGenLinGroup.mk _ = KPLocalSmoothRepresentation.projection F ζ hζ q h
     rw [hh, normalWord_projection]
-  · simp [KubotaRankTwo.d]
+  rfl
 private lemma ordinaryPGLMap_injective : Function.Injective (KPLocalSmoothRepresentation.ordinaryPGLMap F q) := by
   apply (injective_iff_map_eq_one _).mpr
   intro x hx

@@ -229,18 +229,6 @@ private theorem averageCLM_norm (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
       simp only [termLp_norm, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
       rw [← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero), one_mul]
 
-private theorem averageCLM_mem (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
-    (D : Data n r Γ)
-    (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :
-    averageCLM n r Γ D f ∈ equivariantL2 n r Γ
-      (weightedMeasure n D.chart D.weight) D.act D.cocycle := by
-  intro γ
-  filter_upwards [averageCLM_coe n r Γ D f,
-    (D.invariant_measure γ).quasiMeasurePreserving.ae_eq_comp (averageCLM_coe n r Γ D f),
-    ae_chart n r Γ D] with x ha hb hx
-  simp only [Function.comp_apply] at hb
-  rw [ha, hb]
-  exact average_equivariant n r Γ D f γ x hx
 
 private theorem averageCLM_fixed (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
     (D : Data n r Γ)
@@ -409,38 +397,6 @@ private theorem average_congr_ae (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ
 
 end KPChartL2
 
-theorem kp_cont_chart_equivariant_l2_projection
-    (n r : ℕ) (hn : 1 ≤ n) (hr : 1 ≤ r)
-    (Γ : Type*) [Group Γ] [Fintype Γ] (D : KPChartL2.Data n r Γ) :
-    IsClosed (KPChartL2.equivariantL2 n r Γ
-      (KPChartL2.weightedMeasure n D.chart D.weight) D.act D.cocycle) ∧
-    ∃ P : Lp (EuclideanSpace ℂ (Fin r)) 2
-        (KPChartL2.weightedMeasure n D.chart D.weight) →L[ℂ]
-        Lp (EuclideanSpace ℂ (Fin r)) 2
-        (KPChartL2.weightedMeasure n D.chart D.weight),
-      (∀ f, ‖P f‖ ≤ ‖f‖) ∧ (∀ f, P (P f) = P f) ∧
-      Set.range P = KPChartL2.equivariantL2 n r Γ
-        (KPChartL2.weightedMeasure n D.chart D.weight) D.act D.cocycle ∧
-      (∀ f, ∀ᵐ x ∂(KPChartL2.weightedMeasure n D.chart D.weight),
-        (P f) x = KPChartL2.average n r Γ D.chart D.act D.cocycle f x) := by
-  let P := KPChartL2.averageCLM n r Γ D
-  have hmem := KPChartL2.averageCLM_mem n r Γ D
-  have hfix := KPChartL2.averageCLM_fixed n r Γ D
-  have hset : KPChartL2.equivariantL2 n r Γ
-      (KPChartL2.weightedMeasure n D.chart D.weight) D.act D.cocycle =
-      {f | P f = f} := by
-    ext f
-    exact ⟨hfix f, fun hf => hf ▸ hmem f⟩
-  refine ⟨?_, P, KPChartL2.averageCLM_norm n r Γ D,
-    fun f => hfix (P f) (hmem f), ?_, KPChartL2.averageCLM_coe n r Γ D⟩
-  · rw [hset]
-    exact isClosed_eq P.continuous continuous_id
-  · ext f
-    constructor
-    · rintro ⟨g, rfl⟩
-      exact hmem g
-    · intro hf
-      exact ⟨f, hfix f hf⟩
 
 theorem kp_cont_chart_equivariant_average_smooth
     (n r : ℕ) (hn : 1 ≤ n) (hr : 1 ≤ r)

@@ -6,6 +6,7 @@ public import DedekindZetaZeroFree.ZeroDetection.Conductors.ExteriorRamification
 public import DedekindZetaZeroFree.Arithmetic.Ideals.ExteriorPrimeRadicalNormBound
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrimitiveTwists.LocalComponents
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterUnitarity
+public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.TotallyPositiveResidueRepresentatives
 
 @[expose] public section
 
@@ -125,16 +126,18 @@ open scoped NumberField
 open IsDedekindDomain
 namespace DedekindZetaZeroFree.Detector.Conductor
 
-noncomputable def canonicalFrequencyLocalHom
-    (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
-    (χ : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F)) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
+  (χ : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F))
+include hc χ v
+
+noncomputable def canonicalFrequencyLocalHom :
     (v.adicCompletion F)ˣ →* ℂˣ :=
   (RayClassBridge.ideleClassCharacter F hc χ.conductor χ.conductor_ne_zero χ.character).comp
     (IdeleGroup.finitePlaceIdeleClass v)
 
-theorem canonicalFrequencyLocalHom_continuous
-    (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
-    (χ : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F)) :
+theorem canonicalFrequencyLocalHom_continuous :
     Continuous (canonicalFrequencyLocalHom F hc χ v) := by
   apply continuous_of_continuousAt_one
   apply Filter.EventuallyEq.continuousAt (y := (1 : ℂˣ))
@@ -145,22 +148,20 @@ theorem canonicalFrequencyLocalHom_continuous
   exact RayClassBridge.ideleClassCharacter_finitePlaceIdeleClass_higherUnit F hc
     χ.conductor χ.conductor_ne_zero χ.character v u hu
 
-noncomputable def canonicalFrequencyLocalCharacter
-    (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
-    (χ : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F)) :
+noncomputable def canonicalFrequencyLocalCharacter :
     (v.adicCompletion F)ˣ →ₜ* ℂˣ where
   __ := canonicalFrequencyLocalHom F hc χ v
   continuous_toFun := canonicalFrequencyLocalHom_continuous F hc χ v
 
 theorem canonicalFrequencyLocalCharacter_pow_card
-    (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
-    (χ : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F))
     (u : (v.adicCompletion F)ˣ) :
     canonicalFrequencyLocalCharacter F hc χ v u ^
       Nat.card (ClassFieldTheory.RayClassGroup
         (RayClassBridge.narrowIdealModulus F χ.conductor χ.conductor_ne_zero)) = 1 := by
   exact RayClassBridge.ideleClassCharacter_pow_card F hc χ.conductor
     χ.conductor_ne_zero χ.character (IdeleGroup.finitePlaceIdeleClass v u)
+
+end
 
 theorem primitive_twist_local_range_finite_of_local_compatibility
     (F : Type) [Field F] [NumberField F]
@@ -250,8 +251,11 @@ theorem finite_order_characters_of_finite_power_quotient
   have hx := congrFun h (QuotientGroup.mk x : Q)
   exact congrArg Subtype.val hx
 
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
 theorem finite_sextic_continuous_local_characters
-    (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) :
     {δ : (v.adicCompletion F)ˣ →ₜ* ℂˣ | ∀ x, δ x ^ (6 : ℕ) = 1}.Finite := by
   letI : ValuativeRel (v.adicCompletion F) :=
@@ -267,7 +271,6 @@ theorem finite_sextic_continuous_local_characters
   exact finite_order_characters_of_finite_power_quotient _ 6
 
 theorem sextic_local_components_finite_of_exists
-    (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F))
     (hExists : ∀ χ : PrimitiveFrequencyCharacter F,
       (∀ n : Ideal (𝓞 F), n ≠ ⊥ → n ⊔ χ.conductor = ⊤ →
@@ -286,7 +289,6 @@ theorem sextic_local_components_finite_of_exists
   exact ⟨δ, hδ, hlocal⟩
 
  def rayPower
-    (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (η : RayClassCharacter F m) (n : ℕ) (hn : 0 < n) :
     RayClassCharacter F m where
   toFun I := η I ^ n
@@ -296,7 +298,6 @@ theorem sextic_local_components_finite_of_exists
   map_span' a ha hm hpos := by rw [η.map_span' a ha hm hpos, one_pow]
 
 theorem fractional_character_power
-    (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
     (n : ℕ) (hn : 0 < n)
     (hη : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ m = ⊤ → η I ^ n = 1) :
@@ -321,8 +322,7 @@ theorem fractional_character_power
   have hc := DFunLike.congr_fun (hpow.trans hone.symm) c
   exact hc
 
-theorem idelic_character_power
-    (F : Type) [Field F] [NumberField F] (hcomplex : NumberField.IsTotallyComplex F)
+theorem idelic_character_power (hcomplex : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
     (n : ℕ) (hn : 0 < n)
     (hη : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ m = ⊤ → η I ^ n = 1) :
@@ -335,8 +335,7 @@ theorem idelic_character_power
   intro c
   exact hray _
 
-theorem canonicalFrequencyLocalCharacter_power
-    (F : Type) [Field F] [NumberField F] (hc : NumberField.IsTotallyComplex F)
+theorem canonicalFrequencyLocalCharacter_power (hc : NumberField.IsTotallyComplex F)
     (χ : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F))
     (n : ℕ) (hn : 0 < n)
     (hχ : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ χ.conductor = ⊤ →
@@ -347,7 +346,6 @@ theorem canonicalFrequencyLocalCharacter_power
     χ.character n hn hχ (IdeleGroup.finitePlaceIdeleClass v x)
 
 theorem sextic_local_components_finite
-    (F : Type) [Field F] [NumberField F]
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
     (v : HeightOneSpectrum (𝓞 F)) :
     ∃ A : Set ((v.adicCompletion F)ˣ →ₜ* ℂˣ), A.Finite ∧
@@ -363,6 +361,8 @@ theorem sextic_local_components_finite
   exact LocalTwistSteps.idelic_restriction_is_raw_local_component F hc χ v
     (canonicalFrequencyLocalCharacter F hc χ v) (fun _ => rfl)
 
+end
+
 end DedekindZetaZeroFree.Detector.Conductor
 
 end
@@ -376,44 +376,49 @@ namespace DedekindZetaZeroFree.Detector
 
 noncomputable section
 
-def frequencySInteger (F : Type) [Field F] [NumberField F]
-    (S : Set (HeightOneSpectrum (𝓞 F))) (U : FrequencyRepresentatives F S)
-    (u : U.carrier) : S.integer F :=
+section
+
+variable (F : Type) [Field F] [NumberField F] (S : Set (HeightOneSpectrum (𝓞 F)))
+  (U : FrequencyRepresentatives F S) (u : U.carrier)
+include S U u
+
+def frequencySInteger : S.integer F :=
   ⟨(u.val : F), (U.power_free u.val u.property).1⟩
 
-def frequencySNorm (F : Type) [Field F] [NumberField F]
-    (S : Set (HeightOneSpectrum (𝓞 F))) (U : FrequencyRepresentatives F S)
-    (u : U.carrier) : ℕ :=
+def frequencySNorm : ℕ :=
   Nat.card ((S.integer F) ⧸ Ideal.span {frequencySInteger F S U u})
 
-def frequencyRadicalSNorm (F : Type) [Field F] [NumberField F]
-    (S : Set (HeightOneSpectrum (𝓞 F))) (U : FrequencyRepresentatives F S)
-    (u : U.carrier) : ℕ :=
+def frequencyRadicalSNorm : ℕ :=
   Nat.card ((S.integer F) ⧸ (Ideal.span {frequencySInteger F S U u}).radical)
 
-def idealAwayPrimePart (F : Type) [Field F] [NumberField F]
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+def idealAwayPrimePart
     (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) : Ideal (𝓞 F) :=
   ((normalizedFactors I).filter (fun p => p ≠ v.asIdeal)).prod
 
-def integralElementLocalUnit (F : Type) [Field F] [NumberField F]
+def integralElementLocalUnit
     (v : HeightOneSpectrum (𝓞 F)) (a : 𝓞 F) (ha : a ≠ 0) : (v.adicCompletion F)ˣ :=
   Units.mk0 (NumberField.FinitePlace.embedding v (a : F))
     ((NumberField.FinitePlace.embedding v).injective.ne
       (NumberField.RingOfIntegers.coe_ne_zero_iff.mpr ha))
 
-def IsFrequencyLocalComponent (F : Type) [Field F] [NumberField F]
+def IsFrequencyLocalComponent
     (χ : PrimitiveFrequencyCharacter F) (v : HeightOneSpectrum (𝓞 F))
     (δ : (v.adicCompletion F)ˣ →ₜ* ℂˣ) : Prop :=
   ∀ (a : 𝓞 F) (ha : a ≠ 0), a - 1 ∈ idealAwayPrimePart F v χ.conductor →
     (δ (integralElementLocalUnit F v a ha) : ℂ) =
       (χ.character (idealAwayPrimePart F v (Ideal.span {a})))⁻¹
 
-def conductorSupportedOn (F : Type) [Field F] [NumberField F]
+def conductorSupportedOn
     (S : Set (HeightOneSpectrum (𝓞 F))) (η : PrimitiveFrequencyCharacter F) : Prop :=
   ∀ v : HeightOneSpectrum (𝓞 F), η.conductor ≤ v.asIdeal → v ∈ S
 
 theorem frequency_S_norms_finite
-    (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
     (U : FrequencyRepresentatives F S) (u : U.carrier) :
     Finite ((S.integer F) ⧸ Ideal.span {frequencySInteger F S U u}) ∧
@@ -440,7 +445,6 @@ theorem frequency_S_norms_finite
     Nat.card_le_card_of_surjective _ hsurj⟩
 
 theorem frequency_numerator_conductor_bound
-    (F : Type) [Field F] [NumberField F]
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12) (ι : F →+* ℂ)
     (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
     (hSix : ∀ v : HeightOneSpectrum (𝓞 F), ¬ (Ideal.absNorm v.asIdeal).Coprime 6 → v ∈ S)
@@ -466,17 +470,7 @@ theorem frequency_numerator_conductor_bound
       (by exact_mod_cast (frequency_S_norms_finite F S hS U u).2.2.2) hC.le
   exact Conductor.numerator_radical_estimate F ζ12 hζ12 ι S hS hSix
 
-private theorem no_real_of_mu12 (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : IsEmpty (F →+* ℝ) := by
-  constructor
-  intro φ
-  have h : IsPrimitiveRoot (φ ζ) 12 := hζ.map_of_injective φ.injective
-  have he : (φ ζ) ^ 12 = 1 := h.pow_eq_one
-  have hs : (φ ζ) ^ 2 = 1 := by
-    have he' : ((φ ζ)^2)^6 = 1^6 := by simpa [← pow_mul] using he
-    exact (pow_left_inj₀ (sq_nonneg _) (by norm_num) (by norm_num : (6:ℕ) ≠ 0)).mp he'
-  have hd := h.dvd_of_pow_eq_one 2 hs
-  norm_num at hd
+end
 
 private theorem coprime_of_sub_one_mem {R : Type*} [CommRing R]
     (m : Ideal R) (a : R) (h : a - 1 ∈ m) : Ideal.span {a} ⊔ m = ⊤ := by
@@ -485,45 +479,39 @@ private theorem coprime_of_sub_one_mem {R : Type*} [CommRing R]
   have hb : a - 1 ∈ Ideal.span {a} ⊔ m := Ideal.mem_sup_right h
   simpa using (Ideal.span {a} ⊔ m).sub_mem ha hb
 
-private theorem nonzero_of_sub_one_mem {R : Type*} [CommRing R]
-    (m : Ideal R) (hm : m ≠ ⊤) (a : R) (h : a - 1 ∈ m) : a ≠ 0 := by
-  intro ha
-  subst a
-  apply hm
-  apply (Ideal.eq_top_iff_one _).mpr
-  simpa using m.neg_mem h
-
-private theorem ray_congruent
-    (F : Type) [Field F] [NumberField F] [IsEmpty (F →+* ℝ)]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊤) (χ : RayClassCharacter F m)
+private theorem ray_congruent_positive
+    (F : Type) [Field F] [NumberField F]
+    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (χ : RayClassCharacter F m)
     (a b : 𝓞 F) (ha : a ≠ 0) (hb : b ≠ 0)
+    (hpa : ∀ φ : F →+* ℝ, 0 < φ (a : F))
+    (hpb : ∀ φ : F →+* ℝ, 0 < φ (b : F))
     (hcop : Ideal.span {a} ⊔ m = ⊤) (hab : a - b ∈ m) :
     χ (Ideal.span {a}) = χ (Ideal.span {b}) := by
-  have hone : (1 : 𝓞 F) ∈ Ideal.span {a} ⊔ m := by rw [hcop]; trivial
-  obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp hone
-  obtain ⟨c, rfl⟩ := Ideal.mem_span_singleton.mp hx
+  obtain ⟨c, y, hy, hcy⟩ := Ideal.mem_span_singleton_sup.mp ((Ideal.eq_top_iff_one _).mp hcop)
   have hac : a * c - 1 ∈ m := by
-    have heq : a * c - 1 = -y := by linear_combination hxy
+    have heq : a * c - 1 = -y := by linear_combination hcy
     rw [heq]
     exact m.neg_mem hy
-  have hbc : b * c - 1 ∈ m := by
-    have hh := m.mul_mem_right c hab
-    have heq : b * c - 1 = (a * c - 1) - (a - b) * c := by ring
-    rw [heq]
-    exact m.sub_mem hac hh
-  have hac0 := nonzero_of_sub_one_mem m hm (a*c) hac
-  have hbc0 := nonzero_of_sub_one_mem m hm (b*c) hbc
-  have hc0 : c ≠ 0 := (mul_ne_zero_iff.mp hac0).2
-  have hca : χ (Ideal.span {a}) * χ (Ideal.span {c}) = 1 := by
+  obtain ⟨d, hd, hdc, hpd⟩ := LargeSieve.exists_totallyPositive_residue F m hm c
+  have had : a * d - 1 ∈ m := by
+    have heq : a * d - 1 = (a * c - 1) + a * (d - c) := by ring
+    rw [heq]; exact m.add_mem hac (m.mul_mem_left a hdc)
+  have hbd : b * d - 1 ∈ m := by
+    have heq : b * d - 1 = (a * d - 1) - (a - b) * d := by ring
+    rw [heq]; exact m.sub_mem had (m.mul_mem_right d hab)
+  have hchar (x : 𝓞 F) (hx : x ≠ 0) (hp : ∀ φ : F →+* ℝ, 0 < φ (x : F))
+      (hmx : x * d - 1 ∈ m) : χ (Ideal.span {x}) * χ (Ideal.span {d}) = 1 := by
     rw [← χ.map_mul', Ideal.span_singleton_mul_span_singleton]
-    exact χ.map_span' (a*c) hac0 hac (fun φ => isEmptyElim φ)
-  have hcb : χ (Ideal.span {b}) * χ (Ideal.span {c}) = 1 := by
-    rw [← χ.map_mul', Ideal.span_singleton_mul_span_singleton]
-    exact χ.map_span' (b*c) hbc0 hbc (fun φ => isEmptyElim φ)
-  exact mul_right_cancel₀ (right_ne_zero_of_mul_eq_one hca) (hca.trans hcb.symm)
+    apply χ.map_span' _ (mul_ne_zero hx hd) hmx
+    intro φ
+    change 0 < (φ.comp (algebraMap (𝓞 F) F)) (x * d)
+    rw [map_mul]
+    exact mul_pos (hp φ) (hpd φ)
+  have hca := hchar a ha hpa had
+  exact mul_right_cancel₀ (right_ne_zero_of_mul_eq_one hca) (hca.trans (hchar b hb hpb hbd).symm)
 
-private theorem primitive_twist_conductor_le
-    (F : Type) [Field F] [NumberField F] [IsEmpty (F →+* ℝ)]
+theorem finite_mask_twist_conductor_le
+    (F : Type) [Field F] [NumberField F]
     (η χ ψ : PrimitiveFrequencyCharacter F)
     (hTwist : IsPrimitiveFrequencyTwist F η χ ψ) :
     η.conductor * χ.conductor ≤ ψ.conductor := by
@@ -534,11 +522,15 @@ private theorem primitive_twist_conductor_le
     lt_of_le_of_ne le_sup_left (fun heq => hle (le_sup_right.trans_eq heq.symm))
   obtain ⟨a, ha, ham, hpos, hcop, hne⟩ := ψ.primitive _ hlt
   obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp ham
-  let b : 𝓞 F := 1 + y
+  obtain ⟨b, hb0, hby, hposb⟩ := LargeSieve.exists_totallyPositive_residue F
+    (ψ.conductor * (η.conductor * χ.conductor))
+    (mul_ne_zero ψ.conductor_ne_zero (mul_ne_zero η.conductor_ne_zero χ.conductor_ne_zero)) (1+y)
   have hab : a - b ∈ ψ.conductor := by
-    have heq : a - b = x := by dsimp [b]; linear_combination -hxy
-    rw [heq]; exact hx
-  have hbm : b - 1 ∈ η.conductor * χ.conductor := by simpa [b] using hy
+    have heq : a - b = x - (b - (1+y)) := by linear_combination -hxy
+    rw [heq]; exact ψ.conductor.sub_mem hx (Ideal.mul_le_left hby)
+  have hbm : b - 1 ∈ η.conductor * χ.conductor := by
+    have heq : b - 1 = y + (b - (1+y)) := by ring
+    rw [heq]; exact (η.conductor * χ.conductor).add_mem hy (Ideal.mul_le_right hby)
   have hbcop : Ideal.span {b} ⊔ ψ.conductor = ⊤ := by
     apply (Ideal.eq_top_iff_one _).mpr
     have hba : a ∈ Ideal.span {b} ⊔ ψ.conductor := by
@@ -549,44 +541,43 @@ private theorem primitive_twist_conductor_le
       sup_le ((Ideal.span_singleton_le_iff_mem _).mpr hba) le_sup_right
     rw [hcop] at hle'
     exact hle' (by trivial)
-  have hb0 : b ≠ 0 := by
-    intro hb0
-    simp [hb0] at hbcop
-    exact hf hbcop
   have hcopm := coprime_of_sub_one_mem (η.conductor * χ.conductor) b hbm
   have hcopall : Ideal.span {b} ⊔ (η.conductor * χ.conductor * ψ.conductor) = ⊤ := by
     apply IsCoprime.sup_eq
     exact (Ideal.isCoprime_iff_sup_eq.mpr hcopm).mul_right
       (Ideal.isCoprime_iff_sup_eq.mpr hbcop)
   have hη : η.character (Ideal.span {b}) = 1 :=
-    η.character.map_span' b hb0 (Ideal.mul_le_left hbm) (fun φ => isEmptyElim φ)
+    η.character.map_span' b hb0 (Ideal.mul_le_left hbm) hposb
   have hχ : χ.character (Ideal.span {b}) = 1 :=
-    χ.character.map_span' b hb0 (Ideal.mul_le_right hbm) (fun φ => isEmptyElim φ)
+    χ.character.map_span' b hb0 (Ideal.mul_le_right hbm) hposb
   have hψ := hTwist (Ideal.span {b}) (by simpa using hb0) hcopall
-  have heq := ray_congruent F ψ.conductor hf ψ.character a b ha hb0 hcop hab
+  have heq := ray_congruent_positive F ψ.conductor ψ.conductor_ne_zero ψ.character a b ha hb0 hpos hposb hcop hab
   apply hne
   rw [heq, hψ, hη, hχ, map_one, mul_one]
 
-theorem frequency_denominator_conductor_bound
-    (F : Type) [Field F] [NumberField F]
-    (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12) (ι : F →+* ℂ)
-    (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
-    (hSix : ∀ v : HeightOneSpectrum (𝓞 F), ¬ (Ideal.absNorm v.asIdeal).Coprime 6 → v ∈ S)
-    [IsPrincipalIdealRing (S.integer F)]
-    (η : PrimitiveFrequencyCharacter F) (hηS : conductorSupportedOn F S η) :
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
+  (ι : F →+* ℂ) (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
+  (hSix : ∀ v : HeightOneSpectrum (𝓞 F), ¬ (Ideal.absNorm v.asIdeal).Coprime 6 → v ∈ S)
+  [IsPrincipalIdealRing (S.integer F)] (η : PrimitiveFrequencyCharacter F)
+  (hηS : conductorSupportedOn F S η)
+include hζ12 hS hSix hηS
+
+theorem frequency_denominator_conductor_bound :
     ∃ C : ℝ, 0 < C ∧
       ∀ (U : FrequencyRepresentatives F S) (K : KummerFrequencyFamily F ζ12 ι S U)
         (T : TwistedFrequencyFamily F ζ12 ι S U K η) (u : U.carrier),
         (Ideal.absNorm (T.denominator u).conductor : ℝ) ≤
           C * (frequencySNorm F S U u : ℝ) := by
-  letI := no_real_of_mu12 F ζ12 hζ12
   obtain ⟨C, hC, hbound⟩ :=
     frequency_numerator_conductor_bound F ζ12 hζ12 ι S hS hSix
   have hη : 0 < (Ideal.absNorm η.conductor : ℝ) := by
     exact_mod_cast (Nat.pos_of_ne_zero ((Ideal.absNorm_eq_zero_iff).not.mpr η.conductor_ne_zero))
   refine ⟨(Ideal.absNorm η.conductor : ℝ) * C, mul_pos hη hC, ?_⟩
   intro U K T u
-  have hle := primitive_twist_conductor_le F η (K.numerator u) (T.denominator u) (T.induces u)
+  have hle := finite_mask_twist_conductor_le F η (K.numerator u) (T.denominator u) (T.induces u)
   have hn : Ideal.absNorm (T.denominator u).conductor ≤
       Ideal.absNorm (η.conductor * (K.numerator u).conductor) := by
     apply Nat.le_of_dvd
@@ -603,13 +594,7 @@ theorem frequency_denominator_conductor_bound
       mul_le_mul_of_nonneg_left ((hbound U K u).1.trans (hbound U K u).2) hη.le
     _ = _ := by ring
 
-theorem frequency_rows_finite_ramified_local_types
-    (F : Type) [Field F] [NumberField F]
-    (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12) (ι : F →+* ℂ)
-    (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
-    (hSix : ∀ v : HeightOneSpectrum (𝓞 F), ¬ (Ideal.absNorm v.asIdeal).Coprime 6 → v ∈ S)
-    [IsPrincipalIdealRing (S.integer F)]
-    (η : PrimitiveFrequencyCharacter F) (hηS : conductorSupportedOn F S η) :
+theorem frequency_rows_finite_ramified_local_types :
     ∃ (A B : (v : S) → Set ((v.val.adicCompletion F)ˣ →ₜ* ℂˣ)),
       (∀ v : S, (A v).Finite ∧ (B v).Finite) ∧
       ∀ (U : FrequencyRepresentatives F S) (K : KummerFrequencyFamily F ζ12 ι S U)
@@ -628,6 +613,8 @@ theorem frequency_rows_finite_ramified_local_types
     F ζ12 hζ12 ι S hS u.val (K.numerator u) (K.kummer u)
   have hlocal := hAlocal v (K.numerator u) hnum
   exact ⟨hlocal, hBlocal v (K.numerator u) (T.denominator u) (T.induces u) hlocal⟩
+
+end
 
 end
 

@@ -2,7 +2,9 @@ module
 
 public import DedekindZetaZeroFree.Analysis.GaussianWeightConvolution
 public import DedekindZetaZeroFree.Moments.Principal.Contour.SecondBoxMajorant
-public import DedekindZetaZeroFree.Moments.Principal.Contour.ThirdBoxMajorant
+public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.Poisson.SubpowerBounds
+public import DedekindZetaZeroFree.Moments.Principal.Contour.ZetaStripGrowth
+public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.AnalyticContinuation
 
 @[expose] public section
 
@@ -18,38 +20,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private def hh (t : ℝ) : ℝ := (1 + |t|) ^ (-2 : ℝ)
-
-private lemma hh_pos (t : ℝ) : 0 < hh t := Real.rpow_pos_of_pos (by positivity) _
-
-private lemma hh_integrable : Integrable hh := by
-  have := integrable_one_add_norm (E := ℝ) (μ := (volume : Measure ℝ)) (r := 2) (by norm_num)
-  refine this.congr (Filter.Eventually.of_forall fun x => ?_)
-  simp only [hh, Real.norm_eq_abs]
-
-private lemma le_hh {f C t : ℝ} (h : (1 + |t|) ^ 2 * f ≤ C) : f ≤ |C| * hh t := by
-  have hp : 0 < (1 + |t|) ^ 2 := by positivity
-  have h1 : hh t = ((1 + |t|) ^ 2)⁻¹ := by
-    unfold hh
-    rw [Real.rpow_neg (by positivity), Real.rpow_two]
-  rw [h1, ← div_eq_mul_inv, le_div_iff₀ hp]
-  linarith [le_abs_self C, mul_comm f ((1 + |t|) ^ 2)]
-
-private def gaussShear (p : ℝ × ℝ) : ℝ := Real.exp (-(p.1 + p.2) ^ 2) * hh p.2
-
-private lemma gaussShear_nonneg (p : ℝ × ℝ) : 0 ≤ gaussShear p :=
-  mul_nonneg (Real.exp_pos _).le (hh_pos _).le
-
-private lemma gaussShear_integrable : Integrable gaussShear := by
-  have hg : Integrable (fun x : ℝ => Real.exp (-(x) ^ 2)) := by
-    simpa using integrable_exp_neg_mul_sq (b := 1) one_pos
-  have h1 : Integrable (fun p : ℝ × ℝ => hh p.1 * Real.exp (-(p.2) ^ 2)) :=
-    hh_integrable.mul_prod hg
-  have h2 := (measurePreserving_prod_add_swap (volume : Measure ℝ)
-    (volume : Measure ℝ)).integrable_comp_of_integrable h1
-  refine h2.congr (Filter.Eventually.of_forall fun p => ?_)
-  simp only [Function.comp, gaussShear]
-  rw [add_comm p.2 p.1, mul_comm]
+open PrincipalBox2Majorant.GaussianShear
 
 def xiPrincipal : Set Coordinates := {p | Scales.rightLine - Scales.contourOffset / 2 < p.1.re}
 
@@ -68,49 +39,17 @@ private lemma kernel_differentiableAt (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ :
     (hz : 0 < p.2.2.re) (hz6 : 6 * p.2.2 ≠ 1) (hΩ : p ∈ OmegaStar) :
     DifferentiableAt ℂ
       (fun p : Coordinates => kernelWith D (rowContLocal D) u p.1 p.2.1 p.2.2 Z) p := by
-  have hqc : ((D.q u : ℝ) : ℂ) = 1 := by rw [PrincipalResidueFormulas.q_principal D u hu]; simp
-  have hZc : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
-  simp only [kernelWith, rowContLocal, hqc, Complex.one_cpow, mul_one]
-  have a1 : DifferentiableAt ℂ (fun p : Coordinates => p.1) p := differentiableAt_fst
-  have a2 : DifferentiableAt ℂ (fun p : Coordinates => p.2.1) p :=
-    differentiableAt_fst.comp p differentiableAt_snd
-  have a3 : DifferentiableAt ℂ (fun p : Coordinates => p.2.2) p :=
-    differentiableAt_snd.comp p differentiableAt_snd
-  have hpow : DifferentiableAt ℂ (fun p : Coordinates => (Z : ℂ) ^ (((Scales.xExponent / 2 : ℝ) : ℂ) +
-      p.1 - 1 + (Scales.smoothingExponent : ℂ) * p.2.2 + (Scales.yExponent : ℂ) * (p.2.1 - 1))) p := by
-    have : (fun p : Coordinates => (Z : ℂ) ^ (((Scales.xExponent / 2 : ℝ) : ℂ) +
-      p.1 - 1 + (Scales.smoothingExponent : ℂ) * p.2.2 + (Scales.yExponent : ℂ) * (p.2.1 - 1))) = fun p : Coordinates =>
-        Complex.exp (Complex.log Z * (((Scales.xExponent / 2 : ℝ) : ℂ) +
-      p.1 - 1 + (Scales.smoothingExponent : ℂ) * p.2.2 + (Scales.yExponent : ℂ) * (p.2.1 - 1))) :=
-      funext fun p => Complex.cpow_def_of_ne_zero hZc _
-    rw [this]
-    fun_prop
-  have hexp : DifferentiableAt ℂ (fun p : Coordinates =>
-      Complex.exp ((p.1 + p.2.2 - 1) ^ 2)) p := by fun_prop
-  have hMopen : IsOpen {z : ℂ | 0 < z.re} := isOpen_lt continuous_const Complex.continuous_re
-  have hM : DifferentiableAt ℂ (fun p : Coordinates => D.M p.2.2) p :=
-    (D.M_differentiableOn.differentiableAt (hMopen.mem_nhds hz)).comp p a3
-  have hW : Differentiable ℂ D.W1Hat :=
-    ProbeSheet.MellinProof.realWeight_mellin_differentiable D.recipe.probe.W1
-  have hWw : DifferentiableAt ℂ (fun p : Coordinates => D.W1Hat p.2.1) p :=
-    (hW _).comp p a2
-  have hζ : DifferentiableAt ℂ (fun p : Coordinates => D.zetaSCont (6 * p.2.2)) p :=
-    (((PrincipalResidueFormulas.zetaSCont_analytic D) (6 * p.2.2)
-      ⟨by simp only [Set.mem_setOf_eq]; rw [six_re]; linarith, hz6⟩).differentiableAt).comp p
-      (by fun_prop : DifferentiableAt ℂ (fun p : Coordinates => 6 * p.2.2) p)
-  have hξ1 : p.1 ≠ 1 := fun h => by
-    rw [h] at hξ
-    simp at hξ
-  have hLp : DifferentiableAt ℂ (fun p : Coordinates => D.Lpsi u p.2.1) p :=
-    (((D.Lpsi_analyticOnNhd u) p.2.1 ⟨hw, hw1⟩).differentiableAt).comp p a2
-  have hLl : DifferentiableAt ℂ (fun p : Coordinates => D.Llam u p.1) p :=
-    (((D.Llam_analyticOnNhd u) p.1 ⟨by simp only [Set.mem_setOf_eq]; linarith, hξ1⟩).differentiableAt).comp p a1
-  have hHu : DifferentiableAt ℂ (fun p : Coordinates => Hu D u p.1 p.2.1 p.2.2) p :=
-    (Hu_differentiableOn D u).differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hΩ)
-  simp only [div_eq_mul_inv]
-  exact (((hpow.fun_mul hexp).fun_mul hM).fun_mul hWw).fun_mul
-    (((hζ.fun_mul hLp).fun_mul hHu).fun_mul
-      (hLl.inv (RightHeckeBounds.Llam_ne_zero_of_one_lt D u _ hξ)))
+  have hξ1 : p.1 ≠ 1 := fun h => by simp [h] at hξ
+  refine RowAnalyticContinuation.kernel_product_differentiableAt D.M D.W1Hat Z _ hZ
+    (by rw [PrincipalResidueFormulas.q_principal D u hu]; positivity) p
+    (E := fun p => rowContLocal D u p.1 p.2.1 p.2.2)
+    (D.M_differentiableOn.differentiableAt ((RowHeckeBridge.isOpen_re_gt 0).mem_nhds hz))
+    (RowAnalyticContinuation.W1Hat_differentiable D _) ?_
+  exact RowAnalyticContinuation.euler_quotient_differentiableAt D p (D.Lpsi u) (D.Llam u)
+    ((D.Lpsi_analyticOnNhd u) _ ⟨hw, hw1⟩).differentiableAt
+    ((D.Llam_analyticOnNhd u) _ ⟨by simp; linarith, hξ1⟩).differentiableAt
+    (RightHeckeBounds.Llam_ne_zero_of_one_lt D u _ hξ) hz hz6
+    ((Hu_differentiableOn D u).differentiableAt (EulerDomain.OmegaStar_isOpen.mem_nhds hΩ))
 
 private lemma kernel_differentiableOn_of (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
     (U : Set Coordinates)

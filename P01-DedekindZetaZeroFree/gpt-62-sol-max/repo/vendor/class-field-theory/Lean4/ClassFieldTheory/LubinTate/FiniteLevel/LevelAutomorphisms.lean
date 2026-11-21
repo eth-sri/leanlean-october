@@ -77,12 +77,14 @@ variable {K : Type u} [Field K]
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
+section
+
+variable (F : LocalField.{u, v} K) {π : F.valuationSubring}
+  (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+
 /-- A finite parameter root, regarded as an element of its standard level
 field through the analytically constructed integral action. -/
-noncomputable def standardLubinTateUnitParameterLevelRoot
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+noncomputable def standardLubinTateUnitParameterLevelRoot (a : standardLubinTateUnitParameter F n) :
     standardLubinTateLevelField hπ n :=
   standardLubinTatePrimitiveLevelAction hπ n
     (standardLubinTateUnitParameterChosenRepresentative F n a)
@@ -90,10 +92,7 @@ noncomputable def standardLubinTateUnitParameterLevelRoot
 /-- The level-field realization of a parameter root agrees with its ambient
 separable-closure realization. -/
 @[simp]
-theorem standardLubinTateUnitParameterLevelRoot_coe
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterLevelRoot_coe (a : standardLubinTateUnitParameter F n) :
     (standardLubinTateUnitParameterLevelRoot F hπ n a :
       SeparableClosure K) =
         standardLubinTateUnitParameterRoot F hπ n a := by
@@ -102,10 +101,7 @@ theorem standardLubinTateUnitParameterLevelRoot_coe
 
 /-- Distinct finite unit parameters give distinct roots inside the standard
 level field. -/
-theorem standardLubinTateUnitParameterLevelRoot_injective
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+theorem standardLubinTateUnitParameterLevelRoot_injective :
     Function.Injective
       (standardLubinTateUnitParameterLevelRoot F hπ n) := by
   intro a b hab
@@ -137,10 +133,7 @@ theorem standardLubinTateUnitParameterLevelRoot_injective
 
 /-- The identity parameter gives the chosen power-basis generator. -/
 @[simp]
-theorem standardLubinTateUnitParameterLevelRoot_one
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+theorem standardLubinTateUnitParameterLevelRoot_one :
     standardLubinTateUnitParameterLevelRoot F hπ n 1 =
       (standardLubinTateLevelPowerBasis hπ n).gen := by
   apply Subtype.ext
@@ -158,10 +151,7 @@ theorem standardLubinTateUnitParameterLevelRoot_one
 
 /-- A parameter root annihilates the minimal polynomial of the canonical
 level-field generator. -/
-theorem standardLubinTateUnitParameterLevelRoot_aeval_minpoly
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterLevelRoot_aeval_minpoly (a : standardLubinTateUnitParameter F n) :
     Polynomial.aeval (standardLubinTateUnitParameterLevelRoot F hπ n a)
         (minpoly K (standardLubinTateLevelPowerBasis hπ n).gen) = 0 := by
   rw [standardLubinTateLevelPowerBasis_minpoly]
@@ -181,10 +171,7 @@ theorem standardLubinTateUnitParameterLevelRoot_aeval_minpoly
 
 /-- The algebra endomorphism sending the chosen primitive generator to the
 root attached to a finite unit parameter. -/
-noncomputable def standardLubinTateUnitParameterAlgHom
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+noncomputable def standardLubinTateUnitParameterAlgHom (a : standardLubinTateUnitParameter F n) :
     standardLubinTateLevelField hπ n →ₐ[K]
       standardLubinTateLevelField hπ n :=
   (standardLubinTateLevelPowerBasis hπ n).lift
@@ -194,20 +181,14 @@ noncomputable def standardLubinTateUnitParameterAlgHom
 /-- The parameter endomorphism sends the power-basis generator to the
 corresponding parameter root. -/
 @[simp]
-theorem standardLubinTateUnitParameterAlgHom_apply_gen
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterAlgHom_apply_gen (a : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterAlgHom F hπ n a
         (standardLubinTateLevelPowerBasis hπ n).gen =
       standardLubinTateUnitParameterLevelRoot F hπ n a :=
   (standardLubinTateLevelPowerBasis hπ n).lift_gen _ _
 
 /-- The finite-dimensional parameter endomorphism is an automorphism. -/
-noncomputable def standardLubinTateUnitParameterAlgEquiv
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+noncomputable def standardLubinTateUnitParameterAlgEquiv (a : standardLubinTateUnitParameter F n) :
     standardLubinTateLevelField hπ n ≃ₐ[K]
       standardLubinTateLevelField hπ n := by
   letI : FiniteDimensional K (standardLubinTateLevelField hπ n) :=
@@ -220,10 +201,7 @@ noncomputable def standardLubinTateUnitParameterAlgEquiv
 /-- The parameter automorphism sends the power-basis generator to the
 corresponding parameter root. -/
 @[simp]
-theorem standardLubinTateUnitParameterAlgEquiv_apply_gen
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterAlgEquiv_apply_gen (a : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterAlgEquiv F hπ n a
         (standardLubinTateLevelPowerBasis hπ n).gen =
       standardLubinTateUnitParameterLevelRoot F hπ n a := by
@@ -231,12 +209,17 @@ theorem standardLubinTateUnitParameterAlgEquiv_apply_gen
     AlgEquiv.ofBijective_apply,
     standardLubinTateUnitParameterAlgHom_apply_gen]
 
+end
+
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+  (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+  (σ : Gal((standardLubinTateLevelField hπ n) / K))
+include F σ
+
  theorem
     standardLubinTateLevelAlgEquiv_mem_valuationSubring_iff
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ)
-    (σ : Gal((standardLubinTateLevelField hπ n) / K))
     (x : standardLubinTateLevelField hπ n) :
     x ∈ (standardLubinTateLevelCompleteDVF hπ n).valuation.valuationSubring ↔
       σ x ∈
@@ -275,11 +258,7 @@ theorem standardLubinTateUnitParameterAlgEquiv_apply_gen
     simpa using hback
 
  noncomputable def
-    standardLubinTateLevelAutomorphismIntegerRingEquiv
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ)
-    (σ : Gal((standardLubinTateLevelField hπ n) / K)) :
+    standardLubinTateLevelAutomorphismIntegerRingEquiv :
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring ≃+*
       (standardLubinTateLevelCompleteDVF hπ n).valuationSubring :=
   higherPrincipalUnitGroup.valuationSubringRingEquivOfPreserves
@@ -291,10 +270,6 @@ theorem standardLubinTateUnitParameterAlgEquiv_apply_gen
 @[simp]
 private theorem
     standardLubinTateLevelAutomorphismIntegerRingEquiv_apply
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ)
-    (σ : Gal((standardLubinTateLevelField hπ n) / K))
     (x :
       (standardLubinTateLevelCompleteDVF hπ n).valuationSubring) :
     (standardLubinTateLevelAutomorphismIntegerRingEquiv hπ n σ x).val =
@@ -302,11 +277,7 @@ private theorem
   rfl
 
 private theorem
-    standardLubinTateLevelAutomorphismIntegerRingEquiv_continuous
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ)
-    (σ : Gal((standardLubinTateLevelField hπ n) / K)) :
+    standardLubinTateLevelAutomorphismIntegerRingEquiv_continuous :
     Continuous
       (standardLubinTateLevelAutomorphismIntegerRingEquiv hπ n σ) := by
   let target := standardLubinTateLevelCompleteDVF hπ n
@@ -328,11 +299,7 @@ private theorem
         m x).2 hx
 
 private theorem
-    standardLubinTateLevelAutomorphismIntegerRingEquiv_comp_coefficientHom
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ)
-    (σ : Gal((standardLubinTateLevelField hπ n) / K)) :
+    standardLubinTateLevelAutomorphismIntegerRingEquiv_comp_coefficientHom :
     (standardLubinTateLevelAutomorphismIntegerRingEquiv hπ n σ :
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring →+*
           (standardLubinTateLevelCompleteDVF hπ n).valuationSubring).comp
@@ -345,11 +312,7 @@ private theorem
   exact σ.commutes (a : K)
 
 private theorem
-    standardLubinTateLevelAutomorphismIntegerRingEquiv_primitivePoint_hasEval
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ)
-    (σ : Gal((standardLubinTateLevelField hπ n) / K)) :
+    standardLubinTateLevelAutomorphismIntegerRingEquiv_primitivePoint_hasEval :
     PowerSeries.HasEval
       (standardLubinTateLevelAutomorphismIntegerRingEquiv hπ n σ
         (standardLubinTatePrimitivePointInteger hπ n)) := by
@@ -374,10 +337,6 @@ private theorem
 
 private theorem
     standardLubinTateLevelAutomorphismIntegerRingEquiv_endomorphismValue
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ)
-    (σ : Gal((standardLubinTateLevelField hπ n) / K))
     (a : F.valuationSubring) :
     standardLubinTateLevelAutomorphismIntegerRingEquiv hπ n σ
         (standardLubinTateEndomorphismValue hπ n a) =
@@ -411,12 +370,16 @@ private theorem
     standardLubinTateLevelPowerSeriesEval,
     PowerSeries.coe_eval₂Hom, Function.comp_apply, r] using happ
 
+end
+
+section
+
+variable (F : LocalField.{u, v} K) {π : F.valuationSubring}
+  (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+
 /-- A parameter automorphism transports every parameter root according to
 multiplication of finite unit parameters. -/
-theorem standardLubinTateUnitParameterAlgEquiv_apply_levelRoot
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a b : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterAlgEquiv_apply_levelRoot (a b : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterAlgEquiv F hπ n a
         (standardLubinTateUnitParameterLevelRoot F hπ n b) =
       standardLubinTateUnitParameterLevelRoot F hπ n (a * b) := by
@@ -499,10 +462,7 @@ theorem standardLubinTateUnitParameterAlgEquiv_apply_levelRoot
       congrArg Subtype.val hwuz
 
 /-- The identity parameter gives the identity level-field automorphism. -/
-theorem standardLubinTateUnitParameterAlgEquiv_one
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+theorem standardLubinTateUnitParameterAlgEquiv_one :
     standardLubinTateUnitParameterAlgEquiv F hπ n 1 = 1 := by
   apply MulSemiringAction.toAlgHom_injective K
     (standardLubinTateLevelField hπ n)
@@ -514,10 +474,7 @@ theorem standardLubinTateUnitParameterAlgEquiv_one
 
 /-- Multiplication of finite parameters is composition of the associated
 level-field automorphisms. -/
-theorem standardLubinTateUnitParameterAlgEquiv_mul
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a b : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterAlgEquiv_mul (a b : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterAlgEquiv F hπ n (a * b) =
       standardLubinTateUnitParameterAlgEquiv F hπ n a *
         standardLubinTateUnitParameterAlgEquiv F hπ n b := by
@@ -532,20 +489,14 @@ theorem standardLubinTateUnitParameterAlgEquiv_mul
 
 /-- The explicit map from finite unit parameters to the finite-level Galois
 group. -/
-noncomputable def standardLubinTateUnitParameterToGal
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+noncomputable def standardLubinTateUnitParameterToGal :
     standardLubinTateUnitParameter F n →
       Gal((standardLubinTateLevelField hπ n) / K) :=
   standardLubinTateUnitParameterAlgEquiv F hπ n
 
 /-- Faithfulness of the primitive action makes the parameter-to-automorphism
 map injective. -/
-theorem standardLubinTateUnitParameterToGal_injective
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+theorem standardLubinTateUnitParameterToGal_injective :
     Function.Injective
       (standardLubinTateUnitParameterToGal F hπ n) := by
   intro a b hab
@@ -556,24 +507,20 @@ theorem standardLubinTateUnitParameterToGal_injective
   simpa [standardLubinTateUnitParameterToGal] using hgen
 
 /-- The explicit parameter map preserves the identity element. -/
-theorem standardLubinTateUnitParameterToGal_one
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
+theorem standardLubinTateUnitParameterToGal_one :
     standardLubinTateUnitParameterToGal F hπ n 1 = 1 := by
   simpa [standardLubinTateUnitParameterToGal] using
     standardLubinTateUnitParameterAlgEquiv_one F hπ n
 
 /-- The explicit parameter map preserves multiplication. -/
-theorem standardLubinTateUnitParameterToGal_mul
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a b : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterToGal_mul (a b : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterToGal F hπ n (a * b) =
       standardLubinTateUnitParameterToGal F hπ n a *
         standardLubinTateUnitParameterToGal F hπ n b := by
   simpa [standardLubinTateUnitParameterToGal] using
     standardLubinTateUnitParameterAlgEquiv_mul F hπ n a b
+
+end
 
 /-- The automorphism group of a standard finite level is finite. -/
 noncomputable instance standardLubinTateLevelField_galFinite

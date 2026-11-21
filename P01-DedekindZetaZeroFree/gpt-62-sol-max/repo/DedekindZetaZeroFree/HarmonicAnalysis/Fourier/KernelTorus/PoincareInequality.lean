@@ -26,7 +26,7 @@ private theorem compact_of_finite_haar
   rw [not_compactSpace_iff] at H
   obtain ⟨K, K1, hK, Kclosed⟩ : ∃ K ∈ nhds (0 : G), IsCompact K ∧ IsClosed K :=
     exists_mem_nhds_isCompact_isClosed 0
-  have K_pos : 0 < μ K := measure_pos_of_mem_nhds μ K1
+  have K_pos := measure_pos_of_mem_nhds μ K1
   have A : ∀ L : Set G, IsCompact L → ∃ g : G, Disjoint L (g +ᵥ K) := fun L hL =>
     exists_disjoint_vadd_of_isCompact hL hK
   choose! g hg using A

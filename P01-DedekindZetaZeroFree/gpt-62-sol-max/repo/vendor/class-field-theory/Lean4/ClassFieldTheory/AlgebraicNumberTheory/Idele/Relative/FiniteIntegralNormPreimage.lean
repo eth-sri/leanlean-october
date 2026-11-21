@@ -94,7 +94,7 @@ theorem exists_finitePlaceCompletionIntegerUnit_of_unitsEquiv_eq
     ∃ x₀O : 𝒪[vK.Completion]ˣ,
       integerUnitsToFieldUnits vK.Completion x₀O = x₀ := by
   let vK := HeightOneSpectrum.adicAbv K v₀
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
+  let hvKna :=
     HeightOneSpectrum.isNonarchimedean_adicAbv K v₀
   let : Valued vK.Completion ℝ≥0 :=
     finitePlaceCompletionValued vK hvKna

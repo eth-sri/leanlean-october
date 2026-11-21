@@ -28,17 +28,13 @@ private lemma reciprocal_cancel (C A : ℝ) (r : ℕ) (hC : 0 < C) (hA : 0 < A)
       ((C : ℂ) * (A : ℂ)^s * (Complex.Gamma (s+5/6) * Complex.Gamma (s+7/6))^r) = 1 := by
   have h1 : Complex.Gamma (s+5/6) ≠ 0 := Complex.Gamma_ne_zero_of_re_pos (by simp; linarith)
   have h2 : Complex.Gamma (s+7/6) ≠ 0 := Complex.Gamma_ne_zero_of_re_pos (by simp; linarith)
-  have hc : (C : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hC.ne'
+  have hc := Complex.ofReal_ne_zero.mpr hC.ne'
   have ha : (A : ℂ)^s ≠ 0 := Complex.cpow_ne_zero_iff.mpr
     (Or.inl (Complex.ofReal_ne_zero.mpr hA.ne'))
   simp only [thetaProfileReciprocalMellinFactor, reciprocalGamma,
     Complex.cpow_neg, ← mul_inv, inv_pow]
   have hg := pow_ne_zero r (mul_ne_zero h1 h2)
-  calc
-    _ = ((C : ℂ)⁻¹ * C) * (((A : ℂ)^s)⁻¹ * (A : ℂ)^s) *
-      (((Complex.Gamma (s+5/6) * Complex.Gamma (s+7/6))^r)⁻¹ *
-        (Complex.Gamma (s+5/6) * Complex.Gamma (s+7/6))^r) := by ring
-    _ = 1 := by rw [inv_mul_cancel₀ hc, inv_mul_cancel₀ ha, inv_mul_cancel₀ hg]; ring
+  grind only
 
 private lemma axis_cpow (x : PositiveAxis) (s : ℂ) :
     (x.val : ℂ)^s = Complex.exp ((Real.log x.val : ℂ)*s) := by
@@ -57,8 +53,7 @@ private lemma gaussian_contour (u : ℝ) :
   rw [he, h]
   have hs : ((Real.pi : ℂ)/ -(-1 : ℂ))^(1/2 : ℂ) = (Real.sqrt Real.pi : ℂ) := by
     simp only [neg_neg, div_one]
-    rw [show (1/2 : ℂ) = ((1/2 : ℝ) : ℂ) by norm_num,
-      ← Complex.ofReal_cpow Real.pi_pos.le (1/2 : ℝ), Real.sqrt_eq_rpow]
+    simp [Complex.ofReal_cpow, Real.pi_pos.le, Real.sqrt_eq_rpow]
   have hx : (0 : ℂ) - (-Complex.I*u)^2/(4*(-1)) = (-u^2/4 : ℝ) := by
     push_cast; simp only [mul_pow, neg_pow_two, Complex.I_sq]; ring
   rw [hs, hx, ← Complex.ofReal_exp, Complex.real_smul]
@@ -76,11 +71,10 @@ theorem C0_pos (N : TraceHaarTransport R) (P : Packet R Q) : 0 < P.C₀ := by
 theorem positiveSheet_pos (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis) :
     0 < P.positiveSheet x := by
   rw [positiveSheet_eq N P]
-  exact sheet_pos N P x
+  exact sheet_pos ..
 
 theorem positiveSheet_nonneg (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis) :
     0 ≤ P.positiveSheet x := by
-  rw [positiveSheet_eq N P]
   exact integral_nonneg (fun z => radial_nonneg P _)
 
 theorem positiveSheet_continuous (N : TraceHaarTransport R) (P : Packet R Q) :
@@ -144,8 +138,7 @@ theorem gaussian_smoothing (N : TraceHaarTransport R) (P : Packet R Q) (x : Posi
         thetaProfileReciprocalMellinFactor C A r ((0 : ℂ)+t*Complex.I) *
           (1 : ℂ)^((0 : ℂ)+t*Complex.I)) at hi
       simpa [g] using hi
-    have hgc : Continuous g := by
-      exact (Complex.continuous_exp.comp (by fun_prop)).mul
+    have hgc : Continuous g := (Complex.continuous_exp.comp (by fun_prop)).mul
         ((thetaProfileReciprocalMellinFactor_differentiable C A r hC hA hr).continuous.comp (by fun_prop))
     let f : PositiveAxis → ℝ → ℂ := fun t u => g u * (t.val : ℂ)^((u : ℂ)*Complex.I) * (V (x*t) : ℂ)
     have hfcont : Continuous (Function.uncurry f) := by

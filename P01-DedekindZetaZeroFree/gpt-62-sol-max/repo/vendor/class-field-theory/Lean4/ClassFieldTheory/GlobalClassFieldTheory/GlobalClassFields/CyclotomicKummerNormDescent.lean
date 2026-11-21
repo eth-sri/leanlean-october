@@ -82,6 +82,11 @@ private theorem cyclotomicKummerNormDescent_natCast_ne_zero
     ((n : ℕ) : CyclotomicField (n : ℕ) K) ≠ 0 := by
   exact Nat.cast_ne_zero.mpr n.ne_zero
 
+section
+
+variable (n : ℕ+) (seed : Finset (HeightOneSpectrum (𝓞 K)))
+include n seed
+
 /-- A finite support on `K` whose full inverse image in
 `CyclotomicField n K` contains the chosen Kummer norm support upstairs.
 
@@ -89,9 +94,7 @@ The construction first forms the chosen support above the prescribed
 seed and then adds the places below it.  Taking all places above this enlarged
 base support saturates every fibre without losing the largeness and exponent
 support required by the full S-unit Kummer calculation. -/
-noncomputable def cyclotomicKummerNormSupport
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def cyclotomicKummerNormSupport :
     Finset (HeightOneSpectrum (𝓞 K)) := by
   classical
   let C := CyclotomicField (n : ℕ) K
@@ -104,9 +107,7 @@ noncomputable def cyclotomicKummerNormSupport
 
 /-- The prescribed finite seed is contained in its cyclotomic Kummer norm
 support. -/
-theorem subset_cyclotomicKummerNormSupport
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem subset_cyclotomicKummerNormSupport :
     seed ⊆ cyclotomicKummerNormSupport (K := K) n seed := by
   classical
   intro v hv
@@ -115,9 +116,7 @@ theorem subset_cyclotomicKummerNormSupport
 
 /-- All finite places of the cyclotomic field above the enlarged base
 support.  This is the fibre-saturated support used by norm descent. -/
-noncomputable def cyclotomicKummerNormSupportAbove
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def cyclotomicKummerNormSupportAbove :
     Finset
       (HeightOneSpectrum
         (𝓞 (CyclotomicField (n : ℕ) K))) := by
@@ -129,8 +128,6 @@ noncomputable def cyclotomicKummerNormSupportAbove
 below in the enlarged base support. -/
 @[simp]
 theorem mem_cyclotomicKummerNormSupportAbove_iff
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K)))
     (W :
       HeightOneSpectrum
         (𝓞 (CyclotomicField (n : ℕ) K))) :
@@ -145,9 +142,7 @@ theorem mem_cyclotomicKummerNormSupportAbove_iff
 
 /-- The fibre-saturated support upstairs is already fixed by the chosen
 Kummer-support enlargement. -/
-theorem sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem sUnitKummerNormSupport_cyclotomicKummerNormSupportAbove :
     sUnitKummerNormSupport
         (K := CyclotomicField (n : ℕ) K) n
         (cyclotomicKummerNormSupportAbove (K := K) n seed) =
@@ -203,9 +198,7 @@ idempotent.  In particular, downstream neighbourhood arguments may choose a
 support containing these requirements from the outset without a second
 change of support. -/
 @[simp]
-theorem cyclotomicKummerNormSupport_idem
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem cyclotomicKummerNormSupport_idem :
     cyclotomicKummerNormSupport (K := K) n
         (cyclotomicKummerNormSupport (K := K) n seed) =
       cyclotomicKummerNormSupport (K := K) n seed := by
@@ -240,9 +233,7 @@ of the fibre-saturated support above `K`.  The preceding stability theorem
 shows that this enlargement is equal to the fibre-saturated support; retaining
 it in the definition keeps the extension definitionally aligned with the
 exact Kummer norm-realization theorem. -/
-noncomputable abbrev cyclotomicFullSUnitKummerExtension
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable abbrev cyclotomicFullSUnitKummerExtension :
     IntermediateField
       (CyclotomicField (n : ℕ) K)
       (SeparableClosure (CyclotomicField (n : ℕ) K)) :=
@@ -255,9 +246,7 @@ noncomputable abbrev cyclotomicFullSUnitKummerExtension
 
 /-- The cyclotomic full S-unit Kummer extension is Galois over the
 cyclotomic base. -/
-theorem cyclotomicFullSUnitKummerExtension_isGalois
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem cyclotomicFullSUnitKummerExtension_isGalois :
     IsGalois
       (CyclotomicField (n : ℕ) K)
       (cyclotomicFullSUnitKummerExtension (K := K) n seed) := by
@@ -271,9 +260,7 @@ theorem cyclotomicFullSUnitKummerExtension_isGalois
 
 /-- The cyclotomic full S-unit Kummer extension is finite over the
 cyclotomic base. -/
-theorem cyclotomicFullSUnitKummerExtension_finiteDimensional
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem cyclotomicFullSUnitKummerExtension_finiteDimensional :
     FiniteDimensional
       (CyclotomicField (n : ℕ) K)
       (cyclotomicFullSUnitKummerExtension (K := K) n seed) := by
@@ -290,6 +277,8 @@ theorem cyclotomicFullSUnitKummerExtension_finiteDimensional
       n hnC hmu
       (sUnitKummerNormSupport (K := C) n
         (cyclotomicKummerNormSupportAbove (K := K) n seed)))
+
+end
 
 noncomputable local instance
     cyclotomicKummerNormDescent_kummerFiniteDimensional
@@ -368,25 +357,7 @@ noncomputable local instance
       (cyclotomicFullSUnitKummerExtension (K := K) n seed)).comp
     (algebraMap K (CyclotomicField (n : ℕ) K))).toAlgebra
 
-@[reducible]
- noncomputable def
-    cyclotomicKummerNormDescent_kummerSMulOverBase
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
-    SMul K
-      (cyclotomicFullSUnitKummerExtension (K := K) n seed) :=
-  Algebra.toSMul
-    (self := cyclotomicKummerNormDescent_kummerAlgebraOverBase
-      (K := K) n seed)
 
-@[reducible]
- noncomputable def
-    cyclotomicKummerNormDescent_kummerModuleOverBase
-    (n : ℕ+)
-    (seed : Finset (HeightOneSpectrum (𝓞 K))) :
-    Module K
-      (cyclotomicFullSUnitKummerExtension (K := K) n seed) :=
-  Algebra.toModule
 
  theorem
     cyclotomicKummerNormDescent_kummerScalarTower

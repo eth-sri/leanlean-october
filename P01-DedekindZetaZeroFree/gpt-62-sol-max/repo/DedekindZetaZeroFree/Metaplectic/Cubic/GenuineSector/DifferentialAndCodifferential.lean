@@ -47,12 +47,12 @@ def chartCodifferential (a : ActualChart (U := U) (H := H)) (W : omega a → E F
  theorem chart_differential_add (a : ActualChart (U := U) (H := H))
     (f g : omega a → ℂ) (hf : SmoothOnLift a f) (hg : SmoothOnLift a g) :
     chartDifferential a (f + g) = chartDifferential a f + chartDifferential a g := by
-  exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.1 a f g hf hg
+  exact KPContActualSectorTestDifferentialDescentCalculus.ZD_add a f g hf hg
 
  theorem chart_differential_smul (a : ActualChart (U := U) (H := H))
     (c : ℂ) (f : omega a → ℂ) (hf : SmoothOnLift a f) :
     chartDifferential a (c • f) = c • chartDifferential a f := by
-  exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.1 a c f hf
+  exact KPContActualSectorTestDifferentialDescentCalculus.ZD_smul a c f hf
 
 def D_U : S_U F ζ hζ U R P H →ₗ[ℂ] T_U F ζ hζ U R P H where
   toFun f := ⟨⟨fun a => chartDifferential a (f.val a), (differential_descent f).1⟩,
@@ -72,17 +72,18 @@ def D_U : S_U F ζ hζ U R P H →ₗ[ℂ] T_U F ζ hζ U R P H where
     (fun a => chartCodifferential a (coefficient W.val a)) ∈ scalarTests ∧
     scalarSupport (fun a => chartCodifferential a (coefficient W.val a)) ⊆
       cotangentSupport W.val := by
-  exact KPContActualSectorTestDifferentialDescentCalculus.metric_codifferential_descent.1 W
+  exact ⟨KPContActualSectorTestDifferentialDescentCalculus.codifferential_closed W,
+    KPContActualSectorTestDifferentialDescentCalculus.codifferential_support_subset W⟩
 
  theorem chart_codifferential_add (a : ActualChart (U := U) (H := H))
     (V W : omega a → E F) (hV : SmoothOnLift a V) (hW : SmoothOnLift a W) :
     chartCodifferential a (V + W) = chartCodifferential a V + chartCodifferential a W := by
-  exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.1 a V W hV hW
+  exact KPContActualSectorTestDifferentialDescentCalculus.ZC_add a V W hV hW
 
  theorem chart_codifferential_smul (a : ActualChart (U := U) (H := H))
     (c : ℂ) (W : omega a → E F) (hW : SmoothOnLift a W) :
     chartCodifferential a (c • W) = c • chartCodifferential a W := by
-  exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.1 a c W hW
+  exact KPContActualSectorTestDifferentialDescentCalculus.ZC_smul a c W hW
 
 def δ_U : T_U F ζ hζ U R P H →ₗ[ℂ] S_U F ζ hζ U R P H where
   toFun W := ⟨fun a => chartCodifferential a (coefficient W.val a),
@@ -105,6 +106,13 @@ structure RealSmoothCutoff (F : Type) [Field F] [NumberField F] (ζ : F)
   val : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ
   smooth : ∀ a : ActualChart (U := U) (H := H),
     SmoothOnLift a (fun x => val (q a x.val))
+
+theorem RealSmoothCutoff.continuous (η : RealSmoothCutoff F ζ hζ U R P H) : Continuous η.val := by
+  apply KPContActualCotangentPieceHilbertSum.continuous_of_chart_lifts
+  intro a
+  obtain ⟨g, hg, he⟩ := η.smooth a
+  convert hg.continuousOn.domRestrict using 1
+  exact funext (fun y => (he y).symm)
 
 def cutoffLift (η : RealSmoothCutoff F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) : ℂ :=
@@ -181,134 +189,33 @@ def cutoffGradientTimes (η : RealSmoothCutoff F ζ hζ U R P H) :
     funext a x
     exact mul_smul _ _ _
 
-def contraction (v W : E F) : ℂ :=
-  ∑ i : Fin (d F), ∑ k : Fin 3, v (i, k) * W (i, k)
+theorem differential_chart (f : S_U F ζ hζ U R P H)
+    (a : ActualChart (U := U) (H := H)) (x : omega a) :
+    coefficient (D_U f).val a x = chartDifferential a (f.val a) x := rfl
 
-def cutoffContraction (η : RealSmoothCutoff F ζ hζ U R P H) :
-    T_U F ζ hζ U R P H →ₗ[ℂ] S_U F ζ hζ U R P H where
-  toFun W := ⟨fun a x => contraction (cutoffDifferential η a x) (coefficient W.val a x),
-    KPContActualSectorTestDifferentialDescentCalculus.metric_codifferential_descent.2
-      η.val η.smooth W⟩
-  map_add' V W := by
-    apply Subtype.ext
-    funext a x
-    simp [contraction, coefficient, mul_add, Finset.sum_add_distrib]
-  map_smul' c W := by
-    apply Subtype.ext
-    funext a x
-    simp [contraction, coefficient, Finset.mul_sum, mul_left_comm]
+theorem differential_support (f : S_U F ζ hζ U R P H) :
+    cotangentSupport (D_U f).val ⊆ scalarSupport f.val :=
+  ((differential_descent f).2 _).2
 
-structure Properties : Prop where
-  differential_chart : ∀ (f : S_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a),
-    coefficient (D_U f).val a x = chartDifferential a (f.val a) x
-  codifferential_chart : ∀ (W : T_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a),
-    (δ_U W).val a x = chartCodifferential a (coefficient W.val a) x
-  differential_isotropy : ∀ (f : S_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (γ : Gamma a) (x : M F) (hx : x ∈ omega a),
-    coefficient (D_U f).val a ⟨(isotropyArrow a γ).psi x, isotropy_mem a γ x hx⟩ =
-      T (isotropyArrow a γ) x (omega_subset_larger a hx)
-        (coefficient (D_U f).val a ⟨x, hx⟩)
-  differential_overlap : ∀ (f : S_U F ζ hζ U R P H)
-      (a b : ActualChart (U := U) (H := H)) (e : ActualBranch a b)
-      (x : M F) (hx : x ∈ e.arrow.domain),
-    coefficient (D_U f).val b ⟨e.arrow.psi x, e.target_shrinking hx⟩ =
-      T e.arrow x hx (coefficient (D_U f).val a ⟨x, e.source_shrinking hx⟩)
-  codifferential_isotropy : ∀ (W : T_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (γ : Gamma a) (x : M F) (hx : x ∈ omega a),
-    (δ_U W).val a ⟨(isotropyArrow a γ).psi x, isotropy_mem a γ x hx⟩ =
-      (isotropyArrow a γ).phase x * (δ_U W).val a ⟨x, hx⟩
-  codifferential_overlap : ∀ (W : T_U F ζ hζ U R P H)
-      (a b : ActualChart (U := U) (H := H)) (e : ActualBranch a b)
-      (x : M F) (hx : x ∈ e.arrow.domain),
-    (δ_U W).val b ⟨e.arrow.psi x, e.target_shrinking hx⟩ =
-      e.arrow.phase x * (δ_U W).val a ⟨x, e.source_shrinking hx⟩
-  differential_support : ∀ f : S_U F ζ hζ U R P H,
-    cotangentSupport (D_U f).val ⊆ scalarSupport f.val
-  codifferential_support : ∀ W : T_U F ζ hζ U R P H,
-    scalarSupport (δ_U W).val ⊆ cotangentSupport W.val
-  laplacian_chart : ∀ (f : S_U F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a),
+theorem codifferential_support (W : T_U F ζ hζ U R P H) :
+    scalarSupport (δ_U W).val ⊆ cotangentSupport W.val :=
+  (codifferential_descent W).2
+
+theorem laplacian_chart (f : S_U F ζ hζ U R P H)
+    (a : ActualChart (U := U) (H := H)) (x : omega a) :
     (δ_U (D_U f)).val a x =
-      HyperbolicChart.laplacian (d F) (liftExtension a (f.val a)) x.val
-  cutoff_real : ∀ (η : RealSmoothCutoff F ζ hζ U R P H)
-      (a : ActualChart (U := U) (H := H)) (x : omega a)
-      (i : Fin (d F)) (k : Fin 3),
-    (cutoffDifferential η a x (i, k)).im = 0
-  differential_product : ∀ (η : RealSmoothCutoff F ζ hζ U R P H)
-      (f : S_U F ζ hζ U R P H),
-    D_U (scalarMultiply η f) = cotangentMultiply η (D_U f) + cutoffGradientTimes η f
-  codifferential_product : ∀ (η : RealSmoothCutoff F ζ hζ U R P H)
-      (W : T_U F ζ hζ U R P H),
-    δ_U (cotangentMultiply η W) = scalarMultiply η (δ_U W) - cutoffContraction η W
+      HyperbolicChart.laplacian (d F) (liftExtension a (f.val a)) x.val :=
+  KPContActualSectorTestDifferentialDescentCalculus.ZC_ZD a (f.val a) (f.property.1 a) x
+
+theorem differential_product (η : RealSmoothCutoff F ζ hζ U R P H)
+    (f : S_U F ζ hζ U R P H) :
+    D_U (scalarMultiply η f) = cotangentMultiply η (D_U f) + cutoffGradientTimes η f := by
+  apply Subtype.ext
+  apply Subtype.ext
+  funext a x
+  exact KPContActualSectorTestDifferentialDescentCalculus.ZD_mul
+    a (fun y => η.val (q a y.val)) (f.val a) (η.smooth a) (f.property.1 a) x
 
 end DedekindZetaZeroFree.KPContActualSectorTestDifferentialDescent
-
-namespace DedekindZetaZeroFree
-
-open KPContActualSectorTestDifferentialDescent KPContActualSectorSmoothTestModules
-open KPContActualCotangentMeasurableFamilies
-
-theorem kp_cont_actual_sector_test_differential_descent
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) (hR : R.adelicHaar = μG)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H) :
-    KPContActualSectorTestDifferentialDescent.Properties (F := F) (ζ := ζ) (hζ := hζ)
-      (U := U) (R := R) (P := P) (H := H) := by
-  refine {
-    differential_chart := ?_
-    codifferential_chart := ?_
-    differential_isotropy := ?_
-    differential_overlap := ?_
-    codifferential_isotropy := ?_
-    codifferential_overlap := ?_
-    differential_support := ?_
-    codifferential_support := ?_
-    laplacian_chart := ?_
-    cutoff_real := ?_
-    differential_product := ?_
-    codifferential_product := ?_
-  }
-  · intros; rfl
-  · intros; rfl
-  · intro f a γ x hx
-    exact (D_U f).val.property.2.1 a γ x hx
-  · intro f a b e x hx
-    exact (D_U f).val.property.2.2 a b e x hx
-  · intro W a γ x hx
-    exact (δ_U W).property.2.1.1 a γ x hx
-  · intro W a b e x hx
-    exact (δ_U W).property.2.1.2 a b e x hx
-  · intro f
-    exact ((differential_descent f).2 _).2
-  · intro W
-    exact (codifferential_descent W).2
-  · intro f a x
-    exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.2.1
-      a (f.val a) (f.property.1 a) x
-  · intro η a x i k
-    exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.2.2.1
-      a (fun y => η.val (KPContCotangentOverlapRationalBranches.q a y.val))
-      (η.smooth a) x i k
-  · intro η f
-    apply Subtype.ext
-    apply Subtype.ext
-    funext a x
-    exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.2.2.2.1
-      a (fun y => η.val (KPContCotangentOverlapRationalBranches.q a y.val))
-      (f.val a) (η.smooth a) (f.property.1 a) x
-  · intro η W
-    apply Subtype.ext
-    funext a x
-    exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.2.2.2.2
-      a (fun y => η.val (KPContCotangentOverlapRationalBranches.q a y.val))
-      (coefficient W.val a) (η.smooth a) (W.property.1 a) x
-
-end DedekindZetaZeroFree
 
 end

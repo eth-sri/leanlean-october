@@ -9,6 +9,7 @@ noncomputable section
 namespace DedekindZetaZeroFree.KPLocalCubeSobolevJets
 
 open MeasureTheory KPContLocalNorm
+open WeakJets.Raw (list_smooth list_append list_perm)
 
 namespace Regularization
 
@@ -20,16 +21,11 @@ private theorem compact_lp_integrable {n : ℕ} (f : Lp ℂ 2 (volume : Measure 
     Integrable (fun x => f x) volume := by
   have he : K.indicator (fun x => f x) =ᵐ[volume] (fun x => f x) := by
     filter_upwards [hf] with x hx
-    by_cases h : x ∈ K <;> simp [h, hx]
+    simp_all
   apply Integrable.congr _ he
   apply (integrableOn_iff_integrable_of_support_subset Set.support_indicator_subset).mp
   exact ((Lp.memLp f).locallyIntegrable (by norm_num)).integrableOn_isCompact hK |>.indicator hK.measurableSet
 
-private theorem convolution_eq_real {n : ℕ} (φ : Space n → ℝ) (h : Space n → ℂ) :
-    ((fun y => (φ y : ℂ)) ⋆[ContinuousLinearMap.mul ℝ ℂ, volume] h) =
-      (φ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] h) := by
-  ext x
-  simp only [convolution_def, ContinuousLinearMap.mul_apply', ContinuousLinearMap.lsmul_apply, Complex.real_smul]
 
 private theorem weak_derivative_convolution {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
     (φ : Space n → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ)
@@ -43,7 +39,7 @@ private theorem weak_derivative_convolution {n k : ℕ} (g : Interior.GlobalWeak
   have heq := Interior.global_weak_coordinateDerivative_convolution g (fun y => (φ y : ℂ))
     (Complex.ofRealCLM.contDiff.comp hφ)
     (hc.comp_left (g := Complex.ofReal) rfl) α x
-  simpa only [convolution_eq_real] using heq
+  assumption
 
 def regularizedJet {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
     (α : MultiIndex n k) (t : ℕ) : Lp ℂ 2 (volume : Measure (Space n)) :=
@@ -76,18 +72,12 @@ theorem regularizedJet_ae {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
         ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume]
           (fun x => g.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x) := by
     ext x
-    exact Interior.mollify_eq_radiusBump_convolution _ (by positivity) _ x
+    exact Interior.mollify_eq_radiusBump_convolution ..
   rw [hm, weak_derivative_convolution g _ (ContDiffBump.contDiff_normed _) (ContDiffBump.hasCompactSupport_normed _)]
   exact he
 
 open MeasureTheory KPContLocalNorm Filter Topology
 open scoped Convolution
-
-private theorem smooth_list {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) : ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) := by
-  induction l with
-  | nil => exact hf
-  | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
 
 private theorem derivativeList_sub {n : ℕ} (l : List (Fin n)) {f h : Space n → ℂ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hh : ContDiff ℝ (⊤ : ℕ∞) h) :
@@ -97,8 +87,8 @@ private theorem derivativeList_sub {n : ℕ} (l : List (Fin n)) {f h : Space n �
   | cons i l ih =>
     ext x
     simp only [coordinateDerivativeList, ih]
-    rw [fderiv_sub ((smooth_list l hf).differentiable (by simp) x)
-      ((smooth_list l hh).differentiable (by simp) x)]
+    rw [fderiv_sub ((list_smooth l hf).differentiable (by simp) x)
+      ((list_smooth l hh).differentiable (by simp) x)]
     rfl
 
 def mollifiedValue {n k : ℕ} (g : Interior.GlobalWeakSobolev n k) (t : ℕ) : Space n → ℂ :=
@@ -192,7 +182,7 @@ theorem mollifiedValue_jets_uniformCauchy {n : ℕ} (m : ℕ)
     ((mollifiedValue_smooth g t).sub (mollifiedValue_smooth g s)) hsm hsub α
   have hpoint := norm_le_integral_full_mixed_derivative hn (coordinateDerivative α
     (mollifiedValue g t - mollifiedValue g s))
-    (smooth_list α.directions ((mollifiedValue_smooth g t).sub (mollifiedValue_smooth g s)))
+    (list_smooth α.directions ((mollifiedValue_smooth g t).sub (mollifiedValue_smooth g s)))
     (by
       have h : HasCompactSupport (coordinateDerivativeList α.directions
           (mollifiedValue g t - mollifiedValue g s)) := by
@@ -231,7 +221,7 @@ theorem mollifiedValue_jets_uniformLimit {n : ℕ} (m : ℕ)
     exact (mollifiedValue_jets_uniformCauchy m g hn hK hg α).tendstoUniformlyOn_of_tendsto
       (fun x _ => hJ α x)
   refine ⟨hu, hu.continuous ?_⟩
-  exact (Filter.Eventually.of_forall fun t => (smooth_list α.directions (mollifiedValue_smooth g t)).continuous).frequently
+  exact (Filter.Eventually.of_forall fun t => (list_smooth α.directions (mollifiedValue_smooth g t)).continuous).frequently
 
 theorem mollifiedValue_uniformLimit_ae {n k : ℕ} (g : Interior.GlobalWeakSobolev n k)
     {K : Set (Space n)} (hK : IsCompact K)
@@ -310,18 +300,6 @@ private theorem assemble_uniform {n : ℕ} (F : Fin n → ℕ → Space n → �
   intro i
   exact ((ContinuousLinearMap.smulRightL ℝ (Space n) ℂ (EuclideanSpace.proj i)).uniformContinuous).comp_tendstoUniformly (h i)
 
-private theorem list_append {n : ℕ} (l l' : List (Fin n)) (f : Space n → ℂ) :
-    coordinateDerivativeList (l ++ l') f = coordinateDerivativeList l (coordinateDerivativeList l' f) := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => simp only [List.cons_append, coordinateDerivativeList, ih]
-
-private theorem list_smooth {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) : ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) := by
-  induction l with
-  | nil => exact hf
-  | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
-
 theorem contDiff_of_uniform_coordinate_jets {n : ℕ} (m : ℕ)
     (F : ℕ → Space n → ℂ) (hF : ∀ t, ContDiff ℝ (⊤ : ℕ∞) (F t))
     (hjet : ∀ l : List (Fin n), l.length ≤ m →
@@ -354,23 +332,6 @@ theorem contDiff_of_uniform_coordinate_jets {n : ℕ} (m : ℕ)
       (hdf.tendstoUniformlyOn.tendstoLocallyUniformlyOn)
       (fun t x _ => ((hF t).differentiable (by simp) x).hasFDerivAt)
       (fun x _ => hf.tendsto_at x) (Set.mem_univ x)
-
-private theorem list_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
-    {f : Space n → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    coordinateDerivativeList l f = coordinateDerivativeList k f := by
-  induction hp with
-  | nil => rfl
-  | cons i hp ih => simp only [coordinateDerivativeList, ih]
-  | swap i j l =>
-    have hs := list_smooth l hf
-    funext x
-    simp only [coordinateDerivativeList]
-    have hd : Differentiable ℝ (fderiv ℝ (coordinateDerivativeList l f)) :=
-      (hs.fderiv_right (m := (1 : ℕ∞)) (by simp)).differentiable (by norm_num)
-    simpa [fderiv_clm_apply (hd x) (differentiableAt_const _)] using
-      (hs.contDiffAt (x := x) |>.isSymmSndFDerivAt (by simp)).eq
-        (EuclideanSpace.single j 1) (EuclideanSpace.single i 1)
-  | trans hp hq ih ij => exact ih.trans ij
 
 private theorem list_as_index {n m : ℕ} (l : List (Fin n)) (hl : l.length ≤ m) :
     ∃ α : MultiIndex n m, l.Perm α.directions := by

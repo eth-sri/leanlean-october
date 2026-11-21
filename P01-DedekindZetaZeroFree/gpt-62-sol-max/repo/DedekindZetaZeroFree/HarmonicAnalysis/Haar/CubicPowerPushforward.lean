@@ -46,7 +46,7 @@ private lemma density_measurable : Measurable (fun x : K => ENNReal.ofReal ((abs
     apply ContinuousAt.continuousWithinAt
     have hx0 : x ≠ 0 := by simpa using hx
     have hv : valuation K x ≠ 0 := by simpa using hx0
-    have he : ∀ᶠ y in 𝓝 x, valuation K y = valuation K x :=
+    have he :=
       (WithZeroTopology.tendsto_of_ne_zero hv).mp
         (IsValuativeTopology.continuous_valuation.continuousAt : ContinuousAt (valuation K) x)
     apply (continuousAt_const (y := abs K x)).congr

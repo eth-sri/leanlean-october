@@ -76,8 +76,7 @@ private theorem existsOpenDiagonalZero (F : Type*) [Field F] [NumberField F] :
           IsDedekindDomain.HeightOneSpectrum.adicCompletion.valued_coe] using hv
       obtain ⟨r, hr⟩ :=
         IsDedekindDomain.HeightOneSpectrum.mem_integers_of_valuation_le_one F x hfinite
-      have hL : mixedEmbedding F x ∈ L := by
-        exact ⟨r, congrArg (mixedEmbedding F) hr⟩
+      have hL : mixedEmbedding F x ∈ L := ⟨r, congrArg (mixedEmbedding F) hr⟩
       have hsmall : mixedEmbedding F x ∈ W := by
         rw [InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
         exact hx.1

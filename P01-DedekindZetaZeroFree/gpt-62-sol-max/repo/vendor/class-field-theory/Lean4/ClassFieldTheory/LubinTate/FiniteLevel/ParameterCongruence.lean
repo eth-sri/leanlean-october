@@ -46,24 +46,22 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
+section
+
+variable (F : LocalField.{u, v} K) {R : Type w} [CommRing R] (f : F.valuationSubring →+* R)
+  {π ϖ : F.valuationSubring} (h : f π = f ϖ)
+include h
+
 /-- Equal images of two parameters give equal images of their standard
 Lubin--Tate polynomials. -/
-theorem standardLubinTatePolynomial_map_eq_of_parameter_eq
-    (F : LocalField.{u, v} K)
-    {R : Type w} [CommRing R]
-    (f : F.valuationSubring →+* R)
-    {π ϖ : F.valuationSubring} (h : f π = f ϖ) :
+theorem standardLubinTatePolynomial_map_eq_of_parameter_eq :
     (standardLubinTatePolynomial F π).map f =
       (standardLubinTatePolynomial F ϖ).map f := by
   simp [standardLubinTatePolynomial, h]
 
 /-- Equal images of two parameters give equal images of every compositional
 iterate of the corresponding standard polynomials. -/
-theorem standardLubinTatePolynomialIterate_map_eq_of_parameter_eq
-    (F : LocalField.{u, v} K)
-    {R : Type w} [CommRing R]
-    (f : F.valuationSubring →+* R)
-    {π ϖ : F.valuationSubring} (h : f π = f ϖ) (n : ℕ) :
+theorem standardLubinTatePolynomialIterate_map_eq_of_parameter_eq (n : ℕ) :
     (standardLubinTatePolynomialIterate F π n).map f =
       (standardLubinTatePolynomialIterate F ϖ n).map f := by
   induction n with
@@ -77,11 +75,7 @@ theorem standardLubinTatePolynomialIterate_map_eq_of_parameter_eq
 
 /-- Equal images of two parameters give equal images of their primitive
 quotient polynomials at every finite level. -/
-theorem standardLubinTatePrimitivePolynomial_map_eq_of_parameter_eq
-    (F : LocalField.{u, v} K)
-    {R : Type w} [CommRing R]
-    (f : F.valuationSubring →+* R)
-    {π ϖ : F.valuationSubring} (h : f π = f ϖ) (n : ℕ) :
+theorem standardLubinTatePrimitivePolynomial_map_eq_of_parameter_eq (n : ℕ) :
     (standardLubinTatePrimitivePolynomial F π n).map f =
       (standardLubinTatePrimitivePolynomial F ϖ n).map f := by
   simp only [standardLubinTatePrimitivePolynomial,
@@ -91,10 +85,6 @@ theorem standardLubinTatePrimitivePolynomial_map_eq_of_parameter_eq
 /-- Equal parameter images make the two primitive polynomials have equal
 evaluations at every point of the target ring. -/
 theorem standardLubinTatePrimitivePolynomial_eval₂_eq_of_parameter_eq
-    (F : LocalField.{u, v} K)
-    {R : Type w} [CommRing R]
-    (f : F.valuationSubring →+* R)
-    {π ϖ : F.valuationSubring} (h : f π = f ϖ)
     (n : ℕ) (x : R) :
     Polynomial.eval₂ f x
         (standardLubinTatePrimitivePolynomial F π n) =
@@ -105,6 +95,8 @@ theorem standardLubinTatePrimitivePolynomial_eval₂_eq_of_parameter_eq
       F f h n
   simpa only [Polynomial.eval_map] using
     congrArg (fun p : Polynomial R ↦ p.eval x) hpoly
+
+end
 
 /-- If two parameters are congruent modulo an ideal after mapping into a
 commutative ring, then the evaluations of their primitive quotient

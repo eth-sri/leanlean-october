@@ -21,8 +21,11 @@ local instance finiteStageT2Space : T2Space (G F ζ hζ) :=
 local instance finite_stage_approximation_borel_measurable (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
 local instance finiteStageApproximationBorelSpace (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 
- theorem convolution_integrable
-    (K : Subgroup (G F ζ hζ)) (hK : IsCompact (K : Set (G F ζ hζ)))
+section
+
+variable (K : Subgroup (G F ζ hζ))
+
+ theorem convolution_integrable (hK : IsCompact (K : Set (G F ζ hζ)))
     (μ : Measure K) [IsFiniteMeasure μ] (h : C(K, ℂ))
     (u : Functions F ζ hζ) (hu : Continuous u) (g : G F ζ hζ) :
     Integrable (fun k : K => h k * u (g * k.val)) μ := by
@@ -32,8 +35,7 @@ local instance finiteStageApproximationBorelSpace (K : Subgroup (G F ζ hζ)) : 
   simpa only [IntegrableOn, Measure.restrict_univ] using
     hc.continuousOn.integrableOn_compact (μ := μ) isCompact_univ
 
- def convolutionLinearMap
-    (K : Subgroup (G F ζ hζ)) (hK : IsCompact (K : Set (G F ζ hζ)))
+ def convolutionLinearMap (hK : IsCompact (K : Set (G F ζ hζ)))
     (μ : Measure K) [IsFiniteMeasure μ]
     (u : Functions F ζ hζ) (hu : Continuous u) :
     C(K, ℂ) →ₗ[ℂ] Functions F ζ hζ where
@@ -49,8 +51,7 @@ local instance finiteStageApproximationBorelSpace (K : Subgroup (G F ζ hζ)) : 
       Pi.smul_apply, mul_assoc]
     exact integral_const_mul c _
 
-private theorem convolution_rational_invariant
-    (K : Subgroup (G F ζ hζ)) (μ : Measure K)
+private theorem convolution_rational_invariant (μ : Measure K)
     (h : C(K, ℂ)) (u : Functions F ζ hζ)
     (hu : ∀ γ g, u (rationalLift F ζ hζ γ * g) = u g) :
     ∀ γ g, compactConvolution F ζ hζ K μ h u (rationalLift F ζ hζ γ * g) =
@@ -60,8 +61,7 @@ private theorem convolution_rational_invariant
   filter_upwards with k
   simp only [mul_assoc, hu]
 
-private theorem convolution_central_character
-    (K : Subgroup (G F ζ hζ)) (μ : Measure K)
+private theorem convolution_central_character (μ : Measure K)
     (h : C(K, ℂ)) (u : Functions F ζ hζ)
     (hu : ∀ ε g, u (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε * g) =
       (KPGlobalTorusFunctionData.iota F ζ hζ ε : ℂ) * u g) :
@@ -75,8 +75,7 @@ private theorem convolution_central_character
     mul_assoc]
   exact integral_const_mul _ _
 
-private theorem convolution_continuous
-    (K : Subgroup (G F ζ hζ)) (hK : IsCompact (K : Set (G F ζ hζ)))
+private theorem convolution_continuous (hK : IsCompact (K : Set (G F ζ hζ)))
     (μ : Measure K) [IsFiniteMeasure μ] (h : C(K, ℂ))
     (u : Functions F ζ hζ) (hu : Continuous u) :
     Continuous (compactConvolution F ζ hζ K μ h u) := by
@@ -88,8 +87,7 @@ private theorem convolution_continuous
   exact continuousOn_integral_of_compact_support (μ := μ) isCompact_univ
     hc.continuousOn (fun _ _ _ hk => (hk (Set.mem_univ _)).elim)
 
-private theorem kfinite_add
-    (K : Subgroup (G F ζ hζ)) (f v : Functions F ζ hζ)
+private theorem kfinite_add (f v : Functions F ζ hζ)
     (hf : KFinite F ζ hζ K f) (hv : KFinite F ζ hζ K v) :
     KFinite F ζ hζ K (f + v) := by
   obtain ⟨S, hS, hfS, hSinv⟩ := hf
@@ -101,16 +99,21 @@ private theorem kfinite_add
   obtain ⟨s, hs, t, ht, rfl⟩ := Submodule.mem_sup.mp hw
   exact Submodule.add_mem_sup (hSinv k s hs) (hTinv k t ht)
 
-private theorem kfinite_smul
-    (K : Subgroup (G F ζ hζ)) (f : Functions F ζ hζ)
+private theorem kfinite_smul (f : Functions F ζ hζ)
     (hf : KFinite F ζ hζ K f) (c : ℂ) :
     KFinite F ζ hζ K (c • f) := by
   obtain ⟨S, hS, hfS, hSinv⟩ := hf
   exact ⟨S, hS, S.smul_mem c hfS, hSinv⟩
 
+end
+
+section
+
+variable (K : Subgroup (G F ζ hζ)) (hK : IsCompact (K : Set (G F ζ hζ))) (μ : Measure K)
+  [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
+include hK
+
 private theorem matrix_coefficient_convolution_kfinite
-    (K : Subgroup (G F ζ hζ)) (hK : IsCompact (K : Set (G F ζ hζ)))
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (u : Functions F ζ hζ) (hu : Continuous u)
     (n : ℕ) (π : ContRepresentation ℂ K (EuclideanSpace ℂ (Fin n)))
     (hπ : Continuous π) (v w : EuclideanSpace ℂ (Fin n)) :
@@ -144,8 +147,6 @@ private theorem matrix_coefficient_convolution_kfinite
   simp only [Subgroup.coe_mul, mul_assoc]
 
 private theorem representative_convolution_kfinite
-    (K : Subgroup (G F ζ hζ)) (hK : IsCompact (K : Set (G F ζ hζ)))
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (h : C(K, ℂ)) (hh : h ∈ TauCeti.representativeSubmodule ℂ K)
     (u : Functions F ζ hζ) (hu : Continuous u) :
     KFinite F ζ hζ K (compactConvolution F ζ hζ K μ h u) := by
@@ -172,8 +173,6 @@ private theorem representative_convolution_kfinite
       exact kfinite_smul F ζ hζ K _ ih c
 
 theorem representative_convolution_automorphic_kfinite
-    (K : Subgroup (G F ζ hζ)) (hK : IsCompact (K : Set (G F ζ hζ)))
-    (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (h : C(K, ℂ)) (hh : h ∈ TauCeti.representativeSubmodule ℂ K)
     (u : Functions F ζ hζ) (hu : Automorphic F ζ hζ u) :
     Automorphic F ζ hζ (compactConvolution F ζ hζ K μ h u) ∧
@@ -194,6 +193,8 @@ theorem representative_convolution_automorphic_kfinite
   have heq : (g * a) * k.val =
       (g * k.val) * (k.val⁻¹ * a * k.val) := by group
   rw [heq, hU (g * k.val) (k.val⁻¹ * a * k.val) hk]
+
+end
 
 end DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation
 

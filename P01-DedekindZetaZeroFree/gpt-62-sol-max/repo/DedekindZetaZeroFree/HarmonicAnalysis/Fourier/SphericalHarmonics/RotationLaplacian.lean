@@ -15,7 +15,7 @@ noncomputable def rot (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :=
 private theorem rot_X (i j : Fin 3) (x : Ambient) :
     eval (fun k => (x k : ℂ)) (rot i (X j)) = ((rotationVector i x) j : ℂ) := by
   fin_cases i <;> fin_cases j <;>
-    simp [rot, pderiv_X, Pi.single_apply, rotationVector, Fin.reduceAdd]
+    simp [rot, pderiv_X, rotationVector, Fin.reduceAdd]
 
 private theorem rot_eval_flow (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
     (x : Ambient) (t : ℝ) :

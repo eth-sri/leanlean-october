@@ -4,7 +4,7 @@ public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Topology
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.IdeleNormComponents
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormLocalOrder
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.IdeleSupport
-public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Localization
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.AbsoluteValue
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Lattice
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.FinitePlaceCompletion

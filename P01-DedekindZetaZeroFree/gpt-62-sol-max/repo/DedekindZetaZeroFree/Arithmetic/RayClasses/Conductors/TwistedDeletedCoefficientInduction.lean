@@ -42,7 +42,7 @@ theorem deleted_primitive_inducers_eq
   intro v hv
   by_contra hvD
   have hvSf : v ∉ A.Sf := fun hmem => hvD (hSf (by simpa using hmem))
-  have hcop : v.asIdeal ⊔ A.cS = ⊤ := exterior_prime A v hvSf
+  have hcop := exterior_prime A v hvSf
 
   have hnot : ¬ (∃ w ∈ D, v.asIdeal ≤ w.asIdeal) := by
     rintro ⟨w, hwD, hle⟩
@@ -72,60 +72,25 @@ open scoped Classical NumberField
 open IsDedekindDomain LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem exterior_mul_iff (A : SArithmeticData F) (I J : Ideal (𝓞 F)) :
-    (I * J ≠ ⊥ ∧ I * J ⊔ A.cS = ⊤) ↔
-      (I ≠ ⊥ ∧ I ⊔ A.cS = ⊤) ∧ (J ≠ ⊥ ∧ J ⊔ A.cS = ⊤) := by
-  constructor
-  · intro h
-    have hI : I ⊔ A.cS = ⊤ := top_unique (by
-      rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_left _)
-    have hJ : J ⊔ A.cS = ⊤ := top_unique (by
-      rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_right _)
-    exact ⟨⟨left_ne_zero_of_mul h.1, hI⟩, right_ne_zero_of_mul h.1, hJ⟩
-  · rintro ⟨hI, hJ⟩
-    refine ⟨mul_ne_zero hI.1 hJ.1, ?_⟩
-    rw [Ideal.mul_sup_eq_of_coprime_left hI.2]
-    exact hJ.2
+section
 
- def plusCoeff (A : SArithmeticData F) (σ : F →+* ℂ)
-    (U : AllRowEuler.InitialSeparation.RawFrequency A) (I : Ideal (𝓞 F)) : ℂ :=
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+  (U : AllRowEuler.InitialSeparation.RawFrequency A)
+include A σ U
+
+ def plusCoeff (I : Ideal (𝓞 F)) : ℂ :=
   if hI : I ≠ ⊥ ∧ I ⊔ A.cS = ⊤ then
     AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U ⟨I, hI⟩ else 0
 
-private theorem plusCoeff_ext_mul (A : SArithmeticData F) (σ : F →+* ℂ)
-    (U : AllRowEuler.InitialSeparation.RawFrequency A) (I J : A.Exterior) :
-    AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (ExteriorIdealEuler.mul I J) =
-      AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U I *
-        AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U J := by
-  have hb : ∀ K : A.Exterior,
-      AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U K =
-        σ (A.sexticResidue K U.u) := fun K =>
-    AllRowEuler.UnitCovariance.residueCoefficient_eq (σ := σ) K U.u
-  rw [hb, hb, hb,
-    show A.sexticResidue (ExteriorIdealEuler.mul I J) U.u =
-      A.sexticResidue I U.u * A.sexticResidue J U.u from
-      A.sexticResidueFamily_normalized.2.2 I J _ rfl U.u,
-    map_mul]
+private theorem plusCoeff_mul (I J : Ideal (𝓞 F)) :
+    plusCoeff A σ U (I * J) = plusCoeff A σ U I * plusCoeff A σ U J :=
+  ExteriorIdealEuler.extendZero_mul (AllRowEuler.InitialSeparation.plus_ext_mul_raw (σ := σ) U) I J
 
-private theorem plusCoeff_mul (A : SArithmeticData F) (σ : F →+* ℂ)
-    (U : AllRowEuler.InitialSeparation.RawFrequency A) (I J : Ideal (𝓞 F)) :
-    plusCoeff A σ U (I * J) = plusCoeff A σ U I * plusCoeff A σ U J := by
-  have he := exterior_mul_iff A I J
-  unfold plusCoeff
-  by_cases hI : I ≠ ⊥ ∧ I ⊔ A.cS = ⊤
-  · by_cases hJ : J ≠ ⊥ ∧ J ⊔ A.cS = ⊤
-    · rw [dif_pos (he.mpr ⟨hI, hJ⟩), dif_pos hI, dif_pos hJ]
-      exact plusCoeff_ext_mul A σ U ⟨I, hI⟩ ⟨J, hJ⟩
-    · rw [dif_neg (fun h => hJ (he.mp h).2), dif_pos hI, dif_neg hJ, mul_zero]
-  · rw [dif_neg (fun h => hI (he.mp h).1), dif_neg hI, zero_mul]
-
-private theorem plusCoeff_one (A : SArithmeticData F) (σ : F →+* ℂ)
-    (U : AllRowEuler.InitialSeparation.RawFrequency A) : plusCoeff A σ U ⊤ = 1 := by
+private theorem plusCoeff_one : plusCoeff A σ U ⊤ = 1 := by
   have h := (AllRowEuler.InitialSeparation.raw_plus_isCoefficient (σ := σ) U).map_one
   simpa [plusCoeff, ExteriorIdealEuler.one] using h
 
-private theorem plusCoeff_mask (A : SArithmeticData F) (σ : F →+* ℂ)
-    (U : AllRowEuler.InitialSeparation.RawFrequency A)
+private theorem plusCoeff_mask
     (χ : Detector.PrimitiveFrequencyCharacter F)
     (hprime : ∀ p : ExteriorPrime A,
       AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (primeIdeal p) =
@@ -227,8 +192,6 @@ private theorem plusCoeff_mask (A : SArithmeticData F) (σ : F →+* ℂ)
     rw [plusCoeff_mul, hgmul, hInd, hprimes v]
 
 theorem plus_coefficient_of_prime_values
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (U : AllRowEuler.InitialSeparation.RawFrequency A)
     (χ : Detector.PrimitiveFrequencyCharacter F)
     (hprime : ∀ p : LocalFiniteSums.ExteriorPrime A,
       AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U
@@ -248,6 +211,8 @@ theorem plus_coefficient_of_prime_values
   rw [← hbridge, hmask]
   unfold Detector.deletedPrimitiveIdealCoefficient
   rw [if_neg (by simpa [RawHeckeRows.rawDeletionSet] using hI)]
+
+end
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.MinusArithmetic.DeletedCoefficient

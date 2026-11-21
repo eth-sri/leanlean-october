@@ -106,7 +106,7 @@ theorem derivative_eq_jet (f : G → ℂ) (hf : NativeSmooth f) (g : G) (b : B F
     unfold expLift flow
     congr 4
     funext c
-    by_cases hc : c = b <;> simp [Pi.single_apply, hc]
+    by_cases hc : c = b <;> simp [hc]
   rw [he] at h
   exact h.deriv
 
@@ -122,7 +122,7 @@ theorem translate_smooth (k : GInfinity F) (f : G → ℂ) (hf : NativeSmooth f)
     apply contDiff_pi.mpr; intro v
     apply contDiff_pi.mpr; intro i
     apply contDiff_pi.mpr; intro j
-    fin_cases i <;> fin_cases j <;> simp [m, Matrix.mul_apply, Matrix.vecMul, dotProduct, Fin.sum_univ_two] <;> fun_prop
+    fin_cases i <;> fin_cases j <;> simp [m, Matrix.vecMul, dotProduct, Fin.sum_univ_two] <;> fun_prop
   have hv (x) (hx : x ∈ archDomain F) (v) : m x v = (rightMatrix (x v) * (k v).out).val := by
     rw [Units.val_mul, rightMatrix_val _ (hx v)]
   have hi (x) (hx : x ∈ archDomain F) : m x ∈ invertibleProducts := by
@@ -245,7 +245,7 @@ theorem derivative_mem_wordSpace (n : ℕ) (f : scalarSpace (F := F) (ζ := ζ) 
     apply Submodule.subset_span
     refine ⟨b :: w, ?_, rfl⟩
     exact Finset.mem_biUnion.mpr ⟨b, Finset.mem_univ _, Finset.mem_image.mpr ⟨w, hw, rfl⟩⟩
-  | zero => simpa using (wordSpace (n+1) f).zero_mem
+  | zero => simp
   | add x y hx hy ix iy => simpa using (wordSpace (n+1) f).add_mem ix iy
   | smul c x hx ix => simpa using (wordSpace (n+1) f).smul_mem c ix
 

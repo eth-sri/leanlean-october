@@ -20,7 +20,7 @@ private lemma ratios_from_squares (T Y Z U H : ℝ)
   have hH0 : 0 < H := by linarith
   have hzlo' : T*U ≤ H*Z := (sq_le_sq₀ (by positivity) (by positivity)).mp hzlo
   have hyhi' : Y*U ≤ H*T := (sq_le_sq₀ (by positivity) (by positivity)).mp hyhi
-  have hzhi' : Z ≤ H*T*U := (sq_le_sq₀ (by positivity) (by positivity)).mp hzhi
+  have hzhi' := (sq_le_sq₀ (by positivity) (by positivity)).mp hzhi
   constructor
   · apply (div_le_div_iff₀ hH0 hT).mpr
     nlinarith
@@ -28,7 +28,7 @@ private lemma ratios_from_squares (T Y Z U H : ℝ)
   · apply (div_le_div_iff₀ hH0 hY).mpr
     nlinarith
   · apply (div_le_div_iff₀ hH0 hZ).mpr
-    nlinarith [mul_le_mul_of_nonneg_left hzhi' hU.le]
+    nlinarith
 
 private lemma original_squares (M R B U H : ℝ) (hM : 0 < M) (hR : 0 < R)
     (hB : 0 < B) (hU : 0 < U) (hH : 2 ≤ H)
@@ -42,27 +42,25 @@ private lemma original_squares (M R B U H : ℝ) (hM : 0 < M) (hR : 0 < R)
   have hY := Real.sq_sqrt (div_pos hM (by positivity : 0 < 2*B)).le
   have hZ := Real.sq_sqrt (div_pos hM hB).le
   have hH2 : 2 ≤ H^2 := by nlinarith
-  have hMB : 0 < M/B := div_pos hM hB
-  have hMR : 0 < M/R := div_pos hM hR
-  have hcmp : M/R ≤ M/B := div_le_div_of_nonneg_left hM.le hB hRB
+  
+  have hMR := div_pos hM hR
+  have hcmp := div_le_div_of_nonneg_left hM.le hB hRB
   have hcmp2 : M/B ≤ 2*(M/R) := by
     rw [div_le_iff₀ hB]
     rw [mul_assoc, mul_comm (M/R) B, ← mul_assoc, ← mul_div_assoc,
       le_div_iff₀ hR]
-    nlinarith [mul_le_mul_of_nonneg_left hBR hM.le]
-  have hcmp3 : M/(2*B) ≤ M/R := div_le_div_of_nonneg_left hM.le hR hBR
+    nlinarith
+  have hcmp3 := div_le_div_of_nonneg_left hM.le hR hBR
   simp only [mul_pow, div_pow, hT, hY, hZ, div_mul_cancel₀ _ (pow_ne_zero 2 hU.ne')]
   constructor
   · calc
       _ ≤ (M/B)*U^2 := mul_le_mul_of_nonneg_right hcmp (sq_nonneg U)
       _ ≤ H^2*((M/B)*U^2) := le_mul_of_one_le_left (by positivity) (by linarith)
   constructor
-  · exact hcmp3.trans (le_mul_of_one_le_left hMR.le (by linarith))
-  · have hb : M/B ≤ H^2*(M/R) := hcmp2.trans
+  · nlinarith
+  · have hb := hcmp2.trans
       (mul_le_mul_of_nonneg_right hH2 hMR.le)
-    calc
-      _ ≤ (H^2*(M/R))*U^2 := mul_le_mul_of_nonneg_right hb (sq_nonneg U)
-      _ = _ := by ring
+    simp_all
 
 private lemma reflected_square_ratios (M N d E V R B U q : ℝ)
     (hM : 0 < M) (hN : 0 < N) (hd : 0 < d) (hE : 0 < E) (hV : 0 < V)

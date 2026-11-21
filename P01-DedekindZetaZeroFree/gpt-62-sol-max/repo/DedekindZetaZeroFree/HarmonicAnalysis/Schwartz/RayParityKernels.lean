@@ -25,7 +25,7 @@ theorem exists_rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
         ∏ v ∈ δ, (Theta.traceRealCoordinateCLM K v x : ℂ))
     classical
     induction δ using Finset.induction_on with
-    | empty => simpa using Function.HasTemperateGrowth.const (1 : ℂ)
+    | empty => simp
     | insert a s ha ih =>
       have ha' : Function.HasTemperateGrowth
           (fun x : euclidean.mixedSpace K ↦

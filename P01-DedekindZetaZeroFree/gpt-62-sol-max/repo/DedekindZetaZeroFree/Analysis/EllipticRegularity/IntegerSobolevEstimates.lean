@@ -11,62 +11,14 @@ namespace DedekindZetaZeroFree.KPContLocalRegularity
 open MeasureTheory
 open KPContLocalNorm KPContLocalEnergy
 
-def SmoothNearClosedBall {n : ℕ} {outer : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients outer cρ Cρ κ Λ) : Prop :=
-  ∃ U : Set (Space n), IsOpen U ∧
-    Metric.closedBall outer.center outer.radius ⊆ U ∧
-    ContDiffOn ℝ (⊤ : ℕ∞) D.density U ∧
-    ∀ i j : Fin n, ContDiffOn ℝ (⊤ : ℕ∞) (fun x => D.matrix x i j) U
+export SobolevIteration.Raw (SmoothNearClosedBall BoundedCoefficientDerivatives WeakIntegerEstimate)
 
-def BoundedCoefficientDerivatives {n : ℕ} {outer : LocalBall n}
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (k : ℕ) (L : ℝ) : Prop :=
-  ∀ α : MultiIndex n k, ∀ x ∈ outer.carrier,
-    ‖coordinateDerivative α (fun y => (D.density y : ℂ)) x‖ ≤ L ∧
-    ∀ i j : Fin n,
-      ‖coordinateDerivative α
-        (fun y => ((D.density y * D.matrix y i j : ℝ) : ℂ)) x‖ ≤ L
+open SobolevIteration (restrictCoefficients)
 
-def functionSobolevNorm {n : ℕ} (B : LocalBall n) (r : ℕ)
-    (h : Space n → ℂ) : ℝ :=
-  Real.sqrt (∑ α : MultiIndex n r, (functionL2Norm B (coordinateDerivative α h)) ^ 2)
-
-def WeakIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
-  ∀ z : ℂ, ‖z‖ ≤ M →
-    ∀ (u : IntegerSobolev outer 1) (h : IntegerSobolev outer r),
-      WeakEquation D z u (value h) →
-      ∃ v : IntegerSobolev inner (r + 2),
-        Represents v (fun x => value u x) ∧
-        v.sobolevNorm ≤ C * (‖value u‖ + h.sobolevNorm)
-
-def SmoothSourceIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
-  ∀ z : ℂ, ‖z‖ ≤ M →
-    ∀ (u : IntegerSobolev outer 1) (h : Space n → ℂ)
-      (U : Set (Space n)), IsOpen U →
-      Metric.closedBall outer.center outer.radius ⊆ U →
-      ContDiffOn ℝ (⊤ : ℕ∞) h U →
-      ∀ hL2 : MemLp h 2 (volume.restrict outer.carrier),
-        WeakEquation D z u (hL2.toLp h) →
-        ∃ v : IntegerSobolev inner (r + 2),
-          Represents v (fun x => value u x) ∧
-          v.sobolevNorm ≤ C * (‖value u‖ + functionSobolevNorm outer r h)
-
-def SmoothIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
-    {cρ Cρ κ Λ : ℝ} (D : Coefficients outer cρ Cρ κ Λ)
-    (r : ℕ) (M C : ℝ) : Prop :=
-  ∀ z : ℂ, ‖z‖ ≤ M →
-    ∀ (u h : Space n → ℂ) (U : Set (Space n)), IsOpen U →
-      Metric.closedBall outer.center outer.radius ⊆ U →
-      ContDiffOn ℝ (⊤ : ℕ∞) u U → ContDiffOn ℝ (⊤ : ℕ∞) h U →
-      (∀ᵐ x ∂volume.restrict outer.carrier,
-        divergenceOperator D u x - z * u x = h x) →
-      ∃ v : IntegerSobolev inner (r + 2),
-        RepresentsClassicalDerivatives v u ∧
-        v.sobolevNorm ≤ C * (functionL2Norm outer u + functionSobolevNorm outer r h)
+theorem restrictCoefficients_smooth {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+    (hAB : A.carrier ⊆ B.carrier) (hclosed : Metric.closedBall A.center A.radius ⊆ B.carrier)
+    (D : Coefficients B cρ Cρ κ Λ) : SmoothNearClosedBall (restrictCoefficients hAB D) :=
+  ⟨B.carrier, Metric.isOpen_ball, hclosed, D.density_smooth, D.matrix_smooth⟩
 
 private theorem coordDerivList_contDiffOn {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     (l : List (Fin n)) {f : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f U) :
@@ -152,55 +104,18 @@ namespace DedekindZetaZeroFree
 
 open KPContLocalNorm KPContLocalEnergy KPContLocalRegularity
 
-theorem kp_cont_local_regularity_iterate (n r : ℕ) (hn : 0 < n)
-    (a R cρ Cρ κ Λ L M : ℝ) (ha : 0 < a) (haR : a < R)
-    (hcρ : 0 < cρ) (hκ : 0 < κ) (hL : 0 ≤ L) (hM : 0 ≤ M) :
-    ∃ C : ℝ, 0 < C ∧ ∀ inner outer : LocalBall n,
-      inner.center = outer.center → inner.radius = a → outer.radius = R →
-      ∀ D : Coefficients outer cρ Cρ κ Λ,
-        SmoothNearClosedBall D → BoundedCoefficientDerivatives D (r + 1) L →
-        WeakIntegerEstimate inner outer D r M C ∧
-        SmoothSourceIntegerEstimate inner outer D r M C ∧
-        SmoothIntegerEstimate inner outer D r M C := by
-  obtain ⟨C, hC, hweak⟩ :=
-    KPContLocalRegularity.SobolevIteration.quantitative_weak_integer_gain n r hn
-      a R cρ Cρ κ Λ L M ha haR hcρ hκ hL hM
-  refine ⟨C, hC, ?_⟩
-  intro inner outer hcenter hir hor D hD hbd
-
-  let Dr : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients outer cρ Cρ κ Λ :=
-    { density := D.density
-      matrix := D.matrix
-      density_smooth := D.density_smooth
-      matrix_smooth := D.matrix_smooth
-      density_bounds := D.density_bounds
-      symmetric := D.symmetric
-      ellipticity := D.ellipticity
-      upper_bound := D.upper_bound }
-  have hsub : inner.carrier ⊆ outer.carrier := by
-    rw [LocalBall.carrier, LocalBall.carrier, hcenter, hir, hor]
-    exact Metric.ball_subset_ball haR.le
-  have hw : KPContLocalRegularity.SobolevIteration.Raw.WeakIntegerEstimate
-      inner outer Dr r M C :=
-    hweak inner outer hcenter hir hor Dr hD hbd
-  have hs := KPContLocalRegularity.SobolevIteration.smooth_estimates_of_weak_integer_estimate
-    Dr hcρ hsub hw
-  exact ⟨hw, hs⟩
-
 theorem kp_cont_local_regularity_iterate_fixed_coefficients (n : ℕ)
     (inner outer : LocalBall n) (hcenter : inner.center = outer.center)
     (hradii : inner.radius < outer.radius) (cρ Cρ κ Λ M : ℝ)
     (hcρ : 0 < cρ) (hκ : 0 < κ) (hM : 0 ≤ M)
     (D : Coefficients outer cρ Cρ κ Λ) (hD : SmoothNearClosedBall D) :
     ∀ r : ℕ, ∃ C : ℝ, 0 < C ∧
-      WeakIntegerEstimate inner outer D r M C ∧
-      SmoothSourceIntegerEstimate inner outer D r M C ∧
-      SmoothIntegerEstimate inner outer D r M C := by
+      WeakIntegerEstimate inner outer D r M C := by
   intro r
 
   obtain ⟨L, hL, hbd⟩ :=
     boundedCoefficientDerivatives_of_smoothNearClosedBall D hD (r + 1)
-  obtain ⟨C, hC, hmain⟩ := kp_cont_local_regularity_iterate n r inner.dimension_pos
+  obtain ⟨C, hC, hmain⟩ := KPContLocalRegularity.SobolevIteration.quantitative_weak_integer_gain n r inner.dimension_pos
     inner.radius outer.radius cρ Cρ κ Λ L M inner.radius_pos hradii hcρ hκ hL hM
   exact ⟨C, hC, hmain inner outer hcenter rfl rfl D hD hbd⟩
 

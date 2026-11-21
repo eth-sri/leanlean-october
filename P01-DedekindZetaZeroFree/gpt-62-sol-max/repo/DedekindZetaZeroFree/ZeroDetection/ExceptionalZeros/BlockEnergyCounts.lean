@@ -1,7 +1,0 @@
-module
-public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.HeightPrefixMaximalBounds
-public import DedekindZetaZeroFree.ZeroDetection.Smoothing.SmoothedZeroPrefixes
-public import DedekindZetaZeroFree.ZeroDetection.Conductors.FrequencyDyadCounts
-public import DedekindZetaZeroFree.Arithmetic.Units.PrincipalizingRayCharacterContext
-public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.ExteriorDyadicConductorBounds
-public import DedekindZetaZeroFree.Adeles.Quotients.SixthPowerCompactCover

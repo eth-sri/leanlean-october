@@ -60,13 +60,6 @@ abbrev NarrowClassGroup
     (K : Type*) [Field K] [NumberField K] :=
   IdeleGroup K ⧸ narrowDenominator (K := K)
 
-/-- The ray class group with zero finite part and every real place selected is
-the narrow class group. -/
-def rayClassGroupNarrowZeroEquivNarrowClassGroup :
-    RayClassGroup (Modulus.narrowOfFinite (0 : FiniteModulus K)) ≃*
-      NarrowClassGroup K :=
-  rayClassGroupEquivIdeleQuotient
-    (Modulus.narrowOfFinite (0 : FiniteModulus K))
 
 /-- The canonical map from the narrow class group to the ordinary ideal
 class group. -/
@@ -88,21 +81,7 @@ def narrowToClassGroup :
         MonoidHom.mem_ker] at hu'
       rw [hu', map_one])
 
-theorem narrowToClassGroup_mk (a : IdeleGroup K) :
-    narrowToClassGroup
-      (QuotientGroup.mk' (narrowDenominator (K := K)) a) =
-      IdeleGroup.idealClass a :=
-  QuotientGroup.lift_mk _ _ _
 
-theorem narrowToClassGroup_surjective :
-    Function.Surjective
-      (narrowToClassGroup (K := K)) := by
-  intro c
-  obtain ⟨a, rfl⟩ :=
-    IdeleGroup.idealClass_surjective (K := K) c
-  exact ⟨QuotientGroup.mk'
-    (narrowDenominator (K := K)) a,
-    narrowToClassGroup_mk a⟩
 
 /-- The quotient of infinite ideles by the positive congruence
 subgroup. -/
@@ -153,133 +132,12 @@ theorem signToNarrow_mk (a : InfiniteIdeleGroup K) :
         (infiniteToIdele (K := K) a) :=
   QuotientGroup.lift_mk _ _ _
 
-theorem signToNarrow_range_eq_narrowToClassGroup_ker :
-    (signToNarrow (K := K)).range =
-      (narrowToClassGroup (K := K)).ker := by
-  apply le_antisymm
-  · rintro z ⟨s, rfl⟩
-    obtain ⟨a, rfl⟩ :=
-      QuotientGroup.mk'_surjective
-        (narrowInfiniteCongruenceSubgroup (K := K)) s
-    rw [MonoidHom.mem_ker, signToNarrow_mk,
-      narrowToClassGroup_mk]
-    change ClassGroup.mk K
-        (FiniteIdeleGroup.fractionalIdeal (1 :
-          FiniteIdeleGroup K)) = 1
-    simp
-  · intro z hz
-    obtain ⟨a, rfl⟩ :=
-      QuotientGroup.mk'_surjective
-        (narrowDenominator (K := K)) z
-    rw [MonoidHom.mem_ker, narrowToClassGroup_mk] at hz
-    have ha :
-        a ∈ IdeleGroup.ordinaryIdealClassSubgroup (K := K) := by
-      rw [IdeleGroup.ordinaryIdealClassSubgroup_eq_ker]
-      exact hz
-    rw [IdeleGroup.ordinaryIdealClassSubgroup,
-      Subgroup.mem_sup] at ha
-    obtain ⟨u, hu, p, hp, rfl⟩ := ha
-    have hfinite :
-        (1, u.2) ∈
-          (Modulus.narrowOfFinite (0 : FiniteModulus K)).ideleCongruenceSubgroup := by
-      rw [Modulus.ideleCongruenceSubgroup_narrowOfFinite]
-      refine ⟨?_, ?_⟩
-      · exact (narrowInfiniteCongruenceSubgroup (K := K)).one_mem
-      · rw [finiteCongruenceSubgroup_zero]
-        exact hu
-    have hfiniteDen :
-        (1, u.2) ∈ narrowDenominator (K := K) :=
-      Subgroup.mem_sup_left hfinite
-    have hpDen :
-        p ∈ narrowDenominator (K := K) :=
-      Subgroup.mem_sup_right hp
-    have huDecomp :
-        u = (u.1, 1) * (1, u.2) := by
-      ext <;> simp
-    have hfiniteQuot :
-        QuotientGroup.mk' (narrowDenominator (K := K))
-            (1, u.2) = 1 :=
-      (QuotientGroup.eq_one_iff _).mpr hfiniteDen
-    have hpQuot :
-        QuotientGroup.mk' (narrowDenominator (K := K)) p = 1 :=
-      (QuotientGroup.eq_one_iff _).mpr hpDen
-    refine ⟨QuotientGroup.mk'
-      (narrowInfiniteCongruenceSubgroup (K := K)) u.1, ?_⟩
-    rw [signToNarrow_mk]
-    change
-      QuotientGroup.mk' (narrowDenominator (K := K))
-          (u.1, 1) =
-        QuotientGroup.mk' (narrowDenominator (K := K))
-          (u * p)
-    calc
-      QuotientGroup.mk' (narrowDenominator (K := K))
-          (u.1, 1) =
-          QuotientGroup.mk' (narrowDenominator (K := K)) u := by
-            calc
-              QuotientGroup.mk' (narrowDenominator (K := K))
-                  (u.1, 1) =
-                  QuotientGroup.mk' (narrowDenominator (K := K))
-                    ((u.1, 1) * (1, u.2)) := by
-                      rw [map_mul, hfiniteQuot]
-                      exact (mul_one
-                        (QuotientGroup.mk' (narrowDenominator (K := K))
-                          (u.1, 1))).symm
-              _ = QuotientGroup.mk'
-                  (narrowDenominator (K := K)) u :=
-                congrArg
-                  (QuotientGroup.mk'
-                    (narrowDenominator (K := K)))
-                  huDecomp.symm
-      _ = QuotientGroup.mk' (narrowDenominator (K := K))
-          (u * p) := by
-            rw [map_mul, hpQuot]
-            exact (mul_one
-              (QuotientGroup.mk' (narrowDenominator (K := K)) u)).symm
 
 /-- The inclusion of global integral units into the field units. -/
 def integralUnitToFieldUnit :
     (𝓞 K)ˣ →* Kˣ :=
   Units.map (algebraMap (𝓞 K) K)
 
-/-- A field unit generates the unit fractional ideal exactly when it comes
-from a global integral unit. -/
-theorem toPrincipalIdeal_eq_one_iff_mem_integralUnits
-    (x : Kˣ) :
-    toPrincipalIdeal (𝓞 K) K x = 1 ↔
-      x ∈ (integralUnitToFieldUnit (K := K)).range := by
-  constructor
-  · intro hx
-    have hx' :
-        FractionalIdeal.spanSingleton
-            (nonZeroDivisors (𝓞 K)) (x : K) =
-          FractionalIdeal.spanSingleton
-            (nonZeroDivisors (𝓞 K)) (1 : K) := by
-      simpa only [coe_toPrincipalIdeal,
-        Units.val_one, FractionalIdeal.spanSingleton_one] using
-        congrArg Units.val hx
-    obtain ⟨u, hu⟩ :=
-      (FractionalIdeal.spanSingleton_eq_spanSingleton).mp hx'
-    refine ⟨u⁻¹, ?_⟩
-    apply Units.ext
-    change algebraMap (𝓞 K) K (↑(u⁻¹) : 𝓞 K) = (x : K)
-    change algebraMap (𝓞 K) K (u : 𝓞 K) * (x : K) = 1 at hu
-    simpa using (eq_inv_of_mul_eq_one_right hu).symm
-  · rintro ⟨u, rfl⟩
-    apply Units.ext
-    rw [coe_toPrincipalIdeal]
-    change FractionalIdeal.spanSingleton
-        (nonZeroDivisors (𝓞 K))
-          (algebraMap (𝓞 K) K (u : 𝓞 K)) =
-      (1 : FractionalIdeal
-        (nonZeroDivisors (𝓞 K)) K)
-    rw [← FractionalIdeal.spanSingleton_one]
-    apply
-      (FractionalIdeal.spanSingleton_eq_spanSingleton).mpr
-    refine ⟨u⁻¹, ?_⟩
-    change algebraMap (𝓞 K) K (↑(u⁻¹) : 𝓞 K) *
-        algebraMap (𝓞 K) K (u : 𝓞 K) = 1
-    rw [← map_mul]
-    simp
 
 /-- The archimedean image of a global integral unit. -/
 def integralUnitToInfiniteIdele :
@@ -332,219 +190,10 @@ theorem integralUnitSignToRealSign_mk (u : (𝓞 K)ˣ) :
         (integralUnitToInfiniteIdele (K := K) u) :=
   QuotientGroup.lift_mk _ _ _
 
-theorem integralUnitSignToRealSign_injective :
-    Function.Injective
-      (integralUnitSignToRealSign (K := K)) := by
-  intro x y hxy
-  obtain ⟨u, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      (totallyPositiveUnitSubgroup (K := K)) x
-  obtain ⟨v, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      (totallyPositiveUnitSubgroup (K := K)) y
-  rw [integralUnitSignToRealSign_mk,
-    integralUnitSignToRealSign_mk] at hxy
-  have hxy' :
-      integralUnitToInfiniteIdele (K := K) u /
-          integralUnitToInfiniteIdele (K := K) v ∈
-        narrowInfiniteCongruenceSubgroup (K := K) :=
-    (QuotientGroup.eq_iff_div_mem
-      (N := narrowInfiniteCongruenceSubgroup (K := K))
-      (x := integralUnitToInfiniteIdele (K := K) u)
-      (y := integralUnitToInfiniteIdele (K := K) v)).mp hxy
-  apply
-    (QuotientGroup.eq_iff_div_mem
-      (N := totallyPositiveUnitSubgroup (K := K))
-      (x := u) (y := v)).mpr
-  change integralUnitToInfiniteIdele (K := K) (u / v) ∈
-    narrowInfiniteCongruenceSubgroup (K := K)
-  simpa using hxy'
 
-theorem principalIdele_integralUnit_finite_integral
-    (u : (𝓞 K)ˣ) :
-    (IdeleGroup.principalIdele K
-        (integralUnitToFieldUnit (K := K) u)).2 ∈
-      FiniteIdeleGroup.integralSubgroup (K := K) := by
-  rw [← FiniteIdeleGroup.fractionalIdeal_ker,
-    MonoidHom.mem_ker]
-  change IdeleGroup.fractionalIdeal
-      (IdeleGroup.principalIdele K
-        (integralUnitToFieldUnit (K := K) u)) = 1
-  rw [IdeleGroup.fractionalIdeal_principalIdele]
-  exact
-    (toPrincipalIdeal_eq_one_iff_mem_integralUnits
-      (integralUnitToFieldUnit (K := K) u)).mpr
-      ⟨u, rfl⟩
 
-theorem signToNarrow_integralUnit (u : (𝓞 K)ˣ) :
-    signToNarrow
-        (QuotientGroup.mk'
-          (narrowInfiniteCongruenceSubgroup (K := K))
-          (integralUnitToInfiniteIdele (K := K) u)) = 1 := by
-  rw [signToNarrow_mk]
-  let p : IdeleGroup K :=
-    IdeleGroup.principalIdele K
-      (integralUnitToFieldUnit (K := K) u)
-  have hp :
-      p ∈ IdeleGroup.principalSubgroup K :=
-    ⟨integralUnitToFieldUnit (K := K) u, rfl⟩
-  have hfinite :
-      (1, p.2) ∈
-        (Modulus.narrowOfFinite (0 : FiniteModulus K)).ideleCongruenceSubgroup := by
-    rw [Modulus.ideleCongruenceSubgroup_narrowOfFinite]
-    refine ⟨(narrowInfiniteCongruenceSubgroup (K := K)).one_mem, ?_⟩
-    rw [finiteCongruenceSubgroup_zero]
-    exact principalIdele_integralUnit_finite_integral u
-  have hfiniteDen :
-      (1, p.2) ∈ narrowDenominator (K := K) :=
-    Subgroup.mem_sup_left hfinite
-  have hpDen :
-      p ∈ narrowDenominator (K := K) :=
-    Subgroup.mem_sup_right hp
-  have hpDecomp :
-      p = (p.1, 1) * (1, p.2) := by
-    ext <;> simp
-  have hfiniteQuot :
-      QuotientGroup.mk' (narrowDenominator (K := K))
-          (1, p.2) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr hfiniteDen
-  have hpQuot :
-      QuotientGroup.mk' (narrowDenominator (K := K)) p = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr hpDen
-  change QuotientGroup.mk' (narrowDenominator (K := K))
-      (p.1, 1) = 1
-  calc
-    QuotientGroup.mk' (narrowDenominator (K := K))
-        (p.1, 1) =
-        QuotientGroup.mk' (narrowDenominator (K := K))
-          ((p.1, 1) * (1, p.2)) := by
-            rw [map_mul, hfiniteQuot]
-            exact (mul_one
-              (QuotientGroup.mk' (narrowDenominator (K := K))
-                (p.1, 1))).symm
-    _ = QuotientGroup.mk' (narrowDenominator (K := K)) p :=
-      congrArg
-        (QuotientGroup.mk' (narrowDenominator (K := K)))
-        hpDecomp.symm
-    _ = 1 := hpQuot
 
-theorem integralUnitSignToRealSign_range_eq_signToNarrow_ker :
-    (integralUnitSignToRealSign (K := K)).range =
-      (signToNarrow (K := K)).ker := by
-  apply le_antisymm
-  · rintro s ⟨q, rfl⟩
-    obtain ⟨u, rfl⟩ :=
-      QuotientGroup.mk'_surjective
-        (totallyPositiveUnitSubgroup (K := K)) q
-    rw [MonoidHom.mem_ker,
-      integralUnitSignToRealSign_mk]
-    exact signToNarrow_integralUnit u
-  · intro s hs
-    obtain ⟨a, rfl⟩ :=
-      QuotientGroup.mk'_surjective
-        (narrowInfiniteCongruenceSubgroup (K := K)) s
-    rw [MonoidHom.mem_ker, signToNarrow_mk] at hs
-    have hs' :
-        infiniteToIdele (K := K) a ∈
-          narrowDenominator (K := K) :=
-      (QuotientGroup.eq_one_iff _).mp hs
-    rw [narrowDenominator, Subgroup.mem_sup] at hs'
-    obtain ⟨c, hc, p, hp, hcp⟩ := hs'
-    obtain ⟨x, rfl⟩ := hp
-    have hcIntegral :
-        c ∈ IdeleGroup.integralAtFinitePlaces (K := K) :=
-      narrowIdeleCongruenceSubgroup_zero_le_integral hc
-    have hcFractionalIdeal :
-        IdeleGroup.fractionalIdeal c = 1 := by
-      rw [← MonoidHom.mem_ker,
-        IdeleGroup.fractionalIdeal_ker]
-      exact hcIntegral
-    have hxIdeal :
-        toPrincipalIdeal (𝓞 K) K x = 1 := by
-      calc
-        toPrincipalIdeal (𝓞 K) K x =
-            IdeleGroup.fractionalIdeal
-              (IdeleGroup.principalIdele K x) :=
-          (IdeleGroup.fractionalIdeal_principalIdele x).symm
-        _ = IdeleGroup.fractionalIdeal c *
-            IdeleGroup.fractionalIdeal
-              (IdeleGroup.principalIdele K x) := by
-          rw [hcFractionalIdeal, one_mul]
-        _ = IdeleGroup.fractionalIdeal
-            (c * IdeleGroup.principalIdele K x) := by
-          rw [map_mul]
-        _ = IdeleGroup.fractionalIdeal
-            (infiniteToIdele (K := K) a) :=
-          congrArg (IdeleGroup.fractionalIdeal (K := K)) hcp
-        _ = 1 := by
-          change FiniteIdeleGroup.fractionalIdeal
-            (1 : FiniteIdeleGroup K) = 1
-          simp
-    obtain ⟨u, hu⟩ :=
-      (toPrincipalIdeal_eq_one_iff_mem_integralUnits x).mp
-        hxIdeal
-    have hcInfinite :
-        c.1 ∈ narrowInfiniteCongruenceSubgroup (K := K) :=
-      by
-        rw [← Modulus.infiniteCongruenceSubgroup_narrowOfFinite]
-        exact hc.1
-    have hcInfiniteQuot :
-        QuotientGroup.mk'
-            (narrowInfiniteCongruenceSubgroup (K := K)) c.1 = 1 :=
-      (QuotientGroup.eq_one_iff _).mpr hcInfinite
-    have hcpInfinite :
-        c.1 * (IdeleGroup.principalIdele K x).1 = a :=
-      congrArg Prod.fst hcp
-    refine ⟨QuotientGroup.mk'
-      (totallyPositiveUnitSubgroup (K := K)) u, ?_⟩
-    rw [integralUnitSignToRealSign_mk]
-    have huInfinite :
-        integralUnitToInfiniteIdele (K := K) u =
-          (IdeleGroup.principalIdele K x).1 := by
-      change
-        (IdeleGroup.principalIdele K
-          (integralUnitToFieldUnit (K := K) u)).1 =
-          (IdeleGroup.principalIdele K x).1
-      rw [hu]
-    rw [huInfinite]
-    calc
-      QuotientGroup.mk'
-          (narrowInfiniteCongruenceSubgroup (K := K))
-          (IdeleGroup.principalIdele K x).1 =
-          QuotientGroup.mk'
-            (narrowInfiniteCongruenceSubgroup (K := K))
-            (c.1 * (IdeleGroup.principalIdele K x).1) := by
-              rw [map_mul, hcInfiniteQuot]
-              exact (one_mul
-                (QuotientGroup.mk'
-                  (narrowInfiniteCongruenceSubgroup (K := K))
-                  (IdeleGroup.principalIdele K x).1)).symm
-      _ = QuotientGroup.mk'
-          (narrowInfiniteCongruenceSubgroup (K := K)) a :=
-        congrArg
-          (QuotientGroup.mk'
-            (narrowInfiniteCongruenceSubgroup (K := K)))
-          hcpInfinite
 
-/-- The exact sequence
-
-`1 → 𝓞_Kˣ / 𝓞_{K,+}ˣ → ∏_{v real} ℝˣ / ℝ_{>0}ˣ
-  → Cl_K¹ → Cl_K → 1`.
-
-Here complex places contribute a trivial sign quotient, so `realSignGroup`
-may uniformly be defined using all infinite places. -/
-theorem narrowClassGroup_exact_sequence :
-    Function.Injective
-        (integralUnitSignToRealSign (K := K)) ∧
-      (integralUnitSignToRealSign (K := K)).range =
-        (signToNarrow (K := K)).ker ∧
-      (signToNarrow (K := K)).range =
-        (narrowToClassGroup (K := K)).ker ∧
-      Function.Surjective (narrowToClassGroup (K := K)) := by
-  exact ⟨integralUnitSignToRealSign_injective,
-    integralUnitSignToRealSign_range_eq_signToNarrow_ker,
-    signToNarrow_range_eq_narrowToClassGroup_ker,
-    narrowToClassGroup_surjective⟩
 
 end RayClass
 

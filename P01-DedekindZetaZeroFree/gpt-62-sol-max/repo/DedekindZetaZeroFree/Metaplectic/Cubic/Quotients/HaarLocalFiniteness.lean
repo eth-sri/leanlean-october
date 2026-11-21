@@ -159,33 +159,8 @@ theorem sphericalMeasure_finiteOnCompacts
     hK.measurableSet]
   exact (KPContSectorSmoothFramesSupport.q_closed_and_proper F ζ hζ U).2 K hK |>.measure_lt_top
 
-theorem coveredMeasure_regular
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
-    (coveredMeasure F ζ hζ R U).Regular := by
-  letI := coveredMeasure_finiteOnCompacts F ζ hζ R U
-  letI := KPContSectorQuotientRelationsComparison.instPolishSpaceCoveredSpherical F ζ hζ U
-  letI := TopologicalSpace.upgradeIsCompletelyMetrizable (CoveredSpherical F ζ hζ U)
-  exact Measure.Regular.of_sigmaCompactSpace_of_isLocallyFiniteMeasure _
 
-theorem sphericalMeasure_regular
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
-    (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).Regular := by
-  letI := sphericalMeasure_finiteOnCompacts F ζ hζ R P U
-  letI := KPContSectorQuotientRelationsComparison.instPolishSpaceRawXU F ζ hζ U
-  letI := TopologicalSpace.upgradeIsCompletelyMetrizable
-    (KPMsFixedHaarDisintegration.Spherical F ζ hζ U)
-  exact Measure.Regular.of_sigmaCompactSpace_of_isLocallyFiniteMeasure _
 
-theorem coveredMeasure_sigmaFinite
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
-    SigmaFinite (coveredMeasure F ζ hζ R U) := by
-  letI := coveredMeasure_finiteOnCompacts F ζ hζ R U
-  letI := KPContSectorQuotientRelationsComparison.instPolishSpaceCoveredSpherical F ζ hζ U
-  infer_instance
 
 theorem sphericalMeasure_sigmaFinite
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -205,105 +180,8 @@ theorem compactSupport_memLp
   letI := coveredMeasure_finiteOnCompacts F ζ hζ R U
   exact hf.memLp_of_hasCompactSupport hfc
 
-def sectionSquaredNormIntegral
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (f : CoveredSpherical F ζ hζ U → ℂ) : ℝ≥0∞ :=
-  ∑ i : Fin (H.atlas U).componentCount,
-    (H.disintegration U).componentWeight i *
-      ∫⁻ x in ((H.atlas U).cuspAtlas i).fundamentalDomain,
-        ENNReal.ofReal (‖f (Quotient.mk (coveredRelation F ζ hζ U)
-          (x, (H.atlas U).representative i))‖ ^ 2)
-        ∂(KPArch.hyperbolicVolume (KPCuspLogShape.dimension F))
 
-theorem compactSupport_sectionSquaredNormIntegral_lt_top
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (f : CoveredSpherical F ζ hζ U → ℂ)
-    (hfg : ∀ (ε : rootsOfUnity 3 F) v,
-      f (z F ζ hζ U ε v) = (chi F ζ hζ ε : ℂ) * f v)
-    (hf : Continuous f) (hfc : HasCompactSupport f) :
-    sectionSquaredNormIntegral F ζ hζ R P H U f < ⊤ := by
-  let g : KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ U := ⟨f, hfg⟩
-  have N := kp_cont_sector_fixed_line_norm_integrals F ζ hζ U R P H g hf.measurable
-  have hLp := compactSupport_memLp F ζ hζ R U f hf hfc
-  have hfinite : (∫⁻ v, ENNReal.ofReal (‖f v‖ ^ 2)
-      ∂coveredMeasure F ζ hζ R U) < ⊤ := by
-    have ht := lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top
-      (by norm_num : (2 : ℝ≥0∞) ≠ 0) (by norm_num : (2 : ℝ≥0∞) ≠ ⊤) hLp.eLpNorm_lt_top
-    simpa [ENNReal.ofReal_pow, ofReal_norm, ENNReal.rpow_two] using ht
-  have heq : sectionSquaredNormIntegral F ζ hζ R P H U f =
-      ∫⁻ b, KPContSectorFixedLineNormIntegrals.lineNorm F ζ hζ U R P H g b
-        ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U := by
-    have hc := N.component_integral Set.univ MeasurableSet.univ
-    simp only [Set.preimage_univ, Measure.restrict_univ] at hc
-    rw [hc]
-    unfold sectionSquaredNormIntegral
-    apply Finset.sum_congr rfl
-    intro i hi
-    congr 1
-    have hm : Measurable (KPCuspSiegel.projection F
-        (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))) :=
-      measurable_quotient_mk''
-    rw [KPFiniteCuspAtlas.quotientVolume, lintegral_map (N.component_borel i) hm]
-    apply lintegral_congr
-    intro x
-    change ENNReal.ofReal (‖f (Quotient.mk _ (x, _))‖ ^ 2) =
-      ENNReal.ofReal (‖(KPContSectorScalarLineAlgebra.S F ζ hζ U R P H g i).val x‖ ^ 2)
-    rw [KPContSectorScalarLineAlgebra.S_apply]
-  rw [heq]
-  have hp := N.restricted_pushforward Set.univ MeasurableSet.univ
-  simp only [Set.preimage_univ, Measure.restrict_univ] at hp
-  rw [← hp]
-  exact hfinite
-
-structure LevelLocalFiniteness
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ) : Prop where
-  quotient_finite : IsFiniteMeasureOnCompacts R.quotientHaar
-  covered_finite : IsFiniteMeasureOnCompacts (coveredMeasure F ζ hζ R U)
-  spherical_finite : IsFiniteMeasureOnCompacts
-    (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U)
-  covered_regular : (coveredMeasure F ζ hζ R U).Regular
-  spherical_regular :
-    (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).Regular
-  covered_sigmaFinite : SigmaFinite (coveredMeasure F ζ hζ R U)
-  spherical_sigmaFinite :
-    SigmaFinite (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U)
-  compactSupport_memLp : ∀ f : CoveredSpherical F ζ hζ U → ℂ,
-    Continuous f → HasCompactSupport f → MemLp f 2 (coveredMeasure F ζ hζ R U)
-  compactSupport_sectionIntegral : ∀ f : CoveredSpherical F ζ hζ U → ℂ,
-    (∀ (ε : rootsOfUnity 3 F) v,
-      f (z F ζ hζ U ε v) = (chi F ζ hζ ε : ℂ) * f v) →
-    Continuous f → HasCompactSupport f →
-      sectionSquaredNormIntegral F ζ hζ R P H U f < ⊤
-
-theorem levelLocalFiniteness
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
-    LevelLocalFiniteness F ζ hζ R P H U := by
-  exact ⟨quotientHaar_finiteOnCompacts F ζ hζ R,
-    coveredMeasure_finiteOnCompacts F ζ hζ R U,
-    sphericalMeasure_finiteOnCompacts F ζ hζ R P U,
-    coveredMeasure_regular F ζ hζ R U,
-    sphericalMeasure_regular F ζ hζ R P U,
-    coveredMeasure_sigmaFinite F ζ hζ R U,
-    sphericalMeasure_sigmaFinite F ζ hζ R P U,
-    compactSupport_memLp F ζ hζ R U,
-    compactSupport_sectionSquaredNormIntegral_lt_top F ζ hζ R P H U⟩
 
 end DedekindZetaZeroFree.KPContSectorFixedMeasureLocalFiniteness
-
-namespace DedekindZetaZeroFree
-
-end DedekindZetaZeroFree
 
 end

@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllFrequencies.GoodSideBounds
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllFrequencies.GoodNestedIntegrals
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.RectangleDeformation
 
 @[expose] public section

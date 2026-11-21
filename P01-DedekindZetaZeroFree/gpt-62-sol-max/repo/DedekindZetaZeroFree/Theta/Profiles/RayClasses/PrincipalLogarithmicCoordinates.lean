@@ -77,7 +77,7 @@ private theorem Q_smul (q : InfinitePlace F → ℝ) (s : ℝ)
     (x : mixedEmbedding.euclidean.mixedSpace F) :
     RayParity.Q F q (s • x) = s • RayParity.Q F q x := by
   apply (Theta.traceToMixed F).injective
-  simp [RayParity.Q, map_smul, mul_smul_comm]
+  simp [RayParity.Q, map_smul]
 private theorem norm_kernel (q : InfinitePlace F → ℝ)
     (hq : ∀ v, q v ≠ 0) (s : ℝ) (x : F) :
     ‖RayParity.Q F q (s • Theta.traceEmbedding F x)‖ ^ 2 =

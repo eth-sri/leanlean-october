@@ -1,2 +1,0 @@
-module
-public import DedekindZetaZeroFree.Algebra.TensorProduct.BasisAndBaseChange

@@ -67,25 +67,26 @@ instance restrictedRadicalQuotient_commGroupInstance
   change CommGroup (Delta.1 ⧸ restrictedNthPowersSubgroup n Delta)
   infer_instance
 
+section
+
+variable (n : ℕ+) (Delta : KummerSubgroup K n)
+
 /-- Comparison with the group-library presentation of the restricted
 radical quotient. -/
-def restrictedRadicalQuotientMulEquiv
-    (n : ℕ+) (Delta : KummerSubgroup K n) :
+def restrictedRadicalQuotientMulEquiv :
     RestrictedRadicalQuotient n Delta ≃*
       (Delta.1 ⧸ restrictedNthPowersSubgroup n Delta) :=
   MulEquiv.refl _
 
 /-- The canonical projection to the named restricted radical quotient. -/
-def restrictedRadicalQuotientMk
-    (n : ℕ+) (Delta : KummerSubgroup K n) :
+def restrictedRadicalQuotientMk :
     Delta.1 →* RestrictedRadicalQuotient n Delta :=
   QuotientGroup.mk' (restrictedNthPowersSubgroup n Delta)
 
 /-- A restricted radical class is trivial exactly when its representative is a
 restricted `n`th power. -/
 @[simp]
-theorem restrictedRadicalQuotientMk_eq_one_iff
-    (n : ℕ+) (Delta : KummerSubgroup K n) (a : Delta.1) :
+theorem restrictedRadicalQuotientMk_eq_one_iff (a : Delta.1) :
     restrictedRadicalQuotientMk n Delta a = 1 ↔
       a ∈ restrictedNthPowersSubgroup n Delta := by
   change
@@ -94,8 +95,7 @@ theorem restrictedRadicalQuotientMk_eq_one_iff
 
 /-- Equality in the restricted radical quotient is characterized by a restricted power ratio. -/
 @[simp]
-theorem restrictedRadicalQuotientMk_eq_iff
-    (n : ℕ+) (Delta : KummerSubgroup K n) (a b : Delta.1) :
+theorem restrictedRadicalQuotientMk_eq_iff (a b : Delta.1) :
     restrictedRadicalQuotientMk n Delta a =
         restrictedRadicalQuotientMk n Delta b ↔
       a / b ∈ restrictedNthPowersSubgroup n Delta := by
@@ -105,8 +105,7 @@ theorem restrictedRadicalQuotientMk_eq_iff
   exact QuotientGroup.eq_iff_div_mem
 
 /-- Every restricted radical class has a representative in `Delta`. -/
-theorem restrictedRadicalQuotientMk_surjective
-    (n : ℕ+) (Delta : KummerSubgroup K n) :
+theorem restrictedRadicalQuotientMk_surjective :
     Function.Surjective (restrictedRadicalQuotientMk n Delta) := by
   change Function.Surjective
     (QuotientGroup.mk' (restrictedNthPowersSubgroup n Delta))
@@ -115,7 +114,6 @@ theorem restrictedRadicalQuotientMk_surjective
 /-- Eliminate a restricted radical quotient through canonical
 representatives. -/
 theorem restrictedRadicalQuotient_inductionOn
-    (n : ℕ+) (Delta : KummerSubgroup K n)
     {motive : RestrictedRadicalQuotient n Delta → Prop}
     (q : RestrictedRadicalQuotient n Delta)
     (mk : ∀ a : Delta.1,
@@ -123,23 +121,29 @@ theorem restrictedRadicalQuotient_inductionOn
     motive q := by
   exact QuotientGroup.induction_on' q mk
 
+end
+
+section
+
+variable {M : Type*} [Group M] (n : ℕ+) (Delta : KummerSubgroup K n) (f : Delta.1 →* M)
+  (hf : restrictedNthPowersSubgroup n Delta ≤ MonoidHom.ker f)
+include f hf
+
 /-- Descend a homomorphism through the named restricted radical quotient. -/
-def restrictedRadicalQuotientLift {M : Type*} [Group M]
-    (n : ℕ+) (Delta : KummerSubgroup K n) (f : Delta.1 →* M)
-    (hf : restrictedNthPowersSubgroup n Delta ≤ MonoidHom.ker f) :
+def restrictedRadicalQuotientLift :
     RestrictedRadicalQuotient n Delta →* M :=
   (QuotientGroup.lift (restrictedNthPowersSubgroup n Delta) f hf).comp
     (restrictedRadicalQuotientMulEquiv n Delta).toMonoidHom
 
 /-- The restricted radical lift evaluates on quotient representatives by the chosen lift. -/
 @[simp]
-theorem restrictedRadicalQuotientLift_mk {M : Type*} [Group M]
-    (n : ℕ+) (Delta : KummerSubgroup K n) (f : Delta.1 →* M)
-    (hf : restrictedNthPowersSubgroup n Delta ≤ MonoidHom.ker f)
+theorem restrictedRadicalQuotientLift_mk
     (a : Delta.1) :
     restrictedRadicalQuotientLift n Delta f hf
         (restrictedRadicalQuotientMk n Delta a) = f a :=
   rfl
+
+end
 
 /-- The field-level fixed-roots hypothesis supplied by a primitive root in
 the base field. -/
@@ -169,13 +173,16 @@ def restrictedSubgroupKummerCharacter
     (restrictedKummerFixed n hmu)).comp
       (restrictedRadicalInclusion n Delta hDelta)
 
+section
+
+variable [IsGalois K L] (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+  (Delta : KummerSubgroup K n)
+include hmu Delta
+
 /-- The restricted subgroup character has exactly the expected kernel `Kˣ^n`.
 This is inherited from the exact kernel theorem on the actual radical
 subgroup; it is not an additional hypothesis. -/
 theorem ker_restrictedSubgroupKummerCharacter
-    [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n) :
     MonoidHom.ker (restrictedSubgroupKummerCharacter n hmu Delta hDelta) =
       restrictedNthPowersSubgroup n Delta := by
@@ -205,9 +212,6 @@ theorem ker_restrictedSubgroupKummerCharacter
 
 /-- The restricted character descended to `Delta / Kˣ^n`. -/
 def restrictedQuotientKummerCharacter
-    [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n) :
     RestrictedRadicalQuotient n Delta →*
       (Gal(L/K) →* nthRootsSubgroup L (n : ℕ)) :=
@@ -218,9 +222,6 @@ def restrictedQuotientKummerCharacter
 /-- The restricted Kummer character is computed on a quotient representative by
 its root character. -/
 @[simp] theorem restrictedQuotientKummerCharacter_mk
-    [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (a : Delta.1) :
     restrictedQuotientKummerCharacter n hmu Delta hDelta
@@ -231,9 +232,6 @@ its root character. -/
 /-- Exactness of the subgroup-level kernel makes the restricted quotient character
 injective. -/
 theorem restrictedQuotientKummerCharacter_injective
-    [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n) :
     Function.Injective (restrictedQuotientKummerCharacter n hmu Delta hDelta) := by
   intro q r hqr
@@ -264,9 +262,6 @@ theorem restrictedQuotientKummerCharacter_injective
 
 /-- Transpose the restricted Kummer pairing by evaluation. -/
 def restrictedKummerTranspose
-    [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n) :
     Gal(L/K) →*
       (RestrictedRadicalQuotient n Delta →* nthRootsSubgroup L (n : ℕ)) where
@@ -290,9 +285,6 @@ def restrictedKummerTranspose
 /-- The restricted Kummer transpose evaluates a radical class against the
 corresponding character. -/
 @[simp] theorem restrictedKummerTranspose_apply
-    [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (sigma : Gal(L/K)) (q : RestrictedRadicalQuotient n Delta) :
     restrictedKummerTranspose n hmu Delta hDelta sigma q =
@@ -303,9 +295,6 @@ corresponding character. -/
 every actual `n`-th root belonging to `Delta`.  Independence of the root
 choice follows from the fact that all `n`-th roots of unity lie in `K`. -/
 theorem restrictedKummerTranspose_fixes_root
-    [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (sigma : Gal(L/K))
     (hsigma : restrictedKummerTranspose n hmu Delta hDelta sigma = 1)
@@ -348,9 +337,6 @@ theorem restrictedKummerTranspose_fixes_root
 /-- If the roots attached to `Delta` generate `L`, the transposed restricted
 Kummer pairing is nondegenerate on the Galois side. -/
 theorem restrictedKummerTranspose_injective_of_adjoin
-    [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (hgenerate : IntermediateField.adjoin K
       (kummerRootSet (K := K) (Omega := L) n Delta.1) = ⊤) :
@@ -382,6 +368,8 @@ theorem restrictedKummerTranspose_injective_of_adjoin
     | mul x y hx hy ihx ihy =>
         rw [map_mul, ihx, ihy]
   exact hrho
+
+end
 
 /-- The subgroup quotient `Delta / Kˣ^n` is killed by `n`. -/
 theorem restrictedRadicalQuotient_pow_eq_one
@@ -476,66 +464,6 @@ def restrictedKummerCharacterMulEquivOfAdjoin
       restrictedQuotientKummerCharacter_surjective_of_adjoin
         n hmu Delta hDelta hgenerate⟩
 
-/-- Finite inverse endpoint of the Kummer correspondence.
-
-If `L` is generated by the roots attached to `Delta`, then no additional
-base-field radical appears in `L`: the actual radical subgroup of `L/K` is
-exactly `Delta`.  Surjectivity of the restricted pairing supplies a
-`Delta`-class with the same character as an arbitrary actual radical;
-the exact kernel theorem says that the two representatives differ by an
-ambient `n`-th power, which already belongs to `Delta`. -/
-theorem finiteKummerRadicalSubgroup_eq_of_adjoin
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
-    (hDelta : Delta.1 ≤ finiteKummerRadicalSubgroup (K := K) (L := L) n)
-    (hgenerate : IntermediateField.adjoin K
-      (kummerRootSet (K := K) (Omega := L) n Delta.1) = ⊤) :
-    finiteKummerRadicalSubgroup (K := K) (L := L) n = Delta.1 := by
-  apply le_antisymm
-  · intro a ha
-    let D := chosenFiniteKummerRadicalDatum (K := K) (L := L) n
-    let hfixed := restrictedKummerFixed (K := K) (L := L) n hmu
-    let aD : D.carrier := ⟨a, ha⟩
-    let qa : D.RadicalQuotient :=
-      D.radicalQuotientMk aD
-    obtain ⟨q, hq⟩ :=
-      restrictedQuotientKummerCharacter_surjective_of_adjoin
-        n hmu Delta hDelta hgenerate
-        (D.quotientKummerCharacterWithoutSection hfixed qa)
-    obtain ⟨delta, rfl⟩ :=
-      restrictedRadicalQuotientMk_surjective n Delta q
-    let deltaD : D.carrier := restrictedRadicalInclusion n Delta hDelta delta
-    have hcharacters : D.kummerCharacterWithoutSection hfixed deltaD =
-        D.kummerCharacterWithoutSection hfixed aD := by
-      change D.kummerCharacterWithoutSection hfixed deltaD =
-        D.kummerCharacterWithoutSection hfixed aD at hq
-      exact hq
-    have hclasses :
-        D.radicalQuotientMk deltaD = D.radicalQuotientMk aD := by
-      apply D.quotientKummerCharacterWithoutSection_injective hfixed
-      simpa using hcharacters
-    have hdiv : deltaD / aD ∈ D.ambientNthPowersSubgroup :=
-      (D.radicalQuotientMk_eq_iff deltaD aD).1 hclasses
-    obtain ⟨b, hb⟩ := (D.mem_ambientNthPowersSubgroup_iff).1 hdiv
-    have hbDelta : b ^ (n : ℕ) ∈ Delta.1 :=
-      Delta.2 ((mem_unitNthPowersSubgroup_iff n).2 ⟨b, rfl⟩)
-    have hdeltaDiv : delta.1 / b ^ (n : ℕ) ∈ Delta.1 :=
-      div_mem delta.2 hbDelta
-    have hdeltaD_coe : (deltaD : Kˣ) = delta.1 := by
-      exact Subgroup.coe_inclusion hDelta delta
-    have haD_coe : (aD : Kˣ) = a := rfl
-    have hb' : b ^ (n : ℕ) = delta.1 / a := by
-      calc
-        b ^ (n : ℕ) = (deltaD / aD : D.carrier) := hb
-        _ = (deltaD : Kˣ) / (aD : Kˣ) := rfl
-        _ = delta.1 / a := by rw [hdeltaD_coe, haD_coe]
-    have haeq : a = delta.1 / b ^ (n : ℕ) := by
-      rw [hb']
-      exact (div_div_self' delta.1 a).symm
-    rw [haeq]
-    exact hdeltaDiv
-  · exact hDelta
 
 end RestrictedFiniteKummer
 

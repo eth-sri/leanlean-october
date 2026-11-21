@@ -70,10 +70,14 @@ open LocalFieldTheory.DiscreteValuationField.Examples.Qp
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+include p n
+
 /-- The chosen completed primitive root annihilates the original standard
 primitive polynomial over `ℚ_[p]`. -/
-theorem padicCompletedPrimitiveRoot_aeval_standardPrimitivePolynomial
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRoot_aeval_standardPrimitivePolynomial :
     Polynomial.aeval (padicCompletedPrimitiveRoot p n)
         (standardLubinTatePrimitivePolynomialOverField
           (padicLocalField p)
@@ -90,8 +94,7 @@ theorem padicCompletedPrimitiveRoot_aeval_standardPrimitivePolynomial
 /-- The ordinary standard Lubin--Tate level embeds into the completed
 splitting field by sending its canonical generator to the chosen completed
 root. -/
-noncomputable def padicStandardLevelEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicStandardLevelEmbedding :
     let hπ :=
       padicMultiplicativeLubinTateSeries_isUniformizer p
     standardLubinTateLevelField hπ n →ₐ[ℚ_[p]]
@@ -111,8 +114,7 @@ noncomputable def padicStandardLevelEmbedding
 /-- The standard-level embedding has the prescribed value on the canonical
 primitive generator. -/
 @[simp]
-theorem padicStandardLevelEmbedding_apply_gen
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardLevelEmbedding_apply_gen :
     let hπ :=
       padicMultiplicativeLubinTateSeries_isUniformizer p
     padicStandardLevelEmbedding p n
@@ -124,7 +126,6 @@ theorem padicStandardLevelEmbedding_apply_gen
 /-- A finite unit parameter, realized as a root in the completed splitting
 field. -/
 noncomputable def padicCompletedUnitParameterRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     padicCompletedLevelField p n := by
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
@@ -135,8 +136,7 @@ noncomputable def padicCompletedUnitParameterRoot
 
 /-- The identity unit parameter gives the chosen completed primitive root. -/
 @[simp]
-theorem padicCompletedUnitParameterRoot_one
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedUnitParameterRoot_one :
     padicCompletedUnitParameterRoot p n 1 =
       padicCompletedPrimitiveRoot p n := by
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
@@ -147,8 +147,7 @@ theorem padicCompletedUnitParameterRoot_one
 
 /-- Distinct finite unit parameters give distinct roots in the completed
 level. -/
-theorem padicCompletedUnitParameterRoot_injective
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedUnitParameterRoot_injective :
     Function.Injective (padicCompletedUnitParameterRoot p n) := by
   intro a b hab
   apply
@@ -160,7 +159,6 @@ theorem padicCompletedUnitParameterRoot_injective
 /-- A completed parameter root annihilates the original primitive
 polynomial over `ℚ_[p]`. -/
 theorem padicCompletedUnitParameterRoot_aeval_standardPrimitivePolynomial
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     Polynomial.aeval (padicCompletedUnitParameterRoot p n a)
         (standardLubinTatePrimitivePolynomialOverField
@@ -184,7 +182,6 @@ theorem padicCompletedUnitParameterRoot_aeval_standardPrimitivePolynomial
 /-- Every completed finite-parameter point is a root of the genuine
 completed primitive polynomial. -/
 theorem padicCompletedUnitParameterRoot_isRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     ((padicCompletedPrimitivePolynomial p n).map
       (algebraMap (padicCompletedUnramifiedField p)
@@ -202,7 +199,6 @@ theorem padicCompletedUnitParameterRoot_isRoot
 
 private theorem
     padicCompletedStandardScalarEndomorphismValue_congr_point
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     {x y : (padicCompletedLevelCompleteDVF p n).valuationSubring}
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
     (hxy : x = y) (a : (padicLocalField p).valuationSubring) :
@@ -214,7 +210,6 @@ private theorem
 /-- The direct completed standard Lubin--Tate action of a p-adic unit on
 the chosen integral primitive point. -/
 noncomputable def padicCompletedStandardPrimitivePointUnitAction
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedStandardScalarEndomorphismValue p n
@@ -225,7 +220,6 @@ noncomputable def padicCompletedStandardPrimitivePointUnitAction
 /-- A direct completed standard unit translate remains a convergent
 evaluation point. -/
 theorem padicCompletedStandardPrimitivePointUnitAction_hasEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries.HasEval
       (padicCompletedStandardPrimitivePointUnitAction p n u) :=
@@ -236,8 +230,7 @@ theorem padicCompletedStandardPrimitivePointUnitAction_hasEval
 
 /-- The identity unit fixes the chosen completed standard primitive point. -/
 @[simp]
-theorem padicCompletedStandardPrimitivePointUnitAction_one
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedStandardPrimitivePointUnitAction_one :
     padicCompletedStandardPrimitivePointUnitAction p n 1 =
       padicCompletedPrimitiveRootInteger p n := by
   simp [padicCompletedStandardPrimitivePointUnitAction]
@@ -246,7 +239,6 @@ theorem padicCompletedStandardPrimitivePointUnitAction_one
 `n + 1`. -/
 theorem
     padicCompletedStandardPrimitivePointUnitAction_iterate_succ_eq_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     Polynomial.eval₂
         (padicCompletedLevelPadicIntegerCoefficientHom p n)
@@ -317,7 +309,6 @@ theorem
 early. -/
 theorem
     padicCompletedStandardPrimitivePointUnitAction_iterate_ne_zero
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     Polynomial.eval₂
         (padicCompletedLevelPadicIntegerCoefficientHom p n)
@@ -384,7 +375,6 @@ theorem
 /-- The direct completed standard action of every p-adic unit is a root of
 the genuine completed primitive polynomial. -/
 theorem padicCompletedStandardPrimitivePointUnitAction_isRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     ((padicCompletedPrimitivePolynomial p n).map
       (algebraMap (padicCompletedUnramifiedField p)
@@ -433,7 +423,6 @@ theorem padicCompletedStandardPrimitivePointUnitAction_isRoot
 /-- A finite unit parameter, regarded as an element of the full root set in
 the completed splitting field. -/
 noncomputable def padicCompletedUnitParameterRootSet
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     (padicCompletedPrimitivePolynomial p n).rootSet
       (padicCompletedLevelField p n) :=
@@ -445,8 +434,7 @@ noncomputable def padicCompletedUnitParameterRootSet
           exact padicCompletedUnitParameterRoot_isRoot p n a⟩⟩
 
 /-- The root-set realization of finite unit parameters is injective. -/
-theorem padicCompletedUnitParameterRootSet_injective
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedUnitParameterRootSet_injective :
     Function.Injective (padicCompletedUnitParameterRootSet p n) := by
   intro a b hab
   apply padicCompletedUnitParameterRoot_injective p n
@@ -454,8 +442,7 @@ theorem padicCompletedUnitParameterRootSet_injective
 
 /-- The completed primitive polynomial has exactly its degree many roots in
 the completed splitting field. -/
-theorem padicCompletedPrimitiveRootSet_natCard
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRootSet_natCard :
     Nat.card
         ((padicCompletedPrimitivePolynomial p n).rootSet
           (padicCompletedLevelField p n)) =
@@ -468,8 +455,7 @@ theorem padicCompletedPrimitiveRootSet_natCard
 
 /-- The finite p-adic unit-parameter quotient has the degree of the
 completed primitive polynomial. -/
-theorem padicStandardUnitParameter_natCard
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardUnitParameter_natCard :
     Nat.card (standardLubinTateUnitParameter (padicLocalField p) n) =
       (p - 1) * p ^ n := by
   have hcard :
@@ -480,8 +466,7 @@ theorem padicStandardUnitParameter_natCard
 
 /-- Finite p-adic unit parameters enumerate every root of the completed
 primitive polynomial. -/
-theorem padicCompletedUnitParameterRootSet_bijective
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedUnitParameterRootSet_bijective :
     Function.Bijective (padicCompletedUnitParameterRootSet p n) := by
   apply
     (Nat.bijective_iff_injective_and_card
@@ -494,7 +479,6 @@ theorem padicCompletedUnitParameterRootSet_bijective
 /-- A parameter root is itself a power-basis generator of the ordinary
 standard level. -/
 noncomputable def padicStandardLevelUnitParameterPowerBasis
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     let hπ :=
       padicMultiplicativeLubinTateSeries_isUniformizer p
@@ -509,7 +493,6 @@ noncomputable def padicStandardLevelUnitParameterPowerBasis
 finite-level parameter root. -/
 @[simp]
 theorem padicStandardLevelUnitParameterPowerBasis_gen
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     let hπ :=
       padicMultiplicativeLubinTateSeries_isUniformizer p
@@ -524,7 +507,6 @@ theorem padicStandardLevelUnitParameterPowerBasis_gen
     (π := padicIntEquivValuationSubring p (p : ℤ_[p])) hπ n a
 
 private theorem padicPolynomialAeval_mem_completedUnramifiedAdjoin
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : padicCompletedLevelField p n) (f : Polynomial ℚ_[p]) :
     Polynomial.aeval x f ∈
       Algebra.adjoin (padicCompletedUnramifiedField p)
@@ -543,7 +525,6 @@ private theorem padicPolynomialAeval_mem_completedUnramifiedAdjoin
 completed parameter root, with coefficients in the completed-unramified
 base. -/
 theorem padicCompletedUnitParameterRoot_mem_adjoin
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a b : standardLubinTateUnitParameter (padicLocalField p) n) :
     padicCompletedUnitParameterRoot p n b ∈
       Algebra.adjoin (padicCompletedUnramifiedField p)
@@ -589,7 +570,6 @@ theorem padicCompletedUnitParameterRoot_mem_adjoin
 /-- All roots of the completed primitive polynomial lie in the field
 generated by any chosen parameter root. -/
 theorem padicCompletedPrimitiveRootSet_subset_adjoin_parameter
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     ((padicCompletedPrimitivePolynomial p n).rootSet
         (padicCompletedLevelField p n) :
@@ -613,7 +593,6 @@ theorem padicCompletedPrimitiveRootSet_subset_adjoin_parameter
 /-- Every completed parameter root generates the completed splitting field
 over the completed maximal-unramified base. -/
 theorem padicCompletedUnitParameterRoot_adjoin_eq_top
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     Algebra.adjoin (padicCompletedUnramifiedField p)
         ({padicCompletedUnitParameterRoot p n a} :
@@ -636,7 +615,6 @@ theorem padicCompletedUnitParameterRoot_adjoin_eq_top
 splitting field over the completed maximal-unramified base. -/
 theorem
     padicCompletedStandardPrimitivePointUnitAction_adjoin_eq_top
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     Algebra.adjoin (padicCompletedUnramifiedField p)
         ({((padicCompletedStandardPrimitivePointUnitAction p n u :
@@ -672,8 +650,7 @@ theorem
 
 /-- The chosen completed primitive root generates the completed splitting
 field. -/
-theorem padicCompletedPrimitiveRoot_adjoin_eq_top
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRoot_adjoin_eq_top :
     Algebra.adjoin (padicCompletedUnramifiedField p)
         ({padicCompletedPrimitiveRoot p n} :
           Set (padicCompletedLevelField p n)) =
@@ -684,8 +661,7 @@ theorem padicCompletedPrimitiveRoot_adjoin_eq_top
 
 /-- The completed primitive polynomial is the minimal polynomial of the
 chosen completed root. -/
-theorem padicCompletedPrimitiveRoot_minpoly
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRoot_minpoly :
     minpoly (padicCompletedUnramifiedField p)
         (padicCompletedPrimitiveRoot p n) =
       padicCompletedPrimitivePolynomial p n := by
@@ -703,8 +679,7 @@ theorem padicCompletedPrimitiveRoot_minpoly
 
 /-- The chosen primitive root is integral over the completed-unramified
 field. -/
-theorem padicCompletedPrimitiveRoot_isIntegral_over_completedUnramified
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitiveRoot_isIntegral_over_completedUnramified :
     IsIntegral (padicCompletedUnramifiedField p)
       (padicCompletedPrimitiveRoot p n) := by
   refine
@@ -716,8 +691,7 @@ theorem padicCompletedPrimitiveRoot_isIntegral_over_completedUnramified
 
 /-- The power basis of the completed level generated by the chosen
 primitive root. -/
-noncomputable def padicCompletedPrimitivePowerBasis
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicCompletedPrimitivePowerBasis :
     PowerBasis (padicCompletedUnramifiedField p)
       (padicCompletedLevelField p n) :=
   PowerBasis.ofAdjoinEqTop
@@ -727,16 +701,21 @@ noncomputable def padicCompletedPrimitivePowerBasis
 /-- The generator of the completed primitive power basis is the chosen
 completed root. -/
 @[simp]
-theorem padicCompletedPrimitivePowerBasis_gen
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicCompletedPrimitivePowerBasis_gen :
     (padicCompletedPrimitivePowerBasis p n).gen =
       padicCompletedPrimitiveRoot p n :=
   PowerBasis.ofAdjoinEqTop_gen _ _
 
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+  (a : standardLubinTateUnitParameter (padicLocalField p) n)
+include a
+
 /-- Every parameter root is integral over the completed-unramified base. -/
-theorem padicCompletedUnitParameterRoot_isIntegral
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : standardLubinTateUnitParameter (padicLocalField p) n) :
+theorem padicCompletedUnitParameterRoot_isIntegral :
     IsIntegral (padicCompletedUnramifiedField p)
       (padicCompletedUnitParameterRoot p n a) := by
   refine
@@ -748,9 +727,7 @@ theorem padicCompletedUnitParameterRoot_isIntegral
 
 /-- The power basis of the completed level generated by a prescribed finite
 unit parameter. -/
-noncomputable def padicCompletedUnitParameterPowerBasis
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : standardLubinTateUnitParameter (padicLocalField p) n) :
+noncomputable def padicCompletedUnitParameterPowerBasis :
     PowerBasis (padicCompletedUnramifiedField p)
       (padicCompletedLevelField p n) :=
   PowerBasis.ofAdjoinEqTop
@@ -760,12 +737,12 @@ noncomputable def padicCompletedUnitParameterPowerBasis
 /-- The generator of a completed unit-parameter power basis is the
 corresponding completed root. -/
 @[simp]
-theorem padicCompletedUnitParameterPowerBasis_gen
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : standardLubinTateUnitParameter (padicLocalField p) n) :
+theorem padicCompletedUnitParameterPowerBasis_gen :
     (padicCompletedUnitParameterPowerBasis p n a).gen =
       padicCompletedUnitParameterRoot p n a :=
   PowerBasis.ofAdjoinEqTop_gen _ _
+
+end
 
 end LubinTate
 

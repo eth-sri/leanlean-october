@@ -15,6 +15,15 @@ open scoped ContDiff Matrix.Norms.Elementwise Real Topology
 noncomputable def rowRatio (g : ComplexGL2) : ℝ :=
   ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ / bottomRowNormSq g
 
+theorem rowRatio_pos (g : ComplexGL2) : 0 < rowRatio g := by
+  refine div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) ?_
+  unfold bottomRowNormSq
+  by_cases h : g.val 1 0 = 0
+  · have h' : g.val 1 1 ≠ 0 := fun h' => Matrix.GeneralLinearGroup.det_ne_zero g
+      (by simp [Matrix.det_fin_two, h, h'])
+    exact add_pos_of_nonneg_of_pos (sq_nonneg _) (pow_pos (norm_pos_iff.mpr h') 2)
+  · exact add_pos_of_pos_of_nonneg (pow_pos (norm_pos_iff.mpr h) 2) (sq_nonneg _)
+
 noncomputable def bottomRowLine (g : ComplexGL2) : ComplexProjectiveLine :=
   if (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 then projectiveInfinity 0
   else projectiveOpen
@@ -37,7 +46,7 @@ theorem halfPlane_neighborhood (s₀ : ℂ) (hs₀ : -(1 / 6 : ℝ) < s₀.re) :
   have hεpos : 0 < ε := by rw [hε]; linarith
   set b : ℝ := s₀.re - ε with hb
   have hb_gt : -(1 / 6 : ℝ) < b := by rw [hb, hε]; linarith
-  have hδpos : 0 < 1 / 3 + 2 * b := by linarith
+  
   refine ⟨ε, (1 / 3 + 2 * b) / 2, b, ‖s₀‖ + ε,
     hεpos, by linarith, by positivity, by linarith, ?_, ?_⟩
   · intro s hs
@@ -111,8 +120,7 @@ lemma sourceSeminorm_bddAbove (j : ℕ) (φ : CompactPicture) :
         (φ.infinity_smooth.continuous_iteratedFDeriv (by simp)).norm.continuousOn
   have hfin : BddAbove (⋃ q ∈ Finset.range (j + 1),
       ((fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖) '' Metric.closedBall 0 1 ∪
-       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := by
-    exact (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
+       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
   apply BddAbove.union bddAbove_singleton
   apply hfin.mono
   rintro r ⟨q, hq, z, hz, hr⟩
@@ -148,15 +156,6 @@ noncomputable def forwardSection (s : ℂ) (φ : CompactPicture) (g : ComplexGL2
   simp [Matrix.GeneralLinearGroup.det, Matrix.GeneralLinearGroup.coe_mul,
     Matrix.mul_apply, Fin.sum_univ_two, Matrix.det_fin_two]
 
-structure CompactGroupChart (n : ℕ) where
-  domain : Set (Fin n → ℝ)
-  domain_open : IsOpen domain
-  closedSet : Set (Fin n → ℝ)
-  closedSet_compact : IsCompact closedSet
-  closedSet_subset : closedSet ⊆ domain
-  lift : (Fin n → ℝ) → ComplexSU2
-  lift_smooth : ContDiffOn ℝ ∞
-    (fun u => (lift u : Matrix (Fin 2) (Fin 2) ℂ)) domain
 
 structure ChartDifferentialOperator (n j : ℕ) (U : Set (Fin n → ℝ)) where
   coefficient : (q : Fin (j + 1)) → (Fin q.val → Fin n) → (Fin n → ℝ) → ℂ
@@ -273,25 +272,6 @@ theorem planarEnvelope_integrable (h p : ℝ) (hh : 0 < h) (hp : 1 < p) :
   exact (integrable_smul_measure (c := ENNReal.ofReal h)
     (ENNReal.ofReal_ne_zero_iff.mpr hh) ENNReal.ofReal_ne_top).mpr
     (planarEnvelope_volume_integrable p hp)
-
-private lemma rowRatio_pos (g : ComplexGL2) : 0 < rowRatio g := by
-  have hdet : Matrix.det (g : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 :=
-    (Matrix.GeneralLinearGroup.det g).ne_zero
-  have hr : 0 < bottomRowNormSq g := by
-    unfold bottomRowNormSq
-    by_contra hn
-    have he : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 :=
-      le_antisymm (le_of_not_gt hn) (by positivity)
-    have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    apply hdet
-    simp [Matrix.det_fin_two, h0, h1]
-  exact div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) hr
 
  lemma forwardSection_real_formula (t : ℝ) (φ : CompactPicture) (g : ComplexGL2) :
     forwardSection (t : ℂ) φ g = sphericalFunction (positiveParameter + t) g * φ (bottomRowLine g) := by

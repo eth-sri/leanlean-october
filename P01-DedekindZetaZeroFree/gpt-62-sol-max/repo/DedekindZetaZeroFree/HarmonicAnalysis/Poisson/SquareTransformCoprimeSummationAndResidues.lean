@@ -22,22 +22,22 @@ private lemma mobius_indicator {F : Type*} [Field F] [NumberField F] (m I : Idea
     intro J hJ
     have hJI : J = I := by
       by_contra h
-      have : f J = 0 := by simp [f, h]
+      have : f J = 0 := by grind
       simp [Function.mem_support, this] at hJ
     exact hJI
   have h := DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact.coprimeFinsum_eq_moebiusMultiples f hg m hm
   have hc : (∑ᶠ J : Ideal (𝓞 F), if J ≠ ⊥ ∧ J ⊔ m = ⊤ then f J else 0) =
       if I ⊔ m = ⊤ then 1 else 0 := by
     rw [finsum_eq_single (fun J : Ideal (𝓞 F) => if J ≠ ⊥ ∧ J ⊔ m = ⊤ then f J else 0) I (by intro J hJ; simp [f, hJ])]
-    simp [f, hI]
+    grind
   have hd (d : Ideal (𝓞 F)) :
       (∑ᶠ J : Ideal (𝓞 F), if J ≠ ⊥ ∧ d ∣ J then f J else 0) =
       if d ∣ I then 1 else 0 := by
     rw [finsum_eq_single (fun J : Ideal (𝓞 F) => if J ≠ ⊥ ∧ d ∣ J then f J else 0) I (by intro J hJ; simp [f, hJ])]
-    simp [f, hI]
+    grind
   rw [hc] at h
   simp_rw [hd] at h
-  simpa [mul_ite] using h.symm
+  grind
 
 private lemma multiples_tsum {F : Type} [Field F] [NumberField F]
     (g : ℝ → ℂ) (X : ℝ) (hX : 0 < X) (d : Ideal (𝓞 F)) (hd : d ≠ ⊥) :
@@ -55,7 +55,7 @@ private lemma multiples_tsum {F : Type} [Field F] [NumberField F]
       by_contra h
       simp [Function.mem_support, f, h] at hI
     obtain ⟨J, hJ⟩ := h.2
-    exact ⟨J, hJ.symm⟩
+    grind
   change (∑' I, f I) = _
   rw [← hi.tsum_eq hs]
   apply tsum_congr

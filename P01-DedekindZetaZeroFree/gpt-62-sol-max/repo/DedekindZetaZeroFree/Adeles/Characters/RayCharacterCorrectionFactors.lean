@@ -465,18 +465,22 @@ theorem correctionTheta_infinity (A : SArithmeticData F)
   rw [hG, hη]
   simp
 
-theorem correctionTheta_infinity_angular (A : SArithmeticData F)
-    (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
-    (hΛ : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
+  (hΛ : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
       (A.ideleInfiniteComponent Λ w z : ℂ) =
         (DHCubic.infinityComponent (DHCubic.E0 F A) F
           (σ.comp (algebraMap (DHCubic.E0 F A) F)) w
           (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹)
-    (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
+  (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
       A.ideleInfiniteComponent G w z = 1)
-    (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
+  (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
       A.ideleInfiniteComponent η_id w z = 1)
-    (w : InfinitePlace F) :
+  (w : InfinitePlace F)
+include A σ hΛ hG hη
+
+theorem correctionTheta_infinity_angular :
     ∃ n : ℤ, (n = 1 ∨ n = -1) ∧ ∀ z : w.Completionˣ,
       (((A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w z)⁻¹ : Circle) : ℂ) =
         DHCubic.angular (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)) ^ n ∧
@@ -494,18 +498,7 @@ theorem correctionTheta_infinity_angular (A : SArithmeticData F)
     rw [hΛ, hang _ hz, zpow_neg, neg_neg]
     simp
 
-theorem correctionTheta_infinity_no_radial (A : SArithmeticData F)
-    (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
-    (hΛ : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      (A.ideleInfiniteComponent Λ w z : ℂ) =
-        (DHCubic.infinityComponent (DHCubic.E0 F A) F
-          (σ.comp (algebraMap (DHCubic.E0 F A) F)) w
-          (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹)
-    (hG : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      A.ideleInfiniteComponent G w z = 1)
-    (hη : ∀ (w : InfinitePlace F) (z : w.Completionˣ),
-      A.ideleInfiniteComponent η_id w z = 1)
-    (w : InfinitePlace F) (z u : w.Completionˣ) (r : ℝ) (hr : 0 < r)
+theorem correctionTheta_infinity_no_radial (z u : w.Completionˣ) (r : ℝ) (hr : 0 < r)
     (hu : InfinitePlace.Completion.extensionEmbedding w (u : w.Completion) = (r : ℂ)) :
     A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w (z * u) =
       A.ideleInfiniteComponent (A.correctionTheta Λ G η_id) w z := by
@@ -518,6 +511,8 @@ theorem correctionTheta_infinity_no_radial (A : SArithmeticData F)
   rw [hΛ, hΛ]
   simp only [Units.val_mul, map_mul, hu]
   rw [mul_comm, DHCubic.infinity_no_radial _ _ _ _ _ r hr]
+
+end
 
 end CorrectionAssembly
 

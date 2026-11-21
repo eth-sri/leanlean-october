@@ -111,8 +111,11 @@ private lemma realInto_continuous {F : Type} [Field F] [NumberField F] (v : Infi
   · exact (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm.continuous
   · exact (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
       (v.not_isReal_iff_isComplex.mp hv)).symm.continuous.comp Complex.continuous_ofReal
- def radial {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℝ) : (SLocalProduct F S)ˣ where
+section
+
+variable {F : Type} [Field F] [NumberField F] (S : Finset (HeightOneSpectrum (𝓞 F)))
+
+ def radial (s : ℝ) : (SLocalProduct F S)ˣ where
   val := ((fun v => realInto F v (Real.exp (s / (2 * Fintype.card (InfinitePlace F))))), 1)
   inv := ((fun v => realInto F v (Real.exp (-s / (2 * Fintype.card (InfinitePlace F))))), 1)
   val_inv := by
@@ -129,8 +132,7 @@ private lemma realInto_continuous {F : Type} [Field F] [NumberField F] (v : Infi
       rw [← map_mul, ← Real.exp_add]
       rw [show _ + _ = (0 : ℝ) by ring, Real.exp_zero, map_one]
     · simp
-private lemma radial_continuous {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) : Continuous (radial S) := by
+private lemma radial_continuous : Continuous (radial S) := by
   apply Units.continuous_iff.mpr
   constructor
   · apply Continuous.prodMk _ continuous_const
@@ -141,8 +143,7 @@ private lemma radial_continuous {F : Type} [Field F] [NumberField F]
     apply continuous_pi
     intro v
     exact (realInto_continuous v).comp (by fun_prop)
-private lemma modulus_pos {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (y : (SLocalProduct F S)ˣ) :
+private lemma modulus_pos (y : (SLocalProduct F S)ˣ) :
     0 < ProbeWeight.modulus F S y := by
   apply mul_pos
   · apply Finset.prod_pos
@@ -160,9 +161,7 @@ private lemma modulus_pos {F : Type} [Field F] [NumberField F]
       exact zero_ne_one he
     exact norm_pos_iff.mpr hz
 
-theorem modulus_mul
-    {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (y z : (SLocalProduct F S)ˣ) :
+theorem modulus_mul (y z : (SLocalProduct F S)ˣ) :
     ProbeWeight.modulus F S (y * z) =
       ProbeWeight.modulus F S y * ProbeWeight.modulus F S z := by
   have h1 : (∏ v : InfinitePlace F, ‖((y * z).val).1 v‖ ^ 2) =
@@ -184,8 +183,7 @@ theorem modulus_mul
   rw [ProbeWeight.modulus, ProbeWeight.modulus, ProbeWeight.modulus, h1, h2]
   ring
 
-private lemma radial_modulus {F : Type} [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℝ) :
+private lemma radial_modulus (s : ℝ) :
     ProbeWeight.modulus F S (radial S s) = Real.exp s := by
   have hn : (Fintype.card (InfinitePlace F) : ℝ) ≠ 0 := by
     exact_mod_cast Fintype.card_ne_zero
@@ -195,6 +193,8 @@ private lemma radial_modulus {F : Type} [Field F] [NumberField F]
   congr 1
   push_cast
   field_simp
+
+end
  def prodUnitsD (M N : Type*) [Monoid M] [Monoid N]
     [TopologicalSpace M] [TopologicalSpace N] : (M × N)ˣ ≃ₜ* Mˣ × Nˣ where
   __ := MulEquiv.prodUnits

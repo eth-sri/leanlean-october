@@ -3,6 +3,8 @@ module
 public import DedekindZetaZeroFree.Arithmetic.Ideals.DyadicNormBlocks
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.OperatorNormBounds
 
+public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.ReciprocityPrefixOperator
+
 @[expose] public section
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
@@ -14,7 +16,7 @@ variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 private lemma one_le_dyadicScale (i : ℕ) : 1 ≤ dyadicScale i := by
   cases i with
   | zero => simp [dyadicScale]
-  | succ k => simp only [dyadicScale]; exact one_le_pow₀ (show (1 : ℝ) ≤ 2 by norm_num)
+  | succ k => exact one_le_pow₀ (show (1 : ℝ) ≤ 2 by norm_num)
 
 private lemma dyadicScale_nonneg (i : ℕ) : 0 ≤ dyadicScale i :=
   le_trans zero_le_one (one_le_dyadicScale i)
@@ -23,15 +25,15 @@ private lemma rpow_one_eq_one (η : ℝ) : Real.rpow (1 : ℝ) η = 1 := by
   rw [Real.rpow_eq_pow, Real.one_rpow]
 
 private lemma rpow_nonneg' (x : ℝ) (hx : 0 ≤ x) (y : ℝ) : 0 ≤ Real.rpow x y := by
-  rw [Real.rpow_eq_pow]; exact Real.rpow_nonneg hx y
+  exact Real.rpow_nonneg hx y
 
 private lemma one_le_rpow' (x : ℝ) (hx : 1 ≤ x) (y : ℝ) (hy : 0 ≤ y) : 1 ≤ Real.rpow x y := by
-  rw [Real.rpow_eq_pow]; exact Real.one_le_rpow hx hy
+  exact Real.one_le_rpow hx hy
 
 private lemma rpow_ge_self (x : ℝ) (hx : 1 ≤ x) (a : ℝ) (ha : 1 ≤ a) : x ≤ Real.rpow x a := by
   have h := Real.rpow_le_rpow_of_exponent_le hx ha
   rw [Real.rpow_one] at h
-  rwa [← Real.rpow_eq_pow] at h
+  assumption
 
 private lemma card_idealDyadicBlock_le (A : ℝ) (hA1 : 1 ≤ A)
     (hAset : ∀ X : ℝ, 1 ≤ X → ∀ s : Finset (Ideal (𝓞 F)),
@@ -42,13 +44,7 @@ private lemma card_idealDyadicBlock_le (A : ℝ) (hA1 : 1 ≤ A)
     have h1 : ((idealDyadicBlock F c 0).card : ℝ) = 1 := by simp [idealDyadicBlock]
     rw [h1]; simp only [dyadicScale]; linarith
   | succ k =>
-    have hk : (1 : ℝ) ≤ 2 * (2 : ℝ) ^ k := by
-      have := one_le_pow₀ (show (1 : ℝ) ≤ 2 by norm_num) (n := k)
-      linarith
-    have h := hAset (2 * (2 : ℝ) ^ k) hk
-      (paperShell F c ((2 : ℝ) ^ k))
-      (fun I hI => ((mem_paperShell F c ((2 : ℝ) ^ k) I).mp hI).2.2.2)
-    simpa [idealDyadicBlock, dyadicScale] using h
+    grind only [one_le_pow₀, paperShell, mem_paperShell, idealDyadicBlock, dyadicScale]
 
 private lemma mem_block_squarefree (j : ℕ) {b : Ideal (𝓞 F)}
     (hb : b ∈ idealDyadicBlock F c j) : Squarefree b ∧ b ⊔ c = ⊤ := by
@@ -56,39 +52,11 @@ private lemma mem_block_squarefree (j : ℕ) {b : Ideal (𝓞 F)}
   | zero =>
     simp only [idealDyadicBlock, Finset.mem_singleton] at hb
     subst hb
-    exact ⟨by rw [show (⊤ : Ideal (𝓞 F)) = 1 by simp]; exact squarefree_one, by simp⟩
+    simp
   | succ k =>
-    have hb' : b ∈ paperShell F c ((2 : ℝ) ^ k) := by simpa [idealDyadicBlock] using hb
-    obtain ⟨h1, h2, -, -⟩ := (mem_paperShell F c ((2 : ℝ) ^ k) b).mp hb'
-    exact ⟨h1, h2⟩
+    grind only [paperShell, idealDyadicBlock, mem_paperShell]
 
-private lemma norm_row_le_card_mul (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (S : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
-    (hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤) (a : Ideal (𝓞 F)) :
-    ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2 ≤ (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
-  have h : ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ≤ ∑ b ∈ S, ‖lam b‖ := by
-    refine le_trans (norm_sum_le _ _) (Finset.sum_le_sum (fun b hb => ?_))
-    rw [norm_mul]
-    calc ‖lam b‖ * ‖(Q.χ b) a‖ ≤ ‖lam b‖ * 1 :=
-          mul_le_mul_of_nonneg_left (quadraticFamily_norm_le_one Q (hSsf b hb).1 (hSsf b hb).2 a)
-            (norm_nonneg _)
-      _ = ‖lam b‖ := by ring
-  calc ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2 ≤ (∑ b ∈ S, ‖lam b‖) ^ 2 :=
-        pow_le_pow_left₀ (norm_nonneg _) h 2
-    _ ≤ (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := sq_sum_le_card_mul_sum_sq
-
-private lemma sum_sq_le_card_mul_energy (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (R S : Finset (Ideal (𝓞 F))) (lam : Ideal (𝓞 F) → ℂ)
-    (hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤) :
-    ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
-      ≤ (R.card : ℝ) * (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
-  have hE0 : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := Finset.sum_nonneg (fun b _ => by positivity)
-  calc ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
-      ≤ ∑ _a ∈ R, (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
-        Finset.sum_le_sum (fun a _ => norm_row_le_card_mul Q S lam hSsf a)
-    _ = (R.card : ℝ) * ((S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2) := by
-        rw [Finset.sum_const, nsmul_eq_mul]
-    _ = (R.card : ℝ) * (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by ring
+open LargeSieve.Sieve.MainBoundaryPrefix (sum_sq_le_card_mul_energy)
 
 private lemma arith_zero_row (C A η α : ℝ) (hA1 : 1 ≤ A) (hC : 2 * A ≤ C) (hη : 0 < η)
     (hα1 : 1 ≤ α) (x : ℝ) (hx1 : 1 ≤ x) (E : ℝ) (hE0 : 0 ≤ E) :

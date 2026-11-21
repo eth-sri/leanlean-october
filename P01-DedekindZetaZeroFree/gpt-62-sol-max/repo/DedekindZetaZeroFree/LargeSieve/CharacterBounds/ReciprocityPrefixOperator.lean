@@ -36,8 +36,7 @@ theorem matrix_energy_eq {B : Type*} [DecidableEq B]
     (∑ b ∈ S, ‖lam b‖ ^ 2) =
       ‖(WithLp.toLp 2 (fun b : S => lam b) : EuclideanSpace ℂ S)‖ ^ 2 := by
   rw [EuclideanSpace.norm_sq_eq]
-  rw [Finset.sum_subtype (s := S) (p := fun b => b ∈ S) (fun _ => Iff.rfl)
-    (f := fun b => ‖lam b‖ ^ 2)]
+  solve_by_elim [Finset.sum_subtype, s, Iff.rfl]
 
 theorem matrix_norm_bound {A B : Type*} [DecidableEq A] [DecidableEq B]
     (R : Finset A) (S : Finset B) (K : B → A → ℂ) (D : ℝ) (hD : 0 ≤ D)

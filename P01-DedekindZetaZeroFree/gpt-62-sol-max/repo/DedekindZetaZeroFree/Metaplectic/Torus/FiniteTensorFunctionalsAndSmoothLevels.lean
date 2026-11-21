@@ -14,7 +14,7 @@ noncomputable section
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 open KPAdelicCoverRestrictedProduct
-private theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
+theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
     (x : RestrictedCover F ζ hζ)
     (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x) = g.val) :
     ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0 := by
@@ -30,7 +30,7 @@ private theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
   have hd : (restrictedProjection F ζ hζ x) 1 0 = 0 ∧
       (restrictedProjection F ζ hζ x) 0 1 = 0 := by
     rw [hm]
-    simp [Matrix.GeneralLinearGroup.coe_mul, ← map_inv,
+    simp [← map_inv,
       Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
   intro v
   have h := congrArg (adeleEval F v) hd.1
@@ -41,7 +41,7 @@ private theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
   exact ⟨hh.symm.trans (by simpa [matrixEval] using h),
     hh'.symm.trans (by simpa [matrixEval] using h')⟩
 
-private theorem raw_image_torus (x : RestrictedCover F ζ hζ)
+theorem raw_image_torus (x : RestrictedCover F ζ hζ)
     (hd : ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0) :
     scalarQuotient F ζ hζ (amalgamation F ζ hζ x) ∈ KPGlobalTorusFunctionData.E F ζ hζ := by
   refine ⟨restrictedProjection F ζ hζ x, rfl, ?_, ?_⟩
@@ -52,7 +52,7 @@ private theorem raw_image_torus (x : RestrictedCover F ζ hζ)
     · funext w; exact (hd (Sum.inl w)).2
     · apply RestrictedProduct.ext; intro q; exact (hd (Sum.inr q)).2
 
-private theorem arch_mem_B
+theorem arch_mem_B
     (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ) (x : RestrictedCover F ζ hζ)
     (hd : ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0)
     (hf : ∀ q, x (Sum.inr q) = 1) :
@@ -97,6 +97,35 @@ private theorem arch_mem_B
     rw [heval, map_one]
     exact (P.localData (Sum.inr q)).L.one_mem
 
+def rawArchPart (x : RestrictedCover F ζ hζ) : RestrictedCover F ζ hζ :=
+  ⟨fun v => match v with | Sum.inl w => x (Sum.inl w) | Sum.inr _ => 1,
+    Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact])⟩
+
+def rawFinitePart (x : RestrictedCover F ζ hζ) : RestrictedCover F ζ hζ :=
+  ⟨fun v => match v with | Sum.inl _ => 1 | Sum.inr q => x (Sum.inr q),
+    x.property.mono (by intro v hv; cases v with | inl w => trivial | inr q => exact hv)⟩
+
+theorem raw_arch_diagonal (x : RestrictedCover F ζ hζ)
+    (hd : ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0) :
+    ∀ v, (rawArchPart F ζ hζ x v).g 1 0 = 0 ∧ (rawArchPart F ζ hζ x v).g 0 1 = 0 := by
+  intro v; cases v with
+  | inl w => exact hd (Sum.inl w)
+  | inr q => simp [rawArchPart, KPLocalCover.one_g]
+
+theorem raw_finite_diagonal (x : RestrictedCover F ζ hζ)
+    (hd : ∀ v, (x v).g 1 0 = 0 ∧ (x v).g 0 1 = 0) :
+    ∀ v, (rawFinitePart F ζ hζ x v).g 1 0 = 0 ∧ (rawFinitePart F ζ hζ x v).g 0 1 = 0 := by
+  intro v; cases v with
+  | inl w => simp [rawFinitePart, KPLocalCover.one_g]
+  | inr q => exact hd (Sum.inr q)
+
+theorem raw_parts_mul (x : RestrictedCover F ζ hζ) :
+    rawArchPart F ζ hζ x * rawFinitePart F ζ hζ x = x := by
+  apply RestrictedProduct.ext
+  intro v
+  change rawArchPart F ζ hζ x v * rawFinitePart F ζ hζ x v = x v
+  cases v <;> simp [rawArchPart, rawFinitePart]
+
 theorem raw_product_polarization_finite_coset_cover
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
@@ -117,24 +146,10 @@ theorem raw_product_polarization_finite_coset_cover
   have hxg : scalarQuotient F ζ hζ (amalgamation F ζ hζ x) = g.val :=
     (congrArg (scalarQuotient F ζ hζ) hx).trans hu
   have hd := raw_diagonal F ζ hζ g x hxg
-  let xi : RestrictedCover F ζ hζ :=
-    ⟨fun v => match v with | Sum.inl w => x (Sum.inl w) | Sum.inr _ => 1,
-      Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact, Subgroup.one_mem])⟩
-  let xf : RestrictedCover F ζ hζ :=
-    ⟨fun v => match v with | Sum.inl _ => 1 | Sum.inr q => x (Sum.inr q),
-      x.property.mono (by
-        intro v hv
-        cases v with
-        | inl w => trivial
-        | inr q => exact hv)⟩
-  have hdi : ∀ v, (xi v).g 1 0 = 0 ∧ (xi v).g 0 1 = 0 := by
-    intro v; cases v with
-    | inl w => exact hd (Sum.inl w)
-    | inr q => simp [xi, KPLocalCover.one_g]
-  have hdf : ∀ v, (xf v).g 1 0 = 0 ∧ (xf v).g 0 1 = 0 := by
-    intro v; cases v with
-    | inl w => simp [xf, KPLocalCover.one_g]
-    | inr q => exact hd (Sum.inr q)
+  let xi := rawArchPart F ζ hζ x
+  let xf := rawFinitePart F ζ hζ x
+  have hdi := raw_arch_diagonal F ζ hζ x hd
+  have hdf := raw_finite_diagonal F ζ hζ x hd
   let bi : KPGlobalTorusFunctionData.E F ζ hζ :=
     ⟨scalarQuotient F ζ hζ (amalgamation F ζ hζ xi), raw_image_torus F ζ hζ xi hdi⟩
   have hb : bi ∈ Q.H := by
@@ -151,12 +166,7 @@ theorem raw_product_polarization_finite_coset_cover
   apply Subtype.ext
   change g.val = scalarQuotient F ζ hζ (amalgamation F ζ hζ xi) *
     scalarQuotient F ζ hζ (amalgamation F ζ hζ xf)
-  rw [← map_mul, ← map_mul, ← hxg]
-  congr 2
-  apply RestrictedProduct.ext
-  intro v
-  change x v = xi v * xf v
-  cases v <;> simp [xi, xf]
+  rw [← map_mul, ← map_mul, raw_parts_mul, hxg]
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusTensorFibers
@@ -183,7 +193,7 @@ private theorem diagonal_torus_closed
     · rintro ⟨B, hB, h10, h01⟩
       obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hB
       rw [← hu]
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+      simp [Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
     · intro h
       exact ⟨A, rfl, h⟩
@@ -389,7 +399,7 @@ theorem raw_finite_level_subordinate_to_local_torus_subgroups
     have hdiag : (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ raw) 1 0 = 0 ∧
         (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ raw) 0 1 = 0 := by
       rw [hm]
-      simp [Matrix.GeneralLinearGroup.coe_mul, ← map_inv,
+      simp [← map_inv,
         Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
     intro v
     have hv := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ raw v

@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.PositiveSideJetSeminorms
 public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.RegularizedGammaProduct
 
@@ -27,16 +28,7 @@ private lemma iteratedDeriv_eq_zero_of_gt (b : ℝ) (h : ℝ → ℂ)
       rw [hev.deriv_eq]
       simp
 
-private lemma S_nonneg_aux (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
-    (hh : ContDiff ℝ ∞ h) : 0 ≤ S b N h := by
-  unfold S
-  refine Finset.sum_nonneg (fun i _ => ?_)
-  have hbd : BddAbove ((fun y : ℝ => ‖iteratedDeriv i h y‖) '' Set.Icc 0 b) :=
-    (isCompact_Icc.image (contDiff_iteratedDeriv h hh i).continuous.norm).bddAbove
-  have hmem : ‖iteratedDeriv i h 0‖ ∈
-      ((fun y : ℝ => ‖iteratedDeriv i h y‖) '' Set.Icc 0 b) :=
-    ⟨0, ⟨le_rfl, le_of_lt hb⟩, rfl⟩
-  exact le_trans (norm_nonneg _) (le_csSup hbd hmem)
+private alias S_nonneg_aux := DedekindZetaZeroFree.LargeSieve.Vendor.S_nonneg
 
 private lemma jet_le_S (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (i : ℕ) (hi : i ≤ N) (x : ℝ) (hx : x ∈ Set.Icc 0 b) :

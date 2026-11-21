@@ -59,8 +59,7 @@ private theorem componentNorm_nonneg (s : Sections F ζ hζ U R P H)
 
  theorem sectionNorm_nonneg (s : Sections F ζ hζ U R P H)
     (b : X_U F ζ hζ U) : 0 ≤ sectionNorm F ζ hζ U R P H s b := by
-  simp only [sectionNorm]
-  exact componentNorm_nonneg F ζ hζ U R P H s _ _
+  exact componentNorm_nonneg ..
 
 private theorem componentNorm_add_le (s t : Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount)
@@ -76,9 +75,7 @@ private theorem componentNorm_add_le (s t : Sections F ζ hζ U R P H)
  theorem sectionNorm_add_le (s t : Sections F ζ hζ U R P H) :
     sectionNorm F ζ hζ U R P H (s + t) ≤
       sectionNorm F ζ hζ U R P H s + sectionNorm F ζ hζ U R P H t := by
-  intro b
-  simp only [sectionNorm]
-  exact componentNorm_add_le F ζ hζ U R P H s t _ _
+  solve_by_elim [componentNorm_add_le]
 
  theorem sectionNorm_smul (c : ℂ) (s : Sections F ζ hζ U R P H) :
     sectionNorm F ζ hζ U R P H (c • s) =
@@ -596,122 +593,53 @@ def res_K : H_U F ζ hζ U R →L[ℂ] H_K F ζ hζ U R P H K where
 
 end RestrictedNorm
 
-abbrev Chart := KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)
+abbrev Chart := CoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)
 
-def actualWeight (C : Chart F ζ hζ U R P H) (x : KPCoreChartLocalizers.E C.n) : ℝ :=
+def actualWeight (C : Chart F ζ hζ U R P H) (x : CoreChartLocalizers.E C.n) : ℝ :=
   ((H.disintegration U).componentWeight C.component).toReal * C.weight x
 
 variable (hK : IsCompact K)
 
 structure Localizers (hK : IsCompact K) where
   count : ℕ
-  empty_case : K = ∅ → count = 0
   chart : Fin count → Chart F ζ hζ U R P H
-  open_image : ∀ i, IsOpen ((chart i).O F ζ hζ H.totallyComplex U)
-  quotient_chart : ∀ i, Quotient ((chart i).relation F ζ hζ H.totallyComplex U) ≃ₜ
-    ((chart i).O F ζ hζ H.totallyComplex U)
-  quotient_chart_formula : ∀ i (x : Metric.ball (0 : KPCoreChartLocalizers.E (chart i).n)
-      (chart i).radius),
-    (quotient_chart i (Quotient.mk _ x)).val =
-      (chart i).toBase F ζ hζ H.totallyComplex U x.val
-  orbit_relation : ∀ i (x y : Metric.ball (0 : KPCoreChartLocalizers.E (chart i).n)
-      (chart i).radius),
-    ((chart i).relation F ζ hζ H.totallyComplex U).r x y ↔
-      ∃ g : (chart i).G F ζ hζ H.totallyComplex U, (chart i).orthogonal g x.val = y.val
-
-  line_orbit_relation : ∀ i
-      (x y : Metric.ball (0 : KPCoreChartLocalizers.E (chart i).n) (chart i).radius)
-      (a b : KPCuspGenuineMonodromy.scalarFiber F ζ hζ U),
-    ((chart i).lineRelation F ζ hζ H.totallyComplex U).r (x,a) (y,b) ↔
-      ∃ g : (chart i).G F ζ hζ H.totallyComplex U,
-        (chart i).orthogonal g x.val = y.val ∧
-        (b : ℂ) = ((chart i).rho F ζ hζ H.totallyComplex U g : ℂ) * (a : ℂ)
-  line_chart_surjective : ∀ i
-      (l : KPCoreChartLocalizers.Line F ζ hζ H.totallyComplex U (H.atlas U)),
-    KPCoreChartLocalizers.lineBase F ζ hζ H.totallyComplex U (H.atlas U) l ∈
-      (chart i).O F ζ hζ H.totallyComplex U →
-      ∃ (x : Metric.ball (0 : KPCoreChartLocalizers.E (chart i).n) (chart i).radius)
-        (a : KPCuspGenuineMonodromy.scalarFiber F ζ hζ U),
-        (chart i).toLine F ζ hζ H.totallyComplex U x.val a = l
-  invariant_ball : ∀ i (g : (chart i).G F ζ hζ H.totallyComplex U),
-    (chart i).orthogonal g '' Metric.ball 0 (chart i).radius = Metric.ball 0 (chart i).radius
-  unitary_character : ∀ i (g : (chart i).G F ζ hζ H.totallyComplex U),
-    ‖((chart i).rho F ζ hζ H.totallyComplex U g : ℂ)‖ = 1
-
   chart_measure : ∀ i, Measure.map ((chart i).toBase F ζ hζ H.totallyComplex U)
     ((Fintype.card ((chart i).G F ζ hζ H.totallyComplex U) : ℝ≥0∞)⁻¹ •
       (volume.restrict (Metric.ball 0 (chart i).radius)).withDensity
         (fun x => ENNReal.ofReal (actualWeight F ζ hζ U R P H (chart i) x))) =
     (muU F ζ hζ U R P).restrict ((chart i).O F ζ hζ H.totallyComplex U)
   lower : Fin count → ℝ
-  upper : Fin count → ℝ
   positive_lower : ∀ i, 0 < lower i
 
-  density_bounds : ∀ i x, x ∈ closure (Metric.ball (0 : KPCoreChartLocalizers.E
+  density_lower_bound : ∀ i x, x ∈ closure (Metric.ball (0 : CoreChartLocalizers.E
       (chart i).n) (chart i).radius) →
-    lower i ≤ actualWeight F ζ hζ U R P H (chart i) x ∧
-      actualWeight F ζ hζ U R P H (chart i) x ≤ upper i
-  phi : Fin count → X_U F ζ hζ U → ℝ
-  nonnegative_phi : ∀ i x, 0 ≤ phi i x
-  compact_phi : ∀ i, HasCompactSupport (phi i)
-  support_phi : ∀ i, tsupport (phi i) ⊆ (chart i).O F ζ hζ H.totallyComplex U
-  smooth_phi : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun z =>
-    phi i (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative j)
-      (KPCuspSiegel.projection F _ z)))
-  neighborhood : Set (X_U F ζ hζ U)
-  open_neighborhood : IsOpen neighborhood
-  covers_compact : K ⊆ neighborhood
-  partition : ∀ x ∈ neighborhood, ∑ i, phi i x = 1
-  cutoff : ∀ i, KPCoreChartLocalizers.E (chart i).n → ℝ
-  cutoff_formula : ∀ i, cutoff i = (Metric.ball 0 (chart i).radius).indicator
-    (fun x => phi i ((chart i).toBase F ζ hζ H.totallyComplex U x))
+    lower i ≤ actualWeight F ζ hζ U R P H (chart i) x
+  cutoff : ∀ i, CoreChartLocalizers.E (chart i).n → ℝ
   smooth_cutoff : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (cutoff i)
-  compact_cutoff : ∀ i, HasCompactSupport (cutoff i)
   support_cutoff : ∀ i, tsupport (cutoff i) ⊆ Metric.ball 0 (chart i).radius
-  invariant_cutoff : ∀ i (g : (chart i).G F ζ hζ H.totallyComplex U) x,
-    cutoff i ((chart i).orthogonal g x) = cutoff i x
   derivativeBound : Fin count → ℕ → ℝ
   nonnegative_derivativeBound : ∀ i k, 0 ≤ derivativeBound i k
   derivative_bounds : ∀ i k x, x ∈ tsupport (cutoff i) →
     ‖iteratedFDeriv ℝ k (cutoff i) x‖ ≤ derivativeBound i k
   ellipticity : Fin count → ℝ
-  metricUpper : Fin count → ℝ
   positive_ellipticity : ∀ i, 0 < ellipticity i
 
-  metric_bounds : ∀ i x, x ∈ tsupport (cutoff i) → ∀ ξ : KPCoreChartLocalizers.E (chart i).n,
+  ellipticity_bound : ∀ i x, x ∈ tsupport (cutoff i) → ∀ ξ : CoreChartLocalizers.E (chart i).n,
     ellipticity i * ‖ξ‖ ^ 2 ≤
-      ∑ j, ∑ k, (chart i).energyMatrix F ζ hζ H.totallyComplex U x j k * ξ j * ξ k ∧
-    (∑ j, ∑ k, (chart i).energyMatrix F ζ hζ H.totallyComplex U x j k * ξ j * ξ k) ≤
-      metricUpper i * ‖ξ‖ ^ 2
+      ∑ j, ∑ k, (chart i).energyMatrix F ζ hζ H.totallyComplex U x j k * ξ j * ξ k
   T : ∀ i, H_U F ζ hζ U R →L[ℂ]
-    Lp ℂ 2 (volume.restrict (KPCoreChartLocalizers.cube (chart i).n (chart i).a))
+    Lp ℂ 2 (volume.restrict (CoreChartLocalizers.cube (chart i).n (chart i).a))
 
   T_formula : ∀ i (u : H_U F ζ hζ U R) (s : BorelL2Sections F ζ hζ U R P H),
     sectorLineIsometry F ζ hζ U R P H u = mk F ζ hζ U R P H s →
-    T i u =ᵐ[volume.restrict (KPCoreChartLocalizers.cube (chart i).n (chart i).a)]
+    T i u =ᵐ[volume.restrict (CoreChartLocalizers.cube (chart i).n (chart i).a)]
       (fun x => (cutoff i x : ℂ) * (s.val (chart i).component).val ((chart i).coordinates x))
   Rmap : ∀ i, Lp ℂ 2
-    (volume.restrict (KPCoreChartLocalizers.cube (chart i).n (chart i).a)) →L[ℂ]
+    (volume.restrict (CoreChartLocalizers.cube (chart i).n (chart i).a)) →L[ℂ]
       H_K F ζ hζ U R P H K
 
-  R_formula : ∀ i f, ∃ t : BorelL2Sections F ζ hζ U R P H,
-    Rmap i f = mkK F ζ hζ U R P H K t ∧
-    (∀ᵐ x ∂volume.restrict (Metric.ball 0 (chart i).radius),
-      (chart i).toBase F ζ hζ H.totallyComplex U x ∈ K →
-      (t.val (chart i).component).val ((chart i).coordinates x) =
-        ((KPCuspGenuineMonodromy.scalarFiber F ζ hζ U).orthogonalProjectionOnto
-          ((chart i).average F ζ hζ H.totallyComplex U f x) : ℂ)) ∧
-    (∀ᵐ b ∂(muU F ζ hζ U R P).restrict K,
-      b ∉ (chart i).O F ζ hζ H.totallyComplex U → squaredNorm F ζ hζ U R P H t.val b = 0)
   reconstruction : res_K F ζ hζ U R P H K hK.measurableSet =
     ∑ i, (Rmap i).comp (T i)
-  smooth_test_image : ∀ i (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H),
-    ∃ g : KPCoreChartLocalizers.E (chart i).n → ℂ,
-      ContDiff ℝ (⊤ : ℕ∞) g ∧ HasCompactSupport g ∧
-      tsupport g ⊆ interior (KPCoreChartLocalizers.cube (chart i).n (chart i).a) ∧
-      T i (KPContActualSectorTestEmbeddings.iota f) =ᵐ[
-        volume.restrict (KPCoreChartLocalizers.cube (chart i).n (chart i).a)] g
-
 end DedekindZetaZeroFree.KPContActualFixedHaarCoreLocalizers
 
 end

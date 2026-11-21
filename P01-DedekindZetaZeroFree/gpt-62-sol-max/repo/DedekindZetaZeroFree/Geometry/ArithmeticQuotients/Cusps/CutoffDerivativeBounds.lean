@@ -4,6 +4,8 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.Cusps.CompactHei
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.DifferentialOperators.CodifferentialCovariance
 public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.Cusps.UniformCutoffGraphConvergence
 
+public import DedekindZetaZeroFree.Geometry.Hyperbolic.Cotangent.DifferentialCoframe
+
 @[expose] public section
 
 section
@@ -28,17 +30,16 @@ private theorem theta_deriv_zero {t : ℝ} (ht : t ∉ Set.Icc (0 : ℝ) 1) :
     deriv theta t = 0 := by
   have h : theta =ᶠ[nhds t] (fun _ => theta t) := by
     by_cases h0 : 0 ≤ t
-    · have h1 : 1 < t := lt_of_not_ge (fun h1 => ht ⟨h0,h1⟩)
+    · have h1 := lt_of_not_ge (fun h1 => ht ⟨h0,h1⟩)
       filter_upwards [eventually_gt_nhds h1] with u hu
       rw [theta_zero hu.le, theta_zero h1.le]
-    · have h0' : t < 0 := lt_of_not_ge h0
+    · have h0' := lt_of_not_ge h0
       filter_upwards [eventually_lt_nhds h0'] with u hu
       rw [theta_one hu.le, theta_one h0'.le]
   rw [h.deriv_eq]
   simp
 
-theorem theta_deriv_compact : HasCompactSupport (deriv theta) := by
-  exact HasCompactSupport.intro (isCompact_Icc (a := (0 : ℝ)) (b := 1))
+theorem theta_deriv_compact : HasCompactSupport (deriv theta) := HasCompactSupport.intro (isCompact_Icc (a := (0 : ℝ)) (b := 1))
     (fun t ht => theta_deriv_zero ht)
 
 theorem theta_derivatives_bounded : ∃ B : ℝ, 0 ≤ B ∧ ∀ t : ℝ,
@@ -478,155 +479,30 @@ noncomputable section
 open scoped Classical NumberField BigOperators ContDiff
 open Filter Topology
 namespace DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.ScalarIsometry
-private theorem sum_real_basis {I : Type*} [Fintype I] [DecidableEq I]
-    (b : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] ℝ) :
-    ∑ i, (L (b i)) ^ 2 = ‖(InnerProductSpace.toDual ℝ (EuclideanSpace ℝ I)).symm L‖ ^ 2 := by
-  simpa only [InnerProductSpace.toDual_symm_apply] using
-    b.sum_sq_inner_left ((InnerProductSpace.toDual ℝ (EuclideanSpace ℝ I)).symm L)
-
-private theorem sum_complex_basis {I : Type*} [Fintype I] [DecidableEq I]
-    (b c : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] ℂ) :
-    ∑ i, ‖L (b i)‖ ^ 2 = ∑ i, ‖L (c i)‖ ^ 2 := by
-  have hRe := (sum_real_basis b (Complex.reCLM.comp L)).trans
-    (sum_real_basis c (Complex.reCLM.comp L)).symm
-  have hIm := (sum_real_basis b (Complex.imCLM.comp L)).trans
-    (sum_real_basis c (Complex.imCLM.comp L)).symm
-  simp only [ContinuousLinearMap.comp_apply, Complex.reCLM_apply, Complex.imCLM_apply] at hRe hIm
-  simp only [Complex.sq_norm, Complex.normSq_apply, Finset.sum_add_distrib]
-  simpa only [pow_two] using congrArg₂ (· + ·) hRe hIm
-
-private theorem differential_frame (d : ℕ) (f : HyperbolicChart.Space d → ℂ) (x : HyperbolicChart.Space d) (k : Fin d × Fin 3) :
-    (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) k =
-      fderiv ℝ f x (CotangentLogCoframe.H d x
-        (EuclideanSpace.basisFun _ ℝ k)) := by
-  rcases k with ⟨i, k⟩
-  fin_cases k
-  · have hh : CotangentLogCoframe.H d x (EuclideanSpace.basisFun _ ℝ (i, (0 : Fin 3))) =
-        HyperbolicChart.coordinateVector d i 2 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-    change (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) (i, (0 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H d x
-        (EuclideanSpace.basisFun _ ℝ (i, (0 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative]
-  · have hh : CotangentLogCoframe.H d x (EuclideanSpace.basisFun _ ℝ (i, (1 : Fin 3))) =
-        Real.exp (x (i, 2)) • HyperbolicChart.coordinateVector d i 0 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-      split_ifs with h <;> simp_all
-    change (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) (i, (1 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H d x
-        (EuclideanSpace.basisFun _ ℝ (i, (1 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative, RCLike.real_smul_eq_coe_mul]
-  · have hh : CotangentLogCoframe.H d x (EuclideanSpace.basisFun _ ℝ (i, (2 : Fin 3))) =
-        Real.exp (x (i, 2)) • HyperbolicChart.coordinateVector d i 1 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-      split_ifs with h <;> simp_all
-    change (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) (i, (2 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H d x
-        (EuclideanSpace.basisFun _ ℝ (i, (2 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative, RCLike.real_smul_eq_coe_mul]
-
-private theorem differential_norm_isometry (d : ℕ)
-    (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
-    (x : HyperbolicChart.Space d)
-    (hψ : DifferentiableAt ℝ ψ x)
-    (hm : ∀ v w, HyperbolicChart.metric d (ψ x)
-      (fderiv ℝ ψ x v) (fderiv ℝ ψ x w) = HyperbolicChart.metric d x v w)
-    (f : HyperbolicChart.Space d → ℂ) (hf : DifferentiableAt ℝ f (ψ x)) :
-    (∑ i, ∑ k, ‖HyperbolicChart.differential d (f ∘ ψ) x i k‖ ^ 2) =
-    ∑ i, ∑ k, ‖HyperbolicChart.differential d f (ψ x) i k‖ ^ 2 := by
-  let Q : EuclideanSpace ℝ (Fin d × Fin 3) →L[ℝ] EuclideanSpace ℝ (Fin d × Fin 3) :=
-    (CotangentLogCoframe.C d (ψ x)).toContinuousLinearMap.comp
-      ((fderiv ℝ ψ x).comp (CotangentLogCoframe.H d x).toContinuousLinearMap)
-  have hQ : ∀ v w, inner ℝ (Q v) (Q w) = inner ℝ v w := by
-    intro v w
-    change inner ℝ (CotangentLogCoframe.C d (ψ x)
-      (fderiv ℝ ψ x (CotangentLogCoframe.H d x v)))
-      (CotangentLogCoframe.C d (ψ x) (fderiv ℝ ψ x (CotangentLogCoframe.H d x w))) = _
-    rw [CotangentLogCoframe.inner_C, hm, ← CotangentLogCoframe.inner_C]
-    simp [CotangentLogCoframe.H]
-  let q : EuclideanSpace ℝ (Fin d × Fin 3) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin d × Fin 3) :=
-    LinearIsometryEquiv.ofSurjective
-      {toLinearMap := Q.toLinearMap,
-       norm_map' := (LinearMap.norm_map_iff_inner_map_map Q).2 hQ}
-      (by
-        apply LinearMap.surjective_of_injective
-        exact (show EuclideanSpace ℝ (Fin d × Fin 3) →ₗᵢ[ℝ] EuclideanSpace ℝ (Fin d × Fin 3) from
-          {toLinearMap := Q.toLinearMap,
-           norm_map' := (LinearMap.norm_map_iff_inner_map_map Q).2 hQ}).injective)
-  let L := (fderiv ℝ f (ψ x)).comp (CotangentLogCoframe.H d (ψ x)).toContinuousLinearMap
-  have hh : ∀ v, fderiv ℝ ψ x (CotangentLogCoframe.H d x v) =
-      CotangentLogCoframe.H d (ψ x) (q v) := by
-    intro v
-    apply (CotangentLogCoframe.C d (ψ x)).injective
-    simp only [CotangentLogCoframe.H, ContinuousLinearEquiv.apply_symm_apply]
-    rfl
-  have hsum := sum_complex_basis ((EuclideanSpace.basisFun (Fin d × Fin 3) ℝ).map q)
-    (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ) L
-  rw [Fintype.sum_prod_type, Fintype.sum_prod_type] at hsum
-  convert hsum using 1
-  · apply Finset.sum_congr rfl
-    intro i _
-    apply Finset.sum_congr rfl
-    intro k _
-    rw [← CotangentLogCoframe.j_apply d (HyperbolicChart.differential d (f ∘ ψ) x) i k,
-      differential_frame, fderiv_comp x hf hψ]
-    simp only [ContinuousLinearMap.comp_apply, hh, OrthonormalBasis.map_apply, L]
-    rfl
-  · apply Finset.sum_congr rfl
-    intro i _
-    apply Finset.sum_congr rfl
-    intro k _
-    rw [← CotangentLogCoframe.j_apply d (HyperbolicChart.differential d f (ψ x)) i k,
-      differential_frame]
-    rfl
+open CotangentLogCoframe (differential_norm_isometry differential_frame_sum)
 
 private theorem differential_evaluation (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
     (x u : HyperbolicChart.Space d) :
     (∑ ik, (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) ik *
       ((CotangentLogCoframe.C d x u) ik : ℂ)) = fderiv ℝ f x u := by
-  simp_rw [differential_frame]
-  have he := (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ).sum_repr (CotangentLogCoframe.C d x u)
-  have hh := congrArg (fun v => fderiv ℝ f x (CotangentLogCoframe.H d x v)) he
-  simpa only [map_sum, map_smul, EuclideanSpace.basisFun_repr,
-    CotangentLogCoframe.H, ContinuousLinearEquiv.symm_apply_apply, Complex.real_smul, mul_comm] using hh
+  simpa only [CotangentLogCoframe.H, ContinuousLinearEquiv.symm_apply_apply, mul_comm] using
+    (differential_frame_sum d f x (CotangentLogCoframe.C d x u)).symm
 
 private theorem smooth_differential (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (HyperbolicChart.differential d f) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply contDiff_pi.mpr
-  intro k
-  have hD (j : Fin 3) : ContDiff ℝ (⊤ : ℕ∞)
-      (HyperbolicChart.coordinateDerivative d i j f) := by
-    have hh : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ f) := hf.fderiv_right (by simp)
-    exact hh.clm_apply contDiff_const
-  have hE : ContDiff ℝ (⊤ : ℕ∞) (fun p : HyperbolicChart.Space d => (Real.exp (p (i,2)) : ℂ)) := by
-    exact Complex.ofRealCLM.contDiff.comp (Real.contDiff_exp.comp (by fun_prop))
-  fin_cases k
-  · exact hD 2
-  · exact hE.mul (hD 0)
-  · exact hE.mul (hD 1)
+  exact contDiff_pi.mpr fun i => contDiff_pi.mpr fun k => contDiff_iff_contDiffAt.mpr fun x =>
+    HyperbolicChart.differential_smoothAt d f x hf.contDiffAt i k
 
-theorem laplacian_isometry (d : ℕ) (hd : 1 ≤ d)
-    (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
-    (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
-    (hm : ∀ x u v, HyperbolicChart.metric d (ψ x) (fderiv ℝ ψ x u)
+section
+
+variable (d : ℕ) (hd : 1 ≤ d) (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
+  (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hm : ∀ x u v, HyperbolicChart.metric d (ψ x) (fderiv ℝ ψ x u)
       (fderiv ℝ ψ x v) = HyperbolicChart.metric d x u v)
-    (f : HyperbolicChart.Space d → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (x : HyperbolicChart.Space d) :
+  (f : HyperbolicChart.Space d → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (x : HyperbolicChart.Space d)
+include hd hψ hm hf
+
+theorem laplacian_isometry :
     HyperbolicChart.laplacian d (f ∘ ψ) x = HyperbolicChart.laplacian d f (ψ x) := by
   let V := fun y => CotangentLogCoframe.j d (HyperbolicChart.differential d (f ∘ ψ) y)
   let W := fun y => CotangentLogCoframe.j d (HyperbolicChart.differential d f y)
@@ -651,19 +527,15 @@ theorem laplacian_isometry (d : ℕ) (hd : 1 ≤ d)
     HyperbolicChart.codifferential_differential d hd _ (hf.comp hψ)] at ht
   exact ht.symm
 
-theorem derivative_control_isometry (d : ℕ) (hd : 1 ≤ d)
-    (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
-    (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
-    (hm : ∀ x u v, HyperbolicChart.metric d (ψ x) (fderiv ℝ ψ x u)
-      (fderiv ℝ ψ x v) = HyperbolicChart.metric d x u v)
-    (f : HyperbolicChart.Space d → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (x : HyperbolicChart.Space d) :
+theorem derivative_control_isometry :
     Real.sqrt (∑ i, ∑ k, ‖HyperbolicChart.differential d (f ∘ ψ) x i k‖ ^ 2) +
       ‖HyperbolicChart.laplacian d (f ∘ ψ) x‖ =
     Real.sqrt (∑ i, ∑ k, ‖HyperbolicChart.differential d f (ψ x) i k‖ ^ 2) +
       ‖HyperbolicChart.laplacian d f (ψ x)‖ := by
   rw [differential_norm_isometry d ψ x (hψ.differentiable (by simp) _)
     (hm x) f (hf.differentiable (by simp) _), laplacian_isometry d hd ψ hψ hm f hf x]
+
+end
 
 def actionCoordinates (F : Type) [Field F] [NumberField F]
     (γ : KPCuspArithmetic.PGL2 F) (x : HyperbolicChart.Space (KPCuspLogShape.dimension F)) :=
@@ -830,8 +702,13 @@ private theorem eta_bound : ∃ B : ℝ, 0 ≤ B ∧ ∀ n c i (p : Coordinates 
     rw [laplacian_congr_nhds _ he]
     exact hbound (CutoffScalars.shift a n) γ p
 
-private theorem coord_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d → ℂ)
-    (hf : ∀ c, ContDiff ℝ (⊤ : ℕ∞) (f c)) (j : Fin d) (k : Fin 3) :
+section
+
+variable {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d → ℂ)
+  (hf : ∀ c, ContDiff ℝ (⊤ : ℕ∞) (f c))
+include hf
+
+private theorem coord_sum (j : Fin d) (k : Fin 3) :
     coordinateDerivative d j k (fun p => ∑ c, f c p) =
       fun p => ∑ c, coordinateDerivative d j k (f c) p := by
   funext p
@@ -839,8 +716,7 @@ private theorem coord_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d �
   rw [fderiv_fun_sum (fun c _ => (hf c).differentiable (by simp) p)]
   simp
 
-private theorem lap_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d → ℂ)
-    (hf : ∀ c, ContDiff ℝ (⊤ : ℕ∞) (f c)) (p : Space d) :
+private theorem lap_sum (p : Space d) :
     laplacian d (fun q => ∑ c, f c q) p = ∑ c, laplacian d (f c) p := by
   have hdf (j : Fin d) (k : Fin 3) (c : C) :
       ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivative d j k (f c)) :=
@@ -856,6 +732,8 @@ private theorem lap_sum {C : Type*} [Fintype C] (d : ℕ) (f : C → Space d →
   intro j _
   simp only [Finset.sum_sub_distrib, Finset.sum_add_distrib,
     Finset.sum_neg_distrib, Finset.mul_sum, mul_add]
+
+end
 
 private theorem coord_const_sub (d : ℕ) (f : Space d → ℂ) (j : Fin d) (k : Fin 3) :
     coordinateDerivative d j k (fun q => 1 - f q) = -coordinateDerivative d j k f := by

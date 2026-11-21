@@ -25,35 +25,43 @@ def smoothedTail (F : Type) [Field F] [NumberField F] (U β γ : ℝ)
 private lemma r'_sub_r : DetectorDef.r' - DetectorDef.r = 1 / 200 := by
   norm_num [DetectorDef.r, DetectorDef.r']
 
-private lemma exp_neg_mul_cube_le (t : ℝ) (ht : 0 ≤ t) :
-    Real.exp (-t) * t ^ 3 ≤ 6 := by
-  have hfac : t ^ 3 / 6 ≤ Real.exp t := by
-    have := Real.pow_div_factorial_le_exp t ht 3
-    norm_num [Nat.factorial] at this
-    linarith
-  have hexpmul : Real.exp (-t) * Real.exp t = 1 := by
-    rw [← Real.exp_add]; simp
-  have hpos : 0 ≤ Real.exp (-t) := (Real.exp_pos _).le
-  have h6 : t ^ 3 ≤ 6 * Real.exp t := by linarith
-  calc Real.exp (-t) * t ^ 3 ≤ Real.exp (-t) * (6 * Real.exp t) :=
-        mul_le_mul_of_nonneg_left h6 hpos
-    _ = 6 * (Real.exp (-t) * Real.exp t) := by ring
-    _ = 6 := by rw [hexpmul]; ring
+lemma exp_neg_mul_cube_le (t : ℝ) (ht : 0 ≤ t) : Real.exp (-t) * t ^ 3 ≤ 6 := by
+  rw [Real.exp_neg, inv_mul_eq_div, div_le_iff₀ (Real.exp_pos t)]
+  have h := Real.pow_div_factorial_le_exp t ht 3
+  norm_num [Nat.factorial] at h
+  linarith
 
-private lemma exp_half_mul_cube_le (N Y : ℝ) (hN : 0 ≤ N) (hY : 0 < Y) :
-    Real.exp (-(N / (2 * Y))) * N ^ 3 ≤ 48 * Y ^ 3 := by
-  obtain ⟨t, ht⟩ : ∃ t : ℝ, t = N / (2 * Y) := ⟨_, rfl⟩
-  have hY2 : (2 * Y) ≠ 0 := (mul_pos two_pos hY).ne'
-  have hNt : N = t * (2 * Y) := by
-    rw [ht, div_mul_cancel₀ _ hY2]
-  have ht0 : 0 ≤ t := by
-    rw [ht]; exact div_nonneg hN (mul_pos two_pos hY).le
-  rw [← ht, hNt]
-  have h1 := exp_neg_mul_cube_le t ht0
-  have hY3 : 0 ≤ Y ^ 3 := pow_nonneg hY.le 3
-  calc Real.exp (-t) * (t * (2 * Y)) ^ 3 = (Real.exp (-t) * t ^ 3) * (8 * Y ^ 3) := by ring
-    _ ≤ 6 * (8 * Y ^ 3) := mul_le_mul_of_nonneg_right h1 (by linarith)
-    _ = 48 * Y ^ 3 := by ring
+/-- Cubic decay of the exponential weight, with the scale made explicit. -/
+lemma exp_neg_div_le (N Y : ℝ) (hN : 0 < N) (hY : 0 < Y) :
+    Real.exp (-N / Y) ≤ 6 * Y ^ 3 * N ^ (-3 : ℝ) := by
+  rw [Real.rpow_neg hN.le, show (3 : ℝ) = (3 : ℕ) by norm_num, Real.rpow_natCast,
+    ← div_eq_mul_inv, le_div_iff₀ (pow_pos hN 3), neg_div]
+  have h := mul_le_mul_of_nonneg_right (exp_neg_mul_cube_le (N / Y) (by positivity))
+    (pow_nonneg hY.le 3)
+  rwa [mul_assoc, ← mul_pow, div_mul_cancel₀ _ hY.ne'] at h
+
+/-- The coefficient and the inverse norm power are uniformly bounded before
+applying the exponential weight. -/
+lemma coefficient_norm_le (U β γ Ca : ℝ) (hβ : DetectorDef.σ₀ ≤ β) (hCa : 0 ≤ Ca)
+    (ω : Detector.PrimitiveFrequencyCharacter F) (n : Ideal (𝓞 F)) (hn : n ≠ ⊥)
+    (ha : |DetectorDef.a F U n| ≤ Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ)) :
+    ‖(DetectorDef.a F U n : ℂ) * ω.character n *
+        (Ideal.absNorm n : ℂ) ^ (-((β : ℂ) + (γ : ℂ) * Complex.I))‖ ≤ Ca := by
+  have hN : 0 < Ideal.absNorm n := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)
+  have hN₀ : (0 : ℝ) < Ideal.absNorm n := by exact_mod_cast hN
+  have hN₁ : (1 : ℝ) ≤ Ideal.absNorm n := by exact_mod_cast hN
+  have hω := RayUnitary.ray_character_norm_le_one F _ ω.conductor_ne_zero ω.character n
+  have hs : 1 / 10 ≤ DetectorDef.σ₀ := by norm_num [DetectorDef.σ₀]
+  rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs, Complex.norm_natCast_cpow_of_pos hN]
+  simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_I_re,
+    Complex.ofReal_im, neg_zero, add_zero]
+  calc _ ≤ (Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) * 1) * (Ideal.absNorm n : ℝ) ^ (-β) := by
+        gcongr
+    _ = Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 - β) := by
+      rw [mul_one, mul_assoc, ← Real.rpow_add hN₀, sub_eq_add_neg]
+    _ ≤ Ca * 1 := mul_le_mul_of_nonneg_left
+      (Real.rpow_le_one_of_one_le_of_nonpos hN₁ (by linarith)) hCa
+    _ = Ca := mul_one _
 
 private lemma term_bound (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter F)
     (hU : 2 ≤ U) (hβ : DetectorDef.σ₀ ≤ β) (Ca : ℝ) (hCa : 0 < Ca)
@@ -67,114 +75,46 @@ private lemma term_bound (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharac
       else 0)‖ ≤
       48 * Ca * U ^ (3 * DetectorDef.r) * Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) *
         (Ideal.absNorm n : ℝ) ^ (-2 : ℝ) := by
-  have hU0 : (0 : ℝ) < U := by linarith
-  have hE : 0 ≤ Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) := (Real.exp_pos _).le
-  have hYpos : 0 < U ^ DetectorDef.r := Real.rpow_pos_of_pos hU0 _
-  have hY3 : U ^ (3 * DetectorDef.r) = (U ^ DetectorDef.r) ^ 3 := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul hU0.le]
-    congr 1
-    push_cast
-    ring
+  let N : ℝ := Ideal.absNorm n
+  let Y := U ^ DetectorDef.r
+  have hU₀ : 0 < U := by linarith
+  have hY : 0 < Y := Real.rpow_pos_of_pos hU₀ _
   split_ifs with h
-  · obtain ⟨hn, hgt⟩ := h
-    have hne : Ideal.absNorm n ≠ 0 := fun h0 => hn (Ideal.absNorm_eq_zero_iff.mp h0)
-    have hNnat : 0 < Ideal.absNorm n := Nat.pos_of_ne_zero hne
-    have hN1 : (1 : ℝ) ≤ (Ideal.absNorm n : ℝ) := by exact_mod_cast hNnat
-    have hN0 : (0 : ℝ) < (Ideal.absNorm n : ℝ) := by linarith
-    have hω : ‖ω.character n‖ ≤ 1 :=
-      RayUnitary.ray_character_norm_le_one F _ ω.conductor_ne_zero ω.character n
-    have hpow : ‖(Ideal.absNorm n : ℂ) ^ (-((β : ℂ) + (γ : ℂ) * Complex.I))‖
-        = (Ideal.absNorm n : ℝ) ^ (-β) := by
-      rw [Complex.norm_natCast_cpow_of_pos hNnat]
-      simp
-    have hσ : (0 : ℝ) < DetectorDef.σ₀ := by norm_num [DetectorDef.σ₀]
-    have hpow_le : (Ideal.absNorm n : ℝ) ^ (-β) ≤ 1 :=
-      Real.rpow_le_one_of_one_le_of_nonpos hN1 (by linarith)
-    have hpow_nn : 0 ≤ (Ideal.absNorm n : ℝ) ^ (-β) := Real.rpow_nonneg hN0.le _
-    have ha : ‖(DetectorDef.a F U n : ℂ)‖ ≤ Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) := by
-      rw [Complex.norm_real, Real.norm_eq_abs]
-      exact hA n hn
-    have hexpn : ‖(Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) : ℂ)‖
-        = Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) := by
-      rw [Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
-    have hsplitY : U ^ DetectorDef.r' = U ^ (1 / 200 : ℝ) * U ^ DetectorDef.r := by
-      rw [← Real.rpow_add hU0, ← r'_sub_r]
+  · obtain ⟨hn, hcut⟩ := h
+    have hN₁ : 1 ≤ N := by
+      change (1 : ℝ) ≤ (Ideal.absNorm n : ℝ)
+      exact_mod_cast (Nat.succ_le_of_lt (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)))
+    have hN : 0 < N := by linarith
+    have hsplit : U ^ DetectorDef.r' = U ^ (1 / 200 : ℝ) * Y := by
+      rw [show Y = U ^ DetectorDef.r from rfl, ← Real.rpow_add hU₀, ← r'_sub_r]
       congr 1
       ring
-    have hX : U ^ (1 / 200 : ℝ) ≤ (Ideal.absNorm n : ℝ) / U ^ DetectorDef.r := by
-      rw [le_div_iff₀ hYpos]
-      linarith
-    obtain ⟨t, ht⟩ : ∃ t : ℝ, t = (Ideal.absNorm n : ℝ) / (2 * U ^ DetectorDef.r) := ⟨_, rfl⟩
-    have ht0 : 0 ≤ t := by
-      rw [ht]; exact div_nonneg hN0.le (mul_pos two_pos hYpos).le
-    have hEsplit : Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r)
-        = Real.exp (-t) * Real.exp (-t) := by
-      rw [← Real.exp_add, ht]
+    have hX : U ^ (1 / 200 : ℝ) ≤ N / Y := (le_div_iff₀ hY).2 (hsplit.symm ▸ hcut.le)
+    have hm : Real.exp (-N / Y) ≤ Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) *
+        (6 * (2 * Y) ^ 3 * N ^ (-2 : ℝ)) := by
+      rw [show -N / Y = -N / (2 * Y) + -N / (2 * Y) by ring, Real.exp_add]
+      refine mul_le_mul ?_ ?_ (by positivity) (by positivity)
+      · apply Real.exp_le_exp.mpr
+        rw [show -N / (2 * Y) = -(N / Y) / 2 by ring]
+        linarith
+      · refine (exp_neg_div_le N (2 * Y) hN (by positivity)).trans ?_
+        exact mul_le_mul_of_nonneg_left
+          (Real.rpow_le_rpow_of_exponent_le hN₁ (by norm_num)) (by positivity)
+    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
+    change _ * Real.exp (-N / Y) ≤ _
+    refine (mul_le_mul (coefficient_norm_le U β γ Ca hβ hCa.le ω n hn (hA n hn)) hm
+      (by positivity) hCa.le).trans_eq ?_
+    have hY₃ : U ^ (3 * DetectorDef.r) = Y ^ 3 := by
+      dsimp [Y]
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hU₀.le]
       congr 1
+      push_cast
       ring
-    have hExpT : Real.exp (-t) ≤ Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) := by
-      apply Real.exp_le_exp.mpr
-      have h2 : t = ((Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) / 2 := by
-        rw [ht]; ring
-      rw [h2]
-      linarith
-    have hD : Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r)
-        ≤ Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) * Real.exp (-t) := by
-      rw [hEsplit]
-      exact mul_le_mul_of_nonneg_right hExpT (Real.exp_pos _).le
-    have hkey : Real.exp (-t) * (Ideal.absNorm n : ℝ) ^ 3 ≤ 48 * (U ^ DetectorDef.r) ^ 3 := by
-      rw [ht]
-      exact exp_half_mul_cube_le _ _ hN0.le hYpos
-    have hN1' : (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) ≤ (Ideal.absNorm n : ℝ) := by
-      calc (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) ≤ (Ideal.absNorm n : ℝ) ^ (1 : ℝ) :=
-            Real.rpow_le_rpow_of_exponent_le hN1 (by norm_num)
-        _ = (Ideal.absNorm n : ℝ) := Real.rpow_one _
-    have hexp0 : 0 ≤ Real.exp (-t) := (Real.exp_pos _).le
-    have hNm2 : (Ideal.absNorm n : ℝ) ^ (-2 : ℝ) = ((Ideal.absNorm n : ℝ) ^ 2)⁻¹ := by
-      rw [Real.rpow_neg hN0.le, Real.rpow_two]
-    have hmain : (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) * Real.exp (-t)
-        ≤ 48 * (U ^ DetectorDef.r) ^ 3 * (Ideal.absNorm n : ℝ) ^ (-2 : ℝ) := by
-      rw [hNm2, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hN0 2)]
-      have h2 : (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) * Real.exp (-t)
-          ≤ (Ideal.absNorm n : ℝ) * Real.exp (-t) := mul_le_mul_of_nonneg_right hN1' hexp0
-      calc (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) * Real.exp (-t) * (Ideal.absNorm n : ℝ) ^ 2
-          ≤ (Ideal.absNorm n : ℝ) * Real.exp (-t) * (Ideal.absNorm n : ℝ) ^ 2 :=
-            mul_le_mul_of_nonneg_right h2 (sq_nonneg _)
-        _ = Real.exp (-t) * (Ideal.absNorm n : ℝ) ^ 3 := by ring
-        _ ≤ 48 * (U ^ DetectorDef.r) ^ 3 := hkey
-    have hAB : ‖(DetectorDef.a F U n : ℂ)‖ * ‖ω.character n‖ ≤
-        Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) := by
-      calc ‖(DetectorDef.a F U n : ℂ)‖ * ‖ω.character n‖
-          ≤ (Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ)) * 1 :=
-            mul_le_mul ha hω (norm_nonneg _)
-              (mul_nonneg hCa.le (Real.rpow_nonneg hN0.le _))
-        _ = Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) := mul_one _
-    have hABC : ‖(DetectorDef.a F U n : ℂ)‖ * ‖ω.character n‖ *
-        (Ideal.absNorm n : ℝ) ^ (-β) ≤ Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) := by
-      calc ‖(DetectorDef.a F U n : ℂ)‖ * ‖ω.character n‖ * (Ideal.absNorm n : ℝ) ^ (-β)
-          ≤ (Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ)) * 1 :=
-            mul_le_mul hAB hpow_le hpow_nn (mul_nonneg hCa.le (Real.rpow_nonneg hN0.le _))
-        _ = Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) := mul_one _
-    have hL : ‖(DetectorDef.a F U n : ℂ)‖ * ‖ω.character n‖ * (Ideal.absNorm n : ℝ) ^ (-β) *
-        Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r)
-        ≤ (Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ)) *
-          (Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) * Real.exp (-t)) :=
-      mul_le_mul hABC hD (Real.exp_pos _).le (mul_nonneg hCa.le (Real.rpow_nonneg hN0.le _))
-    rw [norm_mul, norm_mul, norm_mul, hpow, hexpn]
-    calc ‖(DetectorDef.a F U n : ℂ)‖ * ‖ω.character n‖ * (Ideal.absNorm n : ℝ) ^ (-β) *
-          Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r)
-        ≤ (Ca * (Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ)) *
-          (Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) * Real.exp (-t)) := hL
-      _ = Ca * Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) *
-          ((Ideal.absNorm n : ℝ) ^ (1 / 10 : ℝ) * Real.exp (-t)) := by ring
-      _ ≤ Ca * Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) *
-          (48 * (U ^ DetectorDef.r) ^ 3 * (Ideal.absNorm n : ℝ) ^ (-2 : ℝ)) :=
-            mul_le_mul_of_nonneg_left hmain (mul_nonneg hCa.le hE)
-      _ = 48 * Ca * U ^ (3 * DetectorDef.r) * Real.exp (-(U ^ (1 / 200 : ℝ)) / 2) *
-          (Ideal.absNorm n : ℝ) ^ (-2 : ℝ) := by rw [hY3]; ring
-  · simp only [norm_zero]
-    exact mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hCa.le)
-      (Real.rpow_nonneg hU0.le _)) hE) (Real.rpow_nonneg (Nat.cast_nonneg _) _)
+    rw [hY₃]
+    change _ = 48 * Ca * Y ^ 3 * _ * N ^ (-2 : ℝ)
+    ring
+  · rw [norm_zero]
+    positivity
 
 theorem smoothedTail_bound :
     ∃ C A : ℝ, 0 < C ∧ ∀ (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter F),

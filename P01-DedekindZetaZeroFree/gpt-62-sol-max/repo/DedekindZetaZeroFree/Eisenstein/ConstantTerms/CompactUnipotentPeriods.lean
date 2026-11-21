@@ -112,11 +112,8 @@ theorem compact_integral_smooth (μ : Measure Q) [IsProbabilityMeasure μ]
 
 end ChartSmoothness
 
-section Symmetries
 
-variable {Q G X : Type*} [MeasurableSpace Q]
 
-end Symmetries
 end DedekindZetaZeroFree.KPCompactPeriod
 
 end

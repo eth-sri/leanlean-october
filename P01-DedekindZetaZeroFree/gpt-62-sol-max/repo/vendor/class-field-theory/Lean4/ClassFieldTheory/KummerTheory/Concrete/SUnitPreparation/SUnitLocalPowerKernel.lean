@@ -33,11 +33,14 @@ namespace KummerTheory
 variable {K : Type*} [Field K]
     [numberFieldK : NumberField K]
 
+section
+
+variable (n : ℕ+) (S T : Finset (HeightOneSpectrum (𝓞 K)))
+include n S T
+
 /-- The diagonal localization map
 `Kˢ → ∏ v ∈ T, K_vˣ / K_vˣⁿ`. -/
-noncomputable def sUnitLocalPowerMap
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def sUnitLocalPowerMap :
     SUnitGroup (K := K) S →*
       ∀ v : T,
         ((v : HeightOneSpectrum (𝓞 K)).adicCompletion K)ˣ ⧸
@@ -54,16 +57,12 @@ noncomputable def sUnitLocalPowerMap
 
 /-- The subgroup `Δ` of `S`-units which are local `n`-th powers at every
 place in `T`. -/
-def sUnitLocalPowerKernel
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+def sUnitLocalPowerKernel :
     Subgroup (SUnitGroup (K := K) S) :=
   MonoidHom.ker (sUnitLocalPowerMap (K := K) n S T)
 
 /-- Elementwise description of the local-power kernel `Δ`. -/
 theorem mem_sUnitLocalPowerKernel_iff
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
     (x : SUnitGroup (K := K) S) :
     x ∈ sUnitLocalPowerKernel (K := K) n S T ↔
       ∀ v : T,
@@ -85,9 +84,7 @@ theorem mem_sUnitLocalPowerKernel_iff
     exact (QuotientGroup.eq_one_iff _).mpr (hx v)
 
 /-- Global `n`-th powers are local `n`-th powers at every place. -/
-theorem nthPowerSubgroup_le_sUnitLocalPowerKernel
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem nthPowerSubgroup_le_sUnitLocalPowerKernel :
     (powMonoidHom (n : ℕ) :
         SUnitGroup (K := K) S →*
           SUnitGroup (K := K) S).range ≤
@@ -108,9 +105,7 @@ theorem nthPowerSubgroup_le_sUnitLocalPowerKernel
       ⟨_, by rw [powMonoidHom_apply]⟩)
 
 /-- The copy of `Kˢⁿ` inside the local-power kernel `Δ`. -/
-def sUnitLocalPowerKernelNthPowers
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+def sUnitLocalPowerKernelNthPowers :
     Subgroup (sUnitLocalPowerKernel (K := K) n S T) :=
   ((powMonoidHom (n : ℕ) :
       SUnitGroup (K := K) S →*
@@ -118,9 +113,7 @@ def sUnitLocalPowerKernelNthPowers
     (sUnitLocalPowerKernel (K := K) n S T).subtype
 
 /-- The canonical map `Δ / Kˢⁿ → Kˢ / Kˢⁿ`. -/
-def sUnitLocalPowerKernelQuotientMap
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+def sUnitLocalPowerKernelQuotientMap :
     sUnitLocalPowerKernel (K := K) n S T ⧸
         sUnitLocalPowerKernelNthPowers (K := K) n S T →*
       SUnitGroup (K := K) S ⧸
@@ -138,9 +131,7 @@ def sUnitLocalPowerKernelQuotientMap
       exact hx)
 
 /-- Inclusion of `Δ` induces an injection on quotients by `Kˢⁿ`. -/
-theorem sUnitLocalPowerKernelQuotientMap_injective
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem sUnitLocalPowerKernelQuotientMap_injective :
     Function.Injective
       (sUnitLocalPowerKernelQuotientMap (K := K) n S T) := by
   intro q r hqr
@@ -157,6 +148,8 @@ theorem sUnitLocalPowerKernelQuotientMap_injective
           apply (QuotientGroup.eq_iff_div_mem).1
           exact hqr
 
+end
+
 /-- The restricted radical quotient `Δ / Kˢⁿ` is finite. -/
 noncomputable instance finite_sUnitLocalPowerKernelQuotient
     (n : ℕ+)
@@ -169,44 +162,8 @@ noncomputable instance finite_sUnitLocalPowerKernelQuotient
     (sUnitLocalPowerKernelQuotientMap_injective
       (K := K) n S T)
 
-/-- The restricted radical quotient has cardinality at most `n ^ s`. -/
-theorem card_sUnitLocalPowerKernelQuotient_le
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
-    Nat.card
-        (sUnitLocalPowerKernel (K := K) n S T ⧸
-          sUnitLocalPowerKernelNthPowers (K := K) n S T) ≤
-      (n : ℕ) ^ totalPlaceCard (K := K) S := by
-  rw [← card_sUnit_nthPowerQuotient (K := K) S n hmu]
-  exact Nat.card_le_card_of_injective
-    (sUnitLocalPowerKernelQuotientMap (K := K) n S T)
-    (sUnitLocalPowerKernelQuotientMap_injective
-      (K := K) n S T)
 
-/-- The local-power kernel, regarded as an actual subgroup of `Kˣ`. -/
-def sUnitLocalPowerRadical
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    Subgroup Kˣ :=
-  (sUnitLocalPowerKernel (K := K) n S T).map
-    (SUnitGroup (K := K) S).subtype
 
-/-- Membership in the local-power radical is membership in the kernel
-through the canonical `S`-unit inclusion. -/
-theorem mem_sUnitLocalPowerRadical_iff
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (x : Kˣ) :
-    x ∈ sUnitLocalPowerRadical (K := K) n S T ↔
-      ∃ hx : x ∈ SUnitGroup (K := K) S,
-        (⟨x, hx⟩ : SUnitGroup (K := K) S) ∈
-          sUnitLocalPowerKernel (K := K) n S T := by
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y.2, hy⟩
-  · rintro ⟨hx, hlocal⟩
-    exact ⟨⟨x, hx⟩, hlocal, rfl⟩
 
 end KummerTheory
 

@@ -26,7 +26,7 @@ private lemma annular_rows_prime_ideal_size_gt_one (p : Ideal (𝓞 F)) (hp : Pr
     fun h => hp.not_isUnit (Ideal.isUnit_iff.mpr (Ideal.absNorm_eq_one_iff.mp h))
   have h2 : 1 < Ideal.absNorm p := by omega
   have h2' : (1 : ℝ) < (Ideal.absNorm p : ℝ) := by exact_mod_cast h2
-  simpa [idealSize] using h2'
+  assumption
 
 private lemma boundary_core (q d : Ideal (𝓞 F)) (hd0 : d ≠ 0)
     (hd : Squarefree d) (hdq : d ⊔ q = ⊤) (K : ℝ)
@@ -40,7 +40,7 @@ private lemma boundary_core (q d : Ideal (𝓞 F)) (hd0 : d ≠ 0)
   have hdvd : ∀ x ∈ Vendor.CutoffDifference.divisors d, x ∣ d := by
     intro x hx
     exact ((Vendor.CutoffDifference.squarefree_divisor_dictionary d hd0 hd).2.2.2.2.2 x).mp hx
-  have hrel : IsRelPrime (h * e * f) q :=
+  have hrel :=
     (((rel_of_sup hhd).of_dvd_right (dvd_mul_right q d)).mul_left
       ((rel_of_sup hdq).of_dvd_left (hdvd e he))).mul_left
       ((rel_of_sup hdq).of_dvd_left (hdvd f hf))
@@ -534,18 +534,15 @@ theorem shellPrefixEnvelope_le_of_exponent
   have hR : (((L' + 1 : ℕ) : ℝ)) ≤ K * (2 * Y) ^ η := by
     have h := DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power hη h2Y1
     rw [← hL'def] at h
-    push_cast at h
     push_cast
     exact h
   have hP : (L : ℝ) ≤ K * X ^ η := by
     have h := DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power hη hX
     rw [← hLdef] at h
-    push_cast at h
     linarith
   have hP' : (L' : ℝ) ≤ K * (2 * Y) ^ η := by
     have h := DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power hη h2Y1
     rw [← hL'def] at h
-    push_cast at h
     linarith
   have hRle : (((L' + 1 : ℕ) : ℝ)) ≤ K * 2 ^ η * Y ^ η := by
     calc (((L' + 1 : ℕ) : ℝ)) ≤ K * (2 * Y) ^ η := hR

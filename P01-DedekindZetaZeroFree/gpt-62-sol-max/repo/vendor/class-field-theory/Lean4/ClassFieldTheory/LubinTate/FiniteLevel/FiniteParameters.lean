@@ -82,9 +82,12 @@ noncomputable instance standardLubinTateUnitParameter_finite
     higherPrincipalUnitGroup.finite_unitsModHigherPrincipalUnitGroup_of_finite_residue
       F.toCompleteDVF (n + 1)
 
+section
+
+variable (F : LocalField.{u, v} K) (n : ℕ)
+
 /-- A chosen valuation-ring unit representing a finite unit parameter. -/
 noncomputable def standardLubinTateUnitParameterChosenRepresentative
-    (F : LocalField.{u, v} K) (n : ℕ)
     (a : standardLubinTateUnitParameter F n) :
     F.valuationSubringˣ :=
   Classical.choose
@@ -94,7 +97,6 @@ noncomputable def standardLubinTateUnitParameterChosenRepresentative
 /-- The chosen representative has the prescribed quotient class. -/
 @[simp]
 theorem standardLubinTateUnitParameterChosenRepresentative_spec
-    (F : LocalField.{u, v} K) (n : ℕ)
     (a : standardLubinTateUnitParameter F n) :
     standardLubinTateUnitParameterClass F n
         (standardLubinTateUnitParameterChosenRepresentative F n a) = a :=
@@ -105,7 +107,6 @@ theorem standardLubinTateUnitParameterChosenRepresentative_spec
 /-- Two valuation-ring units determine the same finite parameter exactly
 when their quotient belongs to `U^(n + 1)`. -/
 theorem standardLubinTateUnitParameterClass_eq_iff_div_mem
-    (F : LocalField.{u, v} K) (n : ℕ)
     (a b : F.valuationSubringˣ) :
     standardLubinTateUnitParameterClass F n a =
         standardLubinTateUnitParameterClass F n b ↔
@@ -121,8 +122,7 @@ theorem standardLubinTateUnitParameterClass_eq_iff_div_mem
 
 /-- The finite standard unit parameter set has cardinality
 `(q - 1) * q ^ n`. -/
-theorem standardLubinTateUnitParameter_natCard
-    (F : LocalField.{u, v} K) (n : ℕ) :
+theorem standardLubinTateUnitParameter_natCard :
     Nat.card (standardLubinTateUnitParameter F n) =
       (Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n := by
@@ -174,23 +174,25 @@ theorem standardLubinTateUnitParameter_natCard
   rw [Subgroup.card_eq_card_quotient_mul_card_subgroup H,
     hquotient, hsubquotient]
 
+end
+
+section
+
+variable (F : LocalField.{u, v} K) {π : F.valuationSubring}
+  (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
+include π hπ
+
 /-- The primitive root attached to a finite unit parameter.  A representative
 is chosen only to evaluate the primitive action; the theorem below shows that
 the value depends only on its quotient class. -/
-noncomputable def standardLubinTateUnitParameterRoot
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+noncomputable def standardLubinTateUnitParameterRoot (a : standardLubinTateUnitParameter F n) :
     SeparableClosure K :=
   standardLubinTatePrimitiveRootAction hπ n
     (standardLubinTateUnitParameterChosenRepresentative F n a)
 
 /-- The parameter root can be evaluated using any representative of its
 quotient class. -/
-theorem standardLubinTateUnitParameterRoot_eq_action_of_class_eq
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n)
+theorem standardLubinTateUnitParameterRoot_eq_action_of_class_eq (a : standardLubinTateUnitParameter F n)
     (u : F.valuationSubringˣ)
     (hu : standardLubinTateUnitParameterClass F n u = a) :
     standardLubinTateUnitParameterRoot F hπ n a =
@@ -207,10 +209,7 @@ theorem standardLubinTateUnitParameterRoot_eq_action_of_class_eq
 /-- Evaluating at a canonical quotient class recovers the primitive action
 of the original valuation-ring unit. -/
 @[simp]
-theorem standardLubinTateUnitParameterRoot_class
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (u : F.valuationSubringˣ) :
+theorem standardLubinTateUnitParameterRoot_class (u : F.valuationSubringˣ) :
     standardLubinTateUnitParameterRoot F hπ n
         (standardLubinTateUnitParameterClass F n u) =
       standardLubinTatePrimitiveRootAction hπ n u :=
@@ -219,16 +218,15 @@ theorem standardLubinTateUnitParameterRoot_class
 
 /-- Every finite unit parameter gives a root of the primitive level
 polynomial. -/
-theorem standardLubinTateUnitParameterRoot_isRoot
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) :
+theorem standardLubinTateUnitParameterRoot_isRoot (a : standardLubinTateUnitParameter F n) :
     ((standardLubinTatePrimitivePolynomialOverField F π n).map
       (algebraMap K (SeparableClosure K))).IsRoot
         (standardLubinTateUnitParameterRoot F hπ n a) := by
   simpa [standardLubinTateUnitParameterRoot] using
     standardLubinTatePrimitiveRootAction_isRoot hπ n
       (standardLubinTateUnitParameterChosenRepresentative F n a)
+
+end
 
 end LubinTate
 

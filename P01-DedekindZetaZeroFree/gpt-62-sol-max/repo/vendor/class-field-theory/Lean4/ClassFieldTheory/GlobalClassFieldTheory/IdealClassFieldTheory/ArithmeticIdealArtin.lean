@@ -50,13 +50,16 @@ variable
 attribute [local instance]
   ideleClassSubgroupNormal idealArtinKernelNormal
 
+section
+
+variable (m : RayClass.Modulus K) (hm :
+      RayClass.Modulus.congruenceSubgroup m ≤
+        (_root_.ideleClassNorm K L).range)
+include m hm
+
 /-- The genuine Galois-valued ideal Artin map in arithmetic Frobenius
 normalization. -/
-noncomputable def arithmeticIdealArtinGaloisMap
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
+noncomputable def arithmeticIdealArtinGaloisMap :
     RayClass.primeToModulusIdeals m →*
       (L ≃ₐ[K] L) :=
   (Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv
@@ -68,10 +71,6 @@ noncomputable def arithmeticIdealArtinGaloisMap
 class map followed by arithmetic global reciprocity. -/
 @[simp]
 theorem arithmeticIdealArtinGaloisMap_apply
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
     (a : RayClass.primeToModulusIdeals m) :
     arithmeticIdealArtinGaloisMap
         (K := K) (L := L) m hm a =
@@ -85,10 +84,6 @@ theorem arithmeticIdealArtinGaloisMap_apply
 geometrically normalized map on every ideal. -/
 @[simp]
 theorem arithmeticIdealArtinGaloisMap_eq_inv_idealArtinGaloisMap
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
     (a : RayClass.primeToModulusIdeals m) :
     arithmeticIdealArtinGaloisMap
         (K := K) (L := L) m hm a =
@@ -99,28 +94,11 @@ theorem arithmeticIdealArtinGaloisMap_eq_inv_idealArtinGaloisMap
     Reciprocity.globalNormResidueContinuousMulEquiv_apply,
     idealArtinGaloisMap_apply]
 
-/-- The arithmetic ideal Artin map is surjective. -/
-theorem arithmeticIdealArtinGaloisMap_surjective
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
-    Function.Surjective
-      (arithmeticIdealArtinGaloisMap
-        (K := K) (L := L) m hm) :=
-  (Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv
-      K L).surjective.comp
-    (idealArtinMap_surjective m
-      ((_root_.ideleClassNorm K L).range) hm)
 
 /-- Arithmetic normalization leaves the defining ideal group
 unchanged. -/
 @[simp]
-theorem arithmeticIdealArtinGaloisMap_ker
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
+theorem arithmeticIdealArtinGaloisMap_ker :
     (arithmeticIdealArtinGaloisMap
       (K := K) (L := L) m hm).ker =
       idealArtinKernel m
@@ -143,11 +121,7 @@ theorem arithmeticIdealArtinGaloisMap_ker
 
 /-- The canonical ideal class-field isomorphism in arithmetic
 Frobenius normalization. -/
-noncomputable def arithmeticIdealClassQuotientEquivGaloisGroup
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
+noncomputable def arithmeticIdealClassQuotientEquivGaloisGroup :
     RayClass.primeToModulusIdeals m ⧸
         idealArtinKernel m
           ((_root_.ideleClassNorm K L).range) hm ≃*
@@ -161,10 +135,6 @@ noncomputable def arithmeticIdealClassQuotientEquivGaloisGroup
 representative to its arithmetic ideal Artin symbol. -/
 @[simp]
 theorem arithmeticIdealClassQuotientEquivGaloisGroup_mk
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
     (a : RayClass.primeToModulusIdeals m) :
     arithmeticIdealClassQuotientEquivGaloisGroup
         (K := K) (L := L) m hm
@@ -179,10 +149,6 @@ theorem arithmeticIdealClassQuotientEquivGaloisGroup_mk
 map form the genuine ideal/idèle compatibility square. -/
 theorem
     arithmeticIdealArtinGaloisMap_primeToIdealMap_eq_globalArtin
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
     (a : RayClass.idelePrimeToModulusSubgroup m) :
     arithmeticIdealArtinGaloisMap
         (K := K) (L := L) m hm
@@ -208,10 +174,6 @@ theorem
 arithmetic prime Artin element. -/
 theorem
     arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticFinitePlacePrimeArtin
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
     (v : HeightOneSpectrum (𝓞 K))
     (hv : v ∉ m.finitePart.support) :
     arithmeticIdealArtinGaloisMap
@@ -227,46 +189,9 @@ theorem
         GlobalClassFields.finitePrimeIdele_mem_idelePrimeToModulusSubgroup
             m v hv⟩
 
-/-- Direct local form: a prime ideal outside the modulus maps to the
-arithmetic chosen local Artin value of normalized order one. -/
-theorem
-    arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticChosenFinitePlaceArtin
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support) :
-    arithmeticIdealArtinGaloisMap
-        (K := K) (L := L) m hm
-        (RayClass.primeToModulusIdeal m v hv) =
-      Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom
-        K L v (FiniteIdeleGroup.chosenLocalOrderSection v 1) := by
-  rw [
-    arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticFinitePlacePrimeArtin,
-    GlobalClassFields.arithmeticFinitePlacePrimeArtin_eq_arithmeticChosenFinitePlaceArtin]
+end
 
-/-- The arithmetic ideal class-field equivalence sends the class of a
-prime ideal to its arithmetic Frobenius automorphism. -/
-theorem
-    arithmeticIdealClassQuotientEquivGaloisGroup_primeIdeal
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support) :
-    arithmeticIdealClassQuotientEquivGaloisGroup
-        (K := K) (L := L) m hm
-        (QuotientGroup.mk'
-          (idealArtinKernel m
-            ((_root_.ideleClassNorm K L).range) hm)
-          (RayClass.primeToModulusIdeal m v hv)) =
-      GlobalClassFields.arithmeticFinitePlacePrimeArtin
-        (K := K) (L := L) v := by
-  rw [
-    arithmeticIdealClassQuotientEquivGaloisGroup_mk,
-    arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticFinitePlacePrimeArtin]
+
 
 end IdealClassFieldTheory
 end GlobalClassFieldTheory

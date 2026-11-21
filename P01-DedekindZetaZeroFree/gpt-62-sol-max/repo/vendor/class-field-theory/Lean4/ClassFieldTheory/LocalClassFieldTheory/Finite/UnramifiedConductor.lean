@@ -42,11 +42,12 @@ open scoped ValuativeRel IsMulCommutative
 open LocalFieldTheory
 open LocalFieldTheory.IsNonarchimedeanLocalField
 
-theorem normQuotientFiniteOfIsAbelianGalois
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L] :
+section
+
+variable (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L]
+
+theorem normQuotientFiniteOfIsAbelianGalois [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L] :
     Finite (NormQuotient K L) := by
   exact Finite.of_equiv Gal(L / K)
     ((Abelianization.equivOfComm (H := Gal(L / K))).trans
@@ -58,11 +59,7 @@ cyclic quotient of the normalized value group by the residue degree.
 This value-group comparison uses the separable norm-valuation formula for its
 residue degree; no unramifiedness assumption is made here. -/
 noncomputable def
-    chosenNormQuotientEquivZModResidueFinrank_of_fieldPrincipalUnits_zero_le
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
+    chosenNormQuotientEquivZModResidueFinrank_of_fieldPrincipalUnits_zero_le [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L]
     [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
     [Valuation.HasExtension (ValuativeRel.valuation K)
@@ -122,11 +119,7 @@ noncomputable def
 
 /-- Finite local reciprocity gives the order of the norm quotient in a finite
 abelian extension: it is the field degree. -/
-theorem card_normQuotient_eq_finrank_of_isAbelianGalois
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L] :
+theorem card_normQuotient_eq_finrank_of_isAbelianGalois [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L] :
     letI : Finite (NormQuotient K L) :=
       normQuotientFiniteOfIsAbelianGalois K L
     Nat.card (NormQuotient K L) = Module.finrank K L := by
@@ -144,19 +137,20 @@ theorem card_normQuotient_eq_finrank_of_isAbelianGalois
         (H := Gal(L / K))).toEquiv.symm
     _ = Module.finrank K L := galoisGroup_card_eq_finrank K L
 
+end
+
+section
+
+variable (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K)
+      (ValuativeRel.valuation L)]
+  [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
+
 /-- In an actual finite unramified abelian extension, every base-field
 integer unit lies in the field-norm subgroup. -/
 theorem fieldPrincipalUnits_zero_le_normSubgroup_of_unramifiedValuation
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
     LocalFieldTheory.fieldPrincipalUnits K 0 ≤ localNormSubgroup K L := by
   rw [normSubgroup_eq_unramifiedNormSubgroup_of_isIntegralClosure K L]
@@ -167,16 +161,6 @@ theorem fieldPrincipalUnits_zero_le_normSubgroup_of_unramifiedValuation
 
 /-- An unramified finite abelian extension has conductor exponent zero. -/
 theorem localConductorExponent_eq_zero_of_unramifiedValuation
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
     localConductorExponent K L = 0 := by
   exact (localConductorExponent_eq_zero_iff K L).2
@@ -184,16 +168,6 @@ theorem localConductorExponent_eq_zero_of_unramifiedValuation
 
 /-- An unramified finite abelian extension has conductor ideal `1`. -/
 theorem localConductorIdeal_eq_one_of_unramifiedValuation
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
     localConductorIdeal K L = 1 := by
   exact (localConductorIdeal_eq_one_iff_exponent_eq_zero K L).2
@@ -206,16 +180,6 @@ is the residue degree by the norm-valuation formula and the conductor-one
 unit inclusion, while finite local reciprocity gives the field degree.
 Cancelling the positive residue degree gives ramification index one. -/
 theorem isFiniteUnramifiedValuationExtension_of_localConductorIdeal_eq_one
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
     (hcond : localConductorIdeal K L = 1) :
     LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L := by
   have hU : LocalFieldTheory.fieldPrincipalUnits K 0 ≤ localNormSubgroup K L :=
@@ -293,17 +257,7 @@ theorem isFiniteUnramifiedValuationExtension_of_localConductorIdeal_eq_one
 
 /-- A finite abelian extension is unramified if and only if its conductor
 ideal is `1`. -/
-theorem isFiniteUnramifiedValuationExtension_iff_localConductorIdeal_eq_one
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]] :
+theorem isFiniteUnramifiedValuationExtension_iff_localConductorIdeal_eq_one :
     LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L ↔
       localConductorIdeal K L = 1 := by
   constructor
@@ -315,42 +269,15 @@ theorem isFiniteUnramifiedValuationExtension_iff_localConductorIdeal_eq_one
 
 /-- A concrete finite abelian local extension is unramified exactly when
 its local conductor exponent is zero. -/
-theorem isUnramifiedValuedExtension_iff_localConductorExponent_eq_zero
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]] :
+theorem isUnramifiedValuedExtension_iff_localConductorExponent_eq_zero :
     IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L ↔
       localConductorExponent K L = 0 :=
   (isFiniteUnramifiedValuationExtension_iff_localConductorIdeal_eq_one
       K L).trans
     (localConductorIdeal_eq_one_iff_exponent_eq_zero K L)
 
-/-- Equivalently, a concrete finite abelian local extension is ramified
-exactly when its local conductor exponent is nonzero. -/
-theorem
-    not_isUnramifiedValuedExtension_iff_localConductorExponent_ne_zero
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]] :
-    ¬ IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L ↔
-      localConductorExponent K L ≠ 0 :=
-  not_congr
-    (isUnramifiedValuedExtension_iff_localConductorExponent_eq_zero
-      K L)
+end
+
 
 end LocalClassFieldTheory
 

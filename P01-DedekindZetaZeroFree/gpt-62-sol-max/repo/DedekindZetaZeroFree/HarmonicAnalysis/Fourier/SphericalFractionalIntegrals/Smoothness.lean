@@ -184,7 +184,6 @@ private theorem integral_ortho (α : ℝ) (e : Ambient ≃ₗᵢ[ℝ] Ambient)
   rw [← (ortho_mp e).integral_comp (ortho e).measurableEmbedding]
   congr 1
   funext y
-  change (fractionalKernel α (ortho e x) (ortho e y) : ℂ) * _ = _
   have hk : fractionalKernel α (ortho e x) (ortho e y) = fractionalKernel α x y := by
     simp only [fractionalKernel]
     change α * Real.rpow ((1 - inner ℝ (e x) (e y)) / 2) (α - 1) = _

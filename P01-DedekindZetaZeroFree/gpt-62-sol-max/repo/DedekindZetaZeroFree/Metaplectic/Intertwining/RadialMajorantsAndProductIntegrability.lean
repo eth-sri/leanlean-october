@@ -33,7 +33,7 @@ private theorem exterior_shells : {u : K | 1 ≤ KPCubicHaar.abs K u} =
      have hlt : (Nat.card 𝓀[K] : ℝ)^z < 1 := zpow_lt_one_of_neg₀
        (by exact_mod_cast (Finite.one_lt_card (α := 𝓀[K]))) (by omega)
      rw [← he] at hlt
-     exact (not_lt_of_ge hu) hlt
+     grind
    refine ⟨z.toNat, ?_⟩
    rw [he, ← zpow_natCast, Int.toNat_of_nonneg hz]
  · rintro ⟨n, hn⟩

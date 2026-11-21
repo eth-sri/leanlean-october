@@ -43,7 +43,7 @@ open MeasureTheory Set Filter Topology
       (HasCompactSupport.of_compactSpace _)).aestronglyMeasurable
   · filter_upwards with k
     intro y hy
-    exact hM (mem_image_of_mem _ (show (y, k) ∈ t ×ˢ univ from ⟨hy, mem_univ k⟩))
+    aesop
   · exact integrable_const M
   · filter_upwards with k
     intro y hy

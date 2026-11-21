@@ -103,7 +103,7 @@ lemma norm_mul (x y : A.G) : A.norm (x * y) = A.norm x * A.norm y := by
     Units.val_mul, _root_.norm_mul, mul_pow, Finset.prod_mul_distrib]
   ring
 lemma norm_div (x y : A.G) : A.norm (x / y) = A.norm x / A.norm y := by
-  simp [SArithmeticData.norm, norm_div, div_pow, Finset.prod_div_distrib, div_mul_div_comm]
+  simp [SArithmeticData.norm, div_pow, Finset.prod_div_distrib, div_mul_div_comm]
 lemma continuous_norm : Continuous A.norm := by
   unfold SArithmeticData.norm
   fun_prop
@@ -128,7 +128,6 @@ lemma secondCountable_G : SecondCountableTopology A.G := by
     Units.isEmbedding_embedProduct.secondCountableTopology
   infer_instance
 lemma locallyCompact_G1 : LocallyCompactSpace A.G1 := by
-  letI := locallyCompact_G A
   exact IsClosed.locallyCompactSpace (isClosed_singleton.preimage (continuous_norm A))
 lemma secondCountable_G1 : SecondCountableTopology A.G1 := by
   letI := secondCountable_G A
@@ -149,7 +148,6 @@ def normOnePart (x : A.G) : A.G1 :=
     rw [ProbeSheet.norm_div, A.norm_radialSection, div_self (norm_pos A x).ne']⟩
 lemma continuous_normOnePart : Continuous (normOnePart A) := by
   apply Continuous.subtype_mk
-  change Continuous (fun x : A.G => x / A.radialSection (A.norm x) _)
   simp only [div_eq_mul_inv]
   have hr : Continuous (fun x : A.G => A.radialSection (A.norm x) (norm_pos A x)) :=
     A.continuous_radialSection.comp
@@ -363,8 +361,7 @@ lemma radial_integrable_iff (f : ℝ → ℂ) :
   apply integrable_congr
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with T hT
   have hp : 0 < T := hT
-  simp only [one_div, ENNReal.toReal_ofReal (inv_nonneg.mpr hp.le), Complex.ofReal_inv, Complex.real_smul,
-    Complex.ofReal_div, Complex.ofReal_one, smul_eq_mul]
+  simp only [one_div, ENNReal.toReal_ofReal (inv_nonneg.mpr hp.le), Complex.ofReal_inv, Complex.real_smul]
   ring
 lemma radial_integral (f : ℝ → ℂ) :
     (∫ T, f T ∂radialMeasure) = ∫ T in Set.Ioi (0 : ℝ), f T / (T : ℂ) := by
@@ -373,8 +370,7 @@ lemma radial_integral (f : ℝ → ℂ) :
   apply integral_congr_ae
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with T hT
   have hp : 0 < T := hT
-  simp only [one_div, ENNReal.toReal_ofReal (inv_nonneg.mpr hp.le), Complex.ofReal_inv, Complex.real_smul,
-    Complex.ofReal_div, Complex.ofReal_one, smul_eq_mul]
+  simp only [one_div, ENNReal.toReal_ofReal (inv_nonneg.mpr hp.le), Complex.ofReal_inv, Complex.real_smul]
   ring
 
 lemma sheet_mellin_of_integrable (A : SArithmeticData F)
@@ -502,7 +498,7 @@ theorem annular_mellin_logDerivative {f : ℝ → ℂ}
     (by simpa only [Pi.mul_def, mul_assoc] using
       (cpow_mul_integrable hf.continuous hc hp (z - 1)).const_mul z)
     (cpow_mul_integrable hf.continuous hc hp z)
-  simp only [Pi.mul_def, mul_assoc, integral_const_mul] at hi
+  simp only [mul_assoc, integral_const_mul] at hi
   have hleft : mellin (fun t : ℝ => (t : ℂ) * deriv f t) z =
       ∫ t : ℝ, (t : ℂ) ^ z * deriv f t := by
     unfold mellin

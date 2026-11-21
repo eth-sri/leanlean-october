@@ -23,15 +23,13 @@ private theorem finite_open (v : HeightOneSpectrum (𝓞 F)) :
   letI : CharZero (v.adicCompletion F) :=
     charZero_of_injective_algebraMap (algebraMap F (v.adicCompletion F)).injective
   have h6 : (6 : v.adicCompletion F) ≠ 0 := by
-    exact Nat.cast_ne_zero.mpr (by decide : 6 ≠ 0)
+    simp
   obtain ⟨E, hE⟩ :=
     LocalClassFieldTheory.exists_finiteGalois_normSubgroup_le_powMonoidHom_range
       (v.adicCompletion F) 6 h6
   letI := E.finiteDimensional
   letI := E.isGalois
-  exact Subgroup.isOpen_mono hE
-    (LocalClassFieldTheory.localNormSubgroup_isOpen (v.adicCompletion F)
-      (E : IntermediateField (v.adicCompletion F) (SeparableClosure (v.adicCompletion F))))
+  solve_by_elim [Subgroup.isOpen_mono, LocalClassFieldTheory.localNormSubgroup_isOpen, E, IntermediateField, SeparableClosure]
 
 theorem local_character_continuous (A : SArithmeticData F) (χ : A.G →* Circle)
     (hχ : ∀ y : A.G, χ y ^ 6 = 1) : Continuous χ := by
@@ -62,7 +60,7 @@ theorem local_character_continuous (A : SArithmeticData F) (χ : A.G →* Circle
       · exact hyf v
     rw [← hy, map_pow, hχ]
   apply continuous_of_continuousAt_one χ
-  have heq : (χ : A.G → Circle) =ᶠ[nhds 1] (fun _ => 1) :=
+  have heq :=
     Filter.eventually_of_mem (hP.mem_nhds h1) htriv
   exact (continuousAt_const.congr_of_eventuallyEq heq)
 
@@ -314,12 +312,16 @@ private theorem adic_val (v u : HeightOneSpectrum (𝓞 F)) (z : (v.adicCompleti
   rfl
 private theorem inf_finite_val (w : InfinitePlace F) (z : w.Completionˣ) (v : HeightOneSpectrum (𝓞 F)) :
     ((NumberField.IdeleGroup.ofCompletion (𝓞 F) F w z : NumberField.AdeleRing (𝓞 F) F).2 v) = 1 := rfl
-private theorem ext_inf (A : SArithmeticData F) (w : InfinitePlace F) (z : w.Completionˣ) :
+section
+
+variable (A : SArithmeticData F)
+
+private theorem ext_inf (w : InfinitePlace F) (z : w.Completionˣ) :
     exteriorIdealMap A (NumberField.IdeleGroup.ofCompletion (𝓞 F) F w z) = 1 := by
   apply ext_supported A
   intro v hv
   rw [inf_finite_val, map_one]
-private theorem ext_fin (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (z : (v.adicCompletion F)ˣ)
+private theorem ext_fin (v : HeightOneSpectrum (𝓞 F)) (z : (v.adicCompletion F)ˣ)
     (hz : v ∈ A.Sf ∨ Valued.v (z : v.adicCompletion F) = 1) :
     exteriorIdealMap A (NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v z) = 1 := by
   apply ext_supported A
@@ -331,12 +333,12 @@ private theorem ext_fin (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     exact hz.resolve_left hu
   · rw [Pi.mulSingle_eq_of_ne h, map_one]
 
-private theorem sr_inf_val (A : SArithmeticData F) (x : NumberField.IdeleGroup (𝓞 F) F)
+private theorem sr_inf_val (x : NumberField.IdeleGroup (𝓞 F) F)
     (w : InfinitePlace F) : ((sRestriction A x).1 w : w.Completion) = (x : NumberField.AdeleRing (𝓞 F) F).1 w := rfl
-private theorem sr_fin_val (A : SArithmeticData F) (x : NumberField.IdeleGroup (𝓞 F) F)
+private theorem sr_fin_val (x : NumberField.IdeleGroup (𝓞 F) F)
     (v : {v // v ∈ A.Sf}) : ((sRestriction A x).2 v : v.val.adicCompletion F) = (x : NumberField.AdeleRing (𝓞 F) F).2 v.val := rfl
 
-private theorem sr_inf (A : SArithmeticData F) (w : InfinitePlace F) (z : w.Completionˣ) :
+private theorem sr_inf (w : InfinitePlace F) (z : w.Completionˣ) :
     sRestriction A (NumberField.IdeleGroup.ofCompletion (𝓞 F) F w z) = (Pi.mulSingle w z, 1) := by
   apply Prod.ext
   · funext u
@@ -352,7 +354,7 @@ private theorem sr_inf (A : SArithmeticData F) (w : InfinitePlace F) (z : w.Comp
     apply Units.ext
     rw [sr_fin_val]
     rfl
-private theorem sr_fin (A : SArithmeticData F) (v : {v // v ∈ A.Sf}) (z : (v.val.adicCompletion F)ˣ) :
+private theorem sr_fin (v : {v // v ∈ A.Sf}) (z : (v.val.adicCompletion F)ˣ) :
     sRestriction A (NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v.val z) = (1, Pi.mulSingle v z) := by
   apply Prod.ext
   · funext u
@@ -369,13 +371,13 @@ private theorem sr_fin (A : SArithmeticData F) (v : {v // v ∈ A.Sf}) (z : (v.v
     · subst u; simp
     · have h' : v.val ≠ u.val := fun e => h (Subtype.ext e)
       simp [Pi.mulSingle_eq_of_ne (Ne.symm h), RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_eq_of_ne (Ne.symm h')]
-private theorem sr_product (A : SArithmeticData F) (y : A.G) :
+private theorem sr_product (y : A.G) :
     sRestriction A ((∏ w : InfinitePlace F, NumberField.IdeleGroup.ofCompletion (𝓞 F) F w (y.1 w)) *
       (∏ v : {v // v ∈ A.Sf}, NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v.val (y.2 v))) = y := by
   simp only [map_mul, map_prod, sr_inf, sr_fin]
   apply Prod.ext <;> simp only [Prod.fst_mul, Prod.snd_mul, Prod.fst_prod, Prod.snd_prod, Finset.attach_eq_univ,
     Finset.prod_const_one, mul_one, one_mul, Finset.univ_prod_mulSingle]
-private theorem sr_outside (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
+private theorem sr_outside (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
     (z : (v.adicCompletion F)ˣ) : sRestriction A (NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v z) = 1 := by
   apply Prod.ext
   · funext w
@@ -388,7 +390,7 @@ private theorem sr_outside (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 
     have h : u.val ≠ v := fun e => hv (e ▸ u.property)
     exact Pi.mulSingle_eq_of_ne h _
 
-theorem glued_character_local_components (A : SArithmeticData F) (χ : A.G →* Circle)
+theorem glued_character_local_components (χ : A.G →* Circle)
     (κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle)
     (Φ : NumberField.IdeleClassGroup (𝓞 F) F →* Circle)
     (heval : ∀ x : NumberField.IdeleGroup (𝓞 F) F,
@@ -429,6 +431,8 @@ theorem glued_character_local_components (A : SArithmeticData F) (χ : A.G →* 
       (χ (sRestriction A (NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v x)))⁻¹ = 1
     rw [ext_fin A v x (Or.inr hx), sr_outside A v hv x]
     simp
+
+end
 
 end
 end DedekindZetaZeroFree.SArithmeticData.ClassCharacterSteps
@@ -540,30 +544,32 @@ variable {F : Type} [Field F] [NumberField F]
 abbrev ArithmeticIdeleClasses (A : SArithmeticData F) :=
   NumberField.IdeleClassGroup (𝓞 F) F
 
-def IdeleCharacterHasFiniteOrder (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle) : Prop :=
+section
+
+variable (A : SArithmeticData F) (Φ : A.ArithmeticIdeleClasses →* Circle)
+include A Φ
+
+def IdeleCharacterHasFiniteOrder : Prop :=
   ∃ n : ℕ, 0 < n ∧ ∀ x : A.ArithmeticIdeleClasses, Φ x ^ n = 1
 
-def ideleInfiniteComponent (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle) (w : InfinitePlace F) :
+def ideleInfiniteComponent (w : InfinitePlace F) :
     w.Completionˣ →* Circle :=
   Φ.comp (NumberField.IdeleClassGroup.ofCompletion (𝓞 F) F w)
 
-def ideleFiniteComponent (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle) (v : HeightOneSpectrum (𝓞 F)) :
+def ideleFiniteComponent (v : HeightOneSpectrum (𝓞 F)) :
     (v.adicCompletion F)ˣ →* Circle :=
   Φ.comp (NumberField.IdeleClassGroup.ofAdicCompletion (𝓞 F) F v)
 
-def IdeleCharacterUnramifiedOutside (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle) : Prop :=
+def IdeleCharacterUnramifiedOutside : Prop :=
   ∀ (v : HeightOneSpectrum (𝓞 F)), v ∉ A.Sf →
     ∀ x : (v.adicCompletion F)ˣ,
       Valued.v (x : v.adicCompletion F) = 1 → A.ideleFiniteComponent Φ v x = 1
 
-def ideleSInverseProduct (A : SArithmeticData F)
-    (Φ : A.ArithmeticIdeleClasses →* Circle) (y : A.G) : Circle :=
+def ideleSInverseProduct (y : A.G) : Circle :=
   (∏ w : InfinitePlace F, (A.ideleInfiniteComponent Φ w (y.1 w))⁻¹) *
     ∏ v : {v // v ∈ A.Sf}, (A.ideleFiniteComponent Φ v.val (y.2 v))⁻¹
+
+end
 
 def RepresentsExteriorIdeal (A : SArithmeticData F) (I : A.Exterior)
     (x : NumberField.IdeleGroup (𝓞 F) F) : Prop :=
@@ -680,43 +686,48 @@ lemma sixth_power (v : A.V) : v ^ 6 = 1 := by
     rw [← QuotientGroup.mk_pow]
     exact (QuotientGroup.eq_one_iff _).mpr ⟨y, rfl⟩
 
-lemma character_sixth (φ : B →* ℂˣ) (b : B) : φ b ^ 6 = 1 := by
+section
+
+variable (φ : B →* ℂˣ)
+include φ
+
+lemma character_sixth (b : B) : φ b ^ 6 = 1 := by
   rw [← map_pow]
   have hb : b ^ 6 = 1 := by
     apply Subtype.ext
     exact sixth_power A (b : A.V)
   rw [hb, map_one]
 
-lemma character_norm (φ : B →* ℂˣ) (b : B) : ‖(φ b : ℂ)‖ = 1 := by
+lemma character_norm (b : B) : ‖(φ b : ℂ)‖ = 1 := by
   apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (6 : ℕ) ≠ 0)).mp
   rw [← Complex.norm_pow]
   have h := congrArg (fun u : ℂˣ => (u : ℂ)) (character_sixth A B φ b)
   simpa only [Units.val_pow_eq_pow_val, Units.val_one, norm_one] using congrArg (fun z : ℂ => ‖z‖) h
 
-def circleCharacter (φ : B →* ℂˣ) : B →* Circle where
+def circleCharacter : B →* Circle where
   toFun b := ⟨φ b, by
     change (φ b : ℂ) ∈ Metric.sphere 0 1
     simpa using character_norm A B φ b⟩
   map_one' := by apply Subtype.ext; exact congrArg (fun u : ℂˣ => (u : ℂ)) φ.map_one
   map_mul' x y := by apply Subtype.ext; exact congrArg (fun u : ℂˣ => (u : ℂ)) (φ.map_mul x y)
 
-lemma circleCharacter_toUnits (φ : B →* ℂˣ) (b : B) :
+lemma circleCharacter_toUnits (b : B) :
     Circle.toUnits (circleCharacter A B φ b) = φ b := by
   apply Units.ext
   rfl
 
-def localCharacter (φ : B →* ℂˣ) : A.G →* Circle :=
+def localCharacter : A.G →* Circle :=
   ((circleCharacter A B φ).comp (projection A B hFactor)).comp
     (QuotientGroup.mk' A.sixthPowers)
 
-lemma localCharacter_split (φ : B →* ℂˣ) (y : A.G) (p : A.E × B)
+lemma localCharacter_split (y : A.G) (p : A.E × B)
     (hp : QuotientGroup.mk y = (p.1 : A.V) * (p.2 : A.V)) :
     Circle.toUnits (localCharacter A B hFactor φ y) = φ p.2 := by
   change Circle.toUnits (circleCharacter A B φ
     (projection A B hFactor (QuotientGroup.mk y))) = _
   rw [hp, projection_split, circleCharacter_toUnits]
 
-lemma localCharacter_unit (φ : B →* ℂˣ) (u : A.U) :
+lemma localCharacter_unit (u : A.U) :
     localCharacter A B hFactor φ (A.diagonal u.val) = 1 := by
   have hu : A.sClass u.val ∈ A.E :=
     ⟨A.diagonal u.val, ⟨u.val, u.property, rfl⟩, rfl⟩
@@ -725,12 +736,14 @@ lemma localCharacter_unit (φ : B →* ℂˣ) (u : A.U) :
   change circleCharacter A B φ (projection A B hFactor (A.sClass u.val)) = 1
   rw [hp, map_one]
 
-lemma localCharacter_sixth (φ : B →* ℂˣ) (y : A.G) :
+lemma localCharacter_sixth (y : A.G) :
     localCharacter A B hFactor φ y ^ 6 = 1 := by
   apply Subtype.ext
   change (φ (projection A B hFactor (QuotientGroup.mk y)) : ℂ) ^ 6 = 1
   exact congrArg (fun u : ℂˣ => (u : ℂ))
     (character_sixth A B φ (projection A B hFactor (QuotientGroup.mk y)))
+
+end
 
 variable (A : SArithmeticData F)
 
@@ -778,26 +791,28 @@ lemma principalMap_ker (φ : B →* ℂˣ) :
   change localCharacter A B hFactor φ (A.diagonal a) = 1
   rw [hae, localCharacter_unit]
 
-def fractionalIdealCharacter (hCl : Subsingleton (ClassGroup A.R)) (φ : B →* ℂˣ) :
+section
+
+variable (hCl : Subsingleton (ClassGroup A.R)) (φ : B →* ℂˣ)
+include hCl φ
+
+def fractionalIdealCharacter :
     (FractionalIdeal A.R⁰ F)ˣ →* Circle :=
   (principalMap A).liftOfSurjective (principalMap_surjective A hCl)
     ⟨(localCharacter A B hFactor φ).comp A.diagonal, principalMap_ker A B hFactor φ⟩
 
-lemma fractionalIdealCharacter_principal (hCl : Subsingleton (ClassGroup A.R))
-    (φ : B →* ℂˣ) (a : Fˣ) :
+lemma fractionalIdealCharacter_principal (a : Fˣ) :
     fractionalIdealCharacter A B hFactor hCl φ (principalMap A a) =
       localCharacter A B hFactor φ (A.diagonal a) := by
   exact MonoidHom.liftOfRightInverse_comp_apply _ _ _ _ _
 
-lemma fractionalIdealCharacter_sixth (hCl : Subsingleton (ClassGroup A.R))
-    (φ : B →* ℂˣ) (I : (FractionalIdeal A.R⁰ F)ˣ) :
+lemma fractionalIdealCharacter_sixth (I : (FractionalIdeal A.R⁰ F)ˣ) :
     fractionalIdealCharacter A B hFactor hCl φ I ^ 6 = 1 := by
   obtain ⟨a, rfl⟩ := principalMap_surjective A hCl I
   rw [fractionalIdealCharacter_principal]
   exact localCharacter_sixth A B hFactor φ _
 
-lemma fractionalIdealCharacter_allowed (hCl : Subsingleton (ClassGroup A.R))
-    (φ : B →* ℂˣ) (I : (FractionalIdeal A.R⁰ F)ˣ) (a : Fˣ)
+lemma fractionalIdealCharacter_allowed (I : (FractionalIdeal A.R⁰ F)ˣ) (a : Fˣ)
     (ha : A.IsAllowed B a)
     (hI : (I : FractionalIdeal A.R⁰ F) = FractionalIdeal.spanSingleton A.R⁰ (a : F)) :
     Circle.toUnits (fractionalIdealCharacter A B hFactor hCl φ I) = φ ⟨A.sClass a, ha⟩ := by
@@ -805,6 +820,8 @@ lemma fractionalIdealCharacter_allowed (hCl : Subsingleton (ClassGroup A.R))
   rw [hp, fractionalIdealCharacter_principal]
   apply localCharacter_split A B hFactor φ _ (1, ⟨A.sClass a, ha⟩)
   exact (one_mul (A.sClass a)).symm
+
+end
 
 variable (A : SArithmeticData F)
 def exteriorFractionalUnit (I : A.Exterior) : (FractionalIdeal A.R⁰ F)ˣ :=

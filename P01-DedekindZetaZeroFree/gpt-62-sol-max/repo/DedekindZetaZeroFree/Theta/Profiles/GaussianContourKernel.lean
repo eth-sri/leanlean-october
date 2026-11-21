@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.Theta.Profiles.ReciprocalGammaStripBounds
 public import DedekindZetaZeroFree.Analysis.VerticalContourShift
 
@@ -292,12 +293,7 @@ theorem thetaProfileGaussianKernel_absolute_moment
   simpa only [Set.Ioc_union_Ioi (show (1 : ℝ) ≤ max 0 1 by norm_num),
     min_eq_left zero_le_one] using hu
 
-theorem thetaProfileGaussianKernel_rpow_bound
-    (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
-    (a : ℝ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T →
-      ‖thetaProfileGaussianKernel C₀ A₀ r T‖ ≤ C * Real.rpow T a := by
-  exact gaussianKernel_power_bound C₀ A₀ r hC₀ hA₀ hr a
+alias thetaProfileGaussianKernel_rpow_bound := DedekindZetaZeroFree.gaussianKernel_power_bound
 
 end
 end DedekindZetaZeroFree

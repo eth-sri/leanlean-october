@@ -48,7 +48,7 @@ theorem spectral_jets (s : ℂ) (hs : s ∈ V) :
     change deriv (KPContinuation.spectralCoordinate (d F : ℤ)) z =
       -4 * (d F : ℂ) * (1 / 3 + 2 * z)
     rw [(KPContinuation.spectralCoordinate_hasDerivAt (d F : ℤ) z).deriv]
-    simp only [Int.cast_natCast]
+    rfl
   have hderiv2 : deriv (fun z : ℂ => -4 * (d F : ℂ) * (1 / 3 + 2 * z)) =
       fun _ => -8 * (d F : ℂ) := by
     funext z
@@ -75,16 +75,12 @@ theorem spectral_jets (s : ℂ) (hs : s ∈ V) :
         rw [iteratedDeriv_succ, ih]
         funext z; simp
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · show KPContinuation.spectralCoordinate (d F : ℤ) s =
-      (d F : ℂ) * (1 - (1 / 3 + 2 * s) ^ 2)
-    unfold KPContinuation.spectralCoordinate
-    simp only [Int.cast_natCast]
-  · show iteratedDerivWithin 0 (lambda F) V s = lambda F s
-    simp only [key 0, iteratedDeriv_zero]
+  · rfl
+  · rfl
   · show iteratedDerivWithin 1 (lambda F) V s = -4 * (d F : ℂ) * (1 / 3 + 2 * s)
-    simp only [key 1, h1]
+    grind
   · show iteratedDerivWithin 2 (lambda F) V s = -8 * (d F : ℂ)
-    simp only [key 2, h2]
+    grind
   · intro j hj
     show iteratedDerivWithin j (lambda F) V s = 0
     rw [key j, hk j (by omega)]
@@ -145,7 +141,7 @@ theorem jet_genuine (hι : Function.Injective ι)
       jet F ζ hζ U ι f k s
         (KPContActualChamberNormalSeries.coveredRepresentative F ζ hζ C R P H U v)
   unfold jet
-  rw [hB, hgen, hcm, hA]
+  simp_all
 
 def coveredJet (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) :
@@ -619,77 +615,7 @@ def frameJet (hι : Function.Injective ι)
 
 namespace FlatCalculation
 
-open KPContFlatCuspCasimirSpecialization
- def meanCLM (d : ℕ) : KPArch.Space d →L[ℝ] ℝ :=
-  (d : ℝ)⁻¹ • ∑ k : Fin d, (ContinuousLinearMap.snd ℝ ℂ ℝ).comp (ContinuousLinearMap.proj k)
-private theorem meanCLM_apply (d : ℕ) (z : KPArch.Space d) :
-    meanCLM d z = KPCuspLogShape.meanHeight d z := by
-  simp [meanCLM, KPCuspLogShape.meanHeight, div_eq_inv_mul]
-private theorem meanCLM_dir (d : ℕ) (i : Fin d) (j : Fin 3) :
-    meanCLM d (coordinateDirection d i j) = if j = 2 then (d : ℝ)⁻¹ else 0 := by
-  simp only [meanCLM, ContinuousLinearMap.smul_apply, sum_apply, ContinuousLinearMap.comp_apply]
-  rw [Finset.sum_eq_single i]
-  · simp [coordinateDirection, Pi.single_eq_same]
-    fin_cases j <;> norm_num
-  · intro k _ hk
-    simp [coordinateDirection, Pi.single_eq_of_ne hk]
-  · simp
-private theorem exp_mean_fderiv {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (d : ℕ) (c : ℂ) (b : V) (z w : KPArch.Space d) :
-    fderiv ℝ (fun y => Complex.exp (c * (meanCLM d y : ℂ)) • b) z w =
-      (c * (meanCLM d w : ℂ) * Complex.exp (c * (meanCLM d z : ℂ))) • b := by
-  have hm := (Complex.ofRealCLM.comp (meanCLM d)).hasFDerivAt (x := z)
-  have he := (hm.const_smul c).cexp.smul_const b
-  have he' : HasFDerivAt (fun y => Complex.exp (c * (meanCLM d y : ℂ)) • b)
-      ((Complex.exp (c * (meanCLM d z : ℂ)) • c • (Complex.ofRealCLM.comp (meanCLM d))).smulRight b) z := by
-    simpa [ContinuousLinearMap.comp_apply, smul_eq_mul] using he
-  rw [he'.fderiv]
-  simp only [ContinuousLinearMap.smulRight_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply, smul_eq_mul]
-  congr 1
-  ring
-private theorem exp_mean_second {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (d : ℕ) (c : ℂ) (b : V) (z w : KPArch.Space d) :
-    fderiv ℝ (fun y => fderiv ℝ (fun x => Complex.exp (c * (meanCLM d x : ℂ)) • b) y w) z w =
-      ((c * (meanCLM d w : ℂ)) ^ 2 * Complex.exp (c * (meanCLM d z : ℂ))) • b := by
-  have hfun : (fun y => fderiv ℝ (fun x => Complex.exp (c * (meanCLM d x : ℂ)) • b) y w) =
-      fun y => Complex.exp (c * (meanCLM d y : ℂ)) • ((c * (meanCLM d w : ℂ)) • b) := by
-    funext y
-    rw [exp_mean_fderiv]
-    simp only [smul_smul]
-    congr 1
-    ring
-  rw [hfun, exp_mean_fderiv, smul_smul]
-  congr 1
-  ring
-private theorem exp_mean_laplacian {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (d : ℕ) (hd : 0 < d) (s : ℂ) (b : V) (z : KPArch.Space d) :
-    Δloc d (fun y => KPIncomingCasimir.heightFactor d s (KPCuspLogShape.meanHeight d y) • b) z =
-      KPContinuation.spectralCoordinate (d : ℤ) s •
-        (KPIncomingCasimir.heightFactor d s (KPCuspLogShape.meanHeight d z) • b) := by
-  have hf : ContDiff ℝ 2 (fun y : KPArch.Space d =>
-      KPIncomingCasimir.heightFactor d s (KPCuspLogShape.meanHeight d y) • b) := by
-    simp only [KPIncomingCasimir.heightFactor, ← meanCLM_apply]
-    apply ContDiff.smul_const
-    have hm : ContDiff ℝ 2 (fun y => (meanCLM d y : ℂ)) :=
-      Complex.ofRealCLM.contDiff.comp (meanCLM d).contDiff
-    exact ((contDiff_const.mul hm).cexp)
-  rw [Δloc_coordinate_expression d _ hf]
-  simp only [KPIncomingCasimir.heightFactor, ← meanCLM_apply]
-  simp only [exp_mean_second]
-  simp only [exp_mean_fderiv, meanCLM_dir]
-  simp only [ite_true, show ¬ ((0 : Fin 3) = 2) from by decide,
-    show ¬ ((1 : Fin 3) = 2) from by decide, ite_false,
-    Complex.ofReal_zero, mul_zero, zero_mul, zero_pow (by decide : 2 ≠ 0), zero_smul,
-    add_zero, sub_zero]
-  simp only [smul_zero, sub_zero, ← neg_smul, smul_smul, ← add_smul]
-  simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, ← Nat.cast_smul_eq_nsmul ℂ]
-  simp only [smul_smul, Complex.ofReal_inv, Complex.ofReal_natCast]
-  congr 1
-  have hd' : (d : ℂ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
-  simp only [KPContinuation.spectralCoordinate, Int.cast_natCast]
-  field_simp
-  ring
+export KPContFlatCuspCasimirSpecialization (meanCLM meanCLM_apply exp_mean_laplacian)
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
@@ -1510,7 +1436,7 @@ private theorem sheet_frame
 
 include hι hf hs
 
-private theorem actualCuspSheet_crossAction
+theorem actualCuspSheet_crossAction
     (h : stabilizer F ζ hζ C R P H U a) (t : ℝ)
     (p : KPCuspCharts.Cross F) (ε : rootsOfUnity 3 F) :
     KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t
@@ -1542,7 +1468,7 @@ private theorem actualCuspSheet_crossAction
     ((KPCuspGenuineMonodromy.chi F ζ hζ (((atlas F ζ hζ C R P H U).line a.1).rho γ) : ℂ) * _) = _
   ring
 
-private theorem actualCuspSheet_translation
+theorem actualCuspSheet_translation
     (l : (parabolic F ζ hζ C R P H U a).L) (t : ℝ)
     (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
     KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a 0 s t
@@ -1567,7 +1493,7 @@ private theorem actualCuspSheet_translation
   rw [he] at hh
   exact hh
 
-private theorem actualCuspSheet_kernel_representative
+theorem actualCuspSheet_kernel_representative
     (t : ℝ) (x y : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F)
     (ε : rootsOfUnity 3 F)
     (hxy : (QuotientAddGroup.mk x : KernelTorus F ζ hζ C R P H U a) = QuotientAddGroup.mk y) :
@@ -1802,7 +1728,7 @@ theorem cusp_integral_commute (hι : Function.Injective ι)
       CuspAnalytic.clm_jet I g V KPChamberL2Defect.chamber_isOpen hg k s hs
     _ = _ := hI k s hs
 
-private theorem cusp_integral_holomorphic (hι : Function.Injective ι)
+theorem cusp_integral_holomorphic (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (a : Cusps F ζ hζ C R P H U)
     (μ : Measure (KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a))

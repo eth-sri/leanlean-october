@@ -129,7 +129,6 @@ private theorem deltaHalf_continuous : Continuous (KPGlobalTorusFunctionData.del
       (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) =
         (((KPGlobalCenterRationalCharacter.nu F ζ hζ t : ℝ≥0) : ℝ)) ^ (6 : ℕ) := by
     rw [KPGlobalCenterRationalCharacter.nu_formula]
-    change _ = (_ ^ (1 / 6 : ℝ)) ^ (6 : ℕ)
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
     norm_num
     rfl

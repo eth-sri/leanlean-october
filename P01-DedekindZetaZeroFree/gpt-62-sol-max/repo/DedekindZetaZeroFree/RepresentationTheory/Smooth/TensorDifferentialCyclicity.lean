@@ -46,7 +46,7 @@ theorem tensor_finite_slot_word_recovery (s : RestrictedTensorSimple.Level D.bad
       funext (fun g => D.finite_intertwining q b s hq x g)
     rw [he]
     exact wordRecovery_finite R T' ⟨_,DedekindZetaZeroFree.FiniteWhittakerProjectors.finiteInjection_mem_finitePart R q b⟩ hm
-  | zero => simpa using (Submodule.zero_mem (wordRecovery R T'))
+  | zero => simp
   | add z w hz hw ihz ihw => simpa only [map_add] using Submodule.add_mem _ ihz ihw
   | smul c z hz ih => simpa only [map_smul] using Submodule.smul_mem _ c ih
 
@@ -106,7 +106,7 @@ theorem tensor_slots_word_recovery
       funext p
       by_cases hp : p = j
       · subst p; simp
-      · simp [u,hp,Function.update_of_ne hp]
+      · simp [u,hp]
     rw [he]
     obtain ⟨j,hjmem⟩ := j
     cases j with

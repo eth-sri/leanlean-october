@@ -31,9 +31,9 @@ private lemma Xwnw (K : Type*) [Field K] (v : Kˣ) :
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply, Units.ne_zero]
 
-private lemma BoneL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
+lemma BoneL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) 1 a = 1 :=
   KubotaDefectSymbolAlgebra.one_left _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1 a
-private lemma BoneR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a 1 = 1 :=
+lemma BoneR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a 1 = 1 :=
   KubotaDefectSymbolAlgebra.one_right _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 a
 private lemma BnegR (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) a (-1) = 1 :=
   (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 a |>.2.1
@@ -57,23 +57,26 @@ private lemma Xdnw (K : Type*) [Field K] (v : Kˣ) (s : K) :
   rw [winv]
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, Matrix.mul_apply]
+lemma Bpow (x y : (LocalField F q)ˣ) (i j : ℤ) :
+    KPHilbert.B3 F ζ hζ (Sum.inr q) (x^i) (y^j) =
+      KPHilbert.B3 F ζ hζ (Sum.inr q) x y ^ (i*j) := by
+  let BL (c : (LocalField F q)ˣ) : (LocalField F q)ˣ →* rootsOfUnity 3 F :=
+    { toFun := fun x => KPHilbert.B3 F ζ hζ (Sum.inr q) x c
+      map_one' := BoneL F ζ hζ q c
+      map_mul' := fun x y => (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1 x y c }
+  let BR (c : (LocalField F q)ˣ) : (LocalField F q)ˣ →* rootsOfUnity 3 F :=
+    { toFun := KPHilbert.B3 F ζ hζ (Sum.inr q) c
+      map_one' := BoneR F ζ hζ q c
+      map_mul' := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 c }
+  change BL (y^j) (x^i) = _
+  rw [map_zpow]
+  change (BR x (y^j)) ^ i = _
+  rw [map_zpow, ← zpow_mul, Int.mul_comm]; rfl
+
 private lemma Bselfpow (a : (LocalField F q)ˣ) (m n : ℤ) :
     KPHilbert.B3 F ζ hζ (Sum.inr q) (a ^ m) (a ^ n) = 1 := by
-  let BL (b : (LocalField F q)ˣ) : (LocalField F q)ˣ →* rootsOfUnity 3 F :=
-    { toFun := fun x => KPHilbert.B3 F ζ hζ (Sum.inr q) x b
-      map_one' := BoneL F ζ hζ q b
-      map_mul' := fun x y => (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1 x y b }
-  let BR : (LocalField F q)ˣ →* rootsOfUnity 3 F :=
-    { toFun := KPHilbert.B3 F ζ hζ (Sum.inr q) a
-      map_one' := BoneR F ζ hζ q a
-      map_mul' := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 a }
-  change BL (a ^ n) (a ^ m) = 1
-  rw [map_zpow]
-  change (BR (a ^ n)) ^ m = 1
-  rw [map_zpow]
-  change (KPHilbert.B3 F ζ hζ (Sum.inr q) a a ^ n) ^ m = 1
-  rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 a |>.1]
-  simp
+  rw [Bpow, (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 a |>.1, one_zpow]
+
 private lemma BnegL (a : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) (-1) a = 1 := by
   rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.1, BnegR]
   simp
@@ -191,7 +194,7 @@ private lemma raw_w_A (y : Kˣ) :
     (KPScalarSplitCentral.scalarMatrix F v y) * _
   rw [KPLocalCover.sectionMap_mul, sigma_scalar_dw, map_one, one_mul, w_d F q y]
 
-private theorem signedW_conjugates_A (y : Kˣ) :
+theorem signedW_conjugates_A (y : Kˣ) :
     (KPPGLLocalCover.signedW F ζ hζ v)⁻¹ * KPPGLLocalCover.A F ζ hζ v y *
       KPPGLLocalCover.signedW F ζ hζ v = KPPGLLocalCover.A F ζ hζ v y⁻¹ := by
   have he := congrArg (KPPGLLocalCover.coverQuotient F ζ hζ v) (raw_w_A F ζ hζ q y)
@@ -210,6 +213,34 @@ private theorem signedW_conjugates_A (y : Kˣ) :
       (KPPGLLocalCover.signedW_sq F ζ hζ v)
 
 end WeylAux
+
+lemma norm_mul (x y : (LocalField F q)ˣ) (z : ℂ) :
+    normPower (LocalField F q) (x * y) z =
+      normPower (LocalField F q) x z * normPower (LocalField F q) y z := by
+  rw [normPower, localAbs_mul, Real.log_mul (ne_of_gt (localAbs_pos _ x))
+    (ne_of_gt (localAbs_pos _ y)), Complex.ofReal_add, mul_add, Complex.exp_add]
+  rfl
+lemma norm_neg (x : (LocalField F q)ˣ) (z : ℂ) :
+    normPower (LocalField F q) (-x) z = normPower (LocalField F q) x z := by
+  simp [normPower, localAbs, Valuation.map_neg]
+lemma norm_pow (x : (LocalField F q)ˣ) (n : ℕ) (z : ℂ) :
+    normPower (LocalField F q) (x ^ n) z = normPower (LocalField F q) x (n * z) := by
+  have ha : localAbs (LocalField F q) (x ^ n) = localAbs (LocalField F q) x ^ n := by
+    induction n with
+    | zero => simp [localAbs_one]
+    | succ n ih => rw [pow_succ, localAbs_mul, ih, pow_succ]
+  simp only [normPower, ha, Real.log_pow, Complex.ofReal_mul, Complex.ofReal_natCast]
+  congr 1
+  ring
+lemma norm_inv (x : (LocalField F q)ˣ) (z : ℂ) :
+    normPower (LocalField F q) x⁻¹ z = (normPower (LocalField F q) x z)⁻¹ := by
+  have ha : localAbs (LocalField F q) x⁻¹ = (localAbs (LocalField F q) x)⁻¹ := by
+    apply eq_inv_of_mul_eq_one_left
+    rw [← localAbs_mul, inv_mul_cancel, localAbs_one]
+  simp [normPower, ha, Real.log_inv, Complex.exp_neg, mul_neg]
+lemma norm_add (x : (LocalField F q)ˣ) (z w : ℂ) :
+    normPower (LocalField F q) x (z + w) = normPower (LocalField F q) x z * normPower (LocalField F q) x w := by
+  simp [normPower, add_mul, Complex.exp_add]
 
 variable {H D : Type} [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
   [CommGroup D] [Finite D] [DecidableEq D]

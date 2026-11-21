@@ -26,19 +26,19 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   change T ≤ KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) w
   exact le_of_lt (show T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) w from hw)
 
- theorem cutoff_next_eventually_one (r : Cutoffs F ζ hζ hF U a)
-    (n : ℕ) (hn : r.height_bound ≤ n) (i : Fin a.componentCount) (x : Arch F)
-    (hx : basePoint F ζ hζ hF U a i x ∉ highEnds F ζ hζ hF U a n) :
-    (fun y : Arch F => r.rho (n+1) (basePoint F ζ hζ hF U a i y)) =ᶠ[nhds x] fun _ => 1 := by
-  have hrx := r.on_sublevel n hn _ hx
-  have hpos : ∀ᶠ y : Arch F in nhds x, 0 < r.rho n (basePoint F ζ hζ hF U a i y) :=
-    (r.smooth n i).continuous.continuousAt.eventually (lt_mem_nhds (by simpa [hrx] : (0:ℝ) < r.rho n (basePoint F ζ hζ hF U a i x)))
-  filter_upwards [hpos] with y hy
-  apply r.on_sublevel (n+1) (by omega)
-  intro hhigh
-  have hclosed := highEnds_subset_closedHighEnds F ζ hζ hF U a (↑(n+1)) hhigh
-  have hz := r.above_next n hn _ (by simpa only [Nat.cast_add, Nat.cast_one] using hclosed)
-  linarith
+theorem cutoff_next_eventually_one {r s : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ}
+    (n : ℕ) (i : Fin a.componentCount) (x : Arch F)
+    (hc : ContinuousAt (fun y => r (basePoint F ζ hζ hF U a i y)) x)
+    (hx : r (basePoint F ζ hζ hF U a i x) = 1)
+    (hs : ∀ y ∉ highEnds F ζ hζ hF U a (↑(n+1)), s y = 1)
+    (hr : ∀ y ∈ closedHighEnds F ζ hζ hF U a (n+1), r y = 0) :
+    (fun y => s (basePoint F ζ hζ hF U a i y)) =ᶠ[nhds x] fun _ => 1 := by
+  filter_upwards [hc.eventually (lt_mem_nhds (by rw [hx]; norm_num :
+    0 < r (basePoint F ζ hζ hF U a i x)))] with y hy
+  apply hs
+  intro hy'
+  have hz := highEnds_subset_closedHighEnds F ζ hζ hF U a (↑(n+1)) hy'
+  exact hy.ne' (hr _ (by simpa only [Nat.cast_add, Nat.cast_one] using hz))
 
  theorem laplacian_congr_nhds (d : ℕ) {f g : HyperbolicChart.Space d → ℂ}
     {x : HyperbolicChart.Space d} (h : f =ᶠ[nhds x] g) :

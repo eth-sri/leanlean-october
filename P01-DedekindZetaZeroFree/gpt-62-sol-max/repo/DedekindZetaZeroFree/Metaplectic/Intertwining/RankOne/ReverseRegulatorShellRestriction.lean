@@ -56,17 +56,17 @@ variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
 variable (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-def actualSection (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
-    (r : ℂˣ) : centerSectionSpace F ζ hζ q T A .plus (additiveParameter F q r) :=
+section
+
+variable (B : Binding F ζ hζ q A P) (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
+  (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ) (r : ℂˣ)
+include B rep hrep d φ hφ hcφ
+
+def actualSection : centerSectionSpace F ζ hζ q T A .plus (additiveParameter F q r) :=
   Classical.choose (center_pure_coordinate_section F ζ hζ q T A P B rep hrep d
     (additiveParameter F q r) φ hφ hcφ)
 
-theorem actualSection_spec (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
-    (r : ℂˣ) :
+theorem actualSection_spec :
     (∀ x, centerCoordinates T rep hrep
       ((actualSection F ζ hζ q T A P B rep hrep d φ hφ hcφ r).val
         (openCoordinate F ζ hζ q x)) = φ x • Pi.single d 1) ∧
@@ -77,6 +77,8 @@ theorem actualSection_spec (B : Binding F ζ hζ q A P)
   unfold actualSection
   exact (Classical.choose_spec (center_pure_coordinate_section F ζ hζ q T A P B rep hrep d
     (additiveParameter F q r) φ hφ hcφ)).1
+
+end
 
 def forwardSection (I : IwasawaData A) (μ : Measure (LocalField F q))
     (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
@@ -115,25 +117,27 @@ theorem center_section_affine_locallyConstant (B : Binding F ζ hζ q A P)
     exact continuous_subtype_val.comp (A.upperRoot_continuous.comp continuous_ofAdd)
   exact continuous_const.mul hn
 
-def reverseIntegrand (I : IwasawaData A) (μ : Measure (LocalField F q))
-    (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
-    (r : ℂˣ) (lam : ℂ) (h : H₀) (v : (LocalField F q)ˣ) : ℂ :=
+section
+
+variable (I : IwasawaData A) (μ : Measure (LocalField F q))
+  (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P) (rep : D → H₀)
+  (hrep : ∀ d, T.π (rep d) = d) (d : D) (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ)
+  (hcφ : HasCompactSupport φ) (r : ℂˣ) (lam : ℂ) (h : H₀)
+include I μ J B rep hrep d φ hφ hcφ r lam h
+
+def reverseIntegrand (v : (LocalField F q)ˣ) : ℂ :=
   (B.eta (kappa F ζ hζ q v 0) : ℂ) *
     (reverseRoot F ζ hζ q T A P B r v
       ((forwardSection F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r).val
         (openCoordinate F ζ hζ q (v : LocalField F q)))).val h *
     normPower (LocalField F q) v lam
 
-def H (I : IwasawaData A) (μ : Measure (LocalField F q))
-    (J : CenterStandardFamily F ζ hζ q T A I μ) (B : Binding F ζ hζ q A P)
-    (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
-    (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
-    (r : ℂˣ) (lam : ℂ) (h : H₀) : ℂ :=
+def H : ℂ :=
   ∫ v : (LocalField F q)ˣ,
     reverseIntegrand F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ r lam h v
       ∂multiplicativeMeasure F q μ
+
+end
 
 theorem actualSection_eq_zero_of_profile_eq_zero (B : Binding F ζ hζ q A P)
     (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)

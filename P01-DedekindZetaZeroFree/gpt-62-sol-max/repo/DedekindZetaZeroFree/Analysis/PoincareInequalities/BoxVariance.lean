@@ -30,7 +30,7 @@ private theorem hybrid_map (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ 
   let T : ((I → ℝ) × (I → ℝ)) → (I → ℝ) :=
     fun q i => if p i then q.2 i else q.1 i
   have hT : Measurable T := by
-    apply measurable_pi_lambda; intro i; dsimp [T]; split_ifs <;> fun_prop
+    apply measurable_pi_lambda; intro i; dsimp [T]; fun_prop
   haveI (i : I) : IsFiniteMeasure ((μ i Set.univ) • μ i) := by
     constructor
     simp only [Measure.smul_apply, smul_eq_mul]
@@ -42,16 +42,8 @@ private theorem hybrid_map (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ 
         (Set.univ.pi (fun i => if p i then Set.univ else s i)) ×ˢ
         (Set.univ.pi (fun i => if p i then s i else Set.univ)) := by
       ext q; simp [T, Set.mem_pi]; constructor
-      · intro H; constructor
-        · intro i; by_cases hi : p i
-          · simp [hi]
-          · simpa [hi] using H i
-        · intro i; by_cases hi : p i
-          · simpa [hi] using H i
-          · simp [hi]
-      · rintro ⟨H,K⟩ i; by_cases hi : p i
-        · simpa [T, hi] using K i
-        · simpa [T, hi] using H i
+      · grind only
+      grind only
     rw [he, Measure.prod_prod, Measure.pi_pi, Measure.pi_pi, ← Finset.prod_mul_distrib]
     apply Finset.prod_congr rfl; intro i _
     by_cases hi : p i <;> simp [hi, mul_comm]
@@ -67,7 +59,7 @@ private theorem update_map (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ 
   haveI (i : I) : IsFiniteMeasure (ν i) := by
     constructor; simp only [ν, Measure.smul_apply, smul_eq_mul]; split_ifs <;> finiteness
   have hm : Measurable (fun q : (I → ℝ) × ℝ => Function.update q.1 j q.2) := by
-    apply measurable_pi_lambda; intro i; by_cases hi : i = j <;> simp [Function.update, hi] <;> fun_prop
+    apply measurable_pi_lambda; intro i; fun_prop
   apply Eq.trans (Measure.pi_eq (μ := ν) ?_).symm ?_
   · intro s hs
     rw [Measure.map_apply hm (MeasurableSet.univ_pi hs)]
@@ -305,7 +297,7 @@ private theorem norm_toLp_sq {α : Type*} [MeasurableSpace α] {μ : Measure α}
   filter_upwards [hf.coeFn_toLp] with x hx
   rw [hx, real_inner_self_eq_norm_sq]
 
-private theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measure α}
+theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measure α}
     [IsFiniteMeasure μ] {f : α → ℂ} (hf : MemLp f 2 μ) :
     ‖∫ x, f x ∂μ‖ ^ 2 ≤ (μ Set.univ).toReal * ∫ x, ‖f x‖ ^ 2 ∂μ := by
   let e : Lp ℂ 2 μ := indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ _) 1

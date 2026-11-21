@@ -11,29 +11,33 @@ open scoped Pointwise
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicLatticeStabilizers
 
-private theorem intersection_mem (F : Type*) [Field F] [NumberField F]
+section
+
+variable (F : Type*) [Field F]
+
+private theorem intersection_mem [NumberField F]
     (g : AdelicGL F) (x : F × F) :
     x ∈ (intersectionLattice F g).val ↔ diagonalVector F x ∈ g • integralVectors F :=
   (Classical.choose_spec ((bounded_crt_lattice_and_projective_compact F).2 g)).1 x
 
-theorem intersectionLattice_mul_integral (F : Type*) [Field F] [NumberField F]
+theorem intersectionLattice_mul_integral [NumberField F]
     (g : AdelicGL F) (k : integralGL F) :
     intersectionLattice F (g * k) = intersectionLattice F g := by
   apply Subtype.ext
   apply Submodule.ext
   intro x
   rw [intersection_mem, intersection_mem, mul_smul]
-  have hk : (k : AdelicGL F) • integralVectors F = integralVectors F :=
+  have hk :=
     MulAction.mem_stabilizer_iff.mp k.property
   rw [hk]
 
- noncomputable def rationalVectorAction (F : Type*) [Field F] (h : RationalGL F) :
+ noncomputable def rationalVectorAction (h : RationalGL F) :
     (F × F) ≃ₗ[F] (F × F) :=
   (LinearEquiv.finTwoArrow F F).symm.trans
     ((Matrix.GeneralLinearGroup.toLin h).toLinearEquiv.trans
       (LinearEquiv.finTwoArrow F F))
 
-private theorem diagonalVector_action (F : Type*) [Field F] [NumberField F]
+private theorem diagonalVector_action [NumberField F]
     (h : RationalGL F) (x : F × F) :
     diagonalVector F (rationalVectorAction F h x) = diagonalGL F h • diagonalVector F x := by
   ext i j
@@ -43,7 +47,7 @@ private theorem diagonalVector_action (F : Type*) [Field F] [NumberField F]
       Matrix.mul_apply, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct,
       Fin.sum_univ_two, LinearEquiv.finTwoArrow, finTwoArrowEquiv]
 
-private theorem intersectionLattice_diagonal_map (F : Type*) [Field F] [NumberField F]
+private theorem intersectionLattice_diagonal_map [NumberField F]
     (h : RationalGL F) (g : AdelicGL F) :
     Submodule.map ((rationalVectorAction F h).toLinearMap.restrictScalars
       (NumberField.RingOfIntegers F)) (intersectionLattice F g).val =
@@ -67,13 +71,13 @@ private theorem intersectionLattice_diagonal_map (F : Type*) [Field F] [NumberFi
     rw [intersection_mem, mul_smul, he] at hx
     exact (Set.smul_mem_smul_set_iff).mp hx
 
-theorem intersectionLattice_diagonal_equivalent (F : Type*) [Field F] [NumberField F]
+theorem intersectionLattice_diagonal_equivalent [NumberField F]
     (h : RationalGL F) (g : AdelicGL F) :
     latticeEquivalent (NumberField.RingOfIntegers F) F
       (intersectionLattice F g).val (intersectionLattice F (diagonalGL F h * g)).val :=
   ⟨rationalVectorAction F h, intersectionLattice_diagonal_map F h g⟩
 
-theorem intersectionLattice_doubleCoset_rel (F : Type*) [Field F] [NumberField F]
+theorem intersectionLattice_doubleCoset_rel [NumberField F]
     {g g' : AdelicGL F}
     (hrel : DoubleCoset.setoid ((diagonalGL F).range : Set (AdelicGL F))
       (integralGL F : Set (AdelicGL F)) g g') :
@@ -85,17 +89,17 @@ theorem intersectionLattice_doubleCoset_rel (F : Type*) [Field F] [NumberField F
     intersectionLattice_mul_integral F _ ⟨k, hk⟩]
   exact intersectionLattice_diagonal_equivalent F a g
 
-noncomputable def glLatticeMap (F : Type*) [Field F] [NumberField F] :
+noncomputable def glLatticeMap [NumberField F] :
     DoubleCoset.Quotient ((diagonalGL F).range : Set (AdelicGL F))
       (integralGL F : Set (AdelicGL F)) →
       Quotient (latticeSetoid (NumberField.RingOfIntegers F) F) :=
   Quotient.map (intersectionLattice F) (fun {_ _} h => intersectionLattice_doubleCoset_rel F h)
 
-@[simp] theorem glLatticeMap_mk (F : Type*) [Field F] [NumberField F] (g : AdelicGL F) :
+@[simp] theorem glLatticeMap_mk [NumberField F] (g : AdelicGL F) :
     glLatticeMap F (DoubleCoset.mk (diagonalGL F).range (integralGL F) g) =
       Quotient.mk (latticeSetoid (NumberField.RingOfIntegers F) F) (intersectionLattice F g) := rfl
 
-private theorem rationalVectorAction_surjective (F : Type*) [Field F] :
+private theorem rationalVectorAction_surjective :
     Function.Surjective (rationalVectorAction F) := by
   intro e
   let t := LinearEquiv.finTwoArrow F F
@@ -106,7 +110,7 @@ private theorem rationalVectorAction_surjective (F : Type*) [Field F] :
   intro x
   simp [rationalVectorAction, l, t]
 
-theorem glLatticeMap_injective_of_local_detection (F : Type*) [Field F] [NumberField F]
+theorem glLatticeMap_injective_of_local_detection [NumberField F]
     (hlocal : ∀ g g' : AdelicGL F,
       (∀ v, localTranslatedLattice F g v = localTranslatedLattice F g' v) →
         ∃ k : integralGL F, g' = g * k) :
@@ -134,7 +138,7 @@ theorem glLatticeMap_injective_of_local_detection (F : Type*) [Field F] [NumberF
   obtain ⟨k, hk⟩ := hlocal _ _ hl
   exact DoubleCoset.eq.mpr ⟨diagonalGL F a, ⟨a, rfl⟩, k, k.property, hk⟩
 
-theorem glLatticeMap_surjective_of_trivializations (F : Type*) [Field F] [NumberField F]
+theorem glLatticeMap_surjective_of_trivializations [NumberField F]
     (htriv : ∀ M : FullLattice (NumberField.RingOfIntegers F) F,
       ∃ g : AdelicGL F, ∀ x : F × F,
         x ∈ M.val ↔ diagonalVector F x ∈ g • integralVectors F) :
@@ -151,7 +155,7 @@ theorem glLatticeMap_surjective_of_trivializations (F : Type*) [Field F] [Number
     exact (intersection_mem F g x).trans (hg x).symm
   rw [hm]
 
-theorem gl_lattice_equivalence_of_local_inputs (F : Type*) [Field F] [NumberField F]
+theorem gl_lattice_equivalence_of_local_inputs [NumberField F]
     (hlocal : ∀ g g' : AdelicGL F,
       (∀ v, localTranslatedLattice F g v = localTranslatedLattice F g' v) →
         ∃ k : integralGL F, g' = g * k)
@@ -171,7 +175,7 @@ theorem gl_lattice_equivalence_of_local_inputs (F : Type*) [Field F] [NumberFiel
   intro g
   rfl
 
-theorem gl_lattice_equivalence (F : Type*) [Field F] [NumberField F] :
+theorem gl_lattice_equivalence [NumberField F] :
     ∃ e : DoubleCoset.Quotient
         ((diagonalGL F).range : Set (AdelicGL F))
         (integralGL F : Set (AdelicGL F)) ≃
@@ -182,6 +186,8 @@ theorem gl_lattice_equivalence (F : Type*) [Field F] [NumberField F] :
             (intersectionLattice F g) := by
   exact gl_lattice_equivalence_of_local_inputs F
     (local_lattice_right_orbit F) (full_lattice_adelic_realization F)
+
+end
 
 end DedekindZetaZeroFree.KPFiniteAdelicLatticeStabilizers
 
@@ -328,8 +334,11 @@ theorem compact_open_commensurable
   ⟨open_finite_relative_index_compact K U hKcompact hUopen,
     open_finite_relative_index_compact U K hUcompact hKopen⟩
 
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
 theorem level_stabilizers_commensurable_standard
-    (F : Type*) [Field F] [NumberField F]
     (U : Subgroup (AdelicPG F))
     (hUcompact : letI := projectiveTopology F; IsCompact (U : Set (AdelicPG F)))
     (hUopen : letI := projectiveTopology F; IsOpen (U : Set (AdelicPG F)))
@@ -347,8 +356,7 @@ theorem level_stabilizers_commensurable_standard
   · exact ((hUK.inf_left (.refl (integralPG F))).map
       (MulAut.conj g).toMonoidHom).comap (diagonalPG F)
 
-theorem standard_stabilizers_commensurable_identity
-    (F : Type*) [Field F] [NumberField F] (g : AdelicPG F) :
+theorem standard_stabilizers_commensurable_identity (g : AdelicPG F) :
     (levelStabilizer F (integralPG F) g).Commensurable
       (levelStabilizer F (integralPG F) 1) := by
   letI := projectiveTopology F
@@ -373,7 +381,6 @@ theorem standard_stabilizers_commensurable_identity
   simpa only [levelStabilizer, h1, Subgroup.map_id] using h.comap (diagonalPG F)
 
 theorem standard_stabilizer_class_obstruction_of_identity
-    (F : Type*) [Field F] [NumberField F]
     (h : (levelStabilizer F (integralPG F) 1).Commensurable
       (idealProjectiveAut F 1)) (g : AdelicPG F) :
     ∃ (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F)
@@ -387,7 +394,7 @@ theorem standard_stabilizer_class_obstruction_of_identity
   rw [h1, Subgroup.map_id]
   exact (standard_stabilizers_commensurable_identity F g).trans h
 
-theorem idealVectors_one_mem (F : Type*) [Field F] [NumberField F]
+theorem idealVectors_one_mem
     (x : Matrix (Fin 2) (Fin 1) F) :
     x ∈ idealVectors F 1 ↔ ∀ i j, ∃ a : NumberField.RingOfIntegers F,
       algebraMap _ F a = x i j := by
@@ -400,7 +407,7 @@ theorem idealVectors_one_mem (F : Type*) [Field F] [NumberField F]
   · intro h
     exact ⟨h 0 0, h 1 0⟩
 
-theorem rational_stabilizer_entries (F : Type*) [Field F] [NumberField F]
+theorem rational_stabilizer_entries
     (A : RationalGL F)
     (hA : A ∈ MulAction.stabilizer (RationalGL F) (idealVectors F 1)) :
     ∀ i j, ∃ a : NumberField.RingOfIntegers F, algebraMap _ F a = A.val i j := by
@@ -419,7 +426,7 @@ theorem rational_stabilizer_entries (F : Type*) [Field F] [NumberField F]
   fin_cases j <;> simpa [Matrix.GeneralLinearGroup.smul_def, Matrix.mul_apply,
     Matrix.single, Matrix.of_apply] using h
 
-theorem diagonalGL_integral_of_rational_stabilizer (F : Type*) [Field F] [NumberField F]
+theorem diagonalGL_integral_of_rational_stabilizer
     (A : RationalGL F)
     (hA : A ∈ MulAction.stabilizer (RationalGL F) (idealVectors F 1)) :
     diagonalGL F A ∈ integralGL F := by
@@ -451,7 +458,7 @@ theorem diagonalGL_integral_of_rational_stabilizer (F : Type*) [Field F] [Number
   · intro x hx
     exact ⟨(diagonalGL F A)⁻¹ • x, act _ hi x hx, by simp⟩
 
-theorem idealProjectiveAut_le_identity (F : Type*) [Field F] [NumberField F] :
+theorem idealProjectiveAut_le_identity :
     idealProjectiveAut F 1 ≤ levelStabilizer F (integralPG F) 1 := by
   rintro q hq
   obtain ⟨A, hA, rfl⟩ := Subgroup.mem_map.mp hq
@@ -461,7 +468,7 @@ theorem idealProjectiveAut_le_identity (F : Type*) [Field F] [NumberField F] :
   change Matrix.ProjGenLinGroup.mk (diagonalGL F A) ∈ integralPG F
   exact Subgroup.mem_map.mpr ⟨_, diagonalGL_integral_of_rational_stabilizer F A hA, rfl⟩
 
-theorem rational_integral_detection (F : Type*) [Field F] [NumberField F]
+theorem rational_integral_detection
     (x : F) :
     (∀ v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F),
       (algebraMap F (Adeles F) x) v ∈ v.adicCompletionIntegers F) ↔
@@ -479,7 +486,7 @@ theorem rational_integral_detection (F : Type*) [Field F] [NumberField F]
     rw [IsDedekindDomain.FiniteAdeleRing.algebraMap_apply]
     exact IsDedekindDomain.HeightOneSpectrum.coe_algebraMap_mem _ F v a
 
-theorem rational_action_integral (F : Type*) [Field F] [NumberField F]
+theorem rational_action_integral
     (A : RationalGL F)
     (hA : ∀ i j, ∃ a : NumberField.RingOfIntegers F, algebraMap _ F a = A.val i j)
     (x : Matrix (Fin 2) (Fin 1) F) (hx : x ∈ idealVectors F 1) :
@@ -494,7 +501,7 @@ theorem rational_action_integral (F : Type*) [Field F] [NumberField F]
   simp only [map_add, map_mul, ha0, ha1, hx0, hx1,
     Matrix.GeneralLinearGroup.smul_def, Matrix.mul_apply, Fin.sum_univ_two]
 
-theorem rational_stabilizer_of_integralGL (F : Type*) [Field F] [NumberField F]
+theorem rational_stabilizer_of_integralGL
     (A : RationalGL F)
     (hA : diagonalGL F A ∈ integralGL F) :
     A ∈ MulAction.stabilizer (RationalGL F) (idealVectors F 1) := by
@@ -524,7 +531,6 @@ theorem rational_stabilizer_of_integralGL (F : Type*) [Field F] [NumberField F]
     exact ⟨A⁻¹ • x, rational_action_integral F A⁻¹ (entries A⁻¹ hi) x hx, by simp⟩
 
 theorem standard_stabilizer_class_obstruction_of_finite_index
-    (F : Type*) [Field F] [NumberField F]
     (h : (idealProjectiveAut F 1).IsFiniteRelIndex (levelStabilizer F (integralPG F) 1))
     (g : AdelicPG F) :
     ∃ (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F)
@@ -536,7 +542,7 @@ theorem standard_stabilizer_class_obstruction_of_finite_index
   exact Subgroup.isFiniteRelIndex_of_le_left (idealProjectiveAut F 1)
     (idealProjectiveAut_le_identity F)
 
-theorem projective_standard_mem_iff_scalar (F : Type*) [Field F] [NumberField F]
+theorem projective_standard_mem_iff_scalar
     (A : RationalGL F) :
     Matrix.ProjGenLinGroup.mk A ∈ levelStabilizer F (integralPG F) 1 ↔
       ∃ u : (Adeles F)ˣ,
@@ -574,7 +580,7 @@ theorem projective_standard_mem_iff_scalar (F : Type*) [Field F] [NumberField F]
     rw [hEq, Matrix.GeneralLinearGroup.center_eq_range_scalar]
     exact ⟨u⁻¹, rfl⟩
 
-theorem scalar_mem_integralGL_iff (F : Type*) [Field F] [NumberField F]
+theorem scalar_mem_integralGL_iff
     (u : (Adeles F)ˣ) :
     Matrix.GeneralLinearGroup.scalar (Fin 2) u ∈ integralGL F ↔
       ∀ v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F),
@@ -622,6 +628,8 @@ theorem scalar_mem_integralGL_iff (F : Type*) [Field F] [NumberField F]
       refine ⟨Matrix.GeneralLinearGroup.scalar (Fin 2) u⁻¹ • x,
         act u⁻¹ (fun v => (h v).2) x hx, ?_⟩
       simp only [map_inv, smul_inv_smul]
+
+end
 
 namespace StabilizerClassRaw
 

@@ -27,7 +27,7 @@ namespace RawRecovery
     apply le_antisymm _ (norm_nonneg _)
     simpa only [LinearMap.mem_ker.mp ht, norm_zero, mul_zero] using hf t
   let fq := e.ker.liftQ f hker
-  let fr : e.range →ₗ[ℂ] ℂ := fq.comp e.quotKerEquivRange.symm.toLinearMap
+  let fr := fq.comp e.quotKerEquivRange.symm.toLinearMap
   have hfr : ∀ t, fr (e.rangeRestrict t) = f t := by
     intro t
     change (e.ker.liftQ f hker) (e.quotKerEquivRange.symm ⟨e t, _⟩) = f t
@@ -39,7 +39,7 @@ namespace RawRecovery
     have he : e.rangeRestrict t = y := Subtype.ext ht
     rw [← he, hfr]
     exact hf t
-  let fc : e.range →L[ℂ] ℂ := fr.mkContinuous C hb
+  let fc := fr.mkContinuous C hb
   obtain ⟨g, hg, hgnorm⟩ := exists_extension_norm_eq e.range fc
   refine ⟨g, ?_, ?_⟩
   · intro t
@@ -51,32 +51,8 @@ open KPContLocalNorm
  def testL2 {n : ℕ} (B : LocalBall n) :
     TestFunction B.toOpens ℂ ⊤ →ₗ[ℂ] BallL2 B where
   toFun φ := (φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport).toLp φ
-  map_add' φ ψ := by
-    apply Lp.ext
-    filter_upwards [MemLp.coeFn_toLp
-        ((φ + ψ).continuous.memLp_of_hasCompactSupport (p := 2) (φ + ψ).hasCompactSupport),
-      Lp.coeFn_add
-        ((φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport).toLp φ)
-        ((ψ.continuous.memLp_of_hasCompactSupport (p := 2) ψ.hasCompactSupport).toLp ψ),
-      MemLp.coeFn_toLp
-        (φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport),
-      MemLp.coeFn_toLp
-        (ψ.continuous.memLp_of_hasCompactSupport (p := 2) ψ.hasCompactSupport)] with x h h' hφ hψ
-    rw [h, h']
-    change φ x + ψ x = _ + _
-    rw [hφ, hψ]
-  map_smul' c φ := by
-    apply Lp.ext
-    filter_upwards [MemLp.coeFn_toLp
-        ((c • φ).continuous.memLp_of_hasCompactSupport (p := 2) (c • φ).hasCompactSupport),
-      Lp.coeFn_smul c
-        ((φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport).toLp φ),
-      MemLp.coeFn_toLp
-        (φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport)] with x h h' hφ
-    simp only [RingHom.id_apply]
-    rw [h, h']
-    change c • φ x = c • _
-    rw [hφ]
+  map_add' φ ψ := rfl
+  map_smul' c φ := rfl
 
  theorem testL2_ae {n : ℕ} (B : LocalBall n) (φ : TestFunction B.toOpens ℂ ⊤) :
     testL2 B φ =ᵐ[volume.restrict B.carrier] φ :=

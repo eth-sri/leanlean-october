@@ -132,7 +132,6 @@ theorem scaledRelativeBasisDiscriminantIdeal_ne_bot :
   rw [scaledRelativeBasisDiscriminantIdeal,
     ne_eq, Ideal.span_singleton_eq_bot]
   exact scaledRelativeBasisDiscriminantInteger_ne_zero
-    (K := K) (L := L)
 
 /-- Finite set of places at which the scaled relative basis has
 nonunit discriminant. -/
@@ -179,10 +178,7 @@ theorem adicAbv_scaledRelativeBasisDiscriminant_eq_one_of_notMem
     NumberField.HeightOneSpectrum.adicAbv K w
         (Algebra.discr K
           (scaledRelativeExtensionBasis (K := K) (L := L))) = 1 := by
-  have hnorm :
-      ‖FinitePlace.embedding (K := K) w
-        (scaledRelativeBasisDiscriminantInteger
-          (K := K) (L := L))‖ = 1 :=
+  have hnorm :=
     (FinitePlace.norm_eq_one_iff_notMem
       (R := 𝓞 K) K w
       (scaledRelativeBasisDiscriminantInteger
@@ -228,11 +224,7 @@ theorem finitePlaceLocalTensorDecompositionComponent_tmul
           (NumberField.HeightOneSpectrum.adicAbv K w)
           wL.1 wL.2
           ((relativeFinitePlaceCompletionAlgEquiv w).symm a) *
-        AbsoluteValue.toCompletion wL.1 b := by
-  simp [finitePlaceLocalTensorDecompositionComponent,
-    relativeFinitePlaceLocalTensorAlgEquiv,
-    completionTensorDecomposition_left_tmul_apply,
-    AbsoluteValue.toCompletionAlgHom]
+        AbsoluteValue.toCompletion wL.1 b := rfl
 
 omit [NumberField L] [FiniteDimensional K L] in
 /-- A coefficient in the concrete base valuation ring maps to the

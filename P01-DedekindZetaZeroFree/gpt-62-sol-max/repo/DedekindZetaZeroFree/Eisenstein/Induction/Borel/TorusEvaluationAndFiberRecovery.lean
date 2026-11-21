@@ -175,7 +175,6 @@ theorem rawRationalEvaluator_torus
         (RestrictedTensorSimple.stageInclusion _ _ _ U y))).val.val (r * e)
   rw [rawCoreVector_stage R N P C U (u * g) hugU,
     rawCoreVector_stage R N P C U g hgU]
-  change (comparisonSmooth R P C (stageVector R N P C U (u * g) y)).val.val r = _
   induction y using PiTensorProduct.induction_on with
   | smul_tprod c y =>
     simp only [map_smul]

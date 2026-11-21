@@ -93,25 +93,28 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_injective
     exact hu_succ
   · exact bot_le
 
-/-- If the high normal-basis lattice lies in the maximal ideal, every additive
-successive-quotient class is represented by a unit `1 + x`; hence the
-map `u ↦ u - 1` is surjective. -/
-theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_surjective_of_le_maximalIdeal
-    {n : Nat} {Vn Vsucc : Subgroup 𝒪[L]ˣ}
-    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
+section
+
+variable {n : Nat} {Vn Vsucc : Subgroup 𝒪[L]ˣ}
+  (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
+  (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
       chosenNormalBasisPrincipalUnitSet K L (n + 1))
-    (hV : Vsucc ≤ Vn)
-    (hmul_error : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
+  (hV : Vsucc ≤ Vn) (hmul_error : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
       ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L n →
         (((((u * v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) -
             (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) +
               ((((v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
           chosenBaseUniformizerPowSubmodule K L (n + 1)
             (chosenNormalBasisIntegerLattice K L))
-    (hle : chosenBaseUniformizerPowSubmodule K L n
+  (hle : chosenBaseUniformizerPowSubmodule K L n
         (chosenNormalBasisIntegerLattice K L) ≤
-      maximalIdealFieldSubmodule K L) :
+      maximalIdealFieldSubmodule K L)
+include n Vn Vsucc hVn hVsucc hV hmul_error hle
+
+/-- If the high normal-basis lattice lies in the maximal ideal, every additive
+successive-quotient class is represented by a unit `1 + x`; hence the
+map `u ↦ u - 1` is surjective. -/
+theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_surjective_of_le_maximalIdeal :
     Function.Surjective
       (chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom
         K L n hVn hVsucc hV hmul_error) := by
@@ -164,22 +167,7 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_surjective_of
 /-- The actual isomorphism
 `V^n/V^(n+1) ≃ π_K^nM/π_K^(n+1)M` once the high-lattice bound and
 multiplicative-error estimate hold. -/
-noncomputable def chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
-    {n : Nat} {Vn Vsucc : Subgroup 𝒪[L]ˣ}
-    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
-      chosenNormalBasisPrincipalUnitSet K L (n + 1))
-    (hV : Vsucc ≤ Vn)
-    (hmul_error : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
-      ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L n →
-        (((((u * v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) -
-            (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) +
-              ((((v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
-          chosenBaseUniformizerPowSubmodule K L (n + 1)
-            (chosenNormalBasisIntegerLattice K L))
-    (hle : chosenBaseUniformizerPowSubmodule K L n
-        (chosenNormalBasisIntegerLattice K L) ≤
-      maximalIdealFieldSubmodule K L) :
+noncomputable def chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot :
     chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV ≃*
       Multiplicative (chosenNormalBasisLatticeSuccQuot K L n) :=
   MulEquiv.ofBijective
@@ -193,21 +181,6 @@ noncomputable def chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
 /-- States the theorem `chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot_mk`. -/
 @[simp]
 theorem chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot_mk
-    {n : Nat} {Vn Vsucc : Subgroup 𝒪[L]ˣ}
-    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
-      chosenNormalBasisPrincipalUnitSet K L (n + 1))
-    (hV : Vsucc ≤ Vn)
-    (hmul_error : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
-      ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L n →
-        (((((u * v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) -
-            (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) +
-              ((((v : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L))) ∈
-          chosenBaseUniformizerPowSubmodule K L (n + 1)
-            (chosenNormalBasisIntegerLattice K L))
-    (hle : chosenBaseUniformizerPowSubmodule K L n
-        (chosenNormalBasisIntegerLattice K L) ≤
-      maximalIdealFieldSubmodule K L)
     (u : Vn) :
     chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
         K L hVn hVsucc hV hmul_error hle
@@ -216,6 +189,8 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot_mk
         (chosenNormalBasisPrincipalUnitLatticeClass K L n (u : 𝒪[L]ˣ)
           (by exact hVn ▸ u.2)) :=
   rfl
+
+end
 
 /-- Existential high-degree boundary used in the proof of the local class-field-axiom theorem:
 for every sufficiently large `n`, the actual successive principal-unit

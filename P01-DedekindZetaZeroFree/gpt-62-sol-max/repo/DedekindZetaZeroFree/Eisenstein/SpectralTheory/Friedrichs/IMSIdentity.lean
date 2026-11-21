@@ -79,8 +79,7 @@ theorem coreLift_product (η : Cutoff F ζ hζ U R P H) (f : S_U F ζ hζ U R P 
     ∇Q (lift (scalarMultiply η f)) =
       j (cotangentMultiply η (D_U f)) + j (cutoffGradientTimes η f) := by
   rw [coreLift_gradient]
-  rw [(kp_cont_actual_sector_test_differential_descent F ζ hζ μG hμG U R hR P H
-    realization).differential_product, map_add]
+  rw [differential_product, map_add]
 
 theorem core_line_representative (v : Q) : ∃ s : BorelL2Sections F ζ hζ U R P H,
     sectorLineIsometry F ζ hζ U R P H (jQ v) = mk F ζ hζ U R P H s := by
@@ -152,7 +151,7 @@ theorem sector_mass {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T
       (fun x => inner ℂ (u.val x) (u.val x)) := by
     filter_upwards [hae] with x hx
     simp only [hx, inner_self_eq_norm_sq_to_K, norm_mul, Complex.norm_real,
-      Real.norm_eq_abs, mul_pow]
+      Real.norm_eq_abs]
     push_cast
     have hs := cutoff_square_sum F ζ hζ U R P H partition
       (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x)
@@ -217,15 +216,7 @@ theorem collar_error_integrable {T : ℝ}
     refine ⟨hm.aestronglyMeasurable, ?_⟩
     rw [hasFiniteIntegral_iff_norm]
     simpa only [Real.norm_of_nonneg (sq_nonneg _), normIntegral, squaredNorm] using s.property.2
-  have hc : Continuous (collarError F ζ hζ U R P H partition.χ₀ partition.χ) := by
-    unfold collarError
-    apply Continuous.add
-    · exact (Classical.choose_spec
-        (differentialNormSquared_descends F ζ hζ U R P H partition.χ₀)).1.1
-    · apply continuous_finset_sum
-      intro c _
-      exact (Classical.choose_spec
-        (differentialNormSquared_descends F ζ hζ U R P H (partition.χ c))).1.1
+  have hc := (collarError_continuous_nonnegative F ζ hζ U R P H partition.χ₀ partition.χ).1
   obtain ⟨C, _, hb⟩ := partition.error_bounded
   apply hi.bdd_mul hc.measurable.aestronglyMeasurable
   exact Filter.Eventually.of_forall (fun x => by
@@ -301,19 +292,17 @@ theorem test_weighted_cutoff_gradient_zero {T : ℝ}
     simp_rw [← mul_assoc, ← pow_two]
     rw [← Finset.sum_mul]
     norm_cast at hsq ⊢
-    simpa [η, hsq] using congrArg (fun c : ℝ => (c : ℂ) * f.val a y) hsq
+    simp [η, hsq]
   have hds := congrArg D_U hs
   rw [map_sum] at hds
-  have hprod := (kp_cont_actual_sector_test_differential_descent F ζ hζ μG hμG U R hR P H
-    realization).differential_product
-  simp_rw [hprod] at hds
+  simp_rw [differential_product] at hds
   apply Subtype.ext
   apply Subtype.ext
   funext a y
   apply PiLp.ext
   intro k
   simp only [Submodule.coe_sum, Submodule.coe_zero, Finset.sum_apply, Pi.zero_apply,
-    WithLp.ofLp_sum, Finset.sum_apply, map_zero, PiLp.zero_apply]
+    WithLp.ofLp_sum, Finset.sum_apply, PiLp.zero_apply]
   have he := congrArg
     (fun W : T_U F ζ hζ U R P H =>
       KPContActualCotangentMeasurableFamilies.coefficient W.val a y k) hds
@@ -321,8 +310,7 @@ theorem test_weighted_cutoff_gradient_zero {T : ℝ}
     (f.val a y * cutoffDifferential (η i) a y k) = 0
   simp only [KPContActualCotangentMeasurableFamilies.coefficient, Submodule.coe_sum,
     Submodule.coe_add, Finset.sum_apply, Pi.add_apply, WithLp.ofLp_sum, WithLp.ofLp_add,
-    cotangentMultiply, cutoffGradientTimes, scalarMultiply, WithLp.ofLp_smul,
-    Pi.smul_apply, smul_eq_mul] at he
+    cotangentMultiply, cutoffGradientTimes, scalarMultiply] at he
   have hsq : ∑ i, (cutoffLift (η i) a y) ^ 2 = (1 : ℂ) := by
     simp only [cutoffLift]
     norm_cast
@@ -369,8 +357,7 @@ theorem test_chart_ims {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P 
     (KPContActualCotangentMeasurableFamilies.coefficient (D_U f).val a y)
     1 (cutoff_square_sum F ζ hζ U R P H partition _) hd
   simp only [norm_one, one_pow, one_mul, one_smul, norm_smul, mul_pow] at hx
-  simp_rw [(kp_cont_actual_sector_test_differential_descent F ζ hζ μG hμG U R hR P H
-    realization).differential_product]
+  simp_rw [differential_product]
   change (∑ i, ‖cutoffLift (η i) a y •
     KPContActualCotangentMeasurableFamilies.coefficient (D_U f).val a y +
     f.val a y • cutoffDifferential (η i) a y‖ ^ 2) = _
@@ -587,15 +574,7 @@ theorem test_ims_scalar {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P
     simp only [Real.sq_sqrt (KPContActualCotangentMeasurableFamilies.normSquare
       (D_U g).val x).coe_nonneg]
   obtain ⟨C, hC, hb⟩ := partition.error_bounded
-  have hEc : Continuous (collarError F ζ hζ U R P H partition.χ₀ partition.χ) := by
-    unfold collarError
-    apply Continuous.add
-    · exact (Classical.choose_spec
-        (differentialNormSquared_descends F ζ hζ U R P H partition.χ₀)).1.1
-    · apply continuous_finset_sum
-      intro c _
-      exact (Classical.choose_spec
-        (differentialNormSquared_descends F ζ hζ U R P H (partition.χ c))).1.1
+  have hEc := (collarError_continuous_nonnegative F ζ hζ U R P H partition.χ₀ partition.χ).1
   have hEbdd : ∀ᵐ x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P,
       ‖collarError F ζ hζ U R P H partition.χ₀ partition.χ x‖ ≤ C :=
     Filter.Eventually.of_forall (fun x => by
@@ -744,7 +723,7 @@ private theorem continuous_weighted_l2 {α : Type*} [MeasurableSpace α] (μ : M
     have hsl : (fL • w : Lp ℂ 2 μ) =ᵐ[μ] (fL : α → ℂ) • (w : α → ℂ) :=
       Lp.coeFn_lpSMul fL w
     filter_upwards [hsl, hfL, hE0] with x hx hfx h0
-    simp only [hx, Pi.smul_apply, smul_eq_mul, Pi.mul_apply, hfx, norm_mul, Complex.norm_real,
+    simp only [hx, smul_eq_mul, Pi.mul_apply, hfx, norm_mul, Complex.norm_real,
       Real.norm_of_nonneg (Real.sqrt_nonneg _), mul_pow, Real.sq_sqrt h0]
   rw [show (fun w : Lp ℂ 2 μ => ∫ x, E x * ‖w x‖ ^ 2 ∂μ)
       = fun w => ‖(fL • w : Lp ℂ 2 μ)‖ ^ 2 from funext hkey]
@@ -925,13 +904,6 @@ structure Properties {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H 
   test_lift : ∀ i (f : S_U F ζ hζ U R P H),
     A i (lift f) = lift (scalarMultiply (cutoff F ζ hζ U R P H partition i) f)
 
-  test_gradient : ∀ f : S_U F ζ hζ U R P H, ∇Q (lift f) = j (D_U f)
-
-  test_product_rule : ∀ i (f : S_U F ζ hζ U R P H),
-    ∇Q (A i (lift f)) =
-      j (cotangentMultiply (cutoff F ζ hζ U R P H partition i) (D_U f)) +
-      j (cutoffGradientTimes (cutoff F ζ hζ U R P H partition i) f)
-
   mass : ∀ v : Q, ∑ i, ‖jQ (A i v)‖ ^ 2 = ‖jQ v‖ ^ 2
 
   line_representative : ∀ v : Q, ∃ s : BorelL2Sections F ζ hζ U R P H,
@@ -939,9 +911,6 @@ structure Properties {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H 
 
   ims : ∀ (v : Q) (s : BorelL2Sections F ζ hζ U R P H),
     sectorLineIsometry F ζ hζ U R P H (jQ v) = mk F ζ hζ U R P H s →
-    Integrable (fun x => collarError F ζ hζ U R P H partition.χ₀ partition.χ x *
-      KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2)
-      (KPContActualSectorCotangentL2.muU F ζ hζ U R P) ∧
     ∑ i, qQ (A i v) = qQ v + ∫ x,
       collarError F ζ hζ U R P H partition.χ₀ partition.χ x *
         KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2
@@ -968,17 +937,10 @@ theorem kp_cont_actual_form_ims_identity
     A := A
     intertwines := hA
     test_lift := ht
-    test_gradient := KPContActualFormIMSIdentity.coreLift_gradient
-      F ζ hζ U R P H μG hμG hR realization
-    test_product_rule := ?_
     mass := ?_
     line_representative := KPContActualFormIMSIdentity.core_line_representative
       F ζ hζ U R P H μG hμG hR realization
     ims := ?_ }⟩
-  · intro i f
-    rw [ht]
-    exact KPContActualFormIMSIdentity.coreLift_product
-      F ζ hζ U R P H μG hμG hR realization _ f
   · intro v
     have he (i) := congrArg (fun M => M v) (hA i)
     simp only [ContinuousLinearMap.comp_apply] at he
@@ -987,7 +949,6 @@ theorem kp_cont_actual_form_ims_identity
       KPContActualFormIMSIdentity.sector_mass F ζ hζ U R P H partition
         (KPContActualFormIMSIdentity.j_U F ζ hζ U R P H μG hμG hR realization v)
   · intro v s hs
-    refine ⟨KPContActualFormIMSIdentity.collar_error_integrable F ζ hζ U R P H partition s, ?_⟩
     exact KPContActualFormIMSIdentity.ims_identity F ζ hζ U R P H μG hμG hR realization
       partition A ht v s hs
 

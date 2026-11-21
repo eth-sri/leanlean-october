@@ -109,7 +109,7 @@ theorem iUnion_finiteCompletionBall_neg_nat (v : HeightOneSpectrum (𝓞 F)) :
   refine Set.mem_iUnion.mpr ⟨(WithZero.log (Valued.v x)).toNat, ?_⟩
   change Valued.v x ≤ WithZero.exp (-(-((WithZero.log (Valued.v x)).toNat : ℤ)))
   apply WithZero.le_exp_of_log_le
-  simpa using Int.le_toNat (WithZero.log (Valued.v x))
+  simp
 
 theorem exists_finiteCompletionUniformizer (v : HeightOneSpectrum (𝓞 F)) :
     ∃ π : v.adicCompletion F, Valued.v π = WithZero.exp (-1 : ℤ) := by

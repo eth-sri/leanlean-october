@@ -106,7 +106,7 @@ theorem matrixValue_inv (x : RestrictedCover F ζ hζ) :
   apply matrix_ext F
   intro v
   rw [Matrix.map_mul, matrixValue_map, matrixValue_map]
-  simpa using (x v).g.val_inv
+  simp
 
 theorem matrixValue_inv_left (x : RestrictedCover F ζ hζ) :
     matrixValue F ζ hζ x⁻¹ * matrixValue F ζ hζ x = 1 := by
@@ -157,12 +157,12 @@ private theorem integral_matrix_lift (q : HeightOneSpectrum (𝓞 F))
     apply hinj
     dsimp only
     rw [Matrix.map_mul, ha, hb]
-    simpa using g.val_inv
+    simp
   have hba : b * a = 1 := by
     apply hinj
     dsimp only
     rw [Matrix.map_mul, hb, ha]
-    simpa using g.inv_val
+    simp
   exact ⟨⟨a, b, hab, hba⟩, Units.ext rfl⟩
 
 private theorem adelic_integral (g : AdelicGL2 F) :

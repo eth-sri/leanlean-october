@@ -54,14 +54,14 @@ theorem flat_root_word_lift {K : Subgroup (Group R)}
     refine ⟨w,C,?_,?_⟩
     · funext g
       rw [hw]
-      simp_rw [ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R]
+      simp_rw [MomentSources.finite_root_injection R]
       change (∑ i, c q i * v.val 0 (g * FiniteWhittakerProjectors.finiteRoot R q.val (t q i))) = _
       rw [hv]
       simp only [FiniteWhittakerProjectors.rootProjectorWord, List.foldr_cons, LinearMap.comp_apply,
         FiniteWhittakerProjectors.rightTranslateSum_apply]
     · funext g
       rw [hC]
-      simp_rw [ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R]
+      simp_rw [MomentSources.finite_root_injection R]
       change (∑ i, c q i * B.numerator 0 (g * FiniteWhittakerProjectors.finiteRoot R q.val (t q i))) = _
       rw [hB]
       simp only [FiniteWhittakerProjectors.rootProjectorWord, List.foldr_cons, LinearMap.comp_apply,

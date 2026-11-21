@@ -1,6 +1,7 @@
 module
 
-public import DedekindZetaZeroFree.Eisenstein.Sections.ArchimedeanIwasawaNorm
+public import DedekindZetaZeroFree.Eisenstein.Sections.FullProductFlatFamily
+public import DedekindZetaZeroFree.Eisenstein.Induction.Height.ArchimedeanFactorization
 public import DedekindZetaZeroFree.Adeles.Quotients.CuspMeasures.StabilizerAveragesAndCoarea
 
 @[expose] public section
@@ -27,9 +28,9 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
 
 open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming placeEquiv → placeEquiv
 open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming archEquiv → archEquiv
-open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming archDiagonalLift_eq_insertion → archDiagonalLift_eq_insertion
-open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming N_eq_insertion → N_eq_insertion
-open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming adeleOfArch → adeleOfArch
+open _root_.DedekindZetaZeroFree.HeightGeometry renaming archDiagonalLift_eq_insertion → archDiagonalLift_eq_insertion
+open _root_.DedekindZetaZeroFree.HeightGeometry renaming N_eq_insertion → N_eq_insertion
+open _root_.DedekindZetaZeroFree.HeightGeometry renaming adeleOfArch → adeleOfArch
 
 private theorem sqrt_exp_double (q : ℝ) :
     Real.sqrt (Real.exp (2*q)) = Real.exp q := by
@@ -56,7 +57,7 @@ private theorem radialSection_exponential_insertion
     funext v
     by_cases hv : v = w
     · subst v
-      simp only [KPMsFixedHaarDisintegration.positiveSlots, if_pos rfl, radialSlotLog]
+      simp only [KPMsFixedHaarDisintegration.positiveSlots, radialSlotLog]
       rw [show 2*(KPCuspLogShape.dimension F : ℝ)*t =
         2*((KPCuspLogShape.dimension F : ℝ)*t) by ring, sqrt_exp_double]
       rfl
@@ -88,7 +89,7 @@ private theorem section_diagonal_inverse (q : ℝ) (z : ℂ) (t : ℝ) :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KubotaRankTwo.d, Matrix.mul_apply, Fin.sum_univ_two, Real.exp_neg,
-        Complex.ofReal_inv, Real.exp_ne_zero]
+        Complex.ofReal_inv]
 
  def radialShapeCorrection (w : NumberField.InfinitePlace F) (t : ℝ) :
     KPCuspCharts.Shape F :=
@@ -136,8 +137,8 @@ private theorem section_diagonal_inverse (q : ℝ) (z : ℂ) (t : ℝ) :
   change _ * (KPArithmeticAction.hyperbolicProjectiveSection (p.1 i,t+p.2.val i) * _) = _
   simp only [Pi.inv_apply]
   rw [← mul_assoc, section_diagonal_inverse]
-  simp only [Pi.mul_apply, KPCuspCharts.toArch, radialShapeCorrection,
-    AddSubgroup.coe_add, Pi.add_apply, Pi.zero_apply, Equiv.apply_symm_apply]
+  simp only [Pi.mul_apply, radialShapeCorrection,
+    Equiv.apply_symm_apply]
   change (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n ℂ
     ((Real.exp (-radialSlotLog w t (KPCusp.complexPlace F i)) : ℂ) * p.1 i)) *
       KPArithmeticAction.hyperbolicProjectiveSection
@@ -264,7 +265,6 @@ attribute [local instance] KPCompactStabilizerHaarSources.groupMeasurableSpace
 open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_compact_finite_test_covariance → actual_compact_finite_test_covariance
 open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_high_cusp_joint_coarea → actual_high_cusp_joint_coarea
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 
 open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming archEquiv → archEquiv
 open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources renaming cocycle → cocycle

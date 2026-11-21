@@ -27,7 +27,7 @@ theorem verticalIntegral_sub_eq_residue
   set q : ℝ := p.re with hq
   set g : ℂ → ℂ := fun z => f (z + (c : ℂ) * I) with hg
   have hpq : p = (q : ℂ) + (c : ℂ) * I := by
-    apply Complex.ext <;> simp [hq, hc]
+    simp_all
   have hcomp : ∀ σ : ℝ, (fun t : ℝ => g ((σ : ℂ) + (t : ℂ) * I)) =
       fun t : ℝ => f ((σ : ℂ) + ((t + c : ℝ) : ℂ) * I) := by
     intro σ; funext t; simp only [hg]; congr 1; push_cast; ring
@@ -91,7 +91,7 @@ theorem verticalIntegral_sub_eq_residue
       refine this.congr ?_
       intro z hz
       simp only [hA]
-      rw [Function.update_of_ne (by simpa using hz.2)]
+      grind
     · exact continuousAt_update_same.mpr hgres
   have hF : ∀ z : ℂ, a ≤ z.re → z.re ≤ b → z ≠ (q : ℂ) → g z = A z / (z - (q : ℂ)) := by
     intro z _ _ hz
@@ -106,7 +106,7 @@ theorem verticalIntegral_sub_eq_residue
     intro T
     apply intervalIntegral.integral_congr
     intro x _
-    simp only [hg, Function.comp_apply, id]
+    simp only [hg, id]
     apply congrArg f
     push_cast
     ring
@@ -117,7 +117,7 @@ theorem verticalIntegral_sub_eq_residue
     intro T
     apply intervalIntegral.integral_congr
     intro x _
-    simp only [hg, Function.comp_apply, id]
+    simp only [hg, id]
     apply congrArg f
     push_cast
     ring
@@ -141,9 +141,8 @@ theorem integrable_of_decay (g : ℝ → ℂ) (C T : ℝ) (hT : 1 ≤ T) (hg : C
     apply hbound t
     simp only [mem_compl_iff, mem_Icc, not_and_or, not_le] at ht
     rcases ht with ht | ht
-    · rw [abs_of_neg (by linarith)]
-      linarith
-    · exact (le_abs_self t).trans' ht.le
+    · grind
+    grind
   simpa only [union_compl_self, integrableOn_univ] using hc.union ht
 
 theorem horizontal_tendsto_zero_of_decay (f : ℂ → ℂ) (a b C T0 ε : ℝ) (hab : a ≤ b)
@@ -161,7 +160,7 @@ theorem horizontal_tendsto_zero_of_decay (f : ℂ → ℂ) (a b C T0 ε : ℝ) (
   filter_upwards [eventually_ge_atTop (max T0 1)] with T hT
   have hT1 : 1 ≤ T := le_trans (le_max_right _ _) hT
   have hT0 : T0 ≤ T := le_trans (le_max_left _ _) hT
-  have he : |ε * T| = T := by rw [abs_mul, hε, one_mul, abs_of_nonneg (by linarith)]
+  have he : |ε * T| = T := by grind
   apply intervalIntegral.norm_integral_le_of_norm_le_const
   intro x hx
   have hx' : x ∈ Icc a b := by
@@ -199,8 +198,7 @@ theorem verticalIntegral_sub_eq_residue_of_decay
       have := congrArg Complex.re h
       simp at this
       exact hne this
-    · intro y hy
-      exact hbound σ hσ y hy
+    simp_all
   refine verticalIntegral_sub_eq_residue hap hpb hf hres
     (hline a ⟨le_rfl, hab⟩ hap.ne) (hline b ⟨hab, le_rfl⟩ hpb.ne') ?_ ?_
   · simpa using horizontal_tendsto_zero_of_decay f a b C T0 (-1) hab (by norm_num) hbound

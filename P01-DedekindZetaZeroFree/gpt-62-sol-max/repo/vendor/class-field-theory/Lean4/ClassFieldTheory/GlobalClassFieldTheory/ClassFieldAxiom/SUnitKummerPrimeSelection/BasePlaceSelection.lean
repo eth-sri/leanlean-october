@@ -39,23 +39,20 @@ section FinitePlaces
 variable {K : Type} [Field K]
     [NumberField K]
 
+section
+
+variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
+  (E : IntermediateField K Omega) [FiniteDimensional K E] [IsGalois K E]
+  [IsMulCommutative Gal(E/K)] (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (p v : ℕ)
+  (hp : p.Prime) (hv : 0 < v) (hn : (n : ℕ) = p ^ v) (r : ℕ) (eG :
+      Gal(E/K) ≃*
+        (Fin r → Multiplicative (ZMod (n : ℕ))))
+  (S : Finset (HeightOneSpectrum (𝓞 K)))
+include p v hp hv hn eG
+
 /-- Base finite places lying below a full-decomposition place for the
 cyclic coordinate extension `N/N_i`. -/
 noncomputable def sUnitKummerCoordinateBasePlaceCandidates
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -98,20 +95,6 @@ noncomputable def sUnitKummerCoordinateBasePlaceCandidates
 /-- Each cyclic coordinate extension supplies infinitely many base
 finite places below completely decomposed places. -/
 theorem sUnitKummerCoordinateBasePlaceCandidates_infinite
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -185,17 +168,19 @@ theorem sUnitKummerCoordinateBasePlaceCandidates_infinite
       (K := Ni) (L := N) q' = ⊤
   exact ⟨q, rfl, hq⟩
 
+end
+
+section
+
+variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
+  (E : IntermediateField K Omega) [FiniteDimensional K E] [IsGalois K E] (n : ℕ+)
+  (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n hmu S
+
 /-- The finite set avoided in the prime choice: the enlarged support,
 all base primes ramified in the full Kummer extension, and the support of
 the exponent `n`. -/
-noncomputable def sUnitKummerAvoidedBasePlaces
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def sUnitKummerAvoidedBasePlaces :
     Finset (HeightOneSpectrum (𝓞 K)) := by
   let S' :=
     enlargeByFiniteKummerRadicalSupport
@@ -222,14 +207,7 @@ noncomputable def sUnitKummerAvoidedBasePlaces
 
 /-- The enlarged support is contained in the finite avoidance set. -/
 theorem
-    enlargeByFiniteKummerRadicalSupport_subset_sUnitKummerAvoidedBasePlaces
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+    enlargeByFiniteKummerRadicalSupport_subset_sUnitKummerAvoidedBasePlaces :
     enlargeByFiniteKummerRadicalSupport
         (K := K) (L := E) n hmu S ⊆
       sUnitKummerAvoidedBasePlaces
@@ -241,23 +219,22 @@ theorem
     Finset.mem_union_left _
       (Finset.mem_union_left _ hw)
 
-/-- Simultaneously choose distinct full-decomposition candidates outside
-the enlarged support, the ramified primes of `N/K`, and the support of `n`. -/
-theorem exists_sUnitKummerChosenBasePlaces
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
+end
+
+section
+
+variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
+  (E : IntermediateField K Omega) [FiniteDimensional K E] [IsGalois K E]
+  [IsMulCommutative Gal(E/K)] (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (p v : ℕ)
+  (hp : p.Prime) (hv : 0 < v) (hn : (n : ℕ) = p ^ v) (r : ℕ) (eG :
       Gal(E/K) ≃*
         (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+  (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n hmu p v hp hv hn r eG S
+
+/-- Simultaneously choose distinct full-decomposition candidates outside
+the enlarged support, the ramified primes of `N/K`, and the support of `n`. -/
+theorem exists_sUnitKummerChosenBasePlaces :
     ∃ f :
         Fin
             (sUnitKummerPrimeCount
@@ -316,21 +293,7 @@ theorem exists_sUnitKummerChosenBasePlaces
   exact hBsub i (hfB i)
 
 /-- The chosen ordered family of base primes. -/
-noncomputable def sUnitKummerChosenBasePlaces
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def sUnitKummerChosenBasePlaces :
     Fin
         (sUnitKummerPrimeCount
           (K := K) E n hmu r S) →
@@ -341,21 +304,7 @@ noncomputable def sUnitKummerChosenBasePlaces
       p v hp hv hn r eG S)
 
 /-- The chosen base primes are pairwise distinct. -/
-theorem sUnitKummerChosenBasePlaces_injective
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem sUnitKummerChosenBasePlaces_injective :
     Function.Injective
       (sUnitKummerChosenBasePlaces
         (K := K) (Omega := Omega) E n hmu
@@ -369,20 +318,6 @@ theorem sUnitKummerChosenBasePlaces_injective
 its coordinate fixed field. -/
 theorem
     sUnitKummerChosenBasePlaces_mem_coordinateBasePlaceCandidates
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -400,20 +335,6 @@ theorem
 /-- Every chosen base prime avoids the enlarged support, the ramified
 primes of the full Kummer extension, and the support of `n`. -/
 theorem sUnitKummerChosenBasePlaces_not_mem_avoided
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -429,20 +350,6 @@ theorem sUnitKummerChosenBasePlaces_not_mem_avoided
 
 /-- The exponent `n` is a unit at every chosen base prime. -/
 theorem sUnitKummerChosenBasePlaces_valuation_natCast_eq_one
-    {Omega : Type} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -477,6 +384,8 @@ theorem sUnitKummerChosenBasePlaces_valuation_natCast_eq_one
         p v hp hv hn r eG S i)
       hnotSupport
   simpa [nUnit] using hunit
+
+end
 
 end FinitePlaces
 

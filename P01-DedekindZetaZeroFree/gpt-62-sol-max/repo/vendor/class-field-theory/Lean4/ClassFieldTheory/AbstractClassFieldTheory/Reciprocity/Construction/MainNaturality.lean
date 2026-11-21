@@ -102,9 +102,7 @@ def finiteReciprocityNaturalityFrobeniusTowerMap
     (Subgroup.inclusion hK'K)
   rintro k' ⟨hk'L', hk'I⟩
   constructor
-  · change k'.1 ∈ L'.toSubgroup at hk'L'
-    change (Subgroup.inclusion hK'K k').1 ∈ L.toSubgroup
-    exact hL'L hk'L'
+  · apply hL'L <;> assumption
   · exact hk'I
 
 /-- The Frobenius tower map has the expected value on a quotient representative. -/
@@ -211,8 +209,7 @@ theorem finiteReciprocityNaturalityFrobeniusTowerLift_coe
     (D.finiteReciprocityNaturalityFrobeniusTowerLift
       E L L' hLK hL'K' hL'L σ).1 =
       D.finiteReciprocityNaturalityFrobeniusTowerMap
-        E.base.field E.field.field L L' hLK hL'K' E.below hL'L σ.1 := by
-  simp [finiteReciprocityNaturalityFrobeniusTowerLift]
+        E.base.field E.field.field L L' hLK hL'K' E.below hL'L σ.1 := rfl
 
 /-- The Frobenius tower lift has the prescribed Frobenius exponent. -/
 @[simp]
@@ -383,8 +380,7 @@ theorem finiteReciprocityNaturalityFrobeniusFixedField_isTotallyRamified
   let : Finite (E.base.toSubgroup ⧸
       extensionSubgroup E.base.field S' (hS'K'.trans E.below)) :=
     relativeTowerQuotientFinite E.base.field E.field.field S' hS'K' E.below
-  let hS'Sfinite : Finite
-      (S.toSubgroup ⧸ extensionSubgroup S S' hS'S) :=
+  let hS'Sfinite :=
     FiniteIntermediateField.finite_extension_of_le
       (hS'S.trans hSK) hSK hS'S
   let ES'S : DegreeData.FiniteResidueAbstractExtension D :=
@@ -447,7 +443,7 @@ def finiteReciprocityNaturalityNormMap
       (L.toSubgroup ⧸ extensionSubgroup L L' hL'L) :=
     FiniteIntermediateField.finite_extension_of_le
       (hL'L.trans hLK) hLK hL'L
-  let f : ambientFixedAddSubgroup A K' →+ FiniteNormQuotient A K L hLK :=
+  let f :=
     (finiteNormClassHom A K L hLK).comp (relativeNorm A K K' hK'K)
   apply finiteNormQuotientLift A K' L' hL'K' f
   rintro _ ⟨a, rfl⟩
@@ -496,9 +492,7 @@ theorem finiteReciprocityNaturalityNormMap_finiteNormClass
     finiteReciprocityNaturalityNormMap A K K' L L' hLK hL'K' hK'K hL'L
         (finiteNormClass A K' L' hL'K' a) =
       finiteNormClass A K L hLK (relativeNorm A K K' hK'K a) :=
-  by
-    simp [finiteReciprocityNaturalityNormMap]
-    rfl
+  rfl
 
 /-- The additive map `a ↦ a^s` between the two actual fixed subgroups. -/
 def conjugateFixedElementHom [ContinuousMul G]
@@ -508,10 +502,10 @@ def conjugateFixedElementHom [ContinuousMul G]
   toFun := conjugateFixedElement A K s
   map_zero' := by
     apply Subtype.ext
-    exact map_zero (A.ρ s⁻¹)
+    exact map_zero ..
   map_add' a b := by
     apply Subtype.ext
-    exact map_add (A.ρ s⁻¹) a.1 b.1
+    exact map_add ..
 
 /-- The homomorphism on conjugate-fixed elements evaluates by the underlying conjugation map. -/
 @[simp]
@@ -543,10 +537,7 @@ def finiteReciprocityNaturalityConjugationNormMap
         (conjugateClosedSubgroup L s)
         (conjugateClosedSubgroup_mono hLK s)) :=
     finite_conjugateExtension K L hLK s
-  let f : ambientFixedAddSubgroup A K →+
-      FiniteNormQuotient A (conjugateClosedSubgroup K s)
-        (conjugateClosedSubgroup L s)
-        (conjugateClosedSubgroup_mono hLK s) :=
+  let f :=
     (finiteNormClassHom A (conjugateClosedSubgroup K s)
       (conjugateClosedSubgroup L s)
       (conjugateClosedSubgroup_mono hLK s)).comp
@@ -556,7 +547,7 @@ def finiteReciprocityNaturalityConjugationNormMap
   apply (finiteNormClass_eq_zero_iff A (conjugateClosedSubgroup K s)
     (conjugateClosedSubgroup L s) (conjugateClosedSubgroup_mono hLK s) _).2
   refine ⟨conjugateFixedElement A L s a, ?_⟩
-  exact relativeNorm_conjugate_apply A K L hLK s a
+  exact relativeNorm_conjugate_apply ..
 
 /-- The conjugation norm map preserves canonical finite norm classes. -/
 @[simp]
@@ -575,14 +566,7 @@ theorem finiteReciprocityNaturalityConjugationNormMap_finiteNormClass
         (finiteNormClass A K L hLK a) =
       finiteNormClass A (conjugateClosedSubgroup K s)
         (conjugateClosedSubgroup L s) (conjugateClosedSubgroup_mono hLK s)
-        (conjugateFixedElement A K s a) := by
-  let hConjFinite : Finite ((conjugateClosedSubgroup K s).toSubgroup ⧸
-      extensionSubgroup (conjugateClosedSubgroup K s)
-        (conjugateClosedSubgroup L s)
-        (conjugateClosedSubgroup_mono hLK s)) :=
-    finite_conjugateExtension K L hLK s
-  simp [finiteReciprocityNaturalityConjugationNormMap]
-  rfl
+        (conjugateFixedElement A K s a) := rfl
 
 /-- The norm identity used for the first diagram of norm--conjugation naturality,
 already expressed in the target finite norm quotient.  Taking `S = Σ` and
@@ -1147,32 +1131,6 @@ theorem finiteReciprocityNaturalityFrobeniusConjugationEquiv_mem_closure_iff
     simpa [DegreeData.frobeniusClosure,
       D.finiteReciprocityNaturalityFrobeniusConjugationLift_coe, e] using hmap
 
-/-- Conjugation of a Frobenius lift commutes with restriction to the finite
-Galois quotient. -/
-theorem finiteReciprocityNaturalityConjugation_frobeniusRestriction
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup) (s : G)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    finiteReciprocityNaturalityConjugation K.field L hLK s
-        (D.frobeniusRestriction K L hLK σ) =
-      D.frobeniusRestriction
-        (K.conjugate s : D.FiniteResidueAbstractField)
-        (conjugateClosedSubgroup L s)
-        (conjugateClosedSubgroup_mono hLK s)
-        (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ) := by
-  change finiteReciprocityNaturalityConjugation K.field L hLK s
-      (D.extensionRestriction K.field L hLK σ.1) =
-    D.extensionRestriction
-      (K.conjugate s : D.FiniteResidueAbstractField).field
-      (conjugateClosedSubgroup L s)
-      (conjugateClosedSubgroup_mono hLK s)
-      (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ).1
-  rw [D.finiteReciprocityNaturalityFrobeniusConjugationLift_coe]
-  refine Quotient.inductionOn' σ.1 ?_
-  intro k
-  rfl
 
 /-- The fixed field of the conjugated Frobenius lift is the conjugate of
 the original fixed field. -/

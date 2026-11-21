@@ -63,7 +63,7 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
       rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx]
       simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
         Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul,
-        sub_self, add_zero, Real.exp_zero, one_mul, zero_mul, mul_one]
+        sub_self, add_zero, Real.exp_zero, zero_mul, mul_one]
       exact mul_le_mul (hrpow σ hσ.1 hσ.2) (hbound σ t hσ) (norm_nonneg _)
         ((Real.rpow_nonneg hx.le _).trans (le_max_left _ _))
   constructor

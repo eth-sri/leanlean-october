@@ -75,69 +75,31 @@ def finiteReciprocityValue (D : DegreeData G) (A : Rep ℤ G)
   D.maximalUnramifiedToFiniteNormQuotient A K.field L hLK
     (D.reciprocityMap A v K L hLK σ)
 
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A) [IsTopologicalGroup G]
+  [CompactSpace G] [T2Space G] [TotallyDisconnectedSpace G]
+  (hAxiom : v.SatisfiesUnramifiedUnitCohomology D) (K : FiniteAbstractField G)
+  (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] [hLfinite : Finite
+      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+include v hAxiom hLnormal hLfinite
+
 /-- reciprocity multiplicativity remains additive after passage from the universal norm
 quotient to the finite quotient by `N_{L/K} A_L`. -/
 theorem finiteReciprocityValue_mul
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (hAxiom : v.SatisfiesUnramifiedUnitCohomology D)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (α β : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK) :
     D.finiteReciprocityValue A v K L hLK (α * β) =
       D.finiteReciprocityValue A v K L hLK α +
         D.finiteReciprocityValue A v K L hLK β := by
   unfold finiteReciprocityValue
   rw [D.reciprocityMap_mul A v hAxiom K L hLK α β]
-  exact map_add
-    (D.maximalUnramifiedToFiniteNormQuotient A K.field L hLK) _ _
+  rfl
 
-/-- Formula for the finite Frobenius value using the chosen prime element
-of its fixed field. -/
-theorem finiteReciprocityValue_eq_primeNormClass
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK) :
-    let KR := K.toFiniteResidueAbstractField D
-    let S := D.frobeniusFixedField KR L hLK σ
-    let hSK := D.frobeniusFixedField_le KR L hLK σ
-    letI : Finite
-        (K.field.toSubgroup ⧸ extensionSubgroup K.field S hSK) :=
-      D.frobeniusFixedField_finite KR L hLK σ
-    letI : Finite ((baseField G).toSubgroup ⧸
-        extensionSubgroup (baseField G) S (le_baseField S)) :=
-      D.frobeniusFixedField_absoluteFinite K L hLK σ
-    let Sigma : FiniteAbstractField G := ⟨S, inferInstance⟩
-    D.finiteReciprocityValue A v K L hLK σ =
-      finiteNormClass A K.field L hLK
-        (relativeNorm A K.field S hSK (v.chosenPrimeElement Sigma)) := by
-  dsimp only
-  rw [finiteReciprocityValue,
-    D.reciprocityMap_eq_chosenPrime A v K L hLK σ]
-  exact D.maximalUnramifiedToFiniteNormQuotient_maximalUnramifiedNormClass
-    A K.field L hLK _
 
 /-- The same formula for any prime element of the fixed field.  Prime-choice
 independence is exactly the reciprocity construction's consequence of the unit-cohomology axiom. -/
 theorem finiteReciprocityValue_eq_primeNormClass_of_isPrime
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (hAxiom : v.SatisfiesUnramifiedUnitCohomology D)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
     (π : ambientFixedAddSubgroup A
       (D.frobeniusFixedField (K.toFiniteResidueAbstractField D) L hLK σ))
@@ -160,8 +122,9 @@ theorem finiteReciprocityValue_eq_primeNormClass_of_isPrime
   rw [finiteReciprocityValue,
     ← D.reciprocityValueOfPrime_eq_reciprocityMap
       A v hAxiom K L hLK σ π hπ]
-  exact D.maximalUnramifiedToFiniteNormQuotient_maximalUnramifiedNormClass
-    A K.field L hLK _
+  rfl
+
+end
 
 end DegreeData
 
@@ -173,13 +136,16 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] (σ τ : D.FrobeniusElements K L hLK)
+include hLnormal
+
 /-- The quotient between two Frobenius lifts when the exponent of the first
 is strictly smaller.  Its exponent is the positive difference. -/
-def frobeniusLiftDifference (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ τ : D.FrobeniusElements K L hLK)
+def frobeniusLiftDifference
     (hdegree : D.frobeniusExponent K L hLK σ <
       D.frobeniusExponent K L hLK τ) :
     D.FrobeniusElements K L hLK := by
@@ -200,23 +166,15 @@ def frobeniusLiftDifference (D : DegreeData G)
 
 /-- The difference of two Frobenius lifts coerces to their ambient quotient difference. -/
 @[simp]
-theorem frobeniusLiftDifference_coe (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ τ : D.FrobeniusElements K L hLK)
+theorem frobeniusLiftDifference_coe
     (hdegree : D.frobeniusExponent K L hLK σ <
       D.frobeniusExponent K L hLK τ) :
     (D.frobeniusLiftDifference K L hLK σ τ hdegree).1 =
       σ.1⁻¹ * τ.1 :=
-  by simp [frobeniusLiftDifference]
+  rfl
 
 /-- Multiplying the smaller lift by its quotient recovers the larger lift. -/
-theorem mul_frobeniusLiftDifference (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ τ : D.FrobeniusElements K L hLK)
+theorem mul_frobeniusLiftDifference
     (hdegree : D.frobeniusExponent K L hLK σ <
       D.frobeniusExponent K L hLK τ) :
     σ * D.frobeniusLiftDifference K L hLK σ τ hdegree = τ := by
@@ -226,11 +184,7 @@ theorem mul_frobeniusLiftDifference (D : DegreeData G)
 
 /-- If the two lifts have the same restriction, their quotient restricts
 trivially. -/
-theorem frobeniusRestriction_frobeniusLiftDifference (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ τ : D.FrobeniusElements K L hLK)
+theorem frobeniusRestriction_frobeniusLiftDifference
     (hRestriction : D.frobeniusRestriction K L hLK σ =
       D.frobeniusRestriction K L hLK τ)
     (hdegree : D.frobeniusExponent K L hLK σ <
@@ -244,6 +198,8 @@ theorem frobeniusRestriction_frobeniusLiftDifference (D : DegreeData G)
   change (D.frobeniusRestriction K L hLK σ)⁻¹ *
       D.frobeniusRestriction K L hLK τ = 1
   rw [hRestriction, inv_mul_cancel]
+
+end
 
 end DegreeData
 
@@ -272,10 +228,9 @@ theorem finiteReciprocityValue_eq_zero_of_restriction_eq_one
       (K.toFiniteResidueAbstractField D) L hLK σ = 1) :
     D.finiteReciprocityValue A v K L hLK σ = 0 := by
   let KR := K.toFiniteResidueAbstractField D
-  let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+  
   let S := D.frobeniusFixedField KR L hLK σ
-  let hSK : S.toSubgroup ≤ K.field.toSubgroup :=
+  let hSK :=
     D.frobeniusFixedField_le KR L hLK σ
   let hSL : S.toSubgroup ≤ L.toSubgroup :=
     D.frobeniusFixedField_le_of_restriction_eq_one
@@ -283,11 +238,9 @@ theorem finiteReciprocityValue_eq_zero_of_restriction_eq_one
   let hSfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field S hSK) :=
     D.frobeniusFixedField_finite KR L hLK σ
-  let hSLfinite : Finite
-      (L.toSubgroup ⧸ extensionSubgroup L S hSL) :=
+  let hSLfinite :=
     FiniteIntermediateField.finite_extension_of_le hSK hLK hSL
-  let hSabsolute : Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G) S (le_baseField S)) :=
+  let hSabsolute :=
     D.frobeniusFixedField_absoluteFinite K L hLK σ
   let Sigma : FiniteAbstractField G := ⟨S, hSabsolute⟩
   rw [finiteReciprocityValue,
@@ -308,7 +261,7 @@ theorem finiteReciprocityValue_eq_zero_of_restriction_eq_one
       middle_le_base := hLK
       finiteTopQuotient := hSLfinite
       finiteBaseQuotient := hLfinite }
-  exact T.norm_trans_apply A (v.chosenPrimeElement Sigma)
+  exact T.norm_trans_apply ..
 
 end DegreeData
 
@@ -377,8 +330,7 @@ theorem finiteReciprocityHom_lift_comparison
       (K.toFiniteResidueAbstractField D) L hLK ι = 1 ∧
         D.finiteReciprocityValue A v K L hLK ι = 0) := by
   let KR := K.toFiniteResidueAbstractField D
-  let hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-    simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
+  
   rcases lt_trichotomy
       (D.frobeniusExponent KR L hLK σ)
       (D.frobeniusExponent KR L hLK τ) with hlt | heq | hgt
@@ -418,30 +370,29 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] [hLfinite : Finite
+      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+  (q : K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)
+include hLnormal hLfinite q
+
 /-- A specified Frobenius lift of a finite Galois automorphism, chosen from
 the surjectivity in the finite degree-quotient decomposition. -/
-def chosenFiniteReciprocityFrobeniusLift (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (q : K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) :
+def chosenFiniteReciprocityFrobeniusLift :
     D.FrobeniusElements K L hLK :=
   Classical.choose (D.frobeniusRestriction_surjective K L hLK q)
 
 /-- The chosen finite-reciprocity Frobenius lift restricts to the prescribed Frobenius element. -/
 @[simp]
-theorem frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (q : K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) :
+theorem frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift :
     D.frobeniusRestriction K L hLK
       (D.chosenFiniteReciprocityFrobeniusLift K L hLK q) = q :=
   Classical.choose_spec (D.frobeniusRestriction_surjective K L hLK q)
+
+end
 
 end DegreeData
 
@@ -454,18 +405,20 @@ variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A) [IsTopologicalGroup G]
+  [CompactSpace G] [T2Space G] (K : FiniteAbstractField G) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] [hLfinite : Finite
+      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+include D A v K hLnormal hLfinite
+
 /-- The canonical candidate underlying the finite reciprocity equivalence, obtained by
 choosing the finite degree-quotient decomposition lift and evaluating in the finite norm
 quotient.  Lift-independence and additivity are reduced to the concrete
 steps above and reciprocity multiplicativity, respectively. -/
-def finiteReciprocityCandidate (D : DegreeData G) (A : Rep ℤ G)
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] :
+def finiteReciprocityCandidate :
     Additive (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) →
       FiniteNormQuotient A K.field L hLK :=
   fun q => D.finiteReciprocityValue A v K L hLK
@@ -474,14 +427,7 @@ def finiteReciprocityCandidate (D : DegreeData G) (A : Rep ℤ G)
 
 /-- The finite reciprocity candidate evaluates a norm class through its chosen Frobenius lift. -/
 @[simp]
-theorem finiteReciprocityCandidate_apply (D : DegreeData G) (A : Rep ℤ G)
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+theorem finiteReciprocityCandidate_apply
     (q : Additive
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)) :
     D.finiteReciprocityCandidate A v K L hLK q =
@@ -493,13 +439,6 @@ theorem finiteReciprocityCandidate_apply (D : DegreeData G) (A : Rep ℤ G)
 /-- Formula for the candidate using the fixed field of its specified
 the finite degree-quotient decomposition lift. -/
 theorem finiteReciprocityCandidate_eq_primeNormClass
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (q : Additive
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)) :
     let KR := K.toFiniteResidueAbstractField D
@@ -517,82 +456,36 @@ theorem finiteReciprocityCandidate_eq_primeNormClass
     let Sigma : FiniteAbstractField G := ⟨S, inferInstance⟩
     D.finiteReciprocityCandidate A v K L hLK q =
       finiteNormClass A K.field L hLK
-        (relativeNorm A K.field S hSK (v.chosenPrimeElement Sigma)) := by
-  dsimp only
-  exact D.finiteReciprocityValue_eq_primeNormClass
-    A v K L hLK
-      (D.chosenFiniteReciprocityFrobeniusLift
-        (K.toFiniteResidueAbstractField D) L hLK q.toMul)
+        (relativeNorm A K.field S hSK (v.chosenPrimeElement Sigma)) := rfl
 
 /-- The finite reciprocity candidate sends the zero norm class to the identity. -/
 @[simp]
-theorem finiteReciprocityCandidate_zero (D : DegreeData G) (A : Rep ℤ G)
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] :
+theorem finiteReciprocityCandidate_zero :
     D.finiteReciprocityCandidate A v K L hLK 0 = 0 := by
   apply D.finiteReciprocityValue_eq_zero_of_restriction_eq_one
-  exact D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift
-    (K.toFiniteResidueAbstractField D) L hLK
-      (1 : K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)
+  exact D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift ..
 
-/-- For two finite automorphisms, the chosen lift of their product and the
-product of their chosen lifts have the same restriction.  Applying the
-degree comparison gives exactly the remaining lift-independence obligation
-in the additivity proof of the finite reciprocity equivalence. -/
-theorem finiteReciprocityHom_product_lift_comparison
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
+end
+
+
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A) [IsTopologicalGroup G]
+  [CompactSpace G] [T2Space G] (K : FiniteAbstractField G) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (q r : Additive
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)) :
-    let KR := K.toFiniteResidueAbstractField D
-    letI hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-      simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
-    let σ₁ := D.chosenFiniteReciprocityFrobeniusLift KR L hLK q.toMul
-    let σ₂ := D.chosenFiniteReciprocityFrobeniusLift KR L hLK r.toMul
-    let σ₃ := D.chosenFiniteReciprocityFrobeniusLift KR L hLK (q + r).toMul
-    σ₃ = σ₁ * σ₂ ∨
-      (∃ ι : D.FrobeniusElements KR L hLK,
-        σ₁ * σ₂ = σ₃ * ι ∧
-        D.frobeniusRestriction KR L hLK ι = 1 ∧
-        D.finiteReciprocityValue A v K L hLK ι = 0) ∨
-      (∃ ι : D.FrobeniusElements KR L hLK,
-        σ₃ = (σ₁ * σ₂) * ι ∧
-        D.frobeniusRestriction KR L hLK ι = 1 ∧
-        D.finiteReciprocityValue A v K L hLK ι = 0) := by
-  dsimp only
-  apply D.finiteReciprocityHom_lift_comparison A v K L hLK
-  rw [D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift,
-    D.frobeniusRestriction_mul,
-    D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift,
-    D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift]
-  rfl
+  (hmul : ∀ α β : D.FrobeniusElements
+        (K.toFiniteResidueAbstractField D) L hLK,
+      D.finiteReciprocityValue A v K L hLK (α * β) =
+        D.finiteReciprocityValue A v K L hLK α +
+          D.finiteReciprocityValue A v K L hLK β)
+include D v K hLnormal hLfinite hmul
 
 /-- Once reciprocity multiplicativity supplies additivity on the Frobenius semigroup,
 the degree comparison proves that the finite reciprocity value is
 independent of the chosen lift.  This is the full three-case argument. -/
 private theorem finiteReciprocityValue_eq_of_same_restriction_of_mul
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hmul : ∀ α β : D.FrobeniusElements
-        (K.toFiniteResidueAbstractField D) L hLK,
-      D.finiteReciprocityValue A v K L hLK (α * β) =
-        D.finiteReciprocityValue A v K L hLK α +
-          D.finiteReciprocityValue A v K L hLK β)
     (σ τ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
     (hRestriction : D.frobeniusRestriction
       (K.toFiniteResidueAbstractField D) L hLK σ =
@@ -612,18 +505,6 @@ private theorem finiteReciprocityValue_eq_of_same_restriction_of_mul
 is available.  Lift-independence is invoked for the chosen lift of a
 product and the product of the two chosen lifts. -/
 theorem finiteReciprocityCandidate_add_of_mul
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hmul : ∀ α β : D.FrobeniusElements
-        (K.toFiniteResidueAbstractField D) L hLK,
-      D.finiteReciprocityValue A v K L hLK (α * β) =
-        D.finiteReciprocityValue A v K L hLK α +
-          D.finiteReciprocityValue A v K L hLK β)
     (q r : Additive
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)) :
     D.finiteReciprocityCandidate A v K L hLK (q + r) =
@@ -656,19 +537,7 @@ theorem finiteReciprocityCandidate_add_of_mul
 
 /-- The finite reciprocity equivalence with the semigroup-additivity input isolated.  The
 final theorem discharges this input directly from reciprocity multiplicativity. -/
- def finiteReciprocityHom_of_mul
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hmul : ∀ α β : D.FrobeniusElements
-        (K.toFiniteResidueAbstractField D) L hLK,
-      D.finiteReciprocityValue A v K L hLK (α * β) =
-        D.finiteReciprocityValue A v K L hLK α +
-          D.finiteReciprocityValue A v K L hLK β) :
+ def finiteReciprocityHom_of_mul :
     Additive (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) →+
       FiniteNormQuotient A K.field L hLK where
   toFun := D.finiteReciprocityCandidate A v K L hLK
@@ -679,18 +548,6 @@ final theorem discharges this input directly from reciprocity multiplicativity. 
 /-- Evaluation of the conditional finite reciprocity homomorphism using any
 Frobenius lift of the specified finite automorphism. -/
 private theorem finiteReciprocityHom_of_mul_apply_of_frobeniusLift
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hmul : ∀ α β : D.FrobeniusElements
-        (K.toFiniteResidueAbstractField D) L hLK,
-      D.finiteReciprocityValue A v K L hLK (α * β) =
-        D.finiteReciprocityValue A v K L hLK α +
-          D.finiteReciprocityValue A v K L hLK β)
     (q : Additive
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK))
     (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
@@ -706,18 +563,21 @@ private theorem finiteReciprocityHom_of_mul_apply_of_frobeniusLift
     A v K L hLK hmul
   rw [D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift, hσ]
 
+end
+
+section
+
+variable (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A) [IsTopologicalGroup G]
+  [CompactSpace G] [T2Space G] [TotallyDisconnectedSpace G]
+  (hAxiom : v.SatisfiesUnramifiedUnitCohomology D) (K : FiniteAbstractField G)
+  (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] [hLfinite : Finite
+      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+include D v hAxiom K hLnormal hLfinite
+
 /-- Prime-norm formula for the conditional finite reciprocity equivalence map, using
 an arbitrary Frobenius lift and an arbitrary prime of its fixed field. -/
 private theorem finiteReciprocityHom_of_mul_apply_eq_primeNormClass
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (hAxiom : v.SatisfiesUnramifiedUnitCohomology D)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hmul : ∀ α β : D.FrobeniusElements
         (K.toFiniteResidueAbstractField D) L hLK,
       D.finiteReciprocityValue A v K L hLK (α * β) =
@@ -754,16 +614,7 @@ private theorem finiteReciprocityHom_of_mul_apply_eq_primeNormClass
 /-- **the finite reciprocity equivalence.** The prime-norm construction descends from positive
 Frobenius lifts to an additive reciprocity homomorphism on the finite Galois
 group. -/
-def finiteReciprocityHom
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (hAxiom : v.SatisfiesUnramifiedUnitCohomology D)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] :
+def finiteReciprocityHom :
     Additive (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) →+
       FiniteNormQuotient A K.field L hLK :=
   D.finiteReciprocityHom_of_mul A v K L hLK
@@ -772,15 +623,6 @@ def finiteReciprocityHom
 /-- Prime-norm evaluation formula for the finite reciprocity equivalence, using any prime
 element in the fixed field of a chosen Frobenius lift. -/
 theorem finiteReciprocityHom_apply_eq_primeNormClass
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (hAxiom : v.SatisfiesUnramifiedUnitCohomology D)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (q : Additive
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK))
     (σ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
@@ -808,6 +650,8 @@ theorem finiteReciprocityHom_apply_eq_primeNormClass
       (D.finiteReciprocityValue_mul A v hAxiom K L hLK)
       q σ hσ π hπ
 
+end
+
 end DegreeData
 
 end finiteReciprocityHom
@@ -828,14 +672,17 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+  (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hnormal : (extensionSubgroup K.field L hLK).Normal]
+include K hnormal
+
 /-- For an unramified `L / K`, the fixed field of the degree-one
 Frobenius lift is itself unramified over `K`. -/
 theorem unramifiedFrobenius_fixedField_isUnramified
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     (DegreeData.AbstractExtension.mk
@@ -859,11 +706,6 @@ theorem unramifiedFrobenius_fixedField_isUnramified
 unramified case.  This is `f_{Σ/K}=d_K(φ_K)=1` together with
 `[Σ:K]=f_{Σ/K}`. -/
 theorem unramifiedFrobenius_fixedField_degree
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     [hfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
@@ -897,6 +739,8 @@ theorem unramifiedFrobenius_fixedField_degree
       D.frobeniusFixedField_residueDegreeOverBase K L hLK σ
     _ = 1 := D.chosenUnramifiedFrobeniusLift_exponent K L hLK
 
+end
+
 end DegreeData
 
 end unramifiedFixedFields
@@ -909,18 +753,19 @@ variable {D : DegreeData G} {A : Rep ℤ G}
 
 namespace ValuationData
 
+section
+
+variable (v : ValuationData D A) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+  (K : FiniteAbstractField G) (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hnormal : (extensionSubgroup K.field L hLK).Normal]
+  [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] (hUnramified :
+      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
+include v K hnormal hUnramified
+
 /-- The prime-norm calculation in the unramified norm-quotient equivalence: the prime element of
 `K`, included into the fixed field of the degree-one lift, has norm equal
 to the original prime element. -/
-theorem unramifiedFrobenius_primeNorm
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
+theorem unramifiedFrobenius_primeNorm :
     let KR := K.toFiniteResidueAbstractField D
     letI hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
       simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hnormal
@@ -972,15 +817,7 @@ theorem unramifiedFrobenius_primeNorm
 
 /-- The included prime element is a prime element in the fixed field used
 for the degree-one Frobenius lift. -/
-theorem unramifiedFrobenius_includedPrime_isPrime
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
+theorem unramifiedFrobenius_includedPrime_isPrime :
     let KR := K.toFiniteResidueAbstractField D
     letI hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
       simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hnormal
@@ -1024,25 +861,29 @@ theorem unramifiedFrobenius_includedPrime_isPrime
   exact v.prime_of_unramified ES hES
     (v.chosenPrimeElement K) (v.chosenPrimeElement_isPrime K)
 
+end
+
+section
+
+variable (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
+  [IsTopologicalGroup G] [CompactSpace G] [T2Space G] (K : FiniteAbstractField G)
+  (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hnormal : (extensionSubgroup K.field L hLK).Normal]
+  [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] (hUnramified :
+      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
+  (f : Additive
+      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) →+
+      FiniteNormQuotient A K.field L hLK)
+  (hf : f (Additive.ofMul (D.unramifiedFrobenius
+        (K.toFiniteResidueAbstractField D) L hLK)) =
+      finiteNormClass A K.field L hLK (v.chosenPrimeElement K))
+include v hAxiom K hnormal hUnramified f hf
+
 /-- The last generator-and-order argument in the unramified norm-quotient equivalence.  Any
 homomorphism which sends the arithmetic Frobenius generator to the prime
 class is bijective: the prime class generates the norm quotient, and both
 finite groups have order `[L : K]`. -/
-theorem unramifiedReciprocity_bijective_of_generator
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
-    (f : Additive
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) →+
-      FiniteNormQuotient A K.field L hLK)
-    (hf : f (Additive.ofMul (D.unramifiedFrobenius
-        (K.toFiniteResidueAbstractField D) L hLK)) =
-      finiteNormClass A K.field L hLK (v.chosenPrimeElement K)) :
+theorem unramifiedReciprocity_bijective_of_generator :
     Function.Bijective f := by
   let e := v.unramifiedReciprocity_valuationEquiv
     hAxiom K L hLK hUnramified
@@ -1079,21 +920,7 @@ theorem unramifiedReciprocity_bijective_of_generator
 /-- Additive-equivalence form of the generator criterion for the unramified norm-quotient equivalence.  This is useful independently of the particular construction of the
 reciprocity homomorphism: a homomorphism with the required Frobenius value
 is canonically promoted to an equivalence. -/
-noncomputable def unramifiedReciprocity_equiv_of_generator
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
-    (f : Additive
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) →+
-      FiniteNormQuotient A K.field L hLK)
-    (hf : f (Additive.ofMul (D.unramifiedFrobenius
-        (K.toFiniteResidueAbstractField D) L hLK)) =
-      finiteNormClass A K.field L hLK (v.chosenPrimeElement K)) :
+noncomputable def unramifiedReciprocity_equiv_of_generator :
     Additive (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) ≃+
       FiniteNormQuotient A K.field L hLK :=
   AddEquiv.ofBijective f
@@ -1104,38 +931,27 @@ noncomputable def unramifiedReciprocity_equiv_of_generator
 value on each class. -/
 @[simp]
 theorem unramifiedReciprocity_equiv_of_generator_apply
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
-    (f : Additive
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) →+
-      FiniteNormQuotient A K.field L hLK)
-    (hf : f (Additive.ofMul (D.unramifiedFrobenius
-        (K.toFiniteResidueAbstractField D) L hLK)) =
-      finiteNormClass A K.field L hLK (v.chosenPrimeElement K))
     (q : Additive
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)) :
     v.unramifiedReciprocity_equiv_of_generator hAxiom K L hLK
       hUnramified f hf q = f q :=
   rfl
 
+end
+
+section
+
+variable (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
+  [IsTopologicalGroup G] [CompactSpace G] [T2Space G] [TotallyDisconnectedSpace G]
+  (K : FiniteAbstractField G) (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hnormal : (extensionSubgroup K.field L hLK).Normal]
+  [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] (hUnramified :
+      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
+include v hAxiom K hnormal hUnramified
+
 /-- The finite reciprocity equivalence sends arithmetic Frobenius to the class of a prime
 element when `L / K` is unramified.  This is the generator calculation. -/
-theorem unramifiedReciprocity_frobenius_image
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
+theorem unramifiedReciprocity_frobenius_image :
     D.finiteReciprocityHom A v hAxiom K L hLK
         (Additive.ofMul (D.unramifiedFrobenius
           (K.toFiniteResidueAbstractField D) L hLK)) =
@@ -1168,16 +984,7 @@ theorem unramifiedReciprocity_frobenius_image
 
 /-- **the unramified norm-quotient equivalence.** For a finite unramified Galois extension, the
 reciprocity homomorphism of the finite reciprocity equivalence is an additive equivalence. -/
-noncomputable def unramifiedReciprocityEquiv
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
+noncomputable def unramifiedReciprocityEquiv :
     Additive (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) ≃+
       FiniteNormQuotient A K.field L hLK :=
   v.unramifiedReciprocity_equiv_of_generator hAxiom K L hLK hUnramified
@@ -1188,20 +995,13 @@ noncomputable def unramifiedReciprocityEquiv
 /-- The canonical unramified reciprocity equivalence evaluates by the normalized valuation class. -/
 @[simp]
 theorem unramifiedReciprocityEquiv_apply
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
     (q : Additive
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)) :
     v.unramifiedReciprocityEquiv hAxiom K L hLK hUnramified q =
       D.finiteReciprocityHom A v hAxiom K L hLK q :=
   rfl
+
+end
 
 end ValuationData
 end unramifiedReciprocity

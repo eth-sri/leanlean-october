@@ -74,7 +74,7 @@ def rightMatrix (x : Fin 3 → ℂ) : Matrix.GeneralLinearGroup (Fin 2) ℂ :=
 def leftMatrix (x : Fin 3 → ℂ) : Matrix.GeneralLinearGroup (Fin 2) ℂ :=
   KPStandardLocalRootLifts.lowerN ℂ (x 0) * KubotaRankTwo.d ℂ (diagonalUnit (x 1)) 1 *
     KubotaRankTwo.n ℂ (x 2)
-private theorem mapped_diagonalUnit (w : InfinitePlace F) (x : ℂ) :
+theorem mapped_diagonalUnit (w : InfinitePlace F) (x : ℂ) :
     Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom (diagonalUnit x) =
       (if h : x=0 then (1 : (w.Completion)ˣ) else Units.mk0

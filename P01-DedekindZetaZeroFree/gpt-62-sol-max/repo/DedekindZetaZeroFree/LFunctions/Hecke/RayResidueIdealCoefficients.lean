@@ -18,8 +18,7 @@ namespace ResidueCoefficientAux
 
 theorem integral_lift (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)}) :
-    ∃ α : 𝓞 F, α ∈ a ∧ (algebraMap (𝓞 F) F) α = x.val := by
-  exact (FractionalIdeal.mem_coeIdeal (𝓞 F)⁰).mp x.property
+    ∃ α : 𝓞 F, α ∈ a ∧ (algebraMap (𝓞 F) F) α = x.val := (FractionalIdeal.mem_coeIdeal (𝓞 F)⁰).mp x.property
 
 theorem coefficient_mul (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
@@ -33,8 +32,7 @@ theorem coefficient_mul (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
   change ((Ideal.span {α} : FractionalIdeal (𝓞 F)⁰ F) *
     (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)⁻¹) *
       rayIdealFractionalIdeal F a ha = _
-  rw [mul_assoc, ← Units.val_inv_eq_inv_val, ← Units.val_mul, inv_mul_cancel,
-    Units.val_one, mul_one]
+  simp_all
 
 theorem quotient_unit_iff (m : Ideal (𝓞 F)) (α : 𝓞 F) :
     IsUnit (Ideal.Quotient.mk m α) ↔ Ideal.span {α} ⊔ m = ⊤ := by
@@ -58,7 +56,7 @@ theorem quotient_unit_iff (m : Ideal (𝓞 F)) (α : 𝓞 F) :
     have ht := congrArg (Ideal.Quotient.mk m) heq
     rw [map_add, map_mul, map_one, Ideal.Quotient.eq_zero_iff_mem.mpr hγ,
       add_zero] at ht
-    simpa [mul_comm] using ht
+    grind
 
 end ResidueCoefficientAux
 private theorem span_coprime_of_unit (m : Ideal (𝓞 F)) (α : 𝓞 F)

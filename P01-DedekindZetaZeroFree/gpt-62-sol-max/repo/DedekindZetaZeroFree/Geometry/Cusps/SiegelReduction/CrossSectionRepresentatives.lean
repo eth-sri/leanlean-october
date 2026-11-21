@@ -124,7 +124,7 @@ theorem exists_arithmetic_cross_section_representatives
           action F (g : KPCuspArithmetic.PGL2 F) z =
             fun i => (x i, KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z +
               (b : Fin (KPCuspLogShape.dimension F) → ℝ) i) := by
-  obtain ⟨D, O, _⟩ := kp_cusp_equivariant_nilmanifold_charts F hF M hM Γ hΓ hcomm q σ hσ
+  obtain ⟨D, ⟨O⟩⟩ := kp_cusp_equivariant_nilmanifold_charts F hF M hM Γ hΓ hcomm q σ hσ
   exact exists_compact_cross_section_representatives F hF _ D O
 
 include hF in

@@ -42,14 +42,6 @@ structure Properties : Prop where
       (∫⁻ x, h x ∂(KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U)) =
         ∑' n, ∫⁻ y in liftedPiece C n, h ((C.chart n).toBase y)
           ∂(C.chart n).liftedMeasure
-  integrableOn_lifted : ∀ (h : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ),
-    Integrable h (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) →
-      ∀ n, IntegrableOn (fun y => h ((C.chart n).toBase y))
-        (liftedPiece C n) (C.chart n).liftedMeasure
-  summable_integrals : ∀ (h : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ),
-    Integrable h (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) →
-      Summable (fun n => ∫ y in liftedPiece C n, h ((C.chart n).toBase y)
-        ∂(C.chart n).liftedMeasure)
   integral_eq_tsum : ∀ (h : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ),
     Integrable h (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) →
       (∫ x, h x ∂(KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U)) =
@@ -144,24 +136,6 @@ theorem kp_cont_actual_cotangent_borel_refinement
       rw [hmap]; exact hint.integrableOn.aestronglyMeasurable
     rw [← hmap]
     exact integral_map (C.properties n).measurable.aemeasurable haesm
-  have hint_lifted : ∀ (h : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ), Integrable h μ → ∀ n,
-      IntegrableOn (fun y => h ((C.chart n).toBase y))
-        (liftedPiece C n) (C.chart n).liftedMeasure := by
-    intro h hint n
-    have hmap := hexact n
-    have hint' : Integrable h
-        (Measure.map (C.chart n).toBase
-          ((C.chart n).liftedMeasure.restrict (liftedPiece C n))) := by
-      rw [hmap]; exact hint.integrableOn
-    exact (integrable_map_measure hint'.aestronglyMeasurable
-      (C.properties n).measurable.aemeasurable).mp hint'
-  have hsum : ∀ (h : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ), Integrable h μ →
-      Summable (fun n => ∫ y in liftedPiece C n, h ((C.chart n).toBase y)
-        ∂(C.chart n).liftedMeasure) := by
-    intro h hint
-    have hhs := hasSum_integral_iUnion (μ := μ) (s := fun n => basePiece C n) (f := h)
-      (fun n => hbase n) hdisj (by rw [hcov]; exact hint.integrableOn)
-    simpa only [hterm h hint] using hhs.summable
   have hint_eq : ∀ (h : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ), Integrable h μ →
       (∫ x, h x ∂μ) =
         ∑' n, ∫ y in liftedPiece C n, h ((C.chart n).toBase y)
@@ -174,7 +148,7 @@ theorem kp_cont_actual_cotangent_borel_refinement
     rw [h1, ← hhs.tsum_eq]
     exact tsum_congr fun n => hterm h hint n
   exact ⟨hbase, hsub, hdisj, hcov, hlmeas, hinv, hexact, hlin,
-    hint_lifted, hsum, hint_eq⟩
+    hint_eq⟩
 
 end DedekindZetaZeroFree
 

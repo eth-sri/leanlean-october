@@ -66,7 +66,7 @@ theorem defect_w_boundary
     simp [D, c, d, f, Matrix.mul_apply]
   have hrel : C * f - D * e = c * q := by
     rw [hC, hD]
-    simp only [q, det, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp only [q, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
     ring
   have hq : q ≠ 0 := (det K h).ne_zero
   have hr : (r : K) = if c = 0 then d else c := rfl

@@ -32,8 +32,7 @@ private theorem two_norm (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Resi
       exact hz
     exact Ring.two_ne_zero hodd hz'
   obtain ⟨u, hu⟩ := hu
-  have he : (localUnit v u : v.adicCompletion F) = 2 := by
-    exact congrArg Subtype.val hu
+  have he : (localUnit v u : v.adicCompletion F) = 2 := congrArg Subtype.val hu
   rw [← he]
   exact unit_norm v u
 private theorem scaled_annihilator (v : HeightOneSpectrum (𝓞 F))

@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.FixedData
+public import DedekindZetaZeroFree.Moments.Probes.TripleMellinAbsoluteConvergence
 
 @[expose] public section
 
@@ -18,56 +19,12 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem freqOrbit_injective (R : PrincipalMellin.ActualRecipe S η) :
     Function.Injective (fun u : Frequency R =>
-      ProbeOrbitNormSum.orbitMk R.A u.val) := by
-  intro u v huv
-  have h := Quotient.exact huv
-  obtain ⟨γ, heq⟩ := MulAction.orbitRel_apply.mp h
-  obtain ⟨δ, hδ⟩ := γ.property
-  let I : R.A.Exterior := ⟨⊤, top_ne_bot, by simp⟩
-  let r := R.probe.coefficients.generator I
-  have hr := (R.probe.coefficients.generates I).1
-  let m : ThetaReflectionData.Row R.A :=
-    ⟨u.val.val * r ^ 6, mul_ne_zero u.val.property (pow_ne_zero _ hr)⟩
-  obtain ⟨x, hx, hxuniq⟩ := R.probe.frequencies.factorization m
-  have hg : R.probe.allowed.generator I = ThetaReflectionData.rowUnit R.A ⟨r, hr⟩ := by
-    apply Units.ext
-    exact R.probe.sameGenerator I
-  have hu : ∃ γ : R.A.U, ThetaReflectionData.rowUnit R.A m =
-      ThetaReflectionData.rowUnit R.A u.val * R.probe.allowed.generator I ^ 6 *
-        γ.val ^ 6 := by
-    refine ⟨1, ?_⟩
-    rw [hg]
-    apply Units.ext
-    simp [m, r, ThetaReflectionData.rowUnit]
-  have hv : ∃ γ : R.A.U, ThetaReflectionData.rowUnit R.A m =
-      ThetaReflectionData.rowUnit R.A v.val * R.probe.allowed.generator I ^ 6 *
-        γ.val ^ 6 := by
-    refine ⟨δ, ?_⟩
-    rw [hg]
-    have huu := congrArg (fun x : ThetaReflectionData.Row R.A => (x.val : F)) heq
-    have hδF := congrArg (fun x : R.A.U => (x.val : F)) hδ
-    apply Units.ext
-    simp only [m, ThetaReflectionData.rowUnit, Units.val_mk0, map_mul, map_pow]
-    change (u.val.val : F) * (r : F) ^ 6 = (v.val.val : F) * (r : F) ^ 6 * (δ.val : F) ^ 6
-    change ((R.A.unitEquiv γ.val : R.A.R) : F) * (v.val.val : F) = (u.val.val : F) at huu
-    have hcoe : ((R.A.unitEquiv γ.val : R.A.R) : F) = (γ.val.val : F) := by
-      simp [SArithmeticData.unitEquiv, Set.unitEquivUnitsInteger]
-    rw [hcoe, ← hδF] at huu
-    change (δ.val : F) ^ 6 * (v.val.val : F) = (u.val.val : F) at huu
-    rw [← huu]
-    ring
-  have he : (u, I) = (v, I) := (hxuniq _ hu).trans (hxuniq _ hv).symm
-  exact congrArg Prod.fst he
+      ProbeOrbitNormSum.orbitMk R.A u.val) :=
+  NormalizedProbe.frequency_orbit_injective R.probe
 
 theorem freqOrbit_norm (R : PrincipalMellin.ActualRecipe S η) (u : Frequency R) :
-    frequencyNorm R u =
-      ProbeOrbitNormSum.orbitNorm R.A (ProbeOrbitNormSum.orbitMk R.A u.val) := by
-  unfold frequencyNorm FiniteTransform.exteriorNorm ProbeOrbitNormSum.orbitNorm
-  rw [ProbeOrbitNormSum.orbitIdeal_mk]
-  change (Nat.card (R.A.R ⧸ Ideal.span {u.val.val}) : ℝ) =
-    R.A.exteriorNorm (ProbeOrbitNormSum.principalExterior R.A u.val)
-  rw [(ProbeOrbitNormSum.principalExterior_generates R.A u.val).2, R.A.exteriorResidue_card]
-  rfl
+    frequencyNorm R u = ProbeOrbitNormSum.orbitNorm R.A (ProbeOrbitNormSum.orbitMk R.A u.val) :=
+  NormalizedProbe.exteriorNorm_eq_orbitNorm R.A u.val
 
 theorem one_le_frequencyNorm (R : PrincipalMellin.ActualRecipe S η)
     (u : Frequency R) : 1 ≤ frequencyNorm R u := by

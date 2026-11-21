@@ -38,7 +38,7 @@ private theorem line_bound {n : ℕ} (g : Space n → ℂ)
     have he : (e : (Fin n → ℝ) → Space n) ∘ Function.update x i = a := rfl
     rw [← he]
     convert e.hasFDerivAt.comp_hasDerivAt t (hasDerivAt_update x i t) using 1
-    simpa [e] using (EuclideanSpace.toLp_single i (1 : ℝ)).symm
+    simp [e]
   have heq (t : ℝ) : deriv (g ∘ a) t =
       coordinateDerivativeList [i] g (a t) := by
     exact ((hg.differentiable (by simp) (a t)).hasFDerivAt.comp_hasDerivAt t (hda t)).deriv

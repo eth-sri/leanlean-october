@@ -52,7 +52,7 @@ private theorem order_nonneg_of_le_one (v : IsDedekindDomain.HeightOneSpectrum (
 private theorem valuation_eq_one_of_order_zero (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (g : Fˣ) (h : ThetaBranch.order v g = 0) : v.valuation F (g : F) = 1 := by
   have := (order_eq_exp v g 0).mp h
-  simpa [WithZero.exp_zero] using this
+  assumption
 
 private theorem sixthPowerFree_rowUnit
     (R : PrincipalMellin.ActualRecipe S η) (u : Frequency R) :
@@ -90,7 +90,7 @@ private theorem rowUnit_represents
   obtain ⟨γ, hγ⟩ := hpres
   have hxeq : x = ThetaReflectionData.rowUnit A u0.val *
       R.probe.allowed.generator I ^ 6 * γ.val ^ 6 := by
-    rw [← hrowunit, hγ]
+    grind
   have hgenU : R.probe.allowed.generator I ∈ A.U := by
     intro v hv
     refine valuation_eq_one_of_order_zero v _ ?_
@@ -98,14 +98,13 @@ private theorem rowUnit_represents
       obtain ⟨r, hgen, hgenF⟩ := R.probe.allowed.generates I
       refine order_nonneg_of_le_one v _ ?_
       rw [hgenF]
-      exact Set.integer_valuation_le_one
-        (A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) F r hv
+      apply Set.integer_valuation_le_one <;> assumption
     have hxord : 0 ≤ ThetaBranch.order v x ∧ ThetaBranch.order v x < 6 := by
       obtain ⟨e, he⟩ := hx.2 v hv
-      have hxe : ThetaBranch.order v x = (e.val : ℤ) := (order_eq_exp v x (e.val : ℤ)).mpr he
+      have hxe := (order_eq_exp v x (e.val : ℤ)).mpr he
       constructor
-      · rw [hxe]; exact Int.natCast_nonneg _
-      · rw [hxe]; exact_mod_cast e.isLt
+      · grind
+      grind
     have huord : 0 ≤ ThetaBranch.order v (ThetaReflectionData.rowUnit A u0.val) ∧
         ThetaBranch.order v (ThetaReflectionData.rowUnit A u0.val) < 6 :=
       R.probe.frequencies.sixthFree u0.val u0.property ⟨v, hv⟩

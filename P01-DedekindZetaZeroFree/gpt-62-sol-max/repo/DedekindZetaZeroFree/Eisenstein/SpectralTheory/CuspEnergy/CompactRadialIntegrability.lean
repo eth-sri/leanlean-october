@@ -3,6 +3,8 @@ module
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.GradientDensityInvariance
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.LaplacianPairingInvariance
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.WeightedGreenDensity
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.RadialTests
+public import DedekindZetaZeroFree.Geometry.Hyperbolic.Cotangent.DifferentialCoframe
 
 @[expose] public section
 
@@ -13,51 +15,7 @@ open MeasureTheory Filter
 open scoped Classical ENNReal
 
 namespace DedekindZetaZeroFree.KPCompactGreenRadialIntegrability
-open KPMeanZeroWeightedEnergy HyperbolicChart
-
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
-
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-
-private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
-  apply (contDiff_piLp 2).mpr
-  intro j
-  rcases j with ⟨i, k⟩
-  fin_cases k
-  · simpa [real, Function.comp_def] using Complex.reCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using Complex.imCLM.contDiff.comp (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
-
-private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
-
-private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
-
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
-  have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
-    Complex.ofRealCLM.contDiff.contDiffAt.comp x
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt.exp)
-  fin_cases k
-  · simpa [differential] using derivative_smoothAt d g x hg i 2
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
+open DedekindZetaZeroFree.KPMeanZeroWeightedEnergy HyperbolicChart
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
@@ -71,29 +29,28 @@ private theorem representative_smoothAt (v : Representative ζ hζ S ρ V T)
     ContDiffAt ℝ (⊤ : ℕ∞) (v.val ∘ arch (KPCuspLogShape.dimension F)) x := by
   have hopen : IsOpen {z : KPArch.Space (KPCuspLogShape.dimension F) |
       T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z} :=
-    isOpen_lt continuous_const (smooth_mean _).continuous
-  exact (v.smooth.contDiffAt (hopen.mem_nhds hx)).comp x (smooth_arch _).contDiffAt
+    isOpen_lt continuous_const (KPMeanZeroWeightedEnergy.meanHeight_contDiff _).continuous
+  exact (v.smooth.contDiffAt (hopen.mem_nhds hx)).comp x (KPMeanZeroWeightedEnergy.arch_contDiff _).contDiffAt
 
 private theorem chart_smooth : ContDiff ℝ (⊤ : ℕ∞)
     (fun p : KPCuspCharts.Coordinates F =>
       real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p)) :=
-  (smooth_real _).comp ((KPCuspCharts.toArch_contDiff F).of_le (by simp))
+  (KPMeanZeroWeightedEnergy.real_contDiff _).comp ((KPCuspCharts.toArch_contDiff F).of_le (by simp))
 
 private theorem chart_height (G : KPCuspCharts.ChartOutput F hF S D)
     (p : KPCuspCharts.Coordinates F) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F)
         (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))) = p.2 := by
-  rw [arch_real, KPCuspCharts.toArch_meanHeight F G.positive_dimension]
+  rw [KPMeanZeroWeightedEnergy.arch_real_eq, KPCuspCharts.toArch_meanHeight F G.positive_dimension]
 
 private theorem cutoff_smoothAt (v : Representative ζ hζ S ρ V T)
     (η : ℝ → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (x : Space (KPCuspLogShape.dimension F))
     (hx : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F) x)) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (rawCutoffUpstairs v η) x := by
-  exact (Complex.ofRealCLM.contDiff.contDiffAt.comp x
-    (hη.contDiffAt.comp x ((smooth_mean _).comp (smooth_arch _)).contDiffAt)).mul
+    ContDiffAt ℝ (⊤ : ℕ∞) (rawCutoffUpstairs v η) x := (Complex.ofRealCLM.contDiff.contDiffAt.comp x
+    (hη.contDiffAt.comp x ((KPMeanZeroWeightedEnergy.meanHeight_contDiff _).comp (KPMeanZeroWeightedEnergy.arch_contDiff _)).contDiffAt)).mul
       (representative_smoothAt v x hx)
 
 private theorem cutoff_eventually_zero (v : Representative ζ hζ S ρ V T)
@@ -102,7 +59,7 @@ private theorem cutoff_eventually_zero (v : Representative ζ hζ S ρ V T)
       (arch (KPCuspLogShape.dimension F) x) ∉ tsupport η) :
     rawCutoffUpstairs v η =ᶠ[nhds x] 0 := by
   have hh := (notMem_tsupport_iff_eventuallyEq.mp hx).comp_tendsto
-    (((smooth_mean _).comp (smooth_arch _)).continuous.continuousAt)
+    (((KPMeanZeroWeightedEnergy.meanHeight_contDiff _).comp (KPMeanZeroWeightedEnergy.arch_contDiff _)).continuous.continuousAt)
   filter_upwards [hh] with q hq
   change η (KPCuspLogShape.meanHeight _ (arch _ q)) = 0 at hq
   simp [rawCutoffUpstairs, hq]
@@ -297,7 +254,7 @@ theorem cutoffGradientSq_geometry
     exact q.property
   have hp : CutoffAffine.affine d a b x = real d (KPCuspCharts.toArch F p.val) := by
     have he := CutoffAffine.action_affine G s A hA hc x
-    have harch : arch d x = KPCuspCharts.toArch F q.val := arch_real _ _
+    have harch : arch d x = KPCuspCharts.toArch F q.val := KPMeanZeroWeightedEnergy.arch_real_eq _ _
     rw [harch] at he
     change KPCuspSiegel.action F (s : KPCuspArithmetic.PGL2 F)
       (KPCuspCharts.toArch F q.val) = KPCuspCharts.toArch F p.val at hs
@@ -323,7 +280,7 @@ theorem cutoffGradientSq_geometry
   have he : (fun y => rawCutoffUpstairs v η (CutoffAffine.affine d a b y)) =ᶠ[nhds x]
       (fun y => c * rawCutoffUpstairs v η y) := by
     have hopen : IsOpen {y : Space d | T < KPCuspLogShape.meanHeight d (arch d y)} :=
-      isOpen_lt continuous_const (((smooth_mean _).comp (smooth_arch _)).continuous)
+      isOpen_lt continuous_const (((KPMeanZeroWeightedEnergy.meanHeight_contDiff _).comp (KPMeanZeroWeightedEnergy.arch_contDiff _)).continuous)
     filter_upwards [hopen.mem_nhds hx] with y hy
     have hheight := CutoffAffine.height_affine G (D.ratio s) (A 0 1 / A 1 1) y
     have haction := CutoffAffine.action_affine G s A hA hc y

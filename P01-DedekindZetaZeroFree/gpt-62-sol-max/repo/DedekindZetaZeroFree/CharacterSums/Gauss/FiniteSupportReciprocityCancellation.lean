@@ -408,13 +408,18 @@ set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
-def principalCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+include A σ
+
+def principalCharacter
     (I : A.Exterior) (a : A.R) (ha : A.Generates I a) :
     MulChar (FiniteTransform.Residue A.R.toSubring a) ℂ :=
   GeneratorInvariance.transportCharacter _ _ ha.2.symm
     (A.sexticResiduePowerChar σ I 1)
 
-def HasArithmeticRecipes (A : SArithmeticData F) (σ : F →+* ℂ)
+def HasArithmeticRecipes
     (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
     (D : ComparisonPoissonCoefficientData F A) : Prop :=
   (∀ I : A.Exterior, ∃ a : Fˣ,
@@ -426,7 +431,7 @@ def HasArithmeticRecipes (A : SArithmeticData F) (σ : F →+* ℂ)
     D.gammaTwo c = A.idealGauss σ hS c.val (D.generator c.val)
       (D.generates c.val) 2)
 
-theorem principalCharacter_pow_six (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem principalCharacter_pow_six
     (I : A.Exterior) (a : A.R) (ha : A.Generates I a) :
     principalCharacter A σ I a ha ^ 6 = 1 := by
   have hχ : A.sexticResiduePowerChar σ I 1 ^ 6 = 1 := by
@@ -452,7 +457,7 @@ theorem principalCharacter_pow_six (A : SArithmeticData F) (σ : F →+* ℂ)
     exact hχ
   exact transport _ _ ha.2.symm _ hχ
 
-theorem HasArithmeticRecipes.compatible (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem HasArithmeticRecipes.compatible
     (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
     (D : ComparisonPoissonCoefficientData F A)
     (hD : HasArithmeticRecipes A σ hS B D) :
@@ -487,12 +492,16 @@ theorem HasArithmeticRecipes.compatible (A : SArithmeticData F) (σ : F →+* �
       rfl
     exact ht _ _ _ hI.2.symm hab hJ.2.symm _
 
+end
+
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+  (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V) (D : ComparisonPoissonCoefficientData F A)
+  (hD : HasArithmeticRecipes A σ hS B D) (C : A.GeneralArithmeticContext σ η hS)
+include B hD
+
 theorem HasArithmeticRecipes.coefficient_eq_crt
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (B : Subgroup A.V) (D : ComparisonPoissonCoefficientData F A)
-    (hD : HasArithmeticRecipes A σ hS B D)
-    (C : A.GeneralArithmeticContext σ η hS)
     (Is Ia : A.Exterior) (s a h : A.R)
     (hs : A.Generates Is s) (ha : A.Generates Ia a) :
     GeneratorInvariance.coefficient A D s a h hs.1 ha.1 =
@@ -506,11 +515,6 @@ theorem HasArithmeticRecipes.coefficient_eq_crt
   congr 1 <;> exact Subsingleton.elim _ _
 
 theorem HasArithmeticRecipes.coefficient_prime_power_crt
-    (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (B : Subgroup A.V) (D : ComparisonPoissonCoefficientData F A)
-    (hD : HasArithmeticRecipes A σ hS B D)
-    (C : A.GeneralArithmeticContext σ η hS)
     (Is Ia Ih : A.Exterior) (s a h : A.R)
     (hs : A.Generates Is s) (ha : A.Generates Ia a) (hh : A.Generates Ih h)
     (hsAllowed : A.IsAllowed C.correction.B
@@ -532,16 +536,23 @@ theorem HasArithmeticRecipes.coefficient_prime_power_crt
   exact MaskedQuotientCRT.full_prime_power_crt C Is Ia Ih s a h hs ha hh
     hsAllowed haAllowed P hSupportS hSupportA hSupportH
 
+end
+
 def primePowerSum (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (π : A.R) (hπ : π ≠ 0) (t k J : ℕ) : ℂ :=
   GeneratorInvariance.coefficient A D (π ^ k) (π ^ t) (π ^ J)
     (pow_ne_zero k hπ) (pow_ne_zero t hπ)
 
-def frequencyTheta (A : SArithmeticData F) (σ : F →+* ℂ)
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+include A σ
+
+def frequencyTheta
     (p : A.Exterior) (uPrimeFree : A.R) : ℂ :=
   σ (A.sexticResidue p uPrimeFree)
 
-theorem frequencyTheta_unit (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem frequencyTheta_unit
     (p : A.Exterior) (x : A.R)
     (hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal p) x)) :
     frequencyTheta A σ p x ≠ 0 ∧ frequencyTheta A σ p x ^ 6 = 1 := by
@@ -560,7 +571,7 @@ theorem frequencyTheta_unit (A : SArithmeticData F) (σ : F →+* ℂ)
     rw [hh, map_one]
   exact ⟨fun hz => by simpa [hz] using hpow, hpow⟩
 
-theorem frequencyTheta_mul (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem frequencyTheta_mul
     (p : A.Exterior) (x y : A.R) :
     frequencyTheta A σ p (x * y) =
       frequencyTheta A σ p x * frequencyTheta A σ p y := by
@@ -568,7 +579,6 @@ theorem frequencyTheta_mul (A : SArithmeticData F) (σ : F →+* ℂ)
   rw [map_mul, map_mul, map_mul]
 
 theorem actual_pair_phase_cancel
-    (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (G : A.GaussCorrectionOutput σ η hS)
     (I J : A.Exterior) (a b : A.R) (ha : A.Generates I a) (hb : A.Generates J b)
@@ -609,6 +619,8 @@ theorem actual_pair_phase_cancel
         omega, pow_mul]
   change (frequencyTheta A σ I b ^ 6) ^ _ = 1
   rw [hroot, one_pow]
+
+end
 
 theorem actual_cross_prime_product_cancel
     {ι : Type*} [Fintype ι] [LinearOrder ι]
@@ -750,9 +762,6 @@ theorem global_pair_cancel
     (hD : HasArithmeticRecipes A σ hS G.B D)
     (c : ExteriorSquarefreeIdeal A.cS) (n s r Iu : A.Exterior)
     (u : A.R) (hu : A.Generates Iu u)
-    (au : Fˣ) (hau : (au : F) = (u : F)) (huAllowed : A.IsAllowed G.B au)
-    (huSixthFree : ∀ v : HeightOneSpectrum (𝓞 F),
-      idealPrimeExponent v.asIdeal Iu.val ≤ 5)
     (P : Finset (HeightOneSpectrum (𝓞 F)))
     (p : P → A.Exterior) (hp : ∀ v : P, (p v).val = v.val.asIdeal)
     (π : P → A.R) (hπ : ∀ v : P, A.Generates (p v) (π v))
@@ -765,8 +774,6 @@ theorem global_pair_cancel
       u = π v ^ idealPrimeExponent v.val.asIdeal Iu.val * uPrimeFree v)
     (hPrimeUnit : ∀ v : P,
       IsUnit (Ideal.Quotient.mk (A.extendIdeal (p v)) (uPrimeFree v))) :
-    (∀ v : P, frequencyTheta A σ (p v) (uPrimeFree v) ≠ 0 ∧
-      frequencyTheta A σ (p v) (uPrimeFree v) ^ 6 = 1) ∧
     D.gammaTwo c * comparisonPoissonFiniteCoefficient F A D c n s
         (u * D.generator r ^ 6) =
       ∏ v : P,
@@ -779,7 +786,6 @@ theorem global_pair_cancel
         A.idealGauss σ hS (p v) (π v) (hπ v) 2 ^ e *
           frequencyTheta A σ (p v) (uPrimeFree v) ^ ((k : ℤ) - (t : ℤ)) *
           primePowerSum A D (π v) (hπ v).1 t k (j + 6 * m) := by
-  refine ⟨fun v => frequencyTheta_unit A σ (p v) (uPrimeFree v) (hPrimeUnit v), ?_⟩
   classical
 
   letI : LinearOrder P := LinearOrder.lift' (Fintype.equivFin P)

@@ -71,11 +71,11 @@ local instance translationJacobianTopologicalGroup : IsTopologicalGroup RawGroup
 private theorem tj_rawMatrix_rawRatios (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 0 0 ≠ 0) :
     rawMatrix (rawRatios a) = (a 0 0)⁻¹ • a := by
   have h0 : rawComplexCoordinates (rawRatios a) 0 = a 1 1 / a 0 0 - 1 := by
-    apply Complex.ext <;> simp [rawComplexCoordinates, rawRatios]
+    rfl
   have h1 : rawComplexCoordinates (rawRatios a) 1 = a 0 1 / a 0 0 := by
-    apply Complex.ext <;> simp [rawComplexCoordinates, rawRatios]
+    rfl
   have h2 : rawComplexCoordinates (rawRatios a) 2 = a 1 0 / a 0 0 := by
-    apply Complex.ext <;> simp [rawComplexCoordinates, rawRatios]
+    rfl
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [rawMatrix, h0, h1, h2, Matrix.smul_apply, ha, div_eq_mul_inv, mul_comm]
@@ -95,20 +95,21 @@ private theorem tj_rawDelta_multiply (x y : RawCoordinates)
   rw [rawMultiply, tj_rawDelta_rawRatios _ (h00 ▸ hxy), Matrix.det_mul,
     rawMatrix_det, rawMatrix_det, h00]
 
-private theorem tj_rawMultiply_mem_source
-    (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
-    (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
-    (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
+section
+
+variable (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
+  (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
+  (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0)
+include h hn hx hy hxy
+
+private theorem tj_rawMultiply_mem_source :
     rawMultiply (x, y) ∈ h.source := by
   rw [hn.source] at hx hy ⊢
   change rawDelta (rawMultiply (x,y)) ≠ 0
   rw [tj_rawDelta_multiply x y hxy]
-  exact div_ne_zero (mul_ne_zero hx hy) (pow_ne_zero 2 hxy)
+  simp_all
 
-private theorem tj_rawMultiply_chart
-    (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
-    (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
-    (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
+private theorem tj_rawMultiply_chart :
     h (rawMultiply (x, y)) = h x * h y := by
   have hx' : rawDelta x ≠ 0 := by simpa [hn.source] using hx
   have hy' : rawDelta y ≠ 0 := by simpa [hn.source] using hy
@@ -130,13 +131,12 @@ private theorem tj_rawMultiply_chart
   simp [Matrix.mul_diagonal, smul_eq_mul, hnz]
   field_simp
 
-private theorem tj_rawMultiply_inverse_chart
-    (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
-    (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
-    (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
+private theorem tj_rawMultiply_inverse_chart :
     h.symm (h x * h y) = rawMultiply (x, y) := by
   rw [← tj_rawMultiply_chart h hn x y hx hy hxy]
   exact h.left_inv (tj_rawMultiply_mem_source h hn x y hx hy hxy)
+
+end
 
 private theorem tj_zero_mem (h : OpenPartialHomeomorph RawCoordinates RawGroup)
     (hn : NormalizedChart h) : (0 : RawCoordinates) ∈ h.source := by
@@ -562,9 +562,12 @@ theorem chart_measure_image {X Y : Type*}
     himage, Measure.restrict_apply hs, inter_eq_left.mpr hsub] at H
   exact H
 
+section
+
+variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [MeasurableSpace G]
+  [BorelSpace G]
+
 theorem invariant_measure_isHaar_of_local_data
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [MeasurableSpace G] [BorelSpace G]
     (ν : Measure G) [ν.IsMulLeftInvariant]
     (U : Set G) (hU : IsOpen U) (hne : U.Nonempty) (hfinite : ν U ≠ ⊤)
     (K : Set G) (hK : IsCompact K) (hpos : ν K ≠ 0) : ν.IsHaarMeasure := by
@@ -573,9 +576,7 @@ theorem invariant_measure_isHaar_of_local_data
   letI : ν.IsOpenPosMeasure := isOpenPosMeasure_of_mulLeftInvariant_of_compact K hK hpos
   exact ⟨⟩
 
-theorem invariant_measure_isHaar_of_chart_density
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [MeasurableSpace G] [BorelSpace G] {n : ℕ}
+theorem invariant_measure_isHaar_of_chart_density {n : ℕ}
     (ν : Measure G) [ν.IsMulLeftInvariant]
     (h : OpenPartialHomeomorph (Fin n → ℝ) G) (hne : h.source.Nonempty)
     (w : (Fin n → ℝ) → ℝ) (hw : ContinuousOn w h.source)
@@ -621,9 +622,7 @@ theorem invariant_measure_isHaar_of_chart_density
   · rw [chart_measure_image h _ ν hd hK.measurableSet hKU]
     exact hKpos.ne'
 
-theorem normalized_chart_haar_of_compatible_translates
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [MeasurableSpace G] [BorelSpace G] [SecondCountableTopology G] {n : ℕ}
+theorem normalized_chart_haar_of_compatible_translates [SecondCountableTopology G] {n : ℕ}
     (h : OpenPartialHomeomorph (Fin n → ℝ) G) (hne : h.source.Nonempty)
     (w : (Fin n → ℝ) → ℝ) (hw : ContinuousOn w h.source)
     (hp : ∀ x ∈ h.source, 0 < w x) (hm : Measurable w)
@@ -653,10 +652,9 @@ theorem normalized_chart_haar_of_compatible_translates
     exact partial_homeomorph_local_map h _
   exact ⟨ν, invariant_measure_isHaar_of_chart_density ν h hne w hw hp hm hd, hd⟩
 
-section RawSmooth
-open scoped Matrix.Norms.Elementwise
+end
 
-end RawSmooth
+
 
 theorem normalized_frame_haar
     [MeasurableSpace RawGroup] [BorelSpace RawGroup]

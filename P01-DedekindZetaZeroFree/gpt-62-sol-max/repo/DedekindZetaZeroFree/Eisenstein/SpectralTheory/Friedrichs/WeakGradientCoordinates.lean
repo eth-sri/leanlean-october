@@ -97,16 +97,6 @@ private theorem permTest_deriv {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall 
   rw [hs]
   rfl
 
-private theorem first_dirs {n : ℕ} (j : Fin n) :
-    (KPContLocalEnergy.firstIndex j).directions = [j] :=
-  KPContLocalEnergy.SobolevEnergyEstimates.firstIndex_directions j
-
-private theorem first_degree {n : ℕ} (j : Fin n) :
-    (KPContLocalEnergy.firstIndex j).degree = 1 := by
-  simp only [KPContLocalEnergy.firstIndex, MultiIndex.degree,
-    apply_ite Fin.val, Fin.val_one, Fin.val_zero]
-  simp
-
 private theorem pull_weak_first {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall n)
     (h : IntegerSobolev (permBall e B) 1) (j : Fin n) :
     IsWeakDerivative B (KPContLocalEnergy.firstIndex j)
@@ -119,7 +109,10 @@ private theorem pull_weak_first {n m : ℕ} (e : Fin n ≃ Fin m) (B : LocalBall
     coordinateDerivative (KPContLocalEnergy.firstIndex (e j)) (permTest e B φ) x) =
     (-1 : ℂ) ^ _ * (∫ x in (permBall e B).carrier,
       KPContLocalEnergy.gradient h (e j) x * permTest e B φ x) at hw
-  simp only [coordinateDerivative, first_dirs, first_degree] at hw ⊢
+  have hdeg {l : ℕ} (i : Fin l) : (KPContLocalEnergy.firstIndex i).degree = 1 :=
+    KPContLocalEnergy.SobolevEnergyEstimates.Raw.first_degree i
+  simp only [coordinateDerivative, KPContLocalEnergy.SobolevEnergyEstimates.firstIndex_directions,
+    hdeg] at hw ⊢
   have ht : ∀ x, permTest e B φ (permIsometry e x) = φ x := by
     intro x
     exact congrArg φ ((permIsometry e).symm_apply_apply x)
@@ -261,19 +254,6 @@ private theorem coord_ball_inside (a : ShrunkChart F ζ hζ U R P H)
     change labeledA (placeEquiv F ζ hζ) ((baseReindex (F := F)).symm x) ∈ a.domain
     rw [hcoord, labeled_inverse]
     exact hA ⟨p, hp, rfl⟩
-
-private theorem sectionFields_apply (s : Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
-    sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
-  have hcoe : (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient s x.val =
-      (KPCuspGenuineMonodromy.chi F ζ hζ
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).splitting x.val) : ℂ) *
-        (s a.component).val
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).kind.representative •
-            labeledA (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).places x.val) :=
-    rfl
-  rw [sectionFields, hcoe]
-  simp [KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
 
 theorem coordinate_weak_gradient_decode (s : BorelL2Sections F ζ hζ U R P H)
     (W : Family (U := U) (H := H))

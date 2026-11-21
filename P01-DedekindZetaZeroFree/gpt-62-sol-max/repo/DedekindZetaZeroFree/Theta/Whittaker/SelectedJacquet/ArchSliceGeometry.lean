@@ -14,26 +14,7 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal
 open KPLiteralChamber
 open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertion → sectionTuple_insertion
 
- def diagonalUnit (x : ℂ) : ℂˣ := if h : x = 0 then 1 else Units.mk0 x h
-
-private theorem mapped_diagonalUnit
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (w : InfinitePlace F) (x : ℂ) :
-    Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-      (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom (diagonalUnit x) =
-      (if h : x = 0 then (1 : (w.Completion)ˣ) else Units.mk0
-        ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
-          (KPHilbert.infinite_isComplex F ζ hζ w)).symm x)
-        (by
-          intro hx
-          apply h
-          simpa using congrArg (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-            (KPHilbert.infinite_isComplex F ζ hζ w)) hx)) := by
-  by_cases hx : x = 0
-  · simp [diagonalUnit, hx]
-  · simp only [diagonalUnit, hx, ↓reduceDIte]
-    apply Units.ext
-    rfl
+export KPLiteralChamber (diagonalUnit)
 
  def lowerCoordinates
     (F : Type) [Field F] [NumberField F] (w : InfinitePlace F) (u : ℂ) :

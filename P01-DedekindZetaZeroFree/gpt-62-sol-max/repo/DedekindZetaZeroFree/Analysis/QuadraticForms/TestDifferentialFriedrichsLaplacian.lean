@@ -13,13 +13,15 @@ variable {S T H V : Type*}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
 
-theorem gradient_closable
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
-    (hcotangent : DenseRange j)
-    (hgreen : ∀ f : S, ∀ w : T,
-      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) :
+section
+
+variable (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι) (j : T →ₗ[ℂ] V)
+  (hj : Function.Injective j) (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S) (hcotangent : DenseRange j)
+  (hgreen : ∀ f : S, ∀ w : T,
+      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w)))
+include ι hι j hj A B hcotangent hgreen
+
+theorem gradient_closable :
     (KPTestOperator.descend ι hι j A).IsClosable := by
   have ht : Dense ((KPTestOperator.descend j hj ι B).domain : Set V) := by
     simpa only [KPTestOperator.descend_domain, KPTestOperator.testDomain,
@@ -27,35 +29,27 @@ theorem gradient_closable
   exact (formalAdjoint_gradient_closable _ _ ht
     (KPTestOperator.descend_formalAdjoint ι hι j hj A B hgreen)).2.1
 
-def resolvent
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
-    (hcotangent : DenseRange j)
-    (hgreen : ∀ f : S, ∀ w : T,
-      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) : H →L[ℂ] H :=
+def resolvent : H →L[ℂ] H :=
   closedGradientResolvent (KPTestOperator.descend ι hι j A)
     (gradient_closable ι hι j hj A B hcotangent hgreen)
 
-def laplacian
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
-    (hscalar : DenseRange ι) (hcotangent : DenseRange j)
-    (hgreen : ∀ f : S, ∀ w : T,
-      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) : H →ₗ.[ℂ] H :=
+end
+
+section
+
+variable (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι) (j : T →ₗ[ℂ] V)
+  (hj : Function.Injective j) (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S) (hscalar : DenseRange ι)
+  (hcotangent : DenseRange j) (hgreen : ∀ f : S, ∀ w : T,
+      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w)))
+include ι hι j hj A B hscalar hcotangent hgreen
+
+def laplacian : H →ₗ.[ℂ] H :=
   closedGradientFriedrichsOperator (KPTestOperator.descend ι hι j A)
     (by simpa only [KPTestOperator.descend_domain, KPTestOperator.testDomain,
       LinearMap.coe_range, DenseRange] using hscalar)
     (gradient_closable ι hι j hj A B hcotangent hgreen)
 
-theorem hilbert_laplacian
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
-    (hscalar : DenseRange ι) (hcotangent : DenseRange j)
-    (hgreen : ∀ f : S, ∀ w : T,
-      inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) :
+theorem hilbert_laplacian :
     let D := KPTestOperator.descend ι hι j A
     let Δ := laplacian ι hι j hj A B hscalar hcotangent hgreen
     let R := resolvent ι hι j hj A B hcotangent hgreen
@@ -126,6 +120,8 @@ theorem hilbert_laplacian
       exact (closedGradientFriedrichsOperator_variational D hd hc ⟨u, hu⟩ h).mpr hform
   · exact (KPTestGreenTransfer.friedrichs_extends_test_laplacian
       ι hι j hj A B hscalar hcotangent hgreen).2
+
+end
 
 end KPTestFriedrichs
 end DedekindZetaZeroFree

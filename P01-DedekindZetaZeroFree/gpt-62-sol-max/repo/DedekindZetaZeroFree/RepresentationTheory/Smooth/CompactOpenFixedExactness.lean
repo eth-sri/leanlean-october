@@ -75,25 +75,22 @@ private theorem orbit_eq_of_coset_eq (ρ : Representation ℂ G V)
   have he := congrArg (ρ (a : G)) hf
   simpa [map_mul, Module.End.mul_apply] using he.symm
 
-noncomputable def finiteAverageMap (ρ : Representation ℂ G V)
-    (U : CompactOpenLevel G) (K : Subgroup U.toOpenSubgroup)
-    [Finite (U.toOpenSubgroup ⧸ K)]
-    (r : (U.toOpenSubgroup ⧸ K) → U.toOpenSubgroup) : V →ₗ[ℂ] V := by
+section
+
+variable (ρ : Representation ℂ G V) (U : CompactOpenLevel G) (K : Subgroup U.toOpenSubgroup)
+  [Finite (U.toOpenSubgroup ⧸ K)] (r : (U.toOpenSubgroup ⧸ K) → U.toOpenSubgroup)
+include ρ U r
+
+noncomputable def finiteAverageMap : V →ₗ[ℂ] V := by
   letI := Fintype.ofFinite (U.toOpenSubgroup ⧸ K)
   exact (Nat.card (U.toOpenSubgroup ⧸ K) : ℂ)⁻¹ • ∑ x, ρ (r x : G)
 
-private theorem finiteAverageMap_apply (ρ : Representation ℂ G V)
-    (U : CompactOpenLevel G) (K : Subgroup U.toOpenSubgroup)
-    [Finite (U.toOpenSubgroup ⧸ K)]
-    (r : (U.toOpenSubgroup ⧸ K) → U.toOpenSubgroup) (v : V) :
+private theorem finiteAverageMap_apply (v : V) :
     finiteAverageMap ρ U K r v = finiteQuotientAverage ρ U K r v := by
   classical
   simp [finiteAverageMap, finiteQuotientAverage, LinearMap.sum_apply]
 
- theorem finiteAverage_constant (ρ : Representation ℂ G V)
-    (U : CompactOpenLevel G) (K : Subgroup U.toOpenSubgroup)
-    [Finite (U.toOpenSubgroup ⧸ K)]
-    (r : (U.toOpenSubgroup ⧸ K) → U.toOpenSubgroup) (v : V)
+ theorem finiteAverage_constant (v : V)
     (hv : ∀ g : U.toOpenSubgroup, ρ (g : G) v = v) :
     finiteQuotientAverage ρ U K r v = v := by
   classical
@@ -105,10 +102,16 @@ private theorem finiteAverageMap_apply (ρ : Representation ℂ G V)
     exact_mod_cast Nat.card_pos.ne'
   rw [inv_mul_cancel₀ hn, one_smul]
 
- theorem finiteAverage_left (ρ : Representation ℂ G V)
-    (U : CompactOpenLevel G) (v : V) (K : FiniteAveragingLevel ρ U v)
-    (r : (U.toOpenSubgroup ⧸ K.subgroup) → U.toOpenSubgroup)
-    (hr : ∀ x, QuotientGroup.mk (r x) = x) (g : U.toOpenSubgroup) :
+end
+
+section
+
+variable (ρ : Representation ℂ G V) (U : CompactOpenLevel G) (v : V)
+  (K : FiniteAveragingLevel ρ U v) (r : (U.toOpenSubgroup ⧸ K.subgroup) → U.toOpenSubgroup)
+  (hr : ∀ x, QuotientGroup.mk (r x) = x) (g : U.toOpenSubgroup)
+include ρ U v K r hr g
+
+ theorem finiteAverage_left :
     letI := K.finite
     ρ (g : G) (finiteQuotientAverage ρ U K.subgroup r v) =
       finiteQuotientAverage ρ U K.subgroup r v := by
@@ -130,10 +133,7 @@ private theorem finiteAverageMap_apply (ρ : Representation ℂ G V)
       rfl
     _ = ∑ x, ρ (r x : G) v := Equiv.sum_comp e (fun x => ρ (r x : G) v)
 
-private theorem finiteAverage_right (ρ : Representation ℂ G V)
-    (U : CompactOpenLevel G) (v : V) (K : FiniteAveragingLevel ρ U v)
-    (r : (U.toOpenSubgroup ⧸ K.subgroup) → U.toOpenSubgroup)
-    (hr : ∀ x, QuotientGroup.mk (r x) = x) (g : U.toOpenSubgroup) :
+private theorem finiteAverage_right :
     letI := K.finite
     finiteQuotientAverage ρ U K.subgroup r (ρ (g : G) v) =
       finiteQuotientAverage ρ U K.subgroup r v := by
@@ -153,6 +153,8 @@ private theorem finiteAverage_right (ρ : Representation ℂ G V)
       rw [QuotientGroup.mk_mul, hr, hr]
       rfl
     _ = ∑ x, ρ (r x : G) v := Equiv.sum_comp e (fun x => ρ (r x : G) v)
+
+end
 
 theorem finiteQuotientAverage_independent (ρ : Representation ℂ G V)
     (U : CompactOpenLevel G) (v : V) (K L : FiniteAveragingLevel ρ U v)
@@ -225,8 +227,12 @@ noncomputable def commonLevel (ρ : Representation ℂ G V) (U : CompactOpenLeve
     exact Subgroup.quotient_finite_of_isOpen _ (K.isOpen.inter L.isOpen)
   fixes := fun h => K.fixes ⟨h.val, h.property.1⟩
 
-theorem compactOpenAverageFun_add (ρ : Representation ℂ G V)
-    (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G) (v w : V) :
+section
+
+variable (ρ : Representation ℂ G V) (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G)
+include ρ hρ U
+
+theorem compactOpenAverageFun_add (v w : V) :
     compactOpenAverageFun ρ hρ U (v + w) =
       compactOpenAverageFun ρ hρ U v + compactOpenAverageFun ρ hρ U w := by
   classical
@@ -245,8 +251,7 @@ theorem compactOpenAverageFun_add (ρ : Representation ℂ G V)
   simp only [map_add, Finset.sum_add_distrib, smul_add]
   rfl
 
-theorem compactOpenAverageFun_smul (ρ : Representation ℂ G V)
-    (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G) (a : ℂ) (v : V) :
+theorem compactOpenAverageFun_smul (a : ℂ) (v : V) :
     compactOpenAverageFun ρ hρ U (a • v) = a • compactOpenAverageFun ρ hρ U v := by
   classical
   let K := Classical.choice (exists_finiteAveragingLevel ρ hρ U v)
@@ -259,14 +264,12 @@ theorem compactOpenAverageFun_smul (ρ : Representation ℂ G V)
   simp only [map_smul, ← Finset.smul_sum]
   exact smul_comm _ a _
 
-noncomputable def compactOpenAverage (ρ : Representation ℂ G V)
-    (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G) : V →ₗ[ℂ] V where
+noncomputable def compactOpenAverage : V →ₗ[ℂ] V where
   toFun := compactOpenAverageFun ρ hρ U
   map_add' := compactOpenAverageFun_add ρ hρ U
   map_smul' := compactOpenAverageFun_smul ρ hρ U
 
-theorem compactOpenAverage_eq_finite (ρ : Representation ℂ G V)
-    (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G) (v : V)
+theorem compactOpenAverage_eq_finite (v : V)
     (K : FiniteAveragingLevel ρ U v)
     (r : (U.toOpenSubgroup ⧸ K.subgroup) → U.toOpenSubgroup)
     (hr : ∀ x, QuotientGroup.mk (r x) = x) :
@@ -278,8 +281,7 @@ theorem compactOpenAverage_eq_finite (ρ : Representation ℂ G V)
   exact finiteQuotientAverage_independent ρ U v L K Quotient.out r
     (fun x => Quotient.out_eq x) hr
 
-theorem compactOpenAverage_fixed (ρ : Representation ℂ G V)
-    (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G) (v : V)
+theorem compactOpenAverage_fixed (v : V)
     (hv : v ∈ fixedSubmodule ρ U.toOpenSubgroup.toSubgroup) :
     compactOpenAverage ρ hρ U v = v := by
   classical
@@ -297,8 +299,7 @@ theorem compactOpenAverage_fixed (ρ : Representation ℂ G V)
     exact_mod_cast Nat.card_pos.ne'
   rw [inv_mul_cancel₀ hn, one_smul]
 
-theorem compactOpenAverage_range (ρ : Representation ℂ G V)
-    (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G) :
+theorem compactOpenAverage_range :
     (compactOpenAverage ρ hρ U).range = fixedSubmodule ρ U.toOpenSubgroup.toSubgroup := by
   classical
   apply le_antisymm
@@ -328,6 +329,8 @@ theorem compactOpenAverage_range (ρ : Representation ℂ G V)
         Equiv.sum_comp e (fun x => ρ ((Quotient.out x : U.toOpenSubgroup) : G) v)
   · intro v hv
     exact ⟨v, compactOpenAverage_fixed ρ hρ U v hv⟩
+
+end
 
 variable {W : Type*} [AddCommGroup W] [Module ℂ W]
 

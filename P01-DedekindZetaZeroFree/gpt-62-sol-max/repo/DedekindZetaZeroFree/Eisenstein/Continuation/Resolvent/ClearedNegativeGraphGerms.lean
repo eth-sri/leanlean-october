@@ -67,7 +67,6 @@ theorem kp_cont_actual_cleared_negative_graph
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (_hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (_hΩopen : IsOpen Ω) (_hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (_hf : DifferentiableOn ℂ f Ω)
     {T : ℝ}
@@ -106,7 +105,7 @@ theorem kp_cont_actual_cleared_negative_graph
     KPContFlatArchDiagonalMultiplier.complexDimension_pos F ζ hζ
   have hdZ : 0 < ((Module.finrank ℚ F / 2 : ℕ) : ℤ) := by exact_mod_cast hd
   have hprops := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U μG hμG hR realization
-    ι _hι _hStage Ω _hΩopen _hΩ f _hf buffer χ source
+    ι _hι Ω _hΩopen _hΩ f _hf buffer χ source
   have hspec := kp_cont_actual_sector_resolvent_specialization F ζ hζ μG hμG
     (KPContActualAllCuspSource.level F ζ hζ C R P H U) R hR P H realization
   have hcl : ((KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ (KPContActualAllCuspSource.level F ζ hζ C R P H U) R P H μG hμG hR realization)).IsClosed :=

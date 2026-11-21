@@ -7,137 +7,8 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.HopfMatr
 section
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
-open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
-open scoped Matrix Matrix.Norms.Elementwise
-
-private lemma chart_formula (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2)
-    (north : Bool) (h : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1) ≠ 0) :
-    f g = (Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-      ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2) (1 + 2*s) : ℂ) *
-      (if north then openCoordinate f else infinityCoordinate f)
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 1 else 0) /
-       (g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)) := by
-  let d : ℂˣ := Units.mk0 ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)) h
-  let a : ℂˣ := (if north then -Matrix.GeneralLinearGroup.det g else Matrix.GeneralLinearGroup.det g) / d
-  have hg : g = upperTriangular a d
-      ((g : Matrix (Fin 2) (Fin 2) ℂ) 0 (if north then 0 else 1)) *
-      (if north then weyl * upperUnipotent
-        ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 / (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0)
-       else lowerUnipotent
-        ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 / (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) := by
-    apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    cases north <;> fin_cases i <;> fin_cases j <;>
-      simp [upperTriangular_coe_matrix, weyl, upperUnipotent, lowerUnipotent,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-        a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
-    all_goals simp only [Bool.false_eq_true, Bool.true_eq, if_false, if_true] at h
-    all_goals field_simp [h]
-    all_goals ring
-  conv_lhs => rw [hg, f.property.1]
-  have hw : inductionWeight s a d =
-      Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2) (1 + 2*s) := by
-    unfold inductionWeight complexAbs
-    have he : ‖(a : ℂ) / (d : ℂ)‖ = ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2 := by
-      cases north <;> simp [a, d, norm_div, norm_neg, div_div, sq]
-    rw [he]
-    calc
-      _ = Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-          ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2)
-          ((2 : ℕ) * (1/2+s)) :=
-        (Real.rpow_natCast_mul (show 0 ≤ ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
-          ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2 by positivity) 2 (1/2+s)).symm
-      _ = _ := by congr 1; norm_num; ring
-  rw [hw]
-  cases north <;> rfl
-
-private lemma matrix_chart_smooth (s : ℝ) (f : PrincipalSeries s)
-    (m : Matrix (Fin 2) (Fin 2) ℂ) (hm : m.det ≠ 0)
-    (north : Bool) (hc : m 1 (if north then 0 else 1) ≠ 0) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (matrixFunction f) m := by
-  let c : Fin 2 := if north then 0 else 1
-  let d : Fin 2 := if north then 1 else 0
-  have hdet : ContDiff ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ => g.det) := by
-    simp only [Matrix.det_fin_two]
-    fun_prop
-  have he : ContDiff ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ => g 1 c) := by fun_prop
-  have hn : ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ =>
-      ‖g.det‖ / ‖g 1 c‖ ^ 2) m :=
-    ((contDiffAt_norm ℝ hm).comp m hdet.contDiffAt).div
-      (((contDiffAt_norm ℝ hc).comp m he.contDiffAt).pow 2)
-      (pow_ne_zero 2 (norm_ne_zero_iff.mpr hc))
-  have hp : ‖m.det‖ / ‖m 1 c‖ ^ 2 ≠ 0 :=
-    div_ne_zero (norm_ne_zero_iff.mpr hm) (pow_ne_zero 2 (norm_ne_zero_iff.mpr hc))
-  have hw : ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ =>
-      (Real.rpow (‖g.det‖ / ‖g 1 c‖ ^ 2) (1+2*s) : ℂ)) m :=
-    by
-      have hr : ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ =>
-          Real.rpow (‖g.det‖ / ‖g 1 c‖ ^ 2) (1+2*s)) m :=
-        by
-          have hr0 : ContDiffAt ℝ (⊤ : ℕ∞) (fun t : ℝ => Real.rpow t (1+2*s))
-              (‖m.det‖ / ‖m 1 c‖ ^ 2) := Real.contDiffAt_rpow_const_of_ne hp
-          have hcomp := hr0.comp m hn
-          simpa only [Function.comp_def] using hcomp
-      have hcomp := Complex.ofRealCLM.contDiff.contDiffAt.comp m hr
-      simpa only [Function.comp_def, Complex.ofRealCLM_apply] using hcomp
-  have hratio : ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ =>
-      g 1 d / g 1 c) m := by
-    simp only [div_eq_mul_inv]
-    exact (show ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ => g 1 d) m by
-      fun_prop).mul (he.contDiffAt.inv hc)
-  have hf : ContDiff ℝ (⊤ : ℕ∞)
-      (if north then openCoordinate f else infinityCoordinate f) := by
-    cases north
-    · exact f.property.2.2
-    · exact f.property.2.1
-  apply (hw.mul (hf.contDiffAt.comp m hratio)).congr_of_eventuallyEq
-  have hmd : ∀ᶠ g : Matrix (Fin 2) (Fin 2) ℂ in nhds m, g.det ≠ 0 :=
-    hdet.continuous.continuousAt (isOpen_ne.mem_nhds hm)
-  have hmc : ∀ᶠ g : Matrix (Fin 2) (Fin 2) ℂ in nhds m, g 1 c ≠ 0 :=
-    he.continuous.continuousAt (isOpen_ne.mem_nhds hc)
-  filter_upwards [hmd, hmc] with g hg hg'
-  rw [matrixFunction, dif_pos hg]
-  exact chart_formula s f (Matrix.GeneralLinearGroup.mkOfDetNeZero g hg) north hg'
-
-theorem principalSeries_matrix_smooth (s : ℝ) (f : PrincipalSeries s) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (matrixFunction f)
-      {g : Matrix (Fin 2) (Fin 2) ℂ | g.det ≠ 0} := by
-  intro m hm
-  by_cases h : m 1 0 = 0
-  · have h' : m 1 1 ≠ 0 := by
-      intro hz
-      apply hm
-      simp [Matrix.det_fin_two, h, hz]
-    exact (matrix_chart_smooth s f m hm false h').contDiffWithinAt
-  · exact (matrix_chart_smooth s f m hm true h).contDiffWithinAt
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
-
-end
-
-section
-
-namespace DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 open scoped Matrix Matrix.Norms.Elementwise
-
-def rowMatrix (a b : ℂ) : Matrix (Fin 2) (Fin 2) ℂ :=
-  !![star b, -star a; a, b]
-
-def hopfChartSU2OfUnitBottomRow (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) : ComplexSU2 :=
-  ⟨rowMatrix a b, by
-    have h' : ‖b‖ ^ 2 + ‖a‖ ^ 2 = 1 := by linarith
-    rw [Matrix.mem_specialUnitaryGroup_iff, Matrix.mem_unitaryGroup_iff]
-    constructor
-    · ext i j
-      fin_cases i <;> fin_cases j <;>
-        simp [rowMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
-          ← Complex.ofReal_add, h, h', mul_comm]
-    · simp [rowMatrix, Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h']⟩
 
 private lemma sphere_equation (x : Sphere) :
     (x : Ambient) 0 ^ 2 + (x : Ambient) 1 ^ 2 + (x : Ambient) 2 ^ 2 = 1 := by
@@ -171,19 +42,19 @@ private lemma south_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
   have hb : ‖southB x‖ ^ 2 = (1 - (x : Ambient) 2) / 2 := by
     change ‖(r : ℂ)‖ ^ 2 = _
     simpa only [Complex.norm_real, Real.norm_eq_abs, sq_abs] using hr2
-  refine ⟨hopfChartSU2OfUnitBottomRow (southA x) (southB x) (by rw [ha, hb]; ring), ?_, rfl⟩
+  refine ⟨rowSU2 (southA x) (southB x) (by rw [ha, hb]; ring), ?_, rfl⟩
   apply Subtype.ext
   rw [hH]
   apply PiLp.ext
   intro i
   fin_cases i
   · change 2 * ((southA x) * star (southB x)).re = (x : Ambient) 0
-    simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_re,
+    simp only [southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_re,
       Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
     change 2 * ((x : Ambient) 0 / (2*r) * r) = _
     field_simp [ne_of_gt hr]
   · change 2 * ((southA x) * star (southB x)).im = (x : Ambient) 1
-    simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_im,
+    simp only [southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_im,
       Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
     change 2 * ((x : Ambient) 1 / (2*r) * r) = _
     field_simp [ne_of_gt hr]
@@ -207,7 +78,7 @@ private lemma north_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
     change ((x : Ambient) 0 / (2*r)) ^ 2 + (-(x : Ambient) 1 / (2*r)) ^ 2 = _
     field_simp [ne_of_gt hr]
     nlinarith [hr2]
-  refine ⟨hopfChartSU2OfUnitBottomRow (northA x) (northB x) (by rw [ha, hb]; ring), ?_, rfl⟩
+  refine ⟨rowSU2 (northA x) (northB x) (by rw [ha, hb]; ring), ?_, rfl⟩
   apply Subtype.ext
   rw [hH]
   apply PiLp.ext
@@ -303,14 +174,6 @@ private lemma local_lifts (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H
       north_smooth p hp', fun q hq => north_lift H hH q hq⟩
     exact isOpen_lt continuous_const (by fun_prop)
 
-private lemma matrixFunction_compact (f : ComplexGL2 → ℂ) (k : ComplexSU2) :
-    matrixFunction f (k : Matrix (Fin 2) (Fin 2) ℂ) = f (complexSU2Embedding k) := by
-  have hd : (k : Matrix (Fin 2) (Fin 2) ℂ).det ≠ 0 := by
-    rw [(Matrix.mem_specialUnitaryGroup_iff.mp k.property).2]
-    exact one_ne_zero
-  rw [matrixFunction, dif_pos hd]
-  congr 1
-
 theorem smooth_hopf_descent (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
     (s : ℝ) (f : PrincipalSeries s)
     (hf : ∀ k l : ComplexSU2, H k = H l →
@@ -328,7 +191,7 @@ theorem smooth_hopf_descent (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates
     intro k
     exact hf k _ (Classical.choose_spec (hsurj (H k))).symm
   refine ⟨F, ?_, hF⟩
-  have hmat := principalSeries_matrix_smooth s f
+  have hmat := ((principalSeries_mem_iff s f).mp f.property).2
   have hopen : IsOpen {g : Matrix (Fin 2) (Fin 2) ℂ | g.det ≠ 0} := by
     exact isOpen_ne.preimage (show Continuous (fun g : Matrix (Fin 2) (Fin 2) ℂ => g.det) by
       simp only [Matrix.det_fin_two]; fun_prop)
@@ -362,8 +225,9 @@ theorem smooth_hopf_descent (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates
   change radialExtension F y = matrixFunction f (M (N y))
   rw [radialExtension, dif_pos hy]
   change F q = matrixFunction f (M (q : Ambient))
-  rw [← hMl, matrixFunction_compact]
-  exact (hlq ▸ hF l).symm
+  rw [← hMl]
+  exact (hlq ▸ hF l).symm.trans
+    (KPCplxPrincipalSeriesMatrixSmooth.matrixFunction_coe f (complexSU2Embedding l)).symm
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
 

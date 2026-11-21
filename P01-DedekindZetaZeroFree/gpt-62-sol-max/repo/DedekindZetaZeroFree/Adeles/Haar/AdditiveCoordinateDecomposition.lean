@@ -78,8 +78,6 @@ theorem continuous_join_symm : Continuous (join F q).symm :=
   ((continuous_id.sub ((continuous_single F q).comp (continuous_eval F q))).subtype_mk _).prodMk
     (continuous_eval F q)
 
-local instance : SecondCountableTopology (InfiniteAdeleRing F) :=
-  (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isEmbedding.secondCountableTopology
 
 instance : SecondCountableTopology (Away F q) :=
   (away_isClosed F q).isClosedEmbedding_subtypeVal.isEmbedding.secondCountableTopology
@@ -91,8 +89,6 @@ local instance : SecondCountableTopology (q.adicCompletion F) := by
       HeightOneSpectrum.denseRange_algebraMap F q⟩⟩
   infer_instance
 
-local instance : SigmaCompactSpace (InfiniteAdeleRing F) :=
-  (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isClosedEmbedding.sigmaCompactSpace
 
 instance : SigmaCompactSpace (Away F q) :=
   (away_isClosed F q).sigmaCompactSpace

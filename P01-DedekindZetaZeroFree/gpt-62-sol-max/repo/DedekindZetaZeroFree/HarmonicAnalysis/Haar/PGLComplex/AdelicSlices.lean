@@ -39,26 +39,12 @@ def finiteSubgroup : Subgroup (ActualCover F ζ hζ) :=
 
 abbrev FiniteLevel := CompactOpenLevel (finiteSubgroup F ζ hζ)
 
-def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (ActualCover F ζ hζ) :=
-  U.toOpenSubgroup.toSubgroup.map (finiteSubgroup F ζ hζ).subtype
 
 abbrev centreMap := KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ
 
-def rightSubgroup (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    Subgroup (ActualCover F ζ hζ) :=
-  if geometric then levelSubgroup F ζ hζ U ⊔ (centreMap F ζ hζ).range
-  else levelSubgroup F ζ hζ U
 
-abbrev LevelSpace (U : FiniteLevel F ζ hζ) (geometric : Bool) :=
-  DoubleCoset.Quotient (rationalSubgroup F ζ hζ : Set (ActualCover F ζ hζ))
-    (rightSubgroup F ζ hζ U geometric : Set (ActualCover F ζ hζ))
 
-instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    TopologicalSpace (LevelSpace F ζ hζ U geometric) :=
-  inferInstanceAs (TopologicalSpace (_root_.Quotient _))
 
-instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    MeasurableSpace (LevelSpace F ζ hζ U geometric) := borel _
 
 abbrev ArchGroup := NumberField.InfinitePlace F → Matrix.ProjGenLinGroup (Fin 2) ℂ
 

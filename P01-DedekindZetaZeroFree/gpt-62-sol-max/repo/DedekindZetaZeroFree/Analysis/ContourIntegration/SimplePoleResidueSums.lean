@@ -48,7 +48,7 @@ private lemma min_sq_one_mul_le (δ t : ℝ) : min (δ^2) 1 * (1 + t^2) ≤ δ^2
 
 private lemma integrable_div_sq_add_sq (α : ℝ) (hα : α ≠ 0) :
     Integrable (fun t : ℝ => α / (α^2 + t^2)) := by
-  have hb : (1/α) ≠ 0 := by simp [hα]
+  have hb : (1/α) ≠ 0 := by grind
   refine ((integrable_inv_one_add_mul_sq hb).const_mul (1/α)).congr
     (Eventually.of_forall fun t => ?_)
   simp only [Pi.mul_apply, smul_eq_mul]
@@ -73,7 +73,7 @@ private lemma integrable_im_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ
   refine Eventually.of_forall fun t => ?_
   have ht1 : (0:ℝ) < δ1^2 + t^2 := by positivity
   have ht2 : (0:ℝ) < δ2^2 + t^2 := by positivity
-  have hD : (0:ℝ) < (δ1^2+t^2)*(δ2^2+t^2) := mul_pos ht1 ht2
+  have hD := mul_pos ht1 ht2
   have hid : t/(δ2^2+t^2) - t/(δ1^2+t^2)
       = t*(δ1^2-δ2^2)/((δ1^2+t^2)*(δ2^2+t^2)) := by
     field_simp

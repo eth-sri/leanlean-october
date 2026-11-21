@@ -77,26 +77,12 @@ theorem compact_conjugation_nhds (S : Set G) (hS : IsCompact S)
 
 end NormalCoreHelpers
 
-section CountableBasisHelpers
-open Filter Set
-open scoped Topology
-variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 
-end CountableBasisHelpers
 
-section ActualFiniteTopology
-open Filter Set Topology
-open scoped Topology
 
-end ActualFiniteTopology
 
-section ActualCompactOpenBasis
-open Filter Set Topology
-open scoped Topology
 
-variable {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 
-end ActualCompactOpenBasis
 
 def pglMatrixEval (v : KPHilbert.Place F) :
     KPAdelicCoverRestrictedProduct.AdelicPGL2 F →* KPPGLLocalCover.LocalPGL2 F v :=

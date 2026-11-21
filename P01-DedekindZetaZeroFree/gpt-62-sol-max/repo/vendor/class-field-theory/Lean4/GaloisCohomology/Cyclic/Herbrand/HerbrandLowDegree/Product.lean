@@ -51,10 +51,13 @@ def piMulDistribMulAction
     funext i
     exact MulDistribMulAction.smul_mul g (x i) (y i)
 
+section
+
+variable (ι : Type uι) (A : ι → Type uA) [∀ i, CommGroup (A i)] (N : ∀ i, Subgroup (A i))
+include N
+
 /-- The pointwise product of a family of subgroups. -/
-def piSubgroup (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+def piSubgroup :
     Subgroup (∀ i, A i) where
   carrier := {x | ∀ i, x i ∈ N i}
   one_mem' i := (N i).one_mem
@@ -63,19 +66,13 @@ def piSubgroup (ι : Type uι) (A : ι → Type uA)
 
 @[simp]
 theorem mem_piSubgroup_iff
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i))
     (x : ∀ i, A i) :
     x ∈ piSubgroup ι A N ↔
       ∀ i, x i ∈ N i :=
   Iff.rfl
 
 /-- The componentwise quotient map. -/
-noncomputable def piQuotientMap
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+noncomputable def piQuotientMap :
     (∀ i, A i) →* ∀ i, A i ⧸ N i where
   toFun x i := QuotientGroup.mk' (N i) (x i)
   map_one' := by
@@ -88,18 +85,12 @@ noncomputable def piQuotientMap
 
 @[simp]
 theorem piQuotientMap_apply
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i))
     (x : ∀ i, A i) (i : ι) :
     piQuotientMap ι A N x i =
       QuotientGroup.mk' (N i) (x i) :=
   rfl
 
-theorem ker_piQuotientMap
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+theorem ker_piQuotientMap :
     (piQuotientMap ι A N).ker =
       piSubgroup ι A N := by
   ext x
@@ -120,10 +111,7 @@ theorem ker_piQuotientMap
         (QuotientGroup.eq_one_iff
           (N := N i) (x := x i)).mpr (hx i)
 
-theorem piQuotientMap_surjective
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+theorem piQuotientMap_surjective :
     Function.Surjective (piQuotientMap ι A N) := by
   intro y
   choose x hx using fun i =>
@@ -134,10 +122,7 @@ theorem piQuotientMap_surjective
 
 /-- The quotient of a dependent product by the pointwise subgroup is the
 dependent product of the quotients. -/
-noncomputable def piQuotientEquiv
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i)) :
+noncomputable def piQuotientEquiv :
     (∀ i, A i) ⧸ piSubgroup ι A N ≃*
       ∀ i, A i ⧸ N i :=
   (QuotientGroup.quotientMulEquivOfEq
@@ -145,6 +130,8 @@ noncomputable def piQuotientEquiv
     (QuotientGroup.quotientKerEquivOfSurjective
       (piQuotientMap ι A N)
       (piQuotientMap_surjective ι A N))
+
+end
 
 section TateProducts
 

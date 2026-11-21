@@ -2,7 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CompactDerivatives.SecondDerivativeL2
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.EnergyEstimates.FirstDerivativeL2
-public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.DominatedFlowDifferentiation
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GreenIdentity.PairingsAndFluxDefinitions
 
 @[expose] public section
 

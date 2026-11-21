@@ -40,22 +40,6 @@ def RepresentsComponents (cover : CountableCover F ζ hζ U R P H)
   ∀ n : ℕ, pieceCoefficient cover f n =ᵐ[(cover.chart n).liftedMeasure]
     ((u n).val : (cover.chart n).domain → E F)
 
-structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
-  integral_eq_tsum : ∀ f : PieceSequence cover,
-    (∫⁻ x, ENNReal.ofReal ((normSquare (G cover f) x : ℝ))
-      ∂(baseMeasure (R := R) (P := P) (U := U))) =
-        ∑' n, pieceSquareIntegral cover f n
-  component_integral_eq : ∀ (f : PieceSequence cover) (u : PieceHilbert cover),
-    RepresentsComponents cover f u → ∀ n : ℕ,
-      pieceSquareIntegral cover f n = ENNReal.ofReal (‖u n‖ ^ 2)
-  tsum_eq_norm_sq : ∀ (f : PieceSequence cover) (u : PieceHilbert cover),
-    RepresentsComponents cover f u →
-      (∑' n, pieceSquareIntegral cover f n) = ENNReal.ofReal (‖u‖ ^ 2)
-  tsum_lt_top : ∀ (f : PieceSequence cover) (u : PieceHilbert cover),
-    RepresentsComponents cover f u → (∑' n, pieceSquareIntegral cover f n) < ⊤
-  gluing_squareFinite : ∀ (f : PieceSequence cover) (u : PieceHilbert cover),
-    RepresentsComponents cover f u → squareFinite (G cover f)
-
 private lemma labeledA_labeledAInv_local
     (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
     (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
@@ -197,30 +181,24 @@ end DedekindZetaZeroFree.KPContActualCotangentGluedPieceIntegral
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cont_actual_cotangent_glued_piece_integral
+open KPContActualCotangentGluedPieceIntegral KPContActualCotangentExactMeasurableGluing
+  KPContActualCotangentPieceHilbertSum KPContActualCotangentMeasurableFamilies in
+theorem kp_cont_actual_cotangent_gluing_squareFinite
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) (hR : R.adelicHaar = μG)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (cover : KPContActualCotangentCountableShrinking.CountableCover F ζ hζ U R P H) :
-    KPContActualCotangentGluedPieceIntegral.Properties cover := by
+    (cover : KPContActualCotangentCountableShrinking.CountableCover F ζ hζ U R P H)
+    (f : PieceSequence cover) (u : PieceHilbert cover) (hf : RepresentsComponents cover f u) :
+    squareFinite (G cover f) := by
   classical
   have hb := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
   have hg := kp_cont_actual_cotangent_exact_measurable_gluing F ζ hζ μG hμG U R hR P H cover
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · exact KPContActualCotangentGluedPieceIntegral.glued_integral_eq_tsum cover hb hg
-  · intro f u hf n
-    exact KPContActualCotangentGluedPieceIntegral.glued_piece_eq cover hb hg f u hf n
-  · intro f u hf
-    exact KPContActualCotangentGluedPieceIntegral.glued_tsum_eq cover hb hg f u hf
-  · intro f u hf
-    exact KPContActualCotangentGluedPieceIntegral.glued_tsum_lt_top cover hb hg f u hf
-  · intro f u hf
-    unfold KPContActualCotangentMeasurableFamilies.squareFinite
-    rw [KPContActualCotangentGluedPieceIntegral.glued_integral_eq_tsum cover hb hg f]
-    exact KPContActualCotangentGluedPieceIntegral.glued_tsum_lt_top cover hb hg f u hf
+  unfold squareFinite
+  rw [KPContActualCotangentGluedPieceIntegral.glued_integral_eq_tsum cover hb hg f]
+  exact KPContActualCotangentGluedPieceIntegral.glued_tsum_lt_top cover hb hg f u hf
 
 end DedekindZetaZeroFree
 

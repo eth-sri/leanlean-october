@@ -10,10 +10,13 @@ open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cusp_coefficientSubmodule_fg
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
+section
+
+variable (R : Type*) [CommRing R] [IsDedekindDomain R] (K : Type*) [Field K] [Algebra R K]
+  [IsFractionRing R K] (M : FullLattice R K) (v : K × K) (hv : v ≠ 0)
+include M hv
+
+theorem kp_cusp_coefficientSubmodule_fg :
     (coefficientSubmodule R K M.val v).FG := by
   let f := (LinearMap.toSpanSingleton K (K × K) v).restrictScalars R
   apply Submodule.fg_of_fg_map_injective f (smul_left_injective K hv)
@@ -21,17 +24,11 @@ theorem kp_cusp_coefficientSubmodule_fg
   rintro x ⟨t, ht, rfl⟩
   exact ht
 
-theorem kp_cusp_coefficientSubmodule_isFractional
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
+theorem kp_cusp_coefficientSubmodule_isFractional :
     IsFractional R⁰ (coefficientSubmodule R K M.val v) := by
   exact FractionalIdeal.isFractional_of_fg (kp_cusp_coefficientSubmodule_fg R K M v hv)
 
-theorem kp_cusp_coefficientSubmodule_ne_bot
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
+theorem kp_cusp_coefficientSubmodule_ne_bot :
     coefficientSubmodule R K M.val v ≠ ⊥ := by
   letI : Submodule.IsLattice K M.val := M.property
   obtain ⟨r, hr, hrv⟩ := kp_cusp_full_lattice_clear_denominators R K (K × K) M.val v
@@ -39,6 +36,8 @@ theorem kp_cusp_coefficientSubmodule_ne_bot
   have hm : algebraMap R K r ∈ coefficientSubmodule R K M.val v := hrv
   rw [h, Submodule.mem_bot] at hm
   exact hr ((IsFractionRing.injective R K) (by simpa using hm))
+
+end
 
 private theorem det_zero_coeff
     {K : Type*} [Field K] (v x : K × K) (hv : v ≠ 0)

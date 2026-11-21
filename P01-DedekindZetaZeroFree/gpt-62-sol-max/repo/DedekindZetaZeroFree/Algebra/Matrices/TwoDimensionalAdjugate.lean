@@ -2,7 +2,7 @@ module
 
 public import Mathlib.LinearAlgebra.Complex.Module
 public import Mathlib.LinearAlgebra.Matrix.Hermitian
-public import DedekindZetaZeroFree.Algebra.Matrices.AdjugateDeterminant
+public import Mathlib.LinearAlgebra.Matrix.Adjugate
 
 @[expose] public section
 

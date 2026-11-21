@@ -92,10 +92,7 @@ private lemma cubicMellinMixture_integral_x (s : ℂ) (hs : 1/3<s.re)
     rw [←Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr ht.ne')]
     congr 1
     ring
-  calc
-    _ = ((1/2:ℂ)*(4:ℂ)^((s-1/3)/2)*Complex.Gamma ((s-1/3)/2))*
-        (((t:ℂ)^(-(2:ℂ)/3)*(t:ℂ)^((s-1/3)/2))*Complex.exp (-(t:ℂ))) := by ring
-    _ = _ := by rw [hp]
+  grind only
 
 private lemma cubicMellinMixture_norm (s : ℂ) (t x : ℝ) (ht : 0<t) (hx : 0<x) :
     ‖cubicMellinMixture s t x‖ =
@@ -139,10 +136,7 @@ private lemma cubicMellinMixture_integral_norm (s : ℂ) (hs : 1/3<s.re)
         rw [←Real.rpow_add ht]
         congr 1
         ring
-      calc
-        _ = ((1/2:ℝ)*(4:ℝ)^((s.re-1/3)/2)*Real.Gamma ((s.re-1/3)/2))*
-            ((t^(-(2:ℝ)/3)*t^((s.re-1/3)/2))*Real.exp (-t)) := by ring
-        _ = _ := by rw [hp]
+      grind only
 
 private lemma cubicMellinMixture_integrable (s : ℂ) (hs : 1/3<s.re) :
     Integrable (fun p : ℝ × ℝ => cubicMellinMixture s p.1 p.2)

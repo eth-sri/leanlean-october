@@ -88,7 +88,6 @@ private theorem actual_selfDual_of_good (v : HeightOneSpectrum (𝓞 F))
     (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) : ResidueTrace.IsSelfDual v := by
   intro x
   rw [character_eq_adapter]
-  change (∀ o : v.adicCompletionIntegers F, localFiniteCharacter F v (x * o) = 1) ↔ _
   have hcod := codifferent_eq_integers_of_good v hv
   change (∀ o : v.adicCompletionIntegers F, localFiniteCharacter F v (x * o) = 1) ↔ x ∈ (v.adicCompletionIntegers F : Set (v.adicCompletion F))
   rw [← hcod]

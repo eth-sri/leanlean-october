@@ -78,7 +78,6 @@ private theorem smooth_orbit_contMDiff
   have hn : ∀ᶠ g in 𝓝 a, a⁻¹ * g ∈ E.target :=
     (show ContinuousAt (fun g : GInfinity F => a⁻¹ * g) a from
       continuousAt_const.mul continuousAt_id).preimage_mem_nhds (by
-      change E.target ∈ 𝓝 (a⁻¹ * a)
       rw [inv_mul_cancel]
       have h1 : E 0 = (1 : GInfinity F) := (D.chart_eq_exponential 0 D.zero_mem_source).trans D.exponential_zero
       exact E.open_target.mem_nhds (h1 ▸ E.map_source D.zero_mem_source))
@@ -185,17 +184,7 @@ theorem word_smul (c : ℂ) (f : X F ζ hζ → ℂ)
     simp only [ih, Pi.smul_apply]
     exact ((word_hasDerivAt_flow F ζ hζ f hf w b x).const_smul c).deriv
 
-def wordLinearMap (V : Submodule ℂ (X F ζ hζ → ℂ))
-    (hV : ∀ v : V, SmoothAutomorphic F ζ hζ v.val) (w : List (B F)) :
-    V →ₗ[ℂ] (X F ζ hζ → ℂ) where
-  toFun v := wordDerivative F ζ hζ w v.val
-  map_add' v u := word_add F ζ hζ v.val u.val (hV v) (hV u) w
-  map_smul' c v := word_smul F ζ hζ c v.val (hV v) w
 
-@[simp] theorem wordLinearMap_apply (V : Submodule ℂ (X F ζ hζ → ℂ))
-    (hV : ∀ v : V, SmoothAutomorphic F ζ hζ v.val) (w : List (B F))
-    (v : V) (x : X F ζ hζ) :
-    wordLinearMap F ζ hζ V hV w v x = wordDerivative F ζ hζ w v.val x := rfl
 
 end DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualWordLinearity
 

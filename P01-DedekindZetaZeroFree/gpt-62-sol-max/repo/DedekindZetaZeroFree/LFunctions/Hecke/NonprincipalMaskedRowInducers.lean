@@ -156,20 +156,6 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 open IsDedekindDomain
 
- def valuationIdeal (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ A.Sf) : Ideal A.R where
-  carrier := {r | v.valuation F (r : F) < 1}
-  zero_mem' := by simp
-  add_mem' := by
-    intro x y hx hy
-    change v.valuation F ((x : F) + (y : F)) < 1
-    exact (ValuationClass.map_add_le_max _ _ _).trans_lt (max_lt hx hy)
-  smul_mem' := by
-    intro x y hy
-    change v.valuation F ((x : F) * (y : F)) < 1
-    rw [map_mul]
-    exact (mul_le_mul_of_nonneg_right (x.property v hv) zero_le).trans_lt (by simpa using hy)
-
 private lemma residueCoefficient_eq_one (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (x : A.R)
     (h : AllRowEuler.UnitCovariance.residueCoefficient σ I x = 1) :
@@ -232,16 +218,7 @@ private lemma sexticResidue_one_valuation (A : SArithmeticData F)
   have hmem : x ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1 ∈ A.extendIdeal I := by
     apply Ideal.Quotient.eq_zero_iff_mem.mp
     rw [map_sub, hmk, map_one, sub_self]
-  have hmap : A.extendIdeal I ≤ valuationIdeal A v hv := by
-    apply Ideal.map_le_iff_le_comap.mpr
-    intro a ha
-    change v.valuation F (((algebraMap (𝓞 F) A.R) a : A.R) : F) < 1
-    have hcoe : (((algebraMap (𝓞 F) A.R) a : A.R) : F) = algebraMap (𝓞 F) F a := rfl
-    rw [hcoe]
-    exact (v.valuation_lt_one_iff_mem (K := F) a).mpr (hIval ▸ ha)
-  have hval2 : v.valuation F
-      ((x ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1 : A.R) : F) < 1 :=
-    hmap hmem
+  have hval2 := FrequencyCharacterMasks.valuation_lt_one_of_mem_extend A v hv hIval.le hmem
   simpa [map_sub, map_pow] using hval2
 
 private lemma eventually_coefficient_of_principal

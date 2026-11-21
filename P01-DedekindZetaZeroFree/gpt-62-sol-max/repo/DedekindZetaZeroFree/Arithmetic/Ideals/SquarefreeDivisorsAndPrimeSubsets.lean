@@ -116,4 +116,39 @@ theorem squarefree_divisor_dictionary (g : R) (hg0 : g ≠ 0) (hg : Squarefree g
       · exact associated_iff_eq.mp (UniqueFactorizationMonoid.factors_prod hd0)
 
 end
+open UniqueFactorizationMonoid in
+theorem ideal_radical_eq {F : Type} [Field F] [NumberField F] (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
+    q.radical = UniqueFactorizationMonoid.radical q := by
+  let r := UniqueFactorizationMonoid.radical q
+  have hr : r ≠ ⊥ := radical_ne_zero
+  have hsf : Squarefree r := squarefree_radical
+  obtain ⟨hp, hprod, _, _, _, _⟩ := squarefree_divisor_dictionary r hr hsf
+  let P := (factors r).toFinset
+  have heq : P.inf (fun p => p) = r := by
+    have h := IsDedekindDomain.inf_prime_pow_eq_prod P (fun p => p) (fun _ => 1)
+      hp (by intro i hi j hj hij; exact hij)
+    calc
+      P.inf (fun p => p) = ∏ p ∈ P, p := by simpa only [pow_one] using h
+      _ = r := hprod
+  have hgen : ∀ S : Finset (Ideal (𝓞 F)), (∀ p ∈ S, Prime p) →
+      (S.inf (fun p => p)).IsRadical := by
+    intro S
+    induction S using Finset.induction_on with
+    | empty => simp [Ideal.IsRadical]
+    | insert p S hnot ih =>
+      intro hpr
+      rw [Finset.inf_insert]
+      apply Ideal.IsRadical.inf
+      · exact (Ideal.isPrime_of_prime (hpr p (by simp))).isRadical
+      · exact ih (by intro t ht; exact hpr t (by simp [ht]))
+  have hR : r.IsRadical := heq ▸ hgen P hp
+  apply le_antisymm
+  · exact (hR.radical_le_iff).mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
+  · obtain ⟨n, hn⟩ := exists_dvd_radical_self_pow hq
+    have hle : r ^ n ≤ q := Ideal.dvd_iff_le.mp hn
+    have : r ≤ (r ^ n).radical := by
+      intro x hx
+      exact ⟨n, Ideal.pow_mem_pow hx n⟩
+    exact this.trans (Ideal.radical_mono hle)
+
 end DedekindZetaZeroFree.LargeSieve.Vendor.CutoffDifference

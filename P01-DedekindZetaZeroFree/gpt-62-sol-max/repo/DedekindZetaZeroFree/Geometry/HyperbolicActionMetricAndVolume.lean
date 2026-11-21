@@ -64,7 +64,7 @@ private lemma den_comp (a b c d C D x : ℂ) (Y : ℝ) :
     (C*num a b c d x Y+D*den c d x Y)*star (C*num a b c d x Y+D*den c d x Y)+
       C*star C*((a*d-b*c)*star (a*d-b*c)*(Y:ℂ)) =
         den (C*a+D*c) (C*b+D*d) x Y * den c d x Y := by
-  simp only [num, den, star_add, star_mul, star_sub, star_star, Complex.star_def,
+  simp only [num, den, star_add, star_mul, star_sub, Complex.star_def,
     Complex.conj_ofReal]
   simp only [Complex.conj_conj]
   ring
@@ -73,7 +73,7 @@ private lemma num_comp (a b c d A B C D x : ℂ) (Y : ℝ) :
     (A*num a b c d x Y+B*den c d x Y)*star (C*num a b c d x Y+D*den c d x Y)+
       A*star C*((a*d-b*c)*star (a*d-b*c)*(Y:ℂ)) =
         num (A*a+B*c) (A*b+B*d) (C*a+D*c) (C*b+D*d) x Y * den c d x Y := by
-  simp only [num, den, star_add, star_mul, star_sub, star_star, Complex.star_def,
+  simp only [num, den, star_add, star_mul, star_sub, Complex.star_def,
     Complex.conj_ofReal]
   simp only [Complex.conj_conj]
   ring
@@ -96,8 +96,7 @@ private lemma height_sq (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
       ((height z ^ 2 : ℝ) : ℂ)) / (actionDenominator g z : ℂ)^2 := by
   rw [action_height]
   change (( (‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * height z / actionDenominator g z)^2 : ℝ) : ℂ) = _
-  simp only [div_pow, mul_pow, Complex.ofReal_div, Complex.ofReal_mul, norm_cast,
-    Complex.ofReal_pow]
+  simp only [div_pow, mul_pow, Complex.ofReal_div, Complex.ofReal_mul, Complex.ofReal_pow]
   rw [← Complex.ofReal_pow, norm_cast]
 
 private lemma den_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
@@ -105,9 +104,9 @@ private lemma den_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
       (actionDenominator (g*h) z : ℂ) := by
   have hd : (actionDenominator h z : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt (actionDenominator_pos h z)
   rw [den_eq, den, fst_eq, height_sq]
-  simp only [star_add, star_mul, star_div]
+  simp only [star_add, star_mul]
   rw [← den_eq h z]
-  simp only [Complex.star_def, Complex.conj_ofReal]
+  simp only [Complex.star_def]
   rw [den_eq (g*h) z]
   simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
     Matrix.det_fin_two]
@@ -133,8 +132,7 @@ private lemma fst_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
     (g 0 0) (g 0 1) (g 1 0) (g 1 1) z.1 (height z ^ 2)
   rw [← den_eq h z] at hc
   simp only [star_add, star_mul, Complex.star_def, Complex.conj_ofReal] at hc
-  simp only [num, star_add, star_mul, star_star, Complex.star_def,
-    Complex.conj_ofReal, Complex.conj_conj] at hc ⊢
+  simp only [num, star_add, star_mul, Complex.star_def] at hc ⊢
   field_simp
   linear_combination hc
 
@@ -174,14 +172,14 @@ theorem scalar_action (a : ℂˣ) (z : H3) :
   apply Prod.ext
   · simp only [action, actionDenominator, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar_apply, Matrix.diagonal_apply, Fin.reduceEq, if_true, if_false,
-      zero_mul, zero_add, norm_zero, zero_pow, mul_zero, add_zero, star_zero]
+      zero_mul, zero_add, norm_zero, mul_zero, add_zero, star_zero]
     norm_num only [OfNat.ofNat_ne_zero, zero_pow, zero_mul, add_zero]
     rw [show (a : ℂ) * z.1 * star (a : ℂ) =
       z.1 * ((‖(a : ℂ)‖ ^ 2 : ℝ) : ℂ) by rw [← hc]; ring]
     exact mul_div_cancel_right₀ _ hac
   · simp only [action, actionDenominator, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar_apply, Matrix.diagonal_apply, Fin.reduceEq, if_true, if_false,
-      zero_mul, zero_add, norm_zero, zero_pow, mul_zero, add_zero, star_zero,
+      zero_mul, zero_add, norm_zero, mul_zero, add_zero, star_zero,
       Matrix.det_fin_two, norm_mul, sub_zero]
     norm_num only [OfNat.ofNat_ne_zero, zero_pow, zero_mul, add_zero]
     rw [show ‖(a : ℂ)‖ * ‖(a : ℂ)‖ = ‖(a : ℂ)‖ ^ 2 by ring,
@@ -286,9 +284,8 @@ private lemma metric_alg (a b c d x v : ℂ) (Y w : ℝ) :
     norm2 (dN a b c d x v Y w * D c d x Y - N a b c d x Y*dD c d x v Y w) +
       norm2 (a*d-b*c)*(Y:ℂ)*((w:ℂ)*D c d x Y-dD c d x v Y w)^2 =
       norm2 (a*d-b*c)*D c d x Y^2*(norm2 v+(Y:ℂ)*(w:ℂ)^2) := by
-  simp only [norm2, N, D, dN, dD, star_mul, star_add, star_sub, star_star,
-    Complex.star_def, Complex.conj_ofReal]
-  simp only [map_sub, map_mul, map_add, map_ofNat, Complex.conj_conj]
+  simp only [norm2, N, D, dN, dD, star_mul, star_add, star_sub, Complex.star_def, Complex.conj_ofReal]
+  simp only [map_ofNat, Complex.conj_conj]
   ring
 
 private def path (z v : H3) (t : ℝ) : H3 := z + t • v
@@ -301,7 +298,7 @@ private lemma D_cast (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
   simp [D, norm2_cast, actionDenominator]
 private lemma dD_real (c d x v : ℂ) (Y w : ℝ) :
     (Complex.re (dD c d x v Y w) : ℂ) = dD c d x v Y w := by
-  apply Complex.ext <;> simp [dD, Complex.mul_re, Complex.mul_im, Complex.star_def] <;> ring
+  apply Complex.ext <;> simp [dD, Complex.mul_re, Complex.mul_im] <;> ring
 private lemma path_x (z v : H3) : HasDerivAt (fun t => (path z v t).1) v.1 0 :=
   (ContinuousLinearMap.fst ℝ ℂ ℝ).hasFDerivAt.comp_hasDerivAt _ (path_deriv z v)
 private lemma path_u (z v : H3) : HasDerivAt (fun t => (path z v t).2) v.2 0 :=
@@ -323,7 +320,7 @@ private lemma path_N (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
   convert (((hx.const_mul (g 0 0)).add_const (g 0 1)).mul hc).add
     (hy.const_mul (g 0 0 * star (g 1 0))) using 1
   · rfl
-  · simp [N, dN, path, Complex.star_def]
+  · simp [dN, path]
 private lemma path_D (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
     HasDerivAt (fun t => D (g 1 0) (g 1 1) (path z v t).1 (height (path z v t)^2))
       (dD (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2) 0 := by
@@ -332,7 +329,7 @@ private lemma path_D (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
   have hc := Complex.conjCLE.toContinuousLinearMap.hasFDerivAt.comp_hasDerivAt _ hx
   convert (hx.mul hc).add (hy.const_mul (g 1 0 * star (g 1 0))) using 1
   · rfl
-  · simp [D, norm2, dD, path, Complex.star_def]
+  · simp [dD, path]
 private lemma path_R (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
     HasDerivAt (fun t => actionDenominator g (path z v t))
       (Complex.re (dD (g 1 0) (g 1 1) z.1 v.1 (height z^2) v.2)) 0 := by
@@ -365,9 +362,8 @@ private lemma path_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3)
     · rfl
   · apply Prod.ext
     · simp [diffX, path, D_cast]
-    · simp only [diffU, path, zero_smul, add_zero, height, Real.exp_pos,
-        Pi.div_apply, ne_eq, Real.exp_ne_zero, not_false_eq_true, mul_one, Prod.snd_add,
-        Prod.snd_smul, Prod.snd_zero]
+    · simp only [diffU, path, zero_smul, add_zero, height, Pi.div_apply, Prod.snd_add,
+        Prod.snd_zero]
       field_simp
 private lemma action_diff (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3)
     (hg : DifferentiableAt ℝ (action g) z) :
@@ -400,12 +396,10 @@ private lemma rankOne_metric (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : 
     ← norm2_cast, ← norm2_cast]
   rw [action_height]
   change (↑(‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * height z / actionDenominator g z) : ℂ)⁻¹ ^ 2 * _ + _ = _
-  simp only [Complex.ofReal_div, Complex.ofReal_mul, Complex.ofReal_inv]
+  simp only [Complex.ofReal_div, Complex.ofReal_mul]
   unfold diffX diffU
-  simp only [Complex.ofReal_sub, Complex.ofReal_div, Complex.ofReal_pow,
-    dD_real, norm2, star_div, star_sub, star_mul, Complex.star_def,
-    Complex.conj_ofReal, map_pow]
-  simp only [norm2, star_mul, Complex.star_def] at h
+  simp only [Complex.ofReal_sub, Complex.ofReal_div, dD_real, norm2, Complex.star_def]
+  simp only [norm2, Complex.star_def] at h
   simp only [map_div₀, map_pow, Complex.conj_ofReal]
   field_simp
   simp only [map_sub, map_mul, Complex.conj_ofReal] at h ⊢
@@ -468,7 +462,7 @@ private lemma w_discr {ι : Type*} [Fintype ι] [DecidableEq ι] (w : ι → ℝ
         ((Pi.single i 1 : ι → ℝ) x + (Pi.single j 1 : ι → ℝ) x))) =
         w i + w j + (if i = j then 2 * w i else 0) := by
       simp_rw [add_mul, mul_add, Finset.sum_add_distrib]
-      simp [Pi.single_apply, Finset.sum_ite_irrel, mul_ite, ite_mul]
+      simp [Pi.single_apply, mul_ite]
       split_ifs <;> simp_all <;> ring
     rw [hsum]
     simp [Pi.single_apply, Matrix.diagonal_apply]
@@ -554,7 +548,7 @@ theorem volumeDensity_split (d : ℕ) (p : SplitSpace d) :
     volumeDensity (d + 1) (splitCoordinates d p) =
       Real.exp (-2 * (d + 1 : ℝ) * p.2.1) := by
   have hs : ∑ i, shape d p.2.2 i = 0 := by
-    simp [shape, Fin.sum_univ_succAbove, Fin.sum_univ_castSucc]
+    simp [shape, Fin.sum_univ_castSucc]
   have he (u : ℝ) : (Real.exp u)⁻¹ ^ 2 = Real.exp (-2 * u) := by
     rw [← Real.exp_neg, ← Real.exp_nat_mul]
     congr 1
@@ -614,13 +608,11 @@ private lemma shape_mp (d : ℕ) : MeasurePreserving
     ((shearB_mp d).smul_measure (ENNReal.ofReal (d+1 : ℝ)))))
   convert hh using 1
   funext p i
-  simp only [Function.comp_def, shearB, shearT, Prod.map_apply, id_eq]
+  simp only [Function.comp_def, shearB, shearT]
   refine Fin.lastCases ?_ (fun j => ?_) i
-  · simp [shape, MeasurableEquiv.piFinSuccAbove, Fin.insertNthEquiv, Fin.insertNth,
-      Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul]
+  · simp [shape, MeasurableEquiv.piFinSuccAbove, Fin.insertNthEquiv, Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul]
     ring
-  · simp [shape, MeasurableEquiv.piFinSuccAbove, Fin.insertNthEquiv, Fin.insertNth,
-      add_comm]
+  · simp [shape, MeasurableEquiv.piFinSuccAbove, Fin.insertNthEquiv, add_comm]
 private lemma split_mp (d : ℕ) : MeasurePreserving (splitCoordinates d)
     (ENNReal.ofReal (d+1 : ℝ) • volume) volume := by
   have hh := (MeasurePreserving.id (volume : Measure (Fin (d+1) → ℂ))).prod (shape_mp d)

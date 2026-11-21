@@ -444,12 +444,12 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
       simp
     have he : η (a.val * b.val ^ 2) = η a.val * (η b.val) ^ 2 := by
       simp only [pow_two, η.map_mul']
-    simp only [T, squareMap, h0, true_and, sup_square, hP _ _ a.property.1 b.property,
+    simp only [T, squareMap, sup_square, hP _ _ a.property.1 b.property,
       hn, he, sup_product]
     by_cases ha : a.val ⊔ m = ⊤ ∧ P a.val
     · by_cases hbm : b.val ⊔ m = ⊤
       · by_cases hbf : b.val ⊔ f = ⊤
-        · simp [a.property.1, b.property, hb2, ha.1, ha.2, hbm, hbf, mul_assoc, mul_comm, mul_left_comm]
+        · simp [a.property.1, hb2, ha.1, ha.2, hbm, hbf, mul_assoc, mul_comm]
         · have hz : η b.val = 0 := (η.eq_zero_iff' b.val).mpr (Or.inr hbf)
           simp [ha.1, ha.2, hbm, hbf, hz]
       · simp [ha.1, ha.2, hbm]
@@ -484,7 +484,7 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
       apply tsum_congr
       intro b
       by_cases hb : b ≠ ⊥ <;>
-        simp [Set.indicator, hb, weightedSquareSeries]
+        simp [Set.indicator, hb]
     · simp [ha]
   simp_rw [hi]
   refine (tsum_subtype {a : Ideal (𝓞 F) | a ≠ ⊥ ∧ Squarefree a}
@@ -493,7 +493,7 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
   apply tsum_congr
   intro a
   by_cases ha : a ≠ ⊥ ∧ Squarefree a
-  · simp [Set.indicator, ha.1, ha.2, and_assoc]
+  · simp [Set.indicator, ha.1, ha.2]
   · have hx : ¬ (a ≠ ⊥ ∧ Squarefree a ∧ a ⊔ m = ⊤ ∧ P a) := by tauto
     simp [Set.indicator, ha, hx]
 

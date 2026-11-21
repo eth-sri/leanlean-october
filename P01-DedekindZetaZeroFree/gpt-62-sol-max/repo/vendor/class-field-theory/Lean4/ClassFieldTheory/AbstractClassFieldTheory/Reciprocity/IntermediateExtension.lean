@@ -173,10 +173,14 @@ theorem intermediateCoset_isClosed (L : FiniteGaloisSubextension K)
   rw [intermediateCoset_eq_representativeIntermediateCoset]
   exact representativeIntermediateCoset_isClosed L q
 
+section
+
+variable (L : FiniteGaloisSubextension K) (S : Subgroup L.extensionQuotient)
+include L S
+
 /-- Closedness of the inverse image, proved by its finite coset
 decomposition rather than postulated as a Galois-correspondence property. -/
-theorem intermediateSubgroup_isClosed (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
+theorem intermediateSubgroup_isClosed :
     IsClosed (L.intermediateSubgroup S : Set K.toSubgroup) := by
   let : Finite L.extensionQuotient := L.finite
   rw [intermediateSubgroup_eq_iUnion_cosets]
@@ -184,8 +188,7 @@ theorem intermediateSubgroup_isClosed (L : FiniteGaloisSubextension K)
   exact hfinite.isClosed_biUnion fun q _ => intermediateCoset_isClosed L q
 
 /-- The closed intermediate field cut out by `S ≤ G(L/K)`. -/
-def intermediateField (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) : ClosedSubgroup G where
+def intermediateField : ClosedSubgroup G where
   toSubgroup := (L.intermediateSubgroup S).map K.toSubgroup.subtype
   isClosed' := by
     change IsClosed
@@ -195,16 +198,14 @@ def intermediateField (L : FiniteGaloisSubextension K)
       (intermediateSubgroup_isClosed L S)
 
 /-- The constructed intermediate field lies over `K`. -/
-theorem intermediateField_le_base (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
+theorem intermediateField_le_base :
     (L.intermediateField S).toSubgroup ≤ K.toSubgroup := by
   rintro _ ⟨m, hm, rfl⟩
   exact m.property
 
 /-- Pulling the constructed field back to `G_K` recovers exactly the
 inverse-image subgroup. -/
-theorem extensionSubgroup_intermediateField_eq
-    (L : FiniteGaloisSubextension K) (S : Subgroup L.extensionQuotient) :
+theorem extensionSubgroup_intermediateField_eq :
     extensionSubgroup K (L.intermediateField S)
         (L.intermediateField_le_base S) =
       L.intermediateSubgroup S := by
@@ -219,8 +220,7 @@ theorem extensionSubgroup_intermediateField_eq
     exact ⟨x, hx, rfl⟩
 
 /-- The constructed field is intermediate: `L ≤ M`. -/
-theorem field_le_intermediateField (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
+theorem field_le_intermediateField :
     L.field.toSubgroup ≤ (L.intermediateField S).toSubgroup := by
   intro x hx
   let xK : K.toSubgroup := ⟨x, L.below hx⟩
@@ -232,8 +232,7 @@ theorem field_le_intermediateField (L : FiniteGaloisSubextension K)
 
 /-- The extension subgroup for `L/M` is the pullback of `G_L ◁ G_K`
 along `G_M → G_K`. -/
-theorem extensionSubgroup_over_intermediate_eq_comap
-    (L : FiniteGaloisSubextension K) (S : Subgroup L.extensionQuotient) :
+theorem extensionSubgroup_over_intermediate_eq_comap :
     extensionSubgroup (L.intermediateField S) L.field
         (L.field_le_intermediateField S) =
       (extensionSubgroup K L.field L.below).comap
@@ -245,12 +244,13 @@ theorem extensionSubgroup_over_intermediate_eq_comap
 
 /-- `L/M` is normal because it is obtained by restricting the normal
 subgroup `G_L ◁ G_K` to `G_M`. -/
-theorem extensionSubgroup_over_intermediate_normal
-    (L : FiniteGaloisSubextension K) (S : Subgroup L.extensionQuotient) :
+theorem extensionSubgroup_over_intermediate_normal :
     (extensionSubgroup (L.intermediateField S) L.field
       (L.field_le_intermediateField S)).Normal := by
   rw [extensionSubgroup_over_intermediate_eq_comap]
   infer_instance
+
+end
 
 /-- The extension subgroup over an intermediate field is normal in the intermediate subgroup. -/
 instance extensionSubgroup_over_intermediate_normalInstance
@@ -305,9 +305,13 @@ theorem intermediateSubgroup_normal
   let : S.Normal := hS
   exact hS.comap L.extensionQuotientMk
 
+section
+
+variable (L : FiniteGaloisSubextension K) (S : Subgroup L.extensionQuotient)
+include L S
+
 /-- Hence `M/K` is normal whenever `S` is normal. -/
 theorem intermediateField_normal
-    (L : FiniteGaloisSubextension K) (S : Subgroup L.extensionQuotient)
     (hS : S.Normal) :
     (extensionSubgroup K (L.intermediateField S)
       (L.intermediateField_le_base S)).Normal := by
@@ -315,8 +319,7 @@ theorem intermediateField_normal
   exact L.intermediateSubgroup_normal S hS
 
 /-- The actual finite Galois extension `L/M`. -/
-def lowerFiniteGalois (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
+def lowerFiniteGalois :
     FiniteGaloisSubextension (L.intermediateField S) where
   field := L.field
   below := L.field_le_intermediateField S
@@ -324,8 +327,7 @@ def lowerFiniteGalois (L : FiniteGaloisSubextension K)
   finite := L.extension_over_intermediate_finite S
 
 /-- If `S` is normal, the actual finite Galois extension `M/K`. -/
-def intermediateFiniteGalois (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) (hS : S.Normal) :
+def intermediateFiniteGalois (hS : S.Normal) :
     FiniteGaloisSubextension K where
   field := L.intermediateField S
   below := L.intermediateField_le_base S
@@ -335,8 +337,7 @@ def intermediateFiniteGalois (L : FiniteGaloisSubextension K)
 /-- Restriction from `G_M` to the subgroup `S ≤ G(L/K)`.  The codomain
 membership proof is supplied by the defining inverse-image equation for
 `M`. -/
-def lowerRestrictionHom (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
+def lowerRestrictionHom :
     (L.intermediateField S).toSubgroup →* S :=
   (L.extensionQuotientMk.comp
       (Subgroup.inclusion (L.intermediateField_le_base S))).codRestrict S
@@ -353,8 +354,7 @@ def lowerRestrictionHom (L : FiniteGaloisSubextension K)
 /-- The lower restriction homomorphism evaluates by restricting the underlying
 ambient automorphism. -/
 @[simp]
-theorem lowerRestrictionHom_apply_coe (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient)
+theorem lowerRestrictionHom_apply_coe
     (m : (L.intermediateField S).toSubgroup) :
     ((L.lowerRestrictionHom S m : S) : L.extensionQuotient) =
       L.extensionQuotientMk
@@ -363,8 +363,7 @@ theorem lowerRestrictionHom_apply_coe (L : FiniteGaloisSubextension K)
 
 /-- Every element of `S` is represented by an element of `G_M`; hence the
 restriction map is onto. -/
-theorem lowerRestrictionHom_surjective (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
+theorem lowerRestrictionHom_surjective :
     Function.Surjective (L.lowerRestrictionHom S) := by
   intro s
   rcases L.extensionQuotientMk_surjective s.1 with ⟨k, hk⟩
@@ -381,8 +380,7 @@ theorem lowerRestrictionHom_surjective (L : FiniteGaloisSubextension K)
   exact hk
 
 /-- The kernel of restriction is exactly `G_L` viewed inside `G_M`. -/
-theorem lowerRestrictionHom_ker (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
+theorem lowerRestrictionHom_ker :
     MonoidHom.ker (L.lowerRestrictionHom S) =
       extensionSubgroup (L.intermediateField S) L.field
         (L.field_le_intermediateField S) := by
@@ -413,8 +411,7 @@ theorem lowerRestrictionHom_ker (L : FiniteGaloisSubextension K)
 
 /-- The first actual Galois-group identification used:
 `G(L/M) ≃ S`. -/
-noncomputable def lowerQuotientEquiv (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
+noncomputable def lowerQuotientEquiv :
     (L.lowerFiniteGalois S).extensionQuotient ≃* S := by
   letI : (extensionSubgroup (L.intermediateField S) L.field
       (L.field_le_intermediateField S)).Normal :=
@@ -427,8 +424,7 @@ noncomputable def lowerQuotientEquiv (L : FiniteGaloisSubextension K)
 
 /-- Representative formula for `G(L/M) ≃ S`. -/
 @[simp]
-theorem lowerQuotientEquiv_mk (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient)
+theorem lowerQuotientEquiv_mk
     (m : (L.intermediateField S).toSubgroup) :
     L.lowerQuotientEquiv S
         ((L.lowerFiniteGalois S).extensionQuotientMk m) =
@@ -447,8 +443,7 @@ theorem lowerQuotientEquiv_mk (L : FiniteGaloisSubextension K)
 /-- The same representative formula after forgetting the subtype `S`; this
 is the form used when composing restriction maps in the reduction diagram. -/
 @[simp]
-theorem lowerQuotientEquiv_mk_coe (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient)
+theorem lowerQuotientEquiv_mk_coe
     (m : (L.intermediateField S).toSubgroup) :
     ((L.lowerQuotientEquiv S
         ((L.lowerFiniteGalois S).extensionQuotientMk m) : S) :
@@ -458,6 +453,8 @@ theorem lowerQuotientEquiv_mk_coe (L : FiniteGaloisSubextension K)
   rw [lowerQuotientEquiv_mk, lowerRestrictionHom_apply_coe]
   apply congrArg L.extensionQuotientMk
   exact Subtype.ext (by rfl)
+
+end
 
 omit [IsTopologicalGroup G] in
 /-- Mapping the inverse image of `S` back to `G(L/K)` recovers `S`

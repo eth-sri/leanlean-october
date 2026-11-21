@@ -14,7 +14,7 @@ def FT (β : ℂ) (h : ℂ → ℂ) (y : ℂ) : ℂ :=
 
 theorem FT_eq_F (β : ℂ) (h : ℂ → ℂ) (y : ℂ) :
     FT β h y = F β h y := by
-  simp [FT, F, mu, integral_smul_measure, ENNReal.toReal_ofReal, norm_nonneg, smul_eq_mul]
+  simp [FT, F, mu, integral_smul_measure]
 
 end
 end DedekindZetaZeroFree.ComplexWeil

@@ -44,9 +44,7 @@ theorem formalLogOnePlusProductArgument_choiceCounts_q_range
     (hbasic : ∀ i ∈ Finset.range q,
       formalLogOnePlusProductArgumentBasicFactor (l i)) :
     e (0 : Fin 2) ≤ q ∧ e (1 : Fin 2) ≤ q ∧
-      q ≤ e (0 : Fin 2) + e (1 : Fin 2) := by
-  exact
-    ⟨formalLogOnePlusProductArgument_choiceCounts_left_coord_le_q
+      q ≤ e (0 : Fin 2) + e (1 : Fin 2) := ⟨formalLogOnePlusProductArgument_choiceCounts_left_coord_le_q
         hl hbasic,
       formalLogOnePlusProductArgument_choiceCounts_right_coord_le_q
         hl hbasic,
@@ -64,44 +62,8 @@ theorem formalLogOnePlusProductArgumentBasicFactorChoices_nonempty_q_range
   rw [mem_formalLogOnePlusProductArgumentBasicFactorChoices] at hl
   exact formalLogOnePlusProductArgument_choiceCounts_q_range hl.1 hl.2
 
-/-- Establishes the identity `formalLogOnePlusProductArgumentBasicFactorChoices q e = ∅`. -/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_eq_empty_of_q_lt_left_coord
-    {q : ℕ} {e : Fin 2 →₀ ℕ}
-    (hleft : q < e (0 : Fin 2)) :
-    formalLogOnePlusProductArgumentBasicFactorChoices q e = ∅ := by
-  classical
-  apply Finset.eq_empty_iff_forall_notMem.2
-  intro l hl
-  rw [mem_formalLogOnePlusProductArgumentBasicFactorChoices] at hl
-  exact
-    (not_le_of_gt hleft)
-      (formalLogOnePlusProductArgument_choiceCounts_q_range hl.1 hl.2).1
 
-/-- Establishes the identity `formalLogOnePlusProductArgumentBasicFactorChoices q e = ∅`. -/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_eq_empty_of_q_lt_right_coord
-    {q : ℕ} {e : Fin 2 →₀ ℕ}
-    (hright : q < e (1 : Fin 2)) :
-    formalLogOnePlusProductArgumentBasicFactorChoices q e = ∅ := by
-  classical
-  apply Finset.eq_empty_iff_forall_notMem.2
-  intro l hl
-  rw [mem_formalLogOnePlusProductArgumentBasicFactorChoices] at hl
-  exact
-    (not_le_of_gt hright)
-      (formalLogOnePlusProductArgument_choiceCounts_q_range hl.1 hl.2).2.1
 
-/-- Establishes the identity `formalLogOnePlusProductArgumentBasicFactorChoices q e = ∅`. -/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_eq_empty_of_coord_sum_lt_q
-    {q : ℕ} {e : Fin 2 →₀ ℕ}
-    (hsum : e (0 : Fin 2) + e (1 : Fin 2) < q) :
-    formalLogOnePlusProductArgumentBasicFactorChoices q e = ∅ := by
-  classical
-  apply Finset.eq_empty_iff_forall_notMem.2
-  intro l hl
-  rw [mem_formalLogOnePlusProductArgumentBasicFactorChoices] at hl
-  exact
-    (not_le_of_gt hsum)
-      (formalLogOnePlusProductArgument_choiceCounts_q_range hl.1 hl.2).2.2
 
 /--
 Establishes the identity `(∏ i ∈ Finset.range q, MvPowerSeries.coeff (l i)
@@ -121,9 +83,7 @@ theorem formalLogOnePlusProductArgument_pow_term_prod_eq_one_of_factors_basic
   intro i hi
   rcases hbasic i hi with hleft | hrightOrMixed
   · simp [hleft]
-  · rcases hrightOrMixed with hright | hmixed
-    · simp [hright]
-    · simp [hmixed]
+  aesop
 
 /--
 Establishes the identity `(∏ i ∈ Finset.range q, MvPowerSeries.coeff (l i)
@@ -139,31 +99,17 @@ theorem formalLogOnePlusProductArgument_pow_term_prod_eq_one_of_basicFactor
     A (fun i hi => by
       simpa [formalLogOnePlusProductArgumentBasicFactor] using hbasic i hi)
 
-/--
-Establishes the identity `(∏ i ∈ Finset.range q, MvPowerSeries.coeff (l i)
-(formalLogOnePlusProductArgument A)) = 1`.
--/
-theorem formalLogOnePlusProductArgument_pow_term_prod_eq_one_of_ne_zero
-    (A : Type*) [CommRing A] {q : ℕ}
-    {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hprod :
-      (∏ i ∈ Finset.range q,
-        MvPowerSeries.coeff (l i) (formalLogOnePlusProductArgument A)) ≠ 0) :
-    (∏ i ∈ Finset.range q,
-      MvPowerSeries.coeff (l i) (formalLogOnePlusProductArgument A)) = 1 := by
-  exact
-    formalLogOnePlusProductArgument_pow_term_prod_eq_one_of_factors_basic
-      A (fun i hi =>
-        formalLogOnePlusProductArgument_pow_term_factor_eq_basic_of_prod_ne_zero
-          A hprod hi)
+
+section
+
+variable (A : Type*) [CommRing A] (q : ℕ) (e : Fin 2 →₀ ℕ)
 
 /--
 Establishes the identity `MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = ∑ l ∈
 Finset.finsuppAntidiag (Finset.range q) e, if ∀ i ∈ Finset.range q,
 formalLogOnePlusProductArgumentBasicFactor (l i) then (1 : A) else 0`.
 -/
-theorem formalLogOnePlusProductArgument_pow_coeff_eq_sum_basicFactor
-    (A : Type*) [CommRing A] (q : ℕ) (e : Fin 2 →₀ ℕ) :
+theorem formalLogOnePlusProductArgument_pow_coeff_eq_sum_basicFactor :
     MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) =
       ∑ l ∈ Finset.finsuppAntidiag (Finset.range q) e,
         if ∀ i ∈ Finset.range q,
@@ -178,7 +124,7 @@ theorem formalLogOnePlusProductArgument_pow_coeff_eq_sum_basicFactor
         formalLogOnePlusProductArgumentBasicFactor (l i)
   · rw [formalLogOnePlusProductArgument_pow_term_prod_eq_one_of_basicFactor
       A hbasic]
-    rw [ite_eq_left hbasic]
+    grind
   · have hprodZero :
         (∏ i ∈ Finset.range q,
           MvPowerSeries.coeff (l i) (formalLogOnePlusProductArgument A)) = 0 := by
@@ -197,8 +143,7 @@ Establishes the identity `(∑ l ∈ Finset.finsuppAntidiag (Finset.range q) e, 
 q, formalLogOnePlusProductArgumentBasicFactor (l i) then (1 : A) else 0) =
 ((formalLogOnePlusProductArgumentBasicFactorChoices q e).card : A)`.
 -/
-theorem formalLogOnePlusProductArgument_basicFactor_sum_eq_card_choices
-    (A : Type*) [CommRing A] (q : ℕ) (e : Fin 2 →₀ ℕ) :
+theorem formalLogOnePlusProductArgument_basicFactor_sum_eq_card_choices :
     (∑ l ∈ Finset.finsuppAntidiag (Finset.range q) e,
       if ∀ i ∈ Finset.range q,
           formalLogOnePlusProductArgumentBasicFactor (l i)
@@ -211,30 +156,17 @@ theorem formalLogOnePlusProductArgument_basicFactor_sum_eq_card_choices
 Establishes the identity `MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) =
 ((formalLogOnePlusProductArgumentBasicFactorChoices q e).card : A)`.
 -/
-theorem formalLogOnePlusProductArgument_pow_coeff_eq_card_choices
-    (A : Type*) [CommRing A] (q : ℕ) (e : Fin 2 →₀ ℕ) :
+theorem formalLogOnePlusProductArgument_pow_coeff_eq_card_choices :
     MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) =
       ((formalLogOnePlusProductArgumentBasicFactorChoices q e).card : A) := by
   rw [formalLogOnePlusProductArgument_pow_coeff_eq_sum_basicFactor,
     formalLogOnePlusProductArgument_basicFactor_sum_eq_card_choices]
 
-/--
-Establishes the identity `MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0`.
--/
-theorem formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_coord_sum_lt
-    (A : Type*) [CommRing A] (q : ℕ) (e : Fin 2 →₀ ℕ)
-    (hsum : e (0 : Fin 2) + e (1 : Fin 2) < q) :
-    MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0 := by
-  rw [formalLogOnePlusProductArgument_pow_coeff_eq_card_choices,
-    formalLogOnePlusProductArgumentBasicFactorChoices_eq_empty_of_coord_sum_lt_q
-      hsum]
-  simp
 
 /--
 Establishes the identity `MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0`.
 -/
 theorem formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_left_coord_lt
-    (A : Type*) [CommRing A] (q : ℕ) (e : Fin 2 →₀ ℕ)
     (hleft : q < e (0 : Fin 2)) :
     MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0 := by
   classical
@@ -271,7 +203,6 @@ theorem formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_left_coord_lt
 Establishes the identity `MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0`.
 -/
 theorem formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_right_coord_lt
-    (A : Type*) [CommRing A] (q : ℕ) (e : Fin 2 →₀ ℕ)
     (hright : q < e (1 : Fin 2)) :
     MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0 := by
   classical
@@ -308,7 +239,6 @@ theorem formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_right_coord_lt
 Establishes the identity `MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0`.
 -/
 theorem formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_degree_lt
-    (A : Type*) [CommRing A] (q : ℕ) (e : Fin 2 →₀ ℕ)
     (hdegree : Finsupp.degree e < q) :
     MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0 := by
   have hnil :
@@ -323,12 +253,17 @@ theorem formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_degree_lt
           Nat.succ_le_of_lt hdegree
         simpa [Nat.add_comm] using hs)
 
+end
+
+section
+
+variable (A : Type*) [CommRing A] [Algebra ℚ A] (q : ℕ) (e : Fin 2 →₀ ℕ)
+
 /--
 Establishes the identity `PowerSeries.coeff q (PowerSeries.log A) •
 MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0`.
 -/
 theorem formalLogOnePlusProductArgument_logSubst_coeff_term_eq_zero_of_degree_lt
-    (A : Type*) [CommRing A] [Algebra ℚ A] (q : ℕ) (e : Fin 2 →₀ ℕ)
     (hdegree : Finsupp.degree e < q) :
     PowerSeries.coeff q (PowerSeries.log A) •
         MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) =
@@ -342,7 +277,6 @@ Establishes the identity `PowerSeries.coeff q (PowerSeries.log A) •
 MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0`.
 -/
 theorem formalLogOnePlusProductArgument_logSubst_coeff_term_eq_zero_of_left_coord_lt
-    (A : Type*) [CommRing A] [Algebra ℚ A] (q : ℕ) (e : Fin 2 →₀ ℕ)
     (hleft : q < e (0 : Fin 2)) :
     PowerSeries.coeff q (PowerSeries.log A) •
         MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) =
@@ -356,7 +290,6 @@ Establishes the identity `PowerSeries.coeff q (PowerSeries.log A) •
 MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) = 0`.
 -/
 theorem formalLogOnePlusProductArgument_logSubst_coeff_term_eq_zero_of_right_coord_lt
-    (A : Type*) [CommRing A] [Algebra ℚ A] (q : ℕ) (e : Fin 2 →₀ ℕ)
     (hright : q < e (1 : Fin 2)) :
     PowerSeries.coeff q (PowerSeries.log A) •
         MvPowerSeries.coeff e ((formalLogOnePlusProductArgument A) ^ q) =
@@ -365,10 +298,15 @@ theorem formalLogOnePlusProductArgument_logSubst_coeff_term_eq_zero_of_right_coo
     A q e hright]
   simp
 
+end
+
+section
+
+variable (A : Type*) [CommRing A]
+
 /-- Expands a coefficient of the logarithm substituted at the product
 argument as a finite sum bounded by the total degree of the exponent. -/
-theorem formalLogOnePlusProductArgument_logSubst_coeff_eq_sum_range_degree_succ
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ) :
+theorem formalLogOnePlusProductArgument_logSubst_coeff_eq_sum_range_degree_succ [Algebra ℚ A] (e : Fin 2 →₀ ℕ) :
     MvPowerSeries.coeff e
         (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
       ∑ q ∈ Finset.range (Finsupp.degree e + 1),
@@ -389,8 +327,7 @@ theorem formalLogOnePlusProductArgument_logSubst_coeff_eq_sum_range_degree_succ
 
 /-- Refines the coefficient expansion to powers at least as large as both
 coordinates of the exponent. -/
-theorem formalLogOnePlusProductArgument_logSubst_coeff_eq_sum_range_degree_succ_filter_coord_le
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ) :
+theorem formalLogOnePlusProductArgument_logSubst_coeff_eq_sum_range_degree_succ_filter_coord_le [Algebra ℚ A] (e : Fin 2 →₀ ℕ) :
     MvPowerSeries.coeff e
         (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
       ∑ q ∈
@@ -417,8 +354,7 @@ theorem formalLogOnePlusProductArgument_logSubst_coeff_eq_sum_range_degree_succ_
 Establishes the divisibility statement `(MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin 2) A) ∣
 formalLogOnePlusProductArgument A - MvPowerSeries.X (0 : Fin 2)`.
 -/
-theorem formalLogOnePlusProductArgument_sub_leftVariable_dvd_rightVariable
-    (A : Type*) [CommRing A] :
+theorem formalLogOnePlusProductArgument_sub_leftVariable_dvd_rightVariable :
     (MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin 2) A) ∣
       formalLogOnePlusProductArgument A -
         MvPowerSeries.X (0 : Fin 2) := by
@@ -433,8 +369,7 @@ theorem formalLogOnePlusProductArgument_sub_leftVariable_dvd_rightVariable
 Establishes the divisibility statement `(MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin 2) A) ∣
 formalLogOnePlusProductArgument A - MvPowerSeries.X (1 : Fin 2)`.
 -/
-theorem formalLogOnePlusProductArgument_sub_rightVariable_dvd_leftVariable
-    (A : Type*) [CommRing A] :
+theorem formalLogOnePlusProductArgument_sub_rightVariable_dvd_leftVariable :
     (MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin 2) A) ∣
       formalLogOnePlusProductArgument A -
         MvPowerSeries.X (1 : Fin 2) := by
@@ -450,8 +385,7 @@ Establishes the divisibility statement `(MvPowerSeries.X (1 : Fin 2) : MvPowerSe
 (formalLogOnePlusProductArgument A) ^ d - (MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin 2) A)
 ^ d`.
 -/
-theorem formalLogOnePlusProductArgument_pow_sub_leftVariable_pow_dvd_rightVariable
-    (A : Type*) [CommRing A] (d : ℕ) :
+theorem formalLogOnePlusProductArgument_pow_sub_leftVariable_pow_dvd_rightVariable (d : ℕ) :
     (MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin 2) A) ∣
       (formalLogOnePlusProductArgument A) ^ d -
         (MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin 2) A) ^ d := by
@@ -466,8 +400,7 @@ Establishes the divisibility statement `(MvPowerSeries.X (0 : Fin 2) : MvPowerSe
 (formalLogOnePlusProductArgument A) ^ d - (MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin 2) A)
 ^ d`.
 -/
-theorem formalLogOnePlusProductArgument_pow_sub_rightVariable_pow_dvd_leftVariable
-    (A : Type*) [CommRing A] (d : ℕ) :
+theorem formalLogOnePlusProductArgument_pow_sub_rightVariable_pow_dvd_leftVariable (d : ℕ) :
     (MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin 2) A) ∣
       (formalLogOnePlusProductArgument A) ^ d -
         (MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin 2) A) ^ d := by
@@ -482,8 +415,7 @@ Establishes the identity `MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
 ((formalLogOnePlusProductArgument A) ^ d) = MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
 ((MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin 2) A) ^ d)`.
 -/
-theorem formalLogOnePlusProductArgument_pow_coeff_single_left
-    (A : Type*) [CommRing A] (d n : ℕ) :
+theorem formalLogOnePlusProductArgument_pow_coeff_single_left (d n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
         ((formalLogOnePlusProductArgument A) ^ d) =
       MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
@@ -514,8 +446,7 @@ Establishes the identity `MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
 ((formalLogOnePlusProductArgument A) ^ d) = MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
 ((MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin 2) A) ^ d)`.
 -/
-theorem formalLogOnePlusProductArgument_pow_coeff_single_right
-    (A : Type*) [CommRing A] (d n : ℕ) :
+theorem formalLogOnePlusProductArgument_pow_coeff_single_right (d n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
         ((formalLogOnePlusProductArgument A) ^ d) =
       MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
@@ -545,8 +476,7 @@ theorem formalLogOnePlusProductArgument_pow_coeff_single_right
 Establishes the identity `MvPowerSeries.coeff e ((MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin
 2) A) ^ d) = if e = Finsupp.single (0 : Fin 2) d then 1 else 0`.
 -/
-theorem formalLogOnePlusLeftVariable_pow_coeff
-    (A : Type*) [CommRing A] (e : Fin 2 →₀ ℕ) (d : ℕ) :
+theorem formalLogOnePlusLeftVariable_pow_coeff (e : Fin 2 →₀ ℕ) (d : ℕ) :
     MvPowerSeries.coeff e
         ((MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin 2) A) ^ d) =
       if e = Finsupp.single (0 : Fin 2) d then 1 else 0 := by
@@ -557,21 +487,25 @@ theorem formalLogOnePlusLeftVariable_pow_coeff
 Establishes the identity `MvPowerSeries.coeff e ((MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin
 2) A) ^ d) = if e = Finsupp.single (1 : Fin 2) d then 1 else 0`.
 -/
-theorem formalLogOnePlusRightVariable_pow_coeff
-    (A : Type*) [CommRing A] (e : Fin 2 →₀ ℕ) (d : ℕ) :
+theorem formalLogOnePlusRightVariable_pow_coeff (e : Fin 2 →₀ ℕ) (d : ℕ) :
     MvPowerSeries.coeff e
         ((MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin 2) A) ^ d) =
       if e = Finsupp.single (1 : Fin 2) d then 1 else 0 := by
   simpa using
     MvPowerSeries.coeff_X_pow (R := A) e (1 : Fin 2) d
 
+end
+
+section
+
+variable (A : Type*) [CommRing A] [Algebra ℚ A]
+
 /--
 Establishes the identity `MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
 (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) = PowerSeries.coeff n
 (PowerSeries.log A)`.
 -/
-theorem formalLogOnePlusProductArgument_logSubst_coeff_single_left
-    (A : Type*) [CommRing A] [Algebra ℚ A] (n : ℕ) :
+theorem formalLogOnePlusProductArgument_logSubst_coeff_single_left (n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
         (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
       PowerSeries.coeff n (PowerSeries.log A) := by
@@ -597,8 +531,7 @@ Establishes the identity `MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
 (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) = PowerSeries.coeff n
 (PowerSeries.log A)`.
 -/
-theorem formalLogOnePlusProductArgument_logSubst_coeff_single_right
-    (A : Type*) [CommRing A] [Algebra ℚ A] (n : ℕ) :
+theorem formalLogOnePlusProductArgument_logSubst_coeff_single_right (n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
         (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
       PowerSeries.coeff n (PowerSeries.log A) := by
@@ -621,24 +554,21 @@ theorem formalLogOnePlusProductArgument_logSubst_coeff_single_right
 
 /-- The formal logarithm `log(1 + X)`, viewed as a two-variable series in the
 left variable. -/
-noncomputable def formalLogOnePlusLeftVariableLogSubst
-    (A : Type*) [CommRing A] [Algebra ℚ A] : MvPowerSeries (Fin 2) A :=
+noncomputable def formalLogOnePlusLeftVariableLogSubst : MvPowerSeries (Fin 2) A :=
   PowerSeries.subst
     (MvPowerSeries.X (0 : Fin 2) : MvPowerSeries (Fin 2) A)
     (PowerSeries.log A)
 
 /-- The formal logarithm `log(1 + Y)`, viewed as a two-variable series in the
 right variable. -/
-noncomputable def formalLogOnePlusRightVariableLogSubst
-    (A : Type*) [CommRing A] [Algebra ℚ A] : MvPowerSeries (Fin 2) A :=
+noncomputable def formalLogOnePlusRightVariableLogSubst : MvPowerSeries (Fin 2) A :=
   PowerSeries.subst
     (MvPowerSeries.X (1 : Fin 2) : MvPowerSeries (Fin 2) A)
     (PowerSeries.log A)
 
 /-- The formal right-hand side `log(1 + X) + log(1 + Y)` of the logarithm
 product formula. -/
-noncomputable def formalLogOnePlusProductRightSide
-    (A : Type*) [CommRing A] [Algebra ℚ A] : MvPowerSeries (Fin 2) A :=
+noncomputable def formalLogOnePlusProductRightSide : MvPowerSeries (Fin 2) A :=
   formalLogOnePlusLeftVariableLogSubst A +
     formalLogOnePlusRightVariableLogSubst A
 
@@ -646,8 +576,7 @@ noncomputable def formalLogOnePlusProductRightSide
 Establishes the identity `MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
 (formalLogOnePlusLeftVariableLogSubst A) = PowerSeries.coeff n (PowerSeries.log A)`.
 -/
-theorem formalLogOnePlusLeftVariableLogSubst_coeff_single
-    (A : Type*) [CommRing A] [Algebra ℚ A] (n : ℕ) :
+theorem formalLogOnePlusLeftVariableLogSubst_coeff_single (n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
         (formalLogOnePlusLeftVariableLogSubst A) =
       PowerSeries.coeff n (PowerSeries.log A) := by
@@ -657,8 +586,7 @@ theorem formalLogOnePlusLeftVariableLogSubst_coeff_single
 Establishes the identity `MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
 (formalLogOnePlusRightVariableLogSubst A) = PowerSeries.coeff n (PowerSeries.log A)`.
 -/
-theorem formalLogOnePlusRightVariableLogSubst_coeff_single
-    (A : Type*) [CommRing A] [Algebra ℚ A] (n : ℕ) :
+theorem formalLogOnePlusRightVariableLogSubst_coeff_single (n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
         (formalLogOnePlusRightVariableLogSubst A) =
       PowerSeries.coeff n (PowerSeries.log A) := by
@@ -667,8 +595,7 @@ theorem formalLogOnePlusRightVariableLogSubst_coeff_single
 /--
 Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusLeftVariableLogSubst A) = 0`.
 -/
-theorem formalLogOnePlusLeftVariableLogSubst_coeff_of_ne_axis
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
+theorem formalLogOnePlusLeftVariableLogSubst_coeff_of_ne_axis (e : Fin 2 →₀ ℕ)
     (he : ∀ d : ℕ, e ≠ Finsupp.single (0 : Fin 2) d) :
     MvPowerSeries.coeff e (formalLogOnePlusLeftVariableLogSubst A) = 0 := by
   simp [formalLogOnePlusLeftVariableLogSubst, PowerSeries.coeff_subst_single, he]
@@ -676,8 +603,7 @@ theorem formalLogOnePlusLeftVariableLogSubst_coeff_of_ne_axis
 /--
 Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusRightVariableLogSubst A) = 0`.
 -/
-theorem formalLogOnePlusRightVariableLogSubst_coeff_of_ne_axis
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
+theorem formalLogOnePlusRightVariableLogSubst_coeff_of_ne_axis (e : Fin 2 →₀ ℕ)
     (he : ∀ d : ℕ, e ≠ Finsupp.single (1 : Fin 2) d) :
     MvPowerSeries.coeff e (formalLogOnePlusRightVariableLogSubst A) = 0 := by
   simp [formalLogOnePlusRightVariableLogSubst, PowerSeries.coeff_subst_single, he]
@@ -687,29 +613,18 @@ Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductRightSid
 MvPowerSeries.coeff e (formalLogOnePlusLeftVariableLogSubst A) + MvPowerSeries.coeff e
 (formalLogOnePlusRightVariableLogSubst A)`.
 -/
-theorem formalLogOnePlusProductRightSide_coeff
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ) :
+theorem formalLogOnePlusProductRightSide_coeff (e : Fin 2 →₀ ℕ) :
     MvPowerSeries.coeff e (formalLogOnePlusProductRightSide A) =
       MvPowerSeries.coeff e (formalLogOnePlusLeftVariableLogSubst A) +
         MvPowerSeries.coeff e (formalLogOnePlusRightVariableLogSubst A) := by
   simp [formalLogOnePlusProductRightSide]
 
-/-- The logarithm substituted at the product argument has zero constant
-coefficient. -/
-theorem formalLogOnePlusProductArgument_logSubst_constantCoeff
-    (A : Type*) [CommRing A] [Algebra ℚ A] :
-    MvPowerSeries.constantCoeff
-        (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) = 0 :=
-  PowerSeries.constantCoeff_subst_eq_zero
-    (formalLogOnePlusProductArgument_constantCoeff A)
-    (PowerSeries.log A) PowerSeries.constantCoeff_log
 
 /--
 Establishes the identity `MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
 (formalLogOnePlusProductRightSide A) = PowerSeries.coeff n (PowerSeries.log A)`.
 -/
-theorem formalLogOnePlusProductRightSide_coeff_single_left
-    (A : Type*) [CommRing A] [Algebra ℚ A] (n : ℕ) :
+theorem formalLogOnePlusProductRightSide_coeff_single_left (n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
         (formalLogOnePlusProductRightSide A) =
       PowerSeries.coeff n (PowerSeries.log A) := by
@@ -736,8 +651,7 @@ theorem formalLogOnePlusProductRightSide_coeff_single_left
 Establishes the identity `MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
 (formalLogOnePlusProductRightSide A) = PowerSeries.coeff n (PowerSeries.log A)`.
 -/
-theorem formalLogOnePlusProductRightSide_coeff_single_right
-    (A : Type*) [CommRing A] [Algebra ℚ A] (n : ℕ) :
+theorem formalLogOnePlusProductRightSide_coeff_single_right (n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
         (formalLogOnePlusProductRightSide A) =
       PowerSeries.coeff n (PowerSeries.log A) := by
@@ -762,8 +676,7 @@ theorem formalLogOnePlusProductRightSide_coeff_single_right
   simp [hleft]
 
 /-- Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductRightSide A) = 0`. -/
-theorem formalLogOnePlusProductRightSide_coeff_of_ne_axes
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
+theorem formalLogOnePlusProductRightSide_coeff_of_ne_axes (e : Fin 2 →₀ ℕ)
     (heLeft : ∀ d : ℕ, e ≠ Finsupp.single (0 : Fin 2) d)
     (heRight : ∀ d : ℕ, e ≠ Finsupp.single (1 : Fin 2) d) :
     MvPowerSeries.coeff e (formalLogOnePlusProductRightSide A) = 0 := by
@@ -776,8 +689,7 @@ Establishes the identity `MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
 (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) = MvPowerSeries.coeff
 (Finsupp.single (0 : Fin 2) n) (formalLogOnePlusProductRightSide A)`.
 -/
-theorem formalLogOnePlusProductFormula_coeff_single_left
-    (A : Type*) [CommRing A] [Algebra ℚ A] (n : ℕ) :
+theorem formalLogOnePlusProductFormula_coeff_single_left (n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
         (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
       MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) n)
@@ -790,14 +702,15 @@ Establishes the identity `MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
 (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) = MvPowerSeries.coeff
 (Finsupp.single (1 : Fin 2) n) (formalLogOnePlusProductRightSide A)`.
 -/
-theorem formalLogOnePlusProductFormula_coeff_single_right
-    (A : Type*) [CommRing A] [Algebra ℚ A] (n : ℕ) :
+theorem formalLogOnePlusProductFormula_coeff_single_right (n : ℕ) :
     MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
         (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
       MvPowerSeries.coeff (Finsupp.single (1 : Fin 2) n)
         (formalLogOnePlusProductRightSide A) := by
   rw [formalLogOnePlusProductArgument_logSubst_coeff_single_right,
     formalLogOnePlusProductRightSide_coeff_single_right]
+
+end
 
 /-- Establishes the identity `e = Finsupp.single (0 : Fin 2) (e (0 : Fin 2))`. -/
 theorem finsupp_fin_two_eq_single_left_of_right_eq_zero
@@ -813,25 +726,7 @@ theorem finsupp_fin_two_eq_single_right_of_left_eq_zero
   ext i
   fin_cases i <;> simp [he]
 
-/-- Establishes the strict bound `0 < e (0 : Fin 2)`. -/
-theorem finsupp_fin_two_left_pos_of_not_right_axis
-    (e : Fin 2 →₀ ℕ)
-    (he : ∀ d : ℕ, e ≠ Finsupp.single (1 : Fin 2) d) :
-    0 < e (0 : Fin 2) := by
-  apply Nat.pos_of_ne_zero
-  intro hzero
-  exact he (e (1 : Fin 2))
-    (finsupp_fin_two_eq_single_right_of_left_eq_zero e hzero)
 
-/-- Establishes the strict bound `0 < e (1 : Fin 2)`. -/
-theorem finsupp_fin_two_right_pos_of_not_left_axis
-    (e : Fin 2 →₀ ℕ)
-    (he : ∀ d : ℕ, e ≠ Finsupp.single (0 : Fin 2) d) :
-    0 < e (1 : Fin 2) := by
-  apply Nat.pos_of_ne_zero
-  intro hzero
-  exact he (e (0 : Fin 2))
-    (finsupp_fin_two_eq_single_left_of_right_eq_zero e hzero)
 
 /-- Establishes the identity `Finsupp.degree e = e (0 : Fin 2) + e (1 : Fin 2)`. -/
 theorem finsupp_fin_two_degree_eq (e : Fin 2 →₀ ℕ) :
@@ -863,9 +758,12 @@ theorem finsupp_fin_two_ne_single_right_of_left_pos
     simp [h]
   exact (Nat.ne_of_gt hpos) hcoord
 
+section
+
+variable (A : Type*) [CommRing A] [Algebra ℚ A]
+
 /-- Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductRightSide A) = 0`. -/
-theorem formalLogOnePlusProductRightSide_coeff_of_pos_coords
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
+theorem formalLogOnePlusProductRightSide_coeff_of_pos_coords (e : Fin 2 →₀ ℕ)
     (hleft : 0 < e (0 : Fin 2)) (hright : 0 < e (1 : Fin 2)) :
     MvPowerSeries.coeff e (formalLogOnePlusProductRightSide A) = 0 :=
   formalLogOnePlusProductRightSide_coeff_of_ne_axes A e
@@ -874,8 +772,7 @@ theorem formalLogOnePlusProductRightSide_coeff_of_pos_coords
 
 /-- On the left coordinate axis, the substituted logarithm and the proposed
 right-hand side have the same coefficient. -/
-theorem formalLogOnePlusProductFormula_coeff_of_right_coord_zero
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
+theorem formalLogOnePlusProductFormula_coeff_of_right_coord_zero (e : Fin 2 →₀ ℕ)
     (he : e (1 : Fin 2) = 0) :
     MvPowerSeries.coeff e
         (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
@@ -885,8 +782,7 @@ theorem formalLogOnePlusProductFormula_coeff_of_right_coord_zero
 
 /-- On the right coordinate axis, the substituted logarithm and the proposed
 right-hand side have the same coefficient. -/
-theorem formalLogOnePlusProductFormula_coeff_of_left_coord_zero
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
+theorem formalLogOnePlusProductFormula_coeff_of_left_coord_zero (e : Fin 2 →₀ ℕ)
     (he : e (0 : Fin 2) = 0) :
     MvPowerSeries.coeff e
         (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
@@ -897,16 +793,14 @@ theorem formalLogOnePlusProductFormula_coeff_of_left_coord_zero
 /-- Difference between the two formal sides of the logarithm product formula.
 The remaining proof of the formal identity is exactly the vanishing of this
 series on mixed monomials. -/
-noncomputable def formalLogOnePlusProductFormulaDefect
-    (A : Type*) [CommRing A] [Algebra ℚ A] : MvPowerSeries (Fin 2) A :=
+noncomputable def formalLogOnePlusProductFormulaDefect : MvPowerSeries (Fin 2) A :=
   PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A) -
       formalLogOnePlusProductRightSide A
 
 /--
 Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductFormulaDefect A) = 0`.
 -/
-theorem formalLogOnePlusProductFormulaDefect_coeff_of_right_coord_zero
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
+theorem formalLogOnePlusProductFormulaDefect_coeff_of_right_coord_zero (e : Fin 2 →₀ ℕ)
     (he : e (1 : Fin 2) = 0) :
     MvPowerSeries.coeff e
         (formalLogOnePlusProductFormulaDefect A) = 0 := by
@@ -916,13 +810,20 @@ theorem formalLogOnePlusProductFormulaDefect_coeff_of_right_coord_zero
 /--
 Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductFormulaDefect A) = 0`.
 -/
-theorem formalLogOnePlusProductFormulaDefect_coeff_of_left_coord_zero
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
+theorem formalLogOnePlusProductFormulaDefect_coeff_of_left_coord_zero (e : Fin 2 →₀ ℕ)
     (he : e (0 : Fin 2) = 0) :
     MvPowerSeries.coeff e
         (formalLogOnePlusProductFormulaDefect A) = 0 := by
   simp [formalLogOnePlusProductFormulaDefect,
     formalLogOnePlusProductFormula_coeff_of_left_coord_zero A e he]
+
+end
+
+section
+
+variable (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ) (hleft : 0 < e (0 : Fin 2))
+  (hright : 0 < e (1 : Fin 2))
+include hleft hright
 
 /--
 Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductFormulaDefect A) = ∑ q ∈
@@ -930,9 +831,7 @@ Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductFormulaD
 PowerSeries.coeff q (PowerSeries.log A) • MvPowerSeries.coeff e
 ((formalLogOnePlusProductArgument A) ^ q)`.
 -/
-theorem formalLogOnePlusProductFormulaDefect_coeff_of_pos_coords_eq_sum_range_degree_succ_filter_coord_le
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
-    (hleft : 0 < e (0 : Fin 2)) (hright : 0 < e (1 : Fin 2)) :
+theorem formalLogOnePlusProductFormulaDefect_coeff_of_pos_coords_eq_sum_range_degree_succ_filter_coord_le :
     MvPowerSeries.coeff e
         (formalLogOnePlusProductFormulaDefect A) =
       ∑ q ∈
@@ -951,9 +850,7 @@ Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductFormulaD
 Fin 2) ≤ q), PowerSeries.coeff q (PowerSeries.log A) • MvPowerSeries.coeff e
 ((formalLogOnePlusProductArgument A) ^ q)`.
 -/
-theorem formalProductDefect_coeff_pos_eq_filtered_sum
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
-    (hleft : 0 < e (0 : Fin 2)) (hright : 0 < e (1 : Fin 2)) :
+theorem formalProductDefect_coeff_pos_eq_filtered_sum :
     MvPowerSeries.coeff e
         (formalLogOnePlusProductFormulaDefect A) =
       ∑ q ∈
@@ -973,9 +870,7 @@ Fin 2) ≤ q), PowerSeries.coeff q (PowerSeries.log A) • (∑ l ∈ Finset.fin
 (Finset.range q) e, if ∀ i ∈ Finset.range q, formalLogOnePlusProductArgumentBasicFactor (l i) then
 (1 : A) else 0)`.
 -/
-theorem formalLogOnePlusProductFormulaDefect_coeff_of_pos_coords_eq_sum_basicFactor
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
-    (hleft : 0 < e (0 : Fin 2)) (hright : 0 < e (1 : Fin 2)) :
+theorem formalLogOnePlusProductFormulaDefect_coeff_of_pos_coords_eq_sum_basicFactor :
     MvPowerSeries.coeff e
         (formalLogOnePlusProductFormulaDefect A) =
       ∑ q ∈
@@ -998,9 +893,7 @@ Establishes the identity `MvPowerSeries.coeff e (formalLogOnePlusProductFormulaD
 Fin 2) ≤ q), PowerSeries.coeff q (PowerSeries.log A) •
 ((formalLogOnePlusProductArgumentBasicFactorChoices q e).card : A)`.
 -/
-theorem formalLogOnePlusProductFormulaDefect_coeff_of_pos_coords_eq_sum_card_choices
-    (A : Type*) [CommRing A] [Algebra ℚ A] (e : Fin 2 →₀ ℕ)
-    (hleft : 0 < e (0 : Fin 2)) (hright : 0 < e (1 : Fin 2)) :
+theorem formalLogOnePlusProductFormulaDefect_coeff_of_pos_coords_eq_sum_card_choices :
     MvPowerSeries.coeff e
         (formalLogOnePlusProductFormulaDefect A) =
       ∑ q ∈
@@ -1013,6 +906,8 @@ theorem formalLogOnePlusProductFormulaDefect_coeff_of_pos_coords_eq_sum_card_cho
   apply Finset.sum_congr rfl
   intro q _hq
   rw [formalLogOnePlusProductArgument_basicFactor_sum_eq_card_choices]
+
+end
 
 /--
 Establishes the identity `(∑ q ∈ (Finset.range (a + b + 1)).filter (fun q => a ≤ q ∧ b ≤ q), F q)
@@ -1416,40 +1311,8 @@ theorem formalLogOnePlusProductFormula
     simpa [formalLogOnePlusProductFormulaDefect] using h
   exact sub_eq_zero.mp hsub
 
-/-- For finitely many variables, a family is a valid `MvPowerSeries`
-evaluation point as soon as every coordinate is topologically nilpotent. -/
-theorem mvPowerSeries_hasEval_of_finite_topologicallyNilpotent
-    {σ : Type*} {S : Type*} [CommRing S] [TopologicalSpace S] [Finite σ]
-    {a : σ → S} (hpow : ∀ s, IsTopologicallyNilpotent (a s)) :
-    MvPowerSeries.HasEval a := by
-  refine ⟨hpow, ?_⟩
-  rw [Filter.cofinite_eq_bot]
-  exact Filter.tendsto_bot
 
-/-- Two topologically nilpotent elements give a valid evaluation point for
-the two-variable product formula. -/
-theorem mvPowerSeries_hasEval_fin_two
-    {S : Type*} [CommRing S] [TopologicalSpace S] {x y : S}
-    (hx : IsTopologicallyNilpotent x) (hy : IsTopologicallyNilpotent y) :
-    MvPowerSeries.HasEval (fun i : Fin 2 => if i = 0 then x else y) := by
-  apply mvPowerSeries_hasEval_of_finite_topologicallyNilpotent
-  intro i
-  fin_cases i <;> simp [hx, hy]
 
-/-- Evaluating the formal logarithm product identity at any convergent
-two-variable point preserves the identity.  This is the formal-to-analytic
-entry point for the field-unit logarithm theorem. -/
-theorem formalLogOnePlusProductFormula_aeval
-    (A : Type*) [CommRing A] [Algebra ℚ A]
-    [UniformSpace A] [IsUniformAddGroup A]
-    [CompleteSpace A] [T2Space A] [IsTopologicalRing A]
-    [IsLinearTopology A A]
-    {a : Fin 2 → A} (ha : MvPowerSeries.HasEval a) :
-    MvPowerSeries.aeval ha
-        (PowerSeries.subst (formalLogOnePlusProductArgument A) (PowerSeries.log A)) =
-      MvPowerSeries.aeval ha (formalLogOnePlusProductRightSide A) := by
-  exact congrArg (fun f => MvPowerSeries.aeval ha f)
-    (formalLogOnePlusProductFormula A)
 
 /-- The value of the monomial indexed by a finitely supported exponent at a
 chosen evaluation point. -/

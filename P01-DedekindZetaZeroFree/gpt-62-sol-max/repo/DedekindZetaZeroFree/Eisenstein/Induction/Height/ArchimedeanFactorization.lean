@@ -10,43 +10,13 @@ open NumberField
 namespace DedekindZetaZeroFree.HeightGeometry
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem tuple_prod (a : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
-    (ha : ∀ q, a (Sum.inr q) = 1) :
-    a = ((Finset.univ : Finset (InfinitePlace F)).toList.map
-      (fun w => KPAdelicCoverRestrictedProduct.localToRestricted F ζ hζ (Sum.inl w)
-        (a (Sum.inl w)))).prod := by
-  apply RestrictedProduct.ext
-  intro v
-  change a v = (RestrictedProduct.evalMonoidHom _ v) _
-  rw [map_list_prod, List.map_map]
-  cases v with
-  | inl w =>
-    simp only [Function.comp_def, KPAdelicCoverRestrictedProduct.localToRestricted,
-      RestrictedProduct.mulSingleMonoidHom_apply,
-      RestrictedProduct.evalMonoidHom_apply, RestrictedProduct.coe_mulSingle_apply]
-    have he : (fun x : InfinitePlace F => Pi.mulSingle (Sum.inl x) (a (Sum.inl x)) (Sum.inl w)) =
-        fun x => if x = w then a (Sum.inl w) else 1 := by
-      funext x
-      by_cases h : x = w
-      · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
-    rw [he, List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
-    rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
-      (Nat.succ_le_of_lt (List.count_pos_iff.mpr (by simp)))]
-    simp
-  | inr q =>
-    simp [ha, KPAdelicCoverRestrictedProduct.localToRestricted, Function.comp_def,
-      RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
-
-private theorem sectionTuple_insertion
+theorem sectionTuple_insertion
     (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (KPLiteralChamber.sectionTuple F ζ hζ r)) =
       PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
-        (fun w => Matrix.ProjGenLinGroup.mk (r w)) := by
-  rw [tuple_prod F ζ hζ (KPLiteralChamber.sectionTuple F ζ hζ r) (by intro q; rfl)]
-  rw [map_list_prod, map_list_prod, List.map_map, List.map_map]
-  exact (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.2.2 r |>.symm
+        (fun w => Matrix.ProjGenLinGroup.mk (r w)) :=
+  KPLiteralChamber.sectionTuple_insertion F ζ hζ r
 
 private lemma gl_map_d {K L : Type*} [Field K] [Field L] (φ : K →+* L) (u v : Kˣ) :
     Matrix.GeneralLinearGroup.map φ (KubotaRankTwo.d K u v) =
@@ -63,7 +33,7 @@ private lemma gl_map_n {K L : Type*} [Field K] [Field L] (φ : K →+* L) (t : K
   fin_cases i <;> fin_cases j <;>
     simp [KubotaRankTwo.n, Matrix.GeneralLinearGroup.map_apply]
 
-private theorem archDiagonalLift_eq_insertion (u : InfinitePlace F → ℂˣ) :
+theorem archDiagonalLift_eq_insertion (u : InfinitePlace F → ℂˣ) :
     KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (u w : ℂ)) =
       PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
         (fun w => Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (u w) 1)) := by
@@ -90,7 +60,7 @@ private theorem archDiagonalLift_eq_insertion (u : InfinitePlace F → ℂˣ) :
   ((fun w => (InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F ζ hζ w)).symm (c w)), 0)
 
-private theorem N_eq_insertion (c : InfinitePlace F → ℂ) :
+theorem N_eq_insertion (c : InfinitePlace F → ℂ) :
     KPGlobalTorusFunctionData.N F ζ hζ (adeleOfArch F ζ hζ c) =
       PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
         (fun w => Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n ℂ (c w))) := by
@@ -142,9 +112,8 @@ private lemma archK_mul_star (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0)
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [archK, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-      star_div₀, star_inv₀, star_star, Complex.conj_ofReal, Complex.mul_conj',
-      Complex.conj_mul', ← Complex.ofReal_add, ← Complex.ofReal_pow,
-      archS_sq, archDen, Complex.ofReal_inj]
+      Complex.conj_ofReal, Complex.mul_conj',
+      ← Complex.ofReal_add, ← Complex.ofReal_pow]
   · rw [abs_of_pos hspos]; field_simp; rw [archS_sq]; unfold archDen; ring
   · ring
   · ring
@@ -156,7 +125,7 @@ private lemma archK_det (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
     simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt hspos
   rw [Matrix.det_fin_two]
   simp only [archK, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.head_cons, Matrix.empty_val', Matrix.cons_val_fin_one]
+    Matrix.cons_val_one, Matrix.empty_val', Matrix.cons_val_fin_one]
   field_simp
   rw [Complex.star_def, Complex.conj_mul', Complex.conj_mul']
   rw [← Complex.ofReal_pow, ← Complex.ofReal_pow, ← Complex.ofReal_pow]

@@ -79,7 +79,7 @@ theorem unipotent_fixes [NumberField F] (x : F) :
   congr 1
   change (↑(unipotent x) : Matrix (Fin 2) (Fin 2) F) *ᵥ ![1, 0] = ![1, 0]
   ext i
-  fin_cases i <;> simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two]
+  fin_cases i <;> simp
 variable [NumberField F]
 theorem cusp_translation_iff (Γ : Subgroup (ProjectiveGroup F))
     (q : Projectivization F (Plane F)) (σ : ProjectiveGroup F)
@@ -108,7 +108,7 @@ theorem translation_finite_index_of_full_ideal
       TranslationParameter (CuspSubgroup F (LatticeAutomorphisms F M) q σ) x) :
     L ≤ (J : Submodule (IntegralOrder F) F).toAddSubgroup ∧
       L.IsFiniteRelIndex (J : Submodule (IntegralOrder F) F).toAddSubgroup := by
-  let f : Multiplicative F →* ProjectiveGroup F :=
+  let f :=
     (MulAut.conj σ).toMonoidHom.comp translationHom
   have heL : L.toSubgroup = Γ.comap f := by
     ext x
@@ -242,7 +242,7 @@ theorem latticeAut_eq (M : Submodule R (Plane F)) :
       Matrix.ProjGenLinGroup.mk A = g ∧ ∀ v, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M} =
       ((matrixAut M).map Matrix.ProjGenLinGroup.mk : Set (ProjectiveGroup F)) := by
     ext g
-    simp only [Set.mem_setOf_eq, Subgroup.mem_map]
+    simp only [Set.mem_setOf_eq]
     constructor
     · rintro ⟨A, rfl, hA⟩; exact ⟨A, hA, rfl⟩
     · rintro ⟨A, hA, rfl⟩; exact ⟨A, rfl, hA⟩
@@ -307,7 +307,7 @@ def conjEnd (B : Matrix.GeneralLinearGroup (Fin 2) F) : Module.End F (Plane F) :
     (rootEnd.comp (Matrix.GeneralLinearGroup.toLin B⁻¹ : Module.End F (Plane F)))
 theorem rootEnd_formula (v : Plane F) : rootEnd v = ![v 1, 0] := by
   ext i
-  fin_cases i <;> simp [rootEnd, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
+  fin_cases i <;> simp [rootEnd, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
 theorem rootEnd_square (v : Plane F) : rootEnd (rootEnd v) = 0 := by
   simp [rootEnd_formula]
 theorem inv_mulVec (B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Plane F) :
@@ -524,7 +524,7 @@ def PreservesUpToHomothety (M : Submodule (Order F) (Vec F)) (g : PGL2 F) : Prop
       Set.image (fun v : Vec F => (a : F) • v) (M : Set (Vec F))
 
 def infinity : Cusp F :=
-  Projectivization.mk F ![1, 0] (by simp [Matrix.cons_val_zero])
+  Projectivization.mk F ![1, 0] (by simp [])
 
 def conjugatedStabilizer (Γ : Subgroup (PGL2 F)) (q : Cusp F) (σ : PGL2 F) :
     Subgroup (PGL2 F) :=
@@ -562,7 +562,7 @@ theorem mem_projectiveAutomorphisms_iff (M : Submodule (Order F) (Vec F)) (g : P
         ∀ v : Vec F, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M} =
       ((integralMatrixAutomorphisms F M).map Matrix.ProjGenLinGroup.mk : Set (PGL2 F)) := by
     ext g
-    simp only [Set.mem_setOf_eq, Subgroup.mem_map]
+    simp only [Set.mem_setOf_eq]
     constructor
     · rintro ⟨A, rfl, hA⟩; exact ⟨A, hA, rfl⟩
     · rintro ⟨A, hA, rfl⟩; exact ⟨A, rfl, hA⟩
@@ -668,7 +668,7 @@ theorem projectiveAutomorphisms_conjugate
         · intro hv
           refine ⟨(↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v, hv, ?_⟩
           change (↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v
-          simpa using gl_inv_mulVec F A⁻¹ v
+          simp
       rw [hmem, hmem, gl_mulVec_mul, gl_mulVec_mul, gl_inv_mulVec]
       exact hp _
   · intro hg
@@ -692,7 +692,7 @@ theorem projectiveAutomorphisms_conjugate
       rw [gl_mulVec_mul, gl_mulVec_mul]
       have hinv (w : Vec F) : (↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ
           ((↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ w) = w := by
-        simpa using gl_inv_mulVec F A⁻¹ w
+        simp
       rw [hinv]
       exact hp _
     · simp only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe, MulAut.conj_apply]

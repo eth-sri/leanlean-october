@@ -32,7 +32,7 @@ theorem relative_borel_retract_actual
       refine ⟨KubotaRankTwo.d (LocalField F q) (u⁻¹ ^ (2 : ℕ)) 1, ?_, ?_, ?_⟩
       · rfl
       · simp [KubotaRankTwo.d]
-      · simp [KubotaRankTwo.d]⟩
+      rfl⟩
   let n := S.borel.upperRoot
     (Multiplicative.ofAdd (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q))
   have hn : (n : ActualCover F ζ hζ q) =

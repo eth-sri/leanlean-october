@@ -173,12 +173,15 @@ theorem map_extensionSubgroup_abstractSubgroupEquiv
     rw [InfiniteGalois.fixingSubgroup_fixedField L] at hσfix
     exact hσfix
 
+section
+
+variable (K L : ClosedSubgroup (Gal(Ω / k))) (hLK : L.toSubgroup ≤ K.toSubgroup)
+  (hnormal : (extensionSubgroup K L hLK).Normal)
+include K L hLK hnormal
+
 /-- Relative normality in the abstract class-formation framework is the actual normality of the subgroup
 fixing the upper field inside the lower field's absolute Galois group. -/
-theorem abstractRelativeFixingSubgroup_normal
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+theorem abstractRelativeFixingSubgroup_normal :
     (abstractRelativeFixedField k Ω hLK).fixingSubgroup.Normal := by
   have hmap : ((extensionSubgroup K L hLK).map
       (abstractSubgroupEquivGaloisGroup k Ω K).toMonoidHom).Normal :=
@@ -189,10 +192,7 @@ theorem abstractRelativeFixingSubgroup_normal
 
 /-- The concrete relative fixed field is Galois precisely from the normality
 witness occurring in the abstract cyclic extension. -/
-theorem abstractRelativeFixedField_isGalois
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+theorem abstractRelativeFixedField_isGalois :
     IsGalois (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) := by
   apply (InfiniteGalois.normal_iff_isGalois
@@ -201,10 +201,7 @@ theorem abstractRelativeFixedField_isGalois
 
 /-- Restriction through the lower fixed field, followed by quotienting by
 the upper fixing subgroup. -/
-def abstractRelativeToAmbientQuotient
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+def abstractRelativeToAmbientQuotient :
     letI := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
     K.toSubgroup →*
       Gal(Ω / abstractFixedField k Ω K) ⧸
@@ -217,10 +214,7 @@ def abstractRelativeToAmbientQuotient
 
 /-- The kernel of the preceding quotient map is the exact abstract class-formation
 relative subgroup. -/
-theorem abstractRelativeToAmbientQuotient_ker
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+theorem abstractRelativeToAmbientQuotient_ker :
     letI := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
     (abstractRelativeToAmbientQuotient k Ω K L hLK hnormal).ker =
       extensionSubgroup K L hLK := by
@@ -242,10 +236,7 @@ theorem abstractRelativeToAmbientQuotient_ker
     exact ⟨σ, hσ, rfl⟩
 
 /-- The quotient map from the abstract lower subgroup is surjective. -/
-theorem abstractRelativeToAmbientQuotient_surjective
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+theorem abstractRelativeToAmbientQuotient_surjective :
     letI := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
     Function.Surjective
       (abstractRelativeToAmbientQuotient k Ω K L hLK hnormal) := by
@@ -264,10 +255,7 @@ theorem abstractRelativeToAmbientQuotient_surjective
 /-- The exact abstract class-formation quotient of a relative normal extension is the
 ordinary quotient of the lower absolute Galois group by the upper fixing
 subgroup. -/
-def abstractExtensionQuotientEquivAmbient
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+def abstractExtensionQuotientEquivAmbient :
     letI := hnormal
     letI := abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
     K.toSubgroup ⧸ extensionSubgroup K L hLK ≃*
@@ -286,10 +274,7 @@ def abstractExtensionQuotientEquivAmbient
 
 /-- The quotient group appearing in the abstract class-field-axiom predicate is
 canonically the actual Galois group of the two concrete fixed fields. -/
-def abstractExtensionQuotientEquivGaloisGroup
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal) :
+def abstractExtensionQuotientEquivGaloisGroup :
     letI := hnormal
     K.toSubgroup ⧸ extensionSubgroup K L hLK ≃*
       Gal(abstractRelativeFixedField k Ω hLK / abstractFixedField k Ω K) := by
@@ -309,15 +294,20 @@ def abstractExtensionQuotientEquivGaloisGroup
           (InfiniteGalois.fixedField_fixingSubgroup
             (abstractRelativeFixedField k Ω hLK)))))
 
+end
+
+section
+
+variable (K L : ClosedSubgroup (Gal(Ω / k))) (hLK : L.toSubgroup ≤ K.toSubgroup)
+  (hKfinite : Finite ((baseField (Gal(Ω / k))).toSubgroup ⧸
+      extensionSubgroup (baseField (Gal(Ω / k))) K (le_baseField K)))
+  (hLKfinite : Finite
+      (K.toSubgroup ⧸ extensionSubgroup K L hLK))
+include hLK hKfinite hLKfinite
+
 /-- In a finite abstract tower `L / K / k`, the concrete upper fixed field is
 finite over the concrete lower fixed field. -/
-theorem abstractFixedField_relativeFiniteDimensional
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hKfinite : Finite ((baseField (Gal(Ω / k))).toSubgroup ⧸
-      extensionSubgroup (baseField (Gal(Ω / k))) K (le_baseField K)))
-    (hLKfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)) :
+theorem abstractFixedField_relativeFiniteDimensional :
     letI : Algebra (abstractFixedField k Ω K) (abstractFixedField k Ω L) :=
       RingHom.toAlgebra
         (IntermediateField.inclusion (abstractFixedField_le k Ω hLK))
@@ -344,13 +334,7 @@ theorem abstractFixedField_relativeFiniteDimensional
 
 /-- The same relative finiteness statement in the scalar-extended
 intermediate-field presentation used by infinite Galois theory. -/
-theorem abstractRelativeFixedField_finiteDimensional
-    (K L : ClosedSubgroup (Gal(Ω / k)))
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hKfinite : Finite ((baseField (Gal(Ω / k))).toSubgroup ⧸
-      extensionSubgroup (baseField (Gal(Ω / k))) K (le_baseField K)))
-    (hLKfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K L hLK)) :
+theorem abstractRelativeFixedField_finiteDimensional :
     FiniteDimensional (abstractFixedField k Ω K)
       (abstractRelativeFixedField k Ω hLK) := by
   let : Algebra (abstractFixedField k Ω K) (abstractFixedField k Ω L) :=
@@ -369,6 +353,8 @@ theorem abstractRelativeFixedField_finiteDimensional
       map_add' := fun _ _ => rfl
       map_smul' := fun _ _ => rfl }
   exact e.finiteDimensional
+
+end
 
 /-- The abstract extension degree is the ordinary degree of the concrete
 finite Galois extension represented by the same pair of fixed fields. -/

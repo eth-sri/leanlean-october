@@ -38,11 +38,14 @@ private theorem finite_image_at_one_nonzero
   change (actualCanonicalForwardMap F ζ hζ q S P μ hμ f).val (1 * g) ≠ 0
   simpa only [one_mul] using hg
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
+  (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
+  (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
+
 private theorem finite_tensor_nonzero
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-    (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-    (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
     (y : ∀ q : E, KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P₀ C₀ q.val)
     (hy : ∀ q, y q ≠ 0) : PiTensorProduct.tprod ℂ y ≠ 0 := by
   have hex (q : E) : ∃ t : actualTorus F ζ hζ q.val, (y q).val t ≠ 0 := by
@@ -65,10 +68,6 @@ private theorem finite_tensor_nonzero
   exact (Finset.prod_ne_zero_iff.mpr (fun q _ => ht q)) he
 
 private theorem actual_rational_image_nonzero
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-    (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-    (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
     (hE : C₀.exceptional ⊆ E)
     (y : ∀ q : E, KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P₀ C₀ q.val)
     (hy : ∀ q, y q ≠ 0) :
@@ -97,6 +96,8 @@ private theorem actual_rational_image_nonzero
   apply Subtype.ext
   funext t
   exact he t
+
+end
 
 theorem unit_mass (F : Type) [Field F] [NumberField F]
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) :
@@ -178,8 +179,11 @@ open KPRankOneShellContinuation
 open _root_.DedekindZetaZeroFree.KPRankOneShellContinuation renaming eval_diff → eval_diff
 open _root_.DedekindZetaZeroFree.KPRankOneShellContinuation renaming denom_diff → denom_diff
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
 private theorem actual_local_vector_expansion
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -200,7 +204,6 @@ private theorem actual_local_vector_expansion
   simp [continuedLevel,evaluate,Finsupp.sum,p]
 
 def rationalStageEval
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
@@ -215,7 +218,6 @@ def rationalStageEval
     (PiTensorProduct.tprod ℂ)
 
  theorem actual_rational_family_regular
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
@@ -256,7 +258,6 @@ def rationalStageEval
     exact denominator_ne_zero_at_zero (LocalField F q.val) .plus
 
 private theorem compact_zero_at_one
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -273,7 +274,6 @@ private theorem compact_zero_at_one
   exact (congrArg (fun v : compactPicture S.borel P S.iwasawa .minus => v.val 1) he).symm
 
 theorem actual_rational_nonzero_cofactor
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)))
@@ -322,6 +322,8 @@ theorem actual_rational_nonzero_cofactor
     simp [b,c]
   · exact hc.2.mul (Finset.analyticAt_fun_prod Finset.univ (fun _ _ => ha0))
   · exact mul_ne_zero hcn (Finset.prod_ne_zero_iff.mpr (fun _ _ => han))
+
+end
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor
 

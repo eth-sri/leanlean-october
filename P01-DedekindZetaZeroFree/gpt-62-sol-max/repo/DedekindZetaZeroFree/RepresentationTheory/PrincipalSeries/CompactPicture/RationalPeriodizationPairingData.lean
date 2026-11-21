@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.RepresentationTheory.Smooth.FiniteFactorAveraging
+public import DedekindZetaZeroFree.Metaplectic.Torus.BorelTwistCompatibility
 public import DedekindZetaZeroFree.Eisenstein.Induction.BorelModulusAndIwasawaContinuity
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.AngularHaarDisintegration
 public import DedekindZetaZeroFree.Eisenstein.Induction.ExceptionalParameterExponents
@@ -40,8 +40,7 @@ private theorem projW :
     (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ _) = _
   unfold KPCubicCoverConstruction.adelicW
   rw [KPRationalAdelicSplitting.W_rational]
-  exact congrArg (QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F))
-    (KPAdelicCoverRestrictedProduct.projection_rationalSection F ζ hζ _)
+  rfl
  theorem wSq :
     (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) *
       (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) = 1 := by
@@ -50,7 +49,7 @@ private theorem projW :
   rw [← map_mul]
   have hw : KPRationalAdelicSplitting.W F ζ hζ * KPRationalAdelicSplitting.W F ζ hζ = 1 :=
     by simpa [pow_two] using KPRationalAdelicSplitting.W_sq F ζ hζ
-  rw [hw, map_one]
+  grind
 theorem adelicW_inv_eq_self_rationalPeriodizationPairingData :
     (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ)⁻¹ =
       (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) :=
@@ -570,7 +569,12 @@ def scalarSmooth (P : KPGlobalTorusFunctionData.Polarization F ζ hζ) :
     Submodule ℂ (KPGlobalTorusFunctionData.BorelFunctions F ζ hζ P) :=
   (KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ P).range
 
-def sourceCore (D : Iwasawa F ζ hζ) : Submodule ℂ (Source F ζ hζ 0) :=
+section
+
+variable (D : Iwasawa F ζ hζ)
+include D
+
+def sourceCore : Submodule ℂ (Source F ζ hζ 0) :=
   KPGlobalEisensteinData.hcHeckeCore
     ((KPGlobalTorusFunctionData.borelRightTranslation F ζ hζ
       (sourcePolarization F ζ hζ 0)).comp D.K.subtype)
@@ -579,7 +583,7 @@ def sourceCore (D : Iwasawa F ζ hζ) : Submodule ℂ (Source F ζ hζ 0) :=
         (KPGlobalTorusFunctionData.finitePart F ζ hζ).subtype)
     (scalarSmooth F ζ hζ (sourcePolarization F ζ hζ 0))
 
-def targetCore (D : Iwasawa F ζ hζ) : Submodule ℂ (Target F ζ hζ 0) :=
+def targetCore : Submodule ℂ (Target F ζ hζ 0) :=
   KPGlobalEisensteinData.hcHeckeCore
     ((KPGlobalTorusFunctionData.borelRightTranslation F ζ hζ
       (targetPolarization F ζ hζ 0)).comp D.K.subtype)
@@ -588,10 +592,10 @@ def targetCore (D : Iwasawa F ζ hζ) : Submodule ℂ (Target F ζ hζ 0) :=
         (KPGlobalTorusFunctionData.finitePart F ζ hζ).subtype)
     (scalarSmooth F ζ hζ (targetPolarization F ζ hζ 0))
 
-abbrev Vplus (D : Iwasawa F ζ hζ) := sourceCore F ζ hζ D
-abbrev Vminus (D : Iwasawa F ζ hζ) := targetCore F ζ hζ D
+abbrev Vplus := sourceCore F ζ hζ D
+abbrev Vminus := targetCore F ζ hζ D
 
-def fixedPlus (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
+def fixedPlus (U : Level F ζ hζ) :
     Submodule ℂ (Vplus F ζ hζ D) where
   carrier := {f | ∀ g (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
     f.val.val (g * u.val) = f.val.val g}
@@ -599,7 +603,7 @@ def fixedPlus (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
   add_mem' := by intro f g hf hg x u; simp [hf x u, hg x u]
   smul_mem' := by intro c f hf x u; simp [hf x u]
 
-def fixedMinus (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
+def fixedMinus (U : Level F ζ hζ) :
     Submodule ℂ (Vminus F ζ hζ D) where
   carrier := {v | ∀ g (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
     v.val.val (g * u.val) = v.val.val g}
@@ -607,7 +611,7 @@ def fixedMinus (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
   add_mem' := by intro f g hf hg x u; simp [hf x u, hg x u]
   smul_mem' := by intro c f hf x u; simp [hf x u]
 
-def fullToLevel (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
+def fullToLevel (U : Level F ζ hζ) :
     FullOmega F ζ hζ D → Omega F ζ hζ D U := by
   refine Quotient.lift (fun g => Quotient.mk (angularSetoid F ζ hζ D U) g) ?_
   intro a b hab
@@ -619,7 +623,7 @@ def fullToLevel (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     exact ⟨y, x, 1, by simpa using h⟩
   exact hrel a b hab
 
-def angularForget (D : Iwasawa F ζ hζ) (V U : Level F ζ hζ)
+def angularForget (V U : Level F ζ hζ)
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup) :
     Omega F ζ hζ D V → Omega F ζ hζ D U := by
   apply Quotient.map id
@@ -629,7 +633,7 @@ def angularForget (D : Iwasawa F ζ hζ) (V U : Level F ζ hζ)
       KPGlobalTorusFunctionData.globalLevel F ζ hζ U := Subgroup.map_mono h
   exact ⟨y, x, ⟨u.val, hm u.property⟩, hu⟩
 
-def sourceStage (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
+def sourceStage (U : Level F ζ hζ)
     (T : KPGlobalEisensteinData.CompactTypeStage
       ((KPGlobalTorusFunctionData.borelRightTranslation F ζ hζ
         (sourcePolarization F ζ hζ 0)).comp D.K.subtype)) :=
@@ -638,6 +642,8 @@ def sourceStage (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
       (sourcePolarization F ζ hζ 0)).comp
         (KPGlobalTorusFunctionData.finitePart F ζ hζ).subtype)
     (scalarSmooth F ζ hζ (sourcePolarization F ζ hζ 0)) U T
+
+end
 
 def scalarLevel (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (U : Level F ζ hζ) :
@@ -714,7 +720,12 @@ structure RawCompactComparison (C : ModelData F ζ hζ) (D : Iwasawa F ζ hζ)
 section Detection
 variable {F ζ hζ}
 
-private theorem compact_radialSection_eq_diagonalLift (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+section
+
+variable (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+include B
+
+private theorem compact_radialSection_eq_diagonalLift
     (r : KPMsFixedHaarDisintegration.Radius) :
     KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r =
       KPGlobalCenterRationalCharacter.diagonalLift F ζ hζ (B.ell r) := by
@@ -747,7 +758,7 @@ private theorem compact_radialSection_eq_diagonalLift (B : KPMsFixedHaarDisinteg
     rw [he]
     simp
 
-private theorem compact_radialSection_mem_center (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+private theorem compact_radialSection_mem_center
     (r : KPMsFixedHaarDisintegration.Radius) :
     ∃ t : KPGlobalTorusFunctionData.Z F ζ hζ,
       t.val.val = KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r := by
@@ -756,7 +767,7 @@ private theorem compact_radialSection_mem_center (B : KPMsFixedHaarDisintegratio
   refine ⟨KPGlobalCenterRationalCharacter.cubeLift F ζ hζ y, ?_⟩
   rw [KPGlobalCenterRationalCharacter.cubeLift_formula, compact_radialSection_eq_diagonalLift]
 
- theorem compact_radialSection_delta (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+ theorem compact_radialSection_delta
     (r : KPMsFixedHaarDisintegration.Radius) :
     (((KPGlobalTorusFunctionData.delta F ζ hζ
       (KPGlobalTorusFunctionData.torusArchChart F ζ hζ
@@ -767,7 +778,7 @@ private theorem compact_radialSection_mem_center (B : KPMsFixedHaarDisintegratio
         (KPMsFixedHaarDisintegration.positiveSlots F B.slot r))) : ℝ≥0) : ℝ)) = r.val
   rw [B.lift_ratio, B.ell_norm]
 
-private theorem compact_radial_lambdaR (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+private theorem compact_radial_lambdaR
     (r : KPMsFixedHaarDisintegration.Radius)
     (t : KPGlobalCenterRationalCharacter.R F ζ hζ)
     (ht : t.val.val = KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r) :
@@ -790,7 +801,7 @@ private theorem compact_radial_lambdaR (B : KPMsFixedHaarDisintegration.RadialDa
   push_cast
   ring
 
-private theorem compact_source_radial_covariance (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+private theorem compact_source_radial_covariance
     (s : ℂ) (r : KPMsFixedHaarDisintegration.Radius)
     (f : Source F ζ hζ s) (g : G F ζ hζ) :
     f.val (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r * g) =
@@ -828,7 +839,7 @@ private theorem compact_source_radial_covariance (B : KPMsFixedHaarDisintegratio
     KPGlobalExceptionalParameter.source_multiplier r.val r.property s] at he
   exact he
 
-private theorem compact_target_radial_covariance (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+private theorem compact_target_radial_covariance
     (s : ℂ) (r : KPMsFixedHaarDisintegration.Radius)
     (f : Target F ζ hζ s) (g : G F ζ hζ) :
     f.val (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r * g) =
@@ -847,6 +858,8 @@ private theorem compact_target_radial_covariance (B : KPMsFixedHaarDisintegratio
     unfold KPGlobalExceptionalParameter.sourceExponent KPGlobalExceptionalParameter.weylExponent
     ring
   simpa only [hx] using he
+
+end
 
 end Detection
 
@@ -903,20 +916,8 @@ variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 variable (A : RawCompactComparison F ζ hζ C D R P H)
 
-private theorem scalar_pair_integrable {X : Type*} [MeasurableSpace X]
-    {μ : Measure X} {f g : X → ℂ} (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
-    Integrable (fun x => star (f x) * g x) μ := by
-  apply (L2.integrable_inner (𝕜 := ℂ) (hf.toLp f) (hg.toLp g)).congr
-  filter_upwards [MemLp.coeFn_toLp hf, MemLp.coeFn_toLp hg] with x hx hy
-  simp [hx, hy, RCLike.inner_apply, mul_comm]
 
-def nu (U : Level F ζ hζ) : Measure (Omega F ζ hζ D U) :=
-  (A.beta U Set.univ)⁻¹ • A.beta U
 
-theorem nu_probability (U : Level F ζ hζ) : IsProbabilityMeasure (nu A U) := by
-  letI := A.beta_finite U
-  letI : NeZero (A.beta U) := ⟨fun h => by simpa [h] using A.beta_positive U⟩
-  exact MeasureTheory.isProbabilityMeasureSMul
 
  theorem compact_core_scalar_continuous
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
@@ -945,39 +946,9 @@ theorem nu_probability (U : Level F ζ hζ) : IsProbabilityMeasure (nu A U) := b
   intro T
   exact le_trans inf_le_left inf_le_left
 
-private theorem actual_source_angular_continuous (U : Level F ζ hζ)
-    (f : fixedPlus F ζ hζ D U) : Continuous (A.sourceAngular U f) := by
-  apply isQuotientMap_quotient_mk'.continuous_iff.mpr
-  simpa only [Function.comp_def, Quotient.mk', A.source_formula] using
-    (compact_core_scalar_continuous _ _ (compact_source_core_smooth f.val.property)).comp
-      continuous_subtype_val
 
-private theorem actual_target_angular_continuous (U : Level F ζ hζ)
-    (v : fixedMinus F ζ hζ D U) : Continuous (A.targetAngular U v) := by
-  apply isQuotientMap_quotient_mk'.continuous_iff.mpr
-  simpa only [Function.comp_def, Quotient.mk', A.target_formula] using
-    (compact_core_scalar_continuous _ _ (compact_target_core_smooth v.val.property)).comp
-      continuous_subtype_val
 
-theorem angular_memLp (U : Level F ζ hζ) :
-    (∀ f : fixedPlus F ζ hζ D U, MemLp (A.sourceAngular U f) 2 (nu A U)) ∧
-    (∀ v : fixedMinus F ζ hζ D U, MemLp (A.targetAngular U v) 2 (nu A U)) := by
-  letI := A.compact U
-  letI : BorelSpace (Omega F ζ hζ D U) := ⟨rfl⟩
-  letI := nu_probability A U
-  exact ⟨fun f => (actual_source_angular_continuous A U f).memLp_of_hasCompactSupport
-      (HasCompactSupport.of_compactSpace _),
-    fun v => (actual_target_angular_continuous A U v).memLp_of_hasCompactSupport
-      (HasCompactSupport.of_compactSpace _)⟩
 
-theorem pairing_integrable (U : Level F ζ hζ)
-    (f g : fixedPlus F ζ hζ D U) (v w : fixedMinus F ζ hζ D U) :
-    Integrable (fun ω => star (A.sourceAngular U f ω) * A.targetAngular U v ω) (nu A U) ∧
-    Integrable (fun ω => star (A.sourceAngular U f ω) * A.sourceAngular U g ω) (nu A U) ∧
-    Integrable (fun ω => star (A.targetAngular U v ω) * A.targetAngular U w ω) (nu A U) := by
-  obtain ⟨hp, hm⟩ := angular_memLp A U
-  exact ⟨scalar_pair_integrable (hp f) (hm v), scalar_pair_integrable (hp f) (hp g),
-    scalar_pair_integrable (hm v) (hm w)⟩
 
 section ArbitraryUProof
 set_option maxHeartbeats 1800000

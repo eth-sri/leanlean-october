@@ -20,56 +20,6 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private lemma q_coordinates (a : ActualChart (U := U) (H := H)) (y : a.domain) :
-    q a (coordinates a y).val = a.toBase y := by
-  have hi : ∀ z : KPCuspGenuineMonodromy.SymmetricSpace F,
-      labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) z) = z := by
-    intro z; funext k; simp [labeledA, labeledAInv]
-  simp only [ShrunkChart.toBase, KPContCotangentOverlapRationalBranches.q, coordinates]
-  rw [hi]
-private theorem continuous_iff_isQuotientMap {X Y Z : Type*} [TopologicalSpace X]
-    [TopologicalSpace Y] [TopologicalSpace Z] {q : X → Y} (hq : IsQuotientMap q)
-    (f : Y → Z) : Continuous f ↔ Continuous (f ∘ q) := by
-  refine ⟨fun h => h.comp hq.continuous, fun h => ?_⟩
-  exact Continuous.mk fun s hs => by
-    rw [← hq.isOpen_preimage]
-    exact h.isOpen_preimage s hs
-private theorem continuous_of_all_lifts (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hf : ∀ a : ActualChart (U := U) (H := H), Continuous (fun y : omega a => f (q a y.val))) :
-    Continuous f := by
-  obtain ⟨cover⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
-  refine continuous_of_cover_nhds (s := fun n => (cover.chart n).baseDomain) ?_ ?_
-  · intro x
-    have hx : x ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
-    obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
-    exact ⟨n, (cover.properties n).base_open.mem_nhds hn⟩
-  · intro n
-    let a := cover.chart n
-    have hloc : Continuous ((fun z : a.baseDomain => f z.val) ∘ a.quotientMap) := by
-      convert (hf a).comp (coordinates_continuous a) using 1
-      funext y
-      exact congrArg f (q_coordinates a y).symm
-    rw [continuousOn_iff_continuous_domRestrict]
-    exact (continuous_iff_isQuotientMap (cover.properties n).quotient _).mpr hloc
-private theorem cutoff_continuous (η : RealSmoothCutoff F ζ hζ U R P H) : Continuous η.val := by
-  apply continuous_of_all_lifts
-  intro a
-  obtain ⟨g,hg,he⟩ := η.smooth a
-  convert hg.continuousOn.domRestrict using 1
-  exact funext (fun y => (he y).symm)
-private theorem exists_chart_point (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
-    ∃ (a : ActualChart (U := U) (H := H)) (y : omega a), q a y.val = x := by
-  obtain ⟨cov⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
-  have hx : x ∈ ⋃ n, (cov.chart n).baseDomain := by rw [cov.covers]; trivial
-  obtain ⟨n,y,hy⟩ := Set.mem_iUnion.mp hx
-  refine ⟨cov.chart n, coordinates (cov.chart n) y, ?_⟩
-  change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative (cov.chart n).component)
-    (KPCuspSiegel.projection F _ (labeledA (placeEquiv F ζ hζ)
-      (labeledAInv (placeEquiv F ζ hζ) y.val))) = x
-  have hl : labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) y.val) = y.val := by
-    funext k; simp [labeledA,labeledAInv]
-  rw [hl]; exact hy
-
 open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra
 open KPContSectorFixedPushforwardSupport KPContSectorClosedLpSubspace
 open KPContActualSectorTestEmbeddings
@@ -77,7 +27,7 @@ attribute [local instance 2000] KPContSectorQuotientRelationsComparison.instMeas
  def weight (η : RealSmoothCutoff F ζ hζ U R P H) (x : CoveredSpherical F ζ hζ U) : ℂ :=
   (η.val (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) : ℂ)
 private theorem weight_cont (η : RealSmoothCutoff F ζ hζ U R P H) : Continuous (weight η) :=
-  Complex.continuous_ofReal.comp ((cutoff_continuous η).comp
+  Complex.continuous_ofReal.comp (η.continuous.comp
     (KPContSectorQuotientRelationsComparison.q_continuous F ζ hζ U))
  theorem mulMem (η : RealSmoothCutoff F ζ hζ U R P H) (B : ℝ) (hη : ∀ x, |η.val x| ≤ B)
     (f : CoveredL2 F ζ hζ R U) : MemLp (fun x => weight η x * f x) 2 (coveredMeasure F ζ hζ R U) := by
@@ -163,7 +113,7 @@ private theorem genuine_eq_of_charts (g h : GenuineCoveredScalars F ζ hζ U)
     (he : ∀ (a : ActualChart (U := U) (H := H)) (y : omega a), g.val (chartCovered a y) = h.val (chartCovered a y)) : g = h := by
   apply Subtype.ext
   funext x
-  obtain ⟨a,y,hy⟩ := exists_chart_point (R := R) (P := P) (H := H) (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x)
+  obtain ⟨a,y,hy⟩ := exists_chart_lift (R := R) (P := P) (H := H) (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x)
   obtain ⟨ε,hε⟩ := (KPContSectorQuotientRelationsComparison.q_eq_iff F ζ hζ U (chartCovered a y) x).mp
     ((chartCovered_q a y).trans hy)
   rw [hε,g.property,h.property,he a y]

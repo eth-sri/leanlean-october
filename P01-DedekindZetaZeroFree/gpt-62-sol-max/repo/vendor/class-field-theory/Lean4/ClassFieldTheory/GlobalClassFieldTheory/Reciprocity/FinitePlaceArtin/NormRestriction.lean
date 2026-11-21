@@ -74,11 +74,12 @@ private theorem finitePlaceArtinNormUnits_map_ringEquiv
   AlgebraicNumberTheory.Valuations.LocalizedCompletion
     (NumberField.HeightOneSpectrum.adicAbv F v) w
 
+section
+
+variable {K' : Type} [Field K'] [NumberField K'] [Algebra K K'] (v : HeightOneSpectrum (𝓞 K))
+  (W : HeightOneSpectrum (𝓞 K'))
+
  noncomputable def finitePlaceRelativeNormUnits
-    {K' : Type}
-    [Field K'] [NumberField K'] [Algebra K K']
-    (v : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v) :
     (finitePlaceNormCompletion K' W)ˣ →*
       (finitePlaceNormCompletion K v)ˣ := by
@@ -92,10 +93,6 @@ private theorem finitePlaceArtinNormUnits_map_ringEquiv
     (finitePlaceNormCompletion K' W)
 
  noncomputable def finitePlaceConcreteNormUnits
-    {K' : Type}
-    [Field K'] [NumberField K'] [Algebra K K']
-    (v : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v) :
     (W.adicCompletion K')ˣ →* (v.adicCompletion K)ˣ := by
   letI : Algebra (v.adicCompletion K) (W.adicCompletion K') :=
@@ -105,10 +102,6 @@ private theorem finitePlaceArtinNormUnits_map_ringEquiv
     (v.adicCompletion K) (W.adicCompletion K')
 
 private theorem finitePlaceArtinConcreteNormUnits
-    {K' : Type}
-    [Field K'] [NumberField K'] [Algebra K K']
-    (v : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v)
     (x : (W.adicCompletion K')ˣ) :
       finitePlaceCompletionUnitsContinuousMulEquiv v
@@ -121,11 +114,9 @@ private theorem finitePlaceArtinConcreteNormUnits
   let vK' := NumberField.HeightOneSpectrum.adicAbv K' W
   let C := vK.Completion
   let D := vK'.Completion
-  let eC :
-      C ≃+* v.adicCompletion K :=
+  let eC :=
     (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv
-  let eD :
-      D ≃+* W.adicCompletion K' :=
+  let eD :=
     (relativeFinitePlaceCompletionAlgEquiv W).toRingEquiv
   let eCUnits :
       Cˣ ≃* (v.adicCompletion K)ˣ :=
@@ -147,8 +138,7 @@ private theorem finitePlaceArtinConcreteNormUnits
           (finitePlaceCompletionRingEquiv W).toMulEquiv =
         Units.mapEquiv eD.toMulEquiv
     rw [finitePlaceCompletionRingEquiv_eq_relative]
-  let concreteBaseMap :
-      v.adicCompletion K →+* W.adicCompletion K' :=
+  let concreteBaseMap :=
     finitePlaceAdicCompletionMap K K' v ⟨W, hW⟩
   let : Algebra (v.adicCompletion K) (W.adicCompletion K') :=
     concreteBaseMap.toAlgebra
@@ -197,6 +187,8 @@ private theorem finitePlaceArtinConcreteNormUnits
         (Units.mapEquiv eD.toMulEquiv)
             ((Units.mapEquiv eD.toMulEquiv).symm x) = x
       exact (Units.mapEquiv eD.toMulEquiv).apply_symm_apply x
+
+end
 
 private theorem finitePlaceArtinHasExtension_of_norm
     {A B C D : Type}
@@ -769,18 +761,15 @@ private theorem finitePlaceNormLocalizedArtin_naturality
         (K := K) (L := L) (K' := K')
         v W w hW y).symm
 
+section
+
+variable {K' L' : Type} [Field K'] [NumberField K'] [Field L'] [NumberField L'] [NumberField L]
+  [Algebra K K'] [Algebra K' L'] [Algebra K L'] [IsScalarTower K K' L'] [Algebra L L']
+  [IsScalarTower K L L'] [IsAbelianGalois K' L'] (v : HeightOneSpectrum (𝓞 K))
+  (W : HeightOneSpectrum (𝓞 K'))
+
 private theorem
     finitePlaceLocalArtinMonoidHom_norm_restriction_localized
-    {K' L' : Type}
-    [Field K'] [NumberField K']
-    [Field L'] [NumberField L']
-    [NumberField L]
-    [Algebra K K'] [Algebra K' L'] [Algebra K L']
-    [IsScalarTower K K' L']
-    [Algebra L L'] [IsScalarTower K L L']
-    [IsAbelianGalois K' L']
-    (v : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v)
     (w : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L)
@@ -823,16 +812,6 @@ private theorem
 /-- The local Artin maps attached to specified finite places commute
 with the norm between their concrete adic completions. -/
 theorem finitePlaceLocalArtinMonoidHom_norm_restriction
-    {K' L' : Type}
-    [Field K'] [NumberField K']
-    [Field L'] [NumberField L']
-    [NumberField L]
-    [Algebra K K'] [Algebra K' L'] [Algebra K L']
-    [IsScalarTower K K' L']
-    [Algebra L L'] [IsScalarTower K L L']
-    [IsAbelianGalois K' L']
-    (v : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v)
     (w : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L)
@@ -916,19 +895,20 @@ theorem finitePlaceLocalArtinMonoidHom_norm_restriction
         (finitePlaceArtinConcreteNormUnits
           (K := K) (K' := K') v W hW x)
 
+end
+
 end FinitePlaceNormRestrictionInstances
+
+section
+
+variable {K' L' : Type} [Field K'] [NumberField K'] [Field L'] [NumberField L'] [Algebra K K']
+  [Algebra K' L'] [Algebra K L'] [IsScalarTower K K' L'] [Algebra L L'] [IsScalarTower K L L']
+  [IsAbelianGalois K' L']
 
 /-- The local Artin map attached to specified finite places carries a
 local norm to the restriction of the upper Artin element. -/
 theorem
     finitePlaceArtinMonoidHomOfExtension_norm_restriction
-    {K' L' : Type}
-    [Field K'] [NumberField K']
-    [Field L'] [NumberField L']
-    [Algebra K K'] [Algebra K' L'] [Algebra K L']
-    [IsScalarTower K K' L']
-    [Algebra L L'] [IsScalarTower K L L']
-    [IsAbelianGalois K' L']
     (v : HeightOneSpectrum (𝓞 K))
     (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v)
@@ -1044,13 +1024,6 @@ local Artin
 factor is the lower local Artin factor after the norm between the
 corresponding concrete adic completions. -/
 theorem chosenFinitePlaceArtinMonoidHom_norm_restriction
-    {K' L' : Type}
-    [Field K'] [NumberField K']
-    [Field L'] [NumberField L']
-    [Algebra K K'] [Algebra K' L'] [Algebra K L']
-    [IsScalarTower K K' L']
-    [Algebra L L'] [IsScalarTower K L L']
-    [IsAbelianGalois K' L']
     (W : HeightOneSpectrum (𝓞 K')) :
     let v := finitePlaceBelow (K := K) W
     letI : Algebra (v.adicCompletion K) (W.adicCompletion K') :=
@@ -1166,13 +1139,6 @@ explicitly.  This form keeps the equality proof in the completion
 algebra and avoids dependent elimination through adic-completion
 types. -/
 theorem chosenFinitePlaceArtinMonoidHom_norm_restriction_of_below_eq
-    {K' L' : Type}
-    [Field K'] [NumberField K']
-    [Field L'] [NumberField L']
-    [Algebra K K'] [Algebra K' L'] [Algebra K L']
-    [IsScalarTower K K' L']
-    [Algebra L L'] [IsScalarTower K L L']
-    [IsAbelianGalois K' L']
     (v : HeightOneSpectrum (𝓞 K))
     (W : HeightOneSpectrum (𝓞 K'))
     (hW : finitePlaceBelow (K := K) W = v) :
@@ -1191,6 +1157,8 @@ theorem chosenFinitePlaceArtinMonoidHom_norm_restriction_of_below_eq
   exact
     chosenFinitePlaceArtinMonoidHom_norm_restriction
       (K := K) (L := L) (K' := K') (L' := L') W
+
+end
 
 end Reciprocity
 end GlobalClassFieldTheory

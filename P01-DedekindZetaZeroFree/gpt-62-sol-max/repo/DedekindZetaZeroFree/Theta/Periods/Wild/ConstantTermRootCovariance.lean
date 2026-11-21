@@ -1,5 +1,6 @@
 module
 
+public import DedekindZetaZeroFree.Theta.Profiles.FourierRootCovariance
 public import DedekindZetaZeroFree.Theta.Periods.Wild.GlobalTensorEvaluation
 public import DedekindZetaZeroFree.Theta.Whittaker.Borel.ConstantIntegralInvariance
 
@@ -51,7 +52,7 @@ theorem globalMap_root (q : W) (t : q.val.adicCompletion F)
           (KPRationalAdelicSplitting.localAdele F (Sum.inr q.val) t)) := by
   have hh := globalMap_finite D W s hW x q
     (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) t) z g
-  simpa only [finite_root_injection (R := R)] using hh
+  simpa only [MomentSources.finite_root_injection (R := R)] using hh
 
 theorem constant_integral_root (q : W) (t : q.val.adicCompletion F)
     (z : AmbientTensor F W (fiber D W))

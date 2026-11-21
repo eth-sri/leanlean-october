@@ -15,7 +15,6 @@ private lemma schur_square_expand {κ : Type*} [Fintype κ]
     (w * ‖∑ j, b j * a j‖ ^ 2 : ℂ) =
       ∑ j, ∑ k, (b j * conj (b k)) * ((w : ℂ) * a j * conj (a k)) := by
   classical
-  push_cast
   rw [← Complex.mul_conj', map_sum]
   simp only [Finset.mul_sum, Finset.sum_mul, map_mul]
   rw [Finset.sum_comm]
@@ -176,7 +175,6 @@ lemma phase_neg (F : Type) [Field F] [NumberField F]
   congr 1
   apply Finset.prod_congr rfl
   intro v hv
-  change ((e v (-(x.2 v)) : Circle) : ℂ) = _
   rw [AddChar.map_neg_eq_inv, Circle.coe_inv_eq_conj]
 
 lemma matrix_dual {ι κ : Type*} [Fintype ι] [Fintype κ]

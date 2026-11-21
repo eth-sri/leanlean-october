@@ -3,8 +3,20 @@ module
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.FrequencyRightBounds
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.FrequencyConvexity
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.KernelRegularity
-public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.KernelGrowth
+public import DedekindZetaZeroFree.ZeroDetection.Smoothing.Poisson.ExceptionalPrefix
+public import DedekindZetaZeroFree.ZeroDetection.ExceptionalZeros.Poisson.RightHalfPlane
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRowCount
+public import DedekindZetaZeroFree.ZeroDetection.Conductors.Poisson.MaximalSieve
+public import DedekindZetaZeroFree.ZeroDetection.ExceptionalZeros.Poisson.CountCore
+public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.AnalyticContinuation
+public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.Reciprocals.LogarithmicDisks
+public import DedekindZetaZeroFree.Analysis.Complex.ThreeCircles
+public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.Reciprocals.EulerBounds
+public import DedekindZetaZeroFree.Analysis.ContourIntegration.KernelWeightIntegration
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.KernelHolomorphy
 public import DedekindZetaZeroFree.Analysis.ContourIntegration.SimplePoleShift
+
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.KernelNorm
 
 @[expose] public section
 
@@ -33,14 +45,9 @@ theorem right_bounds :
   obtain ⟨C3, h3, H3⟩ := RawRightHecke31.recipe_L_right D 2 (by norm_num)
   refine ⟨max C1 (max C2 C3), lt_max_of_lt_left h1, fun u w hw => ?_, fun u ξ hξ => ?_,
     fun z hz => ?_⟩
-  · obtain ⟨a, b, c⟩ := H1 u w hw
-    exact ⟨a, b.trans (le_max_left _ _), c.trans (le_max_left _ _)⟩
-  · obtain ⟨a, b, c⟩ := H2 u ξ hξ
-    exact ⟨a, b.trans ((le_max_left _ _).trans (le_max_right _ _)),
-      c.trans ((le_max_left _ _).trans (le_max_right _ _))⟩
-  · obtain ⟨a, b, c⟩ := H3 z hz
-    exact ⟨a, b.trans ((le_max_right _ _).trans (le_max_right _ _)),
-      c.trans ((le_max_right _ _).trans (le_max_right _ _))⟩
+  · simp_all
+  · simp_all
+  simp_all
 
 private lemma mem_OmegaStar_line (p : EulerDomain.Coordinates) (h1 : p.1.re = 4)
     (h2 : p.2.1.re = 4) (h3 : 1 / 6 < p.2.2.re) : p ∈ EulerDomain.OmegaStar := by
@@ -49,11 +56,7 @@ private lemma mem_OmegaStar_line (p : EulerDomain.Coordinates) (h1 : p.1.re = 4)
     5 < 6 * p.1.re + 6 * p.2.2.re ∧ 1 / 2 < p.1.re ∧ 2 < 3 * p.1.re ∧
     5 / 2 < 3 * p.1.re + p.2.1.re
   rw [h1, h2]
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
-
-private lemma freq_pos (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe u := by
-  rw [← rawFrequency_norm D u]
-  exact_mod_cast D.recipe.A.exteriorNorm_pos _
+  grind only
 
 theorem rawEuler_right (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe) (ξ w z : ℂ), ξ.re = 4 → w.re = 4 → 2 ≤ z.re →
@@ -91,12 +94,8 @@ theorem rawKernel_analytic_z (u : Frequency D.recipe) (hu : u ≠ principalFrequ
 private lemma exp_norm_bound (ξ : ℂ) (v s B : ℝ) (hB : (ξ.re + v - 1) ^ 2 ≤ B) :
     ‖Complex.exp ((ξ + ((v : ℂ) + (s : ℂ) * I) - 1) ^ 2)‖ ≤
       Real.exp B * Real.exp (-(ξ.im + s) ^ 2) := by
-  rw [Complex.norm_exp]
-  have hre : ((ξ + ((v : ℂ) + (s : ℂ) * I) - 1) ^ 2).re =
-      (ξ.re + v - 1) ^ 2 - (ξ.im + s) ^ 2 := by
-    simp [pow_two] <;> ring
-  rw [hre, ← Real.exp_add]
-  exact Real.exp_le_exp.mpr (by linarith)
+  rw [RawKernelNorm.norm_exp_sq_line]
+  gcongr
 
 private lemma key_ineq (A B Cc s : ℝ) (hA : 1 ≤ A) (hB : 1 ≤ B) (hC : 1 ≤ Cc)
     (hAs : A ≤ (1 + |s|) * Cc) :
@@ -128,38 +127,9 @@ private lemma key_ineq (A B Cc s : ℝ) (hA : 1 ≤ A) (hB : 1 ≤ B) (hC : 1 �
     _ ≤ (2 * Cc ^ 2) * (B ^ 2 * Cc ^ 2) := mul_le_mul_of_nonneg_right h2 (by positivity)
     _ = 2 * (Cc ^ 4 * B ^ 2) := by ring
 
-private lemma hI_inv_sq : Integrable (fun x : ℝ => ((1 + |x|) ^ 2)⁻¹) := by
-  have h0 : Integrable (fun x : ℝ => (1 + |x|) ^ (-2 : ℝ)) := by
-    have := integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by norm_num)
-    simpa [Real.norm_eq_abs] using this
-  refine h0.congr (Filter.Eventually.of_forall fun x => ?_)
-  show (1 + |x|) ^ (-2 : ℝ) = ((1 + |x|) ^ 2)⁻¹
-  rw [Real.rpow_neg (by positivity), Real.rpow_two]
-
-private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNorm D.recipe u)
-    (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ) (hZ : 0 < Z) :
-    ‖rawKernel D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I) Z‖ =
-      Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * v + Scales.yExponent * (y - 1)) *
-        frequencyNorm D.recipe u ^ (-v) *
-        WeightConvolution.weightModulus D ξ v y p *
-        ‖rawFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
-          ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
-  unfold rawKernel
-  have hZc : (0 : ℝ) < Z := hZ
-  have hqc : (0 : ℝ) < frequencyNorm D.recipe u := hq
-  have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
-    intro A B C X E R; ring
-  have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
-    intro A E X R; simp only [norm_mul]
-  rw [hre, hkey]
-  unfold WeightConvolution.weightModulus
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZc, Complex.norm_cpow_eq_rpow_re_of_pos hqc]
-  simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
-    Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.add_im, Complex.sub_im,
-    Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, Complex.neg_im,
-    Complex.natCast_re, Complex.natCast_im, Complex.ofReal_natCast]
-  simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
-  try ring_nf
+private lemma hI_inv_sq : Integrable (fun x : ℝ => ((1 + |x|) ^ 2)⁻¹) :=
+  (KernelWeightIntegration.one_add_abs_rpow_integrable 2 (by norm_num)).congr
+    (Eventually.of_forall fun x => by dsimp; rw [Real.rpow_neg (by positivity), Real.rpow_two])
 
 private theorem rawFactor_norm_le (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe) (ξ w z : ℂ), ξ.re = 4 → w.re = 4 →
@@ -167,7 +137,7 @@ private theorem rawFactor_norm_le (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, hp, hm, hL⟩ := right_bounds D
   obtain ⟨CE, hCE, hE⟩ := rawEuler_right D ε hε
   refine ⟨C * C * CE * C, by positivity, fun u ξ w z hξ hw hz => ?_⟩
-  have hq0 := freq_pos D u
+  have hq0 := RawKernelNorm.frequencyNorm_pos D u
   have e : ‖rawFactor D u ξ w z‖ = ‖D.recipe.L (6 * z)‖ * ‖(pkg D).plus u w‖ *
       ‖AllRowEuler.InitialSeparation.correctionProduct D.context (rawFrequency D u) ξ w z‖ *
       ‖((pkg D).minus u ξ)⁻¹‖ := by
@@ -200,12 +170,13 @@ private theorem rawKernel_bound_explicit (ε : ℝ) (hε : 0 < ε) :
   refine ⟨2 * Real.exp ((Scales.tailShift + 3) ^ 2) * |CM| * |CW| * Cf, by positivity, ?_⟩
   intro u Z hZ σ hσ t
   have hZ0 : 0 < Z := by linarith
-  have hq0 : 0 < frequencyNorm D.recipe u := freq_pos D u
+  have hq0 : 0 < frequencyNorm D.recipe u := RawKernelNorm.frequencyNorm_pos D u
   have hσ1 : 2 ≤ σ := hσ.1
   have hσ2 : σ ≤ Scales.tailShift := hσ.2
   obtain ⟨t1, t2, t3⟩ := t
   dsimp only
-  have hK := rawKernel_norm_eq D u hq0 ((4 : ℂ) + (t1 : ℂ) * I) σ 4 (t3, t2) Z hZ0
+  have hK := RawKernelNorm.norm_rawKernel D u ((4 : ℂ) + (t1 : ℂ) * I) σ 4 (t3, t2) Z hZ0
+  unfold Scales.kernelExponent at hK
   dsimp only at hK
   simp only [Complex.ofReal_ofNat] at hK
   have hre1 : ((4 : ℂ) + (t1 : ℂ) * I).re = 4 := by simp
@@ -307,7 +278,7 @@ theorem rawKernel_horizontal_tendsto_zero (u : Frequency D.recipe)
         rawKernel D u ξ w ((x : ℂ) + ((ε * T : ℝ) : ℂ) * I) Z) atTop (𝓝 0) := by
   obtain ⟨c, hc, h⟩ := rawKernel_bound_explicit D 1 one_pos
   have hZ0 : 0 < Z := by linarith
-  have hq0 : 0 < frequencyNorm D.recipe u := freq_pos D u
+  have hq0 : 0 < frequencyNorm D.recipe u := RawKernelNorm.frequencyNorm_pos D u
   obtain ⟨t1, rfl⟩ : ∃ t1 : ℝ, ξ = (4 : ℂ) + (t1 : ℂ) * I :=
     ⟨ξ.im, by apply Complex.ext <;> simp [hξ]⟩
   obtain ⟨t2, rfl⟩ : ∃ t2 : ℝ, w = (4 : ℂ) + (t2 : ℂ) * I :=
@@ -404,7 +375,7 @@ theorem triple_norm_le (ε : ℝ) (hε : 0 < ε) :
   refine ⟨c * I0 ^ 3 + 1, by positivity, ?_⟩
   intro u hu Z hZ
   have hZ0 : 0 < Z := by linarith
-  have hq0 : 0 < frequencyNorm D.recipe u := freq_pos D u
+  have hq0 : 0 < frequencyNorm D.recipe u := RawKernelNorm.frequencyNorm_pos D u
   have hRmem : Scales.tailShift ∈ Icc (2 : ℝ) Scales.tailShift := ⟨by norm_num [Scales.tailShift], le_rfl⟩
   obtain ⟨B, hBd⟩ : ∃ B : ℝ,
       B = Z ^ (Scales.kernelExponent 4 4 Scales.tailShift) * frequencyNorm D.recipe u ^ (-Scales.tailShift + ε) :=

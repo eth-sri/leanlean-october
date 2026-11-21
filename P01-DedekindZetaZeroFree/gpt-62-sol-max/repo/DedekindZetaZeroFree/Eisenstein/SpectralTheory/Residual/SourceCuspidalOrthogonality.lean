@@ -11,7 +11,6 @@ open MeasureTheory Filter
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.CuspidalCancellation renaming cleared_center_unique → cleared_center_unique
 open _root_.DedekindZetaZeroFree.KPBelowThresholdResolvent renaming eigen_nonneg → eigen_nonneg
 open KPGlobalResidualConstruction
@@ -62,7 +61,6 @@ theorem actual_cleared_center_orthogonal_cusp_eigentest
     R.adelicHaar R.adelic_isHaar level R rfl P H realization
   have hg := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
     R.adelicHaar R.adelic_isHaar rfl realization ι hι
-    (stageConclusions F ζ hζ C R P H U ι hι)
     KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen
     (fun _ hs => hs) f hf buffer χ source
   obtain ⟨r',hr',hb',hi',w',hw',he',hcenter',houtside'⟩ := hg.simple_germs c hc

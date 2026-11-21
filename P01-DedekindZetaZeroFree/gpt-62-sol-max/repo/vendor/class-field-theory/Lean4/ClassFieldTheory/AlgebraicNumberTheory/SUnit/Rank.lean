@@ -111,18 +111,15 @@ theorem torsion_eq_rootsOfUnity_range
         have hvpow :
             (v.valuation K ((x : Kˣ) : K)) ^ n = 1 := by
           rw [← map_pow, hxK, map_one]
-        exact (pow_eq_one_iff_left
-          (a := v.valuation K ((x : Kˣ) : K))
-          (Nat.ne_of_gt hnpos)).mp hvpow⟩
-    let u : (𝓞 K)ˣ := emptyEquivNumberFieldUnits y
-    have hufin : IsOfFinOrder u := by
-      exact (emptyEquivNumberFieldUnits (K := K)).toMonoidHom.isOfFinOrder
+        grind only [pow_eq_one_iff_left, Nat.ne_of_gt]⟩
+    let u := emptyEquivNumberFieldUnits y
+    have hufin : IsOfFinOrder u := (emptyEquivNumberFieldUnits (K := K)).toMonoidHom.isOfFinOrder
         ((show IsOfFinOrder y from by
           refine isOfFinOrder_iff_pow_eq_one.mpr ⟨n, hnpos, ?_⟩
           ext
           exact hxK))
     refine ⟨u, ?_, ?_⟩
-    · exact (CommGroup.mem_torsion (G := (𝓞 K)ˣ) u).2 hufin
+    · assumption
     · ext
       change
         (((emptyEquivNumberFieldUnits (K := K)).symm
@@ -172,11 +169,7 @@ theorem valuation_mk'_eq_exp_neg_count
           (IsLocalization.mk' K n d) ≠ 0 := by
     rw [FractionalIdeal.spanSingleton_ne_zero_iff,
       IsFractionRing.mk'_eq_div, ne_eq, div_eq_zero_iff, not_or]
-    exact
-      ⟨(map_ne_zero_iff (algebraMap (𝓞 K) K)
-          (IsFractionRing.injective (𝓞 K) K)).mpr hn,
-        map_ne_zero_of_mem_nonZeroDivisors _
-          (IsFractionRing.injective (𝓞 K) K) d.property⟩
+    simp_all
   have hcount :
       FractionalIdeal.count K v
           (FractionalIdeal.spanSingleton (𝓞 K)⁰
@@ -186,12 +179,12 @@ theorem valuation_mk'_eq_exp_neg_count
           (Associates.mk v.asIdeal).count
             (Associates.mk
               (Ideal.span {(d : 𝓞 K)} : Ideal (𝓞 K))).factors : ℤ) := by
-    exact FractionalIdeal.count_well_defined (K := K) v hx hI
+    apply FractionalIdeal.count_well_defined <;> assumption
   rw [v.valuation_of_mk', v.intValuation_if_neg hn,
     v.intValuation_if_neg (nonZeroDivisors.coe_ne_zero d), hcount]
   rw [div_eq_mul_inv, ← WithZero.exp_neg, ← WithZero.exp_add]
   congr
-  simp [sub_eq_add_neg, add_comm]
+  grind
 
 /-- The adic valuation of a field unit is the exponential of the
 negative exponent of its principal fractional ideal. -/
@@ -206,9 +199,9 @@ theorem valuation_eq_exp_neg_count
   have hn : n ≠ 0 := by
     intro hn0
     apply Units.ne_zero x
-    rw [← hnd, hn0, IsFractionRing.mk'_eq_div, map_zero, zero_div]
+    simp_all
   rw [← hnd]
-  exact valuation_mk'_eq_exp_neg_count (K := K) v hn d
+  apply valuation_mk'_eq_exp_neg_count <;> assumption
 
 /-- A field unit has valuation one exactly when its principal fractional
 ideal has exponent zero at the place. -/
@@ -639,38 +632,7 @@ theorem finrank :
     _ = (NumberField.Units.rank K : Cardinal) +
         (S.card : Cardinal) := by rw [add_comm]
 
-/-- The `S`-unit rank in quotient-by-torsion form. -/
-theorem finrank_modTorsion :
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-      NumberField.Units.rank K + S.card := by
-  calc
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-        Module.finrank ℤ (Additive (SUnitGroup (K := K) S)) := by
-      simpa using!
-        (finrank_quotient_torsion_eq
-          (M := Additive (SUnitGroup (K := K) S)))
-    _ = NumberField.Units.rank K + S.card :=
-      finrank (K := K) S
 
-/-- Cardinality form of the `S`-unit rank:
-`#S_infinite + #S_finite - 1`. -/
-theorem finrank_modTorsion_eq_card_infinitePlaces_add_card_sub_one :
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-      Fintype.card (NumberField.InfinitePlace K) + S.card - 1 := by
-  rw [finrank_modTorsion (K := K) S, NumberField.Units.rank]
-  have hpos :
-      0 < Fintype.card (NumberField.InfinitePlace K) :=
-    Fintype.card_pos
-  omega
 
 end Rank
 

@@ -1,14 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CompactAveraging.Cuspidality
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Casimir.L2GraphDomain
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CompactAveraging.Eigenfunctions
-public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CompactProbabilityExistence
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.GradientL2
-public import DedekindZetaZeroFree.Eisenstein.Residues.Spherical.LaplacianEigenCenters
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.SmoothSphericalAveraging
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.SphericalEigenfunctionDerivativeEnergy
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Spherical.L2Norms
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.NoncuspidalEigentests
 
 @[expose] public section
 
@@ -50,52 +43,22 @@ theorem exists_averaged_eigentest (f : KPSmoothActualFlowData.X F ζ hζ → ℂ
         KPGlobalResidualConstruction.IncomingFiberOrthogonality.AllCuspMeanZero
           F ζ hζ C R P H U Z ∧
         (z,a • z) ∈ (sourceLaplacian F ζ hζ C R P H U).graph := by
-  obtain ⟨ν,hν,hleft⟩ := ResidualCompactProbability.exists_probability F ζ hζ V
-  letI := hν
-  letI := hleft
-  have hr (γ : Gamma F ζ hζ) (g) : (f ∘ Q) (γ.val*g) = (f ∘ Q) g :=
-    KPMsGreenFlux.IntrinsicAveraging.pullback_rational f γ g
-  obtain ⟨Z,hZ⟩ := ResidualSphericalAverage.exists_smooth_average F ζ hζ V ν R P H
-    (f ∘ Q) hf hr hc
-  have hp (g) : originalScalar F ζ hζ V R P H Z (Q g) =
-      ResidualRawAverage.average F ζ hζ (K_U F ζ hζ V) ν (f ∘ Q) g := hZ g
-  have hcont : Continuous f := continuous_coinduced_dom.mpr hf.1
-  have hscalar : originalScalar F ζ hζ V R P H Z =
-      ResidualQuotientAverage.average F ζ hζ (K_U F ζ hζ V) ν f := by
-    funext x
-    induction x using Quotient.inductionOn with
-    | h g => exact hp g
-  have hZ2 : MemLp (originalScalar F ζ hζ V R P H Z) 2 R.quotientHaar := by
-    rw [hscalar]
-    exact ResidualQuotientAverage.average_memLp F ζ hζ (K_U F ζ hζ V)
-      (K_U_compact F ζ hζ V) ν R f hcont h2
-  have hlift : originalScalar F ζ hζ V R P H Z ∘ Q =
-      ResidualRawAverage.average F ζ hζ (K_U F ζ hζ V) ν (f ∘ Q) := funext hp
-  have hZe (g) : KPMsGreenFlux.casimir F ζ hζ
-      (originalScalar F ζ hζ V R P H Z ∘ Q) g = a*originalScalar F ζ hζ V R P H Z (Q g) := by
-    rw [hlift,hp]
-    exact ResidualAverageEigen.average_native_eigen F ζ hζ (K_U F ζ hζ V)
-      (K_U_compact F ζ hζ V) ν (f ∘ Q) hf a he g
-  have hall := spherical_native_eigen_all_derivatives F ζ hζ C R P H U Z hZ2 a hZe
-  have hg := ResidualGradientL2.squareFinite_of_first_derivatives F ζ hζ V R P H Z
-    (fun b => hall [b])
-  have h3 := ResidualSphericalThreeL2.threeL2_of_native F ζ hζ V R P H Z a hZ2 hg hZe
-  obtain ⟨z,hrep,hgraph⟩ := ResidualAverageDomain.graph_eigen_of_threeL2
-    F ζ hζ V R P H canonicalRealization Z a h3
-    (ResidualSectionMetric.section_eigen_of_native F ζ hζ V R P H Z a hZe)
-  refine ⟨ν,hν,hleft,Z,z,hrep,hp,?_,hgraph⟩
+  obtain ⟨ν, hν, hleft, Z, z, hrep, hp, hgraph⟩ :=
+    exists_averaged_graph_eigentest F ζ hζ C R P H U f hf hc h2 a he
+  let := hν
+  let := hleft
+  refine ⟨ν, hν, hleft, Z, z, hrep, hp, ?_, hgraph⟩
   apply ResidualCuspBoundary.allCuspMeanZero_of_original_upper_zero
   let A := H.atlas V
   let i : Fin A.componentCount := ⟨0,A.positive_componentCount⟩
   let j : KPMsGreenFlux.Cusps A := ⟨i,⟨0,(A.cuspAtlas i).positive_cuspCount⟩⟩
   have havg := ResidualAverageCusp.upperZero_average A j (K_U F ζ hζ V)
-    (K_U_compact F ζ hζ V) ν (f ∘ Q) hf.1 hr hz
+    (K_U_compact F ζ hζ V) ν (f ∘ Q) hf.1 (KPMsGreenFlux.IntrinsicAveraging.pullback_rational f) hz
   intro g
   change (∫ q : KPAdditiveQuotient F, (originalScalar F ζ hζ V R P H Z ∘ Q)
     (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q)*g)
     ∂(KPWildKernelUpperBound.quotientHaar F)) = 0
-  rw [hlift]
-  exact havg g
+  simpa only [Function.comp_apply, hp] using havg g
 end DedekindZetaZeroFree.FourierContinuation.ResidualAveragedEigentest
 
 end

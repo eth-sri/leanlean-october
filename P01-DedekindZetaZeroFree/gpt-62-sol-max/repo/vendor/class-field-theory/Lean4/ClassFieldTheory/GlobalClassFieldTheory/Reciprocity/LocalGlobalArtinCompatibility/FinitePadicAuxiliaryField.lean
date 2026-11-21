@@ -96,22 +96,21 @@ noncomputable local instance finitePadicAuxiliaryExtensionQuotientIsMulCommutati
               IsMulCommutative (Gal(L / K))).is_comm.comm
                 (e x) (e y)⟩ }
 
+section
+
+variable (p : Nat.Primes) (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
+include p τ
+
 /-- The concrete auxiliary fixed field attached to a simultaneous
 finite/cyclotomic lift. -/
-noncomputable def numberFieldTowerFinitePadicCyclicFixedField
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
-    IntermediateField ℚ (SeparableClosure ℚ) := by
-  exact
-    IntermediateField.fixedField
+noncomputable def numberFieldTowerFinitePadicCyclicFixedField :
+    IntermediateField ℚ (SeparableClosure ℚ) := IntermediateField.fixedField
       (numberFieldTowerFinitePadicCyclicFixedSubgroup
         (K := K) (L := L) p τ).toSubgroup
 
 /-- A nonzero-degree lift produces a genuine number field: its
 concrete fixed field is finite over `ℚ`. -/
 theorem numberFieldTowerFinitePadicCyclicFixedField_finiteDimensional
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (hτ :
       numberFieldTowerBaseSubgroupPadicCyclotomicDegree
           (K := K) (L := L) p τ ≠
@@ -131,15 +130,11 @@ theorem numberFieldTowerFinitePadicCyclicFixedField_finiteDimensional
   change IsOpen
     (IntermediateField.fixedField S.toSubgroup).fixingSubgroup.carrier
   rw [InfiniteGalois.fixingSubgroup_fixedField S]
-  exact
-    numberFieldTowerFinitePadicCyclicFixedSubgroup_isOpen
-      (K := K) (L := L) p τ hτ
+  apply numberFieldTowerFinitePadicCyclicFixedSubgroup_isOpen <;> assumption
 
 /-- The compatible embedded copy of `K` lies in every auxiliary
 cyclic fixed field. -/
-theorem numberFieldTowerBaseField_le_finitePadicCyclicFixedField
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+theorem numberFieldTowerBaseField_le_finitePadicCyclicFixedField :
     numberFieldTowerBaseField K L ≤
       numberFieldTowerFinitePadicCyclicFixedField
         (K := K) (L := L) p τ := by
@@ -160,9 +155,7 @@ theorem numberFieldTowerBaseField_le_finitePadicCyclicFixedField
 
 /-- The compatible embedding of the original base field into the
 genuine auxiliary fixed field. -/
-noncomputable def numberFieldTowerFinitePadicAuxiliaryBaseEmbedding
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+noncomputable def numberFieldTowerFinitePadicAuxiliaryBaseEmbedding :
     K →ₐ[ℚ]
       LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ)
@@ -183,8 +176,6 @@ noncomputable def numberFieldTowerFinitePadicAuxiliaryBaseEmbedding
 into the rational separable closure. -/
 @[simp]
 theorem numberFieldTowerFinitePadicAuxiliaryBaseEmbedding_coe
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (x : K) :
     ((numberFieldTowerFinitePadicAuxiliaryBaseEmbedding
         (K := K) (L := L) p τ x :
@@ -199,8 +190,6 @@ theorem numberFieldTowerFinitePadicAuxiliaryBaseEmbedding_coe
 /-- The compatible copy of the original top field lies in the
 auxiliary compositum fixed field. -/
 theorem numberFieldTowerTopField_mem_finitePadicAuxiliaryTopField
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     {x : SeparableClosure ℚ}
     (hx : x ∈ numberFieldInRationalSeparableClosure L) :
     x ∈
@@ -217,22 +206,17 @@ theorem numberFieldTowerTopField_mem_finitePadicAuxiliaryTopField
     (S.toSubgroup ⊓ T.toSubgroup)
   rw [IntermediateField.mem_fixedField_iff]
   intro σ hσ
-  have hσT : σ ∈ T.toSubgroup :=
+  have hσT :=
     hσ.2
   change
     σ ∈
       (numberFieldInRationalSeparableClosure L).fixingSubgroup
         at hσT
-  exact
-    (IntermediateField.mem_fixingSubgroup_iff
-      (numberFieldInRationalSeparableClosure L) σ).1
-      hσT x hx
+  simp_all
 
 /-- The compatible embedding of the original top field into the
 auxiliary compositum fixed field. -/
-noncomputable def numberFieldTowerFinitePadicAuxiliaryTopEmbedding
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+noncomputable def numberFieldTowerFinitePadicAuxiliaryTopEmbedding :
     L →ₐ[ℚ]
       LocalClassFieldTheory.abstractRelativeFixedField
         ℚ (SeparableClosure ℚ)
@@ -254,8 +238,6 @@ noncomputable def numberFieldTowerFinitePadicAuxiliaryTopEmbedding
 embedding into the rational separable closure. -/
 @[simp]
 theorem numberFieldTowerFinitePadicAuxiliaryTopEmbedding_coe
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (x : L) :
     ((numberFieldTowerFinitePadicAuxiliaryTopEmbedding
         (K := K) (L := L) p τ x :
@@ -270,8 +252,6 @@ theorem numberFieldTowerFinitePadicAuxiliaryTopEmbedding_coe
 /-- The compatible base and top embeddings form the actual
 base-change square inside the rational separable closure. -/
 theorem numberFieldTowerFinitePadicAuxiliaryEmbedding_algebraMap
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (x : K) :
     ((numberFieldTowerFinitePadicAuxiliaryTopEmbedding
         (K := K) (L := L) p τ (algebraMap K L x) :
@@ -289,6 +269,8 @@ theorem numberFieldTowerFinitePadicAuxiliaryEmbedding_algebraMap
       SeparableClosure ℚ) := by
   rfl
 
+end
+
 noncomputable instance
     numberFieldTowerFinitePadicAuxiliary_baseAlgebra
     (p : Nat.Primes)
@@ -297,9 +279,7 @@ noncomputable instance
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ)
         (numberFieldTowerFinitePadicCyclicFixedSubgroup
-          (K := K) (L := L) p τ)) := by
-  exact
-    (numberFieldTowerFinitePadicAuxiliaryBaseEmbedding
+          (K := K) (L := L) p τ)) := (numberFieldTowerFinitePadicAuxiliaryBaseEmbedding
       (K := K) (L := L) p τ).toRingHom.toAlgebra
 
 instance
@@ -310,9 +290,7 @@ instance
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ)
         (numberFieldTowerFinitePadicCyclicFixedSubgroup
-          (K := K) (L := L) p τ)) := by
-  exact
-    IsScalarTower.of_algebraMap_eq'
+          (K := K) (L := L) p τ)) := IsScalarTower.of_algebraMap_eq'
       (numberFieldTowerFinitePadicAuxiliaryBaseEmbedding
         (K := K) (L := L) p τ).comp_algebraMap.symm
 
@@ -324,9 +302,7 @@ noncomputable instance
       (LocalClassFieldTheory.abstractRelativeFixedField
         ℚ (SeparableClosure ℚ)
         (numberFieldTowerFinitePadicAuxiliaryCompositumSubextension
-          (K := K) (L := L) p τ).below) := by
-  exact
-    (numberFieldTowerFinitePadicAuxiliaryTopEmbedding
+          (K := K) (L := L) p τ).below) := (numberFieldTowerFinitePadicAuxiliaryTopEmbedding
       (K := K) (L := L) p τ).toRingHom.toAlgebra
 
 instance
@@ -337,9 +313,7 @@ instance
       (LocalClassFieldTheory.abstractRelativeFixedField
         ℚ (SeparableClosure ℚ)
         (numberFieldTowerFinitePadicAuxiliaryCompositumSubextension
-          (K := K) (L := L) p τ).below) := by
-  exact
-    IsScalarTower.of_algebraMap_eq'
+          (K := K) (L := L) p τ).below) := IsScalarTower.of_algebraMap_eq'
       (numberFieldTowerFinitePadicAuxiliaryTopEmbedding
         (K := K) (L := L) p τ).comp_algebraMap.symm
 
@@ -389,11 +363,14 @@ instance
     numberFieldTowerFinitePadicAuxiliaryEmbedding_algebraMap
       (K := K) (L := L) p τ x
 
+section
+
+variable (p : Nat.Primes) (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
+include p τ
+
 /-- The genuine auxiliary fixed field is Galois over the original
 base field through the compatible embedding above. -/
-theorem numberFieldTowerFinitePadicAuxiliaryBase_isGalois
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+theorem numberFieldTowerFinitePadicAuxiliaryBase_isGalois :
     IsGalois K
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ)
@@ -445,9 +422,7 @@ theorem numberFieldTowerFinitePadicAuxiliaryBase_isGalois
 
 /-- The distinguished absolute lift, regarded as an element of the
 auxiliary base subgroup. -/
-noncomputable def numberFieldTowerFinitePadicAuxiliarySubgroupLift
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+noncomputable def numberFieldTowerFinitePadicAuxiliarySubgroupLift :
     (numberFieldTowerFinitePadicCyclicFixedSubgroup
       (K := K) (L := L) p τ).toSubgroup :=
   ⟨τ.1,
@@ -456,9 +431,7 @@ noncomputable def numberFieldTowerFinitePadicAuxiliarySubgroupLift
 
 /-- The actual automorphism of the auxiliary compositum induced by
 the distinguished simultaneous finite/cyclotomic lift. -/
-noncomputable def numberFieldTowerFinitePadicAuxiliaryAutomorphism
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+noncomputable def numberFieldTowerFinitePadicAuxiliaryAutomorphism :
     let P :=
       numberFieldTowerFinitePadicAuxiliaryCompositumSubextension
         (K := K) (L := L) p τ
@@ -493,8 +466,6 @@ noncomputable def numberFieldTowerFinitePadicAuxiliaryAutomorphism
 /-- On the common separable closure, the auxiliary automorphism acts
 by the original distinguished ambient lift. -/
 theorem numberFieldTowerFinitePadicAuxiliaryAutomorphism_apply_val
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (x :
       LocalClassFieldTheory.abstractRelativeFixedField
         ℚ (SeparableClosure ℚ)
@@ -526,9 +497,7 @@ theorem numberFieldTowerFinitePadicAuxiliaryAutomorphism_apply_val
 /-- Restricting the auxiliary automorphism through the actual
 base-change square recovers the finite quotient coordinate of the
 distinguished lift. -/
-theorem numberFieldTowerFinitePadicAuxiliaryAutomorphism_restriction
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+theorem numberFieldTowerFinitePadicAuxiliaryAutomorphism_restriction :
     ((AlgEquiv.restrictNormalHom L).comp
         (AlgEquiv.restrictScalarsHom K))
         (numberFieldTowerFinitePadicAuxiliaryAutomorphism
@@ -570,14 +539,19 @@ theorem numberFieldTowerFinitePadicAuxiliaryAutomorphism_restriction
         (numberFieldTowerExtensionQuotientEquivGaloisGroup_mk_apply
           (K := K) (L := L) τ x).symm
 
+end
+
+section
+
+variable (v : HeightOneSpectrum (𝓞 K)) (p : Nat.Primes)
+  (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
+include v p τ
+
 /-- Restriction of the chosen separable-closure place to the genuine
 auxiliary base field.  This is an exact extension of the original
 finite place of `K`, not merely an equivalent valuation. -/
 noncomputable def
-    numberFieldTowerFinitePadicAuxiliaryBasePlaceExtension
-    (v : HeightOneSpectrum (𝓞 K))
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+    numberFieldTowerFinitePadicAuxiliaryBasePlaceExtension :
     AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v)
       (LocalClassFieldTheory.abstractFixedField
@@ -604,10 +578,7 @@ noncomputable def
 auxiliary compositum.  Its restriction to `K` agrees exactly with the
 original normalized finite absolute value. -/
 noncomputable def
-    numberFieldTowerFinitePadicAuxiliaryTopPlaceExtension
-    (v : HeightOneSpectrum (𝓞 K))
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
+    numberFieldTowerFinitePadicAuxiliaryTopPlaceExtension :
     AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v)
       (LocalClassFieldTheory.abstractRelativeFixedField
@@ -634,9 +605,6 @@ noncomputable def
 lies above the centre of the same place on the auxiliary base field. -/
 theorem
     numberFieldTowerFinitePadicAuxiliaryTopPlace_below
-    (v : HeightOneSpectrum (𝓞 K))
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (hτ :
       numberFieldTowerBaseSubgroupPadicCyclotomicDegree
           (K := K) (L := L) p τ ≠
@@ -756,6 +724,8 @@ theorem
     mem_finitePlaceExtensionCentreIdeal_iff,
     mem_finitePlaceExtensionCentreIdeal_iff]
   rfl
+
+end
 
 /-- Evaluation of the distinguished auxiliary automorphism through the
 restricted top-field place.  Isolating this coercion calculation prevents the
@@ -1393,14 +1363,17 @@ theorem
     hq, hσ,
     Subgroup.map_top_of_surjective e.toMonoidHom e.surjective]
 
+section
+
+variable (p : Nat.Primes) (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
+include p
+
 /-- If the finite quotient coordinate of a lift generates the whole
 finite Galois quotient, then its cyclic preimage together with the
 top-field subgroup generates the whole embedded absolute Galois
 group. -/
 theorem
     numberFieldTowerFinitePadicCyclicPreimage_sup_extensionSubgroup_eq_top
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (hgenerate :
       Subgroup.closure
           ({numberFieldTowerFiniteQuotientCoordinate
@@ -1535,8 +1508,6 @@ fixed subgroup together with the subgroup fixing `L` generates the
 subgroup fixing `K`. -/
 theorem
     numberFieldTowerFinitePadicCyclicFixedSubgroup_sup_topSubgroup
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (hgenerate :
       Subgroup.closure
           ({numberFieldTowerFiniteQuotientCoordinate
@@ -1585,8 +1556,6 @@ theorem
 over the compatible embedded copy of `K`. -/
 theorem
     numberFieldTowerFinitePadicCyclicFixedField_inf_topField
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (hgenerate :
       Subgroup.closure
           ({numberFieldTowerFiniteQuotientCoordinate
@@ -1636,8 +1605,6 @@ finite/cyclotomic lift: the intersection of the two fixing subgroups
 already fixes `L`, hence their fixed-field compositum contains `L`. -/
 theorem
     numberFieldTowerTopField_le_finitePadicCyclicFixedField_sup_padicCyclotomicField
-    (p : Nat.Primes)
-    (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (n : ℕ) (hn : 0 < n)
     (hdegree :
       numberFieldTowerBaseSubgroupPadicCyclotomicDegree
@@ -1721,6 +1688,8 @@ theorem
       (F ⊔ C)]
   exact
     IntermediateField.fixedField_le hfixing
+
+end
 
 /-- For a finite-place automorphism generating `Gal(L/K)`, construct
 the genuine auxiliary number field used in the cyclotomic reduction.

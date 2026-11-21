@@ -75,10 +75,13 @@ instance extensionInertiaWithin_normal (D : DegreeData G)
   rw [extensionInertiaWithin]
   infer_instance
 
-theorem extensionInertiaWithin_le_normalizedDegree_ker
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup) :
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+include D K
+
+theorem extensionInertiaWithin_le_normalizedDegree_ker :
     D.extensionInertiaWithin K.field L hLK ≤
       (D.normalizedDegree K).toMonoidHom.ker := by
   intro x hx
@@ -86,9 +89,7 @@ theorem extensionInertiaWithin_le_normalizedDegree_ker
   exact hx.2
 
 /-- The factorized map `d_K : G(\widetilde L|K) → ℤ̂`. -/
-def extensionNormalizedDegree (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+def extensionNormalizedDegree
     [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
     (K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) →* ZHatMul :=
   QuotientGroup.lift (D.extensionInertiaWithin K.field L hLK)
@@ -100,14 +101,14 @@ Establishes the identity `D.extensionNormalizedDegree K L hLK (QuotientGroup.mk 
 D.normalizedDegree K k`.
 -/
 @[simp]
-theorem extensionNormalizedDegree_mk (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+theorem extensionNormalizedDegree_mk
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     (k : K.field.toSubgroup) :
     D.extensionNormalizedDegree K L hLK (QuotientGroup.mk k) =
       D.normalizedDegree K k :=
   rfl
+
+end
 
 /-- Restriction from `G(\widetilde L|K)` to `G(L|K)`. -/
 def extensionRestriction (D : DegreeData G) (K L : ClosedSubgroup G)
@@ -131,11 +132,15 @@ theorem extensionRestriction_mk (D : DegreeData G)
       QuotientGroup.mk k :=
   rfl
 
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+include D K L hLK
+
 /-- The semigroup `Frob(\widetilde L|K)`: elements whose normalized
 degree is a strictly positive natural. -/
-def FrobeniusElements (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+def FrobeniusElements
     [hLnormal : (extensionSubgroup K.field L hLK).Normal] : Type u :=
   {σ : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK //
     ∃ n : ℕ, 0 < n ∧
@@ -143,25 +148,18 @@ def FrobeniusElements (D : DegreeData G)
         (Multiplicative.ofAdd (1 : ZHat)) ^ n}
 
 /-- The restriction map occurring in the finite degree-quotient decomposition. -/
-def frobeniusRestriction (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+def frobeniusRestriction
     [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
     D.FrobeniusElements K L hLK →
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) :=
   fun σ => D.extensionRestriction K.field L hLK σ.1
 
- def normalizedExtensionImageAdd (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup) : AddSubgroup ZHat :=
+ def normalizedExtensionImageAdd : AddSubgroup ZHat :=
   Subgroup.toAddSubgroup'
     ((extensionSubgroup K.field L hLK).map
       (D.normalizedDegree K).toMonoidHom)
 
 private theorem normalizedExtensionImageAdd_index_ne_zero
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] :
     (D.normalizedExtensionImageAdd K L hLK).index ≠ 0 := by
   let E := extensionSubgroup K.field L hLK
@@ -182,9 +180,7 @@ private theorem normalizedExtensionImageAdd_index_ne_zero
 
 /-- **the finite degree-quotient decomposition.** For a finite Galois extension `L | K`, restriction
 maps the Frobenius semigroup onto `G(L|K)`. -/
-theorem frobeniusRestriction_surjective (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+theorem frobeniusRestriction_surjective
     [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     [hLfinite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] :
     Function.Surjective (D.frobeniusRestriction K L hLK) := by
@@ -227,6 +223,8 @@ theorem frobeniusRestriction_surjective (D : DegreeData G)
   change (s * l)⁻¹ * s ∈ extensionSubgroup K.field L hLK
   simpa [mul_inv_rev, mul_assoc] using
     (extensionSubgroup K.field L hLK).inv_mem hlE
+
+end
 
 end DegreeData
 

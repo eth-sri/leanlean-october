@@ -17,7 +17,7 @@ theorem conductor_real_pos
     exact_mod_cast abs_pos.mpr (NumberField.discr_ne_zero F)
   have hm' : 0 < (Ideal.absNorm m : ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hm)
-  exact ⟨mul_pos hd hm', by simp only [Complex.ofReal_mul, Complex.ofReal_intCast,
+  exact ⟨mul_pos hd hm', by simp only [Complex.ofReal_intCast,
     Complex.ofReal_natCast]⟩
 
 theorem completed_prefactor_eq_kappa

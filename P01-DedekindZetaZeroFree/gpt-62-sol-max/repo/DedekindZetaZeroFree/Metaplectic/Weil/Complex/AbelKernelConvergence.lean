@@ -64,7 +64,7 @@ private lemma EK_re_le_zero (β a u ξ : ℂ) (ε : ℝ) (hε : 0 < ε) :
     simp [Complex.sub_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
     linarith
   have hP : 0 ≤ ((ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)).re := by
-    simp [Complex.sub_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
+    simp [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
     linarith
   have h1 : ((-(Real.pi : ℂ) ^ 2 * ((β * u * ξ).re : ℂ) ^ 2 /
       ((ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)))).re ≤ 0 := by
@@ -163,7 +163,7 @@ private lemma EK_zero (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
   rw [hRe]
   unfold EK
   push_cast
-  simp only [Complex.ofReal_zero, zero_sub, zero_add]
+  simp only [zero_sub, zero_add]
   rw [div_neg_eq_neg_div, div_eq_mul_inv, div_eq_mul_inv]
   simp only [mul_inv_rev, Complex.inv_I]
   field_simp

@@ -64,10 +64,10 @@ theorem reflected_regular_dictionary
     rw [hs, root_parameter_additiveParameter F q r₀, hr₀]
   have h6s : (KPRankOneRootParameter.r (KPExceptionalRaw.LocalField F q) s) ^ 6 =
       (residueCardinality (KPExceptionalRaw.LocalField F q) : ℂ) * w ^ 6 := by
-    rw [hrs, mul_pow, hα]
+    grind only
   have hts : KPRankOneRootParameter.t (KPExceptionalRaw.LocalField F q) s = w ^ 6 := by
     simp only [KPRankOneRootParameter.t]
-    rw [h6s, ← mul_assoc, inv_mul_cancel₀ hQc, one_mul]
+    simp_all
   have htneg : KPRankOneRootParameter.t (KPExceptionalRaw.LocalField F q) (-s-1/3) =
       (w ^ 6)⁻¹ := by
     rw [reflected_t F q s, hts]
@@ -83,8 +83,7 @@ theorem reflected_regular_dictionary
     rw [show denominator (KPExceptionalRaw.LocalField F q) .minus s =
         1 - (residueCardinality (KPExceptionalRaw.LocalField F q) : ℂ) *
           (KPRankOneRootParameter.r (KPExceptionalRaw.LocalField F q) s)⁻¹ ^ 6 from rfl]
-    rw [inv_pow, h6s, mul_inv_rev, mul_comm (w ^ 6)⁻¹, ← mul_assoc,
-      mul_inv_cancel₀ hQc, one_mul]
+    grind only
   have hdp : denominator (KPExceptionalRaw.LocalField F q) .plus s = 1 - w ^ 6 := by
     rw [show denominator (KPExceptionalRaw.LocalField F q) .plus s =
         1 - KPRankOneRootParameter.t (KPExceptionalRaw.LocalField F q) s from rfl, hts]
@@ -98,12 +97,12 @@ theorem reflected_regular_dictionary
     rw [show denominator (KPExceptionalRaw.LocalField F q) .plus (-s-1/3) =
         1 - KPRankOneRootParameter.t (KPExceptionalRaw.LocalField F q) (-s-1/3) from rfl, htneg]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [hdm]; exact sub_ne_zero.mpr hw6inv.symm
-  · rw [hdp]; exact sub_ne_zero.mpr hw6.symm
-  · rw [hdm2]; exact sub_ne_zero.mpr hw6.symm
-  · rw [hdp2]; exact sub_ne_zero.mpr hw6inv.symm
-  · rw [← pow_mul]; exact hts.symm
-  · rw [hts]; exact hw6
+  · grind
+  · grind
+  · grind
+  · grind
+  · grind
+  · grind
   · exact ⟨(w ^ 2)⁻¹, inv_ne_zero (pow_ne_zero 2 hw), by rw [inv_pow, ← pow_mul, hts],
       by rw [inv_pow, ← pow_mul, htneg]⟩
 
@@ -128,128 +127,7 @@ set_option maxHeartbeats 3000000
 set_option synthInstance.maxHeartbeats 100000
 set_option backward.isDefEq.respectTransparency false
 
- def CubicResidueDenomRegular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
-  r.denom.eval u ≠ 0
-
-private lemma cubicResidueDenomRegular_constant {F : Type*} [Field F] (u c : F) : CubicResidueDenomRegular u (RatFunc.C c) := by
-  simp [CubicResidueDenomRegular]
-private lemma cubicResidueDenomRegular_coordinate {F : Type*} [Field F] (u : F) : CubicResidueDenomRegular u (RatFunc.X : RatFunc F) := by
-  simp [CubicResidueDenomRegular]
-private lemma cubicResidueDenomRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
-private lemma cubicResidueDenomRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
-private lemma cubicResidueDenomRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (_hr : CubicResidueDenomRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : CubicResidueDenomRegular u r⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  intro h
-  have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
-  apply hv
-  simp [RatFunc.eval, hn]
-private lemma cubicResidue_eval_inv_of_denom_regular_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (hr : CubicResidueDenomRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
-    RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  have hm := RatFunc.eval_mul (f := RingHom.id F) (a := u) hr (cubicResidueDenomRegular_inv_of_value_ne_zero hr hv)
-  rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
-  exact eq_inv_of_mul_eq_one_right hm.symm
-
- def CubicResidueRegularValue {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F) : Prop :=
-  CubicResidueDenomRegular u r ∧ RatFunc.eval (RingHom.id F) u r = v
-private lemma CubicResidueRegularValue.const {F : Type*} [Field F] (u v : F) : CubicResidueRegularValue u (RatFunc.C v) v :=
-  ⟨cubicResidueDenomRegular_constant u v, by simp⟩
-private lemma CubicResidueRegularValue.var {F : Type*} [Field F] (u : F) : CubicResidueRegularValue u RatFunc.X u :=
-  ⟨cubicResidueDenomRegular_coordinate u, by simp⟩
-private lemma CubicResidueRegularValue.add {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : CubicResidueRegularValue u r a) (hs : CubicResidueRegularValue u s b) : CubicResidueRegularValue u (r+s) (a+b) := by
-  refine ⟨cubicResidueDenomRegular_add hr.1 hs.1, ?_⟩
-  rw [RatFunc.eval_add (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma CubicResidueRegularValue.mul {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : CubicResidueRegularValue u r a) (hs : CubicResidueRegularValue u s b) : CubicResidueRegularValue u (r*s) (a*b) := by
-  refine ⟨cubicResidueDenomRegular_mul hr.1 hs.1, ?_⟩
-  rw [RatFunc.eval_mul (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma CubicResidueRegularValue.neg {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : CubicResidueRegularValue u r a) : CubicResidueRegularValue u (-r) (-a) := by
-  simpa only [map_neg, map_one, neg_one_mul] using (CubicResidueRegularValue.const u (-1)).mul hr
-private lemma CubicResidueRegularValue.sub {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : CubicResidueRegularValue u r a) (hs : CubicResidueRegularValue u s b) : CubicResidueRegularValue u (r-s) (a-b) := by
-  simpa only [sub_eq_add_neg] using hr.add hs.neg
-private lemma CubicResidueRegularValue.inv {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : CubicResidueRegularValue u r a) (ha : a ≠ 0) : CubicResidueRegularValue u r⁻¹ a⁻¹ := by
-  have hv : RatFunc.eval (RingHom.id F) u r ≠ 0 := hr.2 ▸ ha
-  exact ⟨cubicResidueDenomRegular_inv_of_value_ne_zero hr.1 hv, by rw [cubicResidue_eval_inv_of_denom_regular_of_value_ne_zero hr.1 hv, hr.2]⟩
-private lemma CubicResidueRegularValue.div {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : CubicResidueRegularValue u r a) (hs : CubicResidueRegularValue u s b) (hb : b ≠ 0) : CubicResidueRegularValue u (r/s) (a/b) := by
-  simpa only [div_eq_mul_inv] using hr.mul (hs.inv hb)
-private lemma CubicResidueRegularValue.pow {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : CubicResidueRegularValue u r a) (n : ℕ) : CubicResidueRegularValue u (r^n) (a^n) := by
-  induction n with
-  | zero => simpa only [pow_zero, map_one] using CubicResidueRegularValue.const u 1
-  | succ n ih => simpa only [pow_succ] using ih.mul hr
-private lemma CubicResidueRegularValue.sum {F I : Type*} [Field F] {u : F} (s : Finset I)
-    {r : I → RatFunc F} {a : I → F} (h : ∀ i ∈ s, CubicResidueRegularValue u (r i) (a i)) :
-    CubicResidueRegularValue u (∑ i ∈ s, r i) (∑ i ∈ s, a i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sum_empty, map_zero] using CubicResidueRegularValue.const u 0
-  | @insert i s hi ih =>
-    simp only [Finset.sum_insert hi]
-    exact (h i (Finset.mem_insert_self i s)).add (ih (fun j hj => h j (Finset.mem_insert_of_mem hj)))
-
-private lemma cubicBetaFactor_regularValue_of_ne_zero_ne_one
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ξ : CubicUnitCharacters.Character K)
-    (w : ℂ) (B : RatFunc ℂ) (b : ℂ) (hB : CubicResidueRegularValue w B b) (hb0 : b ≠ 0) (hb1 : b ≠ 1) :
-    CubicResidueRegularValue w (KPRankoneCubicScalarSum.betaFactor K ξ B)
-      (KPRankoneCubicScalarSum.betaFactor K ξ b) := by
-  classical
-  have hA := (CubicResidueRegularValue.const w (CubicUnitCharacters.residueCard K : ℂ)⁻¹)
-  have h1 := CubicResidueRegularValue.const w 1
-  by_cases hξ : ξ=1
-  · have hBi := hB.inv hb0
-    have hden : (1-b)*(1-b⁻¹) ≠ 0 :=
-      mul_ne_zero (sub_ne_zero.mpr hb1.symm)
-        (sub_ne_zero.mpr (by intro h; exact hb1 (inv_eq_one.mp h.symm)))
-    have h := ((h1.sub (hA.mul hB)).mul (h1.sub (hA.mul hBi))).div
-      ((h1.sub hB).mul (h1.sub hBi)) hden
-    simpa only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_true,
-      KPRankoneCubicScalarSum.unramifiedFactor,map_one,map_inv₀,map_natCast] using h
-  · simpa only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_false,map_natCast,map_inv₀] using
-      hA.pow (CubicUnitCharacters.conductor K ξ)
-
-private theorem residue_scalar_regular_eval
-    (dx : Measure (KPExceptionalRaw.LocalField F q))
-    (w : ℂ) (hw0 : w ≠ 0) (hw6 : w^6 ≠ 1) :
-    CubicResidueRegularValue w (rationalResidueScalar (KPExceptionalRaw.LocalField F q) dx)
-      (residueScalar (KPExceptionalRaw.LocalField F q) dx (w^2)) := by
-  classical
-  let K := KPExceptionalRaw.LocalField F q
-  haveI := KPCubicHaar.cubeUnits_finiteIndex (K := K)
-  haveI : Finite (CubicUnitCharacters.Character K) :=
-    Nat.finite_of_card_ne_zero (by
-      rw [KPCubicExpansion.card_unit_cubic_characters]
-      exact Subgroup.index_ne_zero_of_finite)
-  letI := Fintype.ofFinite (CubicUnitCharacters.Character K)
-  letI := Fintype.ofFinite CubicCharacters.Mu3
-  have hb (ε : CubicCharacters.Mu3) := (CubicResidueRegularValue.const w ((ε : ℂˣ) : ℂ)).mul ((CubicResidueRegularValue.var w).pow 2)
-  have hb0 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 0 :=
-    mul_ne_zero (ε : ℂˣ).ne_zero (pow_ne_zero _ hw0)
-  have hb1 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 1 := by
-    intro he
-    have hp := congrArg (fun z : ℂ => z^3) he
-    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := by
-      exact congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
-    rw [mul_pow,hε,one_mul,← pow_mul,one_pow] at hp
-    exact hw6 hp
-  have hs := CubicResidueRegularValue.sum Finset.univ (fun ξ _ => CubicResidueRegularValue.sum Finset.univ (fun ε _ =>
-    cubicBetaFactor_regularValue_of_ne_zero_ne_one K ξ w _ _ (hb ε) (hb0 ε) (hb1 ε)))
-  have h := (CubicResidueRegularValue.const w (((integerMass K dx^2*KPCubicHaar.abs K (3 : K) : ℝ) : ℂ)/9)).mul hs
-  simpa only [rationalResidueScalar,residueScalar,KPRankoneCubicScalarSum.finiteScalar,
-    finsum_eq_sum_of_fintype] using h
+open ActualShellPort (residue_scalar_regular_evaluation)
 
 theorem forward_regular_residue
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
@@ -295,7 +173,7 @@ theorem forward_regular_residue
     change 1 - t K s = 0
     rw [he, sub_self]
   have hw6 : w^6 ≠ 1 := htw ▸ ht1
-  have hsc := residue_scalar_regular_eval F q dx w hw0 hw6
+  have hsc := residue_scalar_regular_evaluation (KPExceptionalRaw.LocalField F q) dx w hw0 hw6
 
   have hsz : residueScalar K dx (w^2) = residueScalar K dx z := by
     unfold residueScalar
@@ -313,147 +191,6 @@ theorem forward_regular_residue
         KPRankOneGeneric.rationalDenominator] using hforward)
   rw [hsc.2, hsz] at hplus
   exact hplus
-
-end
-end DedekindZetaZeroFree.KPActualScalarBinding.ResidueSteps.Reverse
-
-end
-
-section
-
-namespace DedekindZetaZeroFree.KPActualScalarBinding.ResidueSteps.Reverse
-open MeasureTheory ValuativeRel KPRankOneCubicResidueReduction
-noncomputable section
-
-set_option maxHeartbeats 3000000
-set_option synthInstance.maxHeartbeats 100000
-set_option backward.isDefEq.respectTransparency false
-set_option linter.style.haveILetI false
-
- abbrev CubicResidueDenominatorRegular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
-  r.denom.eval u ≠ 0
-
-private lemma cubicResidueDenominatorRegular_constant {F : Type*} [Field F] (u c : F) : CubicResidueDenominatorRegular u (RatFunc.C c) := by
-  simp [CubicResidueDenominatorRegular]
-private lemma cubicResidueDenominatorRegular_indeterminate {F : Type*} [Field F] (u : F) : CubicResidueDenominatorRegular u (RatFunc.X : RatFunc F) := by
-  simp [CubicResidueDenominatorRegular]
-private lemma cubicResidueDenominatorRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
-private lemma cubicResidueDenominatorRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
-    simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
-private lemma cubicResidueDenominatorRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (_hr : CubicResidueDenominatorRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : CubicResidueDenominatorRegular u r⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  intro h
-  have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
-  apply hv
-  simp [RatFunc.eval, hn]
-private lemma cubicResidue_eval_inv_of_regular_nonzero {F : Type*} [Field F] {u : F} {r : RatFunc F}
-    (hr : CubicResidueDenominatorRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
-    RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
-  have hm := RatFunc.eval_mul (f := RingHom.id F) (a := u) hr (cubicResidueDenominatorRegular_inv_of_value_ne_zero hr hv)
-  rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
-  exact eq_inv_of_mul_eq_one_right hm.symm
-
- abbrev cubicResidue_regularityAtValue {F : Type*} [Field F] (u : F) (r : RatFunc F) (v : F) : Prop :=
-  CubicResidueDenominatorRegular u r ∧ RatFunc.eval (RingHom.id F) u r = v
-private lemma cubicResidue_regularityAtValue.constant {F : Type*} [Field F] (u v : F) : cubicResidue_regularityAtValue u (RatFunc.C v) v :=
-  ⟨cubicResidueDenominatorRegular_constant u v, by simp⟩
-private lemma cubicResidue_regularityAtValue.indeterminate {F : Type*} [Field F] (u : F) : cubicResidue_regularityAtValue u RatFunc.X u :=
-  ⟨cubicResidueDenominatorRegular_indeterminate u, by simp⟩
-private lemma cubicResidue_regularityAtValue.add_values {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : cubicResidue_regularityAtValue u r a) (hs : cubicResidue_regularityAtValue u s b) : cubicResidue_regularityAtValue u (r+s) (a+b) := by
-  refine ⟨cubicResidueDenominatorRegular_add hr.1 hs.1, ?_⟩
-  rw [RatFunc.eval_add (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma cubicResidue_regularityAtValue.mul_values {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : cubicResidue_regularityAtValue u r a) (hs : cubicResidue_regularityAtValue u s b) : cubicResidue_regularityAtValue u (r*s) (a*b) := by
-  refine ⟨cubicResidueDenominatorRegular_mul hr.1 hs.1, ?_⟩
-  rw [RatFunc.eval_mul (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma cubicResidue_regularityAtValue.neg_value {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : cubicResidue_regularityAtValue u r a) : cubicResidue_regularityAtValue u (-r) (-a) := by
-  simpa only [map_neg, map_one, neg_one_mul] using (cubicResidue_regularityAtValue.constant u (-1)).mul_values hr
-private lemma cubicResidue_regularityAtValue.sub_values {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : cubicResidue_regularityAtValue u r a) (hs : cubicResidue_regularityAtValue u s b) : cubicResidue_regularityAtValue u (r-s) (a-b) := by
-  simpa only [sub_eq_add_neg] using hr.add_values hs.neg_value
-private lemma cubicResidue_regularityAtValue.inv_nonzero_value {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : cubicResidue_regularityAtValue u r a) (ha : a ≠ 0) : cubicResidue_regularityAtValue u r⁻¹ a⁻¹ := by
-  have hv : RatFunc.eval (RingHom.id F) u r ≠ 0 := hr.2 ▸ ha
-  exact ⟨cubicResidueDenominatorRegular_inv_of_value_ne_zero hr.1 hv, by rw [cubicResidue_eval_inv_of_regular_nonzero hr.1 hv, hr.2]⟩
-private lemma cubicResidue_regularityAtValue.div_nonzero_value {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
-    (hr : cubicResidue_regularityAtValue u r a) (hs : cubicResidue_regularityAtValue u s b) (hb : b ≠ 0) : cubicResidue_regularityAtValue u (r/s) (a/b) := by
-  simpa only [div_eq_mul_inv] using hr.mul_values (hs.inv_nonzero_value hb)
-private lemma cubicResidue_regularityAtValue.nat_power {F : Type*} [Field F] {u a : F} {r : RatFunc F}
-    (hr : cubicResidue_regularityAtValue u r a) (n : ℕ) : cubicResidue_regularityAtValue u (r^n) (a^n) := by
-  induction n with
-  | zero => simpa only [pow_zero, map_one] using cubicResidue_regularityAtValue.constant u 1
-  | succ n ih => simpa only [pow_succ] using ih.mul_values hr
-private lemma cubicResidue_regularityAtValue.finite_sum {F I : Type*} [Field F] {u : F} (s : Finset I)
-    {r : I → RatFunc F} {a : I → F} (h : ∀ i ∈ s, cubicResidue_regularityAtValue u (r i) (a i)) :
-    cubicResidue_regularityAtValue u (∑ i ∈ s, r i) (∑ i ∈ s, a i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simpa only [Finset.sum_empty, map_zero] using cubicResidue_regularityAtValue.constant u 0
-  | @insert i s hi ih =>
-    simp only [Finset.sum_insert hi]
-    exact (h i (Finset.mem_insert_self i s)).add_values (ih (fun j hj => h j (Finset.mem_insert_of_mem hj)))
-
-private lemma cubicBetaFactor_regularValue_of_nonzero_ne_one
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ξ : CubicUnitCharacters.Character K)
-    (w : ℂ) (B : RatFunc ℂ) (b : ℂ) (hB : cubicResidue_regularityAtValue w B b) (hb0 : b ≠ 0) (hb1 : b ≠ 1) :
-    cubicResidue_regularityAtValue w (KPRankoneCubicScalarSum.betaFactor K ξ B)
-      (KPRankoneCubicScalarSum.betaFactor K ξ b) := by
-  classical
-  have hA := (cubicResidue_regularityAtValue.constant w (CubicUnitCharacters.residueCard K : ℂ)⁻¹)
-  have h1 := cubicResidue_regularityAtValue.constant w 1
-  by_cases hξ : ξ=1
-  · have hBi := hB.inv_nonzero_value hb0
-    have hden : (1-b)*(1-b⁻¹) ≠ 0 :=
-      mul_ne_zero (sub_ne_zero.mpr hb1.symm)
-        (sub_ne_zero.mpr (by intro h; exact hb1 (inv_eq_one.mp h.symm)))
-    have h := ((h1.sub_values (hA.mul_values hB)).mul_values (h1.sub_values (hA.mul_values hBi))).div_nonzero_value
-      ((h1.sub_values hB).mul_values (h1.sub_values hBi)) hden
-    simpa only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_true,
-      KPRankoneCubicScalarSum.unramifiedFactor,map_one,map_inv₀,map_natCast] using h
-  · simpa only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_false,map_natCast,map_inv₀] using
-      hA.nat_power (CubicUnitCharacters.conductor K ξ)
-
-theorem residue_scalar_regular_evaluation
-    (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] [MeasurableSpace K]
-    (dx : Measure K) (w : ℂ) (hw : w ≠ 0) (hw6 : w ^ 6 ≠ 1) :
-    (rationalResidueScalar K dx).denom.eval w ≠ 0 ∧
-      RatFunc.eval (RingHom.id ℂ) w (rationalResidueScalar K dx) =
-        residueScalar K dx (w ^ 2) := by
-  classical
-  haveI := KPCubicHaar.cubeUnits_finiteIndex (K := K)
-  haveI : Finite (CubicUnitCharacters.Character K) :=
-    Nat.finite_of_card_ne_zero (by
-      rw [KPCubicExpansion.card_unit_cubic_characters]
-      exact Subgroup.index_ne_zero_of_finite)
-  letI := Fintype.ofFinite (CubicUnitCharacters.Character K)
-  letI := Fintype.ofFinite CubicCharacters.Mu3
-  have hb (ε : CubicCharacters.Mu3) :=
-    (cubicResidue_regularityAtValue.constant w ((ε : ℂˣ) : ℂ)).mul_values ((cubicResidue_regularityAtValue.indeterminate w).nat_power 2)
-  have hb0 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 0 :=
-    mul_ne_zero (ε : ℂˣ).ne_zero (pow_ne_zero _ hw)
-  have hb1 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 1 := by
-    intro he
-    have hp := congrArg (fun z : ℂ => z^3) he
-    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := by
-      exact congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
-    rw [mul_pow,hε,one_mul,← pow_mul,one_pow] at hp
-    exact hw6 hp
-  have hs := cubicResidue_regularityAtValue.finite_sum Finset.univ (fun ξ _ => cubicResidue_regularityAtValue.finite_sum Finset.univ (fun ε _ =>
-    cubicBetaFactor_regularValue_of_nonzero_ne_one K ξ w _ _ (hb ε) (hb0 ε) (hb1 ε)))
-  have h := (cubicResidue_regularityAtValue.constant w (((integerMass K dx^2*KPCubicHaar.abs K (3 : K) : ℝ) : ℂ)/9)).mul_values hs
-  simpa only [rationalResidueScalar,residueScalar,KPRankoneCubicScalarSum.finiteScalar,
-    finsum_eq_sum_of_fintype] using h
 
 end
 end DedekindZetaZeroFree.KPActualScalarBinding.ResidueSteps.Reverse
@@ -796,7 +533,7 @@ theorem reverse_two_cell_residue
     s (residueScalar (KPExceptionalRaw.LocalField F q) dx z') hd hdp hdu hdup hf
   have hs := residue_scalar_inverse F q dx ω hω (w^2) z'
     (t (KPExceptionalRaw.LocalField F q) s) (pow_ne_zero _ hw) hz' hz3 hz'3 ht
-  rw [hs, ← (Reverse.residue_scalar_regular_evaluation
+  rw [hs, ← (ActualShellPort.residue_scalar_regular_evaluation
     (KPExceptionalRaw.LocalField F q) dx w hw hw6).2] at hc
   exact hc
 

@@ -20,7 +20,7 @@ lemma measurable_derivative (f : X → ℝ → ℂ)
     apply tendsto_nhdsWithin_iff.mpr
     refine ⟨tendsto_one_div_add_atTop_nhds_zero_nat, Eventually.of_forall ?_⟩
     intro n
-    simp [q, Nat.cast_add, Nat.cast_one]
+    simp [q]
     positivity
   apply measurable_of_tendsto_metrizable
     (f := fun n (p : X × ℝ) => (q n)⁻¹ • (f p.1 (p.2 + q n) - f p.1 p.2))

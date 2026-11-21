@@ -77,23 +77,16 @@ theorem mellin_gaussian_contour_shift
         ‖G ((r : ℂ) + t * Complex.I)‖ ≤ C / (1 + t ^ 2))
     (hinv : ∀ x : ℝ, 0 < x →
       g x = mellinInv (-2) (fun z : ℂ => G (-z)) x) :
-    ∀ c : ℝ, 1 < c → ∀ x : ℝ, 0 < x →
+    ∀ c : ℝ, 2 < c → ∀ x : ℝ, 0 < x →
       g x = mellinInv (-c) (fun z : ℂ => G (-z)) x ∧
       MeasureTheory.Integrable (fun t : ℝ =>
         (x : ℂ) ^ (-(((-c : ℝ) : ℂ) + t * Complex.I)) •
           G (-(((-c : ℝ) : ℂ) + t * Complex.I))) := by
   intro c hc x hx
-  let a := (1 + min 2 c) / 2
-  have hmin : 1 < min 2 c := lt_min (by norm_num) hc
-  have ha : 1 < a := by dsimp [a]; linarith
-  have ha2 : a < 2 := by have := min_le_left (2 : ℝ) c; dsimp [a]; linarith
-  have hac : a < c := by have := min_le_right (2 : ℝ) c; dsimp [a]; linarith
-  obtain ⟨heq2, _⟩ := weighted_strip G x a 2 hx ha ha2 hG (hdecay a 2 ha ha2.le)
-  obtain ⟨heqc, hi⟩ := weighted_strip G x a c hx ha hac hG (hdecay a c ha hac.le)
+  obtain ⟨heq, hi⟩ := weighted_strip G x 2 c hx (by norm_num) hc hG (hdecay 2 c (by norm_num) hc.le)
   constructor
   · rw [hinv x hx]
-    change mellinInv (-(2 : ℝ)) (fun z : ℂ => G (-z)) x = _
-    rw [reflected_mellin, reflected_mellin, ← heq2, heqc]
-  · simpa only [reflected_line, smul_eq_mul] using (hi c ⟨hac.le, le_rfl⟩).comp_neg
+    rw [reflected_mellin, reflected_mellin, heq]
+  · simpa only [reflected_line, smul_eq_mul] using (hi c ⟨hc.le, le_rfl⟩).comp_neg
 
 end DedekindZetaZeroFree

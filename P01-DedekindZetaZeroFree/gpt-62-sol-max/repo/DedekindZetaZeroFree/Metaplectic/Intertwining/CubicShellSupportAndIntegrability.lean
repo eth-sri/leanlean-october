@@ -33,25 +33,19 @@ theorem integrable_prod_restrict_of_locallyConstant_profiles
   have hB : ∀ r : R, Integrable r.val ν := by
     intro r
     obtain ⟨x, hxC, hx⟩ := r.property
-    simpa only [hx] using hi x hxC
+    grind only
   have hs : Integrable (fun p : X × Y => ∑ r : R, A r p.1 * r.val p.2)
-      ((μ.restrict C).prod ν) := by
-    exact integrable_finsetSum Finset.univ (fun r _ => (hA r).mul_prod (hB r))
+      ((μ.restrict C).prod ν) := integrable_finsetSum Finset.univ (fun r _ => (hA r).mul_prod (hB r))
   apply hs.congr
   have hmem : ∀ᵐ p : X × Y ∂((μ.restrict C).prod ν), p.1 ∈ C := by
     apply (Measure.ae_prod_iff_ae_ae (hCm.preimage measurable_fst)).mpr
     filter_upwards [ae_restrict_mem hCm] with x hx
-    exact Filter.Eventually.of_forall (fun _ => hx)
+    simp_all
   filter_upwards [hmem] with p hp
   let r : R := ⟨f p.1, ⟨p.1, hp, rfl⟩⟩
   rw [Finset.sum_eq_single r]
   · simp [A, r]
-  · intro b _ hbr
-    have hne : f p.1 ≠ b.val := by
-      intro he
-      apply hbr
-      exact Subtype.ext he.symm
-    simp [A, hne]
+  · aesop
   · simp
 
 end DedekindZetaZeroFree.KPTameTransposeBaseChart.CompactProfiles
@@ -241,13 +235,15 @@ theorem lower_row_constraint {K : Type*} [Field K]
     _ = (1 + u * x) * k 1 1 := by field_simp; ring
     _ = _ := he
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (q : HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
+  (P : Polarization S.heisenberg) (π : (LocalField F q)ˣ) (m : ℕ)
+  (hm : KPLocalChartTopology.MatrixChartDepth F q m) (u x : LocalField F q)
+include hm
+
 theorem actual_support_lower_row
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (π : (LocalField F q)ˣ) (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m)
-    (u x : LocalField F q)
     (hg : kernelW (LocalField F q) S.borel .minus *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
         (eta F ζ hζ q π (0 : Fin 3) * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
@@ -316,12 +312,6 @@ theorem actual_support_lower_row
   exact ⟨hu, k, he⟩
 
 theorem actual_support_residual_in_ideal
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (π : (LocalField F q)ˣ) (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m)
-    (u x : LocalField F q)
     (hg : kernelW (LocalField F q) S.borel .minus *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
         (eta F ζ hζ q π (0 : Fin 3) * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
@@ -357,13 +347,7 @@ theorem actual_support_residual_in_ideal
     exact Units.val_inv_eq_inv_val (Units.map (KPLocalCube.LocalIntegers F q).subtype.toMonoidHom v)
   rw [hvinv, div_eq_mul_inv]
 
-theorem actual_support_inverse_mem_lowShell
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (π : (LocalField F q)ˣ) (m : ℕ)
-    (hm : KPLocalChartTopology.MatrixChartDepth F q m)
-    (u x : LocalField F q) (hx : x ∈ lowShell F q)
+theorem actual_support_inverse_mem_lowShell (hx : x ∈ lowShell F q)
     (hg : kernelW (LocalField F q) S.borel .minus *
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) u *
         (eta F ζ hζ q π (0 : Fin 3) * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
@@ -377,6 +361,8 @@ theorem actual_support_inverse_mem_lowShell
   refine ⟨hu, ?_⟩
   change u⁻¹ ∈ (valuation (LocalField F q)).integer
   simpa only [add_sub_cancel_left] using hsub
+
+end
 
 private theorem unitCubeClasses_exponent_dvd
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -401,11 +387,14 @@ private theorem unitCubeClasses_exponent_dvd
   refine ⟨KPCubicExpansion.valuationExponent K t - KPCubicExpansion.valuationExponent K r, ?_⟩
   omega
 
-private theorem tame_base_borel_exponent_dvd
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P) (b : BL F ζ hζ q S P) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (q : HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
+  (P : Polarization S.heisenberg) (hP : IsTamePolarization F ζ hζ q S P)
+include hP
+
+private theorem tame_base_borel_exponent_dvd (b : BL F ζ hζ q S P) :
     3 ∣ KPCubicExpansion.valuationExponent (LocalField F q)
       (S.borel.coordinate (retractL F ζ hζ q S P b)) := by
   apply unitCubeClasses_exponent_dvd
@@ -415,10 +404,6 @@ private theorem tame_base_borel_exponent_dvd
     (retractL F ζ hζ q S P b).property, rfl⟩
 
 private theorem actual_base_support_exponent_dvd
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
     (π : (LocalField F q)ˣ) (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F q m)
     (u : (LocalField F q)ˣ) (x : LocalField F q)
@@ -515,6 +500,8 @@ private theorem actual_base_support_exponent_dvd
   apply (Int.dvd_iff_emod_eq_zero).mpr
   omega
 
+end
+
 private theorem expanding_shell_pairwise
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F)) :
     Pairwise (fun i j => Disjoint (expandingReverseCubeShell F q i)
@@ -592,12 +579,14 @@ private theorem expanding_shell_measurable
   simpa only [← (valuation (LocalField F q)).restrict_inj] using
     (valuation (LocalField F q)).isClosed_sphere ((valuation (LocalField F q)).restrict a)
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (q : HeightOneSpectrum (𝓞 F)) (S : CanonicalFiniteInducingData F ζ hζ q)
+  (P : Polarization S.heisenberg) (hP : IsTamePolarization F ζ hζ q S P)
+  (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
+
 private theorem baseChart_decomposition_of_integrable
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
@@ -645,11 +634,6 @@ private theorem baseChart_decomposition_of_integrable
   exact integral_iUnion hmeas (expanding_shell_pairwise F q) hi.integrableOn
 
 theorem eventual_baseChart_cube_shell_decomposition
-    (F : Type) [Field F] [NumberField F]
-    (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-    (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-    (hP : IsTamePolarization F ζ hζ q S P)
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
@@ -672,6 +656,8 @@ theorem eventual_baseChart_cube_shell_decomposition
   exact baseChart_decomposition_of_integrable F ζ hζ q S P hP μ π hπ m
     (hD m ((le_max_left D J).trans hm)) s _ (fun _ _ => rfl)
     (hJ m ((le_max_right D J).trans hm) s hs)
+
+end
 
 end DedekindZetaZeroFree.KPTameTransposeBaseChart.AugmentationSteps.CubeShell
 

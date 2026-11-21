@@ -47,13 +47,13 @@ theorem W1Hat_mul_plus_decay (u : Frequency D.recipe) (hu : u ≠ principalFrequ
   have hsplit : (1 + |t|) ^ A * ((1 + |t|) ^ (-(k : ℝ))) = (1 + |t|) ^ (A - k) := by
     rw [← Real.rpow_add hpos]; ring_nf
   have hkk : ((1 + |t|) ^ k : ℝ) = (1 + |t|) ^ (k : ℝ) := (Real.rpow_natCast _ _).symm
-  have ha0 : 0 ≤ ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ := norm_nonneg _
+  
   have ha : ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ ≤ |CW| * (1 + |t|) ^ (-(k : ℝ)) := by
     rw [Real.rpow_neg hpos.le, ← hkk, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos k)]
     nlinarith [le_abs_self CW]
-  have hLn : ‖(pkg D).plus u ((y : ℂ) + (t : ℂ) * I)‖ ≤ CL * (2 ^ A * (1 + |t|) ^ A) :=
+  have hLn :=
     hL'.trans (mul_le_mul_of_nonneg_left h2t hCL.le)
-  have hp1 : 0 ≤ (1 + |t|) ^ A := Real.rpow_nonneg hpos.le _
+  
   calc ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ * ‖(pkg D).plus u ((y : ℂ) + (t : ℂ) * I)‖
       ≤ (|CW| * (1 + |t|) ^ (-(k : ℝ))) * (CL * (2 ^ A * (1 + |t|) ^ A)) :=
         mul_le_mul ha hLn (norm_nonneg _) (by positivity)
@@ -70,26 +70,21 @@ private theorem comb_aux {X Q G1 G2 Mn W P L cp mi bX bG bM bWP bL bcp bmi : ℝ
     (hbM : 0 ≤ bM) (hbWP : 0 ≤ bWP) (hbL : 0 ≤ bL) (hbcp : 0 ≤ bcp) :
     X * Q * (G1 * G2 * Mn * W) * (L * P * cp * mi) ≤
       bX * Q * bG * bM * bWP * bL * bcp * bmi := by
-  have h1 : X * Q ≤ bX * Q := mul_le_mul_of_nonneg_right hX hQ
-  have h2 : G1 * G2 * Mn ≤ bG * bM := mul_le_mul hG hM hMn hbG
-  have p3 : 0 ≤ bX * Q * (bG * bM) := mul_nonneg (mul_nonneg hbX hQ) (mul_nonneg hbG hbM)
-  have h3 : X * Q * (G1 * G2 * Mn) ≤ bX * Q * (bG * bM) :=
+  have h1 := mul_le_mul_of_nonneg_right hX hQ
+  have h2 := mul_le_mul hG hM hMn hbG
+  have p3 := mul_nonneg (mul_nonneg hbX hQ) (mul_nonneg hbG hbM)
+  have h3 :=
     mul_le_mul h1 h2 (mul_nonneg (mul_nonneg hG1 hG2) hMn) (mul_nonneg hbX hQ)
-  have h4 : X * Q * (G1 * G2 * Mn) * (W * P) ≤ bX * Q * (bG * bM) * bWP :=
+  have h4 :=
     mul_le_mul h3 hWP (mul_nonneg hW hP) p3
-  have p4 : 0 ≤ bX * Q * (bG * bM) * bWP := mul_nonneg p3 hbWP
-  have h5 : X * Q * (G1 * G2 * Mn) * (W * P) * L ≤ bX * Q * (bG * bM) * bWP * bL :=
+  have p4 := mul_nonneg p3 hbWP
+  have h5 :=
     mul_le_mul h4 hL hL0 p4
-  have p5 : 0 ≤ bX * Q * (bG * bM) * bWP * bL := mul_nonneg p4 hbL
-  have h6 : X * Q * (G1 * G2 * Mn) * (W * P) * L * cp ≤
-      bX * Q * (bG * bM) * bWP * bL * bcp := mul_le_mul h5 hcp hcp0 p5
-  have p6 : 0 ≤ bX * Q * (bG * bM) * bWP * bL * bcp := mul_nonneg p5 hbcp
-  have h7 : X * Q * (G1 * G2 * Mn) * (W * P) * L * cp * mi ≤
-      bX * Q * (bG * bM) * bWP * bL * bcp * bmi := mul_le_mul h6 hmi hmi0 p6
-  calc X * Q * (G1 * G2 * Mn * W) * (L * P * cp * mi)
-      = X * Q * (G1 * G2 * Mn) * (W * P) * L * cp * mi := by ring
-    _ ≤ bX * Q * (bG * bM) * bWP * bL * bcp * bmi := h7
-    _ = bX * Q * bG * bM * bWP * bL * bcp * bmi := by ring
+  have p5 := mul_nonneg p4 hbL
+  have h6 := mul_le_mul h5 hcp hcp0 p5
+  have p6 := mul_nonneg p5 hbcp
+  have h7 := mul_le_mul h6 hmi hmi0 p6
+  grind
 
 theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) (B : ℝ) :
@@ -214,88 +209,26 @@ theorem Iz_differentiableOn_w (u : Frequency D.recipe) (hu : u ≠ principalFreq
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
     DifferentiableOn ℂ (fun w : ℂ => Iz D u ξ w Scales.zLine Z)
       (comparisonClosedStrip Scales.wLine 4) := by
-  have hp : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
-  set lo : ℝ := Scales.wLine - EulerDomain.pad / 2 with hlo
-  set hi : ℝ := 4 + EulerDomain.pad / 2 with hhi
-  set U : Set ℂ := {w : ℂ | lo < w.re} ∩ {w : ℂ | w.re < hi} with hUdef
-  have hU : IsOpen U :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt Complex.continuous_re continuous_const)
-  have hwU : ∀ w ∈ U, lo < w.re ∧ w.re < hi := fun w hw => hw
-  obtain ⟨G, hG⟩ : ∃ G : ℂ → ℝ → ℂ, ∀ w s, G w s = (2 * (Real.pi : ℂ))⁻¹ *
-      rawKernel D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z := ⟨_, fun _ _ => rfl⟩
-  have hcont : ∀ w ∈ U, Continuous (G w) := by
-    intro w hw
-    have hfun : G w = fun s : ℝ => (2 * (Real.pi : ℂ))⁻¹ *
-        rawKernel D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z := funext (hG w)
-    rw [hfun]
-    refine continuous_const.mul ?_
-    refine continuous_iff_continuousAt.mpr (fun s => ?_)
-    have hd := kdiff D u hu Z hZ ξ hξ w ((Scales.zLine : ℂ) + (s : ℂ) * I)
-      (hwU w hw).1 (by simp)
-    have hc : Continuous (fun s : ℝ =>
-        ((ξ, w, ((Scales.zLine : ℂ) + (s : ℂ) * I)) : ℂ × ℂ × ℂ)) := by fun_prop
-    exact ContinuousAt.comp
-      (g := fun p : ℂ × ℂ × ℂ => rawKernel D u p.1 p.2.1 p.2.2 Z)
-      (f := fun s : ℝ => ((ξ, w, ((Scales.zLine : ℂ) + (s : ℂ) * I)) : ℂ × ℂ × ℂ))
-      (x := s) hd.continuousAt hc.continuousAt
-  have hmeas : ∀ w ∈ U, AEStronglyMeasurable (G w) volume :=
-    fun w hw => (hcont w hw).aestronglyMeasurable
-  have hdiff : ∀ s : ℝ, DifferentiableOn ℂ (fun w => G w s) U := by
-    intro s
-    have h := (rawKernel_differentiableOn_w D u hu Z hZ ξ ((Scales.zLine : ℂ) + (s : ℂ) * I)
-      hξ (by simp)).const_mul ((2 * (Real.pi : ℂ))⁻¹)
-    have hfun : (fun w => G w s) = fun w : ℂ => (2 * (Real.pi : ℂ))⁻¹ *
-        rawKernel D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z := funext fun w => hG w s
-    rw [hfun]
-    exact h
-  obtain ⟨C, hC0, hCb⟩ := rawKernel_w_bound D u hu Z hZ ξ hξ 0
-  have hdom : ∀ w0 ∈ U, ∃ r > (0 : ℝ), Metric.ball w0 r ⊆ U ∧
-      ∃ g : ℝ → ℝ, Integrable g volume ∧ ∀ w ∈ Metric.ball w0 r, ∀ s, ‖G w s‖ ≤ g s := by
-    intro w0 hw0
-    obtain ⟨h1, h2⟩ := hwU w0 hw0
-    obtain ⟨r, hr, hr1, hr2⟩ : ∃ r : ℝ, 0 < r ∧ r ≤ w0.re - lo ∧ r ≤ hi - w0.re :=
-      ⟨min (w0.re - lo) (hi - w0.re), lt_min (by linarith) (by linarith), min_le_left _ _,
-        min_le_right _ _⟩
-    have hball : ∀ w ∈ Metric.ball w0 r, lo < w.re ∧ w.re < hi := by
-      intro w hw
-      have hd : |w.re - w0.re| < r := by
-        have := Complex.abs_re_le_norm (w - w0)
-        rw [Complex.sub_re] at this
-        exact this.trans_lt (by rw [← dist_eq_norm]; exact Metric.mem_ball.mp hw)
-      have := abs_lt.mp hd
-      constructor <;> linarith [this.1, this.2]
-    refine ⟨r, hr, fun w hw => hball w hw, fun s => ‖(2 * (Real.pi : ℂ))⁻¹‖ * C *
-      (1 + |s|) ^ (-(2 : ℝ)), ?_, ?_⟩
-    · exact (KernelWeightIntegration.one_add_abs_rpow_integrable 2 (by norm_num)).const_mul _
-    · intro w hw s
-      obtain ⟨hw1, hw2⟩ := hball w hw
-      have h := hCb w.re s w.im hw1.le hw2.le
-      rw [Complex.re_add_im] at h
-      simp only [neg_zero, Real.rpow_zero, mul_one] at h
-      rw [hG, norm_mul]
-      calc ‖(2 * (Real.pi : ℂ))⁻¹‖ *
-            ‖rawKernel D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z‖
-          ≤ ‖(2 * (Real.pi : ℂ))⁻¹‖ * (C * (1 + |s|) ^ (-(2 : ℝ))) :=
-            mul_le_mul_of_nonneg_left h (norm_nonneg _)
-        _ = ‖(2 * (Real.pi : ℂ))⁻¹‖ * C * (1 + |s|) ^ (-(2 : ℝ)) := by ring
-  have key := HolomorphicDominatedIntegral.differentiableOn_integral_of_locally_dominated
-    (μ := volume) hU hmeas hdiff hdom
-  have hEq : (fun w => Iz D u ξ w Scales.zLine Z) = fun w => ∫ s : ℝ, G w s := by
-    funext w
-    have : Iz D u ξ w Scales.zLine Z = (2 * (Real.pi : ℂ))⁻¹ *
-        ∫ s : ℝ, rawKernel D u ξ w ((Scales.zLine : ℂ) + (s : ℂ) * I) Z := rfl
-    rw [this]
-    simp only [hG]
-    rw [integral_const_mul]
-  rw [hEq]
-  refine key.mono ?_
-  intro w hw
-  obtain ⟨hw1, hw2⟩ := hw
-  show lo < w.re ∧ w.re < hi
-  constructor
-  · rw [hlo]; linarith
-  · rw [hhi]; linarith
+  have hp : (0 : ℝ) < EulerDomain.pad := by norm_num [EulerDomain.pad]
+  let U := {w : ℂ | Scales.wLine - EulerDomain.pad / 2 < w.re ∧ w.re < 4 + EulerDomain.pad / 2}
+  have hU : IsOpen U := (isOpen_lt continuous_const continuous_re).inter
+    (isOpen_lt continuous_re continuous_const)
+  have hsub : comparisonClosedStrip Scales.wLine 4 ⊆ U := fun w ⟨hw₁, hw₂⟩ =>
+    ⟨by linarith, by linarith⟩
+  let z (t : ℝ) : ℂ := (Scales.zLine : ℂ) + (t : ℂ) * I
+  let G (w : ℂ) (t : ℝ) := rawKernel D u ξ w (z t) Z
+  have hc (w : ℂ) (hw : w ∈ U) : Continuous (G w) := by
+    refine continuous_iff_continuousAt.mpr fun t => ?_
+    have h := kdiff D u hu Z hZ ξ hξ w (z t) hw.1 (by simp [z])
+    exact h.continuousAt.comp (f := fun t : ℝ => (ξ, w, z t)) (by unfold z; fun_prop)
+  obtain ⟨C, _, hC⟩ := rawKernel_w_bound D u hu Z hZ ξ hξ 0
+  have hd := HolomorphicDominatedIntegral.differentiableOn_integral_of_dominated (μ := volume) hU
+    (G := G) (fun w hw => (hc w hw).aestronglyMeasurable)
+    (fun t => rawKernel_differentiableOn_w D u hu Z hZ ξ (z t) hξ (by simp [z]))
+    ((KernelWeightIntegration.one_add_abs_rpow_integrable 2 (by norm_num)).const_mul C) (by
+      intro w hw t
+      simpa [G, z, Complex.re_add_im] using hC w.re t w.im hw.1.le hw.2.le)
+  exact (hd.const_mul ((2 * (Real.pi : ℂ))⁻¹)).mono hsub
 
 theorem Iz_decayOn_w (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :

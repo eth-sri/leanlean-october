@@ -8,9 +8,13 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.EisensteinIntegers.PrimaryG
 
 namespace DedekindZetaZeroFree.Eisenstein
 
-theorem mem_I3_of_sup_span_six_eq_top (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E)) (hq0 : q ≠ ⊥)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E))
+  (hq0 : q ≠ ⊥) (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤)
+include q hq0 hq6
+
+theorem mem_I3_of_sup_span_six_eq_top :
     q ∈ I3 E := by
   refine (mem_I3 E q).mpr ⟨hq0, ?_⟩
   apply top_unique
@@ -19,15 +23,18 @@ theorem mem_I3_of_sup_span_six_eq_top (E : Type) [Field E] [NumberField E]
   apply Ideal.span_singleton_le_span_singleton.mpr
   exact ⟨2, by norm_num⟩
 
-def q3 (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E)) (hq0 : q ≠ ⊥)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) : I3 E :=
+def q3 : I3 E :=
   ⟨q, mem_I3_of_sup_span_six_eq_top E q hq0 hq6⟩
 
-theorem span_Jq (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+end
+
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (ω : E)
+  (hω : IsPrimitiveRoot ω 3) (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
+  (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤)
+
+theorem span_Jq :
     Ideal.span {Jq E ω hω q hq0 hqp hq6} = q := by
   have hmem : Jq E ω hω q hq0 hqp hq6 ∈ q :=
     jacobiSum_ρq_mem E ω hω q hq0 hqp hq6
@@ -51,10 +58,7 @@ theorem span_Jq (E : Type) [Field E] [NumberField E]
   have hBtop : B = ⊤ := Ideal.absNorm_eq_one_iff.mp hB1
   rw [hB, hBtop, Ideal.mul_top]
 
-theorem Jq_eq_neg_primaryGenerator (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
-    (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
-    (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
+theorem Jq_eq_neg_primaryGenerator :
     Jq E ω hω q hq0 hqp hq6 = -primaryGenerator E (q3 E q hq0 hq6) := by
   have hspan : Ideal.span {Jq E ω hω q hq0 hqp hq6} = q :=
     span_Jq E ω hω q hq0 hqp hq6
@@ -78,6 +82,8 @@ theorem Jq_eq_neg_primaryGenerator (E : Type) [Field E] [NumberField E]
     rw [hred, red3_primaryGenerator]
   exact neg_eq_iff_eq_neg.mp (eq_of_span_eq_of_red3_eq E (-(Jq E ω hω q hq0 hqp hq6))
     (primaryGenerator E (q3 E q hq0 hq6)) hxy hx0 hx3unit hred3eq)
+
+end
 
 theorem jacobiSum_ρqC_eq_neg_primaryGenerator (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)

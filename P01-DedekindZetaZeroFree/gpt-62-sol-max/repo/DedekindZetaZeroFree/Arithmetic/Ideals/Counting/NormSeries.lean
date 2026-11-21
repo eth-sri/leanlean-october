@@ -58,7 +58,7 @@ private theorem linear : ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →
       exact_mod_cast (show (Ideal.absNorm I.val : ℝ) ≤ (⌈X⌉₊ : ℝ) from hI.trans (Nat.le_ceil X))) Subtype.val_injective.injOn hfin
   have hceil : 0 < (⌈X⌉₊ : ℝ) := lt_of_lt_of_le (by norm_num) (hX.trans (Nat.le_ceil X))
   have hn := hB (Set.mem_range_self ⌈X⌉₊)
-  simp only [Function.comp_apply, Nat.card_coe_set_eq] at hn
+  simp only [Function.comp_apply] at hn
   have hn' : ({I : Ideal (𝓞 F) | Ideal.absNorm I ≤ ⌈X⌉₊}.ncard : ℝ) ≤
       B * (⌈X⌉₊ : ℝ) := by
     apply (div_le_iff₀ hceil).mp

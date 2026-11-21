@@ -147,7 +147,7 @@ def stabilizerDifferential : MulAction.stabilizer Γ p →*
     (KPArch.Space (KPCuspLogShape.dimension F) →L[ℝ] KPArch.Space (KPCuspLogShape.dimension F)) where
   toFun g := fderiv ℝ (fun q => (g.val.val : KPCuspArithmetic.PGL2 F) • q) p
   map_one' := by
-    simp only [OneMemClass.coe_one, Subgroup.coe_one, one_smul]
+    simp only [OneMemClass.coe_one, one_smul]
     change fderiv ℝ id p = 1
     rw [fderiv_id]
     rfl
@@ -587,9 +587,9 @@ theorem component_orthogonal_separated_smooth_chart
   let L := StabilizerLinearization.tangentFrame (KPCuspLogShape.dimension F) p
   let c := L.toHomeomorph.toOpenPartialHomeomorph.trans e.symm
   have hcsource : c.source = L ⁻¹' e.target := by
-    simp [c, OpenPartialHomeomorph.trans_source]
+    simp [c]
   have hctarget : c.target = e.source := by
-    simp [c, OpenPartialHomeomorph.trans_target]
+    simp [c]
   have hcapply (x) : c x = e.symm (L x) := rfl
   have hcsymm (q) : c.symm q = L.symm (e q) := rfl
   refine ⟨H, c, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -984,7 +984,7 @@ lemma component_chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   let L := flattenThree d
   let f := L.symm ∘ c
   let e : OpenPartialHomeomorph (E (3*d)) (E (3*d)) := c.trans L.symm.toHomeomorph.toOpenPartialHomeomorph
-  have hes : e.source = c.source := by simp [e, OpenPartialHomeomorph.trans_source]
+  have hes : e.source = c.source := by simp [e]
   have hef (x) : e x = f x := rfl
   have heinv (x) : e.symm x = c.symm (L x) := rfl
   have hfs : ContDiffOn ℝ (⊤ : ℕ∞) f c.source :=

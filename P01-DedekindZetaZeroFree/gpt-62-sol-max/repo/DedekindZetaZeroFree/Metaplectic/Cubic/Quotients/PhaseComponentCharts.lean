@@ -591,16 +591,20 @@ instance instMulActionChartProduct (i : Fin (H.atlas U).componentCount) (x : Sym
       exact mul_smul (σ.val : KPCuspArithmetic.PGL2 F)
         (τ.val : KPCuspArithmetic.PGL2 F) p.2.val
 
-theorem chartProduct_smul (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x)
+section
+
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+  (O : OrbifoldChart F ζ hζ U R P H i x)
+include i x O
+
+theorem chartProduct_smul
     (σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x)
     (m : PhaseSheets F ζ hζ U) (y : O.neighborhood) :
     ((σ • (m,y)).1, ((σ • (m,y)).2 : SymmetricSpace F)) =
       (m * phaseClass F ζ hζ U (((H.atlas U).line i).rho σ.val)⁻¹,
         (σ.val : KPCuspArithmetic.PGL2 F) • (y : SymmetricSpace F)) := rfl
 
-theorem chart_stabilizer_finite (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) :
+theorem chart_stabilizer_finite :
     Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) x) := by
   letI := O.finite_stabilizer
   let f : MulAction.stabilizer (Component F ζ hζ U R P H i) x →
@@ -618,13 +622,11 @@ theorem chart_stabilizer_finite (i : Fin (H.atlas U).componentCount) (x : Symmet
   exact congrArg (fun σ : MulAction.stabilizer (ArchComponent F ζ hζ U R P H i) x =>
     σ.val.val) hab
 
-abbrev CoveredChartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) :=
+abbrev CoveredChartDomain :=
   Quotient (MulAction.orbitRel (MulAction.stabilizer (Component F ζ hζ U R P H i) x)
     (PhaseSheets F ζ hζ U × O.neighborhood))
 
- def localMap (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) : PhaseSheets F ζ hζ U × O.neighborhood →
+ def localMap : PhaseSheets F ζ hζ U × O.neighborhood →
     (q F ζ hζ U ⁻¹' baseChartImage F ζ hζ U R P H i x O) := fun p =>
   ⟨componentHomeomorph F ζ hζ U R P H ⟨i, Quotient.mk _ (p.1,p.2.val)⟩, by
     change q F ζ hζ U _ ∈ baseChartImage F ζ hζ U R P H i x O
@@ -632,15 +634,13 @@ abbrev CoveredChartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpa
     exact ⟨KPCuspSiegel.projection F (Component F ζ hζ U R P H i) p.2.val,
       ⟨p.2.val,p.2.property,rfl⟩,rfl⟩⟩
 
- theorem localMap_cont (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) : Continuous (localMap F ζ hζ U R P H i x O) := by
+ theorem localMap_cont : Continuous (localMap F ζ hζ U R P H i x O) := by
   apply Continuous.subtype_mk
   apply (componentHomeomorph F ζ hζ U R P H).continuous.comp
   apply continuous_sigmaMk.comp
   exact continuous_quot_mk.comp (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd))
 
- theorem localMap_surj (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) : Function.Surjective (localMap F ζ hζ U R P H i x O) := by
+ theorem localMap_surj : Function.Surjective (localMap F ζ hζ U R P H i x O) := by
   rintro ⟨w,hw⟩
   obtain ⟨⟨j,v⟩,rfl⟩ := (componentHomeomorph F ζ hζ U R P H).surjective w
   rw [Set.mem_preimage, componentHomeomorph_forget] at hw
@@ -663,8 +663,7 @@ abbrev CoveredChartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpa
     rw [hp]
     exact Quotient.sound ⟨γ,rfl⟩
 
- theorem localMap_ker (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) : MulAction.orbitRel
+ theorem localMap_ker : MulAction.orbitRel
       (MulAction.stabilizer (Component F ζ hζ U R P H i) x)
       (PhaseSheets F ζ hζ U × O.neighborhood) =
     Setoid.ker (localMap F ζ hζ U R P H i x O) := by
@@ -702,8 +701,7 @@ abbrev CoveredChartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpa
       exact congrArg Prod.fst hγ
     · apply Subtype.ext
       exact congrArg Prod.snd hγ
- theorem localMap_open (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) : IsOpenMap (localMap F ζ hζ U R P H i x O) := by
+ theorem localMap_open : IsOpenMap (localMap F ζ hζ U R P H i x O) := by
   letI : ContinuousConstSMul (Component F ζ hζ U R P H i)
       (PhaseSheets F ζ hζ U × SymmetricSpace F) := ⟨fun γ => by
     change Continuous (fun p : PhaseSheets F ζ hζ U × SymmetricSpace F =>
@@ -724,8 +722,7 @@ abbrev CoveredChartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpa
   exact ((componentHomeomorph F ζ hζ U R P H).isOpenMap.comp
     (isOpenMap_sigmaMk.comp hq)).subtype_mk _
 
- def actualChart (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) : CoveredChartDomain F ζ hζ U R P H i x O ≃ₜ
+ def actualChart : CoveredChartDomain F ζ hζ U R P H i x O ≃ₜ
     (q F ζ hζ U ⁻¹' baseChartImage F ζ hζ U R P H i x O) :=
   (Homeomorph.Quotient.congrRight (fun p r => by
     rw [localMap_ker F ζ hζ U R P H i x O])).trans
@@ -734,29 +731,25 @@ abbrev CoveredChartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpa
       ((localMap_open F ζ hζ U R P H i x O).isQuotientMap
         (localMap_cont F ζ hζ U R P H i x O) (localMap_surj F ζ hζ U R P H i x O)))
 
-private theorem actualChart_mk (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (ε : rootsOfUnity 3 F) (y : O.neighborhood) :
+private theorem actualChart_mk (ε : rootsOfUnity 3 F) (y : O.neighborhood) :
     (actualChart F ζ hζ U R P H i x O (Quotient.mk _ (phaseClass F ζ hζ U ε,y))).val =
       Quotient.mk (coveredRelation F ζ hζ U)
         (y.val,KPCuspGenuineMonodromy.central F ζ hζ ε * (H.atlas U).representative i) := by
   exact componentHomeomorph_mk F ζ hζ U R P H i ε y.val
 
-def coveredChart (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) :
+def coveredChart :
     CoveredChartDomain F ζ hζ U R P H i x O ≃ₜ
       (q F ζ hζ U ⁻¹' baseChartImage F ζ hζ U R P H i x O) :=
   actualChart F ζ hζ U R P H i x O
 
-theorem coveredChart_mk (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (ε : rootsOfUnity 3 F) (y : O.neighborhood) :
+theorem coveredChart_mk (ε : rootsOfUnity 3 F) (y : O.neighborhood) :
     (coveredChart F ζ hζ U R P H i x O
       (Quotient.mk _ (phaseClass F ζ hζ U ε, y))).val =
         Quotient.mk (coveredRelation F ζ hζ U)
           (y.val, KPCuspGenuineMonodromy.central F ζ hζ ε * (H.atlas U).representative i) := by
   exact actualChart_mk F ζ hζ U R P H i x O ε y
 
-theorem baseChartImage_isOpen (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) :
+theorem baseChartImage_isOpen :
     IsOpen (baseChartImage F ζ hζ U R P H i x O) := by
   letI : ContinuousConstSMul (Component F ζ hζ U R P H i) (SymmetricSpace F) :=
     ⟨fun γ => by
@@ -771,6 +764,8 @@ theorem baseChartImage_isOpen (i : Fin (H.atlas U).componentCount) (x : Symmetri
   change IsOpen ((fun v => (H.atlas U).components (Sigma.mk i v)) '' _)
   rw [← Set.image_image]
   exact (H.atlas U).components.isOpenMap _ (isOpenMap_sigmaMk _ ho)
+
+end
 
 end DedekindZetaZeroFree.KPContSectorPhaseComponentCharts
 

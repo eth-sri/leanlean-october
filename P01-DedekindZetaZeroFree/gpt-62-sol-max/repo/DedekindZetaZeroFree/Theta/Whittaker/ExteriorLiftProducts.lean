@@ -59,7 +59,7 @@ lemma fourier_exterior_list (v : R.A.UnitQuotient)
             (KPRationalAdelicSplitting.localAdele F (Sum.inr p.val) t)) := by
       apply (hg p (List.mem_cons_self) t).mul_left
       change Commute (L.map (fun q => finiteLift R q.val (a q))).prod _
-      rw [← ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R p.val t]
+      rw [← MomentSources.finite_root_injection R p.val t]
       apply commute_list_product
       intro b hb
       obtain ⟨q, hq, rfl⟩ := List.mem_map.mp hb

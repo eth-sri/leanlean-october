@@ -56,10 +56,10 @@ variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
 private lemma Q_pos (p : ExteriorPrime A) : 0 < Q p := A.exteriorNorm_pos (primeIdeal p)
 
-private lemma two_le_Q (p : ExteriorPrime A) : 2 ≤ Q p :=
+lemma two_le_Q (p : ExteriorPrime A) : 2 ≤ Q p :=
   idealNorm_prime_ge_two (primeIdeal p).val (by simpa [primeIdeal] using p.val.prime)
 
-private lemma norm_qPower (p : ExteriorPrime A) (s : ℂ) :
+lemma norm_qPower (p : ExteriorPrime A) (s : ℂ) :
     ‖qPower p s‖ = (Q p) ^ s.re := by
   rw [qPower, Complex.norm_exp, Real.rpow_def_of_pos (Q_pos p)]
   congr 1
@@ -83,7 +83,7 @@ private lemma region_lower (x : Coordinates) (hx : x ∈ Omega) :
   rcases hx with h | h <;> rcases h with ⟨ha, hb, hc⟩ <;>
     exact ⟨by linarith, by linarith, by linarith⟩
 
-private lemma norm_series_le (C : A.GeneralArithmeticContext σ η hS)
+lemma norm_seriesTerm_le_Ctk (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1})
     (e : Fin 2) (l k m : ℕ) (x : Coordinates) :
     ‖seriesTerm C p j θ e l k m x.1 x.2.1 x.2.2‖ ≤
@@ -103,7 +103,7 @@ private lemma norm_series_le (C : A.GeneralArithmeticContext σ η hS)
   exact mul_le_mul_of_nonneg_right
     (mul_le_of_le_one_left (norm_nonneg _) he) (Real.rpow_nonneg (Q_pos p).le _)
 
-private lemma shell_bound (C : A.GeneralArithmeticContext σ η hS)
+lemma norm_Ctk_le_shell (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (t k J : ℕ) (ht : 0 < t) (hk : k ≤ 1) :
     ‖Ctk C p t k J‖ ≤ (Q p) ^ ((t : ℝ) + (k : ℝ) / 2) := by
   interval_cases k
@@ -145,19 +145,18 @@ private lemma weight_nonneg (i : Fin 2 × ℕ × ℕ × ℕ) : 0 ≤ weight i :=
   unfold weight
   positivity
 
-private lemma weight_summable : Summable weight := by
-  have := ratio_pos
-  have hr : Summable (fun n : ℕ => ratio ^ n) :=
-    summable_geometric_of_lt_one ratio_pos.le ratio_lt_one
+lemma shellWeight_summable (c ρ : ℝ) (hc : 0 ≤ c) (hρ : 0 ≤ ρ) (hρ1 : ρ < 1) :
+    Summable (fun i : Fin 2 × ℕ × ℕ × ℕ => c * ρ ^ i.2.1 * (1 / 2 : ℝ) ^ i.2.2.1 * ρ ^ i.2.2.2) := by
+  have hr := summable_geometric_of_lt_one hρ hρ1
   have hh : Summable (fun n : ℕ => (1 / 2 : ℝ) ^ n) :=
     summable_geometric_of_lt_one (by norm_num) (by norm_num)
   have hkm := hh.mul_of_nonneg hr (fun n => by positivity) (fun n => by positivity)
   have hlkm := hr.mul_of_nonneg hkm (fun n => by positivity) (fun n => by dsimp; positivity)
-  have h := (Summable.of_finite : Summable (fun _ : Fin 2 => (4 : ℝ))).mul_of_nonneg hlkm
-    (fun _ => by norm_num) (fun n => by dsimp; positivity)
-  change Summable (fun i : Fin 2 × ℕ × ℕ × ℕ =>
-    4 * ratio ^ i.2.1 * (1 / 2 : ℝ) ^ i.2.2.1 * ratio ^ i.2.2.2)
-  simpa only [mul_assoc] using h
+  simpa only [mul_assoc] using (Summable.of_finite : Summable (fun _ : Fin 2 => c)).mul_of_nonneg hlkm
+    (fun _ => hc) (fun n => by dsimp; positivity)
+
+private lemma weight_summable : Summable weight :=
+  shellWeight_summable 4 ratio (by norm_num) ratio_pos.le ratio_lt_one
 
 private lemma decay_split (p : ExteriorPrime A) (l m : ℕ) :
     (Q p) ^ (-(1 / 4000 : ℝ) - (l : ℝ) / 4 - (m : ℝ) / 4) ≤
@@ -171,7 +170,7 @@ private lemma decay_split (p : ExteriorPrime A) (l m : ℕ) :
         rw [ratio, ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
         congr 1
         ring
-  simp only [sub_eq_add_neg, Real.rpow_add hq, neg_div]
+  simp only [sub_eq_add_neg, Real.rpow_add hq]
   exact mul_le_mul (mul_le_mul_of_nonneg_left (by simpa only [neg_div] using hpow l) (Real.rpow_nonneg hq.le _))
     (by simpa only [neg_div] using hpow m) (Real.rpow_nonneg hq.le _) (by have := ratio_pos; positivity)
 
@@ -183,8 +182,8 @@ private lemma positive_term_bound (C : A.GeneralArithmeticContext σ η hS)
       (Q p) ^ (-(1 / 4000 : ℝ)) * (weight (e, l, k, m) / 2) := by
   have hr := ratio_pos
   by_cases hk : k ≤ 1
-  · have h := (norm_series_le C p j θ e l k m x).trans
-      (mul_le_mul_of_nonneg_right (shell_bound C p _ _ _ ht hk)
+  · have h := (norm_seriesTerm_le_Ctk C p j θ e l k m x).trans
+      (mul_le_mul_of_nonneg_right (norm_Ctk_le_shell C p _ _ _ ht hk)
         (Real.rpow_nonneg (Q_pos p).le _))
     rw [← Real.rpow_add (Q_pos p)] at h
     have h' := Real.rpow_le_rpow_of_exponent_le (x := Q p) (by linarith [two_le_Q p])
@@ -212,7 +211,7 @@ private lemma norm_V_bound (p : ExteriorPrime A) (x : Coordinates) (hx : x ∈ O
   exact (Real.rpow_le_rpow_of_exponent_le (by linarith [two_le_Q p]) he).trans
     (Real.rpow_le_rpow_of_nonpos (by norm_num) (two_le_Q p) (by norm_num))
 
-private lemma zero_term (C : A.GeneralArithmeticContext σ η hS)
+lemma seriesTerm_leading_at (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
     (θ : {θ : ℂ // ‖θ‖ = 1}) (k m : ℕ) (x : Coordinates) :
     seriesTerm C p j θ 0 0 k m x.1 x.2.1 x.2.2 =
@@ -220,13 +219,11 @@ private lemma zero_term (C : A.GeneralArithmeticContext σ η hS)
   by_cases hk : k = 0
   · subst k
     simp only [seriesTerm, Fin.val_zero, pow_zero, Nat.mul_zero, Nat.add_zero,
-      Int.ofNat_zero, sub_zero, zero_sub, zpow_zero, one_mul, Ctk_zero_zero, zero_mul,
-      sub_self, sub_zero, if_true]
+      Int.ofNat_zero, zero_sub, one_mul, Ctk_zero_zero, sub_self, if_true]
     rw [V, qPower, qPower, ← Complex.exp_nat_mul]
     norm_num only [mul_zero, neg_zero, zpow_zero, one_mul, mul_one, Nat.cast_zero,
       zero_mul, sub_zero, zero_sub]
     congr 1
-    push_cast
     ring
   · have hJ : j.val + 6 * m ≠ 0 := by omega
     unfold seriesTerm
@@ -246,11 +243,11 @@ private lemma term_bound (C : A.GeneralArithmeticContext σ η hS)
       (Real.rpow_le_one_of_one_le_of_nonpos (by linarith [two_le_Q p]) (by norm_num))
   · have he : i.1 = 0 := Fin.ext (by simp; omega)
     have hl : i.2.1 = 0 := by omega
-    rw [he, hl, zero_term C p j hj θ]
+    rw [he, hl, seriesTerm_leading_at C p j hj θ]
     split_ifs with hk
     · rw [norm_pow]
       have h := pow_le_pow_left₀ (norm_nonneg _) (norm_V_bound p x hx) i.2.2.2
-      simp only [weight, he, hl, hk, pow_zero, mul_one]
+      simp only [weight, hl, hk, pow_zero, mul_one]
       nlinarith [pow_nonneg hr.le i.2.2.2]
     · simp only [norm_zero]
       exact div_nonneg (weight_nonneg _) (by norm_num)

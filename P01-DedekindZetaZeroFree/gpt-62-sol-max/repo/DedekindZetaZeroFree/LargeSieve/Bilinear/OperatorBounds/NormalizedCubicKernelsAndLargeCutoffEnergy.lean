@@ -17,10 +17,14 @@ def normalizedKernelRows (F : Type) [Field F] [NumberField F]
     (c bad : Ideal (𝓞 F)) (M K : ℝ) : Finset (Ideal (𝓞 F)) :=
   (kernelRows F c M K).filter (fun a => a ⊔ bad = ⊤)
 
-def T3normalizedMasked (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (bad : Ideal (𝓞 F)) (W : ℝ → ℝ) (M N K : ℝ)
-    (d : Ideal (𝓞 F)) (g : Q.G)
+section
+
+variable (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
+  (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (bad : Ideal (𝓞 F)) (W : ℝ → ℝ)
+  (M N K : ℝ) (d : Ideal (𝓞 F))
+include c Q bad W M N K d
+
+def T3normalizedMasked (g : Q.G)
     (U : Finset (Ideal (𝓞 F))) (τ lam : Ideal (𝓞 F) → ℂ) : ℂ :=
   ∑ u ∈ paperShell F c N, ∑ v ∈ paperShell F c N,
     if u ⊔ v = d ∧ Q.cls u = g ∧ Q.cls v = g then
@@ -31,14 +35,13 @@ def T3normalizedMasked (F : Type) [Field F] [NumberField F]
             (Q.χ u) a * (starRingEnd ℂ) ((Q.χ v) a))
     else 0
 
-def B3normalizedMasked (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (bad : Ideal (𝓞 F)) (W : ℝ → ℝ) (M N K : ℝ)
-    (d : Ideal (𝓞 F)) (U : Finset (Ideal (𝓞 F)))
+def B3normalizedMasked (U : Finset (Ideal (𝓞 F)))
     (τ : Ideal (𝓞 F) → ℂ) : ℝ :=
   sSup ({0} ∪ {x : ℝ | ∃ (g : Q.G) (lam : Ideal (𝓞 F) → ℂ),
     energy F c N lam ≤ 1 ∧
       x = ‖T3normalizedMasked F c Q bad W M N K d g U τ lam‖})
+
+end
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.NormalizedKernelProfiles
 
@@ -232,9 +235,12 @@ private theorem norm_five_le (a b c d e : ℂ) :
   have hD := norm_add_le a b
   linarith
 
-private theorem sevenTermSum_eq_mainDifference_sub_errComb
-    {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) :
+section
+
+variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+  {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q)
+
+private theorem sevenTermSum_eq_mainDifference_sub_errComb :
     sevenTermSum C = MainBoundary.mainDifference C - errComb C := by
   have hblock : ∀ (B : ℝ) (unit : Bool), sevenTermBlock C B unit =
       (T C B unit - Tprime C B unit) -
@@ -250,8 +256,7 @@ private theorem sevenTermSum_eq_mainDifference_sub_errComb
   rw [hblock 1 true, hsum]
   ring
 
-private theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-    {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) :
+private theorem norm_errComb_le :
     ‖errComb C‖ ≤
       (‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
         ‖E5 C 1 true‖) +
@@ -266,9 +271,7 @@ private theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal 
           (‖E1 C B‖ + ‖E2 C B‖ + ‖E3 C B‖ + ‖E4 C B‖ + ‖E5 C B‖) :=
         Finset.sum_le_sum (fun B _ => norm_five_le _ _ _ _ _)
 
-private theorem norm_sevenTermSum_le {F : Type} [Field F] [NumberField F]
-    {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-    (C : Context Q) :
+private theorem norm_sevenTermSum_le :
     ‖sevenTermSum C‖ ≤
       ‖MainBoundary.mainDifference C‖ +
       ((‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
@@ -277,6 +280,8 @@ private theorem norm_sevenTermSum_le {F : Type} [Field F] [NumberField F]
           (‖E1 C B‖ + ‖E2 C B‖ + ‖E3 C B‖ + ‖E4 C B‖ + ‖E5 C B‖)) := by
   rw [sevenTermSum_eq_mainDifference_sub_errComb C]
   exact le_trans (norm_sub_le _ _) (add_le_add le_rfl (norm_errComb_le C))
+
+end
 
 theorem large_cutoff_energy_bound
     {F : Type} [Field F] [NumberField F]

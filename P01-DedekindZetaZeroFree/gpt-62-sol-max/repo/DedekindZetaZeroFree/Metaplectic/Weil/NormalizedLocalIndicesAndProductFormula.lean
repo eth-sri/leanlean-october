@@ -54,7 +54,7 @@ private lemma cutoff_scale (v : HeightOneSpectrum (𝓞 F))
       (c.toReal : ℂ) * exteriorRawQuadraticCutoff v μ a n := by
   unfold exteriorRawQuadraticCutoff
   rw [Measure.restrict_smul, integral_smul_measure]
-  simp [smul_eq_mul]
+  simp []
   ring
 
 theorem finiteWeilCutoff_stabilizes (A : SArithmeticData F)

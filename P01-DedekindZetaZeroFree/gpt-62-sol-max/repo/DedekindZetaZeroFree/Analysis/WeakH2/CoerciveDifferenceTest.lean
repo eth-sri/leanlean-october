@@ -11,65 +11,10 @@ namespace DedekindZetaZeroFree.WeakH2
 
 open MeasureTheory Filter Topology KPContLocalNorm
 open KPContLocalEnergy.SobolevEnergyEstimates.Raw
-
-def WeightedFirstBound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients B cρ Cρ κ Λ) (L : ℝ) : Prop :=
-  ∀ x ∈ B.carrier, ∀ i j k : Fin n,
-    ‖fderiv ℝ (fun y => D.density y * D.matrix y i j) x
-      (EuclideanSpace.single k 1)‖ ≤ L
-
-def cutoffValue {n : ℕ} {B : LocalBall n} (η : TestFunction B.toOpens ℝ ⊤)
-    (q : IntegerSobolev B 1) : Space n → ℂ :=
-  B.carrier.indicator (fun x => (η x : ℂ) ^ 2 * value q x)
-
-def cutoffGradient {n : ℕ} {B : LocalBall n} (η : TestFunction B.toOpens ℝ ⊤)
-    (q : IntegerSobolev B 1) (j : Fin n) : Space n → ℂ :=
-  B.carrier.indicator (fun x => (η x : ℂ) ^ 2 * gradient q j x +
-    2 * (η x : ℂ) * coordinateDerivativeList [j] (fun y => (η y : ℂ)) x * value q x)
+open FluxRaw (WeightedFirstBound cutoffValue cutoffGradient)
+open FluxRaw.DifferenceTestAtoms (quotient_memLp exactIBP)
 
 namespace DifferenceTestAtoms
-
-theorem zeroExtension_memLp {n : ℕ} {B : LocalBall n} (f : BallL2 B) :
-    MemLp (zeroExtension f) 2 volume := by
-  exact (memLp_indicator_iff_restrict Metric.isOpen_ball.measurableSet.nullMeasurableSet).2 (Lp.memLp f)
-
-theorem quotient_memLp {n : ℕ} (f : Space n → ℂ) (hf : MemLp f 2 volume)
-    (k : Fin n) (t : ℝ) : MemLp (differenceQuotient k t f) 2 volume := by
-  exact ((hf.comp_measurePreserving (measurePreserving_add_right volume _)).sub hf).const_mul _
-
-theorem exactIBP {n : ℕ} (f g : Space n → ℂ) (hf : MemLp f 2 volume)
-    (hg : MemLp g 2 volume) (k : Fin n) (t : ℝ) :
-    (∫ x, f x * (-differenceQuotient k (-t) g x)) =
-      ∫ x, differenceQuotient k t f x * g x := by
-  have hfg := hf.integrable_mul hg
-  have hfgt := hf.integrable_mul
-    (hg.comp_measurePreserving (measurePreserving_add_right volume ((-t) • EuclideanSpace.single k 1)))
-  have hftg := (hf.comp_measurePreserving
-    (measurePreserving_add_right volume (t • EuclideanSpace.single k 1))).integrable_mul hg
-  change Integrable (fun x => f x * g x) volume at hfg
-  change Integrable (fun x => f x * g (x + (-t) • EuclideanSpace.single k 1)) volume at hfgt
-  change Integrable (fun x => f (x + t • EuclideanSpace.single k 1) * g x) volume at hftg
-  have hshift : (∫ x, f x * g (x + (-t) • EuclideanSpace.single k 1)) =
-      ∫ x, f (x + t • EuclideanSpace.single k 1) * g x := by
-    have h := integral_add_right_eq_self
-      (fun x => f x * g (x + (-t) • EuclideanSpace.single k 1))
-      (t • EuclideanSpace.single k 1) (μ := volume)
-    simpa only [neg_smul, add_neg_cancel_right] using h.symm
-  simp only [differenceQuotient, Complex.ofReal_neg, inv_neg, neg_mul, neg_neg]
-  have hleft : (∫ x, f x * ((t : ℂ)⁻¹ *
-      (g (x + (-t) • EuclideanSpace.single k 1) - g x))) =
-      (t : ℂ)⁻¹ * ((∫ x, f x * g (x + (-t) • EuclideanSpace.single k 1)) - ∫ x, f x * g x) := by
-    simp_rw [mul_left_comm (f _) (t : ℂ)⁻¹]
-    change (∫ x, (t : ℂ)⁻¹ * (f x * (g (x + (-t) • EuclideanSpace.single k 1) - g x))) = _
-    rw [integral_const_mul]
-    simp_rw [mul_sub]
-    rw [integral_sub hfgt hfg, mul_sub]
-  have hright : (∫ x, (t : ℂ)⁻¹ *
-      (f (x + t • EuclideanSpace.single k 1) - f x) * g x) =
-      (t : ℂ)⁻¹ * ((∫ x, f (x + t • EuclideanSpace.single k 1) * g x) - ∫ x, f x * g x) := by
-    simp_rw [mul_assoc, sub_mul]
-    rw [integral_const_mul, integral_sub hftg hfg]
-  rw [hleft, hright, hshift]
 
 theorem cutoffValue_memLp {n : ℕ} {B : LocalBall n}
     (η : TestFunction B.toOpens ℝ ⊤) (q : IntegerSobolev B 1) :

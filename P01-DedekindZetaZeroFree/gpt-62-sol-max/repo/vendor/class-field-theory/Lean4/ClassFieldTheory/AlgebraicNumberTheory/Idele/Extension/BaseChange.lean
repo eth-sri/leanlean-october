@@ -83,16 +83,6 @@ def inclusion :
   (Units.map (adeleInclusion K L)).comp
     (IdeleGroup.equivAdeleRingUnits (K := K)).toMonoidHom
 
-omit [NumberField L] in
-theorem inclusion_injective :
-    Function.Injective (inclusion K L) := by
-  exact
-    (Units.map_injective
-      (Algebra.TensorProduct.includeLeft_injective
-        (R := K) (S := K)
-        (A := NumberField.AdeleRing (𝓞 K) K) (B := L)
-        (FaithfulSMul.algebraMap_injective K L))).comp
-      (IdeleGroup.equivAdeleRingUnits (K := K)).injective
 
 /-- The diagonal copy of `Lˣ` inside the relative idele group. -/
 def principalIdele :

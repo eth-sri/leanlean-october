@@ -18,25 +18,30 @@ noncomputable section
 set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
- abbrev e (A : SArithmeticData F) := ClassCharacterGluing.exteriorFractionalUnit A
- def prod (A : SArithmeticData F) (I J : A.Exterior) : A.Exterior :=
+section
+
+variable (A : SArithmeticData F)
+include A
+
+ abbrev e := ClassCharacterGluing.exteriorFractionalUnit A
+ def prod (I J : A.Exterior) : A.Exterior :=
   ⟨I.val * J.val, mul_ne_zero I.property.1 J.property.1,
     by rw [Ideal.mul_sup_eq_of_coprime_left I.property.2]; exact J.property.2⟩
- def unitIdeal (A : SArithmeticData F) : A.Exterior := ⟨⊤, by simp⟩
-private lemma e_inj (A : SArithmeticData F) : Function.Injective (e A) := by
+ def unitIdeal : A.Exterior := ⟨⊤, by simp⟩
+private lemma e_inj : Function.Injective (e A) := by
   intro I J h
   apply A.exteriorIdealEquiv.injective
   apply Subtype.ext
   apply (FractionalIdeal.coeIdeal_inj (K := F)).mp
   simpa only [e, ClassCharacterGluing.exteriorFractionalUnit_val, A.exteriorIdealEquiv_apply] using congrArg Units.val h
-private lemma e_prod (A : SArithmeticData F) (I J : A.Exterior) :
+private lemma e_prod (I J : A.Exterior) :
     e A (prod A I J) = e A I * e A J :=
   ClassCharacterGluing.exteriorFractionalUnit_mul A I J _ rfl
-private lemma e_unit (A : SArithmeticData F) : e A (unitIdeal A) = 1 := by
+private lemma e_unit : e A (unitIdeal A) = 1 := by
   apply Units.ext
   rw [e, ClassCharacterGluing.exteriorFractionalUnit_val]
   simp [SArithmeticData.extendIdeal, unitIdeal, Ideal.map_top]
-private lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ) :
+private lemma e_ratio (K : (FractionalIdeal A.R⁰ F)ˣ) :
     ∃ I J : A.Exterior, K = e A I / e A J := by
   let k : FractionalIdeal A.R⁰ F := K
   have hn : k.num ≠ ⊥ := by
@@ -47,10 +52,8 @@ private lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ)
     simpa [d, Ideal.span_singleton_eq_bot] using nonZeroDivisors.coe_ne_zero k.den
   let I := A.exteriorIdealEquiv.symm ⟨k.num, hn⟩
   let J := A.exteriorIdealEquiv.symm ⟨d, hd⟩
-  have hI : A.extendIdeal I = k.num := by
-    exact congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨k.num, hn⟩)
-  have hJ : A.extendIdeal J = d := by
-    exact congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨d, hd⟩)
+  have hI : A.extendIdeal I = k.num := congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨k.num, hn⟩)
+  have hJ : A.extendIdeal J = d := congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨d, hd⟩)
   refine ⟨I, J, ?_⟩
   apply (eq_div_iff_mul_eq').mpr
   apply Units.ext
@@ -58,16 +61,22 @@ private lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ)
   rw [show d = Ideal.span {(k.den : A.R)} from rfl, FractionalIdeal.coeIdeal_span_singleton,
     mul_comm]
   exact k.den_mul_self_eq_num'
- def phase (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+ def phase (ι : DHCubic.E0 F A →+* ℂ)
     (I : A.Exterior) : Circle :=
   ⟨DHCubic.lambda F A ι I.val, by
     change DHCubic.lambda F A ι I.val ∈ Metric.sphere 0 1
     simpa [DHCubic.lambda] using DHCubic.lambdaF_exterior_norm (DHCubic.E0 F A) F A ι I⟩
-private lemma phase_prod (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+
+end
+section
+
+variable (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+
+private lemma phase_prod
     (I J : A.Exterior) : phase A ι (prod A I J) = phase A ι I * phase A ι J := by
   apply Subtype.ext
   exact DHCubic.lambdaF_mul (DHCubic.E0 F A) F ι I.val J.val
-private lemma phase_unit (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ) :
+private lemma phase_unit :
     phase A ι (unitIdeal A) = 1 := by
   have h : prod A (unitIdeal A) (unitIdeal A) = unitIdeal A := by
     apply Subtype.ext
@@ -75,7 +84,7 @@ private lemma phase_unit (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
   have hh := phase_prod A ι (unitIdeal A) (unitIdeal A)
   rw [h] at hh
   exact (mul_left_cancel (hh.symm.trans (mul_one _).symm))
-private lemma phase_ratio_eq (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+private lemma phase_ratio_eq
     (I J I' J' : A.Exterior) (h : e A I / e A J = e A I' / e A J') :
     phase A ι I / phase A ι J = phase A ι I' / phase A ι J' := by
   apply (div_eq_div_iff_mul_eq_mul).mpr
@@ -84,8 +93,7 @@ private lemma phase_ratio_eq (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* 
     exact (div_eq_div_iff_mul_eq_mul).mp h)
   rw [← phase_prod, ← phase_prod, he]
 
-theorem exists_fractional_ideal_character (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) :
+theorem exists_fractional_ideal_character :
     ∃! κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle,
       ∀ I : A.Exterior,
         (κ (ClassCharacterGluing.exteriorFractionalUnit A I) : ℂ) =
@@ -125,6 +133,8 @@ theorem exists_fractional_ideal_character (A : SArithmeticData F)
   have hI : κ' (e A I) = phase A ι I := Subtype.ext (hκ' I)
   have hJ : κ' (e A J) = phase A ι J := Subtype.ext (hκ' J)
   rw [hI, hJ]
+
+end
 
 end
 end DedekindZetaZeroFree.SArithmeticData.GaussCorrection.EisensteinExtensionArithmetic
@@ -446,13 +456,17 @@ theorem finite_diagonal_dense (A : SArithmeticData F) :
     convert hu using 1
 
 end FiniteNormalizationTopology
- def infinityDiagonal (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+section
+
+variable (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+include A ι
+
+ def infinityDiagonal
     (w : InfinitePlace F) : Fˣ →* Circle :=
   if w.embedding.comp (algebraMap (DHCubic.E0 F A) F) = ι then
     Eisenstein.archimedeanAngular.comp (Units.map w.embedding.toMonoidHom)
   else (Eisenstein.archimedeanAngular.comp (Units.map w.embedding.toMonoidHom))⁻¹
-private theorem infinityDiagonal_apply (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) (w : InfinitePlace F) (a : Fˣ) :
+private theorem infinityDiagonal_apply (w : InfinitePlace F) (a : Fˣ) :
     (infinityDiagonal A ι w a : ℂ) =
       DHCubic.infinityComponent (DHCubic.E0 F A) F ι w (w.embedding (a : F)) := by
   unfold infinityDiagonal DHCubic.infinityComponent
@@ -460,11 +474,9 @@ private theorem infinityDiagonal_apply (A : SArithmeticData F)
   · rfl
   · rw [DHCubic.star_angular _ ((map_ne_zero w.embedding).mpr a.ne_zero), zpow_neg_one]
     rfl
- def infinityDiagonalProduct (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) : Fˣ →* Circle :=
+ def infinityDiagonalProduct : Fˣ →* Circle :=
   ∏ w : InfinitePlace F, infinityDiagonal A ι w
-private theorem infinityDiagonalProduct_apply (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) (a : Fˣ) :
+private theorem infinityDiagonalProduct_apply (a : Fˣ) :
     (infinityDiagonalProduct A ι a : ℂ) =
       ∏ w : InfinitePlace F,
         DHCubic.infinityComponent (DHCubic.E0 F A) F ι w (w.embedding (a : F)) := by
@@ -472,13 +484,12 @@ private theorem infinityDiagonalProduct_apply (A : SArithmeticData F)
   rw [MonoidHom.finset_prod_apply, map_prod]
   exact Finset.prod_congr rfl (fun w _ => infinityDiagonal_apply A ι w a)
 
-def principalDiscrepancy (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ) :
+def principalDiscrepancy :
     Fˣ →* Circle :=
   ((Classical.choose (exists_fractional_ideal_character A ι).exists).comp
     (ClassCharacterSteps.principalIdealMap A)) * (infinityDiagonalProduct A ι)⁻¹
 
-theorem principalDiscrepancy_apply (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) (a : Fˣ) :
+theorem principalDiscrepancy_apply (a : Fˣ) :
     (principalDiscrepancy A ι a : ℂ) =
       ((Classical.choose (exists_fractional_ideal_character A ι).exists)
         (ClassCharacterSteps.principalIdealMap A a) : ℂ) *
@@ -488,8 +499,7 @@ theorem principalDiscrepancy_apply (A : SArithmeticData F)
   simp only [principalDiscrepancy, MonoidHom.mul_apply, MonoidHom.comp_apply,
     MonoidHom.inv_apply, Circle.coe_mul, Circle.coe_inv, infinityDiagonalProduct_apply]
 
-theorem principalDiscrepancy_primary_congruence (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) (α : 𝓞 F) (hα : α ≠ 0)
+theorem principalDiscrepancy_primary_congruence (α : 𝓞 F) (hα : α ≠ 0)
     (hα3 : α - 1 ∈ Ideal.span {(3 : 𝓞 F)})
     (I : A.Exterior) (hI : I.val = Ideal.span {α})
     (a : Fˣ) (ha : (a : F) = (α : F)) :
@@ -521,8 +531,7 @@ theorem principalDiscrepancy_primary_congruence (A : SArithmeticData F)
     exact Circle.coe_ne_zero _
   simpa using mul_inv_cancel₀ hn
 
-theorem principalDiscrepancy_primary_ratio (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ)
+theorem principalDiscrepancy_primary_ratio
     (α β : 𝓞 F) (hα : α ≠ 0) (hβ : β ≠ 0)
     (hα3 : α - 1 ∈ Ideal.span {(3 : 𝓞 F)})
     (hβ3 : β - 1 ∈ Ideal.span {(3 : 𝓞 F)})
@@ -542,8 +551,7 @@ theorem principalDiscrepancy_primary_ratio (A : SArithmeticData F)
     principalDiscrepancy_primary_congruence A ι β hβ hβ3 J hJ aβ rfl]
   simp
 
-theorem finite_normalization_of_open_conductor (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ)
+theorem finite_normalization_of_open_conductor
     (K : OpenSubgroup ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ))
     (hK : ∀ a : Fˣ, (A.diagonal a).2 ∈ K → principalDiscrepancy A ι a = 1) :
     ∃ τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle,
@@ -562,8 +570,7 @@ theorem finite_normalization_of_open_conductor (A : SArithmeticData F)
   exact (congrArg (fun z : Circle => (z : ℂ)) (hd a)).trans
     (principalDiscrepancy_apply A ι a)
 
-theorem exists_finite_normalization (A : SArithmeticData F)
-    (ι : DHCubic.E0 F A →+* ℂ) :
+theorem exists_finite_normalization :
     let κ := Classical.choose (exists_fractional_ideal_character A ι).exists
     ∃ τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle,
       Continuous τ ∧ ∀ a : Fˣ,
@@ -591,6 +598,8 @@ theorem exists_finite_normalization (A : SArithmeticData F)
   exact principalDiscrepancy_primary_ratio A ι α β hα hβ hα3 hβ3 I J rfl rfl a hab
 
 end
+
+end
 end DedekindZetaZeroFree.SArithmeticData.GaussCorrection.EisensteinExtensionArithmetic
 
 end
@@ -615,13 +624,18 @@ theorem continuous_angularCompletion (w : InfinitePlace F) :
   exact Eisenstein.continuous_archimedeanAngular.comp
     ((InfinitePlace.Completion.isometry_extensionEmbedding w).continuous.units_map _)
 
-def character (A : SArithmeticData F) (σ : F →+* ℂ) (w : InfinitePlace F) :
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+include A σ
+
+def character (w : InfinitePlace F) :
     w.Completionˣ →* Circle :=
   if w.embedding.comp (algebraMap (DHCubic.E0 F A) F) =
       σ.comp (algebraMap (DHCubic.E0 F A) F) then
     (angularCompletion w)⁻¹ else angularCompletion w
 
-theorem character_apply (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem character_apply
     (w : InfinitePlace F) (z : w.Completionˣ) :
     (character A σ w z : ℂ) =
       (DHCubic.infinityComponent (DHCubic.E0 F A) F
@@ -635,25 +649,25 @@ theorem character_apply (A : SArithmeticData F) (σ : F →+* ℂ)
   · rw [DHCubic.star_angular _ hz, zpow_neg_one, inv_inv]
     rfl
 
-theorem continuous_character (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem continuous_character
     (w : InfinitePlace F) : Continuous (character A σ w) := by
   unfold character
   split_ifs
   · exact (continuous_angularCompletion w).inv
   · exact continuous_angularCompletion w
 
-def product (A : SArithmeticData F) (σ : F →+* ℂ) : A.G →* Circle where
+def product : A.G →* Circle where
   toFun y := ∏ w : InfinitePlace F, character A σ w (y.1 w)
   map_one' := by simp
   map_mul' x y := by simp [Finset.prod_mul_distrib]
 
-theorem continuous_product (A : SArithmeticData F) (σ : F →+* ℂ) :
+theorem continuous_product :
     Continuous (product A σ) := by
   apply continuous_finset_prod
   intro w _
   exact (continuous_character A σ w).comp ((continuous_apply w).comp continuous_fst)
 
-theorem character_diagonal (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem character_diagonal
     (w : InfinitePlace F) (a : Fˣ) :
     (character A σ w ((A.diagonal a).1 w) : ℂ) =
       (DHCubic.infinityComponent (DHCubic.E0 F A) F
@@ -663,6 +677,8 @@ theorem character_diagonal (A : SArithmeticData F) (σ : F →+* ℂ)
   change InfinitePlace.Completion.extensionEmbedding w
     (algebraMap F w.Completion (a : F)) = _
   simp
+
+end
 
 end EisensteinInfinityRecipe
 
@@ -741,18 +757,21 @@ theorem glued_infinity (A : SArithmeticData F) (χ : A.G →* Circle)
   simpa only [Finset.prod_inv_distrib, inv_inv, hp, Pi.one_apply, map_one,
     Finset.prod_const_one, inv_one, mul_one] using congrArg Inv.inv h
 
-def sCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
-    (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle) :
+section
+
+variable (A : SArithmeticData F) (σ : F →+* ℂ)
+  (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle)
+include A σ τ
+
+def sCharacter :
     A.G →* Circle :=
   (τ.comp (MonoidHom.snd _ _)) * (EisensteinInfinityRecipe.product A σ)⁻¹
 
-theorem continuous_sCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
-    (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle)
+theorem continuous_sCharacter
     (hτ : Continuous τ) : Continuous (sCharacter A σ τ) := by
   exact (hτ.comp continuous_snd).mul (EisensteinInfinityRecipe.continuous_product A σ).inv
 
-theorem sCharacter_infinity (A : SArithmeticData F) (σ : F →+* ℂ)
-    (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle)
+theorem sCharacter_infinity
     (w : InfinitePlace F) (z : w.Completionˣ) :
     (sCharacter A σ τ (Pi.mulSingle w z, 1))⁻¹ =
       EisensteinInfinityRecipe.character A σ w z := by
@@ -764,6 +783,8 @@ theorem sCharacter_infinity (A : SArithmeticData F) (σ : F →+* ℂ)
   · intro u _ h
     rw [Pi.mulSingle_eq_of_ne h, map_one]
   · simp
+
+end
 
 theorem assemble (A : SArithmeticData F) (σ : F →+* ℂ)
     (κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle)

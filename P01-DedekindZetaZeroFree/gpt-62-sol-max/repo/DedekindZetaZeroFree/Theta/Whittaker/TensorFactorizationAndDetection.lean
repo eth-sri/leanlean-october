@@ -18,14 +18,17 @@ def coreStageMultilinear (s : RestrictedTensorSimple.Level bad) : MultilinearMap
   (L.comp (RestrictedTensorSimple.stageInclusion V e bad s)).compMultilinearMap
     (PiTensorProduct.tprod ℂ)
 
-theorem core_factorization_one_scalar
-    (W : ∀ j, Submodule ℂ (V j →ₗ[ℂ] ℂ))
-    (hmem : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) (i : s.val),
+section
+
+variable (W : ∀ j, Submodule ℂ (V j →ₗ[ℂ] ℂ))
+  (hmem : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) (i : s.val),
       (coreStageMultilinear V e bad L s).toLinearMap x i ∈ W i)
-    (hdim : ∀ j, Module.finrank ℂ (W j) = 1)
-    (ell : ∀ j, V j →ₗ[ℂ] ℂ) (hell : ∀ j, ell j ∈ W j)
-    (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
-    (x₀ : ∀ j : bad, V j) (hx₀ : ∀ j : bad, ell j (x₀ j) = 1) :
+  (hdim : ∀ j, Module.finrank ℂ (W j) = 1) (ell : ∀ j, V j →ₗ[ℂ] ℂ) (hell : ∀ j, ell j ∈ W j)
+  (hnorm : ∀ j ∉ bad, ell j (e j) = 1) (x₀ : ∀ j : bad, V j)
+  (hx₀ : ∀ j : bad, ell j (x₀ j) = 1)
+include W hmem hdim ell hell hnorm x₀ hx₀
+
+theorem core_factorization_one_scalar :
     ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j),
       L (RestrictedTensorSimple.stageInclusion V e bad s (PiTensorProduct.tprod ℂ x)) =
         L (RestrictedTensorSimple.stageInclusion V e bad ⟨bad, le_rfl⟩
@@ -55,13 +58,6 @@ theorem core_factorization_one_scalar
   exact hf
 
 theorem core_factorization_absorbed
-    (W : ∀ j, Submodule ℂ (V j →ₗ[ℂ] ℂ))
-    (hmem : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) (i : s.val),
-      (coreStageMultilinear V e bad L s).toLinearMap x i ∈ W i)
-    (hdim : ∀ j, Module.finrank ℂ (W j) = 1)
-    (ell : ∀ j, V j →ₗ[ℂ] ℂ) (hell : ∀ j, ell j ∈ W j)
-    (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
-    (x₀ : ∀ j : bad, V j) (hx₀ : ∀ j : bad, ell j (x₀ j) = 1)
     (slot : bad) :
     let c := L (RestrictedTensorSimple.stageInclusion V e bad ⟨bad, le_rfl⟩
       (PiTensorProduct.tprod ℂ x₀))
@@ -71,13 +67,6 @@ theorem core_factorization_absorbed
   exact core_factorization_one_scalar V e bad L W hmem hdim ell hell hnorm x₀ hx₀
 
 theorem core_reference_detected
-    (W : ∀ j, Submodule ℂ (V j →ₗ[ℂ] ℂ))
-    (hmem : ∀ (s : RestrictedTensorSimple.Level bad) (x : ∀ j : s.val, V j) (i : s.val),
-      (coreStageMultilinear V e bad L s).toLinearMap x i ∈ W i)
-    (hdim : ∀ j, Module.finrank ℂ (W j) = 1)
-    (ell : ∀ j, V j →ₗ[ℂ] ℂ) (hell : ∀ j, ell j ∈ W j)
-    (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
-    (x₀ : ∀ j : bad, V j) (hx₀ : ∀ j : bad, ell j (x₀ j) = 1)
     (hne : L ≠ 0) :
     L (RestrictedTensorSimple.stageInclusion V e bad ⟨bad, le_rfl⟩
       (PiTensorProduct.tprod ℂ x₀)) ≠ 0 := by
@@ -95,6 +84,8 @@ theorem core_reference_detected
   induction w using PiTensorProduct.induction_on with
   | smul_tprod c x => simp only [map_smul, hp x, smul_zero]
   | add x y hx hy => simp only [map_add, hx, hy, add_zero]
+
+end
 
 end DedekindZetaZeroFree.FourierContinuation
 

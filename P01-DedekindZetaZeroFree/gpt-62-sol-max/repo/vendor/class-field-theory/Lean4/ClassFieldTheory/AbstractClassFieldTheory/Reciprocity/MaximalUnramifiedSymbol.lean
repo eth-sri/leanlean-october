@@ -39,13 +39,16 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : GaloisSubextension K.field)
+  (hUnramified : L.IsUnramified D)
+include D K L hUnramified
+
 /-- Restriction from the maximal unramified Galois group over `K` to the
 actual quotient of an unramified Galois extension `L / K`.  This construction
 does not require the quotient to be finite. -/
-def maximalUnramifiedExtensionRestriction
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : GaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+def maximalUnramifiedExtensionRestriction :
     (K.field.toSubgroup ⧸ D.fieldInertiaWithin K.field) →*
       L.extensionQuotient :=
   L.extensionQuotientMulEquiv.symm.toMonoidHom.comp
@@ -62,9 +65,6 @@ Establishes the identity `maximalUnramifiedExtensionRestriction D K L hUnramifie
 -/
 @[simp]
 theorem maximalUnramifiedExtensionRestriction_mk
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : GaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D)
     (k : K.field.toSubgroup) :
     maximalUnramifiedExtensionRestriction D K L hUnramified
         (QuotientGroup.mk k) =
@@ -76,10 +76,7 @@ theorem maximalUnramifiedExtensionRestriction_mk
 /-- Restriction sends the maximal-unramified Frobenius to the arithmetic
 Frobenius of every finite unramified quotient. -/
 @[simp]
-theorem maximalUnramifiedRestriction_frobenius
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : GaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+theorem maximalUnramifiedRestriction_frobenius :
     maximalUnramifiedExtensionRestriction D K L hUnramified
         (D.frobenius K) =
       L.extensionQuotientMulEquiv.symm
@@ -103,13 +100,18 @@ theorem maximalUnramifiedRestriction_frobenius
     L.extensionQuotientMulEquiv.symm_apply_eq.mpr
       (L.extensionQuotientMk_apply φ).symm
 
+end
+
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D)
+  (L : FiniteGaloisSubextension K.field) (hUnramified : L.IsUnramified D)
+include D K L hUnramified
+
 /-- Restriction to a bundled finite Galois extension.  The named comparison
 between the finite and non-finite Galois quotient boundaries is applied here,
 once, rather than left to definitional unfolding in every consumer. -/
-def finiteUnramifiedRestriction
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+def finiteUnramifiedRestriction :
     (K.field.toSubgroup ⧸ D.fieldInertiaWithin K.field) →*
       L.extensionQuotient :=
   L.toGaloisExtensionQuotientMulEquiv.symm.toMonoidHom.comp
@@ -121,10 +123,7 @@ Establishes the identity `finiteUnramifiedRestriction D K L hUnramified (Quotien
 L.extensionQuotientMk k`.
 -/
 @[simp]
-theorem finiteUnramifiedRestriction_mk
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) (k : K.field.toSubgroup) :
+theorem finiteUnramifiedRestriction_mk (k : K.field.toSubgroup) :
     finiteUnramifiedRestriction D K L hUnramified (QuotientGroup.mk k) =
       L.extensionQuotientMk k := by
   apply L.extensionQuotientMulEquiv.injective
@@ -138,10 +137,7 @@ Establishes the identity `finiteUnramifiedRestriction D K L hUnramified (D.frobe
 L.extensionQuotientMulEquiv.symm (D.unramifiedFrobenius K L.field L.below)`.
 -/
 @[simp]
-theorem finiteUnramifiedRestriction_frobenius
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+theorem finiteUnramifiedRestriction_frobenius :
     finiteUnramifiedRestriction D K L hUnramified (D.frobenius K) =
       L.extensionQuotientMulEquiv.symm
         (D.unramifiedFrobenius K L.field L.below) := by
@@ -153,10 +149,7 @@ theorem finiteUnramifiedRestriction_frobenius
     L.toGaloisSubextension.extensionQuotientMulEquiv.apply_symm_apply
       (D.unramifiedFrobenius K L.field L.below)
 
- theorem finiteUnramifiedDegreeHom_killsExtension
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+ theorem finiteUnramifiedDegreeHom_killsExtension :
     extensionSubgroup K.field L.field L.below ≤
       (((zHatReductionMul
         (L.toFiniteAbstractExtension.degree : ℕ)
@@ -216,10 +209,7 @@ theorem finiteUnramifiedRestriction_frobenius
 
 /-- Normalized degree modulo `[L : K]` on a finite unramified Galois
 quotient. -/
-def finiteUnramifiedDegreeHom
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+def finiteUnramifiedDegreeHom :
     L.extensionQuotient →*
       Multiplicative
         (ZMod (L.toFiniteAbstractExtension.degree : ℕ)) :=
@@ -238,9 +228,6 @@ L.toFiniteAbstractExtension.degree.property (D.normalizedDegree K k)`.
 -/
 @[simp]
 theorem finiteUnramifiedDegreeHom_mk
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D)
     (k : K.field.toSubgroup) :
     finiteUnramifiedDegreeHom D K L hUnramified
         (L.extensionQuotientMk k) =
@@ -255,10 +242,7 @@ theorem finiteUnramifiedDegreeHom_mk
 The specified map is surjective: `Function.Surjective (finiteUnramifiedDegreeHom D K L
 hUnramified)`.
 -/
-theorem finiteUnramifiedDegreeHom_surjective
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+theorem finiteUnramifiedDegreeHom_surjective :
     Function.Surjective
       (finiteUnramifiedDegreeHom D K L hUnramified) := by
   intro z
@@ -277,10 +261,7 @@ theorem finiteUnramifiedDegreeHom_surjective
 
 /-- For an unramified finite extension, normalized degree modulo the
 extension degree is an isomorphism. -/
-def finiteUnramifiedDegreeEquiv
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+def finiteUnramifiedDegreeEquiv :
     L.extensionQuotient ≃*
       Multiplicative (ZMod (L.toFiniteAbstractExtension.degree : ℕ)) := by
   let E := L.toFiniteAbstractExtension
@@ -317,9 +298,6 @@ def finiteUnramifiedDegreeEquiv
 /-- The maximal and finite normalized-degree isomorphisms commute with
 restriction and reduction modulo `[L : K]`. -/
 theorem finiteUnramifiedDegreeEquiv_restriction
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D)
     (x : K.field.toSubgroup ⧸ D.fieldInertiaWithin K.field) :
     finiteUnramifiedDegreeEquiv D K L hUnramified
         (finiteUnramifiedRestriction D K L hUnramified x) =
@@ -336,10 +314,7 @@ theorem finiteUnramifiedDegreeEquiv_restriction
 
 /-- The arithmetic Frobenius has finite normalized degree one. -/
 @[simp]
-theorem finiteUnramifiedDegreeEquiv_unramifiedFrobenius
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : FiniteGaloisSubextension K.field)
-    (hUnramified : L.IsUnramified D) :
+theorem finiteUnramifiedDegreeEquiv_unramifiedFrobenius :
     finiteUnramifiedDegreeEquiv D K L hUnramified
         (L.extensionQuotientMulEquiv.symm
           (D.unramifiedFrobenius K L.field L.below)) =
@@ -350,6 +325,8 @@ theorem finiteUnramifiedDegreeEquiv_unramifiedFrobenius
   rw [D.maximalUnramifiedDegreeEquiv_frobenius]
   apply Multiplicative.ext
   rfl
+
+end
 
 /-- Profinite exponentiation of the maximal-unramified Frobenius, expressed
 through the canonical degree isomorphism with `ℤ̂`. -/
@@ -483,16 +460,6 @@ theorem maximalUnramifiedNormResidue_degree
     (K.toFiniteResidueAbstractField D)).toAdditive.apply_symm_apply
       ((v.valueGroup).subtype (v.valuationAt K a))
 
-/-- The maximal-unramified symbol is literally the profinite power
-`φ_K ^ v_K(a)`. -/
-theorem maximalUnramifiedNormResidue_eq_frobeniusPower
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G)
-    (a : ambientFixedAddSubgroup A K.field) :
-    maximalUnramifiedNormResidueSymbol v K a =
-      maximalUnramifiedFrobeniusPower D (K.toFiniteResidueAbstractField D)
-        (v.valuationAt K a : ZHat) := by
-  rfl
 
 /-- At every finite unramified quotient, normalized degree of the
 maximal-unramified symbol is valuation reduced modulo the extension degree. -/

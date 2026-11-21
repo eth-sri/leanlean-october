@@ -2,7 +2,8 @@ module
 
 public import Mathlib.LinearAlgebra.Matrix.Permutation
 public import Mathlib.Algebra.Group.Pi.Units
-public import DedekindZetaZeroFree.Algebra.Matrices.DiagonalCentralizer
+public import Mathlib.LinearAlgebra.Matrix.IsDiag
+public import Mathlib.LinearAlgebra.Matrix.ToLin
 
 @[expose] public section
 

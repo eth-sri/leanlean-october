@@ -42,7 +42,7 @@ theorem kernel_angular (D : Disintegration A R P) (ω : Omega A)
   kernel_angular_lintegral A (actualKernel A D) ω f hf
 
 abbrev sectionMeasure (D : Disintegration A R P) : Measure (CrossSection A) :=
-  KPMsFixedHaar.WeightedSectionGlobalization.weightedSectionMeasure A D.componentWeight
+  KPMsFixedHaar.weighted_section_measure A D.componentWeight
 
 theorem section_shape_measure (D : Disintegration A R P) :
     Measure.map (angularProjection A) (sectionMeasure A D) = D.beta :=
@@ -216,7 +216,6 @@ theorem cuspWeightedSection_eq_withDensity (D : Disintegration A R P)
     (cuspDensity_measurable A c).comp (angularProjection_measurable A)
   rw [lintegral_withDensity_eq_lintegral_mul (sectionMeasure A D) hc hf]
   simp only [cuspWeightedSection, sectionMeasure,
-    KPMsFixedHaar.WeightedSectionGlobalization.weightedSectionMeasure,
     weighted_section_measure, lintegral_finsetSum_measure, lintegral_smul_measure]
   apply Finset.sum_congr rfl
   intro j _

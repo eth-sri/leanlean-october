@@ -84,7 +84,7 @@ theorem sigmaTwo_scalar_scalar (z z' : (KPHilbert.Completion F v)ˣ) :
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau,
     ← map_mul, X_scalar, KubotaRankTwo.det, Matrix.GeneralLinearGroup.det_scalar,
     Fintype.card_fin]
-  rw [show z * z' / z = z' from by simp [mul_comm],
+  rw [show z * z' / z = z' from by simp [],
     show z * z' / (z' * z ^ 2) = z⁻¹ from by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_pow_eq_pow_val,
@@ -116,7 +116,7 @@ theorem sigmaTwo_scalar_commutator (z : (KPHilbert.Completion F v)ˣ)
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau,
     X_scalar_mul, X_mul_scalar, X_scalar, KubotaRankTwo.det,
     Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
-  rw [show z * KubotaRankTwo.X K g / z = KubotaRankTwo.X K g from by simp [mul_comm],
+  rw [show z * KubotaRankTwo.X K g / z = KubotaRankTwo.X K g from by simp [],
     show z * KubotaRankTwo.X K g / (KubotaRankTwo.X K g * z ^ 2) = z⁻¹ from by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_pow_eq_pow_val,

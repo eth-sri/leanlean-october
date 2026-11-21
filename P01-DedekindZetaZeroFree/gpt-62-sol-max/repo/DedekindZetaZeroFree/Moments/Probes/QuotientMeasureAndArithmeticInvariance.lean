@@ -35,8 +35,8 @@ theorem exterior_weight_finite (A : SArithmeticData F)
   refine ((Ideal.finite_setOfPred_absNorm_le (S := 𝓞 F) ⌈M * Y⌉₊).preimage
     hf.injOn).subset ?_
   intro s hs
-  have hb : A.exteriorNorm s / Y ≤ M := hM (subset_tsupport W1 hs)
-  have hn : A.exteriorNorm s ≤ M * Y := (div_le_iff₀ hY).mp hb
+  have hb := hM (subset_tsupport W1 hs)
+  have hn := (div_le_iff₀ hY).mp hb
   have hn' : (Ideal.absNorm s.val : ℝ) ≤ (⌈M * Y⌉₊ : ℝ) :=
     hn.trans (Nat.le_ceil _)
   exact_mod_cast hn'
@@ -46,17 +46,14 @@ def scaledIntegralRows (A : SArithmeticData F) (T : ℝ) (K : Set A.G) : Set A.R
     asLocalPoint A (radialSection A T * k)}
 
 private theorem localPoint_mul (A : SArithmeticData F) (x y : A.G) :
-    asLocalPoint A (x * y) = asLocalPoint A x * asLocalPoint A y := by
-  ext <;> rfl
+    asLocalPoint A (x * y) = asLocalPoint A x * asLocalPoint A y := rfl
 
 private theorem localPoint_continuous (A : SArithmeticData F) :
     Continuous (asLocalPoint A) := by
   unfold asLocalPoint SArithmeticData.localToAdditive
   apply Continuous.prodMk
-  · exact continuous_pi (fun w => Units.continuous_val.comp
-      ((continuous_apply w).comp continuous_fst))
-  · exact continuous_pi (fun v => Units.continuous_val.comp
-      ((continuous_apply v).comp continuous_snd))
+  · fun_prop
+  fun_prop
 
 private theorem localPoint_embedding (A : SArithmeticData F) :
     Topology.IsEmbedding (asLocalPoint A) :=

@@ -136,9 +136,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
     have hmk :
         upper.extension.extensionQuotientMulEquiv.symm
             (QuotientGroup.mk sigma) =
-          upper.extension.extensionQuotientMk sigma := by
-      exact
-        upper.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
+          upper.extension.extensionQuotientMk sigma := upper.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
           (upper.extension.extensionQuotientMk_apply sigma).symm
     rw [hmk]
   have hqLower_mk :
@@ -151,9 +149,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
         lower.extension.extensionQuotientMulEquiv.symm
             (QuotientGroup.mk (Subgroup.inclusion hH'H sigma)) =
           lower.extension.extensionQuotientMk
-            (Subgroup.inclusion hH'H sigma) := by
-      exact
-        lower.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
+            (Subgroup.inclusion hH'H sigma) := lower.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
           (lower.extension.extensionQuotientMk_apply
             (Subgroup.inclusion hH'H sigma)).symm
     rw [hmk]

@@ -77,7 +77,7 @@ def squareToThree : rootsOfUnity 6 F →* rootsOfUnity 3 F where
     rw [← pow_mul]
     exact z.property⟩
   map_one' := by apply Subtype.ext; simp
-  map_mul' := by intro x y; apply Subtype.ext; simp [mul_pow]
+  map_mul' := by simp [mul_pow]
 
 def B3 (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : Place F) (a b : (Completion F v)ˣ) : rootsOfUnity 3 F :=
   squareToThree F (B6 F ζ hζ v a b)

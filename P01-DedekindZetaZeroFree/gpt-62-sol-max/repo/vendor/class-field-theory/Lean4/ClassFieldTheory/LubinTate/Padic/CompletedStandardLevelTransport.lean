@@ -121,10 +121,14 @@ open SameUniformizer
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+include p n
+
 /-- The standard finite-level embedding restricted to the actual valuation
 rings. -/
-noncomputable def padicStandardLevelIntegerEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicStandardLevelIntegerEmbedding :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring →+*
       (padicCompletedLevelCompleteDVF p n).valuationSubring := by
@@ -207,7 +211,6 @@ noncomputable def padicStandardLevelIntegerEmbedding
 recovers the field embedding. -/
 @[simp]
 theorem padicStandardLevelIntegerEmbedding_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x :
       (standardLubinTateLevelCompleteDVF
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
@@ -224,8 +227,7 @@ theorem padicStandardLevelIntegerEmbedding_coe
 /-- The integral embedding sends the finite primitive point to the chosen
 completed primitive point. -/
 @[simp]
-theorem padicStandardLevelIntegerEmbedding_apply_primitivePoint
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardLevelIntegerEmbedding_apply_primitivePoint :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     padicStandardLevelIntegerEmbedding p n
         (standardLubinTatePrimitivePointInteger hπ n) =
@@ -241,8 +243,7 @@ theorem padicStandardLevelIntegerEmbedding_apply_primitivePoint
 
 /-- The integral standard-level embedding is continuous for the two
 maximal-ideal adic topologies. -/
-theorem padicStandardLevelIntegerEmbedding_continuous
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardLevelIntegerEmbedding_continuous :
     Continuous (padicStandardLevelIntegerEmbedding p n) := by
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
   let source := standardLubinTateLevelCompleteDVF hπ n
@@ -268,8 +269,7 @@ theorem padicStandardLevelIntegerEmbedding_continuous
 
 /-- The integral embedding commutes with the canonical maps of p-adic
 integer coefficients. -/
-theorem padicStandardLevelIntegerEmbedding_comp_coefficientHom
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicStandardLevelIntegerEmbedding_comp_coefficientHom :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     (padicStandardLevelIntegerEmbedding p n).comp
         (standardLubinTateLevelCoefficientHom hπ n) =
@@ -294,7 +294,6 @@ theorem padicStandardLevelIntegerEmbedding_comp_coefficientHom
 /-- Evaluation after extending p-adic coefficients to the completed Witt
 ring is evaluation through the direct p-adic coefficient map. -/
 theorem padicCompletedLevelPowerSeriesEval_map_padicCoefficients
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x)
     (f : PowerSeries (padicLocalField p).valuationSubring) :
@@ -319,7 +318,6 @@ theorem padicCompletedLevelPowerSeriesEval_map_padicCoefficients
 /-- Analytic evaluation in the finite standard level commutes with its
 integral embedding into the completed level. -/
 theorem padicStandardLevelIntegerEmbedding_powerSeriesEval
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x :
       (standardLubinTateLevelCompleteDVF
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
@@ -370,13 +368,18 @@ theorem padicStandardLevelIntegerEmbedding_powerSeriesEval
         (hx.map (padicStandardLevelIntegerEmbedding_continuous p n))
         f).symm
 
+end
+
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (u : (padicLocalField p).valuationSubringˣ)
+include p n u
+
 /-- The integral embedding carries the finite analytic unit action to the
 direct completed analytic unit action with the same unit. -/
 @[simp]
 theorem
-    padicStandardLevelIntegerEmbedding_apply_primitivePointUnitAction
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+    padicStandardLevelIntegerEmbedding_apply_primitivePointUnitAction :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     padicStandardLevelIntegerEmbedding p n
         (standardLubinTatePrimitivePointIntegerAction hπ n u) =
@@ -399,9 +402,7 @@ theorem
 
 /-- At the finite p-adic level, the parameter class of a unit realizes
 exactly its direct analytic action. -/
-theorem padicStandardUnitParameterLevelRoot_class
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicStandardUnitParameterLevelRoot_class :
     let F := padicLocalField p
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     standardLubinTateUnitParameterLevelRoot F hπ n
@@ -420,9 +421,7 @@ theorem padicStandardUnitParameterLevelRoot_class
 same finite unit-parameter class. -/
 @[simp]
 theorem
-    padicCompletedStandardPrimitivePointUnitAction_eq_unitParameterRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+    padicCompletedStandardPrimitivePointUnitAction_eq_unitParameterRoot :
     ((padicCompletedStandardPrimitivePointUnitAction p n u :
         (padicCompletedLevelCompleteDVF p n).valuationSubring) :
       padicCompletedLevelField p n) =
@@ -470,8 +469,6 @@ theorem
 /-- The completed unit-indexed Frobenius lift restricts to the finite
 standard-level automorphism with the same unit-parameter class. -/
 theorem padicCompletedUnitFrobeniusLiftEquiv_standardLevelEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x :
       standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) :
@@ -532,8 +529,6 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_standardLevelEmbedding
 /-- The inverse completed unit-indexed Frobenius lift restricts to the
 inverse finite unit-parameter automorphism. -/
 theorem padicCompletedUnitFrobeniusLiftEquiv_symm_standardLevelEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x :
       standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) :
@@ -561,8 +556,6 @@ the orientation used by the actual local Artin map after changed-uniformizer
 descent. -/
 theorem
     padicCompletedInverseUnitFrobeniusLiftEquiv_standardLevelEmbedding
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
     (x :
       standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) :
@@ -611,6 +604,8 @@ theorem
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n).map_inv]
   rw [hparameter]
   rfl
+
+end
 
 end LubinTate
 

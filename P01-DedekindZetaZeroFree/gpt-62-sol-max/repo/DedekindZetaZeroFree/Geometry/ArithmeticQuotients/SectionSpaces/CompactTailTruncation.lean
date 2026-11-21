@@ -26,31 +26,9 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem continuous_labeledA_placeEquiv :
-    Continuous (labeledA (placeEquiv F ζ hζ)) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
-
 private theorem measurable_q (a : Chart (U := U) (H := H)) :
-    Measurable (KPContCotangentOverlapRationalBranches.q a) := by
-  have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-        (H.atlas U).components ∘ Sigma.mk a.component := by
-      funext x; exact ((H.atlas U).components_formula a.component x).symm
-    rw [he]
-    exact ((H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk).continuous
-  have hproj : Measurable (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    measurable_quotient_mk''
-  have hcomp : KPContCotangentOverlapRationalBranches.q a =
-      KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      ∘ KPCuspSiegel.projection F
-          (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
-      ∘ labeledA (placeEquiv F ζ hζ) := rfl
-  rw [hcomp]
-  exact hcm.measurable.comp (hproj.comp continuous_labeledA_placeEquiv.measurable)
+    Measurable (KPContCotangentOverlapRationalBranches.q a) :=
+  (KPContCotangentOverlapRationalBranches.continuous_chartProjection a).measurable
 
 private theorem q_isotropyArrow (a : Chart (U := U) (H := H)) (γ : Gamma a) (x : M F)
     (hx : x ∈ omega a) :

@@ -42,11 +42,14 @@ theorem character_trivial_near_zero {K : Type*} [NormedField K] [IsUltrametricDi
   exact lt_of_le_of_lt (mul_le_of_le_one_left (norm_nonneg x)
     (IsUltrametricDist.norm_natCast_le_one K m)) hx
 
+section
+
+variable {K G V : Type*} [NormedField K] [IsUltrametricDist K] [Group G] [AddCommGroup V]
+  [Module ℂ V] (ρ : Representation ℂ G V) (n : AddChar K G) (a : Kˣ → G)
+  (hconj : ∀ (y : Kˣ) (x : K), a y * n x = n ((y : K) * x) * a y)
+include hconj
+
 theorem ordinaryDifferences_vanish_near_zero
-    {K G V : Type*} [NormedField K] [IsUltrametricDist K] [Group G]
-    [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (n : AddChar K G) (a : Kˣ → G)
-    (hconj : ∀ (y : Kˣ) (x : K), a y * n x = n ((y : K) * x) * a y)
     (ψ : AddChar K Circle) (hc : Continuous ψ) (ell : V →ₗ[ℂ] ℂ)
     (hWh : ∀ (x : K) (φ : V), ell (ρ (n x) φ) = (ψ x : ℂ) * ell φ)
     (z : V) (hz : z ∈ ordinaryDifferences ρ n) :
@@ -88,10 +91,6 @@ theorem ordinaryDifferences_vanish_near_zero
       rw [show ell (ρ (a y) z) = 0 from hzr y hy, smul_zero]
 
 theorem jacquet_eventual_recurrence
-    {K G V : Type*} [NormedField K] [IsUltrametricDist K] [Group G]
-    [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V) (n : AddChar K G) (a : Kˣ → G)
-    (hconj : ∀ (y : Kˣ) (x : K), a y * n x = n ((y : K) * x) * a y)
     (p : Kˣ) (ha : ∀ y : Kˣ, a (y * p) = a y * a p)
     (α β : ℂ)
     (hJ : ∀ φ : V, ((ρ (a p) - α • LinearMap.id) *
@@ -121,6 +120,8 @@ theorem jacquet_eventual_recurrence
   rw [h1, h2] at hzero
   unfold whittakerValue at *
   linear_combination hzero
+
+end
 
 theorem distinct_root_recurrence_formula (u : ℕ → ℂ) (α β : ℂ)
     (hne : α ≠ β)
@@ -177,21 +178,19 @@ theorem distinct_root_recurrence_uniform_bound (u : ℕ → ℂ) (α β : ℂ)
       gcongr
     _ = _ := by ring
 
-theorem whittakerValue_locallyConstant
-    {K G V : Type*} [Field K] [TopologicalSpace K] [Group G]
-    [TopologicalSpace G] [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V)
-    (hsmooth : ∀ φ : V, IsLocallyConstant (fun g : G => ρ g φ))
-    (a : Kˣ → G) (ha : Continuous a) (ell : V →ₗ[ℂ] ℂ) (φ : V) :
+section
+
+variable {K G V : Type*} [Field K] [TopologicalSpace K] [Group G] [TopologicalSpace G]
+  [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
+  (hsmooth : ∀ φ : V, IsLocallyConstant (fun g : G => ρ g φ)) (a : Kˣ → G) (ha : Continuous a)
+  (ell : V →ₗ[ℂ] ℂ) (φ : V)
+include hsmooth ha
+
+theorem whittakerValue_locallyConstant :
     IsLocallyConstant (whittakerValue ρ a ell φ) := by
   exact ((hsmooth φ).comp ell).comp_continuous ha
 
 theorem whittakerValue_compact_bound
-    {K G V : Type*} [Field K] [TopologicalSpace K] [Group G]
-    [TopologicalSpace G] [AddCommGroup V] [Module ℂ V]
-    (ρ : Representation ℂ G V)
-    (hsmooth : ∀ φ : V, IsLocallyConstant (fun g : G => ρ g φ))
-    (a : Kˣ → G) (ha : Continuous a) (ell : V →ₗ[ℂ] ℂ) (φ : V)
     (S : Set Kˣ) (hS : IsCompact S) :
     ∃ H : ℝ, 0 < H ∧ ∀ y ∈ S, ‖whittakerValue ρ a ell φ y‖ ≤ H := by
   obtain ⟨H, hH⟩ := hS.bddAbove_image
@@ -199,6 +198,8 @@ theorem whittakerValue_compact_bound
   refine ⟨max H 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), ?_⟩
   intro y hy
   exact (hH (Set.mem_image_of_mem _ hy)).trans (le_max_left _ _)
+
+end
 
 theorem generic_fixed_vector_support
     {F : Type} [Field F] [NumberField F]

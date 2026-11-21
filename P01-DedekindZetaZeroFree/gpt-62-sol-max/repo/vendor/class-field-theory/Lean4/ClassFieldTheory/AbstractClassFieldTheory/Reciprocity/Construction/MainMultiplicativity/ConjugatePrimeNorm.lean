@@ -1,7 +1,9 @@
 module
 
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.MainMultiplicativity.FrobeniusActionRemainder
-public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.RelativeNormDoubleCoset
+public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Norm
+public import GaloisCohomology.Cyclic.IntegralRepUniverse
+public import Mathlib.GroupTheory.GroupAction.Quotient
 
 @[expose] public section
 

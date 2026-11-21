@@ -10,6 +10,7 @@ open MeasureTheory Topology
 
 namespace DedekindZetaZeroFree.KPContActualSectorMultiplier
 
+open KPContActualSectorTestDifferentialDescentCalculus (smooth_differential differential_arrow_const smooth_ofReal differentiable_zext)
 open KPContActualSectorSmoothTestModules KPContActualSectorTestDifferentialDescent
 open KPContActualCotangentCountableShrinking KPContCotangentOverlapRationalBranches
 open KPContCotangentActualOverlap KPContActualCotangentPieceHilbertSum
@@ -20,172 +21,14 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem continuous_labeledA_self :
-    Continuous (labeledA (placeEquiv F ζ hζ) : M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
-    (CotangentLogCoframe.A (d F)).continuous
-private theorem isOpen_omega (a : ActualChart (U := U) (H := H)) : IsOpen (omega a) :=
-  a.domain_open.preimage continuous_labeledA_self
-private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q a) := by
-  have hp : Continuous (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    continuous_quotient_mk'
-  have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := a.component))
-    simpa only [Function.comp_def, (H.atlas U).components_formula] using hh
-  exact hc.comp (hp.comp continuous_labeledA_self)
-private lemma q_coordinates (a : ActualChart (U := U) (H := H)) (y : a.domain) :
-    q a (coordinates a y).val = a.toBase y := by
-  have hi : ∀ z : KPCuspGenuineMonodromy.SymmetricSpace F,
-      labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) z) = z := by
-    intro z; funext k; simp [labeledA, labeledAInv]
-  simp only [ShrunkChart.toBase, KPContCotangentOverlapRationalBranches.q, coordinates]
-  rw [hi]
+theorem isOpen_chart_lift (a : ActualChart (U := U) (H := H)) : IsOpen (omega a) :=
+  KPContActualSectorTestDifferentialDescentCalculus.isOpen_omega a
+
+theorem continuous_chart_projection (a : ActualChart (U := U) (H := H)) : Continuous (q a) :=
+  KPContActualSectorTestDifferentialDescentCalculus.continuous_q a
+
  def zext (a : ActualChart (U := U) (H := H)) (f : omega a → ℂ) : M F → ℂ :=
   fun x => if hx : x ∈ omega a then f ⟨x, hx⟩ else 0
-
-private theorem smooth_zext {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
-    (hf : SmoothOnLift a f) : ContDiffOn ℝ (⊤ : ℕ∞) (zext a f) (omega a) := by
-  obtain ⟨g, hg, he⟩ := hf
-  refine hg.congr (f₁ := zext a f) ?_
-  intro x hx
-  simpa [zext, hx] using (he ⟨x, hx⟩).symm
-
-private theorem smooth_differential {a : ActualChart (U := U) (H := H)} {f : omega a → ℂ}
-    (hf : SmoothOnLift a f) : SmoothOnLift a (fun x => CotangentLogCoframe.j (d F)
-      (HyperbolicChart.differential (d F) (zext a f) x.val)) := by
-  refine ⟨fun x => CotangentLogCoframe.j (d F)
-    (HyperbolicChart.differential (d F) (zext a f) x), ?_, fun _ => rfl⟩
-  rw [contDiffOn_piLp]
-  rintro ⟨i, k⟩
-  have hd := (smooth_zext hf).fderiv_of_isOpen (isOpen_omega a) (m := (⊤ : ℕ∞)) (by simp)
-  have hcd (k : Fin 3) : ContDiffOn ℝ (⊤ : ℕ∞)
-      (HyperbolicChart.coordinateDerivative (d F) i k (zext a f)) (omega a) :=
-    hd.clm_apply contDiffOn_const
-  have hexp : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun x : M F => (Real.exp (x (i, 2)) : ℂ)) (omega a) :=
-    Complex.ofRealCLM.contDiff.comp_contDiffOn
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.exp.contDiffOn)
-  fin_cases k
-  · simpa [CotangentLogCoframe.j, HyperbolicChart.differential] using hcd 2
-  · simpa [CotangentLogCoframe.j, HyperbolicChart.differential] using hexp.mul (hcd 0)
-  · simpa [CotangentLogCoframe.j, HyperbolicChart.differential] using hexp.mul (hcd 1)
-
-private theorem differential_frame (f : M F → ℂ) (x : M F) (k : Fin (d F) × Fin 3) :
-    (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) k =
-      fderiv ℝ f x (CotangentLogCoframe.H (d F) x
-        (EuclideanSpace.basisFun _ ℝ k)) := by
-  rcases k with ⟨i, k⟩
-  fin_cases k
-  · have hh : CotangentLogCoframe.H (d F) x (EuclideanSpace.basisFun _ ℝ (i, (0 : Fin 3))) =
-        HyperbolicChart.coordinateVector (d F) i 2 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-    change (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) (i, (0 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H (d F) x
-        (EuclideanSpace.basisFun _ ℝ (i, (0 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative]
-  · have hh : CotangentLogCoframe.H (d F) x (EuclideanSpace.basisFun _ ℝ (i, (1 : Fin 3))) =
-        Real.exp (x (i, 2)) • HyperbolicChart.coordinateVector (d F) i 0 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-      split_ifs with h <;> simp_all
-    change (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) (i, (1 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H (d F) x
-        (EuclideanSpace.basisFun _ ℝ (i, (1 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative, RCLike.real_smul_eq_coe_mul]
-  · have hh : CotangentLogCoframe.H (d F) x (EuclideanSpace.basisFun _ ℝ (i, (2 : Fin 3))) =
-        Real.exp (x (i, 2)) • HyperbolicChart.coordinateVector (d F) i 1 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-      split_ifs with h <;> simp_all
-    change (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) (i, (2 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H (d F) x
-        (EuclideanSpace.basisFun _ ℝ (i, (2 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative, RCLike.real_smul_eq_coe_mul]
-
-private theorem differential_frame_sum (f : M F → ℂ) (x : M F) (v : V F) :
-    fderiv ℝ f x (CotangentLogCoframe.H (d F) x v) =
-      ∑ k, (v k : ℂ) *
-        (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) k := by
-  conv_lhs => rw [← OrthonormalBasis.sum_repr (EuclideanSpace.basisFun _ ℝ) v]
-  simp only [EuclideanSpace.basisFun_repr, map_sum, map_smul, differential_frame,
-    RCLike.real_smul_eq_coe_mul]
-  rfl
-
-private theorem differential_arrow_const {i : Fin (H.atlas U).componentCount}
-    {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i}
-    (e : Arrow a b) (c : ℂ) (f g : M F → ℂ) (x : M F) (hx : x ∈ e.domain)
-    (hf : DifferentiableAt ℝ f x) (hg : DifferentiableAt ℝ g (e.psi x))
-    (he : (fun y => g (e.psi y)) =ᶠ[𝓝 x] c • f) :
-    CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) g (e.psi x)) =
-      c • KPContCotangentRealOrthogonalComplexification.operatorComplexification _ (Q e x)
-        (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x)) := by
-  have hψ : DifferentiableAt ℝ e.psi x :=
-    ((smooth_metric e).1.differentiableOn (by simp) x hx).differentiableAt
-      (e.isOpen_domain.mem_nhds hx)
-  have hd : (fderiv ℝ g (e.psi x)).comp (fderiv ℝ e.psi x) = c • fderiv ℝ f x := by
-    rw [← fderiv_comp x hg hψ]
-    change fderiv ℝ (fun y => g (e.psi y)) x = _
-    rw [he.fderiv_eq, fderiv_const_smul hf]
-  ext k
-  rw [differential_frame]
-  let v := (KPContCotangentActualGenuineTwistIsotropy.q e x hx).symm
-    (EuclideanSpace.basisFun _ ℝ k)
-  have hh : fderiv ℝ e.psi x (CotangentLogCoframe.H (d F) x v) =
-      CotangentLogCoframe.H (d F) (e.psi x) (EuclideanSpace.basisFun _ ℝ k) := by
-    apply (CotangentLogCoframe.C (d F) (e.psi x)).injective
-    change Q e x v = _
-    change KPContCotangentActualGenuineTwistIsotropy.q e x hx v = _
-    simp [v, CotangentLogCoframe.H]
-  rw [← hh]
-  have hdv := congrArg (fun A : M F →L[ℝ] ℂ => A (CotangentLogCoframe.H (d F) x v)) hd
-  rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    differential_frame_sum] at hdv
-  rw [hdv]
-  change _ = c *
-    (KPContCotangentRealOrthogonalComplexification.operatorComplexification _ (Q e x)
-      (CotangentLogCoframe.j (d F) (HyperbolicChart.differential (d F) f x))) k
-  rw [KPContCotangentRealOrthogonalComplexification.operatorComplexification_apply]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro l _
-  have hv : v l = Q e x (EuclideanSpace.basisFun _ ℝ l) k := by
-    have hi := (KPContCotangentActualGenuineTwistIsotropy.q e x hx).inner_map_map
-      v (EuclideanSpace.basisFun _ ℝ l)
-    have hvq : KPContCotangentActualGenuineTwistIsotropy.q e x hx v =
-        EuclideanSpace.basisFun _ ℝ k := by simp [v]
-    rw [hvq] at hi
-    change inner ℝ (EuclideanSpace.basisFun _ ℝ k)
-      (Q e x (EuclideanSpace.basisFun _ ℝ l)) =
-      inner ℝ v (EuclideanSpace.basisFun _ ℝ l) at hi
-    simpa [EuclideanSpace.inner_eq_star_dotProduct, dotProduct,
-      EuclideanSpace.basisFun_apply, Pi.single_apply] using hi.symm
-  rw [hv]
-
-private theorem smooth_ofReal {a : ActualChart (U := U) (H := H)} {f : omega a → ℝ}
-    (hf : SmoothOnLift a f) : SmoothOnLift a (fun x => (f x : ℂ)) := by
-  obtain ⟨g, hg, he⟩ := hf
-  exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
-    fun x => by dsimp; rw [he x]⟩
-
-private theorem differentiable_zext {a : ActualChart (U := U) (H := H)}
-    {f : omega a → ℂ} (hf : SmoothOnLift a f) (x : omega a) :
-    DifferentiableAt ℝ (zext a f) x.val :=
-  ((smooth_zext hf).differentiableOn (by simp) x.val x.property).differentiableAt
-    ((isOpen_omega a).mem_nhds x.property)
 
 private theorem la (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
     labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) x) = x := by
@@ -346,93 +189,56 @@ private theorem cutoff_norm_continuous (η : RealSmoothCutoff F ζ hζ U R P H)
     (fun x : omega a => ‖g x.val‖ ^ 2) from congrArg (fun f => fun x => ‖f x‖ ^ 2) h]
   exact hg.continuousOn.restrict.norm.pow 2
 
-private theorem exists_chart_point (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
-    ∃ (a : ActualChart (U := U) (H := H)) (y : omega a), q a y.val = x := by
-  obtain ⟨cov⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
-  have hx : x ∈ ⋃ n, (cov.chart n).baseDomain := by rw [cov.covers]; trivial
-  obtain ⟨n,y,hy⟩ := Set.mem_iUnion.mp hx
-  refine ⟨cov.chart n, coordinates (cov.chart n) y, ?_⟩
-  change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative (cov.chart n).component)
-    (KPCuspSiegel.projection F _ (labeledA (placeEquiv F ζ hζ)
-      (labeledAInv (placeEquiv F ζ hζ) y.val))) = x
-  rw [la]; exact hy
-
-private theorem continuous_iff_isQuotientMap {X Y Z : Type*} [TopologicalSpace X]
-    [TopologicalSpace Y] [TopologicalSpace Z] {q : X → Y} (hq : IsQuotientMap q)
-    (f : Y → Z) : Continuous f ↔ Continuous (f ∘ q) := by
-  refine ⟨fun h => h.comp hq.continuous, fun h => ?_⟩
-  exact Continuous.mk fun s hs => by
-    rw [← hq.isOpen_preimage]
-    exact h.isOpen_preimage s hs
-private theorem continuous_of_all_lifts (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
-    (hf : ∀ a : ActualChart (U := U) (H := H), Continuous (fun y : omega a => f (q a y.val))) :
-    Continuous f := by
-  obtain ⟨cover⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
-  refine continuous_of_cover_nhds (s := fun n => (cover.chart n).baseDomain) ?_ ?_
-  · intro x
-    have hx : x ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
-    obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
-    exact ⟨n, (cover.properties n).base_open.mem_nhds hn⟩
-  · intro n
-    let a := cover.chart n
-    have hloc : Continuous ((fun z : a.baseDomain => f z.val) ∘ a.quotientMap) := by
-      convert (hf a).comp (coordinates_continuous a) using 1
-      funext y
-      exact congrArg f (q_coordinates a y).symm
-    rw [continuousOn_iff_continuous_domRestrict]
-    exact (continuous_iff_isQuotientMap (cover.properties n).quotient _).mpr hloc
-private theorem cutoff_continuous (η : RealSmoothCutoff F ζ hζ U R P H) : Continuous η.val := by
-  apply continuous_of_all_lifts
-  intro a
-  obtain ⟨g,hg,he⟩ := η.smooth a
-  convert hg.continuousOn.domRestrict using 1
-  exact funext (fun y => (he y).symm)
 private theorem cutoffDifferential_zero (η : RealSmoothCutoff F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (y : omega a)
     (hy : q a y.val ∉ tsupport η.val) : cutoffDifferential η a y = 0 := by
   have hz : η.val =ᶠ[𝓝 (q a y.val)] 0 := by
     filter_upwards [(isClosed_tsupport η.val).isOpen_compl.mem_nhds hy] with x hx
     exact image_eq_zero_of_notMem_tsupport hx
-  have hcomp := hz.comp_tendsto (continuous_q a).continuousAt
+  have hcomp := hz.comp_tendsto (continuous_chart_projection a).continuousAt
   have hext : liftExtension a (cutoffLift η a) =ᶠ[𝓝 y.val] 0 := by
-    filter_upwards [hcomp, (isOpen_omega a).mem_nhds y.property] with x hx hmem
+    filter_upwards [hcomp, (isOpen_chart_lift a).mem_nhds y.property] with x hx hmem
     have hh : η.val (q a x) = 0 := hx
     simp only [liftExtension, dite_eq_left hmem, cutoffLift, hh, Complex.ofReal_zero, Pi.zero_apply]
   ext ⟨i,k⟩
   fin_cases k <;> simp [cutoffDifferential, chartDifferential, CotangentLogCoframe.j,
     HyperbolicChart.differential, HyperbolicChart.coordinateDerivative, hext.fderiv_eq]
 
-private theorem cutoffNorm_descends (η : RealSmoothCutoff F ζ hζ U R P H) :
-    ∃ f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ, Continuous f ∧
+theorem cutoffNorm_descends (η : RealSmoothCutoff F ζ hζ U R P H) :
+    ∃! f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ, Continuous f ∧
       ∀ (a : ActualChart (U := U) (H := H)) (y : omega a),
         f (q a y.val) = ‖cutoffDifferential η a y‖ ^ 2 := by
-  choose chart point hpoint using (exists_chart_point (R := R) (P := P) (H := H))
+  choose chart point hpoint using (exists_chart_lift (R := R) (P := P) (H := H))
   let f : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ := fun x => ‖cutoffDifferential η (chart x) (point x)‖ ^ 2
   have hf (a : ActualChart (U := U) (H := H)) (y : omega a) :
       f (q a y.val) = ‖cutoffDifferential η a y‖ ^ 2 := by
     dsimp only [f]
     rw [cutoff_norm_fiber η (chart (q a y.val)) a (point (q a y.val)) y (hpoint _)]
-  refine ⟨f, ?_, hf⟩
-  apply continuous_of_all_lifts
-  intro a
-  convert cutoff_norm_continuous η a using 1
-  exact funext (hf a)
+  refine ⟨f, ⟨?_, hf⟩, ?_⟩
+  · apply continuous_of_chart_lifts
+    intro a
+    convert cutoff_norm_continuous η a using 1
+    exact funext (hf a)
+  · intro g hg
+    funext x
+    obtain ⟨a, y, rfl⟩ := exists_chart_lift (R := R) (P := P) (H := H) x
+    rw [hg.2, hf]
 
 private theorem compactBounds (η : RealSmoothCutoff F ζ hζ U R P H) (hcompact : HasCompactSupport η.val) :
     ∃ B D : ℝ, 0 ≤ B ∧ 0 ≤ D ∧ (∀ x, |η.val x| ≤ B) ∧
       ∀ (a : ActualChart (U := U) (H := H)) (y : omega a), ‖cutoffDifferential η a y‖ ≤ D := by
-  obtain ⟨f,hf,hchart⟩ := cutoffNorm_descends η
+  obtain ⟨f, ⟨hf, hchart⟩, -⟩ := cutoffNorm_descends η
   have hsupport : tsupport f ⊆ tsupport η.val := by
     apply closure_minimal ?_ (isClosed_tsupport η.val)
     intro x hx
     by_contra hn
-    obtain ⟨a,y,hy⟩ := exists_chart_point (R := R) (P := P) (H := H) x
+    obtain ⟨a,y,hy⟩ := exists_chart_lift (R := R) (P := P) (H := H) x
     have hd := cutoffDifferential_zero η a y (hy ▸ hn)
     have hz : f x = 0 := by rw [← hy, hchart,hd,norm_zero,zero_pow (by decide)]
     exact hx hz
   have hcompactf : HasCompactSupport f :=
     hcompact.of_isClosed_subset (isClosed_tsupport f) hsupport
-  obtain ⟨B,hB⟩ := hcompact.isCompact.exists_bound_of_continuousOn (cutoff_continuous η).continuousOn
+  obtain ⟨B,hB⟩ := hcompact.isCompact.exists_bound_of_continuousOn η.continuous.continuousOn
   obtain ⟨D,hD⟩ := hcompactf.isCompact.exists_bound_of_continuousOn hf.continuousOn
   refine ⟨max B 0, Real.sqrt (max D 0), le_max_right _ _, Real.sqrt_nonneg _, ?_, ?_⟩
   · intro x

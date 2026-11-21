@@ -13,7 +13,7 @@ open MeasureTheory Topology
 namespace DedekindZetaZeroFree.KPContActualCollarBuffer
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+variable (U : KPMsFixedHaar.Level F ζ hζ)
 variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
@@ -69,6 +69,84 @@ def collars (τ T : ℝ) : Set (Base F ζ hζ U) :=
 def coveredCollars (τ T : ℝ) : Set (Covered F ζ hζ U) :=
   KPContSectorCoveredQuotientVocabulary.q F ζ hζ U ⁻¹' collars F ζ hζ U R P H τ T
 
+theorem endChart_continuous (τ : ℝ) (c : CuspIndex F ζ hζ U R P H) :
+    Continuous (KPContActualCollarBuffer.endChart F ζ hζ U R P H τ c) := by
+  apply Continuous.comp _ (show Continuous (KPFiniteCuspAtlas.endMap F
+    (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative c.1))
+    (((H.atlas U).cuspAtlas c.1).cusp c.2)
+    (((H.atlas U).cuspAtlas c.1).representative c.2) τ) from ?_)
+  · have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := c.1))
+    simpa only [Function.comp_def, (H.atlas U).components_formula] using hh
+  · apply Continuous.quotient_lift
+    have hact : Continuous (KPCuspSiegel.action F (((H.atlas U).cuspAtlas c.1).representative c.2)) :=
+      (by unfold KPCuspSiegel.action KPCuspSiegel.glAction
+          exact (KPArch.productAction_contDiff _ _).continuous)
+    exact continuous_quotient_mk'.comp
+      (hact.comp ((KPCuspCharts.toArch_contDiff F).continuous.comp continuous_subtype_val))
+
+theorem compact_slab (c : CuspIndex F ζ hζ U R P H) (L B : ℝ) :
+    ∃ K : Set (Base F ζ hζ U), IsCompact K ∧
+      ∀ z : KPCuspCharts.Coordinates F, z.2 ∈ Set.Icc L B →
+        KPContActualCollarBuffer.chartLift F ζ hζ U R P H c z ∈ K := by
+  let G := ((H.atlas U).cuspAtlas c.1).geometry c.2
+  let S := KPContActualCollarBuffer.Stabilizer F ζ hζ U R P H c
+  letI : CompactSpace (KPCuspCharts.CrossQuotient F S) := G.compact_cross
+  letI : CompactSpace (Set.Icc L B) := isCompact_iff_compactSpace.mp isCompact_Icc
+  let f : KPCuspCharts.CrossQuotient F S × Set.Icc L B → Base F ζ hζ U := fun p =>
+    KPContActualCollarBuffer.endChart F ζ hζ U R P H (L-1) c
+      (G.highPresentation (L-1) (p.1, ⟨p.2.val, by change L-1 < p.2.val; have := p.2.property.1; linarith⟩))
+  have hf : Continuous f := (endChart_continuous F ζ hζ U R P H (L-1) c).comp
+    ((G.highPresentation (L-1)).continuous.comp (by fun_prop))
+  refine ⟨Set.range f, isCompact_range hf, ?_⟩
+  intro z hz
+  refine ⟨(Quotient.mk _ z.1, ⟨z.2,hz⟩), ?_⟩
+  dsimp only [f]
+  rw [G.highPresentation_formula]
+  rfl
+
+theorem end_lift_range (τ : ℝ) (c : CuspIndex F ζ hζ U R P H) :
+    KPContActualCollarBuffer.chartLift F ζ hζ U R P H c ''
+      {z : KPCuspCharts.Coordinates F | τ < z.2} =
+    KPContActualCollarBuffer.endSet F ζ hζ U R P H τ c :=
+  KPActualCollarBuffer.chartLift_range (H.atlas U) τ c
+
+theorem all_ends_open (t : ℝ) (c : CuspIndex F ζ hζ U R P H) :
+    IsOpen (KPContActualCollarBuffer.endSet F ζ hζ U R P H t c) :=
+  KPActualCollarBuffer.end_open (H.atlas U) t c
+
+theorem compact_truncated_core (B : ℝ) :
+    IsCompact ((⋃ c : CuspIndex F ζ hζ U R P H,
+      KPContActualCollarBuffer.endSet F ζ hζ U R P H B c)ᶜ) := by
+  classical
+  choose K hK hslab using (fun c : CuspIndex F ζ hζ U R P H =>
+    compact_slab F ζ hζ U R P H c (H.atlas U).threshold B)
+  let core := (⋃ c : CuspIndex F ζ hζ U R P H,
+      KPContActualCollarBuffer.endSet F ζ hζ U R P H (H.atlas U).threshold c)ᶜ
+  have hc : IsCompact core := by
+    convert (H.atlas U).compact_core using 1
+    ext x
+    simp only [core, Set.mem_compl_iff, Set.mem_iUnion, Set.mem_diff, Set.mem_univ,
+      true_and, KPContActualCollarBuffer.endSet]
+    simp only [Sigma.exists]
+  have hcompact : IsCompact (core ∪ ⋃ c, K c) := hc.union (isCompact_iUnion hK)
+  apply hcompact.of_isClosed_subset
+  · exact (isOpen_iUnion (all_ends_open F ζ hζ U R P H B)).isClosed_compl
+  · intro x hx
+    by_cases hcore : x ∈ core
+    · exact Or.inl hcore
+    · right
+      have hh : x ∈ ⋃ c : CuspIndex F ζ hζ U R P H,
+          KPContActualCollarBuffer.endSet F ζ hζ U R P H (H.atlas U).threshold c :=
+        not_not.mp hcore
+      obtain ⟨c,hc⟩ := Set.mem_iUnion.mp hh
+      rw [← end_lift_range F ζ hζ U R P H (H.atlas U).threshold c] at hc
+      obtain ⟨z,hz,rfl⟩ := hc
+      have hzB : z.2 ≤ B := by
+        by_contra hn
+        apply hx
+        exact Set.mem_iUnion.mpr ⟨c, by rw [← end_lift_range F ζ hζ U R P H B c]; exact ⟨z,lt_of_not_ge hn,rfl⟩⟩
+      exact Set.mem_iUnion.mpr ⟨c,hslab c z ⟨hz.le,hzB⟩⟩
+
 structure CollarBuffer (T : ℝ) where
   τ : ℝ
   chart_threshold_le : (H.atlas U).threshold ≤ τ
@@ -78,9 +156,6 @@ structure CollarBuffer (T : ℝ) where
   open_ends : ∀ a, IsOpen (endSet F ζ hζ U R P H τ a)
   disjoint_ends : Pairwise (fun a b => Disjoint
     (endSet F ζ hζ U R P H τ a) (endSet F ζ hζ U R P H τ b))
-  chart_embedding : ∀ a, Topology.IsEmbedding (endChart F ζ hζ U R P H τ a)
-  chart_range : ∀ a, Set.range (endChart F ζ hζ U R P H τ a) =
-    endSet F ζ hζ U R P H τ a
   lift_range : ∀ a, chartLift F ζ hζ U R P H a ''
     {z : KPCuspCharts.Coordinates F | τ < z.2} = endSet F ζ hζ U R P H τ a
 
@@ -88,34 +163,6 @@ structure CollarBuffer (T : ℝ) where
     height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z) = z.2
   height_continuous : ∀ a,
     ContinuousOn (height F ζ hζ U R P H τ a) (endSet F ζ hζ U R P H τ a)
-  height_smooth : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞)
-    (fun z : KPCuspCharts.Coordinates F =>
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z))
-    {z | τ < z.2}
-
-  height_stabilizer : ∀ a (g : Stabilizer F ζ hζ U R P H a)
-      (z : KPCuspCharts.Coordinates F), τ < z.2 →
-    height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a
-      ((((H.atlas U).cuspAtlas a.1).geometry a.2).crossAction g z.1, z.2)) =
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z)
-
-  height_transitions : ∀ a (g : Stabilizer F ζ hζ U R P H a)
-      (A : Matrix.GeneralLinearGroup (Fin 2) F),
-    Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
-    ∀ (z : KPCuspCharts.Coordinates F), τ < z.2 →
-      let D := ((H.atlas U).cuspAtlas a.1).parabolic a.2
-      let z' := KPCuspCharts.affine F H.totallyComplex D.E D.integralUnits
-        (D.ratio g) (A 0 1 / A 1 1) z
-      chartLift F ζ hζ U R P H a z' = chartLift F ζ hζ U R P H a z ∧
-      height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z') =
-        height F ζ hζ U R P H τ a (chartLift F ζ hζ U R P H a z)
-  compact_each_collar : ∀ a, IsCompact (closure
-    {x | x ∈ endSet F ζ hζ U R P H τ a ∧
-      height F ζ hζ U R P H τ a x ∈ Set.Icc T (T + 1)})
-  collar_in_chart_interior : ∀ a, closure
-    {x | x ∈ endSet F ζ hζ U R P H τ a ∧
-      height F ζ hζ U R P H τ a x ∈ Set.Icc T (T + 1)} ⊆
-        interior (endSet F ζ hζ U R P H τ a)
   compact_collars : IsCompact (collars F ζ hζ U R P H τ T)
   compact_covered_collars : IsCompact (coveredCollars F ζ hζ U R P H τ T)
   finite_covered_measure :
@@ -141,7 +188,7 @@ namespace DedekindZetaZeroFree
 
 theorem kp_cont_actual_collar_buffer
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+    (U : KPMsFixedHaar.Level F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
@@ -151,20 +198,18 @@ theorem kp_cont_actual_collar_buffer
   let τ := ((H.atlas U).threshold + T) / 2
   have hτ : (H.atlas U).threshold ≤ τ := by dsimp [τ]; linarith
   have hτT : τ < T := by dsimp [τ]; linarith
-  obtain ⟨hlift, hcoord, hcont, hsmooth, hstab, htrans⟩ :=
+  obtain ⟨hlift, hcoord, hcont⟩ :=
     KPActualCollarBuffer.actual_height_descent F ζ hζ H.totallyComplex U
       (H.atlas U) τ hτ
-  obtain ⟨hopen, hdisj, hemb, hrange, heach, hinterior, hcompact⟩ :=
+  obtain ⟨hopen, hdisj, hcompact⟩ :=
     KPActualCollarBuffer.actual_end_charts_compact_collars F ζ hζ
       H.totallyComplex U (H.atlas U) τ T hτ hτT
   obtain ⟨hbuffer, hzero⟩ :=
     KPActualCollarBuffer.actual_boundary_zero_buffer F ζ hζ
       H.totallyComplex U (H.atlas U) τ T hτ hτT
-  have hc : IsCompact (KPContActualCollarBuffer.collars F ζ hζ U R P H τ T) := by
-    exact hcompact
   have hcovered : IsCompact
       (KPContActualCollarBuffer.coveredCollars F ζ hζ U R P H τ T) :=
-    (KPContSectorSmoothFramesSupport.q_closed_and_proper F ζ hζ U).2 _ hc
+    (KPContSectorSmoothFramesSupport.q_closed_and_proper F ζ hζ U).2 _ hcompact
   have hmeasure : KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U
       (KPContActualCollarBuffer.coveredCollars F ζ hζ U R P H τ T) < (⊤ : ℝ≥0∞) := by
     letI := KPContSectorFixedMeasureLocalFiniteness.coveredMeasure_finiteOnCompacts
@@ -177,41 +222,16 @@ theorem kp_cont_actual_collar_buffer
             below_cutoff := hτT
             dimension_formula := hdim
             positive_dimension := KPCuspCharts.positive_dimension F H.totallyComplex
-            open_ends := ?_
-            disjoint_ends := ?_
-            chart_embedding := ?_
-            chart_range := ?_
-            lift_range := ?_
-            height_coordinates := ?_
-            height_continuous := ?_
-            height_smooth := ?_
-            height_stabilizer := ?_
-            height_transitions := ?_
-            compact_each_collar := ?_
-            collar_in_chart_interior := ?_
-            compact_collars := hc
+            open_ends := hopen
+            disjoint_ends := hdisj
+            lift_range := hlift
+            height_coordinates := hcoord
+            height_continuous := hcont
+            compact_collars := hcompact
             compact_covered_collars := hcovered
             finite_covered_measure := hmeasure
-            boundary_height_buffer := ?_
-            boundary_zero_extension := ?_ }⟩
-  all_goals
-    dsimp only [KPContActualCollarBuffer.zeroExtension, KPContActualCollarBuffer.height,
-      KPContActualCollarBuffer.chartLift, KPContActualCollarBuffer.endSet,
-      KPContActualCollarBuffer.endChart]
-  · exact hopen
-  · exact hdisj
-  · exact hemb
-  · exact hrange
-  · exact hlift
-  · exact hcoord
-  · exact hcont
-  · exact hsmooth
-  · exact hstab
-  · exact htrans
-  · exact heach
-  · exact hinterior
-  · exact hbuffer
-  · exact hzero
+            boundary_height_buffer := hbuffer
+            boundary_zero_extension := hzero }⟩
 
 end DedekindZetaZeroFree
 

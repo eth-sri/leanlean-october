@@ -10,9 +10,11 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.PoissonArch
 
-theorem temperateGrowth_fourierChar_inner
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] (b : V) :
+section
+
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+
+theorem temperateGrowth_fourierChar_inner (b : V) :
     (fun x : V => (𝐞 (inner ℝ x b) : ℂ)).HasTemperateGrowth := by
   have h1 : (fun y : ℝ => Complex.exp (y * Complex.I)).HasTemperateGrowth :=
     Complex.hasTemperateGrowth_exp_mul_I
@@ -22,9 +24,7 @@ theorem temperateGrowth_fourierChar_inner
   ext x
   rw [Function.comp_apply, Real.fourierChar_apply]
 
-theorem fourier_smul_fourierChar
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
+theorem fourier_smul_fourierChar [MeasurableSpace V] [BorelSpace V]
     (f : 𝓢(V, ℂ)) (b : V) :
     ∀ w : V, 𝓕 ((SchwartzMap.smulLeftCLM ℂ (fun x : V => (𝐞 (inner ℝ x b) : ℂ)) f :
         V → ℂ)) w = 𝓕 (f : V → ℂ) (w - b) := by
@@ -43,29 +43,27 @@ theorem fourier_smul_fourierChar
   ring_nf
 
 theorem summable_norm_modulated_schwartz_translate
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V]
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
     (f : 𝓢(V, ℂ)) (a b : V) :
     Summable (fun v : L =>
       ‖𝐞 (inner ℝ (a + (v : V)) b) • f (a + (v : V))‖) := by
   simpa using summable_norm_schwartz_translate L f a
 
-theorem summable_norm_shifted_fourier_schwartz_dual_lattice
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    (f : 𝓢(V, ℂ)) (a b : V) :
+end
+
+section
+
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+  [MeasurableSpace V] [BorelSpace V] (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
+  (f : 𝓢(V, ℂ)) (a b : V)
+
+theorem summable_norm_shifted_fourier_schwartz_dual_lattice :
     Summable (fun w : dualLattice L =>
       ‖𝐞 (inner ℝ a (w : V)) • (𝓕 (f : V → ℂ)) ((w : V) - b)‖) := by
   have h := summable_norm_fourier_schwartz_translate L f (-b)
   simpa only [Circle.norm_smul, neg_add_eq_sub] using h
 
-theorem poisson_shift_modulation
-    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
-    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
-    (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
-    (f : 𝓢(V, ℂ)) (a b : V) :
+theorem poisson_shift_modulation :
     (∑' v : L, 𝐞 (inner ℝ (a + (v : V)) b) • f (a + (v : V))) =
       (ZLattice.covolume L volume : ℂ)⁻¹ *
         ∑' w : dualLattice L,
@@ -81,6 +79,8 @@ theorem poisson_shift_modulation
     apply tsum_congr
     intro w
     rw [fourier_smul_fourierChar f b (w : V)]
+
+end
 
 end DedekindZetaZeroFree.PoissonArch
 

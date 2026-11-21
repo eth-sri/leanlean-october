@@ -34,7 +34,7 @@ theorem inverse_hopf_disc_cover (p : Sphere) :
       0 < ‖(p : Ambient)‖ + hemisphereSign north * (p : Ambient) 2 ∧
       inverseHopfCoordinate north p ∈ Metric.closedBall (0 : ℂ) 1 := by
   have hn : ‖(p : Ambient)‖ = 1 := by
-    simpa only [Metric.mem_sphere, dist_zero_right] using p.property
+    simp
   have hp : (p : Ambient) ≠ 0 := by
     intro h
     simp [h] at hn
@@ -54,8 +54,7 @@ theorem inverse_hopf_disc_cover (p : Sphere) :
         rw [← Complex.normSq_eq_norm_sq]
         cases north <;> simp [hemisphereSign, Complex.normSq_apply, Complex.mul_re,
           Complex.mul_im, sq]
-      nlinarith [sq_nonneg (hemisphereSign north * (p : Ambient) 2), norm_nonneg
-        (((p : Ambient) 0 : ℂ) - (hemisphereSign north : ℂ) * Complex.I * ((p : Ambient) 1 : ℂ))]
+      nlinarith
     have hdennorm : ‖((‖(p : Ambient)‖ : ℂ) + (hemisphereSign north : ℂ) * ((p : Ambient) 2 : ℂ))‖ =
         1 + hemisphereSign north * (p : Ambient) 2 := by
       rw [hn, ← Complex.ofReal_mul, ← Complex.ofReal_add, Complex.norm_real,
@@ -79,8 +78,7 @@ open scoped BigOperators
 def hopfDomain (north : Bool) : Set Ambient :=
   {x | x ≠ 0 ∧ 0 < ‖x‖ + hemisphereSign north * x 2}
 
-private lemma hopfDomain_open (north : Bool) : IsOpen (hopfDomain north) := by
-  exact isOpen_ne.inter (isOpen_lt continuous_const
+private lemma hopfDomain_open (north : Bool) : IsOpen (hopfDomain north) := isOpen_ne.inter (isOpen_lt continuous_const
     (show Continuous (fun x : Ambient => ‖x‖ + hemisphereSign north * x 2) by fun_prop))
 
 private lemma inverseHopf_smooth (north : Bool) :
@@ -91,12 +89,11 @@ private lemma inverseHopf_smooth (north : Bool) :
   have hreal : ContDiff ℝ (⊤ : ℕ∞) (Complex.ofReal : ℝ → ℂ) := Complex.ofRealCLM.contDiff
   simp only [div_eq_mul_inv]
   apply ContDiffAt.mul
-  · have hc : ContDiff ℝ (⊤ : ℕ∞) (Complex.ofReal : ℝ → ℂ) := Complex.ofRealCLM.contDiff
-    fun_prop
+  · fun_prop
   · apply ContDiffAt.inv
     · have hn : ContDiffAt ℝ (⊤ : ℕ∞) (norm : Ambient → ℝ) x := contDiffAt_norm ℝ hx.1
       have hc := Complex.ofRealCLM.contDiff.contDiffAt.comp x hn
-      exact hc.add (by fun_prop)
+      fun_prop
     · rw [← Complex.ofReal_mul, ← Complex.ofReal_add]
       exact Complex.ofReal_ne_zero.mpr (ne_of_gt hx.2)
 
@@ -117,7 +114,7 @@ private lemma hemisphere_compact (north : Bool) :
     IsCompact {x : Ambient | ‖x‖ = 1 ∧ 0 ≤ hemisphereSign north * x 2} := by
   have hs : {x : Ambient | ‖x‖ = 1} = Metric.sphere (0 : Ambient) 1 := by
     ext x
-    simp [Metric.mem_sphere, dist_zero_right]
+    simp
   rw [show {x : Ambient | ‖x‖ = 1 ∧ 0 ≤ hemisphereSign north * x 2} =
     {x | ‖x‖ = 1} ∩ {x | 0 ≤ hemisphereSign north * x 2} from rfl, hs]
   exact (isCompact_sphere (0 : Ambient) 1).inter_right
@@ -126,7 +123,7 @@ private lemma hemisphere_compact (north : Bool) :
 private lemma hemisphere_mem (north : Bool) (p : Sphere)
     (hp : 0 ≤ hemisphereSign north * (p : Ambient) 2) : (p : Ambient) ∈ hopfDomain north := by
   have hn : ‖(p : Ambient)‖ = 1 := by
-    simpa only [Metric.mem_sphere, dist_zero_right] using p.property
+    simp
   exact ⟨by intro h; simp [h] at hn, by rw [hn]; linarith⟩
 
 private lemma hemisphere_jet_bounds {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]

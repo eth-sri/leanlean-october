@@ -45,9 +45,6 @@ def IsLZero (ω : Detector.PrimitiveFrequencyCharacter F) (s : ℂ) : Prop :=
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D₀ : FixedData S η)
 
-def exceptionalSet (ρ U : ℝ) : Set D₀.Row :=
-  {u | FixedData.Row.u u ≠ 1 ∧ U ≤ D₀.q u ∧ D₀.q u < 2 * U ∧
-    ∃ s : ℂ, IsLZero (D₀.omega u) s ∧ σ₀ ≤ s.re ∧ |s.im| ≤ 4 * U ^ ρ}
 
 end
 

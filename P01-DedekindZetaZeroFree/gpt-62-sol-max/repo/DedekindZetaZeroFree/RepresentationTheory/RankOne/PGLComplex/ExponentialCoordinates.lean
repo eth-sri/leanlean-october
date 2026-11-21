@@ -80,7 +80,7 @@ theorem affineExpDerivative_det : affineExpDerivative.toLinearMap.det = 4 := by
     ext i j
     simp [LinearMap.toMatrix'_apply, affineExpDerivative, Matrix.diagonal_apply,
       Pi.single_apply, eq_comm]
-    split_ifs <;> simp_all
+    grind
   rw [h, Matrix.det_diagonal]
   norm_num [Fin.prod_univ_succ]
 
@@ -99,7 +99,7 @@ theorem affineInverse_mk (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
   have hv := congrArg Units.val hu
   have hentry (i j : Fin 2) : g.val i j = (Matrix.ProjGenLinGroup.mk g).out.val i j * (u : ℂ) := by
     rw [← hv]
-    simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_diagonal]
+    simp
   simp only [affineInverse, ← hentry]
   have ratio (i j : Fin 2) :
       (Matrix.ProjGenLinGroup.mk g).out.val i j / (Matrix.ProjGenLinGroup.mk g).out.val 0 0 =
@@ -146,7 +146,7 @@ private theorem hratio (i j : Fin 2) : HasStrictFDerivAt (fun a => expEntry i j 
   have hm := (hentryExp i j).mul hdenInv
   convert hm using 1 <;> first
     | rfl
-    | (ext a; simp [expEntry, div_eq_mul_inv, sl2Matrix_zero, NormedSpace.exp_zero,
+    | (ext a; simp [expEntry, sl2Matrix_zero, NormedSpace.exp_zero,
         sub_eq_add_neg, smul_eq_mul]; ring)
 
 private theorem hcoordinates : HasStrictFDerivAt (fun a =>
@@ -290,8 +290,8 @@ theorem sl2Matrix_matrixCoordinates (M : Matrix (Fin 2) (Fin 2) ℂ) (hM : Matri
   ext i j
   fin_cases i <;> fin_cases j <;> simp only [sl2Matrix, matrixCoordinates, Matrix.cons_val,
     Matrix.cons_val', Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one,
-    Matrix.head_cons, Matrix.tail_cons, Matrix.of_apply]
-  all_goals simp [sl2Matrix, matrixCoordinates]
+    Matrix.of_apply]
+  all_goals simp []
   all_goals first | (rw [mul_comm Complex.I, Complex.re_add_im]) |
     (rw [hd]; calc
       -(Complex.I * ↑(M 0 0).im) + -↑(M 0 0).re = -((M 0 0).re + (M 0 0).im * Complex.I) := by ring
@@ -306,7 +306,7 @@ theorem exponential_conjugation (g : Group) (a : Coordinates) :
   rw [← hmk, exponential, exponential, ← map_inv, ← map_mul, ← map_mul]
   congr 1
   apply Units.ext
-  simp only [Units.val_mul, Units.val_inv_eq_inv_val, IsUnit.unit_spec]
+  simp only [Units.val_mul, IsUnit.unit_spec]
   rw [sl2Matrix_matrixCoordinates _ (by rw [trace_conjugation, sl2Matrix_trace])]
   rw [hmk]
   exact (NormedSpace.exp_units_conj g.out (sl2Matrix a)).symm
@@ -359,7 +359,7 @@ def adjointLinearEquiv (g : Group) : Coordinates ≃ₗ[ℝ] Coordinates where
   toFun a := matrixCoordinates (g.out.val * sl2Matrix a * g.out⁻¹.val)
   invFun a := matrixCoordinates (g.out⁻¹.val * sl2Matrix a * g.out.val)
   map_add' a b := by simp [sl2Matrix_add, Matrix.mul_add, Matrix.add_mul, coords_add]
-  map_smul' r a := by simp [sl2Matrix_smul, Matrix.mul_smul, Matrix.smul_mul, coords_smul]
+  map_smul' r a := by simp [sl2Matrix_smul, coords_smul]
   left_inv a := by
     change matrixCoordinates (g.out⁻¹.val * sl2Matrix (matrixCoordinates
       (g.out.val * sl2Matrix a * g.out⁻¹.val)) * g.out.val) = a
@@ -418,7 +418,7 @@ theorem exponential_local_coordinates :
     refine ⟨⟨he0, hU⟩, ?_⟩
     change (e.restr U) 0 ∈ affineChart.source
     rw [OpenPartialHomeomorph.restr_apply, he, exponential_zero, h0]
-    simpa using zero_mem_affineSource
+    simp
   · apply (hf.mono (fun a ha => ha.1.1)).congr
     intro a ha
     rw [hEexp a ha]
@@ -462,8 +462,7 @@ theorem exponential_contMDiff {C : ChartedSpace Coordinates Group}
   intro a
   apply contMDiffAt_iff.mpr
   refine ⟨exponential_continuous.continuousAt, ?_⟩
-  simp only [extChartAt_model_space_eq_id, PartialEquiv.refl_coe, Function.comp_id,
-    extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp]
+  simp only [extChartAt_model_space_eq_id, PartialEquiv.refl_coe, extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp]
   rw [hC]
   let g := exponential a
   let m := g.out⁻¹
@@ -509,9 +508,7 @@ theorem exponential_contMDiff {C : ChartedSpace Coordinates Group}
     simpa only [div_eq_mul_inv] using! (hen i j).mul ((hen 0 0).inv hn)
   apply contDiffAt_pi.mpr
   intro i
-  fin_cases i <;> simp only [matrixRatios, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.cons_val_fin_one, Matrix.cons_val,
-    Complex.sub_re, Complex.one_re, Complex.sub_im, Complex.one_im, sub_zero]
+  fin_cases i <;> simp only [matrixRatios, Complex.sub_re, Complex.one_re, Complex.sub_im, Complex.one_im, sub_zero]
   · exact (Complex.reCLM.contDiff.contDiffAt.comp a (hd 1 1)).sub contDiffAt_const
   · exact Complex.imCLM.contDiff.contDiffAt.comp a (hd 1 1)
   · exact Complex.reCLM.contDiff.contDiffAt.comp a (hd 0 1)
@@ -665,7 +662,7 @@ theorem adjointMatrix_contMDiff {C : ChartedSpace Coordinates Group}
   let f (x : Coordinates) := g.out.val * affineMatrix x
   have hfu : IsUnit (f 0) := by
     have hz : affineMatrix 0 = 1 := by ext i j; fin_cases i <;> fin_cases j <;> simp [affineMatrix, complexCoordinates, show (⟨0, 0⟩ : ℂ) = 0 from rfl]
-    simpa [f, hz] using g.out.isUnit
+    simp [f, hz]
   have hm : ContDiffAt ℝ (⊤ : ℕ∞) f 0 :=
     contDiffAt_const.mul affineMatrix_smooth_op.contDiffAt
   have hri : ContDiffAt ℝ (⊤ : ℕ∞) Ring.inverse (f 0) := by
@@ -779,7 +776,7 @@ theorem productAdjointLinearEquiv_basis (g : ProductGroup ι) (a b : ι × Fin 6
     simp [productAdjointMatrix, hab]
   · have hslice : (fun j => (Pi.basisFun ℝ (ι × Fin 6)) b (a.1,j)) = 0 := by
       ext j
-      simp [Pi.basisFun_apply, Pi.single_apply, Prod.ext_iff, hab]
+      simp [Pi.basisFun_apply, Prod.ext_iff, hab]
     rw [hslice, map_zero]
     simp [productAdjointMatrix, hab]
 
@@ -828,8 +825,7 @@ theorem productAffineIsManifold {C : ChartedSpace Coordinates Group}
     exact (hc i).comp ((contDiff_apply ℝ Coordinates i).comp
       (productCoordinatesFlatten ι).symm.contDiff).contDiffOn (by
         intro a ha
-        simp only [modelWithCornersSelf_coe, PartialEquiv.refl_symm,
-          PartialEquiv.refl_coe, Set.preimage_id_eq, Set.range_id, Set.inter_univ] at ha
+        simp only [modelWithCornersSelf_coe, Set.range_id, Set.inter_univ] at ha
         change a ∈ ((productAffineChart ι e).symm.trans (productAffineChart ι f)).source at ha
         have h1 := ha.1.2
         have h2 := ha.2.1

@@ -23,11 +23,11 @@ private lemma compactSphereCoordinate_continuous :
       (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) :=
     (entry_continuous 1 0).mul (entry_continuous 1 1).star
   fin_cases i
-  · simp only [compactSphereCoordinate, Matrix.cons_val_zero]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp ((Complex.continuous_re.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_one, Matrix.head_cons]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp ((Complex.continuous_im.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_two, Matrix.tail_cons]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp
       (((entry_continuous 1 0).norm.pow 2).sub ((entry_continuous 1 1).norm.pow 2))
 
@@ -35,27 +35,6 @@ private lemma polynomialCompactRestriction_continuous (q : MvPolynomial (Fin 3) 
     Continuous (polynomialCompactRestriction q) := by
   simp only [polynomialCompactRestriction, LinearMap.coe_mk, AddHom.coe_mk]
   exact (MvPolynomial.continuous_eval q).comp compactSphereCoordinate_continuous
-
-private lemma su2HarmonicCharacter_continuous' (ℓ : ℕ) :
-    Continuous (su2HarmonicCharacter ℓ) := by
-  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
-      KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
-          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
-    intro n
-    induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
-    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
-    | more n hn hn1 =>
-        simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
-  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
-  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
 
 theorem polynomial_character_integrand_integrable (μ : Measure ComplexSU2)
     (hfinite : IsFiniteMeasure μ) (ℓ : ℕ) (q : MvPolynomial (Fin 3) ℂ)
@@ -68,7 +47,7 @@ theorem polynomial_character_integrand_integrable (μ : Measure ComplexSU2)
     exact Subtype.range_coe.symm)
   have hcont : Continuous (fun t : ComplexSU2 => star (su2HarmonicCharacter ℓ t) *
       polynomialCompactRestriction q (k * t)) :=
-    ((su2HarmonicCharacter_continuous' ℓ).star).mul
+    ((KPCplxHarmonicExtraction.continuous_su2HarmonicCharacter ℓ).star).mul
       ((polynomialCompactRestriction_continuous q).comp (by fun_prop))
   exact hcont.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
 

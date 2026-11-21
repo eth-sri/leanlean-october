@@ -2,7 +2,8 @@ module
 
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.ResidueActionIndex
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteIntegralClosure
-public import ValuedFieldTheory.Ramification.GaloisValuation.AbsoluteGalois.FiniteExtensionCorrespondence
+public import Mathlib.SetTheory.Cardinal.Finite
+public import ValuedFieldTheory.Ramification.GaloisValuation.AbsoluteGalois.InfiniteGaloisCorrespondence
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteExtensionCompleteDVF
 
 @[expose] public section

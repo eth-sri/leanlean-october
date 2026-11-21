@@ -24,14 +24,14 @@ private lemma norm_exp_ofReal_mul_sq_le (ε : ℝ) (hε : 0 ≤ ε) (c t : ℝ) 
       zero_add, zero_sub, neg_zero]
     ring
   rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, hre]
-  nlinarith [sq_nonneg t]
+  nlinarith
 
 theorem gaussianRegulator_boundary (f : ℂ → ℂ) (c : ℝ)
     (hc : Complex.VerticalIntegrable f c) :
     (∀ ε : ℝ, 0 ≤ ε → Complex.VerticalIntegrable (gaussianRegulator f ε) c) ∧
     Tendsto (fun ε : ℝ => verticalIntegral c (gaussianRegulator f ε))
       (𝓝[>] (0 : ℝ)) (𝓝 (verticalIntegral c f)) := by
-  have hc' : Integrable (fun t : ℝ => f ((c : ℂ) + (t : ℂ) * Complex.I)) := hc
+  have hc' := hc
   have hbase : Integrable
       (fun t : ℝ => Real.exp (c ^ 2) * ‖f ((c : ℂ) + (t : ℂ) * Complex.I)‖) :=
     hc'.norm.const_mul _
@@ -41,7 +41,7 @@ theorem gaussianRegulator_boundary (f : ℂ → ℂ) (c : ℝ)
     have hfun : (fun t : ℝ => gaussianRegulator f ε ((c : ℂ) + (t : ℂ) * Complex.I)) =
         fun t : ℝ => f ((c : ℂ) + (t : ℂ) * Complex.I) *
           Complex.exp ((ε : ℂ) * ((c : ℂ) + (t : ℂ) * Complex.I) ^ 2) := by
-      ext t; simp only [gaussianRegulator]
+      ext t; rfl
     rw [hfun]
     exact hc'.mul_bdd (c := Real.exp (ε * c ^ 2))
       ((Complex.continuous_exp.comp
@@ -60,7 +60,7 @@ theorem gaussianRegulator_boundary (f : ℂ → ℂ) (c : ℝ)
         have hfun : (fun t : ℝ => gaussianRegulator f ε ((c : ℂ) + (t : ℂ) * Complex.I)) =
             fun t : ℝ => f ((c : ℂ) + (t : ℂ) * Complex.I) *
               Complex.exp ((ε : ℂ) * ((c : ℂ) + (t : ℂ) * Complex.I) ^ 2) := by
-          ext t; simp only [gaussianRegulator]
+          ext t; rfl
         rw [hfun]
         exact hc'.aestronglyMeasurable.mul (Complex.continuous_exp.comp
           (by fun_prop : Continuous fun t : ℝ =>
@@ -94,10 +94,10 @@ theorem gaussianRegulator_boundary (f : ℂ → ℂ) (c : ℝ)
         have hfun : (fun ε : ℝ => gaussianRegulator f ε ((c : ℂ) + (t : ℂ) * Complex.I)) =
             fun ε : ℝ => f ((c : ℂ) + (t : ℂ) * Complex.I) *
               Complex.exp ((ε : ℂ) * ((c : ℂ) + (t : ℂ) * Complex.I) ^ 2) := by
-          ext ε; simp only [gaussianRegulator]
+          ext ε; rfl
         rw [hfun]
         simpa using tendsto_const_nhds.mul hexp
-    exact hconv.const_mul (1 / (2 * Real.pi) : ℂ)
+    exact hconv.const_mul ..
 
 end DedekindZetaZeroFree.LargeSieve.Vendor.Subquadratic
 
@@ -119,7 +119,7 @@ private theorem rpow_three_halves_le_weighted (d u : ℝ) (hd : 0 < d) (hu : 0 �
   have hu2 : 0 ≤ u ^ 2 := by positivity
   have hgm : (d ^ 4 * u ^ 2) ^ (3 / 4 : ℝ) ≤ 3 / 4 * (d ^ 4 * u ^ 2) + 1 / 4 :=
     rpow_three_quarters_le _ (by positivity)
-  have hd3 : 0 < d ^ 3 := pow_pos hd 3
+  have hd3 := pow_pos hd 3
   have hval : (d ^ 4 * u ^ 2) ^ (3 / 4 : ℝ) = d ^ 3 * u ^ (3 / 2 : ℝ) := by
     rw [Real.mul_rpow hd4 hu2]
     have h1 : (d ^ 4) ^ (3 / 4 : ℝ) = d ^ 3 := by
@@ -129,11 +129,11 @@ private theorem rpow_three_halves_le_weighted (d u : ℝ) (hd : 0 < d) (hu : 0 �
     have h2 : (u ^ 2) ^ (3 / 4 : ℝ) = u ^ (3 / 2 : ℝ) := by
       rw [← Real.rpow_natCast_mul hu 2 (3 / 4 : ℝ),
         show ((2 : ℕ) : ℝ) * (3 / 4 : ℝ) = 3 / 2 by norm_num]
-    rw [h1, h2]
+    grind
   rw [hval] at hgm
   have h1 : u ^ (3 / 2 : ℝ) ≤ (3 / 4 * (d ^ 4 * u ^ 2) + 1 / 4) / d ^ 3 := by
     rw [le_div_iff₀ hd3]
-    simpa [mul_comm, mul_left_comm, mul_assoc] using hgm
+    grind only
   refine h1.trans (le_of_eq ?_)
   field_simp
 

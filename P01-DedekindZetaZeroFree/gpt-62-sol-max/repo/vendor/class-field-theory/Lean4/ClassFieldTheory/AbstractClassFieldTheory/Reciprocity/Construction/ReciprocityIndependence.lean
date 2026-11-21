@@ -38,10 +38,14 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace FiniteIntermediateField
 
+section
+
+variable [IsTopologicalGroup G] {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
+include E K M
+
 /-- The normal core of a finite intermediate field, embedded back into the
 ambient absolute Galois group. -/
-def normalCoreField [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) :
+def normalCoreField :
     ClosedSubgroup G where
   toSubgroup :=
     (extensionSubgroup K M.field M.below).normalCore.map
@@ -55,23 +59,20 @@ def normalCoreField [IsTopologicalGroup G]
         (extensionSubgroup_isClosed K M.field M.below))
 
 /-- The normal core field lies below the field from which it is constructed. -/
-theorem normalCoreField_le [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) :
+theorem normalCoreField_le :
     (M.normalCoreField).toSubgroup ≤ K.toSubgroup := by
   rintro g ⟨k, _, rfl⟩
   exact k.2
 
 /-- The normal core is contained in the specified refinement field. -/
-theorem normalCoreField_le_field [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) :
+theorem normalCoreField_le_field :
     (M.normalCoreField).toSubgroup ≤ M.field.toSubgroup := by
   rintro g ⟨k, hk, rfl⟩
   exact (mem_extensionSubgroup_iff K M.field M.below k).1
     ((extensionSubgroup K M.field M.below).normalCore_le hk)
 
 /-- The subgroup representing the normal core field is the corresponding normal core. -/
-theorem extensionSubgroup_normalCoreField [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) :
+theorem extensionSubgroup_normalCoreField :
     extensionSubgroup K M.normalCoreField M.normalCoreField_le =
       (extensionSubgroup K M.field M.below).normalCore := by
   ext k
@@ -87,8 +88,7 @@ theorem extensionSubgroup_normalCoreField [IsTopologicalGroup G]
 
 /-- Every finite intermediate field admits a finite Galois refinement once
 the bottom extension is normal. -/
-def galoisRefinement [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
+def galoisRefinement
     [hEnormal :
       (extensionSubgroup K E (M.above.trans M.below)).Normal] :
     FiniteIntermediateField E K where
@@ -117,12 +117,13 @@ def galoisRefinement [IsTopologicalGroup G]
     infer_instance
 
 /-- A Galois refinement lies below the original finite field. -/
-theorem galoisRefinement_le_field [IsTopologicalGroup G]
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
+theorem galoisRefinement_le_field
     [_hEnormal :
       (extensionSubgroup K E (M.above.trans M.below)).Normal] :
     (M.galoisRefinement).field.toSubgroup ≤ M.field.toSubgroup :=
   M.normalCoreField_le_field
+
+end
 
 /-- The subgroup representing a Galois refinement is normal. -/
 instance galoisRefinement_normal [IsTopologicalGroup G]
@@ -135,38 +136,29 @@ instance galoisRefinement_normal [IsTopologicalGroup G]
   rw [M.extensionSubgroup_normalCoreField]
   infer_instance
 
+section
+
+variable {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K) (S : ClosedSubgroup G)
+include E K M S
+
 /-- The field compositum `MΣ`, contravariantly represented by
 `G_M ∩ G_Σ`. -/
-def compositumWith
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) : ClosedSubgroup G :=
+def compositumWith : ClosedSubgroup G :=
   M.field ⊓ S
 
 /-- The common compositum refinement maps below its left input field. -/
-theorem compositumWith_le_left
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) :
+theorem compositumWith_le_left :
     (M.compositumWith S).toSubgroup ≤ M.field.toSubgroup :=
   inf_le_left
 
 /-- The common compositum refinement maps below its right input field. -/
-theorem compositumWith_le_right
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) :
+theorem compositumWith_le_right :
     (M.compositumWith S).toSubgroup ≤ S.toSubgroup :=
   inf_le_right
 
-/-- Any common refinement above both inputs lies below their constructed compositum. -/
-theorem above_le_compositumWith
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hES : E.toSubgroup ≤ S.toSubgroup) :
-    E.toSubgroup ≤ (M.compositumWith S).toSubgroup :=
-  fun _ h => ⟨M.above h, hES h⟩
 
 /-- The compositum of the two finite refinements has finite relative quotient. -/
-theorem compositumWith_finite
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hSK : S.toSubgroup ≤ K.toSubgroup) :
+theorem compositumWith_finite (hSK : S.toSubgroup ≤ K.toSubgroup) :
     Finite (S.toSubgroup ⧸
       extensionSubgroup S (M.compositumWith S) (M.compositumWith_le_right S)) := by
   let : Finite (K.toSubgroup ⧸
@@ -193,9 +185,7 @@ theorem compositumWith_finite
   simpa [Subgroup.relIndex] using hinter
 
 /-- The compositum of normal refinements is again normal. -/
-theorem compositumWith_normal
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hSK : S.toSubgroup ≤ K.toSubgroup)
+theorem compositumWith_normal (hSK : S.toSubgroup ≤ K.toSubgroup)
     [hMnormal : (extensionSubgroup K M.field M.below).Normal] :
     (extensionSubgroup S (M.compositumWith S)
       (M.compositumWith_le_right S)).Normal := by
@@ -223,9 +213,7 @@ theorem compositumWith_normal
 
 /-- The compositum of two finite extensions of `K` is finite over `K`.
 Contravariantly this is the finite-index theorem for an intersection. -/
-theorem compositumWith_finite_over_base
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hSK : S.toSubgroup ≤ K.toSubgroup)
+theorem compositumWith_finite_over_base (hSK : S.toSubgroup ≤ K.toSubgroup)
     [hSfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K S hSK)] :
     Finite (K.toSubgroup ⧸ extensionSubgroup K (M.compositumWith S)
       ((M.compositumWith_le_right S).trans hSK)) := by
@@ -249,6 +237,8 @@ theorem compositumWith_finite_over_base
   rw [hsub]
   simpa only [Subgroup.relIndex] using
     Subgroup.relIndex_inf_ne_zero hMindex hSindex
+
+end
 
 /-- If `P | K` is finite and `P` contains the intermediate field `M`, then
 `P | M` is finite. -/
@@ -278,17 +268,20 @@ end FiniteIntermediateField
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hnormal : (extensionSubgroup K.field L hLK).Normal] [hfinite : Finite
+      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+  (hUnramified :
+      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
+include D K hnormal hfinite hUnramified
+
 /-- In a finite unramified Galois extension, the restriction of any
 degree-one lift is a generator.  This common form is used both in the universal norm-descent lemma
 and in the explicit unramified norm-quotient calculation. -/
-theorem quotient_generator_of_unramified_degree_one (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
+theorem quotient_generator_of_unramified_degree_one
     (φ : K.field.toSubgroup)
     (hφ : D.normalizedDegree K φ =
       Multiplicative.ofAdd (1 : ZHat)) :
@@ -350,15 +343,7 @@ theorem quotient_generator_of_unramified_degree_one (D : DegreeData G)
 /-- A finite unramified Galois quotient is generated by the restriction of
 an element of normalized degree `1`.  This is the cyclicity input needed to
 use the finite-cyclic Tate complexes in the unit-cohomology axiom. -/
-theorem exists_quotient_generator_of_unramified
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (hUnramified :
-      (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
+theorem exists_quotient_generator_of_unramified :
     ∃ g : K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK,
       ∀ x, x ∈ Subgroup.zpowers g := by
   obtain ⟨φ, hφ⟩ := D.normalizedDegree_surjective K
@@ -366,6 +351,8 @@ theorem exists_quotient_generator_of_unramified
   refine ⟨QuotientGroup.mk φ, ?_⟩
   exact D.quotient_generator_of_unramified_degree_one
     K L hLK hUnramified φ hφ
+
+end
 
 end DegreeData
 

@@ -69,10 +69,10 @@ private theorem haar (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     (μ : Measure K) [μ.IsAddHaarMeasure] : (KPCubicHaar.multiplicativeHaar K μ).IsHaarMeasure := by
   letI := IsTopologicalAddGroup.rightUniformSpace K
   haveI := isUniformAddGroup_of_addCommGroup (G := K)
-  have hc : IsCompact (KPCubicUnitIndices.Integers K : Set K) :=
+  have hc :=
     IsNonarchimedeanLocalField.isCompact_closedBall K 1
-  have ho : IsOpen (KPCubicUnitIndices.Integers K : Set K) := Valued.isOpen_integer K
-  have hp : 0 < μ (KPCubicUnitIndices.Integers K : Set K) :=
+  have ho := Valued.isOpen_integer K
+  have hp :=
     ho.measure_pos (μ := μ) ⟨0, by simp⟩
   exact (kp_rankone_cubic_haar_power_measure K μ _
     (ENNReal.toReal_pos hp.ne' hc.measure_lt_top.ne)
@@ -94,7 +94,7 @@ private theorem weight_formula (v : (LocalField F q)ˣ) (lam : ℂ) :
   congr 1
   simp only [localAbs, Real.rpow_intCast, Complex.ofReal_zpow,
     valuationIndex, zpow_neg, zpow_natCast]
-  simp only [Complex.ofReal_natCast]
+  rfl
 
 private theorem coefficient_expansion
     (I : IwasawaData S.borel) (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]

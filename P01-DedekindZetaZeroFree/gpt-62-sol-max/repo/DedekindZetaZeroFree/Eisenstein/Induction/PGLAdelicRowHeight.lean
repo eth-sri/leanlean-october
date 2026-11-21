@@ -54,7 +54,7 @@ private lemma eb_entry {K : Type*} [NormedField K] (A : GL (Fin 2) K) (i j : Fin
   fin_cases i <;> fin_cases j <;> unfold eb <;> bound
 private lemma mx_nonneg {K : Type*} [NormedField K] (r : Fin 2 → K) : 0 ≤ mx r := (norm_nonneg _).trans (le_max_left _ _)
 private lemma mx_le_en {K : Type*} [NormedField K] (r : Fin 2 → K) : mx r ≤ en r := by
-  apply max_le <;> apply Real.le_sqrt_of_sq_le <;> nlinarith [sq_nonneg ‖r 0‖, sq_nonneg ‖r 1‖]
+  apply max_le <;> apply Real.le_sqrt_of_sq_le <;> simp
 private lemma en_le_two_mx {K : Type*} [NormedField K] (r : Fin 2 → K) : en r ≤ 2 * mx r := by
   have h0 : ‖r 0‖ ≤ mx r := le_max_left _ _
   have h1 : ‖r 1‖ ≤ mx r := le_max_right _ _
@@ -75,7 +75,7 @@ private lemma mx_mul {K : Type*} [NormedField K] (r : Fin 2 → K) (A : GL (Fin 
     have h1 : ‖r 1‖ ≤ mx r := le_max_right _ _
     have he0 := eb_entry A 0 j
     have he1 := eb_entry A 1 j
-    have hb : 0 ≤ eb A := (by norm_num : (0:ℝ) ≤ 1).trans (eb_one A)
+    
     nlinarith [mul_le_mul h0 he0 (norm_nonneg _) (mx_nonneg r), mul_le_mul h1 he1 (norm_nonneg _) (mx_nonneg r)]
 private lemma mx_mul_ultra {K : Type*} [NormedField K] [IsUltrametricDist K]
     (r : Fin 2 → K) (A : GL (Fin 2) K) :
@@ -84,8 +84,8 @@ private lemma mx_mul_ultra {K : Type*} [NormedField K] [IsUltrametricDist K]
   all_goals
     apply (IsUltrametricDist.norm_add_le_max _ _).trans
     apply max_le <;> rw [norm_mul]
-    · exact (mul_le_mul (show ‖r 0‖ ≤ mx r from le_max_left _ _) (eb_entry A 0 _) (norm_nonneg _) (mx_nonneg r)).trans_eq (mul_comm _ _)
-    · exact (mul_le_mul (show ‖r 1‖ ≤ mx r from le_max_right _ _) (eb_entry A 1 _) (norm_nonneg _) (mx_nonneg r)).trans_eq (mul_comm _ _)
+    · simp [mul_le_mul, mx, eb_entry, norm_nonneg, mul_comm]
+    simp [mul_le_mul, mx, eb_entry, norm_nonneg, mul_comm]
 private lemma en_mul {K : Type*} [NormedField K] (r : Fin 2 → K) (A : GL (Fin 2) K) :
     en (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) ≤ 4 * eb A * en r := by
   calc
@@ -158,10 +158,10 @@ private lemma continuous_cc {K : Type*} [NormedField K] : Continuous (cc (K := K
   (4 * cc (GeneralLinearGroup.map (ae F v) A)) ^ (if v.IsReal then 1 else 2)
 private lemma finite_one (r : Fin 2 → F) (v : V F) :
     finiteRowFactor F r 1 v = mx (fun i => algebraMap F (v.adicCompletion F) (r i)) := by
-  simp [finiteRowFactor, mx, Fin.sum_univ_two, Matrix.one_apply]
+  simp [finiteRowFactor, mx, Matrix.one_apply]
 private lemma infinite_one (r : Fin 2 → F) (v : InfinitePlace F) :
     infiniteRowFactor F r 1 v = en (fun i => algebraMap F v.Completion (r i)) ^ (if v.IsReal then 1 else 2) := by
-  simp [infiniteRowFactor, en, Fin.sum_univ_two, Matrix.one_apply]
+  simp [infiniteRowFactor, en, Matrix.one_apply]
 private lemma finite_nonneg (r : Fin 2 → F) (A : AG F) (v : V F) : 0 ≤ finiteRowFactor F r A v := by
   exact div_nonneg ((norm_nonneg _).trans (le_max_left _ _)) (Real.sqrt_nonneg _)
 private lemma infinite_nonneg (r : Fin 2 → F) (A : AG F) (v : InfinitePlace F) : 0 ≤ infiniteRowFactor F r A v := by
@@ -505,7 +505,7 @@ theorem bottomRow_mk (A : RatGL F) :
       (u : F) = (A : Matrix (Fin 2) (Fin 2) F) 1 i := by
     simpa [GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.mul_diagonal] using hi
   rw [← hi']
-  simp [mul_comm, mul_left_comm, mul_assoc]
+  simp [mul_comm]
 private theorem upperTri_mul_row (A G : RatGL F)
     (hA : (A : Matrix (Fin 2) (Fin 2) F) 1 0 = 0) :
     (fun j => ((A * G : RatGL F) : Matrix (Fin 2) (Fin 2) F) 1 j)
@@ -513,7 +513,7 @@ private theorem upperTri_mul_row (A G : RatGL F)
         (fun j => (G : Matrix (Fin 2) (Fin 2) F) 1 j) := by
   funext j
   fin_cases j <;>
-    simp [GeneralLinearGroup.coe_mul, Matrix.mul_apply, hA, Fin.sum_univ_two]
+    simp [Matrix.mul_apply, hA, Fin.sum_univ_two]
 
 private theorem upperTri_11_ne_zero (A : RatGL F)
     (hA : (A : Matrix (Fin 2) (Fin 2) F) 1 0 = 0) :
@@ -758,7 +758,7 @@ noncomputable def height (ℓ : Line F) (g : AdelPGL F) : ℝ :=
 private theorem row_smul {K : Type*} [Field K] (f : F →+* K)
     (r : Fin 2 → F) (a : F) (A : GL (Fin 2) K) (i : Fin 2) :
     rowAction (fun j => f ((a • r) j)) A i = f a * rowAction (fun j => f (r j)) A i := by
-  simp [rowAction, Pi.smul_apply, smul_eq_mul, map_mul, Finset.mul_sum, mul_assoc]
+  simp [rowAction, Pi.smul_apply, smul_eq_mul, map_mul, mul_assoc]
   ring
 
 private theorem finiteFactor_smul (r : Fin 2 → F) (a : F) (A : AdelGL F)
@@ -823,7 +823,7 @@ private theorem row_scalar {K : Type*} [CommRing K]
     rowAction r (A * GeneralLinearGroup.scalar (Fin 2) u) i =
       (u : K) * rowAction r A i := by
   simp [rowAction, GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.mul_diagonal,
-    Finset.mul_sum, mul_comm, mul_left_comm, mul_assoc]
+    mul_comm, mul_left_comm]
   ring
 private theorem det_scalar_norm {K : Type*} [NormedField K]
     (A : GL (Fin 2) K) (u : Kˣ) :
@@ -940,13 +940,13 @@ theorem height_pos (ℓ : Line F) (g : AdelPGL F) : 0 < height F ℓ g := by
 
 private theorem fin_one (r : Fin 2 → F) (v : HeightOneSpectrum (RingOfIntegers F)) :
   finiteFactor F r 1 v = max ((FinitePlace.equivHeightOneSpectrum.symm v) (r 0)) ((FinitePlace.equivHeightOneSpectrum.symm v) (r 1)) := by
-  simp [finiteFactor, rowAction, GeneralLinearGroup.coe_one, Matrix.one_apply]
+  simp [finiteFactor, rowAction, Matrix.one_apply]
   rfl
 private theorem inf_one (r : Fin 2 → F) (v : InfinitePlace F) :
   infiniteFactor F r 1 v = (Real.sqrt ((v (r 0))^2 + (v (r 1))^2)) ^ v.mult := by
   have hn (a : F) : ‖algebraMap F v.Completion a‖ = v a :=
     InfinitePlace.Completion.norm_coe v ((WithAbs.equiv v.1).symm a)
-  simp [infiniteFactor, rowAction, GeneralLinearGroup.coe_one, Matrix.one_apply, hn]
+  simp [infiniteFactor, rowAction, Matrix.one_apply]
   rfl
 private theorem mulHeight_formula (r : Fin 2 → F) (hr : r ≠ 0) :
     Height.mulHeight r = (∏ v : InfinitePlace F, (max (v (r 0)) (v (r 1))) ^ v.mult) *

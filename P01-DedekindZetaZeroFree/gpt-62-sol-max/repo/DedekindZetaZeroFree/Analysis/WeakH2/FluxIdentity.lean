@@ -31,8 +31,7 @@ def cutoffGradient {n : ℕ} {B : LocalBall n} (η : TestFunction B.toOpens ℝ 
 namespace DifferenceTestAtoms
 
 theorem quotient_memLp {n : ℕ} (f : Space n → ℂ) (hf : MemLp f 2 volume)
-    (k : Fin n) (t : ℝ) : MemLp (differenceQuotient k t f) 2 volume := by
-  exact ((hf.comp_measurePreserving (measurePreserving_add_right volume _)).sub hf).const_mul _
+    (k : Fin n) (t : ℝ) : MemLp (differenceQuotient k t f) 2 volume := ((hf.comp_measurePreserving (measurePreserving_add_right volume _)).sub hf).const_mul _
 
 theorem exactIBP {n : ℕ} (f g : Space n → ℂ) (hf : MemLp f 2 volume)
     (hg : MemLp g 2 volume) (k : Fin n) (t : ℝ) :
@@ -51,7 +50,7 @@ theorem exactIBP {n : ℕ} (f g : Space n → ℂ) (hf : MemLp f 2 volume)
     have h := integral_add_right_eq_self
       (fun x => f x * g (x + (-t) • EuclideanSpace.single k 1))
       (t • EuclideanSpace.single k 1) (μ := volume)
-    simpa only [neg_smul, add_neg_cancel_right] using h.symm
+    simp_all
   simp only [differenceQuotient, Complex.ofReal_neg, inv_neg, neg_mul, neg_neg]
   have hleft : (∫ x, f x * ((t : ℂ)⁻¹ *
       (g (x + (-t) • EuclideanSpace.single k 1) - g x))) =
@@ -66,7 +65,7 @@ theorem exactIBP {n : ℕ} (f g : Space n → ℂ) (hf : MemLp f 2 volume)
       (t : ℂ)⁻¹ * ((∫ x, f (x + t • EuclideanSpace.single k 1) * g x) - ∫ x, f x * g x) := by
     simp_rw [mul_assoc, sub_mul]
     rw [integral_const_mul, integral_sub hftg hfg]
-  rw [hleft, hright, hshift]
+  grind
 
 theorem global_indicator_ae {n : ℕ} {B : LocalBall n}
     (K : Set (Space n)) (hKB : K ⊆ B.carrier) (f : BallL2 B) (g : Space n → ℂ)

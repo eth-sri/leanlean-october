@@ -716,7 +716,7 @@ private lemma split_retract
     have he10 := congrArg (fun C : KPRankOneInduction.GL2 F v => C 1 0) he
     simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
       Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply,
-      Fin.reduceEq, if_true, if_false, mul_zero, zero_add, add_zero, hA10] at he10
+      Fin.reduceEq, if_true, if_false, mul_zero, add_zero, hA10] at he10
     exact (mul_eq_zero.mp he10).resolve_right u.ne_zero
   have hki : k 1 0 = 0 := by
     apply Subtype.ext
@@ -729,9 +729,9 @@ private lemma split_retract
   let t : KPTameCompact.O F v := - (a⁻¹ : (KPTameCompact.O F v)ˣ) * k 0 1
   let d := k * KPStandardLocalRootLifts.integralN F v t
   have hd10 : (KPTameCompact.inclusion F v d) 1 0 = 0 := by
-    simp [d, map_mul, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
+    simp [d, map_mul, Matrix.mul_apply,
       Fin.sum_univ_two, KPStandardLocalRootLifts.integralN, KPTameCompact.inclusion,
-      KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hki]
+      KPLocalCube.integerInclusion, hki]
   have hd01 : (KPTameCompact.inclusion F v d) 0 1 = 0 := by
     have hai : k 0 0 * ((a⁻¹ : (KPTameCompact.O F v)ˣ) : KPTameCompact.O F v) = 1 := by
       rw [← ha]; exact Units.mul_inv a
@@ -794,13 +794,11 @@ private lemma split_ratio (b : inducingData.borel.B) :
     simpa only [G, y, Subgroup.coe_mul, map_mul, inducingData.borel.torus_projection,
       inducingData.borel.upperRoot_projection] using hp.symm
   have h10 : G 1 0 = 0 := by
-    simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
-      Matrix.mul_apply, Fin.sum_univ_two]
+    simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.mul_apply, Fin.sum_univ_two]
   apply Units.ext
   symm
   rw [KPRankOneInduction.borelRatio_eq F v _ G hG h10]
-  simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
-    Matrix.mul_apply, Fin.sum_univ_two, y]
+  simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.mul_apply, Fin.sum_univ_two, y]
 
 include P in
 private lemma split_intersection_norm
@@ -987,7 +985,7 @@ private lemma unit_of_exp_zero (y : (LocalField F v)ˣ)
     ∃ u : (KPTameCompact.O F v)ˣ, KPTameCompact.unitInclusion F v u = y := by
   have hn : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
       (valuation (LocalField F v) (y : LocalField F v)) ≠ 0 := by
-    simpa using (Units.ne_zero y)
+    simp
   have hv : valuation (LocalField F v) (y : LocalField F v) = 1 := by
     apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)).injective
     change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
@@ -1031,11 +1029,11 @@ private lemma class_decomposition
     rw [hu, ← zpow_natCast _ (3 : ℕ), ← zpow_mul]
     norm_num only at *
     calc
-      y = (π ^ n) * (y / π ^ n) := by simp [div_eq_mul_inv, mul_comm, mul_left_comm]
+      y = (π ^ n) * (y / π ^ n) := by simp [div_eq_mul_inv, mul_left_comm]
       _ = _ := by
         conv_lhs => arg 1; rw [hn, zpow_add]
         rw [mul_comm (n / 3) (3 : ℤ)]
-        simp only [mul_comm, mul_left_comm, mul_assoc]
+        simp only [mul_comm, mul_left_comm]
   refine ⟨j, u, ?_⟩
   rw [hy, map_mul]
   have hc : QuotientGroup.mk' (CubicCharacters.cubes (LocalField F v)ˣ) ((π ^ (n / 3)) ^ 3) = 1 := by
@@ -1100,7 +1098,7 @@ private lemma normalized_span
       (inducingData.heisenberg.ω (inducingData.borel.weylCenter ⟨g * t⁻¹, hc⟩) : ℂ) •
       Action F ζ hζ v inducingData P (Lift F ζ hζ v (π ^ (j.val : ℤ))) b := by
     have h := hprops.2.2.2.1 ⟨g * t⁻¹, hc⟩ (Action F ζ hζ v inducingData P t b)
-    simp only [Subgroup.coe_mk, ← Module.End.mul_apply, ← map_mul, inv_mul_cancel_right] at h
+    simp only [← Module.End.mul_apply, ← map_mul, inv_mul_cancel_right] at h
     rw [h]
     congr 1
     change Action F ζ hζ v inducingData P (_ * _) b = _
@@ -1232,14 +1230,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   (P : Polarization inducingData.heisenberg)
 variable [NormedAddCommGroup (Fiber F ζ hζ v inducingData P)]
 
-local instance fiberUniformStep2 : UniformSpace (Fiber F ζ hζ v inducingData P) :=
-  @PseudoMetricSpace.toUniformSpace _
-    (inferInstance : PseudoMetricSpace (Fiber F ζ hζ v inducingData P))
 
-local instance contributionTopologyStep2 : TopologicalSpace (Fiber F ζ hζ v inducingData P) :=
-  @UniformSpace.toTopologicalSpace _
-    (@PseudoMetricSpace.toUniformSpace _
-      (inferInstance : PseudoMetricSpace (Fiber F ζ hζ v inducingData P)))
 
 variable [NormedSpace ℂ (Fiber F ζ hζ v inducingData P)]
 
@@ -1319,7 +1310,6 @@ private lemma central_eval (φ : Sections F ζ hζ v inducingData P)
     φ.val
       (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr v) z * g) =
       (ordinaryIota F ζ hζ z : ℂ) • φ.val g := by
-  change φ.val (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr v) z * g) = _
   rw [← (inducingData.openCell P).central_eq z, φ.property.1]
   change inducingScalar inducingData.borel 0 (inducingData.borel.torus ((inducingData.openCell P).centralTorus z)) •
     borelAction inducingData.borel P .minus (inducingData.borel.torus ((inducingData.openCell P).centralTorus z))
@@ -1399,8 +1389,7 @@ theorem spherical_shell_integrand_evaluation
   have hx : (π : LocalField F v) ^ ((e : ℤ) - l) * (U : LocalField F v) /
       ((p ^ e : (LocalField F v)ˣ) : LocalField F v) = (H : LocalField F v) := by
     dsimp [H, p, t, KPHilbert.integerUnitInclusion]
-    simp only [Units.val_mul, Units.val_zpow_eq_zpow_val, Units.val_pow_eq_pow_val,
-      uniformizerUnit, Units.val_mk0, div_eq_mul_inv]
+    simp only [Units.val_zpow_eq_zpow_val, uniformizerUnit, Units.val_mk0, div_eq_mul_inv]
     rw [mul_right_comm, ← zpow_natCast, ← zpow_neg, ← zpow_add₀ hp]
     congr 2; omega
   have hint : ((H⁻¹ : (LocalField F v)ˣ) : LocalField F v) ∈ (valuation (LocalField F v)).integer := by
@@ -1408,7 +1397,7 @@ theorem spherical_shell_integrand_evaluation
     have hlN : (l.toNat : ℤ) = l := Int.toNat_of_nonneg hl0
     have he : ((H⁻¹ : (LocalField F v)ˣ) : LocalField F v) =
         (π : LocalField F v) ^ l.toNat * (U⁻¹ : LocalField F v) := by
-      simp [H, p, t, KPHilbert.integerUnitInclusion, mul_comm, hlN, zpow_neg,
+      simp [H, p, t, KPHilbert.integerUnitInclusion, mul_comm, zpow_neg,
         uniformizerUnit, ← zpow_natCast, hlN]
     rw [he]
     exact (valuation (LocalField F v)).integer.mul_mem
@@ -1500,7 +1489,7 @@ theorem spherical_shell_integrand_evaluation
       (p ^ (2*l) * KPHilbert.integerUnitInclusion F v (U⁻¹ ^ (2 : ℕ))) =
       arithmeticUnitCharacter F ζ hζ v hgood 1 ^ (2*(2*l)) *
       arithmeticUnitCharacter F ζ hζ v hgood (U⁻¹ ^ (2 : ℕ)) ^ (-2 * (-(e : ℤ))) at hh
-    simp only [map_one, mul_one, hchar1, one_zpow, one_mul, hchar1, one_zpow, hchar, ← zpow_mul] at hh
+    simp only [map_one, mul_one, one_zpow, one_mul, hchar1, one_zpow, hchar, ← zpow_mul] at hh
     convert hh using 1 <;> congr 1 <;> ring
   have hC2 : KPSourceConvention.sourceC F ζ hζ (Sum.inr v) (p ^ j)
       (KPHilbert.integerUnitInclusion F v (U⁻¹ ^ (2 : ℕ))) = c ^ (4 * j) := by
@@ -1575,9 +1564,6 @@ abbrev sphericalShell (π : (valuation (LocalField F v)).integer) (e : ℕ) (l :
 
 variable [NormedAddCommGroup (Fiber F ζ hζ v inducingData P)]
 
-local instance contributionTopology : TopologicalSpace (Fiber F ζ hζ v inducingData P) :=
-  @UniformSpace.toTopologicalSpace _
-    (@PseudoMetricSpace.toUniformSpace _ (inferInstance : PseudoMetricSpace (Fiber F ζ hζ v inducingData P)))
 
 variable [NormedSpace ℂ (Fiber F ζ hζ v inducingData P)]
 

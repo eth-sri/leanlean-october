@@ -35,82 +35,6 @@ local instance (F : Type) [Field F] [NumberField F]
   continuous_toFun := ((mixedHomeo F).prodCongr (Homeomorph.refl _)).continuous
   continuous_invFun := ((mixedHomeo F).prodCongr (Homeomorph.refl _)).symm.continuous
 
-private theorem unique_fourier (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (RingOfIntegers F))) [Unique S]
-    (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
-    (μ : (v : S) → Measure (v.val.adicCompletion F)) [∀ v, (μ v).IsAddHaarMeasure]
-    (he : ∀ v, Continuous (e v)) (hne : ∀ v, ∃ x, e v x ≠ 1)
-    (φ : (default : S).val.adicCompletion F → ℂ) (hlocal : IsLocallyConstant φ)
-    (hsupport : HasCompactSupport φ) :
-    IsLocallyConstant (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) ∧
-    HasCompactSupport (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) := by
-  let h : PoissonFinite.Space F S ≃ₜ (default : S).val.adicCompletion F := Homeomorph.piUnique _
-  let Φ : PoissonFinite.Space F S → ℂ := φ ∘ h
-  have hΦlocal : IsLocallyConstant Φ := hlocal.comp_continuous h.continuous
-  have hΦsupport : HasCompactSupport Φ := hsupport.comp_homeomorph h
-  obtain ⟨U, hoU, hpU⟩ := PoissonFinite.BallExpansion.exists_open_phase_annihilator F S e he
-    (tsupport Φ) hΦsupport.isCompact
-  have hf := PoissonFinite.fourierIntegral_isLocallyConstant_of_open_phase F S e μ Φ U hoU
-    (fun u hu x hx => hpU u hu x (subset_tsupport Φ hx))
-  obtain ⟨V, hoV, hpV⟩ := PoissonFinite.BallExpansion.exists_open_period_subgroup F S Φ hΦlocal hΦsupport
-  letI : ∀ v : S, SigmaCompactSpace (v.val.adicCompletion F) :=
-    fun v => PoissonFinite.BallExpansion.finite_completion_sigmaCompact F v.val
-  have hg := PoissonFinite.fourierIntegral_hasCompactSupport_of_period F S e μ Φ V hpV
-    (PoissonFinite.BallExpansion.isCompact_phase_annihilator F S e he hne V hoV)
-  have heq : (PoissonFinite.fourierIntegral F S e μ Φ) ∘ h.symm =
-      (fun y => ∫ x, φ x * (e default (-x*y) : ℂ) ∂μ default) := by
-    funext y
-    unfold PoissonFinite.fourierIntegral
-    simp only [Function.comp_apply, Fintype.prod_unique]
-    exact (measurePreserving_piUnique μ).integral_comp
-      (MeasurableEquiv.piUnique _).measurableEmbedding
-      (fun x => φ x * (e default (-x*y) : ℂ))
-  rw [← heq]
-  exact ⟨hf.comp_continuous h.symm.continuous, hg.comp_homeomorph h.symm⟩
-private theorem local_fourier (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F))
-    (e : AddChar (v.adicCompletion F) Circle)
-    (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (he : Continuous e) (hne : ∃ x, e x ≠ 1)
-    (φ : v.adicCompletion F → ℂ) (hlocal : IsLocallyConstant φ)
-    (hsupport : HasCompactSupport φ) :
-    IsLocallyConstant (fun y => ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) ∧
-    HasCompactSupport (fun y => ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) := by
-  let S : Finset (HeightOneSpectrum (RingOfIntegers F)) := {v}
-  letI : Unique S := ⟨⟨⟨v, Finset.mem_singleton_self v⟩⟩,
-    fun w => Subtype.ext (Finset.mem_singleton.mp w.property)⟩
-  have hw (w : S) : w.val = v := Finset.mem_singleton.mp w.property
-  let e' : (w : S) → AddChar (w.val.adicCompletion F) Circle :=
-    fun w => (hw w) ▸ e
-  let μ' : (w : S) → Measure (w.val.adicCompletion F) :=
-    fun w => (hw w) ▸ μ
-  let φ' : (default : S).val.adicCompletion F → ℂ := (hw default) ▸ φ
-  letI (w : S) : (μ' w).IsAddHaarMeasure := by
-    rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
-    subst w
-    exact inferInstance
-  have he' (w : S) : Continuous (e' w) := by
-    rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
-    subst w
-    exact he
-  have hne' (w : S) : ∃ x, e' w x ≠ 1 := by
-    rcases w with ⟨w, hwm⟩
-    have h : w = v := Finset.mem_singleton.mp hwm
-    subst w
-    exact hne
-  have hl : IsLocallyConstant φ' := by dsimp [φ']; cases hw default; exact hlocal
-  have hs : HasCompactSupport φ' := by dsimp [φ']; cases hw default; exact hsupport
-  have h := unique_fourier F S e' μ' he' hne' φ' hl hs
-  have hv : (default : S).val = v := rfl
-  change IsLocallyConstant (fun y : v.adicCompletion F =>
-    ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) ∧
-    HasCompactSupport (fun y : v.adicCompletion F =>
-    ∫ x, φ x * (e (-x*y) : ℂ) ∂μ)
-  at h
-  exact h
-
 private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
     (x : InfiniteAdeleRing F) :
     ProbeAdditive.archPhase F x =
@@ -167,29 +91,36 @@ private lemma local_schwartz_transforms
     congr 2
     ring
 
-def IsSchwartzTensor (F : Type) [Field F] [NumberField F]
-    (S : Finset (HeightOneSpectrum (𝓞 F))) (h : SLocalProduct F S → ℂ) : Prop :=
+def SchwartzTensorWith (F : Type) [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (P : (v : S) → (v.val.adicCompletion F → ℂ) → Prop) (h : SLocalProduct F S → ℂ) : Prop :=
   ∃ (c : ℂ)
     (gReal : (v : {v : InfinitePlace F // v.IsReal}) → SchwartzMap ℝ ℂ)
     (gComplex : (v : {v : InfinitePlace F // v.IsComplex}) → SchwartzMap ℂ ℂ)
     (gFinite : (v : ↥S) → v.val.adicCompletion F → ℂ),
-    (∀ v, IsLocallyConstant (gFinite v) ∧ HasCompactSupport (gFinite v)) ∧
+    (∀ v, P v (gFinite v)) ∧
     ∀ x, h x = c *
       ((∏ v, gReal v ((InfiniteAdeleRing.ringEquiv_mixedSpace F x.1).1 v)) *
        (∏ v, gComplex v ((InfiniteAdeleRing.ringEquiv_mixedSpace F x.1).2 v)) *
        ∏ v : ↥S, gFinite v (x.2 v))
 
-theorem fourier_isSchwartzTensor
+abbrev IsSchwartzTensor (F : Type) [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F))) :=
+  SchwartzTensorWith F S (fun _ g => IsLocallyConstant g ∧ HasCompactSupport g)
+
+theorem fourier_tensor_of_local
     {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : ↥S) → AddChar (v.val.adicCompletion F) Circle)
-    (he : ∀ v, Continuous (e v)) (hne : ∀ v, e v ≠ 1)
     (μ : @Measure (SLocalProduct F S) (borel _))
     (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F S) _ _ (borel _) μ)
     (W : SLocalProduct F S → ℂ)
     (hW : ProbeWeight.IsAnnularTensor F S W)
-    (hcompact : HasCompactSupport W) :
-    IsSchwartzTensor F S (ProbeWeight.fourier F S e μ W) := by
+    (P : (v : S) → (v.val.adicCompletion F → ℂ) → Prop)
+    (hP : ∀ (v : S) (ν : Measure (v.val.adicCompletion F)) [ν.IsAddHaarMeasure]
+      (f : v.val.adicCompletion F → ℂ), IsLocallyConstant f → HasCompactSupport f →
+      P v (fun y => ∫ x, f x * (e v (-x * y) : ℂ) ∂ν)) :
+    SchwartzTensorWith F S P (ProbeWeight.fourier F S e μ W) := by
   classical
   letI : MeasurableSpace (SLocalProduct F S) := borel _
   letI : BorelSpace (SLocalProduct F S) := ⟨rfl⟩
@@ -222,9 +153,7 @@ theorem fourier_isSchwartzTensor
   choose gC hgC using hc
   let gF := fun v : S => fun y => ∫ x, fF v x * (e v (-x * y) : ℂ) ∂μf v
   refine ⟨(a : ℂ), gR, gC, gF, ?_, ?_⟩
-  · intro v
-    exact local_fourier F v.val (e v) (μf v) (he v)
-      (AddChar.ne_one_iff.mp (hne v)) (fF v) (hF v).1 (hF v).2.1
+  · exact fun v => hP v (μf v) (fF v) (hF v).1 (hF v).2.1
   · intro y
     have hmap := integral_map_equiv (μ := μ) E.toHomeomorph.toMeasurableEquiv
       (fun x => W (E.symm x) * ProbeAdditive.phase F S e (-E.symm x * y))
@@ -285,6 +214,20 @@ theorem fourier_isSchwartzTensor
     rw [hpR, hpC, hpF]
     simp only [hgR, hgC, gF, kR, kC, kF]
     rfl
+
+theorem fourier_isSchwartzTensor
+    {F : Type} [Field F] [NumberField F]
+    (S : Finset (HeightOneSpectrum (𝓞 F)))
+    (e : (v : ↥S) → AddChar (v.val.adicCompletion F) Circle)
+    (he : ∀ v, Continuous (e v)) (hne : ∀ v, e v ≠ 1)
+    (μ : @Measure (SLocalProduct F S) (borel _))
+    (hμ : @Measure.IsAddHaarMeasure (SLocalProduct F S) _ _ (borel _) μ)
+    (W : SLocalProduct F S → ℂ)
+    (hW : ProbeWeight.IsAnnularTensor F S W)
+    (_hcompact : HasCompactSupport W) :
+    IsSchwartzTensor F S (ProbeWeight.fourier F S e μ W) :=
+  fourier_tensor_of_local S e μ hμ W hW _ fun v ν _ f hf hc =>
+    PoissonS.local_fourier F v.val (e v) ν (he v) (AddChar.ne_one_iff.mp (hne v)) f hf hc
 
 end
 end DedekindZetaZeroFree.ProbeSheetVerticalDecay

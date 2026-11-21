@@ -174,7 +174,7 @@ theorem openCoordinate_injective (s : ℝ) :
         intro u hu
         simp only [mem_compl_iff, mem_singleton_iff] at hu
         simp [Pi.sub_apply, coordinate_transition s f u hu, coordinate_transition s h u hu, hfh]
-      have hd : Dense ({0}ᶜ : Set ℂ) := by exact dense_compl_singleton 0
+      have hd : Dense ({0}ᶜ : Set ℂ) := dense_compl_singleton 0
       have hz := Continuous.ext_on hd hc continuous_const he
       exact sub_eq_zero.mp (congrFun hz 0)
     · rw [coordinate_transition s f u hu, coordinate_transition s h u hu, hfh]

@@ -29,8 +29,7 @@ private lemma unit_coe_injective
 
 private lemma unit_value_one
     (K : Type*) [Field K] [ValuativeRel K] (u : (𝒪[K])ˣ) :
-    ValuativeRel.valuation K (u : K) = 1 := by
-  exact (Valuation.integer.integers (ValuativeRel.valuation K)).one_of_isUnit u.isUnit
+    ValuativeRel.valuation K (u : K) = 1 := (Valuation.integer.integers (ValuativeRel.valuation K)).one_of_isUnit u.isUnit
 
 private lemma exists_unit
     (K : Type*) [Field K] [ValuativeRel K] {x : K}
@@ -66,8 +65,7 @@ theorem unit_annuli_partition
   let f : (𝒪[K])ˣ → K := fun u => (u : K)
   have hf : Function.Injective f := unit_coe_injective K
   have hc : Continuous f := by fun_prop
-  have hm (j : ℕ) : MeasurableSet (f '' (CubicUnitCharacters.unitFiltration K j : Set (𝒪[K])ˣ)) := by
-    exact ((((CubicUnitCharacters.unitFiltration K j).isClosed_of_isOpen
+  have hm (j : ℕ) : MeasurableSet (f '' (CubicUnitCharacters.unitFiltration K j : Set (𝒪[K])ˣ)) := ((((CubicUnitCharacters.unitFiltration K j).isClosed_of_isOpen
       (CubicUnitCharacters.isOpen_unitFiltration K j)).isCompact).image hc).measurableSet
   have he (j : ℕ) : unitAnnulus K j =
       f '' (CubicUnitCharacters.unitFiltration K j : Set (𝒪[K])ˣ) \
@@ -77,13 +75,11 @@ theorem unit_annuli_partition
     simp only [unitAnnulus, Set.mem_setOf_eq, Set.mem_image, Set.mem_diff,
       SetLike.mem_coe]
     constructor
-    · rintro ⟨u, hux, hu, hnu⟩
-      exact ⟨u, ⟨hu, hnu⟩, hux⟩
-    · rintro ⟨u, ⟨hu, hnu⟩, hux⟩
-      exact ⟨u, hux, hu, hnu⟩
+    · grind only
+    grind only
   have hmeas (j : ℕ) : MeasurableSet (unitAnnulus K j) := by
     rw [he]
-    exact (hm j).diff (hm (j + 1))
+    simp_all
   have hcover : (⋃ j : ℕ, unitAnnulus K j) = puncturedUnitRegion K := by
     ext x
     constructor
@@ -92,9 +88,7 @@ theorem unit_annuli_partition
       refine ⟨?_, ?_⟩
       · rw [← hux]
         exact unit_value_one K u
-      · intro hx1
-        have hu1 : u = 1 := hf (by simpa [f, hux] using hx1)
-        exact hnu (hu1 ▸ (CubicUnitCharacters.unitFiltration K (j + 1)).one_mem)
+      aesop
     · rintro ⟨hx, hx1⟩
       obtain ⟨u, hux⟩ := exists_unit K hx
       have hu1 : u ≠ 1 := by
@@ -248,7 +242,7 @@ private lemma filtration_image_pos (n : ℕ) (hn : 1 ≤ n) :
    · change hunit.unit ∈ CubicUnitCharacters.unitFiltration K n
      rw [CubicUnitCharacters.unitFiltration_mem_iff, hunit.unit_spec]
      simpa using ha
-   · simp [hunit.unit_spec]
+   · simp []
 private lemma filtration_mass_pos (μ : Measure K) [μ.IsAddHaarMeasure] (n : ℕ) (hn : 1 ≤ n) :
  ((μ.comap (fun u : (𝒪[K])ˣ => (u : K)))
    (CubicUnitCharacters.unitFiltration K n : Set (𝒪[K])ˣ)).toReal =
@@ -283,7 +277,7 @@ private theorem compact_character_integral
           have h : χ x = 1 := ht hx
           simp [h])
       _ = ((ν (U : Set G)).toReal : ℂ) := by
-        simp [setIntegral_const, Measure.real, Complex.real_smul]
+        simp [Measure.real, Complex.real_smul]
   · rw [if_neg ht]
     obtain ⟨u, hu, hne⟩ : ∃ u ∈ U, χ u ≠ 1 := by
       by_contra h
@@ -365,7 +359,7 @@ private lemma annulus_transport (μ : Measure K) [μ.IsAddHaarMeasure]
  have hu : (u : K) ≠ 0 := by
    have := unit_abs K u
    intro h; simp [h, KPCubicHaar.abs] at this
- simp only [e, dif_neg hu]
+ simp only [dif_neg hu]
  have hm0 : Units.mk0 (u : K) hu = Units.map (𝒪[K]).subtype.toMonoidHom u := by
    apply Units.ext; rfl
  rw [hm0, hχ]
@@ -410,7 +404,7 @@ theorem additive_character_annulus_integral
     push_cast
     rfl
   split_ifs with h1 h2 h3 h4 <;> try omega
-  all_goals try simp only [sub_zero, sub_self, zero_sub]
+  all_goals try simp only [sub_self, zero_sub]
   all_goals try {rw [hmass (j+1) (by omega)]; ring}
   all_goals try {rw [hmass j (by omega), hmass (j+1) (by omega), pow_succ]; ring}
 
@@ -443,7 +437,7 @@ private lemma pi_log {π : 𝒪[K]} (hp : Irreducible π) :
   have hylt : valuation K y < 1 := by
     rw [hy, ← map_one e.symm]
     apply e.symm.strictMono
-    simpa using (exp_lt_exp (a := (-1 : ℤ)) (b := 0)).mpr (by omega)
+    simp
   let z : 𝒪[K] := ⟨y, hylt.le⟩
   have hz : z ∈ 𝓂[K] := by
     rw [IsLocalRing.mem_maximalIdeal]
@@ -689,7 +683,7 @@ theorem integral_complement_units_eq_zero
     · have he : e x ≠ 0 := by
         intro hh
         apply hx
-        exact e.toEquiv.injective (hh.trans (by simp [e, mulEquiv_apply]))
+        exact e.toEquiv.injective (hh.trans (by simp [e]))
       simp only [A, if_neg hx, if_neg he]
       simp only [e, mulEquiv_apply, map_mul, unit_val, one_mul]
   have heν : MeasurePreserving e.toHomeomorph.toMeasurableEquiv ν ν :=
@@ -709,7 +703,7 @@ theorem integral_complement_units_eq_zero
     have he : e x ≠ 0 := by
       intro hh
       apply hx
-      exact e.toEquiv.injective (hh.trans (by simp [e, mulEquiv_apply]))
+      exact e.toEquiv.injective (hh.trans (by simp [e]))
     have hv : ValuativeRel.valuation K (1 - e x) = ValuativeRel.valuation K (1 - x) := by
       have hval : ValuativeRel.valuation K (e x) = ValuativeRel.valuation K x := by
         simp [e, mulEquiv_apply, map_mul, unit_val]

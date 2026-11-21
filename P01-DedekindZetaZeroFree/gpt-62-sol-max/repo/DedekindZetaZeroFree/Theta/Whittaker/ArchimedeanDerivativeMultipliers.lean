@@ -97,7 +97,7 @@ theorem fourier_upperLieDerivative (dq : Measure (KPAdditiveQuotient F))
         ((complexCoordinate y w * direction b).re : ℂ)) * MomentSources.fourier R dq f (diagonal R y) := by
     rw [diagonal, upperCurve, diagonal_upper]
     change MomentSources.fourier R dq f (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 _ * _) = _
-    rw [fourier_upper_translation R dq hHaar hprob f hf.1 hr, trace_upperCurve R y w b t]
+    rw [fourier_upper_translation R dq hHaar f hr, trace_upperCurve R y w b t]
   have hd := (((Complex.ofRealCLM.hasDerivAt (x := (0 : ℝ))).const_mul
     (Complex.I * (4 * Real.pi : ℂ))).mul_const
       ((complexCoordinate y w * direction b).re : ℂ)).cexp.mul_const

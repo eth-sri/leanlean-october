@@ -128,12 +128,11 @@ theorem orbitIdeal_surjective (A : SArithmeticData F)
       apply A.unitEquiv.injective
       apply Units.ext
       apply mul_right_cancel₀ h.property
-      change (A.unitEquiv u : A.R) * h.val = _
       have hh := (congrArg Subtype.val hγ).symm
       change (A.unitEquiv u : A.R) * h.val = (A.unitEquiv γ.val : A.R) * ((A.unitEquiv v : A.R) * h.val) at hh
       simpa [map_mul, mul_assoc] using hh
     rw [huv]
-    simpa [mul_comm, mul_left_comm, mul_assoc] using A.unitSixthPowers.inv_mem γ.property
+    simp [mul_comm, mul_left_comm, mul_assoc]
   · intro huv
     have hγ : u * v⁻¹ ∈ A.unitSixthPowers := by
       simpa [mul_comm, mul_left_comm, mul_assoc] using A.unitSixthPowers.inv_mem huv
@@ -306,7 +305,7 @@ theorem orbit_norm_rpow_summable (A : SArithmeticData F) (σ : ℝ) (hσ : 1 < �
     · intro I
       letI := idealFiber_finite A I
       exact summable_of_finite_support (Set.toFinite _)
-    · simp only [f, fiberSum]
+    · simp only [fiberSum]
       apply Summable.of_nonneg_of_le (f := fun I : A.Exterior =>
         (Nat.card A.UnitQuotient : ℝ) * A.exteriorNorm I ^ (-σ))
         (fun I => mul_nonneg (Nat.cast_nonneg _) (Real.rpow_nonneg (A.exteriorNorm_pos I).le _))

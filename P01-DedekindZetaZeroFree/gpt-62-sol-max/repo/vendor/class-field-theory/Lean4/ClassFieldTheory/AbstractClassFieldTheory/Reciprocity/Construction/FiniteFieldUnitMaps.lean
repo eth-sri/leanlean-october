@@ -83,22 +83,22 @@ private theorem valuationAt_transport
   cases h
   rfl
 
-/-- A quotient element stabilizing a Frobenius fixed field preserves its
-normalized valuation. -/
-theorem valuationAt_frobeniusFixedFieldAction
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
-    [Finite ((baseField G).toSubgroup ⧸
+section
+
+variable (v : ValuationData D A) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+  [TotallyDisconnectedSpace G] (K : DegreeData.FiniteResidueAbstractField D)
+  (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] (σ : D.FrobeniusElements K L hLK)
+  (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) (hq : q * σ.1 = σ.1 * q)
+  [Finite ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G)
         (D.frobeniusFixedField K L hLK σ)
         (le_baseField (D.frobeniusFixedField K L hLK σ)))]
+include v hLnormal q hq
+
+/-- A quotient element stabilizing a Frobenius fixed field preserves its
+normalized valuation. -/
+theorem valuationAt_frobeniusFixedFieldAction
     (a : ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L hLK σ)) :
     v.valuationAt (D.frobeniusFixedAbstractField K L hLK σ)
@@ -139,20 +139,7 @@ theorem valuationAt_frobeniusFixedFieldAction
 
 /-- The stabilizing action restricted to the unit group of a Frobenius
 fixed field. -/
-noncomputable def frobeniusFixedFieldUnitAction
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hq : q * σ.1 = σ.1 * q)
-    [Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G)
-        (D.frobeniusFixedField K L hLK σ)
-        (le_baseField (D.frobeniusFixedField K L hLK σ)))] :
+noncomputable def frobeniusFixedFieldUnitAction :
     v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σ) →+
       v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σ) where
   toFun u := ⟨D.frobeniusFixedFieldAction A K L hLK σ q hq u.1, by
@@ -163,11 +150,17 @@ noncomputable def frobeniusFixedFieldUnitAction
   map_zero' := by apply Subtype.ext; exact map_zero _
   map_add' _ _ := by apply Subtype.ext; exact map_add _ _ _
 
+end
+
+section
+
+variable (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+include v E
+
 /-- Units stay units after inclusion into any finite extension.  The construction
 uses this silently when all finitely many terms of `(*)` are placed in one
 finite Galois field. -/
 theorem fixedFieldInclusion_mem_unitAddSubgroup
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
     (u : v.unitAddSubgroup E.base) :
     fixedFieldInclusion A E.base.field E.field.field E.below u.1 ∈
       v.unitAddSubgroup E.field := by
@@ -203,8 +196,7 @@ theorem fixedFieldInclusion_mem_unitAddSubgroup
   simp [hu]
 
 /-- Inclusion of units along an arbitrary finite extension. -/
-def finiteUnitInclusion
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G) :
+def finiteUnitInclusion :
     v.unitAddSubgroup E.base →+ v.unitAddSubgroup E.field where
   toFun u := ⟨fixedFieldInclusion A E.base.field E.field.field E.below u.1,
     v.fixedFieldInclusion_mem_unitAddSubgroup E u⟩
@@ -214,7 +206,6 @@ def finiteUnitInclusion
 /-- Transporting a finite-unit inclusion along equality of its target field
 does not change its ambient coefficient. -/
 theorem finiteUnitInclusion_transport_coe
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
     (F : FiniteAbstractField G) (h : E.field = F)
     (u : v.unitAddSubgroup E.base) :
     (((h ▸ v.finiteUnitInclusion E u : v.unitAddSubgroup F).1 :
@@ -226,7 +217,6 @@ theorem finiteUnitInclusion_transport_coe
 This is the valuation-theoretic step used when a finite Galois refinement
 is pushed back down to the originally prescribed intermediate field. -/
 theorem relativeNorm_mem_unitAddSubgroup
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
     (u : v.unitAddSubgroup E.field) :
     relativeNorm A E.base.field E.field.field E.below u.1 ∈
       v.unitAddSubgroup E.base := by
@@ -243,13 +233,14 @@ theorem relativeNorm_mem_unitAddSubgroup
   simpa [hu] using h.symm
 
 /-- Relative norm restricted to the finite unit groups. -/
-def finiteUnitNorm
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G) :
+def finiteUnitNorm :
     v.unitAddSubgroup E.field →+ v.unitAddSubgroup E.base where
   toFun u := ⟨relativeNorm A E.base.field E.field.field E.below u.1,
     v.relativeNorm_mem_unitAddSubgroup E u⟩
   map_zero' := by apply Subtype.ext; exact map_zero _
   map_add' _ _ := by apply Subtype.ext; exact map_add _ _ _
+
+end
 
 end ValuationData
 end

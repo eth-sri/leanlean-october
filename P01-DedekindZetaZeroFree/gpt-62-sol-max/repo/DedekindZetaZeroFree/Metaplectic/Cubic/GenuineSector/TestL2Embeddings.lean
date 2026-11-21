@@ -31,7 +31,7 @@ private theorem scalarCovered_continuous (f : S_U F ζ hζ U R P H) :
     Continuous (scalarCovered f).val := by
   have hspec := Classical.choose_spec
     (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) f)
-  have hsmooth : IsSmoothSections F ζ hζ U R P H (scalarSections f) := hspec.1.1
+  have hsmooth := hspec.1.1
   have hcov : scalarCovered f =
       KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H (scalarSections f) := rfl
   rw [hcov]
@@ -42,7 +42,7 @@ private theorem scalarCovered_hasCompactSupport (f : S_U F ζ hζ U R P H) :
     HasCompactSupport (scalarCovered f).val := by
   have hspec := Classical.choose_spec
     (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) f)
-  have hcomp0 : HasCompactSupport (sectionNorm F ζ hζ U R P H (scalarSections f)) := hspec.1.2.1
+  have hcomp0 := hspec.1.2.1
   have hcov : scalarCovered f =
       KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H (scalarSections f) := rfl
   have hS : S F ζ hζ U R P H (scalarCovered f) = scalarSections f := by
@@ -60,11 +60,10 @@ theorem scalar_memLp (f : S_U F ζ hζ U R P H) :
 theorem scalar_class_mem_sector (f : S_U F ζ hζ U R P H) :
     (scalar_memLp f).toLp (scalarCovered f).val ∈
       KPContSectorClosedLpSubspace.H F ζ hζ R U := by
-  have hmeas : Measurable (scalarCovered f).val := (scalarCovered_continuous f).measurable
+  have hmeas := (scalarCovered_continuous f).measurable
   let fB : KPContSectorLineL2Isometry.BorelL2Scalars F ζ hζ U R :=
     ⟨scalarCovered f, hmeas, scalar_memLp f⟩
-  have hmem : (KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ U R P H fB).val ∈
-      KPContSectorClosedLpSubspace.H F ζ hζ R U :=
+  have hmem :=
     (KPContSectorLineL2Isometry.scalarEmbedding F ζ hζ U R P H fB).property
   rw [KPContSectorLineL2Isometry.scalarEmbedding_coe F ζ hζ U R P H fB] at hmem
   exact hmem
@@ -104,13 +103,6 @@ def iota : S_U F ζ hζ U R P H →ₗ[ℂ] KPContSectorClosedLpSubspace.H F ζ 
     rw [h2, hsc]
     simp only [Submodule.coe_smul, Pi.smul_apply, smul_eq_mul]
 
-private theorem continuous_iff_isQuotientMap {X Y Z : Type*} [TopologicalSpace X]
-    [TopologicalSpace Y] [TopologicalSpace Z] {q : X → Y} (hq : IsQuotientMap q)
-    (f : Y → Z) : Continuous f ↔ Continuous (f ∘ q) := by
-  refine ⟨fun h => h.comp hq.continuous, fun h => ?_⟩
-  exact Continuous.mk fun s hs => by
-    rw [← hq.isOpen_preimage]
-    exact h.isOpen_preimage s hs
 
 private lemma q_coordinates (a : ActualChart (U := U) (H := H)) (y : a.domain) :
     q a (coordinates a y).val = a.toBase y := by
@@ -149,7 +141,7 @@ private theorem continuous_normSquare_of_smooth (v : Family (U := U) (H := H))
       rw [← q_coordinates a y, normSquare_chart]
       rfl
     have hF' : Continuous (fun z : a.baseDomain => normSquare v z.val) :=
-      (continuous_iff_isQuotientMap hP.quotient _).mpr (hquot ▸ hloc)
+      hP.quotient.continuous_iff.mpr (hquot ▸ hloc)
     rw [continuousOn_iff_continuous_domRestrict]
     exact hF'
 
@@ -210,7 +202,7 @@ private theorem chi_unit (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity
 private theorem chi_unit' (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F) :
     ‖(chi F ζ hζ ε : ℂ)‖ = 1 := chi_norm F ζ hζ ε
 
-private theorem inner_mul_mul_of_norm_one (c a b : ℂ) (hc : ‖c‖ = 1) :
+theorem inner_mul_mul_of_norm_one (c a b : ℂ) (hc : ‖c‖ = 1) :
     inner ℂ (c * a) (c * b) = inner ℂ a b := by
   rw [← smul_eq_mul, ← smul_eq_mul, inner_smul_left, inner_smul_right, ← mul_assoc]
   have h : (starRingEnd ℂ) c * c = 1 := by
@@ -249,34 +241,12 @@ private theorem scalarPair_covariant (s t : Sections F ζ hζ U R P H)
     KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
   fun b => pairOnSigma s t ((H.atlas U).components.symm b)
 
-private theorem scalarPairSections_components (s t : Sections F ζ hζ U R P H)
+theorem scalarPairSections_components (s t : Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (z : SymmetricSpace F) :
     scalarPairSections s t ((H.atlas U).components ⟨i, Quotient.mk _ z⟩) =
       inner ℂ ((s i).val z) ((t i).val z) := by
-  have h1 : pairOnSigma s t
-      ((H.atlas U).components.symm ((H.atlas U).components ⟨i, Quotient.mk _ z⟩)) =
-      pairOnSigma s t ⟨i, Quotient.mk _ z⟩ :=
-    congrArg (pairOnSigma s t) (Homeomorph.symm_apply_apply _ _)
-  refine h1.trans ?_
-  exact Quotient.lift_mk
-    (s := MulAction.orbitRel
-      (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
-      (SymmetricSpace F))
-    (f := fun x => inner ℂ ((s i).val x) ((t i).val x))
-    (h := scalarPair_invariant s t i) z
-
-private theorem sectionFields_apply (s : Sections F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a) :
-    sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
-  have hcoe : (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).coefficient s x.val =
-      (KPCuspGenuineMonodromy.chi F ζ hζ
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).splitting x.val) : ℂ) *
-        (s a.component).val
-          ((KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).kind.representative •
-            labeledA (KPContCotangentActualGenuineTwistIsotropy.isotropyChart a).places x.val) :=
-    rfl
-  rw [sectionFields, hcoe]
-  simp [KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
+  rw [scalarPairSections, Homeomorph.symm_apply_apply]
+  rfl
 
 private theorem scalarPairSections_chart (s t : Sections F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
@@ -288,10 +258,10 @@ private theorem scalarPairSections_chart (s t : Sections F ζ hζ U R P H)
       (H.atlas U).components_formula]
   rw [hq, scalarPairSections_components, sectionFields_apply, sectionFields_apply]
 
-theorem scalarPair_descends (f g : S_U F ζ hζ U R P H) :
-    ∃! p : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ,
-      Continuous p ∧ ∀ (a : ActualChart (U := U) (H := H)) (x : omega a),
-        p (KPContCotangentOverlapRationalBranches.q a x.val) =
+private theorem scalarPairSections_spec (f g : S_U F ζ hζ U R P H) :
+    Continuous (scalarPairSections (scalarSections f) (scalarSections g)) ∧
+      ∀ (a : ActualChart (U := U) (H := H)) (x : omega a),
+        scalarPairSections (scalarSections f) (scalarSections g) (q a x.val) =
           inner ℂ (f.val a x) (g.val a x) := by
   have hfs := Classical.choose_spec (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) f)
@@ -301,7 +271,7 @@ theorem scalarPair_descends (f g : S_U F ζ hζ U R P H) :
   have hgsmooth : IsSmoothSections F ζ hζ U R P H (scalarSections g) := hgs.1.1
   have hfval : sectionFields (scalarSections f) = f.val := hfs.1.2.2
   have hgval : sectionFields (scalarSections g) = g.val := hgs.1.2.2
-  refine ⟨scalarPairSections (scalarSections f) (scalarSections g), ⟨?_, ?_⟩, ?_⟩
+  constructor
   ·
     let cover := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
     refine continuous_of_cover_nhds (s := fun n => (cover.chart n).baseDomain) ?_ ?_
@@ -314,9 +284,7 @@ theorem scalarPair_descends (f g : S_U F ζ hζ U R P H) :
       set a := cover.chart n
       have hP := every_shrunkChart_properties F ζ hζ U R P H a
       rw [continuousOn_iff_continuous_domRestrict]
-      refine (continuous_iff_isQuotientMap hP.quotient
-        (fun z : a.baseDomain =>
-          scalarPairSections (scalarSections f) (scalarSections g) z.val)).mpr ?_
+      apply hP.quotient.continuous_iff.mpr
       change Continuous (fun y : a.domain =>
         scalarPairSections (scalarSections f) (scalarSections g) (a.toBase y))
       have hbase : (fun y : a.domain =>
@@ -335,18 +303,25 @@ theorem scalarPair_descends (f g : S_U F ζ hζ U R P H) :
           ((hgsmooth a.component).continuous.comp continuous_subtype_val))
   · intro a x
     rw [scalarPairSections_chart, hfval, hgval]
-  · intro p' hp'
-    obtain ⟨-, hchart'⟩ := hp'
-    funext z
-    let cover := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
-    have hz : z ∈ ⋃ n, (cover.chart n).baseDomain := by
-      rw [cover.covers]; exact Set.mem_univ z
-    obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hz
-    set a := cover.chart n
-    obtain ⟨y, hy⟩ := hn
-    rw [← hy, ← q_coordinates a y, hchart' a (coordinates a y),
-      scalarPairSections_chart (scalarSections f) (scalarSections g) a (coordinates a y),
-      hfval, hgval]
+
+private theorem exists_chart_point (b : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
+    ∃ (a : ActualChart (U := U) (H := H)) (x : omega a),
+      KPContCotangentOverlapRationalBranches.q a x.val = b := by
+  let cover := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
+  have hb : b ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
+  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp hb
+  exact ⟨cover.chart n, coordinates (cover.chart n) y, (q_coordinates _ _).trans hy⟩
+
+theorem scalarPair_descends (f g : S_U F ζ hζ U R P H) :
+    ∃! p : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ,
+      Continuous p ∧ ∀ (a : ActualChart (U := U) (H := H)) (x : omega a),
+        p (KPContCotangentOverlapRationalBranches.q a x.val) =
+          inner ℂ (f.val a x) (g.val a x) := by
+  refine ⟨_, scalarPairSections_spec f g, ?_⟩
+  intro p' hp'
+  funext z
+  obtain ⟨a, y, rfl⟩ := exists_chart_point (H := H) z
+  exact (hp'.2 a y).trans ((scalarPairSections_spec f g).2 a y).symm
 
 def scalarPair (f g : S_U F ζ hζ U R P H) : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
   Classical.choose (scalarPair_descends f g)
@@ -522,14 +497,6 @@ theorem scalar_chart_integral (a : ActualChart (U := U) (H := H)) (f g : S_U F �
   rw [localScalarCoefficient, localScalarCoefficient, ← q_coordinates a y]
   exact scalar_pair_chart f g a (coordinates a y)
 
-private theorem exists_chart_point (b : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
-    ∃ (a : ActualChart (U := U) (H := H)) (x : omega a),
-      KPContCotangentOverlapRationalBranches.q a x.val = b := by
-  let cover := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
-  have hb : b ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
-  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp hb
-  exact ⟨cover.chart n, coordinates (cover.chart n) y, (q_coordinates _ _).trans hy⟩
-
 theorem tsupport_scalarPair_subset (f g : S_U F ζ hζ U R P H) :
     tsupport (scalarPair f g) ⊆ scalarSupport g.val := by
   refine closure_mono (fun x hx => ?_)
@@ -543,7 +510,7 @@ theorem tsupport_scalarPair_subset (f g : S_U F ζ hζ U R P H) :
 theorem scalar_pair_integrable (f g : S_U F ζ hζ U R P H) :
     Integrable (scalarPair f g) (KPContActualSectorCotangentL2.muU F ζ hζ U R P) := by
   letI : IsFiniteMeasureOnCompacts (KPContActualSectorCotangentL2.muU F ζ hζ U R P) :=
-    (KPContSectorFixedMeasureLocalFiniteness.levelLocalFiniteness F ζ hζ R P H U).spherical_finite
+    KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_finiteOnCompacts F ζ hζ R P U
   have hcs : HasCompactSupport (scalarPair f g) :=
     g.property.2.2.of_isClosed_subset (isClosed_tsupport _) (tsupport_scalarPair_subset f g)
   exact (scalar_pair_continuous f g).integrable_of_hasCompactSupport hcs
@@ -738,7 +705,7 @@ private theorem continuous_normSquare_of_continuous (v : Family (U := U) (H := H
       rw [← q_coordinates a y, normSquare_chart]
       rfl
     have hF' : Continuous (fun z : a.baseDomain => normSquare v z.val) :=
-      (continuous_iff_isQuotientMap hP.quotient _).mpr (hquot ▸ hloc)
+      hP.quotient.continuous_iff.mpr (hquot ▸ hloc)
     rw [continuousOn_iff_continuous_domRestrict]
     exact hF'
 
@@ -813,54 +780,9 @@ theorem cotangent_unique_continuous (W : T_U F ζ hζ U R P H) :
       (pow_eq_zero_iff (by norm_num : (2 : ℕ) ≠ 0)).mp h
     exact sub_eq_zero.mp (nnnorm_eq_zero.mp h1)
 
-private theorem scalarPair_eq_sections (f g : S_U F ζ hζ U R P H) :
-    scalarPair f g = scalarPairSections (scalarSections f) (scalarSections g) := by
-  have hfs := Classical.choose_spec (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) f)
-  have hgs := Classical.choose_spec (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) g)
-  have hfsmooth : IsSmoothSections F ζ hζ U R P H (scalarSections f) := hfs.1.1
-  have hgsmooth : IsSmoothSections F ζ hζ U R P H (scalarSections g) := hgs.1.1
-  have hfval : sectionFields (scalarSections f) = f.val := hfs.1.2.2
-  have hgval : sectionFields (scalarSections g) = g.val := hgs.1.2.2
-  have hcont : Continuous (scalarPairSections (scalarSections f) (scalarSections g)) := by
-    let cover := KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H
-    refine continuous_of_cover_nhds (s := fun n => (cover.chart n).baseDomain) ?_ ?_
-    · intro x
-      have hx : x ∈ ⋃ n, (cover.chart n).baseDomain := by
-        rw [cover.covers]; exact Set.mem_univ x
-      obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
-      exact ⟨n, (cover.properties n).base_open.mem_nhds hn⟩
-    · intro n
-      set a := cover.chart n
-      have hP := every_shrunkChart_properties F ζ hζ U R P H a
-      rw [continuousOn_iff_continuous_domRestrict]
-      refine (continuous_iff_isQuotientMap hP.quotient
-        (fun z : a.baseDomain =>
-          scalarPairSections (scalarSections f) (scalarSections g) z.val)).mpr ?_
-      change Continuous (fun y : a.domain =>
-        scalarPairSections (scalarSections f) (scalarSections g) (a.toBase y))
-      have hbase : (fun y : a.domain =>
-            scalarPairSections (scalarSections f) (scalarSections g) (a.toBase y)) =
-          fun y : a.domain => inner ℂ ((scalarSections f a.component).val y.val)
-            ((scalarSections g a.component).val y.val) := by
-        funext y
-        have h1 : a.toBase y = (H.atlas U).components
-            ⟨a.component, Quotient.mk _ y.val⟩ := by
-          simp only [ShrunkChart.toBase, KPCuspSiegel.projection,
-            (H.atlas U).components_formula]
-        rw [h1, scalarPairSections_components]
-      rw [hbase]
-      exact continuous_inner.comp
-        (((hfsmooth a.component).continuous.comp continuous_subtype_val).prodMk
-          ((hgsmooth a.component).continuous.comp continuous_subtype_val))
-  have hchart : ∀ (a : ActualChart (U := U) (H := H)) (x : omega a),
-      scalarPairSections (scalarSections f) (scalarSections g) (q a x.val) =
-        inner ℂ (f.val a x) (g.val a x) := by
-    intro a x
-    rw [scalarPairSections_chart, hfval, hgval]
-  exact ((Classical.choose_spec (scalarPair_descends f g)).2
-    (scalarPairSections (scalarSections f) (scalarSections g)) ⟨hcont, hchart⟩).symm
+theorem scalarPair_eq_sections (f g : S_U F ζ hζ U R P H) :
+    scalarPair f g = scalarPairSections (scalarSections f) (scalarSections g) :=
+  ((Classical.choose_spec (scalarPair_descends f g)).2 _ (scalarPairSections_spec f g)).symm
 
 private theorem scalarCovered_inner_eq (f g : S_U F ζ hζ U R P H) :
     (fun v : CoveredSpherical F ζ hζ U =>

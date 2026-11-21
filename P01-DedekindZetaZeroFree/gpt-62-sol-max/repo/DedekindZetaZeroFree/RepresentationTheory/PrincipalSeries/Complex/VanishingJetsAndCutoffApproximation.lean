@@ -21,7 +21,7 @@ private theorem cutoff_open_zero (χ : ℂ → ℂ)
   · rfl
   · rw [hχ x⁻¹, zero_mul]
     rw [norm_inv]
-    have hp : 0 < ‖x‖ := norm_pos_iff.mpr h
+    have hp := norm_pos_iff.mpr h
     have : (2 : ℝ)⁻¹ ≤ ‖x‖⁻¹ := (inv_le_inv₀ (by norm_num) hp).2 hx.le
     norm_num at this ⊢
     exact this

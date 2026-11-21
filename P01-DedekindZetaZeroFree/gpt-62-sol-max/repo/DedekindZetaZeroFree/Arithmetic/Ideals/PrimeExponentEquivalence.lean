@@ -63,7 +63,7 @@ theorem exponentProduct_bijective : Function.Bijective (@exponentProduct R _ _) 
     let m := (normalizedFactors I.val).attach.map
       (fun p => HeightOneSpectrum.ofPrime (prime_of_normalized_factor p.val p.property))
     have hm : m.map HeightOneSpectrum.asIdeal = normalizedFactors I.val := by
-      simp [m, Multiset.map_map, Function.comp_def]
+      simp [m, Multiset.map_map]
     refine ⟨m.toFinsupp, Subtype.ext ?_⟩
     change (m.toFinsupp.prod (fun p n => p.asIdeal ^ n)) = I.val
     rw [product_eq, Multiset.toFinsupp_toMultiset, hm]

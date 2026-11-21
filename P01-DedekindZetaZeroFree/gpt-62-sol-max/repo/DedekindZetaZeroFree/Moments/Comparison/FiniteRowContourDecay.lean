@@ -56,24 +56,22 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
   obtain ⟨hze, hzf⟩ := hz
   have hK : (ξ + z - 1).re ^ 2 ≤ (|a| + |e| + |b| + |f| + 1) ^ 2 := by
     have hre : (ξ + z - 1).re = ξ.re + z.re - 1 := by
-      simp only [Complex.add_re, Complex.sub_re, Complex.one_re, sub_zero]
+      rfl
     rw [hre]
     have habs : |ξ.re + z.re - 1| ≤ |a| + |e| + |b| + |f| + 1 := by
       refine abs_le.mpr ⟨?_, ?_⟩
-      · have h1 := neg_abs_le a; have h2 := neg_abs_le e
-        have h3 := abs_nonneg b; have h4 := abs_nonneg f; linarith
-      · have h1 := le_abs_self b; have h2 := le_abs_self f
-        have h3 := abs_nonneg a; have h4 := abs_nonneg e; linarith
+      · grind
+      grind
     have h2 := pow_le_pow_left₀ (abs_nonneg (ξ.re + z.re - 1)) habs 2
     rwa [sq_abs] at h2
   have hexp : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ ≤
       Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) := by
     have h := norm_exp_sq_le (ξ + z - 1) ((|a| + |e| + |b| + |f| + 1) ^ 2) hK
     simpa only [Complex.add_im, Complex.sub_im, Complex.one_im, sub_zero] using h
-  have hMz : ‖M z‖ ≤ CM * (1 + |z.im|) ^ (-(A + D)) :=
-    hCM z (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hze, hzf⟩)
-  have hWw : ‖W w‖ ≤ CW * (1 + |w.im|) ^ (-(A + B)) :=
-    hCW w (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hwc, hwd⟩)
+  have hMz :=
+    hCM z (by exact ⟨hze, hzf⟩)
+  have hWw :=
+    hCW w (by exact ⟨hwc, hwd⟩)
   have hB1 : (2 + |w.im|) ^ B ≤ 2 ^ B * (1 + |w.im|) ^ B :=
     rpow_two_add_le _ _ (abs_nonneg _) hB
   have hD1 : (2 + |z.im|) ^ D ≤ 2 ^ D * (1 + |z.im|) ^ D :=
@@ -96,38 +94,16 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
       (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
         (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) :=
     mul_le_mul s1 hWw (norm_nonneg _) (by positivity)
-  have s3 : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ * ‖M z‖ * ‖W w‖ * (2 + |w.im|) ^ B ≤
-      (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
-        (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) *
-        (2 ^ B * (1 + |w.im|) ^ B) :=
+  have s3 :=
     mul_le_mul s2 hB1 (by positivity) (by positivity)
-  have s4 : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ * ‖M z‖ * ‖W w‖ * (2 + |w.im|) ^ B *
-      (2 + |z.im|) ^ D ≤
-      (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
-        (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) *
-        (2 ^ B * (1 + |w.im|) ^ B) * (2 ^ D * (1 + |z.im|) ^ D) :=
+  have s4 :=
     mul_le_mul s3 hD1 (by positivity) (by positivity)
   have eq : (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
         (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) *
         (2 ^ B * (1 + |w.im|) ^ B) * (2 ^ D * (1 + |z.im|) ^ D) =
       Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * CM * CW * 2 ^ (B + D) *
         Real.exp (-(ξ.im + z.im) ^ 2) * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) := by
-    calc (Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2)) *
-          (CM * (1 + |z.im|) ^ (-(A + D))) * (CW * (1 + |w.im|) ^ (-(A + B))) *
-          (2 ^ B * (1 + |w.im|) ^ B) * (2 ^ D * (1 + |z.im|) ^ D)
-        = Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) * CM *
-            CW * ((1 + |z.im|) ^ (-(A + D)) * (1 + |z.im|) ^ D) *
-            ((1 + |w.im|) ^ (-(A + B)) * (1 + |w.im|) ^ B) * (2 ^ B * 2 ^ D) := by
-          ring
-      _ = Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) * CM *
-            CW * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) * (2 ^ B * 2 ^ D) := by
-          rw [e1, e2]
-      _ = Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) * CM *
-            CW * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) * 2 ^ (B + D) := by
-          rw [e3]
-      _ = Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * CM * CW * 2 ^ (B + D) *
-            Real.exp (-(ξ.im + z.im) ^ 2) * (1 + |z.im|) ^ (-A) * (1 + |w.im|) ^ (-A) := by
-          ring
+    grind
   rw [comparisonGaussianMellinWeight, norm_mul, norm_mul]
   refine s4.trans (le_of_eq ?_)
   rw [comparisonHeightEnvelope]

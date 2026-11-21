@@ -194,12 +194,15 @@ theorem residueTeichmullerLift_isRoot_X_pow_card_sub_X
   simp [Polynomial.eval_sub,
     higherPrincipalUnitGroup.residueTeichmullerLift_pow_card]
 
+section
+
+variable [Finite F.residueField] (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p] {n : ℕ+}
+  (hcard : Nat.card F.residueField = p ^ (n : ℕ))
+include n hcard
+
 /-- In equal characteristic, `T^q - T` has unit derivative at every
 Teichmuller representative. -/
 theorem residueTeichmullerRootPolynomial_derivative_eval_isUnit_of_charP
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
     (y : F.residueField) :
     IsUnit
       (((Polynomial.X ^ Nat.card F.residueField - Polynomial.X :
@@ -223,9 +226,7 @@ theorem residueTeichmullerRootPolynomial_derivative_eval_isUnit_of_charP
 
 /-- In equal characteristic, the Teichmuller lift from the finite residue field
 to the valuation ring is additive. -/
-theorem residueTeichmullerLift_add_of_charP [Finite F.residueField]
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
+theorem residueTeichmullerLift_add_of_charP
     (x y : F.residueField) :
     higherPrincipalUnitGroup.residueTeichmullerLift F (x + y) =
       higherPrincipalUnitGroup.residueTeichmullerLift F x +
@@ -286,10 +287,7 @@ theorem residueTeichmullerLift_add_of_charP [Finite F.residueField]
 
 /-- In equal characteristic, the Teichmuller lift is a ring homomorphic
 coefficient-field section of the residue map. -/
-noncomputable def residueTeichmullerRingHomOfCharP
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ)) :
+noncomputable def residueTeichmullerRingHomOfCharP :
     F.residueField →+* F.valuationSubring where
   toFun := higherPrincipalUnitGroup.residueTeichmullerLift F
   map_zero' := by
@@ -308,9 +306,6 @@ The defining evaluation formula for `residueTeichmullerRingHomOfCharP` is
 higherPrincipalUnitGroup.residueTeichmullerLift F x`.
 -/
 @[simp] theorem residueTeichmullerRingHomOfCharP_apply
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
     (x : F.residueField) :
     higherPrincipalUnitGroup.residueTeichmullerRingHomOfCharP
         (F := F) p hcard x =
@@ -322,10 +317,7 @@ Establishes the identity `F.residueMap.comp
 (higherPrincipalUnitGroup.residueTeichmullerRingHomOfCharP (F := F) p hcard) = RingHom.id
 F.residueField`.
 -/
-theorem residueMap_comp_residueTeichmullerRingHomOfCharP
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ)) :
+theorem residueMap_comp_residueTeichmullerRingHomOfCharP :
     F.residueMap.comp
         (higherPrincipalUnitGroup.residueTeichmullerRingHomOfCharP
           (F := F) p hcard) =
@@ -335,10 +327,7 @@ theorem residueMap_comp_residueTeichmullerRingHomOfCharP
     (F := F) x
 
 /-- The corresponding coefficient-field embedding into the fraction field. -/
-noncomputable def residueTeichmullerFieldHomOfCharP
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ)) :
+noncomputable def residueTeichmullerFieldHomOfCharP :
     F.residueField →+* K :=
   F.valuation.valuationSubring.subtype.comp
     (higherPrincipalUnitGroup.residueTeichmullerRingHomOfCharP
@@ -350,14 +339,13 @@ The defining evaluation formula for `residueTeichmullerFieldHomOfCharP` is
 (higherPrincipalUnitGroup.residueTeichmullerLift F x : K)`.
 -/
 @[simp] theorem residueTeichmullerFieldHomOfCharP_apply
-    [Finite F.residueField] (p : ℕ) [Fact p.Prime]
-    [CharP F.valuationSubring p] {n : ℕ+}
-    (hcard : Nat.card F.residueField = p ^ (n : ℕ))
     (x : F.residueField) :
     higherPrincipalUnitGroup.residueTeichmullerFieldHomOfCharP
         (F := F) p hcard x =
       (higherPrincipalUnitGroup.residueTeichmullerLift F x : K) :=
   rfl
+
+end
 end higherPrincipalUnitGroup
 
 end CompleteDVF

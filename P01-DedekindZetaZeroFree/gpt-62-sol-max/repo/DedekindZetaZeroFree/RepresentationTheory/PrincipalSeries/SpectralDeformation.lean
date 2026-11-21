@@ -38,12 +38,12 @@ theorem height_upperTriangular (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   have hb : bottomRowNormSq (upperTriangular a d b * g) =
       ‖(d : ℂ)‖ ^ 2 * bottomRowNormSq g := by
     simp [bottomRowNormSq, upperTriangular, Matrix.mul_apply, Fin.sum_univ_two,
-      norm_mul, mul_pow]
+      mul_pow]
     ring
   have hd : ‖((Matrix.GeneralLinearGroup.det (upperTriangular a d b * g) : ℂˣ) : ℂ)‖ =
       ‖(a : ℂ)‖ * ‖(d : ℂ)‖ * ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ := by
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, upperTriangular,
-      Matrix.det_fin_two, norm_mul]
+    simp [Matrix.GeneralLinearGroup.val_det_apply, upperTriangular,
+      Matrix.det_fin_two]
   have hdn : ‖(d : ℂ)‖ ≠ 0 := norm_ne_zero_iff.mpr d.ne_zero
   simp only [height, hb, hd, complexAbs, norm_div]
   field_simp [hdn, (bottom_pos g).ne']
@@ -71,7 +71,7 @@ theorem plusValue_covariance (f : PrincipalSeries positiveParameter) (s : ℂ)
 theorem height_open (z : ℂ) :
     height (weyl * upperUnipotent z) = (1 + ‖z‖ ^ 2)⁻¹ ^ 2 := by
   simp [height, bottomRowNormSq, weyl, upperUnipotent,
-    Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, Matrix.det_fin_two,
+    Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two,
     Matrix.mul_apply, Fin.sum_univ_two]
 
 theorem height_infinity (z : ℂ) :
@@ -219,7 +219,7 @@ private theorem height_orbit_continuous (g : ComplexGL2) :
          ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 + x * (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2)) ^ 2 := by
     funext x
     simp [height, bottomRowNormSq, weyl, upperUnipotent,
-      Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, Matrix.det_fin_two,
+      Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two,
       Matrix.mul_apply, Fin.sum_univ_two, norm_sub_rev]
   rw [he]
   apply Continuous.pow

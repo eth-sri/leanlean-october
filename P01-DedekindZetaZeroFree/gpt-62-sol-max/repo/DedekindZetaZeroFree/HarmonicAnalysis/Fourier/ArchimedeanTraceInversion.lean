@@ -62,11 +62,7 @@ instance completionMeasurableSpace {F : Type*} [Field F] [NumberField F]
 instance completionBorelSpace {F : Type*} [Field F] [NumberField F]
     (v : InfinitePlace F) : BorelSpace v.Completion := ⟨rfl⟩
 
-instance infiniteMeasurableSpace (F : Type*) [Field F] [NumberField F] :
-    MeasurableSpace (InfiniteAdeleRing F) :=
-  inferInstanceAs (MeasurableSpace ((v : InfinitePlace F) → v.Completion))
 
-instance instSigmaFiniteTraceInversionRealMeasure : SigmaFinite realMeasure := inferInstanceAs (SigmaFinite (volume : Measure ℝ))
 
 instance instSigmaFiniteTraceInversionComplexMeasure : SigmaFinite complexMeasure := by
   change SigmaFinite ((2 : ℝ≥0) • (volume : Measure ℂ))

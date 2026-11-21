@@ -74,8 +74,7 @@ theorem padicChangedUniformizerDefect_map_constantCoeff
     (hH : PowerSeries.constantCoeff H = 0) :
     PowerSeries.map WittVector.constantCoeff
         (padicChangedUniformizerDefect p u H) = 0 := by
-  have hM :
-      PowerSeries.HasSubst (padicCompletedMultiplicativeSeries p) :=
+  have hM :=
     PowerSeries.HasSubst.of_constantCoeff_zero'
       (padicCompletedMultiplicativeSeries_constantCoeff p)
   have hHsubst : PowerSeries.HasSubst H :=
@@ -86,7 +85,7 @@ theorem padicChangedUniformizerDefect_map_constantCoeff
     PowerSeries.HasSubst.of_constantCoeff_zero' (by
       change WittVector.constantCoeff
           (PowerSeries.constantCoeff H) = 0
-      rw [hH, map_zero])
+      grind)
   rw [padicChangedUniformizerDefect, map_sub]
   change
     MvPowerSeries.map WittVector.constantCoeff

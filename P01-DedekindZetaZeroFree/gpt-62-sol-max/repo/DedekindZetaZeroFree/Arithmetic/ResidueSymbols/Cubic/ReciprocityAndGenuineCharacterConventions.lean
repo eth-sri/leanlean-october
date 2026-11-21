@@ -21,9 +21,6 @@ def sourceB6 (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ) :
 def ordinaryGenuineCharacter : rootsOfUnity 3 F →* ℂˣ :=
   (KPLocalCover.coefficientEmbedding F ζ hζ).comp (KPLocalCover.threeToSix F)
 
-@[simp] theorem ordinaryGenuineCharacter_apply (z : rootsOfUnity 3 F) :
-    ordinaryGenuineCharacter F ζ hζ z =
-      KPLocalCover.coefficientEmbedding F ζ hζ (KPLocalCover.threeToSix F z) := rfl
 
 def sourceC (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ) : ℂ :=
   (ordinaryGenuineCharacter F ζ hζ (KPHilbert.B3 F ζ hζ v x y ^ 2) : ℂ)
@@ -67,8 +64,6 @@ variable (v : HeightOneSpectrum (𝓞 F))
 local instance : ValuativeRel (v.adicCompletion F) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F v
 
-local instance : IsNonarchimedeanLocalField (v.adicCompletion F) :=
-  ClassFieldTheory.finitePlaceCompletionIsNonarchimedeanLocalField F v
 
 theorem sourceC_valuation_units
     (hgood : ValuativeRel.valuation (v.adicCompletion F) (6 : v.adicCompletion F) = 1)

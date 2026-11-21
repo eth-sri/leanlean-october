@@ -13,14 +13,15 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal
 
-section InsertionCharts
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-end InsertionCharts
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
+include t
 
 private theorem source_chart_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z => t.val.val
       (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
@@ -46,8 +47,6 @@ private theorem source_chart_smooth
   simpa only [← hv, KPGlobalTorusBorelTwistCompatibility.scalarSection_formula] using hd
 
 private theorem slice_lower_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (g : KPCplxCharacterHaar.ComplexGL2) :
@@ -68,8 +67,6 @@ private theorem slice_lower_smooth
     update_left_mul, map_mul]
 
 private theorem slice_charts_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     let f := fun g : KPCplxCharacterHaar.ComplexGL2 => t.val.val
@@ -86,8 +83,6 @@ private theorem slice_charts_smooth
       slice_lower_smooth F ζ hζ t w a c 1
 
 private theorem slice_covariance
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (w : InfinitePlace F) (a₀ : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     KPCplxPrincipalSeriesCharts.HasCovariance KPCplxPrincipalSeriesCharts.positiveParameter
@@ -148,6 +143,8 @@ private theorem slice_covariance
   convert hc using 2
   unfold KPCplxPrincipalSeriesCharts.inductionWeight KPCplxPrincipalSeriesCharts.complexAbs
   norm_num [KPCplxPrincipalSeriesCharts.positiveParameter]
+
+end
 
  def restrictionLinear
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

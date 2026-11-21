@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.Analysis.Sobolev.Restriction.IntegerOrderWeakDerivatives
 public import DedekindZetaZeroFree.Analysis.Sobolev.LocalEmbeddingAndSmoothRepresentatives
 
@@ -63,12 +64,7 @@ theorem safe_segment_mem {n : ℕ} (inner outer : LocalBall n)
     _ = |s| + dist x outer.center := by rw [dist_eq_norm, add_sub_cancel_left, hnorm]
     _ < outer.radius := by linarith
 
-private theorem derivative_support {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
-    tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
-  induction l with
-  | nil => exact Set.Subset.rfl
-  | cons i l ih => exact (tsupport_fderiv_apply_subset ℝ
-      (EuclideanSpace.single i 1)).trans ih
+private alias derivative_support := DedekindZetaZeroFree.WeakJets.Raw.list_tsupport_subset
 
 private theorem derivative_smooth {n : ℕ} (l : List (Fin n))
     (f : Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
@@ -404,24 +400,6 @@ private theorem translated_test_hasDerivAt {n : ℕ} {inner outer : LocalBall n}
       exact mul_le_mul_of_nonneg_left (hb _) (norm_nonneg _))
     (hi.norm.mul_const C)
     (Filter.Eventually.of_forall fun x s _ => hderiv x s)).2
-
-private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
-  classical
-  simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
-  have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
-    intro l; induction l with
-    | nil => rfl
-    | cons j l ih => by_cases hj : j = i <;> simp [hj, ih]
-  have hrep : ∀ j : Fin n, List.replicate (if j = i then 1 else 0) j =
-      if j = i then [j] else [] := by intro j; split_ifs <;> simp
-  simp_rw [hrep]
-  rw [h, List.filter_eq]
-  simp
-
-private theorem first_degree {n : ℕ} (i : Fin n) : (firstIndex i).degree = 1 := by
-  simp only [firstIndex, MultiIndex.degree, apply_ite Fin.val, Fin.val_one, Fin.val_zero]
-  simp
 
 private theorem global_shift_pair {n : ℕ} {inner outer : LocalBall n}
     (f : BallL2 outer) (a : Space n)

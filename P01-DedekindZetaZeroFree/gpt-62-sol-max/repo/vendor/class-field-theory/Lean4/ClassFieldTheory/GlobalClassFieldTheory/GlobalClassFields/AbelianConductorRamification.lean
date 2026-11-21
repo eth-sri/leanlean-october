@@ -39,42 +39,7 @@ variable
     [Field L] [NumberField L] [Algebra K L]
     [FiniteDimensional K L] [IsAbelianGalois K L]
 
-/-- The locally constructed norm modulus vanishes exactly when every
-chosen completed extension is unramified. -/
-theorem
-    ideleClassNormDefiningModulus_eq_zero_iff_all_chosenFinitePlaces_unramified :
-    ideleClassNormDefiningModulus (K := K) (L := L) = 0 ↔
-      ∀ v : HeightOneSpectrum (𝓞 K),
-        _root_.ChosenFinitePlaceIsUnramified
-          (K := K) (L := L) v := by
-  constructor
-  · intro hzero v
-    apply
-      (ideleClassNormLocalHigherUnitExponent_eq_zero_iff_chosenFinitePlaceIsUnramified
-        (K := K) (L := L) v).1
-    rw [← ideleClassNormDefiningModulus_apply
-      (K := K) (L := L) v, hzero]
-    rfl
-  · intro hunramified
-    ext v
-    rw [ideleClassNormDefiningModulus_apply,
-      (ideleClassNormLocalHigherUnitExponent_eq_zero_iff_chosenFinitePlaceIsUnramified
-        (K := K) (L := L) v).2
-          (hunramified v)]
-    rfl
 
-/-- The locally constructed norm modulus is nonzero exactly when some
-chosen completed extension is ramified. -/
-theorem
-    ideleClassNormDefiningModulus_ne_zero_iff_exists_chosenFinitePlace_ramified :
-    ideleClassNormDefiningModulus (K := K) (L := L) ≠ 0 ↔
-      ∃ v : HeightOneSpectrum (𝓞 K),
-        ¬ _root_.ChosenFinitePlaceIsUnramified
-          (K := K) (L := L) v := by
-  rw [ne_eq,
-    ideleClassNormDefiningModulus_eq_zero_iff_all_chosenFinitePlaces_unramified]
-  push Not
-  rfl
 
 /-- Every prime in the minimal narrow finite norm conductor is ramified
 in the chosen completed extension above that prime. -/
@@ -95,25 +60,6 @@ theorem
     (mem_ideleClassNormDefiningModulus_support_iff_not_chosenFinitePlaceIsUnramified
       (K := K) (L := L) v).1 hvLocal
 
-/-- If every chosen finite completion is unramified, then the minimal
-narrow finite conductor of the actual idèle-class norm subgroup is zero. -/
-theorem
-    ideleClassNorm_narrowFiniteConductor_eq_zero_of_all_chosenFinitePlaces_unramified
-    (hunramified :
-      ∀ v : HeightOneSpectrum (𝓞 K),
-        _root_.ChosenFinitePlaceIsUnramified
-          (K := K) (L := L) v) :
-    ideleClassNormNarrowFiniteConductor (K := K) (L := L) = 0 := by
-  have hmodulus :
-      ideleClassNormDefiningModulus
-          (K := K) (L := L) = 0 :=
-    (ideleClassNormDefiningModulus_eq_zero_iff_all_chosenFinitePlaces_unramified
-      (K := K) (L := L)).2 hunramified
-  apply le_antisymm
-  · simpa only [hmodulus] using
-      (ideleClassNorm_narrowFiniteConductor_le_normDefiningModulus
-        (K := K) (L := L))
-  · exact bot_le
 
 end GlobalClassFields
 end GlobalClassFieldTheory

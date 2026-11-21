@@ -63,8 +63,7 @@ private theorem padicMultiplicativeScalarEndomorphism_nat
   let A :
       PowerSeries (padicLocalField p).valuationSubring :=
     (1 + PowerSeries.X) ^ m - 1
-  let Eps :
-      PowerSeries (padicLocalField p).valuationSubring :=
+  let Eps :=
     (padicMultiplicativeLubinTateSeries p).toPowerSeries
   have hEps :
       Eps =

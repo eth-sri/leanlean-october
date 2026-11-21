@@ -1,6 +1,7 @@
 module
 
-public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.CompletionTraceOperatorKernel
+public import DedekindZetaZeroFree.Metaplectic.Weil.QuadraticFourierOperatorsAndPhases
+public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.SchwartzQuadraticOperatorKernel
 
 @[expose] public section
 

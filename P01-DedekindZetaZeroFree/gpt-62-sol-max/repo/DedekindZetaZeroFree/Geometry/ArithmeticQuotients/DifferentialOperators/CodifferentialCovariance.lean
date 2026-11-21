@@ -9,7 +9,7 @@ noncomputable section
 open scoped Classical ContDiff BigOperators
 open Filter Topology
 namespace DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
-private theorem codifferential_smul_const (d : ℕ) (W : HyperbolicChart.Space d → HyperbolicChart.Cotangent d)
+theorem codifferential_smul_const (d : ℕ) (W : HyperbolicChart.Space d → HyperbolicChart.Cotangent d)
     (x : HyperbolicChart.Space d) (hW : DifferentiableAt ℝ W x) (c : ℂ) :
     HyperbolicChart.codifferential d (fun y => c • W y) x =
       c * HyperbolicChart.codifferential d W x := by
@@ -130,16 +130,16 @@ private theorem dual_push (d : ℕ) (ψ : HyperbolicChart.Space d → Hyperbolic
   rw [he]
   simp [Q, CotangentLogCoframe.H]
 
-theorem coframe_codifferential_isometry (d : ℕ)
+theorem coframe_codifferential_of_push (d : ℕ)
     (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
     (V W : HyperbolicChart.Space d → EuclideanSpace ℂ (Fin d × Fin 3))
     (x : HyperbolicChart.Space d) (hψ : ContDiffAt ℝ 2 ψ x)
     (hV : ContDiffAt ℝ (⊤ : ℕ∞) V x) (hW : ContDiffAt ℝ (⊤ : ℕ∞) W (ψ x))
     (hm : ∀ᶠ y in nhds x, ∀ u v, HyperbolicChart.metric d (ψ y) (fderiv ℝ ψ y u)
       (fderiv ℝ ψ y v) = HyperbolicChart.metric d y u v)
-    (hp : ∀ᶠ y in nhds x, ∀ u,
-      ∑ ik, W (ψ y) ik * ((CotangentLogCoframe.C d (ψ y) (fderiv ℝ ψ y u)) ik : ℂ) =
-        ∑ ik, V y ik * ((CotangentLogCoframe.C d y u) ik : ℂ)) :
+    (hpush : ∀ f : ℂ →L[ℝ] ℝ,
+      (fun y => CotangentLogCoframe.H d (ψ y) (part d f (W (ψ y)))) =ᶠ[nhds x]
+        (fun y => fderiv ℝ ψ y (CotangentLogCoframe.H d y (part d f (V y))))) :
     HyperbolicChart.codifferential d ((CotangentLogCoframe.j d).symm ∘ W) (ψ x) =
       HyperbolicChart.codifferential d ((CotangentLogCoframe.j d).symm ∘ V) x := by
   have hr (f : ℂ →L[ℝ] ℝ) :
@@ -155,12 +155,26 @@ theorem coframe_codifferential_isometry (d : ℕ)
     have hb : ContDiffAt ℝ 1 B (ψ x) :=
       ((CotangentLogCoframe.contDiff_H d).contDiffAt.clm_apply
         (part_contDiffAt d f W (ψ x) hW)).of_le (by simp)
-    have hpush : (B ∘ ψ) =ᶠ[nhds x] fun y => fderiv ℝ ψ y (A y) := by
-      filter_upwards [hm, hp] with y hy hpy
-      exact dual_push d ψ (V y) (W (ψ y)) y hy hpy f
     rw [part_codifferential d f W (ψ x) hW, part_codifferential d f V x hV]
-    exact HyperbolicChart.real_divergence_isometry d ψ A B x hψ ha hb hm hpush
+    exact HyperbolicChart.real_divergence_isometry d ψ A B x hψ ha hb hm (hpush f)
   exact Complex.ext (hr Complex.reCLM) (hr Complex.imCLM)
+
+theorem coframe_codifferential_isometry (d : ℕ)
+    (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
+    (V W : HyperbolicChart.Space d → EuclideanSpace ℂ (Fin d × Fin 3))
+    (x : HyperbolicChart.Space d) (hψ : ContDiffAt ℝ 2 ψ x)
+    (hV : ContDiffAt ℝ (⊤ : ℕ∞) V x) (hW : ContDiffAt ℝ (⊤ : ℕ∞) W (ψ x))
+    (hm : ∀ᶠ y in nhds x, ∀ u v, HyperbolicChart.metric d (ψ y) (fderiv ℝ ψ y u)
+      (fderiv ℝ ψ y v) = HyperbolicChart.metric d y u v)
+    (hp : ∀ᶠ y in nhds x, ∀ u,
+      ∑ ik, W (ψ y) ik * ((CotangentLogCoframe.C d (ψ y) (fderiv ℝ ψ y u)) ik : ℂ) =
+        ∑ ik, V y ik * ((CotangentLogCoframe.C d y u) ik : ℂ)) :
+    HyperbolicChart.codifferential d ((CotangentLogCoframe.j d).symm ∘ W) (ψ x) =
+      HyperbolicChart.codifferential d ((CotangentLogCoframe.j d).symm ∘ V) x := by
+  apply coframe_codifferential_of_push d ψ V W x hψ hV hW hm
+  intro f
+  filter_upwards [hm, hp] with y hy hpy
+  exact dual_push d ψ (V y) (W (ψ y)) y hy hpy f
 
 private theorem metric_polarization (d : ℕ) (x u v : HyperbolicChart.Space d) :
     HyperbolicChart.metric d x (u+v) (u+v) =
@@ -175,104 +189,8 @@ private theorem metric_polarization (d : ℕ) (x u v : HyperbolicChart.Space d) 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
-private theorem arch_coordinates (p : Coordinates F) :
-    CotangentLogCoframe.A _ p = toArch F p := by
-  funext i
-  apply Prod.ext
-  · apply Complex.ext <;> simp [CotangentLogCoframe.A, toArch]
-  · rfl
 
-private theorem evaluation_coordinates (Z : Cotangent F ζ hζ U) (p u : Coordinates F) :
-    coframeEvaluation F ζ hζ U Z (toArch F p) (toArch F u) =
-      ∑ ik, (Z ik : ℂ) * ((CotangentLogCoframe.C _ p u) ik : ℂ) := by
-  rw [Fintype.sum_prod_type]
-  unfold coframeEvaluation
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [Fin.sum_univ_three]
-  obtain ⟨h0,h1,h2⟩ := CotangentLogCoframe.C_apply _ p u i
-  rw [h0,h1,h2]
-  simp [toArch, Complex.ofReal_mul]
-  ring
 
-theorem arithmetic_codifferential_covariant (W : Arch F → Cotangent F ζ hζ U)
-    (hW : ContDiff ℝ (⊤ : ℕ∞) W) (γ : KPCuspArithmetic.PGL2 F) (c : ℂ)
-    (hp : ∀ x v, coframeEvaluation F ζ hζ U (W (γ • x)) (γ • x)
-      (fderiv ℝ (fun y : Arch F => γ • y) x v) =
-        c * coframeEvaluation F ζ hζ U (W x) x v) (x : Arch F) :
-    HyperbolicChart.codifferential _
-        (fun p j k => (W (toArch F p) (j,k) : ℂ)) (fromArch F (γ • x)) =
-      c * HyperbolicChart.codifferential _
-        (fun p j k => (W (toArch F p) (j,k) : ℂ)) (fromArch F x) := by
-  let d := KPCuspLogShape.dimension F
-  let A := CotangentLogCoframe.A d
-  let action : Arch F → Arch F := fun y => γ • y
-  obtain ⟨B,hB⟩ := Matrix.ProjGenLinGroup.mk_surjective γ
-  let g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ :=
-    fun j => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F j).embedding B
-  have he : action = KPArch.productAction d g := by
-    funext y
-    change KPCuspSiegel.action F _ y = _
-    rw [← hB, KPCuspSiegel.action_mk]; rfl
-  have hact : ContDiff ℝ (⊤ : ℕ∞) action := (he ▸ KPArch.productAction_contDiff d g).of_le le_top
-  let ψ : Coordinates F → Coordinates F := fun p => A.symm (action (A p))
-  have hψ : ContDiff ℝ (⊤ : ℕ∞) ψ := A.symm.contDiff.comp (hact.comp A.contDiff)
-  have hd (p : Coordinates F) : HasFDerivAt ψ
-      (A.symm.toContinuousLinearMap.comp ((fderiv ℝ action (A p)).comp A.toContinuousLinearMap)) p :=
-    A.symm.hasFDerivAt.comp p
-      (((hact.differentiable (by simp) (A p)).hasFDerivAt).comp p A.hasFDerivAt)
-  have hm0 (p u : Coordinates F) : HyperbolicChart.metric d (ψ p)
-      (fderiv ℝ ψ p u) (fderiv ℝ ψ p u) = HyperbolicChart.metric d p u u := by
-    rw [← CotangentLogCoframe.metric_A, (hd p).fderiv]
-    change KPArch.metric d (A (A.symm _)) (A (A.symm _)) = _
-    rw [A.apply_symm_apply, A.apply_symm_apply, he]
-    change KPArch.metric d (KPArch.productAction d g (A p))
-      (fderiv ℝ (KPArch.productAction d g) (A p) (A u)) = _
-    rw [KPArch.metric_invariant, CotangentLogCoframe.metric_A]
-  have hm (p u v : Coordinates F) : HyperbolicChart.metric d (ψ p)
-      (fderiv ℝ ψ p u) (fderiv ℝ ψ p v) = HyperbolicChart.metric d p u v := by
-    have hh := hm0 p (u+v)
-    rw [map_add, metric_polarization, metric_polarization, hm0, hm0] at hh
-    linarith
-  let Z : Coordinates F → EuclideanSpace ℂ (Fin d × Fin 3) :=
-    fun p => WithLp.toLp 2 (fun ik => (W (A p) ik : ℂ))
-  have hZ : ContDiff ℝ (⊤ : ℕ∞) Z := by
-    apply (contDiff_piLp 2).mpr
-    intro ik
-    exact ((Fiber F ζ hζ U).subtypeL.restrictScalars ℝ).contDiff.comp
-      ((contDiff_piLp 2).mp (hW.comp A.contDiff) ik)
-  have hpc (p u : Coordinates F) :
-      ∑ ik, Z (ψ p) ik * ((CotangentLogCoframe.C d (ψ p) (fderiv ℝ ψ p u)) ik : ℂ) =
-        ∑ ik, (c • Z p) ik * ((CotangentLogCoframe.C d p u) ik : ℂ) := by
-    have hh := hp (A p) (A u)
-    have he1 : A (ψ p) = action (A p) := A.apply_symm_apply _
-    have he2 : A (fderiv ℝ ψ p u) = fderiv ℝ action (A p) (A u) := by
-      rw [(hd p).fderiv]; exact A.apply_symm_apply _
-    change coframeEvaluation F ζ hζ U (W (action (A p))) (action (A p))
-      (fderiv ℝ action (A p) (A u)) = _ at hh
-    rw [← he1, ← he2] at hh
-    simp_rw [show ∀ p, A p = toArch F p from arch_coordinates F] at hh
-    rw [evaluation_coordinates, evaluation_coordinates, Finset.mul_sum] at hh
-    simpa only [Z, show ∀ p, A p = toArch F p from arch_coordinates F,
-      WithLp.ofLp_toLp, PiLp.smul_apply, smul_eq_mul, mul_assoc] using hh
-  have ht := coframe_codifferential_isometry d ψ (fun p => c • Z p) Z (fromArch F x)
-    (hψ.contDiffAt.of_le (by simp)) ((hZ.const_smul c).contDiffAt) hZ.contDiffAt
-    (Eventually.of_forall hm) (Eventually.of_forall hpc)
-  have hcx : A (fromArch F x) = x := A.apply_symm_apply x
-  have harg : ((CotangentLogCoframe.j d).symm ∘ Z) =
-      fun p j k => (W (toArch F p) (j,k) : ℂ) := by
-    funext p j k
-    change (W (A p) (j,k) : ℂ) = _
-    rw [show A p = toArch F p from arch_coordinates F p]
-  have harg' : ((CotangentLogCoframe.j d).symm ∘ (fun p => c • Z p)) =
-      fun p => c • (((CotangentLogCoframe.j d).symm ∘ Z) p) := by
-    funext p; exact map_smul _ _ _
-  rw [harg', codifferential_smul_const d _ _ (by
-    exact ((CotangentLogCoframe.j d).symm.toContinuousLinearEquiv.toContinuousLinearMap.restrictScalars ℝ).differentiableAt.comp _
-      (hZ.contDiffAt.differentiableAt (by simp))) c, harg] at ht
-  change HyperbolicChart.codifferential d _ (A.symm (action (A (fromArch F x)))) = _ at ht
-  rw [hcx] at ht
-  exact ht
 
 end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
 

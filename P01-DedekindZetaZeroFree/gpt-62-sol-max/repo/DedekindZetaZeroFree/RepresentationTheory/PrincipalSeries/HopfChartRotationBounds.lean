@@ -13,12 +13,12 @@ private lemma radial_pos_smul (F : Sphere → ℂ) (t : ℝ) (ht : 0 < t) (x : A
     radialExtension F (t • x) = radialExtension F x := by
   by_cases hx : x = 0
   · simp [hx, radialExtension]
-  have htx : t • x ≠ 0 := smul_ne_zero (ne_of_gt ht) hx
+  have htx := smul_ne_zero (ne_of_gt ht) hx
   simp only [radialExtension, dif_pos hx, dif_pos htx]
   congr 1
   apply Subtype.ext
   simp only [norm_smul, Real.norm_eq_abs, abs_of_pos ht, mul_inv_rev, smul_smul]
-  rw [mul_assoc, inv_mul_cancel₀ (ne_of_gt ht), mul_one]
+  simp_all
 
 private lemma radial_diff {F : Sphere → ℂ} (hF : IsSphereSmooth F)
     {x : Ambient} (hx : x ≠ 0) : DifferentiableAt ℝ (radialExtension F) x :=
@@ -28,15 +28,14 @@ private lemma radial_diff_smul (F : Sphere → ℂ) (hF : IsSphereSmooth F)
     (t : ℝ) (ht : 0 < t) (x : Ambient) (hx : x ≠ 0) (v : Ambient) :
     fderiv ℝ (radialExtension F) (t • x) (t • v) =
       fderiv ℝ (radialExtension F) x v := by
-  have he : (fun y : Ambient => radialExtension F (t • y)) = radialExtension F :=
+  have he :=
     funext (radial_pos_smul F t ht)
   have h := (radial_diff hF (smul_ne_zero (ne_of_gt ht) hx)).hasFDerivAt.comp x
     ((hasFDerivAt_id x).const_smul t)
   change HasFDerivAt (fun y : Ambient => radialExtension F (t • y)) _ x at h
   rw [he] at h
   have hh := congrArg (fun L : Ambient →L[ℝ] ℂ => L v) h.fderiv
-  simpa only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.id_apply] using hh.symm
+  simp_all
 
 private lemma radial_diff_self (F : Sphere → ℂ) (hF : IsSphereSmooth F)
     (x : Ambient) (hx : x ≠ 0) : fderiv ℝ (radialExtension F) x x = 0 := by
@@ -55,13 +54,13 @@ private lemma rotation_scale (i : Fin 3) (t : ℝ) (x : Ambient) :
   apply PiLp.ext
   intro j
   simp only [rotationVector, PiLp.smul_apply, WithLp.toLp]
-  split_ifs <;> simp
+  simp
 
 private lemma radial_rotation (F : Sphere → ℂ) (hF : IsSphereSmooth F)
     (x : Ambient) (hx : x ≠ 0) (i : Fin 3) :
     radialExtension (rotationDeriv i F) x =
       fderiv ℝ (radialExtension F) x (rotationVector i x) := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  have hn := norm_pos_iff.mpr hx
   simp only [radialExtension, dif_pos hx, rotationDeriv]
   rw [rotation_scale]
   exact radial_diff_smul F hF _ (inv_pos.mpr hn) x hx _

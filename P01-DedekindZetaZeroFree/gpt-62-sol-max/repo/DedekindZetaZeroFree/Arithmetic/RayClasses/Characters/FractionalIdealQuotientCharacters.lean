@@ -219,9 +219,13 @@ private lemma totalChar_integralUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
 
 end Construction
 
-theorem exists_fractionalCharacter
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
+  (η : RayClassCharacter F 𝔪)
+include η
+
+theorem exists_fractionalCharacter :
     ∃ χ : ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ,
       ∀ (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤),
         (χ (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I := by
@@ -230,22 +234,16 @@ theorem exists_fractionalCharacter
   change (totalChar F 𝔪 η (integralUnit F I hI) : ℂ) = η I
   exact totalChar_integralUnit F 𝔪 η I hI hcop
 
-def fractionalCharacter
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪) :
+def fractionalCharacter :
     ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ :=
   (exists_fractionalCharacter F 𝔪 h𝔪 η).choose
 
 @[simp] theorem fractionalCharacter_integral
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤) :
     (fractionalCharacter F 𝔪 h𝔪 η (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I :=
   (exists_fractionalCharacter F 𝔪 h𝔪 η).choose_spec I hI hcop
 
 theorem fractionalCharacter_unique
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
     (χ : ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ)
     (hχ : ∀ (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤),
       (χ (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ) = η I) :
@@ -254,8 +252,6 @@ theorem fractionalCharacter_unique
     (fun I hI hcop => by rw [hχ I hI hcop, fractionalCharacter_integral F 𝔪 h𝔪 η I hI hcop])
 
 theorem fractionalCharacter_quotient
-    (F : Type) [Field F] [NumberField F]
-    (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
     (A B : Ideal (𝓞 F)) (hA : A ≠ ⊥) (hB : B ≠ ⊥)
     (hcA : A ⊔ 𝔪 = ⊤) (hcB : B ⊔ 𝔪 = ⊤) :
     (fractionalCharacter F 𝔪 h𝔪 η
@@ -265,6 +261,8 @@ theorem fractionalCharacter_quotient
     fractionalCharacter_integral F 𝔪 h𝔪 η A hA hcA,
     fractionalCharacter_integral F 𝔪 h𝔪 η B hB hcB]
   rfl
+
+end
 
 end DedekindZetaZeroFree.RayClassBridge
 

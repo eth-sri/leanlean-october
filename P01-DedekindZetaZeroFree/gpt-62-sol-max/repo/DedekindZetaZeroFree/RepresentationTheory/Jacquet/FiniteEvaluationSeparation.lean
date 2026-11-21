@@ -37,8 +37,7 @@ theorem jacquet_evaluations_separate (f : PrincipalSeries positiveParameter)
     ⨅ g : ComplexPGL2, (J.comp (jacquetRightAction g)).ker
   have hmem (x : PrincipalSeries positiveParameter) :
       x ∈ U ↔ ∀ g : ComplexPGL2, J (KPCplxPrincipalSeriesCharts.pi positiveParameter g x) = 0 := by
-    simp only [U, Submodule.mem_iInf, LinearMap.mem_ker,
-      ContinuousLinearMap.coe_comp', Function.comp_apply]
+    simp only [U, Submodule.mem_iInf, LinearMap.mem_ker]
     rfl
   have hc : IsClosed (U : Set (PrincipalSeries positiveParameter)) := by
     letI := principalSeries_t2 positiveParameter
@@ -48,8 +47,7 @@ theorem jacquet_evaluations_separate (f : PrincipalSeries positiveParameter)
       ext x
       change (x ∈ U) ↔ _
       rw [hmem]
-      simp only [Set.mem_iInter, SetLike.mem_coe, LinearMap.mem_ker,
-        ContinuousLinearMap.coe_comp', Function.comp_apply]
+      simp only [Set.mem_iInter, SetLike.mem_coe, LinearMap.mem_ker]
       rfl
     rw [he]
     exact isClosed_iInter (fun g => (J.comp (jacquetRightAction g)).isClosed_ker)

@@ -1,6 +1,7 @@
 module
 
-public import DedekindZetaZeroFree.Theta.Whittaker.Complex.NegativeSlotChartJets
+public import DedekindZetaZeroFree.Eisenstein.Induction.ArchimedeanSectionSmoothness
+public import DedekindZetaZeroFree.Theta.Whittaker.Complex.NegativeSlotCompactBounds
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.LocalTensorEvaluation
 
 @[expose] public section

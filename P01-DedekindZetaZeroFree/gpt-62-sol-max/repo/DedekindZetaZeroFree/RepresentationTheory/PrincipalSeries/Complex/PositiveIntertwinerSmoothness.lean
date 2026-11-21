@@ -1,5 +1,7 @@
 module
 
+public import DedekindZetaZeroFree.Analysis.Calculus.DominatedJets
+
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.PositiveIntertwinerConvergence
 public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 
@@ -25,11 +27,10 @@ theorem compact_family_spatial_jets_bounded
     | succ n ih =>
       simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
       have hd : ContDiffAt ℝ (⊤ : ℕ∞) (fun p : ℂ × ℂ => fderiv ℝ
-          (iteratedFDeriv ℝ n (fun v : ℂ => G (p.1, v))) p.2) p := by
-        exact ((ih (p.1,p.2)).comp (p,p.2)
+          (iteratedFDeriv ℝ n (fun v : ℂ => G (p.1, v))) p.2) p := ((ih (p.1,p.2)).comp (p,p.2)
           (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
           (m := (⊤ : ℕ∞)) contDiffAt_snd (by simp)
-      exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => ℂ) ℂ).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.contDiffAt.comp p hd
+      fun_prop
   obtain ⟨C, hC⟩ := ((isCompact_closedBall (0 : ℂ) 1).prod
     (isCompact_closedBall z 1)).exists_bound_of_continuousOn hj.continuous.continuousOn
   refine ⟨max C 0, le_max_right _ _, ?_⟩
@@ -135,54 +136,13 @@ theorem integral_contDiff_of_locally_dominated_jets
       ∀ n : ℕ, ∀ u : E,
         iteratedFDeriv ℝ n (fun v => ∫ x, F v x ∂μ) u =
           ∫ x, iteratedFDeriv ℝ n (fun v => F v x) u ∂μ := by
-  have hint (n : ℕ) (u : E) :
-      Integrable (fun x => iteratedFDeriv ℝ n (fun v => F v x) u) μ := by
-    obtain ⟨s, b, hs, hb, h⟩ := hbound n u
-    exact hb.mono' (hmeas n u) (h.mono fun x hx => hx u (mem_of_mem_nhds hs))
-  let A (n : ℕ) (u : E) := ∫ x, iteratedFDeriv ℝ n (fun v => F v x) u ∂μ
-  have hd (n : ℕ) (u : E) : HasFDerivAt (A n)
-      ((continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ) (A (n + 1) u)) u := by
-    let L := continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ
-    obtain ⟨s, b, hs, hb, h⟩ := hbound (n + 1) u
-    have hf'm : AEStronglyMeasurable (fun x =>
-        fderiv ℝ (iteratedFDeriv ℝ n (fun v => F v x)) u) μ := by
-      exact L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u)
-    have hh := hasFDerivAt_integral_of_dominated_of_fderiv_le (𝕜 := ℝ)
-      (F := fun v x => iteratedFDeriv ℝ n (fun w => F w x) v)
-      (F' := fun v x => fderiv ℝ (iteratedFDeriv ℝ n (fun w => F w x)) v)
-      hs (Eventually.of_forall (hmeas n)) (hint n u) hf'm
-      (h.mono fun x hx v hv => by
-        change ‖L (iteratedFDeriv ℝ (n + 1) (fun w => F w x) v)‖ ≤ b x
-        rw [L.norm_map]
-        exact hx v hv) hb
-      (Eventually.of_forall fun x v _ =>
-        ((hsmooth x).differentiable_iteratedFDeriv (m := n) (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top n)) v).hasFDerivAt)
-    have heq : (∫ x, fderiv ℝ (iteratedFDeriv ℝ n (fun v => F v x)) u ∂μ) =
-        L (A (n + 1) u) := by
-      letI : TopologicalSpace (E [×(n + 1)]→L[ℝ] ℂ) :=
-        (inferInstance : NormedAddCommGroup (E [×(n + 1)]→L[ℝ] ℂ)).toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
-      letI : TopologicalSpace (E →L[ℝ] E [×n]→L[ℝ] ℂ) :=
-        (inferInstance : NormedAddCommGroup (E →L[ℝ] E [×n]→L[ℝ] ℂ)).toPseudoMetricSpace.toUniformSpace.toTopologicalSpace
-      let Lc : (E [×(n + 1)]→L[ℝ] ℂ) →L[ℝ] (E →L[ℝ] E [×n]→L[ℝ] ℂ) :=
-        { toLinearMap := L.toLinearEquiv.toLinearMap
-          cont := by convert L.continuous using 1 }
-      exact @ContinuousLinearMap.integral_comp_comm X (E [×(n + 1)]→L[ℝ] ℂ)
-        (E →L[ℝ] E [×n]→L[ℝ] ℂ) _ μ ℝ _ _ _ _ _ _ _ _ _ Lc _ (hint (n + 1) u)
-    rw [heq] at hh
-    exact hh
-  have heq (n : ℕ) : iteratedFDeriv ℝ n (fun u => ∫ x, F u x ∂μ) = A n := by
-    induction n with
-    | zero =>
-      funext u
-      simpa [A, iteratedFDeriv_zero_eq_comp, Function.comp_apply] using
-        ((continuousMultilinearCurryFin0 ℝ E ℂ).symm.toContinuousLinearEquiv.integral_comp_comm (μ := μ) (F u)).symm
-    | succ n ih =>
-      funext u
-      rw [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply, ih, (hd n u).fderiv]
-      exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ).symm_apply_apply _
-  refine ⟨contDiff_of_differentiable_iteratedFDeriv (fun n _ => ?_), fun n u => congrFun (heq n) u⟩
-  rw [heq n]
-  exact fun u => (hd n u).differentiableAt
+  have h := integral_contDiffOn_of_locally_dominated_jets μ F Set.univ isOpen_univ
+    (fun x => (hsmooth x).contDiffOn)
+    (by simpa only [iteratedFDerivWithin_univ, Set.mem_univ, forall_const] using hmeas)
+    (fun n u _ => by
+      obtain ⟨s, b, hs, hb, h⟩ := hbound n u
+      exact ⟨s, b, hs, Set.subset_univ _, hb, by simpa only [iteratedFDerivWithin_univ] using h⟩)
+  simpa only [contDiffOn_univ, iteratedFDerivWithin_univ, Set.mem_univ, forall_const] using h
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 
 namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum

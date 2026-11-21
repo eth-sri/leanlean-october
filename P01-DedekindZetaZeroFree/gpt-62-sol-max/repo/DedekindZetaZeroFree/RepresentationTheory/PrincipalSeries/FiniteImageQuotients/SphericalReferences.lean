@@ -31,7 +31,6 @@ set_option maxHeartbeats 4000000
 
 theorem finite_spherical_forward_coordinate (q : KPFinitePlace F)
     (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
-    (hgood : valuation (LocalField F q) (6 : LocalField F q) = 1)
     (f : Plus R.A P C (Sum.inr q))
     (hf : ∀ k : KPTameCompact.K0 F q,
       IPlus (C.canonical q).borel (C.polarization q)
@@ -57,10 +56,9 @@ theorem finite_spherical_forward_coordinate (q : KPFinitePlace F)
       _ = _ := by simp [hμ, Measure.real]
   · intro n
     exact actual_compact_spherical_negative_shell_coordinate F ζ hζ q S₀ (μ q) (hμ q)
-      ht hgood (C.polarization q) f hf n t
+      ht (C.polarization q) f hf n t
 
-theorem finiteQuotientReference_one (q : KPFinitePlace F) (hq : q ∉ C.exceptional)
-    (hgood : valuation (LocalField F q) (6 : LocalField F q) = 1) :
+theorem finiteQuotientReference_one (q : KPFinitePlace F) (hq : q ∉ C.exceptional) :
     (finiteQuotientReference R P C μ hμ (Sum.inr q)).val.val 1 =
       (1 + (residueCardinality (LocalField F q) : ℂ)⁻¹) •
         localReference F ζ hζ P C q := by
@@ -83,14 +81,14 @@ theorem finiteQuotientReference_one (q : KPFinitePlace F) (hq : q ∉ C.exceptio
   funext t
   change ((actualCanonicalForwardMap F ζ hζ q (C.canonical q) (C.polarization q)
     (μ q) (hμ q) (plusReference R.A P C (Sum.inr q))).val 1).val t = _
-  rw [finite_spherical_forward_coordinate R P C μ hμ q ht hgood _ hfixed]
+  rw [finite_spherical_forward_coordinate R P C μ hμ q ht _ hfixed]
   have hone : (plusReference R.A P C (Sum.inr q)).val 1 = localReference F ζ hζ P C q := by
     simp only [plusReference, dif_pos hq]
     exact (normalized_reference R.A P C q hq).choose_spec.2
   rw [hone]
   rfl
 
-theorem finiteQuotientReference_ne_zero (hC : C.exceptional = R.A.Sf)
+theorem finiteQuotientReference_ne_zero
     (v : KPHilbert.Place F) (hv : v ∉ bad R.A P C) :
     finiteQuotientReference R P C μ hμ v ≠ 0 := by
   cases v with
@@ -100,11 +98,10 @@ theorem finiteQuotientReference_ne_zero (hC : C.exceptional = R.A.Sf)
     have hq : q ∉ C.exceptional := by
       simpa only [bad, KPGlobalResidualConstruction.ScalarAbsorption.fullBad,
         Finset.inr_mem_disjSum] using hv
-    have hqS : q ∉ R.A.Sf := by simpa only [hC] using hq
     intro hz
     have h := congrArg (fun f : FiniteQuotientFiber R P C μ hμ (Sum.inr q) =>
       f.val.val 1) hz
-    rw [finiteQuotientReference_one R P C μ hμ q hq (ExteriorWhittakerValues.exterior_good_six ⟨q,hqS⟩)] at h
+    rw [finiteQuotientReference_one R P C μ hμ q hq] at h
     have hs := smul_eq_zero.mp h
     rcases hs with hs | hs
     · exact one_add_nat_inv_ne_zero _ hs

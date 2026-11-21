@@ -61,22 +61,9 @@ theorem norm_rawKernel (u : Frequency D.recipe) (ξ : ℂ) (v y : ℝ) (p : ℝ 
         WeightConvolution.weightModulus D ξ v y p *
         ‖RawFixed.FixedData.rawFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
           ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
-  have hqc : (0 : ℝ) < frequencyNorm D.recipe u := frequencyNorm_pos D u
-  unfold RawFixed.FixedData.rawKernel
-  have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
-    intro A B C X E R; ring
-  have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
-    intro A E X R; simp only [norm_mul]
-  rw [hre, hkey]
-  unfold WeightConvolution.weightModulus
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZ, Complex.norm_cpow_eq_rpow_re_of_pos hqc]
-  simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
-    Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.add_im, Complex.sub_im,
-    Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, Complex.neg_im,
-    Complex.natCast_re, Complex.natCast_im, Complex.ofReal_natCast]
-  simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
-  unfold Scales.kernelExponent
-  try ring_nf
+  unfold RawFixed.FixedData.rawKernel WeightConvolution.weightModulus
+  rw [WeightConvolution.norm_mellin_product hZ (frequencyNorm_pos D u)]
+  simp [Scales.kernelExponent, Complex.mul_re]
 
 end
 

@@ -32,14 +32,18 @@ open scoped Polynomial
 namespace AlgebraicNumberTheory
 namespace Valuations
 
+section
+
+variable {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
+  (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
+  (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
+      (absoluteValueValuationSubring v hnonarch))
+include hnonarch hv
+
 /-- The normalized residual factor input from the irreducible-polynomial coefficient bounds contradicts
 irreducibility as soon as the valuation ring satisfies the construction's
 factorization form of Hensel's lemma. -/
 theorem normFormula_hensel_reduction_factor_input_not_irreducible_of_henselFactorization
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
     (F : (absoluteValueValuationSubring v hnonarch)[X])
     {r : ℕ}
     (hrpos : 0 < r) (hrlt : r < F.natDegree)
@@ -84,10 +88,6 @@ theorem normFormula_hensel_reduction_factor_input_not_irreducible_of_henselFacto
 Hensel factorization contradicts irreducibility when both endpoint values are
 strictly below that maximum. -/
 theorem normFormula_normalized_scale_not_irreducible_of_henselFactorization
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
     {f : K[X]} {m : ℝ} {n : ℕ}
     (hmpos : 0 < m)
     (hnmax : v (f.coeff n) = m)
@@ -108,10 +108,6 @@ theorem normFormula_normalized_scale_not_irreducible_of_henselFactorization
 /-- Under primitive Hensel factorization, a positive coefficient maximum of an
 irreducible polynomial is bounded by the larger endpoint value. -/
 theorem normFormula_coeff_max_le_endpoint_max_of_irreducible_of_henselFactorization
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
     {f : K[X]} {m : ℝ} {n : ℕ}
     (hirr : Irreducible f)
     (hmpos : 0 < m)
@@ -138,10 +134,6 @@ theorem normFormula_coeff_max_le_endpoint_max_of_irreducible_of_henselFactorizat
 /-- the finite norm-formula theorem coefficient source: primitive Hensel factorization alone bounds
 every coefficient of an irreducible polynomial by its two endpoint values. -/
 theorem normFormula_coeff_abs_le_endpoint_max_of_irreducible_of_henselFactorization
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
     {f : K[X]} (hirr : Irreducible f) :
     ∀ i : ℕ, v (f.coeff i) ≤ max (v (f.coeff 0)) (v f.leadingCoeff) := by
   rcases irreduciblePolynomial_exists_coeff_abs_max_of_ne_zero v hirr.ne_zero with
@@ -156,10 +148,6 @@ theorem normFormula_coeff_abs_le_endpoint_max_of_irreducible_of_henselFactorizat
 irreducible monic polynomial lies in the closed unit ball, then every
 coefficient lies there. -/
 theorem normFormula_monic_coeff_abs_le_one_of_const_abs_le_one_of_henselFactorization
-    {K : Type*} [Field K]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
     {f : K[X]} (hirr : Irreducible f)
     (hmonic : f.Monic)
     (hconst : v (f.coeff 0) ≤ 1) :
@@ -175,6 +163,8 @@ theorem normFormula_monic_coeff_abs_le_one_of_const_abs_le_one_of_henselFactoriz
   exact
     (normFormula_coeff_abs_le_endpoint_max_of_irreducible_of_henselFactorization
       v hnonarch hv hirr i).trans hendpoint
+
+end
 
 end Valuations
 end AlgebraicNumberTheory

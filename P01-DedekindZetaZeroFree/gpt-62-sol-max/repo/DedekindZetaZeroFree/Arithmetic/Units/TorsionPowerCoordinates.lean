@@ -1,7 +1,12 @@
 module
 
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
-public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.All
+public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.Core
+public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.EnlargedSUnitRestriction
+public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.FiniteRadicalSupport
+public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.FullSUnitKummerExtension
+public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.SUnitLocalPowerKernel
+public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.SUnitPowerQuotient
 
 @[expose] public section
 

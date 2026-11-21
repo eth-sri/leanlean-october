@@ -12,8 +12,12 @@ namespace DedekindZetaZeroFree.KPCubicFamilyResolution
 open scoped ValuativeRel
 open ValuativeRel
 
- noncomputable def exponent (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] : Kˣ →* Multiplicative ℤ where
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K]
+
+ noncomputable def exponent : Kˣ →* Multiplicative ℤ where
   toFun x := Multiplicative.ofAdd (-WithZero.log
     (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K x)))
   map_one' := by simp
@@ -23,8 +27,7 @@ open ValuativeRel
     rw [WithZero.log_mul (by simp) (by simp)]
     simp [add_comm]
 
-private lemma exponent_eq_one_iff (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x : Kˣ) :
+private lemma exponent_eq_one_iff (x : Kˣ) :
     exponent K x = 1 ↔ valuation K (x : K) = 1 := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   change Multiplicative.ofAdd (-WithZero.log (e (valuation K (x : K)))) = 1 ↔ _
@@ -37,11 +40,9 @@ private lemma exponent_eq_one_iff (K : Type*) [Field K] [ValuativeRel K]
       rw [← WithZero.exp_log (show e (valuation K (x : K)) ≠ 0 by simp [e]), hlog]
       exact WithZero.exp_zero
     exact e.injective (by simpa using he)
-  · intro h
-    simp [h]
+  aesop
 
-private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
+private lemma exponent_uniformizer (π : Kˣ)
     (hπ : valuation K (π : K) = uniformizer K) :
     exponent K π = Multiplicative.ofAdd 1 := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
@@ -65,6 +66,8 @@ private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
   rw [hπ, he, WithZero.log_exp]
   rfl
 
+end
+
  noncomputable def coordinateMap (K : Type*) [Field K] [ValuativeRel K]
     (π : Kˣ) : Multiplicative ℤ × (𝒪[K])ˣ →* Kˣ where
   toFun p := π ^ p.1.toAdd * Units.map (𝒪[K]).subtype.toMonoidHom p.2
@@ -74,9 +77,13 @@ private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
     rw [zpow_add, map_mul]
     ac_rfl
 
-private lemma coordinateMap_bijective (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
-    (hπ : valuation K (π : K) = uniformizer K) :
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K)
+include hπ
+
+private lemma coordinateMap_bijective :
     Function.Bijective (coordinateMap K π) := by
   let m := Units.map (𝒪[K]).subtype.toMonoidHom
   have hm (u : (𝒪[K])ˣ) : exponent K (m u) = 1 := by
@@ -123,9 +130,7 @@ private lemma coordinateMap_bijective (K : Type*) [Field K] [ValuativeRel K]
     rw [← mul_assoc, ← zpow_add]
     simp
 
-private lemma cube_coordinate_iff (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
-    (hπ : valuation K (π : K) = uniformizer K) (j : ℤ) (u : (𝒪[K])ˣ) :
+private lemma cube_coordinate_iff (j : ℤ) (u : (𝒪[K])ˣ) :
     π ^ j * Units.map (𝒪[K]).subtype.toMonoidHom u ∈
       (powMonoidHom (α := Kˣ) 3).range ↔
       (3 : ℤ) ∣ j ∧ u ∈ KPCubicUnitIndices.cubeUnits K := by
@@ -153,6 +158,8 @@ private lemma cube_coordinate_iff (K : Type*) [Field K] [ValuativeRel K]
     · apply Multiplicative.toAdd.injective
       exact hn.symm
     · exact hw
+
+end
 
 open scoped Classical in
 
@@ -462,21 +469,25 @@ namespace KPCubicExpansion
 
 open ValuativeRel
 
-noncomputable def valuationExponent (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (y : Kˣ) : ℤ :=
+section
+
+variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K]
+
+noncomputable def valuationExponent (y : Kˣ) : ℤ :=
   -WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
     (valuation K (y : K)))
 
-noncomputable def omega (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+noncomputable def omega
     (t : ℂˣ) (y : Kˣ) : ℂ :=
   ((t ^ valuationExponent K y : ℂˣ) : ℂ)
 
-noncomputable def betaFunction (K : Type*) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
+noncomputable def betaFunction
     (s : ℂ) (v : Kˣ) : ℂ := by
   classical
   exact if v = 1 then 0 else (KPCubicHaar.abs K (1 - (v : K)) : ℂ) ^ (-s)
+
+end
 
 open scoped WithZero
 

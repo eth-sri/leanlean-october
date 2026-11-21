@@ -25,7 +25,6 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   | cons b w ih =>
     simp only [List.map_cons, List.foldr_cons, word] at *
     rw [← ih]
-    rfl
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeWordAction
 

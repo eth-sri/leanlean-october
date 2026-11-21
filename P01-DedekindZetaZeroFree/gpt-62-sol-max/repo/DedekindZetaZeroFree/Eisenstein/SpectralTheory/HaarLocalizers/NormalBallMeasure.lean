@@ -20,7 +20,7 @@ variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 theorem actual_chart_measure
-    (C : KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)) :
+    (C : CoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)) :
     Measure.map (C.toBase F ζ hζ H.totallyComplex U)
       ((Fintype.card (C.G F ζ hζ H.totallyComplex U) : ℝ≥0∞)⁻¹ •
         (volume.restrict (Metric.ball 0 C.radius)).withDensity
@@ -39,7 +39,7 @@ theorem actual_chart_measure
   let μ := KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)
   let π := KPCuspSiegel.projection F Γ
   let j := KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component)
-  let S := C.coordinates '' Metric.ball (0 : KPCoreChartLocalizers.E C.n) C.radius
+  let S := C.coordinates '' Metric.ball (0 : CoreChartLocalizers.E C.n) C.radius
   let T := MulAction.stabilizer Γ C.center
   letI : Fintype T := C.finite_stabilizer
   letI : MeasurableConstSMul Γ (KPFiniteCuspAtlas.SymmetricSpace F) :=
@@ -49,14 +49,14 @@ theorem actual_chart_measure
     have hp := KPFiniteAdelicCuspEnds.arch_smul_measurePreserving F g.val
     change (KPArch.hyperbolicVolume _) ((fun z => g.val • z) ⁻¹' s) = _
     rw [← Measure.map_apply hp.measurable hs, hp.map_eq]
-  have hball : Metric.ball (0 : KPCoreChartLocalizers.E C.n) C.radius ⊆ C.extendedDomain :=
+  have hball : Metric.ball (0 : CoreChartLocalizers.E C.n) C.radius ⊆ C.extendedDomain :=
     subset_closure.trans C.closed_ball_in_extension
   have hS : IsOpen S := by
-    have hi : IsOpen ((Subtype.val : C.extendedDomain → KPCoreChartLocalizers.E C.n) ⁻¹'
+    have hi : IsOpen ((Subtype.val : C.extendedDomain → CoreChartLocalizers.E C.n) ⁻¹'
         Metric.ball 0 C.radius) := Metric.isOpen_ball.preimage continuous_subtype_val
-    have hh := (KPCoreChartLocalizers.Chart.coordinates_open_embedding F ζ hζ H.totallyComplex U C).isOpenMap _ hi
+    have hh := (CoreChartLocalizers.Chart.coordinates_open_embedding F ζ hζ H.totallyComplex U C).isOpenMap _ hi
     have heq : (Set.restrict C.extendedDomain C.coordinates) ''
-        ((Subtype.val : C.extendedDomain → KPCoreChartLocalizers.E C.n) ⁻¹' Metric.ball 0 C.radius) = S := by
+        ((Subtype.val : C.extendedDomain → CoreChartLocalizers.E C.n) ⁻¹' Metric.ball 0 C.radius) = S := by
       ext z
       constructor
       · rintro ⟨x,hx,rfl⟩; exact ⟨x.val,hx,rfl⟩
@@ -102,7 +102,7 @@ theorem actual_chart_measure
   letI : BorelSpace (KPFiniteCuspAtlas.rawXU F ζ hζ U) := ⟨rfl⟩
   have hjm : Measurable j := hj.continuous.measurable
   have hπm : Measurable π := measurable_quotient_mk''
-  let ν := (volume.restrict (Metric.ball (0 : KPCoreChartLocalizers.E C.n) C.radius)).withDensity
+  let ν := (volume.restrict (Metric.ball (0 : CoreChartLocalizers.E C.n) C.radius)).withDensity
     (fun x => ENNReal.ofReal (C.weight x))
   have hcoord : AEMeasurable C.coordinates ν :=
     ((C.smooth_coordinates.continuousOn.mono hball).aemeasurable Metric.isOpen_ball.measurableSet).mono_ac
@@ -125,7 +125,7 @@ theorem actual_chart_measure
       ← Measure.map_smul _ hjm.aemeasurable,
       ← Measure.map_smul _ hπm.aemeasurable, hlocal]
   have hO : C.O F ζ hζ H.totallyComplex U = j '' (π '' S) := by
-    simp only [KPCoreChartLocalizers.Chart.O, hb, S, Set.image_image, Function.comp_assoc]
+    simp only [CoreChartLocalizers.Chart.O, hb, S, Set.image_image, Function.comp_assoc]
     rfl
   have hpre : j ⁻¹' C.O F ζ hζ H.totallyComplex U = π '' S := by
     rw [hO, Set.preimage_image_eq _ hj.injective]

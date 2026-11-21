@@ -39,7 +39,7 @@ theorem finite_norm (S : Finset (HeightOneSpectrum (𝓞 F))) (a : FiniteIdeleGr
   symm
   apply Finset.prod_subset hs
   intro v hv hvs
-  simp [Finsupp.notMem_support_iff.mp hvs, FiniteIdeleGroup.valuationVector_apply]
+  simp [Finsupp.notMem_support_iff.mp hvs]
 
 theorem archimedean_norm (A : SArithmeticData F) (a : InfiniteIdeleGroup F) :
     (∏ w : InfinitePlace F, ‖(ContinuousMulEquiv.piUnits a w : w.Completion)‖ ^ 2) =

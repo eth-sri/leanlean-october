@@ -29,15 +29,13 @@ private lemma suMatrix_mem (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) :
     fin_cases i <;> fin_cases j <;>
       simp [suMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, star_star]
     · change star b * b + star a * a = 1
-      calc star b * b + star a * a = a * star a + b * star b := by ring
-           _ = 1 := h'
+      grind only
     · ring
     · ring
     · exact h'
   · simp only [suMatrix, Matrix.det_fin_two, Matrix.of_apply, Matrix.cons_val_zero,
       Matrix.cons_val_one, Matrix.cons_val_fin_one]
-    calc star b * b - -star a * a = a * star a + b * star b := by ring
-      _ = 1 := h'
+    grind only
 private lemma rep_open (z : ℂ) : ∃ k : ComplexSU2,
     bottomRowLine (complexSU2Embedding k) = projectiveOpen z := by
   let r : ℝ := Real.sqrt (1 + ‖z‖ ^ 2)
@@ -55,7 +53,7 @@ private lemma rep_open (z : ℂ) : ∃ k : ComplexSU2,
   have ha : a ≠ 0 := inv_ne_zero (Complex.ofReal_ne_zero.mpr hr.ne')
   have hrat : b / a = z := by
     dsimp [a, b]
-    field_simp [Complex.ofReal_ne_zero.mpr hr.ne']
+    grind
   change bottomRowLine (Matrix.GeneralLinearGroup.mkOfDetNeZero (suMatrix a b) _) = _
   simp [bottomRowLine, suMatrix, ha, hrat]
 
@@ -68,7 +66,7 @@ theorem compact_representative_exists (p : ComplexProjectiveLine) :
       refine ⟨1, ?_⟩
       simp [bottomRowLine]
     · rw [projective_chart_transition u hu]
-      exact rep_open u⁻¹
+      exact rep_open ..
 
 noncomputable def compactRepresentative (p : ComplexProjectiveLine) : ComplexSU2 :=
   Classical.choose (compact_representative_exists p)
@@ -260,25 +258,6 @@ private theorem compact_pointwise :
 noncomputable def backwardSection (s : ℂ) (φ : CompactPicture) (g : ComplexGL2) : ℂ :=
   Complex.exp (((2 / 3 : ℂ) - 2 * s) * (Real.log (rowRatio g) : ℂ)) *
     φ (bottomRowLine g)
-
-private lemma rowRatio_pos (g : ComplexGL2) : 0 < rowRatio g := by
-  have hdet : Matrix.det (g : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 :=
-    (Matrix.GeneralLinearGroup.det g).ne_zero
-  have hr : 0 < bottomRowNormSq g := by
-    unfold bottomRowNormSq
-    by_contra hn
-    have he : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 :=
-      le_antisymm (le_of_not_gt hn) (by positivity)
-    have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    apply hdet
-    simp [Matrix.det_fin_two, h0, h1]
-  exact div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) hr
 
 noncomputable def haarIntegral (β : ℂˣ) (s : ℂ) (φ : CompactPicture)
     (g : ComplexGL2) : ℂ :=

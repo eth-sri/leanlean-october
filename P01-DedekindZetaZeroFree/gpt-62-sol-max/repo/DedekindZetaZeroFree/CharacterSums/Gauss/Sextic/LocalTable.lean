@@ -168,7 +168,7 @@ theorem T_generator_power (C : A.GeneralArithmeticContext σ η hS)
     have hg : residueMap C p 1 (generator C p) = 0 := by
       change Ideal.Quotient.mk (Ideal.span {generator C p ^ 1}) (generator C p) = 0
       apply Ideal.Quotient.eq_zero_iff_mem.mpr
-      simpa using Ideal.subset_span (Set.mem_singleton (generator C p))
+      simp
     rw [map_pow, hg, zero_pow hn, T_zero]
 
 theorem chi_neg_one (p : ExteriorPrime A) : chi (σ := σ) p (-1) = 1 := by

@@ -67,9 +67,9 @@ private theorem zonal_radial_differentiable (N : ℕ) {F : Sphere → ℂ}
   have hn : (x : Ambient) ≠ 0 := by
     intro h
     have := x.property
-    simp [Metric.mem_sphere, h] at this
+    simp [h] at this
   have hs : ‖(x : Ambient)‖ = 1 := by
-    simpa [Metric.mem_sphere, dist_zero_right] using x.property
+    simp [Metric.mem_sphere, dist_zero_right]
   have hnorm : ContDiffAt ℝ (⊤ : ℕ∞) (fun z : Ambient => ‖z‖⁻¹ • z) (x : Ambient) :=
     ((contDiffAt_norm ℝ hn).inv (norm_ne_zero_iff.mpr hn)).smul contDiffAt_id
   have hd : DifferentiableAt ℝ

@@ -95,43 +95,36 @@ instance compatibleGroupFamiliesCommGroup
       funext i
       exact mul_comm (x.1 i) (y.1 i) }
 
+section
+
+variable { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
+  (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
+
 /-- Evaluation of a compatible family at one coordinate. -/
-def compatibleGroupFamiliesEval
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i) (i : ι) :
+def compatibleGroupFamiliesEval (i : ι) :
     compatibleGroupFamilies G transition →* G i :=
   (Pi.evalMonoidHom G i).comp (compatibleGroupFamilies G transition).subtype
 
 /-- Evaluation of a compatible group family returns its component at the chosen index. -/
 @[simp]
 theorem compatibleGroupFamiliesEval_apply
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
     (i : ι) (x : compatibleGroupFamilies G transition) :
     compatibleGroupFamiliesEval G transition i x = x.1 i :=
   rfl
 
-/-- The named compatibility law for an inverse-limit family. -/
-theorem compatibleGroupFamilies_transition
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
-    (x : compatibleGroupFamilies G transition) {i j : ι} (hij : i ≤ j) :
-    transition hij (compatibleGroupFamiliesEval G transition j x) =
-      compatibleGroupFamiliesEval G transition i x :=
-  x.2 hij
 
 /-- Compatible families are equal when all named coordinate evaluations
 agree. -/
 @[ext]
 theorem compatibleGroupFamilies_ext
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
     {x y : compatibleGroupFamilies G transition}
     (h : ∀ i, compatibleGroupFamiliesEval G transition i x =
       compatibleGroupFamiliesEval G transition i y) : x = y := by
   apply Subtype.ext
   funext i
   exact h i
+
+end
 
 /-- Stagewise multiplicative equivalences induce an equivalence of compatible
 families when they commute with every transition map.  This is the reusable

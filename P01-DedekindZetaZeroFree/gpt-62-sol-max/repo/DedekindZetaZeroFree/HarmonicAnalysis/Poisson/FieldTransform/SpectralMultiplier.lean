@@ -118,7 +118,7 @@ private lemma kernel_large_identity (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
   have hp : (Complex.Gammaℂ (1 - s))⁻¹ ^ r * Complex.Gammaℂ (1 - s) =
       (Complex.Gammaℂ (1 - s))⁻¹ ^ (r - 1) := by
     conv_lhs => rw [← Nat.sub_add_cancel hr, pow_succ]
-    simp [mul_assoc, hne]
+    simp [hne]
   simp only [B, div_eq_mul_inv, mul_pow]
   calc _ = (D : ℂ) ^ (s - 1 * 2⁻¹) * Complex.Gammaℂ s ^ r *
       ((Complex.Gammaℂ (1 - s))⁻¹ ^ r * Complex.Gammaℂ (1 - s)) *

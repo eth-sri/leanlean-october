@@ -49,11 +49,7 @@ theorem mem_rationalPrimeFactorizationSupport
     p.1 ∈ rationalPrimeFactorizationSupport x p := by
   rw [rationalPrimeFactorizationSupport, Finset.mem_filter,
     Finset.mem_range]
-  exact
-    ⟨Nat.lt_succ_of_le
-        (le_max_right
-          (max (x : ℚ).num.natAbs (x : ℚ).den) p.1),
-      p.2⟩
+  grind
 
 /-- The rational `p`-adic unit part of `x`: multiply `x` by the inverse of
 its `p`-power. -/
@@ -739,44 +735,7 @@ theorem
     padicIntUnitOfRat_rationalPrimeUnit_mul_inverseFactors_toZModPow
       x p k
 
-/-- Multiplication by the reduced sign cancels the sign in the reduced
-prime-unit factorization. -/
-theorem rationalSignPadicUnit_mul_primeUnit_toZModPow
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
-    Units.map (PadicInt.toZModPow k).toMonoidHom
-          (rationalSignPadicUnit x p) *
-        Units.map (PadicInt.toZModPow k).toMonoidHom
-          (padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
-            (rationalPrimeUnit x p).ne_zero
-            (padicValRat_rationalPrimeUnit x p)) =
-      ∏ q :
-          ↥((rationalPrimeFactorizationSupport x p).erase p.1),
-        (ZMod.unitOfCoprime q.1
-            ((coprime_of_mem_rationalPrimeFactorizationSupport_erase
-              x p q.2).symm.pow_right k)) ^
-          padicValRat q.1 (x : ℚ) := by
-  rw [padicIntUnitOfRat_rationalPrimeUnit_toZModPow]
-  rw [← mul_assoc, ← pow_two,
-    rationalSignPadicUnit_toZModPow_sq, one_mul]
 
-/-- Inverse/cancellation form of the reduced prime-unit factorization. -/
-theorem padicIntUnitOfRat_rationalPrimeUnit_toZModPow_inv_mul
-    (x : ℚˣ) (p : Nat.Primes) (k : ℕ) :
-    (Units.map (PadicInt.toZModPow k).toMonoidHom
-        (padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
-          (rationalPrimeUnit x p).ne_zero
-          (padicValRat_rationalPrimeUnit x p)))⁻¹ *
-      (Units.map (PadicInt.toZModPow k).toMonoidHom
-          (rationalSignPadicUnit x p) *
-        ∏ q :
-            ↥((rationalPrimeFactorizationSupport x p).erase p.1),
-          (ZMod.unitOfCoprime q.1
-              ((coprime_of_mem_rationalPrimeFactorizationSupport_erase
-                x p q.2).symm.pow_right k)) ^
-            padicValRat q.1 (x : ℚ)) =
-      1 := by
-  rw [← padicIntUnitOfRat_rationalPrimeUnit_toZModPow]
-  simp
 
 end Reciprocity
 end GlobalClassFieldTheory

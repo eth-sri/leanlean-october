@@ -63,13 +63,16 @@ open ValuationTheory.DiscreteValuationField.ValuedExtension
 
 variable {K : Type u} [Field K]
 
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+  (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (u : F.valuationSubringˣ) (n : ℕ)
+  (hu : u ∈
+      CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1))
+include hπ hu
+
 /-- A depth-`n+1` unit changes a uniformizer only in depth `n+2`. -/
-theorem standardLubinTateChangedUniformizer_sub_mem_maximalIdeal_pow
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (hu : u ∈
-      CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
+theorem standardLubinTateChangedUniformizer_sub_mem_maximalIdeal_pow :
     standardLubinTateChangedUniformizer F π u - π ∈
       F.maximalIdeal ^ (n + 2) := by
   have hu' :
@@ -94,12 +97,7 @@ theorem standardLubinTateChangedUniformizer_sub_mem_maximalIdeal_pow
 /-- In the original standard level, the changed and original parameters
 remain congruent through target depth `d(n+2)`. -/
 theorem
-    standardLubinTateChangedUniformizer_map_sub_mem_levelMaximalIdeal_pow
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (hu : u ∈
-      CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
+    standardLubinTateChangedUniformizer_map_sub_mem_levelMaximalIdeal_pow :
     standardLubinTateLevelCoefficientHom hπ n
           (standardLubinTateChangedUniformizer F π u) -
         standardLubinTateLevelCoefficientHom hπ n π ∈
@@ -132,12 +130,7 @@ theorem
 
 /-- The changed primitive polynomial, evaluated at the original primitive
 point, lies in target depth `d(n+2)`. -/
-theorem standardLubinTateChangedPrimitivePolynomial_eval_mem_maximalIdeal_pow
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (hu : u ∈
-      CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
+theorem standardLubinTateChangedPrimitivePolynomial_eval_mem_maximalIdeal_pow :
     Polynomial.eval₂
         (standardLubinTateLevelCoefficientHom hπ n)
         (standardLubinTatePrimitivePointInteger hπ n)
@@ -173,12 +166,7 @@ theorem standardLubinTateChangedPrimitivePolynomial_eval_mem_maximalIdeal_pow
   simpa [I, horiginal] using hcongr
 
 /-- Quantitative form of the changed-polynomial evaluation estimate. -/
-theorem standardLubinTateChangedPrimitivePolynomial_eval_addVal_ge
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
-    (hu : u ∈
-      CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
+theorem standardLubinTateChangedPrimitivePolynomial_eval_addVal_ge :
     ((((Nat.card F.residueField - 1) *
         Nat.card F.residueField ^ n) * (n + 2) : ℕ) : ℕ∞) ≤
       IsDiscreteValuationRing.addVal
@@ -199,6 +187,8 @@ theorem standardLubinTateChangedPrimitivePolynomial_eval_addVal_ge
         Nat.card F.residueField ^ n) * (n + 2))).1
       (standardLubinTateChangedPrimitivePolynomial_eval_mem_maximalIdeal_pow
         hπ u n hu)
+
+end
 
 end LubinTate
 

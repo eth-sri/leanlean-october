@@ -88,8 +88,8 @@ private lemma primitive_series_ne_zero (ν : Detector.PrimitiveFrequencyCharacte
     intro I hI
     refine ⟨?_, by simp⟩
     intro hzero
-    have hz : ν.character I = 0 := (ν.character.eq_zero_iff' I).mpr (Or.inl hzero)
-    exact hI (by simp [hz])
+    have hz := (ν.character.eq_zero_iff' I).mpr (Or.inl hzero)
+    simp_all
   have he := tsum_subtype_eq_of_support_subset hsupp
   rw [← he]
   change (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)),
@@ -119,7 +119,7 @@ private lemma primitive_regularizer
     have hs1 : s ≠ 1 := by intro he; subst s; norm_num at hs
     have he : H.R s / (s - 1) ^ poleIndicator ν = H.L s := by
       rw [poleIndicator, if_pos hp, pow_one, H.regularized s hs0 hs1]
-      exact mul_div_cancel_left₀ _ (sub_ne_zero.mpr hs1)
+      grind
     rw [he]
     exact H.series s hs
   · let H := nonprincipalRayHeckeData F hF ν.conductor ν.conductor_ne_zero
@@ -161,8 +161,7 @@ theorem masked_hecke_meromorphic
   obtain ⟨J, hJ, hJne, hseries⟩ := primitive_regularizer
     (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12) ν
   have hm : MeromorphicOn (fun s : ℂ => J s / (s - 1) ^ poleIndicator ν)
-      {s : ℂ | 0 < s.re} := by
-    exact hJ.meromorphicOn.div
+      {s : ℂ | 0 < s.re} := hJ.meromorphicOn.div
       ((analyticOnNhd_id.sub analyticOnNhd_const).pow (poleIndicator ν)).meromorphicOn
   obtain ⟨hBdiff, hBmero, hBs⟩ := Detector.deleted_primitive_L_continuation F ν
     (deletionSet U i) hD {s : ℂ | 0 < s.re}

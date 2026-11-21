@@ -29,23 +29,6 @@ private theorem coordinates_originalPoint_ext (a : ShrunkChart F ζ hζ U R P H)
   apply Subtype.ext
   simp [KPContActualCotangentPieceReconstruction.originalPoint, coordinates, labeledA, labeledAInv]
 
-private lemma continuous_q (a : ShrunkChart F ζ hζ U R P H) : Continuous (q a) := by
-  have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-        (H.atlas U).components ∘ Sigma.mk a.component := by
-      funext x; exact ((H.atlas U).components_formula a.component x).symm
-    rw [he]
-    exact ((H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk).continuous
-  have hproj : Continuous (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    continuous_quotient_mk'
-  have hcomp : q a = KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      ∘ KPCuspSiegel.projection F (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
-      ∘ labeledA (placeEquiv F ζ hζ) := rfl
-  rw [hcomp]
-  exact hcm.comp (hproj.comp continuous_labeledA_placeEquiv)
-
 private lemma T_symm_coord {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
       (U := U) (R := R) (P := P) (H := H) i}
@@ -142,7 +125,7 @@ theorem smooth_extended_base_support (a : ShrunkChart F ζ hζ U R P H)
     exact (hat e ((sectorTestOverlapEnumeration b a).properties k) hx').contDiffWithinAt
   · have hxq : q b x ∉ K := fun h => hb (hKa h)
     have hn : ∀ᶠ y in 𝓝 x, q b y ∉ K :=
-      (hK.isOpen_compl.preimage (continuous_q b)).mem_nhds hxq
+      (hK.isOpen_compl.preimage (KPContCotangentOverlapRationalBranches.continuous_chartProjection b)).mem_nhds hxq
     apply ContDiffAt.contDiffWithinAt
     apply (contDiffAt_const (c := (0 : E F))).congr_of_eventuallyEq
     filter_upwards [hn] with y hy
@@ -196,15 +179,6 @@ def scalarSupport (f : ScalarFields F ζ hζ U R P H) :
   closure {x | ∃ (a : ActualChart (U := U) (H := H)) (y : omega a),
     q a y.val = x ∧ f a y ≠ 0}
 
-theorem scalarSupport_add_subset (f g : ScalarFields F ζ hζ U R P H) :
-    scalarSupport (f + g) ⊆ scalarSupport f ∪ scalarSupport g := by
-  unfold scalarSupport
-  rw [← closure_union]
-  apply closure_mono
-  rintro x ⟨a, y, hq, hne⟩
-  by_cases hf : f a y = 0
-  · exact Or.inr ⟨a, y, hq, fun hg => hne (by simp [hf, hg])⟩
-  · exact Or.inl ⟨a, y, hq, hf⟩
 
 theorem scalarSupport_smul_subset (c : ℂ) (f : ScalarFields F ζ hζ U R P H) :
     scalarSupport (c • f) ⊆ scalarSupport f := by
@@ -379,6 +353,11 @@ abbrev T_U (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot 
 def sectionFields (s : Sections F ζ hζ U R P H) : ScalarFields F ζ hζ U R P H :=
   fun a x => (isotropyChart a).coefficient s x.val
 
+theorem sectionFields_apply (s : Sections F ζ hζ U R P H)
+    (a : ActualChart (U := U) (H := H)) (x : omega a) :
+    sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
+  simp [sectionFields, LiftedChart.coefficient, isotropyChart, ChartKind.representative]
+
 theorem sectionFields_add (s t : Sections F ζ hζ U R P H) :
     sectionFields (s + t) = sectionFields s + sectionFields t := by
   funext a x
@@ -434,40 +413,6 @@ theorem scalarSupport_sectionFields (s : Sections F ζ hζ U R P H) :
     refine ⟨a, y, hq, ?_⟩
     rw [← hq] at hx
     simpa only [Function.mem_support, sectionNorm_chart, norm_ne_zero_iff] using hx
-
-open KPContSectorPhaseComponentCharts in
- theorem shrink_exists (i : Fin (H.atlas U).componentCount) (p : SymmetricSpace F) :
-    ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
-  let O := Classical.choice (KPContSectorPhaseComponentCharts.orbifoldChart_exists F ζ hζ U R P H i p)
-  letI : Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) p) :=
-    chart_stabilizer_finite F ζ hζ U R P H i p O
-  letI := Fintype.ofFinite (MulAction.stabilizer (Component F ζ hζ U R P H i) p)
-  obtain ⟨W,hWo,hpW,hWsub,hWc⟩ := exists_open_between_and_isCompact_closure
-    (isCompact_singleton (x := p)) O.isOpen (Set.singleton_subset_iff.mpr O.center_mem)
-  let V := ⋂ g : MulAction.stabilizer (Component F ζ hζ U R P H i) p,
-    (fun x : SymmetricSpace F => (g.val : KPCuspArithmetic.PGL2 F) • x) ⁻¹' W
-  have hopen : IsOpen V := isOpen_iInter_of_finite fun g =>
-    hWo.preimage (KPCuspSiegel.continuous_action F g.val.val)
-  have hsub : V ⊆ W := by
-    intro x hx
-    simpa using Set.mem_iInter.mp hx (1 : MulAction.stabilizer (Component F ζ hζ U R P H i) p)
-  have hp : p ∈ V := by
-    apply Set.mem_iInter.mpr; intro g
-    change g.val • p ∈ W
-    rw [MulAction.mem_stabilizer_iff.mp g.property]
-    exact hpW (Set.mem_singleton p)
-  refine ⟨⟨i,p,O,V,hopen,hWc.of_isClosed_subset isClosed_closure (closure_mono hsub),
-    (closure_mono hsub).trans hWsub,?_⟩,rfl,rfl,hp⟩
-  intro g
-  ext x; constructor
-  · rintro ⟨y,hy,rfl⟩
-    apply Set.mem_iInter.mpr; intro h
-    simpa only [Set.mem_preimage, Subgroup.coe_mul, ← mul_smul] using Set.mem_iInter.mp hy (h*g)
-  · intro hx
-    refine ⟨(g.val : KPCuspArithmetic.PGL2 F)⁻¹ • x,?_, smul_inv_smul _ _⟩
-    apply Set.mem_iInter.mpr; intro h
-    simpa only [Set.mem_preimage, Subgroup.coe_mul, Subgroup.coe_inv, ← mul_smul]
-      using Set.mem_iInter.mp hx (h*g⁻¹)
 
  def coord (g : KPCuspArithmetic.PGL2 F) (x : M F) :=
   labeledAInv (placeEquiv F ζ hζ) (g • labeledA (placeEquiv F ζ hζ) x)
@@ -563,13 +508,13 @@ private theorem scalarCompatible_transform (f : ScalarFields F ζ hζ U R P H)
 
  def pointChart (i : Fin (H.atlas U).componentCount) (y : SymmetricSpace F) :
     ActualChart (U := U) (H := H) :=
-  (shrink_exists (H := H) i y).choose
+  (KPContActualCotangentCountableShrinking.Construction.shrink_exists (H := H) i y).choose
 private theorem pointChart_component (i : Fin (H.atlas U).componentCount) (y : SymmetricSpace F) :
     (pointChart (H := H) i y).component = i :=
-  (shrink_exists (H := H) i y).choose_spec.1
+  (KPContActualCotangentCountableShrinking.Construction.shrink_exists (H := H) i y).choose_spec.1
  theorem pointChart_mem (i : Fin (H.atlas U).componentCount) (y : SymmetricSpace F) :
     y ∈ (pointChart (H := H) i y).domain :=
-  (shrink_exists (H := H) i y).choose_spec.2.2
+  (KPContActualCotangentCountableShrinking.Construction.shrink_exists (H := H) i y).choose_spec.2.2
  def pointLift (i : Fin (H.atlas U).componentCount) (y : SymmetricSpace F) :
     omega (pointChart (H := H) i y) :=
   ⟨labeledAInv (placeEquiv F ζ hζ) y, by
@@ -1388,57 +1333,9 @@ theorem cotangentZeroExtension_zero (a : ActualChart (U := U) (H := H))
     (hx : q b x.val ∉ a.baseDomain) : coefficient (cotangentZeroExtension a f).val b x = 0 :=
   KPContActualCotangentChartZeroExtension.extendedFields_zero_off a _ b x hx
 
-theorem cotangentZeroExtension_support (a : ActualChart (U := U) (H := H))
-    (f : localCotangentTests a) :
-    tsupport (normSquare (cotangentZeroExtension a f).val) = localSupport a f.val := by
-  rw [← cotangentSupport_eq]
-  apply Set.Subset.antisymm
-  · unfold cotangentSupport
-    apply closure_minimal _ isClosed_closure
-    rintro z ⟨b, x, hx, hn⟩
-    by_contra hz
-    exact hn (KPContActualCotangentChartZeroExtension.extendedFields_zero_off_base_support a
-      f.val (localSupport a f.val) (fun y hy => subset_closure
-        ⟨y.val, ⟨y.property, hy⟩, rfl⟩) b x (by rwa [hx]))
-  · unfold localSupport cotangentSupport
-    apply closure_mono
-    rintro z ⟨y, ⟨hy, hn⟩, rfl⟩
-    refine ⟨a, ⟨y, hy⟩, rfl, ?_⟩
-    have hr := congrFun (cotangentZeroExtension_restrict a f) ⟨y, hy⟩
-    change cotangentRestriction a (cotangentZeroExtension a f) ⟨y, hy⟩ ≠ 0
-    rwa [hr]
 
-theorem cotangentRestriction_regular (a : ActualChart (U := U) (H := H))
-    (v : T_U F ζ hζ U R P H) :
-    SmoothOnLift a (cotangentRestriction a v) ∧ CotangentEquivariant a (cotangentRestriction a v) :=
-  ⟨v.property.1 a, v.val.property.2.1 a⟩
 
-theorem scalarRestriction_support_subset (a : ActualChart (U := U) (H := H))
-    (f : S_U F ζ hζ U R P H) : localSupport a (scalarRestriction a f) ⊆ scalarSupport f.val := by
-  unfold localSupport scalarSupport
-  apply closure_mono
-  rintro z ⟨x, ⟨hx, hn⟩, rfl⟩
-  exact ⟨a, ⟨x, hx⟩, rfl, hn⟩
 
-theorem cotangentRestriction_support_subset (a : ActualChart (U := U) (H := H))
-    (v : T_U F ζ hζ U R P H) :
-    localSupport a (cotangentRestriction a v) ⊆ tsupport (normSquare v.val) := by
-  rw [← cotangentSupport_eq]
-  unfold localSupport cotangentSupport
-  apply closure_mono
-  rintro z ⟨x, ⟨hx, hn⟩, rfl⟩
-  exact ⟨a, ⟨x, hx⟩, rfl, hn⟩
-private theorem scalar_zero_off_support (f : S_U F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a)
-    (hx : q a x.val ∉ scalarSupport f.val) : f.val a x = 0 := by
-  by_contra hn
-  exact hx (subset_closure ⟨a, x, rfl, hn⟩)
-private theorem tensor_zero_off_support (v : T_U F ζ hζ U R P H)
-    (a : ActualChart (U := U) (H := H)) (x : omega a)
-    (hx : q a x.val ∉ tsupport (normSquare v.val)) : coefficient v.val a x = 0 := by
-  rw [← cotangentSupport_eq] at hx
-  by_contra hn
-  exact hx (subset_closure ⟨a, x, rfl, hn⟩)
 private theorem overlap_component (a b : ShrunkChart F ζ hζ U R P H)
     (x : M F) (hx : q a x ∈ b.baseDomain) : a.component = b.component := by
   obtain ⟨y, hy⟩ := hx
@@ -1499,96 +1396,19 @@ private theorem overlap_iff (a b : ShrunkChart F ζ hζ U R P H)
     apply congrArg (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative i))
     exact Quotient.sound ⟨g, rfl⟩
 
-theorem scalar_eq_of_restriction (a : ActualChart (U := U) (H := H))
-    (f g : S_U F ζ hζ U R P H) (hf : scalarSupport f.val ⊆ a.baseDomain)
-    (hg : scalarSupport g.val ⊆ a.baseDomain)
-    (he : scalarRestriction a f = scalarRestriction a g) : f = g := by
-  apply Subtype.ext
-  funext b x
-  by_cases hx : q b x.val ∈ a.baseDomain
-  · have hc := overlap_component b a x.val hx
-    obtain ⟨u, hu⟩ := (overlap_iff b a hc x.val).mp ⟨x.property, hx⟩
-    let y : omega a := ⟨coord (ζ := ζ) (hζ := hζ) u.val x.val, hu.2⟩
-    have hfy := scalarCompatible_transform f.val f.property.2.1 b a hc u x y rfl
-    have hgy := scalarCompatible_transform g.val g.property.2.1 b a hc u x y rfl
-    have hy : f.val a y = g.val a y := congrFun he y
-    rw [hfy, hgy] at hy
-    exact mul_left_cancel₀ (Units.ne_zero _) hy
-  · rw [scalar_zero_off_support f b x (fun h => hx (hf h)),
-      scalar_zero_off_support g b x (fun h => hx (hg h))]
 
-theorem cotangent_eq_of_restriction (a : ActualChart (U := U) (H := H))
-    (v w : T_U F ζ hζ U R P H) (hv : tsupport (normSquare v.val) ⊆ a.baseDomain)
-    (hw : tsupport (normSquare w.val) ⊆ a.baseDomain)
-    (he : cotangentRestriction a v = cotangentRestriction a w) : v = w := by
-  apply Subtype.ext
-  apply Subtype.ext
-  funext b x
-  by_cases hx : q b x.val ∈ a.baseDomain
-  · have hc := overlap_component b a x.val hx
-    obtain ⟨u, hu⟩ := (overlap_iff b a hc x.val).mp ⟨x.property, hx⟩
-    let e := make b a hc u
-    let y : omega a := ⟨e.arrow.psi x.val, e.target_shrinking hu⟩
-    have hfy := v.val.property.2.2 b a e x.val hu
-    have hgy := w.val.property.2.2 b a e x.val hu
-    have hy : coefficient v.val a y = coefficient w.val a y := congrFun he y
-    change v.val.val a y = w.val.val a y at hy
-    rw [hfy, hgy] at hy
-    exact (T e.arrow x.val hu).injective hy
-  · exact (tensor_zero_off_support v b x (fun h => hx (hv h))).trans
-      (tensor_zero_off_support w b x (fun h => hx (hw h))).symm
 
 structure Properties : Prop where
-  cotangent_support : ∀ v : Family (U := U) (H := H),
-    cotangentSupport v = tsupport (normSquare v)
-  scalar_add_support : ∀ f g : S_U F ζ hζ U R P H,
-    scalarSupport (f + g).val ⊆ scalarSupport f.val ∪ scalarSupport g.val
   scalar_smul_support : ∀ (c : ℂ) (f : S_U F ζ hζ U R P H),
     scalarSupport (c • f).val ⊆ scalarSupport f.val
-  cotangent_add_support : ∀ v w : T_U F ζ hζ U R P H,
-    cotangentSupport (v + w).val ⊆ cotangentSupport v.val ∪ cotangentSupport w.val
-  cotangent_smul_support : ∀ (c : ℂ) (v : T_U F ζ hζ U R P H),
-    cotangentSupport (c • v).val ⊆ cotangentSupport v.val
   scalar_represented : ∀ f : S_U F ζ hζ U R P H,
     sectionFields (scalarSections f) = f.val
   scalar_smooth : ∀ f : S_U F ζ hζ U R P H,
     IsSmoothSections F ζ hζ U R P H (scalarSections f)
   scalar_support : ∀ f : S_U F ζ hζ U R P H,
     scalarSupport f.val = tsupport (sectionNorm F ζ hζ U R P H (scalarSections f))
-  original_scalar_realization : ∀ f : S_U F ζ hζ U R P H,
-    (groupIdentification f).val = (H.atlas U).scalar_realization.symm (scalarSections f)
   covered_realization : ∀ f : S_U F ζ hζ U R P H,
     S F ζ hζ U R P H (scalarCovered f) = scalarSections f
-  covered_support : ∀ f : S_U F ζ hζ U R P H,
-    scalarSupport f.val = KPContSectorCoveredQuotientVocabulary.q F ζ hζ U ''
-      tsupport (scalarCovered f).val
-  group_lift : ∀ (f : S_U F ζ hζ U R P H)
-      (g : KPSmoothActualFlowData.GInfinity F) (c : FiniteCover F ζ hζ),
-    (scalarCovered f).val (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ U
-      (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
-        (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ g * (c : ActualCover F ζ hζ)))) =
-      (groupIdentification f).val.val (KPMsFixedHaarDisintegration.archBasepoint F g, c)
-  group_spherical : ∀ (f : S_U F ζ hζ U R P H)
-      (g : KPSmoothActualFlowData.GInfinity F)
-      (k : KPContSectorArchSphericalFibers.KInfinity F) (c : FiniteCover F ζ hζ),
-    groupLift (groupIdentification f).val (g * k.val) c =
-      groupLift (groupIdentification f).val g c
-  group_level_fixed : ∀ (f : S_U F ζ hζ U R P H)
-      (g : KPSmoothActualFlowData.GInfinity F) (c : FiniteCover F ζ hζ)
-      (u : U.toOpenSubgroup),
-    groupLift (groupIdentification f).val g (c * u.val) =
-      groupLift (groupIdentification f).val g c
-  group_genuine : ∀ (f : S_U F ζ hζ U R P H)
-      (g : KPSmoothActualFlowData.GInfinity F) (c : FiniteCover F ζ hζ)
-      (ε : rootsOfUnity 3 F),
-    groupLift (groupIdentification f).val g (KPCuspGenuineMonodromy.central F ζ hζ ε * c) =
-      (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * groupLift (groupIdentification f).val g c
-  covered_smooth_compact : ∀ f : S_U F ζ hζ U R P H,
-    IsSmoothCovered F ζ hζ U (scalarCovered f) ∧ HasCompactSupport (scalarCovered f).val
-  scalar_restriction_smooth : ∀ a (f : S_U F ζ hζ U R P H),
-    SmoothOnLift a (scalarRestriction a f) ∧ ScalarEquivariant a (scalarRestriction a f)
-  cotangent_restriction_smooth : ∀ a (v : T_U F ζ hζ U R P H),
-    SmoothOnLift a (cotangentRestriction a v) ∧ CotangentEquivariant a (cotangentRestriction a v)
   scalar_restriction_extension : ∀ a (f : localScalarTests (U := U) (H := H) a),
     scalarRestriction a (scalarZeroExtension a f) = f.val
   cotangent_restriction_extension : ∀ a (v : localCotangentTests (U := U) (H := H) a),
@@ -1601,18 +1421,6 @@ structure Properties : Prop where
     q b x.val ∉ a.baseDomain → coefficient (cotangentZeroExtension a v).val b x = 0
   scalar_extension_support : ∀ a (f : localScalarTests (U := U) (H := H) a),
     scalarSupport (scalarZeroExtension a f).val = localSupport a f.val
-  cotangent_extension_support : ∀ a (v : localCotangentTests (U := U) (H := H) a),
-    tsupport (normSquare (cotangentZeroExtension a v).val) = localSupport a v.val
-  scalar_local_restriction : ∀ a (f : S_U F ζ hζ U R P H),
-    scalarSupport f.val ⊆ a.baseDomain → scalarRestriction a f ∈ localScalarTests a
-  cotangent_local_restriction : ∀ a (v : T_U F ζ hζ U R P H),
-    tsupport (normSquare v.val) ⊆ a.baseDomain → cotangentRestriction a v ∈ localCotangentTests a
-  scalar_extension_restriction : ∀ a (f : S_U F ζ hζ U R P H)
-      (h : scalarRestriction a f ∈ localScalarTests a),
-    scalarSupport f.val ⊆ a.baseDomain → scalarZeroExtension a ⟨scalarRestriction a f,h⟩ = f
-  cotangent_extension_restriction : ∀ a (v : T_U F ζ hζ U R P H)
-      (h : cotangentRestriction a v ∈ localCotangentTests a),
-    tsupport (normSquare v.val) ⊆ a.baseDomain → cotangentZeroExtension a ⟨cotangentRestriction a v,h⟩ = v
 
 end DedekindZetaZeroFree.KPContActualSectorSmoothTestModules
 
@@ -1632,68 +1440,19 @@ theorem kp_cont_actual_sector_smooth_test_modules
     KPContSectorQuotientRelationsComparison.instT2SpaceRawXU F ζ hζ U
   open KPContActualSectorSmoothTestModules KPContActualCotangentMeasurableFamilies
     KPContSectorSmoothFramesSupport KPContSectorScalarLineAlgebra in
-    refine {
-      cotangent_support := cotangentSupport_eq
-      scalar_add_support := fun f g => scalarSupport_add_subset f.val g.val
+    exact {
       scalar_smul_support := fun c f => scalarSupport_smul_subset c f.val
-      cotangent_add_support := fun v w => cotangentSupport_add v.val w.val
-      cotangent_smul_support := fun c v => cotangentSupport_smul c v.val
       scalar_represented := scalarSections_fields
       scalar_smooth := scalarSections_smooth
       scalar_support := fun f => by
         rw [← scalarSupport_sectionFields, scalarSections_fields]
-      original_scalar_realization := fun _ => rfl
       covered_realization := fun f => by simp [scalarCovered, S, groupIdentification]
-      covered_support := fun f => ?_
-      group_lift := fun f g c => ?_
-      group_spherical := fun f g k c => ?_
-      group_level_fixed := fun f g c u => (groupIdentification f).val.property.2.2 _ _ _
-      group_genuine := fun f g c ε => (groupIdentification f).val.property.2.1 _ _ _
-      covered_smooth_compact := fun f => ?_
-      scalar_restriction_smooth := fun a f => ⟨f.property.1 a, f.property.2.1.1 a⟩
-      cotangent_restriction_smooth := cotangentRestriction_regular
       scalar_restriction_extension := fun a f => funext (ScalarExtension.fields_source a f)
       cotangent_restriction_extension := cotangentZeroExtension_restrict
       scalar_extension_zero := fun a f b x hx =>
         ScalarExtension.fields_off_support a f b x (fun h => hx (f.property.2.2.2 h))
       cotangent_extension_zero := cotangentZeroExtension_zero
-      scalar_extension_support := ScalarExtension.fields_support
-      cotangent_extension_support := cotangentZeroExtension_support
-      scalar_local_restriction := fun a f hf => ?_
-      cotangent_local_restriction := fun a v hv => ?_
-      scalar_extension_restriction := fun a f h hf => ?_
-      cotangent_extension_restriction := fun a v h hv => ?_ }
-    · rw [← tsupport_sectionNorm F ζ hζ U R P H (scalarCovered f)]
-      have he : S F ζ hζ U R P H (scalarCovered f) = scalarSections f := by
-        simp [scalarCovered, S, groupIdentification]
-      rw [he, ← scalarSupport_sectionFields, scalarSections_fields]
-    · have he : J F ζ hζ U (scalarCovered f) = (groupIdentification f).val := by
-        simp [scalarCovered]
-      rw [← he]
-      exact group_lift_formula F ζ hζ U (scalarCovered f) g c
-    · unfold groupLift
-      have he : KPMsFixedHaarDisintegration.archBasepoint F (g * k.val) =
-          KPMsFixedHaarDisintegration.archBasepoint F g :=
-        ((KPContSectorArchSphericalFibers.archBasepoint_eq_iff F g (g * k.val)).mpr ⟨k, rfl⟩).symm
-      rw [he]
-    · refine ⟨?_, (groupIdentification f).property.2⟩
-      intro c
-      simpa [IsSmoothCovered, scalarCovered] using (groupIdentification f).property.1 c
-    · have hs := scalarRestriction_support_subset a f
-      exact ⟨f.property.1 a, f.property.2.1.1 a,
-        f.property.2.2.of_isClosed_subset isClosed_closure hs, hs.trans hf⟩
-    · have hs := cotangentRestriction_support_subset a v
-      exact ⟨v.property.1 a, v.val.property.2.1 a,
-        v.property.2.of_isClosed_subset isClosed_closure hs, hs.trans hv⟩
-    · refine scalar_eq_of_restriction a _ f ?_ hf ?_
-      · change scalarSupport (sectionFields (ScalarExtension.sections a _)) ⊆ _
-        rw [ScalarExtension.fields_support]
-        exact (⟨scalarRestriction a f, h⟩ : localScalarTests a).property.2.2.2
-      · exact funext (ScalarExtension.fields_source a ⟨scalarRestriction a f, h⟩)
-    · refine cotangent_eq_of_restriction a _ v ?_ hv ?_
-      · rw [cotangentZeroExtension_support]
-        exact (⟨cotangentRestriction a v, h⟩ : localCotangentTests a).property.2.2.2
-      · exact cotangentZeroExtension_restrict a ⟨cotangentRestriction a v, h⟩
+      scalar_extension_support := ScalarExtension.fields_support }
 
 end DedekindZetaZeroFree
 

@@ -84,7 +84,6 @@ theorem period_of_representative_source (C : JointForwardIdentitySources R N) (v
       (Metric.ball_mem_nhds (0 : ℂ) C.realization.radius_pos)] with s hs hn hb
     dsimp [A]
     rw [hs, map_smul, smul_eq_mul, mul_div_cancel_left₀ _ hn, hL]
-    change (∫ y, localMeromorphicIntegrand C.realization v s g y ∂C.sources.dq) = _
     simp only [localMeromorphicIntegrand, ContinuousMap.smul_apply, smul_eq_mul]
     rw [integral_const_mul]
     unfold CompactPeriod.localPeriod upper

@@ -93,15 +93,17 @@ private lemma eulerIter_sub (j : ℕ) {g₁ g₂ : ℝ → ℂ}
     rw [heq.deriv_eq, deriv_sub hd₁ hd₂]
     ring
 
-theorem originPolynomial_natDegree_le (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
+section
+
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
+  (hhc : HasCompactSupport h)
+include hD hr hh hhc
+
+theorem originPolynomial_natDegree_le :
     (originPolynomial D r h).natDegree ≤ r - 1 := by
   exact Vendor.originLogResiduePolynomial_natDegree_le (A D r h) r hr
 
-theorem originPolynomial_coeff_top (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) :
+theorem originPolynomial_coeff_top :
     (originPolynomial D r h).coeff (r - 1) =
       (-1 : ℂ) ^ (r - 1) * (D : ℂ) ^ (-(1 / 2 : ℂ)) *
         (((2 * Real.pi : ℝ) : ℂ) ^ r) * mellin h 1 /
@@ -111,10 +113,7 @@ theorem originPolynomial_coeff_top (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     A_zero D r h hD hr hh hhc]
   ring
 
-theorem B_euler_negative_inverse_integrable
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (j : ℕ) (δ x : ℝ)
+theorem B_euler_negative_inverse_integrable (j : ℕ) (δ x : ℝ)
     (hδ : 0 < δ) (hδ1 : δ < 1) (hx : 0 < x) :
     MeasureTheory.Integrable (fun t : ℝ =>
       (x : ℂ) ^ (-((-δ : ℂ) + (t : ℂ) * Complex.I)) *
@@ -147,10 +146,7 @@ theorem B_euler_negative_inverse_integrable
     Complex.norm_cpow_eq_rpow_re_of_pos hx, hre]
   exact le_refl _
 
-theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (j : ℕ) (δ x : ℝ)
+theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv (j : ℕ) (δ x : ℝ)
     (hδ : 0 < δ) (hδ1 : δ < 1) (hx : 0 < x) :
     Vendor.EulerIter j (fun y : ℝ => fieldTransform D r h y -
       Polynomial.eval (Real.log y : ℂ) (originPolynomial D r h)) x =
@@ -290,6 +286,8 @@ theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
     _ = Vendor.verticalIntegral 1 F - cc 1 := by rw [hV1, hcc1]
     _ = Vendor.verticalIntegral (-δ) F := by rw [sub_eq_iff_eq_add]; exact hcontour
     _ = mellinInv (-δ) (fun s : ℂ => (-s) ^ j * B D r h s) x := hVδ
+
+end
 
 end DedekindZetaZeroFree.LargeSieve
 

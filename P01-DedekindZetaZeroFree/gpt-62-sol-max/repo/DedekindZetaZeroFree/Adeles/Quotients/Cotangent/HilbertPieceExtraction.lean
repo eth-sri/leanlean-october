@@ -36,9 +36,9 @@ def e (v : Family (U := U) (H := H)) (n : ℕ) : (cover.chart n).domain → E F 
 
 theorem measurable_e (v : Family (U := U) (H := H)) (n : ℕ) :
     Measurable (e cover v n) := by
-  have hs : MeasurableSet (liftedPiece cover n) :=
+  have hs :=
     (kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover).lifted_measurable n
-  have hlc : Measurable (localCoefficient cover v n) :=
+  have hlc :=
     (v.property.1 (cover.chart n)).comp (coordinates_continuous (cover.chart n)).measurable
   exact hlc.indicator hs
 

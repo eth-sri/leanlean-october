@@ -39,29 +39,28 @@ namespace ValuationData
 
 variable {D : DegreeData G} {A : Rep ℤ G}
 
-/-- The unit-valued correction term on the upper Frobenius fixed field.
-This is the additive form of the right-hand side of the corrected equation. -/
-noncomputable def fixedTowerCorrection
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σn : D.FrobeniusElements K L hLK)
-    [Finite ((baseField G).toSubgroup ⧸
+section
+
+variable (v : ValuationData D A) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+  [TotallyDisconnectedSpace G] (K : DegreeData.FiniteResidueAbstractField D)
+  (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] (σn : D.FrobeniusElements K L hLK)
+  [Finite ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G)
         (D.frobeniusFixedField K L hLK σn)
         (le_baseField (D.frobeniusFixedField K L hLK σn)))]
-    {ι : Type v} (s : Finset ι)
-    (φ : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hφσn : φ * σn.1 = σn.1 * φ)
-    (τ : ι → K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hτσn : ∀ i, τ i * σn.1 = σn.1 * τ i)
-    (uBar :
+  {ι : Type v} (s : Finset ι) (φ : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
+  (hφσn : φ * σn.1 = σn.1 * φ)
+  (τ : ι → K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
+  (hτσn : ∀ i, τ i * σn.1 = σn.1 * τ i) (uBar :
       v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn))
-    (uBarᵢ : ι →
-      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn)) :
+  (uBarᵢ : ι →
+      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn))
+include v hLnormal ι s φ hφσn τ hτσn uBar uBarᵢ
+
+/-- The unit-valued correction term on the upper Frobenius fixed field.
+This is the additive form of the right-hand side of the corrected equation. -/
+noncomputable def fixedTowerCorrection :
     v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn) :=
   v.frobeniusFixedFieldUnitAction K L hLK σn φ hφσn uBar -
     uBar -
@@ -73,27 +72,7 @@ noncomputable def fixedTowerCorrection
 The underlying fixed-tower correction is the Frobenius difference minus the prescribed finite sum
 of correction terms.
 -/
-theorem fixedTowerCorrection_coe
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σn : D.FrobeniusElements K L hLK)
-    [Finite ((baseField G).toSubgroup ⧸
-      extensionSubgroup (baseField G)
-        (D.frobeniusFixedField K L hLK σn)
-        (le_baseField (D.frobeniusFixedField K L hLK σn)))]
-    {ι : Type v} (s : Finset ι)
-    (φ : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hφσn : φ * σn.1 = σn.1 * φ)
-    (τ : ι → K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
-    (hτσn : ∀ i, τ i * σn.1 = σn.1 * τ i)
-    (uBar :
-      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn))
-    (uBarᵢ : ι →
-      v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn)) :
+theorem fixedTowerCorrection_coe :
     (v.fixedTowerCorrection K L hLK σn s φ hφσn
       τ hτσn uBar uBarᵢ).1 =
         (v.frobeniusFixedFieldUnitAction K L hLK σn
@@ -111,6 +90,8 @@ theorem fixedTowerCorrection_coe
           (inclusion (v.frobeniusFixedFieldUnitAction K L hLK σn
             (τ i) (hτσn i) (uBarᵢ i)) - inclusion (uBarᵢ i))
   simp only [fixedTowerCorrection, map_sub, map_sum]
+
+end
 
 /-- Applying the lower norm to the correction term gives zero.  This is
 the norm calculation immediately before the use of H⁻¹ = 0. -/

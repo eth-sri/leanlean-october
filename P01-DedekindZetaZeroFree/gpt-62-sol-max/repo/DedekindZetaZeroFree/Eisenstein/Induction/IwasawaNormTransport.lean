@@ -42,7 +42,7 @@ private theorem adele_ext (a b : KPGlobalTorusFunctionData.Adeles F)
   · apply Subtype.ext
     funext q
     exact h (Sum.inr q)
-private theorem projected_root (x : KPGlobalTorusFunctionData.Adeles F) :
+ theorem projected_root (x : KPGlobalTorusFunctionData.Adeles F) :
     KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (KPGlobalTorusFunctionData.N F ζ hζ x) =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) (upperRoot F x) := by
   change QuotientGroup.mk' _ (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
@@ -69,7 +69,7 @@ private theorem upper_unit {R : Type*} [CommRing R] (A : Matrix.GeneralLinearGro
     (Matrix.GeneralLinearGroup.det (n := Fin 2) (R := R) A).isUnit
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) R) = A 0 0 * A 1 1 := by
     simp only [Matrix.det_fin_two, h10, mul_zero, sub_zero]
-  exact isUnit_of_mul_isUnit_left (hd ▸ h)
+  grind
 private theorem upper_diagonal {R : Type*} [CommRing R]
     (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0)
     (x : R) (hx : A 0 0 * x = A 0 1) :
@@ -81,7 +81,7 @@ private theorem upper_diagonal {R : Type*} [CommRing R]
 theorem iwasawaUpperUnits (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by
   have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F))) := (Matrix.GeneralLinearGroup.det A).isUnit
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F)) = A 0 0 * A 1 1 := by simp [Matrix.det_fin_two, h10]
-  exact ⟨isUnit_of_mul_isUnit_left (hd ▸ h), isUnit_of_mul_isUnit_right (hd ▸ h)⟩
+  simp_all
 def iwasawaUpperRatio (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : KPGlobalTorusFunctionData.Ideles F :=
   (iwasawaUpperUnits F A h10).1.unit * (iwasawaUpperUnits F A h10).2.unit⁻¹
 theorem iwasawaUpperRatio_scalar (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
@@ -94,10 +94,10 @@ theorem iwasawaUpperRatio_scalar (A B : KPAdelicCoverRestrictedProduct.AdelicGL2
   simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply] at he00 he11
   have hu00 : (iwasawaUpperUnits F A hA).1.unit * c = (iwasawaUpperUnits F B hB).1.unit := by
     apply Units.ext
-    simpa only [Units.val_mul, IsUnit.unit_spec] using he00
+    assumption
   have hu11 : (iwasawaUpperUnits F A hA).2.unit * c = (iwasawaUpperUnits F B hB).2.unit := by
     apply Units.ext
-    simpa only [Units.val_mul, IsUnit.unit_spec] using he11
+    assumption
   unfold iwasawaUpperRatio
   rw [← hu00, ← hu11]
   group

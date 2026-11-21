@@ -47,7 +47,7 @@ theorem productSubgroup_le_finite (J : ProductLevelData F ζ hζ) :
   apply (hh.image (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)).subset
   rintro (w | q) hw
   · simp at hw
-  · exact ⟨q, hw, rfl⟩
+  simp_all
 
  def levelTuple (J : ProductLevelData F ζ hζ)
     (x : ∀ q, (J.localLevel q).toOpenSubgroup) : RestrictedPGLCover F ζ hζ :=
@@ -55,14 +55,14 @@ theorem productSubgroup_le_finite (J : ProductLevelData F ζ hζ) :
     filter_upwards [sum_eventually F J.cofinally_standard] with v hv
     cases v with
     | inl w => exact Subgroup.one_mem _
-    | inr q => rw [← hv]; exact (x q).property⟩
+    | inr q => rw [← hv]; simp⟩
 
 private theorem levelTuple_continuous (J : ProductLevelData F ζ hζ) :
     Continuous (levelTuple F ζ hζ J) := by
   let S : Set (KPHilbert.Place F) := {v | match v with
     | Sum.inl _ => True
     | Sum.inr q => (J.localLevel q).toOpenSubgroup.toSubgroup = pglCompact F ζ hζ (Sum.inr q)}
-  have hS : Filter.cofinite ≤ Filter.principal S :=
+  have hS :=
     Filter.le_principal_iff.mpr (sum_eventually F J.cofinally_standard)
   let t (x : ∀ q, (J.localLevel q).toOpenSubgroup) :
       RestrictedProduct (fun v => KPPGLLocalCover.CubicPGL2 F ζ hζ v)
@@ -74,7 +74,7 @@ private theorem levelTuple_continuous (J : ProductLevelData F ζ hζ) :
       | inr q =>
         change (J.localLevel q).toOpenSubgroup.toSubgroup = pglCompact F ζ hζ (Sum.inr q) at hv
         change (x q).val ∈ pglCompact F ζ hζ (Sum.inr q)
-        rw [← hv]; exact (x q).property)⟩
+        rw [← hv]; simp)⟩
   have ht : Continuous t := by
     apply RestrictedProduct.continuous_rng_of_principal.mpr
     apply continuous_pi

@@ -53,8 +53,8 @@ theorem fδ_one_div
   rw [if_pos (one_div_pos.mpr ht), if_pos ht]
   rw [integral_congr_ae (Filter.Eventually.of_forall heq), integral_const_mul]
   simp only [Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_ofNat]
-  simp only [one_div, mul_inv_rev, inv_inv]
-  simp only [Complex.ofReal_one, inv_one, inv_inv, mul_one]
+  simp only [mul_inv_rev]
+  simp only [Complex.ofReal_one]
   field_simp
   <;> ring
 

@@ -9,20 +9,20 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 private lemma key_sqrt_le (A b P₁ P₂ : ℝ) (hA : 0 ≤ A) (hb : 0 ≤ b)
     (hP₁ : 1 ≤ P₁) (hP₂ : 1 ≤ P₂) :
     Real.sqrt ((2*A + b*P₁) * (2*A + b*P₂)) ≤ 2*A + b*(P₁*P₂) := by
-  have hP₁0 : 0 ≤ P₁ := le_trans zero_le_one hP₁
-  have hP₂0 : 0 ≤ P₂ := le_trans zero_le_one hP₂
+  have hP₁0 := le_trans zero_le_one hP₁
+  have hP₂0 := le_trans zero_le_one hP₂
   have hZ : 0 ≤ 2*A + b*(P₁*P₂) := by
     have := mul_nonneg hb (mul_nonneg hP₁0 hP₂0); linarith
   rw [Real.sqrt_le_left hZ]
   have hsum : P₁ + P₂ ≤ 2*(P₁*P₂) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr hP₁) (sub_nonneg.mpr hP₂)]
+    nlinarith
   have hmul1 : 2*A*b*(P₁+P₂) ≤ 2*A*b*(2*(P₁*P₂)) :=
     mul_le_mul_of_nonneg_left hsum (by nlinarith [mul_nonneg hA hb])
   have hmul2 : 0 ≤ b^2*(P₁*P₂)*(P₁*P₂-1) := by
     have : 0 ≤ P₁*P₂-1 := by
-      nlinarith [mul_nonneg (sub_nonneg.mpr hP₁) (sub_nonneg.mpr hP₂)]
+      linarith
     positivity
-  nlinarith [hmul1, hmul2]
+  grind
 
 private lemma envelope (A b P₁ P₂ U₁ U₂ L : ℝ)
     (hA : 0 < A) (hb : 0 ≤ b) (hP₁ : 1 ≤ P₁) (hP₂ : 1 ≤ P₂)
@@ -32,7 +32,7 @@ private lemma envelope (A b P₁ P₂ U₁ U₂ L : ℝ)
     Real.sqrt (U₁*U₂) ≤ L*(2*A + b*(P₁*P₂))/Real.sqrt (P₁*P₂) := by
   have hP₁0 : 0 < P₁ := lt_of_lt_of_le zero_lt_one hP₁
   have hP₂0 : 0 < P₂ := lt_of_lt_of_le zero_lt_one hP₂
-  have hP0 : 0 < P₁*P₂ := mul_pos hP₁0 hP₂0
+  
   have hmax₁ : max 1 (A/P₁) ≤ 2*A/P₁ := by
     rw [max_le_iff]
     exact ⟨by rw [le_div_iff₀ hP₁0]; linarith,
@@ -46,7 +46,7 @@ private lemma envelope (A b P₁ P₂ U₁ U₂ L : ℝ)
   have hU₂' : U₂ ≤ L*(2*A/P₂ + b) :=
     le_trans hb₂ (mul_le_mul_of_nonneg_left (by linarith [hmax₂]) hL)
   have hx0 : 0 ≤ 2*A/P₁ + b := by positivity
-  have hy0 : 0 ≤ 2*A/P₂ + b := by positivity
+  
   have hprod : Real.sqrt (U₁*U₂) ≤ L*Real.sqrt ((2*A/P₁+b)*(2*A/P₂+b)) := by
     have hmul : U₁*U₂ ≤ (L*(2*A/P₁+b))*(L*(2*A/P₂+b)) :=
       mul_le_mul hU₁' hU₂' hU₂ (mul_nonneg hL hx0)
@@ -62,7 +62,7 @@ private lemma envelope (A b P₁ P₂ U₁ U₂ L : ℝ)
     have heq : (2*A/P₁+b)*(2*A/P₂+b) = (2*A+b*P₁)*(2*A+b*P₂)/(P₁*P₂) := by
       field_simp <;> ring
     rw [heq, Real.sqrt_div (by positivity : (0:ℝ) ≤ (2*A+b*P₁)*(2*A+b*P₂)) (P₁*P₂)]
-  have hkey : Real.sqrt ((2*A+b*P₁)*(2*A+b*P₂)) ≤ 2*A + b*(P₁*P₂) :=
+  have hkey :=
     key_sqrt_le A b P₁ P₂ hA.le hb hP₁ hP₂
   have hfin : Real.sqrt ((2*A/P₁+b)*(2*A/P₂+b)) ≤ (2*A + b*(P₁*P₂))/Real.sqrt (P₁*P₂) := by
     rw [hsplit]

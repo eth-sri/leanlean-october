@@ -19,12 +19,7 @@ def sphericalCoefficient (q m : ℝ) (s : ℂ) : ℂ :=
     (1 - Complex.exp ((-2 - 6 * s) * (Real.log q : ℂ))) /
     (1 - Complex.exp ((-1 - 6 * s) * (Real.log q : ℂ)))
 
-def traceSelfDualIntegerMass (q : ℝ) (differentExponent : ℕ) : ℝ :=
-  q ^ (-(differentExponent : ℝ) / 2)
 
-@[simp] theorem traceSelfDualIntegerMass_unramified (q : ℝ) :
-    traceSelfDualIntegerMass q 0 = 1 := by
-  simp [traceSelfDualIntegerMass]
 
 variable {K : Type*} [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] [MeasurableSpace K]

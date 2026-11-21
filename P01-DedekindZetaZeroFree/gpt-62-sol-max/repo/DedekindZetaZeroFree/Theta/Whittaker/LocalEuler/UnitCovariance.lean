@@ -29,17 +29,6 @@ theorem residueCoefficient_eq (I : A.Exterior) (u : A.R) :
     change 0 = σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)
     rw [MulChar.map_nonunit _ hx, map_zero]
 
-theorem residueCoefficient_norm_of_isUnit (I : A.Exterior) (u : A.R)
-    (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) u)) :
-    ‖residueCoefficient σ I u‖ = 1 := by
-  rw [residueCoefficient_eq]
-  change ‖σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)‖ = 1
-  rw [← hu.unit_spec, MulChar.ofUnitHom_coe]
-  have hp := A.sexticResidueFamily_normalized.1 I hu.unit
-  have hp' : σ ((A.sexticResidueFamily I hu.unit : Fˣ) : F) ^ 6 = 1 := by
-    rw [← map_pow]
-    simpa using congrArg (fun u : Fˣ => σ (u : F)) hp
-  exact Complex.norm_eq_one_of_pow_eq_one hp' (by decide)
 
 end DedekindZetaZeroFree.AllRowEuler.UnitCovariance
 

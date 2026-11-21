@@ -35,13 +35,16 @@ open scoped ValuativeRel
 open IsNonarchimedeanLocalField
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 
+section
+
+variable (G : Type uG) (A : Type uA) [Group G] [CommGroup A] [MulDistribMulAction G A]
+  (V : Subgroup A) (hstable : ∀ (g : G) (a : A), a ∈ V → g • a ∈ V)
+include hstable
+
 /-- Restrict a multiplicative group action to an invariant subgroup.  This
 is the honest action used below on the standard subgroups `V^n`. -/
 @[implicit_reducible]
-def subgroupMulDistribMulActionOfStable
-    (G : Type uG) (A : Type uA) [Group G] [CommGroup A]
-    [MulDistribMulAction G A] (V : Subgroup A)
-    (hstable : ∀ (g : G) (a : A), a ∈ V → g • a ∈ V) :
+def subgroupMulDistribMulActionOfStable :
     MulDistribMulAction G V where
   smul g a := ⟨g • (a : A), hstable g a a.2⟩
   one_smul := by
@@ -63,10 +66,7 @@ def subgroupMulDistribMulActionOfStable
 
 /-- An invariant subgroup satisfies the relation-preservation condition
 needed for the action on its quotient. -/
-theorem quotientActionOfSubgroupStable
-    (G : Type uG) (A : Type uA) [Group G] [CommGroup A]
-    [MulDistribMulAction G A] (V : Subgroup A)
-    (hstable : ∀ (g : G) (a : A), a ∈ V → g • a ∈ V) :
+theorem quotientActionOfSubgroupStable :
     MulAction.QuotientAction G V where
   inv_mul_mem g a b hab := by
     have hsmul : g • (a⁻¹ * b) ∈ V := hstable g (a⁻¹ * b) hab
@@ -75,10 +75,7 @@ theorem quotientActionOfSubgroupStable
 /-- Descend an action by group automorphisms to the quotient by an invariant
 subgroup. -/
 @[implicit_reducible]
-def quotientMulDistribMulActionOfSubgroupStable
-    (G : Type uG) (A : Type uA) [Group G] [CommGroup A]
-    [MulDistribMulAction G A] (V : Subgroup A)
-    (hstable : ∀ (g : G) (a : A), a ∈ V → g • a ∈ V) :
+def quotientMulDistribMulActionOfSubgroupStable :
     MulDistribMulAction G (A ⧸ V) := by
   letI : MulAction.QuotientAction G V :=
     quotientActionOfSubgroupStable G A V hstable
@@ -96,6 +93,8 @@ def quotientMulDistribMulActionOfSubgroupStable
         intro g
         exact congrArg QuotientGroup.mk
           (MulDistribMulAction.smul_one g) }
+
+end
 
 variable (K L : Type u) [Field K] [Field L] [Algebra K L]
   [FiniteDimensional K L] [IsGalois K L]
@@ -144,12 +143,16 @@ theorem galoisGroup_smul_mem_chosenNormalBasisPrincipalUnitSet
   simpa [galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure_smul,
     map_sub, map_one] using hstable
 
+section
+
+variable (n : Nat) (V : Subgroup 𝒪[L]ˣ)
+  (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
+include n hV
+
 /-- The restricted actual Galois action on any subgroup whose carrier is
 the standard `V^n`. -/
 @[implicit_reducible]
-def chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n) :
+def chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction :
     MulDistribMulAction (Gal(L / K)) V := by
   letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
   exact subgroupMulDistribMulActionOfStable (Gal(L / K)) 𝒪[L]ˣ V
@@ -163,8 +166,6 @@ def chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction
 /-- The induced Galois action on the principal-unit subgroup agrees with the ambient action. -/
 @[simp]
 theorem chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction_smul
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
     (sigma : Gal(L / K)) (a : V) :
     letI := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction K L n V hV
     ((sigma • a : V) : 𝒪[L]ˣ) =
@@ -175,8 +176,6 @@ theorem chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction_smul
 /-- Coercing the subgroup Tate norm gives the ambient product over the Galois group. -/
 @[simp]
 theorem chosenNormalBasisPrincipalUnitSubgroup_tateNorm_coe
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
     (a : V) :
     letI := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction K L n V hV
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
@@ -195,8 +194,6 @@ theorem chosenNormalBasisPrincipalUnitSubgroup_tateNorm_coe
 /-- Coercion commutes with the `σ - 1` operation on the principal-unit subgroup. -/
 @[simp]
 theorem chosenNormalBasisPrincipalUnitSubgroup_sigmaMinusOne_coe
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
     (sigma : Gal(L / K)) (a : V) :
     letI := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction K L n V hV
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
@@ -209,9 +206,7 @@ theorem chosenNormalBasisPrincipalUnitSubgroup_sigmaMinusOne_coe
 /-- The quotient action on `𝒪_Lˣ / V^n`, descended from the actual integer-unit
 Galois action. -/
 @[implicit_reducible]
-def chosenNormalBasisIntegerUnitsQuotMulDistribMulAction
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n) :
+def chosenNormalBasisIntegerUnitsQuotMulDistribMulAction :
     MulDistribMulAction (Gal(L / K)) (𝒪[L]ˣ ⧸ V) := by
   letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
   exact quotientMulDistribMulActionOfSubgroupStable
@@ -222,6 +217,8 @@ def chosenNormalBasisIntegerUnitsQuotMulDistribMulAction
       rw [hV] at ha ⊢
       exact galoisGroup_smul_mem_chosenNormalBasisPrincipalUnitSet
         (K := K) (L := L) n sigma ha)
+
+end
 
 /-- Inclusion of a chosen normal-basis principal-unit subgroup into all
 integer units. -/
@@ -249,11 +246,14 @@ theorem chosenNormalBasisIntegerUnitsQuotientMap_apply
       QuotientGroup.mk a :=
   rfl
 
+section
+
+variable (n : Nat) (V : Subgroup 𝒪[L]ˣ)
+  (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n) (sigma : Gal(L / K))
+include n V hV sigma
+
 /-- Inclusion of the principal-unit subgroup is Galois equivariant. -/
-theorem chosenNormalBasisPrincipalUnitSubgroupInclusion_equivariant
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (sigma : Gal(L / K)) (a : V) :
+theorem chosenNormalBasisPrincipalUnitSubgroupInclusion_equivariant (a : V) :
     letI := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction K L n V hV
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) V (sigma • a) =
@@ -261,15 +261,14 @@ theorem chosenNormalBasisPrincipalUnitSubgroupInclusion_equivariant
   rfl
 
 /-- The quotient map on integer units is Galois equivariant. -/
-theorem chosenNormalBasisIntegerUnitsQuotientMap_equivariant
-    (n : Nat) (V : Subgroup 𝒪[L]ˣ)
-    (hV : (V : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (sigma : Gal(L / K)) (a : 𝒪[L]ˣ) :
+theorem chosenNormalBasisIntegerUnitsQuotientMap_equivariant (a : 𝒪[L]ˣ) :
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     letI := chosenNormalBasisIntegerUnitsQuotMulDistribMulAction K L n V hV
     chosenNormalBasisIntegerUnitsQuotientMap (L := L) V (sigma • a) =
       sigma • chosenNormalBasisIntegerUnitsQuotientMap (L := L) V a := by
   rfl
+
+end
 
 /-- Inclusion of the principal-unit subgroup is injective. -/
 theorem chosenNormalBasisPrincipalUnitSubgroupInclusion_injective

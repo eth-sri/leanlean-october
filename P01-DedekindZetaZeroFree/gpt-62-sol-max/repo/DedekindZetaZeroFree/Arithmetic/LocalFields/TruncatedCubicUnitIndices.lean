@@ -22,8 +22,7 @@ private theorem shallow {O : Type*} [CommRing O] [IsDomain O]
       (((j + 2) / 3 : ℕ) : ℕ∞) ≤ IsDiscreteValuationRing.addVal O (x - 1) := by
   let v := IsDiscreteValuationRing.addVal O
   let r := (v (1 - z)).toNat
-  have hr : v (1 - z) = (r : ℕ∞) := by
-    exact (ENat.natCast_toNat (fun h => hz.ne_one (by decide)
+  have hr : v (1 - z) = (r : ℕ∞) := (ENat.natCast_toNat (fun h => hz.ne_one (by decide)
       (sub_eq_zero.mp (IsDiscreteValuationRing.addVal_eq_top_iff.mp h)).symm)).symm
   have hzv : v z = 0 := by
     obtain ⟨u, hu⟩ := hz.isUnit (by decide)
@@ -37,15 +36,10 @@ private theorem shallow {O : Type*} [CommRing O] [IsDomain O]
     exact (mul_eq_zero.mp h).resolve_left (sub_ne_zero.mpr (hz.ne_one (by decide)))
   have hg : v (1 - z ^ 2) = (r : ℕ∞) := by
     have h : 1 - z ^ 2 = -z ^ 2 * (1 - z) := by
-      calc
-        _ = -z ^ 2 * (1 - z) + (1 - z ^ 3) := by ring
-        _ = _ := by rw [hz.pow_eq_one]; ring
-    rw [h, v.map_mul, v.map_neg, v.map_pow, hzv, nsmul_zero, zero_add, hr]
+      grind only
+    simp_all
   have hf : x ^ 3 - 1 = (x - 1) * (x - z) * (x - z ^ 2) := by
-    calc
-      _ = (x - 1) * (x - z) * (x - z ^ 2) +
-        (x - 1) * x * (z ^ 2 + z + 1) - (x - 1) * (z ^ 3 - 1) := by ring
-      _ = _ := by rw [hp, hz.pow_eq_one]; ring
+    grind only
   change (j : ℕ∞) ≤ v (x ^ 3 - 1) ↔ _
   rw [hf, v.map_mul, v.map_mul]
   by_cases ht : v (x - 1) < (r : ℕ∞)
@@ -57,7 +51,7 @@ private theorem shallow {O : Type*} [CommRing O] [IsDomain O]
       exact v.map_add_eq_of_lt_left (by rwa [hg])
     rw [hb, hc]
     cases he : v (x - 1) with
-    | top => simp [he] at ht
+    | top => simp
     | coe a =>
       change (j : ℕ∞) ≤ (a : ℕ∞) + a + a ↔
         (((j + 2) / 3 : ℕ) : ℕ∞) ≤ a

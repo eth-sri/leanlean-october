@@ -256,7 +256,7 @@ private lemma pi_char (μ : Measure K) [μ.IsAddHaarMeasure]
   change (distribHaarChar K d : ℝ) * μ.real ((ValuativeRel.valuation K).integer : Set K) = μ.real ((ValuativeRel.valuation K).integer : Set K) / (q K : ℝ) at ht
   apply mul_right_cancel₀ (mass_pos K μ).ne'
   simpa [div_eq_mul_inv, mul_comm] using ht
-private lemma char_abs (μ : Measure K) [μ.IsAddHaarMeasure] (c : Kˣ) :
+lemma char_abs (μ : Measure K) [μ.IsAddHaarMeasure] (c : Kˣ) :
     (distribHaarChar K c : ℝ) = abs K (c : K) := by
   obtain ⟨π, hπ, ha⟩ := exists_pi K
   let d : Kˣ := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
@@ -297,6 +297,22 @@ theorem map_mul (μ : Measure K) [μ.IsAddHaarMeasure] (c : K) (hc : c ≠ 0) :
   rw [h]
   simp only [Measure.smul_apply, NNReal.smul_def, ENNReal.smul_def, smul_eq_mul,
     ENNReal.coe_inv (ne_of_gt distribHaarChar_pos), hchar]
+
+theorem closedBall_measure (μ : Measure K) [μ.IsAddHaarMeasure] (k : ℤ) :
+    μ {x : K | abs K x ≤
+        (Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer) : ℝ) ^ k} =
+      ENNReal.ofReal
+        ((Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer) : ℝ) ^ k) *
+          μ ((ValuativeRel.valuation K).integer : Set K) := by
+  obtain ⟨π, hπ, ha⟩ := exists_pi K
+  let d : Kˣ := Units.mk0 (π : K) (by exact_mod_cast hπ.ne_zero)
+  have hd : abs K (d : K) = (q K : ℝ) ^ (-1 : ℤ) := ha
+  have hdk : abs K (↑(d ^ (-k)) : K) = (q K : ℝ) ^ k := by
+    rw [azpow K, hd, ← zpow_mul]; simp
+  have h := mass_scale K μ (d ^ (-k))
+  have hchar : (distribHaarChar K (d ^ (-k)) : ℝ≥0∞) = ENNReal.ofReal ((q K : ℝ) ^ k) := by
+    rw [← hdk, ← char_abs K μ (d ^ (-k)), ENNReal.ofReal_coe_nnreal]
+  rwa [hdk, hchar] at h
 
 end DedekindZetaZeroFree.IntrinsicHaarScaling
 

@@ -16,30 +16,42 @@ private lemma absNorm_mul_cast (a b : Ideal (𝓞 F)) :
     (Ideal.absNorm (a * b) : ℝ) = (Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) := by
   rw [map_mul, Nat.cast_mul]
 
-private lemma lt_mul_of_div_lt {A B X : ℝ} (hA : 0 < A) (h : X / A < B) : X < A * B :=
+section
+
+variable {A B X : ℝ} (hA : 0 < A)
+include hA
+
+private lemma lt_mul_of_div_lt (h : X / A < B) : X < A * B :=
   (div_lt_iff₀' hA).mp h
 
-private lemma mul_le_two_mul_of_le_div {A B X : ℝ} (hA : 0 < A)
+private lemma mul_le_two_mul_of_le_div
     (h : B ≤ 2 * (X / A)) : A * B ≤ 2 * X := by
   have h' : B * A ≤ (2 * (X / A)) * A := mul_le_mul_of_nonneg_right h hA.le
   have h2 : (2 * (X / A)) * A = 2 * X := by
     rw [mul_assoc, div_mul_cancel₀ X hA.ne']
   linarith [mul_comm B A]
 
-private lemma div_lt_of_lt_mul {A B X : ℝ} (hA : 0 < A) (h : X < A * B) : X / A < B :=
+private lemma div_lt_of_lt_mul (h : X < A * B) : X / A < B :=
   (div_lt_iff₀' hA).mpr h
 
-private lemma le_div_of_mul_le {A B X : ℝ} (hA : 0 < A) (h : A * B ≤ 2 * X) :
+private lemma le_div_of_mul_le (h : A * B ≤ 2 * X) :
     B ≤ 2 * (X / A) := by
   rw [← mul_div_assoc]
   exact (le_div_iff₀ hA).mpr (by linarith [mul_comm A B])
+
+end
 
 theorem exceptionalShell_norm_pos (hq : q ≠ ⊥)
     {t : Ideal (𝓞 F)} (ht : t ∈ exceptionalDivisors F c q) :
     0 < (Ideal.absNorm t : ℝ) := by
   exact lt_of_lt_of_le zero_lt_one (exceptionalDivisors_properties hq ht).2.2.2.2
 
-theorem mem_shellMul (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+section
+
+variable (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+include hq hcq hX
+
+theorem mem_shellMul
     {t u : Ideal (𝓞 F)} (ht : t ∈ exceptionalDivisors F c q)
     (hu : u ∈ paperShell F q (X / (Ideal.absNorm t : ℝ))) :
     t * u ∈ paperShell F c X := by
@@ -53,7 +65,7 @@ theorem mem_shellMul (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
   · rw [absNorm_mul_cast]
     exact mul_le_two_mul_of_le_div hNt hle
 
-private theorem shellMul_mem_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+private theorem shellMul_mem_sigma
     {x : Σ _ : Ideal (𝓞 F), Ideal (𝓞 F)}
     (hx : x ∈ (exceptionalDivisors F c q).sigma
       (fun t => paperShell F q (X / (Ideal.absNorm t : ℝ)))) :
@@ -61,7 +73,7 @@ private theorem shellMul_mem_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (h
   obtain ⟨hx1, hx2⟩ := Finset.mem_sigma.mp hx
   exact mem_shellMul hq hcq X hX hx1 hx2
 
-private theorem shellMul_inj_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+private theorem shellMul_inj_sigma
     {x₁ x₂ : Σ _ : Ideal (𝓞 F), Ideal (𝓞 F)}
     (hx₁ : x₁ ∈ (exceptionalDivisors F c q).sigma
       (fun t => paperShell F q (X / (Ideal.absNorm t : ℝ))))
@@ -88,7 +100,7 @@ private theorem shellMul_inj_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (h
   subst h2
   rfl
 
-private theorem shellMul_surj_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
+private theorem shellMul_surj_sigma
     {b : Ideal (𝓞 F)} (hb : b ∈ paperShell F c X) :
     ∃ x ∈ (exceptionalDivisors F c q).sigma
       (fun t => paperShell F q (X / (Ideal.absNorm t : ℝ))), x.1 * x.2 = b := by
@@ -102,6 +114,8 @@ private theorem shellMul_surj_sigma (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (
   rw [mem_paperShell F q (X / (Ideal.absNorm w.1 : ℝ)) w.2]
   exact ⟨hw.2.1, hw.2.2.1,
     div_lt_of_lt_mul hNt (hnorm ▸ hlt), le_div_of_mul_le hNt (hnorm ▸ hle)⟩
+
+end
 
 theorem exceptional_shell_sum {Z : Type} [AddCommMonoid Z]
     (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)

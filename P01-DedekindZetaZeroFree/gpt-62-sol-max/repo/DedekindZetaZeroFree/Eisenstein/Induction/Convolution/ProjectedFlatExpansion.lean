@@ -76,8 +76,12 @@ private theorem sourceH_hN (r : (KPSpatialSmoothing.P0 F ζ hζ).H)
     (KPSpatialSmoothing.actualHCoordinate F ζ hζ c) = _
   rw [hh]
 
+section
+
+variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+include hK
+
 private theorem reweight_covariant
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (v : Functions F ζ hζ)
     (hv : ∀ c : KPSpatialSmoothing.actualC F ζ hζ, ∀ g,
       v (c.val * g) = sourceChi F ζ hζ c * v g)
@@ -100,7 +104,6 @@ private theorem reweight_covariant
   ring
 
 private theorem reweight_continuous
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (s : ℂ) (v : Functions F ζ hζ) (hv : Continuous v) :
     Continuous (reweight F ζ hζ K hK s v) := by
   have ha : Continuous (alpha F ζ hζ K hK) :=
@@ -109,7 +112,6 @@ private theorem reweight_continuous
   exact ((continuous_const.mul ha).cexp).mul hv
 
 private theorem reweight_kfinite
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (s : ℂ) (v : Functions F ζ hζ) (hv : KFinite F ζ hζ K v) :
     KFinite F ζ hζ K (reweight F ζ hζ K hK s v) := by
   obtain ⟨S, hS, hvS, hSinv⟩ := hv
@@ -125,7 +127,6 @@ private theorem reweight_kfinite
   rw [alpha_right_compact]
 
 private theorem normalized_source_span_properties
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))
     (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
@@ -168,7 +169,6 @@ private theorem normalized_source_span_properties
     · intro g j hj; simp only [Pi.smul_apply, hvJ g j hj]
 
 private theorem reweight_uniform_level
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (v : Functions F ζ hζ)
     (hv : ∀ g u, u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ J →
@@ -196,7 +196,6 @@ private theorem reweight_uniform_level
   rw [hU g ⟨j.val, hU'⟩]
 
 private theorem reweight_mem_flat
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (v : Functions F ζ hζ) (hv : Continuous v)
     (hc : ∀ c : KPSpatialSmoothing.actualC F ζ hζ, ∀ g,
       v (c.val * g) = sourceChi F ζ hζ c * v g)
@@ -255,7 +254,6 @@ private theorem reweight_mem_flat
       zero_mul, Complex.exp_zero, one_mul, KPGlobalExceptionalParameter.realLogPower]
 
  theorem projected_family_finite_flat_expansion
-    (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))
     (hh : h ∈ TauCeti.representativeSubmodule ℂ K) :
@@ -282,6 +280,8 @@ private theorem reweight_mem_flat
 
   simpa only [map_sum, map_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, b,
     LinearMap.sum_apply, hn] using hEq
+
+end
 
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ActualProjectedFlatExpansion
 

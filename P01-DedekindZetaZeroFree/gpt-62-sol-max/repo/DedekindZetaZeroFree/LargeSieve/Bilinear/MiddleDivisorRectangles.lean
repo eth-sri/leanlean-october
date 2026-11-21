@@ -27,7 +27,7 @@ private lemma phase_norm (C : Context Q) (t : ℝ) (u : Ideal (𝓞 F)) : ‖pha
 private lemma phase_split (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (t s : ℝ) :
     frequencyPhase C p t s = phase C t p.1 * star (phase C (-s) p.2) := by
   simp only [frequencyPhase, phase, Complex.star_def, ← Complex.exp_conj,
-    map_mul, Complex.conj_ofReal, Complex.conj_I, neg_mul, mul_neg, neg_neg]
+    map_mul, Complex.conj_ofReal, Complex.conj_I, neg_mul, mul_neg]
   rw [← Complex.exp_add]
   congr 1
   push_cast

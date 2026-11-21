@@ -82,36 +82,8 @@ theorem finitePlaceTensorUnitsEquivAboveAdic_localIdeleInclusion
         (x : w.adicCompletion K)
   rw [finitePlaceLocalTensorDecompositionComponent_tmul]
   simp only [map_one, mul_one]
-  exact
-    finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap
-      K L w a (x : w.adicCompletion K)
+  exact finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap ..
 
-omit [FiniteDimensional K L] [IsGalois K L] in
-/-- Local orders under the canonical completion map are multiplied by
-the ramification index. -/
-theorem localOrder_finitePlaceAdicCompletionMap
-    (w : HeightOneSpectrum (𝓞 K))
-    (W : {W : HeightOneSpectrum (𝓞 L) //
-      finitePlaceBelow (K := K) W = w})
-    (x : (w.adicCompletion K)ˣ) :
-    (FiniteIdeleGroup.localOrder W.1
-      (Units.map
-        (finitePlaceAdicCompletionMap K L w W).toMonoidHom
-        x)).toAdd =
-      (w.asIdeal.ramificationIdx' W.1.asIdeal : ℤ) *
-        (FiniteIdeleGroup.localOrder w x).toAdd := by
-  rw [FiniteIdeleGroup.localOrder_apply,
-    FiniteIdeleGroup.localOrder_apply]
-  simp only [Units.coe_map]
-  change
-    -WithZero.log
-        (Valued.v
-          (finitePlaceAdicCompletionMap K L w W
-            (x : w.adicCompletion K))) =
-      (w.asIdeal.ramificationIdx' W.1.asIdeal : ℤ) *
-        -WithZero.log (Valued.v (x : w.adicCompletion K))
-  rw [finitePlaceAdicCompletionMap_valued, WithZero.log_pow]
-  simp
 
 namespace FractionalIdealGroup
 
@@ -139,149 +111,9 @@ theorem extension_prime_val
     FractionalIdeal.extendedHom_coeIdeal_eq_map
       L (𝓞 L) w.asIdeal
 
-omit [FiniteDimensional K L] [IsGalois K L] in
-/-- At a place above `w`, the exponent of the extended prime is the
-ramification index. -/
-theorem count_extension_prime
-    (w : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 L))
-    (hW : _root_.finitePlaceBelow (K := K) W = w) :
-    FractionalIdeal.count L W
-      ((extension K L (prime w) : FractionalIdealGroup L) :
-        FractionalIdeal (nonZeroDivisors (𝓞 L)) L) =
-      (w.asIdeal.ramificationIdx' W.asIdeal : ℤ) := by
-  let : W.asIdeal.LiesOver w.asIdeal := by
-    constructor
-    exact congrArg HeightOneSpectrum.asIdeal hW.symm
-  have hmap :
-      w.asIdeal.map (algebraMap (𝓞 K) (𝓞 L)) ≠ ⊥ :=
-    Ideal.map_ne_bot_of_ne_bot w.ne_bot
-  rw [extension_prime_val,
-    FractionalIdeal.count_coe L W hmap,
-    Ideal.count_associates_factors_eq
-      hmap W.isPrime W.ne_bot]
-  norm_cast
-  rw [←
-    Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count
-      w.asIdeal W.asIdeal hmap]
-  exact
-    (Ideal.ramificationIdx'_eq_ramificationIdx
-      w.asIdeal W.asIdeal w.ne_bot).symm
 
-omit [FiniteDimensional K L] [IsGalois K L] in
-/-- A prime below a different place has zero exponent after extension. -/
-theorem count_extension_prime_ne
-    (w : HeightOneSpectrum (𝓞 K))
-    (W : HeightOneSpectrum (𝓞 L))
-    (hW : _root_.finitePlaceBelow (K := K) W ≠ w) :
-    FractionalIdeal.count L W
-      ((extension K L (prime w) : FractionalIdealGroup L) :
-        FractionalIdeal (nonZeroDivisors (𝓞 L)) L) = 0 := by
-  have hmap :
-      w.asIdeal.map (algebraMap (𝓞 K) (𝓞 L)) ≠ ⊥ :=
-    Ideal.map_ne_bot_of_ne_bot w.ne_bot
-  rw [extension_prime_val,
-    FractionalIdeal.count_coe L W hmap,
-    Ideal.count_associates_factors_eq
-      hmap W.isPrime W.ne_bot]
-  norm_cast
-  rw [Multiset.count_eq_zero]
-  intro hmem
-  have hprimes :
-      W.asIdeal ∈ w.asIdeal.primesOver (𝓞 L) :=
-    (Ideal.mem_primesOver_iff_mem_normalizedFactors
-      (𝓞 L) w.ne_bot).2 hmem
-  apply hW
-  apply HeightOneSpectrum.ext
-  rw [_root_.finitePlaceBelow_asIdeal]
-  exact hprimes.2.over.symm
 
-omit [FiniteDimensional K L] [IsGalois K L] in
-/-- The exponent formula for extension of a fractional ideal presented
-by its prime factorization. -/
-theorem count_extension_factorization
-    (exps : Multiplicative
-      (HeightOneSpectrum (𝓞 K) →₀ ℤ))
-    (W : HeightOneSpectrum (𝓞 L)) :
-    FractionalIdeal.count L W
-      ((extension K L
-          (factorization exps) : FractionalIdealGroup L) :
-        FractionalIdeal (nonZeroDivisors (𝓞 L)) L) =
-      ((_root_.finitePlaceBelow
-          (K := K) W).asIdeal.ramificationIdx' W.asIdeal : ℤ) *
-        exps.toAdd
-          (_root_.finitePlaceBelow (K := K) W) := by
-  classical
-  change FractionalIdeal.count L W
-      (((extension K L)
-        (exps.toAdd.prod fun v n =>
-          primePowerHom v (Multiplicative.ofAdd n)) :
-          FractionalIdealGroup L) :
-        FractionalIdeal (nonZeroDivisors (𝓞 L)) L) = _
-  rw [Finsupp.prod, map_prod]
-  simp only [primePowerHom, MonoidHom.mk'_apply,
-    toAdd_ofAdd, map_zpow]
-  have hcoe :
-      (((∏ v ∈ exps.toAdd.support,
-          extension K L (prime v) ^ exps.toAdd v) :
-            FractionalIdealGroup L) :
-          FractionalIdeal (nonZeroDivisors (𝓞 L)) L) =
-        ∏ v ∈ exps.toAdd.support,
-          (((extension K L (prime v) :
-            FractionalIdealGroup L) :
-              FractionalIdeal (nonZeroDivisors (𝓞 L)) L) ^
-            exps.toAdd v) := by
-    simp
-  rw [hcoe, FractionalIdeal.count_prod]
-  · simp only [FractionalIdeal.count_zpow]
-    by_cases hbelow :
-        _root_.finitePlaceBelow
-          (K := K) W ∈ exps.toAdd.support
-    · rw [Finset.sum_eq_single
-          (_root_.finitePlaceBelow (K := K) W)]
-      · rw [count_extension_prime K L
-          (_root_.finitePlaceBelow (K := K) W) W rfl]
-        ring
-      · intro v hv hne
-        rw [count_extension_prime_ne K L v W]
-        · simp
-        · exact Ne.symm hne
-      · exact fun h => (h hbelow).elim
-    · have hzero :
-          exps.toAdd
-            (_root_.finitePlaceBelow (K := K) W) = 0 :=
-        Finsupp.notMem_support_iff.mp hbelow
-      rw [hzero, mul_zero]
-      apply Finset.sum_eq_zero
-      intro v hv
-      rw [count_extension_prime_ne K L v W]
-      · simp
-      · intro h
-        apply hbelow
-        simpa [h] using hv
-  · intro v hv
-    exact zpow_ne_zero _ (Units.ne_zero
-      (extension K L (prime v)))
 
-omit [FiniteDimensional K L] [IsGalois K L] in
-/-- Extension multiplies the exponent at `W` by the ramification index
-over the place below `W`. -/
-theorem count_extension
-    (I : FractionalIdealGroup K)
-    (W : HeightOneSpectrum (𝓞 L)) :
-    FractionalIdeal.count L W
-      ((extension K L I : FractionalIdealGroup L) :
-        FractionalIdeal (nonZeroDivisors (𝓞 L)) L) =
-      ((_root_.finitePlaceBelow
-          (K := K) W).asIdeal.ramificationIdx' W.asIdeal : ℤ) *
-        FractionalIdeal.count K
-          (_root_.finitePlaceBelow (K := K) W)
-          (I : FractionalIdeal
-            (nonZeroDivisors (𝓞 K)) K) := by
-  obtain ⟨exps, rfl⟩ :=
-    factorization_surjective (K := K) I
-  rw [count_extension_factorization,
-    count_factorization]
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- Extension of a prime fractional ideal commutes with passage to the
@@ -339,37 +171,7 @@ variable
     [Algebra A B] [Module.IsTorsionFree A B]
     [IsDedekindDomain A] [IsDedekindDomain B]
 
-/-- If extension of ideal classes is trivial, then the extension of
-each integral ideal is principal. -/
-theorem ideal_map_isPrincipal_of_extendedHom_eq_one
-    (h : extendedHom A B = 1)
-    (I : Ideal A) :
-    (I.map (algebraMap A B)).IsPrincipal := by
-  by_cases hI : I = ⊥
-  · subst I
-    refine ⟨0, ?_⟩
-    simp
-  · let I₀ : (Ideal A)⁰ :=
-      ⟨I, mem_nonZeroDivisors_iff_ne_zero.mpr hI⟩
-    have hclass :=
-      DFunLike.congr_fun h (mk0 I₀)
-    rw [extendedHom_mk0] at hclass
-    simp only [MonoidHom.one_apply] at hclass
-    have hprincipal :=
-      (mk0_eq_one_iff
-        (extendedIdeal A B I₀).2).mp hclass
-    simpa [extendedIdeal, I₀] using hprincipal
 
-/-- Triviality of the class-group extension map is exactly the
-principalization of every integral ideal. -/
-theorem extendedHom_eq_one_iff_forall_ideal_map_isPrincipal :
-    extendedHom A B = 1 ↔
-      ∀ I : Ideal A,
-        (I.map (algebraMap A B)).IsPrincipal := by
-  constructor
-  · intro h I
-    exact ideal_map_isPrincipal_of_extendedHom_eq_one A B h I
-  · exact extendedHom_eq_one_of_forall_isPrincipal A B
 
 end ExtensionPrincipality
 
@@ -484,90 +286,9 @@ theorem extension_finiteComponent
   rw [RelativeIdeleGroup.finiteComponent_inclusion,
     _root_.finitePlaceTensorUnitsEquivAboveAdic_localIdeleInclusion]
 
-omit [IsGalois K L] in
-/-- The local order of an extended idele is multiplied by the
-ramification index at the chosen place above. -/
-theorem extension_localOrder
-    (a : IdeleGroup K)
-    (W : HeightOneSpectrum (𝓞 L)) :
-    (FiniteIdeleGroup.localOrder W
-      (finiteComponent W (extension K L a))).toAdd =
-      ((_root_.finitePlaceBelow
-          (K := K) W).asIdeal.ramificationIdx' W.asIdeal : ℤ) *
-        (FiniteIdeleGroup.localOrder
-          (_root_.finitePlaceBelow (K := K) W)
-          (finiteComponent
-            (_root_.finitePlaceBelow (K := K) W) a)).toAdd := by
-  rw [extension_finiteComponent]
-  exact
-    _root_.localOrder_finitePlaceAdicCompletionMap K L
-      (_root_.finitePlaceBelow (K := K) W) ⟨W, rfl⟩
-      (finiteComponent
-        (_root_.finitePlaceBelow (K := K) W) a)
 
-omit [IsGalois K L] in
-/-- The fractional ideal attached to an extended idele is the extension
-of the fractional ideal attached to the original idele. -/
-theorem fractionalIdeal_extension
-    (a : IdeleGroup K) :
-    fractionalIdeal (extension K L a) =
-      FractionalIdealGroup.extension K L
-        (fractionalIdeal a) := by
-  apply FractionalIdealGroup.ext_count
-  intro W
-  rw [FractionalIdealGroup.count_extension]
-  change
-    FractionalIdeal.count L W
-        (((FractionalIdealGroup.factorization (K := L))
-          (FiniteIdeleGroup.valuationVector
-            (extension K L a).2) : FractionalIdealGroup L) :
-          FractionalIdeal
-            (nonZeroDivisors (𝓞 L)) L) =
-      ((_root_.finitePlaceBelow
-          (K := K) W).asIdeal.ramificationIdx' W.asIdeal : ℤ) *
-        FractionalIdeal.count K
-          (_root_.finitePlaceBelow (K := K) W)
-          (((FractionalIdealGroup.factorization (K := K))
-            (FiniteIdeleGroup.valuationVector a.2) :
-              FractionalIdealGroup K) :
-            FractionalIdeal
-              (nonZeroDivisors (𝓞 K)) K)
-  rw [FractionalIdealGroup.count_factorization,
-    FractionalIdealGroup.count_factorization]
-  exact extension_localOrder K L a W
 
-omit [IsGalois K L] in
-/-- The ideal class attached to an extended idele is the extension of
-the ideal class attached to the original idele. -/
-theorem idealClass_extension
-    (a : IdeleGroup K) :
-    idealClass (extension K L a) =
-      ClassGroup.extendedHom (𝓞 K) (𝓞 L)
-        (idealClass a) := by
-  change
-    ClassGroup.mk L
-        (fractionalIdeal (extension K L a)) =
-      ClassGroup.extendedHom (𝓞 K) (𝓞 L)
-        (ClassGroup.mk K (fractionalIdeal a))
-  rw [fractionalIdeal_extension,
-    FractionalIdealGroup.classGroup_mk_extension]
 
-omit [IsGalois K L] in
-/-- Extension sends the subgroup defining the ordinary ideal class
-quotient into the corresponding subgroup over the extension field. -/
-theorem extension_mem_ordinaryIdealClassSubgroup
-    {a : IdeleGroup K}
-    (ha : a ∈
-      integralAtFinitePlaces (K := K) ⊔
-        principalSubgroup K) :
-    extension K L a ∈
-      integralAtFinitePlaces (K := L) ⊔
-        principalSubgroup L := by
-  change a ∈ ordinaryIdealClassSubgroup at ha
-  change extension K L a ∈ ordinaryIdealClassSubgroup
-  rw [ordinaryIdealClassSubgroup_eq_ker,
-    MonoidHom.mem_ker] at ha ⊢
-  rw [idealClass_extension, ha, map_one]
 
 omit [IsGalois K L] in
 /-- Extension of a principal idele is the corresponding principal idele
@@ -703,122 +424,6 @@ theorem extension_self :
         rfl
         (_root_.finitePlaceBelow_self (K := K) W)
 
-/-- Extension of ideles is functorial in a tower of finite Galois
-extensions. -/
-theorem extension_comp
-    (M : Type w)
-    [Field M] [NumberField M]
-    [Algebra K M] [Algebra M L]
-    [IsScalarTower K M L]
-    [FiniteDimensional K M] [FiniteDimensional M L]
-    [IsGalois K M] [IsGalois M L] :
-    (extension M L).comp (extension K M) =
-      extension K L := by
-  apply MonoidHom.ext
-  intro a
-  apply Prod.ext
-  · apply ContinuousMulEquiv.piUnits.injective
-    funext W
-    change
-      infiniteComponent W
-          (extension M L (extension K M a)) =
-        infiniteComponent W (extension K L a)
-    rw [extension_infiniteComponent,
-      extension_infiniteComponent]
-    dsimp only
-    rw [extension_infiniteComponent]
-    dsimp only
-    let V := _root_.infinitePlaceBelow (K := M) W
-    let v := _root_.infinitePlaceBelow (K := K) W
-    have hmap
-        (v' : InfinitePlace K)
-        (hv' : v' = v)
-        [hVv : V.1.LiesOver v'.1]
-        [hWV : W.1.LiesOver V.1]
-        [hWv : W.1.LiesOver v.1] :
-        Units.map
-            (NumberField.LiesOver.completionMap
-              (v := V) (w := W)).toMonoidHom
-            (Units.map
-              (NumberField.LiesOver.completionMap
-                (v := v') (w := V)).toMonoidHom
-              (infiniteComponent v' a)) =
-          Units.map
-            (NumberField.LiesOver.completionMap
-              (v := v) (w := W)).toMonoidHom
-            (infiniteComponent v a) := by
-      subst v'
-      apply Units.ext
-      change
-        NumberField.LiesOver.completionMap
-            (v := V) (w := W)
-            (NumberField.LiesOver.completionMap
-              (v := v) (w := V)
-              (infiniteComponent v a : v.Completion)) =
-          NumberField.LiesOver.completionMap
-            (v := v) (w := W)
-            (infiniteComponent v a : v.Completion)
-      exact
-        _root_.infinitePlaceCompletionMap_comp_apply
-          (K := K) (L := L) (M := M) W
-          (infiniteComponent v a : v.Completion)
-    exact
-      hmap
-        (_root_.infinitePlaceBelow (K := K) V)
-        (_root_.infinitePlaceBelow_infinitePlaceBelow
-          (K := K) (M := M) (L := L) W)
-        (hVv := ⟨rfl⟩)
-        (hWV := ⟨rfl⟩)
-        (hWv := ⟨rfl⟩)
-  · apply RestrictedProduct.ext
-    intro W
-    change
-      finiteComponent W
-          (extension M L (extension K M a)) =
-        finiteComponent W (extension K L a)
-    rw [extension_finiteComponent,
-      extension_finiteComponent]
-    dsimp only
-    rw [extension_finiteComponent]
-    dsimp only
-    let V := _root_.finitePlaceBelow (K := M) W
-    let v := _root_.finitePlaceBelow (K := K) W
-    have hmap
-        (v' : HeightOneSpectrum (𝓞 K))
-        (hv' : v' = v)
-        (hV : _root_.finitePlaceBelow (K := K) V = v')
-        (hWV : _root_.finitePlaceBelow (K := M) W = V)
-        (hWv : _root_.finitePlaceBelow (K := K) W = v) :
-        Units.map
-            (finitePlaceAdicCompletionMap M L V
-              ⟨W, hWV⟩).toMonoidHom
-            (Units.map
-              (finitePlaceAdicCompletionMap K M v'
-                ⟨V, hV⟩).toMonoidHom
-              (finiteComponent v' a)) =
-          Units.map
-            (finitePlaceAdicCompletionMap K L v
-              ⟨W, hWv⟩).toMonoidHom
-            (finiteComponent v a) := by
-      subst v'
-      apply Units.ext
-      change
-        finitePlaceAdicCompletionMap M L V ⟨W, hWV⟩
-            (finitePlaceAdicCompletionMap K M v ⟨V, hV⟩
-              (finiteComponent v a : v.adicCompletion K)) =
-          finitePlaceAdicCompletionMap K L v ⟨W, hWv⟩
-            (finiteComponent v a : v.adicCompletion K)
-      exact
-        finitePlaceAdicCompletionMap_comp
-          K L (M := M) v V W
-          hV hWV hWv
-          (finiteComponent v a : v.adicCompletion K)
-    exact
-      hmap
-        (_root_.finitePlaceBelow (K := K) V)
-        (_root_.finitePlaceBelow_finitePlaceBelow
-          (K := K) (M := M) (L := L) W)
-        rfl rfl rfl
 
 end IdeleGroup
 
@@ -866,41 +471,5 @@ theorem ideleClassExtension_self :
     IdeleGroup.extension_self]
   rfl
 
-/-- Extension of idele classes is functorial in a tower of finite
-Galois extensions. -/
-theorem ideleClassExtension_comp
-    (M : Type w)
-    [Field M] [NumberField M]
-    [Algebra K M] [Algebra M L]
-    [IsScalarTower K M L]
-    [FiniteDimensional K M] [FiniteDimensional M L]
-    [IsGalois K M] [IsGalois M L] :
-    (ideleClassExtension M L).comp
-        (ideleClassExtension K M) =
-      ideleClassExtension K L := by
-  apply MonoidHom.ext
-  intro c
-  refine QuotientGroup.induction_on c ?_
-  intro a
-  change
-    ideleClassExtension M L
-        (ideleClassExtension K M
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K) a)) =
-      ideleClassExtension K L
-        (QuotientGroup.mk'
-          (IdeleGroup.principalSubgroup K) a)
-  rw [ideleClassExtension_mk,
-    ideleClassExtension_mk,
-    ideleClassExtension_mk]
-  change
-    QuotientGroup.mk'
-        (IdeleGroup.principalSubgroup L)
-        (((IdeleGroup.extension M L).comp
-          (IdeleGroup.extension K M)) a) =
-      QuotientGroup.mk'
-        (IdeleGroup.principalSubgroup L)
-        (IdeleGroup.extension K L a)
-  rw [IdeleGroup.extension_comp]
 
 end

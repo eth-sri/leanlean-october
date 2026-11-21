@@ -29,7 +29,7 @@ theorem balancedRow_finiteFiber_mass_le
     simpa [mapped, Multiset.count_map, eq_comm] using hfiber i hi
   calc
     (rows.map (fun x => mass (index x))).sum = (mapped.map mass).sum := by
-      simp [mapped, Multiset.map_map, Function.comp_def]
+      simp [mapped, Multiset.map_map]
     _ = ∑ i ∈ mapped.toFinset, mapped.count i • mass i :=
       Finset.sum_multiset_map_count mapped mass
     _ ≤ ∑ i ∈ mapped.toFinset, (k₀ : ℝ) * mass i := by

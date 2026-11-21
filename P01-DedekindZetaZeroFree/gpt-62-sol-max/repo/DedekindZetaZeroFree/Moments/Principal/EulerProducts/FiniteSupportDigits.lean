@@ -64,7 +64,7 @@ private theorem finite_pi (I : Type u) [Fintype I] : PiSpec I := by
     · apply E.summable_iff.mp
       simpa only [Function.comp_def, he] using (h none).mul_norm hs
     · apply E.hasSum_iff.mp
-      simp only [Function.comp_def, he, Fintype.prod_option]
+      simp only [Function.comp_def, Fintype.prod_option]
       have hh : Summable (fun x : Digit × (I → Digit) =>
           a none x.1 * ∏ i, a (some i) (x.2 i)) :=
         summable_mul_of_summable_norm (f := a none)

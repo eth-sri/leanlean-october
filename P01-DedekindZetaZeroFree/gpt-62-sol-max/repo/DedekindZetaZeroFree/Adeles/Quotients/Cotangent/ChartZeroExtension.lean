@@ -52,7 +52,7 @@ private theorem q_coordinates_ext (y : a.domain) :
     ∃ k, x.val ∈ ((directEnumeration b a).branch k).domain := by
   have hm : x.val ∈ ⋃ k, ((directEnumeration b a).branch k).domain := by
     rw [(directEnumeration b a).covers]
-    exact ⟨x.property, h⟩
+    grind
   exact Set.mem_iUnion.mp hm
 
 def extendedFields (f : a.domain → E F) : ChartFields F ζ hζ U R P H :=
@@ -173,10 +173,8 @@ private theorem extendedFields_at_branch (f : a.domain → E F)
   rw [localAmbient, dite_eq_left ht] at hc
   exact hc
 
- theorem continuous_labeledA_placeEquiv : Continuous (labeledA (placeEquiv F ζ hζ)) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+ theorem continuous_labeledA_placeEquiv : Continuous (labeledA (placeEquiv F ζ hζ)) :=
+  labeledA_continuous (placeEquiv F ζ hζ)
 
  def identityBranch (a : ShrunkChart F ζ hζ U R P H) : ActualBranch a a where
   component_eq := rfl
@@ -239,22 +237,8 @@ theorem extendedFields_zero_off (f : a.domain → E F)
   simp only [extendedFields]
   exact dite_eq_right hx
 
- lemma measurable_q (a : ShrunkChart F ζ hζ U R P H) : Measurable (q a) := by
-  have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-        (H.atlas U).components ∘ Sigma.mk a.component := by
-      funext x; exact ((H.atlas U).components_formula a.component x).symm
-    rw [he]
-    exact ((H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk).continuous
-  have hproj : Measurable (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    measurable_quotient_mk''
-  have hcomp : q a = KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      ∘ KPCuspSiegel.projection F (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
-      ∘ labeledA (placeEquiv F ζ hζ) := rfl
-  rw [hcomp]
-  exact hcm.measurable.comp (hproj.comp continuous_labeledA_placeEquiv.measurable)
+ lemma measurable_q (a : ShrunkChart F ζ hζ U R P H) : Measurable (q a) :=
+  (KPContCotangentOverlapRationalBranches.continuous_chartProjection a).measurable
 
 private lemma T_apply_twisted {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
@@ -686,63 +670,9 @@ def ext : Q a →ₗᵢ[ℂ] IntrinsicHilbert cover where
   __ := extensionLinear cover a
   norm_map' := extensionLinear_norm cover a
 
-theorem ext_represented (f : Q a) :
-    intrinsicClass cover (ext cover a f) = toAeQuotient (extensionRepresentative a f) :=
-  rfl
 
-theorem res_ext (f : Q a) : res cover a (ext cover a f) = f := by
-  rw [res_eq_familyQ cover a (ext cover a f) (extensionRepresentative a f)
-    (ext_represented cover a f).symm]
-  apply Subtype.ext
-  apply Lp.ext
-  have hsrc : localCoefficient a (extensionRepresentative a f).val =
-      localRepresentative a f := by
-    funext y
-    exact extendedFields_source a (localRepresentative a f)
-      (localRepresentative_measurable a f) (localRepresentative_equivariant a f) y
-  filter_upwards [MemLp.coeFn_toLp (localCoefficient_memLp a (extensionRepresentative a f)),
-    (KPMeasurableLocalL2.representative_spec (localData a) (fullPiece a) f).2.1,
-    Filter.Eventually.of_forall (fun y => congrFun hsrc y)] with y h1 h2 h3
-  change (familyLp a (extensionRepresentative a f)) y =
-    (f : Lp (E F) 2 a.liftedMeasure) y
-  simp only [familyLp]
-  rw [h1, h3]
-  exact h2
 
-theorem ext_inner_eq_integral (f : Q a) (v : IntrinsicHilbert cover)
-    (r s : SquareFiniteFamily (U := U) (H := H))
-    (hr : toAeQuotient r = intrinsicClass cover (ext cover a f))
-    (hs : toAeQuotient s = intrinsicClass cover v) :
-    inner ℂ (ext cover a f) v = ∫ x in a.baseDomain, pair r.val s.val x
-      ∂(KPContActualCotangentMeasurableFamilies.baseMeasure (R := R) (P := P) (U := U)) := by
-  rw [inner_eq_integral cover (ext cover a f) v r s hr hs]
-  symm
-  apply setIntegral_eq_integral_of_ae_compl_eq_zero
-  have hae : AeEquivalent r.val (extensionRepresentative a f).val :=
-    (toAeQuotient_eq_iff r (extensionRepresentative a f)).mp
-      (hr.trans (ext_represented cover a f))
-  filter_upwards [hae] with z hz hnot
-  obtain ⟨b, x, hx⟩ := base_lift_exists z
-  have hn : ‖coefficient r.val b x -
-      coefficient (extensionRepresentative a f).val b x‖₊ ^ 2 = 0 := by
-    rw [← hx, normSquare_chart] at hz
-    exact hz
-  have hcoef : coefficient r.val b x = coefficient (extensionRepresentative a f).val b x := by
-    have hnorm : ‖coefficient r.val b x - coefficient (extensionRepresentative a f).val b x‖₊ = 0 :=
-      (sq_eq_zero_iff).mp hn
-    exact sub_eq_zero.mp (nnnorm_eq_zero.mp hnorm)
-  rw [← hx, pair_chart, hcoef]
-  change inner ℂ (extendedFields a (localRepresentative a f) b x) (coefficient s.val b x) = 0
-  rw [extendedFields_zero_off a _ b x (by rwa [hx]), inner_zero_left]
 
-theorem ext_inner (f : Q a) (v : IntrinsicHilbert cover) :
-    inner ℂ (ext cover a f) v = inner ℂ f (res cover a v) := by
-  obtain ⟨s, hs⟩ := toAeQuotient_surjective (U := U) (H := H) v
-  have hr : toAeQuotient (extensionRepresentative a f) =
-      intrinsicClass cover (ext cover a f) := (ext_represented cover a f).symm
-  rw [ext_inner_eq_integral cover a f v (extensionRepresentative a f) s hr hs]
-  rw [← res_inner_eq_integral cover a (ext cover a f) v (extensionRepresentative a f) s hr hs,
-    res_ext]
 
 def indicatorFamily (r : Family (U := U) (H := H)) : Family (U := U) (H := H) :=
   ⟨fun b x => if KPContCotangentOverlapRationalBranches.q b x.val ∈ a.baseDomain
@@ -892,319 +822,16 @@ def cutoff : IntrinsicHilbert cover →ₗ[ℂ] IntrinsicHilbert cover where
     apply Subtype.ext
     exact indicatorFamily_smul a c r.val
 
-theorem cutoff_represented (v : IntrinsicHilbert cover)
-    (r : SquareFiniteFamily (U := U) (H := H))
-    (hr : toAeQuotient r = intrinsicClass cover v) :
-    intrinsicClass cover (cutoff cover a v) = toAeQuotient (indicatorSquareFamily a r) := by
-  have hv : v = toAeQuotient r := hr.symm
-  rw [hv]
-  rfl
 
-private theorem supported_ae_from_local (r s : Family (U := U) (H := H))
-    (hr : ∀ b (x : omega b), q b x.val ∉ a.baseDomain → coefficient r b x = 0)
-    (hs : ∀ b (x : omega b), q b x.val ∉ a.baseDomain → coefficient s b x = 0)
-    (hae : localCoefficient a r =ᵐ[a.liftedMeasure] localCoefficient a s) :
-    AeEquivalent r s := by
-  have hP := every_shrunkChart_properties F ζ hζ U R P H a
-  have hoff : ∀ z, z ∉ a.baseDomain → normSquare (r-s) z = 0 := by
-    intro z hz
-    obtain ⟨b, x, hx⟩ := base_lift_exists z
-    rw [← hx, normSquare_chart]
-    change ‖coefficient r b x - coefficient s b x‖₊ ^ 2 = 0
-    rw [hr b x (by rwa [hx]), hs b x (by rwa [hx])]
-    simp
-  have hi : (∫⁻ z, (normSquare (r-s) z : ℝ≥0∞)
-      ∂(baseMeasure (R := R) (P := P) (U := U))) = 0 := by
-    rw [← setLIntegral_eq_of_support_subset (s := a.baseDomain) (by
-      intro z hz
-      by_contra hn
-      exact hz (by simp [hoff z hn]))]
-    rw [← hP.exact_pushforward, lintegral_map'
-      (measurable_normSquare (r-s)).coe_nnreal_ennreal.aemeasurable hP.measurable.aemeasurable]
-    apply lintegral_eq_zero_of_ae_eq_zero
-    filter_upwards [hae] with y hy
-    rw [← q_coordinates_ext a y, normSquare_chart]
-    change (↑(‖localCoefficient a r y - localCoefficient a s y‖₊ ^ 2) : ℝ≥0∞) = 0
-    simp [hy]
-  have hz := (lintegral_eq_zero_iff (measurable_normSquare (r-s)).coe_nnreal_ennreal).mp hi
-  filter_upwards [hz] with z hz
-  change (normSquare (r-s) z : ℝ≥0∞) = 0 at hz
-  exact ENNReal.coe_eq_zero.mp hz
 
-theorem ext_res (v : IntrinsicHilbert cover) :
-    ext cover a (res cover a v) = cutoff cover a v := by
-  obtain ⟨s, hs⟩ := toAeQuotient_surjective (U := U) (H := H) v
-  change toAeQuotient s = intrinsicClass cover v at hs
-  apply (intrinsicClass cover).injective
-  rw [ext_represented, cutoff_represented cover a v s hs, toAeQuotient_eq_iff]
-  apply supported_ae_from_local a
-  · intro b x hx
-    exact extendedFields_zero_off a _ b x hx
-  · intro b x hx
-    change coefficient (indicatorFamily a s.val) b x = 0
-    rw [coefficient_indicatorFamily, ite_eq_right hx]
-  · have hres := res_eq_familyQ cover a v s hs
-    have hrep := (KPMeasurableLocalL2.representative_spec (localData a) (fullPiece a) (res cover a v)).2.1
-    have hcoef := MemLp.coeFn_toLp (localCoefficient_memLp a s)
-    filter_upwards [hrep, hcoef] with y hy hz
-    change localRepresentative a (res cover a v) y = (res cover a v : Lp (E F) 2 a.liftedMeasure) y at hy
-    have hval : (res cover a v : Lp (E F) 2 a.liftedMeasure) = familyLp a s := congrArg Subtype.val hres
-    rw [hval] at hy
-    have hl := hy.trans hz
-    change extendedFields a (localRepresentative a (res cover a v)) a (coordinates a y) =
-      coefficient (indicatorFamily a s.val) a (coordinates a y)
-    rw [extendedFields_source a _ (localRepresentative_measurable a _) (localRepresentative_equivariant a _),
-      coefficient_indicatorFamily, ite_eq_left (by rw [q_coordinates_ext]; exact Set.mem_range_self y)]
-    exact hl
 
-theorem ext_any_representative (f : Q a) (g : a.domain → E F)
-    (hg : Measurable g) (he : PointwiseEquivariant a g)
-    (hLp : MemLp g 2 a.liftedMeasure)
-    (hgf : g =ᵐ[a.liftedMeasure] (f : Lp (E F) 2 a.liftedMeasure)) :
-    intrinsicClass cover (ext cover a f) =
-      toAeQuotient (extendedSquareFamily a g hg he hLp) := by
-  rw [ext_represented, toAeQuotient_eq_iff]
-  apply extendedFamily_ae a _ g (localRepresentative_measurable a f) hg
-    (localRepresentative_equivariant a f) he
-  exact ((KPMeasurableLocalL2.representative_spec (localData a) (fullPiece a) f).2.1).trans hgf.symm
 
 def liftField (f : omega a → E F) : a.domain → E F := fun y => f (coordinates a y)
 
 def ambientField (b : ShrunkChart F ζ hζ U R P H) (f : omega b → E F) : M F → E F :=
   fun x => if hx : x ∈ omega b then f ⟨x, hx⟩ else 0
 
-private theorem liftedMeasure_isFiniteMeasure : IsFiniteMeasure a.liftedMeasure := by
-  letI := KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_finiteOnCompacts
-    F ζ hζ R P U
-  let proj : KPCuspGenuineMonodromy.SymmetricSpace F →
-      KPFiniteCuspAtlas.rawXU F ζ hζ U :=
-    fun z => (H.atlas U).components ⟨a.component, Quotient.mk _ z⟩
-  have hc : Continuous proj :=
-    (H.atlas U).components.continuous.comp (continuous_sigmaMk.comp continuous_quot_mk)
-  have hK := a.closure_compact.image hc
-  have hsub : a.baseDomain ⊆ proj '' closure a.domain := by
-    rintro x ⟨y, rfl⟩
-    refine ⟨y.val, subset_closure y.property, ?_⟩
-    change (H.atlas U).components ⟨a.component, Quotient.mk _ y.val⟩ = _
-    rw [(H.atlas U).components_formula]
-    rfl
-  haveI : IsFiniteMeasure
-      ((KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict a.baseDomain) :=
-    ⟨by
-      rw [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
-      exact (measure_mono hsub).trans_lt hK.measure_lt_top⟩
-  have hp := every_shrunkChart_properties F ζ hζ U R P H a
-  haveI : IsFiniteMeasure (Measure.map a.toBase a.liftedMeasure) := by
-    rw [hp.exact_pushforward]
-    exact inferInstance
-  exact Measure.isFiniteMeasure_of_map hp.measurable.aemeasurable
 
-theorem compact_continuous_memLp (f : omega a → E F)
-    (K : Set (M F)) (hK : IsCompact K) (hKa : K ⊆ omega a)
-    (hfK : tsupport f ⊆ Subtype.val ⁻¹' K) (hc : Continuous f) :
-    MemLp (liftField a f) 2 a.liftedMeasure := by
-  haveI := liftedMeasure_isFiniteMeasure (F := F) (ζ := ζ) (hζ := hζ)
-    (U := U) (R := R) (P := P) (H := H) a
-  have hKrange : K ⊆ Set.range (Subtype.val : omega a → M F) :=
-    fun x hx => ⟨⟨x, hKa hx⟩, rfl⟩
-  have hKpre : IsCompact (Subtype.val ⁻¹' K : Set (omega a)) :=
-    (Topology.IsInducing.isCompact_preimage_iff
-      (Topology.IsInducing.subtypeVal) hKrange).2 hK
-  have hts : tsupport (liftField a f) ⊆ coordinates a ⁻¹' tsupport f := by
-    rw [tsupport, tsupport]
-    refine closure_minimal ?_ (isClosed_closure.preimage (coordinates_continuous a))
-    intro z hz
-    exact subset_closure hz
-  suffices ∃ C, ∀ y, ‖liftField a f y‖ ≤ C by
-    obtain ⟨C, hC⟩ := this
-    exact MemLp.of_bound ((hc.comp (coordinates_continuous a)).measurable).aestronglyMeasurable C
-      (Filter.Eventually.of_forall hC)
-  rcases Set.eq_empty_or_nonempty (Subtype.val ⁻¹' K : Set (omega a)) with hemp | hne
-  · refine ⟨0, fun y => ?_⟩
-    have hz : liftField a f y = 0 := by
-      by_contra hne'
-      have h1 : coordinates a y ∈ Subtype.val ⁻¹' K := hfK (hts (subset_closure hne'))
-      rw [hemp] at h1
-      exact h1
-    rw [hz, norm_zero]
-  · obtain ⟨z₀, hz₀, hmax⟩ := hKpre.exists_isMaxOn hne hc.continuousOn.norm
-    refine ⟨‖f z₀‖, fun y => ?_⟩
-    by_cases hy : y ∈ tsupport (liftField a f)
-    · have h1 : coordinates a y ∈ Subtype.val ⁻¹' K := hfK (hts hy)
-      exact hmax h1
-    · have hz : liftField a f y = 0 := by
-        by_contra hne'
-        exact hy (subset_closure hne')
-      rw [hz, norm_zero]
-      exact norm_nonneg _
-
-private lemma continuous_q (a : ShrunkChart F ζ hζ U R P H) : Continuous (q a) := by
-  have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-        (H.atlas U).components ∘ Sigma.mk a.component := by
-      funext x; exact ((H.atlas U).components_formula a.component x).symm
-    rw [he]
-    exact ((H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk).continuous
-  have hproj : Continuous (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    continuous_quotient_mk'
-  have hcomp : q a = KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      ∘ KPCuspSiegel.projection F (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
-      ∘ labeledA (placeEquiv F ζ hζ) := rfl
-  rw [hcomp]
-  exact hcm.comp (hproj.comp continuous_labeledA_placeEquiv)
-
-private theorem compactImage (K : Set (M F)) (hK : IsCompact K) : IsClosed (q a '' K) :=
-  (hK.image (continuous_q a)).isClosed
-
-private theorem extension_zero_off_compact (f : omega a → E F) (K : Set (M F))
-    (hfK : tsupport f ⊆ Subtype.val ⁻¹' K)
-    (b : ShrunkChart F ζ hζ U R P H) (x : omega b) (hx : q b x.val ∉ q a '' K) :
-    extendedFields a (liftField a f) b x = 0 := by
-  by_cases hb : q b x.val ∈ a.baseDomain
-  · dsimp only [extendedFields]
-    rw [dite_eq_left hb]
-    let k := Nat.find (directDomainExists b a x hb)
-    let e := (directEnumeration b a).branch k
-    have he : x.val ∈ e.domain := Nat.find_spec (directDomainExists b a x hb)
-    have ht : e.psi x.val ∈ omega a := ((directEnumeration b a).properties k).target_subset ⟨x.val, he, rfl⟩
-    have hz : f ⟨e.psi x.val, ht⟩ = 0 := by
-      by_contra hn
-      have hk := hfK (subset_closure hn)
-      apply hx
-      exact ⟨e.psi x.val, hk, ((directEnumeration b a).properties k).quotient_compatibility x.val he⟩
-    change (e.transport x.val he).symm (liftField a f
-      (KPContActualCotangentPieceReconstruction.originalPoint a ⟨e.psi x.val, ht⟩)) = 0
-    rw [liftField, coordinates_originalPoint_ext, hz, map_zero]
-  · exact extendedFields_zero_off a _ b x hb
-
-private theorem extended_norm_support (f : omega a → E F) (K : Set (M F))
-    (hK : IsCompact K) (hfK : tsupport f ⊆ Subtype.val ⁻¹' K)
-    (hf : Measurable (liftField a f)) (he : PointwiseEquivariant a (liftField a f)) :
-    tsupport (normSquare (extendedFamily a (liftField a f) hf he)) ⊆ q a '' K := by
-  apply closure_minimal _ (compactImage a K hK)
-  intro z hz
-  by_contra hn
-  obtain ⟨b, x, hx⟩ := base_lift_exists z
-  apply hz
-  rw [← hx, normSquare_chart]
-  change ‖extendedFields a (liftField a f) b x‖₊ ^ 2 = 0
-  rw [extension_zero_off_compact a f K hfK b x (by rwa [hx])]
-  simp
-
-private theorem continuous_branch_inverse (f : omega a → E F) (hc : Continuous f)
-    (b : ShrunkChart F ζ hζ U R P H) (k : ℕ) :
-    Continuous (fun x : ((directEnumeration b a).branch k).domain =>
-      KPContActualCotangentTransportChoiceAlgebra.inverseTransport
-        ((directEnumeration b a).branch k) (localAmbient a (liftField a f)) x.val x.property) := by
-  let e := (directEnumeration b a).branch k
-  have hp := (directEnumeration b a).properties k
-  change Continuous (fun x : e.domain =>
-    KPContActualCotangentTransportChoiceAlgebra.inverseTransport e (localAmbient a (liftField a f)) x.val x.property)
-  cases he : e with
-  | none =>
-    change Continuous (fun x : (∅ : Set (M F)) => _)
-    exact continuous_of_discreteTopology
-  | some e' =>
-    have hψ : Continuous (fun x : e'.arrow.domain => e'.arrow.psi x.val) := by
-      have hs : ContinuousOn e.psi e.domain := hp.smooth.continuousOn
-      rw [he] at hs
-      exact continuousOn_iff_continuous_restrict.mp hs
-    have ht : Continuous (fun x : e'.arrow.domain => twistedOperator e'.arrow x.val) :=
-      continuousOn_iff_continuous_restrict.mp (smooth_operators e'.arrow).2.continuousOn
-    have hfc : Continuous (fun x : e'.arrow.domain => f ⟨e'.arrow.psi x.val, e'.target_shrinking x.property⟩) :=
-      hc.comp (hψ.subtype_mk _)
-    suffices hm : Continuous (fun x : e'.arrow.domain =>
-        WithLp.ofLp ((T e'.arrow x.val x.property).symm
-          (f ⟨e'.arrow.psi x.val, e'.target_shrinking x.property⟩))) by
-      change Continuous (fun x : e'.arrow.domain =>
-        (T e'.arrow x.val x.property).symm (localAmbient a (liftField a f) (e'.arrow.psi x.val)))
-      convert (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin (d F) × Fin 3 => ℂ)).symm.continuous.comp hm using 1
-      funext x
-      dsimp only [KPContActualCotangentTransportChoiceAlgebra.inverseTransport, Branch.transport, Branch.psi]
-      rw [localAmbient, dite_eq_left (e'.target_shrinking x.property), liftField, coordinates_originalPoint_ext]
-      rfl
-    apply continuous_pi
-    intro j
-    convert (ht.clm_apply continuous_const).inner hfc using 1
-    funext x
-    exact T_symm_coord e'.arrow x.val x.property _ j
-
-private theorem continuous_extended_compact (f : omega a → E F) (K : Set (M F))
-    (hK : IsCompact K) (hKa : K ⊆ omega a) (hfK : tsupport f ⊆ Subtype.val ⁻¹' K)
-    (hc : Continuous f) (he : PointwiseEquivariant a (liftField a f))
-    (b : ShrunkChart F ζ hζ U R P H) : Continuous (extendedFields a (liftField a f) b) := by
-  rw [continuous_iff_continuousAt]
-  intro x
-  by_cases hb : q b x.val ∈ a.baseDomain
-  · let k := Nat.find (directDomainExists b a x hb)
-    let e := (directEnumeration b a).branch k
-    have hx : x.val ∈ e.domain := Nat.find_spec (directDomainExists b a x hb)
-    let S : Set (omega b) := Subtype.val ⁻¹' e.domain
-    have hS : IsOpen S := ((directEnumeration b a).properties k).source_open.preimage continuous_subtype_val
-    have hinc : Continuous (fun z : S => (⟨z.val.val, z.property⟩ : e.domain)) :=
-      (continuous_subtype_val.comp continuous_subtype_val).subtype_mk _
-    have hl : Continuous (fun z : S => extendedFields a (liftField a f) b z.val) := by
-      convert (continuous_branch_inverse a f hc b k).comp hinc using 1
-      funext z
-      change extendedFields a (liftField a f) b z.val =
-        KPContActualCotangentTransportChoiceAlgebra.inverseTransport e
-          (localAmbient a (liftField a f)) z.val.val z.property
-      have hat : ∀ (d : Branch b a) (w : omega b) (hw : w.val ∈ d.domain),
-          extendedFields a (liftField a f) b w =
-            KPContActualCotangentTransportChoiceAlgebra.inverseTransport d
-              (localAmbient a (liftField a f)) w.val hw := by
-        intro d w hw
-        cases d with
-        | none => exact False.elim hw
-        | some d => exact extendedFields_at_branch a _ he b d w hw
-      exact hat e z.val z.property
-    exact (continuousOn_iff_continuous_restrict.mpr hl).continuousAt (hS.mem_nhds hx)
-  · have hx : q b x.val ∉ q a '' K := by
-      rintro ⟨z, hz, heq⟩
-      apply hb
-      have hq := q_coordinates_ext a (KPContActualCotangentPieceReconstruction.originalPoint a ⟨z, hKa hz⟩)
-      rw [coordinates_originalPoint_ext] at hq
-      rw [← heq, hq]
-      exact Set.mem_range_self _
-    have hn : ∀ᶠ z : omega b in 𝓝 x, q b z.val ∉ q a '' K :=
-      ((compactImage a K hK).isOpen_compl.preimage ((continuous_q b).comp continuous_subtype_val)).mem_nhds hx
-    apply (continuousAt_const (y := (0 : E F))).congr_of_eventuallyEq
-    filter_upwards [hn] with z hz
-    exact extension_zero_off_compact a f K hfK b z hz
-
-theorem compact_continuous_extension (f : omega a → E F)
-    (K : Set (M F)) (hK : IsCompact K) (hKa : K ⊆ omega a)
-    (hfK : tsupport f ⊆ Subtype.val ⁻¹' K) (hc : Continuous f)
-    (he : PointwiseEquivariant a (liftField a f)) :
-    ∃ (qf : Q a) (r : SquareFiniteFamily (U := U) (H := H)),
-      (liftField a f =ᵐ[a.liftedMeasure] (qf : Lp (E F) 2 a.liftedMeasure)) ∧
-      toAeQuotient r = intrinsicClass cover (ext cover a qf) ∧
-      (∀ b x, coefficient r.val b x = extendedFields a (liftField a f) b x) ∧
-      tsupport (normSquare r.val) ⊆ KPContCotangentOverlapRationalBranches.q a '' K ∧
-      (∀ b : ShrunkChart F ζ hζ U R P H, Continuous (coefficient r.val b)) := by
-  have hg : Measurable (liftField a f) := (hc.comp (coordinates_continuous a)).measurable
-  have hlp := compact_continuous_memLp a f K hK hKa hfK hc
-  let qf : Q a := ⟨hlp.toLp (liftField a f), by
-    refine ⟨?_, ?_⟩
-    · intro γ
-      have hae := MemLp.coeFn_toLp hlp
-      have hact := (action_preserving a γ).quasiMeasurePreserving.ae hae
-      filter_upwards [hae, hact] with y hy hyact
-      change (hlp.toLp (liftField a f)) (actualActionEquiv a γ y) =
-        actualTensor a γ y ((hlp.toLp (liftField a f)) y)
-      rw [hyact, hy, he]
-    · filter_upwards with y hy
-      exact absurd (Set.mem_univ y) hy⟩
-  have hgf : liftField a f =ᵐ[a.liftedMeasure] (qf : Lp (E F) 2 a.liftedMeasure) :=
-    (MemLp.coeFn_toLp hlp).symm
-  refine ⟨qf, extendedSquareFamily a (liftField a f) hg he hlp, hgf,
-    (ext_any_representative cover a qf _ hg he hlp hgf).symm, ?_, ?_, ?_⟩
-  · intro b x
-    rfl
-  · exact extended_norm_support a f K hK hfK hg he
-  · exact continuous_extended_compact a f K hK hKa hfK hc he
 
 end DedekindZetaZeroFree.KPContActualCotangentChartZeroExtension
 

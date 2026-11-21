@@ -26,9 +26,6 @@ def standardResidueFieldEquiv (p : KPFinitePlace F) :
     StandardResidue p ≃+* (𝓞 F ⧸ p.asIdeal) :=
   (GlobalClassFieldTheory.ClassFieldAxiom.ringOfIntegersQuotientEquivAdicResidueField p).symm
 
-instance standardResidueFinite (p : KPFinitePlace F) : Finite (StandardResidue p) := by
-  letI := Ideal.finiteQuotientOfFreeOfNeBot p.asIdeal p.ne_bot
-  exact Finite.of_equiv (𝓞 F ⧸ p.asIdeal) (standardResidueFieldEquiv p).symm.toEquiv
 
 end DedekindZetaZeroFree.PrincipalMellinSource.ProfileCore.FixedSupport
 

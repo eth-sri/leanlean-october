@@ -40,7 +40,7 @@ theorem correction_multipliable_initial (U : Frequency C)
   apply multipliable_localFactor C U (ξ, w, z)
   apply Or.inl
   change _ ∧ _ ∧ _
-  exact ⟨by linarith, by linarith, by linarith⟩
+  grind only
 
  def primeEquiv (A : SArithmeticData F) :
     LocalFiniteSums.ExteriorPrime A ≃ ExteriorIdealEuler.PrimeIndex A.cS where
@@ -145,7 +145,8 @@ theorem initial_separated_euler (U : Frequency C)
   have hseries : HasProd (fun p : LocalFiniteSums.ExteriorPrime A =>
       LocalFiniteSums.f C p (U.j p) (U.theta p) ξ w z)
       (comparisonEulerPoissonSeries F A D U.u ξ w z) :=
-    CRTEulerSeparation.hasProd_local_series U D hD ξ w z hξ hw hz
+    CRTEulerSeparation.hasProd_local_series C U.toRaw D hD ξ w z
+      (by linarith) (by linarith) (by linarith)
   have heq := hseries.unique (hprod.congr_fun hlocal)
   change comparisonEulerPoissonSeries F A D U.u ξ w z * minusL U ξ = _
   rw [heq]

@@ -64,24 +64,8 @@ its additive value. -/
     Multiplicative.ofAdd n ∈ integerMultipleSubgroup d ↔ d ∣ n := by
   rw [mem_integerMultipleSubgroup_iff, toAdd_ofAdd]
 
-/-- Multiplying two multiplicative integers from the multiple subgroup remains in that subgroup. -/
-theorem ofAdd_mul_mem_integerMultipleSubgroup (d n : ℤ) :
-    Multiplicative.ofAdd (d * n) ∈ integerMultipleSubgroup d := by
-  rw [ofAdd_mem_integerMultipleSubgroup_iff]
-  exact dvd_mul_right d n
 
-/-- The multiple subgroup is closed under multiplication in either order. -/
-theorem ofAdd_mul_comm_mem_integerMultipleSubgroup (d n : ℤ) :
-    Multiplicative.ofAdd (n * d) ∈ integerMultipleSubgroup d := by
-  rw [mul_comm]
-  exact ofAdd_mul_mem_integerMultipleSubgroup d n
 
-/-- Divisibility of generators reverses inclusion between their integer-multiple subgroups. -/
-theorem integerMultipleSubgroup_le_of_dvd {a b : ℤ} (hab : a ∣ b) :
-    integerMultipleSubgroup b ≤ integerMultipleSubgroup a := by
-  intro n hn
-  rw [mem_integerMultipleSubgroup_iff] at hn ⊢
-  exact dvd_trans hab hn
 
 /-- Every multiplicative integer belongs to the subgroup of multiples of one. -/
 @[simp] theorem integerMultipleSubgroup_one_eq_top :

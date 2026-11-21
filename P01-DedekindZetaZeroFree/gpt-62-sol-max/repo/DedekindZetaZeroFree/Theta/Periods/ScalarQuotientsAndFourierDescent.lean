@@ -69,21 +69,7 @@ abbrev scalarSection (v : WildPlace F) :=
     (KPAdelicCoverCertificatesRaw.depth F ζ hζ v.val)
     (KPWildCompactProjectorKirillov.standardCharacter F v.val) ℂ
 
-noncomputable instance scalarSectionAdd (v : WildPlace F) :
-    AddCommGroup (scalarSection F ζ hζ v) := by
-  letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ v.val
-    (KPAdelicCoverCertificatesRaw.depth F ζ hζ v.val)
-  letI : AddCommGroup (EqSections (KPKirillovGenuineSectionCharts.H F ζ hζ v.val)
-      (KPKirillovGenuineSectionCharts.coefficientRepresentation F ζ hζ v.val
-        (KPWildCompactProjectorKirillov.standardCharacter F v.val) ℂ) 1) :=
-    Submodule.addCommGroup _
-  letI : AddCommGroup (SmoothInd (KPKirillovGenuineSectionCharts.H F ζ hζ v.val)
-      (KPKirillovGenuineSectionCharts.coefficientRepresentation F ζ hζ v.val
-        (KPWildCompactProjectorKirillov.standardCharacter F v.val) ℂ) 1) :=
-    Submodule.addCommGroup _
-  exact Submodule.addCommGroup _
 
-abbrev scalarTensor := PiTensorProduct ℂ (fun v : WildPlace F => ↥(scalarSection F ζ hζ v))
 
 end DedekindZetaZeroFree.KPWildActualScalarPeriodSource
 

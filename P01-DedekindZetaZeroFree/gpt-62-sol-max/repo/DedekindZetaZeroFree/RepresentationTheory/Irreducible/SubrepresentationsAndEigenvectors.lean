@@ -5,9 +5,11 @@ public import DedekindZetaZeroFree.RepresentationTheory.Subrepresentations.Restr
 public import Mathlib.RingTheory.SimpleModule.Rank
 public import Mathlib.RingTheory.FiniteLength
 public import DedekindZetaZeroFree.Algebra.LocalRings.IdempotentsAndUnits
-public import DedekindZetaZeroFree.Algebra.SemisimpleModules.AnnihilatorsAndEndomorphisms
+public import Mathlib.Algebra.Module.Torsion.Basic
 public import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
-public import DedekindZetaZeroFree.Algebra.TensorProduct.SeparatingFunctionals
+public import Mathlib.LinearAlgebra.Matrix.Basis
+public import Mathlib.LinearAlgebra.TensorProduct.Associator
+public import Mathlib.Algebra.BigOperators.Group.Finset.Sigma
 
 @[expose] public section
 

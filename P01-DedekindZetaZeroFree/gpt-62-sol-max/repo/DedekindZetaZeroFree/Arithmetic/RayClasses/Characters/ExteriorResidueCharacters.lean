@@ -150,7 +150,11 @@ noncomputable section
 set_option maxHeartbeats 800000
 variable {F : Type} [Field F] [NumberField F]
 
-def inverseLocalCharacter (A : SArithmeticData F) (sigma : FixedSResidue.FullLocalCharacters A) :
+section
+
+variable (A : SArithmeticData F)
+
+def inverseLocalCharacter (sigma : FixedSResidue.FullLocalCharacters A) :
     Fˣ →* ℂˣ where
   toFun x := (∏ w : InfinitePlace F, (sigma.1 w ((A.diagonal x).1 w))⁻¹) *
     ∏ v : {v // v ∈ A.Sf}, (sigma.2 v ((A.diagonal x).2 v))⁻¹
@@ -161,19 +165,19 @@ def inverseLocalCharacter (A : SArithmeticData F) (sigma : FixedSResidue.FullLoc
       Finset.prod_mul_distrib]
     ac_rfl
 
-theorem localInverseProduct_eq (A : SArithmeticData F)
+theorem localInverseProduct_eq
     (sigma : FixedSResidue.FullLocalCharacters A) (n : FixedSResidue.NonzeroSInteger A) :
     FixedSResidue.localInverseProduct A sigma n =
       (inverseLocalCharacter A sigma (FixedSResidue.fieldUnit A n) : ℂ) := by
   simp [FixedSResidue.localInverseProduct, inverseLocalCharacter]
 
-theorem localInverseProduct_ne_zero (A : SArithmeticData F)
+theorem localInverseProduct_ne_zero
     (sigma : FixedSResidue.FullLocalCharacters A) (n : FixedSResidue.NonzeroSInteger A) :
     FixedSResidue.localInverseProduct A sigma n ≠ 0 := by
   rw [localInverseProduct_eq]
   exact Units.ne_zero _
 
-theorem localInverseProduct_mul (A : SArithmeticData F)
+theorem localInverseProduct_mul
     (sigma : FixedSResidue.FullLocalCharacters A)
     (n m : FixedSResidue.NonzeroSInteger A) :
     FixedSResidue.localInverseProduct A sigma ⟨n.val * m.val, mul_ne_zero n.property m.property⟩ =
@@ -184,23 +188,23 @@ theorem localInverseProduct_mul (A : SArithmeticData F)
     rfl
   simp only [localInverseProduct_eq, hfield, map_mul, Units.val_mul]
 
-def numeratorExterior (A : SArithmeticData F) (n : FixedSResidue.NonzeroSInteger A) :
+def numeratorExterior (n : FixedSResidue.NonzeroSInteger A) :
     A.Exterior := A.exteriorIdealEquiv.symm
       ⟨Ideal.span {n.val}, Ideal.span_singleton_eq_bot.not.mpr n.property⟩
 
-theorem numeratorExterior_generates (A : SArithmeticData F)
+theorem numeratorExterior_generates
     (n : FixedSResidue.NonzeroSInteger A) :
     A.extendIdeal (numeratorExterior A n) = Ideal.span {n.val} := by
   exact congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply _)
 
-theorem numeratorExterior_unique (A : SArithmeticData F)
+theorem numeratorExterior_unique
     (n : FixedSResidue.NonzeroSInteger A) (a : A.Exterior)
     (ha : Ideal.span {n.val} = A.extendIdeal a) : numeratorExterior A n = a := by
   apply A.exteriorIdealEquiv.injective
   apply Subtype.ext
   exact (numeratorExterior_generates A n).trans ha
 
-theorem numeratorExterior_mul (A : SArithmeticData F)
+theorem numeratorExterior_mul
     (n m : FixedSResidue.NonzeroSInteger A) :
     (numeratorExterior A ⟨n.val * m.val, mul_ne_zero n.property m.property⟩).val =
       (numeratorExterior A n).val * (numeratorExterior A m).val := by
@@ -223,21 +227,26 @@ theorem numeratorExterior_mul (A : SArithmeticData F)
     (⟨n.val * m.val, mul_ne_zero n.property m.property⟩ : FixedSResidue.NonzeroSInteger A) a ha
   exact congrArg (fun b : A.Exterior => b.val) hh
 
-def exteriorCoefficient (A : SArithmeticData F) (f : Ideal (𝓞 F))
-    (omega : RayClassCharacter F f) (sigma : FixedSResidue.FullLocalCharacters A)
+end
+
+section
+
+variable (A : SArithmeticData F) (f : Ideal (𝓞 F)) (omega : RayClassCharacter F f)
+  (sigma : FixedSResidue.FullLocalCharacters A)
+include f omega sigma
+
+def exteriorCoefficient
     (n : FixedSResidue.NonzeroSInteger A) : ℂ :=
   omega (numeratorExterior A n).val / FixedSResidue.localInverseProduct A sigma n
 
-theorem exteriorCoefficient_mul (A : SArithmeticData F) (f : Ideal (𝓞 F))
-    (omega : RayClassCharacter F f) (sigma : FixedSResidue.FullLocalCharacters A)
+theorem exteriorCoefficient_mul
     (n m : FixedSResidue.NonzeroSInteger A) :
     exteriorCoefficient A f omega sigma ⟨n.val*m.val, mul_ne_zero n.property m.property⟩ =
       exteriorCoefficient A f omega sigma n * exteriorCoefficient A f omega sigma m := by
   simp only [exteriorCoefficient, numeratorExterior_mul, omega.map_mul', localInverseProduct_mul]
   exact div_mul_div_comm _ _ _ _ |>.symm
 
-theorem exteriorCoefficient_one (A : SArithmeticData F) (f : Ideal (𝓞 F))
-    (omega : RayClassCharacter F f) (sigma : FixedSResidue.FullLocalCharacters A) :
+theorem exteriorCoefficient_one :
     exteriorCoefficient A f omega sigma ⟨1, one_ne_zero⟩ = 1 := by
   have hn : (numeratorExterior A ⟨1, one_ne_zero⟩).val = ⊤ := by
     let a : A.Exterior := ⟨⊤, top_ne_bot, by simp⟩
@@ -251,7 +260,13 @@ theorem exteriorCoefficient_one (A : SArithmeticData F) (f : Ideal (𝓞 F))
   simp only [exteriorCoefficient, hn, omega.map_top', localInverseProduct_eq,
     hfield, map_one, Units.val_one, div_one]
 
-theorem exterior_coprime_sfactor (A : SArithmeticData F) (f fS qO : Ideal (𝓞 F))
+end
+
+section
+
+variable (A : SArithmeticData F)
+
+theorem exterior_coprime_sfactor (f fS qO : Ideal (𝓞 F))
     (hsplit : FixedSResidue.ConductorSplit A f fS qO) (a : A.Exterior) :
     a.val ⊔ fS = ⊤ := by
   by_contra hne
@@ -268,7 +283,7 @@ theorem exterior_coprime_sfactor (A : SArithmeticData F) (f fS qO : Ideal (𝓞 
     exact sup_le (le_sup_left.trans hle) hc
   exact hM.ne_top (top_unique htop)
 
-theorem exterior_character_eq_zero_iff (A : SArithmeticData F) (f fS qO : Ideal (𝓞 F))
+theorem exterior_character_eq_zero_iff (f fS qO : Ideal (𝓞 F))
     (omega : RayClassCharacter F f) (hsplit : FixedSResidue.ConductorSplit A f fS qO)
     (a : A.Exterior) : omega a.val = 0 ↔ a.val ⊔ qO ≠ ⊤ := by
   rw [omega.eq_zero_iff']
@@ -283,7 +298,7 @@ theorem exterior_character_eq_zero_iff (A : SArithmeticData F) (f fS qO : Ideal 
       exact Ideal.isCoprime_iff_sup_eq.mp (hs.mul_right (Ideal.isCoprime_iff_sup_eq.mpr h))
   exact not_congr he
 
-theorem exteriorCoefficient_nonunit (A : SArithmeticData F) (f fS qO : Ideal (𝓞 F))
+theorem exteriorCoefficient_nonunit (f fS qO : Ideal (𝓞 F))
     (omega : RayClassCharacter F f) (hsplit : FixedSResidue.ConductorSplit A f fS qO)
     (sigma : FixedSResidue.FullLocalCharacters A) (n : FixedSResidue.NonzeroSInteger A)
     (hn : ¬ IsUnit (Ideal.Quotient.mk (FixedSResidue.residueModulus A qO) n.val)) :
@@ -303,7 +318,7 @@ theorem exteriorCoefficient_nonunit (A : SArithmeticData F) (f fS qO : Ideal (�
     exact hm
   simp [exteriorCoefficient, hz]
 
-theorem exists_residue_character_of_coefficient (A : SArithmeticData F) (q : Ideal A.R)
+theorem exists_residue_character_of_coefficient (q : Ideal A.R)
     (c : A.R → ℂ) (hone : c 1 = 1) (hmul : ∀ x y, c (x*y) = c x * c y)
     (hfiber : ∀ x y, Ideal.Quotient.mk q x = Ideal.Quotient.mk q y → c x = c y)
     (hzero : ∀ x, ¬ IsUnit (Ideal.Quotient.mk q x) → c x = 0) :
@@ -331,8 +346,7 @@ theorem exists_residue_character_of_coefficient (A : SArithmeticData F) (q : Ide
   rw [he]
   exact hfiber _ _ (hrep _)
 
-theorem exists_exterior_residue_character_of_coefficient_congr
-    (A : SArithmeticData F) (f fS qO : Ideal (𝓞 F))
+theorem exists_exterior_residue_character_of_coefficient_congr (f fS qO : Ideal (𝓞 F))
     (omega : RayClassCharacter F f) (hsplit : FixedSResidue.ConductorSplit A f fS qO)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (hcongr : ∀ n m : FixedSResidue.NonzeroSInteger A,
@@ -408,7 +422,7 @@ theorem exists_exterior_residue_character_of_coefficient_congr
     hcmul hcfiber hcunit
   exact ⟨lam, fun n => (hlam n.val).trans (hc n)⟩
 
-theorem numeratorExterior_eq_top_of_isUnit (A : SArithmeticData F)
+theorem numeratorExterior_eq_top_of_isUnit
     (n : FixedSResidue.NonzeroSInteger A) (hn : IsUnit n.val) :
     (numeratorExterior A n).val = ⊤ := by
   let a : A.Exterior := ⟨⊤, top_ne_bot, by simp⟩
@@ -417,7 +431,7 @@ theorem numeratorExterior_eq_top_of_isUnit (A : SArithmeticData F)
       Ideal.span_singleton_eq_top] using hn
   exact congrArg (fun b : A.Exterior => b.val) (numeratorExterior_unique A n a ha)
 
-theorem exteriorCoefficient_ne_zero_of_isUnit (A : SArithmeticData F)
+theorem exteriorCoefficient_ne_zero_of_isUnit
     (f : Ideal (𝓞 F)) (omega : RayClassCharacter F f)
     (sigma : FixedSResidue.FullLocalCharacters A)
     (n : FixedSResidue.NonzeroSInteger A) (hn : IsUnit n.val) :
@@ -425,7 +439,7 @@ theorem exteriorCoefficient_ne_zero_of_isUnit (A : SArithmeticData F)
   rw [exteriorCoefficient, numeratorExterior_eq_top_of_isUnit A n hn, omega.map_top']
   exact div_ne_zero one_ne_zero (localInverseProduct_ne_zero A sigma n)
 
-theorem exists_common_integral_numerators (A : SArithmeticData F)
+theorem exists_common_integral_numerators
     (n m : FixedSResidue.NonzeroSInteger A) :
     ∃ (d : FixedSResidue.NonzeroSInteger A) (a b : 𝓞 F),
       IsUnit d.val ∧ a ≠ 0 ∧ b ≠ 0 ∧
@@ -458,7 +472,7 @@ theorem exists_common_integral_numerators (A : SArithmeticData F)
     rw [hb0, map_zero] at hbr
     exact mul_ne_zero hd0 m.property hbr.symm
 
-theorem exteriorCoefficient_congr_of_integral_congr (A : SArithmeticData F)
+theorem exteriorCoefficient_congr_of_integral_congr
     (f : Ideal (𝓞 F)) (omega : RayClassCharacter F f)
     (sigma : FixedSResidue.FullLocalCharacters A) (q : Ideal A.R)
     (hcongr : ∀ (a b : 𝓞 F) (ha : a ≠ 0) (hb : b ≠ 0),
@@ -484,6 +498,8 @@ theorem exteriorCoefficient_congr_of_integral_congr (A : SArithmeticData F)
       ⟨d.val*m.val, mul_ne_zero d.property m.property⟩ := Subtype.ext hbm
   rw [hea, heb, exteriorCoefficient_mul, exteriorCoefficient_mul] at he
   exact mul_left_cancel₀ (exteriorCoefficient_ne_zero_of_isUnit A f omega sigma d hd) he
+
+end
 
 end
 

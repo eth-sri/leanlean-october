@@ -18,7 +18,7 @@ theorem finite_integral_l2 {I : Type*} [Fintype I]
     Real.sqrt (∑ i, ‖∫ t, g t i‖ ^ 2) ≤
       ∫ t, Real.sqrt (∑ i, ‖g t i‖ ^ 2) := by
   let G : ℝ → EuclideanSpace ℂ I := fun t => WithLp.toLp 2 (g t)
-  have hG : Integrable G := integrable_piLp_iff.mpr hg
+  
   have he : (∫ t, G t) = WithLp.toLp 2 (fun i => ∫ t, g t i) := by
     ext i
     exact eval_integral_piLp hg i

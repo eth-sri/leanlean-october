@@ -1,7 +1,9 @@
 module
 
 public import DedekindZetaZeroFree.Metaplectic.Cubic.Wild.ResidualScalarSubmodules
-public import DedekindZetaZeroFree.Theta.Periods.PartialPeriodSourcesAndRootCoinvariants
+public import DedekindZetaZeroFree.Theta.Periods.ScalarQuotientsAndFourierDescent
+public import DedekindZetaZeroFree.Theta.Periods.CompactKernelOrbitData
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.Borel.TorusRetraction
 public import DedekindZetaZeroFree.Theta.Whittaker.Borel.RootFiberContinuity
 
 @[expose] public section

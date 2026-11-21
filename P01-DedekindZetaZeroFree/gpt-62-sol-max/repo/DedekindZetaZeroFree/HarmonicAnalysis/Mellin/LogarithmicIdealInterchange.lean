@@ -55,8 +55,12 @@ private lemma norm_vertical_summand_le {K : ℂ → ℂ} {c : ℝ} {a : ℂ} {z 
           (mul_nonneg (norm_nonneg _) (Real.rpow_nonneg hz.le _))
     _ = z ^ (-c) * ‖K ((c : ℂ) + t * Complex.I)‖ := by ring
 
-private lemma integrable_vertical_summand {K : ℂ → ℂ} {c : ℝ}
-    (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I)))
+section
+
+variable {K : ℂ → ℂ} {c : ℝ} (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I)))
+include hK
+
+private lemma integrable_vertical_summand
     (hKcont : Continuous fun t : ℝ => K ((c : ℂ) + t * Complex.I))
     {a : ℂ} {z : ℝ} (hz : 0 < z) (ha : ‖a‖ ≤ 1) :
     Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I) *
@@ -70,8 +74,7 @@ private lemma integrable_vertical_summand {K : ℂ → ℂ} {c : ℝ}
   · filter_upwards with t
     exact norm_vertical_summand_le hz ha t
 
-private lemma norm_integral_vertical_summand_le {K : ℂ → ℂ} {c : ℝ}
-    (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I)))
+private lemma norm_integral_vertical_summand_le
     {a : ℂ} {z : ℝ} (hz : 0 < z) (ha : ‖a‖ ≤ 1) :
     (∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I) *
         ((z : ℝ) : ℂ) ^ (-((c : ℂ) + t * Complex.I)) * a‖) ≤
@@ -83,8 +86,7 @@ private lemma norm_integral_vertical_summand_le {K : ℂ → ℂ} {c : ℝ}
           (hK.norm.const_mul _) (ae_of_all _ fun t => norm_vertical_summand_le hz ha t)
     _ = z ^ (-c) * ∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I)‖ := integral_const_mul _ _
 
-private lemma norm_mellinInv_le {K : ℂ → ℂ} {c : ℝ}
-    (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I))) {z : ℝ} (hz : 0 < z) :
+private lemma norm_mellinInv_le {z : ℝ} (hz : 0 < z) :
     ‖mellinInv c K z‖ ≤
       (1 / (2 * Real.pi)) * (z ^ (-c) * ∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I)‖) := by
   have hpi : ‖(1 / (2 * Real.pi) : ℂ)‖ = 1 / (2 * Real.pi) := by
@@ -111,8 +113,14 @@ private lemma norm_mellinInv_le {K : ℂ → ℂ} {c : ℝ}
     _ = (1 / (2 * Real.pi)) *
           (z ^ (-c) * ∫ t : ℝ, ‖K ((c : ℂ) + t * Complex.I)‖) := by rw [hXint]
 
-private lemma continuous_idealCoefficientLSeries_line (a : Ideal (𝓞 F) → ℂ)
-    (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1) {c : ℝ} (hc : 1 < c) :
+end
+
+section
+
+variable (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1)
+include ha
+
+private lemma continuous_idealCoefficientLSeries_line {c : ℝ} (hc : 1 < c) :
     Continuous fun t : ℝ => idealCoefficientLSeries a ((c : ℂ) + t * Complex.I) := by
   have hS : Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>
       (Ideal.absNorm I.val : ℝ) ^ (-c)) := by
@@ -136,7 +144,7 @@ private lemma continuous_idealCoefficientLSeries_line (a : Ideal (𝓞 F) → �
         _ = (Ideal.absNorm I.val : ℝ) ^ (-c) := one_mul _)
   simpa only [idealCoefficientLSeries] using h
 
-private lemma norm_lseries_le (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1)
+private lemma norm_lseries_le
     {c : ℝ} (hc : 1 < c) (t : ℝ) :
     ‖idealCoefficientLSeries a ((c : ℂ) + t * Complex.I)‖ ≤
       ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, (Ideal.absNorm I.val : ℝ) ^ (-c) := by
@@ -165,8 +173,7 @@ private lemma norm_lseries_le (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I, I ≠ �
     _ ≤ ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, (Ideal.absNorm I.val : ℝ) ^ (-c) :=
         Summable.tsum_le_tsum hterm hsum.norm hS
 
-private lemma integrable_lseries_line (a : Ideal (𝓞 F) → ℂ)
-    (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1) {K : ℂ → ℂ} {c Y : ℝ} (hc : 1 < c) (hY : 0 < Y)
+private lemma integrable_lseries_line {K : ℂ → ℂ} {c Y : ℝ} (hc : 1 < c) (hY : 0 < Y)
     (hK : Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I)))
     (hKcont : Continuous fun t : ℝ => K ((c : ℂ) + t * Complex.I)) :
     Integrable (fun t : ℝ => K ((c : ℂ) + t * Complex.I) * (Y : ℂ) ^ (-((c : ℂ) + t * Complex.I)) *
@@ -193,6 +200,8 @@ private lemma integrable_lseries_line (a : Ideal (𝓞 F) → ℂ)
             (mul_nonneg (norm_nonneg _) (Real.rpow_nonneg hY.le _))
       _ = (Y ^ (-c) * (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
             (Ideal.absNorm I.val : ℝ) ^ (-c))) * ‖K ((c : ℂ) + t * Complex.I)‖ := by ring
+
+end
 
 private theorem countable_ideal_fubini (F : Type*) [Field F] [NumberField F] :
     Countable (Ideal (𝓞 F)) := by
@@ -374,8 +383,13 @@ theorem idealLogMellin_inverseSpectrum_interchange
     rw [hcongr, ← hFubini, ← tsum_mul_left]
     exact tsum_congr fun I => hterm I
 
-theorem logSpectrum_continuousOn_line {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) {c : ℝ} (hc : 1 < c) :
+section
+
+variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
+  (hf : Vendor.LogMellinAdmissible f δ P H) {c : ℝ} (hc : 1 < c)
+include f δ P H hf hc
+
+theorem logSpectrum_continuousOn_line :
     Continuous fun t : ℝ => H ((c : ℂ) + (t : ℂ) * Complex.I) := by
   rw [continuous_iff_continuousAt]
   intro t
@@ -392,8 +406,7 @@ theorem logSpectrum_continuousOn_line {f : ℝ → ℂ} {δ : ℝ} {P : Polynomi
   exact (hf.differentiableAt _ hre hne).continuousAt.comp'
     (f := fun t : ℝ => (c : ℂ) + (t : ℂ) * Complex.I) hg
 
-theorem logSpectrum_verticalIntegrable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) {c : ℝ} (hc : 1 < c) :
+theorem logSpectrum_verticalIntegrable :
     Complex.VerticalIntegrable H c := by
   obtain ⟨C, hC0, hCbound⟩ := hf.rapid_vertical_decay c c (by linarith [hf.delta_pos]) le_rfl 2
   have hline := logSpectrum_continuousOn_line hf hc
@@ -436,8 +449,7 @@ theorem logSpectrum_verticalIntegrable {f : ℝ → ℂ} {δ : ℝ} {P : Polynom
     hline.aestronglyMeasurable (Filter.Eventually.of_forall fun y => ?_)
   simpa only [Real.norm_eq_abs] using hboundD y
 
-theorem logSource_mellinConvergent {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    {H : ℂ → ℂ} (hf : Vendor.LogMellinAdmissible f δ P H) {c : ℝ} (hc : 1 < c) :
+theorem logSource_mellinConvergent :
     MellinConvergent f (c : ℂ) := by
   have hpow : ContinuousOn (fun t : ℝ => (t:ℂ)^((c:ℂ)-1)) (Set.Ioi 0) :=
     fun t ht => (Complex.continuousAt_ofReal_cpow_const t ((c:ℂ)-1) (Or.inr (ne_of_gt ht))).continuousWithinAt
@@ -518,6 +530,8 @@ theorem logSource_mellinConvergent {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial 
     · exact Or.inl ⟨ht, h⟩
     · exact Or.inr h
   exact (hnear.union hFint).mono_set hsub
+
+end
 
 theorem idealLogMellin_source_interchange
     (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1)

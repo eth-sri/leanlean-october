@@ -57,7 +57,7 @@ private theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
       (KPContFlatLogNormSmooth.finiteComponent F ζ hζ g) := by
   let a := PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g
   obtain ⟨y, x, u, hfac, hy⟩ :=
-    KPContFlatArchProjectionNorm.archimedean_factorization F ζ hζ a
+    HeightGeometry.archimedean_factorization F ζ hζ a
   let k := PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
     (fun w => Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding (u w)))
   have hk : k ∈ K := insertion_mem F ζ hζ K hK.2.2 u

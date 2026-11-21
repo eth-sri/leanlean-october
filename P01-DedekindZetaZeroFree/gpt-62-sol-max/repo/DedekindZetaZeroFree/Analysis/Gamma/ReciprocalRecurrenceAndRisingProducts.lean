@@ -47,7 +47,7 @@ theorem rising_product_norm_lower_bound (σ t : ℝ) (n : ℕ) (ht : 1 ≤ |t|) 
     intro j _
     have h := Complex.abs_im_le_norm ((σ : ℂ) + (t : ℂ) * Complex.I + (j : ℂ))
     rwa [show ((σ : ℂ) + (t : ℂ) * Complex.I + (j : ℂ)).im = t by
-      simp [Complex.add_im, Complex.mul_I_im]] at h
+      simp [Complex.add_im]] at h
   rw [Complex.norm_prod]
   calc |t| ^ n = ∏ _j ∈ Finset.range n, |t| := by
         rw [Finset.prod_const, Finset.card_range]

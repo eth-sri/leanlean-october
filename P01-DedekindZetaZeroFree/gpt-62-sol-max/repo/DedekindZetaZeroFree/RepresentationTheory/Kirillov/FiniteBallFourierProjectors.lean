@@ -62,7 +62,7 @@ def quotientCharacter (u l : ℤ) (t : w.adicCompletion F)
   map_zero_eq_one' := by
     have h : (QuotientAddGroup.mk (Quotient.out (0 : finiteCompletionBallQuotient F w u l)) :
         finiteCompletionBallQuotient F w u l) = QuotientAddGroup.mk 0 := by
-      simpa using (Quotient.out_eq (0 : finiteCompletionBallQuotient F w u l))
+      simp
     simpa using phase_eq_of_mk_eq F w u l t ht h
   map_add_eq_mul' := by
     intro a b
@@ -375,7 +375,7 @@ def projector (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
             (averagingDepth F ζ hζ w ρ m hm hρ u t v) hL2 t h2.2.2)
           v (fixedByBall_mono F ζ hζ w ρ L
             (averagingDepth F ζ hζ w ρ m hm hρ u t v) hL2 v h2.2.1)]
-    simpa using map_smul (levelAverage F ζ hζ w ρ u L hulL t) c v
+    simp
 
 @[simp] theorem projector_apply (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F w m)
@@ -432,7 +432,7 @@ theorem projector_eq_self (u : ℤ) (t : w.adicCompletion F) (v : V)
     simp
   simp only [levelAverage, levelAverageWithRepresentatives, LinearMap.smul_apply,
     LinearMap.sum_apply, ht, Finset.sum_const, Finset.card_univ,
-    nsmul_eq_mul, Nat.card_eq_fintype_card]
+    Nat.card_eq_fintype_card]
   rw [← Nat.card_eq_fintype_card, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul, inv_mul_cancel₀, one_smul]
   exact_mod_cast Nat.card_pos.ne'
 

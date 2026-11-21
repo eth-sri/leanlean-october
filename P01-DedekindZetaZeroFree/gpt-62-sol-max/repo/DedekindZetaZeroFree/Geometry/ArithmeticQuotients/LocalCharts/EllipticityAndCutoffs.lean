@@ -46,9 +46,7 @@ variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
       Complex.smul_re, Complex.smul_im]
     by_cases h2 : ik.2 = 2
     · simp [h2]
-    · by_cases h0 : ik.2 = 0
-      · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
-      · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
+    simp [mul_comm, mul_left_comm, mul_assoc]
 
  def scaleT (d : ℕ) (z : KPArch.Space d) :
     KPArch.Space d →L[ℝ] HyperbolicChart.Space d :=
@@ -82,11 +80,11 @@ private lemma gram_quadform {n d : ℕ}
   simp only [hinner]
   have hξ : ξ = ∑ j, ξ j • EuclideanSpace.single j 1 := by
     conv_lhs => rw [← (EuclideanSpace.basisFun (Fin n) ℝ).sum_repr ξ]
-    simp only [EuclideanSpace.basisFun_apply, EuclideanSpace.basisFun_repr]
+    simp
   have hS : S ξ = ∑ j, ξ j • S (EuclideanSpace.single j 1) := by
     conv_lhs => rw [hξ]
     rw [map_sum]
-    simp only [map_smul]
+    simp
   rw [hS, ← real_inner_self_eq_norm_sq]
   rw [sum_inner]
   apply Finset.sum_congr rfl
@@ -104,8 +102,8 @@ private lemma inv_quadform_lower {n : ℕ} (M : Matrix (Fin n) (Fin n) ℝ) (hM 
   intro v
   rcases eq_or_ne v 0 with rfl | hv
   · simp
-  have hMinv : M⁻¹.PosDef := hM.inv
-  have hQ : 0 ≤ v ⬝ᵥ (M⁻¹ *ᵥ v) := hMinv.posSemidef.dotProduct_mulVec_nonneg v
+  have hMinv := hM.inv
+  have hQ := hMinv.posSemidef.dotProduct_mulVec_nonneg v
   have hA : 0 < v ⬝ᵥ v := by
     have hne : v ⬝ᵥ v ≠ 0 := fun h => hv (dotProduct_self_eq_zero.mp h)
     exact lt_of_le_of_ne (Finset.sum_nonneg fun i _ => mul_self_nonneg (v i)) (Ne.symm hne)
@@ -122,7 +120,7 @@ private lemma inv_quadform_lower {n : ℕ} (M : Matrix (Fin n) (Fin n) ℝ) (hM 
     calc (v ⬝ᵥ v) * (v ⬝ᵥ v) ≤ (v ⬝ᵥ (M⁻¹ *ᵥ v)) * (Λ * (v ⬝ᵥ v)) :=
           le_trans hCS (mul_le_mul_of_nonneg_left hb hQ)
       _ = (v ⬝ᵥ (M⁻¹ *ᵥ v) * Λ) * (v ⬝ᵥ v) := by ring
-  have hfin : v ⬝ᵥ v ≤ v ⬝ᵥ (M⁻¹ *ᵥ v) * Λ := le_of_mul_le_mul_right hstep hA
+  have hfin := le_of_mul_le_mul_right hstep hA
   rw [div_le_iff₀ hΛ]
   linarith [hfin]
 

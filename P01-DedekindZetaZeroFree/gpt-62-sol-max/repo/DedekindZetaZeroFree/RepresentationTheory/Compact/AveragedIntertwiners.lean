@@ -33,17 +33,22 @@ private theorem comp_inv_self {𝕜 G W : Type*} [RCLike 𝕜] [Group G]
   rw [← ContinuousLinearMap.mul_def, ← map_mul, mul_inv_cancel, map_one]
   rfl
 
-noncomputable def conjAction {𝕜 G V W : Type*} [RCLike 𝕜] [Group G]
-    [NormedAddCommGroup V] [NormedSpace 𝕜 V] [NormedAddCommGroup W] [NormedSpace 𝕜 W]
-    (π : ContRepresentation 𝕜 G V) (ρ : ContRepresentation 𝕜 G W) (g : G) :
+section
+
+variable {𝕜 G V W : Type*} [RCLike 𝕜] [Group G] [NormedAddCommGroup V] [NormedSpace 𝕜 V]
+  [NormedAddCommGroup W] [NormedSpace 𝕜 W] (π : ContRepresentation 𝕜 G V)
+  (ρ : ContRepresentation 𝕜 G W) (g : G)
+include π ρ g
+
+noncomputable def conjAction :
     (V →L[𝕜] W) →L[𝕜] V →L[𝕜] W :=
   ContRepresentation.linHom π ρ g⁻¹
 
-private theorem conjAction_apply {𝕜 G V W : Type*} [RCLike 𝕜] [Group G]
-    [NormedAddCommGroup V] [NormedSpace 𝕜 V] [NormedAddCommGroup W] [NormedSpace 𝕜 W]
-    (π : ContRepresentation 𝕜 G V) (ρ : ContRepresentation 𝕜 G W) (g : G) (S : V →L[𝕜] W) :
+private theorem conjAction_apply (S : V →L[𝕜] W) :
     conjAction π ρ g S = (ρ g⁻¹).comp (S.comp (π g)) := by
   rw [conjAction, ContRepresentation.linHom_apply, inv_inv]
+
+end
 
 end DedekindZetaZeroFree.TauCeti
 
@@ -113,12 +118,17 @@ theorem averageOperator_smul (c : 𝕜) (T : V →L[𝕜] W) :
 
 variable [CompleteSpace W]
 
-private theorem conjAction_averageOperator (T : V →L[𝕜] W) (g : G) :
+section
+
+variable (T : V →L[𝕜] W)
+include T
+
+private theorem conjAction_averageOperator (g : G) :
     conjAction π ρ g (averageOperator π hπ ρ hρ T) = averageOperator π hπ ρ hρ T := by
   rw [averageOperator, ← ContinuousLinearMap.haarAverage_comp_comm,
     conjAction_comp_conjFamily π hπ ρ hρ T g, haarAverage_comp_mulRight]
 
-theorem averageOperator_comp (T : V →L[𝕜] W) (g : G) : (averageOperator π hπ ρ hρ T).comp (π g)
+theorem averageOperator_comp (g : G) : (averageOperator π hπ ρ hρ T).comp (π g)
       = (ρ g).comp (averageOperator π hπ ρ hρ T) := by
   have h := conjAction_averageOperator π hπ ρ hρ T g
   rw [conjAction_apply] at h
@@ -131,21 +141,21 @@ theorem averageOperator_comp (T : V →L[𝕜] W) (g : G) : (averageOperator π 
         ContinuousLinearMap.comp_assoc _ _ _
     _ = (ρ g).comp (averageOperator π hπ ρ hρ T) := by rw [h]
 
-noncomputable def averageIntertwiner (T : V →L[𝕜] W) : ContIntertwiningMap π ρ where
+noncomputable def averageIntertwiner : ContIntertwiningMap π ρ where
   __ := averageOperator π hπ ρ hρ T
   isIntertwining' g := averageOperator_comp π hπ ρ hρ T g
 
 @[simp]
-theorem toContinuousLinearMap_averageIntertwiner (T : V →L[𝕜] W) :
+theorem toContinuousLinearMap_averageIntertwiner :
     (averageIntertwiner π hπ ρ hρ T).toContinuousLinearMap = averageOperator π hπ ρ hρ T :=
   (rfl)
 
 @[simp]
-theorem averageIntertwiner_apply (T : V →L[𝕜] W) (v : V) :
+theorem averageIntertwiner_apply (v : V) :
     averageIntertwiner π hπ ρ hρ T v = averageOperator π hπ ρ hρ T v :=
   (rfl)
 
-theorem averageOperator_eq_self (T : V →L[𝕜] W) (hT : ∀ g : G, T.comp (π g) = (ρ g).comp T) :
+theorem averageOperator_eq_self (hT : ∀ g : G, T.comp (π g) = (ρ g).comp T) :
     averageOperator π hπ ρ hρ T = T := by
   have hT_apply (g : G) (v : V) : T (π g v) = ρ g (T v) :=
     congrArg (fun S : V →L[𝕜] W ↦ S v) (hT g)
@@ -154,6 +164,8 @@ theorem averageOperator_eq_self (T : V →L[𝕜] W) (hT : ∀ g : G, T.comp (π
     rw [conjFamily_apply_apply, hT_apply g v]
     exact Representation.inv_self_apply ρ.toRepresentation g (T v)
   rw [averageOperator, hconst, haarAverage_const]
+
+end
 
 @[simp]
 theorem averageOperator_toContinuousLinearMap (f : ContIntertwiningMap π ρ) :

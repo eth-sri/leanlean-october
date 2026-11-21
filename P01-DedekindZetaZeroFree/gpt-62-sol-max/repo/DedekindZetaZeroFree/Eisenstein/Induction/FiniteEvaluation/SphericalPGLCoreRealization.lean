@@ -85,7 +85,7 @@ private theorem diagonal_projective (B : KPCplxCharacterHaar.ComplexGL2)
       KubotaRankTwo.d, Matrix.mul_apply, Fin.sum_univ_two, u, v, h10, h01, div_eq_mul_inv]
     have hv : B 1 1 ≠ 0 := (KPGlobalTorusMatrixCertificates.diagonal_units B h10).2.ne_zero
     field_simp
-  rw [hB, map_mul, Matrix.ProjGenLinGroup.mk_scalar, one_mul]
+  simp_all
 
 private theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (e : KPGlobalTorusFunctionData.E F ζ hζ) :
@@ -101,10 +101,8 @@ private theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField 
         Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ z 1) := by
     intro w
     apply diagonal_projective
-    · change f w (B 1 0) = 0
-      rw [h10, map_zero]
-    · change f w (B 0 1) = 0
-      rw [h01, map_zero]
+    · simp_all
+    simp_all
   choose z hz using hd
   refine ⟨z, ?_⟩
   unfold PGLComplex.AdelicSlicesRaw.archProjection
@@ -124,8 +122,7 @@ private theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField 
   refine ⟨z, ef, ?_, ?_⟩
   · have hi : d.val = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
         (fun w => Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (z w) 1)) := by
-      exact (KPContinuation.ChamberFlatCasimir.arch_diagonal_insertion F ζ hζ
-        (fun w => (z w : ℂ)) (fun w => Units.ne_zero (z w))).symm
+      solve_by_elim [KPContinuation.ChamberFlatCasimir.arch_diagonal_insertion, Units.ne_zero, symm]
     have hp : PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ d.val =
         PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ e.val := by
       rw [hi]

@@ -37,9 +37,7 @@ theorem logLocalized_smooth_support (R : ℝ) (χ ψ K : ℝ → ℂ)
   have hχ1 : ContDiff ℝ ∞ (fun p : ℝ × ℝ => χ p.1) := hχ.comp contDiff_fst
   have hψ2 : ContDiff ℝ ∞ (fun p : ℝ × ℝ => ψ p.2) := hψ.comp contDiff_snd
   constructor
-  · change ContDiff ℝ ∞ (fun p : ℝ × ℝ =>
-        χ p.1 * ψ p.2 * K (scale * Real.exp ((p.1 + p.2) / 2)))
-    exact hχ1.mul hψ2 |>.mul hKcomp
+  · exact hχ1.mul hψ2 |>.mul hKcomp
   · intro p hp
     have hχne : χ p.1 ≠ 0 := by
       intro h

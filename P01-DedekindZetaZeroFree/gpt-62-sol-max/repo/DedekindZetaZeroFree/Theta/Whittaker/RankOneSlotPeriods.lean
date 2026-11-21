@@ -112,10 +112,10 @@ lemma slotPeriod_root (s : RestrictedTensorSimple.Level D.bad)
   rw [show finiteLift R p (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) t) =
       KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
         (KPRationalAdelicSplitting.localAdele F (Sum.inr p) t) from
-      ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R p t, (hg t).eq]
+      MomentSources.finite_root_injection R p t, (hg t).eq]
   letI := Q.quotientHaar
-  rw [ExteriorWhittakerValues.StoredWhittaker.fourier_left_root R Q.dq (D.coreMap core)
-    (ExteriorWhittakerValues.StoredWhittaker.core_rational_root R D core) _ g (core_period_integrable R D core g)]
+  rw [MomentSources.fourier_left_root R Q.dq (D.coreMap core)
+    (ExteriorWhittakerValues.StoredWhittaker.core_rational_root R D core) _ g]
   have htrace : adelicTraceQuotientCharacter F (QuotientAddGroup.mk
       (KPRationalAdelicSplitting.localAdele F (Sum.inr p) t)) = ResidueTrace.localTraceCharacter p t := by
     rw [CodifferentResidueSieve.localTraceCharacter_eq_localFiniteCharacter]

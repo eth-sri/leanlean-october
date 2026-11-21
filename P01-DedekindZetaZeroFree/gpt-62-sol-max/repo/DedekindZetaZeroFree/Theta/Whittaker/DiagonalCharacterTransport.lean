@@ -53,7 +53,7 @@ private theorem scalar_on_ball (F : Type) [Field F] [NumberField F]
     filter_upwards with x
     by_cases hx : x ∈ finiteCompletionBall F v n
     · simp [f, U, localCosetIndicator_apply, hx, Set.indicator_of_mem,
-        δ, AddChar.mulShift_apply, mul_comm, mul_assoc]
+        δ, AddChar.mulShift_apply, mul_comm]
       exact hx
     · simp [f, U, localCosetIndicator_apply, hx, Set.indicator_of_notMem]
       exact lt_of_not_ge hx
@@ -132,9 +132,8 @@ theorem conjugation_quotient
     rw [← map_mul, ← map_mul, hc]
   have hi (x : N) (v : V) : ρ g⁻¹ (β x v) = α (s.symm x) (ρ g⁻¹ v) := by
     apply (Representation.apply_bijective ρ g).injective
-    change ρ g (ρ g⁻¹ (β x v)) = ρ g (α (s.symm x) (ρ g⁻¹ v))
     rw [hf, s.apply_symm_apply]
-    simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, α, β]
+    simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, β]
   let f : α.Coinvariants →ₗ[ℂ] β.Coinvariants :=
     Representation.Coinvariants.lift α
       ((Representation.Coinvariants.mk β).comp (ρ g)) (by
@@ -152,12 +151,12 @@ theorem conjugation_quotient
     induction v using Representation.Coinvariants.induction_on with
     | h v =>
       change Representation.Coinvariants.mk α (ρ g⁻¹ (ρ g v)) = _
-      simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, α, β]
+      simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, α]
   · intro v
     induction v using Representation.Coinvariants.induction_on with
     | h v =>
       change Representation.Coinvariants.mk β (ρ g (ρ g⁻¹ v)) = _
-      simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, α, β]
+      simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, β]
 
 theorem character_scalar (F : Type) [Field F] [NumberField F]
     (q : HeightOneSpectrum (𝓞 F)) (χ : AddChar (q.adicCompletion F) ℂˣ)

@@ -2,7 +2,8 @@ module
 
 public import Mathlib.LinearAlgebra.Trace
 public import Mathlib.RepresentationTheory.Irreducible
-public import DedekindZetaZeroFree.RepresentationTheory.Continuous.IntertwiningMaps
+public import Mathlib.RepresentationTheory.Continuous.Basic
+public import Mathlib.Topology.Algebra.Module.FiniteDimension
 
 @[expose] public section
 

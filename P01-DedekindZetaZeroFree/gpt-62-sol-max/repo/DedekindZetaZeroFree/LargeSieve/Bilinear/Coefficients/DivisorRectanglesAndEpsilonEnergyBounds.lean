@@ -28,53 +28,7 @@ def weightedDivisorBlock (C : Context Q) (e f g a : Ideal (𝓞 F)) : ℂ :=
         C.primitive p hp e * C.primitive p hp a
     else 0
 
-private lemma bin_unique {X P R : ℝ} {f : Ideal (𝓞 F)}
-    (hP : P ∈ ErrorRectangles.scales X) (hR : R ∈ ErrorRectangles.scales X)
-    (hp : ErrorRectangles.InBin P f) (hr : ErrorRectangles.InBin R f) : P = R := by
-  have power {S : ℝ} (hS : S ∈ ErrorRectangles.scales X) : ∃ i : ℕ, S = 2 ^ i := by
-    rcases Finset.mem_insert.mp hS with h | h
-    · exact ⟨0, by simpa using h⟩
-    · obtain ⟨i, _, hi⟩ := Finset.mem_image.mp h
-      exact ⟨i, hi.symm⟩
-  obtain ⟨i, rfl⟩ := power hP
-  obtain ⟨j, rfl⟩ := power hR
-  have step {i j : ℕ} (hij : i < j) : 2 * (2 : ℝ) ^ i ≤ (2 : ℝ) ^ j := by
-    calc
-      _ = (2 : ℝ) ^ (i+1) := by rw [pow_succ'];
-      _ ≤ _ := pow_le_pow_right₀ (by norm_num) hij
-  have nonone {j : ℕ} (hj : 0 < j) : (2 : ℝ) ^ j ≠ 1 := by
-    have hh : (2 : ℝ) ≤ 2 ^ j := by
-      simpa using (pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hj)
-    linarith
-  rcases lt_trichotomy i j with hij | hij | hij
-  · have hj := nonone (by omega : 0 < j)
-    have hl : (2 : ℝ) ^ j < norm f := by simpa [hj] using hr.2.1
-    have hh := step hij
-    linarith [hp.2.2]
-  · rw [hij]
-  · have hi := nonone (by omega : 0 < i)
-    have hl : (2 : ℝ) ^ i < norm f := by simpa [hi] using hp.2.1
-    have hh := step hij
-    linarith [hr.2.2]
-
-private lemma product_unique {u v a b x y : Ideal (𝓞 F)}
-    (huv : u ⊔ v = ⊤) (ha : a ∣ u) (hb : b ∣ v) (hx : x ∣ u) (hy : y ∣ v)
-    (heq : a*b = x*y) : a = x ∧ b = y := by
-  have hrel : IsRelPrime u v := by
-    intro z hz hz'
-    apply Ideal.isUnit_iff.mpr
-    apply top_unique
-    rw [← huv]
-    exact sup_le (Ideal.dvd_iff_le.mp hz) (Ideal.dvd_iff_le.mp hz')
-  have hax : a ∣ x := (hrel.of_dvd_left ha |>.of_dvd_right hy).dvd_of_dvd_mul_right
-    (heq ▸ dvd_mul_right a b)
-  have hxa : x ∣ a := (hrel.of_dvd_left hx |>.of_dvd_right hb).dvd_of_dvd_mul_right
-    (heq.symm ▸ dvd_mul_right x y)
-  have hby : b ∣ y := (hrel.symm.of_dvd_left hb |>.of_dvd_right hx).dvd_of_dvd_mul_left
-    (heq ▸ dvd_mul_left b a)
-  have hyb : y ∣ b := (hrel.symm.of_dvd_left hy |>.of_dvd_right ha).dvd_of_dvd_mul_left
-    (heq.symm ▸ dvd_mul_left y x)
-  exact ⟨dvd_antisymm hax hxa, dvd_antisymm hby hyb⟩
+open DivisorBins (bin_unique product_unique)
 
 private lemma bin_filter_eq (C : Context Q) {B : ℝ} {p : Ideal (𝓞 F) × Ideal (𝓞 F)}
     (hp : p ∈ C.pairs) {P : ℝ × ℝ} (hP : P ∈ Origin.rectangles C B)

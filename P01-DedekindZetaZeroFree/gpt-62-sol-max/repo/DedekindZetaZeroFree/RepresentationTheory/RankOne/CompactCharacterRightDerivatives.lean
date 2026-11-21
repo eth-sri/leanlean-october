@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PU2TracePeakApproximation
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.U2CharacterConvolutionOrthogonality
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HarmonicPolynomials.SymmetricPowerAction
 public import DedekindZetaZeroFree.Analysis.FiniteDimensional.CompatibleComplexNorm
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.SU2.WeylIntegration

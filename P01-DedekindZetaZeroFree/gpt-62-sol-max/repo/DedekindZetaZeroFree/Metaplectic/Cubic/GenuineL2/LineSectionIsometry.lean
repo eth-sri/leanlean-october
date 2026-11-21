@@ -26,12 +26,6 @@ def scalarRepresentative (s : Sections F ζ hζ U R P H) :
     GenuineCoveredScalars F ζ hζ U :=
   (J F ζ hζ U).symm ((H.atlas U).scalar_realization.symm s)
 
-theorem scalarRepresentative_mk (s : Sections F ζ hζ U R P H)
-    (x : SymmetricSpace F) (c : FiniteCover F ζ hζ) :
-    (scalarRepresentative F ζ hζ U R P H s).val
-      (Quotient.mk (coveredRelation F ζ hζ U) (x,c)) =
-        ((H.atlas U).scalar_realization.symm s).val (x,c) := by
-  rfl
 
 theorem scalarRepresentative_eq_symm (s : Sections F ζ hζ U R P H) :
     scalarRepresentative F ζ hζ U R P H s = (S F ζ hζ U R P H).symm s := by
@@ -631,8 +625,6 @@ def sectorLineIsometry : KPContSectorClosedLpSubspace.H F ζ hζ R U ≃ₗᵢ[�
     change ‖lineToSector F ζ hζ U R P H ((lineToSector F ζ hζ U R P H).symm u)‖ = ‖u‖
     rw [LinearEquiv.apply_symm_apply]
 
-instance instCompleteSpaceL2Line : CompleteSpace (L2Line F ζ hζ U R P H) :=
-  (sectorLineIsometry F ζ hζ U R P H).symm.toIsometryEquiv.completeSpace
 
 instance instInnerProductSpaceL2Line : InnerProductSpace ℂ (L2Line F ζ hζ U R P H) :=
   InnerProductSpace.induced (lineToSector F ζ hζ U R P H)
@@ -694,177 +686,17 @@ theorem sectorLineIsometry_representative
   rw [← heq]
   exact sectorLineIsometry_toSector F ζ hζ U R P H f
 
-def ContinuousL2Scalars : Submodule ℂ (BorelL2Scalars F ζ hζ U R) where
-  carrier := {f | Continuous f.val.val}
-  zero_mem' := continuous_const
-  add_mem' := by
-    intro f g hf hg
-    exact hf.add hg
-  smul_mem' := by
-    intro c f hf
-    exact hf.const_smul c
 
-def ContinuousL2Sections : Submodule ℂ (BorelL2Sections F ζ hζ U R P H) where
-  carrier := {s | ∀ i, Continuous (s.val i).val}
-  zero_mem' := fun _ => continuous_const
-  add_mem' := by
-    intro s t hs ht i
-    exact (hs i).add (ht i)
-  smul_mem' := by
-    intro c s hs i
-    exact (hs i).const_smul c
 
-def continuousScalarEmbedding : ContinuousL2Scalars F ζ hζ U R →ₗ[ℂ]
-    KPContSectorClosedLpSubspace.H F ζ hζ R U :=
-  (scalarEmbedding F ζ hζ U R P H).comp (ContinuousL2Scalars F ζ hζ U R).subtype
 
-def continuousSectionEmbedding : ContinuousL2Sections F ζ hζ U R P H →ₗ[ℂ]
-    L2Line F ζ hζ U R P H :=
-  (mk F ζ hζ U R P H).comp (ContinuousL2Sections F ζ hζ U R P H).subtype
 
-theorem continuousScalarEmbedding_injective :
-    Function.Injective (continuousScalarEmbedding F ζ hζ U R P H) := by
-  letI := (levelSupport F ζ hζ R P
-    (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1 U).covered_open_positive
-  intro f g hfg
-  have hlp := congrArg (fun u : KPContSectorClosedLpSubspace.H F ζ hζ R U => u.val) hfg
-  change (scalarEmbedding F ζ hζ U R P H f.val).val =
-    (scalarEmbedding F ζ hζ U R P H g.val).val at hlp
-  rw [scalarEmbedding_coe, scalarEmbedding_coe] at hlp
-  have hae := (f.val.property.2.toLp_eq_toLp_iff g.val.property.2).mp hlp
-  have heq := (f.property.ae_eq_iff_eq (coveredMeasure F ζ hζ R U) g.property).mp hae
-  apply Subtype.ext
-  apply Subtype.ext
-  exact Subtype.ext heq
 
-theorem continuousSectionEmbedding_injective :
-    Function.Injective (continuousSectionEmbedding F ζ hζ U R P H) := by
-  letI := (levelSupport F ζ hζ R P
-    (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1 U).covered_open_positive
-  intro s t hst
-  have hae := (null_iff_scalar_ae_eq F ζ hζ U R P H s.val t.val).mp
-    ((mk_eq_mk_iff F ζ hζ U R P H s.val t.val).mp hst)
-  have hs := (continuous_iff F ζ hζ U R P H s.val.val).mp s.property
-  have ht := (continuous_iff F ζ hζ U R P H t.val.val).mp t.property
-  have heq := (hs.ae_eq_iff_eq (coveredMeasure F ζ hζ R U) ht).mp hae
-  have hsct : scalarRepresentative F ζ hζ U R P H s.val.val =
-      scalarRepresentative F ζ hζ U R P H t.val.val := Subtype.ext heq
-  have hval : s.val.val = t.val.val := (S F ζ hζ U R P H).symm.injective hsct
-  exact Subtype.ext (Subtype.ext hval)
 
-def SmoothCompactL2Scalars : Submodule ℂ (BorelL2Scalars F ζ hζ U R) where
-  carrier := {f | IsSmoothCovered F ζ hζ U f.val ∧ HasCompactSupport f.val.val}
-  zero_mem' := ⟨by
-      show IsSmoothCovered F ζ hζ U (0 : GenuineCoveredScalars F ζ hζ U)
-      intro c
-      have h : (fun x : SymmetricSpace F => (J F ζ hζ U 0).val (x, c))
-          = fun _ => (0 : ℂ) := by
-        funext x; simp
-      rw [h]; exact contDiff_const,
-    by
-      show HasCompactSupport (0 : CoveredSpherical F ζ hζ U → ℂ)
-      rw [hasCompactSupport_iff_eventuallyEq]⟩
-  add_mem' := by
-    intro f g hf hg
-    refine ⟨?_, ?_⟩
-    · show IsSmoothCovered F ζ hζ U (f.val + g.val)
-      intro c
-      have h : (fun x : SymmetricSpace F => (J F ζ hζ U (f.val + g.val)).val (x, c))
-          = fun x => (J F ζ hζ U f.val).val (x, c) + (J F ζ hζ U g.val).val (x, c) := by
-        funext x; simp [map_add]
-      rw [h]; exact (hf.1 c).add (hg.1 c)
-    · simpa using hf.2.add hg.2
-  smul_mem' := by
-    intro a f hf
-    refine ⟨?_, ?_⟩
-    · show IsSmoothCovered F ζ hζ U (a • f.val)
-      intro c
-      have h : (fun x : SymmetricSpace F => (J F ζ hζ U (a • f.val)).val (x, c))
-          = fun x => a • (J F ζ hζ U f.val).val (x, c) := by
-        funext x; simp [map_smul]
-      rw [h]; exact (hf.1 c).const_smul a
-    · have heq : (a • f).val.val = fun x => a * f.val.val x := by
-        funext x; simp [Pi.smul_apply, smul_eq_mul]
-      rw [heq]; exact hf.2.comp_left (g := fun z => a * z) (by simp)
 
-def smoothCompactScalarEmbedding : SmoothCompactL2Scalars F ζ hζ U R →ₗ[ℂ]
-    KPContSectorClosedLpSubspace.H F ζ hζ R U :=
-  (scalarEmbedding F ζ hζ U R P H).comp (SmoothCompactL2Scalars F ζ hζ U R).subtype
 
-theorem smoothCompactScalarEmbedding_injective :
-    Function.Injective (smoothCompactScalarEmbedding F ζ hζ U R P H) := by
-  intro f g hfg
-  have hcont : ∀ h : SmoothCompactL2Scalars F ζ hζ U R, Continuous h.val.val.val := by
-    intro h
-    have hs := (smooth_iff F ζ hζ U R P H h.val.val).mp h.property.1
-    have hc := (continuous_iff F ζ hζ U R P H (S F ζ hζ U R P H h.val.val)).mp
-      (fun i => (hs i).continuous)
-    simpa only [scalarRepresentative_eq_symm, LinearEquiv.symm_apply_apply] using hc
-  let f₀ : ContinuousL2Scalars F ζ hζ U R := ⟨f.val, hcont f⟩
-  let g₀ : ContinuousL2Scalars F ζ hζ U R := ⟨g.val, hcont g⟩
-  have heq : continuousScalarEmbedding F ζ hζ U R P H f₀ =
-      continuousScalarEmbedding F ζ hζ U R P H g₀ := hfg
-  have hval := congrArg (fun h : ContinuousL2Scalars F ζ hζ U R => h.val)
-    (continuousScalarEmbedding_injective F ζ hζ U R P H heq)
-  exact Subtype.ext hval
 
-def SmoothCompactL2Sections : Submodule ℂ (BorelL2Sections F ζ hζ U R P H) where
-  carrier := {s | IsSmoothSections F ζ hζ U R P H s.val ∧
-    HasCompactSupport (sectionNorm F ζ hζ U R P H s.val)}
-  zero_mem' := ⟨by
-      show IsSmoothSections F ζ hζ U R P H (0 : Sections F ζ hζ U R P H)
-      intro i
-      have h : ((0 : Sections F ζ hζ U R P H) i).val = fun _ => (0 : ℂ) := by
-        funext x; simp
-      rw [h]; exact contDiff_const,
-    by
-      show HasCompactSupport (sectionNorm F ζ hζ U R P H (0 : Sections F ζ hζ U R P H))
-      rw [sectionNorm_zero, hasCompactSupport_iff_eventuallyEq]⟩
-  add_mem' := by
-    intro s t hs ht
-    refine ⟨?_, ?_⟩
-    · show IsSmoothSections F ζ hζ U R P H (s.val + t.val)
-      intro i
-      have h : ((s.val + t.val) i).val = fun x => (s.val i).val x + (t.val i).val x := by
-        funext x; simp
-      rw [h]; exact (hs.1 i).add (ht.1 i)
-    · refine (hs.2.add ht.2).mono (fun b hb => ?_)
-      intro h0
-      exact hb (le_antisymm (h0 ▸ sectionNorm_add_le F ζ hζ U R P H s.val t.val b)
-        (sectionNorm_nonneg F ζ hζ U R P H (s.val + t.val) b))
-  smul_mem' := by
-    intro c s hs
-    refine ⟨?_, ?_⟩
-    · show IsSmoothSections F ζ hζ U R P H (c • s.val)
-      intro i
-      have h : ((c • s.val) i).val = fun x => c • (s.val i).val x := by
-        funext x; simp
-      rw [h]; exact (hs.1 i).const_smul c
-    · change HasCompactSupport (sectionNorm F ζ hζ U R P H (c • s.val))
-      have heq : sectionNorm F ζ hζ U R P H (c • s.val) =
-          (fun _ => ‖c‖) * sectionNorm F ζ hζ U R P H s.val := by
-        rw [sectionNorm_smul]
-        funext b; rfl
-      rw [heq]
-      exact HasCompactSupport.mul_left (f := fun _ => ‖c‖)
-        (f' := sectionNorm F ζ hζ U R P H s.val) hs.2
 
-def smoothCompactSectionEmbedding : SmoothCompactL2Sections F ζ hζ U R P H →ₗ[ℂ]
-    L2Line F ζ hζ U R P H :=
-  (mk F ζ hζ U R P H).comp (SmoothCompactL2Sections F ζ hζ U R P H).subtype
 
-theorem smoothCompactSectionEmbedding_injective :
-    Function.Injective (smoothCompactSectionEmbedding F ζ hζ U R P H) := by
-  intro s t hst
-  let s₀ : ContinuousL2Sections F ζ hζ U R P H :=
-    ⟨s.val, fun i => (s.property.1 i).continuous⟩
-  let t₀ : ContinuousL2Sections F ζ hζ U R P H :=
-    ⟨t.val, fun i => (t.property.1 i).continuous⟩
-  have heq : continuousSectionEmbedding F ζ hζ U R P H s₀ =
-      continuousSectionEmbedding F ζ hζ U R P H t₀ := hst
-  have hval := congrArg Subtype.val
-    (continuousSectionEmbedding_injective F ζ hζ U R P H heq)
-  exact Subtype.ext hval
 
 theorem squaredNorm_measurable (s : Sections F ζ hζ U R P H)
     (hs : ∀ i, Measurable (s i).val) :
@@ -880,154 +712,22 @@ theorem squaredNorm_measurable (s : Sections F ζ hζ U R P H)
   rw [heq] at hn
   exact hn
 
-theorem squaredNorm_pullback (s : Sections F ζ hζ U R P H)
-    (v : CoveredSpherical F ζ hζ U) :
-    squaredNorm F ζ hζ U R P H s (q F ζ hζ U v) =
-      ENNReal.ofReal (‖(scalarRepresentative F ζ hζ U R P H s).val v‖ ^ 2) := by
-  have heq : S F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H s) = s :=
-    (S F ζ hζ U R P H).apply_symm_apply s
-  unfold squaredNorm
-  rw [← heq, sectionNorm_pullback, heq]
 
-theorem base_restriction (s : Sections F ζ hζ U R P H)
-    (hs : ∀ i, Measurable (s i).val)
-    (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hE : MeasurableSet E) :
-    Measurable (fun b : E => squaredNorm F ζ hζ U R P H s b.val) ∧
-    Measurable (fun v : (q F ζ hζ U) ⁻¹' E =>
-      (scalarRepresentative F ζ hζ U R P H s).val v.val) ∧
-    (∫⁻ b in E, squaredNorm F ζ hζ U R P H s b ∂sphericalMeasure F ζ hζ R P U) =
-      ∫⁻ v in (q F ζ hζ U) ⁻¹' E,
-        ENNReal.ofReal (‖(scalarRepresentative F ζ hζ U R P H s).val v‖ ^ 2)
-          ∂coveredMeasure F ζ hζ R U := by
-  have hf := (borel_iff F ζ hζ U R P H s).mp hs
-  refine ⟨(squaredNorm_measurable F ζ hζ U R P H s hs).comp measurable_subtype_coe,
-    hf.comp measurable_subtype_coe, ?_⟩
-  have hn := (DedekindZetaZeroFree.kp_cont_sector_fixed_line_norm_integrals
-    F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H s) hf).restricted_pushforward E hE
-  have heq : S F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H s) = s :=
-    (S F ζ hζ U R P H).apply_symm_apply s
-  simpa only [KPContSectorFixedLineNormIntegrals.lineNorm, heq, squaredNorm] using hn.symm
 
-theorem lift_restriction (s : Sections F ζ hζ U R P H)
-    (hs : ∀ i, Measurable (s i).val)
-    (i : Fin (H.atlas U).componentCount) (V : Set (SymmetricSpace F))
-    (hV : MeasurableSet V) :
-    Measurable (fun x : V => (s i).val x.val) ∧
-    (fun x : V => (J F ζ hζ U (scalarRepresentative F ζ hζ U R P H s)).val
-      (x.val, (H.atlas U).representative i)) = (fun x : V => (s i).val x.val) ∧
-    (∀ x : V, squaredNorm F ζ hζ U R P H s
-      ((H.atlas U).components ⟨i, Quotient.mk _ x.val⟩) =
-        ENNReal.ofReal (‖(s i).val x.val‖ ^ 2)) := by
-  refine ⟨(hs i).comp measurable_subtype_coe, ?_, ?_⟩
-  · funext x
-    have heq := congrArg (fun t : Sections F ζ hζ U R P H => (t i).val x.val)
-      ((S F ζ hζ U R P H).apply_symm_apply s)
-    rw [S_apply, ← J_apply] at heq
-    exact heq
-  · intro x
-    unfold squaredNorm
-    rw [sectionNorm_component]
 
-instance instMeasurableSpaceCoveredChartDomain
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i x) :
-    MeasurableSpace (KPContSectorPhaseComponentCharts.CoveredChartDomain F ζ hζ U R P H i x O) :=
-  borel _
 
-instance instBorelSpaceCoveredChartDomain
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i x) :
-    BorelSpace (KPContSectorPhaseComponentCharts.CoveredChartDomain F ζ hζ U R P H i x O) :=
-  ⟨rfl⟩
 
-theorem orbifold_restriction (s : Sections F ζ hζ U R P H)
-    (hs : ∀ i, Measurable (s i).val)
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i x) :
-    Measurable (fun v : KPContSectorPhaseComponentCharts.CoveredChartDomain F ζ hζ U R P H i x O =>
-      (scalarRepresentative F ζ hζ U R P H s).val
-        (KPContSectorPhaseComponentCharts.coveredChart F ζ hζ U R P H i x O v).val) ∧
-    (∀ (m : KPContSectorPhaseComponentCharts.PhaseSheets F ζ hζ U) (y : O.neighborhood),
-      (scalarRepresentative F ζ hζ U R P H s).val
-        (KPContSectorPhaseComponentCharts.coveredChart F ζ hζ U R P H i x O
-          (Quotient.mk _ (m,y))).val =
-        (phaseCoefficient F ζ hζ U R P H s i m y.val : ℂ)) ∧
-    (∀ (ε : rootsOfUnity 3 F) (y : O.neighborhood),
-      squaredNorm F ζ hζ U R P H s
-        (q F ζ hζ U (KPContSectorPhaseComponentCharts.coveredChart F ζ hζ U R P H i x O
-          (Quotient.mk _ (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ U ε,y))).val) =
-        ENNReal.ofReal (‖(s i).val y.val‖ ^ 2)) := by
-  have hf := (borel_iff F ζ hζ U R P H s).mp hs
-  have heq : S F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H s) = s :=
-    (S F ζ hζ U R P H).apply_symm_apply s
-  refine ⟨hf.comp (measurable_subtype_coe.comp
-    (KPContSectorPhaseComponentCharts.coveredChart F ζ hζ U R P H i x O).measurable), ?_, ?_⟩
-  · intro m y
-    simpa only [heq] using orbifold_restriction_commutes F ζ hζ U R P H
-      (scalarRepresentative F ζ hζ U R P H s) i x O m y
-  · intro ε y
-    rw [squaredNorm_pullback,
-      KPContSectorPhaseComponentCharts.coveredChart_mk, scalarRepresentative_mk]
-    have hc : ((H.atlas U).scalar_realization.symm s).val
-        (y.val, KPCuspGenuineMonodromy.central F ζ hζ ε * (H.atlas U).representative i) =
-        (chi F ζ hζ ε : ℂ) * (s i).val y.val := by
-      simpa only [scalarRepresentative_mk, heq] using phase_lift_formula
-        F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H s) i ε y.val
-    rw [hc, norm_mul, chi_coe, chi_norm, one_mul]
 
 structure RealizationIdentities : Prop where
-  borel : ∀ s : Sections F ζ hζ U R P H,
-    (∀ i, Measurable (s i).val) ↔ Measurable (scalarRepresentative F ζ hζ U R P H s).val
-  reconstruction : ∀ (s : Sections F ζ hζ U R P H)
-      (x : SymmetricSpace F) (c : FiniteCover F ζ hζ),
-    (scalarRepresentative F ζ hζ U R P H s).val
-      (Quotient.mk (coveredRelation F ζ hζ U) (x,c)) =
-        ((H.atlas U).scalar_realization.symm s).val (x,c)
   null_relation : ∀ s t : BorelL2Sections F ζ hζ U R P H,
     mk F ζ hζ U R P H s = mk F ζ hζ U R P H t ↔
       squaredNorm F ζ hζ U R P H (s.val - t.val) =ᵐ[sphericalMeasure F ζ hζ R P U] 0
   norm_formula : ∀ s : BorelL2Sections F ζ hζ U R P H,
     ‖mk F ζ hζ U R P H s‖ ^ 2 = (normIntegral F ζ hζ U R P H s.val).toReal
-  extended_norm_formula : ∀ s : BorelL2Sections F ζ hζ U R P H,
-    ENNReal.ofReal (‖mk F ζ hζ U R P H s‖ ^ 2) = normIntegral F ζ hζ U R P H s.val
   forward : ∀ (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
       (f : BorelL2Scalars F ζ hζ U R),
     f.property.2.toLp f.val.val = (u : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U) →
       sectorLineIsometry F ζ hζ U R P H u = mk F ζ hζ U R P H (borelS F ζ hζ U R P H f)
-  inverse : ∀ s : BorelL2Sections F ζ hζ U R P H,
-    ((sectorLineIsometry F ζ hζ U R P H).symm (mk F ζ hζ U R P H s) :
-      KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U) =
-        (representative_memLp F ζ hζ U R P H s).toLp
-          (scalarRepresentative F ζ hζ U R P H s.val).val
-  continuous_scalars : Function.Injective (continuousScalarEmbedding F ζ hζ U R P H)
-  continuous_sections : Function.Injective (continuousSectionEmbedding F ζ hζ U R P H)
-  smooth_compact_scalars : Function.Injective (smoothCompactScalarEmbedding F ζ hζ U R P H)
-  smooth_compact_sections : Function.Injective (smoothCompactSectionEmbedding F ζ hζ U R P H)
-  restricted_norm : ∀ (s : Sections F ζ hζ U R P H), (∀ i, Measurable (s i).val) →
-    ∀ E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), MeasurableSet E →
-      (∫⁻ b in E, squaredNorm F ζ hζ U R P H s b ∂sphericalMeasure F ζ hζ R P U) =
-        ∫⁻ v in (q F ζ hζ U) ⁻¹' E,
-          ENNReal.ofReal (‖(scalarRepresentative F ζ hζ U R P H s).val v‖ ^ 2)
-            ∂coveredMeasure F ζ hζ R U
-  restricted_borel : ∀ (s : Sections F ζ hζ U R P H), (∀ i, Measurable (s i).val) →
-    ∀ E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U), MeasurableSet E →
-      Measurable (fun b : E => squaredNorm F ζ hζ U R P H s b.val) ∧
-      Measurable (fun v : (q F ζ hζ U) ⁻¹' E =>
-        (scalarRepresentative F ζ hζ U R P H s).val v.val)
-  chart_borel : ∀ (s : Sections F ζ hζ U R P H), (∀ i, Measurable (s i).val) →
-    ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-      (O : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i x),
-      Measurable (fun v : KPContSectorPhaseComponentCharts.CoveredChartDomain F ζ hζ U R P H i x O =>
-        (scalarRepresentative F ζ hζ U R P H s).val
-          (KPContSectorPhaseComponentCharts.coveredChart F ζ hζ U R P H i x O v).val)
-  chart_norm : ∀ (s : Sections F ζ hζ U R P H)
-      (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-      (O : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i x)
-      (ε : rootsOfUnity 3 F) (y : O.neighborhood),
-    squaredNorm F ζ hζ U R P H s
-      (q F ζ hζ U (KPContSectorPhaseComponentCharts.coveredChart F ζ hζ U R P H i x O
-        (Quotient.mk _ (KPContSectorPhaseComponentCharts.phaseClass F ζ hζ U ε,y))).val) =
-        ENNReal.ofReal (‖(s i).val y.val‖ ^ 2)
 
 end DedekindZetaZeroFree.KPContSectorLineL2Isometry
 
@@ -1039,38 +739,10 @@ theorem kp_cont_sector_line_l2_isometry
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P) :
-    KPContSectorLineL2Isometry.RealizationIdentities F ζ hζ U R P H := by
-  exact {
-    borel := KPContSectorLineL2Isometry.borel_iff F ζ hζ U R P H
-    reconstruction := KPContSectorLineL2Isometry.scalarRepresentative_mk F ζ hζ U R P H
-    null_relation := KPContSectorLineL2Isometry.mk_eq_mk_iff F ζ hζ U R P H
-    norm_formula := KPContSectorLineL2Isometry.norm_sq F ζ hζ U R P H
-    extended_norm_formula := KPContSectorLineL2Isometry.ofReal_norm_sq F ζ hζ U R P H
-    forward := KPContSectorLineL2Isometry.sectorLineIsometry_representative F ζ hζ U R P H
-    inverse := KPContSectorLineL2Isometry.sectorLineIsometry_symm_mk F ζ hζ U R P H
-    continuous_scalars := KPContSectorLineL2Isometry.continuousScalarEmbedding_injective F ζ hζ U R P H
-    continuous_sections := KPContSectorLineL2Isometry.continuousSectionEmbedding_injective F ζ hζ U R P H
-    smooth_compact_scalars := KPContSectorLineL2Isometry.smoothCompactScalarEmbedding_injective F ζ hζ U R P H
-    smooth_compact_sections := KPContSectorLineL2Isometry.smoothCompactSectionEmbedding_injective F ζ hζ U R P H
-    restricted_norm := fun s hs E hE =>
-      (KPContSectorLineL2Isometry.base_restriction F ζ hζ U R P H s hs E hE).2.2
-    restricted_borel := fun s hs E hE =>
-      ⟨(KPContSectorLineL2Isometry.base_restriction F ζ hζ U R P H s hs E hE).1,
-        (KPContSectorLineL2Isometry.base_restriction F ζ hζ U R P H s hs E hE).2.1⟩
-    chart_borel := fun s hs i x O =>
-      (KPContSectorLineL2Isometry.orbifold_restriction F ζ hζ U R P H s hs i x O).1
-    chart_norm := by
-      intro s i x O ε y
-      rw [KPContSectorLineL2Isometry.squaredNorm_pullback,
-        KPContSectorPhaseComponentCharts.coveredChart_mk]
-      have hp := KPContSectorSmoothFramesSupport.phase_lift_formula F ζ hζ U R P H
-        (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s) i ε y.val
-      have heq : KPContSectorScalarLineAlgebra.S F ζ hζ U R P H
-          (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ U R P H s) = s :=
-        (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H).apply_symm_apply s
-      rw [hp, heq, norm_mul, KPContSectorCoveredQuotientVocabulary.chi_coe,
-        KPContSectorCoveredQuotientVocabulary.chi_norm, one_mul]
-  }
+    KPContSectorLineL2Isometry.RealizationIdentities F ζ hζ U R P H where
+  null_relation := KPContSectorLineL2Isometry.mk_eq_mk_iff F ζ hζ U R P H
+  norm_formula := KPContSectorLineL2Isometry.norm_sq F ζ hζ U R P H
+  forward := KPContSectorLineL2Isometry.sectorLineIsometry_representative F ζ hζ U R P H
 
 end DedekindZetaZeroFree
 

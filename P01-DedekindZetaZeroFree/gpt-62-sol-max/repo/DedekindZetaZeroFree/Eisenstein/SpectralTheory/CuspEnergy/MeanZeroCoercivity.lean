@@ -21,7 +21,7 @@ private theorem rotation (L : ℂ →L[ℝ] ℂ) (u : ℂ) :
       ‖u‖ ^ 2 * (‖L 1‖ ^ 2 + ‖L Complex.I‖ ^ 2) := by
   have h (z : ℂ) : L z = z.re • L 1 + z.im • L Complex.I := by
     have hz : z = z.re • (1 : ℂ) + z.im • Complex.I := by
-      simp [Complex.real_smul, Complex.re_add_im]
+      simp
     conv_lhs => rw [hz]
     rw [map_add, map_smul, map_smul]
   rw [h u, h (u * Complex.I)]
@@ -560,16 +560,8 @@ private theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
     fin_cases k <;> simp
   · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
 
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
+
+
 private theorem representative_differentiableAt (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (x : KPCuspCharts.Cross F) (t : Set.Ioi T) :
     DifferentiableAt ℝ (v.val ∘ arch (KPCuspLogShape.dimension F))
@@ -583,10 +575,10 @@ private theorem representative_differentiableAt (G : KPCuspCharts.ChartOutput F 
   have hp : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F)
         (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F (x, t.val)))) := by
-    rw [arch_real, KPCuspCharts.toArch_meanHeight F G.positive_dimension]
+    rw [KPMeanZeroWeightedEnergy.arch_real_eq, KPCuspCharts.toArch_meanHeight F G.positive_dimension]
     exact t.property
   exact ((v.smooth.contDiffAt (ho.mem_nhds hp)).comp _
-    (smooth_arch _).contDiffAt).differentiableAt (by simp)
+    (KPMeanZeroWeightedEnergy.arch_contDiff _).contDiffAt).differentiableAt (by simp)
 
 private theorem horizontal_real_deriv (b : KPCuspCharts.Shape F) (t : ℝ)
     (y : KPCuspCharts.Horizontal F) :
@@ -613,7 +605,7 @@ private theorem scalar_slice_fderiv (G : KPCuspCharts.ChartOutput F hF S D)
       (v.val ∘ arch (KPCuspLogShape.dimension F)) ∘
         (fun z => real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F ((z,b),t.val))) := by
     funext z
-    simp [Function.comp_def, arch_real, Representative.scalar]
+    simp [Function.comp_def, KPMeanZeroWeightedEnergy.arch_real_eq, Representative.scalar]
   rw [he]
   exact ((representative_differentiableAt G v (y,b) t).hasFDerivAt.comp y
     (horizontal_real_deriv b t.val y)).fderiv

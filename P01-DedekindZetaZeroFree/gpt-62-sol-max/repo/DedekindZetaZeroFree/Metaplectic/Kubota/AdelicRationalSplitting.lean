@@ -6,7 +6,7 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.EffectiveDiagonalHilbertMul
 
 @[expose] public section
 
-open scoped NumberField Classical BigOperators
+open scoped NumberField Classical BigOperators Topology
 
 namespace DedekindZetaZeroFree.KPRationalAdelicSplitting
 
@@ -120,6 +120,44 @@ theorem WCoordinates_restricted :
 
 def NTuple (x : Adeles F) : RestrictedCover F ζ hζ :=
   ⟨NCoordinates F ζ hζ x, NCoordinates_restricted F ζ hζ x⟩
+
+/-- The upper root lifts continuously on a neighbourhood of the zero adele:
+there the good finite coordinates lie in the chosen compact subgroups. -/
+theorem continuousAt_NTuple_zero : ContinuousAt (NTuple F ζ hζ) 0 := by
+  letI : ∀ v : KPHilbert.Place F, TopologicalSpace (KPLocalCover.CubicGL2Raw F ζ hζ v) :=
+    localTopology F ζ hζ
+  letI : TopologicalSpace (RestrictedCover F ζ hζ) := restrictedTopology F ζ hζ
+  have hcoord (v : KPHilbert.Place F) : Continuous (fun x => NCoordinates F ζ hζ x v) := by
+    cases v with
+    | inl w =>
+      exact (KPStandardLocalRootLifts.complex_N_continuous F ζ hζ w).comp
+        ((continuous_apply w).comp continuous_fst)
+    | inr q =>
+      exact (KPStandardLocalRootLifts.finite_N_continuous F ζ hζ q _
+        (depth_admissible F ζ hζ q)).comp ((RestrictedProduct.continuous_eval q).comp continuous_snd)
+  let U : Set (Adeles F) := {x | ∀ q, ¬Bad F q → x.2 q ∈ q.adicCompletionIntegers F}
+  have hU : IsOpen U := (RestrictedProduct.isOpen_forall_imp_mem
+    (fun q : IsDedekindDomain.HeightOneSpectrum (𝓞 F) => Valued.isOpen_valuationSubring
+      (q.adicCompletion F))).preimage continuous_snd
+  have h0 : (0 : Adeles F) ∈ U := fun _ _ => zero_mem _
+  let S : Set (KPHilbert.Place F) := {v | match v with | .inl _ => True | .inr q => ¬Bad F q}
+  have hS : Filter.cofinite ≤ Filter.principal S := by
+    apply Filter.le_principal_iff.mpr
+    exact finite_eventually F (P := fun v => v ∈ S)
+      (show ∀ᶠ q in Filter.cofinite, ¬Bad F q from (bad_finite F).compl_mem_cofinite)
+  have hmem (x : U) (v : KPHilbert.Place F) (hv : v ∈ S) :
+      NCoordinates F ζ hζ x v ∈ compact F ζ hζ v := by
+    cases v with
+    | inl w => exact Subgroup.mem_top _
+    | inr q => exact good_N F ζ hζ q hv ⟨x.val.2 q, (integral_iff F q _).mpr (x.property q hv)⟩
+  let f : U → RestrictedProduct (fun v => KPLocalCover.CubicGL2Raw F ζ hζ v)
+      (fun v => (compact F ζ hζ v : Set _)) (Filter.principal S) :=
+    fun x => ⟨NCoordinates F ζ hζ x, hmem x⟩
+  have hf : Continuous f := RestrictedProduct.continuous_rng_of_principal.mpr
+    (continuous_pi fun v => (hcoord v).comp continuous_subtype_val)
+  have hr : Continuous (U.domRestrict (NTuple F ζ hζ)) :=
+    (RestrictedProduct.continuous_inclusion hS).comp hf
+  exact (continuousOn_iff_continuous_restrict.mpr hr).continuousAt (hU.mem_nhds h0)
 
 def ATuple (y : Ideles F) : RestrictedCover F ζ hζ :=
   ⟨ACoordinates F ζ hζ y, ACoordinates_restricted F ζ hζ y⟩

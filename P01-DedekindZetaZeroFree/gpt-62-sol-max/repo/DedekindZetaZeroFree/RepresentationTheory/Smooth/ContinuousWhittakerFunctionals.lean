@@ -60,7 +60,7 @@ theorem smoothRepresentation_orbit_isLocallyConstant {G V : Type*}
   intro g
   refine ⟨{x : G | g⁻¹ * x ∈ J},
     J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
+  · simp
   · intro x hx
     have heq := congrArg (fun w => ρ g w) (hJ (g⁻¹ * x) hx)
     simpa only [← Module.End.mul_apply, ← map_mul, mul_inv_cancel_left] using heq

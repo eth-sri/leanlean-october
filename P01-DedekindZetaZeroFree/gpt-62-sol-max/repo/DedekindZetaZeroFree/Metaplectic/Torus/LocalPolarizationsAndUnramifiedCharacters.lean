@@ -41,9 +41,8 @@ theorem canonical_good_compact_model_exists (q : HeightOneSpectrum (𝓞 F)) :
           prescribed_center := S.prescribed_center, split_scalars := S.split_scalars,
           polarization := S.polarization, iwasawa := S.iwasawa,
           openCell := S.openCell, openCell_ordinary := S.openCell_ordinary }
-    · intro hg
-      exact absurd hbad hg
-  · have ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3 :=
+    grind
+  · have ht :=
       (not_or.mp hbad).2
     obtain ⟨I, hI⟩ :=
       KPExceptionalRaw.FiniteSource.GoodSphericalVector.actual_split_compact_iwasawa

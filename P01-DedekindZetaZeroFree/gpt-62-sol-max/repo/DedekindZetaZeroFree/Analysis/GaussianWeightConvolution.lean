@@ -165,6 +165,14 @@ theorem model_decay (B k : ℝ) (hB : 0 < B) (hk : 0 ≤ k) :
     refine le_trans hI (le_of_eq ?_)
     ring
 
+/-- The real powers from the two Mellin factors separate from the norm of the weights. -/
+theorem norm_mellin_product {Z q : ℝ} (hZ : 0 < Z) (hq : 0 < q) (a z E M W R : ℂ) :
+    ‖(Z : ℂ) ^ a * E * M * W * (q : ℂ) ^ (-z) * R‖ =
+      Z ^ a.re * q ^ (-z.re) * ‖E * M * W‖ * ‖R‖ := by
+  simp only [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hZ,
+    Complex.norm_cpow_eq_rpow_re_of_pos hq, Complex.neg_re]
+  ring
+
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)

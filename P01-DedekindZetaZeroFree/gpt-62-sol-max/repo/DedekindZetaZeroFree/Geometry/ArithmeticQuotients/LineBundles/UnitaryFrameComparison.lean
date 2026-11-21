@@ -14,9 +14,13 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
 variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
-private theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) :
+section
+
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (M : Realization F ζ hζ hF U A)
+  {K : Set (X F ζ hζ U)} (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count)
+include A M K C
+
+private theorem chart_component_eq :
     ∀ x : E (C.chart i).n,
       M.component ((C.chart i).toBase F ζ hζ hF U x) = (C.chart i).component := by
   intro x
@@ -33,9 +37,7 @@ private theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have := A.components.injective (h1.trans h2.symm)
   exact congrArg Sigma.fst this
 
-private theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) (x : E (C.chart i).n)
+private theorem phase_value (x : E (C.chart i).n)
     (s : KPFiniteCuspAtlas.genuineScalars F ζ hζ U)
     (γ : KPCuspArithmetic.PGL2 F) (ε : rootsOfUnity 3 F) (u : U.toOpenSubgroup)
     (h1 : M.lift ((C.chart i).toBase F ζ hζ hF U x) = γ • (C.chart i).coordinates x)
@@ -74,9 +76,7 @@ private theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   rw [hsec, h1, key, ← mul_assoc,
     inv_mul_cancel₀ (Units.ne_zero ((KPCuspGenuineMonodromy.chi F ζ hζ) ε)), one_mul]
 
-private theorem transition_exists (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
-    (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) (x : E (C.chart i).n) :
+private theorem transition_exists (x : E (C.chart i).n) :
     ∃ γ : KPCuspGenuineMonodromy.Component F ζ hζ U
       (A.representative (C.chart i).component),
       (γ : KPCuspArithmetic.PGL2 F) • (C.chart i).coordinates x =
@@ -98,6 +98,8 @@ private theorem transition_exists (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
         ((C.chart i).coordinates x) := by
     simpa using hp
   exact MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp (Quotient.exact hq))
+
+end
 
 private theorem transition_finite (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (j : Fin A.componentCount)

@@ -123,19 +123,7 @@ theorem Q_integrable_inner (S : Piece D) (f g : Q D S) :
       ((g : Lp E 2 D.measure) x)) D.measure :=
   L2.integrable_inner (f : Lp E 2 D.measure) (g : Lp E 2 D.measure)
 
-def fixedFiber (x : X) : Submodule ℂ E where
-  carrier := {v | ∀ γ : Γ, D.action γ x = x → D.tensor γ x v = v}
-  zero_mem' := by intro γ _; simp
-  add_mem' := by
-    intro a b ha hb γ hγ
-    rw [map_add, ha γ hγ, hb γ hγ]
-  smul_mem' := by
-    intro c a ha γ hγ
-    rw [map_smul, ha γ hγ]
 
-@[simp] theorem mem_fixedFiber_iff (x : X) (v : E) :
-    v ∈ fixedFiber D x ↔
-      ∀ γ : Γ, D.action γ x = x → D.tensor γ x v = v := Iff.rfl
 
 def supportedAverage (S : Piece D) (h : X → E) : X → E :=
   S.set.indicator (fun x => (Fintype.card Γ : ℂ)⁻¹ •

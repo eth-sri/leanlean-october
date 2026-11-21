@@ -19,40 +19,45 @@ def rationalPrimeBelow (v : HeightOneSpectrum (𝓞 F)) : Nat.Primes :=
  instance instFactPrimeResidueTraceRationalPrimeBelow (v : HeightOneSpectrum (𝓞 F)) : Fact (rationalPrimeBelow v).1.Prime :=
   ⟨(rationalPrimeBelow v).2⟩
 
-theorem existsUnique_baseEmbedding (v : HeightOneSpectrum (𝓞 F)) :
+section
+
+variable (v : HeightOneSpectrum (𝓞 F))
+include v
+
+theorem existsUnique_baseEmbedding :
     ∃! ι : ℚ_[rationalPrimeBelow v] →+* v.adicCompletion F,
       Continuous ι ∧ ∀ q : ℚ, ι (q : ℚ_[rationalPrimeBelow v]) =
         algebraMap F (v.adicCompletion F) (algebraMap ℚ F q) := by
   exact ResidueTraceFactorProductFormula.existsUnique_rationalExtension v
 
-def baseEmbedding (v : HeightOneSpectrum (𝓞 F)) :
+def baseEmbedding :
     ℚ_[rationalPrimeBelow v] →+* v.adicCompletion F :=
   Classical.choose (existsUnique_baseEmbedding v)
 
-theorem baseEmbedding_spec (v : HeightOneSpectrum (𝓞 F)) :
+theorem baseEmbedding_spec :
     Continuous (baseEmbedding v) ∧ ∀ q : ℚ,
       baseEmbedding v (q : ℚ_[rationalPrimeBelow v]) =
         algebraMap F (v.adicCompletion F) (algebraMap ℚ F q) :=
   (Classical.choose_spec (existsUnique_baseEmbedding v)).1
 
-def localTraceCharacter (v : HeightOneSpectrum (𝓞 F)) :
+def localTraceCharacter :
     AddChar (v.adicCompletion F) Circle := by
   letI := (baseEmbedding v).toAlgebra
   exact (rationalPadicCharacter (rationalPrimeBelow v)).compAddMonoidHom
     (Algebra.trace ℚ_[rationalPrimeBelow v] (v.adicCompletion F)).toAddMonoidHom
 
-def IsSelfDual (v : HeightOneSpectrum (𝓞 F)) : Prop :=
+def IsSelfDual : Prop :=
   ∀ z : v.adicCompletion F,
     (∀ o : v.adicCompletionIntegers F, localTraceCharacter v (z * (o : v.adicCompletion F)) = 1) ↔
       z ∈ v.adicCompletionIntegers F
 
-theorem localTrace_finite (v : HeightOneSpectrum (𝓞 F)) :
+theorem localTrace_finite :
     letI := (baseEmbedding v).toAlgebra
     Module.Finite ℚ_[rationalPrimeBelow v] (v.adicCompletion F) := by
   exact ResidueTraceFactorProductFormula.finite_rationalExtension v (baseEmbedding v)
     (baseEmbedding_spec v).1 (baseEmbedding_spec v).2
 
-theorem continuous_localTraceCharacter (v : HeightOneSpectrum (𝓞 F)) :
+theorem continuous_localTraceCharacter :
     Continuous (localTraceCharacter v : v.adicCompletion F → Circle) := by
   letI := (baseEmbedding v).toAlgebra
   letI := localTrace_finite v
@@ -63,6 +68,8 @@ theorem continuous_localTraceCharacter (v : HeightOneSpectrum (𝓞 F)) :
     exact ((baseEmbedding_spec v).1.comp continuous_fst).mul continuous_snd
   exact (continuous_rationalPadicCharacter (rationalPrimeBelow v)).comp
     (Algebra.trace ℚ_[rationalPrimeBelow v] (v.adicCompletion F)).continuous_of_finiteDimensional
+
+end
 
 theorem diagonal_hasFiniteMulSupport (x : F) :
     Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (𝓞 F) =>
@@ -134,9 +141,13 @@ def dividedTraceCharacter (A : SArithmeticData F) (c : A.R) : AddChar A.R Circle
   A.fieldTraceCharacter.compAddMonoidHom
     ((LinearMap.mulRight F (c : F)⁻¹).toAddMonoidHom.comp A.R.val.toAddMonoidHom)
 
-theorem dividedTraceCharacter_kernel (A : SArithmeticData F)
-    (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (c : A.R)
-    (hc : A.Generates I c) (x : A.R) (hx : x ∈ A.extendIdeal I) :
+section
+
+variable (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (c : A.R)
+  (hc : A.Generates I c)
+include A hS c hc
+
+theorem dividedTraceCharacter_kernel (x : A.R) (hx : x ∈ A.extendIdeal I) :
     A.dividedTraceCharacter c x = 1 := by
   rw [← hc.2] at hx
   obtain ⟨y, rfl⟩ := Ideal.mem_span_singleton'.mp hx
@@ -146,8 +157,7 @@ theorem dividedTraceCharacter_kernel (A : SArithmeticData F)
   rw [mul_assoc, mul_inv_cancel₀ hcF, mul_one]
   exact A.eS_integer hS y
 
-def residueTraceCharacter (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces)
-    (I : A.Exterior) (c : A.R) (hc : A.Generates I c) :
+def residueTraceCharacter :
     AddChar (A.R ⧸ A.extendIdeal I) Circle :=
   AddChar.toAddMonoidHomEquiv.symm <|
     QuotientAddGroup.lift (A.extendIdeal I).toAddSubgroup
@@ -157,13 +167,13 @@ def residueTraceCharacter (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces
         rw [A.dividedTraceCharacter_kernel hS I c hc x hx]
         rfl)
 
-theorem residueTraceCharacter_apply (A : SArithmeticData F)
-    (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (c : A.R)
-    (hc : A.Generates I c) (x : A.R) :
+theorem residueTraceCharacter_apply (x : A.R) :
     A.residueTraceCharacter hS I c hc (Ideal.Quotient.mk (A.extendIdeal I) x) =
       A.fieldTraceCharacter ((x : F) / (c : F)) := by
   change A.fieldTraceCharacter ((x : F) * (c : F)⁻¹) = _
   rw [div_eq_mul_inv]
+
+end
 
 theorem residueTraceCharacter_prime_local (A : SArithmeticData F)
     (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)

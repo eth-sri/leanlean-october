@@ -246,15 +246,18 @@ theorem mem_infiniteUnitAddSubgroup_iff
       v.IsFiniteStageUnit E K a :=
   Iff.rfl
 
+section
+
+variable (v : ValuationData D A) [IsTopologicalGroup G] (K : FiniteAbstractField G)
+  (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal]
+include v hLnormal
+
 /-- The actual `G(\widetilde L/K)`-action preserves the finite-stage unit
 group `U_{\widetilde L}`.  A unit is first moved to a finite Galois
 refinement of its support; that refinement is stable under the chosen
 representative, so the translated element still has finite unit support. -/
 theorem frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
-    (v : ValuationData D A) [IsTopologicalGroup G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     (q : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L))
     (ha : a ∈ v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
@@ -312,10 +315,6 @@ theorem frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
 /-- The Frobenius power sum used preserves the finite-stage unit
 group of the maximal unramified extension. -/
 theorem frobeniusPowerSum_mem_infiniteUnit_universalNormDescent
-    (v : ValuationData D A) [IsTopologicalGroup G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     (φ : K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)
     (n : ℕ)
     (x : ambientFixedAddSubgroup A (D.maximalUnramifiedField L))
@@ -334,10 +333,6 @@ theorem frobeniusPowerSum_mem_infiniteUnit_universalNormDescent
 /-- The relative norm from `\widetilde L` to `\widetilde K`, included back
 in `A_{\widetilde L}`, preserves finite-stage units. -/
 theorem maximalUnramifiedNorm_mem_infiniteUnitAddSubgroup
-    (v : ValuationData D A) [IsTopologicalGroup G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (a : ambientFixedAddSubgroup A (D.maximalUnramifiedField L))
@@ -419,10 +414,6 @@ theorem maximalUnramifiedNorm_mem_infiniteUnitAddSubgroup
 /-- A maximal-unramified norm of a finite-stage unit descends to a genuine
 unit of `K` once it is fixed by a degree-one Frobenius lift. -/
 theorem descend_maximalUnramifiedNorm_unit
-    (v : ValuationData D A) [IsTopologicalGroup G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
     [hLfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (φ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
@@ -509,6 +500,8 @@ theorem descend_maximalUnramifiedNorm_unit
     exact congrArg Subtype.val haQ
   exact v.descend_maximalUnramified_fixed_unit_of_finiteSupport
     K L hLK φ hφ R (N a) aR haR hfixed
+
+end
 
 end ValuationData
 end

@@ -99,7 +99,7 @@ private theorem split_mp (v : ι) : MeasurePreserving (split v) volume volume :=
         (fun w => w = v)) using 1
       all_goals congr! 3
       have he : Fintype.subtypeEq v = (Subtype.fintype (fun w : ι => w = v)) := Subsingleton.elim _ _
-      simp only [volume_pi, he]
+      simp only [volume_pi]
       congr! 4)
 
 variable (K : Type) [Field K] [NumberField K]
@@ -116,7 +116,7 @@ variable (K : Type) [Field K] [NumberField K]
     by_cases hw : w = v
     · subst w
       simp [RayCoset.weightedLogSum, Matrix.updateRow, Function.update, Pi.single_apply, eq_comm]
-    · simp [hw, Matrix.updateRow, Function.update, Pi.single_apply, Matrix.one_apply, eq_comm]
+    · simp [hw, Matrix.updateRow, Function.update, Pi.single_apply, Matrix.one_apply]
   rw [← LinearMap.det_toMatrix', he]
   have hs : (fun w : InfinitePlace K => (w.mult : ℝ)) =
       ∑ w : InfinitePlace K, (w.mult : ℝ) • (1 : Matrix (InfinitePlace K) (InfinitePlace K) ℝ) w := by

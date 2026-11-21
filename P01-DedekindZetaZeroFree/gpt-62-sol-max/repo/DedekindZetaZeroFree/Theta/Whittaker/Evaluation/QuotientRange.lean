@@ -18,12 +18,6 @@ open KPLiteralScalarHCCompactOrbit KPLiteralScalarHCFiniteProduct
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F A.zeta12 A.primitive_zeta12)
 variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_zeta12 P)
-local instance (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (j : InfinitePlace F ⊕ T) :
-    AddCommGroup (mixedSource F A.zeta12 A.primitive_zeta12 (nativeInducingData A P C) T j) := by
-  cases j <;> dsimp [mixedSource] <;> infer_instance
-local instance (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (j : InfinitePlace F ⊕ T) :
-    Module ℂ (mixedSource F A.zeta12 A.primitive_zeta12 (nativeInducingData A P C) T j) := by
-  cases j <;> dsimp [mixedSource] <;> infer_instance
 
 theorem quotientCoreEvaluator_source_range
     (K : Subgroup (KPLiteralRaw.G F A.zeta12 A.primitive_zeta12))

@@ -27,30 +27,11 @@ private lemma line_infinity (u : ℂ) :
     simp [Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.cons_val_fin_one, hu]
     exact (projective_chart_transition u hu).symm
 
-private lemma ratio_pos (g : ComplexGL2) : 0 < rowRatio g := by
-  have hdet : Matrix.det (g : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 :=
-    (Matrix.GeneralLinearGroup.det g).ne_zero
-  have hr : 0 < bottomRowNormSq g := by
-    unfold bottomRowNormSq
-    by_contra hn
-    have he : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-        ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 :=
-      le_antisymm (le_of_not_gt hn) (by positivity)
-    have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    apply hdet
-    simp [Matrix.det_fin_two, h0, h1]
-  exact div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) hr
-
 private lemma exp_eq_sphere (t : ℝ) (g : ComplexGL2) :
     Complex.exp ((1 + 2 * (t : ℂ)) * (Real.log (rowRatio g) : ℂ)) =
       sphericalSection t g := by
   change _ = ((rowRatio g ^ (1 + 2 * t) : ℝ) : ℂ)
-  rw [Real.rpow_def_of_pos (ratio_pos g), Complex.ofReal_exp]
+  rw [Real.rpow_def_of_pos (rowRatio_pos g), Complex.ofReal_exp]
   congr 1
   push_cast
   ring

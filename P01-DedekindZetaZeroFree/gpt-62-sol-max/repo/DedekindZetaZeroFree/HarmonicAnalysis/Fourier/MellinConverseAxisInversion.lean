@@ -39,7 +39,7 @@ theorem mellin_converse_axis_inversion
       exact (hpoint u).symm
     convert hh.comp_neg using 1
     funext u
-    simp only [p, neg_mul, neg_neg]
+    simp only [p]
     congr 2 <;> ring
   have hF_int : Integrable F := by
     have h := hG_int.comp_mul_right' (show -(2 * Real.pi) ≠ 0 by simp)

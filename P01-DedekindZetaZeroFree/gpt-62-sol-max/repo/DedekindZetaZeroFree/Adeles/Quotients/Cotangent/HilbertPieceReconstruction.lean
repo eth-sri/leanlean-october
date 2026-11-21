@@ -59,16 +59,9 @@ private theorem selectedFields_zero_off (u : PieceHilbert cover) (n : ℕ)
   rw [htb] at hmem'
   exact hmem'
 
-private theorem continuous_labeledA :
-    Continuous (labeledA (placeEquiv F ζ hζ) :
-      M F → KPCuspGenuineMonodromy.SymmetricSpace F) :=
-  continuous_pi fun k =>
-    (continuous_apply ((placeEquiv F ζ hζ).symm k)).comp
-      (CotangentLogCoframe.A (d F)).continuous
-
  theorem continuous_originalPoint (a : ShrunkChart F ζ hζ U R P H) :
     Continuous (originalPoint a) :=
-  Continuous.subtype_mk (continuous_labeledA.comp continuous_subtype_val) fun x => x.property
+  Continuous.subtype_mk ((labeledA_continuous (placeEquiv F ζ hζ)).comp continuous_subtype_val) fun x => x.property
 
 private theorem selectedFields_measurable (u : PieceHilbert cover) (n : ℕ) :
     Measurable (selectedFields cover u n) :=
@@ -148,15 +141,15 @@ def reconstructFamily (u : PieceHilbert cover) : Family (U := U) (H := H) :=
 
 theorem reconstructFamily_squareFinite (u : PieceHilbert cover) :
     squareFinite (reconstructFamily cover u) :=
-  (kp_cont_actual_cotangent_glued_piece_integral F ζ hζ R.adelicHaar R.adelic_isHaar U R rfl P H
-    cover).gluing_squareFinite (selectedSequence cover u) u (selectedSequence_represents cover u)
+  kp_cont_actual_cotangent_gluing_squareFinite F ζ hζ R.adelicHaar R.adelic_isHaar U R rfl P H
+    cover (selectedSequence cover u) u (selectedSequence_represents cover u)
 
 def reconstruct (u : PieceHilbert cover) : SquareFiniteFamily (U := U) (H := H) :=
   ⟨reconstructFamily cover u, reconstructFamily_squareFinite cover u⟩
 
 private theorem measurable_omega' (a : ShrunkChart F ζ hζ U R P H) :
     MeasurableSet (omega a) :=
-  a.domain_open.measurableSet.preimage continuous_labeledA.measurable
+  a.domain_open.measurableSet.preimage (labeledA_continuous (placeEquiv F ζ hζ)).measurable
 
  def coordinatesMeasurableEquiv (a : ShrunkChart F ζ hζ U R P H) :
     a.domain ≃ᵐ omega a where

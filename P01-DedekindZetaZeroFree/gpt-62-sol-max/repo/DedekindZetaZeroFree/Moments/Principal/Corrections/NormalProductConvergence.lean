@@ -18,42 +18,22 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private theorem frequency_good_cofinite
-    (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C) :
-    ∀ᶠ p : ExteriorPrime A in Filter.cofinite, (U.j p).val = 0 := by
-  apply Filter.eventually_cofinite.mpr
-  have hinj : Function.Injective (fun p : ExteriorPrime A => p.val.asIdeal) :=
-    IsDedekindDomain.HeightOneSpectrum.asIdeal_injective.comp Subtype.val_injective
-  simpa [Frequency.j, idealPrimeExponent, Multiset.count_eq_zero] using
-    (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).finite_toSet.preimage
-      hinj.injOn
-
-private theorem frequency_good_unit
-    (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
-    (p : ExteriorPrime A) (hp : (U.j p).val = 0) :
-    IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) := by
-  have hs := U.unitPart_spec p
-  rw [hs.1, hp, pow_zero, one_mul]
-  exact hs.2
-
 private theorem exterior_not_mem (p : ExteriorPrime A) : p.val ∉ A.Sf := by
   intro hp
   have he := (A.exterior_iff ⟨p.val.asIdeal, p.val.ne_bot⟩).mp p.property p.val hp
   simp only [sup_idem] at he
   exact p.val.isPrime.ne_top he
 
-private theorem summable_correction_majorant (M : ℝ) :
-    Summable (fun p : ExteriorPrime A =>
-      M * (Q p) ^ (-(1 + 1 / 4000 : ℝ))) := by
+theorem exterior_norm_majorant_summable (M a : ℝ) (ha : 1 < a) :
+    Summable (fun p : ExteriorPrime A => M * (Q p) ^ (-a)) := by
   let i : ExteriorPrime A → {p : IsDedekindDomain.HeightOneSpectrum (𝓞 F) // p ∉ A.Sf} :=
     fun p => ⟨p.val, exterior_not_mem p⟩
-  have hi : Function.Injective i := by
-    intro p q h
-    apply Subtype.ext
-    exact congrArg (fun r : {p : IsDedekindDomain.HeightOneSpectrum (𝓞 F) // p ∉ A.Sf} => r.val) h
-  have hs := (summable_exterior_prime_norm_rpow F A.Sf (1 + 1 / 4000) (by norm_num)).comp_injective hi
-  simpa [Function.comp_def, i, Q, SArithmeticData.exteriorNorm, idealNorm, primeIdeal]
+  have hi : Function.Injective i := fun _ _ h =>
+    Subtype.ext (congrArg (fun q : {q : IsDedekindDomain.HeightOneSpectrum (𝓞 F) // q ∉ A.Sf} => q.val) h)
+  have hs := (summable_exterior_prime_norm_rpow F A.Sf a ha).comp_injective hi
+  simpa only [Function.comp_def, i, Q, SArithmeticData.exteriorNorm, idealNorm, primeIdeal]
     using hs.mul_left M
+
 
 theorem hasProdUniformlyOn_localFactor
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
@@ -64,25 +44,27 @@ theorem hasProdUniformlyOn_localFactor
       (fun x : Coordinates =>
         ∏' p : ExteriorPrime A, localFactor C U p x.1 x.2.1 x.2.2) K := by
   obtain ⟨M, hM, hbound⟩ := good_correction_uniform_bound
+  have hgood : ∀ᶠ p : ExteriorPrime A in Filter.cofinite, (U.j p).val = 0 :=
+    U.toRaw.eventually_j_eq_zero
   have hb : ∀ᶠ p : ExteriorPrime A in Filter.cofinite, ∀ x ∈ K,
       ‖localFactor C U p x.1 x.2.1 x.2.2 - 1‖ ≤
         M * (Q p) ^ (-(1 + 1 / 4000 : ℝ)) := by
-    filter_upwards [frequency_good_cofinite C U] with p hp
+    filter_upwards [hgood] with p hp
     intro x hx
     simpa [localFactor, hp] using
-      hbound F A σ η hS C p U.u (frequency_good_unit C U p hp) x (hKO hx)
+      hbound F A σ η hS C p U.u (U.toRaw.isUnit_of_j_eq_zero C p hp) x (hKO hx)
   have hcts : ∀ p : ExteriorPrime A,
       ContinuousOn (fun x : Coordinates => localFactor C U p x.1 x.2.1 x.2.2 - 1) K := by
     intro p
     have hc : ContinuousOn (fun x : Coordinates => localFactor C U p x.1 x.2.1 x.2.2) Omega := by
       by_cases hp : (U.j p).val = 0
       · simpa [localFactor, hp] using
-          (good_correction_holomorphic C p U.u (frequency_good_unit C U p hp)).continuousOn
+          (good_correction_holomorphic C p U.u (U.toRaw.isUnit_of_j_eq_zero C p hp)).continuousOn
       · simpa [localFactor, hp] using
           (bad_factor_holomorphic C p (U.j p) hp (U.theta p)).continuousOn
     exact (hc.mono hKO).sub continuousOn_const
   simpa only [add_sub_cancel] using
-    (summable_correction_majorant (A := A) M).hasProdUniformlyOn_one_add hK hb hcts
+    (exterior_norm_majorant_summable (A := A) M (1 + 1 / 4000) (by norm_num)).hasProdUniformlyOn_one_add hK hb hcts
 
 theorem multipliable_localFactor
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)

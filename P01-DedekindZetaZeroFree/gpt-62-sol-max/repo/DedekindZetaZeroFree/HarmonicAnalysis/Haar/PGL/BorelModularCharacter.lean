@@ -45,7 +45,7 @@ private theorem rootCoord_eq (b : upperBorel F w) (A : GL2 F w)
   rw [← heq]
   have hs (i j : Fin 2) : (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) i j =
       A i j * (u : LocalField F w) := by
-    simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_diagonal]
   dsimp only
   rw [hs, hs]
@@ -60,7 +60,7 @@ theorem affineMatrix_entries (p : (LocalField F w)ˣ × LocalField F w) :
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [affineMatrix, diagonalMatrix, upperRootMatrix,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.mkOfDetNeZero,
+      Matrix.GeneralLinearGroup.mkOfDetNeZero,
       Matrix.mul_apply, Fin.sum_univ_two]
 
 def affine (p : (LocalField F w)ˣ × LocalField F w) : upperBorel F w :=
@@ -122,7 +122,6 @@ theorem coords_continuous :
     · have he : (fun A : p ⁻¹' S => ((borelRatio F w (f A))⁻¹ : LocalField F w)) =
           fun A => (A.val : GL2 F w) 1 1 / (A.val : GL2 F w) 0 0 := by
         funext A
-        change (borelRatio F w (f A) : LocalField F w)⁻¹ = _
         rw [borelRatio_eq F w (f A) A.val rfl (hu A), inv_div]
       change Continuous (fun A : p ⁻¹' S => (borelRatio F w (f A) : LocalField F w)⁻¹)
       rw [he]

@@ -68,13 +68,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-def kern (u : D.Row) (Z : ℝ) (ξ w z : ℂ) : ℂ := kernelWith D (rowContLocal D) u ξ w z Z
-
-def Iz (u : D.Row) (Z v : ℝ) (ξ w : ℂ) : ℂ :=
-  comparisonVerticalIntegral v (fun z => kern D u Z ξ w z)
-
-def Iwz (u : D.Row) (Z y v : ℝ) (ξ : ℂ) : ℂ :=
-  comparisonVerticalIntegral y (fun w => Iz D u Z v ξ w)
+export PrincipalStripBasicDefinitions (kern Iz Iwz)
 
 theorem initial_z_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z)
     (x y : ℝ) (hx : x ∈ Icc Scales.rightLine 4) (hy : y ∈ Icc Scales.rightLine 4) (s t : ℝ) :

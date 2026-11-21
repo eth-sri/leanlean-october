@@ -26,7 +26,7 @@ private lemma norm_exp_eps_sq (ε x T : ℝ) :
   congr 1
   simp only [Complex.mul_re, Complex.add_re, Complex.add_im, Complex.mul_im, pow_two,
     Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, add_zero,
-    sub_zero, zero_mul, mul_one, sub_neg_eq_add, zero_add]
+    sub_zero, zero_mul, mul_one, zero_add]
 
 private lemma tendsto_stripReg_zero (f : ℂ → ℂ) (s : ℂ) :
     Tendsto (fun ε : ℝ => stripReg f ε s) (𝓝[>] (0 : ℝ)) (𝓝 (f s)) := by

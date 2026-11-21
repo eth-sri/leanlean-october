@@ -63,36 +63,7 @@ def actualLocalPsi (ψ : ContinuousAddChar (KPAdditiveQuotient F))
     (QuotientAddGroup.continuous_mk.comp (actualLocalAdditive_continuous F v))
   unitary := fun x => ψ.unitary _
 
-def actualLocalPsiUnits (ψ : ContinuousAddChar (KPAdditiveQuotient F))
-    (v : KPHilbert.Place F) : Multiplicative (KPHilbert.Completion F v) →ₜ* ℂˣ where
-  toFun x := Units.mk0 ((actualLocalPsi F ψ v).toAddChar x.toAdd) (by
-    intro hz
-    have h := (actualLocalPsi F ψ v).unitary x.toAdd
-    change ‖(actualLocalPsi F ψ v).toAddChar x.toAdd‖ = 1 at h
-    rw [hz, norm_zero] at h
-    exact zero_ne_one h)
-  map_one' := by apply Units.ext; exact (actualLocalPsi F ψ v).toAddChar.map_zero_eq_one
-  map_mul' := by
-    intro x y
-    apply Units.ext
-    exact (actualLocalPsi F ψ v).toAddChar.map_add_eq_mul _ _
-  continuous_toFun := by
-    apply Units.continuous_iff.mpr
-    constructor
-    · exact (actualLocalPsi F ψ v).continuous_toFun.comp continuous_id
-    · change Continuous (fun x : Multiplicative (KPHilbert.Completion F v) =>
-        ((actualLocalPsi F ψ v).toAddChar x.toAdd)⁻¹)
-      apply Continuous.inv₀ ((actualLocalPsi F ψ v).continuous_toFun.comp continuous_id)
-      intro x hz
-      have h := (actualLocalPsi F ψ v).unitary x
-      change (actualLocalPsi F ψ v).toAddChar x = 0 at hz
-      change ‖(actualLocalPsi F ψ v).toAddChar x‖ = 1 at h
-      rw [hz, norm_zero] at h
-      exact zero_ne_one h
 
-@[simp] theorem actualLocalPsiUnits_formula (ψ : ContinuousAddChar (KPAdditiveQuotient F))
-    (v : KPHilbert.Place F) (x : Multiplicative (KPHilbert.Completion F v)) :
-    (actualLocalPsiUnits F ψ v x : ℂ) = (actualLocalPsi F ψ v).toAddChar x.toAdd := rfl
 
 def actualLocalRoot (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : KPHilbert.Place F) :
     AddChar (KPHilbert.Completion F v) (KPPGLLocalCover.CubicPGL2 F ζ hζ v) where

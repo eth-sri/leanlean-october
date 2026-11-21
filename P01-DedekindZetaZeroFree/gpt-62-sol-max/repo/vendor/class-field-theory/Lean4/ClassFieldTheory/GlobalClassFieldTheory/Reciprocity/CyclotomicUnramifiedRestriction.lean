@@ -56,14 +56,18 @@ noncomputable local instance
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field)
 
+section
+
+variable (H : FiniteAbstractField
+      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+include H
+
 /-- The abelianized fixed-field quotient comparison sends the class of
 an actual finite quotient element to the corresponding automorphism of
 the concrete relative fixed field. -/
 @[simp]
 theorem
     abstractFixedFieldAbelianizedExtensionQuotientEquivGaloisGroup_of
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension H.field)
     (q : L.extensionQuotient) :
     abstractFixedFieldAbelianizedExtensionQuotientEquivGaloisGroup H L
@@ -103,8 +107,6 @@ extension of an abstract fixed field to a finite unramified abelian
 subextension.  The construction uses the canonical quotient
 presentations of both actual Galois groups. -/
 noncomputable def abstractFixedFieldCyclotomicFiniteRestrictionMonoidHom
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension H.field)
     (hUnramified :
       L.toFiniteGaloisExtension.IsUnramified
@@ -150,8 +152,6 @@ noncomputable def abstractFixedFieldCyclotomicFiniteRestrictionMonoidHom
 
 /-- Evaluate the finite cyclotomic restriction through its quotient coordinates. -/
 theorem abstractFixedFieldCyclotomicFiniteRestrictionMonoidHom_apply
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension H.field)
     (hUnramified :
       L.toFiniteGaloisExtension.IsUnramified
@@ -181,8 +181,6 @@ theorem abstractFixedFieldCyclotomicFiniteRestrictionMonoidHom_apply
 symbol recovers the abstract maximal-unramified quotient class. -/
 private theorem
     abstractFixedFieldCyclotomicIdeleClassArtin_fixed_coordinate
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (a :
       ambientFixedAddSubgroup
         rationalIdeleClassRepresentation H.field) :
@@ -215,17 +213,22 @@ private theorem
           (ClassFormation.ValuationData.maximalUnramifiedNormResidueSymbol
             rationalCyclotomicIdeleClassValuationData H a).toMul)
 
+end
+
+section
+
+variable (H : FiniteAbstractField
+      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
+  (L : FiniteAbelianSubextension H.field) (hUnramified :
+      L.toFiniteGaloisExtension.IsUnramified
+        rationalCyclotomicDegreeData)
+include hUnramified
+
 /-- On a fixed-part idele class, finite restriction of the genuine
 cyclotomic Artin symbol is the finite restriction of the
 maximal-unramified norm-residue symbol. -/
 theorem
     abstractFixedFieldCyclotomicFiniteRestriction_ideleClassArtin_fixed
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension H.field)
-    (hUnramified :
-      L.toFiniteGaloisExtension.IsUnramified
-        rationalCyclotomicDegreeData)
     (a :
       ambientFixedAddSubgroup
         rationalIdeleClassRepresentation H.field) :
@@ -282,12 +285,6 @@ class is the finite restriction of the maximal-unramified cyclotomic
 symbol. -/
 theorem
     abstractFixedFieldGlobalNormResidueMonoidHom_fixed_eq_finiteUnramifiedRestriction
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension H.field)
-    (hUnramified :
-      L.toFiniteGaloisExtension.IsUnramified
-        rationalCyclotomicDegreeData)
     (a :
       ambientFixedAddSubgroup
         rationalIdeleClassRepresentation H.field) :
@@ -355,12 +352,6 @@ Artin map is exactly the actual global norm-residue map for every
 finite unramified abelian fixed-field extension. -/
 theorem
     abstractFixedFieldGlobalNormResidueMonoidHom_eq_cyclotomicFiniteRestriction
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension H.field)
-    (hUnramified :
-      L.toFiniteGaloisExtension.IsUnramified
-        rationalCyclotomicDegreeData)
     (c :
       IdeleClassGroup
         (LocalClassFieldTheory.abstractFixedField
@@ -416,6 +407,8 @@ theorem
             H L hUnramified
             (abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom H z))
         hc
+
+end
 
 end Reciprocity
 end GlobalClassFieldTheory

@@ -123,8 +123,7 @@ theorem trivialIntFixedToZModHom_ker :
     have hx0 :
         ((Multiplicative.toAdd
           (x : Multiplicative ℤ) : ℤ) :
-            ZMod (Fintype.card G)) = 0 := by
-      exact congrArg Multiplicative.toAdd hx
+            ZMod (Fintype.card G)) = 0 := congrArg Multiplicative.toAdd hx
     rcases
         (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hx0
       with ⟨z, hz⟩
@@ -151,7 +150,7 @@ theorem trivialIntFixedToZModHom_ker :
             ZMod (Fintype.card G)) = 0
       rw [← hz, tateNormHom_apply, trivialInt_tateNorm_toAdd]
       apply (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2
-      exact ⟨Multiplicative.toAdd z, rfl⟩)
+      simp)
 
 /-- The degree-zero Herbrand group of the trivial integer module is
 `ℤ / |G|ℤ`. -/
@@ -835,34 +834,6 @@ theorem permutationFunctionOrbitEquiv_equivariant :
           (g • f) =
         g • permutationFunctionOrbitEquiv
           (G := G) (ι := ι) f := by
-  let functionAction :
-      MulDistribMulAction G (ι → Multiplicative ℤ) :=
-    permutationFunctionMulDistribMulAction
-  let stabilizerAction :
-      ∀ ω : MulAction.orbitRel.Quotient G ι,
-        MulDistribMulAction
-          (permutationOrbitStabilizer ω)
-          (Multiplicative ℤ) :=
-    fun ω =>
-      trivialIntMulDistribMulAction
-        (permutationOrbitStabilizer ω)
-  let orbitAction :
-      ∀ ω : MulAction.orbitRel.Quotient G ι,
-        MulDistribMulAction G
-          (TransitivePermutationLattice
-            (permutationOrbitStabilizer ω)) :=
-    fun ω =>
-      inducedMulDistribMulAction
-        (permutationOrbitStabilizer ω)
-  let familyAction :
-      MulDistribMulAction G
-        (PermutationLatticeOrbitFamily
-          (fun ω : MulAction.orbitRel.Quotient G ι =>
-            permutationOrbitStabilizer ω)) :=
-    piMulDistribMulAction G
-      (fun ω : MulAction.orbitRel.Quotient G ι =>
-        TransitivePermutationLattice
-          (permutationOrbitStabilizer ω))
   intro g f
   funext ω
   apply Subtype.ext

@@ -56,11 +56,11 @@ private theorem fderiv_ofReal_apply {d : ℕ} {f : KPArch.Space d → ℝ} {z : 
   rw [fderiv_comp (f := f) (g := (Complex.ofRealCLM : ℝ → ℂ)) (x := z)
       (Complex.ofRealCLM.differentiableAt) hf]
   rw [ContinuousLinearMap.fderiv]
-  simp [ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply]
+  rfl
 
 private theorem fderiv_volumeDensity_real (d : ℕ) (z v : KPArch.Space d) :
     fderiv ℝ (KPArch.volumeDensity d) z v = -2 * KPArch.volumeDensity d z * (∑ k, (v k).2) := by
-  have hV : KPArch.volumeDensity d = fun y : KPArch.Space d => Real.exp (-2 * ∑ k, (y k).2) :=
+  have hV :=
     funext (volumeDensity_eq d)
   rw [hV]
   have hB : HasFDerivAt (fun y : KPArch.Space d => -2 * ∑ k : Fin d, (y k).2)
@@ -240,7 +240,7 @@ theorem Δloc_coordinate_expression {V : Type*} [NormedAddCommGroup V]
 
  def meanCLM (d : ℕ) : KPArch.Space d →L[ℝ] ℝ :=
   (d : ℝ)⁻¹ • ∑ k : Fin d, (ContinuousLinearMap.snd ℝ ℂ ℝ).comp (ContinuousLinearMap.proj k)
-private theorem meanCLM_apply (d : ℕ) (z : KPArch.Space d) :
+theorem meanCLM_apply (d : ℕ) (z : KPArch.Space d) :
     meanCLM d z = KPCuspLogShape.meanHeight d z := by
   simp [meanCLM, KPCuspLogShape.meanHeight, div_eq_inv_mul]
 private theorem meanCLM_dir (d : ℕ) (i : Fin d) (j : Fin 3) :
@@ -280,7 +280,7 @@ private theorem exp_mean_second {V : Type*} [NormedAddCommGroup V] [NormedSpace 
   rw [hfun, exp_mean_fderiv, smul_smul]
   congr 1
   ring
-private theorem exp_mean_laplacian {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+theorem exp_mean_laplacian {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
     (d : ℕ) (hd : 0 < d) (s : ℂ) (b : V) (z : KPArch.Space d) :
     Δloc d (fun y => KPIncomingCasimir.heightFactor d s (KPCuspLogShape.meanHeight d y) • b) z =
       KPContinuation.spectralCoordinate (d : ℤ) s •
@@ -328,79 +328,12 @@ theorem dimension (F : Type) [Field F] [NumberField F] (ζ : F)
   have h := KPArch.complex_places_of_primitive_twelfth_root F ζ hζ
   exact ⟨h.2.1, by rw [← h.2.1]; exact h.2.2⟩
 
-def wave (s : ℂ) (v : S) (p : KPCuspCharts.Coordinates F) :
-    ZeroFiber F ζ hζ C R P H U a :=
-  W F ζ hζ C R P H U a ι s v p.2 p.1.2
 
-def incomingOnArch (s : ℂ) (v : S)
-    (z : KPArch.Space (KPCuspLogShape.dimension F)) : ZeroFiber F ζ hζ C R P H U a :=
-  wave F ζ hζ C R P H U ι a s v
-    ((KPCuspCharts.toArchHomeomorph F
-      (KPCuspLogShape.dimension_pos F H.totallyComplex)).symm z)
 
-private theorem incoming_height_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S) :
-    incomingOnArch F ζ hζ C R P H U ι a s v =
-      fun z : KPArch.Space (KPCuspLogShape.dimension F) =>
-        KPIncomingCasimir.heightFactor (Module.finrank ℚ F / 2) s
-          (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z) •
-          (b F ζ hζ C R P H U a ι s hs v).val 0 := by
-  funext z
-  simp only [incomingOnArch, wave]
-  rw [incoming_formula F ζ hζ C R P H U a ι s hs v]
-  have h2 : ((KPCuspCharts.toArchHomeomorph F
-      (KPCuspLogShape.dimension_pos F H.totallyComplex)).symm z).2 =
-      KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z := rfl
-  rw [h2]
-  rw [b_formula F ζ hζ C R P H U a ι s hs v, b_formula F ζ hζ C R P H U a ι s hs v]
 
-private theorem incoming_scalar_eigen (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (q : KernelTorus F ζ hζ C R P H U a)
-    (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-    Δloc (KPCuspLogShape.dimension F)
-      (fun y => (incomingOnArch F ζ hζ C R P H U ι a s v y).val q) z =
-        KPContinuation.spectralCoordinate ((Module.finrank ℚ F / 2 : ℕ) : ℤ) s *
-          (incomingOnArch F ζ hζ C R P H U ι a s v z).val q := by
-  rw [incoming_height_formula F ζ hζ C R P H U ι a s hs v]
-  change Δloc (KPCuspLogShape.dimension F)
-      (fun y => KPIncomingCasimir.heightFactor (Module.finrank ℚ F / 2) s
-        (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) y) •
-        ((b F ζ hζ C R P H U a ι s hs v).val 0).val q) z = _
-  rw [← (dimension F ζ hζ).1]
-  exact exp_mean_laplacian _ (KPCuspLogShape.dimension_pos F H.totallyComplex) _ _ _
 
-private theorem wave_scalar_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (shape : KPCuspCharts.Shape F) (q : KernelTorus F ζ hζ C R P H U a) :
-    (fun t => (W F ζ hζ C R P H U a ι s v t shape).val q) =
-      fun t => KPIncomingCasimir.heightFactor (Module.finrank ℚ F / 2) s t *
-        ((b F ζ hζ C R P H U a ι s hs v).val 0).val q := by
-  funext t
-  rw [incoming_formula F ζ hζ C R P H U a ι s hs v]
-  rw [b_formula F ζ hζ C R P H U a ι s hs v, b_formula F ζ hζ C R P H U a ι s hs v]
-  rfl
 
-theorem metric_radial_scalar (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (p : KPCuspCharts.Coordinates F) (q : KernelTorus F ζ hζ C R P H U a) :
-    Δloc (KPCuspLogShape.dimension F)
-      (fun z => (incomingOnArch F ζ hζ C R P H U ι a s v z).val q)
-      (KPCuspCharts.toArch F p) =
-        KPIncomingCasimir.radialLaplacian (Module.finrank ℚ F / 2)
-          (fun t => (W F ζ hζ C R P H U a ι s v t p.1.2).val q) p.2 := by
-  rw [incoming_scalar_eigen F ζ hζ C R P H U ι a s hs v]
-  rw [wave_scalar_formula F ζ hζ C R P H U ι a s hs v]
-  rw [KPIncomingCasimir.heightFactor_eigenfunction _ (dimension F ζ hζ).2]
-  rw [incoming_height_formula F ζ hζ C R P H U ι a s hs v]
-  dsimp only
-  rw [KPCuspCharts.toArch_meanHeight F (KPCuspLogShape.dimension_pos F H.totallyComplex)]
-  rfl
 
-theorem incoming_casimir_scalar (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
-    (v : S) (q : KernelTorus F ζ hζ C R P H U a)
-    (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-    Δloc (KPCuspLogShape.dimension F)
-      (fun y => (incomingOnArch F ζ hζ C R P H U ι a s v y).val q) z =
-        KPContinuation.spectralCoordinate ((Module.finrank ℚ F / 2 : ℕ) : ℤ) s *
-          (incomingOnArch F ζ hζ C R P H U ι a s v z).val q := by
-  exact incoming_scalar_eigen F ζ hζ C R P H U ι a s hs v q z
 
 end DedekindZetaZeroFree.KPContFlatCuspCasimirSpecialization
 

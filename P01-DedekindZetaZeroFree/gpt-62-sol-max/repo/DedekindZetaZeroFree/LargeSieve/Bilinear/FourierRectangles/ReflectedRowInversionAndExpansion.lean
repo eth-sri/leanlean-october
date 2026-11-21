@@ -30,9 +30,7 @@ private lemma bucket_partition_sum (C : Context Q)
   have heq : J.biUnion blk = idealDivisors u := by
     ext f
     constructor
-    · intro hf
-      obtain ⟨j, hj, hf⟩ := Finset.mem_biUnion.mp hf
-      exact (mem_idealDivisors hu0).mpr (Finset.mem_filter.mp hf).2
+    · aesop
     · intro hf
       obtain ⟨j, ⟨hj, hfj⟩, _⟩ := hex f hf
       exact Finset.mem_biUnion.mpr ⟨j, hj,
@@ -41,10 +39,9 @@ private lemma bucket_partition_sum (C : Context Q)
     intro i hi j hj hij
     apply Finset.disjoint_left.mpr
     intro f hfi hfj
-    have hf : f ∈ idealDivisors u := (mem_idealDivisors hu0).mpr (Finset.mem_filter.mp hfi).2
+    have hf := (mem_idealDivisors hu0).mpr (Finset.mem_filter.mp hfi).2
     obtain ⟨k, hk, huniq⟩ := hex f hf
-    exact hij ((huniq i ⟨hi, (Finset.mem_filter.mp hfi).1⟩).trans
-      (huniq j ⟨hj, (Finset.mem_filter.mp hfj).1⟩).symm)
+    grind
   rw [← heq, Finset.sum_biUnion hdis]
   apply Finset.sum_congr rfl
   intro j hj

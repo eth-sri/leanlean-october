@@ -1,7 +1,7 @@
 module
 
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.ClassGroup
-public import GaloisCohomology.Kummer.Concrete.GaloisCohomology
+public import Mathlib.RepresentationTheory.Homological.GroupCohomology.Hilbert90
 public import Mathlib.Algebra.Group.Action.Basic
 public import Mathlib.GroupTheory.GroupAction.Quotient
 

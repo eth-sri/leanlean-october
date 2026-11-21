@@ -1,8 +1,11 @@
 module
 
+public import DedekindZetaZeroFree.Analysis.Complex.CompactFamilyHolomorphy
 public import DedekindZetaZeroFree.Eisenstein.Continuation.IncomingCuspModes.LocalCubicSheetLifts
 public import DedekindZetaZeroFree.Eisenstein.Continuation.IncomingCuspModes.CuspLiftTransport
 public import DedekindZetaZeroFree.Metaplectic.Cubic.Cotangent.OverlapMetricAndPhase
+
+public import DedekindZetaZeroFree.Analysis.Calculus.ParameterJets
 
 @[expose] public section
 
@@ -13,127 +16,11 @@ open Topology MeasureTheory
 namespace DedekindZetaZeroFree.KPContActualCutoffSmoothDescent
 
 namespace ChartAnalyticHelpers
+
+open CompactPeriodAnalyticity.UpperPeriodContinuation (compact_family_holomorphic)
 open KPContLocalNorm
-section Mixed
-variable {A E Y : Type*} [NormedAddCommGroup A] [NormedSpace ℝ A]
- [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup Y] [NormedSpace ℝ Y]
-set_option backward.isDefEq.respectTransparency.types false in
-private lemma partial_eq (h : A → E → Y) (s : A) (z : E)
- (hh : DifferentiableAt ℝ (Function.uncurry h) (s,z)) :
- fderiv ℝ (h s) z = (fderiv ℝ (Function.uncurry h) (s,z)).comp (ContinuousLinearMap.inr ℝ A E) := by
- exact (hh.hasFDerivAt.comp z (hasFDerivAt_prodMk_right s z)).fderiv
-set_option backward.isDefEq.respectTransparency.types false in
-private lemma mixed_partial (h : A → E → Y) (s : A) (z : E)
- (hh : ContDiffAt ℝ (⊤ : ℕ∞) (Function.uncurry h) (s,z)) (v : A) (w : E) :
- (fderiv ℝ (fun t => fderiv ℝ (h t) z) s) v w =
- (fderiv ℝ (fun x => fderiv ℝ (fun t => h t x) s) z) w v := by
- let H := Function.uncurry h
- let D := fderiv ℝ H
- let L := ContinuousLinearMap.inl ℝ A E
- let R := ContinuousLinearMap.inr ℝ A E
- let CR := (ContinuousLinearMap.compL ℝ E (A × E) Y).flip R
- let CL := (ContinuousLinearMap.compL ℝ A (A × E) Y).flip L
- have hD : HasFDerivAt D (fderiv ℝ D (s,z)) (s,z) :=
-   (hh.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp) |>.hasFDerivAt
- have hs : (fun t => fderiv ℝ (h t) z) =ᶠ[𝓝 s]
-     (fun t => CR (D (t,z))) := by
-   have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-   filter_upwards [(continuous_id.prodMk continuous_const).continuousAt.eventually hn] with t ht
-   exact partial_eq h t z (ht.differentiableAt (by simp))
- have hz : (fun x => fderiv ℝ (fun t => h t x) s) =ᶠ[𝓝 z]
-     (fun x => CL (D (s,x))) := by
-   have hn := (hh.of_le (show (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)).eventually (by simp)
-   filter_upwards [(continuous_const.prodMk continuous_id).continuousAt.eventually hn] with x hx
-   have hd : HasFDerivAt H (D (s,x)) (s,x) := (hx.differentiableAt (by simp)).hasFDerivAt
-   have hleft : HasFDerivAt (fun t : A => H (t,x)) (CL (D (s,x))) s :=
-     by convert hd.comp s (hasFDerivAt_prodMk_left (𝕜 := ℝ) s x) using 1 <;> rfl
-   exact hleft.fderiv
- have hsd := CR.hasFDerivAt.comp s (hD.comp s (hasFDerivAt_prodMk_left s z))
- have hzd := CL.hasFDerivAt.comp z (hD.comp z (hasFDerivAt_prodMk_right s z))
- have hsde := hsd.fderiv
- have hzde := hzd.fderiv
- dsimp only [Function.comp_def] at hsde hzde
- rw [hs.fderiv_eq, hz.fderiv_eq, hsde, hzde]
- exact (hh.isSymmSndFDerivAt (by simp)).eq (v,0) (0,w)
+open ParameterJets
 
-section Complex
-variable [NormedSpace ℂ Y] [IsScalarTower ℝ ℂ Y]
-set_option backward.isDefEq.respectTransparency.types false in
-private lemma partial_snd_hasDeriv (h k : ℂ → E → Y) (U : Set E) (hU : IsOpen U)
- (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Set.univ ×ˢ U))
- (hk : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry k) (Set.univ ×ˢ U))
- (hd : ∀ s z, z ∈ U → HasDerivAt (fun t => h t z) (k s z) s)
- (s : ℂ) (z : E) (hz : z ∈ U) :
- HasDerivAt (fun t => fderiv ℝ (h t) z) (fderiv ℝ (k s) z) s := by
- have hlocal := hh.contDiffAt ((isOpen_univ.prod hU).mem_nhds (show (s,z) ∈ Set.univ ×ˢ U from ⟨Set.mem_univ s,hz⟩))
- have hcomp : ContDiffAt ℝ (⊤ : ℕ∞)
-     (fun q : ℂ × E => h q.1 q.2) (s,z) := hlocal
- have hder : DifferentiableAt ℝ (fun t => fderiv ℝ (h t) z) s := by
-   have h2 : ContDiffAt ℝ (⊤ : ℕ∞)
-       (Function.uncurry (fun t x => h t x)) (s,z) := hlocal
-   exact (h2.fderiv (g := fun _ : ℂ => z) (m := (⊤ : ℕ∞)) contDiffAt_const (by simp)).differentiableAt (by simp)
- have heq : (ContinuousLinearMap.toSpanSingleton ℂ (fderiv ℝ (k s) z)).restrictScalars ℝ =
-     fderiv ℝ (fun t => fderiv ℝ (h t) z) s := by
-   ext d w
-   rw [mixed_partial h s z hlocal d w]
-   have ht : (fun x => (fderiv ℝ (fun t => h t x) s) d) =ᶠ[𝓝 z]
-       (fun x => d • k s x) := by
-     filter_upwards [hU.mem_nhds hz] with x hx
-     rw [((hd s x hx).hasFDerivAt.restrictScalars ℝ).fderiv]
-     rfl
-   have hp := (hk.contDiffAt ((isOpen_univ.prod hU).mem_nhds (show (s,z) ∈ Set.univ ×ˢ U from ⟨Set.mem_univ s,hz⟩))).comp
-     z (contDiffAt_const.prodMk contDiffAt_id)
-   have hf := hp.differentiableAt (by simp)
-   have hswap : ContDiffAt ℝ (⊤ : ℕ∞) (Function.uncurry (fun x t => h t x)) (z,s) :=
-     hlocal.comp (z,s) (contDiff_snd.prodMk contDiff_fst).contDiffAt
-   have happ := (ContinuousLinearMap.apply ℝ Y d).hasFDerivAt.comp z
-     ((hswap.fderiv (g := fun _ : E => s) (m := (⊤ : ℕ∞)) contDiffAt_const (by simp)).differentiableAt (by simp)).hasFDerivAt
-   have he : (fderiv ℝ (fun x => (fderiv ℝ (fun t => h t x) s) d) z) w =
-       ((fderiv ℝ (fun x => fderiv ℝ (fun t => h t x) s) z) w) d := by
-     have he := happ.fderiv
-     dsimp only [Function.comp_def] at he
-     convert congrArg (fun T : E →L[ℝ] Y => T w) he using 1 <;> rfl
-   rw [← he, ht.fderiv_eq]
-   have hf' : DifferentiableAt ℝ (k s) z := hf
-   change (d • fderiv ℝ (k s) z) w = (fderiv ℝ (d • k s) z) w
-   rw [fderiv_const_smul hf' d]
- exact hasFDerivAt_of_restrictScalars ℝ hder.hasFDerivAt heq
-end Complex
-end Mixed
-section CompactDifferentiation
-open scoped Topology
-open Filter
-variable {X Y : Type*} [UniformSpace X] [CompactSpace X]
- [NormedAddCommGroup Y] [NormedSpace ℂ Y]
-set_option backward.isDefEq.respectTransparency.types false in
-private lemma compact_hasDeriv (h k : ℂ → C(X,Y))
- (hk : Continuous (Function.uncurry (fun t x => k t x)))
- (hd : ∀ t x, HasDerivAt (fun r => h r x) (k t x) t) (s : ℂ) :
- HasDerivAt h (k s) s := by
- apply HasDerivAt.of_isLittleO
- rw [Asymptotics.isLittleO_iff]
- intro c hc
- have hu := Metric.tendstoUniformly_iff.mp (hk.tendstoUniformly (fun t x => k t x) s) c hc
- have hseg : ∀ᶠ t in 𝓝 s, ∀ r ∈ segment ℝ s t, ∀ x : X, ‖k r x - k s x‖ ≤ c := by
-   have hs : ∀ᶠ t in 𝓝[Set.univ] s, ∀ x : X, ‖k t x - k s x‖ ≤ c := by
-     simpa only [nhdsWithin_univ, dist_eq_norm_sub, norm_sub_rev] using hu.mono (fun t ht x => (ht x).le)
-   simpa only [nhdsWithin_univ] using (convex_univ : Convex ℝ (Set.univ : Set ℂ)).eventually_nhdsWithin_segment (Set.mem_univ s) hs
- filter_upwards [hseg] with t ht
- apply (ContinuousMap.norm_le (h t - h s - (t-s) • k s) (mul_nonneg hc.le (norm_nonneg _))).mpr
- intro x
- have H := (convex_segment s t).norm_image_sub_le_of_norm_hasFDerivWithin_le'
-   (f := fun r => h r x) (f' := fun r => ContinuousLinearMap.toSpanSingleton ℂ (k r x))
-   (φ := ContinuousLinearMap.toSpanSingleton ℂ (k s x)) (C := c)
-   (fun r _ => (hd r x).hasFDerivAt.hasFDerivWithinAt)
-   (fun r hr => by
-     have he : ContinuousLinearMap.toSpanSingleton ℂ (k r x) - ContinuousLinearMap.toSpanSingleton ℂ (k s x) =
-       ContinuousLinearMap.toSpanSingleton ℂ (k r x - k s x) := by ext a; simp [smul_sub]
-     rw [he, ContinuousLinearMap.norm_toSpanSingleton]
-     exact ht r hr x)
-   (left_mem_segment ℝ s t) (right_mem_segment ℝ s t)
- simpa using H
-
-end CompactDifferentiation
 section Coordinates
  theorem joint_coordinate {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     (h : ℂ → Space n → ℂ)
@@ -164,9 +51,9 @@ private theorem coordinate_hasDeriv {n : ℕ} {U : Set (Space n)} (hU : IsOpen U
   induction l generalizing s x with
   | nil => exact hd s x hx
   | cons i l ih =>
-    have H := partial_snd_hasDeriv (fun t x => coordinateDerivativeList l (h t) x)
-      (fun t x => coordinateDerivativeList l (k t) x) U hU
-      (joint_coordinate hU h hh l) (joint_coordinate hU k hk l) ih s x hx
+    have H := hasDerivAt_fderiv_space (fun t x => coordinateDerivativeList l (h t) x)
+      (fun t x => coordinateDerivativeList l (k t) x) Set.univ isOpen_univ U hU
+      (joint_coordinate hU h hh l) (joint_coordinate hU k hk l) (fun t _ x hx => ih t x hx) s (Set.mem_univ s) x hx
     let ev : (Space n →L[ℝ] ℂ) →L[ℂ] ℂ :=
       { toFun := fun L => L (EuclideanSpace.single i 1)
         map_add' := by intro L M; rfl
@@ -278,53 +165,6 @@ private theorem affine_exponential_compactJets {n : ℕ} {U : Set (Space n)}
   have hhs : ContDiffOn ℝ (⊤ : ℕ∞) (h s) U :=
     hh.comp (contDiffOn_const.prodMk contDiffOn_id) (fun y hy => ⟨Set.mem_univ _,hy⟩)
   exact (coordinate_const_mul hU _ hhs (a s) α.directions (hKU x.property)).symm
-
-private theorem compact_family_holomorphic {X : Type*} [TopologicalSpace X] [CompactSpace X]
-    (O : Set ℂ) (hO : IsOpen O) (j : ℂ → C(X, ℂ))
-    (hc : ContinuousOn (fun p : ℂ × X => j p.1 p.2) (O ×ˢ Set.univ))
-    (hd : ∀ x : X, DifferentiableOn ℂ (fun z => j z x) O) :
-    DifferentiableOn ℂ j O := by
-  have hj : ContinuousOn j O := by
-    apply continuousOn_iff_continuous_restrict.mpr
-    apply ContinuousMap.continuous_of_continuous_uncurry
-    let a : O × X → ℂ × X := fun p => (p.1.val,p.2)
-    have ha : Continuous a := (continuous_subtype_val.comp continuous_fst).prodMk continuous_snd
-    exact hc.comp_continuous ha (fun p => ⟨p.1.property, Set.mem_univ _⟩)
-  intro s hs
-  obtain ⟨r, hr, hrO⟩ := Metric.mem_nhds_iff.mp (hO.mem_nhds hs)
-  let R := r/2
-  have hR : 0 < R := by dsimp [R]; positivity
-  have hclosed : Metric.closedBall s R ⊆ O :=
-    (Metric.closedBall_subset_ball (by dsimp [R]; linarith)).trans hrO
-  have hcircle : CircleIntegrable j s R :=
-    (hj.mono (Metric.sphere_subset_closedBall.trans hclosed)).circleIntegrable hR.le
-  let g : ℂ → C(X,ℂ) := fun w => (2 * Real.pi * Complex.I : ℂ)⁻¹ •
-    circleIntegral (fun z => (z-w)⁻¹ • j z) s R
-  have heq : Set.EqOn g j (Metric.ball s R) := by
-    intro w hw
-    ext x
-    let L : C(X,ℂ) →L[ℂ] ℂ := ContinuousMap.evalCLM ℂ x
-    have hw' : w ∉ Metric.sphere s |R| := by
-      rw [abs_of_pos hR]
-      intro hh
-      exact (ne_of_lt (Metric.mem_ball.mp hw)) hh
-    have hi := hcircle.sub_zpow_smul (-1) hw'
-    have hL : L (circleIntegral (fun z => (z-w)⁻¹ • j z) s R) =
-        circleIntegral (fun z => (z-w)⁻¹ • j z x) s R := by
-      rw [circleIntegral, circleIntegral, ← L.intervalIntegral_comp_comm (by simpa using hi.out)]
-      simp only [map_smul]
-      rfl
-    change L ((2 * Real.pi * Complex.I : ℂ)⁻¹ • _) = _
-    rw [map_smul, hL]
-    exact (((hd x).mono hclosed).mono Metric.closure_ball_subset_closedBall).diffContOnCl
-      |>.two_pi_i_inv_smul_circleIntegral_sub_inv_smul hw
-  have hg : DifferentiableAt ℂ g s := by
-    change DifferentiableAt ℂ (fun w => (2 * Real.pi * Complex.I : ℂ)⁻¹ •
-      circleIntegral (fun z => (z-w)⁻¹ • j z) s R) s
-    exact ((Complex.hasDerivAt_circleIntegral_sub_inv_smul (w := s) hcircle (by
-      simpa [abs_of_pos hR] using (ne_of_gt hR).symm)).const_smul (2 * Real.pi * Complex.I : ℂ)⁻¹).differentiableAt
-  have he : g =ᶠ[𝓝 s] j := Filter.eventually_of_mem (Metric.ball_mem_nhds s hR) (fun w hw => heq hw)
-  exact (hg.congr_of_eventuallyEq he.symm).differentiableWithinAt
 
 private theorem compact_family_of_local {E : Type*} [TopologicalSpace E]
     (O : Set ℂ) (hO : IsOpen O) (U : Set E) (f : ℂ → E → ℂ)
@@ -633,7 +473,6 @@ theorem actual_incoming_cutoff_chart_jets
       (level F ζ hζ C R P H U) R P H T)
     (Ω : Set ℂ) (hopen : IsOpen Ω) (hΩspectral : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (hf : DifferentiableOn ℂ f Ω) (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
     (a : Cusps F ζ hζ C R P H U)
     {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}

@@ -32,9 +32,7 @@ theorem principal_rational_specialization (Q : ℝ) (hQ : 2 ≤ Q)
   dsimp [principalRational]
   have hQ1 : (Q : ℂ) - 1 ≠ 0 := sub_ne_zero.mpr
     (by exact_mod_cast (show Q ≠ 1 by linarith))
-  field_simp [hQ0, hr, he', hQ1]
-  <;> field_simp [hQ1]
-  <;> ring
+  grind only
 
 theorem principal_correction_formula (Q : ℝ) (hQ : 2 ≤ Q)
     (d e : ℂ) (hd : d ≠ 1) (he : e ≠ 1) :
@@ -155,7 +153,7 @@ theorem principal_localFactor_eq_h_p (C : A.GeneralArithmeticContext σ η hS)
     exact Nat.card_unique
   have hideal : U.ideal.val = ⊤ := Ideal.absNorm_eq_one_iff.mp hcard
   have hj : (U.j p).val = 0 := by
-    simp [Frequency.j, idealPrimeExponent, hideal, ← Ideal.one_eq_top]
+    simp [Frequency.j, AllRowEuler.InitialSeparation.RawFrequency.j, idealPrimeExponent, hideal, ← Ideal.one_eq_top]
   simp only [localFactor, hj, if_true, hU]
   exact principal_goodFactor_eq_h_p C p s hs
 

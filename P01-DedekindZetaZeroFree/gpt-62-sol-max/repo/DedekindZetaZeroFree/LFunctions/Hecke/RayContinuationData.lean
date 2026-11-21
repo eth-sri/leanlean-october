@@ -17,7 +17,6 @@ structure NonprincipalRayHeckeData (F : Type) [Field F] [NumberField F]
   W : ℂ
   L_holo : DifferentiableOn ℂ L {s | 0 < s.re}
   Λ_entire : Differentiable ℂ Λ
-  Λdual_entire : Differentiable ℂ Λdual
   series : ∀ s : ℂ, 1 < s.re →
     HasSum (fun I : Ideal (𝓞 F) => η I * (Ideal.absNorm I : ℂ) ^ (-s)) (L s)
   completed : ∀ s : ℂ, 0 < s.re → Λ s = heckeCompletionFactor F 𝔪 s * L s
@@ -37,7 +36,6 @@ structure PrincipalRayHeckeData (F : Type) [Field F] [NumberField F]
   E : ℂ → ℂ
   L_holo : DifferentiableOn ℂ L {s | 0 < s.re ∧ s ≠ 1}
   R_holo : DifferentiableOn ℂ R {s | 0 < s.re}
-  Λ_holo : DifferentiableOn ℂ Λ {s | s ≠ 0 ∧ s ≠ 1}
   E_entire : Differentiable ℂ E
   series : ∀ s : ℂ, 1 < s.re →
     HasSum (fun I : Ideal (𝓞 F) => η I * (Ideal.absNorm I : ℂ) ^ (-s)) (L s)

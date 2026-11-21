@@ -19,22 +19,9 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
 theorem rawDeletionSet_finite (R : PrincipalMellin.ActualRecipe S η)
     (U : AllRowEuler.InitialSeparation.RawFrequency R.A) :
-    (RawHeckeRows.rawDeletionSet U).Finite := by
-  unfold RawHeckeRows.rawDeletionSet
-  apply Set.Finite.union R.A.Sf.finite_toSet
-  let s : Finset (Ideal (𝓞 F)) :=
-    (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).toFinset
-  have hinj : Function.Injective
-      (fun v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) => v.asIdeal) :=
-    IsDedekindDomain.HeightOneSpectrum.asIdeal_injective
-  have hsub : {v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) | U.ideal.val ≤ v.asIdeal} ⊆
-      (fun v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) => v.asIdeal) ⁻¹'
-        (↑s : Set (Ideal (𝓞 F))) := by
-    intro v hv
-    simp only [Set.mem_preimage, Finset.mem_coe]
-    exact Multiset.mem_toFinset.mpr
-      ((Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr ⟨v.isPrime, hv⟩)
-  exact (s.finite_toSet.preimage hinj.injOn).subset hsub
+    (RawHeckeRows.rawDeletionSet U).Finite :=
+  R.A.Sf.finite_toSet.union (by
+    simpa only [Ideal.dvd_iff_le] using Ideal.finite_factors U.ideal.property.1)
 
 theorem Sf_subset_rawDeletionSet (R : PrincipalMellin.ActualRecipe S η)
     (U : AllRowEuler.InitialSeparation.RawFrequency R.A) :
@@ -43,13 +30,45 @@ theorem Sf_subset_rawDeletionSet (R : PrincipalMellin.ActualRecipe S η)
   unfold RawHeckeRows.rawDeletionSet
   exact Set.subset_union_left
 
+theorem mem_bad_of_not_coprime_six (R : PrincipalMellin.ActualRecipe S η)
+    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (h : ¬ (Ideal.absNorm v.asIdeal).Coprime 6) :
+    v ∈ R.A.Sf := by
+  by_contra hn
+  exact h (ArithmeticContext.actual_outside_norm_coprime_six R.A v hn)
+
+/-- The deleted Euler coefficients identify the raw denominator character. -/
+abbrev Identifies (R : PrincipalMellin.ActualRecipe S η)
+    (ω : Frequency R → Detector.PrimitiveFrequencyCharacter F) : Prop :=
+  ∀ (u : Frequency R) (U : AllRowEuler.InitialSeparation.RawFrequency R.A),
+    U.u = u.val.val → ∀ I : R.A.Exterior,
+      AllRowEuler.InitialSeparation.minusExteriorCoefficient R.σ R.target U I =
+        Detector.deletedPrimitiveIdealCoefficient F (ω u) (RawHeckeRows.rawDeletionSet U) I.val
+
+/-- Simultaneously choose the representatives, Kummer family, and twisted family
+used to control the conductor and the local components of each denominator. -/
+theorem exists_identified_family (R : PrincipalMellin.ActualRecipe S η) :
+    ∃ (V : Detector.FrequencyRepresentatives F (R.A.Sf : Set _)) (e : Frequency R ≃ V.carrier)
+      (K : Detector.KummerFrequencyFamily F R.A.zeta12 R.σ (R.A.Sf : Set _) V)
+      (η0 : Detector.PrimitiveFrequencyCharacter F),
+      Detector.conductorSupportedOn F (R.A.Sf : Set _) η0 ∧
+      ∃ T : Detector.TwistedFrequencyFamily F R.A.zeta12 R.σ (R.A.Sf : Set _) V K η0,
+        Identifies R (fun u => T.denominator (e u)) ∧
+        ∀ u, (Detector.frequencySNorm F (R.A.Sf : Set _) V (e u) : ℝ) = frequencyNorm R u := by
+  classical
+  letI : IsPrincipalIdealRing R.A.R :=
+    R.A.principalIdealRing_of_classGroup_subsingleton R.classKilled
+  obtain ⟨V, e, he, hnorm⟩ :=
+    MinusArithmetic.actual_detector_frequency_representatives R
+  obtain ⟨K⟩ := Detector.kummer_frequency_family_exists F R.A.zeta12
+    R.A.primitive_zeta12 R.σ (R.A.Sf : Set _) R.A.Sf.finite_toSet (mem_bad_of_not_coprime_six R) V
+  obtain ⟨η0, hη0, _, htarget⟩ := MinusArithmetic.target_primitive_inducer R
+  obtain ⟨T, hT⟩ :=
+    MinusArithmetic.raw_minus_family_identification R V e he K η0 hη0 htarget
+  exact ⟨V, e, K, η0, hη0, T, hT, hnorm⟩
+
 theorem raw_denominator_existence (R : PrincipalMellin.ActualRecipe S η) :
     ∃ ω : Frequency R → Detector.PrimitiveFrequencyCharacter F,
-      (∀ (u : Frequency R) (U : AllRowEuler.InitialSeparation.RawFrequency R.A),
-        U.u = u.val.val → ∀ I : R.A.Exterior,
-          AllRowEuler.InitialSeparation.minusExteriorCoefficient R.σ R.target U I =
-            Detector.deletedPrimitiveIdealCoefficient F (ω u)
-              (RawHeckeRows.rawDeletionSet U) I.val) ∧
+      Identifies R ω ∧
       (∀ (u : Frequency R) (U : AllRowEuler.InitialSeparation.RawFrequency R.A),
         U.u = u.val.val → ∀ ν : Detector.PrimitiveFrequencyCharacter F,
           (∀ I : R.A.Exterior,
@@ -59,22 +78,9 @@ theorem raw_denominator_existence (R : PrincipalMellin.ActualRecipe S η) :
       (∀ u v : Frequency R, Detector.samePrimitiveFrequencyCharacter F (ω u) (ω v) → u = v) ∧
       (∃ c : ℝ, 0 < c ∧ ∀ u : Frequency R,
         (Ideal.absNorm (ω u).conductor : ℝ) ≤ c * frequencyNorm R u) := by
-  classical
-  letI : IsPrincipalIdealRing R.A.R :=
-    R.A.principalIdealRing_of_classGroup_subsingleton R.classKilled
-  have hSix : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
-      ¬ (Ideal.absNorm v.asIdeal).Coprime 6 →
-        v ∈ (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) := by
-    intro v hv
-    by_contra hout
-    exact hv (ArithmeticContext.actual_outside_norm_coprime_six R.A v hout)
-  obtain ⟨V, e, he, hnorm⟩ :=
-    MinusArithmetic.actual_detector_frequency_representatives R
-  obtain ⟨K⟩ := Detector.kummer_frequency_family_exists F R.A.zeta12
-    R.A.primitive_zeta12 R.σ (R.A.Sf : Set _) R.A.Sf.finite_toSet hSix V
-  obtain ⟨η0, hη0, _, htarget⟩ := MinusArithmetic.target_primitive_inducer R
-  obtain ⟨T, hT⟩ :=
-    MinusArithmetic.raw_minus_family_identification R V e he K η0 hη0 htarget
+  letI : IsPrincipalIdealRing R.A.R := R.A.principalIdealRing_of_classGroup_subsingleton R.classKilled
+  obtain ⟨V, e, K, η0, hη0, T, hT, hnorm⟩ := exists_identified_family R
+  have hSix := mem_bad_of_not_coprime_six R
   obtain ⟨c, hc, hbound⟩ := Detector.frequency_denominator_conductor_bound F
     R.A.zeta12 R.A.primitive_zeta12 R.σ (R.A.Sf : Set _)
     R.A.Sf.finite_toSet hSix η0 hη0

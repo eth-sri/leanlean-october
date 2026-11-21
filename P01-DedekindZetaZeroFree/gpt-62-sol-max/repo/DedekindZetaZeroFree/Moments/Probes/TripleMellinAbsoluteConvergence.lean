@@ -44,27 +44,32 @@ theorem comparisonRealPower_norm (q : ℝ) (hq : 0 < q) (s : ℂ) :
   simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
   rw [mul_comm]
 
-theorem principal_theta_norm (P : PrincipalData A σ η hS) (m : ThetaReflectionData.Row A) :
+section
+
+variable (P : PrincipalData A σ η hS)
+include P
+
+theorem principal_theta_norm (m : ThetaReflectionData.Row A) :
     ‖P.coefficients.theta m.val‖ = 1 := by
   rw [P.theta_principal]
   exact Circle.norm_coe _
 
-theorem principal_generator_quotient_norm (P : PrincipalData A σ η hS) (I : A.Exterior) :
+theorem principal_generator_quotient_norm (I : A.Exterior) :
     (FiniteTransform.exteriorNorm A.R.toSubring (P.coefficients.generator I) : ℝ) =
       A.exteriorNorm I := by
   change (Nat.card (A.R ⧸ Ideal.span {P.coefficients.generator I}) : ℝ) = _
   rw [(P.coefficients.generates I).2, A.exteriorResidue_card]
   rfl
 
-private theorem principalTheta_norm (P : PrincipalData A σ η hS)
+private theorem principalTheta_norm
     (m : ThetaReflectionData.Row A) : ‖P.coefficients.theta m.val‖ = 1 :=
   principal_theta_norm P m
 
-private theorem generated_norm_eq (P : PrincipalData A σ η hS) (I : A.Exterior) :
+private theorem generated_norm_eq (I : A.Exterior) :
     (FiniteTransform.exteriorNorm A.R.toSubring (P.coefficients.generator I) : ℝ) =
       A.exteriorNorm I := principal_generator_quotient_norm P I
 
-private theorem modulus_norm_eq (P : PrincipalData A σ η hS)
+private theorem modulus_norm_eq
     (c : ExteriorSquarefreeIdeal A.cS) (n : A.Exterior) :
     (FiniteTransform.exteriorNorm A.R.toSubring
       (P.coefficients.generator c.val * P.coefficients.generator n ^ 3) : ℝ) =
@@ -83,7 +88,7 @@ private theorem modulus_norm_eq (P : PrincipalData A σ η hS)
   rw (config := { transparency := .all }) [hg, A.exteriorResidue_card]
   simp [I, SArithmeticData.exteriorNorm, idealNorm, map_mul, map_pow]
 
-private theorem finite_coefficient_bound (P : PrincipalData A σ η hS)
+private theorem finite_coefficient_bound
     (c : ExteriorSquarefreeIdeal A.cS) (n s : A.Exterior) (u : A.R) :
     ‖comparisonPoissonFiniteCoefficient F A P.coefficients c n s u‖ ≤
       A.exteriorNorm s * (A.exteriorNorm c.val * A.exteriorNorm n ^ (3 : ℕ)) := by
@@ -99,7 +104,7 @@ private theorem finite_coefficient_bound (P : PrincipalData A σ η hS)
   rw [generated_norm_eq P s, modulus_norm_eq P c n] at h
   exact h
 
-theorem weightedSeparatedSummand_norm_le (P : PrincipalData A σ η hS)
+theorem weightedSeparatedSummand_norm_le
     (i : MellinSeriesIndex P) (ξ w z : ℂ) :
     ‖weightedSeparatedSummand P i ξ w z‖ ≤
       separatedSeriesMajorant P i ξ.re w.re z.re := by
@@ -174,7 +179,7 @@ theorem weightedSeparatedSummand_norm_le (P : PrincipalData A σ η hS)
       P.coefficients.generator i.2.2.1 ^ 3)‖ = 1 := htheta
   simpa only [htheta', mul_one] using mul_le_mul hg hf (norm_nonneg _) zero_le_one
 
-private theorem frequency_orbit_injective (P : PrincipalData A σ η hS) : Function.Injective
+theorem frequency_orbit_injective : Function.Injective
     (fun u : {u // u ∈ P.frequencies.reps} => ProbeOrbitNormSum.orbitMk A u.val) := by
   intro u v huv
   have h := Quotient.exact huv
@@ -213,30 +218,36 @@ private theorem frequency_orbit_injective (P : PrincipalData A σ η hS) : Funct
   have he : (u, I) = (v, I) := (hxuniq _ hu).trans (hxuniq _ hv).symm
   exact congrArg Prod.fst he
 
-private theorem frequency_norm_summable (P : PrincipalData A σ η hS)
+end
+
+open ProbeOrbitNormSum in
+theorem exteriorNorm_eq_orbitNorm (A : SArithmeticData F) (u : Nonzero A) :
+    (FiniteTransform.exteriorNorm A.R.toSubring u.val : ℝ) = orbitNorm A (orbitMk A u) := by
+  unfold FiniteTransform.exteriorNorm orbitNorm
+  rw [orbitIdeal_mk]
+  change (Nat.card (A.R ⧸ Ideal.span {u.val}) : ℝ) = _
+  rw [(principalExterior_generates A u).2, A.exteriorResidue_card]
+  rfl
+
+section
+
+variable (P : PrincipalData A σ η hS)
+include P
+
+private theorem frequency_norm_summable
     (z : ℝ) (hz : 1 < z) : Summable (fun u : {u // u ∈ P.frequencies.reps} =>
       (FiniteTransform.exteriorNorm A.R.toSubring u.val.val : ℝ) ^ (-z)) := by
-  have he (u : {u // u ∈ P.frequencies.reps}) :
-      (FiniteTransform.exteriorNorm A.R.toSubring u.val.val : ℝ) =
-        ProbeOrbitNormSum.orbitNorm A (ProbeOrbitNormSum.orbitMk A u.val) := by
-    unfold FiniteTransform.exteriorNorm ProbeOrbitNormSum.orbitNorm
-    rw [ProbeOrbitNormSum.orbitIdeal_mk]
-    change (Nat.card (A.R ⧸ Ideal.span {u.val.val}) : ℝ) =
-      A.exteriorNorm (ProbeOrbitNormSum.principalExterior A u.val)
-    rw [(ProbeOrbitNormSum.principalExterior_generates A u.val).2,
-      A.exteriorResidue_card]
-    rfl
-  simp_rw [he]
+  simp_rw [exteriorNorm_eq_orbitNorm]
   exact (ProbeOrbitNormSum.orbit_norm_rpow_summable A z hz).comp_injective
     (frequency_orbit_injective P)
 
-theorem weightedSeparatedSummand_continuous (P : PrincipalData A σ η hS)
+theorem weightedSeparatedSummand_continuous
     (i : MellinSeriesIndex P) :
     Continuous (fun p : ℂ × ℂ × ℂ => weightedSeparatedSummand P i p.1 p.2.1 p.2.2) := by
   unfold weightedSeparatedSummand comparisonEulerPoissonSummand comparisonRealPower
   fun_prop
 
-theorem separatedSeriesMajorant_summable (P : PrincipalData A σ η hS)
+theorem separatedSeriesMajorant_summable
     (σξ σw σz : ℝ) (hξ : 3 / 2 < σξ) (hw : 2 < σw) (hz : 1 < σz) :
     Summable (fun i : MellinSeriesIndex P =>
       separatedSeriesMajorant P i σξ σw σz) := by
@@ -276,7 +287,7 @@ theorem separatedSeriesMajorant_summable (P : PrincipalData A σ η hS)
   dsimp
   ring
 
-private theorem majorant_antitone (P : PrincipalData A σ η hS)
+private theorem majorant_antitone
     (i : MellinSeriesIndex P) {a b c a' b' c' : ℝ}
     (ha : a ≤ a') (hb : b ≤ b') (hc : c ≤ c') :
     separatedSeriesMajorant P i a' b' c' ≤ separatedSeriesMajorant P i a b c := by
@@ -317,7 +328,7 @@ private theorem majorant_antitone (P : PrincipalData A σ η hS)
       (Real.rpow_nonneg (A.exteriorNorm_pos _).le _))
       (Real.rpow_nonneg (A.exteriorNorm_pos _).le _)
 
-theorem separatedSeries_absolute_locallyUniform (P : PrincipalData A σ η hS) :
+theorem separatedSeries_absolute_locallyUniform :
     (∀ p ∈ separatedSeriesDomain,
       Summable (fun i : MellinSeriesIndex P =>
         ‖weightedSeparatedSummand P i p.1 p.2.1 p.2.2‖)) ∧
@@ -360,7 +371,7 @@ theorem separatedSeries_absolute_locallyUniform (P : PrincipalData A σ η hS) :
       (majorant_antitone P i hq.1.le hq.2.1.le hq.2.2.le)
     simpa only [Real.norm_eq_abs, abs_norm] using hh
 
-theorem separatedSeries_eq_grouped (P : PrincipalData A σ η hS)
+theorem separatedSeries_eq_grouped
     (ξ w z : ℂ) (hξ : 3 / 2 < ξ.re) (hw : 2 < w.re) (hz : 1 < z.re) :
     (∑' i : MellinSeriesIndex P, weightedSeparatedSummand P i ξ w z) =
       ∑' u : {u // u ∈ P.frequencies.reps},
@@ -382,12 +393,19 @@ theorem separatedSeries_eq_grouped (P : PrincipalData A σ η hS)
     comparisonEulerPoissonSeries]
   rw [tsum_mul_left]
 
+end
+
 def initialMellinPoint (t : ℝ × ℝ × ℝ) : ℂ × ℂ × ℂ :=
   ((4 : ℂ) + (t.1 : ℂ) * Complex.I,
     (4 : ℂ) + (t.2.1 : ℂ) * Complex.I,
     (2 : ℂ) + (t.2.2 : ℂ) * Complex.I)
 
-def tripleMellinWeight (P : PrincipalData A σ η hS)
+section
+
+variable (P : PrincipalData A σ η hS)
+include P
+
+def tripleMellinWeight
     (X Y Z : ℝ) (ξ w z : ℂ) : ℂ := by
   letI : MeasurableSpace (SLocalProduct F A.Sf) := borel _
   exact comparisonRealPower X (1 / 2 - z) *
@@ -396,19 +414,19 @@ def tripleMellinWeight (P : PrincipalData A σ η hS)
     ProbeWeight.fourierMellin F A.Sf P.finiteTrace P.additiveMeasure
       P.multiplicativeMeasure P.W0 z * probeRealWeightMellin P.W1 w
 
-def initialTripleMellinSummand (P : PrincipalData A σ η hS)
+def initialTripleMellinSummand
     (X Y Z : ℝ) (i : MellinSeriesIndex P) (t : ℝ × ℝ × ℝ) : ℂ :=
   let p := initialMellinPoint t
   tripleMellinWeight P X Y Z p.1 p.2.1 p.2.2 *
     weightedSeparatedSummand P i p.1 p.2.1 p.2.2
 
-def initialAbsoluteMellinMajorant (P : PrincipalData A σ η hS)
+def initialAbsoluteMellinMajorant
     (X Y Z : ℝ) (t : ℝ × ℝ × ℝ) : ℝ :=
   let p := initialMellinPoint t
   ‖tripleMellinWeight P X Y Z p.1 p.2.1 p.2.2‖ *
     ∑' i : MellinSeriesIndex P, ‖weightedSeparatedSummand P i p.1 p.2.1 p.2.2‖
 
-theorem tripleMellinWeight_integrable_of_nontrivialTrace (P : PrincipalData A σ η hS) (hne : ∀ v, P.finiteTrace v ≠ 1)
+theorem tripleMellinWeight_integrable_of_nontrivialTrace (hne : ∀ v, P.finiteTrace v ≠ 1)
     (X Y Z : ℝ) (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
     Integrable (fun t : ℝ × ℝ × ℝ => tripleMellinWeight P X Y Z
       (initialMellinPoint t).1 (initialMellinPoint t).2.1 (initialMellinPoint t).2.2) := by
@@ -497,7 +515,7 @@ theorem tripleMellinWeight_integrable_of_nontrivialTrace (P : PrincipalData A σ
     Complex.ofReal_re, Complex.I_im, Complex.I_re, mul_zero, zero_mul, zero_add, add_zero,
     mul_one, mul_assoc, Complex.natCast_im] using hh'
 
-private theorem mellinSeriesIndex_countable (P : PrincipalData A σ η hS) :
+private theorem mellinSeriesIndex_countable :
     Countable (MellinSeriesIndex P) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   have he := (ProbeExteriorIdealCount.ideal_norm_summable F A.cS 2 (by norm_num)).countable_support
@@ -513,7 +531,7 @@ private theorem mellinSeriesIndex_countable (P : PrincipalData A σ η hS) :
   letI : Countable A.R := inferInstance
   exact inferInstance
 
-theorem tripleMellin_majorant_of_integrable_weight (P : PrincipalData A σ η hS)
+theorem tripleMellin_majorant_of_integrable_weight
     (X Y Z : ℝ)
     (hweight : Integrable (fun t : ℝ × ℝ × ℝ =>
       tripleMellinWeight P X Y Z (initialMellinPoint t).1
@@ -576,7 +594,7 @@ theorem tripleMellin_majorant_of_integrable_weight (P : PrincipalData A σ η hS
           exact mul_le_mul_of_nonneg_left (hterm i t) (norm_nonneg _))
       _ = bound i * ∫ t, ‖weight t‖ := integral_const_mul _ _
 
-theorem tripleMellin_integrable_majorant_of_nontrivialTrace (P : PrincipalData A σ η hS)
+theorem tripleMellin_integrable_majorant_of_nontrivialTrace
     (hne : ∀ v, P.finiteTrace v ≠ 1)
     (X Y Z : ℝ) (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
     Integrable (initialAbsoluteMellinMajorant P X Y Z) ∧
@@ -586,7 +604,7 @@ theorem tripleMellin_integrable_majorant_of_nontrivialTrace (P : PrincipalData A
   tripleMellin_majorant_of_integrable_weight P X Y Z
     (tripleMellinWeight_integrable_of_nontrivialTrace P hne X Y Z hX hY hZ)
 
-theorem tripleMellin_integrable_majorant (P : PrincipalData A σ η hS)
+theorem tripleMellin_integrable_majorant
     (X Y Z : ℝ) (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
     Integrable (initialAbsoluteMellinMajorant P X Y Z) ∧
     (∀ i : MellinSeriesIndex P, Integrable (initialTripleMellinSummand P X Y Z i)) ∧
@@ -598,7 +616,7 @@ theorem tripleMellin_integrable_majorant (P : PrincipalData A σ η hS)
     exact hx (by rw [heq]; rfl)
   exact tripleMellin_integrable_majorant_of_nontrivialTrace P hne X Y Z hX hY hZ
 
-theorem tripleMellin_sum_integral_interchange (P : PrincipalData A σ η hS)
+theorem tripleMellin_sum_integral_interchange
     (X Y Z : ℝ) (hX : 0 < X) (hY : 0 < Y) (hZ : 0 < Z) :
     Integrable (fun t : ℝ × ℝ × ℝ =>
       ∑' i : MellinSeriesIndex P, initialTripleMellinSummand P X Y Z i t) ∧
@@ -628,6 +646,8 @@ theorem tripleMellin_sum_integral_interchange (P : PrincipalData A σ η hS)
     _ = initialAbsoluteMellinMajorant P X Y Z t := by
       simp only [initialTripleMellinSummand, initialAbsoluteMellinMajorant, norm_mul,
         tsum_mul_left]
+
+end
 
 end
 end NormalizedProbe

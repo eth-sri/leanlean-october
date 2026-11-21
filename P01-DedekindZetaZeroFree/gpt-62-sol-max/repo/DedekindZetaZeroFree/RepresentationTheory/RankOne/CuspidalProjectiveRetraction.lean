@@ -29,40 +29,36 @@ variable (ρ : Representation ℂ G S) [ρ.IsIrreducible]
 
 include hρ hℓ hU hc
 
+theorem formProperties : CuspidalFiniteCosetForm.Properties ρ ℓ U :=
+  CuspidalFiniteCosetForm.unitarization ρ hρ ℓ hℓ U hU (hc ℓ (smoothFunctional ρ ℓ U hU))
+
  theorem form_add (s t w : S) :
     CuspidalFiniteCosetForm.form ρ ℓ U (s + t) w =
       CuspidalFiniteCosetForm.form ρ ℓ U s w + CuspidalFiniteCosetForm.form ρ ℓ U t w :=
-  (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
-    (hc ℓ (smoothFunctional ρ ℓ U hU))).2.1 s t w
+  (formProperties ρ hρ ℓ hℓ U hU hc).add_left s t w
 
  theorem form_smul (a : ℂ) (s w : S) :
     CuspidalFiniteCosetForm.form ρ ℓ U (a • s) w = a * CuspidalFiniteCosetForm.form ρ ℓ U s w :=
-  (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
-    (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.1 a s w
+  (formProperties ρ hρ ℓ hℓ U hU hc).smul_left a s w
 
  theorem form_hermitian (s w : S) :
     CuspidalFiniteCosetForm.form ρ ℓ U s w = star (CuspidalFiniteCosetForm.form ρ ℓ U w s) :=
-  (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
-    (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.1 s w
+  (formProperties ρ hρ ℓ hℓ U hU hc).hermitian s w
 
  theorem form_real (s : S) : (CuspidalFiniteCosetForm.form ρ ℓ U s s).im = 0 :=
-  ((CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
-    (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.2.1 s).1
+  (formProperties ρ hρ ℓ hℓ U hU hc).real_diagonal s
 
  theorem form_pos (s : S) (hs : s ≠ 0) : 0 < (CuspidalFiniteCosetForm.form ρ ℓ U s s).re :=
-  (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
-    (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.2.2.1 s hs
+  (formProperties ρ hρ ℓ hℓ U hU hc).positive s hs
 
  theorem form_invariant (g : G) (s w : S) :
     CuspidalFiniteCosetForm.form ρ ℓ U (ρ g s) (ρ g w) = CuspidalFiniteCosetForm.form ρ ℓ U s w :=
-  (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
-    (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.2.2.2.1 g s w
+  (formProperties ρ hρ ℓ hℓ U hU hc).invariant g s w
 
  theorem form_coefficient_compact (s w : S) :
     HasCompactSupport (fun g => CuspidalFiniteCosetForm.form ρ ℓ U (ρ g s) w) := by
   obtain ⟨L, hL, hs⟩ :=
-    (CuspidalFiniteCosetForm.unitarization_noT2 ρ hρ ℓ hℓ U hU
-      (hc ℓ (smoothFunctional ρ ℓ U hU))).2.2.2.2.2.2.2.2.2 w
+    (formProperties ρ hρ ℓ hℓ U hU hc).smooth_dual w
   have he : CuspidalFiniteCosetForm.coefficient ρ L s =
       (fun g => CuspidalFiniteCosetForm.form ρ ℓ U (ρ g s) w) := by
     funext g
@@ -210,8 +206,7 @@ theorem pairing_unnormalized_composite :
         (coefficientEmbedding ρ hρ ℓ hℓ U hU hc W v₀ v₀.val)) v₀.val =
     (coefficientSquareSum ρ hρ ℓ hℓ U hU hc W v₀ : ℂ) := by
   classical
-  obtain ⟨L, hL, hsL⟩ := (CuspidalFiniteCosetForm.unitarization ρ hρ ℓ hℓ U hU
-    (hc ℓ (CuspidalProjectiveRetractProof.smoothFunctional ρ ℓ U hU))).2.2.2.2.2.2.2.2.2 v₀.val
+  obtain ⟨L, hL, hsL⟩ := (CuspidalProjectiveRetractProof.formProperties ρ hρ ℓ hℓ U hU hc).smooth_dual v₀.val
   change CuspidalFiniteCosetForm.form ρ ℓ U _ v₀.val = _
   rw [← hL]
   rw [unnormalizedRetraction_apply, map_sum]

@@ -11,7 +11,6 @@ open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.KPWildBorelFrequencyReduction
 open KPGlobalTorusFunctionData
 
-open _root_.DedekindZetaZeroFree.KPWildIndependentGenericity.NonzeroPeriod renaming global_root_continuous → KPWildIndependentGenericity.NonzeroPeriod.global_root_continuous
 open _root_.DedekindZetaZeroFree.KPWildIndependentGenericity.NonzeroPeriod renaming globalRoot_rationalDiagonal_conjugation → KPWildIndependentGenericity.NonzeroPeriod.globalRoot_rationalDiagonal_conjugation
 open _root_.DedekindZetaZeroFree.KPCompactFourier renaming char_integral_zero → KPCompactFourier.char_integral_zero
 
@@ -62,7 +61,7 @@ theorem borel_nontrivial_fourier_zero_iff_standard_trace_zero
         ⟨rationalDiagonalLift F ζ hζ t, rationalDiagonalLift_mem F ζ hζ t⟩
     let θB : borel F ζ hζ → ℂ := fun b => θ b.val
     have hncont : Continuous n :=
-      (KPWildIndependentGenericity.NonzeroPeriod.global_root_continuous F ζ hζ).subtype_mk _
+      (KPGlobalTorusFunctionData.continuous_N F ζ hζ).subtype_mk _
     have hconj (t : Fˣ) (x : Adeles F) :
         n x * a t = a t * n (algebraMap F (Adeles F) (↑t⁻¹ : F) * x) := by
       apply Subtype.ext

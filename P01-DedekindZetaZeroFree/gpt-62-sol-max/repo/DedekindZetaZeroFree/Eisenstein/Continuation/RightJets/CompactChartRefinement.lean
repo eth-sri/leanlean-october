@@ -1,5 +1,6 @@
 module
 
+public import DedekindZetaZeroFree.Metaplectic.Cubic.OrbifoldCharts.RightInvariantFieldCoordinates
 public import DedekindZetaZeroFree.Eisenstein.Continuation.Spherical.HolomorphicSmoothSectionGluing
 
 @[expose] public section

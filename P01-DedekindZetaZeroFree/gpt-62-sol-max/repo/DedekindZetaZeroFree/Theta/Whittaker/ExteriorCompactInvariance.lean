@@ -52,7 +52,7 @@ lemma diagonal_commute_exterior_root (y : R.A.G) (p : ThetaBranch.ExteriorPrime 
     (t : p.val.adicCompletion F) :
     Commute (diagonal R y) (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12
       (KPRationalAdelicSplitting.localAdele F (Sum.inr p.val) t)) := by
-  rw [← ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R p.val t]
+  rw [← MomentSources.finite_root_injection R p.val t]
   exact diagonal_commute_exterior R y p (KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12
     (Sum.inr p.val) t)
 

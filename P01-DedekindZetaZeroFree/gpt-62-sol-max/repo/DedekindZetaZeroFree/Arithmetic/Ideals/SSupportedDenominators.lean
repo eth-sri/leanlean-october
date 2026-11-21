@@ -56,7 +56,7 @@ private theorem denominator_product_order
       ∑ v ∈ S, multiplicity w.asIdeal (Ideal.span ({a v} : Set (RingOfIntegers F))) := by
   classical
   induction S using Finset.induction_on with
-  | empty => simpa using (multiplicity_one_right (a := w.asIdeal))
+  | empty => simp
   | @insert v S hv ih =>
     rw [Finset.prod_insert hv, ← Ideal.span_singleton_mul_span_singleton,
       multiplicity_mul w.prime, Finset.sum_insert hv, ih]

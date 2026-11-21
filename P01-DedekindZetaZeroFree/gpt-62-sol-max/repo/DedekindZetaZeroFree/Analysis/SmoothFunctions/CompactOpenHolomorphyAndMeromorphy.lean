@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import Mathlib
 
 @[expose] public section
@@ -253,13 +254,7 @@ theorem smooth_has_integerSobolev_data {n k : ℕ} (B : LocalBall n)
 abbrev CompactJets {n : ℕ} (K : Set (Space n)) (m : ℕ) :=
   MultiIndex n m → ContinuousMap K ℂ
 
- theorem coordinateDerivativeList_smooth {n : ℕ} (B : LocalBall n)
-    (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
-    (l : List (Fin n)) : ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) B.carrier := by
-  induction l with
-  | nil => exact hu
-  | cons i is ih =>
-    exact (ih.fderiv_of_isOpen Metric.isOpen_ball (by simp)).clm_apply contDiffOn_const
+ alias coordinateDerivativeList_smooth := DedekindZetaZeroFree.KPContLocalNorm.list_smooth
 
 def compactJet {n m : ℕ} (B : LocalBall n) (K : Set (Space n))
     (hK : K ⊆ B.carrier) (u : Space n → ℂ)

@@ -93,8 +93,7 @@ theorem basisEquivFun_symm_intCoordinatePermutation
     intro i
     simp only [LinearMap.comp_apply, Pi.basisFun_apply]
     have hsingle (j : ι) :
-        b.equivFun.symm (Pi.single j 1) = b j := by
-      exact _root_.Basis.equivFun_symm_single b j
+        b.equivFun.symm (Pi.single j 1) = b j := _root_.Basis.equivFun_symm_single b j
     calc
       b.equivFun.symm
           (intCoordinatePermutation (ρ g)

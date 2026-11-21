@@ -73,7 +73,6 @@ theorem integrable_mixedMellinGaussian (x : K) (hx : x ≠ 0)
     simp only [hv.mult_eq_one, Nat.cast_one, one_mul, Complex.ofReal_mul,
       Complex.ofReal_pow, IntegrableOn]
     congr! 2
-    push_cast
     ring_nf
   · convert integrableOn_gaussian_complex_place_mellin s (v x) hs ha using 1
     simp only [hv.mult_eq_two, Nat.cast_ofNat, Complex.ofReal_mul,
@@ -133,7 +132,7 @@ private theorem kernel_real_norm (x : K) (σ : ℝ) (q : InfinitePlace K → ℝ
   unfold mixedMellinGaussian
   simp only [Complex.ofReal_re, Complex.ofReal_prod, Complex.ofReal_mul,
     Complex.ofReal_exp, Complex.ofReal_neg, Complex.ofReal_pow,
-    Complex.ofReal_natCast, Complex.ofReal_sub, Complex.ofReal_one]
+    Complex.ofReal_natCast]
   apply Finset.prod_congr rfl
   intro v hv
   rw [Complex.ofReal_cpow (hq v).le]

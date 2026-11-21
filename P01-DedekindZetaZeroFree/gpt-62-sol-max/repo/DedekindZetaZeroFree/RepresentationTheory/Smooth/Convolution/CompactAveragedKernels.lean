@@ -20,9 +20,6 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 open _root_.DedekindZetaZeroFree.RepresentationTheory.ArchFiniteSplitting renaming projective_t2 → projective_t2
 local instance : T2Space (Matrix.ProjGenLinGroup (Fin 2) ℂ) := projective_t2
 
-local instance : LocallyCompactSpace (Matrix (Fin 2) (Fin 2) ℂ) := by
-  change LocallyCompactSpace (Fin 2 → Fin 2 → ℂ)
-  infer_instance
 
 local instance : LocallyCompactSpace (Matrix.ProjGenLinGroup (Fin 2) ℂ) := by
   change LocallyCompactSpace (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸ Subgroup.center _)

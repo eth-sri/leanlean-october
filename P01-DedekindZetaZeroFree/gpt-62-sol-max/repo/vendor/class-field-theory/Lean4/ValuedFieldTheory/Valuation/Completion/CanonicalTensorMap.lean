@@ -36,10 +36,13 @@ universe u v
 
 open scoped TensorProduct
 
+section
+
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L] (vK : AbsoluteValue K ℝ)
+include vK
+
 /-- The product of the component maps `K_v ⊗_K L → L_w`. -/
-noncomputable def completionTensorMap_leftCanonicalHom
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) :
+noncomputable def completionTensorMap_leftCanonicalHom :
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
       fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -52,9 +55,7 @@ noncomputable def completionTensorMap_leftCanonicalHom
     absoluteValueExtension_localizationTensorHom vK w
 
 @[simp]
-theorem completionTensorMap_leftCanonicalHom_tmul_apply
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (b : vK.Completion) (a : L)
+theorem completionTensorMap_leftCanonicalHom_tmul_apply (b : vK.Completion) (a : L)
     (w : AbsoluteValueExtension vK L) :
     letI : ∀ w : AbsoluteValueExtension vK L,
         Algebra vK.Completion w.1.Completion :=
@@ -69,9 +70,7 @@ theorem completionTensorMap_leftCanonicalHom_tmul_apply
 
 /-- The canonical `K_v`-algebra map in the chosen tensor-factor order
 `L ⊗_K K_v`. -/
-noncomputable def completionTensorMap_canonicalHom
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) :
+noncomputable def completionTensorMap_canonicalHom :
     letI := Algebra.TensorProduct.rightAlgebra
       (R := K) (A := L) (B := vK.Completion)
     letI : ∀ w : AbsoluteValueExtension vK L,
@@ -98,9 +97,7 @@ noncomputable def completionTensorMap_canonicalHom
         exact h.commutes b }
 
 @[simp]
-theorem completionTensorMap_canonicalHom_tmul_apply
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (a : L) (b : vK.Completion)
+theorem completionTensorMap_canonicalHom_tmul_apply (a : L) (b : vK.Completion)
     (w : AbsoluteValueExtension vK L) :
     letI := Algebra.TensorProduct.rightAlgebra
       (R := K) (A := L) (B := vK.Completion)
@@ -120,6 +117,8 @@ theorem completionTensorMap_canonicalHom_tmul_apply
       (Algebra.TensorProduct.comm K L vK.Completion (a ⊗ₜ[K] b)) w = _
   rw [Algebra.TensorProduct.comm_tmul,
     completionTensorMap_leftCanonicalHom_tmul_apply, mul_comm]
+
+end
 
 end Valuations
 end AlgebraicNumberTheory

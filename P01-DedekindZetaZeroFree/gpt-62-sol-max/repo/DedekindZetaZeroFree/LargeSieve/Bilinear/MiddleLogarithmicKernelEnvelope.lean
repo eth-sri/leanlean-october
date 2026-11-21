@@ -71,7 +71,7 @@ private lemma normalized_coefficient (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b t
     · exact (hInt.aestronglyMeasurable.mul hp.aestronglyMeasurable).congr
         (Filter.Eventually.of_forall (fun p => by dsimp [H]; ring))
     · filter_upwards with p
-      simp [norm_mul, phase, Complex.norm_exp, H]
+      simp [phase, Complex.norm_exp, H]
   simp only [MiddleLogKernel.fourierCoefficient, normalized_eq, ← phase_pair]
   rw [show (fun p : ℝ × ℝ => (h : ℂ) * H p * (phase (-t) p.1 * phase (-s) p.2)) =
       (fun p : ℝ × ℝ => (h : ℂ) * (H p * phase (-t) p.1 * phase (-s) p.2)) by ext; ring,

@@ -40,14 +40,8 @@ def translatedTopology (m : ℕ) :
   isOpen_sUnion := by
     intro S hS γ
     rw [Set.preimage_sUnion]
-    exact isOpen_biUnion (fun U hU => hS U hU γ)
+    solve_by_elim [isOpen_biUnion]
 
-theorem isOpen_iff (m : ℕ)
-    (U : Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v))) :
-    @IsOpen _ (translatedTopology F ζ hζ v m) U ↔
-      ∀ γ, IsOpen {k : KPLocalCube.Gamma F v m |
-        γ * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k.val ∈ U} := by
-  rfl
 
 set_option maxHeartbeats 500000 in
 
@@ -71,7 +65,7 @@ theorem translatedChart_isOpenEmbedding (m : ℕ)
   rw [he] at h
   have hf : (fun k => γ * s k) = translatedChart F ζ hζ v m γ := by
     funext k
-    exact congrArg (fun x => γ * x) (hs k)
+    solve_by_elim [congrArg]
   rw [hf] at h
   exact h
 

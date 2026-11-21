@@ -1,7 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.ZeroDetection.Smoothing.Poisson.FrequencyGammaShift
-public import DedekindZetaZeroFree.ZeroDetection.Smoothing.Poisson.CharacterPrefix
+public import DedekindZetaZeroFree.ZeroDetection.Smoothing.Poisson.ExceptionalPrefix
 
 @[expose] public section
 
@@ -186,7 +186,7 @@ theorem detector_prefix (A ρ : ℝ) (hρ : HeightSpec D A ρ) :
   have hUa : U₁ ≤ U := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hU
   have hUb : U₂ ≤ U := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hU
   have hUc : 10 ≤ U := le_trans (le_max_right _ _) hU
-  exact DetectorPrefixCore.prefix_core U s.re s.im (FixedData.primMinus D u) hUc hσ
+  exact DetectorPrefix.prefix_core U s.re s.im (FixedData.primMinus D u) hUc hσ
     (hH U hUa u hu s hs hσ hs1 hγ) (hT U s.re s.im (FixedData.primMinus D u) hUb hσ hs1)
 
 end

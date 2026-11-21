@@ -39,8 +39,6 @@ def Q : Submodule ℂ (Lp (E F) 2 a.liftedMeasure) :=
 instance qInnerProductSpace : InnerProductSpace ℂ (Q a) :=
   KPMeasurableLocalL2.Q_innerProductSpace (localData a) (fullPiece a)
 
-instance qCompleteSpace : CompleteSpace (Q a) :=
-  KPMeasurableLocalL2.Q_completeSpace (localData a) (fullPiece a)
 
 def localCoefficient (r : Family (U := U) (H := H)) (y : a.domain) : E F :=
   coefficient r a (coordinates a y)
@@ -285,62 +283,9 @@ theorem res_represented (v : IntrinsicHilbert cover)
   rw [res_eq_familyQ cover a v r hr]
   exact MemLp.coeFn_toLp (localCoefficient_memLp a r)
 
-theorem res_norm_le (v : IntrinsicHilbert cover) : ‖res cover a v‖ ≤ ‖v‖ := by
-  calc ‖res cover a v‖ ≤ ‖res cover a‖ * ‖v‖ := ContinuousLinearMap.le_opNorm _ _
-    _ ≤ 1 * ‖v‖ := by
-      gcongr
-      exact LinearMap.mkContinuous_norm_le _ zero_le_one _
-    _ = ‖v‖ := one_mul _
 
-theorem res_inner_eq_integral (v w : IntrinsicHilbert cover)
-    (r s : SquareFiniteFamily (U := U) (H := H))
-    (hr : toAeQuotient r = intrinsicClass cover v)
-    (hs : toAeQuotient s = intrinsicClass cover w) :
-    inner ℂ (res cover a v) (res cover a w) =
-      ∫ x in a.baseDomain, pair r.val s.val x
-        ∂(KPContActualCotangentMeasurableFamilies.baseMeasure (R := R) (P := P) (U := U)) := by
-  rw [res_eq_familyQ cover a v r hr, res_eq_familyQ cover a w s hs]
-  exact familyQ_inner_eq_integral a r s
 
-theorem res_norm_sq_eq_integral (v : IntrinsicHilbert cover)
-    (r : SquareFiniteFamily (U := U) (H := H))
-    (hr : toAeQuotient r = intrinsicClass cover v) :
-    ‖res cover a v‖ ^ 2 = ∫ x in a.baseDomain, (normSquare r.val x : ℝ)
-      ∂(KPContActualCotangentMeasurableFamilies.baseMeasure (R := R) (P := P) (U := U)) := by
-  rw [res_eq_familyQ cover a v r hr]
-  have hP := every_shrunkChart_properties F ζ hζ U R P H a
-  have hint : Integrable (fun x => pair r.val r.val x)
-      ((baseMeasure (R := R) (P := P) (U := U)).restrict a.baseDomain) :=
-    (integrable_pair r r).mono_measure Measure.restrict_le_self
-  calc ‖familyQ a r‖ ^ 2
-      = RCLike.re (inner ℂ (familyQ a r) (familyQ a r)) :=
-        InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ) (familyQ a r)
-    _ = RCLike.re (∫ x in a.baseDomain, pair r.val r.val x
-          ∂(baseMeasure (R := R) (P := P) (U := U))) := by
-        rw [familyQ_inner_eq_integral a r r]
-    _ = ∫ x in a.baseDomain, RCLike.re (pair r.val r.val x)
-          ∂(baseMeasure (R := R) (P := P) (U := U)) := (integral_re hint).symm
-    _ = ∫ x in a.baseDomain, (normSquare r.val x : ℝ)
-          ∂(baseMeasure (R := R) (P := P) (U := U)) := by
-      refine integral_congr_ae ?_
-      have hpt : ∀ᵐ x ∂((baseMeasure (R := R) (P := P) (U := U)).restrict a.baseDomain),
-          RCLike.re (pair r.val r.val x) = (normSquare r.val x : ℝ) := by
-        rw [MeasureTheory.ae_restrict_iff' hP.base_measurable]
-        filter_upwards with b hb
-        obtain ⟨y, rfl⟩ := hb
-        rw [← q_coordinates a y, pair_chart, normSquare_chart,
-          ← InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ)
-            (coefficient r.val a (coordinates a y))]
-        push_cast
-        rfl
-      exact hpt
 
-theorem original_normalization :
-    a.liftedMeasure =
-      ((H.disintegration U).componentWeight a.component /
-        (Nat.card a.Isotropy : ℝ≥0∞)) •
-      Measure.comap (Subtype.val : a.domain → KPCuspGenuineMonodromy.SymmetricSpace F)
-        ((KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)).restrict a.domain) := rfl
 
 def coefficientIndex : (Fin (d F) × Fin 3) ≃ Fin (3 * d F) :=
   (Equiv.prodComm _ _).trans finProdFinEquiv
@@ -384,8 +329,6 @@ def euclideanFullPiece : KPMeasurableLocalL2.Piece (euclideanData a) where
 def EuclideanQ : Submodule ℂ (Lp (EuclideanSpace ℂ (Fin (3 * d F))) 2 a.liftedMeasure) :=
   KPMeasurableLocalL2.Q (euclideanData a) (euclideanFullPiece a)
 
-instance euclideanQInnerProductSpace : InnerProductSpace ℂ (EuclideanQ a) :=
-  KPMeasurableLocalL2.Q_innerProductSpace (euclideanData a) (euclideanFullPiece a)
 
 def reindexQ : Q a ≃ₗᵢ[ℂ] EuclideanQ a where
   toFun f := ⟨(coefficientReindex (F := F)).toContinuousLinearEquiv.toContinuousLinearMap.compLp
@@ -484,9 +427,6 @@ theorem resEuclidean_represented (v : IntrinsicHilbert cover)
   rw [hy, hz]
   rfl
 
-theorem resEuclidean_norm (v : IntrinsicHilbert cover) :
-    ‖resEuclidean cover a v‖ = ‖res cover a v‖ := by
-  exact LinearIsometryEquiv.norm_map (reindexQ a) (res cover a v)
 
 end DedekindZetaZeroFree.KPContActualCotangentChartRestriction
 

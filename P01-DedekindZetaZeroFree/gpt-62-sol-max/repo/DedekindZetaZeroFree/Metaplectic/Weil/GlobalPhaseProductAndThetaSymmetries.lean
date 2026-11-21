@@ -30,16 +30,13 @@ private theorem localProductToSpace_sLocalDiagonal
         algebraMap F (NumberField.InfiniteAdeleRing F) r := by
       funext v
       simp only [sLocalDiagonal_infinite]
-      exact (NumberField.InfiniteAdeleRing.algebraMap_apply F r v).symm
+      rfl
     rw [h1]
     apply (NumberField.mixedEmbedding.euclidean.toMixed F).injective
     rw [PoissonArch.infiniteAdeleToSpace_coordinates,
       ContinuousLinearEquiv.apply_symm_apply,
       NumberField.InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
-  · show (sLocalDiagonal F T r).2 = PoissonFinite.diagonal F T r
-    funext v
-    rw [sLocalDiagonal_finite]
-    rfl
+  rfl
 
 private theorem symm_localProductToSpace_diagonal
     (T : Finset (HeightOneSpectrum (𝓞 F))) (r : F) :
@@ -226,11 +223,7 @@ namespace DedekindZetaZeroFree.QuadraticRawProduct
 
 variable {F : Type} [Field F] [NumberField F]
 
-local instance thetaCompletionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
-    MeasurableSpace (v.adicCompletion F) := borel _
 
-local instance thetaCompletionBorel (v : HeightOneSpectrum (𝓞 F)) :
-    BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
 private theorem fourier_add (T : Finset (HeightOneSpectrum (𝓞 F)))
     (f g : PoissonS.Space F T → ℂ)

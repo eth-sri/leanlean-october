@@ -23,9 +23,13 @@ theorem FrozenTensor.finite_mem {v : R.A.UnitQuotient} (X : FrozenTensor R C v)
   rw [X.frozen, C.factorization.bad_exact]
   exact Or.inr ⟨q.val, rfl, q.property⟩
 
-def FrozenTensor.finiteUpdate {v : R.A.UnitQuotient} (X : FrozenTensor R C v)
-    (q : R.A.Sf)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val)) :
+section
+
+variable {v : R.A.UnitQuotient} (X : FrozenTensor R C v) (q : R.A.Sf)
+  (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val))
+include v X q a
+
+def FrozenTensor.finiteUpdate :
     ∀ p : X.level.val, actualLocal R C.factorization.finiteData p :=
   Function.update X.component ⟨Sum.inr q.val, X.finite_mem q⟩
     (KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
@@ -35,9 +39,7 @@ def FrozenTensor.finiteUpdate {v : R.A.UnitQuotient} (X : FrozenTensor R C v)
       (KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) a)
       (X.component ⟨Sum.inr q.val, X.finite_mem q⟩))
 
-theorem FrozenTensor.finite_function {v : R.A.UnitQuotient} (X : FrozenTensor R C v)
-    (q : R.A.Sf)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val))
+theorem FrozenTensor.finite_function
     (g : Group R) :
     C.factorization.coreMap
       (RestrictedTensorSimple.stageInclusion _ C.factorization.references C.factorization.bad
@@ -47,17 +49,13 @@ theorem FrozenTensor.finite_function {v : R.A.UnitQuotient} (X : FrozenTensor R 
   rw [X.function_eq]
   rfl
 
-theorem FrozenTensor.finite_period_integrable {v : R.A.UnitQuotient}
-    (X : FrozenTensor R C v) (q : R.A.Sf)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val)) :
+theorem FrozenTensor.finite_period_integrable :
     Integrable (fun t => C.realization.theta v
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out t) *
         finiteLift q.val a) * star (adelicTraceQuotientCharacter F t : ℂ)) C.sources.dq :=
   C.factorization.period_integrable v (finiteLift q.val a)
 
-theorem FrozenTensor.finite_period_exact {v : R.A.UnitQuotient}
-    (X : FrozenTensor R C v) (q : R.A.Sf)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val)) :
+theorem FrozenTensor.finite_period_exact :
     fourier R C.sources.dq (C.realization.theta v) (finiteLift q.val a) =
       ∏ p : X.level.val, C.factorization.ell p (X.finiteUpdate q a p) := by
   have hi := X.finite_period_integrable q a
@@ -67,9 +65,7 @@ theorem FrozenTensor.finite_period_exact {v : R.A.UnitQuotient}
   filter_upwards [] with t
   simp only [mul_one, X.finite_function]
 
-theorem FrozenTensor.finite_normalized_product {v : R.A.UnitQuotient}
-    (X : FrozenTensor R C v) (q : R.A.Sf)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val)) :
+theorem FrozenTensor.finite_normalized_product :
     fourier R C.sources.dq (C.realization.theta v) (finiteLift q.val a) /
         fourier R C.sources.dq (C.realization.theta v) 1 =
       ∏ p : X.level.val,
@@ -77,9 +73,7 @@ theorem FrozenTensor.finite_normalized_product {v : R.A.UnitQuotient}
           C.factorization.ell p (X.component p) := by
   rw [X.finite_period_exact, X.forward_exact, Finset.prod_div_distrib]
 
-theorem FrozenTensor.finite_normalized_single {v : R.A.UnitQuotient}
-    (X : FrozenTensor R C v) (q : R.A.Sf)
-    (a : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val)) :
+theorem FrozenTensor.finite_normalized_single :
     fourier R C.sources.dq (C.realization.theta v) (finiteLift q.val a) /
         fourier R C.sources.dq (C.realization.theta v) 1 =
       C.factorization.ell (Sum.inr q.val)
@@ -93,6 +87,8 @@ theorem FrozenTensor.finite_normalized_single {v : R.A.UnitQuotient}
       intro p _ hp
       rw [FrozenTensor.finiteUpdate, Function.update_of_ne hp]
       exact div_self (X.local_forward_ne_zero p)) (by simp)
+
+end
 
 end DedekindZetaZeroFree.SheetRescaling.WeylTensorTransport
 

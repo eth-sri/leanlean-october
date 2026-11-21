@@ -76,19 +76,18 @@ theorem section_ext (w w' : Sections F ζ hζ U R P H)
   funext i
   refine Subtype.ext (funext fun x => ?_)
   obtain ⟨O⟩ := orbifoldChart_exists F ζ hζ U R P H i x
-  let p : Space (KPCuspLogShape.dimension F * 3) := (coordinates F).symm x
-  have hpx : coordinates F p = x := (coordinates F).apply_symm_apply x
+  let p := (coordinates F).symm x
+  have hpx := (coordinates F).apply_symm_apply x
   have hmem : p ∈ chartDomain F ζ hζ U R P H i x O := by
     show coordinates F p ∈ O.neighborhood
     rw [hpx]; exact O.center_mem
-  have hOpen : IsOpen (chartDomain F ζ hζ U R P H i x O) :=
+  have hOpen :=
     O.isOpen.preimage (coordinates F).continuous
   obtain ⟨r, hr, hrU⟩ := Metric.nhds_basis_closedBall.mem_iff.mp (hOpen.mem_nhds hmem)
   let B : LocalBall (KPCuspLogShape.dimension F * 3) :=
     ⟨Nat.mul_pos (KPCuspLogShape.dimension_pos F H.totallyComplex) (by norm_num),
       p, r, hr⟩
-  have hBc : KPContLocalCubeEmbedding.closedCarrier B ⊆
-      chartDomain F ζ hζ U R P H i x O := hrU
+  have hBc := hrU
   have hpB : p ∈ B.carrier := by
     rw [KPContLocalNorm.LocalBall.carrier]; exact Metric.mem_ball_self hr
   let A : ChartBall F ζ hζ U R P H := ⟨i, x, O, phaseClass F ζ hζ U 1, B, hBc⟩
@@ -110,18 +109,23 @@ theorem overlapCoordinate_continuous (i : Fin (H.atlas U).componentCount)
   (coordinates F).symm.continuous.comp
     ((KPCuspSiegel.continuous_action F γ.val).comp (coordinates F).continuous)
 
-theorem exists_canonicalData (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F) :
+section
+
+variable (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+include i x
+
+theorem exists_canonicalData :
     ∃ (O : OrbifoldChart F ζ hζ U R P H i x)
       (B : LocalBall (KPCuspLogShape.dimension F * 3)),
       KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i x O ∧
       (coordinates F).symm x ∈ B.carrier := by
   obtain ⟨O⟩ := orbifoldChart_exists F ζ hζ U R P H i x
-  let p : Space (KPCuspLogShape.dimension F * 3) := (coordinates F).symm x
-  have hpx : coordinates F p = x := (coordinates F).apply_symm_apply x
+  let p := (coordinates F).symm x
+  have hpx := (coordinates F).apply_symm_apply x
   have hmem : p ∈ chartDomain F ζ hζ U R P H i x O := by
     show coordinates F p ∈ O.neighborhood
     rw [hpx]; exact O.center_mem
-  have hOpen : IsOpen (chartDomain F ζ hζ U R P H i x O) :=
+  have hOpen :=
     O.isOpen.preimage (coordinates F).continuous
   obtain ⟨r, hr, hrU⟩ := Metric.nhds_basis_closedBall.mem_iff.mp (hOpen.mem_nhds hmem)
   refine ⟨O, ⟨Nat.mul_pos (KPCuspLogShape.dimension_pos F H.totallyComplex) (by norm_num),
@@ -129,40 +133,40 @@ theorem exists_canonicalData (i : Fin (H.atlas U).componentCount) (x : Symmetric
   rw [KPContLocalNorm.LocalBall.carrier]
   exact Metric.mem_ball_self hr
 
-def canonicalChart (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F) :
+def canonicalChart :
     OrbifoldChart F ζ hζ U R P H i x :=
   Classical.choose (exists_canonicalData F ζ hζ U R P H i x)
 
-def canonicalBall (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F) :
+def canonicalBall :
     LocalBall (KPCuspLogShape.dimension F * 3) :=
   Classical.choose (Classical.choose_spec (exists_canonicalData F ζ hζ U R P H i x))
 
-theorem canonicalBall_contained (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F) :
+theorem canonicalBall_contained :
     KPContLocalCubeEmbedding.closedCarrier (canonicalBall F ζ hζ U R P H i x) ⊆
       chartDomain F ζ hζ U R P H i x (canonicalChart F ζ hζ U R P H i x) :=
   (Classical.choose_spec (Classical.choose_spec (exists_canonicalData F ζ hζ U R P H i x))).1
 
-theorem canonicalBall_mem (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F) :
+theorem canonicalBall_mem :
     (coordinates F).symm x ∈ (canonicalBall F ζ hζ U R P H i x).carrier :=
   (Classical.choose_spec (Classical.choose_spec (exists_canonicalData F ζ hζ U R P H i x))).2
 
-def canonicalChartBall (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+def canonicalChartBall
     (m : PhaseSheets F ζ hζ U) : ChartBall F ζ hζ U R P H :=
   ⟨i, x, canonicalChart F ζ hζ U R P H i x, m, canonicalBall F ζ hζ U R P H i x,
     canonicalBall_contained F ζ hζ U R P H i x⟩
 
-theorem canonicalChartBall_mem (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F) (m : PhaseSheets F ζ hζ U) :
+theorem canonicalChartBall_mem (m : PhaseSheets F ζ hζ U) :
     (coordinates F).symm x ∈ (canonicalChartBall F ζ hζ U R P H i x m).ball.carrier :=
   canonicalBall_mem F ζ hζ U R P H i x
 
-theorem exists_canonicalChartBall (i : Fin (H.atlas U).componentCount)
-    (x : SymmetricSpace F) (m : PhaseSheets F ζ hζ U) :
+theorem exists_canonicalChartBall (m : PhaseSheets F ζ hζ U) :
     ∃ A : ChartBall F ζ hζ U R P H,
       A.component = i ∧ A.center = x ∧ A.phase = m ∧
         (coordinates F).symm x ∈ A.ball.carrier :=
   ⟨canonicalChartBall F ζ hζ U R P H i x m, rfl, rfl, rfl,
     canonicalChartBall_mem F ζ hζ U R P H i x m⟩
+
+end
 
 structure LocalRepresentatives (Ω : Set ℂ)
     (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U) where
@@ -336,16 +340,18 @@ theorem separation_of_realization
   · intro i γ ε D hD f g hf hg hae
     exact MeasureTheory.Measure.eqOn_open_of_ae_eq hae hD hf hg
 
-def patchedCoefficient (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+section
+
+variable (Ω : Set ℂ) (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
+  (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+include Ω u locals
+
+def patchedCoefficient
     (i : Fin (H.atlas U).componentCount) (m : PhaseSheets F ζ hζ U)
     (s : ℂ) (p : Space (KPCuspLogShape.dimension F * 3)) : ℂ :=
   locals.coefficient (canonicalChartBall F ζ hζ U R P H i (coordinates F p) m) s p
 
-theorem patchedCoefficient_eq_local (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+theorem patchedCoefficient_eq_local
     (s : ℂ) (hs : s ∈ Ω) (A : ChartBall F ζ hζ U R P H)
     (p : Space (KPCuspLogShape.dimension F * 3)) (hp : p ∈ A.ball.carrier) :
     patchedCoefficient F ζ hζ U R P H Ω u locals A.component A.phase s p =
@@ -362,9 +368,7 @@ theorem patchedCoefficient_eq_local (Ω : Set ℂ)
   simpa only [patchedCoefficient, canonicalChartBall, overlapCoordinate_one,
     overlapTransition_one, map_one, Circle.coe_one, one_mul] using h
 
-theorem patchedCoefficient_smooth (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+theorem patchedCoefficient_smooth
     (i : Fin (H.atlas U).componentCount) (m : PhaseSheets F ζ hζ U)
     (s : ℂ) (hs : s ∈ Ω) :
     ContDiff ℝ (⊤ : ℕ∞) (patchedCoefficient F ζ hζ U R P H Ω u locals i m s) := by
@@ -380,9 +384,7 @@ theorem patchedCoefficient_smooth (Ω : Set ℂ)
       patchedCoefficient_eq_local F ζ hζ U R P H Ω u locals s hs A q hq
   exact ((locals.smooth A s hs p hp).contDiffAt (Metric.isOpen_ball.mem_nhds hp)).congr_of_eventuallyEq he
 
-theorem patchedCoefficient_overlap (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+theorem patchedCoefficient_overlap
     (i : Fin (H.atlas U).componentCount) (m m' : PhaseSheets F ζ hζ U)
     (ε : rootsOfUnity 3 F) (γ : Component F ζ hζ U R P H i)
     (hm : m = phaseClass F ζ hζ U ε * m') (s : ℂ) (hs : s ∈ Ω)
@@ -404,9 +406,7 @@ theorem patchedCoefficient_overlap (Ω : Set ℂ)
     (canonicalBall_contained F ζ hζ U R P H i (coordinates F p))
     (canonicalBall_contained F ζ hζ U R P H i (coordinates F q)) hm s hs p ⟨hp, hq⟩
 
-theorem patchedCoefficient_mem_fiber (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+theorem patchedCoefficient_mem_fiber
     (i : Fin (H.atlas U).componentCount) (s : ℂ) (hs : s ∈ Ω)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     patchedCoefficient F ζ hζ U R P H Ω u locals i (phaseClass F ζ hζ U 1) s p ∈
@@ -419,9 +419,7 @@ theorem patchedCoefficient_mem_fiber (Ω : Set ℂ)
     (by rw [hphase, one_mul]) s hs p
   simpa only [overlapCoordinate_one, overlapTransition_one, chi_coe] using he.symm
 
-def patchedSections (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+def patchedSections
     (s : ℂ) (hs : s ∈ Ω) : Sections F ζ hζ U R P H := by
   intro i
   refine ⟨fun x => patchedCoefficient F ζ hζ U R P H Ω u locals i
@@ -452,9 +450,7 @@ def patchedSections (Ω : Set ℂ)
       _ = a * patchedCoefficient F ζ hζ U R P H Ω u locals i
           (phaseClass F ζ hζ U 1) s ((coordinates F).symm x) := congrArg (fun z : ℂ => a * z) he'.symm
 
-def patchedSmoothSections (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+def patchedSmoothSections
     (s : ℂ) (hs : s ∈ Ω) : smoothSections F ζ hζ U R P H := by
   refine ⟨patchedSections F ζ hζ U R P H Ω u locals s hs, ?_⟩
   intro i
@@ -462,9 +458,7 @@ def patchedSmoothSections (Ω : Set ℂ)
     (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_symm_contDiff
       (KPCuspLogShape.dimension F))
 
-theorem patchedSmoothSections_coefficients (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+theorem patchedSmoothSections_coefficients
     (s : ℂ) (hs : s ∈ Ω) (A : ChartBall F ζ hζ U R P H) :
     Set.EqOn (coefficient F ζ hζ U R P H
       (patchedSmoothSections F ζ hζ U R P H Ω u locals s hs).val A)
@@ -493,6 +487,8 @@ theorem patchedSmoothSections_coefficients (Ω : Set ℂ)
       rw [← chi_coe]
       exact he'.symm
     _ = _ := patchedCoefficient_eq_local F ζ hζ U R P H Ω u locals s hs A p hp
+
+end
 
 theorem canonicalBalls_countable_cover (i : Fin (H.atlas U).componentCount) :
     ∃ T : Set (Space (KPCuspLogShape.dimension F * 3)), T.Countable ∧
@@ -624,10 +620,12 @@ private theorem scalar_ae_of_component_ae (f g : GenuineCoveredScalars F ζ hζ 
   have hnorm : ‖d.val v‖ ^ 2 = 0 := le_antisymm (ENNReal.ofReal_eq_zero.mp hv) (sq_nonneg _)
   exact sub_eq_zero.mp (norm_eq_zero.mp (sq_eq_zero_iff.mp hnorm))
 
-private theorem patchedScalar_ae (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
-    (s : ℂ) (hs : s ∈ Ω) (f : BorelL2Scalars F ζ hζ U R)
+section
+
+variable (Ω : Set ℂ) (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
+  (locals : LocalRepresentatives F ζ hζ U R P H Ω u) (s : ℂ) (hs : s ∈ Ω)
+
+private theorem patchedScalar_ae (f : BorelL2Scalars F ζ hζ U R)
     (hf : scalarEmbedding F ζ hζ U R P H f = u s) :
     (scalarRepresentative F ζ hζ U R P H
       (patchedSmoothSections F ζ hζ U R P H Ω u locals s hs).val).val =ᵐ[coveredMeasure F ζ hζ R U] f.val.val := by
@@ -639,10 +637,7 @@ private theorem patchedScalar_ae (Ω : Set ℂ)
   rw [scalarRepresentative_eq_symm, LinearEquiv.apply_symm_apply]
   exact he
 
-private theorem patched_represents (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
-    (s : ℂ) (hs : s ∈ Ω) : Represents F ζ hζ U R P H
+private theorem patched_represents : Represents F ζ hζ U R P H
       (patchedSmoothSections F ζ hζ U R P H Ω u locals s hs).val (u s) := by
   obtain ⟨f,hf⟩ := scalarEmbedding_surjective F ζ hζ U R P H (u s)
   have he := patchedScalar_ae F ζ hζ U R P H Ω u locals s hs f hf
@@ -651,6 +646,8 @@ private theorem patched_represents (Ω : Set ℂ)
   exact (MemLp.toLp_congr _ _ he).trans ((scalarEmbedding_coe F ζ hζ U R P H f).symm.trans
     (congrArg (fun v : KPContSectorClosedLpSubspace.H F ζ hζ R U =>
       (v : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U)) hf))
+
+end
 
 private theorem smooth_represents_unique (w w' : smoothSections F ζ hζ U R P H)
     (v : KPContSectorClosedLpSubspace.H F ζ hζ R U)
@@ -747,9 +744,12 @@ theorem smoothPowerSeries_congr {n : ℕ} (B : LocalBall n) (c : ℂ) (r : ℝ)
   rw [hd]
   exact hN M hM s hs α x
 
-theorem hasLocalPromotions_holomorphic (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+section
+
+variable (Ω : Set ℂ) (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
+  (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+
+theorem hasLocalPromotions_holomorphic
     (glued : Gluing F ζ hζ U R P H Ω u locals)
     (h : HasLocalPromotions F ζ hζ U R P H Ω u locals) :
     ∀ A : ChartBall F ζ hζ U R P H,
@@ -761,9 +761,7 @@ theorem hasLocalPromotions_holomorphic (Ω : Set ℂ)
   intro s hs x hx
   exact (glued.coefficients s hs A hx).trans (hp s hs hx).symm
 
-theorem hasLocalPromotions_coefficientLocals (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+theorem hasLocalPromotions_coefficientLocals
     (h : HasLocalPromotions F ζ hζ U R P H Ω u locals)
     (c : ℂ) (r : ℝ) (hr : 0 < r) (hdisk : Metric.closedBall c r ⊆ Ω) :
     ∃ (b : ChartBall F ζ hζ U R P H → ℕ → Space (KPCuspLogShape.dimension F * 3) → ℂ)
@@ -796,9 +794,7 @@ theorem hasLocalPromotions_coefficientLocals (Ω : Set ℂ)
   · intro s hs
     exact (hpromotion A s (hdisk (Metric.ball_subset_closedBall hs))).symm
 
-theorem coefficientSeries_transfer (Ω : Set ℂ)
-    (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
+theorem coefficientSeries_transfer
     (glued : Gluing F ζ hζ U R P H Ω u locals)
     (c : ℂ) (r : ℝ) (hdisk : Metric.closedBall c r ⊆ Ω)
     (b : ChartBall F ζ hζ U R P H → ℕ → Space (KPCuspLogShape.dimension F * 3) → ℂ)
@@ -813,6 +809,8 @@ theorem coefficientSeries_transfer (Ω : Set ℂ)
   · exact hW A
   · intro s hs
     exact glued.coefficients s (hdisk (Metric.ball_subset_closedBall hs)) A
+
+end
 
 theorem hasLocalPromotions_holomorphicData (Ω : Set ℂ) (hΩ : IsOpen Ω)
     (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)

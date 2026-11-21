@@ -1,7 +1,8 @@
 module
 
 public import DedekindZetaZeroFree.Theta.Periods.DetectedTensorAssembly
-public import DedekindZetaZeroFree.Theta.Whittaker.RootTranslationCovariance
+public import DedekindZetaZeroFree.Theta.Periods.PureTensorDetection
+public import DedekindZetaZeroFree.Theta.Profiles.FourierRootCovariance
 public import DedekindZetaZeroFree.Theta.Whittaker.ImageRepresentationUniqueness
 
 @[expose] public section
@@ -114,10 +115,10 @@ theorem finite_slice_root (D : TensorActions R N)
   rw [← hu]
   unfold KPPGLLocalCover.N at he ⊢
   dsimp only [i] at hu ⊢
-  rw [he, one_mul, finite_root_injection]
+  rw [he, one_mul, MomentSources.finite_root_injection]
   letI := D.sources.quotientHaar
-  have h := fourier_left_root D.sources.dq (D.coreMap c) (D.core_rational_root c)
-    (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t) 1 (D.toTensorHC.integrable c 1)
+  have h := fourier_left_root R D.sources.dq (D.coreMap c) (D.core_rational_root c)
+    (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t) 1
   have ht : adelicTraceQuotientCharacter F (QuotientAddGroup.mk
       (KPRationalAdelicSplitting.localAdele F (Sum.inr q) t)) = localFiniteCharacter F q t :=
     (adelicTraceQuotientCharacter_mk F _).trans (adelicTraceCharacter_finite_single F q t)

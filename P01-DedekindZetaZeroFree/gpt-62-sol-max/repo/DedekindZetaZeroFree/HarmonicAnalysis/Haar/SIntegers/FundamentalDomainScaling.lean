@@ -49,16 +49,14 @@ def fieldDilation (F : Type) [Field F] [NumberField F]
         ← mul_assoc, ← map_mul, Units.inv_mul, map_one, one_mul,
         ContinuousLinearEquiv.symm_apply_apply]
     · funext v
-      simp only [← mul_assoc, ← map_mul, Units.inv_mul, map_one, one_mul,
-        ContinuousLinearEquiv.symm_apply_apply]
+      simp only [← mul_assoc, ← map_mul, Units.inv_mul, map_one, one_mul]
   right_inv x := by
     apply Prod.ext
     · simp only [PoissonArch.fieldMul, ContinuousLinearEquiv.apply_symm_apply,
         ← mul_assoc, ← map_mul, Units.mul_inv, map_one, one_mul,
         ContinuousLinearEquiv.symm_apply_apply]
     · funext v
-      simp only [← mul_assoc, ← map_mul, Units.mul_inv, map_one, one_mul,
-        ContinuousLinearEquiv.symm_apply_apply]
+      simp only [← mul_assoc, ← map_mul, Units.mul_inv, map_one, one_mul]
   map_add' x y := by
     apply Prod.ext
     · simp [PoissonArch.fieldMul, mul_add]
@@ -99,11 +97,8 @@ noncomputable section
 open scoped Classical nonZeroDivisors
 open NumberField IsDedekindDomain MeasureTheory
 
-namespace DedekindZetaZeroFree.PoissonS.Covolume
 
-attribute [local instance] completionMeasurable completionBorel
 
-end DedekindZetaZeroFree.PoissonS.Covolume
 
 end
 
@@ -115,11 +110,8 @@ noncomputable section
 open scoped Classical nonZeroDivisors
 open NumberField IsDedekindDomain MeasureTheory
 
-namespace DedekindZetaZeroFree.PoissonS.Covolume
 
-attribute [local instance] completionMeasurable completionBorel
 
-end DedekindZetaZeroFree.PoissonS.Covolume
 
 end
 

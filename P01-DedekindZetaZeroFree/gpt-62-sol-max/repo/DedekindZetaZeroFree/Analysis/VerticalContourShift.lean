@@ -225,7 +225,6 @@ theorem simple_pole_of_boundary_control (A F : ℂ → ℂ) {a b p : ℝ}
     linear_combination -he
   unfold comparisonVerticalIntegral
   rw [he']
-  push_cast
   have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   field_simp
   simp only [mul_comm]

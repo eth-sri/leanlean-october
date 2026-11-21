@@ -280,7 +280,7 @@ theorem diagonalDoubleKernel_locallyConstant
     intro g
     refine ⟨{z | g⁻¹ * z ∈ J},
       J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-    · simpa using J.one_mem
+    · simp
     · intro z hz
       have he := congrFun (hJ (g⁻¹ * z) hz) g
       have he' := congrArg (fun v : InducedModule P => v.val 1) he
@@ -363,11 +363,11 @@ theorem diagonal_actual_support_exponent_dvd
   have detd (v : (LocalField F q)ˣ) : Matrix.GeneralLinearGroup.det
       (KubotaRankTwo.d (LocalField F q) v 1) = v := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp []
   have detn (v : LocalField F q) : Matrix.GeneralLinearGroup.det
       (KubotaRankTwo.n (LocalField F q) v) = 1 := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp []
   have detw : Matrix.GeneralLinearGroup.det (KubotaRankTwo.w (LocalField F q)) = 1 := by
     apply Units.ext
     simp [Matrix.GeneralLinearGroup.val_det_apply, KubotaRankTwo.w, Matrix.det_fin_two]

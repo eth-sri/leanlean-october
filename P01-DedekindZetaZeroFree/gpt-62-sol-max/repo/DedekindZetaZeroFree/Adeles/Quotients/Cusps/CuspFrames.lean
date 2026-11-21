@@ -232,6 +232,127 @@ theorem archBasepoint_rational_mul (γ : KPCuspArithmetic.PGL2 F)
   exact congrArg (fun k => k (KPArch.action (a (KPCusp.complexPlace F i)).out (0,0)))
     (funext (fun q => projective_action_mk _ q))
 
+section AtlasFrame
+variable {F ζ hζ}
+variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
+variable {J : KPMsFixedHaarDisintegration.Level F ζ hζ}
+variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF J)
+variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
+
+def cuspEndAt (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ) (j : KPMsFixedHaarDisintegration.CuspIndex A) (Y : ℝ) : Set (X F ζ hζ) :=
+  (P.projection J) ⁻¹'
+    (KPFiniteCuspAtlas.componentMap F ζ hζ J
+      (A.representative j.1) ''
+      KPFiniteCuspAtlas.endSet F
+        (KPCuspGenuineMonodromy.Component F ζ hζ J
+          (A.representative j.1))
+        ((A.cuspAtlas j.1).representative j.2)
+        (KPMsFixedHaarDisintegration.logHeight (F := F) Y))
+
+def FrameAt (j : KPMsFixedHaarDisintegration.CuspIndex A) (Y : ℝ) (x : X F ζ hζ) (g : G F ζ hζ) : Prop :=
+  KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g = x ∧
+    ∃ (a : KPSmoothActualFlowData.GInfinity F) (p : KPCuspCharts.Cross F)
+      (t : ℝ) (ε : rootsOfUnity 3 F) (u : J.toOpenSubgroup),
+      KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
+      KPMsFixedHaarDisintegration.archBasepoint F a =
+        KPCuspSiegel.action F ((A.cuspAtlas j.1).representative j.2)
+          (KPCuspCharts.toArch F (p,t)) ∧
+      g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
+        (A.representative j.1).val * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val.val
+
+theorem spherical_cusp_representative_at (j : KPMsFixedHaarDisintegration.CuspIndex A) (Y : ℝ)
+    (x : X F ζ hζ) (hx : x ∈ cuspEndAt A P j Y) :
+    ∃ (p : KPCuspCharts.Cross F) (t : ℝ),
+      KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
+      P.projection J x = Quotient.mk _
+        (KPCuspSiegel.action F
+          ((A.cuspAtlas j.1).representative j.2)
+          (KPCuspCharts.toArch F (p,t)),
+          A.representative j.1) := by
+  obtain ⟨z, hz, he⟩ := hx
+  obtain ⟨q, hq, rfl⟩ := hz
+  obtain ⟨v, hv, rfl⟩ := hq
+  let hd := KPCuspCharts.positive_dimension F hF
+  let c := (KPCuspCharts.toArchHomeomorph F hd).symm v
+  have hc : KPCuspCharts.toArch F c = v :=
+    (KPCuspCharts.toArchHomeomorph F hd).apply_symm_apply v
+  refine ⟨c.1, c.2, ?_, ?_⟩
+  · change KPMsFixedHaarDisintegration.logHeight (F := F) Y <
+      KPCuspLogShape.meanHeight _ v at hv
+    rw [← hc, KPCuspCharts.toArch_meanHeight F hd] at hv
+    exact hv
+  · rw [← he, ← hc]
+    rfl
+
+theorem cuspLift_at (j : KPMsFixedHaarDisintegration.CuspIndex A) (Y : ℝ)
+    (x : X F ζ hζ) (hx : x ∈ cuspEndAt A P j Y) :
+    ∃ g : G F ζ hζ,
+      KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g = x ∧
+      FrameAt A j Y x g := by
+  obtain ⟨p, t, ht, hx'⟩ := spherical_cusp_representative_at A P j Y x hx
+  obtain ⟨a, c, hc⟩ := arch_finite_factorization F ζ hζ (Quotient.out x)
+  have hqx : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
+      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) = x := by
+    rw [← hc]
+    exact Quotient.out_eq x
+  have he := (P.formula J a c).symm.trans
+    ((congrArg (P.projection J) hqx).trans hx')
+  obtain ⟨γ, ε, u, ha, hf⟩ := Quotient.exact he
+  change A.representative j.1 =
+    KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ *
+      KPCuspGenuineMonodromy.central F ζ hζ ε * c * u.val at hf
+  obtain ⟨η, hγ⟩ := rationalLift_finite_factor F ζ hζ γ
+  let a' := archRational F γ * a
+  let ε' := η * ε⁻¹
+  let u' : J.toOpenSubgroup := u⁻¹
+  let g' := rationalLift F ζ hζ γ * Quotient.out x
+  have hgx : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g' = x := by
+    change Quotient.mk (QuotientGroup.rightRel
+      (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ)) _ = _
+    rw [← Quotient.out_eq x]
+    apply Quotient.sound
+    have hrat : rationalLift F ζ hζ γ ∈ KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ := by
+      let m := Classical.choose (Matrix.ProjGenLinGroup.mk_surjective γ)
+      exact ⟨KPRationalAdelicSplitting.rationalPGLQuotient F m,
+        KPRationalAdelicSplitting.rationalPGLHom_mk F ζ hζ m⟩
+    exact ⟨⟨rationalLift F ζ hζ γ, hrat⟩, rfl⟩
+  refine ⟨g', hgx, hgx, a', p, t, ε', u', ht, ?_, ?_⟩
+  · rw [archBasepoint_rational_mul]
+    exact ha.symm
+  · change rationalLift F ζ hζ γ * Quotient.out x = _
+    rw [hc, hγ]
+    have hm := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1
+    change _ = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational F γ * a) * _ * _ * _
+    rw [hm]
+    rw [mul_assoc, ← mul_assoc
+      ((KPCuspGenuineMonodromy.central F ζ hζ η * KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ) :
+        KPFiniteCuspAtlas.FiniteCover F ζ hζ).val,
+      (insertion_commutes F ζ hζ a _).symm.eq]
+    have hfin : KPCuspGenuineMonodromy.central F ζ hζ η *
+        KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ * c =
+        A.representative j.1 *
+          KPCuspGenuineMonodromy.central F ζ hζ ε' * (u⁻¹).val := by
+      calc
+        _ = KPCuspGenuineMonodromy.central F ζ hζ η *
+          KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ *
+          A.representative j.1 * (u⁻¹).val := by
+            rw [hf, map_inv]
+            rw [← central_comm F ζ hζ ε (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)]
+            change _ = _ * _ * _ * (u.val)⁻¹
+            group
+        _ = _ := by
+          rw [← map_mul, central_comm]
+    have hfin' := congrArg Subtype.val hfin
+    dsimp only [a', ε', u'] at *
+    simp only [Subgroup.coe_mul] at hfin'
+    change _ = _ at hfin'
+    simpa only [mul_assoc, Subgroup.coe_mul, KPCuspGenuineMonodromy.central,
+      MonoidHom.codRestrict_apply, KPSmoothLocalQuotientCharts.centreMap] using congrArg
+      (fun k : G F ζ hζ => KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational F γ) *
+        KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * k) hfin'
+
+end AtlasFrame
+
 variable {F ζ hζ}
 variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
@@ -267,30 +388,6 @@ def AdmissibleFrame (j : Cusp (H := H) J) (Y : ℝ)
         ((Atlas (H := H) J).representative j.1).val *
         KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val
 
-theorem spherical_cusp_representative (j : Cusp (H := H) J) (Y : ℝ)
-    (x : X F ζ hζ) (hx : x ∈ cuspEnd J j Y) :
-    ∃ (p : KPCuspCharts.Cross F) (t : ℝ),
-      KPMsFixedHaarDisintegration.logHeight (F := F) Y < t ∧
-      P.projection J x = Quotient.mk _
-        (KPCuspSiegel.action F
-          (((Atlas (H := H) J).cuspAtlas j.1).representative j.2)
-          (KPCuspCharts.toArch F (p,t)),
-          (Atlas (H := H) J).representative j.1) := by
-  obtain ⟨z, hz, he⟩ := hx
-  obtain ⟨q, hq, rfl⟩ := hz
-  obtain ⟨v, hv, rfl⟩ := hq
-  let hd := KPCuspCharts.positive_dimension F H.totallyComplex
-  let c := (KPCuspCharts.toArchHomeomorph F hd).symm v
-  have hc : KPCuspCharts.toArch F c = v :=
-    (KPCuspCharts.toArchHomeomorph F hd).apply_symm_apply v
-  refine ⟨c.1, c.2, ?_, ?_⟩
-  · change KPMsFixedHaarDisintegration.logHeight (F := F) Y <
-      KPCuspLogShape.meanHeight _ v at hv
-    rw [← hc, KPCuspCharts.toArch_meanHeight F hd] at hv
-    exact hv
-  · rw [← he, ← hc]
-    rfl
-
 theorem cusp_lift_exists
     (hlevel : KPGlobalTorusFunctionData.globalLevel F ζ hζ U =
       J.toOpenSubgroup.toSubgroup.map (KPFiniteCuspAtlas.FiniteCover F ζ hζ).subtype)
@@ -299,70 +396,12 @@ theorem cusp_lift_exists
     ∃ g : G F ζ hζ,
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g = x ∧
       AdmissibleFrame (U := U) J j Y x g := by
-  obtain ⟨p, t, ht, hx'⟩ := spherical_cusp_representative J j Y x hx
-  obtain ⟨a, c, hc⟩ := arch_finite_factorization F ζ hζ (Quotient.out x)
-  have hqx : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
-      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) = x := by
-    rw [← hc]
-    exact Quotient.out_eq x
-  have he := (P.formula J a c).symm.trans
-    ((congrArg (P.projection J) hqx).trans hx')
-  obtain ⟨γ, ε, u, ha, hf⟩ := Quotient.exact he
-  change (Atlas (H := H) J).representative j.1 =
-    KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ *
-      KPCuspGenuineMonodromy.central F ζ hζ ε * c * u.val at hf
-  obtain ⟨η, hγ⟩ := rationalLift_finite_factor F ζ hζ γ
-  let a' := archRational F γ * a
-  let ε' := η * ε⁻¹
-  let u' : KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
-    ⟨((u⁻¹).val : KPFiniteCuspAtlas.FiniteCover F ζ hζ).val, by
-      rw [hlevel]
-      exact ⟨(u⁻¹).val, (u⁻¹).property, rfl⟩⟩
-  let g' := rationalLift F ζ hζ γ * Quotient.out x
-  have hgx : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g' = x := by
-    change Quotient.mk (QuotientGroup.rightRel
-      (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ)) _ = _
-    rw [← Quotient.out_eq x]
-    apply Quotient.sound
-    have hrat : rationalLift F ζ hζ γ ∈ KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ := by
-      let m := Classical.choose (Matrix.ProjGenLinGroup.mk_surjective γ)
-      exact ⟨KPRationalAdelicSplitting.rationalPGLQuotient F m,
-        KPRationalAdelicSplitting.rationalPGLHom_mk F ζ hζ m⟩
-    exact ⟨⟨rationalLift F ζ hζ γ, hrat⟩, rfl⟩
-  refine ⟨g', hgx, hgx, a', p, t, ε', u', ht, ?_, ?_⟩
-  · rw [archBasepoint_rational_mul]
-    exact ha.symm
-  · change rationalLift F ζ hζ γ * Quotient.out x = _
-    rw [hc, hγ]
-    have hm := (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1
-    change _ = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational F γ * a) * _ * _ * _
-    rw [hm]
-    rw [mul_assoc, ← mul_assoc
-      ((KPCuspGenuineMonodromy.central F ζ hζ η * KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ) :
-        KPFiniteCuspAtlas.FiniteCover F ζ hζ).val,
-      (insertion_commutes F ζ hζ a _).symm.eq]
-    have hfin : KPCuspGenuineMonodromy.central F ζ hζ η *
-        KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ * c =
-        (Atlas (H := H) J).representative j.1 *
-          KPCuspGenuineMonodromy.central F ζ hζ ε' * (u⁻¹).val := by
-      calc
-        _ = KPCuspGenuineMonodromy.central F ζ hζ η *
-          KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ *
-          (Atlas (H := H) J).representative j.1 * (u⁻¹).val := by
-            rw [hf, map_inv]
-            rw [← central_comm F ζ hζ ε (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ)]
-            change _ = _ * _ * _ * (u.val)⁻¹
-            group
-        _ = _ := by
-          rw [← map_mul, central_comm]
-    have hfin' := congrArg Subtype.val hfin
-    dsimp only [a', ε', u'] at *
-    simp only [Subgroup.coe_mul] at hfin'
-    change _ = _ at hfin'
-    simpa only [mul_assoc, Subgroup.coe_mul, KPCuspGenuineMonodromy.central,
-      MonoidHom.codRestrict_apply, KPSmoothLocalQuotientCharts.centreMap] using congrArg
-      (fun k : G F ζ hζ => KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational F γ) *
-        KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * k) hfin'
+  obtain ⟨g, hg, _, a, p, t, ε, u, ht, ha, hrep⟩ :=
+    cuspLift_at (H.atlas J) P j Y x hx
+  refine ⟨g, hg, hg, a, p, t, ε, ⟨u.val.val, ?_⟩, ht, ha, hrep⟩
+  rw [hlevel]
+  exact ⟨u.val, u.property, rfl⟩
+
 end DedekindZetaZeroFree.KPMsActualCuspSource
 
 end

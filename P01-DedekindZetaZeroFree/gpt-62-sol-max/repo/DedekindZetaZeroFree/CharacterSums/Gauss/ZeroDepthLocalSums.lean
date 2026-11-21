@@ -183,7 +183,7 @@ private lemma difference (C : A.GeneralArithmeticContext σ η hS) (p : Exterior
     (n : ℕ) (x y : A.R) (h : residueMap C p n x = residueMap C p n y) :
     ∃ r : A.R, x-y = generator C p ^ n * r := by
   exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
-private theorem fiberMap_bijective (C : A.GeneralArithmeticContext σ η hS)
+theorem fiberMap_bijective (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) : Function.Bijective (fiberMap C p n) := by
   have hg := (generator_generates C p).1
   have hl (m : ℕ) (v : Residue C p m) : residueMap C p m ((lifts C p m).val v) = v :=
@@ -240,7 +240,7 @@ private lemma unit_power_iff (C : A.GeneralArithmeticContext σ η hS)
     IsUnit (Ideal.Quotient.mk (Ideal.span {generator C p ^ 1}) x)
   rw [pow_one, ← Ideal.span_singleton_pow]
   exact Ideal.Quotient.isUnit_mk_pow_iff_isUnit_mk _ (by omega)
-private lemma fiber_mask (C : A.GeneralArithmeticContext σ η hS)
+lemma fiber_mask (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) (a : ℤ) (x : Residue C p 1) (y : Residue C p n) :
     maskedPower C p (n+1) a (fiberMap C p n (x,y)) = maskedPower C p 1 a x := by
   have hl (m : ℕ) (v : Residue C p m) : residueMap C p m ((lifts C p m).val v) = v :=
@@ -269,7 +269,7 @@ private lemma fiber_mask (C : A.GeneralArithmeticContext σ η hS)
     simp only [map_add, map_mul, hg', zero_mul, add_zero]
   simp only [maskedPower, Nat.succ_ne_zero, dif_neg, hu, hred, one_ne_zero]
 
-private lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
+lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n J : ℕ) (x : Residue C p 1) (y : Residue C p n) :
     psi C p (n+1) (residueMap C p (n+1) (generator C p ^ J) * fiberMap C p n (x,y)) =
       psi C p (n+1) (residueMap C p (n+1)
@@ -293,7 +293,7 @@ private lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
     <;> ring
   rw [heq, AddChar.map_add_eq_mul]
   rfl
-private lemma phase_descend (C : A.GeneralArithmeticContext σ η hS)
+lemma phase_descend (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n J : ℕ) (hJ : n ≤ J) (x : Residue C p 1) :
     psi C p (n+1) (residueMap C p (n+1) (generator C p ^ J * (lifts C p 1).val x)) =
       psi C p 1 (residueMap C p 1 (generator C p ^ (J-n)) * x) := by
@@ -323,13 +323,13 @@ private lemma generator_nonunit (C : A.GeneralArithmeticContext σ η hS)
     exact Ideal.subset_span (by simp)
   rw [hg] at hh
   exact not_isUnit_zero hh
-private lemma residue_pow_zero (C : A.GeneralArithmeticContext σ η hS)
+lemma residue_pow_zero (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n J : ℕ) :
     residueMap C p n (generator C p ^ J) = 0 ↔ n ≤ J := by
   change Ideal.Quotient.mk (Ideal.span {generator C p ^ n}) (generator C p ^ J) = 0 ↔ _
   rw [Ideal.Quotient.eq_zero_iff_mem, Ideal.mem_span_singleton]
   exact pow_dvd_pow_iff (generator_generates C p).1 (generator_nonunit C p)
-private lemma residue_card (C : A.GeneralArithmeticContext σ η hS)
+lemma residue_card (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) :
     (Fintype.card (Residue C p n) : ℂ) = (Q p : ℂ) ^ n := by
   have hgen : A.Generates (powerIdeal p n) (generator C p ^ n) := by

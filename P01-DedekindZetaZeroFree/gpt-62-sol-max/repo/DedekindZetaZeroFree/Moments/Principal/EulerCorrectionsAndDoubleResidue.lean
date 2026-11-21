@@ -3,8 +3,17 @@ module
 public import DedekindZetaZeroFree.LFunctions.Hecke.UniformRegularizationBoundaryBounds
 public import DedekindZetaZeroFree.LFunctions.Hecke.RegularizationStripGrowth
 public import DedekindZetaZeroFree.Analysis.PhragmenLindelof.PolynomialBoundaryBounds
-public import DedekindZetaZeroFree.ZeroDetection.Conductors.HolomorphicLogarithmControl
-public import DedekindZetaZeroFree.Moments.Principal.Corrections.ThreeVariableProductAndContinuation
+public import Mathlib.Analysis.Complex.BranchLogRoot
+public import Mathlib.Analysis.Complex.BorelCaratheodory
+public import Mathlib.Analysis.Complex.Hadamard
+public import Mathlib.Analysis.Complex.Liouville
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
+public import Mathlib.Analysis.Normed.Module.Connected
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import DedekindZetaZeroFree.LFunctions.Hecke.MaskedMeromorphicContinuation
+public import DedekindZetaZeroFree.Moments.Principal.Corrections.NormalProductConvergence
+public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.SeparatedHeckeFactors
+public import DedekindZetaZeroFree.Moments.Principal.Corrections.SmallPrimeSubpowerBounds
 public import DedekindZetaZeroFree.Moments.Principal.Corrections.PrincipalSpecialization
 public import DedekindZetaZeroFree.Moments.Principal.Corrections.SummableMajorants
 public import DedekindZetaZeroFree.Moments.Reflected.ProbeExponentBound
@@ -22,7 +31,7 @@ namespace DedekindZetaZeroFree.PrincipalCorrection
 set_option autoImplicit false
 
 open LocalFiniteSums CorrectionFactors InitialSeparatedEuler
-open FrequencyCharacterMasks MaskedHeckeMeromorphic MeromorphicSeparationGluing
+open FrequencyCharacterMasks MaskedHeckeMeromorphic
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}

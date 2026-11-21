@@ -34,7 +34,7 @@ private theorem maximal_transfer
     rw [hp, root_four]
     constructor
     · intro hh; apply ordinaryRoots_injective F ζ hζ; simpa using hh
-    · intro hh; rw [hh, map_one]
+    simp_all
   exact ⟨fun x hx y hy => (he x y).mpr (hA.1 x hx y hy),
     fun N hN hi => hA.2 N hN (fun x hx y hy => (he x y).mp (hi x hx y hy))⟩
 

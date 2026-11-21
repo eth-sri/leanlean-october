@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.LocalPGLCoverModules
 public import DedekindZetaZeroFree.Algebra.GLTwoDiagonalAndInverseEntries
+public import DedekindZetaZeroFree.Metaplectic.Kubota.AdelicRationalSplitting
 
 @[expose] public section
 
@@ -156,6 +157,81 @@ theorem ratio_formula (t : ordinaryTorus F) (A : AdelicMatrixGroup F)
   exact congrArg Units.val (rawRatio_same F B A hB.2.1 h10 hB.2.2
     (hB.1.trans hA.symm))
 
+private lemma preimage_diag (A : AdelicMatrixGroup F)
+    (hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A ∈
+      ordinaryTorus F) : A 1 0 = 0 ∧ A 0 1 = 0 := by
+  obtain ⟨B, hB, h10, h01⟩ := hA
+  rw [QuotientGroup.mk'_eq_mk'] at hB
+  obtain ⟨z, hz, he⟩ := hB
+  obtain ⟨u, rfl⟩ := hz
+  rw [← he]
+  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
+
+private theorem continuous_diag_unit {X : Type*} [TopologicalSpace X]
+    {A : X → AdelicMatrixGroup F} (hA : Continuous A) (i : Fin 2)
+    (u : X → Ideles F) (hu : ∀ x, (u x).val = A x i i)
+    (hi : ∀ x, (u x)⁻¹.val = (A x)⁻¹ i i) : Continuous u := by
+  rw [Units.continuous_iff]
+  constructor
+  · change Continuous (fun x => (u x).val)
+    simp only [hu]
+    exact (continuous_apply i).comp (Matrix.GeneralLinearGroup.continuous_apply A hA i)
+  · change Continuous (fun x => (u x)⁻¹.val)
+    simp only [hi]
+    exact (continuous_apply i).comp (Matrix.GeneralLinearGroup.continuous_apply _ hA.inv i)
+
+private theorem inverse_unit_entry (A : AdelicMatrixGroup F) (i : Fin 2)
+    (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) (u : Ideles F) (hu : u.val = A i i) :
+    u⁻¹.val = A⁻¹ i i := by
+  have h : A⁻¹ i i * A i i = 1 := by
+    have h := congrArg (fun M : Matrix (Fin 2) (Fin 2) (Adeles F) => M i i) A.inv_mul
+    fin_cases i <;> simpa [Matrix.mul_apply, Fin.sum_univ_two, h10, h01] using h
+  rw [← hu] at h
+  simpa only [mul_assoc, Units.mul_inv, mul_one, one_mul] using
+    (congrArg (fun y : Adeles F => y * u⁻¹.val) h).symm
+
+ theorem ratio_continuous : Continuous (torusRatio F) := by
+  let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
+  let S : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F) := ordinaryTorus F
+  have hq : IsOpenQuotientMap q := QuotientGroup.isOpenQuotientMap_mk
+  apply (hq.restrictPreimage S).isQuotientMap.continuous_iff.mpr
+  let u (A : q ⁻¹' S) := (diagonal_entries_units F A.val
+    (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2).1.unit
+  let w (A : q ⁻¹' S) := (diagonal_entries_units F A.val
+    (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2).2.unit
+  have hc (i : Fin 2) (v : (q ⁻¹' S) → Ideles F) (hv : ∀ A, (v A).val = A.val i i) :
+      Continuous v :=
+    continuous_diag_unit F continuous_subtype_val i v hv fun A =>
+      inverse_unit_entry F A.val i (preimage_diag F A.val A.property).1
+        (preimage_diag F A.val A.property).2 (v A) (hv A)
+  have h : torusRatio F ∘ S.restrictPreimage q = fun A => u A * (w A)⁻¹ := by
+    funext A
+    exact Units.ext (ratio_formula F _ A.val rfl
+      (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2)
+  rw [h]
+  exact (hc 0 u fun _ => IsUnit.unit_spec _).mul (hc 1 w fun _ => IsUnit.unit_spec _).inv
+
+ theorem p_continuous : Continuous (p F ζ hζ) :=
+  (ratio_continuous F).comp
+    (((KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
+      continuous_subtype_val).subtype_mk fun t => t.property)
+
+ theorem ordinary_torus_closed :
+    IsClosed (ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F)) := by
+  let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
+  apply (QuotientGroup.isQuotientMap_mk (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).isClosed_preimage.mp
+  change IsClosed (q ⁻¹' (ordinaryTorus F : Set _))
+  rw [show q ⁻¹' (ordinaryTorus F : Set _) = {A | A 1 0 = 0 ∧ A 0 1 = 0} from
+    Set.ext fun A => ⟨preimage_diag F A, fun h => ⟨A, rfl, h⟩⟩]
+  have hc (i j : Fin 2) : Continuous (fun A : AdelicMatrixGroup F => A i j) :=
+    (continuous_apply j).comp (Matrix.GeneralLinearGroup.continuous_apply _ continuous_id i)
+  exact (isClosed_eq (hc 1 0) continuous_const).inter (isClosed_eq (hc 0 1) continuous_const)
+
+ theorem torus_closed : IsClosed (torus F ζ hζ : Set (G F ζ hζ)) :=
+  (ordinary_torus_closed F).preimage
+    (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
+
 def rationalDiagonal : Fˣ →* KubotaRankTwo.GL2 F where
   toFun y := KubotaRankTwo.d F y 1
   map_one' := by
@@ -190,87 +266,72 @@ def s : Fˣ →* E F ζ hζ :=
   (rationalDiagonalLift F ζ hζ).codRestrict (torus F ζ hζ)
     (rationalDiagonalLift_mem F ζ hζ)
 
+theorem p_rational (a : Fˣ) :
+    p F ζ hζ (s F ζ hζ a) =
+      IdeleGroup.unitEmbedding (𝓞 F) F a := by
+  let A := KPAdelicCoverRestrictedProduct.rationalBase F (KubotaRankTwo.d F a 1)
+  have hp : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
+      (s F ζ hζ a).val =
+      QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A := by
+    change QuotientGroup.mk' _ (KPAdelicCoverRestrictedProduct.projection F ζ hζ
+      (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ _)) = _
+    rw [KPAdelicCoverRestrictedProduct.projection_rationalSection]
+    rfl
+  have h10 : A 1 0 = 0 := by simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
+  have h01 : A 0 1 = 0 := by simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
+  have h := ratio_formula F
+    ⟨_, (s F ζ hζ a).property⟩ A hp.symm h10 h01
+  apply Units.ext
+  change (torusRatio F
+    ⟨KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (s F ζ hζ a).val,
+      (s F ζ hζ a).property⟩ : Adeles F) = _
+  rw [h]
+  have he1 : (diagonal_entries_units F A h10 h01).1.unit =
+      IdeleGroup.unitEmbedding (𝓞 F) F a := by
+    apply Units.ext
+    rw [IsUnit.unit_spec]
+    simp [A, KPAdelicCoverRestrictedProduct.rationalBase, NumberField.IdeleGroup.unitEmbedding]
+  have he2 : (diagonal_entries_units F A h10 h01).2.unit = 1 := by
+    apply Units.ext
+    rw [IsUnit.unit_spec]
+    simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
+  simp [he1, he2]
+
 abbrev Z := Subgroup.center (E F ζ hζ)
 
 def iota : rootsOfUnity 3 F →* ℂˣ :=
   (KPLocalCover.coefficientEmbedding F ζ hζ).comp (KPLocalCover.threeToSix F)
 
- def integralN {R : Type*} [CommRing R] (t : R) : Matrix.GeneralLinearGroup (Fin 2) R :=
-  ⟨!![1, t; 0, 1], !![1, -t; 0, 1], by ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply],
-    by ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]⟩
-private lemma goodN (q : HeightOneSpectrum (𝓞 F)) (hb : ¬KPAdelicCoverRestrictedProduct.Bad F q)
-    (t : q.adicCompletion F) (ht : t ∈ q.adicCompletionIntegers F) :
-    KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) t ∈
-      KPAdelicCoverRestrictedProduct.compact F ζ hζ (Sum.inr q) := by
-  change _ ∈ KPAdelicCoverRestrictedProduct.finiteCompact F ζ hζ q
-  rw [KPAdelicCoverRestrictedProduct.finiteCompact, dif_neg hb]
-  have ht' : t ∈ KPTameCompact.O F q := by
-    letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
-    letI : (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
-      Valuation.Compatible.ofValuation _
-    rw [Valuation.mem_integer_iff]
-    rw [← map_one (ValuativeRel.valuation (KPLocalCube.LocalField F q)), ← Valuation.Compatible.vle_iff_le]
-    change Valued.v t ≤ Valued.v (1 : q.adicCompletion F)
-    simpa only [map_one, HeightOneSpectrum.mem_adicCompletionIntegers] using ht
-  let g := integralN (⟨t, ht'⟩ : KPTameCompact.O F q)
-  refine ⟨g, ?_⟩
-  rw [KPGoodCompactSplitting.kStar_upper_root_matrix F ζ hζ q _ ⟨t, ht'⟩ g rfl]
-  unfold KPStandardLocalRootLifts.N
-  congr 1
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;> simp [g, integralN, KPTameCompact.inclusion,
-    KPLocalCube.integerInclusion, KubotaRankTwo.n]
-
-theorem root_integral (x : Adeles F) :
-    ∀ᶠ v in Filter.cofinite,
-      KPStandardLocalRootLifts.N F ζ hζ v
-        (KPAdelicCoverRestrictedProduct.adeleEval F v x) ∈
-          KPAdelicCoverRestrictedProduct.compact F ζ hζ v := by
-  have hx : ∀ᶠ q in Filter.cofinite, (x.2 q) ∈ q.adicCompletionIntegers F := x.2.property
-  have hb : ∀ᶠ q in Filter.cofinite, ¬KPAdelicCoverRestrictedProduct.Bad F q :=
-    (KPAdelicCoverRestrictedProduct.bad_finite F).compl_mem_cofinite
-  have hq : ∀ᶠ q in Filter.cofinite, KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q)
-      (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr q) x) ∈
-        KPAdelicCoverRestrictedProduct.compact F ζ hζ (Sum.inr q) := by
-    filter_upwards [hx, hb] with q hx hb
-    exact goodN F ζ hζ q hb _ hx
-  apply Filter.mem_cofinite.mpr
-  have hfin := Filter.mem_cofinite.mp hq
-  apply Set.Finite.subset (hfin.image Sum.inr)
-  intro v hv
-  cases v with
-  | inl w => exact False.elim (hv (show KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w)
-      (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl w) x) ∈ (⊤ : Subgroup _) from trivial))
-  | inr q => exact ⟨q, hv, rfl⟩
-
 def rootTuple (x : Adeles F) : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ :=
   ⟨fun v => KPStandardLocalRootLifts.N F ζ hζ v
-    (KPAdelicCoverRestrictedProduct.adeleEval F v x), root_integral F ζ hζ x⟩
+    (KPAdelicCoverRestrictedProduct.adeleEval F v x),
+    KPRationalAdelicSplitting.NCoordinates_restricted F ζ hζ x⟩
 
 def N (x : Adeles F) : G F ζ hζ :=
   KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (rootTuple F ζ hζ x))
 
 theorem N_add (x y : Adeles F) : N F ζ hζ (x + y) = N F ζ hζ x * N F ζ hζ y := by
-  have ht : rootTuple F ζ hζ (x + y) = rootTuple F ζ hζ x * rootTuple F ζ hζ y := by
-    apply RestrictedProduct.ext
-    intro v
-    change KPStandardLocalRootLifts.N F ζ hζ v
-      (KPAdelicCoverRestrictedProduct.adeleEval F v (x + y)) = _
-    rw [map_add]
-    exact KPStandardLocalRootLifts.N_add F ζ hζ v _ _
-  simp only [N, ht, map_mul]
+  change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
+      (KPRationalAdelicSplitting.N F ζ hζ (x + y)) = _
+  rw [KPRationalAdelicSplitting.N_add, map_mul]
+  rfl
 
 def Nhom : Multiplicative (Adeles F) →* G F ζ hζ where
   toFun x := N F ζ hζ x.toAdd
   map_one' := by
-    change N F ζ hζ 0 = 1
-    have h := N_add F ζ hζ 0 0
-    have hh : N F ζ hζ 0 * N F ζ hζ 0 = N F ζ hζ 0 * 1 := by
-      simpa only [zero_add, mul_one] using h.symm
-    exact mul_left_cancel hh
+    change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ (KPRationalAdelicSplitting.N F ζ hζ 0) = 1
+    rw [KPRationalAdelicSplitting.N_zero, map_one]
   map_mul' x y := N_add F ζ hζ _ _
+
+theorem continuous_N : Continuous (N F ζ hζ) := by
+  let : IsTopologicalGroup (G F ζ hζ) :=
+    (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
+  change Continuous (Nhom F ζ hζ)
+  apply continuous_of_continuousAt_one
+  exact QuotientGroup.continuous_mk.continuousAt.comp
+    (QuotientGroup.continuous_mk.continuousAt.comp
+      (KPRationalAdelicSplitting.continuousAt_NTuple_zero F ζ hζ))
 
 def ideleAbs : Ideles F →* (ℝ≥0)ˣ :=
   (invMonoidHom : (ℝ≥0)ˣ →* (ℝ≥0)ˣ).comp

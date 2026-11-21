@@ -12,6 +12,7 @@ noncomputable section
 
 open DedekindZetaZeroFree NumberField MeasureTheory Set Filter Complex
 open DedekindZetaZeroFree.PrincipalMellinComparison
+  DedekindZetaZeroFree.Quantitative.RawLowXiControls31
 open DedekindZetaZeroFree.Quantitative.RawFixed DedekindZetaZeroFree.Quantitative.RawFixed.FixedData
 open scoped Classical Topology
 
@@ -37,43 +38,6 @@ private theorem vertical_norm_le' (G : ℂ → ℂ) (x A B : ℝ) (hB : 1 < B)
           (Filter.Eventually.of_forall fun t => h t)
     _ = A * ∫ t : ℝ, (1 + |t|) ^ (-B) := integral_const_mul _ _
 
-private theorem minus_ne_x1 (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (ξ : ℂ) (hξ : ξ.re = Scales.rightLine) :
-    (pkg D).minus u ξ ≠ 0 := by
-  have hx1 : (1 : ℝ) < Scales.rightLine := by rw [Scales.rightLine_eq]; norm_num
-  refine RawKernelRegularity31.minus_ne_zero_of_not_isLZero D u hu ξ (by rw [hξ]; linarith) ?_
-  intro h
-  have := DedekindZetaZeroFree.Quantitative.DetectEuler.IsLZero.re_le_one h
-  rw [hξ] at this
-  linarith
-
-private theorem hmem_omega : (((Scales.rightLine : ℝ) : ℂ), ((Scales.wLine : ℝ) : ℂ),
-    ((Scales.zLine : ℝ) : ℂ)) ∈ EulerDomain.OmegaStar := by
-  norm_num [EulerDomain.OmegaStar, Scales.rightLine_eq, Scales.wLine, Scales.zLine]
-
-set_option maxHeartbeats 1000000 in
-
-private theorem rawKernel_cont_heights (u : Frequency D.recipe)
-    (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
-    (hξ : ξ.re = Scales.rightLine) :
-    Continuous (fun p : ℝ × ℝ => rawKernel D u ξ
-      ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I) ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z) := by
-  have hmem := hmem_omega
-  have hz6 : (1 / 6 : ℝ) < Scales.zLine := by unfold Scales.zLine; norm_num
-  obtain ⟨t0, rfl⟩ : ∃ t0 : ℝ, ξ = ((Scales.rightLine : ℝ) : ℂ) + (t0 : ℂ) * Complex.I :=
-    ⟨ξ.im, by apply Complex.ext <;> simp [hξ]⟩
-  have hc : Continuous (fun t : ℝ × ℝ × ℝ => rawKernel D u
-      (((Scales.rightLine : ℝ) : ℂ) + (t.1 : ℂ) * Complex.I)
-      (((Scales.wLine : ℝ) : ℂ) + (t.2.1 : ℂ) * Complex.I)
-      (((Scales.zLine : ℝ) : ℂ) + (t.2.2 : ℂ) * Complex.I) Z) := by
-    rw [continuous_iff_continuousAt]
-    intro t
-    exact RawKernelRegularity31.rawKernel_continuousAt_heights D u hu Z hZ _ _ _ hmem hz6 t
-      (minus_ne_x1 D u hu _ (by simp))
-  have hg : Continuous (fun p : ℝ × ℝ => (t0, p.2, p.1)) := by fun_prop
-  have hcomp := hc.comp hg
-  simpa only [Function.comp_def] using hcomp
-
 private theorem triple_bound_of_majorant (k : ℝ) (hk : 0 ≤ k) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
       (Z : ℝ) (hZ : 0 < Z) (Cc : ℝ) (hCc : 0 ≤ Cc),
@@ -83,35 +47,21 @@ private theorem triple_bound_of_majorant (k : ℝ) (hk : 0 ≤ k) :
           Cc * WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p *
             (2 + |p.1| + |p.2| + |ξ.im|) ^ k) →
       ‖triple D u Scales.rightLine Scales.wLine Scales.zLine Z‖ ≤ K * Cc := by
-  have hz0 : 0 < Scales.zLine := by unfold Scales.zLine; norm_num
-  obtain ⟨Cw, hCw0, hCw⟩ := KernelWeightIntegration.nested_integral_bound D Scales.zLine Scales.zLine
-    Scales.wLine Scales.wLine Scales.rightLine Scales.rightLine hz0 le_rfl le_rfl le_rfl 2 k (by norm_num) hk
-  have hI0 : 0 ≤ ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ)) :=
-    integral_nonneg (fun t => Real.rpow_nonneg (by positivity) _)
-  refine ⟨(2 * Real.pi)⁻¹ * (((2 * Real.pi)⁻¹) ^ 2 * Cw * ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ))),
-    by positivity, ?_⟩
-  intro u hu Z hZ Cc hCc hmaj
-  have hdec : ∀ t : ℝ, ‖Iwz D u (((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z‖ ≤
-      (((2 * Real.pi)⁻¹) ^ 2 * Cw * Cc) * (1 + |t|) ^ (-(2 : ℝ)) := by
-    intro t
-    set ξ : ℂ := ((Scales.rightLine : ℝ) : ℂ) + (t : ℂ) * Complex.I with hξ
-    have hre : ξ.re = Scales.rightLine := by simp [hξ]
-    have him : ξ.im = t := by simp [hξ]
-    have hle := (hCw ξ hre.ge hre.le Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl Cc hCc
-      (fun w z => rawKernel D u ξ w z Z)
-      (rawKernel_cont_heights D u hu Z hZ ξ hre).aestronglyMeasurable
-      (fun p => hmaj ξ hre p)).2.2.2
-    rw [him] at hle
-    have : Iwz D u ξ Scales.wLine Scales.zLine Z = comparisonVerticalIntegral Scales.wLine
-        (fun w => comparisonVerticalIntegral Scales.zLine (fun z => rawKernel D u ξ w z Z)) := rfl
-    rw [this]
-    calc _ ≤ _ := hle
-      _ = _ := by ring
-  have hv := vertical_norm_le'
-    (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine (((2 * Real.pi)⁻¹) ^ 2 * Cw * Cc) 2
-    (by norm_num) hdec
-  unfold DedekindZetaZeroFree.Quantitative.RawFixed.FixedData.triple
-  calc _ ≤ _ := hv
+  obtain ⟨C, hC, h⟩ := Iwz_bound_of_majorant D Scales.rightLine Scales.rightLine 2 k le_rfl two_pos hk
+  obtain ⟨_, _, hne⟩ := RawReciprocal31.raw_reciprocal_right D
+  have hI0 : 0 ≤ ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ)) := integral_nonneg (fun _ => by positivity)
+  refine ⟨(2 * Real.pi)⁻¹ * (C * ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ))), by positivity, ?_⟩
+  intro u hu Z hZ M hM hmaj
+  have hv := vertical_norm_le' (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine (C * M) 2
+    (by norm_num) (fun t => by
+    let ξ : ℂ := (Scales.rightLine : ℂ) + (t : ℂ) * I
+    have hre : ξ.re = Scales.rightLine := by simp [ξ]
+    have hpad : Scales.goodLine - EulerDomain.pad ≤ ξ.re := by
+      rw [hre]
+      norm_num [Scales.goodLine, EulerDomain.pad, Scales.rightLine_eq]
+    simpa [ξ] using h u hu Z hZ ξ hre.ge hre.le hpad (hne u hu ξ hre.ge).1 M hM (hmaj ξ hre))
+  calc
+    _ ≤ _ := hv
     _ = _ := by ring
 
 theorem raw_low_dyad_bound (ε : ℝ) (hε : 0 < ε) :

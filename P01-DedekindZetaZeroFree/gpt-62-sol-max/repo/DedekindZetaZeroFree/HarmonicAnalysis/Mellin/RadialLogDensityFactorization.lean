@@ -29,16 +29,15 @@ private theorem oneKernel_integrable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ :
       exact (mul_le_mul_of_nonneg_right (g.norm_le_seminorm ℝ _) (Real.exp_pos _).le).trans
         (mul_le_mul_of_nonneg_right (le_add_of_nonneg_right (apply_nonneg _ _)) (Real.exp_pos _).le)
     · simp only [M, if_neg ht]
-      have ht0 : 0 ≤ t := le_of_lt (lt_of_not_ge ht)
+      
       have hg := g.norm_pow_mul_le_seminorm ℝ k (Real.exp (t / 2))
       have hpow : ‖Real.exp (t / 2)‖ ^ k = Real.exp ((k : ℝ) / 2 * t) := by
         rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), ← Real.exp_nat_mul]
         congr 1
         ring
       rw [hpow] at hg
-      have hgb : ‖g (Real.exp (t / 2))‖ ≤ C₁ / Real.exp ((k : ℝ) / 2 * t) := by
-        exact (le_div_iff₀ (Real.exp_pos _)).mpr (by simpa [mul_comm] using hg)
-      have hh : σ - (k : ℝ) / 2 ≤ -1 := by linarith
+      have hgb : ‖g (Real.exp (t / 2))‖ ≤ C₁ / Real.exp ((k : ℝ) / 2 * t) := (le_div_iff₀ (Real.exp_pos _)).mpr (by simpa [mul_comm] using hg)
+      
       calc
         ‖g (Real.exp (t / 2))‖ * Real.exp (σ * t) ≤
             (C₁ / Real.exp ((k : ℝ) / 2 * t)) * Real.exp (σ * t) :=
@@ -56,7 +55,7 @@ private theorem oneKernel_integrable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ :
   have hl : IntegrableOn M (Set.Iic 0) := by
     apply ((integrableOn_exp_mul_Iic hσ 0).const_mul (C₀ + C₁)).congr
     filter_upwards [self_mem_ae_restrict measurableSet_Iic] with t ht
-    simp only [M, Set.mem_Iic.mp ht, if_true]
+    grind
   have hr : IntegrableOn M (Set.Ioi 0) := by
     apply ((integrableOn_exp_mul_Ioi (by norm_num : (-1 : ℝ) < 0) 0).const_mul (C₀ + C₁)).congr
     filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with t ht
@@ -85,7 +84,7 @@ private theorem positive_log_substitution (f : ℝ → ℂ) :
       ((hasDerivAt_id t).div_const 2).exp
   have hinj : Function.Injective (fun t : ℝ => Real.exp (t / 2)) := by
     intro t u h
-    exact (div_left_inj' (by norm_num : (2 : ℝ) ≠ 0)).mp (Real.exp_injective h)
+    simp_all
   rw [← hrange]
   constructor
   · simpa only [integrableOn_univ, abs_of_pos (by positivity : 0 < Real.exp (_ / 2) / 2)] using
@@ -132,7 +131,7 @@ private theorem positive_test (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ
       (Filter.Eventually.of_forall hC)
   have hs := positive_log_substitution f
   rw [heq] at hs
-  exact ⟨hs.1.mpr hi, hs.2⟩
+  grind
 
 theorem real_multiplicative_haar_log_test
     (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
@@ -143,8 +142,7 @@ theorem real_multiplicative_haar_log_test
             φ (Real.log (x ^ 2))) =
           ∫ t : ℝ, rawRealSignedLogKernel g σ t * φ t := by
   obtain ⟨k, hk⟩ := real_signed_log_kernel_isSchwartz g σ hσ
-  have hi : Integrable (rawRealSignedLogKernel g σ) := by
-    exact k.integrable.congr (Filter.Eventually.of_forall hk)
+  have hi : Integrable (rawRealSignedLogKernel g σ) := k.integrable.congr (Filter.Eventually.of_forall hk)
   refine ⟨hi, ?_⟩
   intro φ hφ hb
   let f : ℝ → ℂ := fun x =>
@@ -154,7 +152,7 @@ theorem real_multiplicative_haar_log_test
   have hpos : IntegrableOn f (Set.Ioi 0) := by
     apply hp.1.congr
     filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with x hx
-    simp only [f, abs_of_pos (Set.mem_Ioi.mp hx)]
+    grind
   have hneg : IntegrableOn (fun x => f (-x)) (Set.Ioi 0) := by
     apply hn.1.congr
     filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with x hx
@@ -170,7 +168,7 @@ theorem real_multiplicative_haar_log_test
     rw [← hp.2]
     apply setIntegral_congr_fun measurableSet_Ioi
     intro x hx
-    simp only [f, abs_of_pos (Set.mem_Ioi.mp hx)]
+    grind
   have hleft_eq : (∫ x : ℝ in Set.Iic 0, f x) =
       ∫ t : ℝ, (1 / 2 : ℂ) * oneKernel (reflected g) σ t * φ t := by
     rw [← neg_zero, ← integral_comp_neg_Ioi, ← hn.2]
@@ -211,10 +209,8 @@ private lemma pol_meas (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
   unfold pol
   apply Measurable.aestronglyMeasurable
   apply Measurable.mul
-  · apply Measurable.mul
-    · exact g.continuous.measurable.comp (by fun_prop)
-    · exact Complex.continuous_ofReal.measurable.comp (measurable_fst.pow_const _)
-  · exact hφ.measurable.comp (Real.measurable_log.comp (by fun_prop))
+  · fun_prop
+  fun_prop
 private lemma circle_norm (r θ : ℝ) (hr : 0 < r) :
     ‖(r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)‖ = r := by
   simp [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]

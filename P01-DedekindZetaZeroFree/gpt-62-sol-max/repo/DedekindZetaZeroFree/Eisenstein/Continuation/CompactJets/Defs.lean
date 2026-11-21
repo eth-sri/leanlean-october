@@ -66,12 +66,6 @@ def Conclusions (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ)
       (fun x => iteratedDerivWithin k
         (fun z => (scalarRepresentative F ζ hζ U R P H (w z)).val x) O s))
 
-def IsLocalLaplacianFamily (w v : ℂ → Sections F ζ hζ U R P H)
-    (O : Set ℂ) : Prop :=
-  ∀ s ∈ O, ∀ a : ActualChart (U := U) (H := H), ∀ x : omega a,
-    (isotropyChart a).coefficient (v s) x.val =
-      HyperbolicChart.laplacian (d F)
-        (liftExtension a (sectionFields (w s) a)) x.val
 
 end DedekindZetaZeroFree.KPContActualCompactSectionL2Jets
 

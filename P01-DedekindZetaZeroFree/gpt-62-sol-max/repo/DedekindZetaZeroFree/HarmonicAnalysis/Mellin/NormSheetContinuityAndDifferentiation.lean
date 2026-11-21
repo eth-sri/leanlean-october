@@ -34,7 +34,7 @@ private theorem compact_phase_integral_contDiff
   have hfs (r : ℝ) (x : X) (hx : x ∉ tsupport W) : f r x = 0 := by
     simp [f, image_eq_zero_of_notMem_tsupport hx]
   have hfs' (r : ℝ) (x : X) (hx : x ∉ tsupport W) : f' r x = 0 := by
-    simp [f', hfs r x hx]
+    grind only
   have hi (r : ℝ) : Integrable (f r) μ := by
     apply (hf.comp (continuous_const.prodMk continuous_id)).integrable_of_hasCompactSupport
     exact hK.mul_right.mul_right
@@ -58,7 +58,7 @@ private theorem compact_phase_integral_contDiff
     exact le_rfl
   apply contDiff_one_iff_deriv.mpr
   refine ⟨fun r => (hdiff r).differentiableAt, ?_⟩
-  have heq : deriv (fun r => ∫ x, f r x ∂μ) = fun r => ∫ x, f' r x ∂μ :=
+  have heq :=
     funext fun r => (hdiff r).deriv
   rw [heq]
   exact continuousOn_univ.mp (continuousOn_integral_of_compact_support hK

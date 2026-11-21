@@ -172,7 +172,7 @@ theorem sexticReflectedNonzeroDigits_depth_zero {k : Type*} [Field k] [Fintype k
   have hs : sexticSphericalCoefficient χ ψ 0 = 1 := by
     norm_num [sexticSphericalCoefficient]
   simp only [sexticReflectedNonzeroDigits, hs, one_mul, mul_zero, add_zero,
-    zpow_ofNat, if_pos rfl, ite_true]
+    zpow_ofNat, ite_true]
   by_cases hj0 : j.val = 0
   · have hm (v : k) (hv : v ∈ Finset.univ.erase (0 : k)) :
         sexticFourierMask χ ψ j v * χ v ^ 4 * ψ (t / v) =
@@ -185,7 +185,7 @@ theorem sexticReflectedNonzeroDigits_depth_zero {k : Type*} [Field k] [Fintype k
       apply inv_eq_of_mul_eq_one_left
       rw [← pow_add]
       exact h6
-    simp only [sexticReflectedDepthZeroScalar, if_pos hj0, h4inv, hj0, ite_true]
+    simp only [sexticReflectedDepthZeroScalar, h4inv, hj0, ite_true]
     rw [MulChar.pow_apply' χ (by norm_num : (4 : ℕ) ≠ 0)]
     ring
   · have hm (v : k) (hv : v ∈ Finset.univ.erase (0 : k)) :
@@ -213,7 +213,7 @@ theorem sexticReflectedNonzeroDigits_eq_zero {k : Type*} [Field k] [Fintype k]
   rcases he with he | he | ⟨he, hj⟩
   · simp [sexticReflectedNonzeroDigits, sexticSphericalCoefficient, he]
   · simp [sexticReflectedNonzeroDigits, sexticSphericalCoefficient,
-      he, show ¬e % 3 = 0 by omega, show ¬e % 3 = 1 by omega]
+      he]
   · simp only [sexticReflectedNonzeroDigits, if_neg (show e ≠ 0 by omega), mul_one]
     rw [reflected_positive_sum χ ψ hχ j, if_neg hj, mul_zero]
 

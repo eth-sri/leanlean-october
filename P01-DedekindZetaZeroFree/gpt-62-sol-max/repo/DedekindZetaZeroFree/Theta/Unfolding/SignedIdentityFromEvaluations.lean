@@ -127,15 +127,9 @@ def signedUnfolding_of_analytic_evaluations {N : TraceHaarTransport R} (C : Join
     Ur := Ur
     units := hUr
     row_class := rowClass R
-    forward_smoothing_integrable := ?_
-    reverse_smoothing_integrable := ?_
     forward_unfolding := ?_
     reverse_unfolding := ?_
   }
-  · intro u hu h d hh hd hcop Z hZ
-    exact (hx (rowClass R u) _ true Z hZ).2.2.2.2
-  · intro u hu h d hh hd hcop Z hZ
-    exact (hx (rowClass R u) _ false Z hZ).2.2.2.2
   · intro u hu h d hh hd hcop Z hZ
     exact forward_of_evaluation R C hx u h d Z hZ (hf u h d hh hd hcop Z hZ)
   · intro u hu h d hh hd hcop Z hZ

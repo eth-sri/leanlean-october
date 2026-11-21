@@ -28,18 +28,19 @@ universe u
 
 open scoped ValuativeRel
 
+section
+
+variable (K : Type u) [Field K] [ValuativeRel K] (e : 𝒪[K] ≃+* 𝒪[K])
+include e
+
 /-- A ring equivalence of a valuation integer ring preserves the maximal ideal. -/
-theorem integerRingEquiv_mem_maximalIdeal
-    (K : Type u) [Field K] [ValuativeRel K]
-    (e : 𝒪[K] ≃+* 𝒪[K]) (x : 𝒪[K]) :
+theorem integerRingEquiv_mem_maximalIdeal (x : 𝒪[K]) :
     e x ∈ (𝓂[K] : Ideal 𝒪[K]) ↔ x ∈ (𝓂[K] : Ideal 𝒪[K]) := by
   rw [IsLocalRing.mem_maximalIdeal, map_mem_nonunits_iff e,
     ← IsLocalRing.mem_maximalIdeal]
 
 /-- A ring equivalence of a valuation integer ring maps the maximal ideal to itself. -/
-theorem integerRingEquiv_map_maximalIdeal
-    (K : Type u) [Field K] [ValuativeRel K]
-    (e : 𝒪[K] ≃+* 𝒪[K]) :
+theorem integerRingEquiv_map_maximalIdeal :
     Ideal.map e.toRingHom (𝓂[K] : Ideal 𝒪[K]) = (𝓂[K] : Ideal 𝒪[K]) := by
   ext y
   constructor
@@ -55,17 +56,13 @@ theorem integerRingEquiv_map_maximalIdeal
     exact (integerRingEquiv_mem_maximalIdeal K e (e.symm y)).1 hy'
 
 /-- A ring equivalence of a valuation integer ring maps every maximal-ideal power to itself. -/
-theorem integerRingEquiv_map_maximalIdeal_pow
-    (K : Type u) [Field K] [ValuativeRel K]
-    (e : 𝒪[K] ≃+* 𝒪[K]) (n : Nat) :
+theorem integerRingEquiv_map_maximalIdeal_pow (n : Nat) :
     Ideal.map e.toRingHom (𝓂[K] ^ n : Ideal 𝒪[K]) =
       (𝓂[K] ^ n : Ideal 𝒪[K]) := by
   rw [Ideal.map_pow, integerRingEquiv_map_maximalIdeal]
 
 /-- Membership in every maximal-ideal power is invariant under an integer-ring equivalence. -/
-theorem integerRingEquiv_mem_maximalIdeal_pow
-    (K : Type u) [Field K] [ValuativeRel K]
-    (e : 𝒪[K] ≃+* 𝒪[K]) (n : Nat) (x : 𝒪[K]) :
+theorem integerRingEquiv_mem_maximalIdeal_pow (n : Nat) (x : 𝒪[K]) :
     e x ∈ (𝓂[K] ^ n : Ideal 𝒪[K]) ↔ x ∈ (𝓂[K] ^ n : Ideal 𝒪[K]) := by
   constructor
   · intro hx
@@ -80,10 +77,15 @@ theorem integerRingEquiv_mem_maximalIdeal_pow
     rw [integerRingEquiv_map_maximalIdeal_pow K e n] at hxmap
     exact hxmap
 
+end
+
+section
+
+variable (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K])
+include e
+
 /-- The induced additive equivalence on the ideal power `𝓂^n`. -/
-def maximalIdealPowMapEquivOfIntegerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) :
+def maximalIdealPowMapEquivOfIntegerRingEquiv :
     ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) ≃+
       ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) where
   toFun a := ⟨e (a : 𝒪[K]), (integerRingEquiv_mem_maximalIdeal_pow K e n a).2 a.2⟩
@@ -102,18 +104,8 @@ def maximalIdealPowMapEquivOfIntegerRingEquiv
     ext
     simp
 
-/-- An integer-ring equivalence transports an element of a maximal-ideal power by applying the
-underlying ring equivalence. -/
-theorem maximalIdealPowMapEquivOfIntegerRingEquiv_apply
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K])
-    (a : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u)) :
-    (maximalIdealPowMapEquivOfIntegerRingEquiv K n e a : 𝒪[K]) = e (a : 𝒪[K]) :=
-  rfl
 
  theorem maximalIdealPowSuccQuotMapOfIntegerRingEquiv_respects
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K])
     (a b : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u))
     (hab : a - b ∈ maximalIdealPowSuccSubmodule K n) :
     maximalIdealPowSuccQuotMk K n
@@ -130,9 +122,7 @@ theorem maximalIdealPowMapEquivOfIntegerRingEquiv_apply
       ((mem_maximalIdealPowSuccSubmodule_iff K n (a - b)).1 hab)
 
 /-- The induced additive homomorphism on `𝓂^n/𝓂^(n+1)`. -/
-def maximalIdealPowSuccQuotMapOfIntegerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) :
+def maximalIdealPowSuccQuotMapOfIntegerRingEquiv :
     MaximalIdealPowSuccQuot K n →+ MaximalIdealPowSuccQuot K n := by
   let f : MaximalIdealPowSuccQuot K n → MaximalIdealPowSuccQuot K n :=
     maximalIdealPowSuccQuotLift n
@@ -161,8 +151,6 @@ def maximalIdealPowSuccQuotMapOfIntegerRingEquiv
 /-- The map on successive maximal-ideal quotients sends a representative to the class of its image
 under the ring equivalence. -/
 theorem maximalIdealPowSuccQuotMapOfIntegerRingEquiv_mk
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K])
     (a : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u)) :
     maximalIdealPowSuccQuotMapOfIntegerRingEquiv K n e
         (maximalIdealPowSuccQuotMk K n a) =
@@ -178,9 +166,7 @@ theorem maximalIdealPowSuccQuotMapOfIntegerRingEquiv_mk
   exact maximalIdealPowSuccQuotLift_mk n _ _ a
 
 /-- The induced additive equivalence on `𝓂^n/𝓂^(n+1)`. -/
-def maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) :
+def maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv :
     MaximalIdealPowSuccQuot K n ≃+ MaximalIdealPowSuccQuot K n where
   toFun := maximalIdealPowSuccQuotMapOfIntegerRingEquiv K n e
   invFun := maximalIdealPowSuccQuotMapOfIntegerRingEquiv K n e.symm
@@ -212,31 +198,16 @@ def maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv
     intro x y
     exact map_add (maximalIdealPowSuccQuotMapOfIntegerRingEquiv K n e) x y
 
-/-- The equivalence of successive maximal-ideal quotients acts on classes by applying the
-integer-ring equivalence. -/
-theorem maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv_mk
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K])
-    (a : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u)) :
-    maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv K n e
-        (maximalIdealPowSuccQuotMk K n a) =
-      maximalIdealPowSuccQuotMk K n
-        (maximalIdealPowMapEquivOfIntegerRingEquiv K n e a) :=
-  maximalIdealPowSuccQuotMapOfIntegerRingEquiv_mk K n e a
 
 /-- Principal units are preserved by every valuation-integer-ring equivalence. -/
-theorem principalUnits_integerRingEquiv_mem_self
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) (u : 𝒪[K]ˣ)
+theorem principalUnits_integerRingEquiv_mem_self (u : 𝒪[K]ˣ)
     (hu : u ∈ principalUnits K n) :
     Units.mapEquiv e.toMulEquiv u ∈ principalUnits K n :=
   principalUnits_integerRingEquiv_mem K n e
     (fun x hx => (integerRingEquiv_mem_maximalIdeal_pow K e n x).2 hx) u hu
 
 /-- The induced multiplicative equivalence on the `n`-th principal-unit group. -/
-def principalUnitsMapEquivOfIntegerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) :
+def principalUnitsMapEquivOfIntegerRingEquiv :
     principalUnits K n ≃* principalUnits K n where
   toFun u :=
     ⟨Units.mapEquiv e.toMulEquiv u.1,
@@ -257,34 +228,10 @@ def principalUnitsMapEquivOfIntegerRingEquiv
     ext
     simp
 
-/-- An integer-ring equivalence transports principal units by applying it to their underlying units.
-An integer-ring equivalence transports principal units by applying it to their underlying units. -/
-theorem principalUnitsMapEquivOfIntegerRingEquiv_apply
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) (u : principalUnits K n) :
-    principalUnitsMapEquivOfIntegerRingEquiv K n e u =
-      ⟨Units.mapEquiv e.toMulEquiv u.1,
-        principalUnits_integerRingEquiv_mem_self K n e u.1 u.2⟩ :=
-  rfl
 
-/-- Transport of a principal unit of the form `1 + x` is the principal unit formed from the
-transported `x`. -/
-theorem principalUnitsMapEquivOfIntegerRingEquiv_oneAdd
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (hn : 1 ≤ n) (e : 𝒪[K] ≃+* 𝒪[K])
-    (a : (𝓂[K] ^ n : Ideal 𝒪[K])) :
-    principalUnitsMapEquivOfIntegerRingEquiv K n e
-        (principalUnitOneAddOfMemPowSubgroup K hn (a : 𝒪[K]) a.2) =
-      principalUnitOneAddOfMemPowSubgroup K hn
-        (e (a : 𝒪[K])) ((integerRingEquiv_mem_maximalIdeal_pow K e n a).2 a.2) := by
-  ext
-  simp [principalUnitsMapEquivOfIntegerRingEquiv,
-    principalUnitOneAddOfMemPowSubgroup, principalUnitOneAddOfMemPow_val]
 
 /-- The induced homomorphism on the successive principal-unit quotient. -/
-def principalUnitsSuccQuotMapOfIntegerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) :
+def principalUnitsSuccQuotMapOfIntegerRingEquiv :
     PrincipalUnitsSuccQuot K n →* PrincipalUnitsSuccQuot K n :=
   principalUnitsSuccQuotLift n
     ((principalUnitsSuccQuotMk K n).comp
@@ -297,9 +244,7 @@ def principalUnitsSuccQuotMapOfIntegerRingEquiv
 
 /-- The map on successive principal-unit quotients sends each class to the class of its transported
 representative. -/
-theorem principalUnitsSuccQuotMapOfIntegerRingEquiv_apply
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) (u : principalUnits K n) :
+theorem principalUnitsSuccQuotMapOfIntegerRingEquiv_apply (u : principalUnits K n) :
     principalUnitsSuccQuotMapOfIntegerRingEquiv K n e
         (principalUnitsSuccQuotMk K n u) =
       principalUnitsSuccQuotMk K n
@@ -307,9 +252,7 @@ theorem principalUnitsSuccQuotMapOfIntegerRingEquiv_apply
   rfl
 
 /-- The induced multiplicative equivalence on `U^n/U^(n+1)`. -/
-def principalUnitsSuccQuotMapEquivOfIntegerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) :
+def principalUnitsSuccQuotMapEquivOfIntegerRingEquiv :
     PrincipalUnitsSuccQuot K n ≃* PrincipalUnitsSuccQuot K n where
   toFun := principalUnitsSuccQuotMapOfIntegerRingEquiv K n e
   invFun := principalUnitsSuccQuotMapOfIntegerRingEquiv K n e.symm
@@ -345,22 +288,10 @@ def principalUnitsSuccQuotMapEquivOfIntegerRingEquiv
     intro x y
     exact map_mul (principalUnitsSuccQuotMapOfIntegerRingEquiv K n e) x y
 
-/-- The equivalence of successive principal-unit quotients is induced by transport along the
-integer-ring equivalence. -/
-theorem principalUnitsSuccQuotMapEquivOfIntegerRingEquiv_apply
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) (u : principalUnits K n) :
-    principalUnitsSuccQuotMapEquivOfIntegerRingEquiv K n e
-        (principalUnitsSuccQuotMk K n u) =
-      principalUnitsSuccQuotMk K n
-        (principalUnitsMapEquivOfIntegerRingEquiv K n e u) :=
-  rfl
 
 /-- The induced additive equivalence on the additive form of
 `U^n/U^(n+1)`. -/
-def principalUnitsSuccQuotAddEquivOfIntegerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) :
+def principalUnitsSuccQuotAddEquivOfIntegerRingEquiv :
     Additive (PrincipalUnitsSuccQuot K n) ≃+
       Additive (PrincipalUnitsSuccQuot K n) where
   toFun x :=
@@ -402,18 +333,14 @@ def principalUnitsSuccQuotAddEquivOfIntegerRingEquiv
 /-- The additive equivalence on successive principal-unit quotients agrees with transport of
 quotient representatives. -/
 @[simp]
-theorem principalUnitsSuccQuotAddEquivOfIntegerRingEquiv_apply
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) (x : PrincipalUnitsSuccQuot K n) :
+theorem principalUnitsSuccQuotAddEquivOfIntegerRingEquiv_apply (x : PrincipalUnitsSuccQuot K n) :
     principalUnitsSuccQuotAddEquivOfIntegerRingEquiv K n e (Additive.ofMul x) =
       Additive.ofMul (principalUnitsSuccQuotMapEquivOfIntegerRingEquiv K n e x) :=
   rfl
 
 /-- Multiplicative form of the induced equivalence on
 `𝓂^n/𝓂^(n+1)`. -/
-def maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) :
+def maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv :
     Multiplicative (MaximalIdealPowSuccQuot K n) ≃*
       Multiplicative (MaximalIdealPowSuccQuot K n) where
   toFun x :=
@@ -461,93 +388,17 @@ def maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv
 /-- The multiplicative encoding of a successive ideal-quotient equivalence applies the original
 additive transport map. -/
 @[simp]
-theorem maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv_apply
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (e : 𝒪[K] ≃+* 𝒪[K]) (x : MaximalIdealPowSuccQuot K n) :
+theorem maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv_apply (x : MaximalIdealPowSuccQuot K n) :
     maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv K n e
         (Multiplicative.ofAdd x) =
       Multiplicative.ofAdd (maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv K n e x) :=
   rfl
 
-/-- The map `𝓂^n/𝓂^(n+1) → U^n/U^(n+1)` induced by `a ↦ 1+a` is equivariant
-for every valuation-integer-ring automorphism. -/
-theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_integerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (hn : 1 ≤ n) (e : 𝒪[K] ≃+* 𝒪[K])
-    (x : MaximalIdealPowSuccQuot K n) :
-    principalUnitsSuccQuotMapEquivOfIntegerRingEquiv K n e
-        (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn x) =
-      principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn
-        (maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv K n e x) := by
-  refine MaximalIdealPowSuccQuot.inductionOn n
-    (motive := fun x' =>
-      principalUnitsSuccQuotMapEquivOfIntegerRingEquiv K n e
-          (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn x') =
-        principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn
-          (maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv K n e x'))
-    x ?_
-  intro a
-  rw [maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv_mk]
-  change principalUnitsSuccQuotMapEquivOfIntegerRingEquiv K n e
-      (principalUnitsSuccQuotOfIdealPow K n hn a) =
-    principalUnitsSuccQuotOfIdealPow K n hn
-      (maximalIdealPowMapEquivOfIntegerRingEquiv K n e a)
-  rw [principalUnitsSuccQuotOfIdealPow_apply, principalUnitsSuccQuotOfIdealPow_apply,
-    principalUnitsSuccQuotMapEquivOfIntegerRingEquiv_apply]
-  congr 1
-  exact principalUnitsMapEquivOfIntegerRingEquiv_oneAdd K n hn e a
+end
 
-/-- Additive form of equivariance of `a ↦ 1+a` on successive quotients. -/
-theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd_integerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (hn : 1 ≤ n) (e : 𝒪[K] ≃+* 𝒪[K])
-    (x : MaximalIdealPowSuccQuot K n) :
-    Additive.ofMul
-        (principalUnitsSuccQuotMapEquivOfIntegerRingEquiv K n e
-          (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn x)) =
-    principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd K n hn
-        (maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv K n e x) := by
-  rw [principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_integerRingEquiv]
-  rfl
 
-/-- The additive isomorphism `𝓂^n/𝓂^(n+1) ≃ U^n/U^(n+1)` is equivariant for
-every valuation-integer-ring automorphism. -/
-theorem maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot_integerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (hn : 1 ≤ n) (e : 𝒪[K] ≃+* 𝒪[K])
-    (x : MaximalIdealPowSuccQuot K n) :
-    principalUnitsSuccQuotAddEquivOfIntegerRingEquiv K n e
-        (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn x) =
-      maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-        (maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv K n e x) := by
-  rw [maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot_apply,
-    principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd_apply,
-    principalUnitsSuccQuotAddEquivOfIntegerRingEquiv_apply,
-    maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot_apply]
-  exact principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd_integerRingEquiv K n hn e x
 
-/-- Multiplicative equivariance of the associated-graded comparison
-`Multiplicative (𝓂^n/𝓂^(n+1)) ≃* U^n/U^(n+1)` for every
-valuation-integer-ring automorphism. -/
-theorem maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot_integerRingEquiv
-    (K : Type u) [Field K] [ValuativeRel K]
-    (n : Nat) (hn : 1 ≤ n) (e : 𝒪[K] ≃+* 𝒪[K])
-    (x : Multiplicative (MaximalIdealPowSuccQuot K n)) :
-    principalUnitsSuccQuotMapEquivOfIntegerRingEquiv K n e
-        (maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot K n hn x) =
-      maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot K n hn
-        (maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv K n e x) := by
-  change Additive.toMul
-      (principalUnitsSuccQuotAddEquivOfIntegerRingEquiv K n e
-        (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-          (Multiplicative.toAdd x))) =
-    Additive.toMul
-      (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-        (maximalIdealPowSuccQuotMapEquivOfIntegerRingEquiv K n e
-          (Multiplicative.toAdd x)))
-  exact congrArg Additive.toMul
-    (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot_integerRingEquiv
-      K n hn e (Multiplicative.toAdd x))
+
 
 end
 end LocalFieldTheory

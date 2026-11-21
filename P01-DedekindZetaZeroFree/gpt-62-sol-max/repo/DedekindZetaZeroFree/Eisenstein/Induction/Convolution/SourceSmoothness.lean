@@ -141,17 +141,18 @@ private theorem kfinite_raw_orbit
   exact FiniteDimensional.of_injective (Submodule.inclusion hs)
     (Submodule.inclusion_injective hs)
 
-private theorem covariant_source_left_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
-    (χ : actualC F ζ hζ →* ℂ)
-    (v : KPLiteralRaw.Functions F ζ hζ)
-    (hv : Continuous v)
-    (hc : ∀ c : actualC F ζ hζ, ∀ g, v (c.val * g) = χ c * v g)
-    (hf : KFinite F ζ hζ D.K v)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (hJ : ∀ g (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J),
-      v (g * j.val) = v g) :
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ) (χ : actualC F ζ hζ →* ℂ)
+  (v : KPLiteralRaw.Functions F ζ hζ) (hv : Continuous v)
+  (hc : ∀ c : actualC F ζ hζ, ∀ g, v (c.val * g) = χ c * v g) (hf : KFinite F ζ hζ D.K v)
+  (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
+  (hJ : ∀ g (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J),
+      v (g * j.val) = v g)
+include D χ hv hc hf J hJ
+
+private theorem covariant_source_left_smooth :
     ∀ g, ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => v (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
       (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
@@ -226,17 +227,7 @@ private theorem covariant_source_left_smooth
     (fun m w g => (hcal w.val (hwc w)).2.2.2.2.1 m g) w0
     (fun g => (hcal u hv).2.2.2.2.2 g)
 
- theorem covariant_source_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
-    (χ : actualC F ζ hζ →* ℂ)
-    (v : KPLiteralRaw.Functions F ζ hζ)
-    (hv : Continuous v)
-    (hc : ∀ c : actualC F ζ hζ, ∀ g, v (c.val * g) = χ c * v g)
-    (hf : KFinite F ζ hζ D.K v)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (hJ : ∀ g (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J),
-      v (g * j.val) = v g) : Smooth F ζ hζ v := by
+ theorem covariant_source_smooth : Smooth F ζ hζ v := by
   refine ⟨hv, ?_, ⟨J, fun g u hu => hJ g ⟨u, hu⟩⟩⟩
   intro g
   apply contDiffOn_of_locally_contDiffOn
@@ -251,6 +242,8 @@ private theorem covariant_source_left_smooth
   apply (hcomp.congr (fun x hx => ?_)).mono Set.inter_subset_right
   rw [heq x hx]
   rfl
+
+end
 
 open KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ConvolutionSpan.ActualSourceStage
 local instance (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

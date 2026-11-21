@@ -13,8 +13,8 @@ lemma one_add_log_le_mul_rpow {δ : ℝ} (hδ : 0 < δ) :
     ∃ C : ℝ, 0 < C ∧ ∀ x : ℝ, 1 ≤ x → 1 + Real.log x ≤ C * x ^ δ := by
   refine ⟨1 + 1 / δ, by positivity, fun x hx => ?_⟩
   have hx0 : 0 < x := lt_of_lt_of_le one_pos hx
-  have h1 : Real.log x ≤ x ^ δ / δ := Real.log_le_rpow_div hx0.le hδ
-  have h2 : (1 : ℝ) ≤ x ^ δ := Real.one_le_rpow hx hδ.le
+  have h1 := Real.log_le_rpow_div hx0.le hδ
+  have h2 := Real.one_le_rpow hx hδ.le
   have h3 : 1 + x ^ δ / δ ≤ (1 + 1 / δ) * x ^ δ := by
     have : (1 + 1 / δ) * x ^ δ = x ^ δ + x ^ δ / δ := by ring
     rw [this]
@@ -32,8 +32,7 @@ lemma one_add_log_two_mul_le {δ : ℝ} (hδ : 0 < δ) :
     have h2 : (2 * N) ^ δ = (2 : ℝ) ^ δ * N ^ δ := by
       rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) (le_trans zero_le_one hN)]
     rw [h2] at h1
-    calc 1 + Real.log (2 * N) ≤ C * (2 ^ δ * N ^ δ) := h1
-      _ = C * (2 : ℝ) ^ δ * N ^ δ := by ring
+    grind only
 
 lemma one_add_log_succ_le_poly (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {δ : ℝ} (hδ : 0 < δ) :
     ∃ C : ℝ, 0 < C ∧ ∀ (m : ℕ) (N : ℝ), 2 ≤ N → (m : ℝ) ≤ A * N ^ d →
@@ -62,20 +61,20 @@ lemma one_add_log_succ_le_poly (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {δ : ℝ} (h�
         mul_le_mul_of_nonneg_right hAB (by positivity)
       linarith
     have hmpos : 0 < (m : ℝ) + 1 := by positivity
-    have hlog : Real.log ((m : ℝ) + 1) ≤ Real.log (B * N ^ d) :=
+    have hlog :=
       Real.log_le_log hmpos hm1
     have hsplit : Real.log (B * N ^ d) = Real.log B + (d : ℝ) * Real.log N := by
       rw [Real.log_mul (ne_of_gt hBpos) (by positivity : (N : ℝ) ^ d ≠ 0), Real.log_pow]
-    have hlogN : Real.log N ≤ N ^ δ / δ := Real.log_le_rpow_div hNpos.le hδ
-    have hBbound : 1 + Real.log B ≤ C₁ * B ^ δ := hC₁ B hB1
+    have hlogN := Real.log_le_rpow_div hNpos.le hδ
+    have hBbound := hC₁ B hB1
     have hmain : 1 + Real.log ((m : ℝ) + 1) ≤ C₁ * B ^ δ + (d : ℝ) / δ * N ^ δ := by
       rw [hsplit] at hlog
       have hdl : (d : ℝ) * Real.log N ≤ (d : ℝ) * (N ^ δ / δ) :=
         mul_le_mul_of_nonneg_left hlogN (by positivity)
       have hdδ : (d : ℝ) * (N ^ δ / δ) = (d : ℝ) / δ * N ^ δ := by ring
-      linarith [hlog, hBbound, hdl, hdδ.le, hdδ.ge]
+      grind only
     have h2δ : 0 < (2 : ℝ) ^ δ := Real.rpow_pos_of_pos (by norm_num) δ
-    have hNδ : (2 : ℝ) ^ δ ≤ N ^ δ := Real.rpow_le_rpow (by norm_num) hN hδ.le
+    have hNδ := Real.rpow_le_rpow (by norm_num) hN hδ.le
     have hK : C₁ * B ^ δ ≤ (C₁ * B ^ δ / (2 : ℝ) ^ δ) * N ^ δ := by
       have hge : (1 : ℝ) ≤ N ^ δ / 2 ^ δ := by
         rw [← div_self (ne_of_gt h2δ)]
@@ -84,9 +83,7 @@ lemma one_add_log_succ_le_poly (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {δ : ℝ} (h�
       calc C₁ * B ^ δ = (C₁ * B ^ δ) * 1 := by ring
         _ ≤ (C₁ * B ^ δ) * (N ^ δ / 2 ^ δ) := mul_le_mul_of_nonneg_left hge hKnn
         _ = (C₁ * B ^ δ / (2 : ℝ) ^ δ) * N ^ δ := by ring
-    calc 1 + Real.log ((m : ℝ) + 1) ≤ C₁ * B ^ δ + (d : ℝ) / δ * N ^ δ := hmain
-      _ ≤ (C₁ * B ^ δ / (2 : ℝ) ^ δ) * N ^ δ + (d : ℝ) / δ * N ^ δ := by linarith
-      _ = (C₁ * B ^ δ / (2 : ℝ) ^ δ + (d : ℝ) / δ) * N ^ δ := by ring
+    grind only
 
 theorem log_absorption_polynomial_sq (d : ℕ) (A : ℝ) (hA : 0 ≤ A) {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (m : ℕ) (N U : ℝ), 2 ≤ N → 2 ≤ U →

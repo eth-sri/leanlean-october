@@ -36,9 +36,9 @@ lemma rationalValue_left_root (v : R.A.UnitQuotient) (a : Fˣ) (g : Group R) (t 
   rw [he] at hc
   rw [rationalValue_eq_fourier R T, ← mul_assoc, ← hc, mul_assoc]
   letI := Q.quotientHaar
-  rw [ExteriorWhittakerValues.StoredWhittaker.fourier_left_root R Q.dq (T.theta v)
+  rw [MomentSources.fourier_left_root R Q.dq (T.theta v)
     (ExteriorWhittakerValues.StoredWhittaker.core_rational_root R D (D.selected v) |>
-      fun h => by simpa only [D.selected_eq] using h) _ (A * g) (D.period_integrable v (A * g))]
+      fun h => by simpa only [D.selected_eq] using h) _ (A * g)]
   have hχ := adelicTraceQuotientCharacter_mk F (algebraMap F (KPAdeles F) (a : F) * t)
   refine congrArg₂ (fun z : Circle => fun c : ℂ => (z : ℂ) * c) hχ ?_
   exact (rationalValue_eq_fourier R T v a g).symm

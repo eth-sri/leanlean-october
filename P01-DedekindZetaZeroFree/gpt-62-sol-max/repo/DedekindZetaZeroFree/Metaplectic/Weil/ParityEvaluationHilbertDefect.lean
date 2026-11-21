@@ -68,7 +68,7 @@ private theorem conductor_exists (v : HeightOneSpectrum (𝓞 F))
     (Valuation.integer.integers (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).valuation_irreducible_lt_one hπ
   have hinv : (π : v.adicCompletion F)⁻¹ ∉ finiteCompletionBall F v 0 := by
     change ¬ Valued.v (π : v.adicCompletion F)⁻¹ ≤ 1
-    rw [map_inv₀, inv_le_one₀ (by exact lt_of_le_of_ne zero_le (Ne.symm ((Valuation.ne_zero_iff _).mpr hpi)))]
+    rw [map_inv₀, inv_le_one₀ (lt_of_le_of_ne zero_le (Ne.symm ((Valuation.ne_zero_iff _).mpr hpi)))]
     exact not_le.mpr hlt
   have hh := mt (hc (π : v.adicCompletion F)⁻¹).mp hinv
   push Not at hh

@@ -47,7 +47,7 @@ theorem norm_mul (A : SArithmeticData F) (y z : A.G) :
 theorem norm_inv (A : SArithmeticData F) (y : A.G) :
     A.norm y⁻¹ = (A.norm y)⁻¹ := by
   simp [SArithmeticData.norm, _root_.norm_inv, inv_pow, Finset.prod_inv_distrib,
-    mul_inv, mul_comm]
+    mul_comm]
 
 theorem norm_positive (A : SArithmeticData F) (y : A.G) : 0 < A.norm y := by
   unfold SArithmeticData.norm
@@ -85,7 +85,7 @@ theorem section_laws (A : SArithmeticData F) (v₀ : InfinitePlace F) :
     · funext v
       by_cases hv : v = v₀
       · subst v
-        simp only [normSectionRaw, Pi.mulSingle_eq_same, Pi.mul_apply]
+        simp only [normSectionRaw, Pi.mulSingle_eq_same]
         apply Units.ext
         apply (InfinitePlace.Completion.extensionEmbedding v₀).injective
         simp only [Prod.fst_mul, Pi.mul_apply, Pi.mulSingle_eq_same, Units.val_mul, map_mul]

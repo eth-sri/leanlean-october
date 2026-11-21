@@ -80,7 +80,33 @@ instance finiteAdeles_locallyCompactSpace : LocallyCompactSpace (FiniteAdeles F)
   exact (integralAdeles_isCompact F).locallyCompactSpace_of_mem_nhds_of_addGroup
     ((integralAdeles_isOpen F).mem_nhds (integralAdeles F).zero_mem)
 
-instance finiteAdeles_secondCountableTopology : SecondCountableTopology (FiniteAdeles F) := by
+theorem restrictedProduct_secondCountable {ι : Type*} [Countable ι]
+    (X : ι → Type*) [∀ v, TopologicalSpace (X v)] [∀ v, SecondCountableTopology (X v)]
+    (C : ∀ v, Set (X v)) (hC : ∀ v, IsOpen (C v)) :
+    SecondCountableTopology (RestrictedProduct X C Filter.cofinite) := by
+  classical
+  let f (s : Finset ι) :=
+    RestrictedProduct.inclusion X C (Filter.le_principal_iff.mpr s.finite_toSet.compl_mem_cofinite)
+  let U (s : Finset ι) : Set (RestrictedProduct X C Filter.cofinite) :=
+    Set.range (f s)
+  have hf (s : Finset ι) : Topology.IsOpenEmbedding (f s) :=
+    RestrictedProduct.isOpenEmbedding_inclusion_principal hC _
+  letI (s : Finset ι) :
+      SecondCountableTopology (RestrictedProduct X C (Filter.principal (↑s : Set _)ᶜ)) :=
+    RestrictedProduct.isEmbedding_coe_of_principal.secondCountableTopology
+  letI : ∀ s : Finset ι, SecondCountableTopology (U s) :=
+    fun s => (hf s).toIsEmbedding.toHomeomorph.symm.secondCountableTopology
+  apply TopologicalSpace.secondCountableTopology_of_countable_cover (U := U) (fun s => (hf s).isOpen_range)
+  apply Set.eq_univ_of_forall
+  intro a
+  have ha : {v | a v ∉ C v}.Finite := a.2
+  apply Set.mem_iUnion_of_mem ha.toFinset
+  refine Set.mem_range.mpr ⟨⟨a.1, ?_⟩, rfl⟩
+  intro v hv
+  change a v ∈ C v
+  simpa using hv
+
+theorem finitePlace_countable : Countable (HeightOneSpectrum (RingOfIntegers F)) := by
   classical
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI : Countable (RingOfIntegers F) :=
@@ -91,37 +117,20 @@ instance finiteAdeles_secondCountableTopology : SecondCountableTopology (FiniteA
       intro I
       exact IsNoetherian.noetherian I
     exact h.countable
-  letI : Countable (HeightOneSpectrum (RingOfIntegers F)) :=
-    Function.Injective.countable (fun _ _ h => HeightOneSpectrum.ext h)
-  letI : ∀ v : HeightOneSpectrum (RingOfIntegers F),
-      SecondCountableTopology (v.adicCompletion F) := fun v => by
-    letI : TopologicalSpace.SeparableSpace (v.adicCompletion F) :=
-      ⟨⟨Set.range (algebraMap F (v.adicCompletion F)), Set.countable_range _,
-        HeightOneSpectrum.denseRange_algebraMap F v⟩⟩
-    infer_instance
-  let X := fun v : HeightOneSpectrum (RingOfIntegers F) => v.adicCompletion F
-  let C := fun v : HeightOneSpectrum (RingOfIntegers F) => (v.adicCompletionIntegers F : Set (X v))
-  let f (s : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
-    RestrictedProduct.inclusion X C (Filter.le_principal_iff.mpr s.finite_toSet.compl_mem_cofinite)
-  change SecondCountableTopology (RestrictedProduct X C Filter.cofinite)
-  let U (s : Finset (HeightOneSpectrum (RingOfIntegers F))) : Set (RestrictedProduct X C Filter.cofinite) :=
-    Set.range (f s)
-  have hf (s : Finset (HeightOneSpectrum (RingOfIntegers F))) : Topology.IsOpenEmbedding (f s) :=
-    RestrictedProduct.isOpenEmbedding_inclusion_principal (completionIntegers_isOpen F) _
-  letI (s : Finset (HeightOneSpectrum (RingOfIntegers F))) :
-      SecondCountableTopology (RestrictedProduct X C (Filter.principal (↑s : Set _)ᶜ)) :=
-    RestrictedProduct.isEmbedding_coe_of_principal.secondCountableTopology
-  letI : ∀ s : Finset (HeightOneSpectrum (RingOfIntegers F)), SecondCountableTopology (U s) :=
-    fun s => (hf s).toIsEmbedding.toHomeomorph.symm.secondCountableTopology
-  apply TopologicalSpace.secondCountableTopology_of_countable_cover (U := U) (fun s => (hf s).isOpen_range)
-  apply Set.eq_univ_of_forall
-  intro a
-  have ha : {v | a v ∉ v.adicCompletionIntegers F}.Finite := a.2
-  apply Set.mem_iUnion_of_mem ha.toFinset
-  refine Set.mem_range.mpr ⟨⟨a.1, ?_⟩, rfl⟩
-  intro v hv
-  change a v ∈ v.adicCompletionIntegers F
-  simpa using hv
+  exact Function.Injective.countable (fun _ _ h => HeightOneSpectrum.ext h)
+
+theorem completion_secondCountable (v : HeightOneSpectrum (RingOfIntegers F)) :
+    SecondCountableTopology (v.adicCompletion F) := by
+  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
+  letI : TopologicalSpace.SeparableSpace (v.adicCompletion F) :=
+    ⟨⟨Set.range (algebraMap F (v.adicCompletion F)), Set.countable_range _,
+      HeightOneSpectrum.denseRange_algebraMap F v⟩⟩
+  infer_instance
+
+instance finiteAdeles_secondCountableTopology : SecondCountableTopology (FiniteAdeles F) := by
+  letI := finitePlace_countable F
+  letI := completion_secondCountable F
+  exact restrictedProduct_secondCountable _ _ (completionIntegers_isOpen F)
 
 instance adeles_t2Space : T2Space (Adeles F) := by
   letI : T2Space (InfiniteAdeleRing F) := inferInstanceAs

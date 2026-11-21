@@ -52,82 +52,9 @@ variable
     [Field M] [NumberField M]
     [Field N] [NumberField N]
 
-/-- Relative adelic transport over `ℚ` is functorial in the transported
-top field. -/
-theorem relativeAdeleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (z : RelativeAdeleRing ℚ K) :
-    relativeAdeleCongr (K := ℚ) f
-        (relativeAdeleCongr (K := ℚ) e z) =
-      relativeAdeleCongr (K := ℚ) (e.trans f) z := by
-  induction z using TensorProduct.inductionOn with
-  | add x y hx hy =>
-      simpa only [map_add] using congrArg₂ (· + ·) hx hy
-  | tmul a x =>
-      rw [relativeAdeleCongr_tmul,
-        relativeAdeleCongr_tmul,
-        relativeAdeleCongr_tmul]
-      rfl
 
-/-- Canonical transport of ordinary adele rings is functorial. -/
-theorem adeleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (a : NumberField.AdeleRing (𝓞 K) K) :
-    adeleCongr f (adeleCongr e a) =
-      adeleCongr (e.trans f) a := by
-  change
-    relativeAdeleBaseChangeRingEquiv
-        (K := ℚ) (L := N)
-        (relativeAdeleCongr (K := ℚ) f
-          ((relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := M)).symm
-            (relativeAdeleBaseChangeRingEquiv
-              (K := ℚ) (L := M)
-              (relativeAdeleCongr (K := ℚ) e
-                ((relativeAdeleBaseChangeRingEquiv
-                  (K := ℚ) (L := K)).symm a))))) =
-      relativeAdeleBaseChangeRingEquiv
-        (K := ℚ) (L := N)
-        (relativeAdeleCongr (K := ℚ) (e.trans f)
-          ((relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := K)).symm a))
-  rw [RingEquiv.symm_apply_apply,
-    relativeAdeleCongr_trans]
 
-/-- Canonical transport of ordinary ideles is functorial. -/
-theorem ideleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (a : IdeleGroup K) :
-    ideleCongr f (ideleCongr e a) =
-      ideleCongr (e.trans f) a := by
-  apply
-    (IdeleGroup.equivAdeleRingUnits
-      (K := N)).injective
-  simp only [ideleCongr, MulEquiv.trans_apply,
-    MulEquiv.apply_symm_apply]
-  apply Units.ext
-  exact adeleCongr_trans e f
-    (((IdeleGroup.equivAdeleRingUnits
-      (K := K) a :
-        (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-      NumberField.AdeleRing (𝓞 K) K))
 
-/-- Canonical transport of ordinary idele classes is functorial. -/
-theorem ideleClassCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (c : IdeleClassGroup K) :
-    ideleClassCongr f (ideleClassCongr e c) =
-      ideleClassCongr (e.trans f) c := by
-  refine QuotientGroup.induction_on c ?_
-  intro a
-  exact congrArg
-    (QuotientGroup.mk'
-      (IdeleGroup.principalSubgroup N))
-    (ideleCongr_trans e f a)
 
 /-- Transport of ordinary idele classes along the identity
 number-field equivalence is the identity. -/
@@ -284,14 +211,16 @@ theorem relativeAdeleCongrOfAlgEquiv_towerActual
             ← Algebra.smul_def, TensorProduct.smul_tmul,
             Algebra.smul_def]
 
+section
+
+variable (eK : K ≃ₐ[ℚ] K') (eL : L ≃ₐ[ℚ] L') (h : ∀ x : K,
+      eL (algebraMap K L x) =
+        algebraMap K' L' (eK x))
+include eK eL h
+
 /-- The relative-to-ordinary adele comparison commutes with compatible
 equivalences of both fields in a finite extension. -/
 theorem relativeAdeleBaseChangeRingEquiv_congrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
     (z : RelativeAdeleRing K L) :
     relativeAdeleBaseChangeRingEquiv
         (K := K') (L := L')
@@ -368,11 +297,6 @@ theorem relativeAdeleBaseChangeRingEquiv_congrOfAlgEquiv
 /-- The relative-to-ordinary idele comparison commutes with compatible
 equivalences of both fields in a finite extension. -/
 theorem relativeIdeleBaseChangeMulEquiv_congrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
     (a : RelativeIdeleGroup K L) :
     relativeIdeleBaseChangeMulEquiv
         (K := K') (L := L')
@@ -396,11 +320,6 @@ theorem relativeIdeleBaseChangeMulEquiv_congrOfAlgEquiv
 compatible equivalences of both fields in a finite extension. -/
 @[simp]
 theorem relativeIdeleClassBaseChangeMulEquiv_congrOfAlgEquiv
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
     (c : RelativeIdeleGroup.ClassGroup K L) :
     relativeIdeleClassBaseChangeMulEquiv
         (K := K') (L := L')
@@ -420,11 +339,6 @@ theorem relativeIdeleClassBaseChangeMulEquiv_congrOfAlgEquiv
 equivalences of finite number-field extensions. -/
 @[simp]
 theorem ideleClassCongr_ideleClassNorm
-    (eK : K ≃ₐ[ℚ] K')
-    (eL : L ≃ₐ[ℚ] L')
-    (h : ∀ x : K,
-      eL (algebraMap K L x) =
-        algebraMap K' L' (eK x))
     (c : IdeleClassGroup L) :
     ideleClassCongr eK (_root_.ideleClassNorm K L c) =
       _root_.ideleClassNorm K' L' (ideleClassCongr eL c) := by
@@ -467,5 +381,7 @@ theorem ideleClassCongr_ideleClassNorm
         _root_.ideleClassNorm K' L'
           (ideleClassCongr eL c) := by
       rw [hd]
+
+end
 
 end

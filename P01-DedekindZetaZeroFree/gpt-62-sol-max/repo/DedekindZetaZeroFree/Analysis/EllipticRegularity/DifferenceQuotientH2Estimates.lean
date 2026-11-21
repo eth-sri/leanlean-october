@@ -51,15 +51,6 @@ theorem kp_cont_local_difference_h2 (n : ℕ) (hn : 0 < n)
     rw [hc, hir]
     exact Metric.ball_subset_ball (by linarith)
   obtain ⟨η, hηone, hη⟩ := hest inner mid outer hc rfl hir rfl hor
-  let Dr : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients outer cρ Cρ κ Λ :=
-    { density := D.density
-      matrix := D.matrix
-      density_smooth := D.density_smooth
-      matrix_smooth := D.matrix_smooth
-      density_bounds := D.density_bounds
-      symmetric := D.symmetric
-      ellipticity := D.ellipticity
-      upper_bound := D.upper_bound }
   let A : ℝ := K * (u.sobolevNorm + ‖h‖)
   have hA : 0 ≤ A := by dsimp [A, IntegerSobolev.sobolevNorm]; positivity
   have hpair := fun j k => WeakH2.difference_bound_to_test_pairing inner outer hc hgap
@@ -70,7 +61,7 @@ theorem kp_cont_local_difference_h2 (n : ℕ) (hn : 0 < n)
       (∫ x in inner.carrier, ‖WeakH2.differenceQuotient k t
         (WeakH2.zeroExtension (gradient u j)) x‖ ^ 2) ≤ A ^ 2 := by
     intro j k t ht hts
-    obtain ⟨hm, hb⟩ := hη Dr hD z hz u h heq k t ht hts
+    obtain ⟨hm, hb⟩ := hη D hD z hz u h heq k t ht hts
     change (∀ j : Fin n, MeasureTheory.MemLp (fun x => (η x : ℂ) *
       WeakH2.differenceQuotient k t (WeakH2.zeroExtension (gradient u j)) x)
       2 (MeasureTheory.volume.restrict mid.carrier)) at hm

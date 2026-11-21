@@ -15,7 +15,7 @@ theorem principalRayHeckeData_exists
     (hF : NumberField.IsTotallyComplex F) (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (η : RayClassCharacter F 𝔪) (hprim : η.IsPrimitive) (hp : η.IsPrincipal) :
     Nonempty (PrincipalRayHeckeData F 𝔪 η) := by
-  obtain ⟨Λ₀, E₀, hΛ_holo, hE_entire, hseries, hreflection, hE_eq, horder⟩ :=
+  obtain ⟨Λ₀, E₀, -, hE_entire, hseries, hreflection, hE_eq, horder⟩ :=
     (DedekindZetaZeroFree.Hecke.heckeFunctionalEquation F hF 𝔪 hm η hprim).2 hp
 
   let R : ℂ → ℂ := fun s => E₀ s / (s * heckeCompletionFactor F 𝔪 s)
@@ -33,36 +33,14 @@ theorem principalRayHeckeData_exists
     simp only [L, R]
     rw [hE]
     field_simp
-  refine ⟨L, R, Λ₀, E₀, ?_, ?_, hΛ_holo, hE_entire, ?_, ?_, ?_, ?_,
-    hreflection, horder⟩
-  ·
-    have hR_holo : DifferentiableOn ℂ R {s : ℂ | 0 < s.re} := by
-      have hden : DifferentiableOn ℂ (fun s : ℂ => s * heckeCompletionFactor F 𝔪 s)
-          {s : ℂ | 0 < s.re} :=
-        differentiableOn_id.mul (differentiableOn_heckeCompletionFactor F 𝔪 hm)
-      have hden_ne : ∀ s ∈ {s : ℂ | 0 < s.re},
-          s * heckeCompletionFactor F 𝔪 s ≠ 0 := by
-        intro s hs
-        exact mul_ne_zero (Complex.ne_zero_of_re_pos hs)
-          (heckeCompletionFactor_ne_zero F 𝔪 hm s hs)
-      exact (hE_entire.differentiableOn.mono (Set.subset_univ _)).div hden hden_ne
-    have hR' : DifferentiableOn ℂ R {s : ℂ | 0 < s.re ∧ s ≠ 1} :=
-      hR_holo.mono (fun s hs => hs.1)
-    have h1 : DifferentiableOn ℂ (fun s : ℂ => s - 1) {s : ℂ | 0 < s.re ∧ s ≠ 1} :=
-      differentiableOn_id.sub_const 1
-    have h1ne : ∀ s ∈ {s : ℂ | 0 < s.re ∧ s ≠ 1}, s - 1 ≠ 0 :=
-      fun s hs => sub_ne_zero.mpr hs.2
-    exact hR'.div h1 h1ne
-  ·
-    have hden : DifferentiableOn ℂ (fun s : ℂ => s * heckeCompletionFactor F 𝔪 s)
-        {s : ℂ | 0 < s.re} :=
-      differentiableOn_id.mul (differentiableOn_heckeCompletionFactor F 𝔪 hm)
-    have hden_ne : ∀ s ∈ {s : ℂ | 0 < s.re},
-        s * heckeCompletionFactor F 𝔪 s ≠ 0 := by
-      intro s hs
-      exact mul_ne_zero (Complex.ne_zero_of_re_pos hs)
-        (heckeCompletionFactor_ne_zero F 𝔪 hm s hs)
-    exact (hE_entire.differentiableOn.mono (Set.subset_univ _)).div hden hden_ne
+  have hR : DifferentiableOn ℂ R {s : ℂ | 0 < s.re} :=
+    hE_entire.differentiableOn.div
+      (differentiableOn_id.mul (differentiableOn_heckeCompletionFactor F 𝔪 hm))
+      (fun s hs => mul_ne_zero (Complex.ne_zero_of_re_pos hs)
+        (heckeCompletionFactor_ne_zero F 𝔪 hm s hs))
+  refine ⟨L, R, Λ₀, E₀, ?_, hR, hE_entire, ?_, ?_, ?_, ?_, hreflection, horder⟩
+  · exact (hR.mono fun _ hs => hs.1).div (differentiableOn_id.sub_const 1)
+      (fun _ hs => sub_ne_zero.mpr hs.2)
   ·
     intro s hs
     have hs0 : 0 < s.re := zero_lt_one.trans hs

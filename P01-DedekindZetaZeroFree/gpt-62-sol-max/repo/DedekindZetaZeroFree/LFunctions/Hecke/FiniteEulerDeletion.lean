@@ -1,5 +1,6 @@
 module
 
+public import DedekindZetaZeroFree.LFunctions.Dedekind.FinitePrimeDeletion
 public import DedekindZetaZeroFree.ZeroDetection.Conductors.FrequencyTwistsAndLocalCharacters
 public import DedekindZetaZeroFree.ZeroDetection.Conductors.FrequencyDyadCounts
 public import DedekindZetaZeroFree.LFunctions.Hecke.OmittedEulerProductBounds
@@ -91,7 +92,7 @@ theorem finite_euler_local_factor_nonzero
       finiteEulerLocalFactor F v a s ≠ 0 := by
   have hv : 1 < (Ideal.absNorm v.asIdeal : ℝ) := by
     exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm v
-  have hp : 0 < 1 - (Ideal.absNorm v.asIdeal : ℝ) ^ (-σ) :=
+  have hp :=
     sub_pos.mpr (Real.rpow_lt_one_of_one_lt_of_neg hv (neg_neg_of_pos hσ))
   have hb : ‖a * (Ideal.absNorm v.asIdeal : ℂ) ^ (-s)‖ ≤
       (Ideal.absNorm v.asIdeal : ℝ) ^ (-σ) := by
@@ -127,8 +128,8 @@ private theorem exterior_prime_divides_comap
       v.valuation F (u : F) * v.valuation F (b : F) := by
     have hbF : (x : F) = (u : F) * (b : F) := by
       have h := congrArg (fun y : S.integer F => (y : F)) hb
-      simpa only [Subalgebra.coe_mul, Subalgebra.coe_algebraMap] using h
-    rw [hbF, map_mul]
+      assumption
+    grind
   rw [hmul]
   have hle : v.valuation F (u : F) * v.valuation F (b : F) ≤ v.valuation F (u : F) :=
     by simpa [mul_comm] using mul_le_mul_left hvb (v.valuation F (u : F))
@@ -293,58 +294,6 @@ theorem frequency_finite_euler_masks_subpower
   obtain ⟨hn, hp, hi⟩ := finite_masks_comparison F D hDf σ hσ a s ha hs
   exact ⟨hn, hp.trans (hmajor D hD).1, hi.trans (hmajor D hD).2⟩
 
-private theorem finite_prime_delete_hasSum
-    (F : Type) [Field F] [NumberField F]
-    (W : Ideal (𝓞 F) → ℂ) (W0 : W ⊥ = 0)
-    (Wmul : ∀ a b, W (a * b) = W a * W b)
-    (L : ℂ) (hW : HasSum W L) (V : Finset (HeightOneSpectrum (𝓞 F))) :
-    HasSum (fun I => if ∃ v ∈ V, I ≤ v.asIdeal then 0 else W I)
-      (L * ∏ v ∈ V, (1 - W v.asIdeal)) := by
-  induction V using Finset.induction_on with
-  | empty => simpa using hW
-  | @insert p V hp ih =>
-    let G : Ideal (𝓞 F) → ℂ := fun I => if ∃ v ∈ V, I ≤ v.asIdeal then 0 else W I
-    have G0 : G ⊥ = 0 := by simp [G, W0]
-    have Gmul (I : Ideal (𝓞 F)) : G (I * p.asIdeal) = G I * W p.asIdeal := by
-      have he : (∃ v ∈ V, I * p.asIdeal ≤ v.asIdeal) ↔ ∃ v ∈ V, I ≤ v.asIdeal := by
-        constructor
-        · rintro ⟨v, hv, h⟩
-          have hprime := Ideal.prime_of_isPrime v.ne_bot v.isPrime
-          have hd : v.asIdeal ∣ I * p.asIdeal := Ideal.dvd_iff_le.mpr h
-          rcases hprime.dvd_or_dvd hd with hd | hd
-          · exact ⟨v, hv, Ideal.dvd_iff_le.mp hd⟩
-          · have heq : v = p := HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)
-            exact (hp (heq ▸ hv)).elim
-        · rintro ⟨v, hv, h⟩
-          exact ⟨v, hv, (Ideal.mul_le_left).trans h⟩
-      simp only [G, he]
-      split_ifs <;> simp [Wmul]
-    let H : Ideal (𝓞 F) → ℂ := fun I => if I ≤ p.asIdeal then G I else 0
-    have hH : HasSum H ((L * ∏ v ∈ V, (1 - W v.asIdeal)) * W p.asIdeal) := by
-      have hi : Function.Injective (fun I : Ideal (𝓞 F) => I * p.asIdeal) := mul_left_injective₀ p.ne_bot
-      apply (hi.hasSum_iff ?_).mp
-      · have heq : H ∘ (fun I : Ideal (𝓞 F) => I * p.asIdeal) = fun I => G I * W p.asIdeal := by
-          funext I
-          simp [H, Function.comp_def, Ideal.mul_le_right, Gmul]
-        rw [heq]
-        exact ih.mul_right _
-      · intro I hI
-        have hn : ¬ I ≤ p.asIdeal := by
-          intro h
-          obtain ⟨a, ha⟩ := Ideal.dvd_iff_le.mpr h
-          exact hI ⟨a, by simpa [mul_comm] using ha.symm⟩
-        simp [H, hn]
-    have hh := ih.sub hH
-    have heq : (fun I => (if ∃ v ∈ V, I ≤ v.asIdeal then 0 else W I) - H I) =
-        (fun I => if ∃ v ∈ insert p V, I ≤ v.asIdeal then 0 else W I) := by
-      funext I
-      by_cases hI : I ≤ p.asIdeal <;> by_cases hV : ∃ v ∈ V, I ≤ v.asIdeal <;>
-        simp [H, G, hI, hV, Finset.exists_mem_insert]
-    rw [heq] at hh
-    convert hh using 1
-    rw [Finset.prod_insert hp]
-    ring
-
 theorem deleted_primitive_L_euler_identity
     (F : Type) [Field F] [NumberField F]
     (ω : PrimitiveFrequencyCharacter F)
@@ -358,9 +307,6 @@ theorem deleted_primitive_L_euler_identity
         finiteEulerDeletionMask F D (fun v => ω.character v.asIdeal) s := by
   classical
   let W : Ideal (𝓞 F) → ℂ := fun I => ω.character I * (Ideal.absNorm I : ℂ) ^ (-s)
-  have W0 : W ⊥ = 0 := by
-    have h0 : ω.character ⊥ = 0 := (ω.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-    simp [W, h0]
   have Wmul (a b : Ideal (𝓞 F)) : W (a * b) = W a * W b := by
     dsimp [W]
     rw [ω.character.map_mul', map_mul Ideal.absNorm, Nat.cast_mul]
@@ -372,7 +318,7 @@ theorem deleted_primitive_L_euler_identity
     rw [hp]
     ring
   have hW := (heckeDirichlet_right_edge F s.re hs ω.conductor ω.conductor_ne_zero ω.character s le_rfl).1
-  have hh := finite_prime_delete_hasSum F W W0 Wmul (∑' I, W I) hW.hasSum hD.toFinset
+  have hh := finite_prime_delete_hasSum Wmul hW.hasSum hD.toFinset
   have heq : (fun I => if ∃ v ∈ hD.toFinset, I ≤ v.asIdeal then 0 else W I) =
       (fun I => deletedPrimitiveIdealCoefficient F ω D I * (Ideal.absNorm I : ℂ) ^ (-s)) := by
     funext I
@@ -449,132 +395,6 @@ theorem deleted_primitive_L_continuation
     rw [hLeq] at htsum
     rw [← htsum]
     exact hsum.hasSum
-
-private theorem positive_representative (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (a : 𝓞 F) :
-    ∃ b : 𝓞 F, b - a ∈ m ∧ ∀ φ : F →+* ℝ, 0 < φ (b : F) := by
-  have hn : 0 < Ideal.absNorm m := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hm)
-  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := by
-    exact ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
-      have ht := Finset.single_le_sum (fun i (_ : i ∈ Finset.univ) => abs_nonneg ((i : F →+* ℝ) (a : F))) (Finset.mem_univ φ)
-      linarith [neg_le_abs (φ (a : F))]⟩
-  obtain ⟨B, hB⟩ := hb
-  obtain ⟨n, hnB⟩ := exists_nat_gt B
-  let b : 𝓞 F := a + (n * Ideal.absNorm m : ℕ)
-  have hp (φ : F →+* ℝ) : 0 < φ (b : F) := by
-    have hN : (1 : ℝ) ≤ Ideal.absNorm m := by exact_mod_cast hn
-    have hnb : (n : ℝ) ≤ (n : ℝ) * Ideal.absNorm m := by nlinarith [(Nat.cast_nonneg n : (0:ℝ) ≤ n)]
-    change 0 < (φ.comp (algebraMap (𝓞 F) F)) (a + (n * Ideal.absNorm m : ℕ))
-    rw [map_add, map_natCast]
-    simp only [Nat.cast_mul, RingHom.comp_apply]
-    linarith [hB φ]
-  refine ⟨b, ?_, hp⟩
-  have hh : ((n * Ideal.absNorm m : ℕ) : 𝓞 F) ∈ m := by
-    simpa only [Nat.cast_mul] using m.mul_mem_left (n : 𝓞 F) m.absNorm_mem
-  simpa [b] using hh
-private theorem coprime_of_sub_one_mem {R : Type*} [CommRing R]
-    (m : Ideal R) (a : R) (h : a - 1 ∈ m) : Ideal.span {a} ⊔ m = ⊤ := by
-  apply (Ideal.eq_top_iff_one _).mpr
-  have ha : a ∈ Ideal.span {a} ⊔ m := Ideal.mem_sup_left (Ideal.mem_span_singleton_self a)
-  have hb : a - 1 ∈ Ideal.span {a} ⊔ m := Ideal.mem_sup_right h
-  simpa using (Ideal.span {a} ⊔ m).sub_mem ha hb
-
-private theorem nonzero_of_sub_one_mem {R : Type*} [CommRing R]
-    (m : Ideal R) (hm : m ≠ ⊤) (a : R) (h : a - 1 ∈ m) : a ≠ 0 := by
-  intro ha
-  subst a
-  apply hm
-  apply (Ideal.eq_top_iff_one _).mpr
-  simpa using m.neg_mem h
-
-private theorem ray_congruent_positive
-    (F : Type) [Field F] [NumberField F]
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hmt : m ≠ ⊤) (χ : RayClassCharacter F m)
-    (a b : 𝓞 F) (ha : a ≠ 0) (hb : b ≠ 0)
-    (hpa : ∀ φ : F →+* ℝ, 0 < φ (a : F))
-    (hpb : ∀ φ : F →+* ℝ, 0 < φ (b : F))
-    (hcop : Ideal.span {a} ⊔ m = ⊤) (hab : a - b ∈ m) :
-    χ (Ideal.span {a}) = χ (Ideal.span {b}) := by
-  have hone : (1 : 𝓞 F) ∈ Ideal.span {a} ⊔ m := by rw [hcop]; trivial
-  obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp hone
-  obtain ⟨c, rfl⟩ := Ideal.mem_span_singleton.mp hx
-  have hac : a * c - 1 ∈ m := by
-    have heq : a * c - 1 = -y := by linear_combination hxy
-    rw [heq]
-    exact m.neg_mem hy
-  obtain ⟨d, hdc, hpd⟩ := positive_representative F m hm c
-  have had : a * d - 1 ∈ m := by
-    have heq : a * d - 1 = (a * c - 1) + a * (d - c) := by ring
-    rw [heq]; exact m.add_mem hac (m.mul_mem_left a hdc)
-  have hbd : b * d - 1 ∈ m := by
-    have heq : b * d - 1 = (a * d - 1) - (a - b) * d := by ring
-    rw [heq]; exact m.sub_mem had (m.mul_mem_right d hab)
-  have had0 := nonzero_of_sub_one_mem m hmt (a*d) had
-  have hbd0 := nonzero_of_sub_one_mem m hmt (b*d) hbd
-  have hca : χ (Ideal.span {a}) * χ (Ideal.span {d}) = 1 := by
-    rw [← χ.map_mul', Ideal.span_singleton_mul_span_singleton]
-    apply χ.map_span' (a*d) had0 had
-    intro φ
-    change 0 < (φ.comp (algebraMap (𝓞 F) F)) (a * d)
-    rw [map_mul]
-    exact mul_pos (hpa φ) (hpd φ)
-  have hcb : χ (Ideal.span {b}) * χ (Ideal.span {d}) = 1 := by
-    rw [← χ.map_mul', Ideal.span_singleton_mul_span_singleton]
-    apply χ.map_span' (b*d) hbd0 hbd
-    intro φ
-    change 0 < (φ.comp (algebraMap (𝓞 F) F)) (b * d)
-    rw [map_mul]
-    exact mul_pos (hpb φ) (hpd φ)
-  exact mul_right_cancel₀ (right_ne_zero_of_mul_eq_one hca) (hca.trans hcb.symm)
-
-theorem finite_mask_twist_conductor_le
-    (F : Type) [Field F] [NumberField F]
-    (η χ ψ : PrimitiveFrequencyCharacter F)
-    (hTwist : IsPrimitiveFrequencyTwist F η χ ψ) :
-    η.conductor * χ.conductor ≤ ψ.conductor := by
-  by_cases hf : ψ.conductor = ⊤
-  · simp [hf]
-  by_contra hle
-  have hlt : ψ.conductor < ψ.conductor ⊔ (η.conductor * χ.conductor) :=
-    lt_of_le_of_ne le_sup_left (fun heq => hle (le_sup_right.trans_eq heq.symm))
-  obtain ⟨a, ha, ham, hpos, hcop, hne⟩ := ψ.primitive _ hlt
-  obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp ham
-  obtain ⟨b, hby, hposb⟩ := positive_representative F
-    (ψ.conductor * (η.conductor * χ.conductor))
-    (mul_ne_zero ψ.conductor_ne_zero (mul_ne_zero η.conductor_ne_zero χ.conductor_ne_zero)) (1+y)
-  have hab : a - b ∈ ψ.conductor := by
-    have heq : a - b = x - (b - (1+y)) := by linear_combination -hxy
-    rw [heq]; exact ψ.conductor.sub_mem hx (Ideal.mul_le_left hby)
-  have hbm : b - 1 ∈ η.conductor * χ.conductor := by
-    have heq : b - 1 = y + (b - (1+y)) := by ring
-    rw [heq]; exact (η.conductor * χ.conductor).add_mem hy (Ideal.mul_le_right hby)
-  have hbcop : Ideal.span {b} ⊔ ψ.conductor = ⊤ := by
-    apply (Ideal.eq_top_iff_one _).mpr
-    have hba : a ∈ Ideal.span {b} ⊔ ψ.conductor := by
-      have hb := Ideal.mem_sup_left (T := ψ.conductor) (Ideal.mem_span_singleton_self b)
-      have hd := Ideal.mem_sup_right (S := Ideal.span {b}) hab
-      simpa using (Ideal.span {b} ⊔ ψ.conductor).add_mem hb hd
-    have hle' : Ideal.span {a} ⊔ ψ.conductor ≤ Ideal.span {b} ⊔ ψ.conductor :=
-      sup_le ((Ideal.span_singleton_le_iff_mem _).mpr hba) le_sup_right
-    rw [hcop] at hle'
-    exact hle' (by trivial)
-  have hb0 : b ≠ 0 := by
-    intro hb0
-    simp [hb0] at hbcop
-    exact hf hbcop
-  have hcopm := coprime_of_sub_one_mem (η.conductor * χ.conductor) b hbm
-  have hcopall : Ideal.span {b} ⊔ (η.conductor * χ.conductor * ψ.conductor) = ⊤ := by
-    apply IsCoprime.sup_eq
-    exact (Ideal.isCoprime_iff_sup_eq.mpr hcopm).mul_right
-      (Ideal.isCoprime_iff_sup_eq.mpr hbcop)
-  have hη : η.character (Ideal.span {b}) = 1 :=
-    η.character.map_span' b hb0 (Ideal.mul_le_left hbm) hposb
-  have hχ : χ.character (Ideal.span {b}) = 1 :=
-    χ.character.map_span' b hb0 (Ideal.mul_le_right hbm) hposb
-  have hψ := hTwist (Ideal.span {b}) (by simpa using hb0) hcopall
-  have heq := ray_congruent_positive F ψ.conductor ψ.conductor_ne_zero hf ψ.character a b ha hb0 hpos hposb hcop hab
-  apply hne
-  rw [heq, hψ, hη, hχ, map_one, mul_one]
 
 end
 

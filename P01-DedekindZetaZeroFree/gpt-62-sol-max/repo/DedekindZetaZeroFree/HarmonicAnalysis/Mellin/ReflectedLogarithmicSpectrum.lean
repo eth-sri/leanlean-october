@@ -139,8 +139,12 @@ def reflectedLogDual (D : ℝ) (r : ℕ) (H : ℂ → ℂ) (δ x : ℝ) : ℂ :=
 
 variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
 
-private theorem reflected_regularity (D : ℝ) (r : ℕ)
-    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H) :
+section
+
+variable (D : ℝ) (r : ℕ) (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H)
+include hD hr h
+
+private theorem reflected_regularity :
     (∀ s : ℂ, 1 < s.re → s.re < 1 + δ →
       DifferentiableAt ℂ (reflectedLogSpectrum D r H) s) ∧
     (∀ u v : ℝ, 1 < u → u ≤ v → v < 1 + δ → ∀ N : ℕ,
@@ -149,23 +153,20 @@ private theorem reflected_regularity (D : ℝ) (r : ℕ)
           ‖reflectedLogSpectrum D r H ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C) := by
   exact LogReflection.reflection_regularity D r hD hr h
 
-theorem reflectedLogSpectrum_differentiableOn (D : ℝ) (r : ℕ)
-    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H) :
+theorem reflectedLogSpectrum_differentiableOn :
     DifferentiableOn ℂ (reflectedLogSpectrum D r H)
       {s : ℂ | 1 < s.re ∧ s.re < 1 + δ} := by
   intro s hs
   exact ((reflected_regularity D r hD hr h).1 s hs.1 hs.2).differentiableWithinAt
 
-theorem reflectedLogSpectrum_verticalIntegrable (D : ℝ) (r : ℕ)
-    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H)
+theorem reflectedLogSpectrum_verticalIntegrable
     (c : ℝ) (hc : 1 < c) (hcδ : c < 1 + δ) :
     Complex.VerticalIntegrable (reflectedLogSpectrum D r H) c volume := by
   obtain ⟨hhol, hrapid⟩ := reflected_regularity D r hD hr h
   exact (LogReflection.strip_integrability (reflectedLogSpectrum D r H)
     1 (1 + δ) hhol hrapid c hc hcδ).1
 
-theorem reflectedLogDual_eq_mellinInv (D : ℝ) (r : ℕ)
-    (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H)
+theorem reflectedLogDual_eq_mellinInv
     (c x : ℝ) (hc : 1 < c) (hcδ : c < 1 + δ) (hx : 0 < x) :
     reflectedLogDual D r H δ x = mellinInv c (reflectedLogSpectrum D r H) x := by
   obtain ⟨hhol, hrapid⟩ := reflected_regularity D r hD hr h
@@ -174,6 +175,8 @@ theorem reflectedLogDual_eq_mellinInv (D : ℝ) (r : ℕ)
   exact (LogReflection.strip_inverse_api (reflectedLogSpectrum D r H)
     1 (1 + δ) hhol hrapid).1 (1 + δ / 2) c x
     (by linarith) (by linarith) hc hcδ hx
+
+end
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

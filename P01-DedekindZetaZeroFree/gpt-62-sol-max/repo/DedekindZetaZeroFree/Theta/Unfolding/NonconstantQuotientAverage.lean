@@ -35,10 +35,7 @@ theorem thetaAverage_sub_upperAverage {N : TraceHaarTransport R} (C : JointUpper
 
 theorem smoothedTheta_sub_mainTerm {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (Z : ℝ) (hZ : 0 < Z)
-    (hi : Integrable (fun t : PositiveAxis => C.packet.kernel t.val *
-      thetaAverage R C.transport C.sources C.realization C.packet v m b
-        ⟨t.val / Z, div_pos t.property hZ⟩) positiveHaar) :
+    (Z : ℝ) (hZ : 0 < Z) :
     smoothedTheta R C.transport C.sources C.realization C.packet v m b Z -
       mainTerm R C.transport C.sources C.realization C.packet v m b Z =
     ∫ t : PositiveAxis, C.packet.kernel t.val *
@@ -47,8 +44,7 @@ theorem smoothedTheta_sub_mainTerm {N : TraceHaarTransport R} (C : JointUpperVan
        upperAverage R C.transport C.sources C.realization C.packet v m b
         ⟨t.val / Z, div_pos t.property hZ⟩) ∂positiveHaar := by
   rw [smoothedTheta, mainTerm, dif_pos hZ, dif_pos hZ]
-  simp_rw [mul_sub]
-  exact (integral_sub hi (C.descent.smoothing_integrable v m b Z hZ)).symm
+  simp [C.upperZero v m b]
 
 theorem thetaAverage_sub_upperAverage_domain {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool) (l : PositiveAxis) :

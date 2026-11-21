@@ -49,8 +49,7 @@ theorem raw_tracePhase_eq (A : SArithmeticData F)
         (Equiv.subtypeEquivRight fun w : InfinitePlace F =>
           InfinitePlace.not_isReal_iff_isComplex).symm
       intro w
-      simp only [InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply,
-        map_mul]
+      simp only [map_mul]
       rfl
   unfold PoissonS.tracePhase ProbeAdditive.phase ProbeAdditive.archPhase
   change Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
@@ -176,7 +175,6 @@ theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
     PoissonS.localDilationModule F A.Sf (raw_localUnits A g) = A.norm g := by
   unfold PoissonS.localDilationModule SArithmeticData.norm
   congr 1
-  change ‖((raw_localUnits A g).val).1‖ = _
   rw [InfiniteAdeleRing.norm_def]
   apply Finset.prod_congr rfl
   intro v _

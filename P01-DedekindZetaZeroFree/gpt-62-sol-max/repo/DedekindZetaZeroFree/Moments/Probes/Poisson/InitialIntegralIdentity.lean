@@ -19,21 +19,11 @@ def initialRowIntegrand (u : D.Row) (Z : ℝ) (t : ℝ × ℝ × ℝ) : ℂ :=
   K D u ((4 : ℂ) + (t.1 : ℂ) * Complex.I) ((4 : ℂ) + (t.2.1 : ℂ) * Complex.I)
     ((2 : ℂ) + (t.2.2 : ℂ) * Complex.I) Z
 
-theorem row_mem_reps (u : D.Row) :
-    ∃ h : u.toFrequency.u ≠ 0,
-      (⟨u.toFrequency.u, h⟩ : ThetaReflectionData.Row D.recipe.A) ∈ D.recipe.probe.frequencies.reps :=
-  FixedData.Row.u_mem_reps u
 
 def toProbeFrequency (u : D.Row) : PrincipalMellinComparison.Frequency D.recipe :=
   ⟨⟨u.toFrequency.u, (FixedData.Row.u_mem_reps u).choose⟩,
     (FixedData.Row.u_mem_reps u).choose_spec⟩
 
-theorem toProbeFrequency_injective : Function.Injective (toProbeFrequency D) := by
-  intro u v h
-  apply FixedData.Row.u_unique
-  have h2 := congrArg
-    (fun f : PrincipalMellinComparison.Frequency D.recipe => (f.val.val : D.recipe.A.R)) h
-  exact h2
 
 theorem initial_majorant (Z : ℝ) (hZ : 0 < Z) :
     Integrable (NormalizedProbe.initialAbsoluteMellinMajorant D.recipe.probe
@@ -128,7 +118,7 @@ theorem closedRegion_subset_closure : closedRegion ⊆ closure strictRegion := b
   refine Filter.eventually_of_mem (self_mem_nhdsWithin) (fun ε hε => ?_)
   have hε' : 0 < ε := hε
   simp only [strictRegion, Set.mem_setOf_eq, Complex.add_re, Complex.ofReal_re]
-  exact ⟨by linarith, by linarith, by linarith⟩
+  grind only
 
 private theorem crp_aux (q : ℝ) (z : ℂ) (s : ℂ) :
     s = comparisonRealPower q z * (comparisonRealPower q (-z) * s) := by
@@ -136,7 +126,7 @@ private theorem crp_aux (q : ℝ) (z : ℂ) (s : ℂ) :
   have : comparisonRealPower q z * comparisonRealPower q (-z) = 1 := by
     unfold comparisonRealPower
     rw [← Complex.exp_add, ← add_mul, add_neg_cancel, zero_mul, Complex.exp_zero]
-  rw [this, one_mul]
+  grind
 
 private theorem majorant_antitone' (i : NormalizedProbe.MellinSeriesIndex D.recipe.probe)
     {a b c a' b' c' : ℝ} (ha : a ≤ a') (hb : b ≤ b') (hc : c ≤ c') :
@@ -274,27 +264,7 @@ theorem rowFactor_eq_raw_initial (u : D.Row) (ξ w z : ℂ) (hξ : 4 ≤ ξ.re) 
   simp only at h2
   exact h2
 
-private theorem exterior_countable' : Countable D.recipe.A.Exterior := by
-  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
-  have he := (DedekindZetaZeroFree.ProbeExteriorIdealCount.ideal_norm_summable F
-    D.recipe.A.cS 2 (by norm_num)).countable_support
-  have hall : Function.support (fun I : D.recipe.A.Exterior => (idealNorm I.val) ^ (-(2 : ℝ))) =
-      Set.univ := by
-    ext I
-    simp only [Function.mem_support, Set.mem_univ, iff_true]
-    exact (Real.rpow_pos_of_pos (D.recipe.A.exteriorNorm_pos I) _).ne'
-  rw [hall] at he
-  exact Set.countable_univ_iff.mp he
 
-private theorem aIndex_countable' :
-    Countable (ExteriorSquarefreeIdeal D.recipe.A.cS × D.recipe.A.Exterior ×
-      D.recipe.A.Exterior × D.recipe.A.Exterior) := by
-  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
-  letI := exterior_countable' D
-  letI : Countable (ExteriorSquarefreeIdeal D.recipe.A.cS) := by
-    change Countable {I : D.recipe.A.Exterior // Squarefree I.val}
-    infer_instance
-  infer_instance
 
 theorem K_eq_tsum_aux (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ)
     (hξ : (4 : ℝ) ≤ ξ.re) (hw : (4 : ℝ) ≤ w.re) (hz : (2 : ℝ) ≤ z.re) :
@@ -327,47 +297,6 @@ theorem rowIntegrand_eq_tsum (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ 
     (NormalizedProbe.initialMellinPoint t).2.2 Z = _
   exact K_eq_tsum_aux D u Z hZ _ _ _ h1.ge h2.ge h3.ge
 
-theorem rowIntegrand_integrable (u : D.Row) (Z : ℝ) (hZ : 0 < Z) :
-    Integrable (initialRowIntegrand D u Z) := by
-  obtain ⟨hmaj, hint, hsum⟩ := initial_majorant D Z hZ
-  letI := aIndex_countable' D
-  have heq : initialRowIntegrand D u Z = fun t => ∑' a,
-      NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t :=
-    funext fun t => rowIntegrand_eq_tsum D u Z hZ t
-  rw [heq]
-  refine hmaj.mono' (AEStronglyMeasurable.tsum (fun a => (hint (toProbeFrequency D u, a)).1)) ?_
-  refine Filter.Eventually.of_forall (fun t => ?_)
-  have hd : NormalizedProbe.initialMellinPoint t ∈ NormalizedProbe.separatedSeriesDomain := by
-    norm_num [NormalizedProbe.initialMellinPoint, NormalizedProbe.separatedSeriesDomain,
-      Complex.mul_re, Complex.add_re, Complex.ofReal_re, Complex.ofReal_im]
-  have hn := (NormalizedProbe.separatedSeries_absolute_locallyUniform D.recipe.probe).1
-    (NormalizedProbe.initialMellinPoint t) hd
-  have htn : Summable (fun i : NormalizedProbe.MellinSeriesIndex D.recipe.probe =>
-      ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z i t‖) := by
-    simpa only [NormalizedProbe.initialTripleMellinSummand, norm_mul] using
-      hn.mul_left (‖NormalizedProbe.tripleMellinWeight D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z
-        (NormalizedProbe.initialMellinPoint t).1
-        (NormalizedProbe.initialMellinPoint t).2.1 (NormalizedProbe.initialMellinPoint t).2.2‖)
-  have hinj : Function.Injective (fun a : ExteriorSquarefreeIdeal D.recipe.A.cS ×
-      D.recipe.A.Exterior × D.recipe.A.Exterior × D.recipe.A.Exterior =>
-      ((toProbeFrequency D u, a) : NormalizedProbe.MellinSeriesIndex D.recipe.probe)) :=
-    fun a b h => (Prod.mk.inj h).2
-  calc ‖∑' a, NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-          (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t‖
-      ≤ ∑' a, ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-          (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t‖ :=
-        norm_tsum_le_tsum_norm (htn.comp_injective hinj)
-    _ ≤ ∑' i : NormalizedProbe.MellinSeriesIndex D.recipe.probe,
-          ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-          (Scales.xScale Z) (Scales.yScale Z) Z i t‖ :=
-        (htn.comp_injective hinj).tsum_le_tsum_of_inj _ hinj (fun _ _ => norm_nonneg _)
-          (fun _ => le_rfl) htn
-    _ = NormalizedProbe.initialAbsoluteMellinMajorant D.recipe.probe
-          (Scales.xScale Z) (Scales.yScale Z) Z t := by
-      simp only [NormalizedProbe.initialTripleMellinSummand,
-        NormalizedProbe.initialAbsoluteMellinMajorant, norm_mul, tsum_mul_left]
 
 theorem integrable_tsum_norm_bound {ι α : Type*} [Countable ι] [MeasurableSpace α]
     {μ : Measure α} (F : ι → α → ℂ) (hint : ∀ i, Integrable (F i) μ)
@@ -399,22 +328,6 @@ theorem integrable_tsum_norm_bound {ι α : Type*} [Countable ι] [MeasurableSpa
         ENNReal.toReal_mono ENNReal.ofReal_ne_top (hl.trans_eq hfin)
     _ = _ := ENNReal.toReal_ofReal h0
 
-theorem rowIntegrand_norm_summable (Z : ℝ) (hZ : 0 < Z) :
-    Summable (fun u : D.Row => ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖) := by
-  obtain ⟨hmaj, hint, hsum⟩ := initial_majorant D Z hZ
-  letI := aIndex_countable' D
-  have hfib : ∀ u : D.Row, ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖ ≤
-      ∑' a, ∫ t : ℝ × ℝ × ℝ, ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a) t‖ := by
-    intro u
-    simp_rw [rowIntegrand_eq_tsum D u Z hZ]
-    exact (integrable_tsum_norm_bound
-      (fun a => NormalizedProbe.initialTripleMellinSummand D.recipe.probe
-        (Scales.xScale Z) (Scales.yScale Z) Z (toProbeFrequency D u, a))
-      (fun a => hint _) (hsum.prod_factor _)).2
-  have hs := hsum.prod
-  have hs2 := hs.comp_injective (toProbeFrequency_injective D)
-  exact Summable.of_nonneg_of_le (fun u => integral_nonneg fun t => norm_nonneg _) hfib hs2
 
 end
 

@@ -207,13 +207,6 @@ theorem isUnramified_iff_inertia_le (L : FiniteGaloisSubextension K)
       K.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤ L.field.toSubgroup :=
   L.toFiniteAbstractExtension.isUnramified_iff_inertia_le D
 
-/-- Total ramification is the canonical equality of degree images. -/
-theorem isTotallyRamified_iff_image_le (L : FiniteGaloisSubextension K)
-    (D : DegreeData G) :
-    L.IsTotallyRamified D ↔
-      K.toSubgroup.map D.degree.toMonoidHom ≤
-        L.field.toSubgroup.map D.degree.toMonoidHom :=
-  L.toFiniteAbstractExtension.isTotallyRamified_iff_image_le D
 
 /-- Retain the finite-over-base endpoint bundles of a finite Galois
 subextension of an abstract field which is finite over the distinguished
@@ -273,30 +266,6 @@ theorem finite_extension_over_intermediate
   change (extensionSubgroup M P hPM).index ≠ 0
   simpa [Subgroup.relIndex] using hPM0
 
-/-- Every intermediate field of a finite extension is finite over the
-base.  No normality hypothesis is needed: this is the finite-index
-statement for an arbitrary subgroup between the two endpoint subgroups. -/
-theorem finite_intermediate_extension
-    {P M K : ClosedSubgroup G}
-    (hPK : P.toSubgroup ≤ K.toSubgroup)
-    (hPM : P.toSubgroup ≤ M.toSubgroup)
-    (hMK : M.toSubgroup ≤ K.toSubgroup)
-    [hPKfinite : Finite
-      (K.toSubgroup ⧸ extensionSubgroup K P hPK)] :
-    Finite (K.toSubgroup ⧸ extensionSubgroup K M hMK) := by
-  have hPK0 : P.toSubgroup.relIndex K.toSubgroup ≠ 0 := by
-    rw [Subgroup.relIndex]
-    exact @Subgroup.index_ne_zero_of_finite K.toSubgroup _
-      (extensionSubgroup K P hPK) hPKfinite
-  have hMK0 : M.toSubgroup.relIndex K.toSubgroup ≠ 0 := by
-    intro hzero
-    have hmul := Subgroup.relIndex_mul_relIndex
-      P.toSubgroup M.toSubgroup K.toSubgroup hPM hMK
-    rw [hzero, mul_zero] at hmul
-    exact hPK0 hmul.symm
-  apply Nat.finite_of_card_ne_zero
-  change (extensionSubgroup K M hMK).index ≠ 0
-  simpa [Subgroup.relIndex] using hMK0
 
 /-- Base change of a finite Galois extension `M / K` to an arbitrary
 intermediate field `L / K`.  Contravariantly, the compositum `ML` is the
@@ -408,10 +377,6 @@ theorem compositum_le_left (L₁ L₂ : FiniteGaloisSubextension K) :
     (L₁.compositum L₂).field.toSubgroup ≤ L₁.field.toSubgroup :=
   inf_le_left
 
-/-- The constructed Galois compositum satisfies the right comparison bound. -/
-theorem compositum_le_right (L₁ L₂ : FiniteGaloisSubextension K) :
-    (L₁.compositum L₂).field.toSubgroup ≤ L₂.field.toSubgroup :=
-  inf_le_right
 
 end FiniteGaloisSubextension
 

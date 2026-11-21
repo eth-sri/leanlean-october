@@ -64,7 +64,7 @@ private theorem delta_pos (t : E F ζ hζ) :
 private theorem normPower_one (s : ℂ) : normPower F ζ hζ s 1 = 1 := by
   simp [normPower]
 
-private theorem normPower_mul (s : ℂ) (t u : E F ζ hζ) :
+ theorem normPower_mul (s : ℂ) (t u : E F ζ hζ) :
     normPower F ζ hζ s (t * u) = normPower F ζ hζ s t * normPower F ζ hζ s u := by
   simp only [normPower, map_mul, Units.val_mul, NNReal.coe_mul,
     Real.log_mul (ne_of_gt (delta_pos F ζ hζ t)) (ne_of_gt (delta_pos F ζ hζ u)),
@@ -74,7 +74,7 @@ private theorem normPower_cancel (s : ℂ) (t : E F ζ hζ) :
     normPower F ζ hζ s t * normPower F ζ hζ (-s) t = 1 := by
   simp only [normPower, neg_mul, ← Complex.exp_add, add_neg_cancel, Complex.exp_zero]
 
-private theorem normPower_continuous (s : ℂ) : Continuous (normPower F ζ hζ s) := by
+ theorem normPower_continuous (s : ℂ) : Continuous (normPower F ζ hζ s) := by
   have hlog : ∀ t : E F ζ hζ,
       Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) =
         6 * Real.log (((KPGlobalCenterRationalCharacter.nu F ζ hζ t : ℝ≥0) : ℝ)) := by
@@ -267,7 +267,11 @@ theorem normPowerLevelTrivial_of_torus_closed
     ht.isClosedEmbedding_subtypeVal.isCompact_preimage (globalLevel_isCompact F ζ hζ J)
   exact normPower_compact_subgroup F ζ hζ H hc s ⟨j, hj⟩
 
-theorem scalarNormTwist_mem_smoothLevel (P : Polarization F ζ hζ) (s : ℂ)
+section
+
+variable (P : Polarization F ζ hζ) (s : ℂ)
+
+theorem scalarNormTwist_mem_smoothLevel
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ P)
@@ -285,7 +289,7 @@ theorem scalarNormTwist_mem_smoothLevel (P : Polarization F ζ hζ) (s : ℂ)
     rw [normPower_mul, hl J j.val j.property, mul_one]
     rw [KPGlobalTorusFunctionData.rightLevel_covariance _ _ _ ⟨f, hf.2⟩ t j.val j.property]
 
-theorem scalarNormTwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
+theorem scalarNormTwist_mem_smoothUnion
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
     (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ P)
     (hf : f ∈ Smooth F ζ hζ P) :
@@ -299,7 +303,7 @@ theorem scalarNormTwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
   · intro f g hf hg
     rw [map_add]; exact Submodule.add_mem _ hf hg
 
-  theorem scalarNormUntwist_mem_smoothLevel (P : Polarization F ζ hζ) (s : ℂ)
+  theorem scalarNormUntwist_mem_smoothLevel
       (ha : NormPowerArchSmooth F ζ hζ (-s)) (hl : NormPowerLevelTrivial F ζ hζ (-s))
       (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
       (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (twist F ζ hζ P s))
@@ -317,7 +321,7 @@ theorem scalarNormTwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
       rw [normPower_mul, hl J j.val j.property, mul_one]
       rw [KPGlobalTorusFunctionData.rightLevel_covariance _ _ _ ⟨f, hf.2⟩ t j.val j.property]
 
-  theorem scalarNormUntwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
+  theorem scalarNormUntwist_mem_smoothUnion
       (ha : NormPowerArchSmooth F ζ hζ (-s)) (hl : NormPowerLevelTrivial F ζ hζ (-s))
       (f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ (twist F ζ hζ P s))
       (hf : f ∈ Smooth F ζ hζ (twist F ζ hζ P s)) :
@@ -332,7 +336,7 @@ theorem scalarNormTwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
     · intro f g hf hg
       rw [map_add]; exact Submodule.add_mem _ hf hg
 
-  def smoothNormTwistLinearEquiv (P : Polarization F ζ hζ) (s : ℂ)
+  def smoothNormTwistLinearEquiv
       (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
       (hai : NormPowerArchSmooth F ζ hζ (-s)) (hli : NormPowerLevelTrivial F ζ hζ (-s)) :
       Smooth F ζ hζ P ≃ₗ[ℂ] Smooth F ζ hζ (twist F ζ hζ P s) where
@@ -352,6 +356,8 @@ theorem scalarNormTwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
     map_smul' c f := by
       apply Subtype.ext
       exact (scalarNormTwist F ζ hζ P s).map_smul c f.val
+
+end
 
 theorem smoothUnion_linearMap_continuous_of_stages (P Q : Polarization F ζ hζ)
     (A : Smooth F ζ hζ P →ₗ[ℂ] Smooth F ζ hζ Q)
@@ -399,7 +405,12 @@ theorem smoothUnion_linearMap_continuous_of_stages (P Q : Polarization F ζ hζ)
       exact (hq.continuous_seminorm r).comp (hA J)⟩
   exact hp.continuous_seminorm u
 
-def stageNormTwist (P : Polarization F ζ hζ) (s : ℂ)
+section
+
+variable (P : Polarization F ζ hζ) (s : ℂ)
+include P
+
+def stageNormTwist
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ P J →ₗ[ℂ]
@@ -407,7 +418,7 @@ def stageNormTwist (P : Polarization F ζ hζ) (s : ℂ)
   (scalarNormTwist F ζ hζ P s).restrict
     (scalarNormTwist_mem_smoothLevel F ζ hζ P s ha hl J)
 
-def stageNormUntwist (P : Polarization F ζ hζ) (s : ℂ)
+def stageNormUntwist
     (ha : NormPowerArchSmooth F ζ hζ (-s)) (hl : NormPowerLevelTrivial F ζ hζ (-s))
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ (twist F ζ hζ P s) J →ₗ[ℂ]
@@ -415,7 +426,7 @@ def stageNormUntwist (P : Polarization F ζ hζ) (s : ℂ)
   (scalarNormUntwist F ζ hζ P s).restrict
     (scalarNormUntwist_mem_smoothLevel F ζ hζ P s ha hl J)
 
-theorem stageNormTwist_continuous (P : Polarization F ζ hζ) (s : ℂ)
+theorem stageNormTwist_continuous
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     letI := KPGlobalTorusFunctionData.smoothLevelTopology P.H P.character.toMonoidHom
@@ -440,7 +451,7 @@ theorem stageNormTwist_continuous (P : Polarization F ζ hζ) (s : ℂ)
   intro f t
   rfl
 
-theorem stageNormUntwist_continuous (P : Polarization F ζ hζ) (s : ℂ)
+theorem stageNormUntwist_continuous
     (ha : NormPowerArchSmooth F ζ hζ (-s)) (hl : NormPowerLevelTrivial F ζ hζ (-s))
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     letI := KPGlobalTorusFunctionData.smoothLevelTopology (twist F ζ hζ P s).H
@@ -465,7 +476,7 @@ theorem stageNormUntwist_continuous (P : Polarization F ζ hζ) (s : ℂ)
   intro f t
   rfl
 
-theorem smoothNormTwistLinearEquiv_continuous (P : Polarization F ζ hζ) (s : ℂ)
+theorem smoothNormTwistLinearEquiv_continuous
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
     (hai : NormPowerArchSmooth F ζ hζ (-s)) (hli : NormPowerLevelTrivial F ζ hζ (-s)) :
     Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli) := by
@@ -492,7 +503,7 @@ theorem smoothNormTwistLinearEquiv_continuous (P : Polarization F ζ hζ) (s : �
         (KPGlobalTorusFunctionData.torus F ζ hζ).subtype) J
   exact hc.comp (stageNormTwist_continuous F ζ hζ P s ha hl J)
 
-theorem smoothNormTwistLinearEquiv_symm_continuous (P : Polarization F ζ hζ) (s : ℂ)
+theorem smoothNormTwistLinearEquiv_symm_continuous
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
     (hai : NormPowerArchSmooth F ζ hζ (-s)) (hli : NormPowerLevelTrivial F ζ hζ (-s)) :
     Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli).symm := by
@@ -519,37 +530,40 @@ theorem smoothNormTwistLinearEquiv_symm_continuous (P : Polarization F ζ hζ) (
         (KPGlobalTorusFunctionData.torus F ζ hζ).subtype) J
   exact hc.comp (stageNormUntwist_continuous F ζ hζ P s hai hli J)
 
-def smoothNormTwistContinuousLinearEquiv (P : Polarization F ζ hζ) (s : ℂ)
-    (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
-    (hai : NormPowerArchSmooth F ζ hζ (-s)) (hli : NormPowerLevelTrivial F ζ hζ (-s))
-    (hc : Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli))
-    (hci : Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli).symm) :
+end
+
+section
+
+variable (P : Polarization F ζ hζ) (s : ℂ) (ha : NormPowerArchSmooth F ζ hζ s)
+  (hl : NormPowerLevelTrivial F ζ hζ s) (hai : NormPowerArchSmooth F ζ hζ (-s))
+  (hli : NormPowerLevelTrivial F ζ hζ (-s))
+  (hc : Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli))
+  (hci : Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli).symm)
+include ha hl hai hli hc hci
+
+def smoothNormTwistContinuousLinearEquiv :
     Smooth F ζ hζ P ≃L[ℂ] Smooth F ζ hζ (twist F ζ hζ P s) :=
   { smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli with
     continuous_toFun := hc
     continuous_invFun := hci }
 
 @[simp] theorem smoothNormTwistContinuousLinearEquiv_formula
-    (P : Polarization F ζ hζ) (s : ℂ)
-    (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
-    (hai : NormPowerArchSmooth F ζ hζ (-s)) (hli : NormPowerLevelTrivial F ζ hζ (-s))
-    (hc : Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli))
-    (hci : Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli).symm)
     (f : Smooth F ζ hζ P) (t : E F ζ hζ) :
     (smoothNormTwistContinuousLinearEquiv F ζ hζ P s ha hl hai hli hc hci f).val.val t =
       normPower F ζ hζ s t * f.val.val t := rfl
 
 @[simp] theorem smoothNormTwistContinuousLinearEquiv_inverse_formula
-    (P : Polarization F ζ hζ) (s : ℂ)
-    (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
-    (hai : NormPowerArchSmooth F ζ hζ (-s)) (hli : NormPowerLevelTrivial F ζ hζ (-s))
-    (hc : Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli))
-    (hci : Continuous (smoothNormTwistLinearEquiv F ζ hζ P s ha hl hai hli).symm)
     (f : Smooth F ζ hζ (twist F ζ hζ P s)) (t : E F ζ hζ) :
     ((smoothNormTwistContinuousLinearEquiv F ζ hζ P s ha hl hai hli hc hci).symm f).val.val t =
       normPower F ζ hζ (-s) t * f.val.val t := rfl
 
-def normTwistOfConditions (P : Polarization F ζ hζ) (s : ℂ)
+end
+
+section
+
+variable (P : Polarization F ζ hζ) (s : ℂ)
+
+def normTwistOfConditions
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s) :
     Smooth F ζ hζ P ≃L[ℂ] Smooth F ζ hζ (twist F ζ hζ P s) :=
   smoothNormTwistContinuousLinearEquiv F ζ hζ P s ha hl
@@ -557,19 +571,19 @@ def normTwistOfConditions (P : Polarization F ζ hζ) (s : ℂ)
     (smoothNormTwistLinearEquiv_continuous F ζ hζ P s ha hl _ _)
     (smoothNormTwistLinearEquiv_symm_continuous F ζ hζ P s ha hl _ _)
 
-@[simp] theorem normTwistOfConditions_formula (P : Polarization F ζ hζ) (s : ℂ)
+@[simp] theorem normTwistOfConditions_formula
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
     (f : Smooth F ζ hζ P) (t : E F ζ hζ) :
     (normTwistOfConditions F ζ hζ P s ha hl f).val.val t =
       normPower F ζ hζ s t * f.val.val t := rfl
 
-@[simp] theorem normTwistOfConditions_inverse_formula (P : Polarization F ζ hζ) (s : ℂ)
+@[simp] theorem normTwistOfConditions_inverse_formula
     (ha : NormPowerArchSmooth F ζ hζ s) (hl : NormPowerLevelTrivial F ζ hζ s)
     (f : Smooth F ζ hζ (twist F ζ hζ P s)) (t : E F ζ hζ) :
     ((normTwistOfConditions F ζ hζ P s ha hl).symm f).val.val t =
       normPower F ζ hζ (-s) t * f.val.val t := rfl
 
-def normTwist (P : Polarization F ζ hζ) (s : ℂ) :
+def normTwist :
     Smooth F ζ hζ P ≃L[ℂ] Smooth F ζ hζ (twist F ζ hζ P s) :=
   normTwistOfConditions F ζ hζ P s
     (normPowerArchSmooth_of_chart_formula F ζ hζ
@@ -577,11 +591,11 @@ def normTwist (P : Polarization F ζ hζ) (s : ℂ) :
     (normPowerLevelTrivial_of_torus_closed F ζ hζ
       (AnalyticInputs.actualtorusclosed F ζ hζ) s)
 
- theorem normTwist_formula (P : Polarization F ζ hζ) (s : ℂ)
+ theorem normTwist_formula
     (f : Smooth F ζ hζ P) (t : E F ζ hζ) :
     (normTwist F ζ hζ P s f).val.val t = normPower F ζ hζ s t * f.val.val t := rfl
 
- theorem normTwist_inverse_formula (P : Polarization F ζ hζ) (s : ℂ)
+ theorem normTwist_inverse_formula
     (f : Smooth F ζ hζ (twist F ζ hζ P s)) (t : E F ζ hζ) :
     ((normTwist F ζ hζ P s).symm f).val.val t =
       normPower F ζ hζ (-s) t * f.val.val t := by
@@ -589,38 +603,47 @@ def normTwist (P : Polarization F ζ hζ) (s : ℂ) :
   rw [ContinuousLinearEquiv.apply_symm_apply] at h
   rw [h, ← mul_assoc, mul_comm (normPower F ζ hζ (-s) t), normPower_cancel, one_mul]
 
+end
+
 abbrev rationalModel := KPGlobalTorusPeriodizationInverse.rationalModel F ζ hζ
 abbrev productModel (C : ModelData F ζ hζ) :=
   KPGlobalTorusPeriodizationInverse.productModel F ζ hζ C
 abbrev Rational (s : ℂ) := Smooth F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s)
-abbrev Product (C : ModelData F ζ hζ) (s : ℂ) :=
+section
+
+variable (C : ModelData F ζ hζ) (s : ℂ)
+include C s
+
+abbrev Product :=
   Smooth F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s)
 
-def twistedP (C : ModelData F ζ hζ) (s : ℂ) :
+def twistedP :
     Product F ζ hζ C s →L[ℂ] Rational F ζ hζ s :=
   (normTwist F ζ hζ (rationalModel F ζ hζ) s).toContinuousLinearMap.comp
     ((KPGlobalTorusPeriodizationInverse.periodization F ζ hζ C).comp
       (normTwist F ζ hζ (productModel F ζ hζ C) s).symm.toContinuousLinearMap)
 
-def twistedQ (C : ModelData F ζ hζ) (s : ℂ) :
+def twistedQ :
     Rational F ζ hζ s →L[ℂ] Product F ζ hζ C s :=
   (normTwist F ζ hζ (productModel F ζ hζ C) s).toContinuousLinearMap.comp
     ((KPGlobalTorusPeriodizationInverse.averaging F ζ hζ C).comp
       (normTwist F ζ hζ (rationalModel F ζ hζ) s).symm.toContinuousLinearMap)
 
- theorem twistedP_transport (C : ModelData F ζ hζ) (s : ℂ)
+ theorem twistedP_transport
     (f : Smooth F ζ hζ (productModel F ζ hζ C)) :
     twistedP F ζ hζ C s (normTwist F ζ hζ (productModel F ζ hζ C) s f) =
       normTwist F ζ hζ (rationalModel F ζ hζ) s
         (KPGlobalTorusPeriodizationInverse.periodization F ζ hζ C f) := by
   simp [twistedP]
 
- theorem twistedQ_transport (C : ModelData F ζ hζ) (s : ℂ)
+ theorem twistedQ_transport
     (f : Smooth F ζ hζ (rationalModel F ζ hζ)) :
     twistedQ F ζ hζ C s (normTwist F ζ hζ (rationalModel F ζ hζ) s f) =
       normTwist F ζ hζ (productModel F ζ hζ C) s
         (KPGlobalTorusPeriodizationInverse.averaging F ζ hζ C f) := by
   simp [twistedQ]
+
+end
 
 private theorem normTwist_rightAction (P : Polarization F ζ hζ) (s : ℂ)
     (a : E F ζ hζ) (f : Smooth F ζ hζ P) :
@@ -637,7 +660,11 @@ private theorem normTwist_rightAction (P : Polarization F ζ hζ) (s : ℂ)
     KPGlobalTorusPeriodizationInverse.rightAction_formula, normPower_mul]
   ring
 
- theorem twistedP_intertwines (C : ModelData F ζ hζ) (s : ℂ)
+section
+
+variable (C : ModelData F ζ hζ) (s : ℂ)
+
+ theorem twistedP_intertwines
     (a : E F ζ hζ) (f : Product F ζ hζ C s) :
     twistedP F ζ hζ C s
         (KPGlobalTorusPeriodizationInverse.rightAction F ζ hζ
@@ -648,7 +675,7 @@ private theorem normTwist_rightAction (P : Polarization F ζ hζ) (s : ℂ)
   rw [normTwist_rightAction, map_smul, twistedP_transport, twistedP_transport,
     normTwist_rightAction, KPGlobalTorusPeriodizationInverse.periodization_intertwines]
 
- theorem twistedQ_intertwines (C : ModelData F ζ hζ) (s : ℂ)
+ theorem twistedQ_intertwines
     (a : E F ζ hζ) (f : Rational F ζ hζ s) :
     twistedQ F ζ hζ C s
         (KPGlobalTorusPeriodizationInverse.rightAction F ζ hζ
@@ -659,7 +686,7 @@ private theorem normTwist_rightAction (P : Polarization F ζ hζ) (s : ℂ)
   rw [normTwist_rightAction, map_smul, twistedQ_transport, twistedQ_transport,
     normTwist_rightAction, KPGlobalTorusPeriodizationInverse.averaging_intertwines]
 
- theorem twistedP_rational_formula (C : ModelData F ζ hζ) (s : ℂ)
+ theorem twistedP_rational_formula
     (r : KPGlobalTorusPeriodizationInverse.PeriodizationRepresentatives F ζ hζ C)
     (hr : ∀ a, ∃ y : Fˣ, r.lift a = KPGlobalTorusPeriodizationInverse.rationalLift F ζ hζ y)
     (f : Product F ζ hζ C s) (t : E F ζ hζ) :
@@ -679,14 +706,14 @@ private theorem normTwist_rightAction (P : Polarization F ζ hζ) (s : ℂ)
     simp [normPower, delta_rational]
   rw [hn, one_mul, ← mul_assoc, normPower_cancel, one_mul]
 
-def twistedIntegrand (C : ModelData F ζ hζ) (s : ℂ)
+def twistedIntegrand
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : Rational F ζ hζ s) (t : E F ζ hζ)
     (x : KPGlobalTorusPeriodizationInverse.CompactIndex F ζ hζ C) : ℂ :=
   (((twist F ζ hζ (productModel F ζ hζ C) s).character (r.lift x))⁻¹ : ℂˣ) *
     f.val.val ((r.lift x).val * t)
 
-private theorem twistedIntegrand_eq (C : ModelData F ζ hζ) (s : ℂ)
+private theorem twistedIntegrand_eq
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : Rational F ζ hζ s) (t : E F ζ hζ) :
     twistedIntegrand F ζ hζ C s r f t = fun x =>
@@ -711,7 +738,7 @@ private theorem twistedIntegrand_eq (C : ModelData F ζ hζ) (s : ℂ)
   linear_combination -(((productModel F ζ hζ C).character (r.lift x) : ℂ)⁻¹ *
     normPower F ζ hζ (-s) (r.lift x).val * f.val.val ((r.lift x).val * t)) * hc
 
- theorem twistedIntegrand_independent (C : ModelData F ζ hζ) (s : ℂ)
+ theorem twistedIntegrand_independent
     (r r' : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : Rational F ζ hζ s) (t : E F ζ hζ) :
     twistedIntegrand F ζ hζ C s r f t = twistedIntegrand F ζ hζ C s r' f t := by
@@ -719,7 +746,7 @@ private theorem twistedIntegrand_eq (C : ModelData F ζ hζ) (s : ℂ)
   funext x
   rw [KPGlobalTorusPeriodizationInverse.averagingIntegrand_independent F ζ hζ C r r']
 
- theorem twistedQ_formula (C : ModelData F ζ hζ) (s : ℂ)
+ theorem twistedQ_formula
     (r : KPGlobalTorusPeriodizationInverse.AveragingRepresentatives F ζ hζ C)
     (f : Rational F ζ hζ s) (t : E F ζ hζ) :
     (twistedQ F ζ hζ C s f).val.val t =
@@ -730,6 +757,8 @@ private theorem twistedIntegrand_eq (C : ModelData F ζ hζ) (s : ℂ)
       ((normTwist F ζ hζ (rationalModel F ζ hζ) s).symm f))).val.val t = _
   rw [normTwist_formula, KPGlobalTorusPeriodizationInverse.averaging_formula F ζ hζ C r,
     twistedIntegrand_eq, integral_const_mul]
+
+end
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport

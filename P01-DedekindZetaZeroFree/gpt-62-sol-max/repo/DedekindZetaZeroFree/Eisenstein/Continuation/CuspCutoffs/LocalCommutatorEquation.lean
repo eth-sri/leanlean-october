@@ -220,39 +220,6 @@ private theorem rational_laplacian (γ : KPCuspArithmetic.PGL2 F)
   have he := KPContArchLaplacianNaturality.pullback _ g f hf z
   simpa only [ha] using he
 
-theorem localLaplacian_chart
-    (w : SmoothSections F ζ hζ C R P H U)
-    (a : KPContActualSectorSmoothTestModules.ActualChart
-      (U := level F ζ hζ C R P H U) (H := H))
-    (x : KPContCotangentOverlapRationalBranches.omega a) :
-    KPContActualSectorSmoothTestModules.sectionFields
-      (Δloc F ζ hζ C R P H U w).val a x =
-    HyperbolicChart.laplacian (d F)
-      (KPContActualSectorTestDifferentialDescent.liftExtension a
-        (KPContActualSectorSmoothTestModules.sectionFields w.val a)) x.val := by
-  let A := KPContCotangentActualOverlap.labeledA
-    (KPContCotangentActualOverlap.placeEquiv F ζ hζ)
-  have he : KPContActualSectorTestDifferentialDescent.liftExtension a
-      (KPContActualSectorSmoothTestModules.sectionFields w.val a) =ᶠ[nhds x.val]
-        fun y => (w.val a.component).val (A y) := by
-    have ho : IsOpen (KPContCotangentOverlapRationalBranches.omega a) :=
-      a.domain_open.preimage KPContActualGlobalGreen.contDiff_labeledA.continuous
-    filter_upwards [ho.mem_nhds x.property] with y hy
-    simp only [KPContActualSectorTestDifferentialDescent.liftExtension, dif_pos hy]
-    simp [KPContActualSectorSmoothTestModules.sectionFields,
-      KPContCotangentActualOverlap.LiftedChart.coefficient,
-      KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
-      KPContCotangentActualOverlap.ChartKind.representative, A]
-  rw [KPCuspCutoffGraphApproximation.laplacian_congr_nhds (d F) he]
-  have hb := KPContArchLaplacianCoordinateBridge.bridge_equiv (d F)
-    (KPCuspLogShape.dimension F) (KPContCotangentActualOverlap.placeEquiv F ζ hζ)
-    (w.val a.component).val (w.property a.component) x.val
-  simp only [KPContActualSectorSmoothTestModules.sectionFields,
-    KPContCotangentActualOverlap.LiftedChart.coefficient,
-    KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
-    KPContCotangentActualOverlap.ChartKind.representative, map_one, Units.val_one,
-    one_mul, one_smul]
-  exact hb
 
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
 variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
@@ -505,7 +472,7 @@ private theorem scalar_equation (s : ℂ) (hs : s ∈ Ω)
     rw [hC, hΔ, hh, mul_zero, sub_self]
 
 include hΩ in
-private theorem section_equation (s : ℂ) (hs : s ∈ Ω) :
+theorem section_equation (s : ℂ) (hs : s ∈ Ω) :
     Δloc F ζ hζ C R P H U (D.cutoff s) -
       KPContinuation.spectralCoordinate (d F : ℤ) s • D.cutoff s = D.commutator s := by
   apply Subtype.ext
@@ -524,91 +491,6 @@ private theorem section_equation (s : ℂ) (hs : s ∈ Ω) :
   simp only [hp] at he
   exact he
 
-structure Properties : Prop where
-
-  equation : ∀ s ∈ Ω,
-    Δloc F ζ hζ C R P H U (D.cutoff s) -
-      KPContinuation.spectralCoordinate (d F : ℤ) s • D.cutoff s = D.commutator s
-
-  chart_equation : ∀ (s : ℂ), s ∈ Ω →
-    ∀ (a : KPContActualSectorSmoothTestModules.ActualChart
-      (U := level F ζ hζ C R P H U) (H := H))
-      (x : KPContCotangentOverlapRationalBranches.omega a),
-    HyperbolicChart.laplacian (d F)
-      (KPContActualSectorTestDifferentialDescent.liftExtension a
-        (KPContActualSectorSmoothTestModules.sectionFields (D.cutoff s).val a)) x.val -
-      KPContinuation.spectralCoordinate (d F : ℤ) s *
-        KPContActualSectorSmoothTestModules.sectionFields (D.cutoff s).val a x =
-      KPContActualSectorSmoothTestModules.sectionFields (D.commutator s).val a x
-
-  end_equation : ∀ (s : ℂ) (hs : s ∈ Ω) (a : Cusps F ζ hζ C R P H U)
-      (z : KPCuspCharts.Coordinates F), B.τ < z.2 →
-    frameValue F ζ hζ C R P H U (Δloc F ζ hζ C R P H U (D.cutoff s)) a z -
-      KPContinuation.spectralCoordinate (d F : ℤ) s *
-        frameValue F ζ hζ C R P H U (D.cutoff s) a z =
-    KPCutoffSource.incomingCommutatorMultiplier (d F) (χ a).toFun s z.2 *
-      (Complex.exp ((d F : ℂ) * ((4 : ℂ) / 3 + 2 * s) * (z.2 : ℂ)) *
-        ((KPContFlatCuspIncomingEvaluation.b F ζ hζ C R P H U a ι s (hΩ hs)
-          (f s)).val z.1.2).val (QuotientAddGroup.mk z.1.1))
-
-  off_ends_locally : ∀ s ∈ Ω, ∀ x : Covered F ζ hζ C R P H U,
-    (∀ a, x ∉ ends F ζ hζ C R P H U B a) →
-    ∃ V ∈ nhds x, ∀ y ∈ V,
-      scalar F ζ hζ C R P H U (D.cutoff s) y = 0 ∧
-      scalar F ζ hζ C R P H U (Δloc F ζ hζ C R P H U (D.cutoff s)) y = 0 ∧
-      scalar F ζ hζ C R P H U (D.commutator s) y = 0
-
 end DedekindZetaZeroFree.KPContActualCutoffLocalCommutator
-
-namespace DedekindZetaZeroFree
-
-theorem kp_cont_actual_cutoff_local_commutator
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    (_hR : KPContActualFixedSectorRealization.LevelRealization F ζ hζ
-      (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H)
-    {T : ℝ} (B : KPContActualCollarBuffer.CollarBuffer F ζ hζ
-      (KPContActualCutoffSmoothDescent.level F ζ hζ C R P H U) R P H T)
-    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
-    (hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
-    (Ω : Set ℂ) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
-    (f : ℂ → S) (hf : DifferentiableOn ℂ f Ω)
-    (χ : KPContActualCutoffSmoothDescent.Cusps F ζ hζ C R P H U →
-      KPCutoffSource.SmoothCuspCutoff T)
-    (D : KPContActualCutoffSmoothDescent.Descent F ζ hζ C R P H U ι B Ω f χ) :
-    KPContActualCutoffLocalCommutator.Properties F ζ hζ C R P H U ι B Ω hΩ f χ D := by
-  refine ⟨?_, ?_, ?_, ?_⟩
-  · exact KPContActualCutoffLocalCommutator.section_equation F ζ hζ C R P H U
-      ι B Ω hΩ f χ D
-  · intro s hs a x
-    rw [← KPContActualCutoffLocalCommutator.localLaplacian_chart]
-    have he := KPContActualCutoffLocalCommutator.section_equation F ζ hζ C R P H U
-      ι B Ω hΩ f χ D s hs
-    have hv := congrArg (fun w : KPContActualCutoffSmoothDescent.SmoothSections F ζ hζ C R P H U =>
-      KPContActualSectorSmoothTestModules.sectionFields w.val a x) he
-    simp only [KPContActualSectorSmoothTestModules.sectionFields,
-      KPContCotangentActualOverlap.LiftedChart.coefficient,
-      KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
-      KPContCotangentActualOverlap.ChartKind.representative, map_one, Units.val_one,
-      one_mul, one_smul] at hv ⊢
-    exact hv
-  · intro s hs a z hz
-    have he := KPContActualCutoffLocalCommutator.cutoff_cusp_laplacian F ζ hζ C R P H U
-      ι B Ω hΩ f χ D s hs a z hz
-    refine he.trans ?_
-    rw [D.commutator_frame s hs a z hz,
-      KPContActualCutoffSmoothDescent.incomingValue_height_formula F ζ hζ C R P H U
-        ι a s (hΩ hs) (f s) z]
-    rfl
-  · exact KPContActualCutoffLocalCommutator.cutoff_laplacian_commutator_zero_nhds F ζ hζ
-      C R P H U ι B Ω f χ D
-
-end DedekindZetaZeroFree
 
 end

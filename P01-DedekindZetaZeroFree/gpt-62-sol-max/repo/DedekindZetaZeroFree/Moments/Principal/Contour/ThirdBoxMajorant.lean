@@ -1,3 +1,0 @@
-module
-public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.Poisson.SubpowerBounds
-public import DedekindZetaZeroFree.Moments.Principal.Contour.SeparatedStripBounds

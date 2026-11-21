@@ -37,7 +37,7 @@ private theorem mulChar_bound {R : Type*} [CommRing R] [Fintype R]
 private theorem phase_norm (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (x : SLocalProduct F A.Sf) : ‖ProbeAdditive.phase F A.Sf e x‖ = 1 := by
-  simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_mul, norm_prod,
+  simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_prod,
     Complex.norm_exp]
 private theorem gamma_bound (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)

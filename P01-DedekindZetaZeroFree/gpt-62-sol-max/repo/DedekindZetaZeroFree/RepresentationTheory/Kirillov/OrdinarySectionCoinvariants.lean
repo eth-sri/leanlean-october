@@ -81,11 +81,6 @@ def ordinaryRootAction (E : Type*) [AddCommGroup E] [Module ℂ E] :
       (rightAction F ζ hζ w m hm ψ E).map_mul
         (n F ζ hζ w a.toAdd) (n F ζ hζ w b.toAdd)
 
-@[simp] theorem ordinaryRootAction_apply
-    {E : Type*} [AddCommGroup E] [Module ℂ E]
-    (b : K F w) (f : Sections F ζ hζ w m ψ E) :
-    ordinaryRootAction F ζ hζ w m hm ψ E (Multiplicative.ofAdd b) f =
-      rightAction F ζ hζ w m hm ψ E (n F ζ hζ w b) f := rfl
 
 def ordinaryRelationSpan (E : Type*) [AddCommGroup E] [Module ℂ E] :
     Submodule ℂ (Sections F ζ hζ w m ψ E) :=

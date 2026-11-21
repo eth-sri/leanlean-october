@@ -1,13 +1,10 @@
 module
 
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CompactAveraging.Cuspidality
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Casimir.L2GraphDomain
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CompactAveraging.Eigenfunctions
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CompactProbabilityExistence
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.GradientL2
 public import DedekindZetaZeroFree.Eisenstein.Residues.Spherical.LaplacianEigenCenters
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.SmoothSphericalAveraging
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.SphericalEigenfunctionDerivativeEnergy
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Spherical.L2Norms
 
 @[expose] public section
@@ -74,12 +71,9 @@ theorem exists_averaged_graph_eigentest (f : KPSmoothActualFlowData.X F ζ hζ �
     rw [hlift,hp]
     exact ResidualAverageEigen.average_native_eigen F ζ hζ (K_U F ζ hζ V)
       (K_U_compact F ζ hζ V) ν (f ∘ Q) hf a he g
-  have hall := spherical_native_eigen_all_derivatives F ζ hζ C R P H U Z hZ2 a hZe
-  have hg := ResidualGradientL2.squareFinite_of_first_derivatives F ζ hζ V R P H Z
-    (fun b => hall [b])
-  have h3 := ResidualSphericalThreeL2.threeL2_of_native F ζ hζ V R P H Z a hZ2 hg hZe
-  obtain ⟨z,hrep,hgraph⟩ := ResidualAverageDomain.graph_eigen_of_threeL2
-    F ζ hζ V R P H canonicalRealization Z a h3
+  obtain ⟨z,hrep,hgraph⟩ := ResidualAverageDomain.graph_eigen_of_l2
+    F ζ hζ V R P H canonicalRealization Z a
+    (ResidualSphericalThreeL2.original_l2_norm_finite F ζ hζ V R P H Z hZ2)
     (ResidualSectionMetric.section_eigen_of_native F ζ hζ V R P H Z a hZe)
   exact ⟨ν,hν,hleft,Z,z,hrep,hp,hgraph⟩
 end DedekindZetaZeroFree.FourierContinuation.ResidualAveragedEigentest

@@ -57,7 +57,7 @@ private lemma nat_le_of_one_le {r : ℕ} (hr : 1 ≤ r) : (0 : ℝ) < (r : ℝ) 
 private lemma rpow_H5_le {M N η : ℝ} {r : ℕ} (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
     (hr : 1 ≤ r) (hrη : 20 / η ≤ (r : ℝ)) :
     Real.rpow (Real.rpow N (1 / (r : ℝ))) 5 ≤ Real.rpow (M * N) (η / 4) := by
-  have hr0 : (0 : ℝ) < (r : ℝ) := nat_le_of_one_le hr
+  have hr0 := nat_le_of_one_le hr
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hη4 : 0 ≤ η / 4 := by positivity
@@ -69,17 +69,15 @@ private lemma rpow_H5_le {M N η : ℝ} {r : ℕ} (hM : 1 ≤ M) (hN : 1 ≤ N) 
     nlinarith
   have hHN : Real.rpow (Real.rpow N (1 / (r : ℝ))) 5 = Real.rpow N (5 / (r : ℝ)) := by
     rw [rpow_mul' (le_of_lt hN0)]
-    rw [rpow_exp_congr (show (1 / (r : ℝ)) * 5 = 5 / (r : ℝ) by ring)]
+    ring
   rw [hHN]
   calc Real.rpow N (5 / (r : ℝ))
       ≤ Real.rpow N (η / 4) := rpow_le_rpow_exp' hN h5
     _ ≤ Real.rpow (M * N) (η / 4) := by
         rw [mul_rpow' (le_of_lt hM0) (le_of_lt hN0)]
-        have h1 : (1 : ℝ) ≤ Real.rpow M (η / 4) := one_le_rpow' hM hη4
+        have h1 := one_le_rpow' hM hη4
         have h2 : 0 ≤ Real.rpow N (η / 4) := rpow_nonneg' (le_of_lt hN0) _
-        calc Real.rpow N (η / 4) = 1 * Real.rpow N (η / 4) := (one_mul _).symm
-          _ ≤ Real.rpow M (η / 4) * Real.rpow N (η / 4) :=
-              mul_le_mul_of_nonneg_right h1 h2
+        nlinarith
 
 theorem recursion_parameter_basic (α M N η : ℝ) (r : ℕ)
     (hα : 1 ≤ α) (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)

@@ -98,7 +98,6 @@ theorem actual_original_chart_tube_domination
     have hd : ENNReal.ofReal c * volume (a ⁻¹' S ∩ A) ≤
         μArch (a '' (a ⁻¹' S ∩ A)) := by
       rw [himg _ hsub]
-      change _ ≤ μArch ((fun x => chart.exponential.chart (groupCoordinates F x)) '' _)
       rw [hi _ hT (hsub.trans hAT)]
       calc
         _ = ∫⁻ x in a ⁻¹' S ∩ A, ENNReal.ofReal c := by simp

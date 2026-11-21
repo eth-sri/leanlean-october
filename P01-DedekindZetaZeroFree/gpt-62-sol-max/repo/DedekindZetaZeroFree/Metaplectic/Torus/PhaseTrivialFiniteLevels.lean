@@ -12,88 +12,6 @@ namespace DedekindZetaZeroFree.KPGlobalTorusFiniteStagesCofinality
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private lemma diag_inverse (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
-    (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
-    (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit⁻¹.val = A⁻¹ 0 0 := by
-  have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F) => B 0 0) A.inv_mul
-  simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.coe_one, Matrix.one_apply, h10, mul_zero, add_zero, if_pos rfl] at h
-  have hu := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit_spec
-  change A⁻¹ 0 0 * A 0 0 = 1 at h
-  let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit
-  have hu' : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 0 0 := hu
-  calc
-    _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * 1 := (mul_one _).symm
-    _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * (A⁻¹ 0 0 * A 0 0) := by rw [h]
-    _ = A⁻¹ 0 0 := by rw [← hu']; simp [← mul_assoc, mul_comm]
-private lemma diag_inverse11 (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
-    (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
-    (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit⁻¹.val = A⁻¹ 1 1 := by
-  have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F) => B 1 1) A.inv_mul
-  simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.coe_one, Matrix.one_apply, h01, mul_zero, zero_add, if_pos rfl] at h
-  have hu := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit_spec
-  change A⁻¹ 1 1 * A 1 1 = 1 at h
-  let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit
-  have hu' : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 1 1 := hu
-  calc
-    _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * 1 := (mul_one _).symm
-    _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * (A⁻¹ 1 1 * A 1 1) := by rw [h]
-    _ = A⁻¹ 1 1 := by rw [← hu']; simp [← mul_assoc, mul_comm]
-private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
-    (hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A ∈
-      KPGlobalTorusFunctionData.ordinaryTorus F) : A 1 0 = 0 ∧ A 0 1 = 0 := by
-  obtain ⟨B, hB, h10, h01⟩ := hA
-  rw [QuotientGroup.mk'_eq_mk'] at hB
-  obtain ⟨z, hz, he⟩ := hB
-  obtain ⟨u, rfl⟩ := hz
-  rw [← he]
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-    Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
-private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRatio F) := by
-  let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-  let S := (KPGlobalTorusFunctionData.ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F))
-  have hq : IsOpenQuotientMap q := QuotientGroup.isOpenQuotientMap_mk
-  apply (hq.restrictPreimage S).isQuotientMap.continuous_iff.mpr
-  let u (A : q ⁻¹' S) := (KPGlobalTorusFunctionData.diagonal_entries_units F A.val
-    (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2).1.unit
-  let w (A : q ⁻¹' S) := (KPGlobalTorusFunctionData.diagonal_entries_units F A.val
-    (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2).2.unit
-  have hu : Continuous u := by
-    apply Units.continuous_iff.mpr
-    constructor
-    · change Continuous (fun A : q ⁻¹' S => (u A).val)
-      have he : (fun A : q ⁻¹' S => (u A).val) = fun A => A.val 0 0 := by
-        funext A; exact IsUnit.unit_spec _
-      rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A 0 0) from (continuous_apply 0).comp ((continuous_apply 0).comp (Units.continuous_val : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A.val)))).comp continuous_subtype_val
-    · have he : (fun A : q ⁻¹' S => (u A)⁻¹.val) = fun A => A.val⁻¹ 0 0 := by
-        funext A; exact diag_inverse F A.val (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
-      change Continuous (fun A : q ⁻¹' S => (u A)⁻¹.val)
-      rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A⁻¹ 0 0) from (continuous_apply 0).comp ((continuous_apply 0).comp (Units.continuous_coe_inv : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F).val)))).comp continuous_subtype_val
-  have hw : Continuous w := by
-    apply Units.continuous_iff.mpr
-    constructor
-    · change Continuous (fun A : q ⁻¹' S => (w A).val)
-      have he : (fun A : q ⁻¹' S => (w A).val) = fun A => A.val 1 1 := by
-        funext A; exact IsUnit.unit_spec _
-      rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A 1 1) from (continuous_apply 1).comp ((continuous_apply 1).comp (Units.continuous_val : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A.val)))).comp continuous_subtype_val
-    · have he : (fun A : q ⁻¹' S => (w A)⁻¹.val) = fun A => A.val⁻¹ 1 1 := by
-        funext A; exact diag_inverse11 F A.val (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
-      change Continuous (fun A : q ⁻¹' S => (w A)⁻¹.val)
-      rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A⁻¹ 1 1) from (continuous_apply 1).comp ((continuous_apply 1).comp (Units.continuous_coe_inv : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F).val)))).comp continuous_subtype_val
-  have he : (KPGlobalTorusFunctionData.torusRatio F) ∘ S.restrictPreimage q =
-      fun A => u A * (w A)⁻¹ := by
-    funext A
-    apply Units.ext
-    exact KPGlobalTorusFunctionData.ratio_formula F _ A.val rfl
-      (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
-  rw [he]
-  exact hu.mul hw.inv
-
 private theorem small_powers (z : ℂ) (h : ∀ n : ℕ, ‖z ^ n - 1‖ < 1 / 2) : z = 1 := by
   by_contra hz
   have hp : 0 < ‖z - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz)
@@ -117,13 +35,6 @@ private theorem small_powers (z : ℂ) (h : ∀ n : ℕ, ‖z ^ n - 1‖ < 1 / 2
   have hn' : 1 < (n : ℝ) * ‖z - 1‖ := (div_lt_iff₀ hp).mp hn
   have hm := mul_le_mul_of_nonneg_right (hl.trans hl') (le_of_lt hp)
   nlinarith
-
-private lemma pD_continuous :
-    Continuous (KPGlobalProductPolarizationCharacter.pD F ζ hζ) := by
-  apply QuotientGroup.continuous_mk.comp
-  apply (ratio_continuous F).comp
-  exact ((KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
-    continuous_subtype_val).subtype_mk (fun t => t.property)
 
 private lemma finite_basis (W : Set (KPGlobalTorusFunctionData.finitePart F ζ hζ))
     (hW : W ∈ 𝓝 1) :
@@ -211,7 +122,7 @@ theorem finite_level_with_trivial_phase
     rw [← Set.mem_preimage, heV]
     exact h1N
   let O := V ∩ (KPGlobalProductPolarizationCharacter.pD F ζ hζ) ⁻¹' (K : Set (KPGlobalCubicIdelePairing.D F))
-  have hoO : IsOpen O := hoV.inter (hopen.preimage (pD_continuous F ζ hζ))
+  have hoO : IsOpen O := hoV.inter (hopen.preimage (ProductPolarization.pD_continuous F ζ hζ))
   have h1O : (1 : KPGlobalTorusFunctionData.E F ζ hζ) ∈ O := ⟨h1V, by simp [K.one_mem]⟩
   obtain ⟨W, hoW, heW⟩ := isOpen_induced_iff.mp hoO
   have h1W : (1 : KPGlobalTorusFunctionData.G F ζ hζ) ∈ W := by

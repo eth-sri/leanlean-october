@@ -140,41 +140,19 @@ theorem kp_kubota_defect_symbol_algebra
   have s_ry : B y r = (B r y)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt y r
   have s_rz : B z r = (B r z)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt z r
   have s_rt : B t r = (B r t)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt t r
-  have s_rv : B v r = (B r v)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt v r
-  have s_rp : B p r = (B r p)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt p r
-  have s_rq : B q r = (B r q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q r
-  have s_xy : B y x = (B x y)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt y x
   have s_xz : B z x = (B x z)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt z x
-  have s_xt : B t x = (B x t)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt t x
-  have s_xv : B v x = (B x v)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt v x
-  have s_xp : B p x = (B x p)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt p x
-  have s_xq : B q x = (B x q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q x
   have s_yz : B z y = (B y z)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt z y
   have s_yt : B t y = (B y t)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt t y
-  have s_yv : B v y = (B y v)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt v y
-  have s_yp : B p y = (B y p)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt p y
-  have s_yq : B q y = (B y q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q y
   have s_zt : B t z = (B z t)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt t z
-  have s_zv : B v z = (B z v)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt v z
-  have s_zp : B p z = (B z p)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt p z
-  have s_zq : B q z = (B z q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q z
-  have s_tv : B v t = (B t v)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt v t
-  have s_tp : B p t = (B t p)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt p t
-  have s_tq : B q t = (B t q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q t
-  have s_vp : B p v = (B v p)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt p v
-  have s_vq : B q v = (B v q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q v
-  have s_pq : B q p = (B p q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q p
   simp only [
     div_eq_mul_inv, hL, hR,
-    KubotaDefectSymbolAlgebra.one_left K M B hL, KubotaDefectSymbolAlgebra.one_right K M B hR,
     KubotaDefectSymbolAlgebra.inv_left K M B hL, KubotaDefectSymbolAlgebra.inv_right K M B hR, hAlt,
-    s_rx, s_ry, s_rz, s_rt, s_rv, s_rp, s_rq, s_xy, s_xz, s_xt, s_xv, s_xp, s_xq, s_yz, s_yt, s_yv, s_yp, s_yq, s_zt, s_zv, s_zp, s_zq, s_tv, s_tp, s_tq, s_vp, s_vq, s_pq]
+    s_rx, s_ry, s_rz, s_rt, s_xz, s_yz, s_yt, s_zt]
   apply Additive.ofMul.injective
   have omul : ∀ p q : M, Additive.ofMul (p * q) = Additive.ofMul p + Additive.ofMul q :=
     fun p q => rfl
   have oinv : ∀ p : M, Additive.ofMul p⁻¹ = - Additive.ofMul p := fun p => rfl
-  have oone : Additive.ofMul (1 : M) = 0 := rfl
-  simp only [div_eq_mul_inv, omul, oinv, oone, one_mul, mul_one, inv_one]
+  simp only [omul, oinv, one_mul, mul_one]
   abel
 
 end DedekindZetaZeroFree

@@ -2,7 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Metaplectic.Torus.StandardDiagonalIdeleLifts
 public import DedekindZetaZeroFree.Adeles.Characters.PositiveArchimedeanHaarCharacter
-public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CuspDisintegration.RadialRescaling
+public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CuspDisintegration.AngularKernelsAndLevelCompatibility
 
 @[expose] public section
 
@@ -63,7 +63,7 @@ private theorem logarithmicSlots_continuous (w : InfinitePlace F) :
   intro v
   by_cases hv : v = w
   · simp only [logarithmicSlots, hv, ↓reduceIte]
-    exact (continuous_subtype_val.log (fun r => r.property.ne')).div_const 2
+    fun_prop
   · simp only [logarithmicSlots, hv, ↓reduceIte]
     exact continuous_const
  theorem ell_continuous (w : InfinitePlace F) : Continuous (ell F ζ hζ w) :=
@@ -319,8 +319,6 @@ open scoped Classical NumberField ENNReal
 open MeasureTheory
 
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.FixedLevelGeometry renaming actual_fixed_level_geometry → actual_fixed_level_geometry
-open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadiusShift.Globalization renaming exists_actual_compatibility_laws → exists_actual_compatibility_laws
-
 namespace DedekindZetaZeroFree.KPMsFixedHaar.ActualAllLevels
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -331,106 +329,24 @@ def atlas (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     obtain ⟨hF', _, hA⟩ := kp_cont_finite_cusp_atlas F ζ hζ U
     exact hA)
 
-theorem exists_geometry
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : SphericalTransport F ζ hζ)
-    (kernels : ∀ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-      (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U), FiberKernel A) :
-    ∃ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (B : RadialData F ζ hζ)
-      (D : ∀ U, GeometricDisintegration (atlas F ζ hζ hF U) R P),
-      (∀ U, (D U).radial = B) ∧
-      (∀ U, (D U).toFiberKernel = kernels hF U (atlas F ζ hζ hF U)) := by
-  letI := primitive12_totallyComplex F ζ hζ
-  let hF := NumberField.IsTotallyComplex.nrRealPlaces_eq_zero F
-  let B := ActualRadialSection.radialData F ζ hζ
-    (Classical.arbitrary (NumberField.InfinitePlace F))
-  have hD := fun U : Level F ζ hζ => actual_fixed_level_geometry
-    (atlas F ζ hζ hF U) R P B (kernels hF U (atlas F ζ hζ hF U))
-  choose D hrad hkernel using hD
-  exact ⟨hF, B, D, hrad, hkernel⟩
-
-theorem exists_geometry_and_actual_transport
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : SphericalTransport F ζ hζ)
-    (kernels : ∀ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-      (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U), FiberKernel A) :
-    ∃ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (B : RadialData F ζ hζ)
-      (D : ∀ U, GeometricDisintegration (atlas F ζ hζ hF U) R P),
-      (∀ U, (D U).radial = B) ∧
-      (∀ U, (D U).toFiberKernel = kernels hF U (atlas F ζ hζ hF U)) ∧
-      (∀ U, RadialIntegration (atlas F ζ hζ hF U) R P (D U)) ∧
-      ∀ (V U : Level F ζ hζ)
-        (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup),
-      let AV := atlas F ζ hζ hF V
-      let AU := atlas F ζ hζ hF U
-      ∃ (l : CuspIndex AV → CuspIndex AU) (rho : CuspIndex AV → Radius)
-        (c : CrossSection AV → CrossSection AU) (a : Omega AV → Omega AU),
-        Measurable c ∧ Measurable a ∧
-        (∀ x, (c x).1 = l x.1) ∧ (∀ ω, (a ω).1 = l ω.1) ∧
-        (∀ x, angularProjection AU (c x) = a (angularProjection AV x)) ∧
-        (Measure.map a ((D V).beta.withDensity
-          (fun ω => ENNReal.ofReal (rho ω.1).val)) = (D U).beta) ∧
-        (Measure.map a (probability AV ((D V).beta.withDensity
-          (fun ω => ENNReal.ofReal (rho ω.1).val))) = probability AU (D U).beta) ∧
-        (kappa AU R P (D U) = (((D V).beta.withDensity
-          (fun ω => ENNReal.ofReal (rho ω.1).val)) Set.univ).toReal) ∧
-        ((D V).radial.slot = (D U).radial.slot) ∧
-        (∀ f : CrossSection AU → ℝ≥0∞, Measurable f →
-          (∫⁻ ω, ENNReal.ofReal (rho ω.1).val *
-            ∫⁻ x, f (c x) ∂(D V).unipotent ω ∂(D V).beta) =
-            ∫⁻ ω, ∫⁻ x, f x ∂(D U).unipotent ω ∂(D U).beta) ∧
-        (∀ YV YU (hV : AdmissibleCutoff AV YV) (hU : AdmissibleCutoff AU YU)
-          (x : CrossSection AV) (r : Set.Ioi YV) (hr : YU < (rho x.1).val * r.val),
-          P.forget V U h ((D V).chart YV hV (x,r)) =
-            (D U).chart YU hU (c x,⟨(rho x.1).val * r.val,hr⟩)) := by
-  obtain ⟨hF, B, D, hrad, hk⟩ := exists_geometry F ζ hζ R P kernels
-  refine ⟨hF, B, D, hrad, hk,
-    fun U => fixed_haar_radial_integration (atlas F ζ hζ hF U) R P (D U), ?_⟩
-  intro V U h
-  have hslot : (D V).radial.slot = (D U).radial.slot := by rw [hrad V, hrad U]
-  obtain ⟨l,rho,c,a,hc,ha,hcl,hal,hcomm,hbeta,hprob,hcoeff,hkernel,hchart⟩ :=
-    exists_actual_compatibility_laws R P h (D V) (D U) hslot
-  exact ⟨l,rho,c,a,hc,ha,hcl,hal,hcomm,hbeta,hprob,hcoeff,hslot,hkernel,hchart⟩
-
 end DedekindZetaZeroFree.KPMsFixedHaar.ActualAllLevels
 
 namespace DedekindZetaZeroFree.KPMsFixedHaar
 
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+
 theorem coherent_cusp_geometry
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ)
     (kernels : ∀ (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
       (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U), FiberKernel A) :
-    ∃ D : AllLevels F ζ hζ R P,
-      ∀ U, (D.disintegration U).toFiberKernel = kernels D.totallyComplex U (D.atlas U) := by
-  obtain ⟨hF, B, D, hrad, hk, hRI, hcompat⟩ :=
-    ActualAllLevels.exists_geometry_and_actual_transport F ζ hζ R P kernels
-  let L : AllLevels F ζ hζ R P := {
-    totallyComplex := hF
-    atlas := ActualAllLevels.atlas F ζ hζ hF
-    disintegration := D
-    compatible := by
-      intro V U h
-      obtain ⟨l, rho, c, a, hc, ha, hcl, hal, hcomm, hbeta, hprob,
-        hcoeff, hslot, hkernel, hchart⟩ := hcompat V U h
-      exact ⟨{
-        cuspForget := l
-        radiusScale := rho
-        angularForget := a
-        measurable_angularForget := ha
-        angular_label := hal
-        crossForget := c
-        measurable_crossForget := hc
-        cross_label := hcl
-        projection_commutes := hcomm
-        induced_angular := hbeta
-        induced_probability := hprob
-        coefficient := hcoeff
-        common_slot := hslot
-        chart_commutes := hchart
-        induced_kernel := hkernel }⟩ }
-  exact ⟨L, hk⟩
+    Nonempty (AllLevels F ζ hζ R P) := by
+  letI := primitive12_totallyComplex F ζ hζ
+  let hF := NumberField.IsTotallyComplex.nrRealPlaces_eq_zero F
+  let atlas := ActualAllLevels.atlas F ζ hζ hF
+  let B := ActualRadialSection.radialData F ζ hζ (Classical.arbitrary (NumberField.InfinitePlace F))
+  choose D hrad using fun U => actual_fixed_level_geometry (atlas U) R P B (kernels hF U (atlas U))
+  exact ⟨⟨hF, atlas, D, fun U V => by rw [hrad U, hrad V]⟩⟩
 
 end DedekindZetaZeroFree.KPMsFixedHaar
 

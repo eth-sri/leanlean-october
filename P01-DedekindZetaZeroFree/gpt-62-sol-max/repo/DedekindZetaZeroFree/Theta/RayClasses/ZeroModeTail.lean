@@ -149,7 +149,7 @@ private theorem puncture_integral
    integrableOn_const (RayCoset.measure_rayUnitHalfOpenDomain_lt_top K D.m D.modulus_ne_bot).ne
  rw [integral_add hvint H.2, integral_const]
  congr 1
- simp only [Measure.real, Measure.restrict_apply_univ, RayCoset.rayUnitDomainVolume, smul_eq_mul, Complex.real_smul, S, v]
+ simp only [Measure.real, Measure.restrict_apply_univ, RayCoset.rayUnitDomainVolume, Complex.real_smul, S, v]
 private theorem averaged_tail
  (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
  (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
@@ -261,7 +261,7 @@ theorem rayTheta_gδDual_sub_g0δ
    simp [a,hl]
  have H := puncture_integral D δ L 0 a (fun l => (phase_norm _ _).le) hz true t ht
  have hex : ∃ l : L, (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) = 0 := ⟨0,by simp⟩
- simp only [zero_add, Bool.true_eq, ↓reduceIte] at H hex
+ simp only [zero_add, ↓reduceIte] at H hex
  simp only [RayTheta.gδDual, if_pos ht, RayTheta.g0δ]
  change _ - _ = _
  rw [show (∫ h in RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot, ∑' l : L, a l * RayParity.gδ K δ (RayParity.Q K (RayTheta.q K t (-h)) (l : euclidean.mixedSpace K)) ∂Theta.normalizedLogHaar K) = _ from H]
@@ -318,7 +318,7 @@ theorem rayTheta_zeroModeTail
       (fun l : L => (l : euclidean.mixedSpace K) ≠ 0) := funext (fun _ => by simp)
     change ‖_ * ∫ h in _, ∑' l : Subtype (fun l : L => (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) ≠ 0), _ ∂_‖ ≤ _ at H
     rw [eqp] at H
-    simp only [zero_add, Bool.true_eq, ↓reduceIte] at H
+    simp only [zero_add, ↓reduceIte] at H
     exact H.trans ((mul_le_mul_of_nonneg_left e2 hA2.le).trans
       (mul_le_mul_of_nonneg_right (by linarith) (Real.exp_nonneg _)))
 

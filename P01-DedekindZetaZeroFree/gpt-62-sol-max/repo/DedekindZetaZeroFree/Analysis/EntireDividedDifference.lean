@@ -20,9 +20,6 @@ theorem entireDividedDifference_apply (h : ℂ → ℂ) (a s : ℂ) :
     simp [entireDividedDifference]
   · simp [entireDividedDifference, dslope_of_ne h hs, slope_def_field, hs]
 
-@[simp] theorem entireDividedDifference_same (h : ℂ → ℂ) (a : ℂ) :
-    entireDividedDifference h a a = deriv h a := by
-  exact dslope_same h a
 
 theorem entireDividedDifference_of_ne (h : ℂ → ℂ) (a s : ℂ) (hs : s ≠ a) :
     entireDividedDifference h a s = (h s - h a) / (s - a) := by

@@ -266,8 +266,11 @@ theorem integrand_unit_shift_ae (D : RayCoset.Data K)
   intro v hv
   positivity
 
-theorem integrand_eq_scaledMellin_ae (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D) (s : ℂ) :
+section
+
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D) (s : ℂ)
+
+theorem integrand_eq_scaledMellin_ae :
     integrand D δ α s =ᵐ[μrad.prod (Theta.normalizedLogHaar K)]
       (fun th => ScaledMellin.integrand D δ α s (q th)) := by
   have ht : ∀ᵐ th ∂μrad.prod (Theta.normalizedLogHaar K), 0 < th.1 :=
@@ -278,8 +281,7 @@ theorem integrand_eq_scaledMellin_ae (D : RayCoset.Data K)
   simp only [ScaledMellin.integrand, if_pos hq, J_q th hth]
   exact mul_comm _ _
 
-theorem hasSum_integral_of_integrable_full (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D) (s : ℂ)
+theorem hasSum_integral_of_integrable_full
     (hf : Integrable (integrand D δ α s) (μrad.prod (Theta.normalizedLogHaar K))) :
     HasSum (fun u : RayCoset.U K D.m => ∫ th, integrand D δ (u • α) s th ∂μB D)
       ((RayCoset.rayUnitTorsionCard K D.m : ℂ) *
@@ -290,8 +292,7 @@ theorem hasSum_integral_of_integrable_full (D : RayCoset.Data K)
   intro u
   exact integral_congr_ae (integrand_unit_shift_ae D δ α s u)
 
-theorem hasSum_integral_norm_of_integrable_full (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D) (s : ℂ)
+theorem hasSum_integral_norm_of_integrable_full
     (hf : Integrable (integrand D δ α s) (μrad.prod (Theta.normalizedLogHaar K))) :
     HasSum (fun u : RayCoset.U K D.m => ∫ th, ‖integrand D δ (u • α) s th‖ ∂μB D)
       ((RayCoset.rayUnitTorsionCard K D.m : ℝ) *
@@ -302,6 +303,8 @@ theorem hasSum_integral_norm_of_integrable_full (D : RayCoset.Data K)
   intro u
   apply integral_congr_ae
   exact (integrand_unit_shift_ae D δ α s u).fun_comp norm
+
+end
 
 theorem measurable_q : Measurable (q (K := K)) := by
   apply measurable_pi_lambda
@@ -314,17 +317,19 @@ theorem measurePreserving_q : MeasurePreserving (q (K := K))
     (μrad.prod (Theta.normalizedLogHaar K)) (RayParity.μ K) :=
   ⟨measurable_q, RadialPullback.map_q_eq⟩
 
-theorem integrable_full (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
-    (s : ℂ) (hs : 0 < s.re) :
+section
+
+variable (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D) (s : ℂ)
+  (hs : 0 < s.re)
+include hs
+
+theorem integrable_full :
     Integrable (integrand D δ α s) (μrad.prod (Theta.normalizedLogHaar K)) := by
   exact (measurePreserving_q.integrable_comp_of_integrable
     (ScaledMellin.integrable D δ α s hs)).congr
       (integrand_eq_scaledMellin_ae D δ α s).symm
 
-theorem integral_full (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
-    (s : ℂ) (hs : 0 < s.re) :
+theorem integral_full :
     (∫ th, integrand D δ α s th ∂(μrad.prod (Theta.normalizedLogHaar K))) =
       RayParity.κδ K δ s * (RayCoset.signδ D δ (RayCoset.orbitMk D α) : ℂ) *
         (RayCoset.normWeight D (RayCoset.orbitMk D α) : ℂ) ^ (-s) := by
@@ -334,9 +339,7 @@ theorem integral_full (D : RayCoset.Data K)
   rw [← integral_map measurable_q.aemeasurable hm, RadialPullback.map_q_eq]
   exact ScaledMellin.integral D δ α s hs
 
-theorem integral_norm_full (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
-    (s : ℂ) (hs : 0 < s.re) :
+theorem integral_norm_full :
     (∫ th, ‖integrand D δ α s th‖ ∂(μrad.prod (Theta.normalizedLogHaar K))) =
       ‖RayParity.κδ K δ (s.re : ℂ)‖ *
         RayCoset.normWeight D (RayCoset.orbitMk D α) ^ (-s.re) := by
@@ -349,16 +352,12 @@ theorem integral_norm_full (D : RayCoset.Data K)
   rw [← integral_map measurable_q.aemeasurable hm, RadialPullback.map_q_eq]
   exact ScaledMellin.integral_norm D δ α s hs
 
-theorem integrable (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
-    (s : ℂ) (hs : 0 < s.re) (u : RayCoset.U K D.m) :
+theorem integrable (u : RayCoset.U K D.m) :
     Integrable (integrand D δ (u • α) s) (μB D) := by
   exact (ProductUnfolding.integrable_unit_slab D (integrand D δ α s)
     (integrable_full D δ α s hs) u).congr (integrand_unit_shift_ae D δ α s u).symm
 
-theorem hasSum_integral (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
-    (s : ℂ) (hs : 0 < s.re) :
+theorem hasSum_integral :
     HasSum (fun u : RayCoset.U K D.m =>
       ∫ th, integrand D δ (u • α) s th ∂(μB D))
       ((RayCoset.rayUnitTorsionCard K D.m : ℂ) * RayParity.κδ K δ s *
@@ -368,9 +367,7 @@ theorem hasSum_integral (D : RayCoset.Data K)
   rw [integral_full D δ α s hs] at h
   simpa only [mul_assoc] using h
 
-theorem hasSum_integral_norm (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
-    (s : ℂ) (hs : 0 < s.re) :
+theorem hasSum_integral_norm :
     HasSum (fun u : RayCoset.U K D.m =>
       ∫ th, ‖integrand D δ (u • α) s th‖ ∂(μB D))
       ((RayCoset.rayUnitTorsionCard K D.m : ℝ) *
@@ -380,12 +377,12 @@ theorem hasSum_integral_norm (D : RayCoset.Data K)
   rw [integral_norm_full D δ α s hs] at h
   simpa only [mul_assoc] using h
 
-theorem summable_integral_norm (D : RayCoset.Data K)
-    (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
-    (s : ℂ) (hs : 0 < s.re) :
+theorem summable_integral_norm :
     Summable (fun u : RayCoset.U K D.m =>
       ∫ th, ‖integrand D δ (u • α) s th‖ ∂(μB D)) := by
   exact (hasSum_integral_norm D δ α s hs).summable
+
+end
 
 end DedekindZetaZeroFree.AbelianQuotient.RayParity.OrbitSlabMellin
 

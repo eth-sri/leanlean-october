@@ -134,33 +134,6 @@ set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
 
-private theorem valuation_norm_le (x y : LocalField F q) :
-    valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
-  rw [← Valuation.Compatible.vle_iff_le]
-  change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
-
-private theorem ball_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
-    x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
-  let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
-  have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
-  have hn : ‖a‖ = ‖(π : LocalField F q)‖⁻¹ ^ r := by
-    simp [a, norm_inv, norm_pow, inv_pow]
-  have hm : ∀ y : LocalField F q, y ∈ (valuation (LocalField F q)).integer ↔ ‖y‖ ≤ 1 := by
-    intro y
-    rw [Valuation.mem_integer_iff, ← map_one (valuation (LocalField F q)), valuation_norm_le]
-    simp
-  change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
-  rw [← hn]
-  constructor
-  · rintro ⟨u, rfl⟩
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
-  · intro hx
-    refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
-    rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
-    exact hx
-
 private theorem stableIntegral_of_higher_shell_cancellation
     (μ : Measure (LocalField F q)) (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
@@ -172,30 +145,8 @@ private theorem stableIntegral_of_higher_shell_cancellation
     HasStableIntegral F q μ π g
       ((∫ x in lowShell F q, g x ∂μ) +
        (∫ x in conductorOneShell F q π, g x ∂μ)) := by
-  have hv : valuation (LocalField F q) (π : LocalField F q) < 1 := by
-    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
-    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) <
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
-    rw [hπ, map_one]
-    norm_num
-  have hn : 1 ≤ ‖(π : LocalField F q)‖⁻¹ := by
-    have hh := not_le.mpr hv
-    rw [← map_one (valuation (LocalField F q)), valuation_norm_le] at hh
-    have hp : 0 < ‖(π : LocalField F q)‖ := norm_pos_iff.mpr π.ne_zero
-    exact le_of_lt (one_lt_inv₀ hp |>.mpr (by simpa using not_le.mp hh))
-  have hmeas : ∀ r, MeasurableSet (expandingBall F q π r) := by
-    intro r
-    have hset : expandingBall F q π r =
-        (fun x : LocalField F q => ‖x‖) ⁻¹' Set.Iic (‖(π : LocalField F q)‖⁻¹ ^ r) := by
-      ext x
-      exact ball_norm F q π r x
-    rw [hset]
-    exact measurableSet_Iic.preimage (by fun_prop)
-  have hmono : Monotone (expandingBall F q π) := by
-    intro r s hrs x hx
-    rw [ball_norm] at hx ⊢
-    exact hx.trans (pow_le_pow_right₀ hn hrs)
+  have hmeas := KPTameJacquetBruhatTests.Raw.ball_measurable F q π
+  have hmono := KPTameJacquetBruhatTests.Raw.expandingBall_mono F q π hπ
   have hzero : expandingBall F q π 0 = lowShell F q := by
     ext x
     simp only [expandingBall, lowShell, pow_zero, Units.val_one, inv_one, one_mul,

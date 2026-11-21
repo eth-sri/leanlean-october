@@ -1,7 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Theta.Profiles.MixedThetaDefinitions
-public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.RayLatticePeriodization
+public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitHalfOpenDomain
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitTorsionFibers
 

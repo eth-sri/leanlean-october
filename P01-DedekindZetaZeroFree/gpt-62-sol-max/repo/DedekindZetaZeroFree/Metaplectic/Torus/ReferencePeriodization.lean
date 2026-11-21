@@ -18,7 +18,6 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
 open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming localRatioValue_eq → localRatioValue_eq
 open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming baseEval → baseEval
 open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming eval_diagonal → eval_diagonal
-open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport renaming diagonal_formula → diagonal_formula
 
 theorem local_class_of_raw (raw : RestrictedCover F ζ hζ)
     (e : KPGlobalTorusFunctionData.E F ζ hζ)
@@ -29,7 +28,7 @@ theorem local_class_of_raw (raw : RestrictedCover F ζ hζ)
       (pD F ζ hζ e) v := by
   have hproj : pglProjection F ζ hζ e.val =
       KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.p F ζ hζ e) :=
-    (diagonal_formula F ⟨_, e.property⟩).symm
+    (KPGlobalCenterRationalCharacterExtension.principalCubicLagrangianPreimage_diagonalPGL_torusRatio F ⟨_, e.property⟩).symm
   have hlocal : KPPGLLocalCover.projection F ζ hζ v b.val =
       KPPGLLocalCover.baseQuotient F v (ProductPolarization.diagonalHom F v
         (KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ e))) := by
@@ -69,7 +68,7 @@ theorem finiteReference_support (T : Finset (HeightOneSpectrum (𝓞 F)))
       scalarQuotient F ζ hζ (amalgamation F ζ hζ raw)) :=
     (QuotientGroup.mk'_surjective _).comp (QuotientGroup.mk'_surjective _)
   obtain ⟨raw, he⟩ := hsur e.val
-  have hd := FullTorusFormula.raw_diagonal F ζ hζ e raw he
+  have hd := KPGlobalTorusTensorFibers.raw_diagonal F ζ hζ e raw he
   let t (q : HeightOneSpectrum (𝓞 F)) : KPLocalExceptionalConstruction.actualTorus F ζ hζ q :=
     ⟨KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q)), by
       exact ⟨(raw (Sum.inr q)).g, rfl, (hd (Sum.inr q)).1, (hd (Sum.inr q)).2⟩⟩

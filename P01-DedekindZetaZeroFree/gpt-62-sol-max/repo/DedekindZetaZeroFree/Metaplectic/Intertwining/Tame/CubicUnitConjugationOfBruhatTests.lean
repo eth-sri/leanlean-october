@@ -31,12 +31,10 @@ theorem eventually_split_subset_open (U : Set (ActualCover F ζ hζ q))
       (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q) ⟨hd, (hcharts d le_rfl).2.2⟩
   have hUc : @IsOpen _ (KPPGLLocalCover.finiteTopology F ζ hζ q d) U := by rwa [← htop]
   letI : TopologicalSpace (ActualCover F ζ hζ q) := KPPGLLocalCover.finiteTopology F ζ hζ q d
-  have hq : Continuous (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)) := by
-    exact continuous_quotient_mk'
+  have hq : Continuous (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)) := continuous_quotient_mk'
   have hc := (KPLocalChartTopology.translatedChart_isOpenEmbedding F ζ hζ q d
     ⟨hd, (hcharts d le_rfl).2.2⟩ 1).continuous
-  have ho : IsOpen ((KPLocalChartTopology.translatedChart F ζ hζ q d 1) ⁻¹'
-      ((KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)) ⁻¹' U)) :=
+  have ho :=
     (hUc.preimage hq).preimage hc
   obtain ⟨V, hV, he⟩ := isOpen_induced_iff.mp ho
   have hV1 : (1 : KPLocalCube.LocalGL2 F q) ∈ V := by

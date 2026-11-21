@@ -45,8 +45,13 @@ theorem right_fixed {C J : Subgroup G} {chi : C →* ℂ}
     (f : V_J C J chi) (j : J) (g : G) :
     f.val (g * j.val) = f.val g := f.property.2 j g
 
-def rightTranslate (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+section
+
+variable (C K J : Subgroup G) (chi : C →* ℂ)
+  (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+include hnormalize
+
+def rightTranslate
     (k : K) : V_J C J chi →ₗ[ℂ] V_J C J chi where
   toFun f := ⟨fun g => f.val (g * k.val), by
     constructor
@@ -63,13 +68,11 @@ def rightTranslate (C K J : Subgroup G) (chi : C →* ℂ)
   map_add' f h := by rfl
   map_smul' a f := by rfl
 
-@[simp] theorem rightTranslate_apply (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+@[simp] theorem rightTranslate_apply
     (k : K) (f : V_J C J chi) (g : G) :
     (rightTranslate C K J chi hnormalize k f).val g = f.val (g * k.val) := rfl
 
-def rho_J (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J) :
+def rho_J :
     Representation ℂ K (V_J C J chi) where
   toFun := rightTranslate C K J chi hnormalize
   map_one' := by
@@ -79,13 +82,11 @@ def rho_J (C K J : Subgroup G) (chi : C →* ℂ)
     ext f g
     simp [rightTranslate, mul_assoc]
 
-@[simp] theorem rho_J_apply (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+@[simp] theorem rho_J_apply
     (k : K) (f : V_J C J chi) (g : G) :
     (rho_J C K J chi hnormalize k f).val g = f.val (g * k.val) := rfl
 
-def sampleMap (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+def sampleMap
     {W : Type*} [AddCommGroup W] [Module ℂ W]
     (tau : Representation ℂ K W) (n : ℕ) (r : Fin n → G) :
     tau.IntertwiningMap (rho_J C K J chi hnormalize) →ₗ[ℂ]
@@ -106,11 +107,12 @@ def sampleMap (C K J : Subgroup G) (chi : C →* ℂ)
     ext i w
     rfl
 
-@[simp] theorem sampleMap_apply (C K J : Subgroup G) (chi : C →* ℂ)
-    (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
+@[simp] theorem sampleMap_apply
     {W : Type*} [AddCommGroup W] [Module ℂ W]
     (tau : Representation ℂ K W) (n : ℕ) (r : Fin n → G)
     (T : tau.IntertwiningMap (rho_J C K J chi hnormalize)) (i : Fin n) (w : W) :
     sampleMap C K J chi hnormalize tau n r T i w = (T w).val (r i) := rfl
+
+end
 
 end DedekindZetaZeroFree.CovariantSampling

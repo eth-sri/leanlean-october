@@ -1,6 +1,8 @@
 module
 
-public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SphericalHarmonics.PolynomialFunkHecke
+public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Sphere.PolynomialFunkHecke
+public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SphericalHarmonics.LegendreBeta
+public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.SmoothPolynomialDensity
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SphericalHarmonics.RotationLaplacian
 
 @[expose] public section
@@ -22,11 +24,13 @@ theorem fractionalIntegral_harmonic (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
   constructor
   · intro α hα hα1
     funext x
-    have h := (HarmonicIdentity.polynomial_funkHecke ℓ p hp
-      (fun u => α * u ^ (α - 1))
-      (HarmonicIdentity.powerWeight_integrable α hα) x).2
+    have h := KPCplxHarmonicIntertwinerSpectrum.HarmonicIntegral.raw_polynomial_funkHecke ℓ p hp
+      (fun u => α * u ^ (α - 1)) (HarmonicIdentity.powerWeight_integrable α hα) x
     change fractionalIntegral α (polynomialSphere p) x = _
-    simpa only [fractionalIntegral, fractionalKernel,
+    simpa only [KPCplxHarmonicIntertwinerSpectrum.HarmonicIntegral.rawLatitudeKernel,
+      KPCplxHarmonicIntertwinerSpectrum.HarmonicIntegral.rawPolynomialSphere,
+      polynomialSphere, sphereArea, RawSphereProjection.rawSphereArea,
+      fractionalIntegral, fractionalKernel,
       HarmonicIdentity.shiftedLegendre_beta ℓ α hα hα1,
       fractionalEigenvalue, Real.rpow_eq_pow] using h
   · have hp' : p ∈ MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ ∧
@@ -67,19 +71,6 @@ private lemma smooth_diff (F : Sphere → ℂ) (hF : IsSphereSmooth F) (x : Sphe
   exact (hF.differentiableOn (by simp)).differentiableAt
     (isOpen_ne.mem_nhds (sphere_ne_zero x))
 
-private lemma harmonic_rotationVector_smooth (i : Fin 3) :
-    ContDiff ℝ (⊤ : ℕ∞) (rotationVector i) := by
-  unfold rotationVector
-  change ContDiff ℝ (⊤ : ℕ∞) (WithLp.toLp 2 ∘
-    (fun x : Ambient => fun j : Fin 3 => if j = i + 1 then -x (i + 2) else if j = i + 2 then x (i + 1) else 0))
-  apply PiLp.contDiff_toLp.comp
-  apply contDiff_pi.mpr
-  intro j
-  split_ifs
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 2)).contDiff.neg
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 1)).contDiff
-  · exact contDiff_const
-
 private lemma normalize_smooth :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} := by
   exact ((contDiff_id.contDiffOn.norm ℝ (by intro x hx; exact hx)).inv
@@ -88,7 +79,7 @@ private lemma normalize_smooth :
 private lemma rotation_smooth (i : Fin 3) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
     IsSphereSmooth (rotationDeriv i F) := by
   have hd := hF.fderiv_of_isOpen isOpen_ne (m := (⊤ : ℕ∞)) (by simp)
-  have hg := hd.clm_apply (harmonic_rotationVector_smooth i).contDiffOn
+  have hg := hd.clm_apply (rotationVector_smooth i).contDiffOn
   have hn : Set.MapsTo (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} {x | x ≠ 0} := by
     intro x hx
     exact smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx

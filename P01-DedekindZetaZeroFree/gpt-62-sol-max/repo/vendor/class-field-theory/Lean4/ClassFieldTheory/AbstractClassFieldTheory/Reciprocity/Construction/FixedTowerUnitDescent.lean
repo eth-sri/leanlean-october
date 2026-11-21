@@ -123,8 +123,7 @@ theorem unitRepresentation_generator_action_eq
       (QuotientGroup.mk gK :
         T.ambientBase.field.toSubgroup ⧸
           D.extensionInertiaWithin T.ambientBase.field T.ambient.field
-            T.ambient.below) = T.baseFrobenius.1 := by
-    exact congrArg Subtype.val g.mapsToFrobenius
+            T.ambient.below) = T.baseFrobenius.1 := congrArg Subtype.val g.mapsToFrobenius
   apply Subtype.ext
   apply Subtype.ext
   change A.ρ (Quotient.out T.baseFrobenius.1).1 y.1.1 =
@@ -136,12 +135,10 @@ theorem unitRepresentation_generator_action_eq
         A.ρ (Quotient.out T.baseFrobenius.1).1 y.1.1 =
             (D.frobeniusFixedFieldAction A T.ambientBase T.ambient.field
               T.ambient.below T.fieldFrobenius T.baseFrobenius.1
-                T.commute y.1).1 := by
-                exact (D.frobeniusFixedFieldAction_coe A T.ambientBase
+                T.commute y.1).1 := (D.frobeniusFixedFieldAction_coe A T.ambientBase
                   T.ambient.field T.ambient.below T.fieldFrobenius
                   T.baseFrobenius.1 T.commute y.1).symm
-        _ = A.ρ gK.1 y.1.1 := by
-          exact D.frobeniusFixedFieldAction_coe_of_mk
+        _ = A.ρ gK.1 y.1.1 := D.frobeniusFixedFieldAction_coe_of_mk
             A T.ambientBase T.ambient.field T.ambient.below
               T.fieldFrobenius T.baseFrobenius.1 T.commute gK hgKσ y.1
     _ = A.ρ g.element.1 y.1.1 := rfl

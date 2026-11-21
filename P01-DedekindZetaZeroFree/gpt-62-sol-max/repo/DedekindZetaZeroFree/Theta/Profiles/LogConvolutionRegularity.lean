@@ -95,7 +95,7 @@ theorem logConvolution_c2 {I : Type*} [Fintype I]
     funext u
     apply integral_congr_ae
     filter_upwards [hpos] with T hT
-    simp [logProfile, logConvolution, A, F, Real.exp_sub, Real.exp_log hT]
+    simp [logProfile, F, Real.exp_sub, Real.exp_log hT]
   have heq : ∀ i j, j ≤ 2 → iteratedDeriv j (logProfile (logConvolution K (H i))) = A i j := by
     intro i j hj
     induction j with

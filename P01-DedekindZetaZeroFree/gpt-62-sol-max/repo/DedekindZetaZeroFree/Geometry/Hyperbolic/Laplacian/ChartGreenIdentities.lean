@@ -79,8 +79,7 @@ private theorem coordinateDerivative_exp_mul (d : ℕ) (i : Fin d) (k : Fin 3)
   simpa [coordinateDerivative, coordinateVector, hk, Ne.symm hk, Pi.mul_def] using hh
 
 private theorem smooth_star (d : ℕ) (f : Space d → ℂ) (hf : ContDiff ℝ ∞ f) :
- ContDiff ℝ ∞ (fun p => star (f p)) := by
- exact (starL' ℝ : ℂ ≃L[ℝ] ℂ).contDiff.comp hf
+ ContDiff ℝ ∞ (fun p => star (f p)) := (starL' ℝ : ℂ ≃L[ℝ] ℂ).contDiff.comp hf
 
 private theorem deriv_mul (d : ℕ) (i : Fin d) (k : Fin 3) (f g : Space d → ℂ)
     (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) (p : Space d) :

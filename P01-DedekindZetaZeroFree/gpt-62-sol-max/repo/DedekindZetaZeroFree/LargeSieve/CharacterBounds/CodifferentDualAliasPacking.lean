@@ -21,17 +21,17 @@ theorem codifferent_finite_colors (F : Type) [Field F] [NumberField F] :
         col u = col v → ∃ m : 𝓞 F, u - v = (m : F) := by
   let I : FractionalIdeal (𝓞 F)⁰ F := PoissonArch.codifferentIdeal F
   obtain ⟨d, hd, hden⟩ := I.isFractional
-  have hd0 : d ≠ 0 := mem_nonZeroDivisors_iff_ne_zero.mp hd
+  have hd0 := mem_nonZeroDivisors_iff_ne_zero.mp hd
   have hnum : ∀ u : F, u ∈ I → ∃ a : 𝓞 F, (a : F) = (d : F) * u := by
     intro u hu
     obtain ⟨a, ha⟩ := hden u hu
-    exact ⟨a, ha⟩
+    tauto
   let num : F → 𝓞 F := fun u => if hu : u ∈ I then (hnum u hu).choose else 0
   have hnum_eq (u : F) (hu : u ∈ I) : (num u : F) = (d : F) * u := by
     dsimp [num]
     rw [dif_pos hu]
-    exact (hnum u hu).choose_spec
-  let J : Ideal (𝓞 F) := Ideal.span {d}
+    grind
+  let J := Ideal.span {d}
   have hJ : J ≠ ⊥ := fun h => hd0 (Ideal.span_singleton_eq_bot.mp h)
   letI : Finite ((𝓞 F) ⧸ J) := Ring.HasFiniteQuotients.finiteQuotient hJ
   letI : Fintype ((𝓞 F) ⧸ J) := Fintype.ofFinite _
@@ -39,7 +39,7 @@ theorem codifferent_finite_colors (F : Type) [Field F] [NumberField F] :
   refine ⟨Fintype.card ((𝓞 F) ⧸ J), Fintype.card_pos,
     fun u => e (Ideal.Quotient.mk J (num u)), ?_⟩
   intro u v hu hv hcol
-  have hq : Ideal.Quotient.mk J (num u) = Ideal.Quotient.mk J (num v) :=
+  have hq :=
     e.injective hcol
   have hsub : num u - num v ∈ J := (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp hq
   obtain ⟨m, hm⟩ := Ideal.mem_span_singleton'.mp hsub
@@ -49,7 +49,7 @@ theorem codifferent_finite_colors (F : Type) [Field F] [NumberField F] :
   apply mul_left_cancel₀ hdF
   rw [mul_sub]
   rw [← hnum_eq u hu, ← hnum_eq v hv]
-  simpa only [map_mul, map_sub, mul_comm] using hcast.symm
+  grind
 
 end
 end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramPacking
@@ -76,12 +76,12 @@ private theorem ball_count
     intro i hi j hj hij
     apply Metric.ball_disjoint_ball
     rw [dist_eq_norm]
-    simpa [two_mul] using hs i hi j hj hij
+    grind
   have hsub : (⋃ i ∈ T, Metric.ball (x i) r) ⊆ Metric.ball a (ρ + r) := by
     refine Set.iUnion₂_subset fun i hi => ?_
     apply Metric.ball_subset_ball'
     rw [dist_eq_norm]
-    linarith [hb i hi]
+    grind
   have hI : (T.card : ℝ≥0∞) * ENNReal.ofReal (r ^ Module.finrank ℝ E) * μ (Metric.ball 0 1) ≤
       ENNReal.ofReal ((ρ + r) ^ Module.finrank ℝ E) * μ (Metric.ball 0 1) := by
     calc
@@ -175,13 +175,17 @@ open NumberField IsDedekindDomain
 open scoped Classical
 open ArithmeticGramSteps
 
- def aliasTrace (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+ def aliasTrace
     (S : Finset (HeightOneSpectrum (𝓞 F))) : F →+ PoissonArch.Space F :=
   (PoissonArch.traceAdapter F).toAddMonoidHom.comp
     ((PoissonArch.infiniteAdeleToSpace F).toAddMonoidHom.comp
       ((RingHom.fst _ _).comp (sLocalDiagonal F S)).toAddMonoidHom)
 
-private theorem aliasTrace_coordinates (F : Type) [Field F] [NumberField F]
+private theorem aliasTrace_coordinates
     (S : Finset (HeightOneSpectrum (𝓞 F))) (t : F) :
     mixedEmbedding.euclidean.toMixed F
       ((PoissonArch.traceAdapter F).symm (aliasTrace F S t)) = mixedEmbedding F t := by
@@ -193,7 +197,7 @@ private theorem aliasTrace_coordinates (F : Type) [Field F] [NumberField F]
   rw [PoissonArch.infiniteAdeleToSpace_coordinates]
   exact (InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp (K := F) (x := t)).symm
 
-private theorem place_le_mixed_norm (F : Type) [Field F] [NumberField F]
+private theorem place_le_mixed_norm
     (x : mixedEmbedding.mixedSpace F) (v : InfinitePlace F) :
     mixedEmbedding.normAtPlace v x ≤ ‖x‖ := by
   by_cases hv : v.IsReal
@@ -205,7 +209,6 @@ private theorem place_le_mixed_norm (F : Type) [Field F] [NumberField F]
       (norm_snd_le x)
 
 theorem same_color_alias_power_separation
-    (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (k : (v : S) → ℤ)
@@ -345,6 +348,8 @@ theorem same_color_alias_power_separation
     _ = _ := by ring
 
 end
+
+end
 end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramPacking
 
 end
@@ -356,7 +361,11 @@ noncomputable section
 open NumberField IsDedekindDomain
 open scoped Classical nonZeroDivisors
 
-private theorem coordinates (F : Type) [Field F] [NumberField F]
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private theorem coordinates
     (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) :
     ∃ g : PoissonArch.dualLattice (PoissonS.ballArchLattice F S k) → F,
       (∀ ν, g ν ∈ (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) * (PoissonS.ballFractionalIdeal F S k)⁻¹) ∧
@@ -381,7 +390,7 @@ private theorem coordinates (F : Type) [Field F] [NumberField F]
     exact (PoissonArch.mem_idealLattice F _ _).mp hh
   choose g hg heq using hex
   exact ⟨g, hg, fun ν => by rw [heq]; simp⟩
-private theorem dual_le (F : Type) [Field F] [NumberField F]
+private theorem dual_le
     (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) (hk : ∀ v, k v ≤ 0) :
     (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) * (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤
       (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) := by
@@ -392,7 +401,7 @@ private theorem dual_le (F : Type) [Field F] [NumberField F]
   have hi : (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤ 1 := by
     exact inv_le_one_of_one_le₀ h
   simpa using mul_le_mul_of_nonneg_left hi (show 0 ≤ (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) from bot_le)
-private theorem finite_bound (F : Type) [Field F] [NumberField F]
+private theorem finite_bound
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (hne : ∀ v, ∃ y, e v y ≠ 1) (k : S → ℤ) :
@@ -433,7 +442,7 @@ private theorem finite_bound (F : Type) [Field F] [NumberField F]
     have hh := ht _ hx v
     exact hy v (by simpa [z, hz] using hh)
 
-private theorem arch_product (F : Type) [Field F] [NumberField F]
+private theorem arch_product
     [IsTotallyComplex F] (x : InfiniteAdeleRing F) :
     (∏ v : InfinitePlace F, (archTraceCharacter v (x v) : ℂ)) =
       Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
@@ -449,7 +458,7 @@ private theorem arch_product (F : Type) [Field F] [NumberField F]
   intro v _
   ring
 
-private theorem canonical_diagonal (F : Type) [Field F] [NumberField F]
+private theorem canonical_diagonal
     (S : Finset (HeightOneSpectrum (𝓞 F))) (m : sIntegerRing F S) :
     (∏ v : InfinitePlace F, archTraceCharacter v (algebraMap F v.Completion (m : F))) *
       (∏ v : S, localFiniteCharacter F v.val
@@ -473,7 +482,6 @@ private theorem canonical_diagonal (F : Type) [Field F] [NumberField F]
   exact traceCharacter_diagonal_product_formula F (m : F)
 
 theorem trace_coordinates_and_finite_annihilator
-    (F : Type) [Field F] [NumberField F]
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12)
     (S : Finset (HeightOneSpectrum (𝓞 F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
@@ -628,6 +636,8 @@ theorem trace_coordinates_and_finite_annihilator
     · simp
   rw [heq v]
   exact hp.symm.trans ht
+
+end
 
 end
 end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramPacking

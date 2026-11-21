@@ -30,11 +30,16 @@ universe u v
 
 variable {G : Type u} {D : Type v} [Group G] [Group D]
 
- def kernelToSaturation (d : G →* D) (L K : Subgroup G) :
+section
+
+variable (d : G →* D) (L K : Subgroup G)
+include d
+
+ def kernelToSaturation :
     ↑(K ⊓ d.ker) →* ↑(K ⊓ (L ⊔ d.ker)) :=
   Subgroup.inclusion (inf_le_inf le_rfl le_sup_right)
 
- theorem kernelToSaturation_rel_iff (d : G →* D) (L K : Subgroup G)
+ theorem kernelToSaturation_rel_iff
     (x y : ↑(K ⊓ d.ker)) :
     QuotientGroup.leftRel ((L ⊓ d.ker).subgroupOf (K ⊓ d.ker)) x y ↔
       QuotientGroup.leftRel (L.subgroupOf (K ⊓ (L ⊔ d.ker)))
@@ -45,13 +50,13 @@ variable {G : Type u} {D : Type v} [Group G] [Group D]
   · intro h
     exact ⟨h, d.ker.mul_mem (d.ker.inv_mem x.property.2) y.property.2⟩
 
- noncomputable def kernelCosetToSaturationCoset (d : G →* D) (L K : Subgroup G) :
+ noncomputable def kernelCosetToSaturationCoset :
     (↑(K ⊓ d.ker) ⧸ (L ⊓ d.ker).subgroupOf (K ⊓ d.ker)) →
       (↑(K ⊓ (L ⊔ d.ker)) ⧸ L.subgroupOf (K ⊓ (L ⊔ d.ker))) :=
   Quotient.map' (kernelToSaturation d L K) fun x y h ↦
     (kernelToSaturation_rel_iff d L K x y).mp h
 
- theorem kernelCosetToSaturationCoset_injective (d : G →* D) (L K : Subgroup G) :
+ theorem kernelCosetToSaturationCoset_injective :
     Function.Injective (kernelCosetToSaturationCoset d L K) := by
   intro q₁ q₂
   refine Quotient.inductionOn₂ q₁ q₂ ?_
@@ -61,8 +66,14 @@ variable {G : Type u} {D : Type v} [Group G] [Group D]
   apply Quotient.eq''.mp
   simpa only [kernelCosetToSaturationCoset, Quotient.map'_mk''] using h
 
- theorem kernelCosetToSaturationCoset_surjective (d : G →* D) {L K : Subgroup G}
-    (hLK : L ≤ K) : Function.Surjective (kernelCosetToSaturationCoset d L K) := by
+end
+
+section
+
+variable (d : G →* D) {L K : Subgroup G} (hLK : L ≤ K)
+include d hLK
+
+ theorem kernelCosetToSaturationCoset_surjective : Function.Surjective (kernelCosetToSaturationCoset d L K) := by
   intro q
   refine Quotient.inductionOn q ?_
   intro z
@@ -87,7 +98,7 @@ variable {G : Type u} {D : Type v} [Group G] [Group D]
 
 This is the set-level second-isomorphism argument needed for relative indices; no normality
 assumption on `L` is required. -/
-noncomputable def kernelCosetEquivSaturation (d : G →* D) {L K : Subgroup G} (hLK : L ≤ K) :
+noncomputable def kernelCosetEquivSaturation :
     (↑(K ⊓ d.ker) ⧸ (L ⊓ d.ker).subgroupOf (K ⊓ d.ker)) ≃
       (↑(K ⊓ (L ⊔ d.ker)) ⧸ L.subgroupOf (K ⊓ (L ⊔ d.ker))) :=
   Equiv.ofBijective (kernelCosetToSaturationCoset d L K)
@@ -96,12 +107,13 @@ noncomputable def kernelCosetEquivSaturation (d : G →* D) {L K : Subgroup G} (
 
 /-- The index of `L` in the `ker d`-saturated part of `K` is the relative
 index of the corresponding kernel intersections. -/
-theorem relIndex_saturation_eq_inf_ker_relIndex (d : G →* D)
-    {L K : Subgroup G} (hLK : L ≤ K) :
+theorem relIndex_saturation_eq_inf_ker_relIndex :
     L.relIndex (K ⊓ (L ⊔ d.ker)) =
       (L ⊓ d.ker).relIndex (K ⊓ d.ker) := by
   unfold Subgroup.relIndex
   exact Nat.card_congr (kernelCosetEquivSaturation d hLK).symm
+
+end
 
 /-- The mapped relative index is the index of the `ker d`-saturated part of
 `K`. -/
@@ -190,8 +202,12 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
   rintro ⟨_, x, hx, rfl⟩
   exact ⟨⟨x, hx⟩, rfl⟩
 
- theorem subgroupMapRestriction_rel_iff (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) (x y : K) :
+section
+
+variable (d : G →* D) (H : Subgroup D) (K : Subgroup G)
+include H
+
+ theorem subgroupMapRestriction_rel_iff (x y : K) :
     QuotientGroup.leftRel ((H.comap d).subgroupOf K) x y ↔
       QuotientGroup.leftRel (H.subgroupOf (K.map d))
         (subgroupMapRestriction d K x) (subgroupMapRestriction d K y) := by
@@ -200,15 +216,13 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
   change d (x.1⁻¹ * y.1) ∈ H ↔ (d x.1)⁻¹ * d y.1 ∈ H
   rw [map_mul, map_inv]
 
- noncomputable def relativeCosetComapMap (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) :
+ noncomputable def relativeCosetComapMap :
     (K ⧸ (H.comap d).subgroupOf K) →
       (K.map d ⧸ H.subgroupOf (K.map d)) :=
   Quotient.map' (subgroupMapRestriction d K) fun x y h ↦
     (subgroupMapRestriction_rel_iff d H K x y).mp h
 
- theorem relativeCosetComapMap_injective (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) :
+ theorem relativeCosetComapMap_injective :
     Function.Injective (relativeCosetComapMap d H K) := by
   intro q₁ q₂
   refine Quotient.inductionOn₂ q₁ q₂ ?_
@@ -218,8 +232,7 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
   apply Quotient.eq''.mp
   simpa only [relativeCosetComapMap, Quotient.map'_mk''] using h
 
- theorem relativeCosetComapMap_surjective (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) :
+ theorem relativeCosetComapMap_surjective :
     Function.Surjective (relativeCosetComapMap d H K) := by
   intro q
   refine Quotient.inductionOn' q ?_
@@ -228,13 +241,14 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
   exact ⟨Quotient.mk'' x, by
     simp only [relativeCosetComapMap, Quotient.map'_mk'']⟩
 
- noncomputable def relativeCosetComapEquiv (d : G →* D)
-    (H : Subgroup D) (K : Subgroup G) :
+ noncomputable def relativeCosetComapEquiv :
     (K ⧸ (H.comap d).subgroupOf K) ≃
       (K.map d ⧸ H.subgroupOf (K.map d)) :=
   Equiv.ofBijective (relativeCosetComapMap d H K)
     ⟨relativeCosetComapMap_injective d H K,
       relativeCosetComapMap_surjective d H K⟩
+
+end
 
  noncomputable def imageCosetEquivSaturation (d : G →* D)
     (L K : Subgroup G) :

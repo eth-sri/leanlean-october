@@ -88,7 +88,6 @@ private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Modu
     rfl
   have hcomm : A (b ^ 6) * A a = A a * A (b ^ 6) := by
     rw [← hA]
-    change A _ = A a * A (b ^ 6)
     rw [mul_comm (b ^ 6) a, KPPGLLocalCover.A_mul]
     have hh := ((KPHilbert.B3_laws F R.A.zeta12 R.A.primitive_zeta12 v).2.2.2.2.1 a (b ^ 2)).2
     rw [← pow_mul] at hh

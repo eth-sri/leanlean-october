@@ -22,7 +22,6 @@ open KPMsActualAngularSource KPMsActualAngularDescentSource KPMsActualAngularTra
 open KPMsActualCuspSource
 open FullSupportGeometry
 open _root_.DedekindZetaZeroFree.KPMsActualAngularCrossLevelFrameSource renaming frame_change_full_angular → frame_change_full_angular
-open _root_.DedekindZetaZeroFree.KPMsActualAngularCrossLevelFrameSource renaming all_level_radial_slot_eq → all_level_radial_slot_eq
 open _root_.DedekindZetaZeroFree.KPMsActualAngularCrossLevelFrameSource renaming framed_iwasawaNorm_eq_of_delta_one → framed_iwasawaNorm_eq_of_delta_one
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
@@ -77,7 +76,7 @@ private theorem nativeFrameTransport
     exact (smul_inv_smul (((nativeAtlas F ζ hζ R P S V).cuspAtlas k.1).representative k.2)
       (KPMsFixedHaarDisintegration.archBasepoint F a)).symm
   refine ⟨k,h,hq,?_,?_,a,c.1,c.2,ε,u,hc,he⟩
-  · exact (frame_change_full_angular (nativeDatum F ζ hζ) _ _ (all_level_radial_slot_eq (nativeFamily F ζ hζ R P) (S.atlasLevel (cofinalLevel F ζ hζ U)) (S.atlasLevel (cofinalLevel F ζ hζ V)))
+  · exact (frame_change_full_angular (nativeDatum F ζ hζ) _ _ ((nativeFamily F ζ hζ R P).radial_slot_eq _ _)
       σ τ g h y n hframe).symm
   · have hr := framed_iwasawaNorm_eq_of_delta_one (D := (nativeDatum F ζ hζ)) 1
       (σ⁻¹*g) (τ⁻¹*h) _ n (by simpa only [inv_one,one_mul] using hframe)

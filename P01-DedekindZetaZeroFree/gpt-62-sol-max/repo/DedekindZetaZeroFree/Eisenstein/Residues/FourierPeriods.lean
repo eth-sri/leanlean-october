@@ -64,8 +64,7 @@ theorem actualCore_fourier_left_root (x : V) (a : KPAdeles F) (g : MomentSources
       (KPGlobalTorusFunctionData.N F ζ hζ a*g) x =
       (adelicTraceQuotientCharacter F (QuotientAddGroup.mk a) : ℂ) *
         actualCoreFourier R P C μ hμ N g x := by
-  apply ExteriorWhittakerValues.StoredWhittaker.fourier_left_root R dq _ ?_ a g
-    (actualCoreResidue_period_integrable R P C μ hμ N x g)
+  apply MomentSources.fourier_left_root R dq _ ?_ a g
   intro t g
   rw [← KPLiteralExceptionalResidue.rationalLift_unipotent]
   exact (actualCoreResidue_automorphic R P C μ hμ N x).2.1 _ _

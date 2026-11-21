@@ -162,6 +162,91 @@ def eta (π : (LocalField F q)ˣ) (j : Fin 3) : ActualCover F ζ hζ q :=
 def expandingBall (π : (LocalField F q)ˣ) (r : ℕ) : Set (LocalField F q) :=
   {x | ∃ o : 𝒪[LocalField F q], x = ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹ * o}
 
+theorem valuation_norm_le (x y : LocalField F q) :
+    valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
+  rw [← Valuation.Compatible.vle_iff_le]
+  change Valued.v x ≤ Valued.v y ↔ _
+  exact (Valued.toNormedField.norm_le_iff).symm
+
+theorem expandingBall_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
+    x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
+  let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
+  have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
+  have hn : ‖a‖ = ‖(π : LocalField F q)‖⁻¹ ^ r := by
+    simp [a, norm_inv, norm_pow, inv_pow]
+  have hm : ∀ y : LocalField F q, y ∈ (valuation (LocalField F q)).integer ↔ ‖y‖ ≤ 1 := by
+    intro y
+    rw [Valuation.mem_integer_iff, ← map_one (valuation (LocalField F q)), valuation_norm_le]
+    simp
+  change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
+  rw [← hn]
+  constructor
+  · rintro ⟨u, rfl⟩
+    rw [norm_mul]
+    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
+  · intro hx
+    refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
+    rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
+    exact hx
+
+theorem uniformizer_valuation_lt_one (π : (LocalField F q)ˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
+      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+    valuation (LocalField F q) (π : LocalField F q) < 1 := by
+  apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
+  change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
+    (valuation (LocalField F q) (π : LocalField F q)) <
+    IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
+  rw [hπ, map_one]
+  norm_num
+
+theorem uniformizer_inv_norm_gt_one (π : (LocalField F q)ˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
+      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+    1 < ‖(π : LocalField F q)‖⁻¹ := by
+  apply (one_lt_inv₀ (norm_pos_iff.mpr π.ne_zero)).mpr
+  have h := not_le.mpr (uniformizer_valuation_lt_one F q π hπ)
+  rw [← map_one (valuation (LocalField F q)), valuation_norm_le] at h
+  simpa using not_le.mp h
+
+theorem expandingBall_eq_closedBall (π : (LocalField F q)ˣ) (r : ℕ) :
+    expandingBall F q π r = Metric.closedBall 0 (‖(π : LocalField F q)‖⁻¹ ^ r) := by
+  ext x
+  simpa only [Metric.mem_closedBall, dist_zero_right] using expandingBall_norm F q π r x
+
+theorem ball_measurable (π : (LocalField F q)ˣ) (r : ℕ) : MeasurableSet (expandingBall F q π r) := by
+  rw [expandingBall_eq_closedBall]
+  exact measurableSet_closedBall
+
+theorem expandingBall_mono (π : (LocalField F q)ˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
+      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
+    Monotone (expandingBall F q π) := by
+  intro r s hrs x hx
+  rw [expandingBall_norm] at hx ⊢
+  exact hx.trans (pow_le_pow_right₀ (uniformizer_inv_norm_gt_one F q π hπ).le hrs)
+
+theorem eventually_mem_ball (π : (LocalField F q)ˣ)
+    (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
+      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
+    (t : LocalField F q) :
+    ∃ r₀ : ℕ, ∀ r ≥ r₀, t ∈ expandingBall F q π r := by
+  have ht := tendsto_pow_atTop_atTop_of_one_lt (uniformizer_inv_norm_gt_one F q π hπ)
+  obtain ⟨r₀, hr₀⟩ := Filter.eventually_atTop.mp (ht.eventually (Filter.eventually_ge_atTop ‖t‖))
+  exact ⟨r₀, fun r hr => (expandingBall_norm F q π r t).mpr (hr₀ r hr)⟩
+
+theorem ball_translate (π : (LocalField F q)ˣ) (r : ℕ)
+    (t : LocalField F q) (ht : t ∈ expandingBall F q π r) :
+    (fun x => x + t) ⁻¹' expandingBall F q π r = expandingBall F q π r := by
+  ext x
+  simp only [Set.mem_preimage, expandingBall_norm] at *
+  constructor
+  · intro hx
+    have h := IsUltrametricDist.norm_add_le_max (x + t) (-t)
+    simpa using h.trans (max_le hx (by simpa using ht))
+  · intro hx
+    exact (IsUltrametricDist.norm_add_le_max x t).trans (max_le hx ht)
+
 def jacquetIntegrand (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (ψ : Multiplicative (LocalField F q) →* ℂˣ) (a : ActualCover F ζ hζ q)
     (f : scalarSections F ζ hζ q S P hP ε) (x : LocalField F q) : ℂ :=

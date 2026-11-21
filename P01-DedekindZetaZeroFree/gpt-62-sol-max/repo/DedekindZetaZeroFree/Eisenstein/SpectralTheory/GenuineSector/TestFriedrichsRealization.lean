@@ -1,6 +1,14 @@
 module
 
-public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSector.CompactWeakFormDomain
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.WeakSections.ZeroExtensionFirstJetBound
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.WeakSections.SupportAndMultiplication
+public import DedekindZetaZeroFree.Analysis.EllipticEquations.Regularity.IntegerOrderEstimateTransfer
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.WeakSections.GradientSupportLocality
+public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.InteriorBallLocality
+public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.CompactInteriorZeroExtension
+public import DedekindZetaZeroFree.Analysis.Sobolev.Mollification.L2Convergence
+public import DedekindZetaZeroFree.Analysis.Sobolev.WeightedCovariant.CompactMetricBounds
+public import DedekindZetaZeroFree.Analysis.Sobolev.WeightedCovariant.CoordinateData
 
 @[expose] public section
 
@@ -22,30 +30,9 @@ variable (hR : R.adelicHaar = μG)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 
 structure Properties : Prop where
-
-  smooth_tests : KPContActualSectorSmoothTestModules.Properties
-    (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H)
-
   embeddings : KPContActualSectorTestEmbeddings.Properties
     (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H)
-  scalar_dense : DenseRange
-    (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
-  cotangent_dense : DenseRange
-    (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
-
-  differential : KPContActualSectorTestDifferentialDescent.Properties
-    (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H)
-
-  global_green : KPContActualSectorGlobalGreen.Properties
-    (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H)
-
   friedrichs : KPContActualSectorFriedrichsSynthesis.Properties
-    F ζ hζ U R P H μG hμG hR realization
-
-  weak_localization : KPContActualSectorFormWeakLocalization.Properties
-    F ζ hζ U R P H μG hμG hR realization
-
-  compact_weak_converse : KPContActualSectorCompactWeakFormConverse.Properties
     F ζ hζ U R P H μG hμG hR realization
 
 end DedekindZetaZeroFree.KPContActualSectorTestFriedrichs
@@ -61,24 +48,8 @@ theorem kp_cont_actual_sector_test_friedrichs
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H) :
     KPContActualSectorTestFriedrichs.Properties F ζ hζ U R P H μG hμG hR realization :=
-  { smooth_tests :=
-      kp_cont_actual_sector_smooth_test_modules F ζ hζ μG hμG U R hR P H realization
-    embeddings :=
-      kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization
-    scalar_dense :=
-      KPContActualSectorFriedrichsSynthesis.scalarDense F ζ hζ U R P H μG hμG hR realization
-    cotangent_dense :=
-      KPContActualSectorFriedrichsSynthesis.cotangentDense F ζ hζ U R P H μG hμG hR realization
-    differential :=
-      kp_cont_actual_sector_test_differential_descent F ζ hζ μG hμG U R hR P H realization
-    global_green :=
-      kp_cont_actual_sector_global_green F ζ hζ μG hμG U R hR P H realization
-    friedrichs :=
-      kp_cont_actual_sector_friedrichs_synthesis F ζ hζ μG hμG U R hR P H realization
-    weak_localization :=
-      kp_cont_actual_sector_form_weak_localization F ζ hζ μG hμG U R hR P H realization
-    compact_weak_converse :=
-      kp_cont_actual_sector_compact_weak_form_converse F ζ hζ μG hμG U R hR P H realization }
+  ⟨kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization,
+    kp_cont_actual_sector_friedrichs_synthesis F ζ hζ μG hμG U R hR P H realization⟩
 
 end DedekindZetaZeroFree
 

@@ -1,5 +1,6 @@
 module
 
+public import DedekindZetaZeroFree.Analysis.HarmonicPolynomials.SphereRestriction
 public import DedekindZetaZeroFree.HarmonicAnalysis.Sphere.ZonalRotationCommutation
 public import DedekindZetaZeroFree.MeasureTheory.Sphere.UniformProjection
 public import DedekindZetaZeroFree.HarmonicAnalysis.SphericalHarmonics.FischerSpanning
@@ -9,66 +10,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.SphericalHarmonics.FischerSp
 namespace DedekindZetaZeroFree.ComplexFractionalInverse
 open KPCplxIntertwinerEigenvalues
 open scoped BigOperators
-
-noncomputable def polynomialSphere (p : MvPolynomial (Fin 3) ℂ) (x : Sphere) : ℂ :=
-  MvPolynomial.eval (fun i => ((x : Ambient) i : ℂ)) p
-
-theorem homogeneous_eval_scale {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
-    (hp : p.IsHomogeneous ℓ) (t : ℂ) (x : Fin 3 → ℂ) :
-    MvPolynomial.eval (fun i => t * x i) p = t ^ ℓ * MvPolynomial.eval x p := by
-  classical
-  rw [MvPolynomial.eval_eq', MvPolynomial.eval_eq', Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro d hd
-  have hdeg : ∑ i : Fin 3, d i = ℓ := by
-    have hh := hp (MvPolynomial.mem_support_iff.mp hd)
-    change Finsupp.weight (fun _ : Fin 3 => (1 : ℕ)) d = ℓ at hh
-    rw [← Finsupp.degree_eq_weight_one, Finsupp.degree_eq_sum] at hh
-    exact hh
-  simp_rw [mul_pow, Finset.prod_mul_distrib]
-  rw [Finset.prod_pow_eq_pow_sum, hdeg]
-  ring
-theorem homogeneous_sphere_eq_zero {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
-    (hp : p.IsHomogeneous ℓ) (h : ∀ x : Sphere, polynomialSphere p x = 0) : p = 0 := by
-  apply MvPolynomial.funext_set (fun _ => Set.range Complex.ofReal)
-    (fun _ => by simpa using Set.infinite_univ.image Complex.ofReal_injective.injOn)
-  intro z hz
-  have hreal : ∀ i : Fin 3, ∃ r : ℝ, (r : ℂ) = z i := fun i => hz i (Set.mem_univ _)
-  choose r hr using hreal
-  let x : Ambient := WithLp.toLp 2 r
-  have eval_real (y : Ambient) (hy : y ≠ 0) :
-      MvPolynomial.eval (fun i => (y i : ℂ)) p = 0 := by
-    let u : Sphere := ⟨‖y‖⁻¹ • y, by
-      rw [Metric.mem_sphere, dist_zero_right, norm_smul, Real.norm_eq_abs,
-        abs_inv, abs_norm, inv_mul_cancel₀ (norm_ne_zero_iff.mpr hy)]⟩
-    have hu := h u
-    change MvPolynomial.eval (fun i => ((u : Ambient) i : ℂ)) p = 0 at hu
-    have hs := homogeneous_eval_scale hp (‖y‖ : ℂ) (fun i => ((u : Ambient) i : ℂ))
-    have he : (fun i => (‖y‖ : ℂ) * ((u : Ambient) i : ℂ)) = (fun i => (y i : ℂ)) := by
-      funext i
-      change (‖y‖ : ℂ) * ((‖y‖⁻¹ * y i : ℝ) : ℂ) = _
-      rw [← Complex.ofReal_mul]
-      congr 1
-      rw [← mul_assoc, mul_inv_cancel₀ (norm_ne_zero_iff.mpr hy), one_mul]
-    rw [he] at hs
-    simpa only [polynomialSphere] using hs.trans (by rw [hu]; simp)
-  have hx : x ≠ 0 ∨ x = 0 := ne_or_eq x 0
-  rcases hx with hx | hx
-  · have hh := eval_real x hx
-    simpa only [x, hr, PiLp.toLp_apply, map_zero] using hh
-  · have he : MvPolynomial.eval (fun i => (x i : ℂ)) p = 0 := by
-      by_cases hℓ : ℓ = 0
-      · subst ℓ
-        have htd : p.totalDegree = 0 := (MvPolynomial.totalDegree_zero_iff_isHomogeneous (σ := Fin 3)).mpr hp
-        have hc : p = MvPolynomial.C (p.coeff 0) := MvPolynomial.totalDegree_eq_zero_iff_eq_C.mp htd
-        rw [hc]
-        have hs := h (⟨WithLp.toLp 2 ![1,0,0], by simp [Metric.mem_sphere, dist_zero_right, EuclideanSpace.norm_eq, Fin.sum_univ_succ]⟩ : Sphere)
-        rw [hc] at hs
-        simpa only [polynomialSphere, MvPolynomial.eval_C] using hs
-      · have hs := homogeneous_eval_scale hp 0 (fun _ => 0)
-        simp [hℓ] at hs
-        simpa [hx] using hs
-    simpa only [x, hr, PiLp.toLp_apply, map_zero] using he
 
 theorem finite_fischer_spanning (p : MvPolynomial (Fin 3) ℂ) :
     ∃ (I : Finset ℕ) (h : ℕ → MvPolynomial (Fin 3) ℂ),
@@ -142,7 +83,7 @@ noncomputable def polynomialZonalApproximant (N : ℕ) (F : Sphere → ℂ) : Mv
         ∏ k : Fin N, zonalFactor (w k)
 private theorem zonalFactor_eval (i : Option (Fin 3)) (x : Sphere) :
     MvPolynomial.eval (fun i => ((x : Ambient) i : ℂ)) (zonalFactor i) = zonalCoord i x := by
-  cases i <;> simp [zonalFactor, zonalCoord, polynomialSphere]
+  cases i <;> simp [zonalFactor, zonalCoord]
 
 theorem polynomialZonalApproximant_eq_integral (N : ℕ) (F : Sphere → ℂ) (hF : Continuous F) (x : Sphere) :
     polynomialSphere (polynomialZonalApproximant N F) x =
@@ -288,7 +229,7 @@ theorem finite_polynomial_smooth_density (F : Sphere → ℂ) (hF : IsSphereSmoo
   rw [show (fun y => F y - polynomialSphere (polynomialZonalApproximant N F) y) =
       (fun y => F y + -(polynomialSphere (polynomialZonalApproximant N F) y)) by funext; ring]
   rw [rotationWord_add w hF (IsSphereSmooth.neg hpoly), rotationWord_neg]
-  simp only [Pi.add_apply, Pi.neg_apply]
+  simp only []
   rw [show polynomialSphere (polynomialZonalApproximant N F) =
       rawZonalIntegral N F from funext (fun z => polynomialZonalApproximant_eq_integral N F hc z)]
   rw [rawZonalIntegral_rotationWord N F hF w]

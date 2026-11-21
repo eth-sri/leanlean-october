@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.Eisenstein.Induction.FiniteEvaluation.SphericalPGLCoreRealization
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.CompactPicture.ArchimedeanRootCovariance
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.CompactPicture.ArchimedeanSliceCharts
@@ -91,17 +92,7 @@ theorem archMatrixInsertion_diagonal (z : InfinitePlace F → ℂˣ) :
     intro i j
     fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
 
-private theorem upper_projective (a d : ℂˣ) (b : ℂ) :
-    Matrix.ProjGenLinGroup.mk (KPCplxPrincipalSeriesCharts.upperTriangular a d b) =
-      Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (a / d) 1 * upperUnipotent (b / a)) := by
-  apply (Matrix.ProjGenLinGroup.mk_eq_mk_iff).mpr
-  refine ⟨Units.mk0 ((d : ℂ)⁻¹) (inv_ne_zero d.ne_zero), ?_⟩
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [KPCplxPrincipalSeriesCharts.upperTriangular, upperUnipotent,
-      Matrix.mul_apply, Fin.sum_univ_two, div_eq_mul_inv]
-  field_simp
+private alias upper_projective := DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.upper_projective
 
 theorem productHCScalar_arch_upperTriangular_zero
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)

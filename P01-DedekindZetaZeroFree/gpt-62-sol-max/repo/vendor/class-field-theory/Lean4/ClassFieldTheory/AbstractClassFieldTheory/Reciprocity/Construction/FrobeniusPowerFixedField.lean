@@ -70,11 +70,7 @@ theorem extensionInertia_commutes_of_mem_extensionSubgroup (D : DegreeData G)
         ((extensionSubgroup K.field L hLK).inv_mem hk) t⁻¹
     simpa [mul_assoc] using
       (extensionSubgroup K.field L hLK).mul_mem hconj hk
-  · change (k * t)⁻¹ * (t * k) ∈ D.fieldInertiaWithin K.field
-    have hconj : k⁻¹ * t * k ∈ D.fieldInertiaWithin K.field := by
-      simpa using (inferInstance : (D.fieldInertiaWithin K.field).Normal).conj_mem
-        t htI k⁻¹
-    simp [mul_assoc]
+  simp_all
 
 /-- Let `P/K` be a finite Galois subextension of `\widetilde L/K`
 containing `L`.  The `|G(P/K)|`-th power of every element of
@@ -99,16 +95,8 @@ theorem quotientPower_card_commutes_degreeZero (D : DegreeData G)
   let Q := K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK
   let hIP : D.extensionInertiaWithin K.field L hLK ≤
       extensionSubgroup K.field P.field P.below := by
-    intro x hx
-    have hxE : x ∈ extensionSubgroup K.field (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) := by
-      rw [D.extensionSubgroup_maximalUnramifiedField K.field L hLK]
-      exact hx
-    apply (mem_extensionSubgroup_iff K.field P.field P.below x).2
-    exact P.above
-      ((mem_extensionSubgroup_iff K.field (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) x).1 hxE)
-  let rP : Q →* R :=
+    solve_by_elim [P.above]
+  let rP :=
     QuotientGroup.map (D.extensionInertiaWithin K.field L hLK)
       (extensionSubgroup K.field P.field P.below)
       (MonoidHom.id K.field.toSubgroup) hIP
@@ -126,10 +114,10 @@ theorem quotientPower_card_commutes_degreeZero (D : DegreeData G)
       _ = 1 := hrPpow
   have hkL : k ∈ extensionSubgroup K.field L hLK := by
     apply (mem_extensionSubgroup_iff K.field L hLK k).2
-    exact hPL ((mem_extensionSubgroup_iff K.field P.field P.below k).1 hkP)
+    apply hPL <;> assumption
   have hcomm := D.extensionInertia_commutes_of_mem_extensionSubgroup
     K L hLK k hkL τ hτ
-  simpa [Q, n, hkq] using hcomm
+  grind only
 
 theorem extensionNormalizedDegree_pow_of_degreeOne (D : DegreeData G)
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -191,19 +179,11 @@ theorem frobeniusPowerFixedField_le_finiteField (D : DegreeData G)
   dsimp only
   let R := K.field.toSubgroup ⧸ extensionSubgroup K.field P.field P.below
   let n := P.quotientCard
-  have hn : 0 < n := P.quotientCard_pos
+  have hn := P.quotientCard_pos
   let Q := K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK
   let hIP : D.extensionInertiaWithin K.field L hLK ≤
       extensionSubgroup K.field P.field P.below := by
-    intro x hx
-    have hxE : x ∈ extensionSubgroup K.field (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) := by
-      rw [D.extensionSubgroup_maximalUnramifiedField K.field L hLK]
-      exact hx
-    apply (mem_extensionSubgroup_iff K.field P.field P.below x).2
-    exact P.above
-      ((mem_extensionSubgroup_iff K.field (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) x).1 hxE)
+    solve_by_elim [P.above]
   let rP : Q →ₜ* R :=
     { toMonoidHom :=
         QuotientGroup.map

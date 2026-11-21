@@ -19,16 +19,7 @@ private theorem single_cont (v : KPHilbert.Place F) : Continuous (RestrictedProd
   let S : Set (KPHilbert.Place F) := {v}ᶜ
   let t : LocalD F v → RestrictedProduct (LocalD F) (fun w => (KPGlobalCubicIdelePairing.U F w : Set (LocalD F w))) (Filter.principal S) :=
     fun l => ⟨Pi.mulSingle v l, by intro w hw; simp only [S, Set.mem_compl_iff, Set.mem_singleton_iff] at hw; simp [Pi.mulSingle_eq_of_ne hw, Subgroup.one_mem]⟩
-  have ht : Continuous t := by
-    apply RestrictedProduct.continuous_rng_of_principal.mpr
-    apply continuous_pi
-    intro w
-    change Continuous (fun l : LocalD F v => Pi.mulSingle v l w)
-    by_cases hw : w = v
-    · subst w
-      simp only [Pi.mulSingle_eq_same]
-      exact continuous_id
-    · simpa only [Pi.mulSingle_eq_of_ne hw] using (continuous_const : Continuous (fun _ : LocalD F v => (1 : LocalD F w)))
+  have ht : Continuous t := RestrictedProduct.continuous_rng_of_principal.mpr (continuous_mulSingle v)
   have hS : Filter.cofinite ≤ Filter.principal S := by simp [S]
   exact (RestrictedProduct.continuous_inclusion hS).comp ht
 theorem local_finite (v : KPHilbert.Place F) : Finite (LocalD F v) := by
@@ -159,7 +150,7 @@ theorem adjustedLocalValue_outside (P : CompatibleLocalData F ζ hζ)
     adjustedLocalValue F ζ hζ P T (Sum.inr q) b = (P.localData (Sum.inr q)).lambda b := by
   simp [adjustedLocalValue, T.outside_unchanged q hq]
 
-private theorem rawCoordinate_val (P : CompatibleLocalData F ζ hζ)
+theorem rawCoordinate_val (P : CompatibleLocalData F ζ hζ)
     (x : rawB F ζ hζ P) (v : KPHilbert.Place F) :
     (rawCoordinate F ζ hζ P x v).val.val =
       KPPGLLocalCover.coverQuotient F ζ hζ v (x.val v) :=
@@ -466,52 +457,10 @@ end FiniteAdjustmentSupport
 
 namespace FiniteAdjustmentSupport
 
-theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
-    KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.torusRatio F t) = t.val := by
-  let A := Classical.choose t.property
-  have hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A = t.val ∧
-      A 1 0 = 0 ∧ A 0 1 = 0 := Classical.choose_spec t.property
-  let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).1.unit
-  let w := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).2.unit
-  have hu : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 0 0 := IsUnit.unit_spec _
-  have hw : (w : KPAdelicCoverRestrictedProduct.Adeles F) = A 1 1 := IsUnit.unit_spec _
-  have heq : A = KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹) *
-      Matrix.GeneralLinearGroup.scalar (Fin 2) w := by
-    apply Units.ext
-    ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
-    exact hw.symm
-  change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val
-  rw [← hA.1, heq]
-  have hs : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) w) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr ⟨w, rfl⟩
-  rw [(QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).map_mul, hs, mul_one]
- def torusPullbackBridge : E F ζ hζ →* KPGlobalCubicIdelePairing.E F ζ hζ where
-  toFun e := ⟨(e.val, KPGlobalTorusFunctionData.p F ζ hζ e),
-    (diagonal_formula F ⟨_, e.property⟩).symm⟩
-  map_one' := by apply Subtype.ext; exact Prod.ext rfl (map_one _)
-  map_mul' x y := by apply Subtype.ext; exact Prod.ext rfl (map_mul _ _ _)
-
-private theorem torusPullbackBridge_injective :
-    Function.Injective (torusPullbackBridge F ζ hζ) := by
-  intro x y h
-  exact Subtype.ext (congrArg (fun t : KPGlobalCubicIdelePairing.E F ζ hζ => t.val.1) h)
-
 private theorem commute_iff_beta (x y : E F ζ hζ) :
     Commute x y ↔ KPGlobalCubicIdelePairing.beta3 F ζ hζ
-      (pD F ζ hζ x) (pD F ζ hζ y) = 1 := by
-  have h := KPGlobalCubicIdelePairing.commutator_annihilators F ζ hζ
-    (torusPullbackBridge F ζ hζ x) (torusPullbackBridge F ζ hζ y)
-  constructor
-  · intro hc
-    exact h.mp (hc.map (torusPullbackBridge F ζ hζ))
-  · intro hb
-    apply torusPullbackBridge_injective F ζ hζ
-    simpa only [map_mul] using (h.mpr hb).eq
+      (pD F ζ hζ x) (pD F ζ hζ y) = 1 :=
+  KPGlobalCenterRationalCharacterExtension.commute_iff_beta F ζ hζ x y
 
 def baseEval (v : KPHilbert.Place F) :
     KPAdelicCoverRestrictedProduct.AdelicPGL2 F →* KPPGLLocalCover.LocalPGL2 F v :=
@@ -556,7 +505,7 @@ theorem rawProjection_coord (P : CompatibleLocalData F ζ hζ)
   let e : E F ζ hζ := (rawProjection F ζ hζ P x).val
   have hproj : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ e.val =
       KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.p F ζ hζ e) :=
-    (diagonal_formula F ⟨_, e.property⟩).symm
+    (KPGlobalCenterRationalCharacterExtension.principalCubicLagrangianPreimage_diagonalPGL_torusRatio F ⟨_, e.property⟩).symm
   have hlocal : KPPGLLocalCover.projection F ζ hζ v
       (rawCoordinate F ζ hζ P x v).val.val =
       KPPGLLocalCover.baseQuotient F v (diagonalHom F v

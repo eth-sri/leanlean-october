@@ -8,10 +8,13 @@ open scoped nonZeroDivisors
 
 namespace DedekindZetaZeroFree
 
-theorem kp_cusp_ideal_bezout_row
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
+section
+
+variable (R : Type*) [CommRing R] [IsDedekindDomain R] (K : Type*) [Field K] [Algebra R K]
+  [IsFractionRing R K] (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0)
+include hI hJ
+
+theorem kp_cusp_ideal_bezout_row :
     ∃ a b u v : K, a ∈ I⁻¹ ∧ b ∈ J⁻¹ ∧ u ∈ I ∧ v ∈ J ∧ a * u + b * v = 1 := by
   obtain ⟨a₀, ha₀, haI⟩ := FractionalIdeal.exists_ne_zero_mem_isInteger
     (show I⁻¹ ≠ 0 by simpa using hI)
@@ -40,9 +43,6 @@ theorem kp_cusp_ideal_bezout_row
   exact ⟨a, b, u, v, ha, hb, hu, hv, hxy⟩
 
 theorem kp_cusp_ideal_steinitz_equiv_of_bezout
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0)
     (a b u v : K) (ha : a ∈ I⁻¹) (hb : b ∈ J⁻¹)
     (hu : u ∈ I) (hv : v ∈ J) (hrow : a * u + b * v = 1) :
     ∃ e : (R × (I * J)) ≃ₗ[R] (I × J),
@@ -132,14 +132,13 @@ theorem kp_cusp_ideal_steinitz_equiv_of_bezout
     · rw [← hfirst (e.symm (x, y)), he]
     · rw [← hsecond (e.symm (x, y)), he]
 
-theorem kp_cusp_ideal_steinitz_nonempty
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
-    (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
+theorem kp_cusp_ideal_steinitz_nonempty :
     Nonempty ((I × J) ≃ₗ[R] (R × (I * J))) := by
   obtain ⟨a, b, u, v, ha, hb, hu, hv, hrow⟩ := kp_cusp_ideal_bezout_row R K I J hI hJ
   obtain ⟨e, _⟩ := kp_cusp_ideal_steinitz_equiv_of_bezout R K I J hI hJ
     a b u v ha hb hu hv hrow
   exact ⟨e.symm⟩
+
+end
 
 end DedekindZetaZeroFree

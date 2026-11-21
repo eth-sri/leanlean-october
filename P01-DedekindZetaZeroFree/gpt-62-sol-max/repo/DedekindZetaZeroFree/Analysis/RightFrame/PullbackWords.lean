@@ -24,6 +24,23 @@ def directionalWord (fields : B → E → E) : List B → (E → ℂ) → E → 
 def constantDirectionWord (w : List P) (u : P → ℂ) : P → ℂ :=
   directionalWord (fun (v : P) (_ : P) => v) w u
 
+lemma word_smooth (U : Set E) (hU : IsOpen U)
+    (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
+    (r : List B) (u : E → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
+    ContDiffOn ℝ (⊤ : ℕ∞) (directionalWord fields r u) U := by
+  induction r with
+  | nil => exact hu
+  | cons b r ih =>
+    exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply (hfields b)
+
+theorem directionalWord_map {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {A B : Type*} (fields : B → E → E) (f : A → B) (w : List A) (u : E → ℂ) :
+    directionalWord fields (w.map f) u =
+      directionalWord (fun a => fields (f a)) w u := by
+  induction w with
+  | nil => rfl
+  | cons a w ih => simp only [List.map_cons, directionalWord, ih]
+
 section TransportProof
 open Topology
 variable [FiniteDimensional ℝ E] [FiniteDimensional ℝ P] [Fintype B]
@@ -71,15 +88,6 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
       exact (show (A (ψ x)).IsInvertible from ⟨e, he.symm⟩).self_apply_inverse _
     simpa only [A, a, ContinuousLinearMap.sum_apply, ContinuousLinearMap.smulRight_apply,
       ContinuousLinearMap.proj_apply] using hh.symm
- lemma word_smooth (U : Set E) (hU : IsOpen U)
-    (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
-    (r : List B) (u : E → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (directionalWord fields r u) U := by
-  induction r with
-  | nil => exact hu
-  | cons b r ih =>
-    exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply (hfields b)
-
 private lemma term_derivative (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
     (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (ψ : P → E) (hψ : ContDiffOn ℝ (⊤ : ℕ∞) ψ O) (hψU : Set.MapsTo ψ O U)

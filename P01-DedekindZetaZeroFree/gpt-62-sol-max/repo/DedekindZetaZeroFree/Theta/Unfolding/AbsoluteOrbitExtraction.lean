@@ -65,15 +65,12 @@ theorem absolute_extraction {N : TraceHaarTransport R} (C : JointUpperVanishingS
   have hmass := smoothingIntegrand_integral_norm_summable R C v m b Z hZ
     (fun i => (ht i).aestronglyMeasurable)
   obtain ⟨hnonconstant, hsum⟩ := AbsoluteIntegration.hasSum_integral ht hmass hsheetSum
-  have hupper := C.descent.smoothing_integrable v m b Z hZ
   have htheta : Integrable (fun t : PositiveAxis => C.packet.kernel t.val *
       thetaAverage R C.transport C.sources C.realization C.packet v m b
         ⟨t.val / Z, div_pos t.property hZ⟩) positiveHaar := by
-    convert hnonconstant.add hupper using 1
-    funext t
-    simp only [Pi.add_apply, mul_sub, sub_add_cancel]
+    simpa only [C.upperZero v m b, sub_zero] using hnonconstant
   refine ⟨hq, ht, orbitTerm_norm_summable R C v m b Z hZ, ?_, htheta⟩
-  rw [smoothedTheta_sub_mainTerm R C v m b Z hZ htheta]
+  rw [smoothedTheta_sub_mainTerm R C v m b Z hZ]
   exact hsum
 
 end DedekindZetaZeroFree.OrbitExpansion

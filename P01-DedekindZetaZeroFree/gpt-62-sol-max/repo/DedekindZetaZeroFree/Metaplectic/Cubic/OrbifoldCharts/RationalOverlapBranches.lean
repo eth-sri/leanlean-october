@@ -29,6 +29,16 @@ def q (a : ShrunkChart F ζ hζ U R P H) (x : M F) :
       (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
       (labeledA (placeEquiv F ζ hζ) x))
 
+theorem chartOmega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) :=
+  a.domain_open.preimage (labeledA_continuous (placeEquiv F ζ hζ))
+
+theorem continuous_chartProjection (a : ShrunkChart F ζ hζ U R P H) : Continuous (q a) := by
+  have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
+      ((H.atlas U).representative a.component)) := by
+    simpa only [Function.comp_def, (H.atlas U).components_formula] using
+      (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := a.component))
+  exact hc.comp (continuous_quotient_mk'.comp (labeledA_continuous (placeEquiv F ζ hζ)))
+
 def targetChart (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
     LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
@@ -334,9 +344,9 @@ private theorem comparison_delta {i : Fin (H.atlas U).componentCount}
     have hh := congrArg (fun z => z * t⁻¹) l.finite_comparison
     simpa [t, mul_assoc] using hh
   change f (l.gamma * k.gamma⁻¹) * t = c (l.root * k.root⁻¹)⁻¹ * t * _
-  simp only [Subgroup.coe_mul, Subgroup.coe_inv, map_mul, map_inv]
+  simp only [Subgroup.coe_inv, map_mul, map_inv]
   rw [hk, hl]
-  simp only [mul_inv_rev, inv_inv, map_mul, map_inv, Subgroup.coe_mul, Subgroup.coe_inv]
+  simp only [mul_inv_rev, inv_inv, map_inv]
   have hc (z : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) : c k.root * z = z * c k.root := central_comm k.root z
   have hc2 : c k.root * (c l.root)⁻¹ = (c l.root)⁻¹ * c k.root := hc _
   change _ = c k.root * (c l.root)⁻¹ * t * (l.levelLift.val * k.levelLift.val⁻¹)

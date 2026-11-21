@@ -11,7 +11,6 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.CuspidalCancellation
 
 open MeasureTheory Filter
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 
 private theorem projection_center_zero {E : Type*} [NormedAddCommGroup E]
     [InnerProductSpace ℂ E] [CompleteSpace E]
@@ -95,7 +94,6 @@ theorem smooth_center_eq_zero
     R.adelicHaar R.adelic_isHaar rfl realization
   have hg := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
     R.adelicHaar R.adelic_isHaar rfl realization ι hι
-    (stageConclusions F ζ hζ C R P H U ι hι)
     KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen
     (fun _ hs => hs) f hf buffer χ source
   obtain ⟨r', hr', hb', hi', w', hw', he', hcenter', houtside'⟩ := hg.simple_germs c hc

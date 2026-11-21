@@ -65,15 +65,14 @@ abbrev u (r : D.Row) : D.recipe.A.R := r.toFrequency.u
 
 instance : Coe D.Row (CorrectionFactors.Frequency D.context) := ⟨Row.toFrequency⟩
 
-abbrev generates (r : D.Row) := r.toFrequency.generates
 
 theorem ext {r r' : D.Row} (h : r.toFrequency = r'.toFrequency) : r = r' := by
   cases r; cases r'; cases h; rfl
 
 private theorem frequency_ext_of_u_ideal {f g : CorrectionFactors.Frequency D.context}
     (hu : f.u = g.u) (hI : f.ideal = g.ideal) : f = g := by
-  obtain ⟨u, I, a, b, c⟩ := f
-  obtain ⟨u', I', a', b', c'⟩ := g
+  obtain ⟨u, I, a, b⟩ := f
+  obtain ⟨u', I', a', b'⟩ := g
   have hu' : u = u' := hu
   have hI' : I = I' := hI
   subst hu'
@@ -97,7 +96,6 @@ theorem u_mem_reps (r : D.Row) :
 
 theorem u_ne_zero (r : D.Row) : r.u ≠ 0 := r.isRep.choose
 
-theorem u_unique {r r' : D.Row} (h : r.u = r'.u) : r = r' := u_injective h
 
 end Row
 
@@ -128,9 +126,6 @@ def Llam (u : D.Row) (s : ℂ) : ℂ :=
   MaskedHeckeMeromorphic.quotientRepresentative u.toFrequency (D.inducers u)
     MaskedHeckeMeromorphic.Row.minus (D.rowContinuation u .minus).J s
 
-abbrev rowDeletionSet (u : D.Row) (i : MaskedHeckeMeromorphic.Row) :
-    Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :=
-  MaskedHeckeMeromorphic.deletionSet u.toFrequency i
 
 theorem Lpsi_eq_raw (u : D.Row) (s : ℂ) (hs : 1 < s.re) : D.Lpsi u s = D.LpsiRaw u s :=
   ((D.rowContinuation u .plus).regular_equality s hs).symm
@@ -138,17 +133,7 @@ theorem Lpsi_eq_raw (u : D.Row) (s : ℂ) (hs : 1 < s.re) : D.Lpsi u s = D.LpsiR
 theorem Llam_eq_raw (u : D.Row) (s : ℂ) (hs : 1 < s.re) : D.Llam u s = D.LlamRaw u s :=
   ((D.rowContinuation u .minus).regular_equality s hs).symm
 
-theorem Lpsi_eq_J_mask (u : D.Row) (s : ℂ) :
-    D.Lpsi u s = (D.rowContinuation u .plus).J s *
-      Detector.finiteEulerDeletionMask F (D.rowDeletionSet u .plus)
-        (fun p => (D.inducers u).plus.character p.asIdeal) s /
-      (s - 1) ^ MaskedHeckeMeromorphic.poleIndicator (D.inducers u).plus := rfl
 
-theorem Llam_eq_J_mask (u : D.Row) (s : ℂ) :
-    D.Llam u s = (D.rowContinuation u .minus).J s *
-      Detector.finiteEulerDeletionMask F (D.rowDeletionSet u .minus)
-        (fun p => (D.omega u).character p.asIdeal) s /
-      (s - 1) ^ MaskedHeckeMeromorphic.poleIndicator (D.omega u) := rfl
 
 theorem Lpsi_analyticOnNhd (u : D.Row) :
     AnalyticOnNhd ℂ (D.Lpsi u) ({s : ℂ | 0 < s.re} \ {1}) := by

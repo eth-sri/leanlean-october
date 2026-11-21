@@ -14,7 +14,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
-private theorem normalized_mem
+theorem normalized_mem
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
     (g : KPMsRationalCompactCrossPairing.G F ζ hζ) :
     KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D

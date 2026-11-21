@@ -14,8 +14,11 @@ attribute [local instance] Fintype.ofFinite
 
 namespace DedekindZetaZeroFree.KPFiniteCuspAtlasReduction
 
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
 private theorem meanHeight_upper_frame
-    (F : Type) [Field F] [NumberField F]
     (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
@@ -39,15 +42,12 @@ private theorem meanHeight_upper_frame
     intro i
     let ρ := (KPCusp.complexPlace F i).embedding
     apply KPCuspLogShape.upper_action_snd
-    · change ρ (A 1 0) = 0
-      simp [hA]
-    · exact (map_ne_zero ρ).mpr (div_ne_zero h00 h11)
-    · change ρ (A 0 0) = ρ (A 0 0 / A 1 1) * ρ (A 1 1)
-      rw [← map_mul, div_mul_cancel₀ _ h11]
+    · simp_all
+    · simp_all
+    simp_all
   simp only [KPCuspLogShape.meanHeight, hs, Finset.sum_add_distrib, add_div]
 
 private theorem highCusp_frame_equivariant
-    (F : Type) [Field F] [NumberField F]
     (γ σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     KPCuspSiegel.action F γ '' KPCuspSiegel.highCusp F σ T =
       KPCuspSiegel.highCusp F (γ * σ) T := by
@@ -58,7 +58,6 @@ private theorem highCusp_frame_equivariant
   exact (mul_smul γ σ z).symm
 
 private theorem highCusp_upper_frame
-    (F : Type) [Field F] [NumberField F]
     (σ : KPCuspArithmetic.PGL2 F)
     (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0) (T : ℝ) :
     KPCuspSiegel.highCusp F (σ * Matrix.ProjGenLinGroup.mk A) T =
@@ -92,16 +91,19 @@ private theorem highCusp_upper_frame
       rw [mul_smul, smul_inv_smul]
 
 private theorem highCusp_antitone
-    (F : Type) [Field F] [NumberField F]
     (σ : KPCuspArithmetic.PGL2 F) {T S : ℝ} (h : T ≤ S) :
     KPCuspSiegel.highCusp F σ S ⊆ KPCuspSiegel.highCusp F σ T := by
   apply Set.image_mono
   intro z hz
   exact lt_of_le_of_lt h hz
 
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F] (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
+
 private theorem projected_highCusp_frame_equivariant
-    (F : Type) [Field F] [NumberField F]
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (γ : Γ) (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F (γ.val * σ) T =
       KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F σ T := by
@@ -111,8 +113,6 @@ private theorem projected_highCusp_frame_equivariant
   exact KPCuspSiegel.projection_action F Γ γ z
 
 private theorem projected_highCusp_equivalent_frame_shift
-    (F : Type) [Field F] [NumberField F]
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (γ : Γ) (σ τ : KPCuspArithmetic.PGL2 F)
     (h : γ • (σ • KPCuspArithmetic.infinity F) = τ • KPCuspArithmetic.infinity F) :
     ∃ c : ℝ, ∀ T : ℝ,
@@ -147,8 +147,6 @@ private theorem projected_highCusp_equivalent_frame_shift
   rw [ht, projected_highCusp_frame_equivariant, highCusp_upper_frame F σ A hupper]
 
 theorem finite_frame_high_end_absorption
-    (F : Type) [Field F] [NumberField F]
-    (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     {ι κ : Type*} [Finite ι]
     (τ : ι → KPCuspArithmetic.PGL2 F)
     (σ : κ → KPCuspArithmetic.PGL2 F)
@@ -174,6 +172,8 @@ theorem finite_frame_high_end_absorption
     Finset.single_le_sum (fun b _ => abs_nonneg (c b)) (Finset.mem_univ b)
   have hneg : -(c b) ≤ |c b| := neg_le_abs (c b)
   linarith
+
+end
 
 end DedekindZetaZeroFree.KPFiniteCuspAtlasReduction
 
@@ -293,8 +293,11 @@ open scoped Classical NumberField Matrix
 
 namespace DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
 
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
 theorem component_reduction_of_integral_lattice
-    (F : Type) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
     (hM : KPCuspArithmetic.IsRankTwoLattice F M)
@@ -329,7 +332,6 @@ theorem component_reduction_of_integral_lattice
   exact ⟨hdisjoint, (hcompact T (lt_of_lt_of_le hT₁ hT)).2, hembed⟩
 
 theorem finite_adelic_stabilizer_commensurable_lattice
-    (F : Type) [Field F] [NumberField F]
     (U : Subgroup (KPFiniteComponents.FinitePGL2 F))
     (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
     (hUo : IsOpen (U : Set (KPFiniteComponents.FinitePGL2 F)))
@@ -353,7 +355,6 @@ theorem finite_adelic_stabilizer_commensurable_lattice
   exact hcomm
 
 theorem finite_adelic_cusp_orbits
-    (F : Type) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : Subgroup (KPFiniteComponents.FinitePGL2 F))
     (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
@@ -383,7 +384,6 @@ theorem finite_adelic_cusp_orbits
     (MulAction.mem_orbit_iff.mpr ⟨⟨δ.val, δ.property.1⟩, hδ⟩)
 
 theorem highCusp_frame_equivariant
-    (F : Type) [Field F] [NumberField F]
     (γ σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     KPCuspSiegel.action F γ '' KPCuspSiegel.highCusp F σ T =
       KPCuspSiegel.highCusp F (γ * σ) T := by
@@ -394,7 +394,6 @@ theorem highCusp_frame_equivariant
   exact (mul_smul γ σ z).symm
 
 theorem projected_highCusp_frame_equivariant
-    (F : Type) [Field F] [NumberField F]
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (γ : Γ) (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     KPCuspSiegel.projection F Γ '' KPCuspSiegel.highCusp F (γ.val * σ) T =
@@ -405,7 +404,6 @@ theorem projected_highCusp_frame_equivariant
   exact KPCuspSiegel.projection_action F Γ γ z
 
 theorem meanHeight_upper_frame
-    (F : Type) [Field F] [NumberField F]
     (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
@@ -437,7 +435,6 @@ theorem meanHeight_upper_frame
   simp only [KPCuspLogShape.meanHeight, hs, Finset.sum_add_distrib, add_div]
 
 theorem highCusp_upper_frame
-    (F : Type) [Field F] [NumberField F]
     (σ : KPCuspArithmetic.PGL2 F)
     (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0) (T : ℝ) :
     KPCuspSiegel.highCusp F (σ * Matrix.ProjGenLinGroup.mk A) T =
@@ -471,7 +468,6 @@ theorem highCusp_upper_frame
       rw [mul_smul, smul_inv_smul]
 
 theorem highCusp_same_cusp_shift
-    (F : Type) [Field F] [NumberField F]
     (σ τ : KPCuspArithmetic.PGL2 F)
     (h : σ • KPCuspArithmetic.infinity F = τ • KPCuspArithmetic.infinity F) :
     ∃ c : ℝ, ∀ T : ℝ,
@@ -497,7 +493,6 @@ theorem highCusp_same_cusp_shift
   exact highCusp_upper_frame F σ A hc T
 
 theorem highCusp_antitone
-    (F : Type) [Field F] [NumberField F]
     (σ : KPCuspArithmetic.PGL2 F) {T S : ℝ} (h : T ≤ S) :
     KPCuspSiegel.highCusp F σ S ⊆ KPCuspSiegel.highCusp F σ T := by
   apply Set.image_mono
@@ -505,7 +500,6 @@ theorem highCusp_antitone
   exact lt_of_le_of_lt h hz
 
 theorem finite_same_cusp_common_height
-    (F : Type) [Field F] [NumberField F]
     {ι : Type} [Fintype ι]
     (σ τ : ι → KPCuspArithmetic.PGL2 F)
     (h : ∀ a, σ a • KPCuspArithmetic.infinity F = τ a • KPCuspArithmetic.infinity F) :
@@ -530,13 +524,19 @@ theorem finite_same_cusp_common_height
     have hle := hCa a
     linarith
 
-theorem finite_adelic_cusp_cover_with_compact_complement
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (U : Subgroup (KPFiniteComponents.FinitePGL2 F))
-    (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
-    (hUo : IsOpen (U : Set (KPFiniteComponents.FinitePGL2 F)))
-    (g : KPFiniteComponents.FinitePGL2 F) :
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+  (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
+  (U : Subgroup (KPFiniteComponents.FinitePGL2 F))
+  (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
+  (hUo : IsOpen (U : Set (KPFiniteComponents.FinitePGL2 F)))
+  (g : KPFiniteComponents.FinitePGL2 F)
+include hF U hUc hUo g
+
+theorem finite_adelic_cusp_cover_with_compact_complement :
     let Γ := KPFiniteComponents.arithmeticStabilizer F U g
     ∃ (n : ℕ) (q : Fin n → KPCuspArithmetic.Cusp F)
       (σ : Fin n → KPCuspArithmetic.PGL2 F),
@@ -569,13 +569,7 @@ theorem finite_adelic_cusp_cover_with_compact_complement
     obtain ⟨δ, a, w, hw, hz⟩ := hboxes z
     exact ⟨⟨δ.val, δ.property.1⟩, a, w, hw, hz⟩
 
-theorem finite_adelic_inequivalent_cusp_representatives
-    (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (U : Subgroup (KPFiniteComponents.FinitePGL2 F))
-    (hUc : IsCompact (U : Set (KPFiniteComponents.FinitePGL2 F)))
-    (hUo : IsOpen (U : Set (KPFiniteComponents.FinitePGL2 F)))
-    (g : KPFiniteComponents.FinitePGL2 F) :
+theorem finite_adelic_inequivalent_cusp_representatives :
     let Γ := KPFiniteComponents.arithmeticStabilizer F U g
     ∃ (n : ℕ) (q : Fin n → KPCuspArithmetic.Cusp F)
       (σ : Fin n → KPCuspArithmetic.PGL2 F),
@@ -616,6 +610,8 @@ theorem finite_adelic_inequivalent_cusp_representatives
       apply (MulAction.orbitRel Γ (KPCuspArithmetic.Cusp F)).symm
       exact MulAction.orbitRel_apply.mpr (MulAction.mem_orbit_iff.mpr ⟨δ, hδ⟩)
     exact hij (e.symm.injective he)
+
+end
 
 theorem compact_complement_of_cusp_representatives
     (F : Type) [Field F] [NumberField F]

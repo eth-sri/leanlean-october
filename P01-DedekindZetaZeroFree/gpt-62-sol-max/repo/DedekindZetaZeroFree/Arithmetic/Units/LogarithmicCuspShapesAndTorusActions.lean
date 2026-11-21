@@ -62,10 +62,14 @@ def ratioAction (F : Type*) [Field F] [NumberField F] (E : Subgroup Fˣ)
   fun i => ((KPCusp.complexPlace F i).embedding ((u : Fˣ) : F) * (z i).1,
     (z i).2 + logRatio F E (Additive.ofMul u) i)
 
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+  (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (E : Subgroup Fˣ)
+  (hE : E ≤ KPCuspArithmetic.rationalUnits F)
+include hF E hE
+
 theorem logRatio_mem_hyperplane
-    (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : Additive E) :
     logRatio F E u ∈ hyperplane (dimension F) := by
   rw [hyperplane, LinearMap.mem_ker]
@@ -119,39 +123,29 @@ theorem logRatio_mem_hyperplane
   · exact absurd h (by norm_num)
   · exact h
 
-def logarithm (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :
+def logarithm :
     Additive E →+ hyperplane (dimension F) :=
   (logRatio F E).codRestrict (hyperplane (dimension F)).toAddSubgroup
     (logRatio_mem_hyperplane F hF E hE)
 
-def logLattice (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :
+def logLattice :
     Submodule ℤ (hyperplane (dimension F)) :=
   (logarithm F hF E hE).range.toIntSubmodule
 
-theorem sum_logRatio_eq_zero (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) (u : E) :
+theorem sum_logRatio_eq_zero (u : E) :
     ∑ i : Fin (dimension F), logRatio F E (Additive.ofMul u) i = 0 := by
   have h := logRatio_mem_hyperplane F hF E hE (Additive.ofMul u)
   rw [hyperplane, LinearMap.mem_ker] at h
   simpa [sumCoordinates] using h
 
-theorem meanHeight_ratioAction (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
+theorem meanHeight_ratioAction
     (u : E) (z : KPArch.Space (dimension F)) :
     meanHeight (dimension F) (ratioAction F E u z) = meanHeight (dimension F) z := by
   unfold meanHeight ratioAction
   simp only [Finset.sum_add_distrib]
   rw [sum_logRatio_eq_zero F hF E hE u, add_zero]
 
-theorem shapeCoordinates_ratioAction (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
+theorem shapeCoordinates_ratioAction
     (u : E) (hu : logarithm F hF E hE (Additive.ofMul u) = 0)
     (z : KPArch.Space (dimension F)) :
     shapeCoordinates (dimension F) (ratioAction F E u z) =
@@ -164,9 +158,7 @@ theorem shapeCoordinates_ratioAction (F : Type*) [Field F] [NumberField F]
   rw [meanHeight_ratioAction F hF E hE u z]
   simp [ratioAction, hlog]
 
-theorem finite_logarithm_ker (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :
+theorem finite_logarithm_ker :
     Finite (logarithm F hF E hE).ker := by
   let f := Units.map (algebraMap (NumberField.RingOfIntegers F) F).toMonoidHom
   let T := (NumberField.Units.torsion F).map f
@@ -204,6 +196,8 @@ theorem finite_logarithm_ker (F : Type*) [Field F] [NumberField F]
         congrArg (fun t : T => (t : Fˣ)) huv
       have he : u.val.toMul = v.val.toMul := Subtype.ext hb
       exact Subtype.ext (congrArg Additive.ofMul he))
+
+end
 
 theorem finrank_hyperplane (d : ℕ) (hd : 0 < d) :
     finrank ℝ (hyperplane d) = d - 1 := by
@@ -375,8 +369,11 @@ private lemma toDirichlet_bijective : Function.Bijective (toDirichlet F hF) := b
     (LinearMap.injective_iff_surjective_of_finrank_eq_finrank hr).mp
       (toDirichlet_injective F hF)⟩
 
-private lemma toDirichlet_logarithm (E : Subgroup Fˣ)
-    (hE : E ≤ KPCuspArithmetic.rationalUnits F) (u : Additive E)
+section
+
+variable (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
+
+private lemma toDirichlet_logarithm (u : Additive E)
     (x : (NumberField.RingOfIntegers F)ˣ)
     (hx : Units.map (algebraMap (NumberField.RingOfIntegers F) F).toMonoidHom x =
       (u.toMul : Fˣ)) :
@@ -397,16 +394,14 @@ private lemma toDirichlet_logarithm (E : Subgroup Fˣ)
     simpa using hx'
   rw [← NumberField.RingOfIntegers.coe_eq_algebraMap, hx'']
 
-private lemma toDirichlet_mem_unitLattice (E : Subgroup Fˣ)
-    (hE : E ≤ KPCuspArithmetic.rationalUnits F)
+private lemma toDirichlet_mem_unitLattice
     (b : logLattice F hF E hE) : toDirichlet F hF b ∈ NumberField.Units.unitLattice F := by
   obtain ⟨u, hu⟩ := b.property
   obtain ⟨x, hx⟩ := hE u.toMul.property
   rw [← hu, toDirichlet_logarithm F hF E hE u x hx]
   exact ⟨Additive.ofMul x, Submodule.mem_top, rfl⟩
 
-theorem logarithm_discrete (E : Subgroup Fˣ)
-    (hE : E ≤ KPCuspArithmetic.rationalUnits F) :
+theorem logarithm_discrete :
     DiscreteTopology (logLattice F hF E hE) := by
   let f : logLattice F hF E hE → NumberField.Units.unitLattice F :=
     fun b => ⟨toDirichlet F hF b, toDirichlet_mem_unitLattice F hF E hE b⟩
@@ -414,8 +409,7 @@ theorem logarithm_discrete (E : Subgroup Fˣ)
     ((toDirichlet F hF).continuous_of_finiteDimensional.comp continuous_subtype_val |>.subtype_mk _)
     (by intro a b h; apply Subtype.ext; exact toDirichlet_injective F hF (congrArg Subtype.val h))
 
-theorem logarithm_span_top (E : Subgroup Fˣ)
-    (hE : E ≤ KPCuspArithmetic.rationalUnits F)
+theorem logarithm_span_top
     (hindex : (E.subgroupOf (KPCuspArithmetic.rationalUnits F)).FiniteIndex) :
     Submodule.span ℝ (logLattice F hF E hE : Set (hyperplane (dimension F))) = ⊤ := by
   let L := logLattice F hF E hE
@@ -456,6 +450,8 @@ theorem logarithm_span_top (E : Subgroup Fˣ)
   change Submodule.map (toDirichlet F hF) (Submodule.span ℝ (L : Set _)) = ⊤
   rw [Submodule.map_span]
   exact ht
+
+end
 
  theorem upper_action_snd (A : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (hA : A 1 0 = 0) (u : ℂ) (hu : u ≠ 0) (hr : A 0 0 = u * A 1 1)
@@ -515,10 +511,6 @@ theorem actual_upper_height_shape (F : Type*) [Field F] [NumberField F]
   simp only [shapeCoordinates, hm, Pi.add_apply, hs]
   ring
 
-section TorusAction
-variable (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) (E : Subgroup Fˣ)
-variable (hinv : ∀ (u : E) (x : F), x ∈ L → ((u : Fˣ) : F) * x ∈ L)
-end TorusAction
 
 section AffineAction
 variable (F : Type*) [Field F]
@@ -534,29 +526,29 @@ private lemma upper_translation_eq (A B : Matrix.GeneralLinearGroup (Fin 2) F)
     Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
   simp
   rw [mul_div_mul_right _ _ (Units.ne_zero u)]
-private def upperRepresentative (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g) (g : S) :=
+section
+
+variable (S : Subgroup (KPCuspArithmetic.PGL2 F))
+  (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g)
+include hS
+
+private def upperRepresentative (g : S) :=
   Classical.choose (hS g g.property)
-private lemma upperRepresentative_upper (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g) (g : S) :
+private lemma upperRepresentative_upper (g : S) :
     upperRepresentative F S hS g 1 0 = 0 :=
   (Classical.choose_spec (hS g g.property)).2
-private lemma upperRepresentative_mk (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g) (g : S) :
+private lemma upperRepresentative_mk (g : S) :
     Matrix.ProjGenLinGroup.mk (upperRepresentative F S hS g) = g :=
   (Classical.choose_spec (hS g g.property)).1
-private def upperTranslation (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g) (g : S) : F :=
+private def upperTranslation (g : S) : F :=
   upperRepresentative F S hS g 0 1 / upperRepresentative F S hS g 1 1
-private theorem upperTranslation_formula (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g) (g : S)
+private theorem upperTranslation_formula (g : S)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : Matrix.ProjGenLinGroup.mk A = g) :
     upperTranslation F S hS g = A 0 1 / A 1 1 := by
   exact upper_translation_eq F _ _ ((upperRepresentative_mk F S hS g).trans hA.symm)
     (upperRepresentative_upper F S hS g)
- theorem upper_translation_cocycle (S : Subgroup (KPCuspArithmetic.PGL2 F))
-    (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g)
+ theorem upper_translation_cocycle
     (E : Subgroup Fˣ) (ρ : S →* E)
     (hr : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F),
       Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
@@ -584,6 +576,8 @@ private theorem upperTranslation_formula (S : Subgroup (KPCuspArithmetic.PGL2 F)
     simp only [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, hA, hAr, zero_mul, zero_add]
     field_simp
     <;> ring
+
+end
 
 end AffineAction
 

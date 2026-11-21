@@ -11,126 +11,6 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar
 open scoped BigOperators
 
-noncomputable def linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ) :
-    MvPolynomial (Fin 3) ℂ →ₐ[ℂ] MvPolynomial (Fin 3) ℂ :=
-  MvPolynomial.aeval (fun i => ∑ j, MvPolynomial.C (A i j) * MvPolynomial.X j)
-
-private theorem pderiv_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
-    (p : MvPolynomial (Fin 3) ℂ) (j : Fin 3) :
-    MvPolynomial.pderiv j (linearSubstitution A p) =
-      ∑ i, MvPolynomial.C (A i j) * linearSubstitution A (MvPolynomial.pderiv i p) := by
-  classical
-  induction p using MvPolynomial.induction_on with
-  | C c => simp [linearSubstitution]
-  | add p q ihp ihq =>
-      simp only [map_add, ihp, ihq, mul_add, Finset.sum_add_distrib]
-  | mul_X p i ih =>
-      simp only [map_mul, linearSubstitution, MvPolynomial.aeval_X]
-      rw [MvPolynomial.pderiv_mul]
-      simp only [MvPolynomial.pderiv_mul, MvPolynomial.pderiv_X,
-        map_add, map_mul, map_sum, MvPolynomial.pderiv_C, zero_mul, zero_add]
-      unfold linearSubstitution at ih
-      rw [ih]
-      simp [Finset.sum_mul, Finset.mul_sum, Finset.sum_add_distrib,
-        Pi.single_apply, mul_add, mul_ite, mul_assoc, mul_comm, mul_left_comm]
-
-private theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
-    (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
-    (p : MvPolynomial (Fin 3) ℂ) :
-    polynomialLaplacian (linearSubstitution A p) = linearSubstitution A (polynomialLaplacian p) := by
-  classical
-  simp only [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-    map_sum]
-  change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (linearSubstitution A p))) =
-    ∑ j, linearSubstitution A (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
-  simp only [pderiv_linearSubstitution, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_linearSubstitution, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [Finset.sum_comm]
-  simp_rw [← Finset.sum_mul, ← map_sum]
-  simp_rw [hA]
-  simp
-
-private theorem linearSubstitution_homogeneous (A : Matrix (Fin 3) (Fin 3) ℂ)
-    (p : MvPolynomial (Fin 3) ℂ) (ℓ : ℕ) (hp : p.IsHomogeneous ℓ) :
-    (linearSubstitution A p).IsHomogeneous ℓ := by
-  unfold linearSubstitution
-  simpa using hp.aeval (fun i => ∑ j, MvPolynomial.C (A i j) * MvPolynomial.X j)
-    (fun i => MvPolynomial.IsHomogeneous.sum _ _ 1 (fun j _ =>
-      MvPolynomial.isHomogeneous_C_mul_X _ _))
-
-private theorem linearSubstitution_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
-    (hA : ∀ i k, ∑ j, A i j * A k j = if i = k then 1 else 0)
-    (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ) (hp : p ∈ harmonicPolynomials ℓ) :
-    linearSubstitution A p ∈ harmonicPolynomials ℓ := by
-  refine ⟨linearSubstitution_homogeneous A p ℓ hp.1, ?_⟩
-  change polynomialLaplacian (linearSubstitution A p) = 0
-  rw [polynomialLaplacian_linearSubstitution A hA]
-  have hh : polynomialLaplacian p = 0 := hp.2
-  rw [hh, map_zero]
-
-private theorem su2_entries (k : ComplexSU2) : (k : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) ∧
-  (k : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
-  let m : Matrix (Fin 2) (Fin 2) ℂ := k
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
-  have hd := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
-  have ha : star m = Matrix.adjugate m := by
-    calc
-      star m = 1 * star m := by simp
-      _ = (Matrix.adjugate m * m) * star m := by rw [Matrix.adjugate_mul, hd]; simp
-      _ = Matrix.adjugate m * (m * star m) := by rw [mul_assoc]
-      _ = Matrix.adjugate m := by rw [hu]; simp
-  have h00 := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 0 0) ha
-  have h10 := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 1 0) ha
-  simp only [Matrix.star_apply, Matrix.adjugate_fin_two, Matrix.of_apply,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one] at h00 h10
-  constructor
-  · simpa using congrArg star h00
-  · simpa using congrArg star h10
-
-private theorem su2_row_norm (k : ComplexSU2) :
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).re ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0).im ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).re ^ 2 +
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1).im ^ 2 = 1 := by
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
-  have h := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A 1 1).re) hu
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Complex.mul_re, Complex.star_def, Complex.normSq_apply] at h
-  nlinarith
-
-noncomputable def hopfMatrix (a b : ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
-  fun i j => (((!![
-    b.re^2-b.im^2-a.re^2+a.im^2, 2*b.re*b.im-2*a.re*a.im, -2*a.re*b.re-2*a.im*b.im;
-    -2*b.re*b.im-2*a.re*a.im, b.re^2-b.im^2+a.re^2-a.im^2, -2*a.im*b.re+2*a.re*b.im;
-    2*a.re*b.re-2*a.im*b.im, 2*a.re*b.im+2*a.im*b.re, b.re^2+b.im^2-a.re^2-a.im^2]
-      : Matrix (Fin 3) (Fin 3) ℝ) i j) : ℂ)
-
-private theorem hopfMatrix_orthogonal (a b : ℂ)
-    (h : a.re^2+a.im^2+b.re^2+b.im^2 = 1) (i k : Fin 3) :
-    ∑ j, hopfMatrix a b i j * hopfMatrix a b k j = if i = k then 1 else 0 := by
-  fin_cases i <;> fin_cases k <;>
-    simp [hopfMatrix, Fin.sum_univ_three, ← Complex.ofReal_mul,
-      ← Complex.ofReal_add]
-  all_goals norm_cast
-  all_goals first | (solve | ring) | (calc
-    _ = (a.re^2+a.im^2+b.re^2+b.im^2)^2 := by ring
-    _ = _ := by rw [h]; norm_num)
-
-private theorem hopfMatrix_action (l k : ComplexSU2) (i : Fin 3) :
-    compactSphereCoordinate (l * k) i =
-      ∑ j, hopfMatrix ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0)
-        ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) i j * compactSphereCoordinate l j := by
-  obtain ⟨h0, h1⟩ := su2_entries k
-  fin_cases i <;>
-    simp [compactSphereCoordinate, hopfMatrix, Matrix.mul_apply,
-      Fin.sum_univ_two, Fin.sum_univ_three, h0, h1,
-      Complex.mul_re, Complex.mul_im, Complex.star_def,
-      ← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
-  all_goals ring
-
 theorem harmonicPolynomials_su2_translation (ℓ : ℕ)
     (k : ComplexSU2) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials ℓ) :
@@ -138,20 +18,8 @@ theorem harmonicPolynomials_su2_translation (ℓ : ℕ)
       ∀ h : ComplexSU2,
         MvPolynomial.eval (compactSphereCoordinate (h * k)) p =
           MvPolynomial.eval (compactSphereCoordinate h) q := by
-  classical
-  let A := hopfMatrix ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0)
-    ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1)
-  refine ⟨linearSubstitution A p,
-    linearSubstitution_harmonic A (hopfMatrix_orthogonal _ _ (su2_row_norm k)) ℓ p hp, ?_⟩
-  intro h
-  unfold linearSubstitution
-  change MvPolynomial.aeval _ p = MvPolynomial.aeval _ (MvPolynomial.aeval _ p)
-  rw [MvPolynomial.comp_aeval_apply]
-  congr 2
-  funext i
-  simp only [map_sum, map_mul, MvPolynomial.aeval_C, MvPolynomial.aeval_X,
-    Algebra.algebraMap_self]
-  exact hopfMatrix_action h k i
+  let q := HarmonicVendor.harmonicRepresentation ℓ k ⟨p, hp⟩
+  exact ⟨q, q.property, fun h => (HarmonicVendor.harmonicRepresentation_restriction ℓ k h ⟨p, hp⟩).symm⟩
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 
@@ -206,9 +74,8 @@ private theorem rowSphere_smooth (i : Fin 3) :
 
 private theorem rowB_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     rowB (upperTriangular a d b * g) = ‖(d : ℂ)‖ ^ 2 * rowB g := by
-  change rowB ((upperTriangular a d b : Mat) * (g : Mat)) = _
   change rowB (!![(a : ℂ), b; 0, (d : ℂ)] * (g : Mat)) = _
-  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, mul_add]
+  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow, mul_add]
 
 private theorem rowW_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     rowW (upperTriangular a d b * g) = rowW g := by
@@ -322,7 +189,7 @@ private theorem highestWeightIsotropicPower_directionalDerivative_eq_zero (ℓ :
     MvPolynomial.pderiv 0 (highestWeightIsotropicLinearPolynomial ^ ℓ) +
       MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 (highestWeightIsotropicLinearPolynomial ^ ℓ) = 0 := by
   simp only [MvPolynomial.pderiv_pow]
-  simp [highestWeightIsotropicLinearPolynomial, MvPolynomial.pderiv_C_mul, Pi.single_apply]
+  simp [highestWeightIsotropicLinearPolynomial]
   have hI : (MvPolynomial.C Complex.I : MvPolynomial (Fin 3) ℂ) ^ 2 = -1 := by
     rw [← map_pow]; norm_num
   linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
@@ -335,8 +202,8 @@ private theorem highestWeightIsotropicPower_mem_harmonicPolynomials (ℓ : ℕ) 
     have hmul (p : MvPolynomial (Fin 3) ℂ) :
         polynomialLaplacian (highestWeightIsotropicLinearPolynomial * p) = highestWeightIsotropicLinearPolynomial * polynomialLaplacian p +
           2 * (MvPolynomial.pderiv 0 p + MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 p) := by
-      simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-        Fin.sum_univ_succ, highestWeightIsotropicLinearPolynomial, MvPolynomial.pderiv_mul, MvPolynomial.pderiv_C_mul]
+      simp [polynomialLaplacian, LinearMap.comp_apply,
+        Fin.sum_univ_succ, highestWeightIsotropicLinearPolynomial]
       ring
     induction ℓ with
     | zero => simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply]
@@ -436,7 +303,7 @@ theorem cyclic_of_extraction {G E : Type*} [Group G] [NormedAddCommGroup E]
         rcases hu with ⟨k, rfl⟩
         rw [← hρ]
         exact Submodule.subset_span ⟨g⁻¹ * k, rfl⟩
-      | zero => simpa using W.zero_mem
+      | zero => simp
       | add u z hu hz ihu ihz => simpa using W.add_mem ihu ihz
       | smul c u hu ih => simpa using W.smul_mem c ih
     have he : ρ g (ρ g⁻¹ u) = u := by rw [← hρ, mul_inv_cancel, h1]
@@ -489,7 +356,7 @@ private theorem highestWeightNullLinearPolynomial_pow_nullDirectionalDerivative_
     MvPolynomial.pderiv 0 (highestWeightNullLinearPolynomial ^ ℓ) +
       MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 (highestWeightNullLinearPolynomial ^ ℓ) = 0 := by
   simp only [MvPolynomial.pderiv_pow]
-  simp [highestWeightNullLinearPolynomial, MvPolynomial.pderiv_C_mul, Pi.single_apply]
+  simp [highestWeightNullLinearPolynomial]
   have hI : (MvPolynomial.C Complex.I : MvPolynomial (Fin 3) ℂ) ^ 2 = -1 := by
     rw [← map_pow]; norm_num
   linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
@@ -502,8 +369,8 @@ private theorem highestWeightNullLinearPolynomial_pow_mem_harmonicPolynomials (�
     have hmul (p : MvPolynomial (Fin 3) ℂ) :
         polynomialLaplacian (highestWeightNullLinearPolynomial * p) = highestWeightNullLinearPolynomial * polynomialLaplacian p +
           2 * (MvPolynomial.pderiv 0 p + MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 p) := by
-      simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-        Fin.sum_univ_succ, highestWeightNullLinearPolynomial, MvPolynomial.pderiv_mul, MvPolynomial.pderiv_C_mul]
+      simp [polynomialLaplacian, LinearMap.comp_apply,
+        Fin.sum_univ_succ, highestWeightNullLinearPolynomial]
       ring
     induction ℓ with
     | zero => simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply]
@@ -782,7 +649,7 @@ noncomputable def openSU2 (x : ℂ) : ComplexSU2 := by
   have hr : r ^ 2 = 1 + Complex.normSq x := Real.sq_sqrt (by linarith)
   refine ⟨!![(star x) / r, -(1 / r); 1 / r, x / r], ?_⟩
   convert su2_matrix (1 / (r : ℂ)) (x / (r : ℂ)) ?_ using 1
-  · simp [map_div₀]
+  · simp []
   · simp only [Complex.normSq_div, Complex.normSq_one, Complex.normSq_ofReal]
     rw [← pow_two, hr]
     field_simp [show 1 + Complex.normSq x ≠ 0 by linarith]

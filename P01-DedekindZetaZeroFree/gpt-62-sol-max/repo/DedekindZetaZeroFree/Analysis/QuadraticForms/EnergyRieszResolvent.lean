@@ -7,16 +7,16 @@ public import Mathlib.Analysis.InnerProductSpace.Positive
 noncomputable section
 namespace DedekindZetaZeroFree
 
-def energyRieszResolvent
-    {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
-    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (j : W →L[ℂ] H) : H →L[ℂ] H :=
+section
+
+variable {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
+  [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H] (j : W →L[ℂ] H)
+include j
+
+def energyRieszResolvent : H →L[ℂ] H :=
   j.comp j.adjoint
 
-theorem energyRieszResolvent_properties
-    {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
-    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (j : W →L[ℂ] H) (hinj : Function.Injective j) (hdense : DenseRange j)
+theorem energyRieszResolvent_properties (hinj : Function.Injective j) (hdense : DenseRange j)
     (hcontract : ‖j‖ ≤ 1) :
     IsSelfAdjoint (energyRieszResolvent j) ∧
       (energyRieszResolvent j).IsPositive ∧
@@ -59,10 +59,7 @@ theorem energyRieszResolvent_properties
       _ ≤ 1 := by nlinarith [norm_nonneg j, hcontract]
   exact ⟨hBsa, hBpos, hBinj, hBdense, hnorm⟩
 
-theorem energyRieszResolvent_variational
-    {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
-    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (j : W →L[ℂ] H) (f : H) :
+theorem energyRieszResolvent_variational (f : H) :
     (∀ z : W, inner ℂ (j.adjoint f) z = inner ℂ f (j z)) ∧
       (∀ w : W, (∀ z : W, inner ℂ w z = inner ℂ f (j z)) → w = j.adjoint f) ∧
       energyRieszResolvent j f = j (j.adjoint f) := by
@@ -71,10 +68,7 @@ theorem energyRieszResolvent_variational
   refine ext_inner_right ℂ fun z => ?_
   rw [hw z, ← j.adjoint_inner_left z f]
 
-theorem energyRieszResolvent_estimates
-    {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
-    [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (j : W →L[ℂ] H) (hcontract : ‖j‖ ≤ 1) (f : H) :
+theorem energyRieszResolvent_estimates (hcontract : ‖j‖ ≤ 1) (f : H) :
     ‖energyRieszResolvent j f‖ ^ 2 ≤ (inner ℂ f (energyRieszResolvent j f)).re ∧
       (inner ℂ f (energyRieszResolvent j f)).re = ‖j.adjoint f‖ ^ 2 ∧
       ‖j.adjoint f‖ ^ 2 ≤ ‖f‖ ^ 2 := by
@@ -95,6 +89,8 @@ theorem energyRieszResolvent_estimates
       _ = ‖f‖ := one_mul _
   exact ⟨by rw [h1]; exact pow_le_pow_left₀ (norm_nonneg _) h2 2, h1,
     pow_le_pow_left₀ (norm_nonneg _) h3 2⟩
+
+end
 
 end DedekindZetaZeroFree
 

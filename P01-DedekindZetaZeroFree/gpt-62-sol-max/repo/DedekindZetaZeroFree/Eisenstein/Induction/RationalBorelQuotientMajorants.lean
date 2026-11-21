@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.Induction.Height.ChamberCosetBounds
+public import DedekindZetaZeroFree.Eisenstein.Induction.FlatSectionContinuity
 
 @[expose] public section
 
@@ -17,34 +18,6 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
-
-private theorem normalized_mem
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    (g : KPMsRationalCompactCrossPairing.G F ζ hζ) :
-    KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
-      ((KPMsFixedHaarDisintegration.radialSection F ζ hζ
-        (H.disintegration (A.atlasLevel U)).radial.slot
-        ⟨((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ),
-          NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩)⁻¹ * g) = 1 := by
-  let B := (H.disintegration (A.atlasLevel U)).radial
-  let r : KPMsFixedHaarDisintegration.Radius :=
-    ⟨((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ),
-      NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩
-  let t := KPGlobalTorusFunctionData.torusArchChart F ζ hζ
-    (KPMsFixedHaarDisintegration.positiveSlots F B.slot r)
-  have hd : KPGlobalTorusFunctionData.delta F ζ hζ t =
-      KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g := by
-    apply Units.ext
-    apply NNReal.eq
-    exact KPMsRationalCompactCrossPairing.compact_radialSection_delta B r
-  change KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
-    ((t⁻¹).val * g) = 1
-  have hN : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=
-    (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
-  have h := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_borel_mul
-    F ζ hζ D (t⁻¹) 0 g
-  rw [hN, mul_one] at h
-  rw [h, map_inv, hd, inv_mul_cancel]
 
 theorem source_radial_norm (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
     (s : ℂ) (r : KPMsFixedHaarDisintegration.Radius)
@@ -78,7 +51,7 @@ theorem source_iwasawa_norm_bound (U : KPMsRationalCompactCrossPairing.Level F �
   let a := KPMsFixedHaarDisintegration.radialSection F ζ hζ
     (H.disintegration (A.atlasLevel U)).radial.slot r
   let k : KPMsRationalCompactCrossPairing.NormOne F ζ hζ D :=
-    ⟨a⁻¹ * g, normalized_mem A U g⟩
+    ⟨a⁻¹ * g, Actual.normalized_mem A U g⟩
   have hg : a * k.val = g := by dsimp [k]; group
   have hs := source_radial_norm A U s r f k
   rw [hg] at hs

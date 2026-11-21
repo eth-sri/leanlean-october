@@ -43,14 +43,11 @@ variable (source : KPContActualAllCuspSource.Source F ζ hζ C R P H U ι buffer
 
 end Actual
 
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 open Filter
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 open MeasureTheory Filter
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
 variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)

@@ -27,26 +27,7 @@ local notation "Δ" => KPTestFriedrichs.laplacian ι hι j hj A B hscalar hcotan
 
 end SameOperator
 
-private theorem polynomial_limit_holomorphic {E : Type*} [NormedAddCommGroup E]
-    [NormedSpace ℂ E] [CompleteSpace E] (z₀ : ℂ) (r : ℝ)
-    (a : ℕ → E) (f : ℂ → E)
-    (hc : ∀ ε > 0, ∃ N : ℕ, ∀ M ≥ N, ∀ z ∈ Metric.closedBall z₀ r,
-      ‖(∑ q ∈ Finset.range M, (z - z₀) ^ q • a q) - f z‖ < ε) :
-    DifferentiableOn ℂ f (Metric.ball z₀ r) := by
-  have ht : TendstoUniformlyOn
-      (fun M z => ∑ q ∈ Finset.range M, (z - z₀) ^ q • a q) f
-      Filter.atTop (Metric.ball z₀ r) := by
-    rw [Metric.tendstoUniformlyOn_iff]
-    intro ε hε
-    obtain ⟨N, hN⟩ := hc ε hε
-    exact Filter.eventually_atTop.mpr ⟨N, fun M hM z hz => by
-      rw [dist_eq_norm, norm_sub_rev]
-      exact hN M hM z (Metric.ball_subset_closedBall hz)⟩
-  apply ht.tendstoLocallyUniformlyOn.differentiableOn _ Metric.isOpen_ball
-  apply Filter.Eventually.of_forall
-  intro M
-  exact DifferentiableOn.fun_sum (fun q _ =>
-    ((differentiableOn_id.sub_const z₀).pow q).smul_const (a q))
+open KPContLocalHolomorphyUpgrade.CauchyAssembly.ContourLift (polynomial_limit_holomorphic)
 
 theorem power_series_jet_holomorphy {n : ℕ} (B : LocalBall n)
     (O : Set ℂ) (hO : IsOpen O) (u : ℂ → Space n → ℂ)

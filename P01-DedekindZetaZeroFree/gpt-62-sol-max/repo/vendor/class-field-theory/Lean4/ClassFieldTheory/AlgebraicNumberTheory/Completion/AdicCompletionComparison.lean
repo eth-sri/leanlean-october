@@ -3,7 +3,7 @@ module
 public import ClassFieldTheory.AlgebraicNumberTheory.Completion.AdicCompletionMap
 public import ClassFieldTheory.AlgebraicNumberTheory.Completion.Comparison
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.IdeleSupport
-public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Localization
+
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.AbsoluteValue
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Lattice
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.FinitePlaceCompletion

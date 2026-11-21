@@ -35,9 +35,9 @@ lemma rationalValue_left_root {N : TraceHaarTransport R} (C : JointUpperVanishin
   rw [he] at hc
   rw [OrbitFrequencies.rationalValue_eq_fourier R C.realization, ← mul_assoc, ← hc, mul_assoc]
   letI := C.sources.quotientHaar
-  rw [ExteriorWhittakerValues.StoredWhittaker.fourier_left_root R C.sources.dq (C.realization.theta v)
+  rw [MomentSources.fourier_left_root R C.sources.dq (C.realization.theta v)
     (ExteriorWhittakerValues.StoredWhittaker.core_rational_root R C.factorization (C.factorization.selected v) |>
-      fun h => by simpa only [C.factorization.selected_eq] using h) _ (A * g) (C.factorization.period_integrable v (A * g))]
+      fun h => by simpa only [C.factorization.selected_eq] using h) _ (A * g)]
   have hχ := adelicTraceQuotientCharacter_mk F (algebraMap F (KPAdeles F) (a : F) * t)
   refine congrArg₂ (fun z : Circle => fun c : ℂ => (z : ℂ) * c) hχ ?_
   exact (OrbitFrequencies.rationalValue_eq_fourier R C.realization v a g).symm

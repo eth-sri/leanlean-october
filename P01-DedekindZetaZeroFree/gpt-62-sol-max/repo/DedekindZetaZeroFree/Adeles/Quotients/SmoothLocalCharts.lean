@@ -253,7 +253,7 @@ theorem quotient_full_support (R : HaarRecipe F ζ hζ) :
       intro γ g
       apply Quotient.sound
       apply QuotientGroup.rightRel_apply.mpr
-      simpa using (rationalSubgroup F ζ hζ).inv_mem γ.property
+      simp
     refine ⟨fun V hVo hVn => ?_⟩
     rw [← R.quotient_normalization, Measure.map_apply hp.measurable hVo.measurableSet,
       Measure.restrict_apply (hVo.preimage hp).measurableSet]

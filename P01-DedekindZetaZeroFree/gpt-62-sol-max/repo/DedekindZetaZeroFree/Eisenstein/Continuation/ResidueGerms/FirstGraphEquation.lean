@@ -76,7 +76,6 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 theorem actual_simple_germs_first_graph
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (hΩopen : IsOpen Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (hf : DifferentiableOn ℂ f Ω) (c : ℂ) (hc : c ∈ Ω) :
     ∃ r : ℝ, 0 < r ∧ Metric.ball c r ⊆ Ω ∧
@@ -85,7 +84,7 @@ theorem actual_simple_germs_first_graph
           w s = (s-c) • v F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source s) ∧
         (deriv w c, a c • deriv w c + deriv a c • w c - source.h c) ∈ (Δactual).graph := by
   have h := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
-    μG hμG hR realization ι hι hStage Ω hΩopen hΩ f hf buffer χ source
+    μG hμG hR realization ι hι Ω hΩopen hΩ f hf buffer χ source
   obtain ⟨r, hr, hb, hi, w, hw, he, hp, hn⟩ := h.simple_germs c hc
   refine ⟨r, hr, hb, w, hw, he, ?_⟩
   have hD := (kp_cont_actual_sector_friedrichs_synthesis F ζ hζ

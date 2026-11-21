@@ -247,14 +247,5 @@ noncomputable instance ideleClassComponentQuotientCompactSpace :
     (ideleClassNormOneToComponentQuotient K).continuous_toFun
     (ideleClassNormOneToComponentQuotient_surjective K)
 
-/-- Every continuous homomorphism from the idele class group to a totally
-disconnected topological group kills the identity component. -/
-theorem ideleClassIdentityComponent_le_ker
-    {H : Type*}
-    [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
-    [TotallyDisconnectedSpace H]
-    (f : IdeleClassGroup K →ₜ* H) :
-    ideleClassIdentityComponent K ≤ f.ker :=
-  f.connectedComponentOfOne_le_ker
 
 end

@@ -41,7 +41,7 @@ private lemma Wcurve_deriv (c d z : ℂ) (hb : ‖c‖^2+‖d‖^2 ≠ 0) :
   have hB := Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt 0 (Bcurve_deriv c d z)
   convert (h.star.const_mul (2*c)).div hB (by simpa [Bcurve] using Complex.ofReal_ne_zero.mpr hb) using 1
   · funext t; simp [Wcurve, mul_assoc]
-  · simp [Wvel, Bcurve, Function.comp_def]
+  · simp [Wvel, Bcurve]
 
  def Hcurve (s : ℝ) (n : ℕ) (D : ℝ) (c d z : ℂ) (t : ℝ) : ℂ :=
   (Real.rpow (D / Bcurve c d z t) (1+2*s) : ℂ) * Wcurve c d z t ^ n
@@ -59,7 +59,7 @@ private lemma Hcurve_deriv (s : ℝ) (n : ℕ) (D : ℝ) (c d z : ℂ)
   convert hc.mul ((Wcurve_deriv c d z hb.ne').pow n) using 1
   · rfl
   · dsimp [Function.comp_def, Hvel, Bcurve, Wcurve, Complex.ofRealCLM_apply]
-    simp only [Complex.ofReal_zero, zero_mul, add_zero, zero_sub]
+    simp only [zero_mul, add_zero, zero_sub]
     have he : (D/(‖c‖^2+‖d‖^2)) ^ (1+2*s-1:ℝ) =
         (D/(‖c‖^2+‖d‖^2)) ^ (1+2*s:ℝ) / (D/(‖c‖^2+‖d‖^2)) := by
       rw [Real.rpow_sub (div_pos hD hb), Real.rpow_one]
@@ -78,7 +78,7 @@ private lemma highest_orbit_curve (s : ℝ) (n : ℕ) (g : ComplexGL2) (z : ℂ)
     Matrix.mul_apply, Fin.sum_univ_two, upperUnipotent, Matrix.det_mul]
   have he : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * ((t:ℂ)*z) + g 1 1 =
       g 1 1 + (t:ℂ)*(g 1 0*z) := by ring
-  simp [Matrix.det_fin_two, he, mul_assoc, add_comm, mul_comm, mul_left_comm]
+  simp [Matrix.det_fin_two, mul_assoc, add_comm, mul_comm, mul_left_comm]
 
 private lemma highest_orbit_deriv (s : ℝ) (n : ℕ) (g : ComplexGL2) (z : ℂ) :
     deriv (fun t : ℝ => harmonicSection s n (g * upperUnipotent ((t:ℂ)*z))) 0 =
@@ -93,7 +93,7 @@ private lemma Hvel_plus (s : ℝ) (n : ℕ) (D : ℝ) (c d : ℂ)
       -((n:ℂ)+((1+2*s:ℝ):ℂ))/2 *
         (Real.rpow (D/(‖c‖^2+‖d‖^2)) (1+2*s):ℂ) *
           (2*c*star d/((‖c‖^2+‖d‖^2:ℝ):ℂ))^(n+1) := by
-  simp only [Hvel, Wvel, Bvel_complex, star_mul, star_one, Complex.star_def, Complex.conj_I, mul_one]
+  simp only [Hvel, Wvel, Bvel_complex, star_mul, Complex.star_def, Complex.conj_I, mul_one]
   have hbc : ((‖c‖^2+‖d‖^2:ℝ):ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hb
   cases n with
   | zero =>
@@ -106,7 +106,7 @@ private lemma Hvel_plus (s : ℝ) (n : ℕ) (D : ℝ) (c d : ℂ)
     simp only [Nat.succ_sub_one, Nat.cast_succ, pow_succ]
     field_simp [hbc]
     ring_nf
-    simp only [Complex.I_sq, pow_succ]
+    simp only [Complex.I_sq]
     ring
 
 def highestImage (β : ℂˣ) (n : ℕ) : Theta β :=
@@ -129,7 +129,7 @@ theorem highestImage_upper (β : ℂˣ) (n : ℕ) :
   norm_num [negativeParameter] at hh
   simp only [Z_plus, E_R, E_I, Prod.smul_fst, Prod.smul_snd, smul_eq_mul] at ⊢
   simp only [Prod.fst_sub, Prod.snd_sub, Prod.smul_fst, Prod.smul_snd,
-    Prod.fst_zero, Prod.snd_zero, smul_eq_mul, mul_zero, mul_one, sub_zero, zero_sub,
+    smul_eq_mul, mul_zero, mul_one, sub_zero, zero_sub,
     mul_one]
   change (1/2:ℂ) * Hvel negativeParameter n _ _ _ 1 +
     (1/2:ℂ) * (-Complex.I) * Hvel negativeParameter n _ _ _ Complex.I = _
@@ -146,7 +146,7 @@ private lemma whittaker_one (β : ℂˣ) (h : Theta β) :
   have hd : diagonal (1:ℂˣ) = 1 := by
     apply Matrix.GeneralLinearGroup.ext
     intro i j
-    fin_cases i <;> fin_cases j <;> simp [diagonal, Matrix.one_apply]
+    fin_cases i <;> fin_cases j <;> simp [diagonal]
   unfold whittakerValue
   rw [hd, map_one]
   have he : imageAction β 1 h = h := by
@@ -169,7 +169,7 @@ theorem highestImage_jacquet_ne_zero (n : ℕ) :
     have hd : diagonal (1:ℂˣ) = 1 := by
       apply Matrix.GeneralLinearGroup.ext
       intro i j
-      fin_cases i <;> fin_cases j <;> simp [diagonal, Matrix.one_apply]
+      fin_cases i <;> fin_cases j <;> simp [diagonal]
     rw [hd, map_one, pi_one] at hp
     have he : intertwinerToImage standardComplexParameter (sphericalSection positiveParameter) =
         (3*characterScale standardComplexParameter/2:ℂ) • highestImage standardComplexParameter 0 := by

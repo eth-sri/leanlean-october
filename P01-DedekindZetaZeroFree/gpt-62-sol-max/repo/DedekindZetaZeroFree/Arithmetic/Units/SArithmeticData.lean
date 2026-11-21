@@ -46,21 +46,26 @@ abbrev Completion (A : SArithmeticData F) (v : A.Place) : Type :=
 instance completionField (A : SArithmeticData F) (v : A.Place) : Field (A.Completion v) := by
   cases v <;> dsimp [Completion] <;> infer_instance
 
-abbrev G (A : SArithmeticData F) :=
+section
+
+variable (A : SArithmeticData F)
+include A
+
+abbrev G :=
   ((w : InfinitePlace F) → w.Completionˣ) ×
     ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ)
 
-def diagonal (A : SArithmeticData F) : Fˣ →* A.G where
+def diagonal : Fˣ →* A.G where
   toFun u := (fun w => Units.map (algebraMap F w.Completion).toMonoidHom u,
     fun v => Units.map (algebraMap F (v.val.adicCompletion F)).toMonoidHom u)
   map_one' := by ext <;> simp
   map_mul' := by intros; ext <;> simp
 
-def norm (A : SArithmeticData F) (x : A.G) : ℝ :=
+def norm (x : A.G) : ℝ :=
   (∏ w : InfinitePlace F, ‖(x.1 w : w.Completion)‖ ^ (2 : ℕ)) *
     ∏ v : {v // v ∈ A.Sf}, ‖(x.2 v : v.val.adicCompletion F)‖
 
-def G1 (A : SArithmeticData F) : Subgroup A.G where
+def G1 : Subgroup A.G where
   carrier := {x | A.norm x = 1}
   one_mem' := by simp [norm]
   mul_mem' := by
@@ -77,38 +82,38 @@ def G1 (A : SArithmeticData F) : Subgroup A.G where
       norm_inv, inv_pow, Finset.prod_inv_distrib, ← mul_inv, inv_one] using
       congrArg Inv.inv hx
 
-def sixthPowers (A : SArithmeticData F) : Subgroup A.G := (powMonoidHom 6).range
+def sixthPowers : Subgroup A.G := (powMonoidHom 6).range
 
-abbrev V (A : SArithmeticData F) := A.G ⧸ A.sixthPowers
+abbrev V := A.G ⧸ A.sixthPowers
 
-def unitSixthPowers (A : SArithmeticData F) : Subgroup A.U := (powMonoidHom 6).range
+def unitSixthPowers : Subgroup A.U := (powMonoidHom 6).range
 
-abbrev UnitQuotient (A : SArithmeticData F) := A.U ⧸ A.unitSixthPowers
+abbrev UnitQuotient := A.U ⧸ A.unitSixthPowers
 
-def E (A : SArithmeticData F) : Subgroup A.V :=
+def E : Subgroup A.V :=
   (A.U.map A.diagonal).map (QuotientGroup.mk' A.sixthPowers)
 
-def Gamma (A : SArithmeticData F) : Subgroup A.G :=
+def Gamma : Subgroup A.G :=
   (A.U.map (powMonoidHom 6)).map A.diagonal
 
-def cS (A : SArithmeticData F) : Ideal (𝓞 F) := ∏ v ∈ A.Sf, v.asIdeal
+def cS : Ideal (𝓞 F) := ∏ v ∈ A.Sf, v.asIdeal
 
-abbrev Exterior (A : SArithmeticData F) := ExteriorIdeal A.cS
+abbrev Exterior := ExteriorIdeal A.cS
 
-def extendIdeal (A : SArithmeticData F) (I : A.Exterior) : Ideal A.R :=
+def extendIdeal (I : A.Exterior) : Ideal A.R :=
   Ideal.map (algebraMap (𝓞 F) A.R) I.val
 
-def Generates (A : SArithmeticData F) (I : A.Exterior) (r : A.R) : Prop :=
+def Generates (I : A.Exterior) (r : A.R) : Prop :=
   r ≠ 0 ∧ Ideal.span {r} = A.extendIdeal I
 
-abbrev exteriorNorm (A : SArithmeticData F) (I : A.Exterior) : ℝ := idealNorm I.val
+abbrev exteriorNorm (I : A.Exterior) : ℝ := idealNorm I.val
 
-theorem primitive_sixth_root (A : SArithmeticData F) :
+theorem primitive_sixth_root :
     (primitiveRoots 6 F).Nonempty := by
   exact ⟨A.zeta12 ^ 2, (mem_primitiveRoots (by decide)).2
     (A.primitive_zeta12.pow (by decide) (by decide : 12 = 2 * 6))⟩
 
-theorem complex_place (A : SArithmeticData F) (w : InfinitePlace F) : w.IsComplex := by
+theorem complex_place (w : InfinitePlace F) : w.IsComplex := by
   apply InfinitePlace.not_isReal_iff_isComplex.mp
   intro hw
   have hcard := InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt
@@ -117,14 +122,14 @@ theorem complex_place (A : SArithmeticData F) (w : InfinitePlace F) : w.IsComple
     Fintype.card_eq_zero_iff.mp hcard
   exact hempty.false ⟨w, hw⟩
 
-theorem zeta12_pow_six (A : SArithmeticData F) : A.zeta12 ^ 6 = -1 :=
+theorem zeta12_pow_six : A.zeta12 ^ 6 = -1 :=
   (A.primitive_zeta12.pow (by decide) (by decide : 12 = 6 * 2)).eq_neg_one_of_two_right
 
-theorem cS_ne_zero (A : SArithmeticData F) : A.cS ≠ ⊥ := by
+theorem cS_ne_zero : A.cS ≠ ⊥ := by
   change (∏ v ∈ A.Sf, v.asIdeal) ≠ 0
   exact Finset.prod_ne_zero_iff.mpr (fun v _ => v.ne_bot)
 
-theorem exterior_iff (A : SArithmeticData F) (I : NonzeroIdeal F) :
+theorem exterior_iff (I : NonzeroIdeal F) :
     I.val ⊔ A.cS = ⊤ ↔ ∀ v : HeightOneSpectrum (𝓞 F), v ∈ A.Sf →
       I.val ⊔ v.asIdeal = ⊤ := by
   constructor
@@ -137,14 +142,14 @@ theorem exterior_iff (A : SArithmeticData F) (I : NonzeroIdeal F) :
   · intro h
     exact Ideal.sup_prod_eq_top h
 
-theorem extendIdeal_ne_zero (A : SArithmeticData F) (I : A.Exterior) :
+theorem extendIdeal_ne_zero (I : A.Exterior) :
     A.extendIdeal I ≠ ⊥ := by
   apply (Ideal.map_eq_bot_iff_of_injective ?_).not.mpr I.property.1
   intro x y h
   apply (IsFractionRing.injective (𝓞 F) F)
   exact congrArg (fun r : A.R => (r : F)) h
 
-def exteriorIdealEquiv (A : SArithmeticData F) :
+def exteriorIdealEquiv :
     A.Exterior ≃ {J : Ideal A.R // J ≠ ⊥} :=
   Equiv.ofBijective (fun I => ⟨A.extendIdeal I, A.extendIdeal_ne_zero I⟩) (by
     constructor
@@ -162,11 +167,11 @@ def exteriorIdealEquiv (A : SArithmeticData F) :
       letI := SIntegerLocalization.isLocalization_away A.Sf
       exact IsLocalization.map_under (Submonoid.powers (SIntegerLocalization.denominator A.Sf)) _ J.val)
 
-theorem exteriorIdealEquiv_apply (A : SArithmeticData F) (I : A.Exterior) :
+theorem exteriorIdealEquiv_apply (I : A.Exterior) :
     (A.exteriorIdealEquiv I).val = A.extendIdeal I := by
   rfl
 
-theorem norm_diagonal_unit (A : SArithmeticData F) (u : A.U) :
+theorem norm_diagonal_unit (u : A.U) :
     A.norm (A.diagonal u.val) = 1 := by
   have hp := NumberField.prod_abs_eq_one (Units.ne_zero u.val)
   rw [SUnitGroup.finprod_finitePlace_eq_prod_adicAbv A.Sf u] at hp
@@ -182,13 +187,13 @@ theorem norm_diagonal_unit (A : SArithmeticData F) (u : A.U) :
   simpa only [InfinitePlace.mult,
     InfinitePlace.not_isReal_iff_isComplex.mpr (A.complex_place _), if_false] using hp
 
-theorem Gamma_le_G1 (A : SArithmeticData F) : A.Gamma ≤ A.G1 := by
+theorem Gamma_le_G1 : A.Gamma ≤ A.G1 := by
   rintro x ⟨y, ⟨u, hu, rfl⟩, rfl⟩
   exact A.norm_diagonal_unit ⟨u ^ 6, A.U.pow_mem hu 6⟩
 
-def Gamma1 (A : SArithmeticData F) : Subgroup A.G1 := A.Gamma.subgroupOf A.G1
+def Gamma1 : Subgroup A.G1 := A.Gamma.subgroupOf A.G1
 
-theorem generator_norm (A : SArithmeticData F) (I : A.Exterior) (r : A.R)
+theorem generator_norm (I : A.Exterior) (r : A.R)
     (hr : A.Generates I r) (u : Fˣ) (hu : (u : F) = (r : F)) :
     A.norm (A.diagonal u) = A.exteriorNorm I := by
   have hp := SIntegerLocalization.generator_norm A.Sf I.val I.property.1 I.property.2 r hr.1 hr.2
@@ -205,7 +210,7 @@ theorem generator_norm (A : SArithmeticData F) (I : A.Exterior) (r : A.R)
     InfinitePlace.not_isReal_iff_isComplex.mpr (A.complex_place _), if_false,
     exteriorNorm, idealNorm] using hp
 
-theorem exterior_norm_mod_twelve (A : SArithmeticData F)
+theorem exterior_norm_mod_twelve
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
     Ideal.absNorm v.asIdeal % 12 = 1 := by
   have h6 : (6 : 𝓞 F) ∉ v.asIdeal := fun h => hv (A.above_six v h)
@@ -237,6 +242,8 @@ theorem exterior_norm_mod_twelve (A : SArithmeticData F)
   change 12 ∣ Ideal.absNorm v.asIdeal - 1 at hd
   have hmod := Nat.mod_eq_zero_of_dvd hd
   omega
+
+end
 
 end SArithmeticData
 end

@@ -17,38 +17,38 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private def hh (t : ℝ) : ℝ := (1 + |t|) ^ (-2 : ℝ)
+namespace GaussianShear
 
-private lemma hh_pos (t : ℝ) : 0 < hh t := Real.rpow_pos_of_pos (by positivity) _
+def hh (t : ℝ) : ℝ := (1 + |t|) ^ (-2 : ℝ)
 
-private lemma hh_integrable : Integrable hh := by
-  have := integrable_one_add_norm (E := ℝ) (μ := (volume : Measure ℝ)) (r := 2) (by norm_num)
-  refine this.congr (Filter.Eventually.of_forall fun x => ?_)
-  simp only [hh, Real.norm_eq_abs]
+lemma hh_pos (t : ℝ) : 0 < hh t := Real.rpow_pos_of_pos (by positivity) _
 
-private lemma le_hh {f C t : ℝ} (h : (1 + |t|) ^ 2 * f ≤ C) : f ≤ |C| * hh t := by
+lemma hh_integrable : Integrable hh := by
+  exact integrable_one_add_norm (E := ℝ) (r := 2) (by norm_num)
+
+lemma le_hh {f C t : ℝ} (h : (1 + |t|) ^ 2 * f ≤ C) : f ≤ |C| * hh t := by
   have hp : 0 < (1 + |t|) ^ 2 := by positivity
   have h1 : hh t = ((1 + |t|) ^ 2)⁻¹ := by
     unfold hh
-    rw [Real.rpow_neg (by positivity), Real.rpow_two]
+    simp
   rw [h1, ← div_eq_mul_inv, le_div_iff₀ hp]
-  linarith [le_abs_self C, mul_comm f ((1 + |t|) ^ 2)]
+  grind
 
-private def gaussShear (p : ℝ × ℝ) : ℝ := Real.exp (-(p.1 + p.2) ^ 2) * hh p.2
+def gaussShear (p : ℝ × ℝ) : ℝ := Real.exp (-(p.1 + p.2) ^ 2) * hh p.2
 
-private lemma gaussShear_nonneg (p : ℝ × ℝ) : 0 ≤ gaussShear p :=
+lemma gaussShear_nonneg (p : ℝ × ℝ) : 0 ≤ gaussShear p :=
   mul_nonneg (Real.exp_pos _).le (hh_pos _).le
 
-private lemma gaussShear_integrable : Integrable gaussShear := by
+lemma gaussShear_integrable : Integrable gaussShear := by
   have hg : Integrable (fun x : ℝ => Real.exp (-(x) ^ 2)) := by
     simpa using integrable_exp_neg_mul_sq (b := 1) one_pos
-  have h1 : Integrable (fun p : ℝ × ℝ => hh p.1 * Real.exp (-(p.2) ^ 2)) :=
-    hh_integrable.mul_prod hg
-  have h2 := (measurePreserving_prod_add_swap (volume : Measure ℝ)
-    (volume : Measure ℝ)).integrable_comp_of_integrable h1
-  refine h2.congr (Filter.Eventually.of_forall fun p => ?_)
-  simp only [Function.comp, gaussShear]
-  rw [add_comm p.2 p.1, mul_comm]
+  refine ((measurePreserving_prod_add_swap (volume : Measure ℝ) volume).integrable_comp_of_integrable
+    (hh_integrable.mul_prod hg)).congr (Filter.Eventually.of_forall fun p => ?_)
+  simp [Function.comp_def, gaussShear, add_comm, mul_comm]
+
+end GaussianShear
+
+open GaussianShear
 
 private def tripleG (p : ℝ × ℝ × ℝ) : ℝ := gaussShear (p.1, p.2.2) * hh p.2.1
 
@@ -56,7 +56,7 @@ private lemma tripleG_nonneg (p : ℝ × ℝ × ℝ) : 0 ≤ tripleG p :=
   mul_nonneg (gaussShear_nonneg _) (hh_pos _).le
 
 private lemma tripleG_integrable : Integrable tripleG := by
-  have h : Integrable (fun q : (ℝ × ℝ) × ℝ => gaussShear q.1 * hh q.2) :=
+  have h :=
     gaussShear_integrable.mul_prod hh_integrable
   have h1 : MeasurePreserving (Prod.map (id : ℝ → ℝ) (Prod.swap : ℝ × ℝ → ℝ × ℝ))
       (volume : Measure (ℝ × ℝ × ℝ)) (volume : Measure (ℝ × ℝ × ℝ)) :=
@@ -64,7 +64,7 @@ private lemma tripleG_integrable : Integrable tripleG := by
   have h2 := MeasurePreserving.symm MeasurableEquiv.prodAssoc
     (measurePreserving_prodAssoc (volume : Measure ℝ) (volume : Measure ℝ) (volume : Measure ℝ))
   have h3 := (h2.comp h1).integrable_comp_of_integrable h
-  exact h3.congr (Filter.Eventually.of_forall fun p => rfl)
+  assumption
 
 private lemma norm_kernel_principal (u : D.Row) (hq : D.q u = 1) (x y v Z : ℝ) (hZ : 0 < Z)
     (t : ℝ × ℝ × ℝ) :
@@ -142,13 +142,9 @@ theorem kernel_majorant_paddedBox2 (u : D.Row) (hu : u.u = 1)
     (le_trans (min_le_right _ _) (le_max_right _ _)) (⌈B⌉₊ + 2)
   set K : ℝ := Real.exp ((|x₀| + |x₁| + |v₀| + |v₁| + 1) ^ 2) * |CM| * |CL * CW| *
     (Cz * CH * Cl) with hK
-  have hK0 : 0 ≤ K := by
-    rw [hK]
-    exact mul_nonneg (mul_nonneg (mul_nonneg (Real.exp_pos _).le (abs_nonneg _))
-      (abs_nonneg _)) (mul_nonneg (mul_nonneg hCz0.le hCH0.le) hCl0.le)
-  refine ⟨fun t => K * tripleG t, tripleG_integrable.const_mul _, fun t => ?_, ?_⟩
-  · have := tripleG_nonneg t
-    exact mul_nonneg hK0 this
+  have hK0 : 0 ≤ K := by rw [hK]; positivity
+  refine ⟨fun t => K * tripleG t, tripleG_integrable.const_mul _,
+    fun t => mul_nonneg hK0 (tripleG_nonneg t), ?_⟩
   intro x hxI y hyI v hvI Z hZ2 t
   dsimp only
   have hZ0 : 0 < Z := by linarith
@@ -192,27 +188,19 @@ theorem kernel_majorant_paddedBox2 (u : D.Row) (hu : u.u = 1)
     exact this
   have hLW : ‖D.Lpsi u ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖ *
       ‖D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖ ≤ |CL * CW| * hh t.2.1 := by
-    have hp1 : (1 : ℝ) ≤ 1 + |t.2.1| := by linarith [abs_nonneg t.2.1]
-    have hpB : (1 + |t.2.1|) ^ B ≤ (1 + |t.2.1|) ^ ⌈B⌉₊ := by
-      calc (1 + |t.2.1|) ^ B ≤ (1 + |t.2.1|) ^ ((⌈B⌉₊ : ℕ) : ℝ) :=
-            Real.rpow_le_rpow_of_exponent_le hp1 (Nat.le_ceil B)
-        _ = _ := Real.rpow_natCast _ _
-    have hL' : ‖D.Lpsi u ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖ ≤
-        CL * (1 + |t.2.1|) ^ ⌈B⌉₊ := bP.trans (mul_le_mul_of_nonneg_left hpB hCL0.le)
-    have key : (1 + |t.2.1|) ^ 2 * (‖D.Lpsi u ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖ *
-        ‖D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖) ≤ CL * CW := by
-      have h1 : ‖D.Lpsi u ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖ *
-          ‖D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖ ≤
-          CL * (1 + |t.2.1|) ^ ⌈B⌉₊ * ‖D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖ :=
-        mul_le_mul_of_nonneg_right hL' (norm_nonneg _)
-      have h2 := mul_le_mul_of_nonneg_left h1 (by positivity : (0 : ℝ) ≤ (1 + |t.2.1|) ^ 2)
-      have h3 : (1 + |t.2.1|) ^ 2 * (CL * (1 + |t.2.1|) ^ ⌈B⌉₊ *
-          ‖D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖) =
-          CL * ((1 + |t.2.1|) ^ (⌈B⌉₊ + 2) * ‖D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖) := by
-        rw [pow_add]; ring
-      have h4 := mul_le_mul_of_nonneg_left hWY hCL0.le
-      linarith
-    exact le_hh key
+    apply le_hh
+    let A := 1 + |t.2.1|
+    have hA : 1 ≤ A := by dsimp [A]; linarith [abs_nonneg t.2.1]
+    have hAB : A ^ B ≤ A ^ ⌈B⌉₊ := by
+      simpa only [Real.rpow_natCast] using Real.rpow_le_rpow_of_exponent_le hA (Nat.le_ceil B)
+    set L := ‖D.Lpsi u ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖
+    set W := ‖D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖
+    change A ^ 2 * (L * W) ≤ CL * CW
+    have hL : L ≤ CL * A ^ ⌈B⌉₊ := bP.trans (mul_le_mul_of_nonneg_left hAB hCL0.le)
+    calc A ^ 2 * (L * W) ≤ A ^ 2 * ((CL * A ^ ⌈B⌉₊) * W) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hL (norm_nonneg _)) (sq_nonneg A)
+      _ = CL * (A ^ (⌈B⌉₊ + 2) * W) := by rw [pow_add]; ring
+      _ ≤ CL * CW := mul_le_mul_of_nonneg_left hWY hCL0.le
   have bE : Real.exp ((x + v - 1) ^ 2) ≤ Real.exp ((|x₀| + |x₁| + |v₀| + |v₁| + 1) ^ 2) := by
     apply Real.exp_le_exp.mpr
     have habs : -(|x₀| + |x₁| + |v₀| + |v₁| + 1) ≤ x + v - 1 ∧
@@ -220,56 +208,19 @@ theorem kernel_majorant_paddedBox2 (u : D.Row) (hu : u.u = 1)
       constructor <;> linarith [neg_abs_le x₀, neg_abs_le v₀, le_abs_self x₁, le_abs_self v₁,
         hxI.1, hxI.2, hvI.1, hvI.2, abs_nonneg x₀, abs_nonneg x₁, abs_nonneg v₀, abs_nonneg v₁]
     exact sq_le_sq' habs.1 habs.2
-  have hZE : 0 ≤ Z ^ (Scales.kernelExponent x y v) := Real.rpow_nonneg hZ0.le _
-  have hG0 : 0 ≤ Real.exp (-(t.1 + t.2.2) ^ 2) := (Real.exp_pos _).le
-  have hP' : Z ^ (Scales.kernelExponent x y v) * Real.exp ((x + v - 1) ^ 2) * Real.exp (-(t.1 + t.2.2) ^ 2) ≤
-      Z ^ (Scales.kernelExponent x y v) * Real.exp ((|x₀| + |x₁| + |v₀| + |v₁| + 1) ^ 2) *
-        Real.exp (-(t.1 + t.2.2) ^ 2) :=
-    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left bE hZE) hG0
-  have hP'0 : 0 ≤ Z ^ (Scales.kernelExponent x y v) * Real.exp ((|x₀| + |x₁| + |v₀| + |v₁| + 1) ^ 2) *
-      Real.exp (-(t.1 + t.2.2) ^ 2) :=
-    mul_nonneg (mul_nonneg hZE (Real.exp_pos _).le) hG0
-  have hPn : 0 ≤ Z ^ (Scales.kernelExponent x y v) * Real.exp ((x + v - 1) ^ 2) *
-      Real.exp (-(t.1 + t.2.2) ^ 2) :=
-    mul_nonneg (mul_nonneg hZE (Real.exp_pos _).le) hG0
   rw [norm_kernel_principal D u hq x y v Z hZ0 t]
-  have hLc0 : 0 ≤ ‖D.Llam u ((x : ℂ) + (t.1 : ℂ) * Complex.I)‖⁻¹ := inv_nonneg.2 (norm_nonneg _)
-  have hA : (Z ^ (Scales.kernelExponent x y v) * Real.exp ((x + v - 1) ^ 2) * Real.exp (-(t.1 + t.2.2) ^ 2)) *
-      ‖D.M ((v : ℂ) + (t.2.2 : ℂ) * Complex.I)‖ ≤
-      (Z ^ (Scales.kernelExponent x y v) * Real.exp ((|x₀| + |x₁| + |v₀| + |v₁| + 1) ^ 2) *
-        Real.exp (-(t.1 + t.2.2) ^ 2)) * (|CM| * hh t.2.2) :=
-    (mul_le_mul_of_nonneg_right hP' (norm_nonneg _)).trans
-      (mul_le_mul_of_nonneg_left bM hP'0)
-  have hC3 : ‖D.zetaSCont (6 * ((v : ℂ) + (t.2.2 : ℂ) * Complex.I))‖ *
-      ‖Hu D u ((x : ℂ) + (t.1 : ℂ) * Complex.I) ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)
-        ((v : ℂ) + (t.2.2 : ℂ) * Complex.I)‖ * ‖D.Llam u ((x : ℂ) + (t.1 : ℂ) * Complex.I)‖⁻¹ ≤
-      Cz * CH * Cl :=
-    mul_le_mul (mul_le_mul bZ bH (norm_nonneg _) hCz0.le) bL hLc0
-      (mul_nonneg hCz0.le hCH0.le)
-  have hLn0 := norm_nonneg (D.Lpsi u ((y : ℂ) + (t.2.1 : ℂ) * Complex.I))
-  have hWv0 := norm_nonneg (D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I))
-  have hz0 := norm_nonneg (D.zetaSCont (6 * ((v : ℂ) + (t.2.2 : ℂ) * Complex.I)))
-  have hH0 := norm_nonneg (Hu D u ((x : ℂ) + (t.1 : ℂ) * Complex.I) ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)
-        ((v : ℂ) + (t.2.2 : ℂ) * Complex.I))
-  have ha1 : 0 ≤ |CM| * hh t.2.2 := mul_nonneg (abs_nonneg _) (hh_pos _).le
-  have ha2 : 0 ≤ |CL * CW| * hh t.2.1 := mul_nonneg (abs_nonneg _) (hh_pos _).le
-  calc _ = (Z ^ (Scales.kernelExponent x y v) * Real.exp ((x + v - 1) ^ 2) * Real.exp (-(t.1 + t.2.2) ^ 2) *
-        ‖D.M ((v : ℂ) + (t.2.2 : ℂ) * Complex.I)‖) *
-        (‖D.Lpsi u ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖ *
-          ‖D.W1Hat ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)‖) *
-        (‖D.zetaSCont (6 * ((v : ℂ) + (t.2.2 : ℂ) * Complex.I))‖ *
-          ‖Hu D u ((x : ℂ) + (t.1 : ℂ) * Complex.I) ((y : ℂ) + (t.2.1 : ℂ) * Complex.I)
-            ((v : ℂ) + (t.2.2 : ℂ) * Complex.I)‖ * ‖D.Llam u ((x : ℂ) + (t.1 : ℂ) * Complex.I)‖⁻¹) := by
-        ring
-    _ ≤ ((Z ^ (Scales.kernelExponent x y v) * Real.exp ((|x₀| + |x₁| + |v₀| + |v₁| + 1) ^ 2) *
-          Real.exp (-(t.1 + t.2.2) ^ 2)) * (|CM| * hh t.2.2)) *
-          (|CL * CW| * hh t.2.1) * (Cz * CH * Cl) :=
-        mul_le_mul (mul_le_mul hA hLW (mul_nonneg hLn0 hWv0) (mul_nonneg hP'0 ha1)) hC3
-          (mul_nonneg (mul_nonneg hz0 hH0) hLc0) (mul_nonneg (mul_nonneg hP'0 ha1) ha2)
-    _ = Z ^ (Scales.kernelExponent x y v) * (K * tripleG t) := by
-        rw [hK]
-        simp only [tripleG, gaussShear]
-        ring
+  set ξ : ℂ := (x : ℂ) + (t.1 : ℂ) * Complex.I
+  set w : ℂ := (y : ℂ) + (t.2.1 : ℂ) * Complex.I
+  set z : ℂ := (v : ℂ) + (t.2.2 : ℂ) * Complex.I
+  calc _ = Z ^ Scales.kernelExponent x y v * Real.exp ((x + v - 1) ^ 2) *
+        Real.exp (-(t.1 + t.2.2) ^ 2) * ‖D.M z‖ * (‖D.Lpsi u w‖ * ‖D.W1Hat w‖) *
+        (‖D.zetaSCont (6 * z)‖ * ‖Hu D u ξ w z‖ * ‖D.Llam u ξ‖⁻¹) := by ring
+    _ ≤ Z ^ Scales.kernelExponent x y v * Real.exp ((|x₀| + |x₁| + |v₀| + |v₁| + 1) ^ 2) *
+        Real.exp (-(t.1 + t.2.2) ^ 2) * (|CM| * hh t.2.2) * (|CL * CW| * hh t.2.1) * (Cz * CH * Cl) := by
+      have := (hh_pos t.2.2).le
+      have := (hh_pos t.2.1).le
+      gcongr
+    _ = _ := by rw [hK]; simp only [tripleG, gaussShear]; ring
 
 end
 

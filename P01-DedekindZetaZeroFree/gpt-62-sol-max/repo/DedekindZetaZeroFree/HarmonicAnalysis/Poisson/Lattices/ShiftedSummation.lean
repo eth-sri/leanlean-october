@@ -42,7 +42,7 @@ theorem poisson_summation_lattice_shift
       exact h2
     rw [show UnitAddTorus.mFourier n x
           = (starRingEnd ℂ) ((starRingEnd ℂ) (UnitAddTorus.mFourier n x)) from by simp, h3]
-    simpa using hconjgen (-inner ℝ a (((dualVector_b L b n : dualLattice L) : V)))
+    simp
   have hxval : (torusPeriodisation b f) x = ∑' v : L, f (a + (v : V)) := by
     rw [hx]
     rw [torusPeriodisation_coe b f ((b.ofZLatticeBasis ℝ L).repr a)]

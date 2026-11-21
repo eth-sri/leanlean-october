@@ -7,7 +7,7 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.LocalCubicHeisenbergPairing
 
 open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
-namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+namespace DedekindZetaZeroFree.KPGlobalCubicIdelePairing
 noncomputable section
 set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
@@ -154,7 +154,7 @@ def restrictedBeta (x y : RestrictedClasses F) : rootsOfUnity 3 F :=
 def beta3 (x y : D F) : rootsOfUnity 3 F :=
   restrictedBeta F ζ hζ (classComparison F x) (classComparison F y)
 
-private theorem localPairing_mul_right (v : KPHilbert.Place F) (x y z : LocalD F v) :
+theorem localPairing_mul_right (v : KPHilbert.Place F) (x y z : LocalD F v) :
     localPairing F ζ hζ v x (y * z) =
       localPairing F ζ hζ v x y * localPairing F ζ hζ v x z := by
   induction x using QuotientGroup.induction_on with
@@ -247,4 +247,4 @@ def unitValuationPairing (q : HeightOneSpectrum (𝓞 F))
     (unitValuation_congr F ζ hζ q hgood u)
 
 end
-end DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+end DedekindZetaZeroFree.KPGlobalCubicIdelePairing

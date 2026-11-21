@@ -152,39 +152,37 @@ structure Chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) where
 
 attribute [instance] Chart.finite_stabilizer
 
-abbrev Chart.G {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) :=
+section
+
+variable {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U} (C : Chart F ζ hζ hF U A)
+include A C
+
+abbrev Chart.G :=
   MulAction.stabilizer (KPCuspGenuineMonodromy.Component F ζ hζ U
     (A.representative C.component)) C.center
 
-def Chart.rho {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) : C.G F ζ hζ hF U →* ℂˣ :=
+def Chart.rho : C.G F ζ hζ hF U →* ℂˣ :=
   (KPCuspGenuineMonodromy.chi F ζ hζ).comp
     ((A.line C.component).rho.comp (MulAction.stabilizer _ C.center).subtype)
 
-def Chart.toBase {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) : X F ζ hζ U :=
+def Chart.toBase (x : E C.n) : X F ζ hζ U :=
   KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative C.component)
     (KPCuspSiegel.projection F _ (C.coordinates x))
 
-def Chart.toLine {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) (a : V F ζ hζ U) :
+def Chart.toLine (x : E C.n) (a : V F ζ hζ U) :
     Line F ζ hζ hF U A :=
   ⟨C.component, Quotient.mk _ (C.coordinates x, a)⟩
 
-def Chart.O {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) : Set (X F ζ hζ U) :=
+def Chart.O : Set (X F ζ hζ U) :=
   C.toBase F ζ hζ hF U '' Metric.ball 0 C.radius
 
-def Chart.average {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (f : E C.n → ℂ) : E C.n → ℂ :=
+def Chart.average (f : E C.n → ℂ) : E C.n → ℂ :=
   (Metric.ball 0 C.radius).indicator (fun x =>
     (Fintype.card (C.G F ζ hζ hF U) : ℂ)⁻¹ *
       ∑ g : C.G F ζ hζ hF U, ((C.rho F ζ hζ hF U g)⁻¹ : ℂˣ) *
         f (C.orthogonal g x))
 
-def Chart.metricMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
+def Chart.metricMatrix (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
   fun j k =>
     (KPArch.metric (KPCuspLogShape.dimension F) (C.coordinates x)
       (fderiv ℝ C.coordinates x (EuclideanSpace.single j 1 + EuclideanSpace.single k 1)) -
@@ -193,9 +191,10 @@ def Chart.metricMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
     KPArch.metric (KPCuspLogShape.dimension F) (C.coordinates x)
       (fderiv ℝ C.coordinates x (EuclideanSpace.single k 1))) / 2
 
-def Chart.energyMatrix {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
-    (C : Chart F ζ hζ hF U A) (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
+def Chart.energyMatrix (x : E C.n) : Matrix (Fin C.n) (Fin C.n) ℝ :=
   (C.metricMatrix F ζ hζ hF U x)⁻¹
+
+end
 
 structure FiniteCutoffs (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (K : Set (X F ζ hζ U)) where

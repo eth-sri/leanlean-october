@@ -70,7 +70,7 @@ theorem numberFieldTowerExtensionQuotientEquivGaloisGroup_mk_apply
     numberFieldSeparableClosureEmbedding L
   let e :=
     numberFieldTowerSeparableClosureEquiv K L
-  let quotientNormal := numberFieldTowerExtensionSubgroup_normal K L
+  
   convert
     (LocalClassFieldTheory.ambientEmbeddedExtensionQuotientEquivGaloisGroup_mk_apply
       ℚ K L j e τ x) using 1; rfl
@@ -103,9 +103,7 @@ noncomputable def automorphismOverCyclicFixedField
     ⟨σ, by
       rw [automorphismCyclicFixedField,
         IntermediateField.fixingSubgroup_fixedField]
-      exact
-        Subgroup.subset_closure
-          (Set.mem_singleton σ)⟩
+      simp⟩
 
 omit [NumberField K] [NumberField L] [IsAbelianGalois K L] in
 /-- Restricting the automorphism over its cyclic fixed field back to the base
@@ -128,11 +126,9 @@ theorem automorphismOverCyclicFixedField_generates
             (Gal(L / automorphismCyclicFixedField σ))) =
       ⊤ := by
   let M := automorphismCyclicFixedField σ
-  let σM : Gal(L / M) :=
+  let σM :=
     automorphismOverCyclicFixedField σ
-  let e :
-      M.fixingSubgroup ≃*
-        Gal(L / M) :=
+  let e :=
     IntermediateField.fixingSubgroupEquiv M
   have hσ :
       (⟨σ, by
@@ -141,9 +137,7 @@ theorem automorphismOverCyclicFixedField_generates
               (automorphismCyclicFixedField σ).fixingSubgroup
           rw [automorphismCyclicFixedField,
             IntermediateField.fixingSubgroup_fixedField]
-          exact
-            Subgroup.subset_closure
-              (Set.mem_singleton σ)⟩ :
+          simp⟩ :
         M.fixingSubgroup) =
         e.symm.toMonoidHom σM := by
     apply Subtype.ext
@@ -320,7 +314,7 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
     chosenFinitePlaceExtension (L := L) v
   let wM :=
     automorphismCyclicFixedTopExtension v σ.1
-  let σM : Gal(L / M) :=
+  let σM :=
     automorphismOverCyclicFixedField σ.1
   have hrestrict :
       RamificationTheory.HilbertRamification.ValuationSubring.restrictAutomorphismScalars
@@ -335,7 +329,7 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
     apply
       (decompositionGroupRestriction_mem_absoluteValueDecompositionGroup_restrictScalars_iff
         (K := K) (M := M) wK.1 σM).mp
-    simpa only [hrestrict] using σ.2
+    grind
   have hequiv :
       wK.1.IsEquiv wM.1 := by
     apply
@@ -367,27 +361,6 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
     exact hσM_wM
   exact hσM_chosen
 
-/-- A decomposition automorphism remains a decomposition
-automorphism after the cyclic fixed-field reduction, for the actual
-chosen local Artin factor over the reduced base. -/
-theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceArtin_range
-    (v : HeightOneSpectrum (𝓞 K))
-    (σ :
-      absoluteValueDecompositionGroup K
-        (chosenFinitePlaceExtension (L := L) v).1) :
-    let M := automorphismCyclicFixedField σ.1
-    automorphismOverCyclicFixedField σ.1 ∈
-      (chosenFinitePlaceArtinMonoidHom
-        (K := M) (L := L)
-        (automorphismCyclicFixedPlace v σ.1)).range := by
-  dsimp only
-  rw [
-    chosenFinitePlaceArtinMonoidHom_range
-      (K := automorphismCyclicFixedField σ.1) (L := L)
-      (automorphismCyclicFixedPlace v σ.1)]
-  exact
-    automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
-      (K := K) (L := L) v σ
 
 /-- Restriction from the decomposition group in the common compatible
 rational separable closure to the decomposition group at the chosen

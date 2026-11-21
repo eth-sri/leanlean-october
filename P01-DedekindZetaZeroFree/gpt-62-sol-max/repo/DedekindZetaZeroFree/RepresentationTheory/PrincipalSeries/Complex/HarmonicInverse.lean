@@ -10,9 +10,7 @@ namespace DedekindZetaZeroFree.FourierContinuation.ComplexLines
 open KPGlobalResidualConstruction KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
-local instance : AddCommGroup complexCore := Submodule.addCommGroup complexCore
 local instance : Module ℂ complexCore := Submodule.module complexCore
-local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 
 private theorem harmonic_preimage (ℓ : ℕ) (h : PrincipalSeries negativeParameter)
     (hh : h ∈ harmonicKType negativeParameter ℓ) :
@@ -62,8 +60,6 @@ def harmonicInverse : complexCore →ₗ[ℂ] KPLiteralTensor.harmonicPlus :=
   (NativeStageSlot.inverse.toLinearMap.comp complexCore.subtype).codRestrict
     KPLiteralTensor.harmonicPlus inverse_harmonic_mem
 
-@[simp] theorem harmonicInverse_val (v : complexCore) :
-    (harmonicInverse v).val = NativeStageSlot.inverse v.val := rfl
 
 @[simp] theorem harmonicInverse_pin (v : complexCore) :
     standardIntertwiner (1 : ℂˣ) (harmonicInverse v).val = v.val :=

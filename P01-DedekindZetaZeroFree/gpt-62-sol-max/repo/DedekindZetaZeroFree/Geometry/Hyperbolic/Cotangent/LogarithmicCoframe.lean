@@ -35,12 +35,12 @@ def C (d : ℕ) (p : HyperbolicChart.Space d) :
         intro a u
         ext ik
         obtain ⟨i, k⟩ := ik
-        fin_cases k <;> simp [mul_assoc, mul_comm, mul_left_comm]
+        fin_cases k <;> simp [mul_left_comm]
       left_inv := by
         intro v
         ext ik
         obtain ⟨i, k⟩ := ik
-        fin_cases k <;> simp [← mul_assoc, ← Real.exp_add, neg_add_cancel, Real.exp_zero,
+        fin_cases k <;> simp [← mul_assoc, ← Real.exp_add, Real.exp_zero,
           one_mul]
       right_inv := by
         intro u

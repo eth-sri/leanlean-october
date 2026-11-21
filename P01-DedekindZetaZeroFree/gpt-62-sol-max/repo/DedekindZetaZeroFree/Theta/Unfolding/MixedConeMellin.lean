@@ -54,7 +54,7 @@ theorem integral_mixedConeRadialKernel (x : K) (s : ℂ) :
   convert setIntegral_expMapBasis_image (K := K) MeasurableSet.univ
     (mixedMellinGaussian K x s) using 1
   simp only [MeasureTheory.setIntegral_univ, mixedConeRadialKernel,
-    mixedRadialJacobian, smul_eq_mul, Complex.real_smul,
+    mixedRadialJacobian, Complex.real_smul,
     mul_comm (b := (Module.finrank ℚ K : ℝ))]
 
 theorem integrable_mixedConeRadialKernel {x : K} (hx : x ≠ 0)

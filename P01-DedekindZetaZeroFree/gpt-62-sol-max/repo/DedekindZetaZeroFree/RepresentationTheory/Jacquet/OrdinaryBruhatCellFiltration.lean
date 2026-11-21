@@ -59,9 +59,9 @@ theorem ordinary_cell_quotient_exact
   letI : Module ℂ (Induced F ζ hζ w m τB) := inferInstance
   let K := KPRankOneInduction.LocalField F w
   let ρU := KPJacquetOpenTestFunction.translationRepresentation (K := K) (E := E)
-  let ρV : Representation ℂ (Multiplicative K) (Induced F ζ hζ w m τB) :=
+  let ρV :=
     (cellAction F ζ hζ w m hm τB).comp (upperRoot F ζ hζ w)
-  let ρW : Representation ℂ (Multiplicative K) E := 1
+  
   let ext := KPJacquetOpenCell.ext_w F ζ hζ w m hm τB hτB
   let ev := ev1 F ζ hζ w m τB
   have hext : ∀ x φ, ext (ρU x φ) = ρV x (ext φ) := by

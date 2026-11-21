@@ -20,7 +20,6 @@ local instance rawGroup (v : KPHilbert.Place F) : IsTopologicalGroup (KPLocalCov
   | inl w => exact (KPLocalChartTopology.complex_topological_cover F ζ hζ w).2.2.1
   | inr q => exact (KPLocalChartTopology.finite_topological_group F ζ hζ q _ (depth_admissible F ζ hζ q)).2.2
 local instance : Fact (∀ v : KPHilbert.Place F, IsOpen (compact F ζ hζ v : Set (KPLocalCover.CubicGL2Raw F ζ hζ v))) := ⟨compact_open F ζ hζ⟩
-local instance : IsTopologicalGroup (RestrictedCover F ζ hζ) := RestrictedProduct.isTopologicalGroup (R := fun v => KPLocalCover.CubicGL2Raw F ζ hζ v) (B := compact F ζ hζ)
 
  def finiteTruncate (x : RestrictedCover F ζ hζ) : RestrictedCover F ζ hζ :=
   RestrictedProduct.mapAlong _ _ id Filter.tendsto_id

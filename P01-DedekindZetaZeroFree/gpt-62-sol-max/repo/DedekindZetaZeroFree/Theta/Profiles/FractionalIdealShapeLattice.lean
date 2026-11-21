@@ -62,11 +62,7 @@ private theorem unscaleComplexCoordinates_toLinearMap :
     (unscaleComplexCoordinates K).toLinearMap =
       LinearMap.pi (fun w ↦
         (divideBySqrtTwo : ℂ ≃L[ℝ] ℂ).toLinearMap.comp
-          (LinearMap.proj w)) := by
-  apply LinearMap.ext
-  intro z
-  funext w
-  simp [unscaleComplexCoordinates]
+          (LinearMap.proj w)) := rfl
 
 open Classical in
 private theorem det_unscaleComplexCoordinates :
@@ -95,8 +91,7 @@ private theorem det_traceToEuclidean :
         (u.toLinearMap.comp
           (mixedEmbedding.euclidean.toMixed K).toLinearMap)) =
       LinearMap.det u.toLinearMap by
-        exact LinearMap.det_conj u.toLinearMap
-          (mixedEmbedding.euclidean.toMixed K).symm.toLinearEquiv]
+        exact LinearMap.det_conj ..]
   change LinearMap.det
       (LinearMap.prodMap
         (LinearMap.id (R := ℝ)
@@ -131,8 +126,7 @@ theorem covolume_comap_continuousLinearEquiv
   have hmeasure :
       μ (e ⁻¹' ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) =
         ENNReal.ofReal |(LinearMap.det e.toLinearMap)⁻¹| *
-          μ (ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) := by
-    exact MeasureTheory.Measure.addHaar_preimage_linearMap
+          μ (ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)) := MeasureTheory.Measure.addHaar_preimage_linearMap
       μ (LinearEquiv.isUnit_det' e.toLinearEquiv).ne_zero _
   rw [ZLattice.covolume_eq_measure_fundamentalDomain _
       μ
@@ -227,7 +221,7 @@ theorem traceToMixed_traceRadialScale
     traceToMixed K (traceRadialScale K q hq v) =
       mixedSpaceOfRealSpace q * traceToMixed K v := by
   rw [traceRadialScale]
-  simp
+  simp [radialMixedSpaceUnit]
 
 open Classical in
 theorem inner_traceRadialScale

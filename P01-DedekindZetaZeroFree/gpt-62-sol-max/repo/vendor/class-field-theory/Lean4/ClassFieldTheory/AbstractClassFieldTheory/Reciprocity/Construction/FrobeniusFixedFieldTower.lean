@@ -153,12 +153,6 @@ noncomputable def field (T : FrobeniusFixedFieldTower D) :
   exact D.frobeniusFixedAbstractField T.ambientBase T.ambient.field
     T.ambient.below T.fieldFrobenius
 
-/-- The fixed-field inclusion as a bundled Galois subextension. -/
-noncomputable def toGaloisSubextension (T : FrobeniusFixedFieldTower D) :
-    GaloisSubextension T.base.field where
-  field := T.field.field
-  below := T.field_le_base
-  normal := T.normal
 
 /-- The finite extension between the two bundled fixed fields. -/
 noncomputable def extension (T : FrobeniusFixedFieldTower D) :

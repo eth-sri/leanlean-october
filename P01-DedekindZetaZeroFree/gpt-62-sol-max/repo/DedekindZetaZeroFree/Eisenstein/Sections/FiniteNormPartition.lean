@@ -17,10 +17,6 @@ def logIncrement (g u : KPMsRationalCompactCrossPairing.G F ζ hζ) : ℝ :=
   Real.log (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D (g * u) : ℝ≥0) : ℝ)) -
     Real.log (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ))
 
- def rawIwasawa (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ) :
-    KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ :=
-  { K := D.K, compact := D.compact, decomposition := D.decomposition, overlap := D.overlap }
-
 private theorem norm_borel_mul
     (t : KPMsRationalCompactCrossPairing.E F ζ hζ)
     (x : KPGlobalTorusFunctionData.Adeles F)
@@ -29,7 +25,7 @@ private theorem norm_borel_mul
         ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       KPGlobalTorusFunctionData.delta F ζ hζ t *
         KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g :=
-  KPGlobalTorusBorelNormTwistTransport.iwasawaNorm_borel_mul F ζ hζ (rawIwasawa D) t x g
+  KPGlobalTorusBorelNormTwistTransport.iwasawaNorm_borel_mul F ζ hζ D t x g
 
 theorem logIncrement_borel_mul
     (t : KPMsRationalCompactCrossPairing.E F ζ hζ)

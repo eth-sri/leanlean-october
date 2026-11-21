@@ -41,12 +41,16 @@ variable {base : ValuationTheory.DiscreteValuationField.DVF.{u, v} K}
 variable {target : ValuationTheory.DiscreteValuationField.DVF.{w, x} L}
 variable [base.valuation.HasExtension target.valuation]
 
+section
+
+variable (huniq :
+      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
+        base target)
+include huniq
+
 /-- Elements whose displacement has a fixed maximal-ideal lower bound form a
 base valuation-ring subalgebra. -/
 def valuationSubringDisplacementSubalgebraOfUniqueExtension
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
     (n : ℕ) (sigma : Gal(L/K)) :
     Subalgebra base.valuationSubring target.valuationSubring where
   carrier :=
@@ -125,9 +129,6 @@ def valuationSubringDisplacementSubalgebraOfUniqueExtension
 
 /-- States the theorem `mem_valuationSubringDisplacementSubalgebraOfUniqueExtension_iff`. -/
 @[simp] theorem mem_valuationSubringDisplacementSubalgebraOfUniqueExtension_iff
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
     (n : ℕ) (sigma : Gal(L/K)) (a : target.valuationSubring) :
     a ∈ valuationSubringDisplacementSubalgebraOfUniqueExtension
         (base := base) (target := target) huniq n sigma ↔
@@ -139,9 +140,6 @@ def valuationSubringDisplacementSubalgebraOfUniqueExtension
 /-- A displacement bound on a generator extends to every integral polynomial
 expression in that generator. -/
 theorem valuationSubringAutOfUniqueExtension_sub_mem_of_mem_adjoin
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
     {a z : target.valuationSubring} {n : ℕ} {sigma : Gal(L/K)}
     (ha : valuationSubringAutOfUniqueExtension
           (base := base) (target := target) huniq sigma a - a ∈
@@ -165,9 +163,6 @@ theorem valuationSubringAutOfUniqueExtension_sub_mem_of_mem_adjoin
 /-- Ramification number attached to an integral element, before choosing the
 integral generator. -/
 def ramificationNumberOfUniqueExtension
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
     (a : target.valuationSubring) (sigma : Gal(L/K)) : ℕ∞ :=
   IsDiscreteValuationRing.addVal target.valuationSubring
     (valuationSubringAutOfUniqueExtension
@@ -175,9 +170,6 @@ def ramificationNumberOfUniqueExtension
 
 /-- States the theorem `ramificationNumberOfUniqueExtension_one`. -/
 @[simp] theorem ramificationNumberOfUniqueExtension_one
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
     (a : target.valuationSubring) :
     ramificationNumberOfUniqueExtension
       (base := base) (target := target) huniq a 1 = ⊤ := by
@@ -185,9 +177,6 @@ def ramificationNumberOfUniqueExtension
 
 /-- States the theorem `natCast_le_ramificationNumberOfUniqueExtension_iff`. -/
 theorem natCast_le_ramificationNumberOfUniqueExtension_iff
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
     (a : target.valuationSubring) (sigma : Gal(L/K)) (n : ℕ) :
     (n : ℕ∞) ≤ ramificationNumberOfUniqueExtension
         (base := base) (target := target) huniq a sigma ↔
@@ -200,9 +189,6 @@ theorem natCast_le_ramificationNumberOfUniqueExtension_iff
 
 /-- The ramification number is independent of the monogenic generator. -/
 theorem ramificationNumberOfUniqueExtension_eq_of_adjoin_eq_top
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
     {a b : target.valuationSubring}
     (ha : Algebra.adjoin base.valuationSubring
       ({a} : Set target.valuationSubring) = ⊤)
@@ -225,24 +211,27 @@ theorem ramificationNumberOfUniqueExtension_eq_of_adjoin_eq_top
     exact valuationSubringAutOfUniqueExtension_sub_mem_of_mem_adjoin
       (base := base) (target := target) huniq hbn (by rw [hb]; simp)
 
+end
+
 variable [FiniteDimensional K L] [IsGalois K L]
 variable [Algebra.IsSeparable base.residueField target.residueField]
 
+section
+
+variable (huniq :
+      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
+        base target)
+include huniq
+
 /-- The integral generator supplied internally by the monogeneity theorem under
 the standing hypotheses. -/
-def chosenRamificationGeneratorOfUniqueExtension
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target) : target.valuationSubring :=
+def chosenRamificationGeneratorOfUniqueExtension : target.valuationSubring :=
   Classical.choose
     (exists_valuationSubring_adjoin_eq_top_of_uniqueExtension
       (base := base) (target := target) huniq)
 
 /-- States the theorem `chosenRamificationGeneratorOfUniqueExtension_adjoin_eq_top`. -/
-theorem chosenRamificationGeneratorOfUniqueExtension_adjoin_eq_top
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target) :
+theorem chosenRamificationGeneratorOfUniqueExtension_adjoin_eq_top :
     Algebra.adjoin base.valuationSubring
         ({chosenRamificationGeneratorOfUniqueExtension
             (base := base) (target := target) huniq} :
@@ -254,9 +243,6 @@ theorem chosenRamificationGeneratorOfUniqueExtension_adjoin_eq_top
 /-- The canonical ramification number.  Its generator is supplied
 internally by the monogenic integral-generator theorem. -/
 def intrinsicRamificationNumberOfUniqueExtension
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
     (sigma : Gal(L/K)) : ℕ∞ :=
   ramificationNumberOfUniqueExtension
     (base := base) (target := target) huniq
@@ -264,42 +250,13 @@ def intrinsicRamificationNumberOfUniqueExtension
       (base := base) (target := target) huniq) sigma
 
 /-- States the theorem `intrinsicRamificationNumberOfUniqueExtension_one`. -/
-@[simp] theorem intrinsicRamificationNumberOfUniqueExtension_one
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target) :
+@[simp] theorem intrinsicRamificationNumberOfUniqueExtension_one :
     intrinsicRamificationNumberOfUniqueExtension
       (base := base) (target := target) huniq 1 = ⊤ := by
   simp [intrinsicRamificationNumberOfUniqueExtension]
 
-/-- The canonical ramification number recovers the integral lower groups. -/
-theorem mem_lowerRamificationGroup_nat_iff_intrinsicRamificationNumberOfUniqueExtension_ge
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (n : ℕ) (sigma : Gal(L/K)) :
-    sigma ∈ lowerRamificationGroup
-        (base := base) (target := target) huniq (n : ℝ) ↔
-      ((n + 1 : ℕ) : ℕ∞) ≤
-        intrinsicRamificationNumberOfUniqueExtension
-          (base := base) (target := target) huniq sigma := by
-  change sigma ∈ lowerRamificationGroup
-      (base := base) (target := target) huniq (n : ℝ) ↔
-    ((n + 1 : ℕ) : ℕ∞) ≤ ramificationNumberOfUniqueExtension
-      (base := base) (target := target) huniq
-      (chosenRamificationGeneratorOfUniqueExtension
-        (base := base) (target := target) huniq) sigma
-  rw [mem_lowerRamificationGroup_nat_iff,
-    natCast_le_ramificationNumberOfUniqueExtension_iff]
-  constructor
-  · intro hsigma
-    exact hsigma _
-  · intro hgen z
-    exact valuationSubringAutOfUniqueExtension_sub_mem_of_mem_adjoin
-      (base := base) (target := target) huniq hgen (by
-        rw [chosenRamificationGeneratorOfUniqueExtension_adjoin_eq_top
-          (base := base) (target := target) huniq]
-        simp)
+end
+
 
 end Higher
 end RamificationTheory.HilbertRamification

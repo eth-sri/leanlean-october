@@ -12,11 +12,15 @@ set_option maxHeartbeats 1000000
 
 noncomputable section
 
- theorem cls_self (G : Type*) [CommGroup G] (n : ℕ) (g : G) :
+section
+
+variable (G : Type*) [CommGroup G]
+
+ theorem cls_self (n : ℕ) (g : G) :
     QuotientGroup.mk' (powMonoidHom (α := G) n).range (g ^ n) = 1 := by
   apply (QuotientGroup.eq_one_iff _).2
   exact ⟨g, rfl⟩
-private theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k)
+private theorem cls_congr (n m k l : ℕ) (h : n*m=l*k)
     (a b : G) (hab : QuotientGroup.mk' (powMonoidHom (α := G) n).range a =
       QuotientGroup.mk' (powMonoidHom (α := G) n).range b) :
     QuotientGroup.mk' (powMonoidHom (α := G) k).range (a^m) =
@@ -24,24 +28,24 @@ private theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k
   obtain ⟨z, hz, hab⟩ := (QuotientGroup.mk'_eq_mk' _).1 hab
   obtain ⟨t, rfl⟩ := hz
   rw [← hab, mul_pow, powMonoidHom_apply, ← pow_mul, h, pow_mul, map_mul, cls_self, mul_one]
- theorem cls_out (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k) (a : G) :
+ theorem cls_out (n m k l : ℕ) (h : n*m=l*k) (a : G) :
     QuotientGroup.mk' (powMonoidHom (α := G) k).range
       ((Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) n).range a))^m) =
     QuotientGroup.mk' (powMonoidHom (α := G) k).range (a^m) := by
   apply cls_congr G n m k l h
   exact Quotient.out_eq _
- theorem cls_out_eq (G : Type*) [CommGroup G] (n : ℕ) (q : PowerQuotient G n) :
+ theorem cls_out_eq (n : ℕ) (q : PowerQuotient G n) :
     QuotientGroup.mk' (powMonoidHom (α := G) n).range (Quotient.out q) = q :=
   Quotient.out_eq q
 
- theorem cls_ann (G : Type*) [CommGroup G] (n : ℕ)
+ theorem cls_ann (n : ℕ)
     (q : PowerQuotient G n) : q ^ n = 1 := by
   induction q using Quotient.inductionOn with
   | h g =>
     change (QuotientGroup.mk' (powMonoidHom (α := G) n).range g)^n = 1
     rw [← map_pow]; exact cls_self G n g
 
- theorem crt_kernel (G : Type*) [CommGroup G] :
+ theorem crt_kernel :
     (powMonoidHom (α := G) 6).range ≤
       (((QuotientGroup.mk' (powMonoidHom (α := G) 2).range).prod
         (QuotientGroup.mk' (powMonoidHom (α := G) 3).range))).ker := by
@@ -52,7 +56,7 @@ private theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k
   · change QuotientGroup.mk' (powMonoidHom (α := G) 3).range (g^6) = 1
     convert cls_self G 3 (g^2) using 1 <;> rw [← pow_mul] <;> norm_num
 
-def sixthPowerCRT (G : Type*) [CommGroup G] :
+def sixthPowerCRT :
     PowerQuotient G 6 ≃* PowerQuotient G 2 × PowerQuotient G 3 where
   toFun := QuotientGroup.lift (powMonoidHom (α := G) 6).range
     ((QuotientGroup.mk' (powMonoidHom (α := G) 2).range).prod
@@ -99,6 +103,8 @@ def sixthPowerCRT (G : Type*) [CommGroup G] :
       ((QuotientGroup.mk' (powMonoidHom (α := G) 2).range).prod
         (QuotientGroup.mk' (powMonoidHom (α := G) 3).range)) (crt_kernel G)) a b
 
+end
+
  theorem pair_power_range (G H : Type*) [CommGroup G] [CommGroup H] (n : ℕ) :
     (powMonoidHom (α := G × H) n).range =
       ((powMonoidHom (α := G) n).range).prod ((powMonoidHom (α := H) n).range) := by
@@ -108,21 +114,26 @@ def sixthPowerCRT (G : Type*) [CommGroup G] :
     exact ⟨⟨y.1, rfl⟩, ⟨y.2, rfl⟩⟩
   · rintro ⟨⟨a, ha⟩, ⟨b, hb⟩⟩
     exact ⟨(a,b), Prod.ext ha hb⟩
- def piPairPowerEquiv {I J : Type*} (G : I → Type*) (H : J → Type*)
-    [∀ i, CommGroup (G i)] [∀ j, CommGroup (H j)] (n : ℕ) :
+section
+
+variable {I J : Type*} (G : I → Type*) (H : J → Type*) [∀ i, CommGroup (G i)]
+  [∀ j, CommGroup (H j)] (n : ℕ)
+
+ def piPairPowerEquiv :
     PowerQuotient (((i : I) → G i) × ((j : J) → H j)) n ≃*
       (((i : I) → PowerQuotient (G i) n) × ((j : J) → PowerQuotient (H j) n)) :=
   (QuotientGroup.quotientMulEquivOfEq (pair_power_range _ _ n)).trans
     ((QuotientGroup.prodMulEquiv _ _).trans
       ((QuotientGroup.mulEquivPiModRangePowMonoidHom G n).prodCongr
        (QuotientGroup.mulEquivPiModRangePowMonoidHom H n)))
- theorem piPairPowerEquiv_apply {I J : Type*} (G : I → Type*) (H : J → Type*)
-    [∀ i, CommGroup (G i)] [∀ j, CommGroup (H j)] (n : ℕ)
+ theorem piPairPowerEquiv_apply
     (g : ((i : I) → G i) × ((j : J) → H j)) :
     piPairPowerEquiv G H n (QuotientGroup.mk' (powMonoidHom (α := (((i : I) → G i) × ((j : J) → H j))) n).range g) =
       (fun i => QuotientGroup.mk' (powMonoidHom (α := G i) n).range (g.1 i),
        fun j => QuotientGroup.mk' (powMonoidHom (α := H j) n).range (g.2 j)) := by
   rfl
+
+end
 namespace SArithmeticData
 
 variable {F : Type} [Field F] [NumberField F]

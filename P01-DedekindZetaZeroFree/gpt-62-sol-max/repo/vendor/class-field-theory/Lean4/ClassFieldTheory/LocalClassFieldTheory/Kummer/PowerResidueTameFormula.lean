@@ -52,9 +52,13 @@ open LocalFieldTheory.IsNonarchimedeanLocalField
 variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 
+section
+
+variable (n : ℕ+) (z : nthRootsSubgroup K (n : ℕ))
+include n z
+
 /-- Every field-valued `n`-th root of unity has normalized valuation zero. -/
-theorem nthRootsSubgroup_valuationMap_eq_zero
-    (n : ℕ+) (z : nthRootsSubgroup K (n : ℕ)) :
+theorem nthRootsSubgroup_valuationMap_eq_zero :
     valuationMap K (Additive.ofMul z.1) = 0 := by
   have hpow := valuationMap_ofMul_pow K z.1 (n : ℕ)
   have hzero :
@@ -65,23 +69,22 @@ theorem nthRootsSubgroup_valuationMap_eq_zero
 
 /-- The canonical valuation-ring unit underlying a local `n`-th root of
 unity. -/
-noncomputable def nthRootIntegerUnit
-    (n : ℕ+) (z : nthRootsSubgroup K (n : ℕ)) : 𝒪[K]ˣ :=
+noncomputable def nthRootIntegerUnit : 𝒪[K]ˣ :=
   integerUnitOfValuationMapZero K z.1
     (nthRootsSubgroup_valuationMap_eq_zero K n z)
 
 @[simp]
-theorem integerUnitsToFieldUnits_nthRootIntegerUnit
-    (n : ℕ+) (z : nthRootsSubgroup K (n : ℕ)) :
+theorem integerUnitsToFieldUnits_nthRootIntegerUnit :
     integerUnitsToFieldUnits K (nthRootIntegerUnit K n z) = z.1 :=
   integerUnitOfValuationMapZero_spec K z.1
     (nthRootsSubgroup_valuationMap_eq_zero K n z)
 
-theorem nthRootIntegerUnit_pow
-    (n : ℕ+) (z : nthRootsSubgroup K (n : ℕ)) :
+theorem nthRootIntegerUnit_pow :
     nthRootIntegerUnit K n z ^ (n : ℕ) = 1 := by
   apply integerUnitsToFieldUnits_injective K
   rw [map_pow, integerUnitsToFieldUnits_nthRootIntegerUnit, z.2, map_one]
+
+end
 
 /-- Reduction of roots of unity from a nonarchimedean local field to its
 residue field. -/
@@ -279,11 +282,14 @@ theorem residue_arithmeticFrobenius_integerUnitQuotient
       rw [hcard, pow_succ]
       simp
 
+section
+
+variable (n : ℕ+) (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
+include hn
+
 /-- If `n` is a valuation-ring unit, reduction is injective on the local
 `n`-th roots of unity. -/
-theorem localNthRootsReduction_injective
-    (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1) :
+theorem localNthRootsReduction_injective :
     Function.Injective (localNthRootsReduction K n) := by
   intro z w hzw
   let zO : 𝒪[K]ˣ := nthRootIntegerUnit K n z
@@ -358,8 +364,6 @@ theorem localNthRootsReduction_injective
 /-- Away from the residue characteristic, reduction identifies the local
 and residue-field `n`-th roots of unity. -/
 noncomputable def localNthRootsReductionEquiv
-    (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     nthRootsSubgroup K (n : ℕ) ≃* rootsOfUnity (n : ℕ) 𝓀[K] := by
   letI : NeZero (n : ℕ) := ⟨n.ne_zero⟩
@@ -400,8 +404,6 @@ noncomputable def localNthRootsReductionEquiv
 /-- If `K` contains the `n`-th roots of unity and `n` is a local unit, then
 `n` divides the order of the residue-field unit group. -/
 theorem dvd_residueCard_sub_one_of_primitiveRoots
-    (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     (n : ℕ) ∣ Nat.card 𝓀[K] - 1 := by
   let : NeZero (n : ℕ) := ⟨n.ne_zero⟩
@@ -423,6 +425,8 @@ theorem dvd_residueCard_sub_one_of_primitiveRoots
       (rootsOfUnity (n : ℕ) 𝓀[K]).subtype Subtype.val_injective
   rw [hroots, Nat.card_units] at hdvd
   exact hdvd
+
+end
 
 /-- For an `n`-th root of a base integer unit, the residue of its arithmetic
 Frobenius quotient is the base residue unit raised to `(q - 1) / n`. -/
@@ -510,13 +514,15 @@ theorem residue_arithmeticFrobenius_kummerRootQuotient
     _ = (betaBar ^ (n : ℕ)) ^ m := by rw [pow_mul]
     _ = uBar ^ m := by rw [hbetaBarPow]
 
+section
+
+variable (n : ℕ+) (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
+  (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (u : 𝒪[K]ˣ)
+include n hn hmu u
+
 /-- The finite-field tame power-residue symbol, lifted canonically to the
 local `n`-th roots of unity. -/
-noncomputable def localTamePowerResidueSymbol
-    (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (u : 𝒪[K]ˣ) :
+noncomputable def localTamePowerResidueSymbol :
     nthRootsSubgroup K (n : ℕ) := by
   letI : Fintype 𝓀[K] := Fintype.ofFinite _
   exact
@@ -530,11 +536,7 @@ noncomputable def localTamePowerResidueSymbol
 
 /-- Reduction of the lifted tame symbol is the literal finite-field
 power-residue symbol. -/
-theorem localNthRootsReductionEquiv_localTamePowerResidueSymbol
-    (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (u : 𝒪[K]ˣ) :
+theorem localNthRootsReductionEquiv_localTamePowerResidueSymbol :
     letI : Fintype 𝓀[K] := Fintype.ofFinite _
     localNthRootsReductionEquiv K n hn hmu
         (localTamePowerResidueSymbol K n hn hmu u) =
@@ -546,6 +548,8 @@ theorem localNthRootsReductionEquiv_localTamePowerResidueSymbol
         (integerUnitsToResidueUnits K u) := by
   let : Fintype 𝓀[K] := Fintype.ofFinite _
   exact (localNthRootsReductionEquiv K n hn hmu).apply_symm_apply _
+
+end
 
 /-- The tame power-residue symbol embedded in an unramified extension is the
 root quotient of an `n`-th root by arithmetic Frobenius. -/
@@ -721,17 +725,18 @@ theorem natCast_ne_zero_of_valuation_eq_one
     simpa only [hn0] using hn
   exact zero_ne_one ((ValuativeRel.valuation K).map_zero.symm.trans hzero)
 
+section
+
+variable (n : ℕ+) (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
+  (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (u : 𝒪[K]ˣ)
+
 /-- For a valuation-ring unit `u`, the Hilbert symbol with the chosen inverse
 prime element in the first slot is the tame residue symbol of `u`.  The proof
 constructs the unramified certificate for the chosen simple Kummer extension
 from its unit radical and then uses the arithmetic-Frobenius normalization of
 the local Artin map. -/
 theorem
-    localHilbertSymbol_inverseIntegerRingUniformizerFieldUnit_integerUnit_eq_tame
-    (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (u : 𝒪[K]ˣ) :
+    localHilbertSymbol_inverseIntegerRingUniformizerFieldUnit_integerUnit_eq_tame :
     localHilbertSymbol K n
         (natCast_ne_zero_of_valuation_eq_one K n hn) hmu
         (inverseIntegerRingUniformizerFieldUnit K)
@@ -820,11 +825,7 @@ theorem
 /-- Tame local Hilbert-symbol formula in the unit-first convention.  It is the
 skew-symmetric form of the preceding arithmetic-Frobenius calculation. -/
 theorem
-    localHilbertSymbol_integerUnit_inverseIntegerRingUniformizerFieldUnit_eq_tame_inv
-    (n : ℕ+)
-    (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (u : 𝒪[K]ˣ) :
+    localHilbertSymbol_integerUnit_inverseIntegerRingUniformizerFieldUnit_eq_tame_inv :
     localHilbertSymbol K n
         (natCast_ne_zero_of_valuation_eq_one K n hn) hmu
         (integerUnitsToFieldUnits K u)
@@ -847,6 +848,8 @@ theorem
       congrArg Inv.inv
         (localHilbertSymbol_inverseIntegerRingUniformizerFieldUnit_integerUnit_eq_tame
           K n hn hmu u)
+
+end
 
 /-- The local Hilbert symbol is compatible with arbitrary integral powers in
 its second argument. -/

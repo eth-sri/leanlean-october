@@ -84,13 +84,7 @@ def fullTargetSection (D : Iwasawa F ζ hζ) (s : ℂ) :
     rintro a b ⟨y, x, hb⟩
     rw [hb, target_rational])
 
-@[simp] theorem fullSourceSection_mk (D : Iwasawa F ζ hζ) (s : ℂ)
-    (f : Source F ζ hζ s) (g : NormOne F ζ hζ D) :
-    fullSourceSection D s f (Quotient.mk _ g) = f.val g.val := rfl
 
-@[simp] theorem fullTargetSection_mk (D : Iwasawa F ζ hζ) (s : ℂ)
-    (f : Target F ζ hζ s) (g : NormOne F ζ hζ D) :
-    fullTargetSection D s f (Quotient.mk _ g) = f.val g.val := rfl
 
 def sourceAngular (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     fixedPlus F ζ hζ D U →ₗ[ℂ] (Omega F ζ hζ D U → ℂ) :=
@@ -114,13 +108,7 @@ def targetAngular (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     rintro a b ⟨y, x, u, hb⟩
     rw [hb, f.property, target_rational])
 
-@[simp] theorem sourceAngular_mk (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
-    (f : fixedPlus F ζ hζ D U) (g : NormOne F ζ hζ D) :
-    sourceAngular D U f (Quotient.mk _ g) = f.val.val.val g.val := rfl
 
-@[simp] theorem targetAngular_mk (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
-    (f : fixedMinus F ζ hζ D U) (g : NormOne F ζ hζ D) :
-    targetAngular D U f (Quotient.mk _ g) = f.val.val.val g.val := rfl
 
 def fullSourceAngular (D : Iwasawa F ζ hζ) :
     Vplus F ζ hζ D →ₗ[ℂ] (FullOmega F ζ hζ D → ℂ) :=
@@ -130,13 +118,7 @@ def fullTargetAngular (D : Iwasawa F ζ hζ) :
     Vminus F ζ hζ D →ₗ[ℂ] (FullOmega F ζ hζ D → ℂ) :=
   (fullTargetSection D 0).comp (targetCore F ζ hζ D).subtype
 
-@[simp] theorem fullSourceAngular_mk (D : Iwasawa F ζ hζ)
-    (f : Vplus F ζ hζ D) (g : NormOne F ζ hζ D) :
-    fullSourceAngular D f (Quotient.mk _ g) = f.val.val g.val := rfl
 
-@[simp] theorem fullTargetAngular_mk (D : Iwasawa F ζ hζ)
-    (f : Vminus F ζ hζ D) (g : NormOne F ζ hζ D) :
-    fullTargetAngular D f (Quotient.mk _ g) = f.val.val g.val := rfl
 
 end DedekindZetaZeroFree.KPMsRationalCompactCrossPairingProof.ScalarAngularDescent
 

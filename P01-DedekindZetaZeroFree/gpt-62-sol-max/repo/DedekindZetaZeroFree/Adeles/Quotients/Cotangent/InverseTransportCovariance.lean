@@ -21,25 +21,31 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem eqRec_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
+section
+
+variable {i j : Fin (H.atlas U).componentCount} (h : i = j)
+
+private theorem eqRec_places
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).places = s.places := by
   cases h; rfl
 
-private theorem eqRec_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
+private theorem eqRec_rep
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).kind.representative = s.kind.representative := by
   cases h; rfl
 
-private theorem eqRec_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
+private theorem eqRec_splitting
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).splitting = s.splitting := by
   cases h; rfl
 
-private theorem eqRec_cast_symm {i j : Fin (H.atlas U).componentCount} (h : i = j)
+private theorem eqRec_cast_symm
     (y : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) j) :
     h ▸ (h.symm ▸ y) = y := by
   cases h; rfl
+
+end
 
 private theorem eqRec_trans_symm {i j k : Fin (H.atlas U).componentCount}
     (h₁ : i = j) (h₂ : j = k)
@@ -47,32 +53,33 @@ private theorem eqRec_trans_symm {i j k : Fin (H.atlas U).componentCount}
     h₁.symm ▸ (h₂.symm ▸ X) = (h₁.trans h₂).symm ▸ X := by
   cases h₁; cases h₂; rfl
 
-private theorem targetChart_places (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+section
+
+variable (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
+
+private theorem targetChart_places :
     (targetChart a b h).places = placeEquiv F ζ hζ := by
   unfold targetChart
   rw [eqRec_places]
   rfl
 
-private theorem targetChart_rep (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+private theorem targetChart_rep :
     (targetChart a b h).kind.representative = 1 := by
   unfold targetChart
   rw [eqRec_rep]
   rfl
 
-private theorem targetChart_splitting (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+private theorem targetChart_splitting :
     (targetChart a b h).splitting = fun _ => 1 := by
   unfold targetChart
   rw [eqRec_splitting]
   rfl
 
-private theorem targetChart_cast (a b : ShrunkChart F ζ hζ U R P H)
-    (h : a.component = b.component) :
+private theorem targetChart_cast :
     h ▸ targetChart a b h = isotropyChart b := by
-  unfold targetChart
-  exact eqRec_cast_symm h (isotropyChart b)
+  exact eqRec_cast_symm ..
+
+end
 
 private theorem shrunkChart_separated (C : ShrunkChart F ζ hζ U R P H)
     (g : KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H C.component)

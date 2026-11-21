@@ -10,30 +10,8 @@ open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
 open KPMeanZeroWeightedEnergy HyperbolicChart
 
-private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
-  apply (contDiff_piLp 2).mpr
-  intro ⟨i,k⟩
-  fin_cases k
-  · simpa [real, Function.comp_def] using Complex.reCLM.contDiff.comp
-      (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using Complex.imCLM.contDiff.comp
-      (contDiff_fst.comp (contDiff_apply ℝ KPArch.H3 i))
-  · simpa [real, Function.comp_def] using contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
 
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+
 private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
@@ -57,14 +35,14 @@ private theorem flux_component_contDiff
   rw [contDiff_iff_contDiffAt]
   intro x
   let h : Space d → ℝ := fun x => KPCuspLogShape.meanHeight d (arch d x)
-  have hh : ContDiff ℝ (⊤ : ℕ∞) h := (smooth_mean d).comp (smooth_arch d)
+  have hh : ContDiff ℝ (⊤ : ℕ∞) h := (KPMeanZeroWeightedEnergy.meanHeight_contDiff d).comp (KPMeanZeroWeightedEnergy.arch_contDiff d)
   by_cases hx : h x ∈ tsupport a
   · have hopen : IsOpen {z : KPArch.Space d | T < KPCuspLogShape.meanHeight d z} :=
-      isOpen_lt continuous_const (smooth_mean d).continuous
+      isOpen_lt continuous_const (KPMeanZeroWeightedEnergy.meanHeight_contDiff d).continuous
     have hxT : T < h x := ha.2.2 hx
     have hu' : ContDiffAt ℝ (⊤ : ℕ∞) (fun q => (u (arch d q) : ℂ)) x :=
       Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        ((hu.contDiffAt (hopen.mem_nhds hxT)).comp x (smooth_arch d).contDiffAt)
+        ((hu.contDiffAt (hopen.mem_nhds hxT)).comp x (KPMeanZeroWeightedEnergy.arch_contDiff d).contDiffAt)
     exact (Complex.ofRealCLM.contDiff.comp (ha.1.comp hh)).contDiffAt.mul
       (differential_smoothAt d _ x hu' i k)
   · have hn : (tsupport a)ᶜ ∈ 𝓝 (h x) := (isClosed_tsupport a).isOpen_compl.mem_nhds hx
@@ -104,7 +82,7 @@ theorem cutoff_tangentialDivergence_contDiff
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.exp)
   have hx : ContDiff ℝ (⊤ : ℕ∞) (fun p : KPCuspCharts.Coordinates F =>
       real d (KPCuspCharts.toArch F p)) :=
-    (smooth_real d).comp ((KPCuspCharts.toArch_contDiff F).of_le (by simp))
+    (KPMeanZeroWeightedEnergy.real_contDiff d).comp ((KPCuspCharts.toArch_contDiff F).of_le (by simp))
   unfold tangentialDivergence
   apply ContDiff.sum
   intro i hi
@@ -117,9 +95,6 @@ theorem cutoff_tangentialDivergence_contDiff
     (Complex.reCLM.contDiff.comp ((he i).mul (hc' i 0 1)))).add
       (Complex.reCLM.contDiff.comp ((he i).mul (hc' i 1 2))) |>.comp hx
 
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
-
 theorem cutoff_tangentialDivergence_eq_zero_of_notMem_tsupport
     {F : Type} [Field F] [NumberField F]
     (hd : 0 < KPCuspLogShape.dimension F)
@@ -130,7 +105,7 @@ theorem cutoff_tangentialDivergence_eq_zero_of_notMem_tsupport
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F (c,t))
   have hmean : KPCuspLogShape.meanHeight d (arch d x) = t := by
-    rw [arch_real]
+    rw [KPMeanZeroWeightedEnergy.arch_real_eq]
     exact KPCuspCharts.toArch_meanHeight F hd (c,t)
   have hh : Continuous (fun q : Space d => KPCuspLogShape.meanHeight d (arch d q)) := by
     unfold KPCuspLogShape.meanHeight

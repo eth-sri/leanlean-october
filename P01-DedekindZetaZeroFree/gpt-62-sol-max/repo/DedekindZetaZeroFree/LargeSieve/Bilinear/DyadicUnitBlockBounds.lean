@@ -183,7 +183,7 @@ theorem unit_block_extension
       refine le_trans (mul_le_mul_of_nonneg_right hfac hE) ?_
       exact le_of_eq (by rw [Finset.sum_singleton])
     ·
-      simp only [idealDyadicBlock, dyadicScale, one_mul, mul_one]
+      simp only [idealDyadicBlock, dyadicScale]
       refine le_trans (hshell ((2 : ℝ) ^ k) ((2 : ℝ) ^ l)
         (one_le_pow₀ (by norm_num : (1 : ℝ) ≤ 2))
         (one_le_pow₀ (by norm_num : (1 : ℝ) ≤ 2)) lam) ?_

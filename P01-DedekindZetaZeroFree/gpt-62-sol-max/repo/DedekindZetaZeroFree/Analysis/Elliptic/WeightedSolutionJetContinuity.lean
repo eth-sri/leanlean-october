@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Analysis.EllipticEquations.InteriorEstimates.SolutionDifferenceJetBounds
+public import DedekindZetaZeroFree.Analysis.Elliptic.WeightedSmoothRepresentatives
 public import DedekindZetaZeroFree.Eisenstein.Continuation.Cusps.CutoffSourceData
 
 @[expose] public section
@@ -31,7 +32,8 @@ private theorem forcing_jet_continuity {n : ℕ} (A : LocalBall n)
       α.directions (hKA x.property), ← coordinateDerivative, ← coordinateDerivative]
   exact hp.trans_lt hb
 
-open KPContLocalOrbifold
+open KPContLocalOrbifold KPContLocalRegularity.SobolevIteration
+open KPContLocalRegularity.SobolevIteration.Iteration (lowerSobolev lower_value lower_norm)
 
 private lemma deriv_smooth {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (l : List (Fin n)) :
@@ -92,114 +94,6 @@ private lemma smooth_bound {n : ℕ} (B C : LocalBall n)
     unfold normFactor
     nlinarith
 
-private lemma larger_ball {n : ℕ} (A B : LocalBall n)
-    (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) :
-    ∃ C : LocalBall n, C.center = A.center ∧ A.radius < C.radius ∧
-      Metric.closedBall C.center C.radius ⊆ B.carrier := by
-  obtain ⟨δ, hδ, hsub⟩ := (isCompact_closedBall A.center A.radius).exists_cthickening_subset_open
-    Metric.isOpen_ball hAB
-  rw [cthickening_closedBall hδ.le A.radius_pos.le] at hsub
-  exact ⟨⟨A.dimension_pos, A.center, δ + A.radius, add_pos hδ A.radius_pos⟩,
-    rfl, by dsimp; linarith, hsub⟩
-
- def lowIndex {n k l : ℕ} (hkl : k ≤ l) (α : MultiIndex n k) : MultiIndex n l :=
-  ⟨fun i => ⟨(α.val i).val, by have := (α.val i).isLt; omega⟩, α.property.trans hkl⟩
- def lowSobolev {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
-    (u : IntegerSobolev B l) : IntegerSobolev B k where
-  derivatives α := u.derivatives (lowIndex hkl α)
-  weak_derivatives α := u.weak_derivatives (lowIndex hkl α)
-private lemma low_value {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
-    (u : IntegerSobolev B l) : value (lowSobolev hkl u) = value u := rfl
-private lemma low_norm {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
-    (u : IntegerSobolev B l) : (lowSobolev hkl u).sobolevNorm ≤ u.sobolevNorm := by
-  classical
-  apply Real.sqrt_le_sqrt
-  change (∑ α : MultiIndex n k, ‖u.derivatives (lowIndex hkl α)‖ ^ 2) ≤
-    ∑ α : MultiIndex n l, ‖u.derivatives α‖ ^ 2
-  apply Finset.sum_le_sum_of_injOn (lowIndex hkl)
-  · intro α _ β _ hab
-    apply Subtype.ext
-    funext i
-    apply Fin.ext
-    exact congrArg (fun a : MultiIndex n l => (a.val i).val) hab
-  · intro α _; exact Finset.mem_univ _
-  · intro α _; exact le_rfl
-  · intro α _ _; exact sq_nonneg _
-
- def family_restrictCoefficients {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (hAB : A.carrier ⊆ B.carrier) (D : Coefficients B cρ Cρ κ Λ) :
-    Coefficients A cρ Cρ κ Λ where
-  density := D.density
-  matrix := D.matrix
-  density_smooth := D.density_smooth.mono hAB
-  matrix_smooth i j := (D.matrix_smooth i j).mono hAB
-  density_bounds x hx := D.density_bounds x (hAB hx)
-  symmetric x hx := D.symmetric x (hAB hx)
-  ellipticity x hx := D.ellipticity x (hAB hx)
-  upper_bound x hx := D.upper_bound x (hAB hx)
-private lemma family_restrictCoefficients_smooth {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (hAB : A.carrier ⊆ B.carrier) (hclosed : Metric.closedBall A.center A.radius ⊆ B.carrier)
-    (D : Coefficients B cρ Cρ κ Λ) : SmoothNearClosedBall (family_restrictCoefficients hAB D) := by
-  exact ⟨B.carrier, Metric.isOpen_ball, hclosed, D.density_smooth, D.matrix_smooth⟩
-private lemma family_weakEquation_restrict {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
-    (hAB : A.carrier ⊆ B.carrier) (D : Coefficients B cρ Cρ κ Λ) (z : ℂ)
-    (u : IntegerSobolev B 1) (h : BallL2 B) (hw : WeakEquation D z u h) :
-    WeakEquation (family_restrictCoefficients hAB D) z (restrictSobolev hAB u) (restrictBallL2 hAB h) := by
-  intro φ
-  let ψ : TestFunction B.toOpens ℂ ⊤ :=
-    ⟨φ, φ.contDiff, φ.hasCompactSupport, φ.tsupport_subset.trans hAB⟩
-  have heq := hw ψ
-  have hgrad : ∀ᵐ x ∂volume.restrict A.carrier,
-      ∀ j, gradient (restrictSobolev hAB u) j x = gradient u j x := by
-    apply ae_all_iff.mpr
-    intro j
-    exact restrictBallL2_ae hAB _
-  have hv := restrictSobolev_represents hAB u
-  have hh := restrictBallL2_ae hAB h
-  change (∫ x in A.carrier, (D.density x : ℂ) *
-      ∑ i, ∑ j, (D.matrix x i j : ℂ) * gradient (restrictSobolev hAB u) j x *
-        star (coordinateDerivativeList [i] (fun y => φ y) x)) -
-      z * (∫ x in A.carrier, (D.density x : ℂ) * value (restrictSobolev hAB u) x * star (φ x)) =
-        ∫ x in A.carrier, (D.density x : ℂ) * restrictBallL2 hAB h x * star (φ x)
-  have hi : (∫ x in A.carrier, (D.density x : ℂ) *
-      ∑ i, ∑ j, (D.matrix x i j : ℂ) * gradient (restrictSobolev hAB u) j x *
-        star (coordinateDerivativeList [i] (fun y => φ y) x)) =
-      ∫ x in B.carrier, (D.density x : ℂ) *
-      ∑ i, ∑ j, (D.matrix x i j : ℂ) * gradient u j x *
-        star (coordinateDerivativeList [i] (fun y => φ y) x) := by
-    trans ∫ x in A.carrier, (D.density x : ℂ) *
-      ∑ i, ∑ j, (D.matrix x i j : ℂ) * gradient u j x *
-        star (coordinateDerivativeList [i] (fun y => φ y) x)
-    · apply integral_congr_ae
-      filter_upwards [hgrad] with x hx
-      simp only [hx]
-    · symm
-      apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero Metric.isOpen_ball.measurableSet hAB
-      intro x hx
-      have hz : ∀ i, coordinateDerivativeList [i] (fun y => φ y) x = 0 := by
-        intro i
-        apply image_eq_zero_of_notMem_tsupport
-        intro hm
-        exact hx.2 (φ.tsupport_subset (coordinateDerivativeList_tsupport_subset [i] _ hm))
-      simp [hz]
-  have h0 (f : BallL2 B) :
-      (∫ x in A.carrier, (D.density x : ℂ) * restrictBallL2 hAB f x * star (φ x)) =
-      ∫ x in B.carrier, (D.density x : ℂ) * f x * star (φ x) := by
-    trans ∫ x in A.carrier, (D.density x : ℂ) * f x * star (φ x)
-    · apply integral_congr_ae
-      filter_upwards [restrictBallL2_ae hAB f] with x hx
-      rw [hx]
-    · symm
-      apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero Metric.isOpen_ball.measurableSet hAB
-      intro x hx
-      have hz : φ x = 0 := image_eq_zero_of_notMem_tsupport (fun hm => hx.2 (φ.tsupport_subset hm))
-      simp [hz]
-  rw [hi, h0 h]
-  change (∫ x in B.carrier, _) - z * (∫ x in A.carrier,
-    (D.density x : ℂ) * restrictBallL2 hAB (value u) x * star (φ x)) = _
-  rw [h0 (value u)]
-  exact heq
-
 private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
     (R : H →L[ℂ] BallL2 D.outer)
@@ -230,10 +124,10 @@ private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
   have hCB : C.carrier ⊆ B.carrier := by
     rw [LocalBall.carrier, LocalBall.carrier, hBC]
     exact Metric.ball_subset_ball hrad.le
-  let DB := family_restrictCoefficients hsub D.coefficients
+  let DB := restrictCoefficients hsub D.coefficients
   have hDB : SmoothNearClosedBall DB :=
-    family_restrictCoefficients_smooth hsub hBD D.coefficients
-  obtain ⟨T, hT, hest, _, _⟩ := kp_cont_local_regularity_iterate_fixed_coefficients n C B
+    restrictCoefficients_smooth hsub hBD D.coefficients
+  obtain ⟨T, hT, hest⟩ := kp_cont_local_regularity_iterate_fixed_coefficients n C B
     hBC.symm hrad D.densityLower D.densityUpper D.ellipticityLower D.ellipticityUpper
     (‖a z₀‖ + 1) D.densityLower_pos D.ellipticityLower_pos (by positivity) DB hDB k
   let K := Metric.closedBall B.center B.radius
@@ -289,11 +183,11 @@ private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
       exact hx.trans (hy.trans hz'.symm)
     have heqB : WeakEquation DB (a z) uB (value g) := by
       rw [hgval]
-      exact family_weakEquation_restrict hsub D.coefficients (a z) u g₀ heq
+      exact restrictWeakEquation hsub D.coefficients (a z) u g₀ heq
     obtain ⟨q, hq, hqnorm⟩ := hest (a z) haB uB g heqB
-    refine ⟨lowSobolev (Nat.le_add_right k 2) q, ?_, ?_⟩
+    refine ⟨lowerSobolev (Nat.le_add_right k 2) q, ?_, ?_⟩
     · unfold Represents
-      rw [low_value]
+      rw [lower_value]
       filter_upwards [hq, ae_restrict_of_ae_restrict_of_subset hCB
         (restrictSobolev_represents hsub u),
         ae_restrict_of_ae_restrict_of_subset (hCB.trans hsub) hu,
@@ -305,7 +199,7 @@ private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
         rw [hvu]
         exact (norm_restrictBallL2_le hsub _).trans
           ((R.le_opNorm _).trans (mul_le_mul_of_nonneg_left hvB (norm_nonneg _)))
-      have hn := low_norm (Nat.le_add_right k 2) q
+      have hn := lower_norm (Nat.le_add_right k 2) q
       have hm := mul_le_mul_of_nonneg_left (add_le_add hvalB hgnorm) hT.le
       dsimp [U]
       linarith
@@ -340,54 +234,13 @@ private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
   dsimp [w]
   nlinarith
 
- def analyticChart {n : ℕ} (A : LocalBall n) {cρ Cρ κ Λ : ℝ}
-    (D : Coefficients A cρ Cρ κ Λ) (hcρ : 0 < cρ) (hκ : 0 < κ)
-    (hD : SmoothNearClosedBall D) : LineChart n := by
-  let B : LocalBall n := ⟨A.dimension_pos, A.center, A.radius / 2,
-    div_pos A.radius_pos (by norm_num)⟩
-  let η : ContDiffBump A.center :=
-    ⟨A.radius / 2, 3 * A.radius / 4, div_pos A.radius_pos (by norm_num),
-      by linarith [A.radius_pos]⟩
-  exact {
-    stabilizer := Unit
-    group := inferInstance
-    finite := inferInstance
-    action := 1
-    lineAction := 1
-    unitary := by intro g; simp
-    inner := B
-    outer := A
-    concentric := rfl
-    radii_lt := by dsimp [B]; linarith [A.radius_pos]
-    fixes_center := by intro g; simp
-    densityLower := cρ
-    densityUpper := Cρ
-    ellipticityLower := κ
-    ellipticityUpper := Λ
-    densityLower_pos := hcρ
-    ellipticityLower_pos := hκ
-    coefficients := D
-    smooth_coefficients := hD
-    density_invariant := by intro g x hx; simp
-    cutoff := η
-    cutoff_smooth := η.contDiff
-    cutoff_compact := η.hasCompactSupport
-    cutoff_support := by
-      rw [η.tsupport_eq]
-      exact Metric.closedBall_subset_ball (by change 3 * A.radius / 4 < A.radius; linarith [A.radius_pos])
-    cutoff_one := by intro x hx; exact η.one_of_mem_closedBall hx
-    cutoff_invariant := by intro g x; simp }
-
 theorem weighted_solution_jet_continuity {n : ℕ} (A : LocalBall n)
     {cρ Cρ κ Λ : ℝ} (D : Coefficients A cρ Cρ κ Λ)
     (hcρ : 0 < cρ) (hκ : 0 < κ)
-    (hD : KPContLocalRegularity.SmoothNearClosedBall D)
     (Ω : Set ℂ) (hΩ : IsOpen Ω) (a : ℂ → ℂ) (ha : ContinuousOn a Ω)
     (v : ℂ → BallL2 A) (hv : ContinuousOn v Ω)
     (h : ℂ → Space n → ℂ)
     (hh : KPCutoffSource.ChartSmoothHolomorphicOn A h Ω)
-    (hhS : ∀ B : LocalBall n, KPContLocalCubeEmbedding.closedCarrier B ⊆ A.carrier →
-      KPCutoffSource.ChartSobolevHolomorphicOn B h Ω)
     (hweak : ∀ s ∈ Ω, ∃ w : IntegerSobolev A 1,
       value w = v s ∧ ∃ g : BallL2 A,
         (h s =ᵐ[volume.restrict A.carrier] (fun p => g p)) ∧
@@ -397,7 +250,7 @@ theorem weighted_solution_jet_continuity {n : ℕ} (A : LocalBall n)
       (f s =ᵐ[volume.restrict A.carrier] (fun p => v s p))) :
     KPContLocalHolomorphyUpgrade.CauchyAssembly.Raw.JetContinuousOn A f Ω := by
   classical
-  let D' := analyticChart A D hcρ hκ hD
+  let D' : LineChart n := ⟨A, cρ, Cρ, κ, Λ, hcρ, hκ, D⟩
   let R : BallL2 A →L[ℂ] BallL2 A := ContinuousLinearMap.id ℂ (BallL2 A)
   have hweak' : ∀ z ∈ Ω, ∃ w : IntegerSobolev A 1,
       Represents w (fun p => R (v z) p) ∧ ∃ g : BallL2 A,

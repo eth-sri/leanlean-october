@@ -444,32 +444,31 @@ theorem mem_sUnitGroup_of_pow_mem
     (pow_eq_one_iff_left
       (a := v.valuation K ((x : Kˣ) : K)) n.ne_zero).mp hpow
 
+section
+
+variable (n : ℕ+) (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n S
+
 /-- The admissible subgroup
 
 `Kˢ · Kˣⁿ ≤ Kˣ`
 
 whose radical extension is the field `N = K(√[n]{Kˢ})` in the finite S-unit preparation argument. -/
-def fullSUnitKummerSubgroup
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+def fullSUnitKummerSubgroup :
     KummerTheory.KummerSubgroup K n :=
   ⟨SUnitGroup (K := K) S ⊔
       KummerTheory.unitNthPowersSubgroup K n,
     le_sup_right⟩
 
 /-- Include an `S`-unit in the full `S`-unit Kummer subgroup. -/
-def sUnitToFullSUnitKummerSubgroup
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+def sUnitToFullSUnitKummerSubgroup :
     SUnitGroup (K := K) S →*
       (fullSUnitKummerSubgroup (K := K) n S).1 :=
   Subgroup.inclusion le_sup_left
 
 /-- Map an `S`-unit to its class in
 `(Kˢ · Kˣⁿ) / Kˣⁿ`. -/
-def sUnitToFullSUnitRadicalQuotient
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+def sUnitToFullSUnitRadicalQuotient :
     SUnitGroup (K := K) S →*
       KummerTheory.RestrictedRadicalQuotient
         n (fullSUnitKummerSubgroup (K := K) n S) :=
@@ -478,9 +477,7 @@ def sUnitToFullSUnitRadicalQuotient
     (sUnitToFullSUnitKummerSubgroup (K := K) n S)
 
 /-- `S`-unit `n`-th powers vanish in the full radical quotient. -/
-theorem nthPowerSubgroup_le_ker_sUnitToFullSUnitRadicalQuotient
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem nthPowerSubgroup_le_ker_sUnitToFullSUnitRadicalQuotient :
     (powMonoidHom (n : ℕ) :
         SUnitGroup (K := K) S →*
           SUnitGroup (K := K) S).range ≤
@@ -504,9 +501,7 @@ theorem nthPowerSubgroup_le_ker_sUnitToFullSUnitRadicalQuotient
 /-- The canonical comparison
 
 `Kˢ / Kˢⁿ → (Kˢ · Kˣⁿ) / Kˣⁿ`. -/
-def sUnitNthPowerQuotientToFullSUnitRadicalQuotient
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+def sUnitNthPowerQuotientToFullSUnitRadicalQuotient :
     SUnitGroup (K := K) S ⧸
         (powMonoidHom (n : ℕ) :
           SUnitGroup (K := K) S →*
@@ -522,9 +517,7 @@ def sUnitNthPowerQuotientToFullSUnitRadicalQuotient
       (K := K) n S)
 
 /-- Every class in `(Kˢ · Kˣⁿ) / Kˣⁿ` has an `S`-unit representative. -/
-theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_surjective
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_surjective :
     Function.Surjective
       (sUnitNthPowerQuotientToFullSUnitRadicalQuotient
         (K := K) n S) := by
@@ -557,9 +550,7 @@ theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_surjective
 /-- The canonical comparison from `Kˢ / Kˢⁿ` is injective.  The only
 arithmetic point is saturation of the `S`-unit group under positive
 powers, proved above from valuations. -/
-theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_injective
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_injective :
     Function.Injective
       (sUnitNthPowerQuotientToFullSUnitRadicalQuotient
         (K := K) n S) := by
@@ -596,9 +587,7 @@ theorem sUnitNthPowerQuotientToFullSUnitRadicalQuotient_injective
 
 /-- The exact quotient identification used to define
 `N = K(√[n]{Kˢ})`. -/
-noncomputable def sUnitNthPowerQuotientEquivFullSUnitRadicalQuotient
-    (n : ℕ+)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+noncomputable def sUnitNthPowerQuotientEquivFullSUnitRadicalQuotient :
     SUnitGroup (K := K) S ⧸
         (powMonoidHom (n : ℕ) :
           SUnitGroup (K := K) S →*
@@ -612,6 +601,8 @@ noncomputable def sUnitNthPowerQuotientEquivFullSUnitRadicalQuotient
         (K := K) n S,
       sUnitNthPowerQuotientToFullSUnitRadicalQuotient_surjective
         (K := K) n S⟩
+
+end
 
 /-- The full `S`-unit radical quotient is finite. -/
 noncomputable instance finite_fullSUnitRadicalQuotient

@@ -36,24 +36,21 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
+section
+
+variable (K F E : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field F] [ValuativeRel F] [TopologicalSpace F]
+  [IsNonarchimedeanLocalField F] [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
+  [IsScalarTower K F E] [FiniteDimensional K F] [Algebra.IsSeparable K F]
+  [Valuation.HasExtension
+      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
+  [FiniteDimensional F E] [IsAbelianGalois F E] (j : E →ₐ[K] SeparableClosure K)
+  (e : ambientEmbeddedSeparableClosureEquiv K F E j) (z : Abelianization Gal(E / F))
+
 /-- The chosen ambient prime witness maps to the prescribed abelianized
 Galois element under the concrete local Artin map. -/
 theorem
-    ambientEmbeddedPrimeWitness_local
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeWitness_local :
     localArtinMonoidHom F E
         (ambientEmbeddedPrimeWitness K F E j e z) =
       z := by
@@ -334,21 +331,7 @@ theorem
 /-- The chosen prime witness satisfies the ambient fixed-field
 norm-residue symbol formula. -/
 theorem
-    ambientEmbeddedPrimeWitness_symbol
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeWitness_symbol :
     ambientEmbeddedPrimeSymbolProperty K F E j e z := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
@@ -646,21 +629,7 @@ theorem
 /-- The transported ambient symbol of the chosen prime witness equals
 its ambient Frobenius target. -/
 theorem
-    ambientEmbeddedPrimeTransportValue_eq_target
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeTransportValue_eq_target :
     ambientEmbeddedPrimeTransportValue K F E j e z =
       ambientEmbeddedPrimeTarget K F E j e z := by
   have hsymbol :=
@@ -673,21 +642,7 @@ theorem
 /-- The ambient Frobenius target recovers the original abelianized
 Galois element. -/
 theorem
-    ambientEmbeddedPrimeTarget_eq
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeTarget_eq :
     ambientEmbeddedPrimeTarget K F E j e z = z := by
   let i :=
     j.comp (IsScalarTower.toAlgHom K F E)
@@ -815,21 +770,7 @@ theorem
 /-- The ambient norm-residue value of the chosen prime witness is the
 prescribed abelianized Galois element. -/
 theorem
-    ambientEmbeddedPrimeWitness_ambient
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
-    (z : Abelianization Gal(E / F)) :
+    ambientEmbeddedPrimeWitness_ambient :
     ambientEmbeddedNormResidueAbelianElement K F E j e
         (ambientEmbeddedPrimeWitness K F E j e z) =
       z := by
@@ -841,6 +782,8 @@ theorem
       ambientEmbeddedPrimeTransportValue_eq_target K F E j e z
     _ = z :=
       ambientEmbeddedPrimeTarget_eq K F E j e z
+
+end
 
 end LocalClassFieldTheory
 

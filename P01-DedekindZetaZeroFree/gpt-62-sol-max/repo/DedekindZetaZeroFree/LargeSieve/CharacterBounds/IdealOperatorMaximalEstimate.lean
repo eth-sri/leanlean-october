@@ -27,29 +27,32 @@ private lemma sorted_equiv {α : Type*} [Fintype α] (f : α → ℝ) :
   let e := Fintype.orderIsoFinOfCardEq α rfl
   exact ⟨e.toEquiv, hf.comp e.monotone⟩
 
-lemma exists_sortedEnumeration (F : Type) [Field F] [NumberField F] (N : ℝ) :
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+lemma exists_sortedEnumeration (N : ℝ) :
     ∃ e : Fin (dyad F N).card ≃ dyad F N,
       Monotone (fun k => (Ideal.absNorm (e k).val : ℝ)) := by
   have h := sorted_equiv (fun J : dyad F N => (Ideal.absNorm J.val : ℝ))
   rw [Fintype.card_coe] at h
   exact h
 
-def enumeration (F : Type) [Field F] [NumberField F] (N : ℝ) :
+def enumeration (N : ℝ) :
     Fin (dyad F N).card ≃ dyad F N :=
   (exists_sortedEnumeration F N).choose
 
-lemma enumeration_monotone (F : Type) [Field F] [NumberField F] (N : ℝ) :
+lemma enumeration_monotone (N : ℝ) :
     Monotone (fun k => (Ideal.absNorm (enumeration F N k).val : ℝ)) :=
   (exists_sortedEnumeration F N).choose_spec
 
-lemma sum_enumeration (F : Type) [Field F] [NumberField F] (N : ℝ)
+lemma sum_enumeration (N : ℝ)
     {M : Type*} [AddCommMonoid M] (f : Ideal (𝓞 F) → M) :
     (∑ k : Fin (dyad F N).card, f (enumeration F N k).val) =
-      ∑ J ∈ dyad F N, f J := by
-  exact ((enumeration F N).sum_comp (fun J : dyad F N => f J.val)).trans
+      ∑ J ∈ dyad F N, f J := ((enumeration F N).sum_comp (fun J : dyad F N => f J.val)).trans
     (Finset.sum_coe_sort _ _)
 
-lemma coefficientMass_eq (F : Type) [Field F] [NumberField F]
+lemma coefficientMass_eq
     (b : Ideal (𝓞 F) → ℂ) (N : ℝ) :
     (∑ᶠ J : Ideal (𝓞 F),
       if J ≠ ⊥ ∧ N < (Ideal.absNorm J : ℝ) ∧ (Ideal.absNorm J : ℝ) ≤ 2 * N
@@ -59,25 +62,23 @@ lemma coefficientMass_eq (F : Type) [Field F] [NumberField F]
   rw [finsum_eq_sum_of_support_subset _ (s := dyad F N)]
   · apply Finset.sum_congr rfl
     intro J hJ
-    simp [(mem_dyad F N J).mp hJ]
-  · intro J hJ
-    by_contra h
-    simp only [Function.mem_support] at hJ
-    simp [(mem_dyad F N J).not.mp h] at hJ
+    simp_all
+  simp_all
 
-lemma norm_pos (F : Type) [Field F] [NumberField F] (N : ℝ)
+lemma norm_pos (N : ℝ)
     (k : Fin (dyad F N).card) :
     0 < (Ideal.absNorm (enumeration F N k).val : ℝ) := by
   exact_mod_cast Nat.pos_of_ne_zero
     (Ideal.absNorm_eq_zero_iff.not.mpr ((mem_dyad F N _).mp (enumeration F N k).property).1)
+
+end
 
 lemma cpow_eq_phase (n : ℕ) (hn : 0 < n) (t : ℝ) :
     (n : ℂ) ^ (-Complex.I * (t : ℂ)) =
       DetectorMaximalFiniteHeight.phase (n : ℝ) t := by
   rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast Nat.ne_of_gt hn)]
   have hlog : Complex.log (n : ℂ) = (Real.log (n : ℝ) : ℂ) := by
-    simpa only [Complex.ofReal_natCast] using
-      (Complex.ofReal_log (Nat.cast_nonneg n : (0 : ℝ) ≤ n)).symm
+    simp
   rw [hlog]
   unfold DetectorMaximalFiniteHeight.phase
   congr 1
@@ -104,7 +105,7 @@ lemma cutoff_eq_prefix (F : Type) [Field F] [NumberField F] (N : ℝ)
     have hk := (mem_dyad F N _).mp (enumeration F N k).property
     have hkl : q k ≤ y ↔ k.val < l.val := by
       have := congr_arg (fun s => k ∈ s) hl
-      exact Iff.of_eq (by simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using this)
+      grind
     have hc : ((enumeration F N k).val ≠ ⊥ ∧
         N < (Ideal.absNorm (enumeration F N k).val : ℝ) ∧
         (Ideal.absNorm (enumeration F N k).val : ℝ) ≤ y) ↔ q k ≤ y :=
@@ -122,20 +123,28 @@ lemma cutoff_eq_prefix (F : Type) [Field F] [NumberField F] (N : ℝ)
       exact h ((mem_dyad F N J).mpr ⟨hgood.1, hgood.2.1, hgood.2.2.trans hy⟩)
     simp [Function.mem_support, hbad] at hJ
 
-def extend (F : Type) [Field F] [NumberField F] (N : ℝ)
-    (c : Fin (dyad F N).card → ℂ) (J : Ideal (𝓞 F)) : ℂ :=
+section
+
+variable (F : Type) [Field F] [NumberField F] (N : ℝ) (c : Fin (dyad F N).card → ℂ)
+include N c
+
+def extend (J : Ideal (𝓞 F)) : ℂ :=
   if h : J ∈ dyad F N then c ((enumeration F N).symm ⟨J, h⟩) else 0
 
-lemma extend_zero (F : Type) [Field F] [NumberField F] (N : ℝ)
-    (c : Fin (dyad F N).card → ℂ) (J : Ideal (𝓞 F)) (hJ : J ∉ dyad F N) :
+lemma extend_zero (J : Ideal (𝓞 F)) (hJ : J ∉ dyad F N) :
     extend F N c J = 0 := by simp [extend, hJ]
 
-@[simp] lemma extend_enumeration (F : Type) [Field F] [NumberField F] (N : ℝ)
-    (c : Fin (dyad F N).card → ℂ) (k : Fin (dyad F N).card) :
+@[simp] lemma extend_enumeration (k : Fin (dyad F N).card) :
     extend F N c (enumeration F N k).val = c k := by
   simp [extend, (enumeration F N k).property]
 
-lemma ball_sum_eq (F : Type) [Field F] [NumberField F] (N : ℝ)
+end
+
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+lemma ball_sum_eq (N : ℝ)
     {M : Type*} [AddCommMonoid M] (f : Ideal (𝓞 F) → M)
     (hf : ∀ J, J ∉ dyad F N → f J = 0) :
     (∑ᶠ J : Ideal (𝓞 F), if J ≠ ⊥ ∧ (Ideal.absNorm J : ℝ) ≤ 2 * N then f J else 0) =
@@ -150,7 +159,7 @@ lemma ball_sum_eq (F : Type) [Field F] [NumberField F] (N : ℝ)
     by_contra h
     simp [Function.mem_support, hf J h] at hJ
 
-lemma operator_transfer (F : Type) [Field F] [NumberField F]
+lemma operator_transfer
     (ι : Type*) [Fintype ι] (ω : ι → Ideal (𝓞 F) → ℂ) (N K : ℝ)
     (hop : ∀ c : Ideal (𝓞 F) → ℂ, (∀ J, J ∉ dyad F N → c J = 0) →
       (∑ i, ‖∑ᶠ J : Ideal (𝓞 F),
@@ -174,7 +183,7 @@ lemma operator_transfer (F : Type) [Field F] [NumberField F]
     simp
   simpa only [he, hm] using h
 
-lemma prefixMaximum_le (F : Type) [Field F] [NumberField F]
+lemma prefixMaximum_le
     (b ω : Ideal (𝓞 F) → ℂ) (N t : ℝ) (hN : 2 ≤ N) :
     DetectorMaximalExpressions.prefixMaximum F b ω N t ≤
       detector_prefixMaxSq (fun k => ω (enumeration F N k).val)
@@ -191,7 +200,7 @@ lemma prefixMaximum_le (F : Type) [Field F] [NumberField F]
     exact Finset.le_sup' (f := fun l => ‖detector_prefixSum _ _ l‖ ^ 2)
       (Finset.mem_univ l)
 
-lemma heightMaximum_le (F : Type) [Field F] [NumberField F]
+lemma heightMaximum_le
     (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) (hN : 2 ≤ N) (hT : 0 ≤ T) :
     DetectorMaximalExpressions.heightMaximum F b ω N T ≤
       sSup ((fun t => detector_prefixMaxSq (fun k => ω (enumeration F N k).val)
@@ -212,6 +221,8 @@ lemma heightMaximum_le (F : Type) [Field F] [NumberField F]
       0, ⟨by linarith, hT⟩, rfl⟩
   · rintro v ⟨t, ht, rfl⟩
     exact (prefixMaximum_le F b ω N t hN).trans (le_csSup hb ⟨t, ht, rfl⟩)
+
+end
 
 theorem ideal_operator_maximal :
     ∃ C : ℝ, 0 < C ∧ ∀ (F : Type) [Field F] [NumberField F]

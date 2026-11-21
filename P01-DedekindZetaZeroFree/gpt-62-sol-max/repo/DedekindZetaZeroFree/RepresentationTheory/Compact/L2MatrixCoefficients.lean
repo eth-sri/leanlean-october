@@ -1,6 +1,8 @@
 module
 
-public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LpClassFunctions
+public import Mathlib.MeasureTheory.Function.LpSpace.Complete
+public import Mathlib.MeasureTheory.Function.LpSpace.DomAct.Basic
+public import Mathlib.MeasureTheory.Function.LpSpace.ContinuousFunctions
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CompactProbabilityMeasure
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.MatrixCoefficients
 public import Mathlib.MeasureTheory.Function.L2Space

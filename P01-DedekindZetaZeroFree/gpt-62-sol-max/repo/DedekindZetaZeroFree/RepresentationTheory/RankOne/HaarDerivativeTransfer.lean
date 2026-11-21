@@ -81,12 +81,15 @@ private theorem polyCharacter_smooth {d : ℕ} (ℓ : RawHarmonicType d) : ContD
   exact ((polySym_smooth _).comp (contDiff_apply ℝ _ j)).mul
     ((((Complex.conjCLE : ℂ ≃L[ℝ] ℂ).contDiff).comp
       (det_smooth.comp (contDiff_apply ℝ _ j))).pow _)
-noncomputable def matrixLift {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (b : Fin d × Fin 3) (t : ℝ) :
+section
+
+variable {d : ℕ} (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
+include B
+
+noncomputable def matrixLift (b : Fin d × Fin 3) (t : ℝ) :
     Fin d → Matrix (Fin 2) (Fin 2) ℂ :=
   fun j => if j = b.1 then NormedSpace.exp ((t : ℂ) • B b.1 b.2) else 1
-private theorem matrixLift_smooth {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ) (b : Fin d × Fin 3) :
+private theorem matrixLift_smooth (b : Fin d × Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (matrixLift B b) := by
   apply contDiff_pi.mpr
   intro j
@@ -97,19 +100,16 @@ private theorem matrixLift_smooth {d : ℕ}
     exact he.comp ((Complex.ofRealCLM.contDiff).smul contDiff_const)
   · simp only [matrixLift, hj, if_false]
     exact contDiff_const
-private theorem matrixLift_eq {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
+private theorem matrixLift_eq
     (hskew : ∀ j a, star (B j a) = -B j a) (b : Fin d × Fin 3) (t : ℝ) :
     matrixLift B b t = fun j => (basisLift B hskew b t j).val := by
   funext j
   by_cases hj : j = b.1 <;> simp [matrixLift, basisLift, basisExp, hj]
-noncomputable def jetFunction {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
+noncomputable def jetFunction
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3)
     (g : Fin d → Matrix (Fin 2) (Fin 2) ℂ) (t s : ℝ) : ℂ :=
   star (polyCharacter ℓ (g * matrixLift B b t * matrixLift B b s))
-private theorem jetFunction_smooth {d : ℕ}
-    (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)
+private theorem jetFunction_smooth
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p : ((Fin d → Matrix (Fin 2) (Fin 2) ℂ) × ℝ) × ℝ =>
       jetFunction B ℓ b p.1.1 p.1.2 p.2) := by
@@ -120,6 +120,8 @@ private theorem jetFunction_smooth {d : ℕ}
   exact (((contDiff_apply ℝ _ j).comp (contDiff_fst.comp contDiff_fst)).mul
     (((contDiff_apply ℝ _ j).comp (matrixLift_smooth B b)).comp (contDiff_snd.comp contDiff_fst))).mul
     (((contDiff_apply ℝ _ j).comp (matrixLift_smooth B b)).comp contDiff_snd)
+
+end
 set_option maxHeartbeats 800000 in
 private theorem firstJet_smooth {d : ℕ}
     (B : Fin d → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ)

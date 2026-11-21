@@ -130,15 +130,15 @@ private lemma left_ratio_bound (F : Type) [Field F] [NumberField F]
       mul_le_mul_of_nonneg_left hx (by positivity)
     _ = _ := by rw [mul_pow, ← pow_mul]; ring
 
-private lemma principal_strip_bound (F : Type) [Field F] [NumberField F]
-    (hF : NumberField.IsTotallyComplex F) (η : RayClassCharacter F (⊤ : Ideal (𝓞 F)))
-    (D : PrincipalRayHeckeData F ⊤ η) (δ : ℝ) (hδ : 0 < δ)
+lemma principal_strip_bound (F : Type) [Field F] [NumberField F]
+    (hF : NumberField.IsTotallyComplex F) (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m)
+    (D : PrincipalRayHeckeData F m η) (δ : ℝ) (hδ : 0 < δ)
     (s : ℂ) (hs : 1+δ ≤ s.re) (hs4 : s.re ≤ 4) :
-    ‖principalHeckeEntireRegularization F ⊤ η D s‖ ≤ 4*idealAbsoluteSum F (1+δ)*(2+|s.im|) := by
+    ‖principalHeckeEntireRegularization F m η D s‖ ≤ 4*idealAbsoluteSum F (1+δ)*(2+|s.im|) := by
   have hs0 : 0 < s.re := by linarith
   have hs1 : s ≠ 1 := by intro h; subst s; simp at hs; linarith
-  rw [principalHeckeEntireRegularization_eq F hF ⊤ top_ne_bot η D s hs0 hs1, norm_mul]
-  have hb := heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) ⊤ top_ne_bot η s hs (D.L s)
+  rw [principalHeckeEntireRegularization_eq F hF m hm η D s hs0 hs1, norm_mul]
+  have hb := heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) m hm η s hs (D.L s)
     (D.series s (by linarith))
   have hn : ‖s-1‖ ≤ 4*(2+|s.im|) := by
     calc
@@ -177,19 +177,18 @@ private lemma nonprincipal_left_bound (F : Type) [Field F] [NumberField F]
     _ ≤ _ * idealAbsoluteSum F (1+δ) := mul_le_mul hx hd (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-private lemma principal_left_bound (F : Type) [Field F] [NumberField F]
+lemma principal_left_bound (F : Type) [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F)
-    (η : RayClassCharacter F (⊤ : Ideal (𝓞 F))) (D : PrincipalRayHeckeData F ⊤ η)
+    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (η : RayClassCharacter F m) (D : PrincipalRayHeckeData F m η)
     (δ K : ℝ) (hδ : 0 < δ) (hδu : δ ≤ 1/10) (hK : 0 ≤ K)
     (hb : ∀ s : ℂ, s.re = -δ → ‖Complex.Gammaℂ (1-s) * (Complex.Gammaℂ s)⁻¹‖ ≤ K*(2+|s.im|)^2)
     (s : ℂ) (hs : s.re = -δ) :
-    ‖principalHeckeEntireRegularization F ⊤ η D s‖ ≤
+    ‖principalHeckeEntireRegularization F m η D s‖ ≤
       (((|NumberField.discr F| : ℤ) : ℝ) ^ ((1:ℝ)/2+δ) * K ^ NumberField.InfinitePlace.nrComplexPlaces F *
-      idealAbsoluteSum F (1+δ)) * (2+|s.im|) ^ (2*NumberField.InfinitePlace.nrComplexPlaces F+1) := by
-  rw [principal_left_formula F hF ⊤ η D δ hδ s hs, norm_mul, norm_mul]
-  have hx := left_ratio_bound F ⊤ top_ne_bot δ K hδ hK hb s hs
-  simp only [Ideal.absNorm_top, Nat.cast_one, Real.one_rpow, mul_one] at hx
-  have hd := heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) ⊤ top_ne_bot η (1-s)
+      (Ideal.absNorm m : ℝ) ^ ((1:ℝ)/2+δ) * idealAbsoluteSum F (1+δ)) * (2+|s.im|) ^ (2*NumberField.InfinitePlace.nrComplexPlaces F+1) := by
+  rw [principal_left_formula F hF m η D δ hδ s hs, norm_mul, norm_mul]
+  have hx := left_ratio_bound F m hm δ K hδ hK hb s hs
+  have hd := heckeDirichlet_hasSum_norm_le F (1+δ) (by linarith) m hm η (1-s)
     (by simp [hs]) (D.L (1-s)) (D.series (1-s) (by simp [hs]; linarith))
   have hn : ‖s-1‖ ≤ 2+|s.im| := by
     calc
@@ -265,12 +264,14 @@ theorem heckeEntireRegularizations_uniform_boundaries
         _ ≤ C * (1+(Ideal.absNorm m : ℝ))^((1:ℝ)/2+δ) := le_mul_of_one_le_right hC.le hM
         _ ≤ _ := le_mul_of_one_le_right (by positivity) (hHpow s)
   · intro η hprim hp D
-    refine ⟨?_, principal_strip_bound F hF η D δ hδ⟩
+    refine ⟨?_, principal_strip_bound F hF ⊤ top_ne_bot η D δ hδ⟩
     intro s hs
     rcases hs with hs | hs
-    · exact (principal_left_bound F hF η D δ K hδ hδ_upper hK.le hb s hs).trans
+    · have hl := principal_left_bound F hF ⊤ top_ne_bot η D δ K hδ hδ_upper hK.le hb s hs
+      simp only [Ideal.absNorm_top, Nat.cast_one, Real.one_rpow, mul_one] at hl
+      exact hl.trans
         (mul_le_mul_of_nonneg_right hCA (by positivity))
-    · have hx := principal_strip_bound F hF η D δ hδ s hs.ge (by linarith)
+    · have hx := principal_strip_bound F hF ⊤ top_ne_bot η D δ hδ s hs.ge (by linarith)
       exact hx.trans (mul_le_mul hC4 (hHbase s) (by positivity) hC.le)
 
 end

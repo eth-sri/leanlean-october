@@ -1,5 +1,7 @@
 module
 
+public import DedekindZetaZeroFree.Algebra.RationalEvaluation
+
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.Cubic.FullCenterReverseChart
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.ReverseRegulatorSpecialization
 
@@ -17,99 +19,32 @@ set_option maxHeartbeats 2000000
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg) [DecidableEq S.D]
- def Good {K L : Type} [Field K] [Field L] (f : K →+* L) (a : L) (x : RatFunc K) (b : L) : Prop :=
-  Polynomial.eval₂ f a x.denom ≠ 0 ∧ RatFunc.eval f a x = b
-variable {K L : Type} [Field K] [Field L] {f : K →+* L} {a : L}
-private lemma good_C (c : K) : Good f a (RatFunc.C c) (f c) := by
-  simp [Good]
-private lemma good_X : Good f a (RatFunc.X : RatFunc K) a := by
-  simp [Good]
-private lemma good_mul {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c) :
-    Good f a (x*y) (b*c) := by
-  refine ⟨?_, by rw [RatFunc.eval_mul f a hx.1 hy.1, hx.2, hy.2]⟩
-  intro h
-  have h' := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero f a (RatFunc.denom_mul_dvd x y) h
-  rw [Polynomial.eval₂_mul] at h'
-  exact (mul_ne_zero hx.1 hy.1) h'
-private lemma good_add {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c) :
-    Good f a (x+y) (b+c) := by
-  refine ⟨?_, by rw [RatFunc.eval_add f a hx.1 hy.1, hx.2, hy.2]⟩
-  intro h
-  have h' := Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero f a (RatFunc.denom_add_dvd x y) h
-  rw [Polynomial.eval₂_mul] at h'
-  exact (mul_ne_zero hx.1 hy.1) h'
-private lemma good_neg {x : RatFunc K} {b : L} (hx : Good f a x b) : Good f a (-x) (-b) := by
-  simpa using good_mul (good_C (f := f) (a := a) (-1)) hx
-private lemma good_sub {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c) :
-    Good f a (x-y) (b-c) := by
-  simpa [sub_eq_add_neg] using good_add hx (good_neg hy)
-private lemma good_one : Good f a (1 : RatFunc K) 1 := by
-  simpa using good_C (f := f) (a := a) 1
-private lemma good_zero : Good f a (0 : RatFunc K) 0 := by
-  simpa using good_C (f := f) (a := a) 0
-private lemma good_inv {x : RatFunc K} {b : L} (hx : Good f a x b) (hb : b ≠ 0) :
-    Good f a x⁻¹ b⁻¹ := by
-  have hnum : Polynomial.eval₂ f a x.num ≠ 0 := by
-    intro h
-    have : b = 0 := by rw [← hx.2, RatFunc.eval, h, zero_div]
-    exact hb this
-  have hxn : x ≠ 0 := by
-    intro h; subst x; simpa using hnum
-  have hi : Polynomial.eval₂ f a x⁻¹.denom ≠ 0 := by
-    intro h
-    exact hnum (Polynomial.eval₂_eq_zero_of_dvd_of_eval₂_eq_zero f a (RatFunc.denom_inv_dvd hxn) h)
-  refine ⟨hi, ?_⟩
-  have hm := good_mul hx (show Good f a x⁻¹ (RatFunc.eval f a x⁻¹) from ⟨hi, rfl⟩)
-  have he : b * RatFunc.eval f a x⁻¹ = 1 := by
-    rw [← hm.2, mul_inv_cancel₀ hxn, RatFunc.eval_one]
-  apply (mul_left_cancel₀ hb)
-  rw [he, mul_inv_cancel₀ hb]
-private lemma good_div {x y : RatFunc K} {b c : L} (hx : Good f a x b) (hy : Good f a y c) (hc : c ≠ 0) :
-    Good f a (x/y) (b/c) := by
-  simpa [div_eq_mul_inv] using good_mul hx (good_inv hy hc)
-private lemma good_pow {x : RatFunc K} {b : L} (hx : Good f a x b) (n : ℕ) :
-    Good f a (x^n) (b^n) := by
-  induction n with
-  | zero => simpa using (good_one (f := f) (a := a))
-  | succ n hn => simpa [pow_succ] using good_mul hn hx
-private lemma good_zpow {x : RatFunc K} {b : L} (hx : Good f a x b) (hb : b ≠ 0) (n : ℤ) :
-    Good f a (x^n) (b^n) := by
-  cases n with
-  | ofNat n => simpa using good_pow hx n
-  | negSucc n => simpa [zpow_negSucc] using good_inv (good_pow hx (n+1)) (pow_ne_zero _ hb)
-private lemma good_sum {ι : Type*} (s : Finset ι) (x : ι → RatFunc K) (b : ι → L)
-    (h : ∀ i ∈ s, Good f a (x i) (b i)) : Good f a (∑ i ∈ s, x i) (∑ i ∈ s, b i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simpa using (good_zero (f := f) (a := a))
-  | @insert i s hi hs =>
-    simp only [Finset.sum_insert hi]
-    exact good_add (h i (Finset.mem_insert_self _ _)) (hs fun j hj => h j (Finset.mem_insert_of_mem hj))
+open RationalEvaluation
 
 private theorem good_restriction (p : ShellNumerator) (r : ℂˣ)
     (hd : shellDenominator F q (r : ℂ) 1 ≠ 0) :
-    Good (RingHom.id ℂ) (r : ℂ) (restrictionAtOne F q p)
+    Evaluates₂ (RingHom.id ℂ) (r : ℂ) (restrictionAtOne F q p)
       (evaluateNumerator p r 1 / shellDenominator F q r 1) := by
   have hq : (residueCardinality (LocalField F q) : ℂ) ≠ 0 := by
     exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField
       (ValuativeRel.valuation (LocalField F q)).integer)).ne'
   have ht : t F q (r : ℂ) ≠ 0 := mul_ne_zero (inv_ne_zero hq) (pow_ne_zero _ r.ne_zero)
-  have hn : Good (RingHom.id ℂ) (r : ℂ)
+  have hn : Evaluates₂ (RingHom.id ℂ) (r : ℂ)
       (p.sum (fun ij c => RatFunc.C c * (RatFunc.X : Rr)^ij.1))
       (evaluateNumerator p r 1) := by
     classical
     simp only [evaluateNumerator, one_zpow, mul_one, Finsupp.sum]
-    apply good_sum
+    apply Evaluates₂.sum
     intro ij hij
-    exact good_mul (good_C _) (good_zpow good_X r.ne_zero _)
-  have hT : Good (RingHom.id ℂ) (r : ℂ)
+    exact Evaluates₂.mul (Evaluates₂.const _) (Evaluates₂.zpow Evaluates₂.var r.ne_zero _)
+  have hT : Evaluates₂ (RingHom.id ℂ) (r : ℂ)
       (RatFunc.C (residueCardinality (LocalField F q) : ℂ)⁻¹ * (RatFunc.X : Rr)^6)
-      (t F q (r : ℂ)) := good_mul (good_C _) (good_pow good_X _)
-  have hD := good_mul (good_mul (good_sub good_one hT)
-    (good_sub good_one (good_inv hT ht)))
-    (good_sub good_one (good_C ((residueCardinality (LocalField F q) : ℂ)^(-3 : ℤ))))
+      (t F q (r : ℂ)) := Evaluates₂.mul (Evaluates₂.const _) (Evaluates₂.pow Evaluates₂.var _)
+  have hD := Evaluates₂.mul (Evaluates₂.mul (Evaluates₂.sub Evaluates₂.one hT)
+    (Evaluates₂.sub Evaluates₂.one (Evaluates₂.inv hT ht)))
+    (Evaluates₂.sub Evaluates₂.one (Evaluates₂.const ((residueCardinality (LocalField F q) : ℂ)^(-3 : ℤ))))
   rw [restrictionAtOne_eq]
-  simpa only [shellDenominator, one_pow, one_zpow, mul_one, RingHom.id_apply] using good_div hn hD (by simpa only [shellDenominator, one_pow, one_zpow, mul_one, RingHom.id_apply] using hd)
+  simpa only [shellDenominator, one_pow, one_zpow, mul_one, RingHom.id_apply] using Evaluates₂.div hn hD (by simpa only [shellDenominator, one_pow, one_zpow, mul_one, RingHom.id_apply] using hd)
 
 private theorem actual_own_chamber_composition
     (I : IwasawaData S.borel) (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -263,7 +198,7 @@ private theorem exists_rational_double
     (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
     (h : KPExceptionalRaw.actualTorus F ζ hζ q) :
     ∃ R : RatFunc ℂ, ∀ r : ℂˣ, IsRegular F q r →
-      Good (RingHom.id ℂ) (r : ℂ) R
+      Evaluates₂ (RingHom.id ℂ) (r : ℂ) R
         (actualDoubleCoefficient F ζ hζ q S.heisenberg S.borel P I μ J (S.openCell P) rep hrep d φ hφ hcφ r h) := by
   classical
   obtain ⟨L, hL, ψ, hψ⟩ :=
@@ -359,22 +294,22 @@ private theorem exists_rational_double
     apply Finset.sum_congr rfl
     intro n hn
     ring
-  have hU : Good (RingHom.id ℂ) (r : ℂ) U (t F q (r : ℂ)) :=
-    good_mul (good_C _) (good_pow good_X _)
-  have hN : Good (RingHom.id ℂ) (r : ℂ) N
+  have hU : Evaluates₂ (RingHom.id ℂ) (r : ℂ) U (t F q (r : ℂ)) :=
+    Evaluates₂.mul (Evaluates₂.const _) (Evaluates₂.pow Evaluates₂.var _)
+  have hN : Evaluates₂ (RingHom.id ℂ) (r : ℂ) N
       (∑ j ∈ pm.support, ∑ i ∈ pp.support, ∑ n ∈ ψ.support,
         c j i n * (r : ℂ)^(-j) * (r : ℂ)^i * (r : ℂ)^n) := by
-    apply good_sum
+    apply Evaluates₂.sum
     intro j hj
-    apply good_sum
+    apply Evaluates₂.sum
     intro i hi
-    apply good_sum
+    apply Evaluates₂.sum
     intro n hn
-    exact good_mul (good_mul (good_mul (good_C _) (good_zpow good_X r.ne_zero _))
-      (good_zpow good_X r.ne_zero _)) (good_zpow good_X r.ne_zero _)
-  have hR := good_div (good_mul (good_mul (good_C (deltaHalf S.borel b))
-    (good_zpow good_X r.ne_zero m)) hN)
-    (good_mul (good_sub good_one hU) (good_sub good_one (good_inv hU ht))) (mul_ne_zero hr hdm)
+    exact Evaluates₂.mul (Evaluates₂.mul (Evaluates₂.mul (Evaluates₂.const _) (Evaluates₂.zpow Evaluates₂.var r.ne_zero _))
+      (Evaluates₂.zpow Evaluates₂.var r.ne_zero _)) (Evaluates₂.zpow Evaluates₂.var r.ne_zero _)
+  have hR := Evaluates₂.div (Evaluates₂.mul (Evaluates₂.mul (Evaluates₂.const (deltaHalf S.borel b))
+    (Evaluates₂.zpow Evaluates₂.var r.ne_zero m)) hN)
+    (Evaluates₂.mul (Evaluates₂.sub Evaluates₂.one hU) (Evaluates₂.sub Evaluates₂.one (Evaluates₂.inv hU ht))) (mul_ne_zero hr hdm)
   exact ⟨hR.1, hR.2.trans hactual.symm⟩
 
 theorem actual_restriction_eq_double_coefficient

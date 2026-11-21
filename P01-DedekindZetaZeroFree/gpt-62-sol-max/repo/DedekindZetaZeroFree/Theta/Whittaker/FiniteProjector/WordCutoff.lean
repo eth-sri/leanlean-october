@@ -59,7 +59,7 @@ theorem rootWord_fourier (l : List R.A.Sf) (v : R.A.UnitQuotient) (y : R.A.G) :
         (actualFiniteCharacter q.val).toAddChar ((y.2 q : q.val.adicCompletion F) * t q i) *
           fourier R A.sources.dq (rootProjectorWord R I c t l (A.realization.theta v)) (diagonal R y) := by
       unfold finiteRoot
-      rw [diagonal_upper_projector, fourier_upper R _ _ hr' _ _ (hi _) (hi _), trace_finite_diagonal]
+      rw [diagonal_upper_projector, fourier_upper R _ _ hr' _ _, trace_finite_diagonal]
     simp only [List.map_cons, List.prod_cons]
     simp_rw [htr, ih]
     simp only [← mul_assoc, Finset.sum_mul]

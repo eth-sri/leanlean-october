@@ -39,12 +39,15 @@ namespace Completion
 
 universe u v
 
+section
+
+variable {F : Type u} [Field F]
+
 /-- The canonical monic normalization of polynomial factors over a field.
 The normalization instances for an arbitrary field require a decidable
 equality; this definition installs the classical one internally instead of
 exposing it as an assumption of the extension-factor correspondence. -/
-noncomputable def polynomialNormalizedFactors
-    {F : Type u} [Field F] (p : F[X]) : Multiset F[X] := by
+noncomputable def polynomialNormalizedFactors (p : F[X]) : Multiset F[X] := by
   letI : DecidableEq F := Classical.decEq F
   letI : NormalizationMonoid F := inferInstance
   letI : NormalizationMonoid F[X] := Polynomial.instNormalizationMonoid
@@ -52,22 +55,19 @@ noncomputable def polynomialNormalizedFactors
 
 /-- The finite set underlying `polynomialNormalizedFactors`, with repeated
 factors removed. -/
-noncomputable def polynomialDistinctNormalizedFactors
-    {F : Type u} [Field F] (p : F[X]) : Finset F[X] := by
+noncomputable def polynomialDistinctNormalizedFactors (p : F[X]) : Finset F[X] := by
   classical
   exact (polynomialNormalizedFactors p).toFinset
 
 /-- Associated polynomials have the same multiset of normalized irreducible factors. -/
-theorem polynomialNormalizedFactors_eq_of_associated
-    {F : Type u} [Field F] {p q : F[X]} (h : Associated p q) :
+theorem polynomialNormalizedFactors_eq_of_associated {p q : F[X]} (h : Associated p q) :
     polynomialNormalizedFactors p = polynomialNormalizedFactors q := by
   classical
   dsimp [polynomialNormalizedFactors]
   exact h.normalizedFactors_eq
 
 /-- Associated polynomials have the same set of distinct normalized factors. -/
-theorem polynomialDistinctNormalizedFactors_eq_of_associated
-    {F : Type u} [Field F] {p q : F[X]} (h : Associated p q) :
+theorem polynomialDistinctNormalizedFactors_eq_of_associated {p q : F[X]} (h : Associated p q) :
     polynomialDistinctNormalizedFactors p =
       polynomialDistinctNormalizedFactors q := by
   classical
@@ -77,32 +77,33 @@ theorem polynomialDistinctNormalizedFactors_eq_of_associated
 /-- The distinct normalized irreducible factors of a nonzero polynomial.
 Using `toFinset` removes the multiplicities retained by `normalizedFactors`.
 -/
-abbrev DistinctNormalizedFactors
-    {F : Type u} [Field F] (p : F[X]) :=
+abbrev DistinctNormalizedFactors (p : F[X]) :=
   {g : F[X] // g ∈ polynomialDistinctNormalizedFactors p}
 
 /-- The roots in `E` of a polynomial over the base field `F`. -/
-abbrev PolynomialRootsIn
-    {F : Type u} [Field F] (E : Type v) [Field E] [Algebra F E]
+abbrev PolynomialRootsIn (E : Type v) [Field E] [Algebra F E]
     (p : F[X]) :=
   {x : E // x ∈ p.rootSet E}
 
+end
+
+section
+
+variable {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
+
 /-- Send a root to its monic minimal polynomial over the base field. -/
 def rootMinpoly
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
     (p : F[X]) : PolynomialRootsIn E p → F[X] :=
   fun x => minpoly F (x : E)
 
 /-- Equality of the minimal polynomials of two roots.  Over a normal closure,
 this is equivalently conjugacy under the absolute Galois group. -/
 abbrev rootMinpolySetoid
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
     (p : F[X]) : Setoid (PolynomialRootsIn E p) :=
   Setoid.ker (rootMinpoly p)
 
 /-- The minimal polynomial of a root occurs among the normalized factors of the polynomial. -/
 theorem rootMinpoly_mem_normalizedFactors
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
     [Algebra.IsAlgebraic F E] {p : F[X]} (hp : p ≠ 0)
     (x : PolynomialRootsIn E p) :
     rootMinpoly p x ∈ polynomialDistinctNormalizedFactors p := by
@@ -116,7 +117,6 @@ theorem rootMinpoly_mem_normalizedFactors
 
 /-- Minimal polynomials of roots exhaust the distinct normalized factors. -/
 theorem range_rootMinpoly_eq_distinctNormalizedFactors
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
     [Algebra.IsAlgebraic F E] [IsAlgClosed E]
     {p : F[X]} (hp : p ≠ 0) :
     Set.range (rootMinpoly p : PolynomialRootsIn E p → F[X]) =
@@ -146,7 +146,6 @@ theorem range_rootMinpoly_eq_distinctNormalizedFactors
 /-- Conjugacy classes of roots of `p` are in canonical bijection with the
 distinct normalized irreducible factors of `p`. -/
 noncomputable def rootClassesEquivDistinctNormalizedFactors
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
     [Algebra.IsAlgebraic F E] [IsAlgClosed E]
     {p : F[X]} (hp : p ≠ 0) :
     Quotient (rootMinpolySetoid (E := E) p) ≃
@@ -154,20 +153,9 @@ noncomputable def rootClassesEquivDistinctNormalizedFactors
   (Setoid.quotientKerEquivRange (rootMinpoly p)).trans
     (Set.equivOfEq (range_rootMinpoly_eq_distinctNormalizedFactors hp))
 
-/-- Two roots are equivalent precisely when they are conjugate roots. -/
-theorem rootMinpolySetoid_rel_iff_isConjRoot
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
-    {p : F[X]} (x y : PolynomialRootsIn E p) :
-    (rootMinpolySetoid p).r x y ↔ IsConjRoot F (x : E) (y : E) :=
-  Iff.rfl
+end
 
-/-- Minimal-polynomial equivalence of roots agrees with the Galois orbit relation. -/
-theorem rootMinpolySetoid_rel_iff_orbitRel
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
-    [Normal F E] {p : F[X]} (x y : PolynomialRootsIn E p) :
-    (rootMinpolySetoid p).r x y ↔
-      MulAction.orbitRel Gal(E / F) E (x : E) (y : E) := by
-  exact isConjRoot_iff_orbitRel
+
 
 /-- For a simple finite extension `L = K(α)`, `K`-embeddings into an
 extension of `K'` are the roots, in that extension, of the minimal polynomial

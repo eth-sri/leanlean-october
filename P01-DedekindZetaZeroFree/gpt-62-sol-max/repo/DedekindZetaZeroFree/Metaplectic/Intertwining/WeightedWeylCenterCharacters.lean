@@ -44,7 +44,7 @@ private theorem pgl_diagonal_injective (L : Type*) [Field L] (u v : Lˣ)
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
   have h11 := congrArg (fun g : GL (Fin 2) L => (g : Matrix (Fin 2) (Fin 2) L) 1 1) hc
   have h00 := congrArg (fun g : GL (Fin 2) L => (g : Matrix (Fin 2) (Fin 2) L) 0 0) hc
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc
@@ -84,7 +84,6 @@ private theorem weyl_twice (S : ActualKPBinding F ζ hζ q) (h : H₀) :
   have hwi : S.borel.liftedW⁻¹ = S.borel.liftedW :=
     inv_eq_of_mul_eq_one_right (by simpa only [pow_two] using hw)
   apply Subtype.val_injective
-  change (S.borel.weyl (S.borel.weyl h) : KPExceptionalRaw.ActualCover F ζ hζ q) = h
   rw [← S.torus_full, S.borel.weyl_from_lift, S.borel.weyl_from_lift, S.torus_full, hwi]
   simp only [← mul_assoc, ← pow_two, hw, one_mul]
   rw [mul_assoc, ← pow_two, hw, mul_one]

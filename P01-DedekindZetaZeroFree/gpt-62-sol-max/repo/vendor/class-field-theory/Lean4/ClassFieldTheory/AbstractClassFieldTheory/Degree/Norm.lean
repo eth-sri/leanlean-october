@@ -85,10 +85,12 @@ def leftMulCosetEquiv {G : Type*} [Group G]
     leftMulCosetEquiv H g (QuotientGroup.mk x) = QuotientGroup.mk (g * x) :=
   rfl
 
+section
+
+variable (A : Rep ℤ G) (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
+
 /-- The additive norm value from `A_L` to the ambient module. -/
 def relativeNormValue
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (a : ambientFixedAddSubgroup A L) : A.V := by
   letI := Fintype.ofFinite (K.toSubgroup ⧸ extensionSubgroup K L hLK)
@@ -96,8 +98,6 @@ def relativeNormValue
 
 /-- The relative coset action is additive in the represented fixed element. -/
 theorem relativeCosetAction_add
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     (a b : ambientFixedAddSubgroup A L)
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK) :
     relativeCosetAction A K L hLK (a + b) q =
@@ -111,8 +111,6 @@ theorem relativeCosetAction_add
 /-- Every relative coset acts trivially on the zero fixed element. -/
 @[simp]
 theorem relativeCosetAction_zero
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     (q : K.toSubgroup ⧸ extensionSubgroup K L hLK) :
     relativeCosetAction A K L hLK 0 q = 0 := by
   refine Quotient.inductionOn' q ?_
@@ -122,8 +120,6 @@ theorem relativeCosetAction_zero
 
 /-- The relative norm value is fixed by the base subgroup action. -/
 theorem relativeNormValue_fixed
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (a : ambientFixedAddSubgroup A L) (k : K.toSubgroup) :
     A.ρ k.1 (relativeNormValue A K L hLK a) =
@@ -151,8 +147,6 @@ In the multiplicative notation of the construction this additive sum is the prod
 over a system of representatives of `G_K / G_L`.  Its codomain is the
 actual fixed module `A_K`, with fixedness proved by coset reindexing. -/
 def relativeNorm
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
     ambientFixedAddSubgroup A L →+ ambientFixedAddSubgroup A K where
   toFun a := ⟨relativeNormValue A K L hLK a,
@@ -173,13 +167,13 @@ def relativeNorm
 /-- Coercing a relative norm gives the explicit sum over quotient representatives. -/
 @[simp]
 theorem relativeNorm_apply_coe
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (a : ambientFixedAddSubgroup A L) :
     ((relativeNorm A K L hLK a : ambientFixedAddSubgroup A K) : A.V) =
       relativeNormValue A K L hLK a :=
   rfl
+
+end
 
 end
 end ClassFormation

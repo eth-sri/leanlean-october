@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.Poisson.FrequencyNormalConvergence
+public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.Poisson.SubpowerBounds
 
 @[expose] public section
 

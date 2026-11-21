@@ -183,9 +183,14 @@ def eigenspace (ρ : Representation ℂ (Multiplicative K) V)
     intro a v hv t ht
     rw [map_smul, hv t ht, smul_comm]
 
-private theorem characterAverage_isProj (ρ : Representation ℂ (Multiplicative K) V)
-    (ψ : Multiplicative K →* ℂˣ) (L J : AddSubgroup K) (hJL : J ≤ L)
-    (hLcompact : IsCompact (L : Set K)) (hJopen : IsOpen (J : Set K))
+section
+
+variable (ρ : Representation ℂ (Multiplicative K) V) (ψ : Multiplicative K →* ℂˣ)
+  (L J : AddSubgroup K) (hJL : J ≤ L) (hLcompact : IsCompact (L : Set K))
+  (hJopen : IsOpen (J : Set K))
+include ρ ψ L J hJL hLcompact hJopen
+
+private theorem characterAverage_isProj
     (hψJ : ∀ j ∈ J, ψ (Multiplicative.ofAdd j) = 1) :
     LinearMap.IsProj ((eigenspace ρ ψ L).comap (fixedSubmodule ρ J.toSubgroup).subtype)
       (characterAverage ρ ψ L J hJL hLcompact hJopen) := by
@@ -236,9 +241,7 @@ private theorem characterAverage_isProj (ρ : Representation ℂ (Multiplicative
   rw [heq, ← hinv]
   exact τ.isProj_averageMap
 
-theorem characterAverage_range (ρ : Representation ℂ (Multiplicative K) V)
-    (ψ : Multiplicative K →* ℂˣ) (L J : AddSubgroup K) (hJL : J ≤ L)
-    (hLcompact : IsCompact (L : Set K)) (hJopen : IsOpen (J : Set K))
+theorem characterAverage_range
     (hψJ : ∀ j ∈ J, ψ (Multiplicative.ofAdd j) = 1) :
     LinearMap.range ((fixedSubmodule ρ J.toSubgroup).subtype.comp
         (characterAverage ρ ψ L J hJL hLcompact hJopen)) = eigenspace ρ ψ L := by
@@ -257,27 +260,21 @@ theorem characterAverage_range (ρ : Representation ℂ (Multiplicative K) V)
     change (characterAverage ρ ψ L J hJL hLcompact hJopen ⟨v, hvJ⟩ : V) = v
     exact congrArg Subtype.val (hp.map_id ⟨v, hvJ⟩ hv)
 
-private def ambientAverage (ρ : Representation ℂ (Multiplicative K) V)
-    (ψ : Multiplicative K →* ℂˣ) (L J : AddSubgroup K) (hJL : J ≤ L)
-    (hLcompact : IsCompact (L : Set K)) (hJopen : IsOpen (J : Set K)) : V →ₗ[ℂ] V :=
+private def ambientAverage : V →ₗ[ℂ] V :=
   letI : Finite (LevelQuotient L J) := finite_levelQuotient L J hJL hLcompact hJopen
   letI := Fintype.ofFinite (LevelQuotient L J)
   (Fintype.card (LevelQuotient L J) : ℂ)⁻¹ • ∑ x : LevelQuotient L J,
     (ψ (Multiplicative.ofAdd (representative L J x : K)) : ℂ)⁻¹ •
       ρ (Multiplicative.ofAdd (representative L J x : K))
 
-private theorem ambientAverage_apply (ρ : Representation ℂ (Multiplicative K) V)
-    (ψ : Multiplicative K →* ℂˣ) (L J : AddSubgroup K) (hJL : J ≤ L)
-    (hLcompact : IsCompact (L : Set K)) (hJopen : IsOpen (J : Set K))
+private theorem ambientAverage_apply
     (v : fixedSubmodule ρ J.toSubgroup) :
     (characterAverage ρ ψ L J hJL hLcompact hJopen v : V) =
       ambientAverage ρ ψ L J hJL hLcompact hJopen (v : V) := by
   classical
   simp [characterAverage, averageWithRepresentatives, ambientAverage, fixedRepresentation]
 
-private theorem ambientAverage_eigen (ρ : Representation ℂ (Multiplicative K) V)
-    (ψ : Multiplicative K →* ℂˣ) (L J : AddSubgroup K) (hJL : J ≤ L)
-    (hLcompact : IsCompact (L : Set K)) (hJopen : IsOpen (J : Set K))
+private theorem ambientAverage_eigen
     (v : V) (hv : v ∈ eigenspace ρ ψ L) :
     ambientAverage ρ ψ L J hJL hLcompact hJopen v = v := by
   classical
@@ -292,9 +289,14 @@ private theorem ambientAverage_eigen (ρ : Representation ℂ (Multiplicative K)
   rw [← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
   simp
 
-private theorem ambientAverage_commute (ρ : Representation ℂ (Multiplicative K) V)
-    (ψ : Multiplicative K →* ℂˣ) (L J J' : AddSubgroup K)
-    (hJL : J ≤ L) (hJ'L : J' ≤ L) (hLcompact : IsCompact (L : Set K))
+end
+
+section
+
+variable (ρ : Representation ℂ (Multiplicative K) V) (ψ : Multiplicative K →* ℂˣ)
+  (L J J' : AddSubgroup K) (hJL : J ≤ L) (hJ'L : J' ≤ L)
+
+private theorem ambientAverage_commute (hLcompact : IsCompact (L : Set K))
     (hJopen : IsOpen (J : Set K)) (hJ'open : IsOpen (J' : Set K)) :
     Commute (ambientAverage ρ ψ L J hJL hLcompact hJopen)
       (ambientAverage ρ ψ L J' hJ'L hLcompact hJ'open) := by
@@ -316,9 +318,7 @@ private theorem ambientAverage_commute (ρ : Representation ℂ (Multiplicative 
   exact (Commute.all (Multiplicative.ofAdd (representative L J' j : K))
     (Multiplicative.ofAdd (representative L J i : K))).map ρ
 
-theorem characterAverage_refinement (ρ : Representation ℂ (Multiplicative K) V)
-    (ψ : Multiplicative K →* ℂˣ) (L J J' : AddSubgroup K)
-    (hJL : J ≤ L) (hJ'L : J' ≤ L) (hJ'J : J' ≤ J)
+theorem characterAverage_refinement (hJ'J : J' ≤ J)
     (hLcompact : IsCompact (L : Set K))
     (hJopen : IsOpen (J : Set K)) (hJ'open : IsOpen (J' : Set K))
     (hψJ : ∀ j ∈ J, ψ (Multiplicative.ofAdd j) = 1)
@@ -343,6 +343,8 @@ theorem characterAverage_refinement (ρ : Representation ℂ (Multiplicative K) 
   calc A v = B (A v) := (ambientAverage_eigen ρ ψ L J' hJ'L hLcompact hJ'open (A v) hA).symm
     _ = A (B v) := hc.symm
     _ = B v := ambientAverage_eigen ρ ψ L J hJL hLcompact hJopen (B v) hB
+
+end
 
 end AdditiveRoot
 

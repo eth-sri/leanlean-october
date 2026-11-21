@@ -48,7 +48,7 @@ theorem digitParameter_S (m : ThetaReflectionData.Row R.A)
     (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
     (p : KPFinitePlace F) (hp : p ∈ R.A.Sf) :
     KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p) (digitParameter R m d) = 0 := by
-  simp only [digitParameter, map_sum, eval_localAdele]
+  simp only [digitParameter, map_sum]
   apply Finset.sum_eq_zero
   intro q _
   apply Pi.single_eq_of_ne
@@ -119,12 +119,11 @@ theorem digitParameter_congruence (m : ThetaReflectionData.Row R.A) (u : R.A.U)
     KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p) (digitParameter R m (digitReindex R m u d)) -
       (algebraMap F (p.adicCompletion F) (u.val : F)) ^ 6 *
         KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p) (digitParameter R m d) ∈ KPTameCompact.O F p := by
-  simp only [digitParameter, map_sum, Finset.mul_sum, ← Finset.sum_sub_distrib, eval_localAdele]
+  simp only [digitParameter, map_sum, Finset.mul_sum, ← Finset.sum_sub_distrib]
   apply (KPTameCompact.O F p).sum_mem
   intro q _
   by_cases he : p = q.val
   · subst p
-    change _ ∈ KPTameCompact.O F q.val
     have hz (x : q.val.adicCompletion F) :
         KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr q.val)
           (KPRationalAdelicSplitting.localAdele F (Sum.inr q.val) x) = x := by

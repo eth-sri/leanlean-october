@@ -17,10 +17,10 @@ def weightedInverseClassEquiv (d : H) : H ≃ H where
   invFun c := d⁻¹ * c⁻¹
   left_inv := by
     intro c
-    simp [mul_inv_rev, mul_comm, mul_left_comm]
+    simp [mul_inv_rev, mul_comm]
   right_inv := by
     intro c
-    simp [mul_inv_rev, mul_comm, mul_left_comm]
+    simp [mul_inv_rev, mul_comm]
 
 @[simp] theorem weightedInverseClassEquiv_apply (d c : H) :
     weightedInverseClassEquiv d c = d⁻¹ * c⁻¹ := rfl
@@ -28,7 +28,7 @@ def weightedInverseClassEquiv (d : H) : H ≃ H where
 theorem weightedInverseClassEquiv_involutive (d : H) :
     Function.Involutive (weightedInverseClassEquiv d) := by
   intro c
-  simp [mul_inv_rev, mul_comm, mul_left_comm]
+  simp [mul_inv_rev, mul_comm]
 
 theorem weightedInvolution_sum [Fintype H] (ψ : H →* ℂ)
     (hψ : ∀ c : H, ‖ψ c‖ = 1) (d : H) (B : H → ℂ) :

@@ -101,7 +101,7 @@ private theorem finiteComponent_norm_eq_prod_extensions
       Module.Finite vK.Completion w.1.Completion :=
     fun w =>
       completionModuleFinite vK hvK w
-  have hz : e z = a :=
+  have hz :=
     e.apply_symm_apply a
   change
     Units.mapEquiv
@@ -125,7 +125,7 @@ private theorem finiteComponent_norm_eq_prod_extensions
             (_root_.finitePlaceLocalTensorDecompositionUnitsComponent
               (K := K) (L := L) v w x)) :
           vK.Completionˣ) : vK.Completion)
-  let x' : (vK.Completion ⊗[K] L)ˣ :=
+  let x' :=
     Units.mapEquiv
       (_root_.relativeFinitePlaceLocalTensorAlgEquiv
         (K := K) (L := L) v).symm.toMulEquiv x
@@ -135,9 +135,7 @@ private theorem finiteComponent_norm_eq_prod_extensions
         (Algebra.norm (v.adicCompletion K)
           (x : v.adicCompletion K ⊗[K] L)) =
         Algebra.norm vK.Completion
-          (x' : vK.Completion ⊗[K] L) := by
-      exact
-        map_norm_tensorProduct_baseChange
+          (x' : vK.Completion ⊗[K] L) := map_norm_tensorProduct_baseChange
           (K := K) (L := L)
           (_root_.relativeFinitePlaceCompletionAlgEquiv
             (K := K) v).symm.toAlgHom
@@ -146,9 +144,7 @@ private theorem finiteComponent_norm_eq_prod_extensions
         Algebra.norm vK.Completion
           (completionTensorDecomposition_left
             (K := K) (L := L) vK hvK
-            (x' : vK.Completion ⊗[K] L) w) := by
-      exact
-        RelativeIdeleGroup.localNorm_units_eq_prod
+            (x' : vK.Completion ⊗[K] L) w) := RelativeIdeleGroup.localNorm_units_eq_prod
           vK hvK x'
     _ =
         (((∏ w : AbsoluteValueExtension vK L,

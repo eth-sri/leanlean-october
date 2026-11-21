@@ -18,7 +18,7 @@ def standardComplexParameter : ℂˣ :=
 @[simp] lemma standardComplexParameter_scale :
     characterScale standardComplexParameter = 4 * Real.pi := by
   simp [standardComplexParameter, characterScale, Complex.norm_real,
-    Real.norm_eq_abs, abs_of_pos (show 0 < 4 * Real.pi by positivity)]
+    Real.norm_eq_abs]
 
 def standardWeylJacquet (κ : ℂˣ) (f : PrincipalSeries positiveParameter)
     (y : ℂˣ) : ℂ :=

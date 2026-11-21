@@ -30,7 +30,7 @@ theorem principalGap_pos (σ₀ : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀) :
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
   have h₂ : Real.rpow 2 (3 - 6 * σ₀) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  exact sub_pos.mpr (max_lt h₁ h₂)
+  simp_all
 
 private lemma model_moduli (σ₀ Q : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀)
     (hQ : 2 ≤ Q) (α β s : ℂ) (hα : ‖α‖ = 1) (hβ : ‖β‖ = 1)
@@ -88,7 +88,7 @@ private lemma rational_bounds (r M : ℝ) (D E : ℂ) (hr0 : 0 ≤ r)
   have hdu : ‖1 - D‖ ≤ 2 := (norm_sub_le _ _).trans (by simpa using (show 1 + ‖D‖ ≤ 2 by linarith))
   have heu : ‖1 - E‖ ≤ 2 := (norm_sub_le _ _).trans (by simpa using (show 1 + ‖E‖ ≤ 2 by linarith))
   have hden : 0 < ‖1 - E‖ * ‖1 - D‖ := mul_pos (by linarith) (by linarith)
-  have hdenu : ‖1 - E‖ * ‖1 - D‖ ≤ 4 := by nlinarith [norm_nonneg (1 - E), norm_nonneg (1 - D)]
+  have hdenu : ‖1 - E‖ * ‖1 - D‖ ≤ 4 := by nlinarith
   refine ⟨?_, hen, hdn⟩
   unfold Audit.Euler.principalCorrection
   rw [norm_div, norm_mul, norm_mul]

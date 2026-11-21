@@ -1,3 +1,0 @@
-module
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalSourceCriterion
-public import DedekindZetaZeroFree.Theta.Unfolding.AbsolutelyConvergentExpansion

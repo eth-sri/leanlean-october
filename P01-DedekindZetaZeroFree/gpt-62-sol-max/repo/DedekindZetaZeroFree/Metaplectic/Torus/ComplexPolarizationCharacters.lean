@@ -23,14 +23,14 @@ private theorem scalar_d (v : KPHilbert.Place F) (z y : (KPHilbert.Completion F 
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
-    simp [KPScalarSplitCentral.scalarMatrix, Matrix.mul_apply, Matrix.scalar]
+    simp
 
 private theorem scalar_diag_sigma (v : KPHilbert.Place F)
     (z y : (KPHilbert.Completion F v)ˣ)
     (hy : KPGlobalCubicIdelePairing.localClass F v y = 1) :
     KPLocalCover.sigmaTwo F ζ hζ v (KPScalarSplitCentral.scalarMatrix F v z)
       (KubotaRankTwo.d _ y 1) = 1 := by
-  have hcube : y ∈ CubicCharacters.cubes (KPHilbert.Completion F v)ˣ :=
+  have hcube :=
     (QuotientGroup.eq_one_iff y).mp hy
   obtain ⟨t, rfl⟩ := hcube
   have hB := (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1
@@ -64,7 +64,7 @@ private theorem localValue_scalar_diag (v : KPHilbert.Place F)
       KPStandardLocalRootLifts.A, scalar_diag_sigma F ζ hζ v z y hy]
   have h1 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) (z * y) z :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 0) := by
-    rw [KubotaRankTwo.coe_d]; exact Units.isUnit (z * y)
+    rw [KubotaRankTwo.coe_d]; simp
   have h2 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) (z * y) z :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 1) := by
     rw [KubotaRankTwo.coe_d]; exact Units.isUnit z
@@ -102,17 +102,16 @@ theorem raw_value_on_cube_normal_word (v : KPHilbert.Place F)
   have hq : KPPGLLocalCover.coverQuotient F ζ hζ v g =
       KPPGLLocalCover.coverQuotient F ζ hζ v
         (KPLocalCover.centralInjection F ζ hζ v e * KPStandardLocalRootLifts.A F ζ hζ v y) := by
-    simpa [map_mul, KPPGLLocalCover.centralInjection, KPPGLLocalCover.A] using hg
-  have hm : g / (KPLocalCover.centralInjection F ζ hζ v e *
-      KPStandardLocalRootLifts.A F ζ hζ v y) ∈ KPPGLLocalCover.splitScalarSubgroup F ζ hζ v :=
+    assumption
+  have hm :=
     QuotientGroup.eq_iff_div_mem.mp hq
   obtain ⟨z, hz⟩ := hm
   have hrep : g = KPScalarSplitCentral.scalarHom F ζ hζ v z *
       (KPLocalCover.centralInjection F ζ hζ v e * KPStandardLocalRootLifts.A F ζ hζ v y) := by
     rw [hz]
-    simp only [div_mul_cancel]
+    simp
   rw [hrep]
-  exact localValue_scalar_diag F ζ hζ v e z y hy
+  apply localValue_scalar_diag <;> assumption
 
 end
 end DedekindZetaZeroFree.ProductPolarizationCharacterDescent
@@ -322,7 +321,12 @@ def localCoverTopology (v : KPHilbert.Place F) :
 
 attribute [local instance] localCoverTopology
 
-def diagonalHom (v : KPHilbert.Place F) :
+section
+
+variable (v : KPHilbert.Place F)
+include v
+
+def diagonalHom :
     (KPHilbert.Completion F v)ˣ →* KPLocalCover.LocalGL2 F v where
   toFun y := KubotaRankTwo.d (KPHilbert.Completion F v) y 1
   map_one' := by
@@ -334,20 +338,20 @@ def diagonalHom (v : KPHilbert.Place F) :
     intro i j
     fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
 
-def localOrdinaryTorus (v : KPHilbert.Place F) :
+def localOrdinaryTorus :
     Subgroup (KPPGLLocalCover.LocalPGL2 F v) :=
   ((KPPGLLocalCover.baseQuotient F v).comp (diagonalHom F v)).range
 
-def localTorus (v : KPHilbert.Place F) :
+def localTorus :
     Subgroup (KPPGLLocalCover.CubicPGL2 F ζ hζ v) :=
   (localOrdinaryTorus F v).comap (KPPGLLocalCover.projection F ζ hζ v)
 
-abbrev LocalE (v : KPHilbert.Place F) := localTorus F ζ hζ v
+abbrev LocalE := localTorus F ζ hζ v
 
-def localRatioValue (v : KPHilbert.Place F) (g : LocalE F ζ hζ v) :
+def localRatioValue (g : LocalE F ζ hζ v) :
     (KPHilbert.Completion F v)ˣ := Classical.choose g.property
 
-theorem baseQuotient_diagonalHom_injective (v : KPHilbert.Place F) :
+theorem baseQuotient_diagonalHom_injective :
     Function.Injective fun y : (KPHilbert.Completion F v)ˣ =>
       KPPGLLocalCover.baseQuotient F v (diagonalHom F v y) := by
   intro y y' h
@@ -372,12 +376,12 @@ theorem baseQuotient_diagonalHom_injective (v : KPHilbert.Place F) :
   subst hw1
   exact Units.ext (by simpa using h00)
 
-theorem localRatioValue_spec (v : KPHilbert.Place F) (g : LocalE F ζ hζ v) :
+theorem localRatioValue_spec (g : LocalE F ζ hζ v) :
     KPPGLLocalCover.baseQuotient F v (diagonalHom F v (localRatioValue F ζ hζ v g)) =
       KPPGLLocalCover.projection F ζ hζ v g :=
   Classical.choose_spec g.property
 
-theorem localRatioValue_eq (v : KPHilbert.Place F) {g : LocalE F ζ hζ v}
+theorem localRatioValue_eq {g : LocalE F ζ hζ v}
     {y : (KPHilbert.Completion F v)ˣ}
     (hy : KPPGLLocalCover.baseQuotient F v (diagonalHom F v y) =
       KPPGLLocalCover.projection F ζ hζ v g) :
@@ -385,13 +389,13 @@ theorem localRatioValue_eq (v : KPHilbert.Place F) {g : LocalE F ζ hζ v}
   (baseQuotient_diagonalHom_injective F v
     ((localRatioValue_spec F ζ hζ v g).trans hy.symm).symm)
 
-theorem localRatioValue_one (v : KPHilbert.Place F) :
+theorem localRatioValue_one :
     localRatioValue F ζ hζ v 1 = 1 := by
   symm
   apply localRatioValue_eq F ζ hζ v
   simp
 
-theorem localRatioValue_mul (v : KPHilbert.Place F) (g h : LocalE F ζ hζ v) :
+theorem localRatioValue_mul (g h : LocalE F ζ hζ v) :
     localRatioValue F ζ hζ v (g * h) =
       localRatioValue F ζ hζ v g * localRatioValue F ζ hζ v h := by
   symm
@@ -402,19 +406,26 @@ theorem localRatioValue_mul (v : KPHilbert.Place F) (g h : LocalE F ζ hζ v) :
   rw [hgh, ← localRatioValue_spec F ζ hζ v g, ← localRatioValue_spec F ζ hζ v h]
   rw [map_mul, map_mul]
 
-def localRatio (v : KPHilbert.Place F) :
+def localRatio :
     LocalE F ζ hζ v →* (KPHilbert.Completion F v)ˣ where
   toFun := localRatioValue F ζ hζ v
   map_one' := localRatioValue_one F ζ hζ v
   map_mul' := localRatioValue_mul F ζ hζ v
 
-def localProjection (v : KPHilbert.Place F) : LocalE F ζ hζ v →* LocalD F v :=
+def localProjection : LocalE F ζ hζ v →* LocalD F v :=
   (KPGlobalCubicIdelePairing.localClass F v).comp (localRatio F ζ hζ v)
 
-def localCenter (v : KPHilbert.Place F) : Subgroup (LocalE F ζ hζ v) :=
+def localCenter : Subgroup (LocalE F ζ hζ v) :=
   (localProjection F ζ hζ v).ker
 
- theorem normalizedLocalAbs_norm (q : HeightOneSpectrum (𝓞 F))
+end
+
+section
+
+variable (q : HeightOneSpectrum (𝓞 F))
+include q
+
+ theorem normalizedLocalAbs_norm
     (y : (q.adicCompletion F)ˣ) :
     KPLocalPrincipalSeries.localAbs (q.adicCompletion F) y = ‖(y : q.adicCompletion F)‖ := by
   open MeasureTheory ValuativeRel in
@@ -450,7 +461,7 @@ def localCenter (v : KPHilbert.Place F) : Subgroup (LocalE F ζ hζ v) :=
     ENNReal.toReal_ofReal (inv_nonneg.mpr (norm_nonneg _))] at hi'
   exact inv_injective hi'
 
-theorem fullnorm_bridgefinite (q : HeightOneSpectrum (𝓞 F))
+theorem fullnorm_bridgefinite
     (y : (q.adicCompletion F)ˣ) :
     KPGlobalCenterRationalCharacter.positiveComplex
       (KPGlobalCenterRationalCharacter.sixthPower (Units.mk0
@@ -465,7 +476,7 @@ theorem fullnorm_bridgefinite (q : HeightOneSpectrum (𝓞 F))
   simp [KPGlobalCenterRationalCharacter.positiveComplex,
     KPGlobalCenterRationalCharacter.sixthPower, KPGlobalCenterRationalCharacter.localAbs,
     NNReal.coe_rpow]
- lemma finiteH_eq (q : HeightOneSpectrum (𝓞 F)) :
+ lemma finiteH_eq :
     localTorus F ζ hζ (Sum.inr q) = ActualFiniteTorus.H F ζ hζ q := by
   letI : (KPPGLLocalCover.scalarSubgroup F (Sum.inr q)).Normal :=
     KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
@@ -492,10 +503,10 @@ theorem fullnorm_bridgefinite (q : HeightOneSpectrum (𝓞 F))
     rw [hp, one_mul]
     rfl
 
- def finiteEquiv (q : HeightOneSpectrum (𝓞 F)) :
+ def finiteEquiv :
     LocalE F ζ hζ (Sum.inr q) ≃* ActualFiniteTorus.H F ζ hζ q :=
   MulEquiv.subgroupCongr (finiteH_eq F ζ hζ q)
-private lemma finite_coordinate (q : HeightOneSpectrum (𝓞 F)) (g : LocalE F ζ hζ (Sum.inr q)) :
+private lemma finite_coordinate (g : LocalE F ζ hζ (Sum.inr q)) :
     ActualFiniteTorus.coordinate F ζ hζ q (finiteEquiv F ζ hζ q g) = localRatio F ζ hζ (Sum.inr q) g := by
   apply Units.ext
   change (KPRankOneInduction.borelRatio F q _ : ActualFiniteTorus.K F q) = _
@@ -503,7 +514,7 @@ private lemma finite_coordinate (q : HeightOneSpectrum (𝓞 F)) (g : LocalE F �
   · simp [diagonalHom, KubotaRankTwo.d]
   · exact congrArg (KPLocalSmoothRepresentation.ordinaryPGLMap F q) (localRatioValue_spec F ζ hζ (Sum.inr q) g)
   · simp [diagonalHom, KubotaRankTwo.d]
- lemma finite_center_eq (q : HeightOneSpectrum (𝓞 F)) :
+ lemma finite_center_eq :
     localCenter F ζ hζ (Sum.inr q) = Subgroup.center (LocalE F ζ hζ (Sum.inr q)) := by
   ext x
   have hker := (ActualFiniteTorus.actual_center_cube_normal_form F ζ hζ q).1
@@ -521,7 +532,7 @@ private lemma finite_coordinate (q : HeightOneSpectrum (𝓞 F)) (g : LocalE F �
   · intro h y
     obtain ⟨y,rfl⟩ := (finiteEquiv F ζ hζ q).surjective y
     simpa using congrArg (finiteEquiv F ζ hζ q) (h y)
- def finiteCenterMap (q : HeightOneSpectrum (𝓞 F)) :
+ def finiteCenterMap :
     localCenter F ζ hζ (Sum.inr q) →ₜ* ActualFiniteTorus.C F ζ hζ q where
   toFun z := ⟨finiteEquiv F ζ hζ q z.val, by
     have hh : z.val ∈ Subgroup.center (LocalE F ζ hζ (Sum.inr q)) := by rw [← finite_center_eq]; exact z.property
@@ -536,11 +547,11 @@ private lemma finite_coordinate (q : HeightOneSpectrum (𝓞 F)) (g : LocalE F �
     apply Continuous.subtype_mk
     exact continuous_subtype_val.comp continuous_subtype_val
 
- def finiteOmega (q : HeightOneSpectrum (𝓞 F)) :
+ def finiteOmega :
     localCenter F ζ hζ (Sum.inr q) →ₜ* ℂˣ :=
   (ActualFiniteTorus.prescribedCenterCharacter F ζ hζ q).comp (finiteCenterMap F ζ hζ q)
 
-private lemma finiteOmega_normal_formula (q : HeightOneSpectrum (𝓞 F))
+private lemma finiteOmega_normal_formula
     (z : localCenter F ζ hζ (Sum.inr q)) (e : rootsOfUnity 3 F)
     (y : (q.adicCompletion F)ˣ)
     (hz : z.val.val = ActualFiniteTorus.normalWord F ζ hζ q e y) :
@@ -557,6 +568,8 @@ private lemma finiteOmega_normal_formula (q : HeightOneSpectrum (𝓞 F))
       (ActualFiniteTorus.coordinate F ζ hζ q (finiteEquiv F ζ hζ q z.val)) = _
   rw [hs.1, hs.2, ← fullnorm_bridgefinite]
   rfl
+
+end
 
 private lemma local_normal_exists (v : KPHilbert.Place F) (g : LocalE F ζ hζ v) :
     ∃ e, g.val = KPPGLLocalCover.centralInjection F ζ hζ v e *

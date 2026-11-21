@@ -25,7 +25,6 @@ local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogSha
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 set_option synthInstance.maxHeartbeats 200000
-local instance : BorelSpace (FullOmega F ζ hζ (nativeDatum F ζ hζ)) := ⟨rfl⟩
 
 end CoefficientAssembly
 

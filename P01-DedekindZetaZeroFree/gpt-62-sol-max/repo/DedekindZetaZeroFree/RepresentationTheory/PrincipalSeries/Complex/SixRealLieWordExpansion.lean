@@ -14,16 +14,10 @@ def slotLieMatrix (i : Fin 3) (j : Fin 2) : Matrix (Fin 2) (Fin 2) ℂ :=
   let z : Fin 3 → ℂ := fun k => if k = i then (if j = 0 then 1 else Complex.I) else 0
   !![z 0, z 1; z 2, -z 0]
 
-private theorem complex_spherical_twist (s : ℂ) (g : KPCplxCharacterHaar.ComplexGL2) :
+theorem complex_spherical_twist (s : ℂ) (g : KPCplxCharacterHaar.ComplexGL2) :
     Complex.exp (s * (KPContFlatLogNormSmooth.complexMatrixLogNorm g : ℂ)) *
       KPCplxPrincipalSeriesCharts.sphericalSection KPCplxPrincipalSeriesCharts.positiveParameter g =
         KPContHolomorphicKGeneration.complexSpherical s g := by
-  have hr : 0 < ‖((g : Matrix (Fin 2) (Fin 2) ℂ).det)‖ /
-      (‖g 1 0‖^2+‖g 1 1‖^2) := by
-    have hsq := KPContFlatLogNormSmooth.complexMatrixLogNorm_argument_pos g
-    have hn : 0 ≤ ‖((g : Matrix (Fin 2) (Fin 2) ℂ).det)‖ /
-        (‖g 1 0‖^2+‖g 1 1‖^2) := by positivity
-    nlinarith
   rw [← KPContHolomorphicKGeneration.complexSpherical_zero]
   unfold KPContFlatLogNormSmooth.complexMatrixLogNorm KPContHolomorphicKGeneration.complexSpherical
   dsimp only [KPCplxPrincipalSeriesCharts.bottomRowNormSq]
@@ -37,7 +31,8 @@ private theorem complex_spherical_twist (s : ℂ) (g : KPCplxCharacterHaar.Compl
   rw [hdet]
   ring
 
-private theorem spherical_word_matrix_smooth (w : KPContHolomorphicKGeneration.RealLieWord) (s : ℂ) :
+open scoped Matrix.Norms.Elementwise in
+theorem spherical_word_matrix_smooth (w : KPContHolomorphicKGeneration.RealLieWord) (s : ℂ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (KPCplxPrincipalSeriesCharts.matrixFunction (KPContHolomorphicKGeneration.complexSphericalWord w s))
       {g | g.det ≠ 0} := by
@@ -76,12 +71,11 @@ private theorem matrix_six_real_decomposition (X : Matrix (Fin 2) (Fin 2) ℂ) :
     exact Complex.re_add_im z
   ext a b
   fin_cases a <;> fin_cases b <;>
-    simp [Fin.sum_univ_succ, Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply,
-      slotLieMatrix, tracelessCoordinates, Complex.real_smul] <;>
+    simp [Fin.sum_univ_succ, Matrix.add_apply, Matrix.smul_apply, slotLieMatrix, tracelessCoordinates, Complex.real_smul] <;>
     try simp only [hz]
   all_goals apply Complex.ext <;>
     simp [Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
-      Complex.div_re, Complex.div_im, Complex.mul_re, Complex.mul_im] <;> ring
+      Complex.mul_re, Complex.mul_im] <;> ring
 
  abbrev Mat := Matrix (Fin 2) (Fin 2) ℂ
  abbrev CGL := KPCplxCharacterHaar.ComplexGL2
@@ -103,7 +97,7 @@ private theorem ambient_scalar (f : CGL → ℂ)
   · let a := Matrix.GeneralLinearGroup.mkOfDetNeZero g hg
     have he : ((Matrix.GeneralLinearGroup.scalar (Fin 2) c * a : CGL) : Mat) = (c : ℂ) • g := by
       ext i j
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+      simp [Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.scalar_apply, Matrix.diagonal_mul, a]
     rw [← he, ambient_gl, hf]
     exact (ambient_gl f a).symm
@@ -137,7 +131,7 @@ private theorem right_scalar (f : CGL → ℂ) (X : Mat)
   unfold KPContHolomorphicKGeneration.rightLieFunction
   have hmat : ((Matrix.GeneralLinearGroup.scalar (Fin 2) c * g : CGL) : Mat) = L (g : Mat) := by
     ext i j
-    simp [L, Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [L, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar_apply, Matrix.diagonal_mul]
   rw [hmat]
   change fderiv ℝ (ambient f) (L (g : Mat)) (L (g : Mat) * X) = _
@@ -201,7 +195,7 @@ private theorem right_six (X : Mat) (W : KPContHolomorphicKGeneration.RealLieWor
   apply Finset.sum_congr rfl
   intro j hj
   rw [map_smul]
-  simp only [Complex.real_smul, smul_eq_mul, apply_ite, Complex.ofReal_re, Complex.ofReal_im]
+  simp only [Complex.real_smul, apply_ite]
   rfl
 
 private theorem word_differentiable (W : KPContHolomorphicKGeneration.RealLieWord) (s : ℂ) (g : CGL) :

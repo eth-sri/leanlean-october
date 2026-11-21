@@ -80,11 +80,13 @@ private lemma correction_region (x : Coordinates) (hx : x ∈ Omega) :
   rcases hx with h | h <;> rcases h with ⟨hξ, hw, hz⟩ <;>
     refine ⟨by linarith, by linarith, by linarith, by linarith⟩
 
-private lemma correction_norms_lt_one (C : A.GeneralArithmeticContext σ η hS)
-    (p : ExteriorPrime A) (u : A.R) (x : Coordinates) (hx : x ∈ Omega) :
+private lemma norms_lt_one_of_pos (C : A.GeneralArithmeticContext σ η hS)
+    (p : ExteriorPrime A) (u : A.R) (x : Coordinates) 
+    (hx : 0 < 6 * x.2.2.re ∧ 0 < x.2.1.re ∧ 0 < x.1.re ∧
+      0 < 6 * x.1.re + 6 * x.2.2.re - 4) :
     ‖V p x.2.2‖ < 1 ∧ ‖W (σ := σ) p u x.2.1‖ < 1 ∧
     ‖D (σ := σ) (η := η) p u x.1‖ < 1 ∧ ‖E C p x.1 x.2.2‖ < 1 := by
-  obtain ⟨hz, hw, hξ, he⟩ := correction_region x hx
+  obtain ⟨hz, hw, hξ, he⟩ := hx
   have hlog := Real.log_pos (correction_Q_gt_one p)
   have hexp : ∀ a : ℝ, a < 0 → Real.exp (a * Real.log (Q p)) < 1 := by
     intro a ha
@@ -94,6 +96,12 @@ private lemma correction_norms_lt_one (C : A.GeneralArithmeticContext σ η hS)
   · exact (correction_norm_W p u _).trans_lt (hexp _ (by linarith))
   · exact (correction_norm_D p u _).trans_lt (hexp _ (by linarith))
   · rw [correction_norm_E]; exact hexp _ (by linarith)
+
+private lemma region_pos {x : Coordinates} (hx : x ∈ Omega) :
+    0 < 6 * x.2.2.re ∧ 0 < x.2.1.re ∧ 0 < x.1.re ∧
+      0 < 6 * x.1.re + 6 * x.2.2.re - 4 := by
+  obtain ⟨hz, hw, hξ, he⟩ := correction_region x hx
+  exact ⟨by linarith, by linarith, by linarith, by linarith⟩
 
 private lemma correction_decay_exponents (x : Coordinates) (hx : x ∈ Omega) :
     -6 * x.2.2.re - x.2.1.re ≤ -(1 + 1 / 4000 : ℝ) ∧
@@ -238,6 +246,22 @@ private lemma correction_numerator_bound (q t : ℝ) (hq : 2 ≤ q) (ht : 0 ≤ 
     _ ≤ ((((‖-v * w‖ + ‖d * v‖) + ‖d * w‖) + ‖(q : ℂ) * d * w * v‖) + 2 * t) + 6 * t := by gcongr; exact norm_add_le _ _
     _ ≤ 12 * t := by simp only [norm_mul, norm_neg, hqn]; linarith
 
+private theorem denominators_ne_zero_of_pos
+    (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
+    (x : Coordinates) 
+    (hx : 0 < 6 * x.2.2.re ∧ 0 < x.2.1.re ∧ 0 < x.1.re ∧
+      0 < 6 * x.1.re + 6 * x.2.2.re - 4) :
+    1 - V p x.2.2 ≠ 0 ∧
+    1 - W (σ := σ) p u x.2.1 ≠ 0 ∧
+    1 - D (σ := σ) (η := η) p u x.1 ≠ 0 ∧
+    1 - E C p x.1 x.2.2 ≠ 0 := by
+  obtain ⟨hv, hw, hd, he⟩ := norms_lt_one_of_pos C p u x hx
+  have h : ∀ a : ℂ, ‖a‖ < 1 → 1 - a ≠ 0 := by
+    intro a ha heq
+    have : a = 1 := (sub_eq_zero.mp heq).symm
+    simp [this] at ha
+  exact ⟨h _ hv, h _ hw, h _ hd, h _ he⟩
+
 theorem good_correction_denominators_ne_zero
     (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
     (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
@@ -245,21 +269,18 @@ theorem good_correction_denominators_ne_zero
     1 - V p x.2.2 ≠ 0 ∧
     1 - W (σ := σ) p u x.2.1 ≠ 0 ∧
     1 - D (σ := σ) (η := η) p u x.1 ≠ 0 ∧
-    1 - E C p x.1 x.2.2 ≠ 0 := by
-  obtain ⟨hv, hw, hd, he⟩ := correction_norms_lt_one C p u x hx
-  have h : ∀ a : ℂ, ‖a‖ < 1 → 1 - a ≠ 0 := by
-    intro a ha heq
-    have : a = 1 := (sub_eq_zero.mp heq).symm
-    simp [this] at ha
-  exact ⟨h _ hv, h _ hw, h _ hd, h _ he⟩
+    1 - E C p x.1 x.2.2 ≠ 0 :=
+  denominators_ne_zero_of_pos C p u x (region_pos hx)
 
 set_option maxHeartbeats 1500000 in
 
-theorem good_correction_holomorphic
+theorem goodFactor_differentiableOn
     (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
-    (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)) :
+    {T : Set Coordinates}
+    (hT : ∀ x ∈ T, 0 < 6 * x.2.2.re ∧ 0 < x.2.1.re ∧ 0 < x.1.re ∧
+      0 < 6 * x.1.re + 6 * x.2.2.re - 4) :
     DifferentiableOn ℂ (fun x : Coordinates => goodFactor C p u x.1 x.2.1 x.2.2)
-      Omega := by
+      T := by
   have hξ : Differentiable ℂ (fun x : Coordinates => x.1) := differentiable_fst
   have hw : Differentiable ℂ (fun x : Coordinates => x.2.1) := differentiable_snd.fst
   have hz : Differentiable ℂ (fun x : Coordinates => x.2.2) := differentiable_snd.snd
@@ -272,7 +293,7 @@ theorem good_correction_holomorphic
   have he : Differentiable ℂ (fun x : Coordinates => E C p x.1 x.2.2) := by
     unfold E V qPower; fun_prop
   intro x hx
-  obtain ⟨nv, nw, nd, ne⟩ := good_correction_denominators_ne_zero C p u hu x hx
+  obtain ⟨nv, nw, nd, ne⟩ := denominators_ne_zero_of_pos C p u x (hT x hx)
   have hvx := hv x
   have hwx := hw' x
   have hdx := hd x
@@ -281,6 +302,13 @@ theorem good_correction_holomorphic
   unfold goodFactor goodRational
   dsimp only
   fun_prop (disch := assumption)
+
+theorem good_correction_holomorphic
+    (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
+    (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)) :
+    DifferentiableOn ℂ (fun x : Coordinates => goodFactor C p u x.1 x.2.1 x.2.2)
+      Omega :=
+  goodFactor_differentiableOn C p u fun _ hx => region_pos hx
 
 theorem good_correction_numerator
     (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
@@ -323,7 +351,7 @@ theorem good_correction_uniform_bound :
   intro F _ _ A σ η hS C p u hu x hx
   have ht : 0 ≤ (Q p) ^ (-(1 + 1 / 4000 : ℝ)) :=
     (Real.rpow_pos_of_pos (lt_trans zero_lt_one (correction_Q_gt_one p)) _).le
-  obtain ⟨hv, hw, hd, he⟩ := correction_norms_lt_one C p u x hx
+  obtain ⟨hv, hw, hd, he⟩ := norms_lt_one_of_pos C p u x (region_pos hx)
   obtain ⟨hvw, hdv, hdw, hdwv, he'⟩ := correction_monomial_bounds C p u x hx
   have hn := correction_numerator_bound (Q p) _ (correction_Q_ge_two p) ht
     (V p x.2.2) (W (σ := σ) p u x.2.1) (D (σ := σ) (η := η) p u x.1)

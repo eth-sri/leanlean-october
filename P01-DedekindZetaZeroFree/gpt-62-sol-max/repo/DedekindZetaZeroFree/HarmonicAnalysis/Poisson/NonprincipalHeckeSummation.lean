@@ -19,7 +19,7 @@ namespace DedekindZetaZeroFree.LargeSieve.NonprincipalPoisson
 private lemma cpow_strip_bound (Y : ℝ) (hY : 0 < Y) (c a b : ℝ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s : ℂ, s.re ∈ Set.Icc a b →
       ‖(Y : ℂ) ^ ((c : ℂ) * s)‖ ≤ B := by
-  have hd : Differentiable ℂ (fun s : ℂ => (Y : ℂ) ^ ((c : ℂ) * s)) :=
+  have hd :=
     ((differentiable_id.const_mul (c : ℂ))).const_cpow
       (Or.inl (Complex.ofReal_ne_zero.mpr hY.ne'))
   obtain ⟨B, hB⟩ := isCompact_Icc.exists_bound_of_continuousOn
@@ -33,14 +33,13 @@ private lemma cpow_strip_bound (Y : ℝ) (hY : 0 < Y) (c a b : ℝ) :
   rw [he]
   have hb := hB s.re hs
   rw [Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)] at hb
-  exact hb.trans (le_max_left _ _)
+  grind
 
 private lemma Gammaℂ_ne_zero_of_im_ne_zero {s : ℂ} (hs : s.im ≠ 0) :
     Complex.Gammaℂ s ≠ 0 := by
   rw [Complex.Gammaℂ_def]
   refine mul_ne_zero (mul_ne_zero two_ne_zero ?_) ?_
-  · exact Complex.cpow_ne_zero_iff.mpr
-      (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
+  · simp
   · intro h0
     rw [Complex.Gamma_eq_zero_iff] at h0
     obtain ⟨m, hm⟩ := h0

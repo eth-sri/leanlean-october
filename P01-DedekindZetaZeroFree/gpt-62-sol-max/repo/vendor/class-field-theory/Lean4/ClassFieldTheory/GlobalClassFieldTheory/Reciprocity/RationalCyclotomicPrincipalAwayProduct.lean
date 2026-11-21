@@ -87,8 +87,12 @@ noncomputable local instance
       (KummerTheory.rationalCyclotomicLevel m) :=
   rationalCyclotomicPrincipalPrimeLevelIsAbelianGalois m
 
+section
+
+variable (p : Nat.Primes) (k : ℕ) (x : ℚˣ)
+include p x
+
  noncomputable def rationalCyclotomicPrincipalHeightOneArtinInput
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ)
     (v : HeightOneSpectrum (𝓞 ℚ)) :
     KummerTheory.rationalCyclotomicLevel
         ⟨p.1 ^ k, pow_pos p.2.pos k⟩ ≃ₐ[ℚ]
@@ -104,7 +108,6 @@ noncomputable local instance
       (IdeleGroup.principalIdele ℚ x))
 
 private theorem rationalCyclotomicPrincipalHeightOneArtinInput_spec
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ)
     (v : HeightOneSpectrum (𝓞 ℚ)) :
     rationalCyclotomicPrincipalHeightOneArtinInput p k x v =
       chosenFinitePlaceArtinMonoidHom
@@ -118,7 +121,6 @@ private theorem rationalCyclotomicPrincipalHeightOneArtinInput_spec
   rfl
 
  noncomputable def rationalCyclotomicPrincipalHeightOneCharacter
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ)
     (v : HeightOneSpectrum (𝓞 ℚ)) :
     (ZMod (p.1 ^ k))ˣ :=
   IsCyclotomicExtension.Rat.galEquivZMod
@@ -133,7 +135,6 @@ private theorem rationalCyclotomicPrincipalHeightOneArtinInput_spec
 /-- The named height-one character is the cyclotomic coordinate of the
 chosen finite-place Artin symbol. -/
 theorem rationalCyclotomicPrincipalHeightOneCharacter_spec
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ)
     (v : HeightOneSpectrum (𝓞 ℚ)) :
     rationalCyclotomicPrincipalHeightOneCharacter p k x v =
       IsCyclotomicExtension.Rat.galEquivZMod
@@ -157,15 +158,13 @@ theorem rationalCyclotomicPrincipalHeightOneCharacter_spec
 /-- The genuine chosen finite-place Artin character of the rational
 principal idele at the prime `q`, evaluated in the `p ^ k` cyclotomic
 coordinate. -/
-noncomputable def rationalCyclotomicPrincipalFinitePlaceCharacter
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) (q : Nat.Primes) :
+noncomputable def rationalCyclotomicPrincipalFinitePlaceCharacter (q : Nat.Primes) :
     (ZMod (p.1 ^ k))ˣ :=
   rationalCyclotomicPrincipalHeightOneCharacter p k x
     ((Rat.HeightOneSpectrum.primesEquiv
       (R := 𝓞 ℚ)).symm q)
 
-private theorem rationalCyclotomicPrincipalFinitePlaceCharacter_spec
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) (q : Nat.Primes) :
+private theorem rationalCyclotomicPrincipalFinitePlaceCharacter_spec (q : Nat.Primes) :
     rationalCyclotomicPrincipalFinitePlaceCharacter p k x q =
       rationalCyclotomicPrincipalHeightOneCharacter p k x
         ((Rat.HeightOneSpectrum.primesEquiv
@@ -175,8 +174,7 @@ private theorem rationalCyclotomicPrincipalFinitePlaceCharacter_spec
 /-- The named rational-prime character is exactly the cyclotomic
 coordinate of the chosen finite-place Artin symbol. -/
 theorem
-    rationalCyclotomicPrincipalFinitePlaceCharacter_chosenArtin_spec
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) (q : Nat.Primes) :
+    rationalCyclotomicPrincipalFinitePlaceCharacter_chosenArtin_spec (q : Nat.Primes) :
     rationalCyclotomicPrincipalFinitePlaceCharacter p k x q =
       IsCyclotomicExtension.Rat.galEquivZMod
         (p.1 ^ k)
@@ -201,6 +199,8 @@ theorem
     rationalCyclotomicPrincipalHeightOneCharacter_spec p k x
       ((Rat.HeightOneSpectrum.primesEquiv
         (R := 𝓞 ℚ)).symm q)
+
+end
 
 /-- At every positive `p`-power level, the finite-place character at `p`
 is the direct reduction of the rational `p`-adic unit. -/
@@ -411,12 +411,16 @@ theorem
     padicValNat.eq_zero_of_not_dvd hqDen]
   norm_num
 
+section
+
+variable (p : Nat.Primes) (k : ℕ) (x : ℚˣ)
+include p x
+
 /-- A chosen finite-place Artin character outside the rational
 prime-factorization support is genuinely trivial. -/
 @[simp]
 theorem
-    rationalCyclotomicPrincipalFinitePlaceCharacter_eq_one_of_not_mem_support
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) (q : Nat.Primes)
+    rationalCyclotomicPrincipalFinitePlaceCharacter_eq_one_of_not_mem_support (q : Nat.Primes)
     (hq :
       q ∉ rationalPrimeFactorizationPrimeSupport x p) :
     rationalCyclotomicPrincipalFinitePlaceCharacter p k x q = 1 := by
@@ -435,8 +439,7 @@ theorem
 multiplicative support, contained in the ordinary rational prime
 factorization support. -/
 theorem
-    rationalCyclotomicPrincipalFinitePlaceCharacters_hasFiniteMulSupport
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalCyclotomicPrincipalFinitePlaceCharacters_hasFiniteMulSupport :
     HasFiniteMulSupport
       (rationalCyclotomicPrincipalFinitePlaceCharacter p k x) := by
   rw [HasFiniteMulSupport]
@@ -452,8 +455,7 @@ theorem
 explicit finite product over the erased rational prime-factorization
 support. -/
 theorem
-    rationalCyclotomicPrincipalAwayFinitePlaceCharacter_finprod_eq_factorizationProduct
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalCyclotomicPrincipalAwayFinitePlaceCharacter_finprod_eq_factorizationProduct :
     (∏ᶠ (q : Nat.Primes) (_ : q ≠ p),
       rationalCyclotomicPrincipalFinitePlaceCharacter p k x q) =
       ∏ q :
@@ -513,8 +515,7 @@ theorem
 /-- The direct rational `p`-unit character times the explicit inverse
 away-from-`p` factorization product is the reduced rational sign. -/
 theorem
-    rationalPrimeUnitCharacter_mul_principalAwayFactorizationProduct_eq_sign
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalPrimeUnitCharacter_mul_principalAwayFactorizationProduct_eq_sign :
     Units.map (PadicInt.toZModPow k).toMonoidHom
           (padicIntUnitOfRat p (rationalPrimeUnit x p : ℚ)
             (rationalPrimeUnit x p).ne_zero
@@ -532,22 +533,19 @@ theorem
     padicIntUnitOfRat_rationalPrimeUnit_mul_primeSupportInverseFactors_toZModPow
       x p k
 
- noncomputable def rationalCyclotomicPrincipalHeightOneCharacterFinprod
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+ noncomputable def rationalCyclotomicPrincipalHeightOneCharacterFinprod :
     (ZMod (p.1 ^ k))ˣ :=
   ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
     rationalCyclotomicPrincipalHeightOneCharacter p k x v
 
 private theorem
-    rationalCyclotomicPrincipalHeightOneCharacterFinprod_eq_finprod
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalCyclotomicPrincipalHeightOneCharacterFinprod_eq_finprod :
     rationalCyclotomicPrincipalHeightOneCharacterFinprod p k x =
       ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
         rationalCyclotomicPrincipalHeightOneCharacter p k x v := by
   rfl
 
-private theorem rationalCyclotomicPrincipalHeightOneCharacterFinprod_spec
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+private theorem rationalCyclotomicPrincipalHeightOneCharacterFinprod_spec :
     rationalCyclotomicPrincipalHeightOneCharacterFinprod p k x =
       ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
         IsCyclotomicExtension.Rat.galEquivZMod
@@ -576,8 +574,7 @@ private theorem rationalCyclotomicPrincipalHeightOneCharacterFinprod_spec
       exact rationalCyclotomicPrincipalHeightOneCharacter_spec p k x v
 
 private theorem
-    rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_away_eq_namedFinprod
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_away_eq_namedFinprod :
     rationalCyclotomicPrincipalFinitePlaceCharacter p k x p *
         (∏ᶠ (q : Nat.Primes) (_ : q ≠ p),
           rationalCyclotomicPrincipalFinitePlaceCharacter p k x q) =
@@ -608,8 +605,7 @@ private theorem
 distinguished prime identifies the height-one finprod with its genuine
 `p`-factor times the off-`p` prime finprod. -/
 theorem
-    rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_away_finprod
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_away_finprod :
     rationalCyclotomicPrincipalFinitePlaceCharacter p k x p *
         (∏ᶠ (q : Nat.Primes) (_ : q ≠ p),
           rationalCyclotomicPrincipalFinitePlaceCharacter p k x q) =
@@ -638,8 +634,7 @@ theorem
 height-one chosen Artin finprod is the genuine `p`-factor times the
 explicit away-from-`p` rational factorization product. -/
 theorem
-    rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_factorizationProduct
-    (p : Nat.Primes) (k : ℕ) (x : ℚˣ) :
+    rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_factorizationProduct :
     rationalCyclotomicPrincipalFinitePlaceCharacter p k x p *
         (∏ q :
             ↥((rationalPrimeFactorizationPrimeSupport x p).erase p),
@@ -671,6 +666,8 @@ theorem
   exact
     rationalCyclotomicPrincipalFinitePlaceCharacter_prime_mul_away_finprod
       p k x
+
+end
 
 end Reciprocity
 end GlobalClassFieldTheory

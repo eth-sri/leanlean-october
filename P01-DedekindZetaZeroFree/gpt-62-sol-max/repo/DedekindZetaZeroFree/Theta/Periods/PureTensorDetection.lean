@@ -27,9 +27,6 @@ def corePeriod (g : Group R) :
     RestrictedTensorSimple.Core (actualLocal R M) e bad →ₗ[ℂ] ℂ :=
   (period T g).comp (coreIntoSpan T M e bad A hA)
 
-@[simp] theorem corePeriod_apply (g : Group R)
-    (x : RestrictedTensorSimple.Core (actualLocal R M) e bad) :
-    corePeriod T M e bad A hA g x = MomentSources.fourier R Q.dq (A x) g := rfl
 
 end Core
 

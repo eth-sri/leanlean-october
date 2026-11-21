@@ -31,10 +31,8 @@ theorem rootDepth_spec [CharZero K] (v : AddValuation K (WithTop ℤ))
     (hnormalized : ∃ π : K, v π = (1 : WithTop ℤ))
     (ζ : (Ring v)ˣ) (hζ : IsPrimitiveRoot ((ζ : Ring v) : K) 3) :
     v (1 - ((ζ : Ring v) : K)) = (rootDepth v ζ : WithTop ℤ) := by
-  have hne : v (1 - ((ζ : Ring v) : K)) ≠ ⊤ := by
-    exact fun h => (hζ.ne_one (by decide)) ((sub_eq_zero.mp (v.top_iff.mp h)).symm)
-  have hnonneg : 0 ≤ v (1 - ((ζ : Ring v) : K)) := by
-    exact ((1 - (ζ : Ring v)) : Ring v).property
+  have hne : v (1 - ((ζ : Ring v) : K)) ≠ ⊤ := fun h => (hζ.ne_one (by decide)) ((sub_eq_zero.mp (v.top_iff.mp h)).symm)
+  have hnonneg : 0 ≤ v (1 - ((ζ : Ring v) : K)) := ((1 - (ζ : Ring v)) : Ring v).property
   generalize he : v (1 - ((ζ : Ring v) : K)) = a at *
   cases a with
   | top => exact (hne rfl).elim

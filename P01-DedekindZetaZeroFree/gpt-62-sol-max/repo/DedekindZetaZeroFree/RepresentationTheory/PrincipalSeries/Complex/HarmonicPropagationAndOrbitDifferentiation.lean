@@ -57,18 +57,18 @@ private theorem harmonic_partial_mem (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials (n + 1)) (i : Fin 3) :
     pderiv i p ∈ harmonicPolynomials n := by
   refine ⟨by simpa using hp.1.pderiv (i := i), ?_⟩
-  change polynomialLaplacian (pderiv i p) = 0
-  have hc : polynomialLaplacian (pderiv i p) = pderiv i (polynomialLaplacian p) := by
+  change KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian (pderiv i p) = 0
+  have hc : KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian (pderiv i p) = pderiv i (KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian p) := by
     change (∑ j : Fin 3, pderiv j (pderiv j (pderiv i p))) =
       pderiv i (∑ j : Fin 3, pderiv j (pderiv j p))
     rw [map_sum]
     apply Finset.sum_congr rfl
     intro j hj
     rw [partials_commute j i, partials_commute j i]
-  rw [hc, show polynomialLaplacian p = 0 from hp.2, map_zero]
+  rw [hc, show KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian p = 0 from hp.2, map_zero]
 
 private theorem laplacian_coordinate_mul (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
-    polynomialLaplacian (X i * p) = X i * polynomialLaplacian p + 2 * pderiv i p := by
+    KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian (X i * p) = X i * KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian p + 2 * pderiv i p := by
   classical
   change (∑ j : Fin 3, pderiv j (pderiv j (X i * p))) = _
   have hc (j : Fin 3) : pderiv j (pderiv j (X i)) = (0 : MvPolynomial (Fin 3) ℂ) := by
@@ -97,26 +97,22 @@ private theorem harmonicRaise_succ_mem (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     harmonicRaise (n + 1) i p ∈ harmonicPolynomials (n + 2) := by
   open ComplexFractionalInverse.FiniteFischerRaw in
   have hpartial := harmonic_partial_mem n p hp i
-  have hr : radiusQuadratic.IsHomogeneous 2 := by
-    apply IsHomogeneous.sum
-    intro j hj
-    exact isHomogeneous_X_pow j 2
   refine ⟨?_, ?_⟩
   · change (X i * p - (2 * ((n + 1 : ℕ) : ℂ) + 1)⁻¹ •
         (radiusQuadratic * pderiv i p)).IsHomogeneous (n + 2)
     apply IsHomogeneous.sub
     · convert (isHomogeneous_X ℂ i).mul hp.1 using 1 <;> omega
     · apply (homogeneousSubmodule (Fin 3) ℂ (n + 2)).smul_mem
-      simpa [add_comm] using hr.mul hpartial.1
-  · change polynomialLaplacian (harmonicRaise (n + 1) i p) = 0
+      simpa [add_comm] using radius_homogeneous.mul hpartial.1
+  · change KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian (harmonicRaise (n + 1) i p) = 0
     have hrad := laplacian_radius_pow hpartial.1 1
     simp only [pow_one, Nat.cast_one, one_mul, Nat.sub_self, pow_zero] at hrad
-    have hzero : polynomialLaplacian (pderiv i p) = 0 := hpartial.2
+    have hzero : KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian (pderiv i p) = 0 := hpartial.2
     rw [hzero, mul_zero, zero_add] at hrad
     have hc : (2 * ((n + 1 : ℕ) : ℂ) + 1) ≠ 0 := by
       norm_cast
     dsimp only [harmonicRaise]
-    rw [map_sub, map_smul, laplacian_coordinate_mul, show polynomialLaplacian p = 0 from hp.2,
+    rw [map_sub, map_smul, laplacian_coordinate_mul, show KPCplxHarmonicIntertwinerSpectrum.polynomialLaplacian p = 0 from hp.2,
       mul_zero, zero_add, hrad]
     simp only [Nat.cast_add, Nat.cast_one, smul_smul, one_mul, mul_one]
     have he : (2 * ((n : ℂ) + 1) + 1)⁻¹ * (2 * (2 * (n : ℂ) + 2 + 1)) = 2 := by
@@ -203,217 +199,6 @@ theorem conformal_gradient_harmonic_decomposition (s : ℝ) (n : ℕ)
   · rw [map_smul, hq]
 
 end DedekindZetaZeroFree.KPCplxLoweringHarmonicDecomposition
-
-end
-
-section
-
-namespace DedekindZetaZeroFree.KPCplxLoweringOrbitDifferentiation
-
-open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxHarmonicPropagation.RaisingTopology
-open scoped Topology Matrix.Norms.Elementwise
-
-private lemma matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
-    matrixFunction f (g : Matrix (Fin 2) (Fin 2) ℂ) = f g := by
-  unfold matrixFunction
-  rw [dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
-  congr 1
-  apply Units.ext
-  rfl
-
-private lemma contDiff_upperUnipotent :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => (upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ)) := by
-  change ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => !![1, x; 0, 1])
-  apply contDiff_pi.mpr
-  intro i
-  apply contDiff_pi.mpr
-  intro j
-  fin_cases i <;> fin_cases j <;> simp <;>
-    first | exact contDiff_const | exact contDiff_id
-
-lemma contDiff_weyl_upperUnipotent :
-    ContDiff ℝ (⊤ : ℕ∞)
-      (fun x : ℂ => (weyl * upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ)) := by
-  change ContDiff ℝ (⊤ : ℕ∞)
-    (fun x : ℂ => (weyl : Matrix (Fin 2) (Fin 2) ℂ) *
-      (upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ))
-  apply contDiff_pi.mpr
-  intro i
-  apply contDiff_pi.mpr
-  intro j
-  simp only [Matrix.mul_apply]
-  apply ContDiff.sum
-  intro l _
-  exact contDiff_const.mul (contDiff_pi.mp (contDiff_pi.mp contDiff_upperUnipotent l) j)
-
-lemma contDiff_lowerUnipotent :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => (lowerUnipotent x : Matrix (Fin 2) (Fin 2) ℂ)) := by
-  change ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => !![1, 0; x, 1])
-  apply contDiff_pi.mpr
-  intro i
-  apply contDiff_pi.mpr
-  intro j
-  fin_cases i <;> fin_cases j <;> simp <;>
-    first | exact contDiff_const | exact contDiff_id
-
-lemma smoothOrbit_curve (s : ℝ) (f : PrincipalSeries s)
-    (q : ℂ → ComplexGL2)
-    (hq : ContDiff ℝ (⊤ : ℕ∞) (fun x => (q x : Matrix (Fin 2) (Fin 2) ℂ)))
-    (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ))) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × ℂ => f (q p.2 * γ p.1)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2
-  have hm : ContDiff ℝ (⊤ : ℕ∞)
-      (fun p : ℝ × ℂ => (q p.2 * γ p.1 : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    change ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × ℂ =>
-      (q p.2 : Matrix (Fin 2) (Fin 2) ℂ) * (γ p.1 : Matrix (Fin 2) (Fin 2) ℂ))
-    apply contDiff_pi.mpr
-    intro i
-    apply contDiff_pi.mpr
-    intro j
-    simp only [Matrix.mul_apply]
-    apply ContDiff.sum
-    intro l _
-    exact (contDiff_pi.mp (contDiff_pi.mp (hq.comp contDiff_snd) i) l).mul
-      (contDiff_pi.mp (contDiff_pi.mp (hγ.comp contDiff_fst) l) j)
-  have h := hf.comp_contDiff hm (fun p => by
-    change (q p.2 * γ p.1 : ComplexGL2).val.det ≠ 0
-    exact (Matrix.GeneralLinearGroup.det (q p.2 * γ p.1)).ne_zero)
-  simpa only [Function.comp_def, ← Matrix.GeneralLinearGroup.coe_mul, matrixFunction_coe] using h
-
-noncomputable def orbitDerivativeSection (s : ℝ) (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
-    (f : PrincipalSeries s) : PrincipalSeries s :=
-  ⟨fun g => deriv (fun t : ℝ => f (g * γ t)) 0, by
-    refine ⟨?_, ?_, ?_⟩
-    · intro a d b g
-      show deriv (fun t : ℝ => f (upperTriangular a d b * g * γ t)) 0 =
-        (inductionWeight s a d : ℂ) * deriv (fun t : ℝ => f (g * γ t)) 0
-      have hfun : (fun t : ℝ => f (upperTriangular a d b * g * γ t)) =
-          (fun t : ℝ => (inductionWeight s a d : ℂ) * f (g * γ t)) := by
-        funext t
-        rw [mul_assoc]
-        exact f.property.1 a d b (g * γ t)
-      rw [hfun, deriv_const_mul_field]
-    · have hs := smoothOrbit_curve s f (fun x => weyl * upperUnipotent x)
-        contDiff_weyl_upperUnipotent γ hγ
-      have hd := SmoothQuotient.slice_smooth
-        (SmoothQuotient.partialT (fun p : ℝ × ℂ => f ((weyl * upperUnipotent p.2) * γ p.1)))
-        (SmoothQuotient.partialT_smooth _ hs) 0
-      change ContDiff ℝ (⊤ : ℕ∞)
-        (fun x : ℂ => deriv (fun t : ℝ => f ((weyl * upperUnipotent x) * γ t)) 0)
-      simpa only [SmoothQuotient.partialT, fderiv_apply_one_eq_deriv] using hd
-    · have hs := smoothOrbit_curve s f lowerUnipotent contDiff_lowerUnipotent γ hγ
-      have hd := SmoothQuotient.slice_smooth
-        (SmoothQuotient.partialT (fun p : ℝ × ℂ => f (lowerUnipotent p.2 * γ p.1)))
-        (SmoothQuotient.partialT_smooth _ hs) 0
-      change ContDiff ℝ (⊤ : ℕ∞)
-        (fun x : ℂ => deriv (fun t : ℝ => f (lowerUnipotent x * γ t)) 0)
-      simpa only [SmoothQuotient.partialT, fderiv_apply_one_eq_deriv] using hd⟩
-
-private lemma contDiff_orbit_scalar (s : ℝ) (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
-    (f : PrincipalSeries s) (g : ComplexGL2) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => f (g * γ t)) := by
-  have hf := ((principalSeries_mem_iff s f).mp f.property).2
-  have hm : ContDiff ℝ (⊤ : ℕ∞)
-      (fun t : ℝ => (g * γ t : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    change ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ =>
-      (g : Matrix (Fin 2) (Fin 2) ℂ) * (γ t : Matrix (Fin 2) (Fin 2) ℂ))
-    apply contDiff_pi.mpr
-    intro i
-    apply contDiff_pi.mpr
-    intro j
-    simp only [Matrix.mul_apply]
-    apply ContDiff.sum
-    intro l _
-    exact contDiff_const.mul (contDiff_pi.mp (contDiff_pi.mp hγ l) j)
-  have h := hf.comp_contDiff hm (fun t => by
-    change (g * γ t : ComplexGL2).val.det ≠ 0
-    exact (Matrix.GeneralLinearGroup.det (g * γ t)).ne_zero)
-  simpa only [Function.comp_def, ← Matrix.GeneralLinearGroup.coe_mul, matrixFunction_coe] using h
-
-private lemma orbitDerivativeSection_hasDerivAt (s : ℝ) (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
-    (f : PrincipalSeries s) (g : ComplexGL2) :
-    HasDerivAt (fun t : ℝ => f (g * γ t)) (orbitDerivativeSection s γ hγ f g) 0 :=
-  (contDiff_orbit_scalar s γ hγ f g).differentiable (by simp) 0 |>.hasDerivAt
-
-set_option maxHeartbeats 1500000 in
-private theorem orbit_quotient_tendsto (s : ℝ) (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
-    (hzero : γ 0 = 1) (u D : PrincipalSeries s)
-    (hd : ∀ g : ComplexGL2, HasDerivAt (fun t : ℝ => u (g * γ t)) (D g) 0) :
-    Filter.Tendsto (fun t : ℝ => (t : ℂ)⁻¹ • (rightTranslate s (γ t) u - u))
-      (𝓝[≠] (0 : ℝ)) (𝓝 D) := by
-  let F : ℝ × ℂ → ℂ := fun p => u (weyl * upperUnipotent p.2 * γ p.1)
-  let H : ℝ × ℂ → ℂ := fun p => u (lowerUnipotent p.2 * γ p.1)
-  have hF : ContDiff ℝ (⊤ : ℕ∞) F :=
-    smoothOrbit_curve s u (fun x => weyl * upperUnipotent x) contDiff_weyl_upperUnipotent γ hγ
-  have hH : ContDiff ℝ (⊤ : ℕ∞) H :=
-    smoothOrbit_curve s u lowerUnipotent contDiff_lowerUnipotent γ hγ
-  have hPF : (fun x => SmoothQuotient.partialT F (0, x)) = openCoordinate D := by
-    funext x
-    exact (SmoothQuotient.partialT_deriv F hF 0 x).unique (hd (weyl * upperUnipotent x))
-  have hPH : (fun x => SmoothQuotient.partialT H (0, x)) = infinityCoordinate D := by
-    funext x
-    exact (SmoothQuotient.partialT_deriv H hH 0 x).unique (hd (lowerUnipotent x))
-  have hzero' : ∀ x, F (0, x) = openCoordinate u x ∧ H (0, x) = infinityCoordinate u x := by
-    intro x
-    simp [F, H, hzero, openCoordinate, infinityCoordinate]
-  have ht : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
-  rw [ht.tendsto_nhds]
-  intro n ε hε
-  have hS : IsCompact (Metric.closedBall (0 : ℂ) 1) := isCompact_closedBall _ _
-  have hne : (Metric.closedBall (0 : ℂ) 1).Nonempty := ⟨0, by simp⟩
-  have hf := SmoothQuotient.sup_jet_error_tendsto F hF n _ hS hne
-  have hh := SmoothQuotient.sup_jet_error_tendsto H hH n _ hS hne
-  simp only [show ∀ x, SmoothQuotient.partialT F (0, x) = openCoordinate D x
-    from fun x => congrFun hPF x] at hf
-  simp only [show ∀ x, SmoothQuotient.partialT H (0, x) = infinityCoordinate D x
-    from fun x => congrFun hPH x] at hh
-  have heF (t : ℝ) :
-      openCoordinate ((t : ℂ)⁻¹ • (rightTranslate s (γ t) u - u) - D) =
-      fun x => t⁻¹ • (F (t, x) - F (0, x)) - openCoordinate D x := by
-    funext x
-    simp only [openCoordinate, Submodule.coe_sub, Submodule.coe_smul_of_tower, Pi.sub_apply,
-      Pi.smul_apply]
-    rw [(hzero' x).1]
-    simp [F, rightTranslate, openCoordinate, Complex.real_smul, Complex.ofReal_inv]
-  have heH (t : ℝ) :
-      infinityCoordinate ((t : ℂ)⁻¹ • (rightTranslate s (γ t) u - u) - D) =
-      fun x => t⁻¹ • (H (t, x) - H (0, x)) - infinityCoordinate D x := by
-    funext x
-    simp only [infinityCoordinate, Submodule.coe_sub, Submodule.coe_smul_of_tower, Pi.sub_apply,
-      Pi.smul_apply]
-    rw [(hzero' x).2]
-    simp [H, rightTranslate, infinityCoordinate, Complex.real_smul, Complex.ofReal_inv]
-  have hlim : Filter.Tendsto (fun t : ℝ => chartSeminorm s n
-      ((t : ℂ)⁻¹ • (rightTranslate s (γ t) u - u) - D))
-        (𝓝[≠] (0 : ℝ)) (𝓝 (0 : ℝ)) := by
-    change Filter.Tendsto (fun t => max (sSup ((fun x => ‖iteratedFDeriv ℝ n (openCoordinate _) x‖)
-      '' Metric.closedBall (0 : ℂ) 1)) (sSup ((fun x => ‖iteratedFDeriv ℝ n (infinityCoordinate _) x‖)
-      '' Metric.closedBall (0 : ℂ) 1))) _ _
-    simp only [Submodule.coe_sub, Submodule.coe_smul_of_tower, heF, heH]
-    convert hf.max hh using 1 <;> simp
-  exact (tendsto_order.mp hlim).2 ε hε
-
-theorem smooth_matrix_orbit_derivative (s : ℝ) (γ : ℝ → ComplexGL2)
-    (hγ : ContDiff ℝ (⊤ : ℕ∞)
-      (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
-    (hzero : γ 0 = 1) (f : PrincipalSeries s) :
-    ∃ D : PrincipalSeries s,
-      Filter.Tendsto
-        (fun t : ℝ => (t : ℂ)⁻¹ • (rightTranslate s (γ t) f - f))
-        (𝓝[≠] (0 : ℝ)) (𝓝 D) ∧
-      ∀ g : ComplexGL2,
-        HasDerivAt (fun t : ℝ => f (g * γ t)) (D g) 0 := by
-  refine ⟨orbitDerivativeSection s γ hγ f, ?_, ?_⟩
-  · exact orbit_quotient_tendsto s γ hγ hzero f (orbitDerivativeSection s γ hγ f)
-      (orbitDerivativeSection_hasDerivAt s γ hγ f)
-  · exact orbitDerivativeSection_hasDerivAt s γ hγ f
-
-end DedekindZetaZeroFree.KPCplxLoweringOrbitDifferentiation
 
 end
 

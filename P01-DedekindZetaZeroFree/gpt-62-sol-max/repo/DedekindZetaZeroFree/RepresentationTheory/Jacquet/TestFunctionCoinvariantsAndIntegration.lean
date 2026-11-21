@@ -18,7 +18,7 @@ variable {E : Type*} [AddCommGroup E] [Module ℂ E]
 
 def translation (y : K) : CcLC K E →ₗ[ℂ] CcLC K E where
   toFun φ := ⟨LocallyConstant.comap ⟨fun x => x + y, continuous_id.add continuous_const⟩ φ.val,
-    by exact φ.property.comp_homeomorph (Homeomorph.addRight y)⟩
+    φ.property.comp_homeomorph (Homeomorph.addRight y)⟩
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
 

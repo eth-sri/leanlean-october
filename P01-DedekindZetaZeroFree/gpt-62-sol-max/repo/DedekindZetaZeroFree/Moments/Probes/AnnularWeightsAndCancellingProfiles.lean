@@ -44,7 +44,7 @@ private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
     apply Continuous.rpow_const ((continuous_norm.pow 2).max continuous_const)
     intro z
     left
-    exact ne_of_gt (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_max_right _ _))
+    grind
   let g : ℂ → ℝ := fun z => (phi z).re * w z
   have hc : Continuous g := (Complex.reCLM.continuous.comp phi_smooth.continuous).mul hw
   have hk : HasCompactSupport g := phi_annular.2.1.comp_left (g := Complex.reCLM) (by simp) |>.mul_right
@@ -58,14 +58,14 @@ private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
       dsimp [g, phi, w]
       rw [hb]
       simp only [Complex.ofReal_re, one_mul]
-      exact (Real.rpow_pos_of_pos (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_max_right _ _)) _).ne'
+      norm_num
   have he : complexNormMellinIntegrand phi (5 / 6) = fun z => (g z : ℂ) := by
     funext z
     by_cases hz : phi z = 0
     · simp [complexNormMellinIntegrand, hz, g]
     · have ha := (phi_annulus (subset_tsupport phi hz)).1
       have hz0 : z ≠ 0 := by intro h; have := ha; norm_num [h] at this
-      have hsq : 1 ≤ ‖z‖ ^ 2 := by nlinarith [norm_nonneg z]
+      have hsq : 1 ≤ ‖z‖ ^ 2 := by nlinarith
       simp [complexNormMellinIntegrand, hz0, g, w, max_eq_left hsq, phi]
       norm_num
   rw [complexNormMellin, he]
@@ -75,13 +75,13 @@ private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
     (by exact_mod_cast hp.ne')
  def dil (z : ℂ) : ℂ := phi ((1 / 2 : ℝ) • z)
 private theorem dil_annular : IsComplexAnnular dil := by
-  have hs : ContDiff ℝ (⊤ : ℕ∞) dil := phi_smooth.comp (contDiff_id.const_smul (1 / 2 : ℝ))
+  have hs := phi_smooth.comp (contDiff_id.const_smul (1 / 2 : ℝ))
   have ha : tsupport dil ⊆ {z : ℂ | 2 ≤ ‖z‖ ∧ ‖z‖ ≤ 4} := by
     apply closure_minimal
     · intro z hz
       have h := phi_annulus (subset_tsupport phi (by simpa [Function.mem_support, dil] using hz))
       norm_num [norm_smul, Real.norm_eq_abs] at h
-      constructor <;> linarith [h.1, h.2]
+      grind
     · exact (isClosed_le continuous_const continuous_norm).inter (isClosed_le continuous_norm continuous_const)
   refine ⟨hs, ?_, 2, 4, by norm_num, by norm_num, ha⟩
   apply IsCompact.of_isClosed_subset (isCompact_closedBall (0 : ℂ) 4) isClosed_closure
@@ -99,7 +99,7 @@ private theorem f_annular : IsComplexAnnular f := by
       simp [Function.mem_support, f, h.1, h.2] at hz
     rcases hn with h | h
     · have h := phi_annulus (subset_tsupport phi h)
-      exact ⟨h.1, h.2.trans (by norm_num)⟩
+      grind
     · have h' := phi_annulus (subset_tsupport phi h)
       norm_num [norm_smul, Real.norm_eq_abs] at h'
       constructor <;> linarith [h'.1, h'.2]
@@ -269,8 +269,13 @@ theorem arithmetic_complex_place (A : SArithmeticData F) :
     Nonempty {v : InfinitePlace F // v.IsComplex} := by
   exact ⟨⟨Classical.arbitrary (InfinitePlace F), A.infinite_isComplex _⟩⟩
 
-def shellCoordinates (A : SArithmeticData F) (f : ℂ → ℂ) (hf : IsComplexAnnular f)
-    (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w) : AnnularCoordinates F A.Sf where
+section
+
+variable (A : SArithmeticData F) (f : ℂ → ℂ) (hf : IsComplexAnnular f)
+  (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
+include A f hf hrad
+
+def shellCoordinates : AnnularCoordinates F A.Sf where
   fReal := fun _ _ => 0
   fComplex := fun _ => f
   fFinite := fun v => TateFiniteShell.annularTest F v.val
@@ -294,8 +299,7 @@ def shellCoordinates (A : SArithmeticData F) (f : ℂ → ℂ) (hf : IsComplexAn
     have := (TateFiniteShell.mem_unitShell_iff F v.val 0).mp (ht h)
     simpa using this
 
-theorem shellCoordinates_tensor_eq (A : SArithmeticData F) (f : ℂ → ℂ)
-    (hf : IsComplexAnnular f) (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
+theorem shellCoordinates_tensor_eq
     [NumberField.IsTotallyComplex F] :
     tensor F A.Sf (shellCoordinates F A f hf hrad) =
       TateTensorProfile.coordinateTensor F A.Sf (fun _ => f) := by
@@ -305,9 +309,7 @@ theorem shellCoordinates_tensor_eq (A : SArithmeticData F) (f : ℂ → ℂ)
   simp [tensor, shellCoordinates, TateTensorProfile.coordinateTensor,
     TateTensorProfile.archTensor, PoissonArch.infiniteAdeleToSpace_coordinates]
 
-theorem shellCoordinates_canonical_pairings (A : SArithmeticData F)
-    (f : ℂ → ℂ) (hf : IsComplexAnnular f)
-    (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w)
+theorem shellCoordinates_canonical_pairings
     (hcancel : (∫ z : ℂ, f z) = 0)
     (hmoment : complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0)
     [NumberField.IsTotallyComplex F] :
@@ -326,6 +328,8 @@ theorem shellCoordinates_canonical_pairings (A : SArithmeticData F)
       (fun _ => f) (1 / 6) (by norm_num) (fun _ => hmoment)
       (fun v => TateFiniteShellFourierIntegrals.finiteShell_weighted_fourier_integral_ne_zero F v.val
         (1 / 6) (by norm_num) (by norm_num))
+
+end
 
  instance instMeasurableSpaceAnnularTensorInfiniteAdeleRing : MeasurableSpace (InfiniteAdeleRing F) := borel _
  instance instBorelSpaceAnnularTensorInfiniteAdeleRing : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
@@ -375,10 +379,13 @@ theorem modulus_eq_canonical (S : Finset (HeightOneSpectrum (𝓞 F)))
   intro v hv
   rw [(NumberField.IsTotallyComplex.isComplex v).mult_eq_two]
 
-theorem exists_tensor_from_haar_comparison (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (he : ∀ v, Continuous (e v))
-    (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
+section
+
+variable (A : SArithmeticData F) (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
+  (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
+include A he htrace
+
+theorem exists_tensor_from_haar_comparison
     (μ : @Measure (SLocalProduct F A.Sf) (borel _))
     (ν : @Measure (SLocalProduct F A.Sf)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
@@ -417,10 +424,7 @@ theorem exists_tensor_from_haar_comparison (A : SArithmeticData F)
   exact mul_ne_zero (Complex.ofReal_ne_zero.mpr ha.ne')
     (shellCoordinates_canonical_pairings F A f hf hrad hcancel hmoment).2.2
 
-theorem exists_tensor_from_complex_profile (A : SArithmeticData F)
-    (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
-    (he : ∀ v, Continuous (e v))
-    (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
+theorem exists_tensor_from_complex_profile
     (μ : @Measure (SLocalProduct F A.Sf) (borel _))
     (ν : @Measure (SLocalProduct F A.Sf)ˣ
       (@Units.instMeasurableSpace (SLocalProduct F A.Sf) _ (borel _)))
@@ -442,6 +446,8 @@ theorem exists_tensor_from_complex_profile (A : SArithmeticData F)
     hcancel hmoment
     (TateSLocalComparison.compatible_phase_eq_trace F A e he htrace)
     (TateSLocalComparison.haar_fourierMellin_comparison F A.Sf μ ν hμ hν)
+
+end
 
 end
 end DedekindZetaZeroFree.ProbeAnnularTensorWeights

@@ -1,6 +1,7 @@
 module
 
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormProperties
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.BaseChange
+public import Mathlib.RingTheory.Norm.Transitivity
 public import Mathlib.Algebra.Module.LinearMap.Polynomial
 public import Mathlib.Algebra.MvPolynomial.Funext
 public import Mathlib.LinearAlgebra.Charpoly.BaseChange

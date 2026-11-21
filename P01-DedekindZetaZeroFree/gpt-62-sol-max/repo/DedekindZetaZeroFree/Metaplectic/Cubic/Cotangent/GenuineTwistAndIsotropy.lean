@@ -163,13 +163,7 @@ theorem T_comp (θ : Arrow b c) (ψ : Arrow a b) (x : M F)
     ContinuousLinearMap.smul_apply, map_smul, smul_smul]
   rw [mul_comm (θ.phase (ψ.psi x)) (ψ.phase x)]
 
-theorem T_inner (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) (v w : E F) :
-    inner ℂ (T ψ x hx v) (T ψ x hx w) = inner ℂ v w := by
-  exact (T ψ x hx).inner_map_map v w
 
-def B (ψ : Arrow a b) (x : M F) :
-    Matrix (Fin (d F) × Fin 3) (Fin (d F) × Fin 3) ℝ :=
-  fun k l => Q ψ x (EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℝ l) k
 
 open KPContActualCotangentCountableShrinking
 
@@ -352,32 +346,6 @@ theorem mem_Fixed_iff (x : M F) (hx : x ∈ (isotropyChart A).omega) (v : E F) :
   · intro h γ
     exact h γ.val γ.property
 
-theorem Fixed_eq_bot_of_central_phase (ε : rootsOfUnity 3 F)
-    (hε : KPCuspGenuineMonodromy.central F ζ hζ ε ∈ U.toOpenSubgroup)
-    (hχ : (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) ≠ 1)
-    (x : M F) (hx : x ∈ (isotropyChart A).omega) :
-    Fixed A x hx = ⊥ := by
-  apply eq_bot_iff.mpr
-  intro v hv
-  rw [Submodule.mem_bot]
-  let γ : Gamma A := ⟨(1, ε), central_label_mem A ε hε⟩
-  have hγ : (isotropyArrow A γ).psi = id := by
-    change (identity (isotropyChart A)).psi = id
-    exact KPContCotangentActualGroupoidIdentities.identity_psi _
-  have hfix := (mem_Fixed_iff A x hx v).mp hv γ
-    (show (gammaMulAction A).smul γ x = x from congrFun hγ x)
-  change twistedOperator (isotropyArrow A γ) x v = v at hfix
-  have hQ : Q (isotropyArrow A γ) x = ContinuousLinearMap.id ℝ (V F) := by
-    ext w k
-    simp [Q, hγ, CotangentLogCoframe.H]
-  have hphase : (isotropyArrow A γ).phase x = (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) := by
-    change (KPCuspGenuineMonodromy.chi F ζ hζ (1 * ε * 1⁻¹) : ℂ) = _
-    simp
-  simp only [twistedOperator, hQ, hphase, operatorComplexification_id,
-    ContinuousLinearMap.smul_apply, ContinuousLinearMap.id_apply] at hfix
-  have hz : ((KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) - 1) • v = 0 := by
-    rw [sub_smul, one_smul, hfix, sub_self]
-  exact (smul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr hχ)
 
 end DedekindZetaZeroFree.KPContCotangentActualGenuineTwistIsotropy
 

@@ -67,23 +67,11 @@ theorem rationalValue_continuous {Q : AdmissibleFlatSources R}
   · intro p x hp hx
     exact False.elim (hx (Set.mem_univ x))
 
-theorem frequencyIntegrand_integrable {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient)
-    (ξ : ThetaReflectionData.Frequency R.A) (g : Group R) :
-    Integrable (frequencyIntegrand R Q T v ξ g) Q.dq :=
-  rationalIntegrand_integrable R T v (Quotient.out ξ) g
-
 theorem orbitFrequencyIntegrand_integrable {Q : AdmissibleFlatSources R}
     (T : Realization R Q) (v : R.A.UnitQuotient)
     (i : ThetaReflectionData.Frequency R.A × ThetaReflectionData.rationalGamma R.A)
     (g : Group R) : Integrable (orbitFrequencyIntegrand R Q T v i g) Q.dq :=
   rationalIntegrand_integrable R T v ((Quotient.out i.1) * i.2.val) g
-
-theorem frequencyValue_continuous {Q : AdmissibleFlatSources R}
-    (T : Realization R Q) (v : R.A.UnitQuotient)
-    (ξ : ThetaReflectionData.Frequency R.A) :
-    Continuous (frequencyValue R Q T v ξ) :=
-  rationalValue_continuous R T v (Quotient.out ξ)
 
 theorem orbitFrequencyValue_continuous {Q : AdmissibleFlatSources R}
     (T : Realization R Q) (v : R.A.UnitQuotient)

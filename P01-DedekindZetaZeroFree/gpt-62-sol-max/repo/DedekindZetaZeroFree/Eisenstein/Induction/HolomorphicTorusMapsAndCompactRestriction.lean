@@ -26,7 +26,7 @@ local instance smoothTopology4 (P : Polarization F ζ hζ) :
 local instance inducedTop4 (P : Polarization F ζ hζ) : TopologicalSpace (Induced F ζ hζ P) :=
   inducedTopology F ζ hζ P
 
-private theorem induced_smooth (P : Polarization F ζ hζ)
+ theorem induced_smooth (P : Polarization F ζ hζ)
     (f : Induced F ζ hζ P) (g : G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => (f.val.val (groupArchChart F ζ hζ z * g)).val.val 1)

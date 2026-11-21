@@ -10,59 +10,68 @@ open MeasureTheory
 namespace DedekindZetaZeroFree
 namespace KPCuspChart
 
-abbrev Horizontal (F : Type*) [Field F] [NumberField F] :=
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+
+abbrev Horizontal :=
   Fin (KPCuspLogShape.dimension F) → ℂ
 
-abbrev Shape (F : Type*) [Field F] [NumberField F] :=
+abbrev Shape :=
   KPCuspLogShape.hyperplane (KPCuspLogShape.dimension F)
 
-abbrev Cross (F : Type*) [Field F] [NumberField F] := Horizontal F × Shape F
+abbrev Cross := Horizontal F × Shape F
 
-abbrev Coordinates (F : Type*) [Field F] [NumberField F] := Cross F × ℝ
+abbrev Coordinates := Cross F × ℝ
 
-def embedding (F : Type*) [Field F] [NumberField F] : F →+ Horizontal F where
+def embedding : F →+ Horizontal F where
   toFun x := fun i => (KPCusp.complexPlace F i).embedding x
   map_zero' := by ext i; simp
   map_add' x y := by ext i; simp
 
-def translationLattice (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) :
+def translationLattice (L : AddSubgroup F) :
     AddSubgroup (Horizontal F) := L.map (embedding F)
 
-abbrev Torus (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) :=
+abbrev Torus (L : AddSubgroup F) :=
   Horizontal F ⧸ translationLattice F L
 
-abbrev Base (F : Type*) [Field F] [NumberField F]
+abbrev Base
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :=
   Shape F ⧸ (KPCuspLogShape.logLattice F hF E hE).toAddSubgroup
 
-def toArch (F : Type*) [Field F] [NumberField F] (p : Coordinates F) :
+def toArch (p : Coordinates F) :
     KPArch.Space (KPCuspLogShape.dimension F) :=
   fun i => (p.1.1 i, p.2 + (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i)
 
-def affine (F : Type*) [Field F] [NumberField F]
+def affine
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
     (u : E) (v : F) (p : Coordinates F) : Coordinates F :=
   ((fun i => embedding F ((u : Fˣ) : F) i * p.1.1 i + embedding F v i,
     p.1.2 + KPCuspLogShape.logarithm F hF E hE (Additive.ofMul u)), p.2)
 
-def crossRelation (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) : Setoid (Cross F) :=
+end
+
+section
+
+variable (F : Type*) [Field F] [NumberField F] (S : Subgroup (KPCuspArithmetic.PGL2 F))
+include S
+
+def crossRelation : Setoid (Cross F) :=
   Setoid.comap (fun p => toArch F (p, 0))
     (MulAction.orbitRel S (KPArch.Space (KPCuspLogShape.dimension F)))
 
-abbrev CrossQuotient (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) := Quotient (crossRelation F S)
+abbrev CrossQuotient := Quotient (crossRelation F S)
 
-def highRelation (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (T : ℝ) :
+def highRelation (T : ℝ) :
     Setoid {p : Coordinates F // T < p.2} :=
   Setoid.comap (fun p => toArch F p.val)
     (MulAction.orbitRel S (KPArch.Space (KPCuspLogShape.dimension F)))
 
-abbrev HighQuotient (F : Type*) [Field F] [NumberField F]
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (T : ℝ) := Quotient (highRelation F S T)
+abbrev HighQuotient (T : ℝ) := Quotient (highRelation F S T)
+
+end
 
 @[instance_reducible] def homeomorphAction {G X : Type*} [Group G] [TopologicalSpace X]
     (β : G →* (X ≃ₜ X)) : MulAction G X where
@@ -90,17 +99,20 @@ def kernelUnits (F : Type*) [Field F] [NumberField F]
     change KPCuspLogShape.logarithm F hF E hE (-Additive.ofMul a) = 0
     rw [map_neg, ha, neg_zero]
 
-abbrev CoarseFiber (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) :=
+section
+
+variable (F : Type*) [Field F] [NumberField F]
+  (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (L : AddSubgroup F) (E : Subgroup Fˣ)
+  (hE : E ≤ KPCuspArithmetic.rationalUnits F) (β : E →* (Torus F L ≃ₜ Torus F L))
+include hF L E hE β
+
+abbrev CoarseFiber :=
   AffineOrbit (β.comp (kernelUnits F hF E hE).subtype)
 
-def coarseProjection (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (L : AddSubgroup F) (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F)
-    (β : E →* (Torus F L ≃ₜ Torus F L)) :
+def coarseProjection :
     Torus F L → CoarseFiber F hF L E hE β := Quotient.mk _
+
+end
 
 structure ExtensionData (F : Type*) [Field F] [NumberField F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) where

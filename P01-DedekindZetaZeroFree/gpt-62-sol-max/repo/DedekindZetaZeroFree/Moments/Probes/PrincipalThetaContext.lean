@@ -60,10 +60,6 @@ def principalCorrection (A : SArithmeticData F) (σ : F →+* ℂ)
     infinity_no_radial := SArithmeticData.CorrectionAssembly.correctionTheta_infinity_no_radial
       A σ D.Λ D.G 1 D.Λ_infinity D.G_infinity hi }
 
-@[simp] theorem principalCorrection_target (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (D : A.GaussCorrectionOutput σ η hS) (hη : η.IsPrincipal) :
-    (principalCorrection A σ η hS D hη).η_id = 1 := rfl
 
 def principalContext (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -75,10 +71,6 @@ def principalContext (A : SArithmeticData F) (σ : F →+* ℂ)
     prime_target := fun I v hIv p hp a ha hap x hx =>
       D.prime_theta I v hIv p hp a ha hap x hx }
 
-@[simp] theorem principalContext_target (A : SArithmeticData F) (σ : F →+* ℂ)
-    (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
-    (C : A.GeneralArithmeticContext σ η hS) (hη : η.IsPrincipal) :
-    (principalContext A σ η hS C hη).correction.η_id = 1 := rfl
 
 end DedekindZetaZeroFree.PrincipalProbeConstruction.Inputs
 

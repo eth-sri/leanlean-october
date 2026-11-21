@@ -24,9 +24,7 @@ theorem integral_central_average (g : CoveredSpherical F ζ hζ U → ℂ)
       (coveredMeasure F ζ hζ R U) :=
     (hmp ε).integrable_comp_of_integrable hg
   rw [integral_const_mul, integral_finset_sum _ (fun ε _ => hi ε)]
-  have he (ε : rootsOfUnity 3 F) :
-      (∫ v, g (z F ζ hζ U ε v) ∂coveredMeasure F ζ hζ R U) =
-        ∫ v, g v ∂coveredMeasure F ζ hζ R U :=
+  have he (ε : rootsOfUnity 3 F) :=
     (hmp ε).integral_comp (z F ζ hζ U ε).measurableEmbedding g
   simp_rw [he]
   rw [Finset.sum_const, Finset.card_univ, ← Nat.card_eq_fintype_card,
@@ -572,7 +570,7 @@ theorem pairing_centralAverage (u h : SmoothSections F ζ hζ C R P H U) (v : X)
       unfold KPMsFixedHaarDisintegration.cuspEnds
       rw [hy]
       exact Set.mem_iUnion.mpr ⟨j,hj⟩
-    exact mul_eq_zero_of_right _ (source.descent.off_ends s hs x hx').2
+    exact mul_eq_zero_of_right _ (source.descent.off_ends s hs x hx')
   · intro a ha he r ω
     have he' : ∀ x : X, a (q F ζ hζ V x) = g x := by
       intro x

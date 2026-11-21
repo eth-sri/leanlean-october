@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.ComplexCompactSphericalCharts
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicCharacterProjection
 
@@ -177,47 +178,12 @@ private lemma entry_continuous (i j : Fin 2) :
     Continuous (fun k : ComplexSU2 => (k : Matrix (Fin 2) (Fin 2) ℂ) i j) :=
   (continuous_apply j).comp ((continuous_apply i).comp continuous_subtype_val)
 
-private lemma compactSphereCoordinate_continuous :
-    Continuous (compactSphereCoordinate : ComplexSU2 → Fin 3 → ℂ) := by
-  rw [continuous_pi_iff]
-  intro i
-  have h : Continuous (fun k : ComplexSU2 =>
-      (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) :=
-    (entry_continuous 1 0).mul (entry_continuous 1 1).star
-  fin_cases i
-  · simp only [compactSphereCoordinate, Matrix.cons_val_zero]
-    exact RCLike.continuous_ofReal.comp ((Complex.continuous_re.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_one, Matrix.head_cons]
-    exact RCLike.continuous_ofReal.comp ((Complex.continuous_im.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_two, Matrix.tail_cons]
-    exact RCLike.continuous_ofReal.comp
-      (((entry_continuous 1 0).norm.pow 2).sub ((entry_continuous 1 1).norm.pow 2))
+private alias compactSphereCoordinate_continuous := DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial.coord_cont
 
 private lemma polynomialCompactRestriction_continuous (q : MvPolynomial (Fin 3) ℂ) :
     Continuous (polynomialCompactRestriction q) := by
   simp only [polynomialCompactRestriction, LinearMap.coe_mk, AddHom.coe_mk]
   exact (MvPolynomial.continuous_eval q).comp compactSphereCoordinate_continuous
-
-private lemma su2HarmonicCharacter_continuous' (ℓ : ℕ) :
-    Continuous (su2HarmonicCharacter ℓ) := by
-  have htrace : ∀ n : ℕ, Continuous (fun k : ComplexSU2 =>
-      KPCompactHarmonic.symmetricPowerTrace n
-        ⟨(k : Matrix (Fin 2) (Fin 2) ℂ),
-          (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩) := by
-    intro n
-    induction n using Nat.twoStepInduction with
-    | zero => simpa [KPCompactHarmonic.symmetricPowerTrace] using
-        (continuous_const : Continuous (fun _ : ComplexSU2 => (1 : ℂ)))
-    | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
-    | more n hn hn1 =>
-        simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
-  unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
-  simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
 
 theorem character_convolution_tendsto_of_uniform (μ : Measure ComplexSU2)
     (hfinite : IsFiniteMeasure μ) (ℓ : ℕ) (F : ComplexSU2 → ℂ)
@@ -243,7 +209,7 @@ theorem character_convolution_tendsto_of_uniform (μ : Measure ComplexSU2)
   obtain ⟨Mc, hMc⟩ : ∃ M, ∀ x, ‖su2HarmonicCharacter ℓ x‖ ≤ M := by
     have hbdd : Bornology.IsBounded (Set.range fun x : ComplexSU2 =>
         su2HarmonicCharacter ℓ x) :=
-      (isCompact_range (su2HarmonicCharacter_continuous' ℓ)).isBounded
+      (isCompact_range (KPCplxHarmonicExtraction.continuous_su2HarmonicCharacter ℓ)).isBounded
     obtain ⟨M, hM⟩ := hbdd.exists_norm_le
     exact ⟨M, fun x => hM (su2HarmonicCharacter ℓ x) ⟨x, rfl⟩⟩
   have hMc0 : 0 ≤ Mc := (norm_nonneg _).trans (hMc (1 : ComplexSU2))
@@ -252,7 +218,7 @@ theorem character_convolution_tendsto_of_uniform (μ : Measure ComplexSU2)
     have hcont : Continuous (fun t : ComplexSU2 =>
         star (su2HarmonicCharacter ℓ t) *
           polynomialCompactRestriction (p n) (k * t)) :=
-      ((su2HarmonicCharacter_continuous' ℓ).star).mul
+      ((KPCplxHarmonicExtraction.continuous_su2HarmonicCharacter ℓ).star).mul
         ((polynomialCompactRestriction_continuous (p n)).comp hmul)
     exact hcont.aestronglyMeasurable
   · refine ⟨Mc * (M + 1), ?_⟩

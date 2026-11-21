@@ -13,13 +13,9 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace ProbePoissonSheet
 variable {F : Type} [Field F] [NumberField F]
 
-local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
 
-local instance (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
 
-local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 
-local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
 def principalNorm (A : SArithmeticData F) (h : A.R) : ℝ :=
   (Nat.card (A.R ⧸ Ideal.span ({h} : Set A.R)) : ℝ)

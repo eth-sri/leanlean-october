@@ -201,42 +201,6 @@ private theorem positiveArchimedeanLocalComponent_nnnorm
       _ = ((r : ℝ≥0ˣ) : ℝ) :=
         Real.norm_of_nonneg (r : ℝ≥0).coe_nonneg
 
-omit [NumberField K] in
-private theorem positiveArchimedeanLocalComponent_mem_positive
-    (v : InfinitePlace K) (r : ℝ≥0ˣ) :
-    positiveArchimedeanLocalComponent v r ∈
-      RayClass.infinitePositiveSubgroup v := by
-  rw [RayClass.mem_infinitePositiveSubgroup_iff]
-  intro hv
-  let e : v.Completion ≃+* ℝ :=
-    InfinitePlace.Completion.ringEquivRealOfIsReal hv
-  have hcomponent :
-      Units.mapEquiv e.toMulEquiv
-          (positiveArchimedeanLocalComponent v r) =
-        Units.map NNReal.toRealHom.toMonoidHom r := by
-    simp only [positiveArchimedeanLocalComponent,
-      dite_eq_left hv, MonoidHom.comp_apply]
-    change
-      Units.mapEquiv e.toMulEquiv
-          (Units.mapEquiv e.symm.toMulEquiv
-            (Units.map NNReal.toRealHom.toMonoidHom r)) =
-        Units.map NNReal.toRealHom.toMonoidHom r
-    exact
-      (Units.mapEquiv e.toMulEquiv).apply_symm_apply
-        (Units.map NNReal.toRealHom.toMonoidHom r)
-  have hvalue :
-      e
-          ((positiveArchimedeanLocalComponent v r :
-            v.Completionˣ) : v.Completion) =
-        ((r : ℝ≥0ˣ) : ℝ) := by
-    simpa [e] using congrArg Units.val hcomponent
-  change
-    0 < e
-      ((positiveArchimedeanLocalComponent v r :
-        v.Completionˣ) : v.Completion)
-  rw [hvalue]
-  exact NNReal.coe_pos.mpr
-    (pos_iff_ne_zero.mpr r.ne_zero)
 
 /-- The positive root needed to compensate for the multiplicity of the
 chosen infinite place. -/
@@ -285,10 +249,6 @@ theorem positiveArchimedeanSectionContinuous_apply
       positiveArchimedeanSection K r :=
   rfl
 
-/-- The positive archimedean section is continuous. -/
-theorem continuous_positiveArchimedeanSection :
-    Continuous (positiveArchimedeanSection K) :=
-  (positiveArchimedeanSectionContinuous K).continuous_toFun
 
 @[simp]
 private theorem positiveArchimedeanSection_infiniteComponent_same
@@ -342,23 +302,6 @@ theorem positiveArchimedeanSection_finiteComponent
             (positiveArchimedeanRoot (K := K) r))) = 1
   rw [IdeleGroup.infinitePlaceIdele_finiteComponent]
 
-/-- Every infinite component of the positive archimedean idele lies in the
-standard positive subgroup. -/
-theorem positiveArchimedeanSection_infiniteComponent_mem_positive
-    (r : ℝ≥0ˣ) (v : InfinitePlace K) :
-    IdeleGroup.infiniteComponent v
-        (positiveArchimedeanSection K r) ∈
-      RayClass.infinitePositiveSubgroup v := by
-  by_cases hv : v = w₀ (K := K)
-  · subst v
-    rw [positiveArchimedeanSection_infiniteComponent_same]
-    exact
-      positiveArchimedeanLocalComponent_mem_positive
-        (w₀ (K := K))
-        (positiveArchimedeanRoot (K := K) r)
-  · rw [positiveArchimedeanSection_infiniteComponent_of_ne
-      r v hv]
-    exact Subgroup.one_mem _
 
 /-- The positive archimedean idele has absolute idele norm `r⁻¹`. -/
 @[simp]

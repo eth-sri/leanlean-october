@@ -12,25 +12,31 @@ noncomputable section
 variable {R : Type*} [CommMonoidWithZero R] [UniqueFactorizationMonoid R]
   [Subsingleton Rˣ]
 
-private lemma cutoff_eq_zero_iff (n : R →* ℝ≥0) (K : ℝ) (a : R) :
+section
+
+variable (n : R →* ℝ≥0) (K : ℝ) (a : R)
+
+private lemma cutoff_eq_zero_iff :
     cutoff n K a = 0 ↔ K < (n a : ℝ) := by
   simp only [cutoff]
   by_cases h : (n a : ℝ) ≤ K
   · rw [if_pos h]; exact iff_of_false (by norm_num) (by linarith)
   · rw [if_neg h]; exact iff_of_true rfl (not_le.mp h)
 
-private lemma cutoff_eq_one_iff (n : R →* ℝ≥0) (K : ℝ) (a : R) :
+private lemma cutoff_eq_one_iff :
     cutoff n K a = 1 ↔ (n a : ℝ) ≤ K := by
   simp only [cutoff]
   by_cases h : (n a : ℝ) ≤ K
   · rw [if_pos h]; exact iff_of_true rfl h
   · rw [if_neg h]; exact iff_of_false (by norm_num) h
 
-private lemma zero_le_cutoff (n : R →* ℝ≥0) (K : ℝ) (a : R) : 0 ≤ cutoff n K a := by
-  simp only [cutoff]; split <;> norm_num
+private lemma zero_le_cutoff : 0 ≤ cutoff n K a := by
+  simp only [cutoff]; positivity
 
-private lemma cutoff_le_one (n : R →* ℝ≥0) (K : ℝ) (a : R) : cutoff n K a ≤ 1 := by
-  simp only [cutoff]; split <;> norm_num
+private lemma cutoff_le_one : cutoff n K a ≤ 1 := by
+  simp only [cutoff]; omega
+
+end
 
 private lemma cutoff_mono (n : R →* ℝ≥0) (K : ℝ) {a b : R}
     (h : (n a : ℝ) ≤ (n b : ℝ)) : cutoff n K b ≤ cutoff n K a := by
@@ -43,27 +49,29 @@ private lemma mem_divisors_iff {g : R} (hg0 : g ≠ 0) {d : R} :
     d ∈ divisors g ↔ ∃ s ≤ UniqueFactorizationMonoid.factors g, s.prod = d := by
   simp only [divisors, if_neg hg0, Finset.mem_image, Multiset.mem_toFinset, Multiset.mem_powerset]
 
-private lemma one_le_prod_map_of_le_factors (n : R →* ℝ≥0)
-    (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
+section
+
+variable (n : R →* ℝ≥0) (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
+include hn
+
+private lemma one_le_prod_map_of_le_factors
     {g : R} {s : Multiset R} (hs : s ≤ UniqueFactorizationMonoid.factors g) :
     (1 : ℝ≥0) ≤ (s.map n).prod := by
   apply Multiset.one_le_prod_of_one_le
   intro x hx
   obtain ⟨p, hp, rfl⟩ := Multiset.mem_map.mp hx
-  have hpf : p ∈ UniqueFactorizationMonoid.factors g := Multiset.mem_of_le hs hp
+  have hpf := Multiset.mem_of_le hs hp
   have hprime : Prime p := UniqueFactorizationMonoid.prime_of_factor p hpf
-  have h1 : (1 : ℝ) < (n p : ℝ) := hn p hprime
-  exact (NNReal.coe_lt_coe.mp (by simpa using h1)).le
+  have h1 := hn p hprime
+  linarith
 
-private lemma one_le_n_of_mem_divisors (n : R →* ℝ≥0)
-    (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
+private lemma one_le_n_of_mem_divisors
     {g d : R} (hg0 : g ≠ 0) (hd : d ∈ divisors g) : (1 : ℝ≥0) ≤ n d := by
   obtain ⟨s, hs, rfl⟩ := (mem_divisors_iff hg0).mp hd
   rw [MonoidHom.map_multiset_prod]
   exact one_le_prod_map_of_le_factors n hn hs
 
-private lemma n_le_n_of_mem_divisors (n : R →* ℝ≥0)
-    (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
+private lemma n_le_n_of_mem_divisors
     {g d : R} (hg0 : g ≠ 0) (hd : d ∈ divisors g) : n d ≤ n g := by
   obtain ⟨s, hs, rfl⟩ := (mem_divisors_iff hg0).mp hd
   obtain ⟨u, hu⟩ := Multiset.le_iff_exists_add.mp hs
@@ -79,8 +87,7 @@ private lemma n_le_n_of_mem_divisors (n : R →* ℝ≥0)
   rw [hng, hu, Multiset.map_add, Multiset.prod_add, MonoidHom.map_multiset_prod]
   exact le_mul_of_one_le_right' (one_le_prod_map_of_le_factors n hn hu_le)
 
-theorem nonzero_coefficient_annulus (n : R →* ℝ≥0)
-    (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
+theorem nonzero_coefficient_annulus
     (g : R) (hg0 : g ≠ 0) (K : ℝ) (hK : 0 < K)
     (H : Finset R) (b : R) (hb : boundaryCoefficient n K H g b ≠ 0) :
     K < (n b : ℝ) ∧ (n b : ℝ) ≤ K * (n g : ℝ) ^ 2 := by
@@ -90,55 +97,54 @@ theorem nonzero_coefficient_annulus (n : R →* ℝ≥0)
   obtain ⟨e, he, hb3⟩ := Finset.exists_ne_zero_of_sum_ne_zero hb2
   have hbe : h * d * e = b := by
     by_contra hne
-    exact hb3 (by rw [if_neg hne])
+    simp_all
   rw [if_pos hbe] at hb3
   have hcut : cutoff n K (h * d) - cutoff n K h ≠ 0 :=
     fun h0 => hb3 (by rw [h0, mul_zero])
-  have hne : cutoff n K (h * d) ≠ cutoff n K h := sub_ne_zero.mp hcut
-  have hd1 : (1 : ℝ≥0) ≤ n d := one_le_n_of_mem_divisors n hn hg0 hd
-  have he1 : (1 : ℝ≥0) ≤ n e := one_le_n_of_mem_divisors n hn hg0 he
-  have hdg : n d ≤ n g := n_le_n_of_mem_divisors n hn hg0 hd
-  have heg : n e ≤ n g := n_le_n_of_mem_divisors n hn hg0 he
+  have hne := sub_ne_zero.mp hcut
+  have hd1 := one_le_n_of_mem_divisors n hn hg0 hd
+  have he1 := one_le_n_of_mem_divisors n hn hg0 he
+  have hdg := n_le_n_of_mem_divisors n hn hg0 hd
+  have heg := n_le_n_of_mem_divisors n hn hg0 he
   have hhle_nn : n h ≤ n (h * d) := by rw [map_mul]; exact le_mul_of_one_le_right' hd1
-  have hhle : (n h : ℝ) ≤ (n (h * d) : ℝ) := NNReal.coe_le_coe.mpr hhle_nn
-  have hle_cut : cutoff n K (h * d) ≤ cutoff n K h := cutoff_mono n K hhle
-  have hlt : cutoff n K (h * d) < cutoff n K h := lt_of_le_of_ne hle_cut hne
+  have hhle := NNReal.coe_le_coe.mpr hhle_nn
+  have hle_cut := cutoff_mono n K hhle
+  have hlt := lt_of_le_of_ne hle_cut hne
   have hcuthd0 : cutoff n K (h * d) = 0 := by
     have h1 : cutoff n K (h * d) < 1 := lt_of_lt_of_le hlt (cutoff_le_one n K h)
-    have h2 : 0 ≤ cutoff n K (h * d) := zero_le_cutoff n K (h * d)
+    have h2 := zero_le_cutoff n K (h * d)
     omega
-  have hKlt : K < (n (h * d) : ℝ) := (cutoff_eq_zero_iff n K (h * d)).mp hcuthd0
+  have hKlt := (cutoff_eq_zero_iff n K (h * d)).mp hcuthd0
   have hnhK : (n h : ℝ) ≤ K := by
     have hpos : 0 < cutoff n K h := lt_of_le_of_lt (zero_le_cutoff n K (h * d)) hlt
-    have hle1 : cutoff n K h ≤ 1 := cutoff_le_one n K h
+    have hle1 := cutoff_le_one n K h
     have h1 : cutoff n K h = 1 := by omega
     exact (cutoff_eq_one_iff n K h).mp h1
   have hnb_eq : (n b : ℝ) = (n (h * d) : ℝ) * (n e : ℝ) := by
     rw [← hbe, map_mul, NNReal.coe_mul]
-  have he1r : (1 : ℝ) ≤ (n e : ℝ) := NNReal.coe_le_coe.mpr he1
-  have hnd_pos : 0 < (n (h * d) : ℝ) := lt_trans hK hKlt
+  have he1r := NNReal.coe_le_coe.mpr he1
+  have hnd_pos := lt_trans hK hKlt
   refine ⟨?_, ?_⟩
-  · calc K < (n (h * d) : ℝ) := hKlt
-      _ = (n (h * d) : ℝ) * 1 := (mul_one _).symm
-      _ ≤ (n (h * d) : ℝ) * (n e : ℝ) := mul_le_mul_of_nonneg_left he1r (le_of_lt hnd_pos)
-      _ = (n b : ℝ) := hnb_eq.symm
+  · nlinarith
   · have hnb_eq2 : (n b : ℝ) = (n h : ℝ) * (n d : ℝ) * (n e : ℝ) := by
       rw [hnb_eq, map_mul, NNReal.coe_mul]
     rw [hnb_eq2]
-    have h0nh : 0 ≤ (n h : ℝ) := (n h).coe_nonneg
-    have h0nd : 0 ≤ (n d : ℝ) := (n d).coe_nonneg
-    have h0ne : 0 ≤ (n e : ℝ) := (n e).coe_nonneg
-    have h0ng : 0 ≤ (n g : ℝ) := (n g).coe_nonneg
-    have hd_nn : (n d : ℝ) ≤ (n g : ℝ) := NNReal.coe_le_coe.mpr hdg
-    have he_nn : (n e : ℝ) ≤ (n g : ℝ) := NNReal.coe_le_coe.mpr heg
+    
+    have h0nd := (n d).coe_nonneg
+    have h0ne := (n e).coe_nonneg
+    have h0ng := (n g).coe_nonneg
+    have hd_nn := NNReal.coe_le_coe.mpr hdg
+    have he_nn := NNReal.coe_le_coe.mpr heg
     calc (n h : ℝ) * (n d : ℝ) * (n e : ℝ)
         ≤ K * (n g : ℝ) * (n g : ℝ) := by
           apply mul_le_mul
           · exact mul_le_mul hnhK hd_nn h0nd hK.le
           · exact he_nn
           · exact h0ne
-          · exact mul_nonneg hK.le h0ng
+          positivity
       _ = K * (n g : ℝ) ^ 2 := by ring
+
+end
 
 end
 end DedekindZetaZeroFree.LargeSieve.Vendor.CutoffDifference
@@ -162,7 +168,7 @@ private lemma abs_moebius_le_one (a : R) : |UniqueFactorizationMonoid.moebius a|
 private lemma abs_cutoff_sub_le_one (n : R →* ℝ≥0) (K : ℝ) (a b : R) :
     |cutoff n K a - cutoff n K b| ≤ 1 := by
   simp only [cutoff]
-  split_ifs <;> norm_num
+  grind
 
 private lemma divisors_ne_zero (g : R) (hg0 : g ≠ 0) {d : R} (hd : d ∈ divisors g) :
     d ≠ 0 := by
@@ -528,26 +534,33 @@ def divisors (g : R) : Finset R :=
   if g = 0 then ∅ else (UniqueFactorizationMonoid.factors g).powerset.toFinset.image
     Multiset.prod
 
-def normalizedValue (n : R →* (ℝ≥0)) (χ : R →* ℂ) (b : R) : ℂ :=
+section
+
+variable (n : R →* (ℝ≥0))
+include n
+
+def normalizedValue (χ : R →* ℂ) (b : R) : ℂ :=
   χ b / (Real.sqrt (n b : ℝ) : ℂ)
 
-def cutoff (n : R →* (ℝ≥0)) (K : ℝ) (b : R) : ℤ :=
+def cutoff (K : ℝ) (b : R) : ℤ :=
   if (n b : ℝ) ≤ K then 1 else 0
 
-def divisorCutoffSum (n : R →* (ℝ≥0)) (χ : R →* ℂ) (K : ℝ)
+def divisorCutoffSum (χ : R →* ℂ) (K : ℝ)
     (H : Finset R) (g : R) : ℂ :=
   ∑ h ∈ H, ∑ d ∈ divisors g,
     normalizedValue n χ (h * d) * (cutoff n K (h * d) : ℂ)
 
-def baseCutoffSum (n : R →* (ℝ≥0)) (χ : R →* ℂ) (K : ℝ)
+def baseCutoffSum (χ : R →* ℂ) (K : ℝ)
     (H : Finset R) : ℂ :=
   ∑ h ∈ H, normalizedValue n χ h * (cutoff n K h : ℂ)
 
-def moebiusDivisorSum (n : R →* (ℝ≥0)) (χ : R →* ℂ) (g : R) : ℂ :=
+def moebiusDivisorSum (χ : R →* ℂ) (g : R) : ℂ :=
   ∑ e ∈ divisors g, (UniqueFactorizationMonoid.moebius e : ℂ) * normalizedValue n χ e
 
-def density (n : R →* (ℝ≥0)) (g : R) : ℝ :=
+def density (g : R) : ℝ :=
   ∏ p ∈ (UniqueFactorizationMonoid.factors g).toFinset, (1 - 1 / (n p : ℝ))
+
+end
 
 def boundaryElements (H : Finset R) (g : R) : Finset R :=
   (H ×ˢ (divisors g ×ˢ divisors g)).image (fun x => x.1 * x.2.1 * x.2.2)
@@ -562,12 +575,14 @@ private theorem normalizedValue_mul (n : R →* ℝ≥0) (χ : R →* ℂ) (a b 
     normalizedValue n χ (a * b) = normalizedValue n χ a * normalizedValue n χ b :=
   SplitData.normalizedValue_mul n χ a b
 
-theorem main_terms_difference (n : R →* (ℝ≥0)) (χ : R →* ℂ)
-    (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
-    (g : R) (hg0 : g ≠ 0) (hg : Squarefree g)
-    (hχ : ∀ p : R, Prime p → p ∣ g → χ p ^ 2 = 1)
-    (K : ℝ) (hK : 0 < K) (H : Finset R)
-    (hH : ∀ h ∈ H, Squarefree h ∧ IsRelPrime h g) :
+section
+
+variable (n : R →* (ℝ≥0)) (χ : R →* ℂ) (hn : ∀ p : R, Prime p → 1 < (n p : ℝ)) (g : R)
+  (hg0 : g ≠ 0) (hg : Squarefree g) (hχ : ∀ p : R, Prime p → p ∣ g → χ p ^ 2 = 1) (K : ℝ)
+  (hK : 0 < K) (H : Finset R) (hH : ∀ h ∈ H, Squarefree h ∧ IsRelPrime h g)
+include hn hg0 hg hχ hK hH
+
+theorem main_terms_difference :
     divisorCutoffSum n χ K H g * moebiusDivisorSum n χ g -
       baseCutoffSum n χ K H * (density n g : ℂ) =
     ∑ h ∈ H, ∑ d ∈ divisors g, ∑ e ∈ divisors g,
@@ -607,18 +622,15 @@ theorem main_terms_difference (n : R →* (ℝ≥0)) (χ : R →* ℂ)
   rw [hfirst, hsecond]
   simp only [← Finset.sum_sub_distrib, Int.cast_sub, mul_sub]
 
-theorem main_terms_difference_collected (n : R →* (ℝ≥0)) (χ : R →* ℂ)
-    (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
-    (g : R) (hg0 : g ≠ 0) (hg : Squarefree g)
-    (hχ : ∀ p : R, Prime p → p ∣ g → χ p ^ 2 = 1)
-    (K : ℝ) (hK : 0 < K) (H : Finset R)
-    (hH : ∀ h ∈ H, Squarefree h ∧ IsRelPrime h g) :
+theorem main_terms_difference_collected :
     divisorCutoffSum n χ K H g * moebiusDivisorSum n χ g -
       baseCutoffSum n χ K H * (density n g : ℂ) =
     ∑ b ∈ boundaryElements H g,
       (boundaryCoefficient n K H g b : ℂ) * normalizedValue n χ b := by
   rw [main_terms_difference n χ hn g hg0 hg hχ K hK H hH]
   exact collect_cutoff_triple_sum n χ K H g
+
+end
 
 theorem boundary_coefficient_properties (n : R →* (ℝ≥0))
     (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))

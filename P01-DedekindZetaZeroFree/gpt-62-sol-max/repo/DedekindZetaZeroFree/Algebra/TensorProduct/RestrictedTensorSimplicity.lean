@@ -30,13 +30,11 @@ private theorem extend_update (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t)
     simp [extend]
   · have hj : j ≠ (⟨i, hst i.property⟩ : t) := by
       intro h
-      exact hji (congrArg Subtype.val h)
+      grind
     rw [Function.update_of_ne hj]
     simp only [extend]
     split_ifs with h
-    · rw [Function.update_of_ne (by
-        intro heq
-        exact hji (congrArg Subtype.val heq))]
+    · grind
     · rfl
 
 theorem exists_insert (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t) :
@@ -50,10 +48,10 @@ theorem exists_insert (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t) :
     { toFun := fun x => PiTensorProduct.tprod ℂ (extend V e s t x)
       map_update_add' := fun x i z w => by
         simp only [extend_update V e s t hst]
-        exact (PiTensorProduct.tprod ℂ).map_update_add _ _ _ _
+        simp
       map_update_smul' := fun x i c z => by
         simp only [extend_update V e s t hst]
-        exact (PiTensorProduct.tprod ℂ).map_update_smul _ _ _ _ }
+        simp }
   exact ⟨PiTensorProduct.lift m, fun x => PiTensorProduct.lift.tprod x⟩
 
 noncomputable def insert (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t) :
@@ -88,8 +86,8 @@ theorem insert_comp (e : ∀ j, V j) (s t u : Finset J)
   congr 1
   funext j
   by_cases hs : (j : J) ∈ s
-  · simp [hs, hst hs]
-  · by_cases ht : (j : J) ∈ t <;> simp [hs, ht]
+  · grind
+  simp_all
 
 noncomputable def restrict (s t : Finset J) (hst : s ⊆ t)
     (x : ∀ j : t, V j) : ∀ j : s, V j := fun j => x ⟨j, hst j.property⟩
@@ -113,9 +111,7 @@ theorem restrict_update_notMem (s t : Finset J) (hst : s ⊆ t)
     (z : V i) : restrict V s t hst (Function.update x i z) = restrict V s t hst x := by
   funext j
   simp only [restrict]
-  rw [Function.update_of_ne (by
-    intro h
-    exact hi ((congrArg Subtype.val h) ▸ j.property))]
+  grind
 
 noncomputable def contract (s t : Finset J) (hst : s ⊆ t)
     (φ : ∀ j : t, Module.Dual ℂ (V j)) : Stage V t →ₗ[ℂ] Stage V s := by
@@ -128,14 +124,14 @@ noncomputable def contract (s t : Finset J) (hst : s ⊆ t)
     funext j
     by_cases hj : j = i
     · subst j; simp [p]
-    · simp [p, Function.update_of_ne hj]
+    grind
   let m : MultilinearMap ℂ (fun j : t => V j) (Stage V s) :=
     { toFun := fun x => (∏ j, p x j) • PiTensorProduct.tprod ℂ (restrict V s t hst x)
       map_update_add' := fun x i z w => by
         by_cases hi : (i : J) ∈ s
         · have hp' (q : V i) : p (Function.update x i q) = p x := by
             rw [hp]
-            simp [hi, p, Function.update_eq_self]
+            simp [hi, p]
           simp only [hp', restrict_update_mem V s t hst _ _ hi,
             MultilinearMap.map_update_add, smul_add]
         · simp only [hp, Finset.prod_update_of_mem (Finset.mem_univ i), if_neg hi,
@@ -144,7 +140,7 @@ noncomputable def contract (s t : Finset J) (hst : s ⊆ t)
         by_cases hi : (i : J) ∈ s
         · have hp' (q : V i) : p (Function.update x i q) = p x := by
             rw [hp]
-            simp [hi, p, Function.update_eq_self]
+            simp [hi, p]
           simp only [hp', restrict_update_mem V s t hst _ _ hi,
             MultilinearMap.map_update_smul, smul_comm c]
         · simp only [hp, Finset.prod_update_of_mem (Finset.mem_univ i), if_neg hi,
@@ -485,7 +481,7 @@ private theorem tensorMap_mem [∀ j, IsSimpleModule (A j) (V j)]
         funext k
         by_cases hk : k = i
         · subst k; simp [hi]
-        · simp [hk, Function.update_of_ne hk]
+        · simp [hk]
       rw [hmap, LinearMap.comp_apply]
       exact linearSlot_mem V A hcommutant e E N s i (f i) _ ih
   simpa using h Finset.univ

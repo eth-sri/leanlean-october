@@ -32,7 +32,7 @@ theorem exists_openEmbedding_cuspQuotient
     apply MulAction.orbitRel_apply.mpr
     apply MulAction.mem_orbit_iff.mpr
     exact ⟨⟨g, g.property.1⟩, hg⟩
-  let e : CuspQuotient F Γ q U → OrbitQuotient F Γ :=
+  let e :=
     Quotient.lift (fun z : U => projection F Γ z) hrel
   have he (z : U) : e (Quotient.mk _ z) = projection F Γ z := rfl
   refine ⟨e, Topology.IsOpenEmbedding.of_continuous_injective_isOpenMap ?_ ?_ ?_, he⟩

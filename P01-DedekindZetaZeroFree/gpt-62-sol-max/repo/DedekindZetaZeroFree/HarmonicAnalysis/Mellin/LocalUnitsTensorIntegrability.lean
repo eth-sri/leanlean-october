@@ -24,7 +24,7 @@ private lemma compact_shell (a : ℝ) (ha : 0 < a) (n : ℕ) : IsCompact (shell 
   have he : Units.val '' shell a n = {x : ℝ | a ^ n ≤ ‖x‖ ∧ ‖x‖ ≤ 2 * a ^ n} := by
     ext x
     constructor
-    · rintro ⟨u, hu, rfl⟩; exact hu
+    · aesop
     · intro hx
       have hx0 : x ≠ 0 := by
         intro h; simp [h] at hx
@@ -43,13 +43,8 @@ private lemma measure_shell (ν : Measure ℝˣ) [ν.IsHaarMeasure]
     simp only [shell, mem_preimage, mem_setOf_eq, Units.val_mul, u, Units.val_mk0,
       norm_mul, Real.norm_eq_abs, abs_mul, abs_of_pos (pow_pos ha n), pow_zero, mul_one]
     constructor
-    · intro h
-      exact ⟨(le_mul_iff_one_le_right (pow_pos ha n)).mp h.1,
-        (mul_le_mul_iff_right₀ (pow_pos ha n)).mp (by simpa [mul_comm] using h.2)⟩
-    · intro h
-      constructor
-      · exact (le_mul_iff_one_le_right (pow_pos ha n)).mpr h.1
-      · simpa [mul_comm] using (mul_le_mul_of_nonneg_right h.2 (pow_pos ha n).le)
+    · grind only [le_mul_iff_one_le_right, pow_pos, mul_le_mul_iff_right₀, mul_comm]
+    grind only [le_mul_iff_one_le_right, pow_pos, mul_comm, mul_le_mul_of_nonneg_right]
   rw [← he, measure_preimage_mul]
 
 private lemma shell_integrable (ν : Measure ℝˣ) [ν.IsHaarMeasure]
@@ -80,7 +75,7 @@ private lemma weighted_bound (g : SchwartzMap ℝ ℂ) (z : ℂ) (x : ℝˣ) (k 
     ‖g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z‖ ≤
       SchwartzMap.seminorm ℝ k 0 g * ‖x.val‖ ^ (2 * z.re - k) := by
   rw [weight_norm]
-  have hx : 0 < ‖x.val‖ := norm_pos_iff.mpr x.ne_zero
+  have hx := norm_pos_iff.mpr x.ne_zero
   have h := mul_le_mul_of_nonneg_right (g.norm_pow_mul_le_seminorm ℝ k x.val)
     (Real.rpow_nonneg hx.le (2 * z.re - k))
   calc
@@ -94,7 +89,7 @@ private lemma weighted_bound (g : SchwartzMap ℝ ℂ) (z : ℂ) (x : ℝˣ) (k 
 private lemma cover : (⋃ n, shell (1/2) n) ∪ (⋃ n, shell 2 n) = (univ : Set ℝˣ) := by
   apply eq_univ_of_forall
   intro x
-  have hx : 0 < ‖x.val‖ := norm_pos_iff.mpr x.ne_zero
+  have hx := norm_pos_iff.mpr x.ne_zero
   by_cases hx1 : 1 ≤ ‖x.val‖
   · obtain ⟨n, hn, hn'⟩ := exists_nat_pow_near hx1 (by norm_num : (1 : ℝ) < 2)
     exact Or.inr (mem_iUnion.mpr ⟨n, hn, by simpa [pow_succ, mul_comm] using hn'.le⟩)

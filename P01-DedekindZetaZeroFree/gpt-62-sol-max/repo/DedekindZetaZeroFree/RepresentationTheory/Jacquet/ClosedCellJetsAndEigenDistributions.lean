@@ -338,8 +338,7 @@ theorem sectionJet_one_unipotent_fixed_of_zero (s : ℝ) (t : ℂ) (f : Principa
   fin_cases k
   · simp [sectionJet, jetAtInfinity, iteratedFDeriv_zero_apply,
       infinityCoordinate_zero_unipotent_fixed]
-  · simp only [sectionJet, jetAtInfinity, Fin.val_one,
-      iteratedFDeriv_one_apply]
+  · simp only [sectionJet, jetAtInfinity, iteratedFDeriv_one_apply]
     rw [infinityCoordinate_fderiv_unipotent_fixed_of_zero s t f hf]
 theorem sectionJet_one_zero_value (s : ℝ) (f : PrincipalSeries s) (hf : sectionJet s 1 f = 0) :
     infinityCoordinate f 0 = 0 := by
@@ -530,7 +529,7 @@ private theorem closedCell_comp_flat_top (n : ℕ) (F C : ℂ → ℂ)
   rw [Finset.sum_eq_single (OrderedFinpartition.atomic n)]
   · ext v
     simp only [FormalMultilinearSeries.compAlongOrderedFinpartition_apply,
-      OrderedFinpartition.atomic_length, ftaylorSeries, h0]
+      ftaylorSeries, h0]
     congr 1
     funext i
     change (iteratedFDeriv ℝ 1 C 0) (fun _ => v i) = v i

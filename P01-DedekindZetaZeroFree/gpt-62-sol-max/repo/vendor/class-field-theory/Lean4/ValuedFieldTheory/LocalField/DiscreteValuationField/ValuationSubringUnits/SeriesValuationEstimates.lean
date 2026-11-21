@@ -35,10 +35,13 @@ namespace MultiplicativeIntegerValuation
 
 variable {K : Type u} [Field K]
 
+section
+
+variable (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
+
 /-- Positive-degree exponential terms have positive integer valuation when
 the input has valuation strictly bigger than one. -/
 theorem ofWithZeroValuation_val_pow_div_natCast_factorial_pos_of_one_lt
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p n : ℕ} [Fact p.Prime] (x : Kˣ)
     (hnK : (((n.factorial : ℕ) : K) ≠ 0))
     (hnval :
@@ -72,7 +75,6 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_pos_of_one_lt
 /-- Real lower bound for the valuation of the exponential-series term
 `x^n / n!`. -/
 theorem ofWithZeroValuation_val_pow_div_natCast_factorial_real_lower_bound
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p n : ℕ} (x : Kˣ)
     (hnK : (((n.factorial : ℕ) : K) ≠ 0))
     (hnval :
@@ -105,7 +107,6 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_real_lower_bound
 /-- Real lower bound for the valuation of the exponential-series term
 `x^n / n!`, with a ramification-index scale in the denominator valuation. -/
 theorem ofWithZeroValuation_val_pow_div_natCast_factorial_scaled_real_lower_bound
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p n : ℕ} (e : ℕ) (x : Kˣ)
     (hnK : (((n.factorial : ℕ) : K) ≠ 0))
     (hnval :
@@ -139,7 +140,6 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_scaled_real_lower_boun
 when the value of `x` is strictly larger than one.  This is the convergence
 estimate used for the exponential half of the field-unit logarithm theorem. -/
 theorem ofWithZeroValuation_val_pow_div_natCast_factorial_tendsto_atTop
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p : ℕ} [Fact p.Prime] (x : Kˣ)
     (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
     (hnval : ∀ n : ℕ,
@@ -176,7 +176,6 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_tendsto_atTop
 `x^n / n!`: a value of `x` strictly above `e/(p-1)` dominates the scaled
 factorial denominator contribution `e * v_p(n!)`. -/
 theorem ofWithZeroValuation_val_pow_div_natCast_factorial_scaled_tendsto_atTop
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p : ℕ} [Fact p.Prime] (e : ℕ) (x : Kˣ)
     (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
     (hnval : ∀ n : ℕ,
@@ -216,7 +215,6 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_scaled_tendsto_atTop
 /-- Real lower bound for the valuation of `x^n / n`, in the form used to prove
 that the logarithm-series terms tend to zero. -/
 theorem ofWithZeroValuation_val_pow_div_natCast_real_lower_bound
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p n : ℕ} [Fact p.Prime] (x : Kˣ) (hnK : (n : K) ≠ 0)
     (hnval : v (n : K) = WithZero.exp (-(padicValNat p n : ℤ)))
     {c : ℝ} (hc : c ≤ ((ofWithZeroValuation v).val x : ℝ)) :
@@ -251,7 +249,6 @@ theorem ofWithZeroValuation_val_pow_div_natCast_real_lower_bound
 /-- Real lower bound for the valuation of `x^n / n`, with a fixed
 ramification-index scale in the denominator valuation. -/
 theorem ofWithZeroValuation_val_pow_div_natCast_scaled_real_lower_bound
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p n : ℕ} [Fact p.Prime] (e : ℕ) (x : Kˣ)
     (hnK : (n : K) ≠ 0)
     (hnval :
@@ -294,7 +291,6 @@ theorem ofWithZeroValuation_val_pow_div_natCast_scaled_real_lower_bound
 `+∞`, assuming the natural-number denominators have their expected `p`-adic
 values and `x` has positive valuation. -/
 theorem ofWithZeroValuation_val_pow_succ_div_natCast_tendsto_atTop
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p : ℕ} [Fact p.Prime] (x : Kˣ)
     (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
     (hnval : ∀ n : ℕ,
@@ -331,7 +327,6 @@ theorem ofWithZeroValuation_val_pow_succ_div_natCast_tendsto_atTop
 `+∞` when the natural-number denominators have a fixed ramification-index
 scale in their `p`-adic valuation. -/
 theorem ofWithZeroValuation_val_pow_succ_div_natCast_scaled_tendsto_atTop
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     {p : ℕ} [Fact p.Prime] (e : ℕ) (x : Kˣ)
     (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
     (hnval : ∀ n : ℕ,
@@ -367,6 +362,8 @@ theorem ofWithZeroValuation_val_pow_succ_div_natCast_scaled_tendsto_atTop
           (v := v) (p := p) (e := e) (n := n + 1) x
           (hnK n) (hnval n) hc
   exact tendsto_atTop_mono' atTop hle hsource
+
+end
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

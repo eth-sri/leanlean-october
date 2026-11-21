@@ -21,7 +21,7 @@ private theorem map_density_equiv {X Y : Type*} [MeasurableSpace X] [MeasurableS
   rw [e.measurableEmbedding.map_apply, withDensity_apply _ (e.measurable hs),
     withDensity_apply _ hs, Measure.restrict_map e.measurable hs,
     e.measurableEmbedding.lintegral_map]
-  simp only [e.symm_apply_apply]
+  simp
 
 private theorem product_chart_density {ι : Type*} [Fintype ι]
     (ν : Measure PGLComplex.Group) [ν.IsHaarMeasure] [SigmaFinite ν]

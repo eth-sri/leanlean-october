@@ -104,53 +104,6 @@ theorem intrinsicBase_normalizedDegree_eq_localResidueDegree
     exact intrinsicFiniteAbstractBase_residueDegree_eq_one F] at h
   simpa [localResidueDatum] using h
 
-/-- Transport along a separable-closure equivalence identifies the intrinsic
-normalized degree over a finite fixed field with the ambient normalized degree. -/
-theorem intrinsicBase_normalizedDegree_eq_ambientFixedField
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K)) :
-    let F := abstractFixedField K (SeparableClosure K) H.field
-    letI : Algebra F (SeparableClosure F) :=
-      (separableClosure F (AlgebraicClosure F)).algebra
-    ∀ (e : SeparableClosure F ≃ₐ[F] SeparableClosure K)
-      (τ : (intrinsicAbstractBase F).toSubgroup),
-    letI : FiniteDimensional K F :=
-      abstractFixedField_finiteDimensional
-        K (SeparableClosure K) H.field H.finite
-    letI : NontriviallyNormedField F :=
-      finiteExtensionSpectralNormedField K F
-    letI : ValuativeRel F :=
-      finiteExtensionSpectralValuativeRel K F
-    letI : IsNonarchimedeanLocalField F :=
-      finiteExtensionSpectralIsNonarchimedeanLocalField K F
-    (localResidueDatum F).normalizedDegree
-        ((intrinsicFiniteAbstractBase F).toFiniteResidueAbstractField
-          (localResidueDatum F)) τ =
-      (localResidueDatum K).normalizedDegree
-        (H.toFiniteResidueAbstractField (localResidueDatum K))
-        ((abstractSubgroupEquivGaloisGroup
-          K (SeparableClosure K) H.field).symm
-            (AlgEquiv.autCongr e τ.1)) := by
-  dsimp only
-  let F := abstractFixedField K (SeparableClosure K) H.field
-  let : Algebra F (SeparableClosure F) :=
-    (separableClosure F (AlgebraicClosure F)).algebra
-  intro e τ
-  let : FiniteDimensional K F :=
-    abstractFixedField_finiteDimensional
-      K (SeparableClosure K) H.field H.finite
-  let : NontriviallyNormedField F :=
-    finiteExtensionSpectralNormedField K F
-  let : ValuativeRel F :=
-    finiteExtensionSpectralValuativeRel K F
-  let : IsNonarchimedeanLocalField F :=
-    finiteExtensionSpectralIsNonarchimedeanLocalField K F
-  rw [intrinsicBase_normalizedDegree_eq_localResidueDegree F τ]
-  exact
-    localResidueDegree_eq_normalizedDegree_abstractFixedFieldEquiv
-      K H e τ.1
 
 /-- A separable-closure equivalence identifies the intrinsic base subgroup of a
 finite fixed field with its defining subgroup in the ambient Galois group. -/

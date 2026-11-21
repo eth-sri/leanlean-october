@@ -61,7 +61,7 @@ structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
     exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
   continuous_invFun := by
     apply (CotangentLogCoframe.A (d F)).symm.continuous.comp
-    exact continuous_pi fun k => continuous_apply _
+    fun_prop
 
  def coordinateMeasure : Measure (M F) :=
   Measure.map (coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)).symm
@@ -210,33 +210,16 @@ private theorem null_transfer {a b : ShrunkChart F ζ hζ U R P H}
   exact h3
 
 private theorem continuous_labeledA_placeEquiv :
-    Continuous (labeledA (placeEquiv F ζ hζ)) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+    Continuous (labeledA (placeEquiv F ζ hζ)) :=
+  labeledA_continuous (placeEquiv F ζ hζ)
 
 private theorem measurable_omega (a : ShrunkChart F ζ hζ U R P H) :
     MeasurableSet (omega a) :=
   a.domain_open.measurableSet.preimage continuous_labeledA_placeEquiv.measurable
 
 private theorem measurable_q (a : ShrunkChart F ζ hζ U R P H) :
-    Measurable (KPContCotangentOverlapRationalBranches.q a) := by
-  have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-        (H.atlas U).components ∘ Sigma.mk a.component := by
-      funext x; exact ((H.atlas U).components_formula a.component x).symm
-    rw [he]
-    exact ((H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk).continuous
-  have hproj : Measurable (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    measurable_quotient_mk''
-  have hcomp : KPContCotangentOverlapRationalBranches.q a =
-      KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      ∘ KPCuspSiegel.projection F (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
-      ∘ labeledA (placeEquiv F ζ hζ) := rfl
-  rw [hcomp]
-  exact hcm.measurable.comp (hproj.comp continuous_labeledA_placeEquiv.measurable)
+    Measurable (KPContCotangentOverlapRationalBranches.q a) :=
+  (KPContCotangentOverlapRationalBranches.continuous_chartProjection a).measurable
 
 private theorem T_proof_irrel {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}

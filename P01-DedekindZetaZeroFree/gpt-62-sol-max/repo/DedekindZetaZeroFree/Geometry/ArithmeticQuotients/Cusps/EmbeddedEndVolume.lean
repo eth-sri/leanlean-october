@@ -21,11 +21,10 @@ theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
     apply (ae_all_iff).2
     intro b
     by_cases hab : a = b
-    · exact Filter.Eventually.of_forall (by simp [hab])
+    · simp_all
     · have h := hs.aedisjoint (i := a⁻¹) (j := b⁻¹) (by simpa only [ne_eq, inv_inj] using hab)
       have he : μ ((a⁻¹ • s) ∩ (b⁻¹ • s)) = 0 := h
-      have hz : ∀ᵐ x ∂μ, x ∉ ((a⁻¹ • s) ∩ (b⁻¹ • s)) := by
-        exact ae_iff.mpr (by simpa using he)
+      have hz : ∀ᵐ x ∂μ, x ∉ ((a⁻¹ • s) ∩ (b⁻¹ • s)) := ae_iff.mpr (by simpa using he)
       filter_upwards [hz] with x hx
       intro _
       simpa only [Set.mem_inter_iff, Set.mem_smul_set_iff_inv_smul_mem, inv_inv,
@@ -35,7 +34,7 @@ theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
   refine ⟨a, ha, ?_⟩
   intro b hb
   by_contra hba
-  exact hd b a hba ⟨hb, ha⟩
+  grind only
 
 theorem fd_ae_free {G X : Type*} [Group G] [Countable G]
     [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]

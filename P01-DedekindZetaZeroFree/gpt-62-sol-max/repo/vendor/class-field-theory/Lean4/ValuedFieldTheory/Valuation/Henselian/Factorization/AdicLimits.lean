@@ -32,16 +32,19 @@ open scoped BigOperators
 namespace AlgebraicNumberTheory
 namespace Valuations
 
+section
+
+variable {R : Type*} [CommRing R] (I : Ideal R)
+include I
+
 /-- the directed adic Cauchy estimate for a coefficient
 sequence: later differences from stage `M` lie in `I^(M+1)`. -/
-def henselFactorization_adicCoeffCauchy
-    {R : Type*} [CommRing R] (I : Ideal R) (x : ℕ → R) : Prop :=
+def henselFactorization_adicCoeffCauchy (x : ℕ → R) : Prop :=
   ∀ {M N : ℕ}, M ≤ N → x N - x M ∈ I ^ (M + 1)
 
 /-- A coefficientwise Cauchy estimate for a polynomial sequence gives an
 adic Cauchy estimate for each fixed coefficient. -/
-theorem henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
-    {R : Type*} [CommRing R] (I : Ideal R) {Pseq : ℕ → R[X]}
+theorem henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem {Pseq : ℕ → R[X]}
     (hsub :
       ∀ {M N : ℕ}, M ≤ N → ∀ i : ℕ,
         (Pseq N - Pseq M).coeff i ∈ I ^ (M + 1))
@@ -52,8 +55,7 @@ theorem henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
 
 /-- the coefficientwise `I^(M+1)` estimate gives mathlib's
 `I`-adic Cauchy condition after weakening `I^(M+1) ≤ I^M`. -/
-theorem henselFactorization_adicCoeffCauchy_isAdicCauchy
-    {R : Type*} [CommRing R] (I : Ideal R) {x : ℕ → R}
+theorem henselFactorization_adicCoeffCauchy_isAdicCauchy {x : ℕ → R}
     (hx : henselFactorization_adicCoeffCauchy I x) :
     AdicCompletion.IsAdicCauchy I R x := by
   intro M N hMN
@@ -66,8 +68,7 @@ theorem henselFactorization_adicCoeffCauchy_isAdicCauchy
 
 /-- precompleteness supplies a coefficient limit for every
 coefficient sequence satisfying the directed estimate. -/
-theorem henselFactorization_exists_adicCoeffLimit
-    {R : Type*} [CommRing R] (I : Ideal R) [IsPrecomplete I R]
+theorem henselFactorization_exists_adicCoeffLimit [IsPrecomplete I R]
     {x : ℕ → R}
     (hx : henselFactorization_adicCoeffCauchy I x) :
     ∃ L : R, ∀ n : ℕ, x n - L ∈ I ^ n := by
@@ -77,6 +78,8 @@ theorem henselFactorization_exists_adicCoeffLimit
   refine ⟨L, fun n => ?_⟩
   have hmem := SModEq.sub_mem.mp (hL n)
   simpa [smul_eq_mul, Ideal.mul_top] using hmem
+
+end
 
 /-- assemble finitely many coefficient limits into the
 polynomial supported in degrees at most `N`. -/
@@ -124,10 +127,13 @@ theorem henselFactorization_polyOfLimitCoeffs_natDegree_le
   intro n hn
   exact henselFactorization_polyOfLimitCoeffs_coeff_eq_zero_of_lt (c := c) hn
 
+section
+
+variable {R : Type*} [CommRing R] (I : Ideal R)
+
 /-- bounded polynomial approximants with coefficientwise
 adic limits have a bounded polynomial limit. -/
-theorem henselFactorization_exists_limitPolynomial_of_bounded_coeffLimits
-    {R : Type*} [CommRing R] (I : Ideal R) [IsPrecomplete I R]
+theorem henselFactorization_exists_limitPolynomial_of_bounded_coeffLimits [IsPrecomplete I R]
     {N : ℕ} {Pseq : ℕ → R[X]}
     (hdeg : ∀ n : ℕ, (Pseq n).natDegree ≤ N)
     (hcauchy :
@@ -160,8 +166,7 @@ theorem henselFactorization_exists_limitPolynomial_of_bounded_coeffLimits
 /-- if all coefficients of the left factor lie in an ideal,
 then all coefficients of its product with any polynomial lie in the same
 ideal. -/
-theorem henselFactorization_mul_left_coeff_mem_ideal
-    {R : Type*} [CommRing R] (I : Ideal R) {A B : R[X]}
+theorem henselFactorization_mul_left_coeff_mem_ideal {A B : R[X]}
     (hA : ∀ i : ℕ, A.coeff i ∈ I) :
     ∀ i : ℕ, (A * B).coeff i ∈ I := by
   intro i
@@ -171,8 +176,7 @@ theorem henselFactorization_mul_left_coeff_mem_ideal
 /-- if all coefficients of the right factor lie in an ideal,
 then all coefficients of its product with any polynomial lie in the same
 ideal. -/
-theorem henselFactorization_mul_right_coeff_mem_ideal
-    {R : Type*} [CommRing R] (I : Ideal R) {A B : R[X]}
+theorem henselFactorization_mul_right_coeff_mem_ideal {A B : R[X]}
     (hB : ∀ i : ℕ, B.coeff i ∈ I) :
     ∀ i : ℕ, (A * B).coeff i ∈ I := by
   intro i
@@ -181,8 +185,7 @@ theorem henselFactorization_mul_right_coeff_mem_ideal
 
 /-- coefficientwise convergence is preserved by multiplying
 two polynomial approximants. -/
-theorem henselFactorization_mul_sub_mul_coeff_mem_of_coeff_mem
-    {R : Type*} [CommRing R] (I : Ideal R) {A A' B B' : R[X]}
+theorem henselFactorization_mul_sub_mul_coeff_mem_of_coeff_mem {A A' B B' : R[X]}
     (hA : ∀ i : ℕ, (A - A').coeff i ∈ I)
     (hB : ∀ i : ℕ, (B - B').coeff i ∈ I) :
     ∀ i : ℕ, (A * B - A' * B').coeff i ∈ I := by
@@ -197,7 +200,6 @@ theorem henselFactorization_mul_sub_mul_coeff_mem_of_coeff_mem
 /-- combine the product convergence with the residual error
 estimate at one adic level. -/
 theorem henselFactorization_limit_factor_coeff_mem_of_approximants
-    {R : Type*} [CommRing R] (I : Ideal R)
     {f G H Gn Hn : R[X]}
     (herr : ∀ i : ℕ, (f - Gn * Hn).coeff i ∈ I)
     (hG : ∀ i : ℕ, (Gn - G).coeff i ∈ I)
@@ -213,8 +215,7 @@ theorem henselFactorization_limit_factor_coeff_mem_of_approximants
 
 /-- a polynomial whose coefficients lie in every adic power is
 zero in a Hausdorff coefficient ring. -/
-theorem henselFactorization_polynomial_eq_zero_of_coeff_mem_all_powers
-    {R : Type*} [CommRing R] (I : Ideal R) [IsHausdorff I R]
+theorem henselFactorization_polynomial_eq_zero_of_coeff_mem_all_powers [IsHausdorff I R]
     {P : R[X]}
     (hP : ∀ n i : ℕ, P.coeff i ∈ I ^ n) :
     P = 0 := by
@@ -228,8 +229,7 @@ theorem henselFactorization_polynomial_eq_zero_of_coeff_mem_all_powers
 /-- if the approximating factorization and both factors
 converge coefficientwise at every adic level, then the limiting polynomials
 factor `f`. -/
-theorem henselFactorization_limit_factor_eq_of_approximants
-    {R : Type*} [CommRing R] (I : Ideal R) [IsHausdorff I R]
+theorem henselFactorization_limit_factor_eq_of_approximants [IsHausdorff I R]
     {f G H : R[X]} {Gseq Hseq : ℕ → R[X]}
     (herr : ∀ n i : ℕ, (f - Gseq n * Hseq n).coeff i ∈ I ^ n)
     (hG : ∀ n i : ℕ, (Gseq n - G).coeff i ∈ I ^ n)
@@ -245,7 +245,6 @@ theorem henselFactorization_limit_factor_eq_of_approximants
 /-- the limit of approximants preserving a fixed residual
 class preserves that residual class.  Only the first adic level is needed. -/
 theorem henselFactorization_limit_reduction_of_approx_reduction
-    {R : Type*} [CommRing R] (I : Ideal R)
     {P P0 : R[X]} {Pseq : ℕ → R[X]}
     (hlim : ∀ n i : ℕ, (Pseq n - P).coeff i ∈ I ^ n)
     (hred : ∀ n i : ℕ, (Pseq n - P0).coeff i ∈ I) :
@@ -258,6 +257,8 @@ theorem henselFactorization_limit_reduction_of_approx_reduction
     ring
   rw [hdecomp, Polynomial.coeff_add, Polynomial.coeff_neg]
   exact I.add_mem (I.neg_mem hlim1) hred1
+
+end
 
 /-- coefficientwise membership in a ring-hom kernel gives
 equality after mapping coefficients. -/

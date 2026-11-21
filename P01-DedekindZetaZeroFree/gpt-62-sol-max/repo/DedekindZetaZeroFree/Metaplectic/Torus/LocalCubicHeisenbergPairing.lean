@@ -35,58 +35,12 @@ private theorem integral_root (K : Type*) [Field K] [ValuativeRel K]
 
 open KPCubicUnitIndices
 
-private theorem log_integer (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (a : Integers K) (ha : a ≠ 0) :
-    WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-      (valuation K (a : K))) = -((IsDiscreteValuationRing.addVal (Integers K) a).toNat : ℤ) := by
-  let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-  obtain ⟨p, hp⟩ := valuation_surjective (e.symm (WithZero.exp (-1 : ℤ)))
-  have hep : e (valuation K p) = WithZero.exp (-1 : ℤ) := by rw [hp, e.apply_symm_apply]
-  have hpint : valuation K p ≤ 1 := by
-    apply (map_le_map_iff e).mp
-    rw [map_one, hep]
-    change WithZero.exp (-1 : ℤ) ≤ WithZero.exp 0
-    exact WithZero.exp_le_exp.mpr (by omega)
-  let π : Integers K := ⟨p, hpint⟩
-  have hm : IsLocalRing.maximalIdeal (Integers K) = Ideal.span {π} := by
-    ext b
-    change b ∈ IsLocalRing.maximalIdeal (valuation K).integer ↔ b ∈ Ideal.span {π}
-    rw [IsLocalRing.mem_maximalIdeal, mem_nonunits_iff,
-      (Valuation.integer.integers (valuation K)).isUnit_iff_valuation_eq_one,
-      Ideal.mem_span_singleton, (Valuation.integer.integers (valuation K)).dvd_iff_le]
-    change valuation K (b : K) ≠ 1 ↔ valuation K p ≥ valuation K (b : K)
-    rw [ne_iff_lt_iff_le.mpr (show valuation K (b : K) ≤ 1 from b.property)]
-    rw [← (map_lt_map_iff e (a := valuation K (b : K)) (b := 1))]
-    change _ ↔ valuation K (b : K) ≤ valuation K p
-    rw [← (map_le_map_iff e (a := valuation K (b : K)) (b := valuation K p)), map_one, hep]
-    generalize e (valuation K (b : K)) = z
-    cases z using WithZero.recZeroCoe with
-    | zero => simp
-    | coe z =>
-      change (z : WithZero (Multiplicative ℤ)) < ↑(1 : Multiplicative ℤ) ↔
-        (z : WithZero (Multiplicative ℤ)) ≤ ↑(Multiplicative.ofAdd (-1 : ℤ))
-      rw [WithZero.coe_lt_coe, WithZero.coe_le_coe]
-      change z.toAdd < 0 ↔ z.toAdd ≤ -1
-      omega
-  have hi : Irreducible π := (IsDiscreteValuationRing.irreducible_iff_uniformizer π).mpr hm
-  obtain ⟨n, u, hu⟩ := IsDiscreteValuationRing.eq_unit_mul_pow_irreducible ha hi
-  rw [hu, IsDiscreteValuationRing.addVal_def' u hi]
-  simp only [ENat.toNat_coe]
-  have hvu : valuation K ((u : Integers K) : K) = 1 :=
-    (Valuation.integer.integers (valuation K)).one_of_isUnit u.isUnit
-  change WithZero.log (e (valuation K
-    (((u : Integers K) : K) * p^n))) = -(n : ℤ)
-  rw [map_mul, map_pow, hvu, map_mul, map_pow, map_one, one_mul, hep]
-  rw [← WithZero.exp_nsmul, WithZero.log_exp]
-  simp [nsmul_eq_mul]
-
 theorem card_cubeClasses (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
     Nat.card (CubeClasses Kˣ) = 9 * inverseThreeModule K := by
   obtain ⟨z, hz⟩ := integral_root K ζ hζ
-  have hlog := log_integer K (3 : 𝒪[K]) (by norm_num)
+  have hlog := KPCubicHaarTransport.log_integer K (3 : 𝒪[K]) (by norm_num)
   have hmodule : KPCubicHaarTransport.abs K (3 : K) =
       ((inverseThreeModule K : ℕ) : ℝ)⁻¹ := by
     simp only [KPCubicHaarTransport.abs, if_neg (show (3 : K) ≠ 0 by norm_num)]

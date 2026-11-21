@@ -7,24 +7,26 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.EisensteinIntegers.PrimaryI
 namespace DedekindZetaZeroFree.Eisenstein
 
 open IsCyclotomicExtension.Rat.Three
-private lemma lambda_sq_aux (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E] (ω : E)
+  (hω : IsPrimitiveRoot ω 3)
+
+private lemma lambda_sq_aux :
     «λ» E ω hω ^ 2 = -(3 : R E) * η E ω hω := by
   have h := eta_sq_add_eta_add_one hω
   change (η E ω hω)^2 + η E ω hω + 1 = 0 at h
   dsimp [«λ»]
   linear_combination h
 
-private lemma lambda_not_dvd_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
+private lemma lambda_not_dvd_one :
     ¬ «λ» E ω hω ∣ 1 := by
   intro h
   have hn := map_dvd (Algebra.norm ℤ) h
   rw [hω.norm_toInteger_sub_one_of_prime_ne_two' (by decide), map_one] at hn
   norm_num at hn
 
-private lemma lambda_not_dvd_two (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
+private lemma lambda_not_dvd_two :
     ¬ «λ» E ω hω ∣ (2 : R E) := by
   intro h
   have hn := map_dvd (Algebra.norm ℤ) h
@@ -36,8 +38,7 @@ private lemma lambda_not_dvd_two (E : Type) [Field E] [NumberField E]
   have := hp.dvd_of_dvd_pow hn
   norm_num at this
 
-private lemma red3_eq_of_lambda_sq_dvd (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
+private lemma red3_eq_of_lambda_sq_dvd
     (x y : R E) (h : «λ» E ω hω ^ 2 ∣ x - y) : red3 E x = red3 E y := by
   apply Ideal.Quotient.eq.mpr
   apply Ideal.mem_span_singleton.mpr
@@ -45,8 +46,7 @@ private lemma red3_eq_of_lambda_sq_dvd (E : Type) [Field E] [NumberField E]
   rw [lambda_sq_aux]
   exact dvd_mul_of_dvd_left (dvd_neg.mpr dvd_rfl) _
 
-private lemma lambda_sq_dvd_three (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
+private lemma lambda_sq_dvd_three :
     «λ» E ω hω ^ 2 ∣ (3 : R E) := by
   rw [lambda_sq_aux]
   have hu := hω.toInteger_isPrimitiveRoot.isUnit (by decide : 3 ≠ 0)
@@ -57,8 +57,7 @@ private lemma lambda_sq_dvd_three (E : Type) [Field E] [NumberField E]
     (3 : R E) = 3 * (hω.toInteger * v) := by rw [hv, mul_one]
     _ = -3 * hω.toInteger * -v := by ring
 
-private lemma exists_unit_residue (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
+private lemma exists_unit_residue
     (x : R E) (hx : «λ» E ω hω ∣ x - 1) :
     ∃ u : (R E)ˣ, red3 E (u : R E) = red3 E x := by
   let e : (R E)ˣ := (hω.toInteger_isPrimitiveRoot.isUnit (by decide : 3 ≠ 0)).unit
@@ -93,8 +92,13 @@ private lemma exists_unit_residue (E : Type) [Field E] [NumberField E]
     exact dvd_add (lambda_sq_dvd_three E ω hω)
       (by simpa [pow_two] using mul_dvd_mul_left («λ» E ω hω) h)
 
-private lemma lift_unit_residue (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (x : R E) (hx : IsUnit (red3 E x)) :
+end
+
+section
+
+variable (E : Type) [Field E] [NumberField E] [IsCyclotomicExtension {3} ℚ E]
+
+private lemma lift_unit_residue (x : R E) (hx : IsUnit (red3 E x)) :
     ∃ u : (R E)ˣ, red3 E (u : R E) = red3 E x := by
   obtain ⟨ω, hω⟩ := IsCyclotomicExtension.exists_isPrimitiveRoot ℚ E
     (Set.mem_singleton 3) (by decide : 3 ≠ 0)
@@ -118,8 +122,7 @@ private lemma lift_unit_residue (E : Type) [Field E] [NumberField E]
     refine ⟨-u, ?_⟩
     simpa using congrArg Neg.neg hu
 
-private lemma kernel_trivial (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (u : (R E)ˣ)
+private lemma kernel_trivial (u : (R E)ˣ)
     (hu : red3 E (u : R E) = 1) : u = 1 := by
   obtain ⟨ω, hω⟩ := IsCyclotomicExtension.exists_isPrimitiveRoot ℚ E
     (Set.mem_singleton 3) (by decide : 3 ≠ 0)
@@ -137,8 +140,7 @@ private lemma kernel_trivial (E : Type) [Field E] [NumberField E]
       convert this.neg_right using 1 <;> ring
     exact lambda_not_dvd_two E ω hω hd'
 
-theorem red3_units_bijective (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] :
+theorem red3_units_bijective :
     Function.Bijective (Units.map (red3 E).toMonoidHom) := by
   constructor
   · intro u v huv
@@ -155,8 +157,7 @@ theorem red3_units_bijective (E : Type) [Field E] [NumberField E]
     obtain ⟨u, hu⟩ := lift_unit_residue E x hunit
     exact ⟨u, Units.ext (hu.trans hx)⟩
 
-theorem existsUnique_unit_mul_red3_eq_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (x : R E) (hx : IsUnit (red3 E x)) :
+theorem existsUnique_unit_mul_red3_eq_one (x : R E) (hx : IsUnit (red3 E x)) :
     ∃! u : (R E)ˣ, red3 E ((u : R E) * x) = 1 := by
   classical
   let v := hx.unit
@@ -176,15 +177,13 @@ theorem existsUnique_unit_mul_red3_eq_one (E : Type) [Field E] [NumberField E]
       simpa [mul_assoc] using congrArg (fun y : R E ⧸ m3 E => y * (↑v⁻¹ : R E ⧸ m3 E)) this
     exact h'.trans (congrArg Units.val hu).symm
 
-theorem unit_eq_one_of_red3_eq_one (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (u : (R E)ˣ)
+theorem unit_eq_one_of_red3_eq_one (u : (R E)ˣ)
     (hu : red3 E (u : R E) = 1) : u = 1 := by
   apply (red3_units_bijective E).injective
   apply Units.ext
   simpa using hu
 
-theorem isUnit_red3_iff_span_sup_m3_eq_top (E : Type) [Field E] [NumberField E]
-    [IsCyclotomicExtension {3} ℚ E] (x : R E) :
+theorem isUnit_red3_iff_span_sup_m3_eq_top (x : R E) :
     IsUnit (red3 E x) ↔ Ideal.span {x} ⊔ m3 E = ⊤ := by
   rw [← Ideal.isCoprime_iff_sup_eq, Ideal.isCoprime_iff_exists]
   constructor
@@ -203,5 +202,7 @@ theorem isUnit_red3_iff_span_sup_m3_eq_top (E : Type) [Field E] [NumberField E]
     have h := congrArg (red3 E) hab
     simpa only [map_add, map_mul, map_one, Ideal.Quotient.eq_zero_iff_mem.mpr hb,
       add_zero] using h
+
+end
 
 end DedekindZetaZeroFree.Eisenstein

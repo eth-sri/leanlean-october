@@ -6,7 +6,7 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.Cubic.IdeleUnitValu
 
 open scoped NumberField Classical RestrictedProduct
 open NumberField IsDedekindDomain
-namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+namespace DedekindZetaZeroFree.KPGlobalCubicIdelePairing
 noncomputable section
 variable (F : Type) [Field F] [NumberField F]
  instance completionTG (v : KPHilbert.Place F) : IsTopologicalGroup (KPHilbert.Completion F v)ˣ := by
@@ -129,4 +129,4 @@ theorem class_comparison_continuous_open :
   · apply IsOpenMap.of_comp QuotientGroup.continuous_mk (QuotientGroup.mk_surjective)
     exact restrictedClassMap_open F
 end
-end DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+end DedekindZetaZeroFree.KPGlobalCubicIdelePairing

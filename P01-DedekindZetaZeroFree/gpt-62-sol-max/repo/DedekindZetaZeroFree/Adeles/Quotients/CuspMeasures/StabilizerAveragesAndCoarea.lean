@@ -27,7 +27,7 @@ private theorem original_full_K (d : ℕ) (μ : Measure (G d)) [μ.IsHaarMeasure
         (c : ℝ≥0∞) • ((KPArch.hyperbolicVolume d).prod (stabilizerHaar d)) := by
   obtain ⟨e, heOrbit, heFiber⟩ := product_iwasawa_homeomorph d
   obtain ⟨hfinite, hpositive, hinvariant⟩ := hyperbolic_volume_properties d
-  let ν : Measure (G d) :=
+  let ν :=
     Measure.map e.symm ((KPArch.hyperbolicVolume d).prod (stabilizerHaar d))
   have : ν.IsHaarMeasure := compact_fiber_lift_isHaar d e heFiber
     (KPArch.hyperbolicVolume d) hfinite hpositive hinvariant
@@ -43,7 +43,7 @@ private theorem original_full_K (d : ℕ) (μ : Measure (G d)) [μ.IsHaarMeasure
       congr 1
       dsimp [ν]
       rw [Measure.map_map e.measurable e.symm.measurable]
-      simp only [e.apply_symm_apply, Function.comp_def, Measure.map_id']
+      simp
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
@@ -763,14 +763,8 @@ open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming
 open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming framedRadius → framedRadius
 open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof renaming rational_upper_literal_factorization → rational_upper_literal_factorization
 
-section ActualLift
-open KPMsClearedTruncationL2
-open KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
-open KPMsResidualTailRestoration.SharpConstantTerm
 
-end ActualLift
 
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 
 end DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure
 

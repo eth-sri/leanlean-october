@@ -70,13 +70,17 @@ open ValuationTheory.DiscreteValuationField.ValuedExtension
 
 variable {K : Type u} [Field K]
 
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+  (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
+include F
+
 /-- Every integral primitive polynomial splits already over the valuation
 ring of its standard level.  The finite unit parameters give as many
 distinct integral roots as the degree of the polynomial. -/
 theorem
     standardLubinTatePrimitivePolynomial_map_levelCoefficientHom_splits
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) :
     ((standardLubinTatePrimitivePolynomial F π n).map
       (standardLubinTateLevelCoefficientHom hπ n)).Splits := by
@@ -91,11 +95,9 @@ theorem
     fun a =>
       standardLubinTatePrimitivePointIntegerAction hπ n
         (standardLubinTateUnitParameterChosenRepresentative F n a)
-  have hpmonic : p.Monic := by
-    exact
-      (standardLubinTatePrimitivePolynomial_monic F π n).map
+  have hpmonic : p.Monic := (standardLubinTatePrimitivePolynomial_monic F π n).map
         (standardLubinTateLevelCoefficientHom hπ n)
-  have hpne : p ≠ 0 := hpmonic.ne_zero
+  have hpne := hpmonic.ne_zero
   have hroot (a : standardLubinTateUnitParameter F n) :
       p.eval (root a) = 0 := by
     apply standardLubinTateLevelIntegerToSeparableClosure_injective hπ n
@@ -109,8 +111,7 @@ theorem
       Polynomial.eval_map, Polynomial.eval₂_map] using
         standardLubinTatePrimitiveRootAction_isRoot hπ n
           (standardLubinTateUnitParameterChosenRepresentative F n a)
-  have hroot_mem (a : standardLubinTateUnitParameter F n) :
-      root a ∈ p.roots :=
+  have hroot_mem (a : standardLubinTateUnitParameter F n) :=
     (Polynomial.mem_roots hpne).2 (hroot a)
   have hroot_injective : Function.Injective root := by
     intro a b hab
@@ -166,8 +167,6 @@ derivative value multiplied by `q y^(q-1) + π`, where `y` is the old
 iterate value. -/
 private theorem
     standardLubinTatePolynomialIterate_derivative_eval₂_succ
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n i : ℕ) :
     Polynomial.eval₂
         (standardLubinTateLevelCoefficientHom hπ n)
@@ -194,8 +193,6 @@ private theorem
 /-- The derivative factor `q y^(q-1) + π` occurring at every iterate has
 the same additive valuation as the image of the base uniformizer. -/
 private theorem standardLubinTate_iterate_derivative_factor_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n i : ℕ) (hi : i ≤ n) :
     IsDiscreteValuationRing.addVal
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
@@ -280,8 +277,6 @@ private theorem standardLubinTate_iterate_derivative_factor_addVal
 has additive valuation `i * d`, where `d = (q - 1) q^n`. -/
 private theorem
     standardLubinTatePolynomialIterate_derivative_eval₂_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n i : ℕ) (hi : i ≤ n) :
     IsDiscreteValuationRing.addVal
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
@@ -313,8 +308,6 @@ private theorem
 /-- Exact derivative valuation of the integral primitive polynomial at the
 distinguished primitive point. -/
 theorem standardLubinTatePrimitivePolynomial_derivative_eval₂_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) :
     IsDiscreteValuationRing.addVal
         (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
@@ -395,8 +388,6 @@ theorem standardLubinTatePrimitivePolynomial_derivative_eval₂_addVal
 has the same derivative valuation as the distinguished primitive point. -/
 theorem
     standardLubinTatePrimitivePolynomial_map_levelCoefficientHom_derivative_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ)
     {y : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring}
     (hy :
@@ -502,40 +493,19 @@ theorem
         standardLubinTatePrimitivePolynomial_derivative_eval₂_addVal
           hπ n
 
-/-- Arithmetic form of the derivative exponent used by the
-root-product comparison. -/
-theorem standardLubinTatePrimitivePolynomial_derivativeExponent_eq
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    n * ((Nat.card F.residueField - 1) *
-          Nat.card F.residueField ^ n) +
-        (Nat.card F.residueField - 2) *
-          Nat.card F.residueField ^ n =
-      (n + 1) * ((Nat.card F.residueField - 1) *
-          Nat.card F.residueField ^ n) -
-        Nat.card F.residueField ^ n := by
-  let q := Nat.card F.residueField
-  have hq : 2 ≤ q :=
-    (Finite.one_lt_card : 1 < Nat.card F.residueField)
-  have hqsub : q - 1 = (q - 2) + 1 := by
-    omega
-  have hsum :
-      (n + 1) * ((q - 1) * q ^ n) =
-        q ^ n +
-          (n * ((q - 1) * q ^ n) + (q - 2) * q ^ n) := by
-    rw [hqsub]
-    ring
-  change
-    n * ((q - 1) * q ^ n) + (q - 2) * q ^ n =
-      (n + 1) * ((q - 1) * q ^ n) - q ^ n
-  rw [hsum, Nat.add_sub_cancel_left]
+end
+
+
+section
+
+variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
+  (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (u : F.valuationSubringˣ) (n : ℕ)
+include F
 
 /-- The changed primitive polynomial after passing through the changed
 level and then into the common compositum valuation ring. -/
 noncomputable def
-    standardLubinTateChangedPrimitivePolynomialInCompositum
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+    standardLubinTateChangedPrimitivePolynomialInCompositum :
     (standardLubinTateChangedLevelCompositumCompleteDVF
       hπ u n).valuationSubring[X] :=
   let hπ' :=
@@ -548,36 +518,17 @@ noncomputable def
 /-- The original distinguished primitive point in the common compositum
 valuation ring. -/
 noncomputable def
-    standardLubinTateOriginalPrimitivePointInChangedLevelCompositum
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+    standardLubinTateOriginalPrimitivePointInChangedLevelCompositum :
     (standardLubinTateChangedLevelCompositumCompleteDVF
       hπ u n).valuationSubring :=
   standardLubinTateLevelToChangedLevelCompositumIntegerMap hπ u n
     (standardLubinTatePrimitivePointInteger hπ n)
 
-/-- The distinguished changed primitive point in the common compositum
-valuation ring. -/
-noncomputable def
-    standardLubinTateChangedPrimitivePointInCompositum
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    (standardLubinTateChangedLevelCompositumCompleteDVF
-      hπ u n).valuationSubring :=
-  let hπ' :=
-    standardLubinTateChangedUniformizer_isUniformizer hπ u
-  standardLubinTateChangedLevelToCompositumIntegerMap hπ u n
-    (standardLubinTatePrimitivePointInteger hπ' n)
 
 /-- The two routes from base coefficients into the common compositum
 valuation ring agree. -/
 private theorem
-    standardLubinTateChangedLevelCompositum_coefficientHom_eq
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+    standardLubinTateChangedLevelCompositum_coefficientHom_eq :
     (standardLubinTateChangedLevelToCompositumIntegerMap hπ u n).comp
         (standardLubinTateLevelCoefficientHom
           (standardLubinTateChangedUniformizer_isUniformizer hπ u) n) =
@@ -616,10 +567,7 @@ private theorem
 
 /-- The changed primitive polynomial is monic in the common valuation
 ring. -/
-theorem standardLubinTateChangedPrimitivePolynomialInCompositum_monic
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+theorem standardLubinTateChangedPrimitivePolynomialInCompositum_monic :
     (standardLubinTateChangedPrimitivePolynomialInCompositum
       hπ u n).Monic := by
   exact
@@ -631,10 +579,7 @@ theorem standardLubinTateChangedPrimitivePolynomialInCompositum_monic
       (standardLubinTateChangedLevelToCompositumIntegerMap hπ u n)
 
 /-- The changed primitive polynomial splits in the common valuation ring. -/
-theorem standardLubinTateChangedPrimitivePolynomialInCompositum_splits
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+theorem standardLubinTateChangedPrimitivePolynomialInCompositum_splits :
     (standardLubinTateChangedPrimitivePolynomialInCompositum
       hπ u n).Splits := by
   exact
@@ -645,10 +590,7 @@ theorem standardLubinTateChangedPrimitivePolynomialInCompositum_splits
 /-- The changed primitive polynomial remains nonconstant in the common
 valuation ring. -/
 theorem
-    standardLubinTateChangedPrimitivePolynomialInCompositum_natDegree_ne_zero
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+    standardLubinTateChangedPrimitivePolynomialInCompositum_natDegree_ne_zero :
     (standardLubinTateChangedPrimitivePolynomialInCompositum
       hπ u n).natDegree ≠ 0 := by
   let hπ' :=
@@ -678,10 +620,7 @@ theorem
 the original primitive point and then applying the original-level
 valuation-ring inclusion. -/
 private theorem
-    standardLubinTateChangedPrimitivePolynomialInCompositum_eval_original
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+    standardLubinTateChangedPrimitivePolynomialInCompositum_eval_original :
     (standardLubinTateChangedPrimitivePolynomialInCompositum
         hπ u n).eval
         (standardLubinTateOriginalPrimitivePointInChangedLevelCompositum
@@ -702,9 +641,6 @@ private theorem
 common compositum. -/
 theorem
     standardLubinTateChangedPrimitivePolynomialInCompositum_eval_addVal_ge
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     (hu : u ∈
       CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
     ((standardLubinTateLevelToChangedLevelCompositumRamificationIndex
@@ -743,9 +679,6 @@ theorem
 derivative valuation. -/
 theorem
     standardLubinTateChangedPrimitivePolynomialInCompositum_derivative_addVal
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     {beta :
       (standardLubinTateChangedLevelCompositumCompleteDVF
         hπ u n).valuationSubring}
@@ -816,10 +749,7 @@ theorem
 /-- The relative ramification index of the original level in the common
 compositum is positive. -/
 private theorem
-    standardLubinTateLevelToChangedLevelCompositumRamificationIndex_pos
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
+    standardLubinTateLevelToChangedLevelCompositumRamificationIndex_pos :
     0 <
       standardLubinTateLevelToChangedLevelCompositumRamificationIndex
         hπ u n := by
@@ -857,9 +787,6 @@ The root-product estimate first gives the stronger lower bound
 index of the original level in the compositum. -/
 theorem
     exists_standardLubinTateChangedPrimitiveRootInCompositum_close
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     (hu : u ∈
       CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
     ∃ beta :
@@ -1008,9 +935,6 @@ automorphism of the common compositum is bounded by the old level-`n`
 bound, scaled by the relative ramification index. -/
 private theorem
     standardLubinTateOriginalPrimitivePointInChangedLevelCompositum_displacement_addVal_le
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     (σ :
       Gal(standardLubinTateChangedLevelCompositumField hπ u n / K))
     (hne :
@@ -1124,9 +1048,6 @@ private theorem
 of the changed standard level. -/
 private theorem
     standardLubinTateChangedPrimitiveRootInCompositum_mem_changedRestrict
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     {beta :
       (standardLubinTateChangedLevelCompositumCompleteDVF
         hπ u n).valuationSubring}
@@ -1189,9 +1110,6 @@ private theorem
 fixes the old primitive point. -/
 private theorem
     standardLubinTateOriginalPrimitivePointInChangedLevelCompositum_fixed_of_fixed_close
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     {beta :
       (standardLubinTateChangedLevelCompositumCompleteDVF
         hπ u n).valuationSubring}
@@ -1251,9 +1169,6 @@ private theorem
 changed standard levels coincide at principal-unit depth `n + 1`. -/
  theorem
     standardLubinTateHigherUnit_restrict_changedLevel_eq_originalLevel
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     (hu : u ∈
       CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
     IntermediateField.restrict
@@ -1386,9 +1301,6 @@ changed standard levels coincide at principal-unit depth `n + 1`. -/
 /-- The changed standard level is `K`-isomorphic to the original standard
 level when the unit factor is congruent to one at depth `n + 1`. -/
 noncomputable def standardLubinTateHigherUnitChangedLevelAlgEquiv
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     (hu : u ∈
       CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
     standardLubinTateChangedLevelField hπ u n ≃ₐ[K]
@@ -1416,9 +1328,6 @@ noncomputable def standardLubinTateHigherUnitChangedLevelAlgEquiv
 original standard level. -/
 theorem
     standardLubinTateUnitFactorFieldUnit_mem_standardNormSubgroup_of_mem_higher
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ)
     (hu : u ∈
       CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)) :
     standardLubinTateUnitFactorFieldUnit F u ∈
@@ -1427,6 +1336,8 @@ theorem
     hπ u n
       (standardLubinTateHigherUnitChangedLevelAlgEquiv
         hπ u n hu)
+
+end
 
 end LubinTate
 

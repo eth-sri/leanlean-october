@@ -82,7 +82,7 @@ theorem localTraceCharacter_eq_localFiniteCharacter (v : HeightOneSpectrum (𝓞
           (Rat.HeightOneSpectrum.adicCompletion.padicEquiv
             (PlaceTraceAdapter.rationalPlace F v)).symm.continuous
       · funext q
-        exact (hmq q).trans (by simp [PlaceTraceAdapter.padicMap, map_ratCast])
+        simp
     subst m
     rfl
   exact hgeneral _ _ (ResidueTrace.baseEmbedding_spec v).1

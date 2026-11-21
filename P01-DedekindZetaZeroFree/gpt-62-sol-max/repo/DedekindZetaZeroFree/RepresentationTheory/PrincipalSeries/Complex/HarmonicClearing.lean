@@ -52,7 +52,7 @@ theorem native_harmonic_finite_words
         rfl
     exact hall _
   rw [KPContHolomorphicKGeneration.complexSphericalWord_zero]
-  exact congrArg (fun h : ComplexGL2 → ℂ => D (e j).val * h a) (hword (e j).val).symm
+  simp_all
 
 section PolynomialWords
 open scoped ContDiff Matrix.Norms.Elementwise
@@ -348,7 +348,7 @@ private theorem cProj_sum_eval (μ : Measure ComplexSU2) (hp : IsProbabilityMeas
   exact funext (fun z => hf.eqOn_of_preconnected_of_mem_closure hh
     isPreconnected_univ (Set.mem_univ 0) hc (Set.mem_univ z))
 private theorem clear_ratio_pos (g : ComplexGL2) : 0 < sphericalRatio g := by
-  have hb := RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.rowB_pos g
+  have hb := KPCplxHarmonicPropagation.RaisingCalculation.rowB_pos g
   exact div_pos (norm_pos_iff.mpr (Units.ne_zero _)) hb
 private theorem clear_spherical_real (t : ℝ) (g : ComplexGL2) :
     KPContHolomorphicKGeneration.complexSpherical t g = sphericalSection (positiveParameter + t) g := by
@@ -389,7 +389,7 @@ private theorem clear_word_factor (w : KPContHolomorphicKGeneration.RealLieWord)
       (KPContHolomorphicKGeneration.rightWord (positiveParameter + t) w
         (sphericalSection (positiveParameter + t))).property.1]
     rw [clear_spherical_real, (sphericalSection (positiveParameter + t)).property.1]
-    rw [RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.spherical_compact,
+    rw [KPCplxHarmonicPropagation.RaisingCalculation.spherical_compact,
       mul_one]
   exact congrFun (entire_of_real (KPContHolomorphicKGeneration.complexSphericalWord_holomorphic w g)
     ((KPContHolomorphicKGeneration.complexSphericalWord_holomorphic [] g).mul
@@ -399,7 +399,7 @@ private theorem clear_section_factor (h : PrincipalSeries positiveParameter) (g 
     (hg : g = upperTriangular a d b * complexSU2Embedding k) :
     h g = sphericalSection positiveParameter g * h (complexSU2Embedding k) := by
   rw [hg, h.property.1, (sphericalSection positiveParameter).property.1,
-    RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.spherical_compact, mul_one]
+    KPCplxHarmonicPropagation.RaisingCalculation.spherical_compact, mul_one]
 private theorem clear_spherical_tw (s : ℂ) (g : ComplexGL2) :
     KPContHolomorphicKGeneration.complexSpherical s g = tw s g * sphericalSection positiveParameter g := by
   rw [← KPContHolomorphicKGeneration.complexSpherical_zero]

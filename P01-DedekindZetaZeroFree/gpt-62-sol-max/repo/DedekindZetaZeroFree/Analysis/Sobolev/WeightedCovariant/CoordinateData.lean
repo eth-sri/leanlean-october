@@ -59,9 +59,6 @@ def InverseMetric.quadratic {n r : ℕ} {Ω : Opens (E n)}
     (Q : InverseMetric Ω) (x : E n) (d : Fin n → V r) : ℝ :=
   ∑ j, ∑ k, Q.Q x j k * Complex.re ⟪d j, d k⟫_ℂ
 
-def smoothCovariantDerivative {n r : ℕ} {Ω : Opens (E n)}
-    (A : Connection (r := r) Ω) (u : E n → V r) (x v : E n) : V r :=
-  fderiv ℝ u x v + ∑ j, (v j) • A.A j x (u x)
 
 def FiniteH0 {n r : ℕ} (S : Set (E n)) (f : E n → V r)
     (g : Fin n → E n → V r) : Prop :=
@@ -76,20 +73,7 @@ def H0 {n r : ℕ} (S : Set (E n)) (f : E n → V r)
   l2Norm (volume.restrict S) f h.1 +
     Real.sqrt (∑ j, (l2Norm (volume.restrict S) (g j) (h.2 j)) ^ 2)
 
-def FiniteHw {n r : ℕ} {Ω : Opens (E n)} (S : Set (E n))
-    (w : E n → ℝ) (Q : InverseMetric Ω) (A : Connection (r := r) Ω)
-    (f : E n → V r) (g : Fin n → E n → V r) : Prop :=
-  MemLp f 2 (KPChartL2.weightedMeasure n S w) ∧
-    Integrable (fun x => w x * Q.quadratic x (fun j => covariantFirst A f g j x))
-      (volume.restrict S)
 
-def Hw {n r : ℕ} {Ω : Opens (E n)} (S : Set (E n))
-    (w : E n → ℝ) (Q : InverseMetric Ω) (A : Connection (r := r) Ω)
-    (f : E n → V r) (g : Fin n → E n → V r)
-    (h : FiniteHw S w Q A f g) : ℝ :=
-  l2Norm (KPChartL2.weightedMeasure n S w) f h.1 +
-    Real.sqrt (∫ x in S,
-      w x * Q.quadratic x (fun j => covariantFirst A f g j x))
 
 def chartOpens {n r : ℕ} {Γ : Type*} [Group Γ] (D : KPChartL2.Data n r Γ) :
     Opens (E n) :=
@@ -101,14 +85,6 @@ def InverseMetric.IsInvariant {n r : ℕ} {Γ : Type*} [Group Γ]
     Q.quadratic x (fun j => T (fderiv ℝ (D.act γ) x (coordinateDirection j))) =
       Q.quadratic (D.act γ x) (fun j => T (coordinateDirection j))
 
-def Connection.IsCompatible {n r : ℕ} {Γ : Type*} [Group Γ]
-    (D : KPChartL2.Data n r Γ) (A : Connection (r := r) (chartOpens D)) : Prop :=
-  ∀ (γ : Γ) (u : E n → V r), ContDiffOn ℝ ∞ u D.chart →
-    ∀ x ∈ D.chart, ∀ v : E n,
-      smoothCovariantDerivative A
-        (fun y => (D.cocycle γ y).symm (u (D.act γ y))) x v =
-      (D.cocycle γ x).symm
-        (smoothCovariantDerivative A u (D.act γ x) (fderiv ℝ (D.act γ) x v))
 
 end DedekindZetaZeroFree.KPCompactInteriorH1
 

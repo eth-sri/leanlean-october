@@ -37,7 +37,6 @@ open KPContActualCutoffSmoothDescent
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
 open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
 open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer renaming cutoff → cutoff
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
 open ResidualHilbertCenters
 def SphericalBoundaryProperty
@@ -108,7 +107,7 @@ theorem spherical_scalar_hilbert_boundary_centers
       KPCutoffSource.SmoothCuspCutoff T := fun _ => cutoff T
   have hf : DifferentiableOn ℂ (fun _ : ℂ => (1 : ℂ)) KPContinuation.spectralDomain :=
     differentiableOn_const _
-  obtain ⟨buffer, source, domain, W, hW, ⟨formula⟩⟩ :=
+  obtain ⟨buffer, source, W, hW, formula⟩ :=
     kp_cont_actual_chamber_formula_equality F R.A.zeta12 R.A.primitive_zeta12 D Haar.adelicHaar Haar.adelic_isHaar Haar rfl
       Transport H U realization ι hι (fun _ => 1) hf T hT χ
   let Z : ℂ → Smooth := E F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U KPContinuation.spectralDomain
@@ -117,21 +116,20 @@ theorem spherical_scalar_hilbert_boundary_centers
     source.descent.cutoff W
   refine ⟨Z, ?_, ?_⟩
   · intro s hs g
-    rw [formula.group_equal s hs g]
+    rw [formula s hs g]
     unfold KPContActualChamberNormalSeries.E
     congr 1
     funext q
     unfold KPContActualChamberNormalSeries.term KPContActualSphericalFlatStage.L
       KPContFlatCommonLevelKernel.L
     simp [ι, lift_eq]
-  · have hStage := stageConclusions F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U ι hι
-    have hHilb := kp_cont_actual_hilbert_simple_germs F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U
-      Haar.adelicHaar Haar.adelic_isHaar rfl realization ι hι hStage
+  · have hHilb := kp_cont_actual_hilbert_simple_germs F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U
+      Haar.adelicHaar Haar.adelic_isHaar rfl realization ι hι
       KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen Set.Subset.rfl
       (fun _ => 1) hf buffer χ source
     intro c hc
     obtain ⟨r, hr, hb, hi, w, hw, he, _⟩ := hHilb.simple_germs c hc
-    obtain ⟨N⟩ := hW.continuation.every_germ c hc r hr hb hi w hw he
+    obtain ⟨N⟩ := hW.every_germ c hc r hr hb hi w hw he
     refine ⟨r, hr, hb, numerator F R.A.zeta12 R.A.primitive_zeta12 D Haar Transport H U source.descent.cutoff c N.W,
       N.numerator_data, N.punctured_group, ?_, ?_⟩
     · refine ⟨w c, ?_, ?_, ?_⟩

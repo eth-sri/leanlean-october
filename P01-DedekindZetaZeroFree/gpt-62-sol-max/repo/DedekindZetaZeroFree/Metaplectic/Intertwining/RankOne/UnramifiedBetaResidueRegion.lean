@@ -178,7 +178,7 @@ theorem residue_region (dx : Measure K) [dx.IsAddHaarMeasure]
   refine ⟨(integrableOn_const hfinite (C := (1 : ℂ))).congr_fun he.symm (residue_measurable K), ?_⟩
   rw [setIntegral_congr_fun (residue_measurable K) he, integral_const]
   simp only [Measure.real, Measure.restrict_apply_univ, residue_mass,
-    R_volume K dx m hm hvol, Complex.real_smul, mul_one]
+    Complex.real_smul, mul_one]
   change (dx.real (R K) : ℂ) = _
   rw [R_volume K dx m hm hvol]
   simp [rawA]

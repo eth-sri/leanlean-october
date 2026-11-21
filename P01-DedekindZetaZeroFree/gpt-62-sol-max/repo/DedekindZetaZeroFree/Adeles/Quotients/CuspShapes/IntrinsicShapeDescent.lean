@@ -107,7 +107,7 @@ private theorem chart_projection (S : NativeRecipe F ζ hζ R P) (V : Level F ζ
       (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
         ⟨ε⁻¹, rfl⟩) _).symm
   rw [← mul_assoc (KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹), hc]
-  simp [map_inv, mul_assoc]
+  simp
 
 private theorem spherical_projection_right_level
     (S : NativeRecipe F ζ hζ R P)

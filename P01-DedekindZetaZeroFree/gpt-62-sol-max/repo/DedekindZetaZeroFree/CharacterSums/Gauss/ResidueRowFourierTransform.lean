@@ -83,8 +83,7 @@ private theorem phase_eq (R : Subring K) (e : AddChar K ℂ)
   rw [hx, e.map_add_eq_mul, he r, mul_one]
 
 private theorem residue_difference (R : Subring K) (a x y : R)
-    (h : residueMap R a x = residueMap R a y) : ∃ r : R, x - y = a * r := by
-  exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
+    (h : residueMap R a x = residueMap R a y) : ∃ r : R, x - y = a * r := Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
 
 theorem linear_phase_eq (R : Subring K) (s : R) (hs : s ≠ 0)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (x y k : R)
@@ -96,8 +95,7 @@ theorem linear_phase_eq (R : Subring K) (s : R) (hs : s ≠ 0)
   have hr' : (x : K) - (y : K) = (s : K) * (r : K) := by exact_mod_cast hr
   push_cast
   rw [← sub_div, ← mul_sub, hr']
-  field_simp
-  <;> ring
+  grind
 
 private theorem double_phase_eq (R : Subring K) (s A h x y v w : R)
     (hs : s ≠ 0) (hA : A ≠ 0) (e : AddChar K ℂ) (he : IsTrivialOn R e)

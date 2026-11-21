@@ -71,7 +71,7 @@ theorem ball_basis_nat (v : HeightOneSpectrum (𝓞 F)) :
   · intro hU
     obtain ⟨γ, hγ⟩ := Valued.mem_nhds_zero.mp hU
     have hn : MonoidWithZeroHom.ValueGroup₀.embedding γ.val ≠ 0 := by
-      simpa using γ.ne_zero
+      simp
     obtain ⟨n, hn'⟩ := WithZero.exists_exp_neg_natCast_lt hn
     refine ⟨n, trivial, fun x hx => hγ ?_⟩
     rw [Set.mem_setOf_eq, Valuation.restrict_lt_iff_lt_embedding]

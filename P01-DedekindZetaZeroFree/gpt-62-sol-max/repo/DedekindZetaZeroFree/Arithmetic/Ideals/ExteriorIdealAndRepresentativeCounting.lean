@@ -50,11 +50,8 @@ noncomputable section
 open scoped NumberField Classical WithZero NNReal
 open IsDedekindDomain
 
-namespace DedekindZetaZeroFree.ProbeExteriorPrincipalIdealFibers
 
-variable (F : Type) [Field F] [NumberField F]
 
-end DedekindZetaZeroFree.ProbeExteriorPrincipalIdealFibers
 
 end
 
@@ -66,9 +63,7 @@ noncomputable section
 open scoped NumberField Classical nonZeroDivisors
 open IsDedekindDomain
 
-namespace DedekindZetaZeroFree.ProbeExteriorPrincipalIdealFibers
 
-end DedekindZetaZeroFree.ProbeExteriorPrincipalIdealFibers
 
 end
 

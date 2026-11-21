@@ -10,8 +10,8 @@ public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCom
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Finite
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.H0
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.HMinusOne
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.Trivial
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.Quotient
+
+
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.NormResidue
 
 @[expose] public section
@@ -62,11 +62,13 @@ variable {K L : Type}
     [Field L] [Algebra K L]
     [hKLfinite : FiniteDimensional K L] [IsAbelianGalois K L]
 
+section
+
+variable {F : Type} [Field F] (vF : AbsoluteValue F ℝ) (hvF : IsNonarchimedean (vF : F → ℝ))
+include vF hvF
+
 /-- A completion attached to a nonarchimedean absolute value has an ultrametric distance. -/
-theorem finitePlaceArtinCompletionIsUltrametricDist
-    {F : Type} [Field F]
-    (vF : AbsoluteValue F ℝ)
-    (hvF : IsNonarchimedean (vF : F → ℝ)) :
+theorem finitePlaceArtinCompletionIsUltrametricDist :
     IsUltrametricDist vF.Completion :=
   IsUltrametricDist.isUltrametricDist_of_isNonarchimedean_norm
     (AbsoluteValue.completionAbsoluteValue_isNonarchimedean
@@ -74,10 +76,7 @@ theorem finitePlaceArtinCompletionIsUltrametricDist
 
 /-- The valued-field structure on a finite-place completion induced by its nonarchimedean norm. -/
 @[reducible]
-noncomputable def finitePlaceArtinCompletionValued
-    {F : Type} [Field F]
-    (vF : AbsoluteValue F ℝ)
-    (hvF : IsNonarchimedean (vF : F → ℝ)) :
+noncomputable def finitePlaceArtinCompletionValued :
     Valued vF.Completion ℝ≥0 :=
   letI : IsUltrametricDist vF.Completion :=
     finitePlaceArtinCompletionIsUltrametricDist vF hvF
@@ -85,10 +84,7 @@ noncomputable def finitePlaceArtinCompletionValued
 
 /-- The valuation relation on a finite-place completion induced by its canonical valuation. -/
 @[reducible]
-noncomputable def finitePlaceArtinCompletionValuativeRel
-    {F : Type} [Field F]
-    (vF : AbsoluteValue F ℝ)
-    (hvF : IsNonarchimedean (vF : F → ℝ)) :
+noncomputable def finitePlaceArtinCompletionValuativeRel :
     ValuativeRel vF.Completion := by
   letI : Valued vF.Completion ℝ≥0 :=
     finitePlaceArtinCompletionValued vF hvF
@@ -98,9 +94,6 @@ noncomputable def finitePlaceArtinCompletionValuativeRel
 /-- The canonical valued structure makes a locally compact finite-place completion a nonarchimedean local field. -/
 theorem
     finitePlaceArtinCompletionIsNonarchimedeanLocalField
-    {F : Type} [Field F]
-    (vF : AbsoluteValue F ℝ)
-    (hvF : IsNonarchimedean (vF : F → ℝ))
     [IsUltrametricDist vF.Completion]
     [NontriviallyNormedField vF.Completion]
     [(NormedField.valuation
@@ -133,6 +126,8 @@ theorem
       toLocallyCompactSpace := inferInstance
       toIsNontrivial := inferInstance }
 
+end
+
 /-- The concrete finite-completion ring equivalence agrees with the
 relative-completion algebra equivalence on underlying rings. -/
 theorem finitePlaceCompletionRingEquiv_eq_relative
@@ -156,10 +151,14 @@ theorem finitePlaceCompletionRingEquiv_eq_relative
       relativeFinitePlaceCompletionRingHom_coe]
     rfl
 
+section
+
+variable (v : HeightOneSpectrum (𝓞 K))
+include v
+
 /-- The finite-place Artin homomorphism associated with a specified
 extension of the base adic absolute value to the global extension. -/
 noncomputable def finitePlaceArtinMonoidHomOfExtension
-    (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L) :
     (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) := by
@@ -230,87 +229,9 @@ noncomputable def finitePlaceArtinMonoidHomOfExtension
         ((LocalClassFieldTheory.abelianLocalArtinMonoidHom
           vK.Completion E).comp eK.symm.toMonoidHom))
 
-/-- Pointwise formula for the finite-place Artin homomorphism attached
-to a specified extension of the base absolute value. -/
-theorem finitePlaceArtinMonoidHomOfExtension_apply
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L)
-    (x : (v.adicCompletion K)ˣ) :
-    let vK :=
-      NumberField.HeightOneSpectrum.adicAbv K v
-    let hvK : vK.IsNontrivial :=
-      RayClass.adicAbv_isNontrivial v
-    letI hK :=
-      AbsoluteValue.extensionCompletionAlgebra
-        (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI : Algebra vK.Completion w.1.Completion :=
-      AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI :=
-      LocalClassFieldTheory.localizedCompletionGlobalAlgebra vK w
-    letI :=
-      LocalClassFieldTheory.localizedCompletionIsScalarTower vK w
-    let E :=
-      AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w
-    letI : FiniteDimensional vK.Completion E :=
-      AlgebraicNumberTheory.Valuations.localizedCompletionModuleFinite vK hvK w
-    letI : IsAbelianGalois vK.Completion E :=
-      LocalClassFieldTheory.localizedCompletion_isAbelianGalois
-        vK hvK w
-    letI : NontriviallyNormedField vK.Completion :=
-      absoluteValueExtension_completionNontriviallyNormedField
-        vK hvK
-    letI : LocallyCompactSpace vK.Completion :=
-      AbsoluteValue.Completion.locallyCompactSpace
-        (finitePlaceCompletionBaseMap_isometry v)
-    letI : IsUltrametricDist vK.Completion :=
-      IsUltrametricDist.isUltrametricDist_of_isNonarchimedean_norm
-        (AbsoluteValue.completionAbsoluteValue_isNonarchimedean
-          vK
-          (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv
-            K v))
-    letI : Valued vK.Completion ℝ≥0 :=
-      NormedField.toValued
-    let vC : Valuation vK.Completion ℝ≥0 :=
-      Valued.v
-    letI : vC.IsNontrivial :=
-      (inferInstance :
-        (NormedField.valuation
-          (K := vK.Completion)).IsNontrivial)
-    letI : ValuativeRel vK.Completion :=
-      ValuativeRel.ofValuation vC
-    letI : vC.Compatible :=
-      Valuation.Compatible.ofValuation vC
-    letI : ValuativeRel.IsNontrivial vK.Completion :=
-      (ValuativeRel.isNontrivial_iff_isNontrivial vC).2
-        inferInstance
-    letI : IsValuativeTopology vK.Completion :=
-      isValuativeTopology_of_valued_ofValuation
-        vK.Completion ℝ≥0
-    letI : IsNonarchimedeanLocalField vK.Completion :=
-      { toIsValuativeTopology := inferInstance
-        toLocallyCompactSpace := inferInstance
-        toIsNontrivial := inferInstance }
-    let eD :
-        absoluteValueDecompositionGroup K w.1 ≃*
-          (E ≃ₐ[vK.Completion] E) :=
-      decompositionGroupEquivAlgebraicLocalizationAut
-        vK hvK w
-    let eK :
-        vK.Completionˣ ≃* (v.adicCompletion K)ˣ :=
-      finitePlaceCompletionUnitsContinuousMulEquiv v
-    finitePlaceArtinMonoidHomOfExtension
-        (K := K) (L := L) v w x =
-      (absoluteValueDecompositionGroup K w.1).subtype
-        (eD.symm
-          (LocalClassFieldTheory.abelianLocalArtinMonoidHom
-            vK.Completion E (eK.symm x))) := by
-  rfl
 
 /-- The canonical completion input used by the finite-place local Artin map. -/
-noncomputable def finitePlaceLocalArtinInputMonoidHom
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceLocalArtinInputMonoidHom :
     (v.adicCompletion K)ˣ →*
       (NumberField.HeightOneSpectrum.adicAbv K v).Completionˣ :=
   (finitePlaceCompletionUnitsContinuousMulEquiv v).symm.toMonoidHom
@@ -318,7 +239,6 @@ noncomputable def finitePlaceLocalArtinInputMonoidHom
 /-- Evaluation of the canonical completion input for the finite-place local
 Artin map. -/
 noncomputable def finitePlaceLocalArtinInput
-    (v : HeightOneSpectrum (𝓞 K))
     (x : (v.adicCompletion K)ˣ) :
     (NumberField.HeightOneSpectrum.adicAbv K v).Completionˣ :=
   finitePlaceLocalArtinInputMonoidHom v x
@@ -326,8 +246,7 @@ noncomputable def finitePlaceLocalArtinInput
 /-- The canonical valuation relation used on a finite-place completion by
 the local Artin construction. -/
 @[reducible]
-noncomputable def finitePlaceLocalArtinCompletionValuativeRel
-    (v : HeightOneSpectrum (𝓞 K)) :
+noncomputable def finitePlaceLocalArtinCompletionValuativeRel :
     ValuativeRel
       (NumberField.HeightOneSpectrum.adicAbv K v).Completion :=
   finitePlaceArtinCompletionValuativeRel
@@ -337,8 +256,7 @@ noncomputable def finitePlaceLocalArtinCompletionValuativeRel
 /-- The canonical nonarchimedean-local-field certificate used on a
 finite-place completion by the local Artin construction. -/
 theorem
-    finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField
-    (v : HeightOneSpectrum (𝓞 K)) :
+    finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField :
     @IsNonarchimedeanLocalField
       (NumberField.HeightOneSpectrum.adicAbv K v).Completion
       (inferInstance : Field
@@ -369,8 +287,7 @@ theorem
 
 /-- The local Artin input of a chosen order-one prime element has the
 inverse-standard normalized local valuation. -/
-theorem finitePlaceLocalArtinInput_chosenLocalOrderSection_valuationMap
-    (v : HeightOneSpectrum (𝓞 K)) :
+theorem finitePlaceLocalArtinInput_chosenLocalOrderSection_valuationMap :
     let C := (NumberField.HeightOneSpectrum.adicAbv K v).Completion
     letI : ValuativeRel C := finitePlaceLocalArtinCompletionValuativeRel v
     letI : IsNonarchimedeanLocalField C :=
@@ -511,7 +428,6 @@ theorem finitePlaceLocalArtinInput_chosenLocalOrderSection_valuationMap
 finite-place local Artin map. -/
 @[reducible]
 noncomputable def finitePlaceLocalArtinLocalizedAlgebra
-    (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L) :
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
@@ -525,6 +441,8 @@ noncomputable def finitePlaceLocalArtinLocalizedAlgebra
   letI : Algebra vK.Completion w.1.Completion :=
     AbsoluteValue.completionAlgebra vK w.1 w.2
   exact inferInstance
+
+end
 
 omit [IsAbelianGalois K L] in
 /-- The canonical finite-dimensional certificate for the localized
@@ -588,11 +506,14 @@ theorem finitePlaceLocalArtinIsAbelianGalois
     LocalClassFieldTheory.localizedCompletion_isAbelianGalois
       vK hvK w
 
+section
+
+variable (v : HeightOneSpectrum (𝓞 K)) (w : AbsoluteValueExtension
+      (NumberField.HeightOneSpectrum.adicAbv K v) L)
+include v w
+
 /-- The local Artin homomorphism on the algebraic localization attached to a chosen extension of a finite place. -/
-noncomputable def finitePlaceLocalArtinMonoidHom
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L) :
+noncomputable def finitePlaceLocalArtinMonoidHom :
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
     let E := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w
     letI : Algebra vK.Completion E :=
@@ -617,9 +538,6 @@ noncomputable def finitePlaceLocalArtinMonoidHom
 
 /-- Evaluation of the localized finite-place Artin homomorphism through the canonical completion equivalence. -/
 theorem finitePlaceLocalArtinMonoidHom_apply
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L)
     (x : (v.adicCompletion K)ˣ) :
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
     let hvK : vK.IsNontrivial :=
@@ -667,9 +585,6 @@ canonical completion data hidden behind named opaque terms.  This is the
 normalization API for clients that must not unfold the construction's
 dependent instance tower. -/
 theorem finitePlaceLocalArtinMonoidHom_apply_normalized
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L)
     (x : (v.adicCompletion K)ˣ) :
     finitePlaceLocalArtinMonoidHom
         (K := K) (L := L) v w x =
@@ -697,9 +612,6 @@ map.  This form lets clients transport an action without asking the
 elaborator to rewrite an equality of automorphisms carrying a dependent
 instance tower. -/
 theorem finitePlaceLocalArtinMonoidHom_apply_normalized_at
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L)
     (x : (v.adicCompletion K)ˣ)
     (z : AlgebraicNumberTheory.Valuations.LocalizedCompletion
       (NumberField.HeightOneSpectrum.adicAbv K v) w) :
@@ -728,10 +640,7 @@ theorem finitePlaceLocalArtinMonoidHom_apply_normalized_at
         (K := K) (L := L) v w x)
 
 /-- The decomposition-group inclusion transporting localized automorphisms to the global Galois group. -/
-noncomputable def finitePlaceLocalToGlobalMonoidHom
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L) :
+noncomputable def finitePlaceLocalToGlobalMonoidHom :
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
     let E := AlgebraicNumberTheory.Valuations.LocalizedCompletion vK w
     letI : Algebra vK.Completion E :=
@@ -753,10 +662,7 @@ noncomputable def finitePlaceLocalToGlobalMonoidHom
       eD.symm.toMonoidHom
 
 /-- The finite-place Artin map factors through the localized Artin map and the decomposition-group inclusion. -/
-theorem finitePlaceArtinMonoidHomOfExtension_factor
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L) :
+theorem finitePlaceArtinMonoidHomOfExtension_factor :
     finitePlaceArtinMonoidHomOfExtension
         (K := K) (L := L) v w =
       (finitePlaceLocalToGlobalMonoidHom
@@ -769,9 +675,6 @@ theorem finitePlaceArtinMonoidHomOfExtension_factor
 localized Artin map and its decomposition-group transport expressed through
 the canonical named data. -/
 theorem finitePlaceArtinMonoidHomOfExtension_apply_normalized
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (NumberField.HeightOneSpectrum.adicAbv K v) L)
     (x : (v.adicCompletion K)ˣ) :
     let vK := NumberField.HeightOneSpectrum.adicAbv K v
     let hvK : vK.IsNontrivial :=
@@ -802,6 +705,8 @@ theorem finitePlaceArtinMonoidHomOfExtension_apply_normalized
     MonoidHom.comp_apply,
     finitePlaceLocalArtinMonoidHom_apply_normalized]
   rfl
+
+end
 
 /-- The finite-place Artin homomorphism from the concrete adic
 completion into the actual global Galois group.  Its image is contained

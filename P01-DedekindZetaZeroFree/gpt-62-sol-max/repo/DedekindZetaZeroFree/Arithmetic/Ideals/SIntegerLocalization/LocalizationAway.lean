@@ -55,7 +55,6 @@ theorem isLocalization_away (S : Finset (HeightOneSpectrum (𝓞 F))) :
   constructor
   · intro y
     obtain ⟨n, hn⟩ := y.property
-    change IsUnit (algebraMap (𝓞 F) _ (y : 𝓞 F))
     rw [← hn, map_pow]
     let t := denominator S
     let ti : (S : Set (HeightOneSpectrum (𝓞 F))).integer F :=

@@ -28,83 +28,6 @@ open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual renam
 open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual renaming section_signed_weyl → section_signed_weyl
 open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual renaming literal_compact_majorants → literal_compact_majorants
 open _root_.DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual renaming actual_sourceFlat_continuous → actual_sourceFlat_continuous
-private theorem actual_upper_root_continuous : Continuous (KPGlobalTorusFunctionData.N F ζ hζ) := by
-  letI : ∀ v : KPHilbert.Place F, TopologicalSpace (KPLocalCover.CubicGL2Raw F ζ hζ v) :=
-    KPAdelicCoverRestrictedProduct.localTopology F ζ hζ
-  letI : TopologicalSpace (KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) :=
-    KPAdelicCoverRestrictedProduct.restrictedTopology F ζ hζ
-  letI : IsTopologicalGroup (KPGlobalTorusFunctionData.G F ζ hζ) :=
-    (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
-  have hcoord (v : KPHilbert.Place F) :
-      Continuous (fun x : KPGlobalTorusFunctionData.Adeles F =>
-        KPStandardLocalRootLifts.N F ζ hζ v
-          (KPAdelicCoverRestrictedProduct.adeleEval F v x)) := by
-    cases v with
-    | inl w =>
-      exact (KPStandardLocalRootLifts.complex_N_continuous F ζ hζ w).comp
-        ((continuous_apply w).comp continuous_fst)
-    | inr q =>
-      exact (KPStandardLocalRootLifts.finite_N_continuous F ζ hζ q _
-        (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)).comp
-        ((RestrictedProduct.continuous_eval q).comp continuous_snd)
-  let U : Set (KPGlobalTorusFunctionData.Adeles F) :=
-    {x | ∀ q, ¬ KPAdelicCoverRestrictedProduct.Bad F q →
-      x.2 q ∈ q.adicCompletionIntegers F}
-  have hU : IsOpen U :=
-    (RestrictedProduct.isOpen_forall_imp_mem
-      (fun q : HeightOneSpectrum (𝓞 F) => Valued.isOpen_valuationSubring
-        (q.adicCompletion F))).preimage continuous_snd
-  have h0 : (0 : KPGlobalTorusFunctionData.Adeles F) ∈ U := by
-    intro q hq
-    exact zero_mem _
-  let S : Set (KPHilbert.Place F) :=
-    {v | match v with | .inl _ => True | .inr q => ¬ KPAdelicCoverRestrictedProduct.Bad F q}
-  have hS : Filter.cofinite ≤ Filter.principal S := by
-    rw [Filter.le_principal_iff]
-    change ∀ᶠ v in Filter.cofinite, v ∈ S
-    rw [Filter.eventually_cofinite, ← Set.finite_preimage_inl_and_inr]
-    exact ⟨Set.toFinite _, by simpa [S] using KPAdelicCoverRestrictedProduct.bad_finite F⟩
-  have hmem (x : U) (v : KPHilbert.Place F) (hv : v ∈ S) :
-      KPStandardLocalRootLifts.N F ζ hζ v
-        (KPAdelicCoverRestrictedProduct.adeleEval F v x) ∈
-          KPAdelicCoverRestrictedProduct.compact F ζ hζ v := by
-    cases v with
-    | inl w => exact Subgroup.mem_top _
-    | inr q =>
-      have hi (t : q.adicCompletion F) :
-          t ∈ KPTameCompact.O F q ↔ t ∈ q.adicCompletionIntegers F := by
-        letI : ValuativeRel (q.adicCompletion F) :=
-          ClassFieldTheory.finitePlaceCompletionValuativeRel F q
-        change (ValuativeRel.valuation (q.adicCompletion F)) t ≤ 1 ↔ Valued.v t ≤ 1
-        rw [← Valuation.vle_one_iff]
-        letI : Valued.v.Compatible := Valuation.Compatible.ofValuation
-          (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))
-        exact Valuation.vle_one_iff Valued.v
-      have hx : x.val.2 q ∈ KPTameCompact.O F q := (hi _).mpr (x.property q hv)
-      simp only [KPAdelicCoverRestrictedProduct.compact,
-        KPAdelicCoverRestrictedProduct.finiteCompact, dif_neg hv]
-      refine ⟨KPStandardLocalRootLifts.integralN F q ⟨_, hx⟩, ?_⟩
-      exact (KPStandardLocalRootLifts.N_eq_compact F ζ hζ q
-        (fun h3 => hv (Or.inr h3)) ⟨_, hx⟩).symm
-  let f : U → RestrictedProduct (fun v => KPLocalCover.CubicGL2Raw F ζ hζ v)
-      (fun v => (KPAdelicCoverRestrictedProduct.compact F ζ hζ v : Set _))
-      (Filter.principal S) :=
-    fun x => ⟨fun v => KPStandardLocalRootLifts.N F ζ hζ v
-      (KPAdelicCoverRestrictedProduct.adeleEval F v x), hmem x⟩
-  have hf : Continuous f := RestrictedProduct.continuous_rng_of_principal.mpr
-    (continuous_pi (fun v => (hcoord v).comp continuous_subtype_val))
-  have hrt : ContinuousAt (KPGlobalTorusFunctionData.rootTuple F ζ hζ) 0 := by
-    have hr : Continuous (U.domRestrict (KPGlobalTorusFunctionData.rootTuple F ζ hζ)) :=
-      (RestrictedProduct.continuous_inclusion hS).comp hf
-    exact (continuousOn_iff_continuous_restrict.mpr hr).continuousAt (hU.mem_nhds h0)
-  have hN : Continuous (KPGlobalTorusFunctionData.N F ζ hζ) := by
-    have hh : Continuous (KPGlobalTorusFunctionData.Nhom F ζ hζ) := by
-      apply continuous_of_continuousAt_one
-      exact QuotientGroup.continuous_mk.continuousAt.comp
-        (QuotientGroup.continuous_mk.continuousAt.comp hrt)
-    exact hh
-  exact hN
-
 private theorem rationalLift_eq (γ : Matrix.ProjGenLinGroup (Fin 2) F) :
     KPLiteralRaw.rationalLift F ζ hζ γ = rational F ζ hζ γ := by
   have hm : Matrix.ProjGenLinGroup.mk (Quotient.out γ) = γ := Quotient.out_eq' γ
@@ -153,7 +76,7 @@ private theorem open_cell_term (s : ℂ) (v : V) (g : G) (t : F) (x : Adeles) :
     intro x hx
     exact ⟨subset_closure hx.1, hx.2⟩
   let C := (fun x : Adeles => KPGlobalTorusFunctionData.N F ζ hζ x * g) '' K
-  have hN := actual_upper_root_continuous F ζ hζ
+  have hN := KPGlobalTorusFunctionData.continuous_N F ζ hζ
   have hA : IsCompact C := hK.image (hN.mul continuous_const)
   obtain ⟨b, hb, hbound⟩ := literal_compact_majorants F ζ hζ A U s hs v C hA
   let h : Adeles → ℂ := fun x => (A.sourceFlat s v).val

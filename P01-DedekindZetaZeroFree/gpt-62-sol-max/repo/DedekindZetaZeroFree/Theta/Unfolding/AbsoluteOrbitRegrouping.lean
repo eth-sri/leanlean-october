@@ -20,32 +20,35 @@ def groupedOrbitTerm {N : TraceHaarTransport R} (C : JointUpperVanishingSources 
     (Z : ℝ) (hZ : 0 < Z) (ξ : ThetaReflectionData.Frequency R.A) : ℂ :=
   ∑' γ : ThetaReflectionData.rationalGamma R.A, orbitTerm R C v m b Z hZ (ξ, γ)
 
-theorem orbit_fiber_norm_summable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (Z : ℝ) (hZ : 0 < Z)
+section
+
+variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
+  (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A)
+  (b : Bool) (Z : ℝ) (hZ : 0 < Z)
+include hx
+
+theorem orbit_fiber_norm_summable
     (ξ : ThetaReflectionData.Frequency R.A) :
     Summable (fun γ : ThetaReflectionData.rationalGamma R.A =>
       ‖orbitTerm R C v m b Z hZ (ξ, γ)‖) :=
   ((hx v m b Z hZ).2.2.1).prod_factor ξ
 
-theorem groupedOrbitTerm_norm_summable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (Z : ℝ) (hZ : 0 < Z) :
+theorem groupedOrbitTerm_norm_summable :
     Summable (fun ξ => ‖groupedOrbitTerm R C v m b Z hZ ξ‖) := by
   have hn := (hx v m b Z hZ).2.2.1
   have hg := hn.prod
   exact hg.of_nonneg_of_le (fun _ => norm_nonneg _) (fun ξ =>
     norm_tsum_le_tsum_norm (orbit_fiber_norm_summable R C hx v m b Z hZ ξ))
 
-theorem groupedOrbitTerm_hasSum {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
-    (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (Z : ℝ) (hZ : 0 < Z) :
+theorem groupedOrbitTerm_hasSum :
     HasSum (groupedOrbitTerm R C v m b Z hZ)
       (∑' i : OrbitIndex R, orbitTerm R C v m b Z hZ i) := by
   have hn := (hx v m b Z hZ).2.2.1
   have hg := groupedOrbitTerm_norm_summable R C hx v m b Z hZ
   convert hg.of_norm.hasSum using 1
   exact hn.of_norm.tsum_prod
+
+end
 
 theorem reverse_orbit_evaluation_of_fiber_identity {N : TraceHaarTransport R}
     (C : JointUpperVanishingSources R N) (hx : AbsoluteExtraction R C) (v : R.A.UnitQuotient)

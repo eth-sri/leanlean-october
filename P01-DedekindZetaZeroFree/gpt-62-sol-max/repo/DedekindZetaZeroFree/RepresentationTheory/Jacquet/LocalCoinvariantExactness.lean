@@ -33,7 +33,7 @@ private lemma compact_bound {K : Type*} [Field K] [ValuativeRel K] [TopologicalS
     apply Set.mem_iUnion.mpr
     refine ⟨Units.mk0 (max (v x) 1)
       (ne_of_gt (lt_of_lt_of_le zero_lt_one (le_max_right _ _))), ?_⟩
-    exact le_max_left (v x) 1
+    simp
   · intro a b
     refine ⟨if a ≤ b then b else a, ?_, ?_⟩
     · intro x hx

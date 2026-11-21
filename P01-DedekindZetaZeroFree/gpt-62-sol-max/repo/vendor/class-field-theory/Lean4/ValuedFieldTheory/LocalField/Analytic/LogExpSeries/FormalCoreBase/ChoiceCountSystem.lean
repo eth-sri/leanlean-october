@@ -146,15 +146,18 @@ theorem formalLogOnePlusProductArgumentBasicFactor_total_indicator
       finsupp_fin_two_single_right_ne_mixed.symm
     simp [hmixed, hmixedLeft, hmixedRight]
 
+section
+
+variable {q : ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)} (hbasic : ∀ i ∈ Finset.range q,
+      formalLogOnePlusProductArgumentBasicFactor (l i))
+include hbasic
+
 /--
 Establishes the identity `(∑ i ∈ Finset.range q, l i (0 : Fin 2)) =
 formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l`.
 -/
-theorem formalLogOnePlusProductArgument_leftCoord_sum_eq_choiceCounts
-    {q : ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_leftCoord_sum_eq_choiceCounts :
     (∑ i ∈ Finset.range q, l i (0 : Fin 2)) =
       formalLogOnePlusProductArgumentLeftChoiceCount q l +
         formalLogOnePlusProductArgumentMixedChoiceCount q l := by
@@ -169,10 +172,7 @@ Establishes the identity `(∑ i ∈ Finset.range q, l i (1 : Fin 2)) =
 formalLogOnePlusProductArgumentRightChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l`.
 -/
-theorem formalLogOnePlusProductArgument_rightCoord_sum_eq_choiceCounts
-    {q : ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_rightCoord_sum_eq_choiceCounts :
     (∑ i ∈ Finset.range q, l i (1 : Fin 2)) =
       formalLogOnePlusProductArgumentRightChoiceCount q l +
         formalLogOnePlusProductArgumentMixedChoiceCount q l := by
@@ -187,10 +187,7 @@ Establishes the identity `formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentRightChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = q`.
 -/
-theorem formalLogOnePlusProductArgument_totalChoiceCount_eq
-    {q : ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_totalChoiceCount_eq :
     formalLogOnePlusProductArgumentLeftChoiceCount q l +
         formalLogOnePlusProductArgumentRightChoiceCount q l +
       formalLogOnePlusProductArgumentMixedChoiceCount q l =
@@ -214,15 +211,20 @@ theorem formalLogOnePlusProductArgument_totalChoiceCount_eq
         (hbasic i hi)
     _ = q := by simp
 
+end
+
+section
+
+variable {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
+  (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e) (hbasic : ∀ i ∈ Finset.range q,
+      formalLogOnePlusProductArgumentBasicFactor (l i))
+include hl hbasic
+
 /--
 Establishes the identity `formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = e (0 : Fin 2)`.
 -/
-theorem formalLogOnePlusProductArgument_choiceCounts_left_add_mixed_eq
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_choiceCounts_left_add_mixed_eq :
     formalLogOnePlusProductArgumentLeftChoiceCount q l +
       formalLogOnePlusProductArgumentMixedChoiceCount q l =
         e (0 : Fin 2) := by
@@ -235,11 +237,7 @@ theorem formalLogOnePlusProductArgument_choiceCounts_left_add_mixed_eq
 Establishes the identity `formalLogOnePlusProductArgumentRightChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = e (1 : Fin 2)`.
 -/
-theorem formalLogOnePlusProductArgument_choiceCounts_right_add_mixed_eq
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_choiceCounts_right_add_mixed_eq :
     formalLogOnePlusProductArgumentRightChoiceCount q l +
       formalLogOnePlusProductArgumentMixedChoiceCount q l =
         e (1 : Fin 2) := by
@@ -257,11 +255,7 @@ formalLogOnePlusProductArgumentLeftChoiceCount q l +
 formalLogOnePlusProductArgumentRightChoiceCount q l +
 formalLogOnePlusProductArgumentMixedChoiceCount q l = q`.
 -/
-theorem formalLogOnePlusProductArgument_choiceCounts_system
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ Finset.finsuppAntidiag (Finset.range q) e)
-    (hbasic : ∀ i ∈ Finset.range q,
-      formalLogOnePlusProductArgumentBasicFactor (l i)) :
+theorem formalLogOnePlusProductArgument_choiceCounts_system :
     formalLogOnePlusProductArgumentLeftChoiceCount q l +
           formalLogOnePlusProductArgumentMixedChoiceCount q l =
         e (0 : Fin 2) ∧
@@ -278,6 +272,8 @@ theorem formalLogOnePlusProductArgument_choiceCounts_system
       formalLogOnePlusProductArgument_choiceCounts_right_add_mixed_eq
         hl hbasic,
       formalLogOnePlusProductArgument_totalChoiceCount_eq hbasic⟩
+
+end
 
 
 end MultiplicativeIntegerValuation

@@ -140,35 +140,10 @@ open KPMsResidualTailRestoration.SharpConstantTerm
 
 end Normalization
 
-section CuspDescent
-set_option autoImplicit false
-variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
-variable {C : KPMsRationalCompactCrossPairing.ModelData F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable {A : RawCompactComparison F ζ hζ C D R P H}
-variable {U : KPMsRationalCompactCrossPairing.Level F ζ hζ}
-open KPMsClearedTruncationL2
-open KPMsResidualTailRestoration.SharpConstantTerm
 
-include C D U
 
-end CuspDescent
 
-section Patch
-variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
-variable {C : KPMsRationalCompactCrossPairing.ModelData F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ C D R P H)
-variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-open KPMsClearedTruncationL2
 
-end Patch
 
 end DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof
 

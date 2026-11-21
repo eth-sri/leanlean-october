@@ -178,34 +178,7 @@ theorem mobius_divisor_coprime_columns (C : Context Q)
   rw [← hmult]
   exact sup_le_sup_right (Ideal.dvd_iff_le.mp hediv) u
 
-theorem finite_coprime_sum_bound
-    (R U V : Finset (Ideal (𝓞 F)))
-    (hU : ∀ u ∈ U, u ≠ ⊥) (hV : ∀ v ∈ V, v ≠ ⊥)
-    (A B : ℝ) (hA : 0 ≤ A) (hB : 0 ≤ B)
-    (hUA : ∀ z : Ideal (𝓞 F) → ℂ, (∑ r ∈ R, ‖∑ u ∈ U, z u * (Q.χ u) r‖^2) ≤ A * ∑ u ∈ U, ‖z u‖^2)
-    (hVB : ∀ z : Ideal (𝓞 F) → ℂ, (∑ r ∈ R, ‖∑ v ∈ V, z v * (Q.χ v) r‖^2) ≤ B * ∑ v ∈ V, ‖z v‖^2)
-    (x y : Ideal (𝓞 F) → ℂ) :
-    (∑ r ∈ R, ‖∑ u ∈ U, ∑ v ∈ V, if u ⊔ v = ⊤ then
-      x u * star (y v) * (Q.χ u) r * star ((Q.χ v) r) else 0‖) ≤
-      Real.sqrt (A*B) * Real.sqrt
-        ((∑ u ∈ U, (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors u).toFinset.card * ‖x u‖^2) *
-         (∑ v ∈ V, (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors v).toFinset.card * ‖y v‖^2)) := by
-  have h := Sieve.DivisorSeparation.rectangle_operator_bound Q
-    {⊤} {⊤} R U V hU hV A B hA hB
-    (by intro d hd z; have hd' : d = ⊤ := Finset.mem_singleton.mp hd; subst d; simpa using hUA z)
-    (by intro d hd z; have hd' : d = ⊤ := Finset.mem_singleton.mp hd; subst d; simpa using hVB z) x y
-  simp only [Sieve.DivisorSeparation.idealDivisorRectangle, Finset.sum_singleton,
-    Finset.card_singleton, Nat.cast_one, one_mul] at h
-  have htop : ∀ u : Ideal (𝓞 F), (⊤ : Ideal (𝓞 F)) ∣ u := fun u =>
-    by simpa only [← Ideal.one_eq_top] using one_dvd u
-  have hfilter : ∀ u : Ideal (𝓞 F), ({⊤} : Finset (Ideal (𝓞 F))).filter (fun d => d ∣ u) = {⊤} := by
-    intro u; apply Finset.filter_eq_self.mpr
-    intro d hd; rw [Finset.mem_singleton.mp hd]; exact htop u
-  simp only [htop, and_true, hfilter, Finset.card_singleton,
-    Nat.cast_one, mul_one, starRingEnd_apply] at h
-  rw [mul_assoc (A*B)] at h
-  have hs := Real.le_sqrt_of_sq_le h
-  simpa only [Real.sqrt_mul (mul_nonneg hA hB)] using hs
+export SupportedRows (finite_coprime_sum_bound)
 
 theorem supported_factor_coprime_columns (C : Context Q)
     (t : Ideal (𝓞 F)) (ht : t ∈ squarefreeBadPool c) :

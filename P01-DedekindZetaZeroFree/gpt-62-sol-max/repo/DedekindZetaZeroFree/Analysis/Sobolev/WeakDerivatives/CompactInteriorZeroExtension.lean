@@ -109,50 +109,6 @@ private theorem compactZeroExtension_ae_eq {n r : ℕ} {Ω : Opens (E n)}
   · simp [compactZeroExtension, hxK]
   · simp [compactZeroExtension, hxK, hx ⟨hxΩ, hxK⟩]
 
-theorem compactZeroExtension_properties {n r : ℕ} {Ω : Opens (E n)}
-    {K : Set (E n)} {f : E n → V r} {g : Fin n → E n → V r}
-    (hK : IsCompact K) (hKΩ : K ⊆ (Ω : Set (E n)))
-    (hfg : WeakFirst Ω f g)
-    (hf : ∀ᵐ x ∂volume.restrict (Ω : Set (E n)),
-      x ∈ (Ω : Set (E n)) \ K → f x = 0) :
-    let F := compactZeroExtension K f
-    let G := fun j => compactZeroExtension K (g j)
-    MemLp F 2 volume ∧
-    (∀ j, MemLp (G j) 2 volume) ∧
-    Integrable F volume ∧
-    (∀ j, Integrable (G j) volume) ∧
-    (∀ x, x ∉ K → F x = 0) ∧
-    (∀ j x, x ∉ K → G j x = 0) ∧
-    tsupport F ⊆ K ∧
-    (∀ j, tsupport (G j) ⊆ K) ∧
-    F =ᵐ[volume.restrict (Ω : Set (E n))] f ∧
-    (∀ j, G j =ᵐ[volume.restrict (Ω : Set (E n))] g j) := by
-  haveI : IsFiniteMeasure (volume.restrict K) := isFiniteMeasure_restrict.2 hK.measure_ne_top
-  have hFmem : MemLp (compactZeroExtension K f) 2 volume :=
-    compactZeroExtension_memLp hK hKΩ hfg.section_locallyL2
-  have hGmem : ∀ j, MemLp (compactZeroExtension K (g j)) 2 volume := fun j =>
-    compactZeroExtension_memLp hK hKΩ (hfg.derivative_locallyL2 j)
-  have hFint : Integrable (compactZeroExtension K f) volume :=
-    (integrableOn_iff_integrable_of_support_subset
-      (Set.support_indicator_subset : Function.support (compactZeroExtension K f) ⊆ K)).mp
-      ((hFmem.mono_measure Measure.restrict_le_self).integrable (by norm_num))
-  have hGint : ∀ j, Integrable (compactZeroExtension K (g j)) volume := fun j =>
-    (integrableOn_iff_integrable_of_support_subset
-      (Set.support_indicator_subset : Function.support (compactZeroExtension K (g j)) ⊆ K)).mp
-      (((hGmem j).mono_measure Measure.restrict_le_self).integrable (by norm_num))
-  have hFzero : ∀ x, x ∉ K → compactZeroExtension K f x = 0 := fun x hx =>
-    Set.indicator_of_notMem hx f
-  have hGzero : ∀ j x, x ∉ K → compactZeroExtension K (g j) x = 0 := fun j x hx =>
-    Set.indicator_of_notMem hx (g j)
-  have hFtsupp : tsupport (compactZeroExtension K f) ⊆ K :=
-    closure_minimal Set.support_indicator_subset hK.isClosed
-  have hGtsupp : ∀ j, tsupport (compactZeroExtension K (g j)) ⊆ K := fun j =>
-    closure_minimal Set.support_indicator_subset hK.isClosed
-  have hFae : compactZeroExtension K f =ᵐ[volume.restrict (Ω : Set (E n))] f :=
-    compactZeroExtension_ae_eq hf
-  have hGae : ∀ j, compactZeroExtension K (g j) =ᵐ[volume.restrict (Ω : Set (E n))] g j :=
-    fun j => compactZeroExtension_ae_eq (weakFirst_zero_off_compact hK hKΩ hfg hf j)
-  exact ⟨hFmem, hGmem, hFint, hGint, hFzero, hGzero, hFtsupp, hGtsupp, hFae, hGae⟩
 
 theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
     {K : Set (E n)} {f : E n → V r} {g : Fin n → E n → V r}
@@ -304,25 +260,6 @@ theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
   rw [← hfinalF, ← hfinalG]
   exact hmain
 
-theorem compactZeroExtension_weakFirst {n r : ℕ} {Ω : Opens (E n)}
-    {K : Set (E n)} {f : E n → V r} {g : Fin n → E n → V r}
-    (hK : IsCompact K) (hKΩ : K ⊆ (Ω : Set (E n)))
-    (hfg : WeakFirst Ω f g)
-    (hf : ∀ᵐ x ∂volume.restrict (Ω : Set (E n)),
-      x ∈ (Ω : Set (E n)) \ K → f x = 0) :
-    WeakFirst (⊤ : Opens (E n)) (compactZeroExtension K f)
-      (fun j => compactZeroExtension K (g j)) := by
-  obtain ⟨hFmem, hGmem, -, -, -, -, -, -, -, -⟩ :=
-    compactZeroExtension_properties hK hKΩ hfg hf
-  refine ⟨?_, ?_, ?_⟩
-  · exact ⟨by simpa only [Opens.coe_top, Measure.restrict_univ] using hFmem.aestronglyMeasurable,
-      fun L _ _ => hFmem.mono_measure Measure.restrict_le_self⟩
-  · intro j
-    exact ⟨by simpa only [Opens.coe_top, Measure.restrict_univ] using (hGmem j).aestronglyMeasurable,
-      fun L _ _ => (hGmem j).mono_measure Measure.restrict_le_self⟩
-  · intro j ψ a
-    have h := compactZeroExtension_weak_identity hK hKΩ hfg hf (fun y => ψ y) ψ.contDiff' j a
-    simpa using h.2.2
 
 end DedekindZetaZeroFree.KPCompactInteriorH1
 

@@ -39,11 +39,14 @@ variable (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
 
+section
+
+variable (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+include n hnK hmu
+
 /-- The Galois group of the maximal exponent-`n` Kummer extension is
 canonically equivalent to the local power-class group. -/
-noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient :
     Gal(kummerRadicalExtension (K := K) (Omega := Omega) n
         (KummerTheory.maximalKummerSubgroup K n).1/K) ≃*
       Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
@@ -65,9 +68,7 @@ noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient
 
 /-- Local reciprocity and Kummer duality identify the norm quotient of the
 maximal Kummer extension with the local power-class group. -/
-noncomputable def maximalKummerNormQuotientEquivPowerQuotient
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+noncomputable def maximalKummerNormQuotientEquivPowerQuotient :
     let E := kummerRadicalExtension (K := K) (Omega := Omega) n
       (KummerTheory.maximalKummerSubgroup K n).1
     NormQuotient K E ≃* Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
@@ -91,9 +92,7 @@ noncomputable def maximalKummerNormQuotientEquivPowerQuotient
 
 /-- Every `n`-th power is a norm from the maximal exponent-`n` Kummer
 extension. -/
-theorem powMonoidHom_range_le_maximalKummerNormSubgroup
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+theorem powMonoidHom_range_le_maximalKummerNormSubgroup :
     let E := kummerRadicalExtension (K := K) (Omega := Omega) n
       (KummerTheory.maximalKummerSubgroup K n).1
     (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range ≤ localNormSubgroup K E := by
@@ -127,9 +126,7 @@ theorem powMonoidHom_range_le_maximalKummerNormSubgroup
 
 /-- If the base field contains the `n`-th roots of unity, the norm subgroup
 of the maximal exponent-`n` Kummer extension is exactly `Kˣⁿ`. -/
-theorem maximalKummerNormSubgroup_eq_powMonoidHom_range
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
+theorem maximalKummerNormSubgroup_eq_powMonoidHom_range :
     let E := kummerRadicalExtension (K := K) (Omega := Omega) n
       (KummerTheory.maximalKummerSubgroup K n).1
     localNormSubgroup K E = (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
@@ -170,6 +167,8 @@ theorem maximalKummerNormSubgroup_eq_powMonoidHom_range
     rw [hindex] at hindexLt
     exact (Nat.lt_irrefl _ hindexLt)
   · exact hle
+
+end
 
 end LocalClassFieldTheory
 

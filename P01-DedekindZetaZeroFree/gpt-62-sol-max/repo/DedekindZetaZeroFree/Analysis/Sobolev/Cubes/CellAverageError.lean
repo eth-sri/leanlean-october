@@ -39,8 +39,7 @@ theorem cube_isCompact (n : ℕ) (a : ℝ) : IsCompact (cube n a) := by
   constructor
   · intro hx
     exact ⟨e x, hx, e.symm_apply_apply x⟩
-  · rintro ⟨y, hy, rfl⟩
-    exact hy
+  aesop
 
 theorem cell_measurable (n : ℕ) (a : ℝ) (m : ℕ) (i : CellIndex n m) :
     MeasurableSet (cell n a m i) := by
@@ -61,33 +60,33 @@ theorem cell_measure_ne_top (n : ℕ) (a : ℝ) (m : ℕ) (i : CellIndex n m) :
 private theorem cell_subset_cube (n : ℕ) (a : ℝ) (ha : 0 < a)
     (m : ℕ) (hm : 1 ≤ m) (i : CellIndex n m) : cell n a m i ⊆ cube n a := by
   intro x hx j
-  have hmR : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
-  have hs : 0 < side a m := div_pos (by linarith) hmR
+  have hmR : (0 : ℝ) < m := by positivity
+  have hs := div_pos (by linarith) hmR
   have hmul : (m : ℝ) * side a m = 2 * a := by
     dsimp [side]
     field_simp
-  have hi0 : (0 : ℝ) ≤ (i j : ℝ) := by positivity
+  
   have hi1 : (i j : ℝ) + 1 ≤ m := by exact_mod_cast (i j).is_lt
   constructor
   · exact le_trans (by nlinarith) (hx j).1
   · have hh := (hx j).2
-    nlinarith [mul_le_mul_of_nonneg_right hi1 (le_of_lt hs)]
+    nlinarith
 
 private theorem cells_disjoint (n : ℕ) (a : ℝ) (ha : 0 < a) (m : ℕ) (hm : 1 ≤ m) :
     Pairwise (fun i j : CellIndex n m => Disjoint (cell n a m i) (cell n a m j)) := by
   intro i k hik
   obtain ⟨j, hj⟩ := Function.ne_iff.mp hik
-  have hmR : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
-  have hs : 0 < side a m := div_pos (by linarith) hmR
+  have hmR : (0 : ℝ) < m := by positivity
+  have hs := div_pos (by linarith) hmR
   apply Set.disjoint_left.mpr
   intro x hxi hxk
   have hi := hxi j
   have hk := hxk j
   rcases lt_or_gt_of_ne hj with h | h
   · have h' : (i j : ℝ) + 1 ≤ (k j : ℝ) := by exact_mod_cast h
-    nlinarith [mul_le_mul_of_nonneg_right h' hs.le]
+    nlinarith
   · have h' : (k j : ℝ) + 1 ≤ (i j : ℝ) := by exact_mod_cast h
-    nlinarith [mul_le_mul_of_nonneg_right h' hs.le]
+    nlinarith
 
 private theorem interval_cell (a : ℝ) (ha : 0 < a) (m : ℕ) (hm : 1 ≤ m)
     (x : ℝ) (hx : -a ≤ x ∧ x < a) :
@@ -270,33 +269,6 @@ private theorem norm_toLp_sq {α : Type*} [MeasurableSpace α] {μ : Measure α}
   filter_upwards [hf.coeFn_toLp] with x hx
   rw [hx, real_inner_self_eq_norm_sq]
 
-private theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    [IsFiniteMeasure μ] {f : α → ℂ} (hf : MemLp f 2 μ) :
-    ‖∫ x, f x ∂μ‖ ^ 2 ≤ (μ Set.univ).toReal * ∫ x, ‖f x‖ ^ 2 ∂μ := by
-  let e : Lp ℂ 2 μ := indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ _) 1
-  have he : ‖e‖ ^ 2 = (μ Set.univ).toReal := by
-    rw [← real_inner_self_eq_norm_sq, L2.inner_def]
-    have hcoe := (indicatorConstLp_coeFn (p := 2) (hs := MeasurableSet.univ)
-      (hμs := measure_ne_top μ _) (c := (1 : ℂ)))
-    simp only [Set.indicator_univ, Pi.one_apply] at hcoe
-    calc
-      (∫ x, inner ℝ (e x) (e x) ∂μ) = ∫ x, (1 : ℝ) ∂μ := by
-        apply integral_congr_ae
-        filter_upwards [hcoe] with x hx
-        change inner ℝ (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ _) (1 : ℂ) x)
-          (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ _) (1 : ℂ) x) = 1
-        rw [hx]
-        norm_num [real_inner_self_eq_norm_sq]
-      _ = _ := by simp [Measure.real]
-  have hi : inner ℂ e (hf.toLp f) = ∫ x, f x ∂μ := by
-    rw [L2.inner_indicatorConstLp_one MeasurableSet.univ (measure_ne_top μ _),
-      Measure.restrict_univ]
-    exact integral_congr_ae hf.coeFn_toLp
-  calc
-    ‖∫ x, f x ∂μ‖ ^ 2 = ‖inner ℂ e (hf.toLp f)‖ ^ 2 := by rw [hi]
-    _ ≤ (‖e‖ * ‖hf.toLp f‖) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (norm_inner_le_norm e _ ) 2
-    _ = (μ Set.univ).toReal * ∫ x, ‖f x‖ ^ 2 ∂μ := by
-      rw [mul_pow, he, norm_toLp_sq hf]
 private theorem interval_pair_bound (l r : ℝ) (hlr : l < r)
     (f : ℝ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (x y : ℝ)
     (hx : x ∈ Set.Icc l r) (hy : y ∈ Set.Icc l r) :
@@ -313,7 +285,7 @@ private theorem interval_pair_bound (l r : ℝ) (hlr : l < r)
     apply (memLp_two_iff_integrable_sq_norm hd.aestronglyMeasurable).2
     exact (show Integrable (fun t => ‖deriv f t‖ ^ 2) (volume.restrict (Set.Icc l r)) from hi).mono_measure
       (Measure.restrict_mono hsub le_rfl)
-  have hb := integral_sq_bound hmem
+  have hb := KPCubeAverageError.integral_sq_bound hmem
   have hftc : ∫ t in Set.Ioc y x, deriv f t = f x - f y := by
     rw [← intervalIntegral.integral_of_le hxy]
     exact intervalIntegral.integral_deriv_eq_sub

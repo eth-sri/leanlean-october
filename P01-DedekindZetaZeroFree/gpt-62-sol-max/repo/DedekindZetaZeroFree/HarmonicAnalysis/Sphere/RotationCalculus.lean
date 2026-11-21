@@ -51,8 +51,7 @@ private theorem normalize_smooth : ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambien
 private theorem restrict_smooth (G : Ambient → ℂ)
     (hG : ContDiffOn ℝ (⊤ : ℕ∞) G {x | x ≠ 0}) :
     IsSphereSmooth (fun x : Sphere => G x) := by
-  have h := hG.comp normalize_smooth (fun x hx => by
-    exact smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx)
+  have h := hG.comp normalize_smooth (fun x hx => smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx)
   apply h.congr
   intro x hx
   simp only [radialExtension, dif_pos (show x ≠ 0 from hx), Function.comp_apply]

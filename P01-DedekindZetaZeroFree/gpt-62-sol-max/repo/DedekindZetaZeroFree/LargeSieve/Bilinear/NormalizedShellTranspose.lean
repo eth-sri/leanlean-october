@@ -40,7 +40,7 @@ private lemma transpose_admissible
     (hR : R ⊆ paperShell F q B ∨ (B = 1 ∧ R ⊆ {⊤})) :
     R ⊆ idealAdmissibleFinset F c (2 * B) ∧
       ∀ a ∈ R, Squarefree a ∧ a ⊔ q = ⊤ := by
-  have hc : q ≤ c := Ideal.dvd_iff_le.mp hcq
+  have hc := Ideal.dvd_iff_le.mp hcq
   rcases hR with hR | ⟨rfl, hR⟩
   · have ha : ∀ a ∈ R, Squarefree a ∧ a ⊔ q = ⊤ ∧
         (Ideal.absNorm a : ℝ) ≤ 2 * B := by

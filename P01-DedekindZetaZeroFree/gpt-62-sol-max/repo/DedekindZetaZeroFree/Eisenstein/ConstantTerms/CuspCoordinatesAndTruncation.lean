@@ -137,7 +137,6 @@ structure Continuation (T) where
 variable {F ζ hζ C D R P H A U}
 variable {T} (B : Continuation F ζ hζ C D R P H A U T)
 
-def g (f : ℂ → Stage F ζ hζ D U T) (s : ℂ) := B.clearedM s (f s)
 
 abbrev Atlas := H.atlas (A.atlasLevel U)
 abbrev Cusp := KPMsFixedHaarDisintegration.CuspIndex (Atlas (A := A) (U := U))

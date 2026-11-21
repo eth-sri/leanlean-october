@@ -67,10 +67,13 @@ variable {R Q P : Type} [CommRing R]
     (fun q : Q => Ares.ρ q)
     (fun p : P => A.ρ p) (fun _ => rfl)
 
+section
+
+variable (e : Q ≃* P) (A : Rep R P) (g : Q)
+
 /-- Reindexing along a group isomorphism preserves the cyclic `H⁰`
 short complex. -/
-def normHomCompSubResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+def normHomCompSubResEquivIso :
     Rep.FiniteCyclicGroup.normHomCompSub
         (Rep.res e.toMonoidHom A) g ≅
       Rep.FiniteCyclicGroup.normHomCompSub A (e g) := by
@@ -83,8 +86,7 @@ def normHomCompSubResEquivIso
 
 /-- Reindexing along a group isomorphism preserves the cyclic `H⁻¹`
 short complex. -/
-def subCompNormHomResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+def subCompNormHomResEquivIso :
     Rep.FiniteCyclicGroup.subCompNormHom
         (Rep.res e.toMonoidHom A) g ≅
       Rep.FiniteCyclicGroup.subCompNormHom A (e g) := by
@@ -96,20 +98,20 @@ def subCompNormHomResEquivIso
   · simpa [Ares, i] using (res_norm_eq e A).symm
 
 /-- Homology-level group-reindexing comparison in degree zero. -/
-def normHomCompSubHomologyResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+def normHomCompSubHomologyResEquivIso :
     (Rep.FiniteCyclicGroup.normHomCompSub
         (Rep.res e.toMonoidHom A) g).homology ≅
       (Rep.FiniteCyclicGroup.normHomCompSub A (e g)).homology :=
   ShortComplex.homologyMapIso (normHomCompSubResEquivIso e A g)
 
 /-- Homology-level group-reindexing comparison in degree minus one. -/
-def subCompNormHomHomologyResEquivIso
-    (e : Q ≃* P) (A : Rep R P) (g : Q) :
+def subCompNormHomHomologyResEquivIso :
     (Rep.FiniteCyclicGroup.subCompNormHom
         (Rep.res e.toMonoidHom A) g).homology ≅
       (Rep.FiniteCyclicGroup.subCompNormHom A (e g)).homology :=
   ShortComplex.homologyMapIso (subCompNormHomResEquivIso e A g)
+
+end
 
 end GroupEquiv
 
@@ -117,10 +119,14 @@ section RepresentationIso
 
 variable {R Q : Type} [CommRing R] [CommGroup Q] [Fintype Q]
 
+section
+
+variable {M N : Rep R Q} (e : M ≅ N) (g : Q)
+include e
+
 /-- Isomorphic representations have isomorphic cyclic `H⁰` short
 complexes. -/
-def normHomCompSubIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+def normHomCompSubIsoOfRepIso :
     Rep.FiniteCyclicGroup.normHomCompSub M g ≅
       Rep.FiniteCyclicGroup.normHomCompSub N g := by
   let i : ModuleCat.of R M.V ≅ ModuleCat.of R N.V :=
@@ -142,8 +148,7 @@ def normHomCompSubIsoOfRepIso
 
 /-- Isomorphic representations have isomorphic cyclic `H⁻¹` short
 complexes. -/
-def subCompNormHomIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+def subCompNormHomIsoOfRepIso :
     Rep.FiniteCyclicGroup.subCompNormHom M g ≅
       Rep.FiniteCyclicGroup.subCompNormHom N g := by
   let i : ModuleCat.of R M.V ≅ ModuleCat.of R N.V :=
@@ -164,19 +169,19 @@ def subCompNormHomIsoOfRepIso
     simpa [i, Rep.norm] using h
 
 /-- Homology-level representation-isomorphism comparison in degree zero. -/
-def normHomCompSubHomologyIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+def normHomCompSubHomologyIsoOfRepIso :
     (Rep.FiniteCyclicGroup.normHomCompSub M g).homology ≅
       (Rep.FiniteCyclicGroup.normHomCompSub N g).homology :=
   ShortComplex.homologyMapIso (normHomCompSubIsoOfRepIso e g)
 
 /-- Homology-level representation-isomorphism comparison in degree
 minus one. -/
-def subCompNormHomHomologyIsoOfRepIso
-    {M N : Rep R Q} (e : M ≅ N) (g : Q) :
+def subCompNormHomHomologyIsoOfRepIso :
     (Rep.FiniteCyclicGroup.subCompNormHom M g).homology ≅
       (Rep.FiniteCyclicGroup.subCompNormHom N g).homology :=
   ShortComplex.homologyMapIso (subCompNormHomIsoOfRepIso e g)
+
+end
 
 end RepresentationIso
 

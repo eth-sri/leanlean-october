@@ -119,7 +119,7 @@ private theorem torus_lift_mem (z : Circle) :
     (⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding (TauCeti.SU2.torusHom z)),
       ⟨TauCeti.SU2.torusHom z, rfl⟩⟩ : compactSubgroup) ∈ compactDiagonalTorus := by
   refine ⟨Circle.toUnits z, (Circle.toUnits z)⁻¹, ?_, ?_, ?_⟩
-  · simpa using Circle.norm_coe z
+  · simp
   · simp [Units.val_inv_eq_inv_val, norm_inv, Circle.norm_coe]
   · congr 1
     apply Units.ext

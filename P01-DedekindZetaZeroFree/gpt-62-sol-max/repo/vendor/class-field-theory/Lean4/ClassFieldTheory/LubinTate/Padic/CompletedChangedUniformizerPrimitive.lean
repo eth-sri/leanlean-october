@@ -37,11 +37,14 @@ open LocalFieldTheory.DiscreteValuationField
 open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 open ValuationTheory.DiscreteValuationField
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
+include u n
+
 /-- The integral primitive polynomial for the changed uniformizer `u * p`
 over the completed-unramified Witt valuation ring. -/
-noncomputable def padicChangedCompletedPrimitivePolynomialInteger
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicChangedCompletedPrimitivePolynomialInteger :
     Polynomial
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring :=
   (standardLubinTatePrimitivePolynomial
@@ -53,9 +56,7 @@ noncomputable def padicChangedCompletedPrimitivePolynomialInteger
 
 /-- The field-valued changed primitive polynomial after extension from
 `ℚ_[p]` to the completed-unramified fraction field. -/
-noncomputable def padicChangedCompletedPrimitivePolynomial
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicChangedCompletedPrimitivePolynomial :
     Polynomial (padicCompletedUnramifiedField p) :=
   (standardLubinTatePrimitivePolynomialOverField
       (padicLocalField p)
@@ -66,9 +67,7 @@ noncomputable def padicChangedCompletedPrimitivePolynomial
 
 /-- Passing the integral changed primitive polynomial to the fraction field
 gives the field-valued changed primitive polynomial. -/
-theorem padicChangedCompletedPrimitivePolynomialInteger_map
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedCompletedPrimitivePolynomialInteger_map :
     (padicChangedCompletedPrimitivePolynomialInteger p u n).map
         (algebraMap
           (padicCompletedUnramifiedCompleteDVF p).valuationSubring
@@ -98,9 +97,7 @@ theorem padicChangedCompletedPrimitivePolynomialInteger_map
   rw [Polynomial.map_map, Polynomial.map_map, hmaps]
 
 /-- The integral changed primitive polynomial is monic. -/
-theorem padicChangedCompletedPrimitivePolynomialInteger_monic
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedCompletedPrimitivePolynomialInteger_monic :
     (padicChangedCompletedPrimitivePolynomialInteger p u n).Monic :=
   (standardLubinTatePrimitivePolynomial_monic
     (padicLocalField p)
@@ -109,9 +106,7 @@ theorem padicChangedCompletedPrimitivePolynomialInteger_monic
       (padicIntEquivValuationSubring p (p : ℤ_[p])) u) n).map _
 
 /-- The field-valued changed primitive polynomial is monic. -/
-theorem padicChangedCompletedPrimitivePolynomial_monic
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedCompletedPrimitivePolynomial_monic :
     (padicChangedCompletedPrimitivePolynomial p u n).Monic :=
   (standardLubinTatePrimitivePolynomialOverField_monic
     (padicLocalField p)
@@ -121,9 +116,7 @@ theorem padicChangedCompletedPrimitivePolynomial_monic
 
 /-- The integral changed primitive polynomial has degree
 `(p - 1) * p ^ n`. -/
-theorem padicChangedCompletedPrimitivePolynomialInteger_natDegree
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedCompletedPrimitivePolynomialInteger_natDegree :
     (padicChangedCompletedPrimitivePolynomialInteger p u n).natDegree =
       (p - 1) * p ^ n := by
   have hcard :
@@ -139,9 +132,7 @@ theorem padicChangedCompletedPrimitivePolynomialInteger_natDegree
     standardLubinTatePrimitivePolynomial_natDegree, hcard]
 
 /-- The changed primitive polynomial has degree `(p - 1) * p ^ n`. -/
-theorem padicChangedCompletedPrimitivePolynomial_natDegree
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedCompletedPrimitivePolynomial_natDegree :
     (padicChangedCompletedPrimitivePolynomial p u n).natDegree =
       (p - 1) * p ^ n := by
   have hcard :
@@ -155,6 +146,8 @@ theorem padicChangedCompletedPrimitivePolynomial_natDegree
         (padicLocalField p)
         (padicIntEquivValuationSubring p (p : ℤ_[p])) u) n).natDegree_map,
     standardLubinTatePrimitivePolynomialOverField_natDegree, hcard]
+
+end
 
 /-- The image of the changed uniformizer `u * p` is a uniformizer of the
 completed-unramified coefficient field. -/
@@ -193,12 +186,15 @@ theorem padicChangedCompletedUniformizer_isUniformizer
       (u : (padicLocalField p).valuationSubring) π
   exact hmul.symm ▸ (associated_unit_mul_right πE uE huE)
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
+include u
+
 /-- The integral changed primitive polynomial is weakly Eisenstein after
 base change to the completed-unramified valuation ring. -/
 theorem
-    padicChangedCompletedPrimitivePolynomialInteger_isWeaklyEisensteinAt
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+    padicChangedCompletedPrimitivePolynomialInteger_isWeaklyEisensteinAt :
     (padicChangedCompletedPrimitivePolynomialInteger p u n).IsWeaklyEisensteinAt
       (padicCompletedUnramifiedCompleteDVF p).maximalIdeal := by
   rw [← padicCompletedUnramifiedIntegerMap_map_maximalIdeal p]
@@ -211,9 +207,7 @@ theorem
 
 /-- The integral changed primitive polynomial is genuinely Eisenstein over
 the completed-unramified valuation ring. -/
-theorem padicChangedCompletedPrimitivePolynomialInteger_isEisensteinAt
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedCompletedPrimitivePolynomialInteger_isEisensteinAt :
     (padicChangedCompletedPrimitivePolynomialInteger p u n).IsEisensteinAt
       (padicCompletedUnramifiedCompleteDVF p).maximalIdeal := by
   let target := padicCompletedUnramifiedCompleteDVF p
@@ -247,9 +241,7 @@ theorem padicChangedCompletedPrimitivePolynomialInteger_isEisensteinAt
       π, πu, πuE] using hnotMem
 
 /-- The integral changed primitive polynomial is irreducible. -/
-theorem padicChangedCompletedPrimitivePolynomialInteger_irreducible
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedCompletedPrimitivePolynomialInteger_irreducible :
     Irreducible
       (padicChangedCompletedPrimitivePolynomialInteger p u n) := by
   apply
@@ -266,9 +258,7 @@ theorem padicChangedCompletedPrimitivePolynomialInteger_irreducible
 
 /-- The changed primitive polynomial remains irreducible over the completed
 maximal-unramified fraction field. -/
-theorem padicChangedCompletedPrimitivePolynomial_irreducible
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedCompletedPrimitivePolynomial_irreducible :
     Irreducible (padicChangedCompletedPrimitivePolynomial p u n) := by
   have hmap :
       Irreducible
@@ -285,9 +275,7 @@ theorem padicChangedCompletedPrimitivePolynomial_irreducible
 
 /-- The theta value is a root of the named changed primitive polynomial
 over the completed-unramified field. -/
-theorem padicChangedUniformizerThetaValue_isRoot_completedPrimitivePolynomial
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaValue_isRoot_completedPrimitivePolynomial :
     ((padicChangedCompletedPrimitivePolynomial p u n).map
       (algebraMap (padicCompletedUnramifiedField p)
         (padicCompletedLevelField p n))).IsRoot
@@ -302,9 +290,7 @@ theorem padicChangedUniformizerThetaValue_isRoot_completedPrimitivePolynomial
     padicChangedUniformizerThetaValue_field_isRoot p u n
 
 /-- The theta value is integral over the completed-unramified field. -/
-theorem padicChangedUniformizerThetaValue_isIntegral_completedBase
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaValue_isIntegral_completedBase :
     IsIntegral (padicCompletedUnramifiedField p)
       ((padicChangedUniformizerThetaValue p u n :
         (padicCompletedLevelCompleteDVF p n).valuationSubring) :
@@ -319,9 +305,7 @@ theorem padicChangedUniformizerThetaValue_isIntegral_completedBase
 
 /-- The minimal polynomial of the theta value over the completed-unramified
 field is the genuine changed primitive polynomial. -/
-theorem padicChangedUniformizerThetaValue_minpoly_completedBase
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaValue_minpoly_completedBase :
     minpoly (padicCompletedUnramifiedField p)
         ((padicChangedUniformizerThetaValue p u n :
           (padicCompletedLevelCompleteDVF p n).valuationSubring) :
@@ -348,9 +332,7 @@ theorem padicChangedUniformizerThetaValue_minpoly_completedBase
 
 /-- The fixed theta point generates the entire standard completed level
 over the completed-unramified coefficient field. -/
-theorem padicChangedUniformizerThetaValue_adjoin_completedBase_eq_top
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaValue_adjoin_completedBase_eq_top :
     IntermediateField.adjoin
         (padicCompletedUnramifiedField p)
         ({((padicChangedUniformizerThetaValue p u n :
@@ -384,9 +366,7 @@ theorem padicChangedUniformizerThetaValue_adjoin_completedBase_eq_top
 
 /-- The theta value supplies a power basis of the completed standard level
 over the completed-unramified field. -/
-noncomputable def padicChangedUniformizerThetaPowerBasis
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+noncomputable def padicChangedUniformizerThetaPowerBasis :
     PowerBasis (padicCompletedUnramifiedField p)
       (padicCompletedLevelField p n) := by
   apply PowerBasis.ofAdjoinEqTop
@@ -400,14 +380,14 @@ noncomputable def padicChangedUniformizerThetaPowerBasis
 /-- The generator of the theta power basis is the genuine evaluated theta
 value. -/
 @[simp]
-theorem padicChangedUniformizerThetaPowerBasis_gen
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
+theorem padicChangedUniformizerThetaPowerBasis_gen :
     (padicChangedUniformizerThetaPowerBasis p u n).gen =
       ((padicChangedUniformizerThetaValue p u n :
         (padicCompletedLevelCompleteDVF p n).valuationSubring) :
           padicCompletedLevelField p n) :=
   PowerBasis.ofAdjoinEqTop_gen _ _
+
+end
 
 end LubinTate
 

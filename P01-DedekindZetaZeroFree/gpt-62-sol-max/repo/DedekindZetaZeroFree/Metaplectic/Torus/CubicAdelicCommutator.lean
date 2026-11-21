@@ -6,7 +6,7 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.Cubic.IdeleUnitValu
 
 open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
-namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+namespace DedekindZetaZeroFree.KPGlobalCubicIdelePairing
 open KubotaRankTwo
 noncomputable section
 set_option autoImplicit false
@@ -206,4 +206,4 @@ theorem cover_torus_commutator (x y : E F ζ hζ) :
   · change x.val.2 * y.val.2 * x.val.2⁻¹ * y.val.2⁻¹ = 1
     simp [mul_assoc, mul_left_comm, mul_comm]
 end
-end DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+end DedekindZetaZeroFree.KPGlobalCubicIdelePairing

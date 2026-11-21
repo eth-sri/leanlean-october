@@ -21,7 +21,7 @@ open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming complexSectionHom →
 variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
 variable (C : ModelData F ζ hζ) (f : Flat F ζ hζ K)
 
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingGeometry renaming arch_center → arch_center
+open KPGlobalTorusFiniteStagesCofinality (arch_center)
 
 theorem productModel_arch_character (z : KPGlobalTorusFunctionData.TorusArch F) :
     ∃ t : (productModel F ζ hζ C).H,

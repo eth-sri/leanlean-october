@@ -7,6 +7,8 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.CoprimeForms.PrimeSupport
 public import DedekindZetaZeroFree.Analysis.FinitePartitionQuadraticBounds
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.Divisors.IdealDivisorRectangleOperatorBound
 
+public import DedekindZetaZeroFree.Arithmetic.Ideals.PrimeSupportCost
+
 @[expose] public section
 
 section
@@ -80,8 +82,7 @@ private lemma density_interval (a : Ideal (𝓞 F)) :
     · have := one_div_le_one_div_of_le (by norm_num : (0 : ℝ) < 1) hp1
       simp only [one_div_one, ← one_div] at this
       linarith
-    · have : 0 ≤ 1 / (Ideal.absNorm p : ℝ) := by positivity
-      linarith
+    simp
   constructor
   · exact Finset.prod_nonneg (fun p hp => (he p hp).1)
   · exact (Finset.prod_le_prod₀ (fun p hp => (he p hp).1)
@@ -101,9 +102,9 @@ private lemma density_mul (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ �
   apply Finset.prod_union
   rw [Finset.disjoint_left]
   intro p hp hq
-  have hpa : p ∣ a := UniqueFactorizationMonoid.dvd_of_mem_factors (Multiset.mem_toFinset.mp hp)
-  have hpb : p ∣ b := UniqueFactorizationMonoid.dvd_of_mem_factors (Multiset.mem_toFinset.mp hq)
-  have hpab : p ∣ a ⊔ b := Ideal.dvd_iff_le.mpr
+  have hpa := UniqueFactorizationMonoid.dvd_of_mem_factors (Multiset.mem_toFinset.mp hp)
+  have hpb := UniqueFactorizationMonoid.dvd_of_mem_factors (Multiset.mem_toFinset.mp hq)
+  have hpab := Ideal.dvd_iff_le.mpr
     (sup_le (Ideal.dvd_iff_le.mp hpa) (Ideal.dvd_iff_le.mp hpb))
   rw [hab, ← Ideal.one_eq_top] at hpab
   exact (UniqueFactorizationMonoid.prime_of_factor p (Multiset.mem_toFinset.mp hp)).not_isUnit
@@ -122,16 +123,15 @@ private lemma coprime_rows_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily 
       (∑ a ∈ R, ‖∑ u ∈ S, if e ∣ u then z u * (Q.χ u) a else 0‖ ^ 2) ≤
         U * ∑ u ∈ S, ‖z u‖ ^ 2 := by
     intro e he z
-    have he' : e = ⊤ := Finset.mem_singleton.mp he
+    have he' := Finset.mem_singleton.mp he
     subst e
-    simpa only [← Ideal.one_eq_top, one_dvd, if_true] using hop z
+    simp_all
   have h := DivisorSeparation.rectangle_operator_bound Q {⊤} {⊤} R S S
     hS hS U U hU hU hm hm z z
   simp only [DivisorSeparation.idealDivisorRectangle, Finset.sum_singleton,
     Finset.card_singleton, Nat.cast_one, one_mul, ← Ideal.one_eq_top, one_dvd,
-    and_true, Finset.filter_true_of_mem, mul_one] at h
-  simp only [Finset.filter_singleton, one_dvd, if_true, Finset.card_singleton,
-    Nat.cast_one, mul_one, Ideal.one_eq_top] at h
+    and_true, mul_one] at h
+  simp only [Finset.filter_singleton, Ideal.one_eq_top] at h
   have htopdvd : ∀ u : Ideal (𝓞 F), (⊤ : Ideal (𝓞 F)) ∣ u := by
     intro u
     exact Ideal.dvd_iff_le.mpr le_top
@@ -146,8 +146,7 @@ private lemma coprime_rows_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily 
   have hsq : (∑ a ∈ R, ‖∑ u ∈ S, ∑ v ∈ S, if u ⊔ v = ⊤ then
       z u * star (z v) * (Q.χ u) a * star ((Q.χ v) a) else 0‖) ^ 2 ≤
       (U * ∑ u ∈ S, GcdTail.primeSupportCost u * ‖z u‖ ^ 2) ^ 2 := by
-    calc _ ≤ _ := h
-         _ = _ := by ring
+    grind only
   exact (sq_le_sq₀ (by positivity) (mul_nonneg hU h0)).mp hsq
 
 private lemma nonunit_rows_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
@@ -184,9 +183,9 @@ private lemma nonunit_rows_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily 
     by_cases hu1 : u = ⊤ <;> by_cases hv1 : v = ⊤
     · subst u; subst v
       simp [z0, star_mul, mul_assoc, mul_left_comm, mul_comm]
-    · simp [z0, hu1, hv1, ht, star_mul]
-    · simp [z0, hu1, hv1, ht, star_mul]
-    · simp [z0, hu1, hv1, ht, star_mul]
+    · simp [z0, hu1, hv1]
+    · simp [z0, hu1, hv1, star_mul]
+    · simp [z0, hu1, hv1, ht]
   have henergy : (∑ u ∈ S, ‖z0 u‖ ^ 2) ≤
       ∑ u ∈ S, GcdTail.primeSupportCost u * ‖z u‖ ^ 2 := by
     apply Finset.sum_le_sum
@@ -278,9 +277,8 @@ theorem density_rows_of_operator
         density_mul D.bad u D.bad_ne_bot (hSne u hu) hqu]
     change lam (d * u) * star (lam (d * v)) * (rho (D.bad * u * v) : ℂ) *
       ((Q.χ u) (a * t ^ 2) * star ((Q.χ v) (a * t ^ 2))) = _
-    simp only [hf, MainBoundaryBound.pairCharacter, MonoidHom.coe_mk,
-      MonoidHom.coe_coe, (Q.χ u).map_mul', (Q.χ v).map_mul', beta,
-      star_mul, Complex.star_def, map_mul, Complex.conj_ofReal, Complex.ofReal_mul]
+    simp only [hf, (Q.χ u).map_mul', (Q.χ v).map_mul', beta,
+      star_mul, Complex.star_def, Complex.conj_ofReal, Complex.ofReal_mul]
     ring
   have hrow : ∀ t a,
       MainBoundaryBound.densityRow Q D.bad d N g lam (a * t ^ 2) =
@@ -342,68 +340,6 @@ noncomputable section
 open scoped NumberField Classical NNReal
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryPrefix
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
-
-private lemma primeSupportCost_le_divisorCount {F : Type} [Field F] [NumberField F]
-    (u : Ideal (𝓞 F)) (hu : u ≠ ⊥) :
-    (2 : ℝ) ^ (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisorCount u : ℝ) := by
-  classical
-  set m := UniqueFactorizationMonoid.normalizedFactors u with hm
-  set S := m.toFinset with hS
-  have hmem : ∀ p : Ideal (𝓞 F), p ∈ S ↔ p ∈ m := fun p => Multiset.mem_toFinset
-  have hprime : ∀ p ∈ S, Irreducible p := fun p hp =>
-    UniqueFactorizationMonoid.irreducible_of_normalized_factor p ((hmem p).mp hp)
-  have hnorm : ∀ p ∈ S, normalize p = p := fun p hp =>
-    UniqueFactorizationMonoid.normalize_normalized_factor p ((hmem p).mp hp)
-  have key : ∀ s : Finset (Ideal (𝓞 F)), s ⊆ S →
-      UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ s, p) = s.val := by
-    intro s hs
-    have hirr : ∀ p ∈ s.val, Irreducible p := by
-      intro p hp
-      exact hprime p (hs (by simpa using hp))
-    have h1 := UniqueFactorizationMonoid.normalizedFactors_prod_eq s.val hirr
-    have hprod : (∏ p ∈ s, p) = s.val.prod := by
-      rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
-    rw [hprod, h1]
-    rw [Multiset.map_congr rfl (fun p hp => hnorm p (hs (by simpa using hp))),
-      Multiset.map_id']
-  have hinj : Set.InjOn (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
-      (↑S.powerset : Set (Finset (Ideal (𝓞 F)))) := by
-    intro s hs t ht hst
-    have hssub : s ⊆ S := Finset.mem_powerset.mp hs
-    have htsub : t ⊆ S := Finset.mem_powerset.mp ht
-    have hsval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ s, p) = s.val :=
-      key s hssub
-    have htval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ t, p) = t.val :=
-      key t htsub
-    have hst' : (∏ p ∈ s, p) = (∏ p ∈ t, p) := hst
-    rw [hst'] at hsval
-    exact Finset.val_inj.mp (hsval.symm.trans htval)
-  have hmaps : Set.MapsTo (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
-      (↑S.powerset : Set (Finset (Ideal (𝓞 F))))
-      (↑(DedekindZetaZeroFree.LargeSieve.idealDivisors u) : Set (Ideal (𝓞 F))) := by
-    intro s hs
-    change (∏ p ∈ s, p) ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors u
-    rw [DedekindZetaZeroFree.LargeSieve.mem_idealDivisors hu]
-    have hssub : s ⊆ S := Finset.mem_powerset.mp hs
-    have hle : s.val ≤ m := by
-      rw [Multiset.le_iff_subset s.nodup]
-      intro p hp
-      exact (hmem p).mp (hssub (by simpa using hp))
-    have hprod : (∏ p ∈ s, p) = s.val.prod := by
-      rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
-    rw [hprod, ← Ideal.prod_normalizedFactors_eq_self hu]
-    exact Multiset.prod_dvd_prod_of_le hle
-  have hcard : S.powerset.card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisors u).card :=
-    Finset.card_le_card_of_injOn _ hmaps hinj
-  have hcost : (2 : ℝ) ^ (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card = (2 : ℝ) ^ S.card := by
-    rw [hS, ← hm]
-  rw [hcost]
-  have hpc : ((S.powerset.card : ℕ) : ℝ) = (2 : ℝ) ^ S.card := by
-    rw [Finset.card_powerset]
-    push_cast
-    ring
-  rw [← hpc]
-  exact_mod_cast hcard
 
 private lemma cutoff_divisors_le_count (d : Ideal (𝓞 F)) (hd0 : d ≠ ⊥) :
     ((Vendor.CutoffDifference.divisors d).card : ℝ) ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisorCount d : ℝ) := by

@@ -51,7 +51,7 @@ theorem integrableOn_mixedRadialTheta_neg
 
 theorem integral_one_angularCube :
     (∫ _u in angularCube K, (1 : ℂ)) = 1 := by
-  simp [setIntegral_const, volume_cube K, Measure.real]
+  simp [volume_cube K, Measure.real]
 
 theorem mixedAngularAverage_sub_one
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :

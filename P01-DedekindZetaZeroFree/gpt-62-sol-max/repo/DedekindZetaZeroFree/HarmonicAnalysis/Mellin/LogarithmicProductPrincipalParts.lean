@@ -61,7 +61,7 @@ private lemma HolomorphicNear.sub_const_comp {A : ℂ → ℂ} {p : ℂ}
       tendsto_id.sub tendsto_const_nhds
     simpa using h
   filter_upwards [hmap.eventually hA] with s hs
-  exact hs.comp s (by fun_prop)
+  fun_prop
 
 private lemma HolomorphicNear.finset_sum {ι : Type*} (K : Finset ι) {B : ι → ℂ → ℂ} {p : ℂ}
     (hB : ∀ k ∈ K, HolomorphicNear (B k) p) :
@@ -70,8 +70,8 @@ private lemma HolomorphicNear.finset_sum {ι : Type*} (K : Finset ι) {B : ι �
   induction K using Finset.induction_on with
   | empty => simpa using HolomorphicNear.const' 0 p
   | insert a s ha ih =>
-    have h1 : HolomorphicNear (B a) p := hB a (Finset.mem_insert_self a s)
-    have h2 : HolomorphicNear (fun t => ∑ k ∈ s, B k t) p :=
+    have h1 := hB a (Finset.mem_insert_self a s)
+    have h2 :=
       ih (fun k hk => hB k (Finset.mem_insert_of_mem hk))
     simpa [Finset.sum_insert ha] using h1.add' h2
 
@@ -111,21 +111,17 @@ private lemma taylor_reindex (a : ℕ → ℂ) (z : ℂ) (N : ℕ) :
     · intro hj
       rw [Finset.mem_Icc] at hj
       exact Finset.mem_image.mpr ⟨N - j, Finset.mem_range.mpr (by omega), by omega⟩
-    · intro hj
-      rcases Finset.mem_image.mp hj with ⟨i, hi, rfl⟩
-      rw [Finset.mem_range] at hi
-      rw [Finset.mem_Icc]
-      omega
+    grind
   rw [hset]
   rw [Finset.sum_image (by
     intro x hx y hy h
-    have hx' : x < N := Finset.mem_range.mp hx
+    
     have hy' : y < N := Finset.mem_range.mp hy
     have h' : N - x = N - y := h
     omega)]
   refine Finset.sum_congr rfl fun i hi => ?_
-  have hi' : i < N := Finset.mem_range.mp hi
-  rw [show N - (N - i) = i by omega]
+  have hi' := Finset.mem_range.mp hi
+  grind only
 
 private lemma div_pow_split {A : ℂ → ℂ} {p : ℂ} {N : ℕ} (hN : 1 ≤ N)
     {c : ℕ → ℂ} {F : ℂ → ℂ} (hF : HolomorphicNear F p)
@@ -134,15 +130,15 @@ private lemma div_pow_split {A : ℂ → ℂ} {p : ℂ} {N : ℕ} (hN : 1 ≤ N)
     HasFinitePrincipalPart (fun s => A s / (s - p) ^ N) p c N := by
   refine ⟨F, hF, ?_⟩
   filter_upwards [hA.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with s hAs hs
-  have hsp : s - p ≠ 0 := sub_ne_zero.mpr hs
+  have hsp := sub_ne_zero.mpr hs
   rw [hAs]
   have hterm : ∀ j ∈ Finset.Icc 1 N,
       c j * (s - p) ^ (N - j) / (s - p) ^ N = c j / (s - p) ^ j := by
     intro j hj
     have hjN : j ≤ N := (Finset.mem_Icc.mp hj).2
     have h1 : (s - p) ^ (N - j) / (s - p) ^ N = ((s - p) ^ j)⁻¹ := by
-      rw [pow_sub₀ _ hsp hjN, mul_div_cancel_left₀ ((s - p) ^ j)⁻¹ (pow_ne_zero N hsp)]
-    rw [mul_div_assoc, h1, div_eq_mul_inv]
+      grind only [pow_sub₀, mul_div_cancel_left₀, pow_ne_zero]
+    grind
   rw [add_div, Finset.sum_div, mul_div_cancel_left₀ (F s) (pow_ne_zero N hsp),
     Finset.sum_congr rfl hterm]
   exact add_comm _ _

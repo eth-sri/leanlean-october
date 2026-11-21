@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Analysis.HarmonicPolynomials.FiniteFischerDecomposition
+public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.ComplexHarmonicEigenvaluesAndSmoothness
 
 @[expose] public section
 
@@ -30,8 +31,9 @@ theorem unit_radius_spanning (p : MvPolynomial (Fin 3) ℂ) :
     obtain ⟨ha, hdeg⟩ := Finset.mem_filter.mp ha
     obtain ⟨hd, hk⟩ := Finset.mem_sigma.mp ha
     have hk' : a.2 ≤ a.1 / 2 := Nat.le_of_lt_succ (Finset.mem_range.mp hk)
-    have hh' := hh a.1 a.2 hk'
-    simpa only [degree, hdeg] using hh'
+    change a.1 - 2 * a.2 = ℓ at hdeg
+    rw [← hdeg]
+    exact hh a.1 a.2 hk'
   · intro x hx
     have hr : MvPolynomial.eval (fun i => (x i : ℂ)) radiusQuadratic = 1 := by
       simp only [radiusQuadratic, map_sum, map_pow, MvPolynomial.eval_X]

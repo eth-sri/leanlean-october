@@ -67,7 +67,7 @@ theorem center_character_trivial_on_good_compact
       (h1.unit * h2.unit⁻¹) = 1 := by
     apply NNReal.eq
     simp [KPGlobalCenterRationalCharacter.localAbs, IsUnit.unit_spec,
-      norm_mul, norm_inv, ha, hd]
+      ha, hd]
   change KPGlobalTorusFunctionData.iota F ζ hζ (KPTameCompact.kappa F q ζ hζ k) *
     KPGlobalCenterRationalCharacter.positiveComplex
       (KPGlobalCenterRationalCharacter.sixthPower
@@ -420,7 +420,7 @@ theorem local_center_modulus (v : KPHilbert.Place F) (z : localCenter F ζ hζ v
   rw [hn, one_mul]
   simp [KPGlobalCenterRationalCharacter.positiveComplex,
     KPGlobalCenterRationalCharacter.sixthPower, NNReal.coe_rpow,
-    Real.rpow_nonneg (NNReal.coe_nonneg _) (1 / 6 : ℝ), y]
+    y]
   positivity
 
 theorem complex_local_polarization (w : InfinitePlace F) :

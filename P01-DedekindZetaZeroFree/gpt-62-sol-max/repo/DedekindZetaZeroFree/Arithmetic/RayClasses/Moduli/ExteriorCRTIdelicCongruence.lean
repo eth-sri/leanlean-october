@@ -73,15 +73,15 @@ private theorem ratio_higher (F : Type) [Field F] [NumberField F]
       change (↑hub.unit : v.adicCompletionIntegers F).val = _
       rw [hub.unit_spec]
       rfl
-    rw [haeq, hbeq]
+    grind
   · have hmem : aa - bb ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ k := by
       simpa only [aa, bb, map_sub] using (CRT_completed_power_mem_iff F v (a - b) k).mpr hab
     have heq : ((hua.unit / hub.unit : (v.adicCompletionIntegers F)ˣ) :
         v.adicCompletionIntegers F) - 1 = (aa - bb) * ↑(hub.unit⁻¹) := by
       simp only [div_eq_mul_inv, Units.val_mul, hua.unit_spec]
       have hbi : bb * (↑(hub.unit⁻¹) : v.adicCompletionIntegers F) = 1 := by
-        simpa only [hub.unit_spec] using hub.unit.mul_inv
-      rw [sub_mul, hbi]
+        simp
+      grind
     rw [heq]
     exact Ideal.mul_mem_right _ _ hmem
 

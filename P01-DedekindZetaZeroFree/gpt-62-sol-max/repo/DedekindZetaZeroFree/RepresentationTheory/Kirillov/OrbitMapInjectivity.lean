@@ -62,8 +62,7 @@ def ordinaryKernelRepresentation :
     Representation ℂ (P F ζ hζ w) (ordinaryKernel F ζ hζ w ρ) :=
   Representation.subrepresentation (ρ.comp (P F ζ hζ w).subtype)
     (ordinaryKernel F ζ hζ w ρ) (by
-      intro p v hv
-      exact ordinaryKernel_borel_stable F ζ hζ w ρ p v hv)
+      apply ordinaryKernel_borel_stable <;> assumption)
 
 variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
   (hρ : IsSmooth F ζ hζ w m ρ)
@@ -75,7 +74,7 @@ private theorem borel_conjugates_root (m : ℕ)
       p.val⁻¹ = KPLocalSmoothRepresentation.upperRoot F ζ hζ w
         (Multiplicative.ofAdd ((slope F ζ hζ w p : K F w) * x)) := by
   obtain ⟨⟨a, b⟩, hp, _⟩ := KPLocalInductionJacquetReciprocity.borel_factorization F ζ hζ w p
-  let aa : P F ζ hζ w := KPJacquetClosedCellBump.torusInBorel F ζ hζ w m hm a
+  let aa := KPJacquetClosedCellBump.torusInBorel F ζ hζ w m hm a
   have hps : p = aa * n F ζ hζ w b.toAdd := Subtype.ext hp
   have hs : slope F ζ hζ w p = KPJacquetOpenCell.r F ζ hζ w m hm a := by
     rw [hps, map_mul]
@@ -92,7 +91,7 @@ private theorem borel_conjugates_root (m : ℕ)
       KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x) =
       KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x) *
         KPLocalSmoothRepresentation.upperRoot F ζ hζ w b := by
-    rw [← hc, ← hc', mul_comm]
+    grind only
   calc
     _ = a.val * KPLocalSmoothRepresentation.upperRoot F ζ hζ w (Multiplicative.ofAdd x) *
         a.val⁻¹ := by

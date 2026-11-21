@@ -16,44 +16,53 @@ variable {S T H V : Type*}
 
 abbrev testDomain (ι : S →ₗ[ℂ] H) : Submodule ℂ H := ι.range
 
-def representative (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι) :
+section
+
+variable (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
+include ι hι
+
+def representative :
     testDomain ι ≃ₗ[ℂ] S := (LinearEquiv.ofInjective ι hι).symm
 
-def descend (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
+def descend
     (j : T →ₗ[ℂ] V) (A : S →ₗ[ℂ] T) : H →ₗ.[ℂ] V :=
   ⟨testDomain ι, j.comp (A.comp (representative ι hι).toLinearMap)⟩
 
-@[simp] theorem descend_domain (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
+@[simp] theorem descend_domain
     (j : T →ₗ[ℂ] V) (A : S →ₗ[ℂ] T) :
     (descend ι hι j A).domain = testDomain ι := rfl
 
-@[simp] theorem representative_image (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
+@[simp] theorem representative_image
     (f : S) : representative ι hι ⟨ι f, LinearMap.mem_range_self ι f⟩ = f := by
   exact (LinearEquiv.ofInjective ι hι).symm_apply_apply f
 
-@[simp] theorem image_representative (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
+@[simp] theorem image_representative
     (f : testDomain ι) : ι (representative ι hι f) = f :=
   LinearEquiv.ofInjective_symm_apply ι f
 
-@[simp] theorem descend_image (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
+@[simp] theorem descend_image
     (j : T →ₗ[ℂ] V) (A : S →ₗ[ℂ] T) (f : S) :
     descend ι hι j A ⟨ι f, LinearMap.mem_range_self ι f⟩ = j (A f) := by
   change j (A (representative ι hι ⟨ι f, _⟩)) = _
   rw [representative_image]
 
-theorem descend_mem (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
+theorem descend_mem
     (j : T →ₗ[ℂ] V) (A : S →ₗ[ℂ] T) (f : testDomain ι) :
     descend ι hι j A f ∈ testDomain j :=
   LinearMap.mem_range_self j _
 
-def laplacian (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
+def laplacian
     (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S) : testDomain ι →ₗ[ℂ] H :=
   ι.comp (B.comp (A.comp (representative ι hι).toLinearMap))
 
-theorem laplacian_eq_divergence_differential
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S) (f : testDomain ι) :
+end
+
+section
+
+variable (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι) (j : T →ₗ[ℂ] V)
+  (hj : Function.Injective j) (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
+
+theorem laplacian_eq_divergence_differential (f : testDomain ι) :
     laplacian ι hι A B f =
       descend j hj ι B ⟨descend ι hι j A f, descend_mem ι hι j A f⟩ := by
   change ι (B (A (representative ι hι f))) =
@@ -61,9 +70,6 @@ theorem laplacian_eq_divergence_differential
   rw [representative_image]
 
 theorem descend_formalAdjoint
-    (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (j : T →ₗ[ℂ] V) (hj : Function.Injective j)
-    (A : S →ₗ[ℂ] T) (B : T →ₗ[ℂ] S)
     (hgreen : ∀ f : S, ∀ w : T,
       inner ℂ (j (A f)) (j w) = inner ℂ (ι f) (ι (B w))) :
     (descend ι hι j A).IsFormalAdjoint (descend j hj ι B) := by
@@ -72,6 +78,8 @@ theorem descend_formalAdjoint
     inner ℂ (f : H) (ι (B (representative j hj w)))
   rw [← image_representative j hj w, ← image_representative ι hι f]
   exact hgreen _ _
+
+end
 
 end KPTestOperator
 

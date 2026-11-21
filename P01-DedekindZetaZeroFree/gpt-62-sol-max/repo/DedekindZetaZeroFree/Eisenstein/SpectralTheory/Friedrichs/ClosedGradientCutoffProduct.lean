@@ -269,8 +269,7 @@ private theorem graphTestLinear_bound
     η D₀ hD₀ hdη
   obtain ⟨N, hNnorm, hNeq⟩ := KPContActualCotangentBoundedScalarMultiplier.exists_multiplier
     F ζ hζ U R P H μG hμG hR realization η B hB hη
-  have hdp := fun f => (kp_cont_actual_sector_test_differential_descent F ζ hζ μG hμG U R hR P H
-    realization).differential_product η f
+  have hdp := fun f => differential_product η f
   have hM0 : (0 : ℝ) ≤ ‖M.op‖ := ContinuousLinearMap.opNorm_nonneg M.op
   refine ⟨‖M.op‖ + B + D₀, add_nonneg (add_nonneg hM0 hB) hD₀, ?_⟩
   intro f

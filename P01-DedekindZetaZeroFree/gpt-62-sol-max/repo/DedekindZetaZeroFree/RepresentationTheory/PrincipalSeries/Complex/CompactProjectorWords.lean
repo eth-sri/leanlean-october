@@ -21,17 +21,14 @@ open KPCplxCharacterHaar KPCplxHarmonicIntertwinerSpectrum
 open KPCplxHarmonicExtraction
 open scoped BigOperators
 
-private theorem restriction_bridge : polynomialCompactRestriction =
-    KPCplxIntertwinerEigenvalues.polynomialCompactRestriction := rfl
-
 def eigenvalue (m : ℕ) : ℂ := 2 * (m : ℂ) * ((m : ℂ) + 1)
 
 private theorem eigenvalue_injective : Function.Injective eigenvalue := by
   intro m n he
   have hr := congrArg Complex.re he
   norm_num [eigenvalue, Complex.mul_re, Complex.mul_im] at hr
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+  
+  
   have heq : (m : ℝ) = n := by nlinarith
   exact_mod_cast heq
 
@@ -92,7 +89,6 @@ theorem character_eq_interpolation_harmonic
       polynomialCompactRestriction
         ((Polynomial.aeval pauliCasimir (projectorPolynomial N ℓ)) p) k := by
   rw [projector_harmonic N ℓ m hm p hp]
-  simp_rw [restriction_bridge]
   by_cases he : m = ℓ
   · subst m
     simpa using CompactPolynomial.harmonic_character_projection_diagonal
@@ -208,11 +204,8 @@ variable {α : Type*}
 
 end FixedWords
 
-section ActualRealWords
 
-open KPCplxPrincipalSeriesCharts KPContHolomorphicKGeneration
 
-end ActualRealWords
 
 end CompactInterpolation
 
@@ -288,7 +281,7 @@ private theorem word_factor (w : RealLieWord) (s : ℂ) (g : ComplexGL2)
     rw [word_real, word_real, hg,
       (rightWord (positiveParameter + t) w (sphericalSection (positiveParameter + t))).property.1]
     rw [spherical_real, (sphericalSection (positiveParameter + t)).property.1]
-    have hs := RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.spherical_compact
+    have hs := KPCplxHarmonicPropagation.RaisingCalculation.spherical_compact
       (positiveParameter + t) k
     rw [hs, mul_one]
   have hs : AnalyticOnNhd ℂ (fun z => complexSpherical z g) Set.univ :=

@@ -15,16 +15,8 @@ open Filter
 namespace DedekindZetaZeroFree.KPCompactGreen
 open KPMeanZeroWeightedEnergy
 
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+
+
  def heightCLM (d : ℕ) : HyperbolicChart.Space d →L[ℝ] ℝ :=
   (d : ℝ)⁻¹ • ∑ i : Fin d, EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))
 private theorem height_eq (d : ℕ) (x : HyperbolicChart.Space d) :
@@ -143,7 +135,7 @@ theorem mean_height_cutoff_ims
         (deriv η p.2 ^ 2 * ‖v.scalar p‖ ^ 2) := by
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F p)
-  have hx : arch d x = KPCuspCharts.toArch F p := arch_real d _
+  have hx : arch d x = KPCuspCharts.toArch F p := KPMeanZeroWeightedEnergy.arch_real_eq d _
   have ht : heightCLM d x = p.2 := by
     rw [← height_eq, hx, KPCuspCharts.toArch_meanHeight F hd]
   have hu : cutoffUpstairs v η = fun q => (η (heightCLM d q) : ℂ) * (v.val ∘ arch d) q := by
@@ -162,7 +154,7 @@ theorem mean_height_cutoff_ims
     have hv : DifferentiableAt ℝ v.val (arch d x) :=
       (v.smooth.differentiableOn (by simp)).differentiableAt (hopen.mem_nhds htx)
     have hf : DifferentiableAt ℝ (v.val ∘ arch d) x :=
-      hv.comp x ((smooth_arch d).differentiable (by simp) x)
+      hv.comp x ((KPMeanZeroWeightedEnergy.arch_contDiff d).differentiable (by simp) x)
     have hi := ims_upstairs d hd η (hη.1.differentiable (by simp)) (v.val ∘ arch d) x hf
     simpa only [cutoffGradientSq, weightedGreenDensity, hu, hu2, ht,
       Representative.scalar, Function.comp_apply, hx] using hi
@@ -193,11 +185,7 @@ open scoped Classical ENNReal
 namespace DedekindZetaZeroFree.KPCompactGreen
 open KPMeanZeroWeightedEnergy
 
-private theorem arch_real_for_compactEnergy (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  funext i
-  apply Prod.ext
-  · apply Complex.ext <;> simp [arch, real]
-  · simp [arch, real]
+
 private theorem contDiff_arch_for_compactEnergy (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
   apply contDiff_pi.mpr
   intro i
@@ -210,12 +198,7 @@ private theorem contDiff_arch_for_compactEnergy (d : ℕ) : ContDiff ℝ (⊤ : 
     funext x
     apply Complex.ext <;> simp [arch, PiLp.proj_apply]
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
-private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
-  unfold KPCuspLogShape.meanHeight
-  apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact (contDiff_snd.comp (contDiff_apply ℝ _ i))
+
 private theorem mean_deriv (d : ℕ) (x : HyperbolicChart.Space d) :
     HasFDerivAt (fun q : HyperbolicChart.Space d => KPCuspLogShape.meanHeight d (arch d q))
       ((d : ℝ)⁻¹ • ∑ i : Fin d, EuclideanSpace.proj (𝕜 := ℝ) (i,(2 : Fin 3))) x := by
@@ -295,13 +278,13 @@ theorem mean_height_reverse_cutoff_bound
     · positivity
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F p)
-  have hx : arch d x = KPCuspCharts.toArch F p := arch_real_for_compactEnergy _ _
+  have hx : arch d x = KPCuspCharts.toArch F p := KPMeanZeroWeightedEnergy.arch_real_eq _ _
   have ht : KPCuspLogShape.meanHeight d (arch d x) = p.2 := by
     rw [hx]; exact KPCuspCharts.toArch_meanHeight F hd p
   have hp : p.2 ∈ Set.Ioi T := hη.2.2 (subset_tsupport η (by exact hz))
   have hs : {z : KPArch.Space d | T < KPCuspLogShape.meanHeight d z} ∈
       nhds (arch d x) :=
-    (isOpen_lt continuous_const (smooth_mean d).continuous).mem_nhds (by simpa [ht] using hp)
+    (isOpen_lt continuous_const (KPMeanZeroWeightedEnergy.meanHeight_contDiff d).continuous).mem_nhds (by simpa [ht] using hp)
   have hv : DifferentiableAt ℝ (v.val ∘ arch d) x :=
     ((v.smooth.differentiableOn (by simp)).differentiableAt hs).comp x
       ((contDiff_arch_for_compactEnergy d).differentiable (by simp) x)

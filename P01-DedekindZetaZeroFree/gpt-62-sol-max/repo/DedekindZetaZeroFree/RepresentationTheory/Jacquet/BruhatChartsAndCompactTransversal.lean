@@ -38,7 +38,7 @@ private theorem entry_zero_iff (A B : KPRankOneInduction.GL2 F w)
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
   simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
     Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
-  fin_cases j <;> simp [Units.ne_zero u]
+  fin_cases j <;> simp
 
 private theorem entry_ratio_eq (A B : KPRankOneInduction.GL2 F w)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B)

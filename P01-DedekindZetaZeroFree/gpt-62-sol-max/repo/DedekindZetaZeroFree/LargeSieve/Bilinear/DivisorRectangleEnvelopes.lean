@@ -72,6 +72,16 @@ def scales (X : ℝ) : Finset ℝ :=
   insert 1 ((Finset.range (Vendor.dyadicLength (2 * max 1 X))).image
     (fun i => (2 : ℝ) ^ i))
 
+theorem scales_card_le (X : ℝ) :
+    ((ErrorRectangles.scales X).card : ℝ) ≤ (Vendor.dyadicLength (2 * max 1 X) : ℝ) + 1 := by
+  have h := (Finset.card_insert_le (1 : ℝ)
+    ((Finset.range (Vendor.dyadicLength (2 * max 1 X))).image
+      (fun i : ℕ => (2 : ℝ) ^ i))).trans
+    (Nat.add_le_add_right (Finset.card_image_le.trans_eq (Finset.card_range _)) 1)
+  have h' : (ErrorRectangles.scales X).card ≤ Vendor.dyadicLength (2 * max 1 X) + 1 := h
+  exact_mod_cast h'
+
+
 def InBin (P : ℝ) (f : Ideal (𝓞 F)) : Prop :=
   f ≠ ⊥ ∧ (if P = 1 then 1 ≤ norm f else P < norm f) ∧ norm f ≤ 2 * P
 
@@ -81,6 +91,15 @@ def rectangles (C : Context Q) : Finset (ℝ × ℝ) :=
       P.1 ≤ 2 * C.N / norm C.d ∧ P.2 ≤ 2 * C.N / norm C.d ∧
       ∃ p ∈ C.pairs, ∃ f₁ f₂ : Ideal (𝓞 F),
         f₁ ∣ p.1 ∧ f₂ ∣ p.2 ∧ InBin P.1 f₁ ∧ InBin P.2 f₂)
+
+theorem rectangle_card_le (C : Context Q) (S : Finset (ℝ × ℝ))
+    (hS : S ⊆ rectangles C) :
+    (S.card : ℝ) ≤ (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 : ℝ) ^ 2 := by
+  have h := Finset.card_le_card (hS.trans (Finset.filter_subset _ _))
+  rw [Finset.card_product] at h
+  exact (by rw [pow_two]; exact_mod_cast h :
+    (S.card : ℝ) ≤ ((scales (C.N / norm C.d)).card : ℝ) ^ 2) |>.trans
+      (pow_le_pow_left₀ (by positivity) (scales_card_le _) 2)
 
 def lowerConstant (c : Ideal (𝓞 F)) : ℝ := 1 / (4 * max 1 (norm c))
 

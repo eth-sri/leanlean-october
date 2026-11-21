@@ -49,11 +49,8 @@ theorem heightFactor_eigenfunction (d : ℕ) (hd : 0 < d) (s : ℂ) (b : ℂ) :
   field_simp
   ring
 
-section RationalRealization
 
-variable {G H A : Type*} [AddCommGroup H] [Module ℂ H]
 
-end RationalRealization
 
 end DedekindZetaZeroFree.KPIncomingCasimir
 

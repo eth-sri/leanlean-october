@@ -18,7 +18,6 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming e
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming end_measurable → end_measurable
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass renaming pinned_cusp_lintegral → pinned_cusp_lintegral
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass renaming forward_offset_factor → forward_offset_factor
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 
 section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -29,8 +28,6 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming e
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.RadialIntegrationSteps renaming end_measurable → end_measurable
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass renaming pinned_cusp_lintegral → pinned_cusp_lintegral
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass renaming forward_offset_factor → forward_offset_factor
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming fromRawDisintegration → fromRawDisintegration
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
 
@@ -104,7 +101,7 @@ private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F
         ⟨j,p⟩) ∂(KPMsFixedHaarDisintegration.Geometry (nativeAtlas F ζ hζ R P S V) j).sectionMeasure := by
   let A := nativeAtlas F ζ hζ R P S V
   let U := S.atlasLevel (cofinalLevel F ζ hζ V)
-  let D := (KPMsActualNativeHaarFamily.rawFamily F ζ hζ R P).disintegration U
+  let D := (KPMsActualNativeHaarFamily.family F ζ hζ R P).disintegration U
   let Z := Y / (cuspOffset F ζ hζ R P S V j).val
   let E := {x : KPMsFixedHaar.Spherical F ζ hζ U | Z < D.modulus x ∧ D.modulus x ≤ 2 * Z}
   let B := component A j.1 '' ends A j (KPMsFixedHaar.logHeight (F := F) Z)
@@ -120,8 +117,7 @@ private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F
     congr 1
     ext x
     rw [mul_div_assoc]
-    rfl
-  have hi := pinned_cusp_lintegral A R (toRawTransport F ζ hζ P) D j Z (hY j)
+  have hi := pinned_cusp_lintegral A R P D j Z (hY j)
     (E.indicator g) (hg.indicator hE)
   rw [lintegral_indicator hE, Measure.restrict_restrict hE, Set.inter_comm] at hi
   have hinner (r : Set.Ioi Z) :
@@ -158,7 +154,7 @@ private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F
   have ht : 0 < 2 * Z := mul_pos (by norm_num) (hY j).1
   rw [ENNReal.ofReal_inv_of_pos ht] at hi
   have hpush : Measure.map (P.projection U) (R.quotientHaar.restrict (cuspShell F ζ hζ R P S V j Y)) =
-      (KPMsFixedHaar.sphericalMeasure F ζ hζ R (toRawTransport F ζ hζ P) U).restrict (B ∩ E) := by
+      (KPMsFixedHaar.sphericalMeasure F ζ hζ R P U).restrict (B ∩ E) := by
     rw [heq, ← Measure.restrict_map (P.continuous U).measurable (hB.inter hE)]
     rfl
   change ENNReal.ofReal (2 * Y) * (∫⁻ x, g (P.projection U x)
@@ -171,7 +167,7 @@ private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F
   rw [show 2 * Z = 2 * Y / (cuspOffset F ζ hζ R P S V j).val by dsimp [Z]; ring]
   rw [← hc]
   change ENNReal.ofReal (2 * Y) * ((_ / _) * (_ * _)) = (_ * _) * _
-  dsimp only [D, A, U, nativeDisintegration, nativeFamily, KPMsActualNativeHaarFamily.family, fromRawDisintegration]
+  dsimp only [D, A, U, nativeDisintegration, nativeFamily, KPMsActualNativeHaarFamily.family]
   ring
 
 end

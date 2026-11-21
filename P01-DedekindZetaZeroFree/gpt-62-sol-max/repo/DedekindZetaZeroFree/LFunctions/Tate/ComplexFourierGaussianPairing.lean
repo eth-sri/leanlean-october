@@ -59,7 +59,7 @@ private theorem kernelEval (t : ℝ) (ht : 0 < t) (x : ℂ) :
     ring
   rw [hFour, hid, fourier_gaussian_innerProductSpace (by simp; positivity)]
   have hn : ‖(2 : ℂ) * (starRingEnd ℂ) x‖ = 2 * ‖x‖ := by
-    simp [norm_mul, Complex.norm_conj]
+    simp []
   rw [hn]
   simp only [Complex.finrank_real_complex]
   norm_num
@@ -68,7 +68,6 @@ private theorem kernelEval (t : ℝ) (ht : 0 < t) (x : ℂ) :
     have ht' : (t : ℂ) ≠ 0 := by exact_mod_cast ht.ne'
     field_simp
   · congr 1
-    push_cast
     have hp : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
     have ht' : (t : ℂ) ≠ 0 := by exact_mod_cast ht.ne'
     field_simp

@@ -118,16 +118,6 @@ theorem le_finiteKummerRadicalSubgroup_kummerRadicalExtension
   apply Subtype.ext
   exact hpow
 
-/-- In particular, for an admissible subgroup-side object, the radical
-subgroup recovered from its field still contains `Kˣ^n`. -/
-theorem unitNthPowersSubgroup_le_constructedRadical
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0) (Delta : KummerSubgroup K n) :
-    unitNthPowersSubgroup K n ≤ finiteKummerRadicalSubgroup
-      (K := K)
-      (L := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1) n :=
-  Delta.2.trans
-    (le_finiteKummerRadicalSubgroup_kummerRadicalExtension n hn Delta.1)
 
 /-- A Kummer root is nonzero because its prescribed power is a unit. -/
 theorem kummerRootSet_ne_zero
@@ -140,10 +130,14 @@ theorem kummerRootSet_ne_zero
     rw [← ha, hzero, zero_pow n.ne_zero]
   exact ((_root_.map_ne_zero (algebraMap K Omega)).2 a.1.ne_zero) this
 
+section
+
+variable (n : ℕ+) (Delta : Subgroup Kˣ) (sigma : Gal(Omega/K))
+include n Delta sigma
+
 /-- Every `K`-automorphism of the separable closure preserves the full root
 set. -/
-theorem kummerRootSet_mapsTo
-    (n : ℕ+) (Delta : Subgroup Kˣ) (sigma : Gal(Omega/K)) :
+theorem kummerRootSet_mapsTo :
     Set.MapsTo sigma
       (kummerRootSet (K := K) (Omega := Omega) n Delta)
       (kummerRootSet (K := K) (Omega := Omega) n Delta) := by
@@ -157,8 +151,7 @@ theorem kummerRootSet_mapsTo
 
 /-- Because inverse automorphisms preserve the same equations, the root set
 is carried onto itself, not merely into itself. -/
-theorem kummerRootSet_image
-    (n : ℕ+) (Delta : Subgroup Kˣ) (sigma : Gal(Omega/K)) :
+theorem kummerRootSet_image :
     sigma '' kummerRootSet (K := K) (Omega := Omega) n Delta =
       kummerRootSet (K := K) (Omega := Omega) n Delta := by
   apply Set.Subset.antisymm
@@ -170,13 +163,14 @@ theorem kummerRootSet_image
 
 /-- The actual radical field is stable under every automorphism of the
 separable closure. -/
-theorem kummerRadicalExtension_map
-    (n : ℕ+) (Delta : Subgroup Kˣ) (sigma : Gal(Omega/K)) :
+theorem kummerRadicalExtension_map :
     (kummerRadicalExtension (K := K) (Omega := Omega) n Delta).map sigma =
       kummerRadicalExtension (K := K) (Omega := Omega) n Delta := by
   rw [kummerRadicalExtension, IntermediateField.adjoin_map]
   congr 1
   exact kummerRootSet_image n Delta sigma
+
+end
 
 /-- The stability just proved is precisely normality over `K`. -/
 theorem kummerRadicalExtension_normal
@@ -196,13 +190,16 @@ theorem kummerRadicalExtension_isGalois
   rw [isGalois_iff]
   exact ⟨inferInstance, kummerRadicalExtension_normal n Delta⟩
 
+section
+
+variable [IsSepClosure K Omega] (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+  (Delta : Subgroup Kˣ)
+include n hmu Delta
+
 /-- On every radical generator, two automorphisms commute.  The quotient
 `sigma(beta) / beta` is an `n`-th root of unity, hence lies in and is fixed
 by the base field under the primitive-root hypothesis. -/
 theorem kummerRadicalExtension_generator_commute
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : Subgroup Kˣ)
     (sigma tau : Gal(kummerRadicalExtension (K := K) (Omega := Omega) n Delta/K))
     {beta : Omega}
     (hbeta : beta ∈ kummerRootSet (K := K) (Omega := Omega) n Delta) :
@@ -253,10 +250,7 @@ theorem kummerRadicalExtension_generator_commute
 
 /-- Hence `Gal(K(√[n]{Delta})/K)` is commutative.  Equality is checked on
 the radical generators of the adjoin. -/
-theorem kummerRadicalExtension_isMulCommutative
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : Subgroup Kˣ) :
+theorem kummerRadicalExtension_isMulCommutative :
     IsMulCommutative Gal(kummerRadicalExtension (K := K) (Omega := Omega) n Delta/K) := by
   refine ⟨⟨fun sigma tau => ?_⟩⟩
   apply AlgEquiv.coe_toAlgHom_injective
@@ -267,9 +261,6 @@ theorem kummerRadicalExtension_isMulCommutative
 /-- On every radical generator, the `n`-th power of an automorphism is the
 identity. -/
 theorem kummerRadicalExtension_generator_pow_eq_one
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : Subgroup Kˣ)
     (sigma : Gal(kummerRadicalExtension (K := K) (Omega := Omega) n Delta/K))
     {beta : Omega}
     (hbeta : beta ∈ kummerRootSet (K := K) (Omega := Omega) n Delta) :
@@ -322,9 +313,6 @@ theorem kummerRadicalExtension_generator_pow_eq_one
 
 /-- Every element of the Galois group has `n`-th power one. -/
 theorem kummerRadicalExtension_galois_pow_eq_one
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : Subgroup Kˣ)
     (sigma : Gal(kummerRadicalExtension (K := K) (Omega := Omega) n Delta/K)) :
     sigma ^ (n : ℕ) = 1 := by
   apply AlgEquiv.coe_toAlgHom_injective
@@ -334,14 +322,13 @@ theorem kummerRadicalExtension_galois_pow_eq_one
 
 /-- the Kummer correspondence, forward construction: adjoining the radicals attached to
 `Delta` produces an abelian Galois extension. -/
-theorem kummerRadicalExtension_isAbelianGalois
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : Subgroup Kˣ) :
+theorem kummerRadicalExtension_isAbelianGalois :
     IsAbelianGalois K
       (kummerRadicalExtension (K := K) (Omega := Omega) n Delta) where
   toIsGalois := kummerRadicalExtension_isGalois n Delta
   toIsMulCommutative := kummerRadicalExtension_isMulCommutative n hmu Delta
+
+end
 
 end RadicalExtension
 

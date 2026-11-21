@@ -34,19 +34,16 @@ theorem principal_value_eq_one_of_sixth_power_congr
     have hbc : Ideal.Quotient.mk m b * Ideal.Quotient.mk m c = 1 := by
       dsimp [c]
       simp only [map_mul, map_pow]
-      calc
-        Ideal.Quotient.mk m b * (Ideal.Quotient.mk m b ^ 5 * Ideal.Quotient.mk m d) =
-            Ideal.Quotient.mk m b ^ 6 * Ideal.Quotient.mk m d := by ring
-        _ = 1 := by rw [← hab']; exact had'
+      grind only
     simp only [map_mul, map_pow, map_one]
-    rw [hab', ← mul_pow, hbc, one_pow]
+    grind only
   have hac0 : a * c ^ (6 : ℕ) ≠ 0 := by
     intro hz
     have h1 : (1 : 𝓞 F) ∈ m := by simpa [hz] using m.neg_mem hac
     exact hmt (Ideal.eq_top_of_isUnit_mem m h1 isUnit_one)
   have hc0 : c ≠ 0 := by
     intro hz
-    simp [hz] at hac0
+    grind
   have hccop : Ideal.span {c} ⊔ m = ⊤ := by
     apply (Ideal.eq_top_iff_one _).mpr
     have hprod : a * c ^ (6 : ℕ) ∈ Ideal.span {c} ⊔ m := by

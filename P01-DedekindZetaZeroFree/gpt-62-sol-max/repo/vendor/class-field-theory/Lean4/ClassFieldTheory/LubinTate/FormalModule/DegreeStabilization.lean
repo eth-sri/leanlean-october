@@ -55,7 +55,7 @@ theorem truncTotal_succ_eq_iff_coeff_eq_degree_le
         MvPowerSeries.coeff d H = MvPowerSeries.coeff d H' := by
   constructor
   · intro h d hd
-    have hd' : d.degree < m + 1 := Nat.lt_succ_iff.mpr hd
+    have hd' := Nat.lt_succ_iff.mpr hd
     calc
       MvPowerSeries.coeff d H =
           (H.truncTotal (m + 1)).coeff d :=
@@ -68,7 +68,7 @@ theorem truncTotal_succ_eq_iff_coeff_eq_degree_le
     by_cases hd : d.degree < m + 1
     · rw [MvPowerSeries.coeff_truncTotal H hd,
         MvPowerSeries.coeff_truncTotal H' hd]
-      exact h d (Nat.lt_succ_iff.mp hd)
+      grind
     · rw [MvPowerSeries.coeff_truncTotal_eq_zero H (not_lt.mp hd),
         MvPowerSeries.coeff_truncTotal_eq_zero H' (not_lt.mp hd)]
 
@@ -95,9 +95,7 @@ private theorem truncTotal_powerSeries_subst_eq_of_truncTotal_eq
     (MvPowerSeries.subst (fun _ : Unit ↦ H) e.toPowerSeries).truncTotal k =
         (MvPowerSeries.subst
           (fun _ : Unit ↦ (H.truncTotal k).toMvPowerSeries)
-          e.toPowerSeries).truncTotal k := by
-      exact
-        MvPowerSeries.truncTotal_subst_eq_truncTotal_subst_truncTotal_of_le
+          e.toPowerSeries).truncTotal k := MvPowerSeries.truncTotal_subst_eq_truncTotal_subst_truncTotal_of_le
           (f := e.toPowerSeries) (a := fun _ : Unit ↦ H)
           (x := fun _ : Unit ↦ k) hHsubst.const (fun _ ↦ le_rfl)
     _ = (MvPowerSeries.subst
@@ -105,9 +103,7 @@ private theorem truncTotal_powerSeries_subst_eq_of_truncTotal_eq
           e.toPowerSeries).truncTotal k := by
       rw [htrunc]
     _ = (MvPowerSeries.subst (fun _ : Unit ↦ H')
-          e.toPowerSeries).truncTotal k := by
-      exact
-        (MvPowerSeries.truncTotal_subst_eq_truncTotal_subst_truncTotal_of_le
+          e.toPowerSeries).truncTotal k := (MvPowerSeries.truncTotal_subst_eq_truncTotal_subst_truncTotal_of_le
           (f := e.toPowerSeries) (a := fun _ : Unit ↦ H')
           (x := fun _ : Unit ↦ k) hH'subst.const
           (fun _ ↦ le_rfl)).symm
@@ -197,8 +193,11 @@ theorem coeff_defect_eq_of_coeff_eq_degree_le
     _ = MvPowerSeries.coeff d (defect e ebar H') :=
       MvPowerSeries.coeff_truncTotal (defect e ebar H') hd'
 
-private theorem degree_le_order_monomial_stabilization
-    {R : Type*} [CommRing R] {τ : Type*}
+section
+
+variable {R : Type*} [CommRing R]
+
+private theorem degree_le_order_monomial_stabilization {τ : Type*}
     (d : τ →₀ ℕ) (c : R) :
     (d.degree : ℕ∞) ≤ (MvPowerSeries.monomial d c).order := by
   classical
@@ -206,8 +205,7 @@ private theorem degree_le_order_monomial_stabilization
   · simp [hc]
   · rw [MvPowerSeries.order_monomial_of_ne_zero hc]
 
-private theorem natCast_le_order_pow_of_one_le_order_stabilization
-    {R : Type*} [CommRing R] {τ : Type*}
+private theorem natCast_le_order_pow_of_one_le_order_stabilization {τ : Type*}
     (f : MvPowerSeries τ R) (n : ℕ)
     (hf : (1 : ℕ∞) ≤ f.order) :
     (n : ℕ∞) ≤ (f ^ n).order := by
@@ -216,8 +214,7 @@ private theorem natCast_le_order_pow_of_one_le_order_stabilization
     _ ≤ n • f.order := nsmul_le_nsmul_right hf n
     _ ≤ (f ^ n).order := MvPowerSeries.le_order_pow n
 
-private theorem le_order_finset_sum_stabilization
-    {R : Type*} [CommRing R] {τ ι : Type*}
+private theorem le_order_finset_sum_stabilization {τ ι : Type*}
     {s : Finset ι} {f : ι → MvPowerSeries τ R} {m : ℕ∞}
     (h : ∀ i ∈ s, m ≤ (f i).order) :
     m ≤ (∑ i ∈ s, f i).order := by
@@ -232,8 +229,7 @@ private theorem le_order_finset_sum_stabilization
           (ih fun j hj => h j (Finset.mem_insert_of_mem hj))).trans
         MvPowerSeries.min_order_le_add
 
-private theorem natCast_sum_le_order_finset_prod_pow_stabilization
-    {R : Type*} [CommRing R] {τ ι : Type*}
+private theorem natCast_sum_le_order_finset_prod_pow_stabilization {τ ι : Type*}
     {s : Finset ι} (f : ι → MvPowerSeries τ R) (n : ι → ℕ)
     (hf : ∀ i ∈ s, (1 : ℕ∞) ≤ (f i).order) :
     ((∑ i ∈ s, n i : ℕ) : ℕ∞) ≤
@@ -256,8 +252,7 @@ private theorem natCast_sum_le_order_finset_prod_pow_stabilization
         _ ≤ ((f i) ^ n i * ∏ j ∈ s, (f j) ^ n j).order :=
           MvPowerSeries.le_order_mul
 
-private theorem order_sub_add_pred_le_order_pow_sub_pow_stabilization
-    {R : Type*} [CommRing R] {τ : Type*}
+private theorem order_sub_add_pred_le_order_pow_sub_pow_stabilization {τ : Type*}
     (f g : MvPowerSeries τ R)
     (hf : (1 : ℕ∞) ≤ f.order)
     (hg : (1 : ℕ∞) ≤ g.order)
@@ -294,8 +289,7 @@ private theorem order_sub_add_pred_le_order_pow_sub_pow_stabilization
     _ = (f ^ n - g ^ n).order :=
       congrArg (fun h : MvPowerSeries τ R => h.order) hfactor
 
-private theorem natCast_sum_add_one_le_order_prod_pow_sub_prod_pow_stabilization
-    {R : Type*} [CommRing R] {τ ι : Type*}
+private theorem natCast_sum_add_one_le_order_prod_pow_sub_prod_pow_stabilization {τ ι : Type*}
     {s : Finset ι}
     (f g : ι → MvPowerSeries τ R) (n : ι → ℕ)
     (hn : ∀ i ∈ s, n i ≠ 0)
@@ -394,6 +388,8 @@ private theorem natCast_sum_add_one_le_order_prod_pow_sub_prod_pow_stabilization
       exact
         (le_min hleft hright).trans
           MvPowerSeries.min_order_le_add
+
+end
 
  noncomputable def linearInVariableStabilization
     (π : F.valuationSubring) (i : σ) :
@@ -605,12 +601,14 @@ private theorem constantCoeff_monomial_eq_zero_stabilization
     MvPowerSeries.coeff_monomial_ne]
   exact Ne.symm hd
 
-private theorem coeff_pow_add_monomial_sub_pow_of_degree_le
-    {R : Type*} [CommRing R] {τ : Type*}
-    {H : MvPowerSeries τ R}
-    (hH : MvPowerSeries.constantCoeff H = 0)
-    (q d : τ →₀ ℕ) (hq : q.degree ≤ d.degree)
-    (hd : 1 ≤ d.degree) (c : R) (n : ℕ) :
+section
+
+variable {R : Type*} [CommRing R] {τ : Type*} {H : MvPowerSeries τ R}
+  (hH : MvPowerSeries.constantCoeff H = 0) (q d : τ →₀ ℕ) (hq : q.degree ≤ d.degree)
+  (hd : 1 ≤ d.degree) (c : R) (n : ℕ)
+include hH hq hd
+
+private theorem coeff_pow_add_monomial_sub_pow_of_degree_le :
     MvPowerSeries.coeff q
         ((H + MvPowerSeries.monomial d c) ^ n - H ^ n) =
       if n = 1 then (if q = d then c else 0) else 0 := by
@@ -674,12 +672,7 @@ private theorem coeff_pow_add_monomial_sub_pow_of_degree_le
       have hzero := MvPowerSeries.coeff_of_lt_order hlt
       simpa [A, M, hn, hn0] using hzero
 
-private theorem coeff_pow_add_monomial_of_degree_le
-    {R : Type*} [CommRing R] {τ : Type*}
-    {H : MvPowerSeries τ R}
-    (hH : MvPowerSeries.constantCoeff H = 0)
-    (q d : τ →₀ ℕ) (hq : q.degree ≤ d.degree)
-    (hd : 1 ≤ d.degree) (c : R) (n : ℕ) :
+private theorem coeff_pow_add_monomial_of_degree_le :
     MvPowerSeries.coeff q
         ((H + MvPowerSeries.monomial d c) ^ n) =
       MvPowerSeries.coeff q (H ^ n) +
@@ -689,6 +682,8 @@ private theorem coeff_pow_add_monomial_of_degree_le
       hH q d hq hd c n
   rw [map_sub, sub_eq_iff_eq_add] at h
   simpa [add_comm] using h
+
+end
 
 omit [Fintype σ] in
 private theorem coeff_subst_lubinTateSeries_add_monomial_of_degree_le

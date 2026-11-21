@@ -18,12 +18,15 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 variable (M : ∀ q, LocalImageData R q)
 
-theorem sourceStage_kernel_test
-    {V : Type*} [AddCommGroup V] [Module ℂ V]
-    (s : Finset (KPHilbert.Place F))
-    (L : RestrictedTensorSimple.Stage (plusLocal R M) s →ₗ[ℂ] V)
-    (hlocal : ∀ (x : ∀ p : s, plusLocal R M p) (p : s),
-      sourceQuotient R M p (x p) = 0 → L (PiTensorProduct.tprod ℂ x) = 0) :
+section
+
+variable {V : Type*} [AddCommGroup V] [Module ℂ V] (s : Finset (KPHilbert.Place F))
+  (L : RestrictedTensorSimple.Stage (plusLocal R M) s →ₗ[ℂ] V)
+  (hlocal : ∀ (x : ∀ p : s, plusLocal R M p) (p : s),
+      sourceQuotient R M p (x p) = 0 → L (PiTensorProduct.tprod ℂ x) = 0)
+include hlocal
+
+theorem sourceStage_kernel_test :
     LinearMap.ker (sourceStageQuotient R M s) ≤ LinearMap.ker L := by
   have hk := tensor_kernel_le_span (fun p : s => sourceQuotient R M p)
     (fun p => sourceQuotient_surjective R M p)
@@ -32,12 +35,7 @@ theorem sourceStage_kernel_test
   rintro y ⟨x, ⟨p, hp⟩, rfl⟩
   exact hlocal x p hp
 
-theorem sourceStage_descent
-    {V : Type*} [AddCommGroup V] [Module ℂ V]
-    (s : Finset (KPHilbert.Place F))
-    (L : RestrictedTensorSimple.Stage (plusLocal R M) s →ₗ[ℂ] V)
-    (hlocal : ∀ (x : ∀ p : s, plusLocal R M p) (p : s),
-      sourceQuotient R M p (x p) = 0 → L (PiTensorProduct.tprod ℂ x) = 0) :
+theorem sourceStage_descent :
     ∃! B : RestrictedTensorSimple.Stage (actualLocal R M) s →ₗ[ℂ] V,
       ∀ x, B (sourceStageQuotient R M s x) = L x := by
   obtain ⟨B, hB⟩ := KPLiteralResidueDescent.factor_through_surjection
@@ -49,6 +47,8 @@ theorem sourceStage_descent
   intro y
   obtain ⟨x, rfl⟩ := sourceStageQuotient_surjective R M s y
   rw [hC, hB]
+
+end
 
 theorem sourceStageQuotient_transition
     (e : ∀ p, plusLocal R M p) (bad : Finset (KPHilbert.Place F))
@@ -68,13 +68,16 @@ theorem sourceStageQuotient_transition
   funext p
   split_ifs <;> rfl
 
-theorem descendedStage_compatible
-    {V : Type*} [AddCommGroup V] [Module ℂ V]
-    (e : ∀ p, plusLocal R M p) (bad : Finset (KPHilbert.Place F))
-    (L : ∀ s : RestrictedTensorSimple.Level bad,
+section
+
+variable {V : Type*} [AddCommGroup V] [Module ℂ V] (e : ∀ p, plusLocal R M p)
+  (bad : Finset (KPHilbert.Place F)) (L : ∀ s : RestrictedTensorSimple.Level bad,
       RestrictedTensorSimple.Stage (plusLocal R M) s.val →ₗ[ℂ] V)
-    (hL : ∀ s t (hst : s ≤ t) x,
+  (hL : ∀ s t (hst : s ≤ t) x,
       L t (RestrictedTensorSimple.transition (plusLocal R M) e bad s t hst x) = L s x)
+include hL
+
+theorem descendedStage_compatible
     (B : ∀ s : RestrictedTensorSimple.Level bad,
       RestrictedTensorSimple.Stage (actualLocal R M) s.val →ₗ[ℂ] V)
     (hB : ∀ s x, B s (sourceStageQuotient R M s.val x) = L s x) :
@@ -92,12 +95,6 @@ theorem descendedStage_compatible
   rw [← he, hB, hL, hB]
 
 theorem sourceCore_descent
-    {V : Type*} [AddCommGroup V] [Module ℂ V]
-    (e : ∀ p, plusLocal R M p) (bad : Finset (KPHilbert.Place F))
-    (L : ∀ s : RestrictedTensorSimple.Level bad,
-      RestrictedTensorSimple.Stage (plusLocal R M) s.val →ₗ[ℂ] V)
-    (hL : ∀ s t (hst : s ≤ t) x,
-      L t (RestrictedTensorSimple.transition (plusLocal R M) e bad s t hst x) = L s x)
     (hlocal : ∀ (s : RestrictedTensorSimple.Level bad)
       (x : ∀ p : s.val, plusLocal R M p) (p : s.val),
       sourceQuotient R M p (x p) = 0 → L s (PiTensorProduct.tprod ℂ x) = 0) :
@@ -128,6 +125,8 @@ theorem sourceCore_descent
   obtain ⟨s, x, rfl⟩ := Module.DirectLimit.exists_of y
   obtain ⟨z, rfl⟩ := sourceStageQuotient_surjective R M s.val x
   exact (hC s z).trans ((hb s _).trans (hB s z)).symm
+
+end
 
 end DedekindZetaZeroFree.FourierContinuation.DetectedDictionary
 

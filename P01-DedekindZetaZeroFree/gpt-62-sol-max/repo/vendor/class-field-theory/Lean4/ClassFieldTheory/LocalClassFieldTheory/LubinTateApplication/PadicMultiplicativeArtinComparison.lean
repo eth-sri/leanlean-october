@@ -53,11 +53,14 @@ open LocalFieldTheory.DiscreteValuationField.ValuedExtension
 open ValuationTheory.DiscreteValuationField
 open ValuationTheory.DiscreteValuationField.ValuedExtension
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ) (u : (padicLocalField p).valuationSubringˣ)
+include p n u
+
 /-- The negative changed-uniformizer prime element as an actual unit of its
 completed fixed field.  Its norm is the changed base uniformizer `u p`. -/
-noncomputable def padicCompletedChangedUniformizerNegativePrimeUnit
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+noncomputable def padicCompletedChangedUniformizerNegativePrimeUnit :
     (padicCompletedChangedUniformizerFixedField p u n)ˣ :=
   Units.mk0
     (-padicCompletedChangedUniformizerPrimeElement p u n)
@@ -84,9 +87,7 @@ noncomputable def padicCompletedChangedUniformizerNegativePrimeUnit
 /-- The underlying field element of the negative changed prime unit is
 `-theta`. -/
 @[simp]
-theorem padicCompletedChangedUniformizerNegativePrimeUnit_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicCompletedChangedUniformizerNegativePrimeUnit_coe :
     (padicCompletedChangedUniformizerNegativePrimeUnit p n u :
       padicCompletedChangedUniformizerFixedField p u n) =
       -padicCompletedChangedUniformizerPrimeElement p u n :=
@@ -94,9 +95,7 @@ theorem padicCompletedChangedUniformizerNegativePrimeUnit_coe
 
 /-- The field-unit norm of the negative changed prime is the actual
 changed base uniformizer. -/
-theorem padicCompletedChangedUniformizerNegativePrimeUnit_norm
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicCompletedChangedUniformizerNegativePrimeUnit_norm :
     normUnits ℚ_[p]
         (padicCompletedChangedUniformizerFixedField p u n)
         (padicCompletedChangedUniformizerNegativePrimeUnit p n u) =
@@ -111,9 +110,7 @@ theorem padicCompletedChangedUniformizerNegativePrimeUnit_norm
 
 /-- The negative changed prime has normalized additive value `-1` in its
 completed fixed field. -/
-theorem padicCompletedChangedUniformizerNegativePrimeUnit_valuationMap
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicCompletedChangedUniformizerNegativePrimeUnit_valuationMap :
     let D := padicCompletedChangedUniformizerFixedField p u n
     letI : NontriviallyNormedField D :=
       finiteExtensionSpectralNormedField ℚ_[p] D
@@ -164,9 +161,7 @@ theorem padicCompletedChangedUniformizerNegativePrimeUnit_valuationMap
 /-- The actual relative local Artin image of the negative changed prime is
 the explicit inverse-coefficient-Frobenius candidate. -/
 theorem
-    padicCompletedChangedUniformizerRelativeArtin_negativePrime
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
+    padicCompletedChangedUniformizerRelativeArtin_negativePrime :
     let D := padicCompletedChangedUniformizerFixedField p u n
     let M := padicCompletedStandardChangedCompositum p u n
     letI : NontriviallyNormedField D :=
@@ -229,6 +224,8 @@ theorem
     _ = padicCompletedChangedUniformizerRelativeArtinCandidate p u n :=
       (padicCompletedChangedUniformizerRelativeArtinCandidate_eq_inverseArithmeticFrobenius
         p u n).symm
+
+end
 
 section PadicStandardLevelRestriction
 
@@ -308,10 +305,14 @@ theorem
 
 end PadicStandardLevelRestriction
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (n : ℕ)
+include p n
+
 /-- The chosen p-adic Lubin--Tate uniformizer is an actual norm from every
 finite multiplicative level, hence its actual local Artin image is trivial. -/
-theorem padicMultiplicativeAbelianLocalArtin_baseUniformizer
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicMultiplicativeAbelianLocalArtin_baseUniformizer :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     let L := standardLubinTateLevelField hπ n
     letI : FiniteDimensional ℚ_[p] L :=
@@ -341,8 +342,7 @@ theorem padicMultiplicativeAbelianLocalArtin_baseUniformizer
 determined by its valuation-zero part.  This is an equality of the actual
 maps: the discarded uniformizer power is an explicit norm from the standard
 Lubin--Tate level. -/
-theorem padicMultiplicativeAbelianLocalArtin_eq_uniformizerUnitPart
-    (p : ℕ) [Fact p.Prime] (n : ℕ) (x : ℚ_[p]ˣ) :
+theorem padicMultiplicativeAbelianLocalArtin_eq_uniformizerUnitPart (x : ℚ_[p]ˣ) :
     let F := padicLocalField p
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     let L := standardLubinTateLevelField hπ n
@@ -396,7 +396,6 @@ theorem padicMultiplicativeAbelianLocalArtin_eq_uniformizerUnitPart
 /-- Multiplying the chosen uniformizer by a p-adic valuation-ring unit does
 not change the actual local Artin value of the unit factor. -/
 theorem padicMultiplicativeAbelianLocalArtin_changedUniformizer
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     let L := standardLubinTateLevelField hπ n
@@ -446,7 +445,6 @@ negative changed prime has norm `u p`, its relative Artin image is the
 inverse arithmetic Frobenius, and norm--restriction carries that image to
 the direct `u`-action on the standard level. -/
 theorem padicMultiplicativeAbelianLocalArtin_eq_unitParameter
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     let T := standardLubinTateLevelField hπ n
@@ -545,43 +543,6 @@ theorem padicMultiplicativeAbelianLocalArtin_eq_unitParameter
       hnormRestriction
   exact h.symm
 
-/-- The actual local Artin action of a p-adic valuation-ring unit on the
-genuine multiplicative primitive point is exponentiation by the direct
-unit parameter. -/
-theorem padicMultiplicativeAbelianLocalArtin_primitiveRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ) :
-    let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-    let T := standardLubinTateLevelField hπ n
-    letI : FiniteDimensional ℚ_[p] T :=
-      standardLubinTateLevelField_finiteDimensional hπ n
-    letI : IsAbelianGalois ℚ_[p] T :=
-      standardLubinTateLevelField_isAbelianGalois
-        (padicLocalField p) hπ n
-    abelianLocalArtinMonoidHom ℚ_[p] T
-        (standardLubinTateUnitFactorFieldUnit (padicLocalField p) u)
-        (padicMultiplicativePrimitiveRoot p n) =
-      (padicMultiplicativePrimitiveRoot p n) ^
-        (PadicInt.toZModPow (n + 1)
-          ((padicIntEquivValuationSubring p).symm
-            (u : (padicLocalField p).valuationSubring))).val := by
-  let F := padicLocalField p
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let T := standardLubinTateLevelField hπ n
-  let : FiniteDimensional ℚ_[p] T :=
-    standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsAbelianGalois ℚ_[p] T :=
-    standardLubinTateLevelField_isAbelianGalois F hπ n
-  have hArtin :
-      abelianLocalArtinMonoidHom ℚ_[p] T
-          (standardLubinTateUnitFactorFieldUnit F u) =
-        standardLubinTateUnitParameterEquivGal F hπ n
-          (standardLubinTateUnitParameterClass F n u) :=
-    padicMultiplicativeAbelianLocalArtin_eq_unitParameter p n u
-  exact
-    (congrArg (fun σ : Gal(T / ℚ_[p]) =>
-      σ (padicMultiplicativePrimitiveRoot p n)) hArtin).trans
-      (padicMultiplicativePrimitiveRoot_unitParameterGaloisAction p n u)
 
 /-- A p-adic valuation-ring unit invisible at level `n` has trivial image
 under the actual abelian local Artin map of the multiplicative Lubin--Tate
@@ -592,7 +553,6 @@ unit is an actual norm, rather than merely postulating membership in the
 Artin kernel. -/
 theorem
     padicMultiplicativeAbelianLocalArtin_eq_one_of_mem_higherPrincipalUnitGroup
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ)
     (hu : u ∈
       CompleteDVF.higherPrincipalUnitGroup
@@ -626,8 +586,7 @@ theorem
 /-- The actual local Artin homomorphism on p-adic valuation-ring units,
 descended through the finite parameter quotient
 `O_pˣ / U_p^(n + 1)`. -/
-noncomputable def padicMultiplicativeArtinUnitParameterHom
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicMultiplicativeArtinUnitParameterHom :
     standardLubinTateUnitParameter (padicLocalField p) n →*
       Gal((standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) / ℚ_[p]) := by
@@ -656,7 +615,6 @@ noncomputable def padicMultiplicativeArtinUnitParameterHom
 recovers the actual Artin value of its valuation-ring-unit representative. -/
 @[simp]
 theorem padicMultiplicativeArtinUnitParameterHom_apply_class
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     let F := padicLocalField p
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
@@ -676,8 +634,7 @@ theorem padicMultiplicativeArtinUnitParameterHom_apply_class
 surjective.  Given an Artin preimage in `ℚ_pˣ`, remove its uniformizer power;
 that power has trivial Artin image because the chosen uniformizer is an
 actual norm from the Lubin--Tate level. -/
-theorem padicMultiplicativeArtinUnitParameterHom_surjective
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+theorem padicMultiplicativeArtinUnitParameterHom_surjective :
     Function.Surjective (padicMultiplicativeArtinUnitParameterHom p n) := by
   let F := padicLocalField p
   let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
@@ -710,8 +667,7 @@ actual Galois group through the actual local Artin map.
 This equivalence is constructed from the descended Artin map itself.  It
 does not identify its orientation with the independently constructed
 explicit Lubin--Tate equivalence. -/
-noncomputable def padicMultiplicativeArtinUnitParameterEquiv
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
+noncomputable def padicMultiplicativeArtinUnitParameterEquiv :
     standardLubinTateUnitParameter (padicLocalField p) n ≃*
       Gal((standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n) / ℚ_[p]) := by
@@ -739,7 +695,6 @@ noncomputable def padicMultiplicativeArtinUnitParameterEquiv
 as the actual local Artin automorphism of its representative. -/
 @[simp]
 theorem padicMultiplicativeArtinUnitParameterEquiv_apply_class
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     let F := padicLocalField p
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
@@ -755,250 +710,12 @@ theorem padicMultiplicativeArtinUnitParameterEquiv_apply_class
   dsimp only
   rfl
 
-/-- The subgroup of `ℚ_pˣ` generated by the chosen uniformizer and the
-valuation-ring units in `U^(n + 1)`. -/
-noncomputable def
-    padicMultiplicativeUniformizerHigherPrincipalUnitSubgroup
-    (p : ℕ) [Fact p.Prime] (n : ℕ) : Subgroup ℚ_[p]ˣ :=
-  let F := padicLocalField p
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  Subgroup.zpowers (standardLubinTateBaseUniformizerUnit hπ) ⊔
-    (CompleteDVF.higherPrincipalUnitGroup
-      F.toCompleteDVF (n + 1)).map
-        (CompleteDVF.valuationSubringUnitsToFieldUnits F.toCompleteDVF)
+end
 
-/-- The kernel of the actual local Artin map for the multiplicative p-adic
-level is exactly the subgroup generated by the chosen uniformizer and
-`U^(n + 1)`.
 
-The reverse containment uses the actual-Artin equivalence on finite unit
-parameters, not a postulated norm-subgroup formula. -/
-theorem padicMultiplicativeAbelianLocalArtin_ker
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    let F := padicLocalField p
-    let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-    let L := standardLubinTateLevelField hπ n
-    letI : FiniteDimensional ℚ_[p] L :=
-      standardLubinTateLevelField_finiteDimensional hπ n
-    letI : IsAbelianGalois ℚ_[p] L :=
-      standardLubinTateLevelField_isAbelianGalois F hπ n
-    (abelianLocalArtinMonoidHom ℚ_[p] L).ker =
-      padicMultiplicativeUniformizerHigherPrincipalUnitSubgroup p n := by
-  let F := padicLocalField p
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let L := standardLubinTateLevelField hπ n
-  let : FiniteDimensional ℚ_[p] L :=
-    standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsAbelianGalois ℚ_[p] L :=
-    standardLubinTateLevelField_isAbelianGalois F hπ n
-  let φ := abelianLocalArtinMonoidHom ℚ_[p] L
-  let ϖ : ℚ_[p]ˣ := standardLubinTateBaseUniformizerUnit hπ
-  let H : Subgroup F.valuationSubringˣ :=
-    CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1)
-  let j : F.valuationSubringˣ →* ℚ_[p]ˣ :=
-    CompleteDVF.valuationSubringUnitsToFieldUnits F.toCompleteDVF
-  change φ.ker = Subgroup.zpowers ϖ ⊔ H.map j
-  apply le_antisymm
-  · intro x hx
-    let u : F.valuationSubringˣ :=
-      CompleteDVF.higherPrincipalUnitGroup.fieldUnitUniformizerUnitPart
-        F.toCompleteDVF hπ x
-    let e : ℤ :=
-      CompleteDVF.uniformizerValueExponent F.toCompleteDVF hπ x
-    have hxArtin : φ x = 1 :=
-      MonoidHom.mem_ker.mp hx
-    have hreduce :
-        φ x = φ (standardLubinTateUnitFactorFieldUnit F u) := by
-      simpa only [φ, u] using
-        padicMultiplicativeAbelianLocalArtin_eq_uniformizerUnitPart
-          p n x
-    have huArtin :
-        φ (standardLubinTateUnitFactorFieldUnit F u) = 1 :=
-      hreduce.symm.trans hxArtin
-    have huClass :
-        standardLubinTateUnitParameterClass F n u = 1 := by
-      apply (padicMultiplicativeArtinUnitParameterEquiv p n).injective
-      rw [
-        padicMultiplicativeArtinUnitParameterEquiv_apply_class,
-        map_one]
-      exact huArtin
-    have hu : u ∈ H := by
-      exact
-        (QuotientGroup.eq_one_iff (N := H) u).1 huClass
-    have huMap : j u ∈ H.map j :=
-      ⟨u, hu, rfl⟩
-    have hunit :
-        j u ∈ Subgroup.zpowers ϖ ⊔ H.map j :=
-      (show H.map j ≤ Subgroup.zpowers ϖ ⊔ H.map j from le_sup_right)
-        huMap
-    have hpow :
-        ϖ ^ e ∈ Subgroup.zpowers ϖ ⊔ H.map j :=
-      (show Subgroup.zpowers ϖ ≤
-          Subgroup.zpowers ϖ ⊔ H.map j from le_sup_left)
-        (Subgroup.zpow_mem_zpowers ϖ e)
-    have huField :
-        j u = x * ϖ ^ (-e) := by
-      apply Units.ext
-      simpa only [
-        j, u, e, ϖ,
-        CompleteDVF.coe_valuationSubringUnitsToFieldUnits_apply,
-        CompleteDVF.higherPrincipalUnitGroup.coe_valuationSubringUnitFieldUnitHom_apply,
-        standardLubinTateBaseUniformizerUnit] using
-        congrArg (fun z : ℚ_[p]ˣ => (z : ℚ_[p]))
-          (CompleteDVF.higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom_fieldUnitUniformizerUnitPart
-            F.toCompleteDVF hπ x)
-    have hxDecomposition :
-        x = j u * ϖ ^ e := by
-      rw [huField]
-      simp [mul_assoc]
-    rw [hxDecomposition]
-    exact
-      (Subgroup.zpowers ϖ ⊔ H.map j).mul_mem hunit hpow
-  · apply sup_le
-    · apply Subgroup.zpowers_le_of_mem
-      rw [MonoidHom.mem_ker]
-      simpa only [φ, ϖ] using
-        padicMultiplicativeAbelianLocalArtin_baseUniformizer p n
-    · rintro _ ⟨u, hu, rfl⟩
-      rw [MonoidHom.mem_ker]
-      change
-        abelianLocalArtinMonoidHom ℚ_[p] L
-            (standardLubinTateUnitFactorFieldUnit F u) =
-          1
-      exact
-        padicMultiplicativeAbelianLocalArtin_eq_one_of_mem_higherPrincipalUnitGroup
-          p n u hu
 
-/-- The actual norm subgroup of the multiplicative p-adic level is the
-uniformizer subgroup times `U^(n + 1)`. -/
-theorem
-    padicMultiplicativeLocalNormSubgroup_eq_uniformizerHigherPrincipalUnitSubgroup
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    let F := padicLocalField p
-    let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-    let L := standardLubinTateLevelField hπ n
-    letI : FiniteDimensional ℚ_[p] L :=
-      standardLubinTateLevelField_finiteDimensional hπ n
-    letI : IsAbelianGalois ℚ_[p] L :=
-      standardLubinTateLevelField_isAbelianGalois F hπ n
-    localNormSubgroup ℚ_[p] L =
-      padicMultiplicativeUniformizerHigherPrincipalUnitSubgroup p n := by
-  let F := padicLocalField p
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let L := standardLubinTateLevelField hπ n
-  let : FiniteDimensional ℚ_[p] L :=
-    standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsAbelianGalois ℚ_[p] L :=
-    standardLubinTateLevelField_isAbelianGalois F hπ n
-  calc
-    localNormSubgroup ℚ_[p] L =
-        (abelianLocalArtinMonoidHom ℚ_[p] L).ker :=
-      (abelianLocalArtinMonoidHom_ker ℚ_[p] L).symm
-    _ = padicMultiplicativeUniformizerHigherPrincipalUnitSubgroup p n :=
-      padicMultiplicativeAbelianLocalArtin_ker p n
 
-/-- On `U^(n + 1)`, the actual local Artin map agrees with the inverse
-finite Lubin--Tate unit-parameter automorphism. -/
-theorem
-    padicMultiplicativeAbelianLocalArtin_eq_unitParameter_of_mem_higherPrincipalUnitGroup
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
-    (hu : u ∈
-      CompleteDVF.higherPrincipalUnitGroup
-        (padicLocalField p).toCompleteDVF (n + 1)) :
-    let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-    let L := standardLubinTateLevelField hπ n
-    letI : FiniteDimensional ℚ_[p] L :=
-      standardLubinTateLevelField_finiteDimensional hπ n
-    letI : IsAbelianGalois ℚ_[p] L :=
-      standardLubinTateLevelField_isAbelianGalois
-        (padicLocalField p) hπ n
-    abelianLocalArtinMonoidHom ℚ_[p] L
-        (standardLubinTateUnitFactorFieldUnit (padicLocalField p) u) =
-      (standardLubinTateUnitParameterEquivGal
-        (padicLocalField p) hπ n
-        (standardLubinTateUnitParameterClass
-          (padicLocalField p) n u))⁻¹ := by
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let L := standardLubinTateLevelField hπ n
-  let : FiniteDimensional ℚ_[p] L :=
-    standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsAbelianGalois ℚ_[p] L :=
-    standardLubinTateLevelField_isAbelianGalois
-      (padicLocalField p) hπ n
-  have hArtin :
-      abelianLocalArtinMonoidHom ℚ_[p] L
-          (standardLubinTateUnitFactorFieldUnit (padicLocalField p) u) =
-        1 :=
-    padicMultiplicativeAbelianLocalArtin_eq_one_of_mem_higherPrincipalUnitGroup
-      p n u hu
-  have hParameter :
-      standardLubinTateUnitParameterClass (padicLocalField p) n u = 1 := by
-    exact
-      (QuotientGroup.eq_one_iff
-        (N :=
-          CompleteDVF.higherPrincipalUnitGroup
-            (padicLocalField p).toCompleteDVF (n + 1)) u).2 hu
-  calc
-    abelianLocalArtinMonoidHom ℚ_[p] L
-        (standardLubinTateUnitFactorFieldUnit (padicLocalField p) u) = 1 :=
-      hArtin
-    _ = (standardLubinTateUnitParameterEquivGal
-        (padicLocalField p) hπ n
-        (standardLubinTateUnitParameterClass
-          (padicLocalField p) n u))⁻¹ := by
-      rw [hParameter, map_one, inv_one]
 
-/-- On an invisible principal unit, the actual local Artin automorphism acts
-on the chosen primitive `p ^ (n + 1)`-st root by the explicit inverse-unit
-exponent. -/
-theorem
-    padicMultiplicativeAbelianLocalArtin_primitiveRoot_of_mem_higherPrincipalUnitGroup
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
-    (hu : u ∈
-      CompleteDVF.higherPrincipalUnitGroup
-        (padicLocalField p).toCompleteDVF (n + 1)) :
-    let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-    let L := standardLubinTateLevelField hπ n
-    letI : FiniteDimensional ℚ_[p] L :=
-      standardLubinTateLevelField_finiteDimensional hπ n
-    letI : IsAbelianGalois ℚ_[p] L :=
-      standardLubinTateLevelField_isAbelianGalois
-        (padicLocalField p) hπ n
-    (abelianLocalArtinMonoidHom ℚ_[p] L
-        (standardLubinTateUnitFactorFieldUnit (padicLocalField p) u))
-        (padicMultiplicativePrimitiveRoot p n) =
-      padicMultiplicativePrimitiveRoot p n ^
-        (PadicInt.toZModPow (p := p) (n + 1)
-          ((padicIntEquivValuationSubring p).symm
-            ((u⁻¹ : (padicLocalField p).valuationSubringˣ) :
-              (padicLocalField p).valuationSubring))).val := by
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let L := standardLubinTateLevelField hπ n
-  let : FiniteDimensional ℚ_[p] L :=
-    standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsAbelianGalois ℚ_[p] L :=
-    standardLubinTateLevelField_isAbelianGalois
-      (padicLocalField p) hπ n
-  let F := padicLocalField p
-  let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
-  let L := standardLubinTateLevelField hπ n
-  let : FiniteDimensional ℚ_[p] L :=
-    standardLubinTateLevelField_finiteDimensional hπ n
-  let : IsAbelianGalois ℚ_[p] L :=
-    standardLubinTateLevelField_isAbelianGalois F hπ n
-  have hArtin :
-      abelianLocalArtinMonoidHom ℚ_[p] L
-          (standardLubinTateUnitFactorFieldUnit F u) =
-        (standardLubinTateUnitParameterEquivGal F hπ n
-          (standardLubinTateUnitParameterClass F n u))⁻¹ :=
-    padicMultiplicativeAbelianLocalArtin_eq_unitParameter_of_mem_higherPrincipalUnitGroup
-      p n u hu
-  exact
-    (congrArg (fun σ : Gal(L / ℚ_[p]) =>
-      σ (padicMultiplicativePrimitiveRoot p n)) hArtin).trans
-      (padicMultiplicativePrimitiveRoot_galoisAction p n u)
 
 end LocalClassFieldTheory
 

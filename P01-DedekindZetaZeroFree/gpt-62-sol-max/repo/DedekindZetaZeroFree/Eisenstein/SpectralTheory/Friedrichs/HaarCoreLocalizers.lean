@@ -65,9 +65,8 @@ theorem kp_cont_actual_fixed_haar_core_localizers
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hK : IsCompact K) :
     Nonempty (KPContActualFixedHaarCoreLocalizers.Localizers F ζ hζ U R P H K hK) := by
-  obtain ⟨M,hM⟩ := KPCoreChartLocalizers.actual_realization_and_localizers F ζ hζ H.totallyComplex U (H.atlas U)
-  obtain ⟨C⟩ := hM K hK
-  choose D hD hDb using (fun i => KPCoreChartLocalizers.cutoff_derivative_bounds (C.smooth_cutoff i) (C.compact_cutoff i))
+  obtain ⟨C⟩ := CoreChartLocalizers.finite_cutoffs F ζ hζ H.totallyComplex U (H.atlas U) K hK
+  choose D hD hDb using (fun i => CoreChartLocalizers.cutoff_derivative_bounds (C.smooth_cutoff i) (C.compact_cutoff i))
   have hcut : ∀ i x, |C.cutoff i x| ≤ D i 0 := by
     intro i x
     simpa only [norm_iteratedFDeriv_zero, Real.norm_eq_abs] using hDb i 0 x
@@ -87,73 +86,32 @@ theorem kp_cont_actual_fixed_haar_core_localizers
     (C.invariant_cutoff i) (D i 0) (hD i 0) (hcut i) (hchart i))
   choose Rmap hRn hRf using (fun i => KPFixedHaarNormalBallMaps.averagedZeroExtension_exists F ζ hζ U R P H
     K hK (C.chart i) (hchart i))
-  choose B hB using (fun i => KPFixedHaarLocalizersBodies.metric_upper_bound F ζ hζ U R P H (C.chart i))
   refine ⟨{
     count := C.count
-    empty_case := C.empty_case
     chart := C.chart
-    open_image := C.open_image
-    quotient_chart := C.quotient_chart
-    quotient_chart_formula := C.quotient_chart_formula
-    orbit_relation := C.orbit_relation
-    line_orbit_relation := C.line_orbit_relation
-    line_chart_surjective := C.line_chart_surjective
-    invariant_ball := C.invariant_ball
-    unitary_character := C.unitary_character
     chart_measure := hchart
     lower := fun i => ((H.disintegration U).componentWeight (C.chart i).component).toReal * (C.chart i).lower
-    upper := fun i => ((H.disintegration U).componentWeight (C.chart i).component).toReal * (C.chart i).upper
     positive_lower := fun i => (KPFixedHaarLocalizersBodies.actualWeight_bounds F ζ hζ U R P H (C.chart i)).1
-    density_bounds := fun i => (KPFixedHaarLocalizersBodies.actualWeight_bounds F ζ hζ U R P H (C.chart i)).2
-    phi := C.phi
-    nonnegative_phi := C.nonnegative_phi
-    compact_phi := C.compact_phi
-    support_phi := C.support_phi
-    smooth_phi := C.smooth_phi
-    neighborhood := C.neighborhood
-    open_neighborhood := C.open_neighborhood
-    covers_compact := C.covers_compact
-    partition := C.partition
+    density_lower_bound := fun i x hx =>
+      ((KPFixedHaarLocalizersBodies.actualWeight_bounds F ζ hζ U R P H (C.chart i)).2 x hx).1
     cutoff := C.cutoff
-    cutoff_formula := C.cutoff_formula
     smooth_cutoff := C.smooth_cutoff
-    compact_cutoff := C.compact_cutoff
     support_cutoff := C.support_cutoff
-    invariant_cutoff := C.invariant_cutoff
     derivativeBound := D
     nonnegative_derivativeBound := hD
     derivative_bounds := fun i k x hx => hDb i k x
     ellipticity := C.ellipticity
-    metricUpper := B
     positive_ellipticity := C.positive_ellipticity
-    metric_bounds := fun i x hx ξ => ⟨C.uniform_ellipticity i x (subset_closure (C.support_cutoff i hx)) ξ,
-      hB i x (subset_closure (C.support_cutoff i hx)) ξ⟩
+    ellipticity_bound := fun i x hx ξ =>
+      C.uniform_ellipticity i x (subset_closure (C.support_cutoff i hx)) ξ
     T := T
     T_formula := hT
     Rmap := Rmap
-    R_formula := hRf
     reconstruction := KPFixedHaarLocalizersBodies.finite_reconstruction F ζ hζ U R P H
       K hK C.chart C.phi C.smooth_phi C.support_phi
       (fun b hb => C.partition b (C.covers_compact hb)) C.cutoff C.cutoff_formula C.invariant_cutoff
       (fun i => D i 0) (fun i => hD i 0) hphi T hT Rmap hRf hchart
-    smooth_test_image := ?_
   }⟩
-  intro i f
-  let fs : BorelL2Scalars F ζ hζ U R := ⟨KPContActualSectorSmoothTestModules.scalarCovered f,
-    (kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization).scalar_continuous f |>.measurable,
-    KPContActualSectorTestEmbeddings.scalar_memLp f⟩
-  let ss := borelS F ζ hζ U R P H fs
-  have hs : sectorLineIsometry F ζ hζ U R P H (KPContActualSectorTestEmbeddings.iota f) = mk F ζ hζ U R P H ss :=
-    (kp_cont_sector_line_l2_isometry F ζ hζ U R P H).forward _ fs
-      (KPContActualSectorTestEmbeddings.scalar_represented f).symm
-  have hsm : IsSmoothSections F ζ hζ U R P H ss.val := by
-    change IsSmoothSections F ζ hζ U R P H (KPContSectorScalarLineAlgebra.S F ζ hζ U R P H fs.val)
-    rw [(kp_cont_actual_sector_smooth_test_modules F ζ hζ μG hμG U R hR P H realization).covered_realization f]
-    exact (kp_cont_actual_sector_smooth_test_modules F ζ hζ μG hμG U R hR P H realization).scalar_smooth f
-  obtain ⟨hg,hgc,hgs⟩ := KPFixedHaarLocalizersBodies.smooth_cutoff_coefficient F ζ hζ U R P H
-    (C.chart i) (C.cutoff i) (C.smooth_cutoff i) (C.compact_cutoff i) (C.support_cutoff i) ss.val hsm
-  exact ⟨_,hg,hgc,hgs,hT i _ ss hs⟩
-
 end DedekindZetaZeroFree
 
 end

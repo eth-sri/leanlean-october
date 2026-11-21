@@ -26,7 +26,7 @@ private theorem quotient_value_norm_le {n : ℕ} (mid outer : LocalBall n)
     apply Lp.ext
     filter_upwards [hq, hq'] with x hx hx'
     exact hx.trans hx'.symm
-  simpa only [he] using hnorm
+  grind
 
 private theorem gradient_norm_le_sobolevNorm {n : ℕ} {outer : LocalBall n}
     (u : IntegerSobolev outer 1) (k : Fin n) :
@@ -36,7 +36,7 @@ private theorem gradient_norm_le_sobolevNorm {n : ℕ} {outer : LocalBall n}
     exact Finset.single_le_sum (fun α _ => sq_nonneg ‖u.derivatives α‖)
       (Finset.mem_univ (firstIndex k))
   have hu : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
-  nlinarith [norm_nonneg (gradient u k)]
+  nlinarith
 
 private theorem l2_pairing_bound {X : Type*} [MeasurableSpace X] {μ : Measure X}
     (f g : X → ℂ) (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
@@ -66,7 +66,7 @@ private theorem component_norm_le_sobolevNorm {n : ℕ} {outer : LocalBall n}
     rw [u.sobolevNorm_sq]
     exact Finset.single_le_sum (fun β _ => sq_nonneg ‖u.derivatives β‖) (Finset.mem_univ α)
   have hu : 0 ≤ u.sobolevNorm := Real.sqrt_nonneg _
-  nlinarith [norm_nonneg (u.derivatives α)]
+  nlinarith
 
 private theorem compact_sobolev_extension {n : ℕ} (B T : LocalBall n)
     (v : IntegerSobolev B 1) (K : Set (Space n)) (hK : IsCompact K)
@@ -444,7 +444,6 @@ private theorem integrated_flux_bound {X : Type*} [MeasurableSpace X] {μ : Meas
   have heb : ∀ i j, ‖∫ x, e i j x ∂μ‖ ≤ K * V * W + L * T * (V + W) := by
     intro i j
     dsimp only [e]
-    change ‖∫ x, (a i j x * F j x * star (H i x) + b i j x * U j x * star (S i x)) ∂μ‖ ≤ _
     have h1 : Integrable (fun x => a i j x * F j x * star (H i x)) μ :=
       (show MemLp (fun x => a i j x * F j x) 2 μ from (ha i j).fun_mul (hF j)).integrable_mul (hH i).star
     have h2 : Integrable (fun x => b i j x * U j x * star (S i x)) μ :=
@@ -674,7 +673,7 @@ theorem uniform_difference_energy_inequality (n : ℕ) (hn : 0 < n)
     simp only [FluxRaw.cutoffGradient, Set.indicator_of_mem hm]
     rw [← hx j]
     dsimp [a, b, F, H, S, U, d]
-    simp only [map_add, map_mul, map_pow, Complex.star_def, Complex.conj_ofReal]
+    simp only [map_add, map_mul, map_pow, Complex.conj_ofReal]
     ring
   rw [hiEq] at hib
   have hlower := difference_lower_order_bound mid outer hsub η q hη G M hG.le hM hd

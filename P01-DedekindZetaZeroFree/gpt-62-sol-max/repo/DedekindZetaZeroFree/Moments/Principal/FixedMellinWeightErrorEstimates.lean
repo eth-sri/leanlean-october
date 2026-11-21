@@ -1,3 +1,0 @@
-module
-public import DedekindZetaZeroFree.Moments.Comparison.PoissonMellinKernelData
-public import DedekindZetaZeroFree.Moments.Comparison.ContourExponentMargins

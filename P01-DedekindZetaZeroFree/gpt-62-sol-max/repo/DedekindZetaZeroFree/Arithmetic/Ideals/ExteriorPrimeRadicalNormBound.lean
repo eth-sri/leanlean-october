@@ -53,6 +53,12 @@ private lemma valuationIdeal_comap (F : Type) [Field F] [NumberField F]
   change v.valuation F (r : F) < 1 ↔ r ∈ v.asIdeal
   exact v.valuation_lt_one_iff_mem r
 
+theorem map_le_valuationIdeal {F : Type} [Field F] [NumberField F]
+    {S : Set (HeightOneSpectrum (𝓞 F))} {v : HeightOneSpectrum (𝓞 F)} {hv : v ∉ S}
+    {I : Ideal (𝓞 F)} :
+    I.map (algebraMap (𝓞 F) (S.integer F)) ≤ valuationIdeal F S v hv ↔ I ≤ v.asIdeal := by
+  rw [Ideal.map_le_iff_le_comap, valuationIdeal_comap]
+
 theorem exterior_prime_product_le_radical_index
     (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)

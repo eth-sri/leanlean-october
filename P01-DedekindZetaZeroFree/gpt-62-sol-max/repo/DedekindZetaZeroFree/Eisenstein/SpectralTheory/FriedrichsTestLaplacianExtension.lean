@@ -9,10 +9,13 @@ public import DedekindZetaZeroFree.Analysis.QuadraticForms.FriedrichsVariational
 noncomputable section
 namespace DedekindZetaZeroFree
 
+section
+
+variable {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V] (D : H →ₗ.[ℂ] V)
+  (δ : V →ₗ.[ℂ] H)
+
 private theorem closedGradient_test_inner_eq
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (δ : V →ₗ.[ℂ] H)
     (hclosable : D.IsClosable) (hformal : D.IsFormalAdjoint δ)
     (himage : ∀ f : D.domain, D f ∈ δ.domain) (f : D.domain) (v : D.closure.domain) :
     inner ℂ (D.closure ⟨(f : H), D.le_closure.1 f.property⟩) (D.closure v) =
@@ -35,9 +38,6 @@ private theorem closedGradient_test_inner_eq
     ← inner_conj_symm (δ ⟨D f, himage f⟩) (v : H), hlim]
 
 theorem closedGradientFriedrichsOperator_test_domain
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (δ : V →ₗ.[ℂ] H)
     (hdense : Dense (D.domain : Set H)) (hclosable : D.IsClosable)
     (hδ : Dense (δ.domain : Set V)) (hformal : D.IsFormalAdjoint δ)
     (himage : ∀ f : D.domain, D f ∈ δ.domain) :
@@ -49,9 +49,6 @@ theorem closedGradientFriedrichsOperator_test_domain
         ⟨f, hf⟩ v)).1
 
 theorem kp_cont_smooth_test_operator_extension
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (δ : V →ₗ.[ℂ] H)
     (hdense : Dense (D.domain : Set H)) (hclosable : D.IsClosable)
     (hδ : Dense (δ.domain : Set V)) (hformal : D.IsFormalAdjoint δ)
     (himage : ∀ f : D.domain, D f ∈ δ.domain) :
@@ -70,6 +67,8 @@ theorem kp_cont_smooth_test_operator_extension
       = ⟨(f : H), h.1⟩ := Subtype.ext rfl
   rw [hsub]
   exact h.2
+
+end
 
 namespace KPTestGreenTransfer
 

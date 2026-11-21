@@ -101,12 +101,12 @@ theorem signed_bruhat_iwasawa_coordinate
       rw [← Subgroup.coe_inv, ← map_inv]
       rfl
     dsimp [b, k]
-    simp only [Subgroup.coe_mul, Subgroup.coe_inv, hi]
+    simp only [hi]
     group
   rw [borel_coordinate_of_compact_factor F ζ hζ q S _ b k he]
   dsimp [b, u]
   simp only [map_mul, map_inv, S.borel.retract_upperRoot, S.borel.retract_torus,
-    map_one, B.coordinate_eq, B.central_coordinate, inv_one, one_mul, mul_one, inv_pow]
+    B.coordinate_eq, B.central_coordinate, inv_one, one_mul, mul_one]
   congr 2
 
 theorem negative_shell_iwasawa_coordinate

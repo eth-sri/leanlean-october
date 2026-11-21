@@ -101,9 +101,12 @@ private lemma det₂_linearEquiv (g : (K × K) ≃ₗ[K] (K × K)) (x y : K × K
 
 end DeterminantLinearEquiv
 
+section
+
+variable (R : Type*) [CommRing R] [IsDedekindDomain R] (K : Type*) [Field K] [Algebra R K]
+  [IsFractionRing R K]
+
 theorem kp_cusp_determinantSubmodule_fg
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) :
     (determinantSubmodule R K M.val).FG := by
   obtain ⟨S, hS⟩ := M.property.fg
@@ -139,15 +142,11 @@ theorem kp_cusp_determinantSubmodule_fg
         hx hy
 
 theorem kp_cusp_determinantSubmodule_isFractional
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) :
     IsFractional R⁰ (determinantSubmodule R K M.val) := by
   exact FractionalIdeal.isFractional_of_fg (kp_cusp_determinantSubmodule_fg R K M)
 
 theorem kp_cusp_determinantSubmodule_ne_bot
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) :
     determinantSubmodule R K M.val ≠ ⊥ := by
   intro hbot
@@ -180,8 +179,6 @@ theorem kp_cusp_determinantSubmodule_ne_bot
   exact one_ne_zero hstd
 
 theorem kp_cusp_determinantSubmodule_map
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : Submodule R (K × K)) (g : (K × K) ≃ₗ[K] (K × K)) :
     determinantSubmodule R K (Submodule.map (g.toLinearMap.restrictScalars R) M) =
       Submodule.map (LinearMap.mulLeft R (LinearMap.det g.toLinearMap))
@@ -209,8 +206,6 @@ theorem kp_cusp_determinantSubmodule_map
       ⟨g x, Submodule.mem_map_of_mem hx, g y, Submodule.mem_map_of_mem hy, rfl⟩
 
 theorem kp_cusp_determinantSubmodule_ideal_coordinates
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : Submodule R (K × K))
     (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0)
     (v w : K × K) (hvw : det₂ K v w ≠ 0)
@@ -267,8 +262,6 @@ theorem kp_cusp_determinantSubmodule_ideal_coordinates
   exact hcoec.symm
 
 theorem kp_cusp_determinantSubmodule_coordinateLattice
-    (R : Type*) [CommRing R] [IsDedekindDomain R]
-    (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (I J : FractionalIdeal R⁰ K) :
     determinantSubmodule R K (coordinateLattice R K I J) =
       (I * J : FractionalIdeal R⁰ K).val := by
@@ -300,5 +293,7 @@ theorem kp_cusp_determinantSubmodule_coordinateLattice
          rfl⟩
   rw [hmain]
   exact hcoe.symm
+
+end
 
 end DedekindZetaZeroFree

@@ -38,26 +38,6 @@ structure JointReverseAbsoluteSources extends JointSameResidueProfileSources R N
   absolute : ReverseAbsolute R transport sources realization packet
 structure JointUpperVanishingSources extends JointReverseAbsoluteSources R N where
   upperZero : BothUpperZero R transport sources realization packet
-structure JointSignedUnfoldingSources extends JointUpperVanishingSources R N where
-  unfolding : SignedUnfolding R transport sources realization packet
-
-def JointSignedUnfoldingSources.certified (C : JointSignedUnfoldingSources R N) : CertifiedPacket R where
-  aligned := C.aligned
-  transport := C.transport
-  sources := C.sources
-  realization := C.realization
-  factorization := C.factorization
-  localHaarTransport := C.localHaarTransport
-  exterior := C.exterior
-  packet := C.packet
-  forward := C.forward
-  constantTerm := C.constantTerm
-  mellin := C.mellin
-  descent := C.descent
-  profiles := C.profiles
-  absolute := C.absolute
-  upperZero := C.upperZero
-  unfolding := C.unfolding
 end DedekindZetaZeroFree.MomentSources
 
 end

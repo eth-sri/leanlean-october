@@ -22,7 +22,7 @@ theorem strip_bound_of_tail_bound {a b : ℝ} (f : ℂ → ℂ)
     convert h using 1
     ext s
     simp only [Set.mem_preimage, Set.mem_prod, Set.mem_Icc, Set.mem_setOf_eq,
-      Complex.equivRealProdCLM_apply, abs_le]
+      abs_le]
     tauto
   obtain ⟨C, hC⟩ := hK.exists_bound_of_continuousOn (hf.mono (fun s hs => hs.1))
   refine ⟨max C B, hB0.trans (le_max_right _ _), fun σ t hσ => ?_⟩

@@ -80,19 +80,7 @@ omit [NumberField K] [NumberField L] in
 @[simp]
 theorem finitePlaceEquiv_one
     (v : HeightOneSpectrum (𝓞 L)) :
-    finitePlaceEquiv K L (1 : L ≃ₐ[K] L) v = v := by
-  apply HeightOneSpectrum.ext
-  ext x
-  change
-    NumberField.RingOfIntegers.mapRingHom (1 : L ≃ₐ[K] L).symm.toRingHom x ∈
-        v.asIdeal ↔
-      x ∈ v.asIdeal
-  have hx :
-      NumberField.RingOfIntegers.mapRingHom (1 : L ≃ₐ[K] L).symm.toRingHom x =
-        x := by
-    apply NumberField.RingOfIntegers.ext
-    rfl
-  rw [hx]
+    finitePlaceEquiv K L (1 : L ≃ₐ[K] L) v = v := rfl
 
 omit [NumberField K] [NumberField L] in
 @[simp]
@@ -101,22 +89,7 @@ theorem finitePlaceEquiv_mul
     (v : HeightOneSpectrum (𝓞 L)) :
     finitePlaceEquiv K L (σ * τ) v =
       finitePlaceEquiv K L σ
-        (finitePlaceEquiv K L τ v) := by
-  apply HeightOneSpectrum.ext
-  ext x
-  change
-    NumberField.RingOfIntegers.mapRingHom (σ * τ).symm.toRingHom x ∈
-        v.asIdeal ↔
-      NumberField.RingOfIntegers.mapRingHom τ.symm.toRingHom
-          (NumberField.RingOfIntegers.mapRingHom σ.symm.toRingHom x) ∈
-        v.asIdeal
-  have hx :
-      NumberField.RingOfIntegers.mapRingHom (σ * τ).symm.toRingHom x =
-        NumberField.RingOfIntegers.mapRingHom τ.symm.toRingHom
-          (NumberField.RingOfIntegers.mapRingHom σ.symm.toRingHom x) := by
-    apply NumberField.RingOfIntegers.ext
-    rfl
-  rw [hx]
+        (finitePlaceEquiv K L τ v) := rfl
 
 omit [NumberField K] [NumberField L] in
 @[simp]
@@ -303,15 +276,6 @@ theorem IsGaloisStableFinitePlaces.smul_mem
     σ • v ∈ S :=
   (hS σ v).mp hv
 
-omit [NumberField K] [NumberField L] in
-theorem IsGaloisStableFinitePlaces.smul_not_mem
-    {S : Finset (HeightOneSpectrum (𝓞 L))}
-    (hS : IsGaloisStableFinitePlaces K L S)
-    (σ : L ≃ₐ[K] L) {v : HeightOneSpectrum (𝓞 L)}
-    (hv : v ∉ S) :
-    σ • v ∉ S := by
-  intro hmem
-  exact hv ((hS σ v).mpr hmem)
 
 omit [NumberField K] in
 /-- Galois automorphisms preserve the concrete `S`-unit subgroup when
@@ -364,12 +328,15 @@ theorem sUnit_smul_coe
       Units.mapEquiv σ.toMulEquiv (x : Lˣ) :=
   rfl
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 L))) (hS : IsGaloisStableFinitePlaces K L S)
+include S hS
+
 /-- The action on the finite set `S` obtained by restricting the
 finite-place permutation. -/
 @[reducible]
-noncomputable def stableFinitePlaceMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
-    (hS : IsGaloisStableFinitePlaces K L S) :
+noncomputable def stableFinitePlaceMulAction :
     MulAction (L ≃ₐ[K] L) S where
   smul σ v :=
     ⟨σ • (v : HeightOneSpectrum (𝓞 L)),
@@ -385,9 +352,7 @@ noncomputable def stableFinitePlaceMulAction
 /-- The permutation action on all logarithmic places
 `InfinitePlace L ⊕ S`. -/
 @[reducible]
-noncomputable def logPlaceMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
-    (hS : IsGaloisStableFinitePlaces K L S) :
+noncomputable def logPlaceMulAction :
     MulAction (L ≃ₐ[K] L)
       (SUnitGroup.LogPlace (K := L) S) := by
   letI : MulAction (L ≃ₐ[K] L) S :=
@@ -422,9 +387,7 @@ noncomputable def logPlaceMulAction
 
 /-- The additive action on the additive form of the `S`-unit group. -/
 @[reducible]
-noncomputable def additiveSUnitDistribMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
-    (hS : IsGaloisStableFinitePlaces K L S) :
+noncomputable def additiveSUnitDistribMulAction :
     DistribMulAction (L ≃ₐ[K] L)
       (Additive (SUnitGroup (K := L) S)) := by
   letI := sUnitMulDistribMulAction K L S hS
@@ -458,9 +421,7 @@ noncomputable def additiveSUnitDistribMulAction
 /-- The contragredient coordinate-permutation action on the full
 logarithmic coordinate space. -/
 @[reducible]
-noncomputable def fullLogSpaceDistribMulAction
-    (S : Finset (HeightOneSpectrum (𝓞 L)))
-    (hS : IsGaloisStableFinitePlaces K L S) :
+noncomputable def fullLogSpaceDistribMulAction :
     DistribMulAction (L ≃ₐ[K] L)
       (SUnitGroup.FullLogSpace (K := L) S) := by
   letI := logPlaceMulAction K L S hS
@@ -483,6 +444,8 @@ noncomputable def fullLogSpaceDistribMulAction
       smul_add := by
         intro σ z z'
         rfl }
+
+end
 
 omit [NumberField K] [NumberField L] in
 @[simp]
@@ -558,17 +521,20 @@ theorem coordinateSum_smul
         z (σ⁻¹ • p))
       z (fun _ => rfl)
 
+section
+
+variable (S : Finset (HeightOneSpectrum (𝓞 L)))
+include S
+
 /-- The constant vector whose coordinate sum is one. -/
-noncomputable def normalizedLogDiagonal
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def normalizedLogDiagonal :
     SUnitGroup.FullLogSpace (K := L) S :=
   fun _ =>
     (Fintype.card
       (SUnitGroup.LogPlace (K := L) S) : ℝ)⁻¹
 
 @[simp]
-theorem coordinateSum_normalizedLogDiagonal
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem coordinateSum_normalizedLogDiagonal :
     SUnitGroup.coordinateSum (K := L) S
         (normalizedLogDiagonal L S) = 1 := by
   change
@@ -583,8 +549,7 @@ theorem coordinateSum_normalizedLogDiagonal
 
 /-- Splitting of the full coordinate space into the sum-zero
 hyperplane and its coordinate sum. -/
-noncomputable def fullLogSpaceSplit
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def fullLogSpaceSplit :
     SUnitGroup.FullLogSpace (K := L) S →ₗ[ℝ]
       (SUnitGroup.LogHyperplane (K := L) S × ℝ) where
   toFun z :=
@@ -613,8 +578,7 @@ noncomputable def fullLogSpaceSplit
     · exact map_smul
         (SUnitGroup.coordinateSum (K := L) S) c z
 
-theorem fullLogSpaceSplit_injective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem fullLogSpaceSplit_injective :
     Function.Injective (fullLogSpaceSplit L S) := by
   intro z z' h
   have hfirst :
@@ -651,8 +615,7 @@ theorem fullLogSpaceSplit_injective
               rw [hfirst, hsecond]
     _ = z' := sub_add_cancel _ _
 
-theorem fullLogSpaceSplit_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+theorem fullLogSpaceSplit_surjective :
     Function.Surjective (fullLogSpaceSplit L S) := by
   intro q
   let z : SUnitGroup.FullLogSpace (K := L) S :=
@@ -681,8 +644,7 @@ theorem fullLogSpaceSplit_surjective
 
 /-- Linear coordinate splitting used to adjoin one invariant diagonal
 direction to the logarithmic lattice. -/
-noncomputable def fullLogSpaceEquivHyperplaneProd
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def fullLogSpaceEquivHyperplaneProd :
     SUnitGroup.FullLogSpace (K := L) S ≃ₗ[ℝ]
       (SUnitGroup.LogHyperplane (K := L) S × ℝ) :=
   LinearEquiv.ofBijective
@@ -691,16 +653,14 @@ noncomputable def fullLogSpaceEquivHyperplaneProd
       fullLogSpaceSplit_surjective L S⟩
 
 /-- The coordinate splitting as a continuous linear equivalence. -/
-noncomputable def fullLogSpaceContinuousEquivHyperplaneProd
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def fullLogSpaceContinuousEquivHyperplaneProd :
     SUnitGroup.FullLogSpace (K := L) S ≃L[ℝ]
       (SUnitGroup.LogHyperplane (K := L) S × ℝ) :=
   (fullLogSpaceEquivHyperplaneProd L S).toContinuousLinearEquiv
 
 /-- A real basis of the logarithmic hyperplane obtained from an
 integral basis of the complete logarithmic lattice. -/
-noncomputable def fullLogLatticeRealBasis
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def fullLogLatticeRealBasis :
     Basis
       (Module.Free.ChooseBasisIndex ℤ
         (SUnitGroup.fullLogLattice (K := L) S))
@@ -711,8 +671,7 @@ noncomputable def fullLogLatticeRealBasis
 
 /-- A basis of the product of the logarithmic hyperplane with the
 one-dimensional diagonal direction. -/
-noncomputable def fullLogHyperplaneDiagonalBasis
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def fullLogHyperplaneDiagonalBasis :
     Basis
       (Module.Free.ChooseBasisIndex ℤ
           (SUnitGroup.fullLogLattice (K := L) S) ⊕ Unit)
@@ -721,8 +680,7 @@ noncomputable def fullLogHyperplaneDiagonalBasis
 
 /-- The product lattice formed from the logarithmic lattice and one
 integral diagonal direction. -/
-noncomputable def fullLogHyperplaneDiagonalLattice
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def fullLogHyperplaneDiagonalLattice :
     Submodule ℤ
       (SUnitGroup.LogHyperplane (K := L) S × ℝ) :=
   Submodule.span ℤ
@@ -730,12 +688,13 @@ noncomputable def fullLogHyperplaneDiagonalLattice
 
 /-- The complete lattice in the full logarithmic coordinate space
 obtained by adjoining an integral invariant diagonal direction. -/
-noncomputable def extendedFullLogLattice
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
+noncomputable def extendedFullLogLattice :
     Submodule ℤ (SUnitGroup.FullLogSpace (K := L) S) :=
   ZLattice.comap ℝ
     (fullLogHyperplaneDiagonalLattice L S)
     (fullLogSpaceContinuousEquivHyperplaneProd L S).toLinearMap
+
+end
 
 instance instDiscreteTopology_extendedFullLogLattice
     (S : Finset (HeightOneSpectrum (𝓞 L))) :
@@ -904,51 +863,7 @@ theorem fullLog_smul
   apply Subtype.ext
   exact fullLogAmbient_smul K L hS σ x
 
-/-- The kernel of `fullLog`, stated as an equality of additive
-subgroups. -/
-theorem fullLog_ker_eq_torsion
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
-    (SUnitGroup.fullLog (K := L) S).ker =
-      AddCommGroup.torsion
-        (Additive (SUnitGroup (K := L) S)) := by
-  ext x
-  change
-    SUnitGroup.fullLog (K := L) S x = 0 ↔
-      x ∈ AddCommGroup.torsion
-        (Additive (SUnitGroup (K := L) S))
-  exact SUnitGroup.fullLog_eq_zero_iff (K := L) S x
 
-/-- The first-isomorphism identification of `S`-units modulo torsion
-with the actual logarithmic lattice. -/
-noncomputable def
-    additiveSUnitQuotientTorsionEquivFullLogLattice
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
-    (Additive (SUnitGroup (K := L) S) ⧸
-        AddCommGroup.torsion
-          (Additive (SUnitGroup (K := L) S))) ≃+
-      SUnitGroup.fullLogLattice (K := L) S := by
-  let f :=
-    SUnitGroup.fullLog (K := L) S
-  have hker :
-      f.ker =
-        AddCommGroup.torsion
-          (Additive (SUnitGroup (K := L) S)) :=
-    fullLog_ker_eq_torsion L S
-  have hrange :
-      f.range =
-        (SUnitGroup.fullLogLattice
-          (K := L) S).toAddSubgroup := by
-    rw [SUnitGroup.fullLogLattice_eq_range]
-    ext z
-    constructor
-    · rintro ⟨x, rfl⟩
-      exact ⟨x, rfl⟩
-    · rintro ⟨x, rfl⟩
-      exact ⟨x, rfl⟩
-  exact
-    (QuotientAddGroup.quotientAddEquivOfEq hker.symm).trans
-      ((QuotientAddGroup.quotientKerEquivRange f).trans
-        (AddEquiv.addSubgroupCongr hrange))
 
 omit [NumberField K] in
 /-- The complete logarithmic lattice is stable under the concrete
@@ -1095,22 +1010,6 @@ theorem extendedFullLogLattice_permutation_stable
         fullLogSpaceSplit_snd_smul K L hS] using
         hzrepr (Sum.inr j)
 
-/-- The canonical complete permutation sublattice of the extended
-logarithmic lattice has finite index. -/
-theorem extendedFullLogPermutationSublattice_finite_quotient
-    {S : Finset (HeightOneSpectrum (𝓞 L))}
-    (hS : IsGaloisStableFinitePlaces K L S) :
-    Finite
-      (extendedFullLogLattice L S ⧸
-        (permutationSublattice
-          (logPlacePermutationHom K L S hS)
-          (extendedFullLogLattice L S)
-          (extendedFullLogLattice_permutation_stable K L hS)).comap
-            (extendedFullLogLattice L S).subtype) :=
-  permutationSublattice_finite_quotient
-    (logPlacePermutationHom K L S hS)
-    (extendedFullLogLattice L S)
-    (extendedFullLogLattice_permutation_stable K L hS)
 
 /-- For the actual full logarithmic `S`-unit
 lattice.  The Herbrand quotient is the product of the orders of the

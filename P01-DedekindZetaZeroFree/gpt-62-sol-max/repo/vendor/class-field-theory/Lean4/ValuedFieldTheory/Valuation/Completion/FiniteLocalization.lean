@@ -51,11 +51,15 @@ nontrivially normed field structure on `K_v`. -/
       ⟨x, hx0, hx1⟩
     exact ⟨x, hx0, hx1⟩)
 
+section
+
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L] (vK : AbsoluteValue K ℝ)
+  (w : AbsoluteValueExtension vK L)
+include vK w
+
 /-- The completion `L_w` is a normed algebra over `K_v`: its scalar map is
 the isometric completion map supplied by the valuation-extension theorem. -/
-@[reducible] noncomputable def absoluteValueExtension_completionNormedAlgebra
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L) :
+@[reducible] noncomputable def absoluteValueExtension_completionNormedAlgebra :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     NormedAlgebra vK.Completion w.1.Completion := by
   letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -68,9 +72,7 @@ the isometric completion map supplied by the valuation-extension theorem. -/
     (map_zero (AbsoluteValue.completionMap vK w.1 w.2))]
 
 /-- Multiplication gives the canonical map `K_v ⊗_K L → L_w`. -/
-noncomputable def absoluteValueExtension_localizationTensorHom
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L) :
+noncomputable def absoluteValueExtension_localizationTensorHom :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     vK.Completion ⊗[K] L →ₐ[vK.Completion] w.1.Completion := by
   letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
@@ -85,8 +87,6 @@ noncomputable def absoluteValueExtension_localizationTensorHom
 
 @[simp]
 theorem absoluteValueExtension_localizationTensorHom_tmul
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L)
     (b : vK.Completion) (a : L) :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     absoluteValueExtension_localizationTensorHom vK w (b ⊗ₜ[K] a) =
@@ -95,13 +95,17 @@ theorem absoluteValueExtension_localizationTensorHom_tmul
   let := AbsoluteValue.completionAlgebra vK w.1 w.2
   rfl
 
+end
+
+section
+
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
+  (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) (w : AbsoluteValueExtension vK L)
+include vK hvK w
+
 /-- For a finite extension, the canonical map `K_v ⊗_K L → L_w` is
 surjective. -/
-theorem absoluteValueExtension_localizationTensorHom_surjective
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :
+theorem absoluteValueExtension_localizationTensorHom_surjective :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
     Function.Surjective (absoluteValueExtension_localizationTensorHom vK w) := by
   let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
@@ -142,11 +146,7 @@ theorem absoluteValueExtension_localizationTensorHom_surjective
 
 /-- For a finite extension, the localization `L K_v` inside the
 metric completion is the whole completion `L_w`. -/
-theorem absoluteValueExtension_finiteLocalization_eq_top
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :
+theorem absoluteValueExtension_finiteLocalization_eq_top :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -166,6 +166,8 @@ theorem absoluteValueExtension_finiteLocalization_eq_top
         (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x).property
   | add x y hx hy =>
       simpa only [map_add] using E.add_mem (hx trivial) (hy trivial)
+
+end
 
 end Valuations
 end AlgebraicNumberTheory

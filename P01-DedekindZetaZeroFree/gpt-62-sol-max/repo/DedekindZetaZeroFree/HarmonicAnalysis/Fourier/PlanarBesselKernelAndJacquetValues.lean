@@ -46,8 +46,7 @@ private theorem laplace_rpow (a : ℝ) (ha : 0 < a) :
   simp only [Real.rpow_eq_pow]
   simp only [Real.rpow_eq_pow] at h
   rw [h, one_div, Real.inv_rpow ha.le, ← Real.rpow_neg ha.le]
-  have hg : Real.Gamma (4 / 3 : ℝ) ≠ 0 :=
-    (Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 4 / 3)).ne'
+  
   field_simp
 
 private theorem oscillatory_gaussian (c t : ℝ) (ht : 0 < t) :
@@ -96,8 +95,7 @@ private theorem gaussian_integral (t : ℝ) (ht : 0 < t) :
   have h' : (Complex.ofReal (∫ x : ℂ, Real.exp (-t * ‖x‖ ^ 2))) = (Real.pi / t : ℝ) := by
     rw [← integral_complex_ofReal]
     convert h using 1
-    · congr 1; ext x
-      rw [Complex.ofReal_exp, Complex.ofReal_mul, Complex.ofReal_neg, Complex.ofReal_pow]
+    · simp
     · simp
   exact Complex.ofReal_injective h'
 
@@ -113,7 +111,7 @@ private theorem laplaceGaussian_integrable (c ρ : ℝ) (hρ : 0 < ρ) :
       ((volume.restrict (Set.Ioi (0 : ℝ))).prod (volume : Measure ℂ)) := by
     apply Continuous.aestronglyMeasurable
     unfold laplaceGaussian Function.uncurry
-    fun_prop (disch := norm_num)
+    fun_prop
   apply (integrable_prod_iff hm).2
   constructor
   · filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with t ht

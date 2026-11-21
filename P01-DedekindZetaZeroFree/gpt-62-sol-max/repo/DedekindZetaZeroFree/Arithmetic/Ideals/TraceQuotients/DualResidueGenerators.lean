@@ -48,14 +48,17 @@ abbrev rayDualResidueModule (m : Ideal (𝓞 F))
 theorem rayCodifferent_ne_zero : rayCodifferent F ≠ 0 := by
   exact FractionalIdeal.dual_ne_zero ℤ ℚ one_ne_zero
 
-theorem rayDualResidueNumerator_ne_zero (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
+section
+
+variable (m : Ideal (𝓞 F)) (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0)
+include hm ha
+
+theorem rayDualResidueNumerator_ne_zero :
     rayDualResidueNumerator m a ≠ 0 := by
   exact mul_ne_zero rayCodifferent_ne_zero
     (inv_ne_zero (mul_ne_zero ha (FractionalIdeal.coeIdeal_ne_zero.mpr hm)))
 
-theorem rayDualResidue_mul_eq (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
+theorem rayDualResidue_mul_eq :
     (m : FractionalIdeal (𝓞 F)⁰ F) * rayDualResidueNumerator m a =
       rayDualFractionalIdeal a := by
   have hM : (m : FractionalIdeal (𝓞 F)⁰ F) ≠ 0 :=
@@ -66,18 +69,18 @@ theorem rayDualResidue_mul_eq (m : Ideal (𝓞 F))
         ((m : FractionalIdeal (𝓞 F)⁰ F) * (m : FractionalIdeal (𝓞 F)⁰ F)⁻¹) := by ac_rfl
     _ = _ := by rw [mul_inv_cancel₀ hM, mul_one]
 
-theorem rayDualResidue_denominator_le (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
+theorem rayDualResidue_denominator_le :
     rayDualFractionalIdeal a ≤ rayDualResidueNumerator m a := by
   rw [← rayDualResidue_mul_eq m a hm ha]
   exact fractionalResidue_mul_le m (rayDualResidueNumerator m a)
 
-theorem rayDualResidueDenominator_eq (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
+theorem rayDualResidueDenominator_eq :
     rayDualResidueDenominator m a =
       fractionalResidueDenominator m (rayDualResidueNumerator m a) := by
   unfold rayDualResidueDenominator fractionalResidueDenominator
   rw [rayDualResidue_mul_eq m a hm ha]
+
+end
 
 theorem rayDualResidueModule_isTorsionBySet (m : Ideal (𝓞 F))
     (a : FractionalIdeal (𝓞 F)⁰ F) :
@@ -109,8 +112,12 @@ noncomputable instance rayDualResidueModuleModule (m : Ideal (𝓞 F))
     Module ((𝓞 F) ⧸ m) (rayDualResidueModule m a) :=
   (rayDualResidueModule_isTorsionBySet m a).module
 
-noncomputable def rayDualResidueModuleEquiv (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
+section
+
+variable (m : Ideal (𝓞 F)) (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0)
+include hm ha
+
+noncomputable def rayDualResidueModuleEquiv :
     rayDualResidueModule m a ≃ₗ[(𝓞 F) ⧸ m]
       fractionalResidueModule m (rayDualResidueNumerator m a) := by
   letI := (rayDualResidueModule_isTorsionBySet m a).isScalarTower (S := 𝓞 F)
@@ -119,8 +126,7 @@ noncomputable def rayDualResidueModuleEquiv (m : Ideal (𝓞 F))
   exact LinearEquiv.extendScalarsOfSurjective Ideal.Quotient.mk_surjective
     (Submodule.quotEquivOfEq _ _ (rayDualResidueDenominator_eq m a hm ha))
 
-@[simp] theorem rayDualResidueModuleEquiv_mk (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0)
+@[simp] theorem rayDualResidueModuleEquiv_mk
     (x : (rayDualResidueNumerator m a : Submodule (𝓞 F) F)) :
     rayDualResidueModuleEquiv m a hm ha
       (Submodule.Quotient.mk (p := rayDualResidueDenominator m a) x) =
@@ -128,19 +134,16 @@ noncomputable def rayDualResidueModuleEquiv (m : Ideal (𝓞 F))
           (p := fractionalResidueDenominator m (rayDualResidueNumerator m a)) x := by
   exact Submodule.quotEquivOfEq_mk _ _ (rayDualResidueDenominator_eq m a hm ha) x
 
-noncomputable def rayDualResidueEquiv (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
+noncomputable def rayDualResidueEquiv :
     ((𝓞 F) ⧸ m) ≃ₗ[(𝓞 F) ⧸ m] rayDualResidueModule m a :=
   (fractionalResidueEquiv m (rayDualResidueNumerator m a) hm
     (rayDualResidueNumerator_ne_zero m a hm ha)).trans
       (rayDualResidueModuleEquiv m a hm ha).symm
 
-noncomputable def rayDualResidueGenerator (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
+noncomputable def rayDualResidueGenerator :
     rayDualResidueModule m a := rayDualResidueEquiv m a hm ha 1
 
-theorem rayDualResidueGenerator_bijective (m : Ideal (𝓞 F))
-    (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
+theorem rayDualResidueGenerator_bijective :
     Function.Bijective (LinearMap.toSpanSingleton ((𝓞 F) ⧸ m)
       (rayDualResidueModule m a) (rayDualResidueGenerator m a hm ha)) := by
   have he : (LinearMap.toSpanSingleton ((𝓞 F) ⧸ m)
@@ -151,6 +154,8 @@ theorem rayDualResidueGenerator_bijective (m : Ideal (𝓞 F))
     rw [← map_smul, smul_eq_mul, mul_one]
   rw [he]
   exact (rayDualResidueEquiv m a hm ha).bijective
+
+end
 
 theorem rayDualResidueGenerator_lift_coprime (m : Ideal (𝓞 F))
     (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (hm1 : m ≠ ⊤) (ha : a ≠ 0)

@@ -106,26 +106,6 @@ noncomputable def residueRootsOfUnityContinuousMulEquivZMod
       continuous_toFun := continuous_of_discreteTopology
       continuous_invFun := continuous_of_discreteTopology }
 
-/-- The field-unit structure theorem with the still-to-be-classified first-principal-unit
-factor left visible: the other two factors are already the standard cyclic
-factors appearing in the decomposition. -/
-noncomputable def fieldUnitsContinuousMulEquivCyclicRootsPrincipalUnitsUniformizer
-    (F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, v} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K)) :
-    letI : Valued K (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
-      _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F
-    ((Multiplicative (ZMod (Nat.card F.residueField - 1)) ×
-        LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F 1) × Multiplicative ℤ) ≃ₜ* Kˣ := by
-  letI : Valued K (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F
-  exact
-    (continuousMulEquivProdCongr
-      (continuousMulEquivProdCongr
-        (residueRootsOfUnityContinuousMulEquivZMod F)
-        (ContinuousMulEquiv.refl (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F 1)))
-      (ContinuousMulEquiv.refl (Multiplicative ℤ))).trans
-      (fieldUnitsContinuousMulEquivRootsPrincipalUnitsUniformizer_of_completeDVF_mrangeRestrict
-        F hπ)
 
 /-- The uniformizer–residue–principal-unit decomposition in the topology carried directly by a standard
 `ℤᵐ⁰`-valued valuation.  This is the decomposition used to assemble the two

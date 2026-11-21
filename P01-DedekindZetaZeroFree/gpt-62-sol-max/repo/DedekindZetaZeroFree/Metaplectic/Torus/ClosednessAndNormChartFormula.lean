@@ -135,32 +135,8 @@ open KPAdelicCoverRestrictedProduct KPGlobalTorusFunctionData
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
-private theorem diagonal_preimage :
-    (fun A : AdelicGL2 F => QuotientGroup.mk' (scalarSubgroup F) A) ⁻¹'
-      (ordinaryTorus F : Set (AdelicPGL2 F)) = {A | A 1 0 = 0 ∧ A 0 1 = 0} := by
-  ext A
-  constructor
-  · rintro ⟨B, hB, h10, h01⟩
-    have h : B⁻¹ * A ∈ scalarSubgroup F := QuotientGroup.eq.mp hB
-    obtain ⟨u, hu⟩ := h
-    have hA : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) u := by
-      rw [hu]; simp
-    rw [hA]
-    simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.mul_apply, Matrix.scalar_apply, h10, h01]
-  · rintro ⟨h10, h01⟩
-    exact ⟨A, rfl, h10, h01⟩
-private theorem ordinarytorusclosed : IsClosed (ordinaryTorus F : Set (AdelicPGL2 F)) := by
-  rw [← (QuotientGroup.isQuotientMap_mk (scalarSubgroup F)).isClosed_preimage]
-  change IsClosed ((fun A : AdelicGL2 F => QuotientGroup.mk' (scalarSubgroup F) A) ⁻¹' _)
-  rw [diagonal_preimage]
-  have hc (i j : Fin 2) : Continuous (fun A : AdelicGL2 F => A i j) :=
-    (continuous_apply j).comp (Matrix.GeneralLinearGroup.continuous_apply
-      (fun A : AdelicGL2 F => A) continuous_id i)
-  exact (isClosed_eq (hc 1 0) continuous_const).inter (isClosed_eq (hc 0 1) continuous_const)
-
-theorem actualtorusclosed : IsClosed (torus F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := by
-  exact (ordinarytorusclosed F).preimage (adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
+theorem actualtorusclosed : IsClosed (torus F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) :=
+  KPGlobalTorusFunctionData.torus_closed F ζ hζ
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.AnalyticInputs
 

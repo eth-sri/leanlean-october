@@ -23,16 +23,6 @@ theorem card_cubic_center : Nat.card (rootsOfUnity 3 F) = 3 := by
   exact (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ
     (by norm_num : 12 = 4 * 3)).card_rootsOfUnity
 
-private lemma ennreal_inv_mul_eq_inv {o c : ℕ} (h : o * c = 3) :
-    (3 : ℝ≥0∞)⁻¹ * (c : ℝ≥0∞) = (o : ℝ≥0∞)⁻¹ := by
-  have hcast : (o : ℝ≥0∞) * (c : ℝ≥0∞) = 3 := by
-    rw [← Nat.cast_mul, h]; norm_num
-  have ho0 : o ≠ 0 := by rintro rfl; simp at h
-  have hc0 : c ≠ 0 := by rintro rfl; simp at h
-  have ho0' : (o : ℝ≥0∞) ≠ 0 := Nat.cast_ne_zero.mpr ho0
-  have hc0' : (c : ℝ≥0∞) ≠ 0 := Nat.cast_ne_zero.mpr hc0
-  rw [← hcast, ENNReal.mul_inv (Or.inl ho0') (Or.inr hc0'), mul_assoc,
-    ENNReal.inv_mul_cancel hc0' ENNReal.coe_ne_top, mul_one]
 
 private lemma measurable_iff_comp_q (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (a : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞) :
@@ -51,11 +41,6 @@ def centralAverage (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     CoveredSpherical F ζ hζ U → ℝ≥0∞ :=
   fun v => (3 : ℝ≥0∞)⁻¹ * ∑ ε : rootsOfUnity 3 F, ψ (z F ζ hζ U ε v)
 
-def distinctOrbitAverage (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞)
-    (v : CoveredSpherical F ζ hζ U) : ℝ≥0∞ :=
-  (Nat.card (MulAction.orbit (rootsOfUnity 3 F) v) : ℝ≥0∞)⁻¹ *
-    ∑ w ∈ (Finite.finite_mulAction_orbit (M := rootsOfUnity 3 F) v).toFinset, ψ w
 
 theorem centralAverage_invariant (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞)
@@ -191,77 +176,8 @@ theorem lintegral_borelDescent
     lintegral_congr (fun v => borelDescent_q F ζ hζ U ψ hψ v)]
   exact (lintegral_centralAverage F ζ hζ R U ψ hψ).symm
 
-theorem orbit_card_mul_stabilizer_card
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (v : CoveredSpherical F ζ hζ U) :
-    Nat.card (MulAction.orbit (rootsOfUnity 3 F) v) *
-      Nat.card (MulAction.stabilizer (rootsOfUnity 3 F) v) = 3 := by
-  have h := Nat.card_congr
-    (MulAction.orbitProdStabilizerEquivGroup (G := rootsOfUnity 3 F) v)
-  rw [Nat.card_prod] at h
-  rw [h, (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ (by norm_num : 12 = 4 * 3)).card_rootsOfUnity]
 
-theorem fiber_point_repetitions (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (v w : CoveredSpherical F ζ hζ U) (hw : q F ζ hζ U w = q F ζ hζ U v) :
-    Nat.card {ε : rootsOfUnity 3 F // z F ζ hζ U ε v = w} =
-      Nat.card (MulAction.stabilizer (rootsOfUnity 3 F) v) := by
-  obtain ⟨ε₀, hε₀⟩ := (KPContSectorQuotientRelationsComparison.q_eq_iff F ζ hζ U v w).mp hw.symm
-  refine Nat.card_congr ?_
-  refine
-    { toFun := fun e => ⟨ε₀⁻¹ * e.1, ?_⟩
-      invFun := fun h => ⟨ε₀ * h.1, ?_⟩
-      left_inv := fun e => Subtype.ext (by
-        show (ε₀ : rootsOfUnity 3 F) * (ε₀⁻¹ * (e : rootsOfUnity 3 F)) = (e : rootsOfUnity 3 F)
-        rw [← mul_assoc, mul_inv_cancel, one_mul])
-      right_inv := fun h => Subtype.ext (by
-        show (ε₀ : rootsOfUnity 3 F)⁻¹ * (ε₀ * (h : rootsOfUnity 3 F)) = (h : rootsOfUnity 3 F)
-        rw [← mul_assoc, inv_mul_cancel, one_mul]) }
-  · rw [MulAction.mem_stabilizer_iff]
-    show (ε₀⁻¹ * (e : rootsOfUnity 3 F)) • v = v
-    have he : e.1 • v = w := e.2
-    rw [mul_smul, he, hε₀, show z F ζ hζ U ε₀ v = ε₀ • v from rfl, ← mul_smul, inv_mul_cancel,
-      one_smul]
-  · have hh : h.1 • v = v := h.2
-    rw [show z F ζ hζ U (ε₀ * (h : rootsOfUnity 3 F)) v =
-        (ε₀ * (h : rootsOfUnity 3 F)) • v from rfl, mul_smul, hh, hε₀,
-      show z F ζ hζ U ε₀ v = ε₀ • v from rfl]
 
-theorem centralAverage_eq_distinctOrbitAverage
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞)
-    (v : CoveredSpherical F ζ hζ U) :
-    centralAverage F ζ hζ U ψ v = distinctOrbitAverage F ζ hζ U ψ v := by
-  rw [centralAverage, distinctOrbitAverage]
-  set S := (Finite.finite_mulAction_orbit (M := rootsOfUnity 3 F) v).toFinset with hS_def
-  set g : rootsOfUnity 3 F → CoveredSpherical F ζ hζ U :=
-    fun ε => z F ζ hζ U ε v with hg_def
-  have hS : Finset.univ.image g = S := by
-    ext w
-    simp only [Finset.mem_image, Finset.mem_univ, true_and, hS_def, Set.Finite.mem_toFinset,
-      MulAction.mem_orbit_iff, hg_def]
-    exact ⟨fun ⟨a, h⟩ => ⟨a, h⟩, fun ⟨a, h⟩ => ⟨a, h⟩⟩
-  have hfiber : ∀ w ∈ S, (Finset.univ.filter (fun ε => g ε = w)).card =
-      Nat.card (MulAction.stabilizer (rootsOfUnity 3 F) v) := by
-    intro w hw
-    have hwq : q F ζ hζ U w = q F ζ hζ U v := by
-      rw [hS_def, Set.Finite.mem_toFinset, MulAction.mem_orbit_iff] at hw
-      obtain ⟨ε, hε⟩ := hw
-      rw [← hε]
-      exact KPContSectorCoveredQuotientVocabulary.q_z F ζ hζ U ε v
-    have hcard : (Finset.univ.filter (fun ε => g ε = w)).card =
-        Nat.card {ε : rootsOfUnity 3 F // z F ζ hζ U ε v = w} := by
-      rw [Nat.card_eq_fintype_card, Fintype.card_subtype]
-    rw [hcard, fiber_point_repetitions F ζ hζ U v w hwq]
-  have hsum : (∑ ε : rootsOfUnity 3 F, ψ (z F ζ hζ U ε v)) =
-      (Nat.card (MulAction.stabilizer (rootsOfUnity 3 F) v) : ℝ≥0∞) * ∑ w ∈ S, ψ w := by
-    rw [show (∑ ε : rootsOfUnity 3 F, ψ (z F ζ hζ U ε v)) =
-        ∑ ε ∈ Finset.univ, ψ (g ε) from rfl, Finset.sum_comp (fun w => ψ w) g, hS]
-    rw [show (∑ w ∈ S,
-        (Finset.univ.filter (fun ε => g ε = w)).card • ψ w) =
-        ∑ w ∈ S, (Nat.card (MulAction.stabilizer (rootsOfUnity 3 F) v) : ℝ≥0∞) * ψ w from
-      Finset.sum_congr rfl fun w hw => by rw [hfiber w hw, nsmul_eq_mul]]
-    rw [Finset.mul_sum]
-  rw [hsum, ← mul_assoc, ennreal_inv_mul_eq_inv (orbit_card_mul_stabilizer_card F ζ hζ U v)]
 
 theorem centralAverage_indicator
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)

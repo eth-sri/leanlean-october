@@ -50,12 +50,16 @@ namespace HolomorphicDominatedIntegral
 variable {α : Type*} [MeasurableSpace α] {μ : Measure α}
   {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
 
-theorem hasDerivAt_integral_of_locally_dominated
-    {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E}
-    (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
-    (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
-    (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧
+section
+
+variable {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E}
+  (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
+  (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
+  (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧
       ∃ g : α → ℝ, Integrable g μ ∧ ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p)
+include hU hmeas hdiff hdom
+
+theorem hasDerivAt_integral_of_locally_dominated
     {z0 : ℂ} (hz0 : z0 ∈ U) :
     Integrable (fun p => deriv (fun z => G z p) z0) μ ∧
       HasDerivAt (fun z => ∫ p, G z p ∂μ) (∫ p, deriv (fun z => G z p) z0 ∂μ) z0 := by
@@ -85,40 +89,20 @@ theorem hasDerivAt_integral_of_locally_dominated
       hbd z0 (mem_ball_self hr) p)
 
   have hF'meas : AEStronglyMeasurable (fun p => deriv (fun z => G z p) z0) μ := by
-    let h : ℕ → ℂ := fun n => ((r / 4 / ((n : ℝ) + 1) : ℝ) : ℂ)
-    have hh0 : ∀ n, h n ≠ 0 := by
-      intro n
-      have : (0 : ℝ) < r / 4 / ((n : ℝ) + 1) := by positivity
-      exact Complex.ofReal_ne_zero.2 this.ne'
-    have hhlim : Tendsto h atTop (𝓝[≠] 0) := by
-      refine tendsto_nhdsWithin_iff.2 ⟨?_, Filter.Eventually.of_forall hh0⟩
-      have : Tendsto (fun n : ℕ => r / 4 / ((n : ℝ) + 1)) atTop (𝓝 0) :=
-        tendsto_const_div_atTop_nhds_zero_nat (r / 4) |>.comp (tendsto_add_atTop_nat 1) |>.congr
-          (fun n => by simp [Function.comp])
-      have := (Complex.continuous_ofReal.tendsto 0).comp this
-      have h0 : (𝓝 (0 : ℂ)) = 𝓝 ((0 : ℝ) : ℂ) := by simp
-      rw [h0]
-      exact this
-    have hmem : ∀ n, z0 + h n ∈ U := by
-      intro n
-      apply hrU
-      rw [mem_ball, dist_eq_norm]
-      have hn : (0 : ℝ) < r / 4 / ((n : ℝ) + 1) := by positivity
-      have hle : r / 4 / ((n : ℝ) + 1) ≤ r / 4 := by
-        apply div_le_self (by positivity)
-        have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-        linarith
-      simp only [h, add_sub_cancel_left, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hn]
-      linarith
-    refine aestronglyMeasurable_of_tendsto_ae (u := atTop) (f := fun n p =>
-      (h n)⁻¹ • (G (z0 + h n) p - G z0 p)) ?_ ?_
-    · intro n
-      exact ((hmeas _ (hmem n)).sub (hmeas z0 hz0)).const_smul _
-    · refine Filter.Eventually.of_forall fun p => ?_
-      have hd := (hdiffAt p z0 hz0).hasDerivAt
-      have := hd.tendsto_slope_zero.comp hhlim
-      refine this.congr fun n => ?_
-      simp [Function.comp]
+    classical
+    have hnear : ∀ᶠ h : ℂ in 𝓝[≠] 0, z0 + h ∈ U := by
+      apply mem_nhdsWithin_of_mem_nhds
+      exact (continuous_const.add continuous_id).continuousAt.preimage_mem_nhds
+        (by simpa using hU.mem_nhds hz0)
+    refine aestronglyMeasurable_of_tendsto_ae (𝓝[≠] (0 : ℂ))
+      (f := fun h p => if z0 + h ∈ U then h⁻¹ • (G (z0 + h) p - G z0 p) else 0)
+      (fun h => ?_) (Eventually.of_forall fun p => ?_)
+    · split_ifs with hh
+      · exact ((hmeas _ hh).sub (hmeas z0 hz0)).const_smul _
+      · exact aestronglyMeasurable_const
+    · refine (hdiffAt p z0 hz0).hasDerivAt.tendsto_slope_zero.congr' ?_
+      filter_upwards [hnear] with h hh
+      simp [hh]
   have key := hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
     (F := G) (x₀ := z0) (s := Metric.ball z0 (r / 2)) (ball_mem_nhds z0 hr2) hFmeas hFint
     (F' := fun z p => deriv (fun z => G z p) z) hF'meas
@@ -129,15 +113,23 @@ theorem hasDerivAt_integral_of_locally_dominated
       (hdiffAt p z (hrU (hsub hz))).hasDerivAt)
   exact key
 
-theorem differentiableOn_integral_of_locally_dominated
-    {U : Set ℂ} (hU : IsOpen U) {G : ℂ → α → E}
-    (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
-    (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
-    (hdom : ∀ z0 ∈ U, ∃ r > 0, Metric.ball z0 r ⊆ U ∧
-      ∃ g : α → ℝ, Integrable g μ ∧ ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p) :
+theorem differentiableOn_integral_of_locally_dominated :
     DifferentiableOn ℂ (fun z => ∫ p, G z p ∂μ) U := fun z hz =>
   (hasDerivAt_integral_of_locally_dominated hU hmeas hdiff hdom hz).2.differentiableAt
     |>.differentiableWithinAt
+
+end
+
+/-- Uniform domination on an open set gives holomorphy of the parameter integral. -/
+theorem differentiableOn_integral_of_dominated {U : Set ℂ} (hU : IsOpen U)
+    {G : ℂ → α → E} (hmeas : ∀ z ∈ U, AEStronglyMeasurable (G z) μ)
+    (hdiff : ∀ p, DifferentiableOn ℂ (fun z => G z p) U)
+    {g : α → ℝ} (hg : Integrable g μ) (hbd : ∀ z ∈ U, ∀ p, ‖G z p‖ ≤ g p) :
+    DifferentiableOn ℂ (fun z => ∫ p, G z p ∂μ) U := by
+  refine differentiableOn_integral_of_locally_dominated hU hmeas hdiff ?_
+  intro z hz
+  obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.mp hU z hz
+  exact ⟨r, hr, hball, g, hg, fun w hw => hbd w (hball hw)⟩
 
 theorem integrable_of_locally_dominated
     {U : Set ℂ} {G : ℂ → α → E}

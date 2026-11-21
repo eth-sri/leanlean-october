@@ -27,19 +27,12 @@ theorem inducedFunctions_fiber_eval (P : Polarization F ζ hζ)
   have he := congrArg (fun v : Smooth F ζ hζ P => v.val.val 1) hc
   have hd : KPGlobalTorusFunctionData.deltaHalf F ζ hζ t ≠ 0 := by
     unfold KPGlobalTorusFunctionData.deltaHalf
-    exact_mod_cast (ne_of_gt (Real.sqrt_pos.2
-      (NNReal.coe_pos.2 (pos_iff_ne_zero.2
-        (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ t))))))
+    simp
   have hn : KPGlobalTorusFunctionData.N F ζ hζ (0 : KPGlobalTorusFunctionData.Adeles F) = 1 :=
     (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
   simp only [hn, mul_one, KPGlobalTorusPeriodizationInverse.rightAction_formula,
     Submodule.coe_smul, Pi.smul_apply, smul_eq_mul, one_mul] at he
-  calc (f.val g₀).val.val t
-      = (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t)⁻¹ *
-          (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t * (f.val g₀).val.val t) := by
-        rw [← mul_assoc, inv_mul_cancel₀ hd, one_mul]
-    _ = _ := congrArg (fun z : ℂ => (KPGlobalTorusFunctionData.deltaHalf F ζ hζ t)⁻¹ * z)
-        he.symm
+  simp_all
 
 theorem groupArchChart_commutes_finite (a : G F ζ hζ)
     (ha : a ∈ KPGlobalTorusFunctionData.finitePart F ζ hζ) (z : GroupArch F) :

@@ -37,9 +37,9 @@ theorem identity_evaluation_mem
         (f.val g).val (1 * S.borel.retract (inBorel F ζ hζ q S P b)) = _
       rw [one_mul]
       have hv := (f.val g).property (retractL F ζ hζ q S P b) 1
-      simp only [mul_one, retractL, weylHL, MonoidHom.coe_mk, OneHom.coe_mk] at hv
+      simp only [mul_one, retractL] at hv
       rw [hv]
-      simp [chi, chiH, inducingScalar, deltaHalf, normPower, retractL, weylHL]
+      simp [chi, chiH, inducingScalar, deltaHalf, normPower, retractL]
       ring
     · change (inducingScalar S.borel 0 (inBorel F ζ hζ q S P b)) *
         (f.val g).val (1 * S.borel.weyl (S.borel.retract
@@ -84,7 +84,7 @@ private theorem pgl_diagonal_injective (K : Type*) [Field K] (u v : Kˣ)
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
   have h11 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 1 1) hc
   have h00 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 0 0) hc
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc
@@ -265,7 +265,7 @@ private theorem liftFiber_cov (hP : IsTamePolarization F ζ hζ q S P) (ε : Sig
       half F ζ hζ q S (S.borel.retract b) * liftValue F ζ hζ q S P hP _ φ g _
     unfold liftValue
     simp only [twist, MulEquiv.refl_apply, map_mul,
-      S.borel.weyl.symm_apply_apply, half_mul]
+      half_mul]
     have hw : S.borel.weyl.symm.toMulEquiv
         (S.borel.weyl.toMonoidHom (S.borel.retract b)) = S.borel.retract b :=
       S.borel.weyl.symm_apply_apply _

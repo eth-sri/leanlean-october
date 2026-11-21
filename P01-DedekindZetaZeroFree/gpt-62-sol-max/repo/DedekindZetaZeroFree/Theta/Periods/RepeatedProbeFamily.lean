@@ -38,8 +38,6 @@ def repeatedProbe (D : PeriodSource R N) : PeriodSource R N :=
     sources := probeSources D
     realization := probeRealization D }
 
-@[simp] theorem repeatedProbe_theta (D : PeriodSource R N) (v : R.A.UnitQuotient) :
-    (repeatedProbe D).realization.theta v = D.realization.theta D.probe := rfl
 
 end DedekindZetaZeroFree.FourierContinuation.DetectedDictionary
 

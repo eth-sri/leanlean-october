@@ -83,7 +83,7 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
     Function.HasFiniteMulSupport (localNorm F ζ hζ P C t a d) ∧
       (((KPGlobalCenterRationalCharacter.nu F ζ hζ e : ℝ≥0) : ℝ)) =
         ∏ᶠ v, Real.rpow (localNorm F ζ hζ P C t a d v) (1/6 : ℝ) := by
-  have hd := FullTorusFormula.raw_diagonal F ζ hζ e u he
+  have hd := KPGlobalTorusTensorFibers.raw_diagonal F ζ hζ e u he
   let h v := (KPGlobalCenterRationalCharacterModulus.raw_torus_local_ratio F ζ hζ u e he v).choose
   have hr v := (KPGlobalCenterRationalCharacterModulus.raw_torus_local_ratio F ζ hζ u e he v).choose_spec
   let abs v := KPGlobalCenterRationalCharacterModulus.localAbsUnit F v
@@ -150,7 +150,7 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
       scalarQuotient F ζ hζ (amalgamation F ζ hζ u)) :=
     (QuotientGroup.mk'_surjective _).comp (QuotientGroup.mk'_surjective _)
   obtain ⟨u, he⟩ := hsur e.val
-  have hd := FullTorusFormula.raw_diagonal F ζ hζ e u he
+  have hd := KPGlobalTorusTensorFibers.raw_diagonal F ζ hζ e u he
   let h v := (KPGlobalCenterRationalCharacterModulus.raw_torus_local_ratio F ζ hζ u e he v).choose
   let t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q := fun q =>
     ⟨KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (u (Sum.inr q)),

@@ -115,51 +115,6 @@ theorem end_volume_at_cutoff (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T
     (fun _ => rfl) (endMap_embedding A j T hT) _
     (A.cuspAtlas j.1).measurable_fundamentalDomain (A.cuspAtlas j.1).isFundamentalDomain
 
-theorem spherical_open_positive : (sphericalMeasure F ζ hζ R P U).IsOpenPosMeasure := by
-  letI : BorelSpace (X F ζ hζ) := ⟨rfl⟩
-  letI := (KPSmoothLocalQuotientCharts.quotient_full_support F ζ hζ R).1
-  apply (P.continuous U).isOpenPosMeasure_map
-  intro x
-  induction x using Quotient.inductionOn with
-  | h x =>
-    rcases x with ⟨x,c⟩
-    let e : {v : NumberField.InfinitePlace F // v.IsComplex} ≃ Fin (KPCuspLogShape.dimension F) :=
-      Fintype.equivFin _
-    let g : KPSmoothActualFlowData.GInfinity F := fun v =>
-      if hv : v.IsComplex then
-        Matrix.ProjGenLinGroup.mk (KPArithmeticAction.hyperbolicGLSection (x (e ⟨v,hv⟩)))
-      else 1
-    refine ⟨KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
-      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ g * c), ?_⟩
-    rw [P.formula]
-    congr 1
-    apply Prod.ext
-    swap
-    · rfl
-    funext i
-    change KPArch.action (g (KPCusp.complexPlace F i)).out (0,0) = x i
-    have hc : (KPCusp.complexPlace F i).IsComplex := (e.symm i).property
-    simp only [g, dif_pos hc]
-    have hi : e ⟨KPCusp.complexPlace F i, hc⟩ = i := by
-      exact e.apply_symm_apply i
-    rw [hi]
-    have he : KPArch.action (Quotient.out (Matrix.ProjGenLinGroup.mk
-        (KPArithmeticAction.hyperbolicGLSection (x i)))) (0,0) =
-        KPArch.action (KPArithmeticAction.hyperbolicGLSection (x i)) (0,0) := by
-      have heq : Matrix.ProjGenLinGroup.mk (Quotient.out (Matrix.ProjGenLinGroup.mk
-          (KPArithmeticAction.hyperbolicGLSection (x i)))) =
-          Matrix.ProjGenLinGroup.mk (KPArithmeticAction.hyperbolicGLSection (x i)) :=
-        Quotient.out_eq _
-      obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp heq
-      calc
-        _ = KPArch.action ((Matrix.ProjGenLinGroup.mk
-            (KPArithmeticAction.hyperbolicGLSection (x i))).out *
-            Matrix.GeneralLinearGroup.scalar (Fin 2) u) (0,0) := by
-          rw [(KPArch.action_laws _ _ _).2, KPArch.scalar_action]
-        _ = _ := congrArg (fun k => KPArch.action k (0,0)) hu
-    rw [he]
-    exact KPArithmeticAction.hyperbolicGLSection_action (x i)
-
 theorem end_coordinate_lintegral (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T)
     (φ : KPCuspSiegel.OrbitQuotient F
       (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1)) → ℝ≥0∞)
@@ -624,67 +579,20 @@ theorem radial_shell (Y : ℝ) (hY : 0 < Y) :
     intro h
     exact (not_le_of_gt hY) h.1
 
-theorem shell_eval (Y : ℝ) (hY : AdmissibleCutoff A Y)
-    (hrad : radialMeasure (Set.Ioc Y (2*Y)) = ENNReal.ofReal (2*Y)⁻¹) :
-    D.beta Set.univ = ENNReal.ofReal (2*Y) *
-      sphericalMeasure F ζ hζ R P U
-        (cuspEnds A Y ∩ {x : Spherical F ζ hζ U | Y < D.modulus x ∧ D.modulus x ≤ 2*Y}) := by
-  let E := {x : Spherical F ζ hζ U | Y < D.modulus x ∧ D.modulus x ≤ 2*Y}
-  have hE : MeasurableSet E :=
-    (measurableSet_lt measurable_const D.measurable_modulus).inter
-      (measurableSet_le D.measurable_modulus measurable_const)
-  have hi := cusp_integration A R P D Y hY (E.indicator (fun _ => 1))
-    (measurable_const.indicator hE)
-  have hi' : sphericalMeasure F ζ hζ R P U (cuspEnds A Y ∩ E) =
-      D.beta Set.univ * radialMeasure (Set.Ioc Y (2*Y)) := by
-    rw [lintegral_indicator hE, lintegral_const, Measure.restrict_apply MeasurableSet.univ,
-      Set.univ_inter, Measure.restrict_apply hE, Set.inter_comm] at hi
-    simp only [one_mul] at hi
-    have heq : ∀ r : Set.Ioi Y, ∀ x : CrossSection A,
-        E.indicator (fun _ => (1 : ℝ≥0∞)) (D.chart Y hY (x,r)) =
-        (Set.Iic (2*Y)).indicator (fun _ => (1 : ℝ≥0∞)) r.val := by
-      intro r x
-      simp only [E, Set.indicator_apply, Set.mem_setOf_eq, D.chart_modulus, Set.mem_Iic]
-      have hr : Y < r.val := r.property
-      simp only [hr, true_and]
-    simp_rw [heq] at hi
-    letI := D.probability_mass
-    have hkernel : ∀ r : Set.Ioi Y, ∀ ω : Omega A,
-        (∫⁻ x, (Set.Iic (2*Y)).indicator (fun _ => (1 : ℝ≥0∞)) r.val ∂D.unipotent ω) =
-        (Set.Iic (2*Y)).indicator (fun _ => (1 : ℝ≥0∞)) r.val := by
-      intro r ω
-      letI := D.probability_unipotent ω
-      simp
-    simp_rw [hkernel] at hi
-    simp only [lintegral_const, measure_univ, mul_one] at hi
-    rw [lintegral_subtype_comap measurableSet_Ioi, lintegral_indicator measurableSet_Iic,
-      lintegral_const, Measure.restrict_apply MeasurableSet.univ,
-      Set.univ_inter, Measure.restrict_apply measurableSet_Iic] at hi
-    have hs : Set.Iic (2*Y) ∩ Set.Ioi Y = Set.Ioc Y (2*Y) := by ext r; simp [and_comm]
-    rw [hs, one_mul] at hi
-    exact hi
-  rw [hi', hrad]
-  have hpos : 0 < 2*Y := mul_pos (by norm_num) hY.1
-  have hmul := ENNReal.mul_inv_cancel_left (ENNReal.ofReal_ne_zero_iff.mpr hpos)
-    ENNReal.ofReal_ne_top (b := D.beta Set.univ)
-  calc
-    _ = ENNReal.ofReal (2*Y) * ((ENNReal.ofReal (2*Y))⁻¹ * D.beta Set.univ) := hmul.symm
-    _ = _ := by rw [ENNReal.ofReal_inv_of_pos hpos, mul_comm (D.beta Set.univ)]
-
 end RadialIntegrationSteps
 
-theorem fixed_haar_radial_integration
+theorem GeometricDisintegration.cusp_integral
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {U : Level F ζ hζ} (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : SphericalTransport F ζ hζ) (D : GeometricDisintegration A R P) :
-    RadialIntegration A R P D := by
-  refine ⟨RadialIntegrationSteps.cusp_integration A R P D, ?_,
-    RadialIntegrationSteps.spherical_open_positive R P⟩
-  intro Y hY
-  exact RadialIntegrationSteps.shell_eval A R P D Y hY
-    (RadialIntegrationSteps.radial_shell Y hY.1)
+    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0} {U : Level F ζ hζ}
+    {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
+    {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ} {P : SphericalTransport F ζ hζ}
+    (D : GeometricDisintegration A R P) (Y : ℝ) (hY : AdmissibleCutoff A Y)
+    (φ : Spherical F ζ hζ U → ℝ≥0∞) (hφ : Measurable φ) :
+    (∫⁻ x in cuspEnds A Y, φ x ∂sphericalMeasure F ζ hζ R P U) =
+      D.beta Set.univ * ∫⁻ r : Set.Ioi Y, ∫⁻ ω, ∫⁻ x,
+        φ (D.chart Y hY (x,r)) ∂D.unipotent ω ∂probability A D.beta
+        ∂Measure.comap (Subtype.val : Set.Ioi Y → ℝ) radialMeasure :=
+  RadialIntegrationSteps.cusp_integration A R P D Y hY φ hφ
 
 end DedekindZetaZeroFree.KPMsFixedHaar
 

@@ -117,26 +117,12 @@ natural indexing range. -/
 def realRamificationExponent (s : ℝ) : ℕ :=
   (Int.ceil (s + 1)).toNat
 
-/-- States the theorem `realRamificationExponent_mono`. -/
-theorem realRamificationExponent_mono :
-    Monotone realRamificationExponent := by
-  intro s t hst
-  apply Int.toNat_le_toNat
-  apply Int.ceil_mono
-  linarith
 
 /-- States the theorem `realRamificationExponent_neg_one`. -/
 @[simp] theorem realRamificationExponent_neg_one :
     realRamificationExponent (-1) = 0 := by
   simp [realRamificationExponent]
 
-/-- States the theorem `realRamificationExponent_eq_zero_of_le_neg_one`. -/
-theorem realRamificationExponent_eq_zero_of_le_neg_one
-    {s : ℝ} (hs : s ≤ -1) :
-    realRamificationExponent s = 0 := by
-  rw [realRamificationExponent, Int.toNat_eq_zero]
-  have hs' : s + 1 ≤ 0 := by linarith
-  exact Int.ceil_le.mpr (by simpa using hs')
 
 /-- States the theorem `realRamificationExponent_nat`. -/
 @[simp] theorem realRamificationExponent_nat (n : ℕ) :
@@ -148,10 +134,6 @@ def realRamificationIdeal (target : ValuationTheory.DiscreteValuationField.DVF.{
     (s : ℝ) : Ideal target.valuationSubring :=
   target.maximalIdeal ^ realRamificationExponent s
 
-/-- States the theorem `realRamificationIdeal_antitone`. -/
-theorem realRamificationIdeal_antitone {s t : ℝ} (hst : s ≤ t) :
-    realRamificationIdeal target t ≤ realRamificationIdeal target s := by
-  exact Ideal.pow_le_pow_right (realRamificationExponent_mono hst)
 
 /-- States the theorem `realRamificationIdeal_neg_one`. -/
 @[simp] theorem realRamificationIdeal_neg_one :
@@ -163,18 +145,16 @@ theorem realRamificationIdeal_antitone {s t : ℝ} (hst : s ≤ t) :
     realRamificationIdeal target (n : ℝ) = target.maximalIdeal ^ (n + 1) := by
   simp [realRamificationIdeal]
 
-/-- States the theorem `realRamificationIdeal_eq_top_of_le_neg_one`. -/
-theorem realRamificationIdeal_eq_top_of_le_neg_one
-    {s : ℝ} (hs : s ≤ -1) :
-    realRamificationIdeal target s = ⊤ := by
-  simp [realRamificationIdeal,
-    realRamificationExponent_eq_zero_of_le_neg_one hs]
+
+section
+
+variable (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
+      base target)
+include huniq
 
 /-- The automorphism induced on the target valuation ring by uniqueness of the
 valuation extension. -/
 def valuationSubringAutOfUniqueExtension
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (σ : Gal(L/K)) :
     target.valuationSubring ≃+* target.valuationSubring where
   toFun a :=
@@ -200,8 +180,6 @@ def valuationSubringAutOfUniqueExtension
 
 /-- States the theorem `valuationSubringAutOfUniqueExtension_apply_coe`. -/
 @[simp] theorem valuationSubringAutOfUniqueExtension_apply_coe
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (σ : Gal(L/K)) (a : target.valuationSubring) :
     ((valuationSubringAutOfUniqueExtension
       (base := base) (target := target) huniq σ a :
@@ -210,8 +188,6 @@ def valuationSubringAutOfUniqueExtension
 
 /-- States the theorem `valuationSubringAutOfUniqueExtension_one_apply`. -/
 @[simp] theorem valuationSubringAutOfUniqueExtension_one_apply
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (a : target.valuationSubring) :
     valuationSubringAutOfUniqueExtension
       (base := base) (target := target) huniq 1 a = a := by
@@ -220,8 +196,6 @@ def valuationSubringAutOfUniqueExtension
 
 /-- States the theorem `valuationSubringAutOfUniqueExtension_mul_apply`. -/
 @[simp] theorem valuationSubringAutOfUniqueExtension_mul_apply
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (σ τ : Gal(L/K)) (a : target.valuationSubring) :
     valuationSubringAutOfUniqueExtension
         (base := base) (target := target) huniq (σ * τ) a =
@@ -234,8 +208,6 @@ def valuationSubringAutOfUniqueExtension
 
 /-- States the theorem `valuationSubringAutOfUniqueExtension_apply_inv_apply`. -/
 @[simp] theorem valuationSubringAutOfUniqueExtension_apply_inv_apply
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (σ : Gal(L/K)) (a : target.valuationSubring) :
     valuationSubringAutOfUniqueExtension
       (base := base) (target := target) huniq σ
@@ -247,8 +219,6 @@ def valuationSubringAutOfUniqueExtension
 /-- A uniquely extended valuation-ring automorphism preserves the maximal
 ideal. -/
 theorem valuationSubringAutOfUniqueExtension_mem_maximalIdeal_iff
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (σ : Gal(L/K)) (a : target.valuationSubring) :
     valuationSubringAutOfUniqueExtension
         (base := base) (target := target) huniq σ a ∈ target.maximalIdeal ↔
@@ -267,8 +237,6 @@ theorem valuationSubringAutOfUniqueExtension_mem_maximalIdeal_iff
 /-- A uniquely extended valuation-ring automorphism preserves every power of
 the maximal ideal. -/
 theorem valuationSubringAutOfUniqueExtension_mem_maximalIdeal_pow_iff
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (σ : Gal(L/K)) (n : ℕ) (a : target.valuationSubring) :
     valuationSubringAutOfUniqueExtension
         (base := base) (target := target) huniq σ a ∈ target.maximalIdeal ^ n ↔
@@ -311,8 +279,6 @@ theorem valuationSubringAutOfUniqueExtension_mem_maximalIdeal_pow_iff
 
 /-- States the theorem `valuationSubringAutOfUniqueExtension_mem_realRamificationIdeal_iff`. -/
 theorem valuationSubringAutOfUniqueExtension_mem_realRamificationIdeal_iff
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (σ : Gal(L/K)) (s : ℝ) (a : target.valuationSubring) :
     valuationSubringAutOfUniqueExtension
         (base := base) (target := target) huniq σ a ∈
@@ -327,8 +293,6 @@ group.  On the natural range `s >= -1`, membership is exactly the condition that
 all integral displacements have normalized additive value at least `s + 1`,
 expressed intrinsically as membership in `m ^ ceil(s + 1)`. -/
 def lowerRamificationGroup
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (s : ℝ) : Subgroup Gal(L/K) where
   carrier :=
     {σ | ∀ a : target.valuationSubring,
@@ -389,8 +353,6 @@ def lowerRamificationGroup
 
 /-- States the theorem `mem_lowerRamificationGroup_iff`. -/
 @[simp] theorem mem_lowerRamificationGroup_iff
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (s : ℝ) (σ : Gal(L/K)) :
     σ ∈ lowerRamificationGroup
         (base := base) (target := target) huniq s ↔
@@ -403,8 +365,6 @@ def lowerRamificationGroup
 /-- At an integral index, the real definition is exactly the usual
 `m^(n+1)` displacement condition. -/
 theorem mem_lowerRamificationGroup_nat_iff
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (n : ℕ) (σ : Gal(L/K)) :
     σ ∈ lowerRamificationGroup
         (base := base) (target := target) huniq (n : ℝ) ↔
@@ -414,19 +374,9 @@ theorem mem_lowerRamificationGroup_nat_iff
           target.maximalIdeal ^ (n + 1) := by
   simp only [mem_lowerRamificationGroup_iff, realRamificationIdeal_nat]
 
-/-- The real lower-ramification definition: the lower groups are decreasing in their real index. -/
-theorem lowerRamificationGroup_antitone
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target) :
-    Antitone (lowerRamificationGroup
-      (base := base) (target := target) huniq) := by
-  intro s t hst σ hσ a
-  exact realRamificationIdeal_antitone (target := target) hst (hσ a)
 
 /-- The real lower-ramification definition: every real lower ramification group is normal. -/
 theorem lowerRamificationGroup_normal
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
     (s : ℝ) :
     (lowerRamificationGroup
       (base := base) (target := target) huniq s).Normal := by
@@ -457,6 +407,8 @@ theorem lowerRamificationGroup_normal
     simp [b, map_sub]
   rwa [hrewrite]
 
+end
+
 /-- Provides the instance `instNormal`. -/
 instance lowerRamificationGroup.instNormal
     (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
@@ -476,17 +428,6 @@ instance lowerRamificationGroup.instNormal
   ext σ
   simp [mem_lowerRamificationGroup_iff]
 
-/-- The all-real extension is constant at the full Galois group below the
-distinguished endpoint `-1`. -/
-theorem lowerRamificationGroup_eq_top_of_le_neg_one
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
-    {s : ℝ} (hs : s ≤ -1) :
-    lowerRamificationGroup
-      (base := base) (target := target) huniq s = ⊤ := by
-  ext σ
-  simp [mem_lowerRamificationGroup_iff,
-    realRamificationIdeal_eq_top_of_le_neg_one (target := target) hs]
 
 /-- Restriction of scalars from `Gal(L/M)` to `Gal(L/K)`. -/
 def galRestrictScalarsToIntermediate (M : IntermediateField K L) :
@@ -501,28 +442,7 @@ def galRestrictScalarsToIntermediate (M : IntermediateField K L) :
     galRestrictScalarsToIntermediate M σ = AlgEquiv.restrictScalars K σ :=
   rfl
 
-/-- States the theorem `galRestrictScalarsToIntermediate_injective`. -/
-theorem galRestrictScalarsToIntermediate_injective
-    (M : IntermediateField K L) :
-    Function.Injective (galRestrictScalarsToIntermediate M) :=
-  AlgEquiv.restrictScalars_injective K
 
-/-- The range of restriction of scalars is precisely the subgroup fixing the
-intermediate field. -/
-theorem galRestrictScalarsToIntermediate_range
-    (M : IntermediateField K L) :
-    (galRestrictScalarsToIntermediate M).range = M.fixingSubgroup := by
-  ext σ
-  constructor
-  · rintro ⟨τ, rfl⟩
-    rw [IntermediateField.mem_fixingSubgroup_iff]
-    intro z hz
-    simpa using τ.commutes ⟨z, hz⟩
-  · intro hσ
-    let τ : Gal(L/M) := IntermediateField.fixingSubgroupEquiv M ⟨σ, hσ⟩
-    refine ⟨τ, ?_⟩
-    ext z
-    rfl
 
 /-- The lower ramification group for `L/M`, using the same normalized top
 valuation as for `L/K`.  This is the real lower-ramification definition with only the automorphism
@@ -549,34 +469,6 @@ def lowerRamificationGroupOverIntermediate
           realRamificationIdeal target s :=
   Iff.rfl
 
-/-- The lower-ramification base-change law: changing only the base field
-intersects the lower ramification group with `Gal(L/M)`.  The left side is
-transported into `Gal(L/K)` by restriction of scalars, so the statement is a
-literal subgroup equality. -/
-theorem lowerRamificationGroupOverIntermediate_map_eq_inf
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
-    (M : IntermediateField K L) (s : ℝ) :
-    Subgroup.map (galRestrictScalarsToIntermediate M)
-        (lowerRamificationGroupOverIntermediate
-          (base := base) (target := target) huniq M s) =
-      lowerRamificationGroup
-          (base := base) (target := target) huniq s ⊓ M.fixingSubgroup := by
-  ext σ
-  constructor
-  · rintro ⟨τ, hτ, rfl⟩
-    have hrange :
-        galRestrictScalarsToIntermediate M τ ∈
-          (galRestrictScalarsToIntermediate M).range :=
-      ⟨τ, rfl⟩
-    rw [galRestrictScalarsToIntermediate_range] at hrange
-    exact ⟨hτ, hrange⟩
-  · intro hσ
-    have hrange : σ ∈ (galRestrictScalarsToIntermediate M).range := by
-      rw [galRestrictScalarsToIntermediate_range]
-      exact hσ.2
-    rcases hrange with ⟨τ, rfl⟩
-    exact ⟨τ, hσ.1, rfl⟩
 
 end Higher
 end RamificationTheory.HilbertRamification

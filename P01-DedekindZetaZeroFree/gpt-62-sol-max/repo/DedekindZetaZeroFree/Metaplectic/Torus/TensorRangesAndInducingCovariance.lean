@@ -30,9 +30,9 @@ theorem finite_joint_covariant_function_expansion
   letI (i : I) : (B i).FiniteIndex := inferInstance
   let Q := fun i => H i ⧸ B i
   letI (i : I) : Fintype (Q i) := Fintype.ofFinite _
-  let q (i : I) : H i →* Q i := QuotientGroup.mk' (B i)
-  let r (i : I) : Q i → H i := Function.surjInv (QuotientGroup.mk'_surjective (B i))
-  have hr (i : I) (d : Q i) : q i (r i d) = d :=
+  let q (i : I) := QuotientGroup.mk' (B i)
+  let r (i : I) := Function.surjInv (QuotientGroup.mk'_surjective (B i))
+  have hr (i : I) (d : Q i) :=
     Function.surjInv_eq (QuotientGroup.mk'_surjective (B i)) d
   let a (i : I) (x : H i) : B i := ⟨x * (r i (q i x))⁻¹, by
     apply (QuotientGroup.eq_one_iff _).mp

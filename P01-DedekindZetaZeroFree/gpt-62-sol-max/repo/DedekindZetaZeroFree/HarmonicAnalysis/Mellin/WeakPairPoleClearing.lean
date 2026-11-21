@@ -36,7 +36,7 @@ theorem weakFEPair_selfDual_reflection (P : WeakFEPair ℂ) (hk : P.k = 1)
     ∀ s : ℂ, s ≠ 0 → s ≠ 1 → P.Λ s = P.Λ (1 - s) := by
   have hsymm : P.symm.Λ = P.Λ := by
     unfold WeakFEPair.Λ WeakFEPair.Λ₀ WeakFEPair.f_modif
-    simp only [WeakFEPair.symm_f, WeakFEPair.symm_g, WeakFEPair.symm_f₀,
+    simp only [WeakFEPair.symm_f, WeakFEPair.symm_f₀,
       WeakFEPair.symm_g₀, WeakFEPair.symm_k, WeakFEPair.symm_ε, hg, hg₀, hε, inv_one]
   intro s _ _
   have h := P.functional_equation (1 - s)

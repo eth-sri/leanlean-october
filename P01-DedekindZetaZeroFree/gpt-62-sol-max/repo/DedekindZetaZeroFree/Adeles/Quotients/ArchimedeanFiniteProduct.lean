@@ -40,12 +40,12 @@ theorem scalar_killed (v : InfinitePlace F) (u : ℂˣ) :
   apply (QuotientGroup.eq_one_iff _).mpr
   refine ⟨Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ v)).symm.toRingHom u, ?_⟩
   simp [rawSection, KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift, KPScalarSplitCentral.scalarMatrix, Matrix.GeneralLinearGroup.map_scalar]
- rw [h, map_one]
+ grind
  def localHom (v : InfinitePlace F) : Matrix.ProjGenLinGroup (Fin 2) ℂ →* ActualQuotient.actualCover F ζ hζ :=
  Matrix.ProjGenLinGroup.lift
   ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
    ((KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inl v)).comp (rawSection F ζ hζ v)))
-  (by ext u; exact scalar_killed F ζ hζ v u)
+  (by ext u; exact scalar_killed ..)
 private theorem localHom_out (v : InfinitePlace F) (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
  localHom F ζ hζ v g = KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inl v) (rawSection F ζ hζ v g.out)) := by
  conv_lhs => rw [← Quotient.out_eq g]
@@ -93,8 +93,7 @@ private theorem centre_finite : (pglCentralInjection F ζ hζ).range ≤
   rintro c ⟨ε, rfl⟩
   refine Subgroup.mem_map.mpr ⟨localToRestricted F ζ hζ (Sum.inr q)
     (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) ε), ?_, ?_⟩
-  · intro w
-    exact RestrictedProduct.mulSingle_eq_of_ne (compact F ζ hζ) _ (by simp)
+  · solve_by_elim [RestrictedProduct.mulSingle_eq_of_ne]
   · change scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q)
       (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) ε)) = _
     rw [localInjection_central]

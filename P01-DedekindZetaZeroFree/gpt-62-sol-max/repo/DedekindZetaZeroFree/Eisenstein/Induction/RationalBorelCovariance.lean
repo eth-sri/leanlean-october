@@ -124,7 +124,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
  abbrev rational :=
   (KPGlobalResidualConstruction.ElementaryOutputs.rationalSplitting F ζ hζ).lift
 
-private theorem section_unipotent_invariant (s : ℂ)
+theorem section_unipotent_invariant (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s)
     (a : KPGlobalTorusFunctionData.Adeles F)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
@@ -132,7 +132,7 @@ private theorem section_unipotent_invariant (s : ℂ)
   have h := v.property 1 a g
   simpa [KPGlobalTorusFunctionData.deltaHalf] using h
 
-private theorem rational_unipotent (t : F) :
+theorem rational_unipotent (t : F) :
     rational F ζ hζ (KPChamberBruhatTwoCells.rationalUnipotent F t) =
       KPGlobalTorusFunctionData.Nhom F ζ hζ
         (Multiplicative.ofAdd (algebraMap F (KPGlobalTorusFunctionData.Adeles F) t)) := by
@@ -148,7 +148,7 @@ private theorem rational_unipotent (t : F) :
     KPChamberBruhatTwoCells.CompatibleUnipotentLift F (rational F ζ hζ)
       (KPGlobalTorusFunctionData.Nhom F ζ hζ) := rational_unipotent F ζ hζ
 
-private theorem unsigned_weyl :
+theorem unsigned_weyl :
     rational F ζ hζ (Matrix.ProjGenLinGroup.mk (KPStandardLocalRootLifts.weylSwap F)) =
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPCubicCoverConstruction.adelicW F ζ hζ) := by
@@ -157,7 +157,7 @@ private theorem unsigned_weyl :
   exact congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
     (KPRationalAdelicSplitting.W_rational F ζ hζ).symm
 
-private theorem section_rational_diagonal_invariant (s : ℂ)
+theorem section_rational_diagonal_invariant (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s)
     (y : Fˣ) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     v.val ((KPGlobalTorusFunctionData.s F ζ hζ y).val * g) = v.val g := by
@@ -202,37 +202,18 @@ private theorem section_rational_diagonal_invariant (s : ℂ)
   change v.val ((KPGlobalTorusFunctionData.s F ζ hζ (-1)).val * _) = _
   exact section_rational_diagonal_invariant F ζ hζ s v (-1) _
 
-private theorem upper_matrix_factorization
-    (b : KPRationalFlag.borel F) :
-    ∃ (y : Fˣ) (t : F), Matrix.ProjGenLinGroup.mk b.val =
-      Matrix.ProjGenLinGroup.mk (KPGlobalTorusFunctionData.rationalDiagonal F y) *
-        KPChamberBruhatTwoCells.rationalUnipotent F t := by
-  have hb : b.val 1 0 = 0 := b.property
-  have hdet : b.val 0 0 * b.val 1 1 ≠ 0 := by
-    have h := Units.ne_zero (Matrix.GeneralLinearGroup.det b.val)
-    simpa [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, hb] using h
-  have ha := (mul_ne_zero_iff.mp hdet).1
-  have hd := (mul_ne_zero_iff.mp hdet).2
-  let y : Fˣ := Units.mk0 (b.val 0 0 / b.val 1 1) (div_ne_zero ha hd)
-  refine ⟨y, b.val 0 1 / b.val 0 0, ?_⟩
-  unfold KPChamberBruhatTwoCells.rationalUnipotent
-  rw [← map_mul]
-  apply Eq.symm
-  apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
-  refine ⟨Units.mk0 (b.val 1 1) hd, ?_⟩
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [KPGlobalTorusFunctionData.rationalDiagonal, y,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
+theorem scalar_unipotent_invariant (s : ℂ)
+    (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s) :
+    KPChamberBruhatTwoCells.ScalarUnipotentInvariant F
+      (KPGlobalTorusFunctionData.Nhom F ζ hζ) v.val :=
+  section_unipotent_invariant F ζ hζ s v
 
  theorem scalar_rational_borel_invariant (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s) :
     KPChamberBruhatTwoCells.ScalarRationalBorelInvariant F (rational F ζ hζ) v.val := by
   intro b g
   obtain ⟨B, hB, he⟩ := b.property
-  obtain ⟨y, t, ht⟩ := upper_matrix_factorization F ⟨B, hB⟩
+  obtain ⟨y, t, ht⟩ := KPLiteralExceptionalResidue.upper_matrix_factorization F ⟨B, hB⟩
   rw [← he, ht, map_mul, rational_unipotent, mul_assoc]
   change v.val ((KPGlobalTorusFunctionData.s F ζ hζ y).val *
     (KPGlobalTorusFunctionData.N F ζ hζ _ * g)) = _

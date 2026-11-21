@@ -13,7 +13,6 @@ namespace DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproxim
 open KPLiteralRaw
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 local instance stageBorel (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
-local instance stageBorelSpace (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 
  lemma targetH_eq_R : (KPSpatialSmoothing.P0 F ζ hζ).H = R F ζ hζ := by
   change (KPMsRationalCompactCrossPairing.targetPolarization F ζ hζ 0).H = _
@@ -34,8 +33,7 @@ lemma sourceH_coordinate_hN (r : (KPSpatialSmoothing.P0 F ζ hζ).H) (x : KPAdel
       ActualBorelRetraction.rootInBorel F ζ hζ (Multiplicative.ofAdd x) := Subtype.ext hc
   apply Subtype.ext
   change ActualBorelRetraction.retraction F ζ hζ (cToBorel F ζ hζ c) = r.val
-  rw [he, map_mul, ActualBorelRetraction.retraction_torus,
-    ActualBorelRetraction.retraction_root, mul_one]
+  simp_all
 
 def sourceCharacter : KPSpatialSmoothing.actualC F ζ hζ →* ℂ :=
   (Units.coeHom ℂ).comp

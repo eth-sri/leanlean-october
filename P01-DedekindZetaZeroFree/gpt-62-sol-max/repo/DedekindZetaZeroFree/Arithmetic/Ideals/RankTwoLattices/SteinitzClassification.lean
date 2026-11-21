@@ -20,7 +20,7 @@ theorem kp_cusp_class_eq_iff_scalar
   simp only [ClassGroup.equiv_mk, FractionalIdeal.canonicalEquiv_self,
     Units.coe_mapEquiv, RingEquiv.coe_toMulEquiv, RingEquiv.refl_apply,
     QuotientGroup.mk'_eq_mk', mem_principal_ideals_iff,
-    Units.ext_iff, Units.val_mul, Units.val_mk0, exists_prop]
+    Units.ext_iff, Units.val_mul, Units.val_mk0]
   constructor
   · rintro ⟨X, ⟨x, hX⟩, hx⟩
     refine ⟨x, ?_, ?_⟩
@@ -65,7 +65,7 @@ private theorem scalar_mul_ideal
     (Submodule.smul_mem _ (x.1 / a) (Submodule.subset_span he1))
     (Submodule.smul_mem _ (x.2 / b) (Submodule.subset_span he2))
   convert hx using 1
-  ext <;> simp [div_mul_cancel₀, ha0, hb0]
+  ext <;> simp [ha0, hb0]
 
  def coordinate_full_lattice
     (R : Type*) [CommRing R] [IsDedekindDomain R]

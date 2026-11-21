@@ -18,18 +18,23 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
-theorem graph_eigen_of_threeL2
+theorem graph_eigen_of_l2
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (Z : smoothSections F ζ hζ U R P H) (a : ℂ)
-    (h3 : ThreeL2 Z) (he : localLaplacian Z = a • Z.val) :
+    (h2 : normIntegral F ζ hζ U R P H Z.val < ⊤) (he : localLaplacian Z = a • Z.val) :
     ∃ z : KPContSectorClosedLpSubspace.H F ζ hζ R U,
       KPContActualSmoothLineGluing.Represents F ζ hζ U R P H Z.val z ∧
       (z,a • z) ∈ (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H
         R.adelicHaar R.adelic_isHaar rfl realization).graph := by
-  let W : GraphSection (U := U) (H := H) := ⟨Z,h3⟩
-  obtain ⟨r,hr⟩ := kp_cont_actual_sector_cutoff_graph_limit.{0} F ζ hζ
-    R.adelicHaar R.adelic_isHaar U R rfl P H realization
-  obtain ⟨hd,hdv⟩ := hr.closed_graph_consequence W
+  let B : BorelL2Sections F ζ hζ U R P H :=
+    ⟨Z.val, ⟨fun i => (Z.property i).continuous.measurable, h2⟩⟩
+  have hΔ : normIntegral F ζ hζ U R P H (localLaplacian Z) < ⊤ :=
+    he ▸ ((BorelL2Sections F ζ hζ U R P H).smul_mem a B.property).2
+  let W : GraphSection (U := U) (H := H) := ⟨Z, h2,
+    squareFinite_gradient_of_laplacian F ζ hζ U R P H R.adelicHaar R.adelic_isHaar rfl
+      realization Z h2 hΔ, hΔ⟩
+  obtain ⟨hd, hdv⟩ := kp_cont_actual_sector_cutoff_graph_limit F ζ hζ
+    R.adelicHaar R.adelic_isHaar U R rfl P H realization W
   have hl : laplacianClass W = a • sectionClass W := by
     unfold laplacianClass sectionClass
     rw [← map_smul]
@@ -37,10 +42,7 @@ theorem graph_eigen_of_threeL2
     apply Subtype.ext
     exact he
   refine ⟨sectionClass W, ?_, ?_⟩
-  · let B : BorelL2Sections F ζ hζ U R P H :=
-      ⟨Z.val, ⟨fun i => (Z.property i).continuous.measurable, h3.1⟩⟩
-    refine ⟨representative_memLp F ζ hζ U R P H B, ?_⟩
-    rfl
+  · exact ⟨representative_memLp F ζ hζ U R P H B, rfl⟩
   · have hg := (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H
         R.adelicHaar R.adelic_isHaar rfl realization).mem_graph ⟨sectionClass W, hd⟩
     simpa only [hdv, hl] using hg

@@ -26,18 +26,8 @@ def series (lift : Q → G) (representative : X → G)
 
 end ScalarFormula
 
-def scalarJet {X : Type*} (g : ℂ → X → ℂ) (k : ℕ) (s : ℂ) : X → ℂ :=
-  fun x => iteratedDerivWithin k (fun z => g z x) chamber s
 
-def spectralCorrection {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
-    (d : ℕ) (u : ℕ → ℂ → H) (k : ℕ) (s : ℂ) : H :=
-  ∑ j ∈ Finset.Icc 1 (min k 2),
-    ((Nat.choose k j : ℂ) *
-      iteratedDerivWithin j (KPContinuation.spectralCoordinate (d : ℤ)) chamber s) •
-        u (k - j) s
 
-def graphNorm {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
-    (Δ : H →ₗ.[ℂ] H) (u : Δ.domain) : ℝ := ‖(u : H)‖ + ‖Δ u‖
 
 section CuspOutput
 variable {Y A W : Type*} [MeasurableSpace Y] [Fintype A]
@@ -45,10 +35,7 @@ variable {Y A W : Type*} [MeasurableSpace Y] [Fintype A]
 
 end CuspOutput
 
-section GraphEstimates
-variable {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
 
-end GraphEstimates
 end DedekindZetaZeroFree.KPChamberL2Defect
 
 end

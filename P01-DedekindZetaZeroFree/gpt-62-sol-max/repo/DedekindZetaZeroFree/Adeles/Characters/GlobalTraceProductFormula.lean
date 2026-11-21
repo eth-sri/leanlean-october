@@ -16,8 +16,7 @@ variable {F : Type} [Field F] [NumberField F]
 
 def residuePrime (v : HeightOneSpectrum (𝓞 F)) : Nat.Primes :=
   ⟨ringChar (𝓞 F ⧸ v.asIdeal), by
-    letI : v.asIdeal.IsMaximal := v.isPrime.isMaximal v.ne_bot
-    exact CharP.prime_ringChar _⟩
+    exact CharP.prime_ringChar ..⟩
 
 instance (v : HeightOneSpectrum (𝓞 F)) : Fact (residuePrime v).1.Prime :=
   ⟨(residuePrime v).2⟩
@@ -55,7 +54,7 @@ private lemma extension (v : HeightOneSpectrum (𝓞 F)) :
   have hf : Continuous f := (HeightOneSpectrum.uniformContinuous_algebraMap_liesOver ℚ F w v).continuous
   let c := UniformSpace.Completion.mapRingHom f hf
   let e := Padic.adicCompletionEquiv ℤ (residuePrime v)
-  let ι : ℚ_[residuePrime v] →+* v.adicCompletion F :=
+  let ι :=
     ((HeightOneSpectrum.adicCompletion.equiv F v).symm.toRingHom.comp c).comp
       ((HeightOneSpectrum.adicCompletion.equiv ℚ w).toRingHom.comp e.toAlgEquiv.toRingHom)
   refine ⟨ι, ?_⟩

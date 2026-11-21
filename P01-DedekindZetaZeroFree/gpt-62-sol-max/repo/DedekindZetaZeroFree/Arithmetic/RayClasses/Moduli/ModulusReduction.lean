@@ -13,8 +13,12 @@ open scoped NumberField Classical
 
 variable {F : Type*} [Field F] [NumberField F]
 
-theorem fullModulus_le_of_le (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f) :
+section
+
+variable (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f)
+include hmf
+
+theorem fullModulus_le_of_le :
     fullModulus f hf ≤ fullModulus m hm := by
   rw [ClassFieldTheory.RayClassModulus.le_iff]
   refine ⟨fun v => ?_, ?_⟩
@@ -25,22 +29,18 @@ theorem fullModulus_le_of_le (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   · intro x hx
     simpa using Finset.mem_univ x
 
-def modulusReduction (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f) :
+def modulusReduction :
     ClassFieldTheory.RayClassGroup (fullModulus m hm) →*
       ClassFieldTheory.RayClassGroup (fullModulus f hf) :=
   ClassFieldTheory.rayClassIdealModulusProjection F
     (fullModulus_le_of_le m hm f hf hmf)
 
-theorem modulusReduction_surjective (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f) :
+theorem modulusReduction_surjective :
     Function.Surjective (modulusReduction m hm f hf hmf) := by
   exact ClassFieldTheory.rayClassIdealModulusProjection_surjective F
     (fullModulus_le_of_le m hm f hf hmf)
 
 @[simp] theorem modulusReduction_apply_idealClass
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f)
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) :
     modulusReduction m hm f hf hmf (idealClass m hm I hI hcop) =
       idealClass f hf I hI (by
@@ -54,6 +54,8 @@ theorem modulusReduction_surjective (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (z : ClassFieldTheory.RayClassGroup (fullModulus f hf)))
   apply Subtype.ext
   simp only [Subgroup.coe_inclusion, idealToPrimeTo_coe]
+
+end
 
 end DedekindZetaZeroFree.LargeSieve.RayBridge
 

@@ -87,6 +87,35 @@ theorem coordinates_continuous : Continuous (coordinates a) := by
   apply (CotangentLogCoframe.A (d F)).symm.continuous.comp
   exact (continuous_pi fun k => continuous_apply _).comp continuous_subtype_val
 
+theorem coordinates_toBase (y : a.domain) : q a (coordinates a y).val = a.toBase y := by
+  have h : labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) y.val) = y.val := by
+    funext k; simp [labeledA, labeledAInv]
+  simp only [coordinates, KPContCotangentOverlapRationalBranches.q, ShrunkChart.toBase, h]
+
+theorem exists_chart_lift (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
+    ∃ (a : ShrunkChart F ζ hζ U R P H) (y : omega a), q a y.val = x := by
+  obtain ⟨cover⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
+  have hx : x ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
+  obtain ⟨n, y, hy⟩ := Set.mem_iUnion.mp hx
+  exact ⟨cover.chart n, coordinates _ y, (coordinates_toBase _ y).trans hy⟩
+
+theorem continuous_of_chart_lifts {Z : Type*} [TopologicalSpace Z]
+    (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → Z)
+    (hf : ∀ a : ShrunkChart F ζ hζ U R P H, Continuous (fun y : omega a => f (q a y.val))) :
+    Continuous f := by
+  obtain ⟨cover⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
+  refine continuous_of_cover_nhds (s := fun n => (cover.chart n).baseDomain) ?_ ?_
+  · intro x
+    have hx : x ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
+    obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
+    exact ⟨n, (cover.properties n).base_open.mem_nhds hn⟩
+  · intro n
+    let a := cover.chart n
+    rw [continuousOn_iff_continuous_domRestrict, (cover.properties n).quotient.continuous_iff]
+    convert (hf a).comp (coordinates_continuous a) using 1
+    funext y
+    exact congrArg f (coordinates_toBase a y).symm
+
 def actualTensor (γ : Gamma a) (y : a.domain) : E F ≃ₗᵢ[ℂ] E F :=
   T (isotropyArrow a γ) (coordinates a y).val
     (KPContActualCotangentMeasurableFamilies.omega_subset_larger a (coordinates a y).property)

@@ -106,7 +106,7 @@ private theorem modulus_binding (h : Torus F ζ hζ v) :
   exact (S.borel.torus_projection h).symm
  have hd := KPRankOneInduction.deltaB_eq F v (projection F ζ hζ v)
    (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ v m hm h)
-   (KubotaRankTwo.d (KPRankOneInduction.LocalField F v) (S.borel.coordinate h) 1) hp (by simp [KubotaRankTwo.coe_d])
+   (KubotaRankTwo.d (KPRankOneInduction.LocalField F v) (S.borel.coordinate h) 1) hp (rfl)
  simp only [KubotaRankTwo.coe_d, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
   Matrix.head_cons, Matrix.head_fin_const, div_one] at hd
  change (((KPRankOneInduction.halfModulus (deltaB F ζ hζ v)
@@ -138,7 +138,7 @@ include hm in
     change (S.borel.upperRoot x : FiniteCover F ζ hζ v) = upperRoot F ζ hζ v x at hn
     rw [hn] at hv
     exact hv
-  let q := KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v
+  
   have hb : borelBridge F ζ hζ v S b =
       KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ v m hm (S.borel.retract b) *
         ⟨upperRoot F ζ hζ v x,

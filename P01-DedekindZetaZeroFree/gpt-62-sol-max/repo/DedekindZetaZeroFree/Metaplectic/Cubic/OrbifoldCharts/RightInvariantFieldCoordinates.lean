@@ -100,9 +100,14 @@ structure LocalSection (i : Fin (H.atlas U).componentCount) (a : SymmetricSpace 
       coefficient ((σ.val : KPCuspArithmetic.PGL2 F) • x) =
         phaseTransport F ζ hζ U (((H.atlas U).line i).rho σ.val) (coefficient x)
 
-def localCoveredScalar {i : Fin (H.atlas U).componentCount} {a : SymmetricSpace F}
-    {A : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i a}
-    (u : LocalSection F ζ hζ U R P H i a A) :
+section
+
+variable {i : Fin (H.atlas U).componentCount} {a : SymmetricSpace F}
+  {A : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i a}
+  (u : LocalSection F ζ hζ U R P H i a A)
+include i a A u
+
+def localCoveredScalar :
     (q F ζ hζ U ⁻¹'
       KPContSectorPhaseComponentCharts.baseChartImage F ζ hζ U R P H i a A) → ℂ :=
   fun v => Quotient.lift
@@ -165,14 +170,14 @@ def localCoveredScalar {i : Fin (H.atlas U).componentCount} {a : SymmetricSpace 
       rw [← mul_assoc, hchi])
     ((KPContSectorPhaseComponentCharts.coveredChart F ζ hζ U R P H i a A).symm v)
 
-def sectionGroupLift {i : Fin (H.atlas U).componentCount} {a : SymmetricSpace F}
-    {A : KPContSectorPhaseComponentCharts.OrbifoldChart F ζ hζ U R P H i a}
-    (u : LocalSection F ζ hζ U R P H i a A) : ActualCover F ζ hζ → ℂ := fun g =>
+def sectionGroupLift : ActualCover F ζ hζ → ℂ := fun g =>
   if hg : piTilde F ζ hζ U (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) ∈
       q F ζ hζ U ⁻¹'
         KPContSectorPhaseComponentCharts.baseChartImage F ζ hζ U R P H i a A then
     localCoveredScalar F ζ hζ U R P H u ⟨_, hg⟩
   else 0
+
+end
 
 structure GroupChart where
   groupCenter : KPSmoothLocalQuotientCharts.ArchGroup F
@@ -212,42 +217,49 @@ namespace GroupChart
 
 variable {F ζ hζ U R P H}
 
-def groupLift (D : GroupChart F ζ hζ U R P H)
+section
+
+variable (D : GroupChart F ζ hζ U R P H)
+include D
+
+def groupLift
     (x : KPContLocalNorm.Space (groupDimension F)) : ActualCover F ζ hζ :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (D.exponential.chart (groupCoordinates F x)) * D.finiteRepresentative
 
-def π (D : GroupChart F ζ hζ U R P H) :
+def π :
     KPContLocalNorm.Space (groupDimension F) → KPContLocalNorm.Space (baseDimension F) :=
   fun x => (baseCoordinates F).symm (D.rationalComparison •
     KPMsFixedHaarDisintegration.archBasepoint F
       (D.exponential.chart (groupCoordinates F x)))
 
-def frame (D : GroupChart F ζ hζ U R P H) :
+def frame :
     KPContLocalNorm.Space (groupDimension F) → ℂ :=
   fun _ => (chi F ζ hζ D.phase : ℂ)
 
-def fields (D : GroupChart F ζ hζ U R P H) : Fin (groupDimension F) →
+def fields : Fin (groupDimension F) →
     KPContLocalNorm.Space (groupDimension F) → KPContLocalNorm.Space (groupDimension F) :=
   fun b x => (groupCoordinates F).symm
     (KPSmoothLocalQuotientCharts.rightLieField F D.exponential
       (lieEnumeration F b) (groupCoordinates F x))
 
-lemma π_inside_actual_chart (D : GroupChart F ζ hζ U R P H)
+lemma π_inside_actual_chart
     (x : KPContLocalNorm.Space (groupDimension F)) (hx : x ∈ D.T.carrier) :
     baseCoordinates F (D.π x) ∈ D.A.neighborhood := by
   exact D.baseBall_inside ⟨D.π x,
     subset_closure (D.image_inside x (subset_closure hx)), rfl⟩
 
-def sectionExpression (D : GroupChart F ζ hζ U R P H)
+def sectionExpression
     (u : LocalSection F ζ hζ U R P H D.component D.baseCenter D.A) :
     KPContLocalNorm.Space (baseDimension F) → ℂ :=
   fun x => (u.coefficient (baseCoordinates F x) : ℂ)
 
-def piece (D : GroupChart F ζ hζ U R P H)
+def piece
     (K : Set (KPContLocalNorm.Space (groupDimension F))) : Set (ActualCover F ζ hζ) :=
   {g | ∃ x ∈ K, ∃ u : U.toOpenSubgroup,
     g = D.groupLift x * ((u : FiniteCover F ζ hζ) : ActualCover F ζ hζ)}
+
+end
 
 end GroupChart
 
@@ -393,7 +405,12 @@ private lemma lieMatrix_smooth (w : NumberField.InfinitePlace F) :
   exact variable_origin_smooth A hA
 
 namespace GroupChart
-lemma π_smooth (D : GroupChart F ζ hζ U R P H) :
+section
+
+variable (D : GroupChart F ζ hζ U R P H)
+include D
+
+lemma π_smooth :
     ContDiffOn ℝ (⊤ : ℕ∞) D.π D.T.carrier := by
   have hs := (baseCoordinates F).symm.contDiff.comp
     ((CoreChartLocalizers.CutoffConstruction.StabilizerLinearization.rational_action_contDiff
@@ -405,7 +422,7 @@ lemma π_smooth (D : GroupChart F ζ hζ U R P H) :
     (D.closure_source ⟨x, subset_closure hx, rfl⟩)]
   rfl
 
-lemma actual_base_chart (D : GroupChart F ζ hζ U R P H)
+lemma actual_base_chart
     (x : KPContLocalNorm.Space (groupDimension F)) (hx : x ∈ D.T.carrier) :
     piTilde F ζ hζ U (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (D.groupLift x)) =
       (KPContSectorPhaseComponentCharts.coveredChart F ζ hζ U R P H
@@ -418,7 +435,7 @@ lemma actual_base_chart (D : GroupChart F ζ hζ U R P H)
   · simp [π]
   · rw [D.finite_comparison]
     simp
-lemma scalar_pullback (D : GroupChart F ζ hζ U R P H)
+lemma scalar_pullback
     (u : LocalSection F ζ hζ U R P H D.component D.baseCenter D.A)
     (x : KPContLocalNorm.Space (groupDimension F)) (hx : x ∈ D.T.carrier) :
     sectionGroupLift F ζ hζ U R P H u (D.groupLift x) =
@@ -444,7 +461,7 @@ lemma scalar_pullback (D : GroupChart F ζ hζ U R P H)
     phaseTransport_apply, KPContRightJets.scalarLift, frame, sectionExpression]
   rfl
 
-lemma global_scalar_pullback (D : GroupChart F ζ hζ U R P H)
+lemma global_scalar_pullback
     (f : GenuineCoveredScalars F ζ hζ U)
     (x : KPContLocalNorm.Space (groupDimension F)) (hx : x ∈ D.T.carrier) :
     f.val (piTilde F ζ hζ U (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (D.groupLift x))) =
@@ -454,19 +471,19 @@ lemma global_scalar_pullback (D : GroupChart F ζ hζ U R P H)
     ← z_mk, f.property]
   simp only [KPContRightJets.scalarLift, frame, S_apply]
 
-lemma relatively_compact (D : GroupChart F ζ hζ U R P H) :
+lemma relatively_compact :
     IsCompact (closure D.T.carrier) := by
   rw [KPContLocalNorm.LocalBall.carrier, closure_ball _ D.T.radius_pos.ne']
   exact isCompact_closedBall _ _
 
-lemma frame_smooth (D : GroupChart F ζ hζ U R P H) :
+lemma frame_smooth :
     ContDiffOn ℝ (⊤ : ℕ∞) D.frame D.T.carrier := contDiffOn_const
 
-lemma frame_unitary (D : GroupChart F ζ hζ U R P H)
+lemma frame_unitary
     (x : KPContLocalNorm.Space (groupDimension F)) : ‖D.frame x‖ = 1 :=
   chi_norm F ζ hζ D.phase
 
-lemma compact_image (D : GroupChart F ζ hζ U R P H)
+lemma compact_image
     (hπ : ContDiffOn ℝ (⊤ : ℕ∞) D.π D.T.carrier)
     (K : Set (KPContLocalNorm.Space (groupDimension F)))
     (hK : IsCompact K) (hKT : K ⊆ D.T.carrier) :
@@ -475,7 +492,7 @@ lemma compact_image (D : GroupChart F ζ hζ U R P H)
   rintro _ ⟨x, hx, rfl⟩
   exact D.image_inside x (subset_closure (hKT hx))
 
-lemma scalar_smooth (D : GroupChart F ζ hζ U R P H)
+lemma scalar_smooth
     (hπ : ContDiffOn ℝ (⊤ : ℕ∞) D.π D.T.carrier)
     (u : LocalSection F ζ hζ U R P H D.component D.baseCenter D.A) :
     ContDiffOn ℝ (⊤ : ℕ∞)
@@ -486,7 +503,7 @@ lemma scalar_smooth (D : GroupChart F ζ hζ U R P H)
   apply (D.frame_smooth.mul hs).congr
   intro x hx
   exact D.scalar_pullback u x hx
-lemma fields_smooth (D : GroupChart F ζ hζ U R P H)
+lemma fields_smooth
     (hs : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞)
       (KPSmoothLocalQuotientCharts.rightLieField F D.exponential b) D.exponential.chart.source)
     (b : Fin (groupDimension F)) :
@@ -495,7 +512,7 @@ lemma fields_smooth (D : GroupChart F ζ hζ U R P H)
   exact (hs (lieEnumeration F b)).comp (groupCoordinates F).contDiff.contDiffOn
     (fun x hx => D.closure_source ⟨x, subset_closure hx, rfl⟩)
 
-lemma right_iteration_of_differential (D : GroupChart F ζ hζ U R P H)
+lemma right_iteration_of_differential
     (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (D.fields b) D.T.carrier)
     (hd : ∀ (f : KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ → ℂ),
       ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f (D.groupLift x)) D.T.carrier →
@@ -523,7 +540,7 @@ lemma right_iteration_of_differential (D : GroupChart F ζ hζ U R P H)
     exact Filter.EventuallyEq.fderiv_eq
       (Filter.eventuallyEq_iff_exists_mem.mpr ⟨D.T.carrier,
         Metric.isOpen_ball.mem_nhds hx, ih.2⟩)
-private lemma inverse_curve (D : GroupChart F ζ hζ U R P H)
+private lemma inverse_curve
     (O : OpenPartialHomeomorph (KPSmoothLocalQuotientCharts.Coordinates F)
       (KPSmoothLocalQuotientCharts.ArchGroup F))
     (he : O.toPartialHomeomorph = D.exponential.chart)
@@ -555,7 +572,7 @@ private lemma inverse_curve (D : GroupChart F ζ hζ U R P H)
   rw [← he]
   exact hs.contDiffAt.differentiableAt (by simp)
 
-private lemma fields_smooth_of_inverse (D : GroupChart F ζ hζ U R P H)
+private lemma fields_smooth_of_inverse
     (O : OpenPartialHomeomorph (KPSmoothLocalQuotientCharts.Coordinates F)
       (KPSmoothLocalQuotientCharts.ArchGroup F))
     (he : O.toPartialHomeomorph = D.exponential.chart)
@@ -619,7 +636,7 @@ private lemma fields_smooth_of_inverse (D : GroupChart F ζ hζ U R P H)
     rw [mfderiv_eq_fderiv]
     rfl
   exact hd''.contDiffAt.contDiffWithinAt
-private lemma differential_of_inverse (D : GroupChart F ζ hζ U R P H)
+private lemma differential_of_inverse
     (hopen : IsOpen D.exponential.chart.target)
     (hcurve : ∀ b x, x ∈ D.exponential.chart.source →
       DifferentiableAt ℝ (fun t : ℝ => D.exponential.chart.symm
@@ -685,12 +702,12 @@ private lemma differential_of_inverse (D : GroupChart F ζ hζ U R P H)
     rw [mul_assoc, ← hc.eq, ← mul_assoc]
   exact (hcomp.congr_of_eventuallyEq heq).deriv
 
-lemma fields_smooth_actual (D : GroupChart F ζ hζ U R P H) :
+lemma fields_smooth_actual :
     ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (D.fields b) D.T.carrier := by
   obtain ⟨O, he, hi⟩ := D.inverse_smooth
   exact D.fields_smooth_of_inverse O he hi
 
-lemma right_differential (D : GroupChart F ζ hζ U R P H)
+lemma right_differential
     (f : ActualCover F ζ hζ → ℂ)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f (D.groupLift x)) D.T.carrier)
     (b : Fin (groupDimension F)) (x : KPContLocalNorm.Space (groupDimension F))
@@ -701,7 +718,7 @@ lemma right_differential (D : GroupChart F ζ hζ U R P H)
   have ho : IsOpen D.exponential.chart.target := he ▸ O.open_target
   exact D.differential_of_inverse ho (fun b y hy => D.inverse_curve O he hi b y hy) f hf b x hx
 
-lemma identification (D : GroupChart F ζ hζ U R P H) :
+lemma identification :
     Identification F ζ hζ U R P H D := by
   refine
     { relatively_compact := D.relatively_compact
@@ -719,6 +736,8 @@ lemma identification (D : GroupChart F ζ hζ U R P H) :
   intro f hf w
   exact (D.right_iteration_of_differential D.fields_smooth_actual
     D.right_differential f hf w).2
+
+end
 
 end GroupChart
 

@@ -87,7 +87,6 @@ theorem fundamentalConeNormCount_eq_natCard_idealSetIntNorm
     (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
     fundamentalConeNormCount K J n =
       Nat.card {a : idealSet K J // idealSetIntNorm K J a = n} := by
-  rw [fundamentalConeNormCount]
   exact (Nat.card_congr (idealSetIntNormFiberEquiv K J n)).symm
 
 theorem idealSetIntNorm_ne_zero
@@ -97,7 +96,7 @@ theorem idealSetIntNorm_ne_zero
   rw [← idealSetIntNorm_eq_norm K J a] at hpos
   intro h
   rw [h] at hpos
-  exact absurd hpos (by norm_num)
+  grind
 
 theorem fundamentalConeNormCount_eq_torsion_mul
     (J : (Ideal (𝓞 K))⁰) (n : ℕ) :

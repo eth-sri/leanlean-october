@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
 
 open MeasureTheory KPContLocalNorm Raw
 
-private theorem coordinateDerivativeList_tsupport_subset {n : ℕ} (l : List (Fin n))
+theorem coordinateDerivativeList_tsupport_subset {n : ℕ} (l : List (Fin n))
     (f : Space n → ℂ) : tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
   induction l with
   | nil => exact Set.Subset.rfl
@@ -21,7 +21,7 @@ private theorem coordinateDerivativeList_tsupport_subset {n : ℕ} (l : List (Fi
     (hsub : inner.carrier ⊆ outer.carrier) (f : BallL2 outer) : BallL2 inner :=
   ((Lp.memLp f).mono_measure (Measure.restrict_mono hsub le_rfl)).toLp f
 
-private theorem restrictBallL2_ae {n : ℕ} {inner outer : LocalBall n}
+theorem restrictBallL2_ae {n : ℕ} {inner outer : LocalBall n}
     (hsub : inner.carrier ⊆ outer.carrier) (f : BallL2 outer) :
     ∀ᵐ x ∂volume.restrict inner.carrier, restrictBallL2 hsub f x = f x :=
   MemLp.coeFn_toLp _
@@ -74,24 +74,27 @@ private theorem integral_mul_test_restrict {n : ℕ} {inner outer : LocalBall n}
   derivatives α := restrictBallL2 hsub (u.derivatives α)
   weak_derivatives α := isWeakDerivative_restrict hsub α _ _ (u.weak_derivatives α)
 
+theorem restrictSobolev_normSq_eq_integral {n k : ℕ} {inner outer : LocalBall n}
+    (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer k) :
+    (restrictSobolev hsub u).normSq = ∑ α : MultiIndex n k,
+        ∫ x in inner.carrier, ‖u.derivatives α x‖ ^ 2 := by
+  rw [← IntegerSobolev.sobolevNorm_sq, IntegerSobolev.sobolevNorm_sq_eq_integral]
+  apply Finset.sum_congr rfl
+  intro α _
+  apply integral_congr_ae
+  filter_upwards [restrictBallL2_ae hsub (u.derivatives α)] with x hx
+  change ‖restrictBallL2 hsub (u.derivatives α) x‖ ^ 2 = _
+  rw [hx]
+
 theorem restrict_integerSobolev {n k : ℕ} (inner outer : LocalBall n)
     (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer k) :
     ∃ v : IntegerSobolev inner k,
       (∀ α : MultiIndex n k,
         ∀ᵐ x ∂volume.restrict inner.carrier, v.derivatives α x = u.derivatives α x) ∧
       v.normSq = ∑ α : MultiIndex n k,
-        ∫ x in inner.carrier, ‖u.derivatives α x‖ ^ 2 := by
-  let v := restrictSobolev hsub u
-  have hae : ∀ α : MultiIndex n k,
-      ∀ᵐ x ∂volume.restrict inner.carrier, v.derivatives α x = u.derivatives α x :=
-    fun α => restrictBallL2_ae hsub (u.derivatives α)
-  refine ⟨v, hae, ?_⟩
-  rw [← v.sobolevNorm_sq, v.sobolevNorm_sq_eq_integral]
-  apply Finset.sum_congr rfl
-  intro α _
-  apply integral_congr_ae
-  filter_upwards [hae α] with x hx
-  rw [hx]
+        ∫ x in inner.carrier, ‖u.derivatives α x‖ ^ 2 :=
+  ⟨restrictSobolev hsub u, fun α => restrictBallL2_ae hsub _,
+    restrictSobolev_normSq_eq_integral hsub u⟩
 
 end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
 

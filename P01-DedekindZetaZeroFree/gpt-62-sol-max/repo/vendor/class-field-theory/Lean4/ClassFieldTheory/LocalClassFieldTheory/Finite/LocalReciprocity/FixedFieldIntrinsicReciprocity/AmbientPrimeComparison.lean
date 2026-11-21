@@ -34,23 +34,21 @@ open ClassFormation
 open scoped ValuativeRel
 open scoped IsMulCommutative
 
+section
+
+variable (K F E : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field F] [ValuativeRel F] [TopologicalSpace F]
+  [IsNonarchimedeanLocalField F] [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
+  [IsScalarTower K F E] [FiniteDimensional K F] [Algebra.IsSeparable K F]
+  [Valuation.HasExtension
+      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
+  [FiniteDimensional F E] [IsAbelianGalois F E] (j : E →ₐ[K] SeparableClosure K)
+  (e : ambientEmbeddedSeparableClosureEquiv K F E j)
+
 /-- Every abelianized Galois element is simultaneously represented by the local
 Artin map and by the ambient embedded norm-residue construction. -/
 theorem
     exists_localArtin_ambientEmbedded_prime
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
     (z : Abelianization Gal(E / F)) :
     ∃ x : Fˣ,
       localArtinMonoidHom F E x = z ∧
@@ -64,19 +62,6 @@ theorem
 class modulo norms from `E`. -/
 theorem
     ambientEmbeddedNormResidueAbelianElement_eq_of_normClass_eq
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
     (a x : Fˣ)
     (h : normClass F E a = normClass F E x) :
     ambientEmbeddedNormResidueAbelianElement K F E j e a =
@@ -201,19 +186,6 @@ map agrees pointwise with the ambient norm-residue element transported through
 a separable-closure equivalence. -/
 theorem
     abelianLocalArtin_eq_ambientEmbeddedNormResidueSymbol_of_equiv
-    (K F E : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F]
-    [Field E] [Algebra K F] [Algebra F E] [Algebra K E]
-    [IsScalarTower K F E]
-    [FiniteDimensional K F] [Algebra.IsSeparable K F]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation K) (ValuativeRel.valuation F)]
-    [FiniteDimensional F E] [IsAbelianGalois F E]
-    (j : E →ₐ[K] SeparableClosure K)
-    (e : ambientEmbeddedSeparableClosureEquiv K F E j)
     (a : Fˣ) :
     abelianLocalArtinMonoidHom F E a =
       ambientEmbeddedNormResidueElement K F E j e a := by
@@ -270,6 +242,8 @@ theorem
       hxAmbient.symm
     _ = ambientEmbeddedNormResidueAbelianElement K F E j e a :=
       hxNormResidue.symm
+
+end
 
 end LocalClassFieldTheory
 

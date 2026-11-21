@@ -74,7 +74,6 @@ variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
 open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming localRatioValue_eq → localRatioValue_eq
 open _root_.DedekindZetaZeroFree.ProductPolarization renaming baseEval → baseEval
 open _root_.DedekindZetaZeroFree.ProductPolarization renaming eval_diagonal → eval_diagonal
-open _root_.DedekindZetaZeroFree.ProductPolarization renaming diagonal_formula → diagonal_formula
 
 private theorem raw_diagonal (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (r : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
@@ -100,7 +99,7 @@ private theorem global_raw_ratio
     localRatio F ζ hζ v t = KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ e) := by
   have hproj : pglProjection F ζ hζ e.val =
       KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.p F ζ hζ e) :=
-    (diagonal_formula F ⟨_, e.property⟩).symm
+    (KPGlobalCenterRationalCharacterExtension.principalCubicLagrangianPreimage_diagonalPGL_torusRatio F ⟨_, e.property⟩).symm
   have h := congrArg (baseEval F v) hproj
   rw [he, eval_diagonal] at h
   change KPPGLLocalCover.baseQuotient F v

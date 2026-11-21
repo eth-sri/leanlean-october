@@ -18,6 +18,47 @@ variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField F q)]
 
+open scoped Topology in
+theorem kappa_lc : IsLocallyConstant (fun v : (LocalField F q)ˣ => kappa F ζ hζ q v 0) := by
+ let m := KPAdelicCoverRestrictedProduct.depth F ζ hζ q
+ have hm := KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q
+ letI := KPLocalChartTopology.translatedTopology F ζ hζ q m
+ letI := (KPLocalChartTopology.finite_topological_group F ζ hζ q m hm).2.2
+ have hn := KPStandardLocalRootLifts.finite_N_continuous F ζ hζ q m hm
+ have ha := KPStandardLocalRootLifts.finite_A_continuous F ζ hζ q m hm
+ have hs := (KPScalarSplitCentral.finite_continuous_closed F ζ hζ q m hm).1
+ have hl : Continuous (fun v : (LocalField F q)ˣ => bruhatLeft F ζ hζ q v 0) :=
+   (((continuous_const.mul (hn.comp (Units.continuous_val.comp continuous_inv).neg)).mul continuous_const).mul continuous_const)
+ have hr : Continuous (fun v : (LocalField F q)ˣ => bruhatRight F ζ hζ q v 0) :=
+   (hs.comp continuous_inv).mul
+     (((ha.comp (continuous_id.pow 2)).mul (hn.comp (Units.continuous_val.comp continuous_inv))).mul continuous_const |>.mul
+       (hn.comp (continuous_const.add Units.continuous_val)))
+ have hq : Continuous (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)) := QuotientGroup.continuous_mk
+ have he (v : (LocalField F q)ˣ) :
+     KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
+       (bruhatLeft F ζ hζ q v 0 * (bruhatRight F ζ hζ q v 0)⁻¹) =
+     KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v 0) := by
+   rw [raw_bruhat_identity, mul_inv_cancel_right]
+   rfl
+ have hc : Continuous (fun v : (LocalField F q)ˣ =>
+     KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v 0)) := by
+   simp_rw [← he]
+   exact hq.comp (hl.mul hr.inv)
+ letI : Group (KPPGLLocalCover.LocalPGL2 F (Sum.inr q)) :=
+   @QuotientGroup.Quotient.group _ _ (KPPGLLocalCover.scalarSubgroup F (Sum.inr q))
+    (KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q))
+ letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
+ letI := (KPPGLLocalCover.finite_discrete_kernel F ζ hζ q m hm).1
+ have hsub : Continuous (fun v : (LocalField F q)ˣ =>
+   (⟨KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v 0),
+     by rw [← KPPGLLocalCover.range_centralInjection_eq_ker_projection]; exact ⟨_, rfl⟩⟩ :
+     (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).ker)) := hc.subtype_mk _
+ have hh := (IsLocallyConstant.iff_continuous _).mpr hsub
+ rw [IsLocallyConstant.iff_eventually_eq] at hh ⊢
+ intro v
+ filter_upwards [hh v] with w hw
+ exact KPPGLLocalCover.centralInjection_injective F ζ hζ (Sum.inr q) (congrArg Subtype.val hw)
+
 def additiveParameter (r : ℂˣ) : ℂ :=
   -Complex.log (r : ℂ) / (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ)
 

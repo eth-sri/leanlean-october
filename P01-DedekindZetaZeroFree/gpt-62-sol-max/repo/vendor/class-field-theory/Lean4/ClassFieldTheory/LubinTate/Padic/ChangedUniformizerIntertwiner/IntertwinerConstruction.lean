@@ -70,9 +70,12 @@ open SameUniformizer
             PowerSeries.coeff_monomial]
           simp [m] }
 
+section
+
+variable (p : ℕ) [Fact p.Prime] (u : (padicLocalField p).valuationSubringˣ)
+include u
+
 private theorem padicChangedUniformizerApproximation_succ
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (n : ℕ) :
     (padicChangedUniformizerApproximation p u (n + 1)).series =
       (padicChangedUniformizerApproximation p u n).series +
@@ -85,8 +88,6 @@ private theorem padicChangedUniformizerApproximation_succ
 
 private theorem
     padicChangedUniformizerApproximation_coeff_succ_eq_of_lt
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (n q : ℕ) (hq : q < n + 2) :
     PowerSeries.coeff q
         (padicChangedUniformizerApproximation p u (n + 1)).series =
@@ -97,8 +98,6 @@ private theorem
   exact add_zero _
 
 private theorem padicChangedUniformizerApproximation_coeff_eq_of_le
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (q : ℕ) {a b : ℕ} (hab : a ≤ b)
     (hq : q < a + 2) :
     PowerSeries.coeff q
@@ -114,8 +113,6 @@ private theorem padicChangedUniformizerApproximation_coeff_eq_of_le
 
 private theorem
     padicChangedUniformizerApproximation_succ_defect_coeff
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (n : ℕ) :
     PowerSeries.coeff (n + 2)
         (padicChangedUniformizerDefect p u
@@ -131,9 +128,7 @@ private theorem
 
 /-- The actual semilinear changed-uniformizer series over the completed
 unramified Witt ring. -/
-noncomputable def padicChangedUniformizerIntertwiner
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+noncomputable def padicChangedUniformizerIntertwiner :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.mk fun m =>
     PowerSeries.coeff m
@@ -141,8 +136,6 @@ noncomputable def padicChangedUniformizerIntertwiner
 
 @[simp]
 theorem padicChangedUniformizerIntertwiner_coeff
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (m : ℕ) :
     PowerSeries.coeff m
         (padicChangedUniformizerIntertwiner p u) =
@@ -150,9 +143,7 @@ theorem padicChangedUniformizerIntertwiner_coeff
         (padicChangedUniformizerApproximation p u m).series := by
   simp [padicChangedUniformizerIntertwiner]
 
-theorem padicChangedUniformizerIntertwiner_constantCoeff
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicChangedUniformizerIntertwiner_constantCoeff :
     PowerSeries.constantCoeff
         (padicChangedUniformizerIntertwiner p u) = 0 := by
   rw [← PowerSeries.coeff_zero_eq_constantCoeff,
@@ -161,9 +152,7 @@ theorem padicChangedUniformizerIntertwiner_constantCoeff
     (padicChangedUniformizerApproximation p u 0).constantCoeff_eq_zero
 
 @[simp]
-theorem padicChangedUniformizerIntertwiner_coeff_one
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicChangedUniformizerIntertwiner_coeff_one :
     PowerSeries.coeff 1
         (padicChangedUniformizerIntertwiner p u) =
       (padicChangedUniformizerLinearCoefficient p u :
@@ -172,17 +161,13 @@ theorem padicChangedUniformizerIntertwiner_coeff_one
   exact
     (padicChangedUniformizerApproximation p u 1).coeff_one_eq
 
-theorem padicChangedUniformizerIntertwiner_hasSubst
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicChangedUniformizerIntertwiner_hasSubst :
     PowerSeries.HasSubst
       (padicChangedUniformizerIntertwiner p u) :=
   PowerSeries.HasSubst.of_constantCoeff_zero'
     (padicChangedUniformizerIntertwiner_constantCoeff p u)
 
 private theorem padicChangedUniformizerIntertwiner_coeff_eq_approximation
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (q a : ℕ) (hq : q < a + 2) :
     PowerSeries.coeff q
         (padicChangedUniformizerIntertwiner p u) =
@@ -198,9 +183,7 @@ private theorem padicChangedUniformizerIntertwiner_coeff_eq_approximation
     rw [padicChangedUniformizerApproximation_coeff_succ_eq_of_lt
       p u a (a + 1) (by omega)]
 
-private theorem padicChangedUniformizerDefect_coeff_zero
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+private theorem padicChangedUniformizerDefect_coeff_zero :
     PowerSeries.coeff 0
         (padicChangedUniformizerDefect p u
           (padicChangedUniformizerIntertwiner p u)) = 0 := by
@@ -228,9 +211,7 @@ private theorem padicChangedUniformizerDefect_coeff_zero
       (padicCompletedChangedStandardSeries p u) hE,
     sub_zero]
 
-private theorem padicChangedUniformizerDefect_coeff_one
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+private theorem padicChangedUniformizerDefect_coeff_one :
     PowerSeries.coeff 1
         (padicChangedUniformizerDefect p u
           (padicChangedUniformizerIntertwiner p u)) = 0 := by
@@ -332,8 +313,6 @@ private theorem padicChangedUniformizerDefect_coeff_one
   ring
 
 private theorem padicChangedUniformizerDefect_coeff_succ_succ
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     (n : ℕ) :
     PowerSeries.coeff (n + 2)
         (padicChangedUniformizerDefect p u
@@ -359,9 +338,7 @@ private theorem padicChangedUniformizerDefect_coeff_succ_succ
 /-- The completed changed standard series after the actual intertwiner is
 the Frobenius transform of the intertwiner after the multiplicative
 series. This is the first changed-uniformizer identity. -/
-theorem padicChangedUniformizerIntertwiner_functionalEquation
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
+theorem padicChangedUniformizerIntertwiner_functionalEquation :
     PowerSeries.subst
         (padicChangedUniformizerIntertwiner p u)
         (PowerSeries.map
@@ -418,8 +395,6 @@ theorem padicChangedUniformizerIntertwiner_functionalEquation
 /-- A zero-constant-coefficient solution of the changed-uniformizer
 functional equation is determined by its linear coefficient. -/
 theorem padicChangedUniformizerIntertwiner_unique
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ)
     {H H' : PowerSeries (padicCompletedUnramifiedWittRing p)}
     (hHconstant : PowerSeries.constantCoeff H = 0)
     (hH'constant : PowerSeries.constantCoeff H' = 0)
@@ -612,6 +587,8 @@ theorem padicChangedUniformizerIntertwiner_unique
       have hcZero : c = 0 :=
         hunique.unique hcSolution hzeroSolution
       exact sub_eq_zero.mp (by simpa only [c] using hcZero)
+
+end
 
 end LubinTate
 

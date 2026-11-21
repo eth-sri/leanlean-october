@@ -11,11 +11,14 @@ open scoped Classical NumberField
 
 namespace DedekindZetaZeroFree.KPContinuation.ChamberFlatSource
 
+section
+
+variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+  (U : KPMsRationalCompactCrossPairing.Level F ζ hζ) {S : Type*} [NormedAddCommGroup S]
+  [NormedSpace ℂ S] [FiniteDimensional ℂ S]
+  (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
+
 private theorem actual_right_chart_smooth
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (s : ℂ) (v : S) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => KPContActualSphericalFlatStage.L F ζ hζ U ι s v
       (g * KPGlobalResidualConstruction.archChart F ζ hζ x))
@@ -34,11 +37,7 @@ private theorem actual_right_chart_smooth
     (KPContActualSphericalFlatStage.L F ζ hζ U ι s v) (heq x hx))).mono
   exact Set.inter_subset_right
 
-private theorem actual_scalar_kfinite
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (v : S) :
+private theorem actual_scalar_kfinite (v : S) :
     KPLiteralRaw.KFinite F ζ hζ (KPContFlatFullProductIwasawa.iwasawaData F ζ hζ).K
       (KPContActualSphericalFlatStage.L F ζ hζ U ι 0 v) := by
   letI : IsTopologicalGroup (KPGlobalTorusFunctionData.G F ζ hζ) :=
@@ -64,10 +63,6 @@ private theorem actual_scalar_kfinite
     rfl
 
 private theorem actual_level_all
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
-    {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
-    (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (s : ℂ) (v : S) (g : KPGlobalTorusFunctionData.G F ζ hζ)
     (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U) :
     KPContActualSphericalFlatStage.L F ζ hζ U ι s v (g * u.val) =
@@ -80,6 +75,8 @@ private theorem actual_level_all
       (Complex.ofReal_eq_zero.mp ha)
     rw [he]
   · rw [hz, mul_zero, mul_zero]
+
+end
 
 private theorem half_modulus_multiplier
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

@@ -26,11 +26,11 @@ private lemma unit_eq (c m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K) :
   ext a
   simp only [ReflectedSigma4.unitRows, Finset.mem_filter, Finset.mem_singleton]
   constructor
-  · exact fun h => h.1
+  · grind
   · intro h
     subst a
     refine ⟨rfl, ?_, by simp, ?_⟩
-    · simpa only [← Ideal.one_eq_top] using (squarefree_one : Squarefree (1 : Ideal (𝓞 F)))
+    · simp
     · simpa only [sc_top] using hK
 private lemma clipped_succ (m : Ideal (𝓞 F)) (K : ℝ) (i : ℕ) :
     Sieve.clippedDyadicBlock F m K (i+1) = sigma4DyadicRows F m K ((2:ℝ)^i) := by
@@ -48,11 +48,11 @@ private lemma clipped_zero (m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K) :
   simp only [Sieve.clippedDyadicBlock, Sieve.idealDyadicBlock, Finset.mem_inter,
     Finset.mem_singleton]
   constructor
-  · exact fun h => h.1
+  · grind
   · intro h
     subst a
     refine ⟨rfl, (Sieve.mem_idealAdmissibleFinset F m K ⊤).mpr ⟨?_, by simp, ?_⟩⟩
-    · simpa only [← Ideal.one_eq_top] using (squarefree_one : Squarefree (1 : Ideal (𝓞 F)))
+    · simp
     · simpa using hK
 set_option backward.isDefEq.respectTransparency false in
 private lemma row_partition (c m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K)
@@ -66,20 +66,18 @@ private lemma row_partition (c m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K)
       (Sieve.pairwiseDisjoint_clippedDyadicBlock F m K hK) (f := f)).symm
     rw [Sieve.biUnion_clippedDyadicBlock F m K hK, Finset.sum_range_succ'] at hsum
     simpa only [clipped_succ, clipped_zero m K hK, unit_eq c m K hK, add_comm] using hsum
-  · intro i hi j hj heq
-    exact pow_right_injective₀ (by norm_num : (0:ℝ)<2) (by norm_num : (2:ℝ) ≠ 1) heq
+  simp
 
 lemma original_partition (C : Context Q) (hK : 1 ≤ C.K) (f : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ C.originalRows 1 true, f a) +
       (∑ B ∈ dyadicScales C, ∑ a ∈ C.originalRows B, f a) =
         ∑ a ∈ Sieve.idealAdmissibleFinset F (c*C.d) C.K, f a := by
-  exact row_partition c (c*C.d) C.K hK f
+  apply row_partition <;> assumption
 
 lemma core_partition (C : Context Q) (hK : 1 ≤ C.K) (f : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ C.reflectedCoreRows 1 true, f a) +
       (∑ B ∈ dyadicScales C, ∑ a ∈ C.reflectedCoreRows B, f a) =
-        ∑ a ∈ Sieve.idealAdmissibleFinset F c C.K, f a := by
-  exact row_partition c c C.K hK f
+        ∑ a ∈ Sieve.idealAdmissibleFinset F c C.K, f a := row_partition c c C.K hK f
 private lemma sup_top_of_rel {x y : Ideal (𝓞 F)} (h : IsRelPrime x y) : x ⊔ y = ⊤ :=
   Ideal.isUnit_iff.mp (h (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right))
 private lemma rel_of_sup {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) : IsRelPrime x y := by
@@ -558,39 +556,6 @@ private theorem sup_c_eq_top_of_beta_ne_zero (C : Context Q)
 
 open UniqueFactorizationMonoid
 
-private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
-    q.radical = UniqueFactorizationMonoid.radical q := by
-  let r := UniqueFactorizationMonoid.radical q
-  have hr : r ≠ ⊥ := radical_ne_zero
-  have hsf : Squarefree r := squarefree_radical
-  obtain ⟨hp, hprod, _, _, _, _⟩ := Vendor.CutoffDifference.squarefree_divisor_dictionary r hr hsf
-  let P := (factors r).toFinset
-  have heq : P.inf (fun p => p) = r := by
-    have h := IsDedekindDomain.inf_prime_pow_eq_prod P (fun p => p) (fun _ => 1)
-      hp (by intro i hi j hj hij; exact hij)
-    calc
-      P.inf (fun p => p) = ∏ p ∈ P, p := by simpa only [pow_one] using h
-      _ = r := hprod
-  have hgen : ∀ S : Finset (Ideal (𝓞 F)), (∀ p ∈ S, Prime p) →
-      (S.inf (fun p => p)).IsRadical := by
-    intro S
-    induction S using Finset.induction_on with
-    | empty => simp [Ideal.IsRadical]
-    | insert p S hnot ih =>
-      intro hpr
-      rw [Finset.inf_insert]
-      apply Ideal.IsRadical.inf
-      · exact (Ideal.isPrime_of_prime (hpr p (by simp))).isRadical
-      · exact ih (by intro t ht; exact hpr t (by simp [ht]))
-  have hR : r.IsRadical := heq ▸ hgen P hp
-  apply le_antisymm
-  · exact (hR.radical_le_iff).mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
-  · obtain ⟨n, hn⟩ := exists_dvd_radical_self_pow hq
-    have hle : r ^ n ≤ q := Ideal.dvd_iff_le.mp hn
-    have : r ≤ (r ^ n).radical := by
-      intro x hx
-      exact ⟨n, Ideal.pow_mem_pow hx n⟩
-    exact this.trans (Ideal.radical_mono hle)
 private lemma nv_prod (n : Ideal (𝓞 F) →* ℝ≥0) (χ : Ideal (𝓞 F) →* ℂ)
     (S : Finset (Ideal (𝓞 F))) :
     Vendor.CutoffDifference.SplitData.normalizedValue n χ (∏ p ∈ S, p) =
@@ -614,7 +579,7 @@ theorem double_divisor_local_product (q : Ideal (𝓞 F)) (hq : q ≠ ⊥)
     ∏ l ∈ (UniqueFactorizationMonoid.normalizedFactors q).toFinset,
       (1 - χ l ^ 2 / (norm l : ℂ)) := by
   classical
-  rw [ideal_radical_eq q hq]
+  rw [Vendor.CutoffDifference.ideal_radical_eq q hq]
   let r := UniqueFactorizationMonoid.radical q
   have hr : r ≠ ⊥ := radical_ne_zero
   obtain ⟨hp, hprod, hd, hi, hmu, hmem⟩ :=

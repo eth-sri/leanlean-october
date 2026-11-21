@@ -267,10 +267,7 @@ private theorem weak_ibp_of_integrated_product_derivative
   exact congrFun (KPSmoothQuotientTranslationFlow.rightTranslation_mul
     (KPSmoothActualFlowData.rationalSubgroup F ζ hζ) _ _) x
 
-section ActualCutoffSupport
-variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
-end ActualCutoffSupport
 
 end DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources
 

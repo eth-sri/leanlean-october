@@ -21,7 +21,7 @@ theorem euler_bound (σ0 : ℝ) (hσ0 : 1 < σ0) :
       σ0 ≤ s.re → ‖Detector.idealLSeries F ω s‖ ≤ B := by
   obtain ⟨hsum, hnn, hpos, -⟩ := idealAbsoluteSum_converges F σ0 hσ0
   refine ⟨idealAbsoluteSum F σ0, hpos, fun m hm ω s hs => ?_⟩
-  have hs1 : 1 < s.re := lt_of_lt_of_le hσ0 hs
+  have hs1 := lt_of_lt_of_le hσ0 hs
   obtain ⟨hsum', hnn', -, -⟩ := idealAbsoluteSum_converges F s.re hs1
   have hterm : ∀ I : Ideal (𝓞 F),
       ‖(if I ≠ ⊥ then ω I * (Ideal.absNorm I : ℂ) ^ (-s) else 0)‖ ≤ idealAbsoluteWeight F σ0 I := by

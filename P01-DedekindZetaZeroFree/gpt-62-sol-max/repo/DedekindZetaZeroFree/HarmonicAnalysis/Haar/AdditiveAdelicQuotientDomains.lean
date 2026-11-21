@@ -435,52 +435,6 @@ attribute [local instance] quotientProbability_finiteMeasurable
   quotientProbability_adeleMeasurable quotientProbability_quotientMeasurable
 
 set_option backward.isDefEq.respectTransparency false in
- def massArchEquiv (F : Type) [Field F] [NumberField F] :
-    InfiniteAdeleRing F ≃ₜ+ mixedEmbedding.mixedSpace F where
-  toAddEquiv := (InfiniteAdeleRing.ringEquiv_mixedSpace F).toAddEquiv
-  continuous_toFun := by
-    apply Continuous.prodMk
-    · apply continuous_pi
-      intro v
-      exact (InfinitePlace.Completion.isometry_extensionEmbeddingOfIsReal v.2).continuous.comp
-        (continuous_apply v.1)
-    · apply continuous_pi
-      intro v
-      exact (InfinitePlace.Completion.isometry_extensionEmbedding v.1).continuous.comp
-        (continuous_apply v.1)
-  continuous_invFun := by
-    apply continuous_pi
-    intro v
-    by_cases hv : v.IsReal
-    · have he (x : mixedEmbedding.mixedSpace F) :
-          (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x v =
-            (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm (x.1 ⟨v,hv⟩) := by
-        apply (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).injective
-        have hh := congrArg (fun y : mixedEmbedding.mixedSpace F => y.1 ⟨v,hv⟩)
-          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
-        rw [IsometryEquiv.apply_symm_apply]
-        exact hh
-      convert (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm.continuous.comp
-        ((continuous_apply (⟨v,hv⟩ : {w : InfinitePlace F // w.IsReal})).comp
-          (continuous_fst : Continuous (Prod.fst : mixedEmbedding.mixedSpace F → _))) using 1
-      funext x
-      exact he x
-    · have hv' := InfinitePlace.not_isReal_iff_isComplex.mp hv
-      have he (x : mixedEmbedding.mixedSpace F) :
-          (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x v =
-            (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').symm (x.2 ⟨v,hv'⟩) := by
-        apply (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').injective
-        have hh := congrArg (fun y : mixedEmbedding.mixedSpace F => y.2 ⟨v,hv'⟩)
-          ((InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x)
-        rw [IsometryEquiv.apply_symm_apply]
-        exact hh
-      convert (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv').symm.continuous.comp
-        ((continuous_apply (⟨v,hv'⟩ : {w : InfinitePlace F // w.IsComplex})).comp
-          (continuous_snd : Continuous (Prod.snd : mixedEmbedding.mixedSpace F → _))) using 1
-      funext x
-      exact he x
-
-set_option backward.isDefEq.respectTransparency false in
 
 theorem quotient_mass_eq_covolume_mul
     (F : Type) [Field F] [NumberField F]
@@ -569,7 +523,7 @@ theorem quotient_mass_eq_covolume_mul
   simp only [Set.preimage_univ, Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
   have he : Continuous (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F =>
       (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing (𝓞 F) F)) :=
-    (massArchEquiv F).symm.continuous.prodMap continuous_id
+    (archEquiv F).symm.continuous.prodMap continuous_id
   have hem : Measurable (fun x : mixedEmbedding.mixedSpace F × FiniteAdeleRing (𝓞 F) F =>
       (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x.1, x.2) : AdeleRing (𝓞 F) F)) := he.measurable
   unfold additiveProductHaar

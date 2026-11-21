@@ -18,8 +18,7 @@ theorem rationalUnits_of_pow_mem (F : Type*) [Field F] [NumberField F]
     Units.map (algebraMap (NumberField.RingOfIntegers F) F).toMonoidHom v = u ^ n at hu
   obtain ⟨v, hv⟩ := hu
   have hvval : algebraMap (NumberField.RingOfIntegers F) F (v : NumberField.RingOfIntegers F) =
-      (u : F) ^ n := by
-    exact congrArg Units.val hv
+      (u : F) ^ n := congrArg Units.val hv
   have hvival : algebraMap (NumberField.RingOfIntegers F) F
       ((v⁻¹ : (NumberField.RingOfIntegers F)ˣ) : NumberField.RingOfIntegers F) =
       ((u⁻¹ : Fˣ) : F) ^ n := by
@@ -32,8 +31,8 @@ theorem rationalUnits_of_pow_mem (F : Type*) [Field F] [NumberField F]
     (hvival ▸ isIntegral_algebraMap)
   have hxy : x * y = 1 := by
     apply NumberField.RingOfIntegers.coe_injective
-    simp only [map_mul, map_one, hx, hy, Units.mul_inv]
-  have hyx : y * x = 1 := by simpa only [mul_comm] using hxy
+    simp_all
+  have hyx : y * x = 1 := by grind
   refine ⟨⟨x, y, hxy, hyx⟩, ?_⟩
   apply Units.ext
   exact hx
@@ -59,7 +58,7 @@ theorem conjugatedStabilizer_commensurable (F : Type*) [Field F]
     simpa only [Subgroup.comap_subtype, Subgroup.subgroupOf_map_subtype] using
       (h.comap (MulAction.stabilizer (KPCuspArithmetic.PGL2 F) q).subtype).map
         (MulAction.stabilizer (KPCuspArithmetic.PGL2 F) q).subtype
-  exact hq.map (MulAut.conj σ⁻¹).toMonoidHom
+  exact hq.map ..
 
 theorem conjugatedStabilizer_upper (F : Type*) [Field F] [NumberField F]
     (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) (q : KPCuspArithmetic.Cusp F)
@@ -101,7 +100,7 @@ theorem isZLattice_of_commensurable {V : Type*} [NormedAddCommGroup V] [NormedSp
   have hd : DiscreteTopology L.toIntSubmodule := by
     change DiscreteTopology {x : V // x ∈ (L.toIntSubmodule : Set V)}
     rw [AddSubgroup.coe_toIntSubmodule]
-    exact (inferInstance : DiscreteTopology L)
+    assumption
   letI := hd
   refine ⟨hd, ?_⟩
   constructor
@@ -176,16 +175,15 @@ private theorem ratioValue_formula {F : Type*} [Field F]
   change (A*B) 0 0 / (A*B) 1 1 = (A 0 0 / A 1 1) * (B 0 0 / B 1 1)
   simp only [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, hA, hB,
     mul_zero, zero_mul, add_zero, zero_add]
-  exact mul_div_mul_comm _ _ _ _
+  exact mul_div_mul_comm ..
 
 def upperRatio {F : Type*} [Field F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F))
     (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g) : S →* Fˣ where
-  toFun g := Units.mk0 (ratioValue S hS g) (by
-    exact div_ne_zero (diagonal_ne_zero _ (representative_upper S hS g)).1
+  toFun g := Units.mk0 (ratioValue S hS g) (div_ne_zero (diagonal_ne_zero _ (representative_upper S hS g)).1
       (diagonal_ne_zero _ (representative_upper S hS g)).2)
   map_one' := by apply Units.ext; exact ratioValue_one S hS
-  map_mul' g h := by apply Units.ext; exact ratioValue_mul S hS g h
+  map_mul' g h := by apply Units.ext; exact ratioValue_mul ..
 
 theorem upperRatio_formula {F : Type*} [Field F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F))

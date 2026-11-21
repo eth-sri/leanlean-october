@@ -2,7 +2,13 @@ module
 
 public import ValuedFieldTheory.Ramification.HilbertRamification.RamificationNumber
 public import ValuedFieldTheory.Ramification.HilbertRamification.UniformizerGradedHom
-public import ValuedFieldTheory.Ramification.Herbrand.Average
+public import Mathlib.SetTheory.Cardinal.Finite
+public import Mathlib.GroupTheory.QuotientGroup.Finite
+public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnits.Core
+public import Mathlib.Data.Rat.Lemmas
+public import Mathlib.Algebra.Order.Floor.Ring
+public import Mathlib.Topology.Order.MonotoneContinuity
+public import ValuedFieldTheory.Ramification.Herbrand.Tower
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.AddVal
 
 @[expose] public section

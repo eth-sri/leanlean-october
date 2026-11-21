@@ -86,34 +86,32 @@ theorem universalNormDescent_endpoint_descent
     s φ.1 τ u.1 (fun i => (uᵢ i).1) hstar
   exact v.descend_maximalUnramifiedNorm_unit K L hLK φ hφ u.1 u.2 hfixed
 
+section
+
+variable (v : ValuationData D A) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
+  [TotallyDisconnectedSpace G] (hAxiom : v.SatisfiesUnramifiedUnitCohomology)
+  (K : FiniteAbstractField G) (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hLnormal : (extensionSubgroup K.field L hLK).Normal] [hLfinite : Finite
+      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+  (φ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK) (hφ : D.frobeniusExponent
+      (K.toFiniteResidueAbstractField D) L hLK φ = 1)
+  {ι : Type*} (s : Finset ι) (τ : ι →
+      (D.extensionNormalizedDegreeContinuous
+        (K.toFiniteResidueAbstractField D) L hLK).toMonoidHom.ker)
+  (u : v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
+      (D.maximalUnramifiedField_le_of_le hLK))
+  (uᵢ : ι → v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
+      (D.maximalUnramifiedField_le_of_le hLK))
+  (hstar : D.frobeniusQuotientAction A K.field L hLK φ.1 u.1 - u.1 =
+      ∑ i ∈ s,
+        (D.frobeniusQuotientAction A K.field L hLK (τ i).1 (uᵢ i).1 -
+          (uᵢ i).1))
+include v hAxiom K hLnormal hLfinite φ hφ ι s τ u uᵢ hstar
+
 /-- The universal norm-descent lemma, finite target step.  After placing the finite support in a
 common finite Galois overfield, the descended unit is a norm from every
 prescribed finite intermediate field. -/
 theorem universalNormDescent_mem_finiteUnitNormRange
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (hAxiom : v.SatisfiesUnramifiedUnitCohomology)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (φ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
-    (hφ : D.frobeniusExponent
-      (K.toFiniteResidueAbstractField D) L hLK φ = 1)
-    {ι : Type*} (s : Finset ι)
-    (τ : ι →
-      (D.extensionNormalizedDegreeContinuous
-        (K.toFiniteResidueAbstractField D) L hLK).toMonoidHom.ker)
-    (u : v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
-      (D.maximalUnramifiedField_le_of_le hLK))
-    (uᵢ : ι → v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
-      (D.maximalUnramifiedField_le_of_le hLK))
-    (hstar : D.frobeniusQuotientAction A K.field L hLK φ.1 u.1 - u.1 =
-      ∑ i ∈ s,
-        (D.frobeniusQuotientAction A K.field L hLK (τ i).1 (uᵢ i).1 -
-          (uᵢ i).1))
     (aK : v.unitAddSubgroup K)
     (haK :
       letI : Finite
@@ -637,31 +635,7 @@ theorem universalNormDescent_mem_finiteUnitNormRange
 relation for an infinite-level unit forces its maximal-unramified norm to
 descend to a `K`-unit which is a unit norm from every finite intermediate
 field. -/
-theorem universalNormDescent
-    (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (hAxiom : v.SatisfiesUnramifiedUnitCohomology)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (φ : D.FrobeniusElements (K.toFiniteResidueAbstractField D) L hLK)
-    (hφ : D.frobeniusExponent
-      (K.toFiniteResidueAbstractField D) L hLK φ = 1)
-    {ι : Type*} (s : Finset ι)
-    (τ : ι →
-      (D.extensionNormalizedDegreeContinuous
-        (K.toFiniteResidueAbstractField D) L hLK).toMonoidHom.ker)
-    (u : v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
-      (D.maximalUnramifiedField_le_of_le hLK))
-    (uᵢ : ι → v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
-      (D.maximalUnramifiedField_le_of_le hLK))
-    (hstar : D.frobeniusQuotientAction A K.field L hLK φ.1 u.1 - u.1 =
-      ∑ i ∈ s,
-        (D.frobeniusQuotientAction A K.field L hLK (τ i).1 (uᵢ i).1 -
-          (uᵢ i).1)) :
+theorem universalNormDescent :
     letI : Finite
         ((D.maximalUnramifiedField K.field).toSubgroup ⧸
           extensionSubgroup (D.maximalUnramifiedField K.field)
@@ -688,6 +662,8 @@ theorem universalNormDescent
   intro M
   exact v.universalNormDescent_mem_finiteUnitNormRange hAxiom K L hLK φ hφ
     s τ u uᵢ hstar aK haK M
+
+end
 
 end ValuationData
 

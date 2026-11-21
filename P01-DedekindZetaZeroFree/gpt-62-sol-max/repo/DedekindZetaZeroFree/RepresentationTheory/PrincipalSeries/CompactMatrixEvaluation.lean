@@ -12,9 +12,6 @@ namespace DedekindZetaZeroFree.KPActualReflectionData.LiteralProductPointBound
 open KPGlobalResidualConstruction KPLiteralTensor KPCplxPrincipalSeriesCharts
 open LiteralProductEvaluator
 
-local instance : AddCommGroup harmonicPlus := Submodule.addCommGroup harmonicPlus
-local instance : Module ℂ harmonicPlus := Submodule.module harmonicPlus
-local instance : TopologicalSpace harmonicPlus := instTopologicalSpaceSubtype
 
 theorem principalSeries_matrix_evaluation_joint (a : ℝ) :
     Continuous (fun p : PrincipalSeries a × KPCplxCharacterHaar.ComplexGL2 => p.1 p.2) := by

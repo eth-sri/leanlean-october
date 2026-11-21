@@ -21,9 +21,9 @@ private lemma norm_le_majorant {F : Type*} [Field F] [NumberField F]
   by_cases hI : I = ⊥
   · simp [hI]
   · rw [if_neg hI, if_neg hI]
-    have hn : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := one_le_absNorm_cast hI
-    have hn0 : 0 ≤ (Ideal.absNorm I : ℝ) := le_trans zero_le_one hn
-    have hpos : 0 < u * (Ideal.absNorm I : ℝ) := mul_pos hu (lt_of_lt_of_le zero_lt_one hn)
+    have hn := one_le_absNorm_cast hI
+    have hn0 := le_trans zero_le_one hn
+    have hpos := mul_pos hu (lt_of_lt_of_le zero_lt_one hn)
     calc ‖φ (u * (Ideal.absNorm I : ℝ))‖
         ≤ K * (u * (Ideal.absNorm I : ℝ)) ^ (-B) := hφ _ hpos
       _ = K * (u ^ (-B) * (Ideal.absNorm I : ℝ) ^ (-B)) := by rw [Real.mul_rpow hu.le hn0]

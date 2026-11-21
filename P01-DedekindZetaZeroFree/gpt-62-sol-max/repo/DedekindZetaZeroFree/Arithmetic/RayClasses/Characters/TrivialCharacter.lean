@@ -22,7 +22,7 @@ noncomputable def trivialRayCharacter : RayClassCharacter K ⊤ := by
   · intro I
     simp
   · intro α hα _ _
-    simp [Ideal.span_singleton_eq_bot, hα]
+    simp [hα]
 
 theorem trivialRayCharacter_apply (I : Ideal (𝓞 K)) :
     trivialRayCharacter K I = if I = ⊥ then 0 else 1 := by

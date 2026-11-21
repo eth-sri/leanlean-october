@@ -1,7 +1,8 @@
 module
 
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteIntegralClosure
-public import ValuedFieldTheory.Ramification.GaloisValuation.AbsoluteGalois.FiniteExtensionCorrespondence
+public import Mathlib.SetTheory.Cardinal.Finite
+public import ValuedFieldTheory.Ramification.GaloisValuation.AbsoluteGalois.InfiniteGaloisCorrespondence
 
 @[expose] public section
 

@@ -319,10 +319,6 @@ def orbitEquiv : (ordinaryKernel F ζ hζ w ρ) ≃ₗ[ℂ]
     ⟨orbitSectionMap_injective F ζ hζ w ρ m hm hρ hgen,
       orbitSectionMap_surjective F ζ hζ w ρ m hm hρ hgen⟩
 
-@[simp] theorem orbitEquiv_apply (v : ordinaryKernel F ζ hζ w ρ) :
-    orbitEquiv F ζ hζ w ρ m hm hρ hgen v =
-      orbitSectionMap F ζ hζ w ρ m hm hρ hgen v := by
-  rfl
 
 theorem orbitEquiv_symm_intertwines (p : P F ζ hζ w)
     (f : Sections F ζ hζ w m (ψ F w) (J F ζ hζ w ρ)) :

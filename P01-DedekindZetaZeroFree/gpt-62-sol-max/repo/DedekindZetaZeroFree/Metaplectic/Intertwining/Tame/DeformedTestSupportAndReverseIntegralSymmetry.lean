@@ -12,6 +12,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneOppositeZero KPRankOneForwardTestVector
 open KPTameJacquetTestDuality KPTameValuationCoordinates
+open KPTameJacquetBruhatTests.Raw (expandingBall_norm valuation_norm_le uniformizer_inv_norm_gt_one)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   (q : HeightOneSpectrum (𝓞 F))
 local notation "K" => LocalField F q
@@ -27,9 +28,7 @@ private lemma A_N (y : Kˣ) (x : K) :
       KubotaRankTwo.n K ((y : K) * x) * KubotaRankTwo.d K y 1 := by
     apply Units.ext
     ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-        Matrix.mul_apply, Fin.sum_univ_two]
+    simp
   have hs1 : KPLocalCover.sigmaTwo F ζ hζ v (KubotaRankTwo.d K y 1) (KubotaRankTwo.n K x) = 1 := by
     simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, B1, B2]
   have hs2 : KPLocalCover.sigmaTwo F ζ hζ v (KubotaRankTwo.n K ((y : K) * x)) (KubotaRankTwo.d K y 1) = 1 := by
@@ -273,35 +272,10 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneOppositeZero KPRankOneForwardTestVector
 open KPTameJacquetTestDuality KPTameValuationCoordinates
+open KPTameJacquetBruhatTests.Raw (expandingBall_norm valuation_norm_le uniformizer_inv_norm_gt_one)
 
 variable (F : Type) [Field F] [NumberField F]
   (q : HeightOneSpectrum (𝓞 F))
-
-private theorem valuation_norm_le (x y : LocalField F q) :
-    valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
-  rw [← Valuation.Compatible.vle_iff_le]
-  change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
-private theorem ball_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
-    x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
-  let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
-  have ha : a ≠ 0 := inv_ne_zero (π ^ r).ne_zero
-  have hn : ‖a‖ = ‖(π : LocalField F q)‖⁻¹ ^ r := by
-    simp [a, norm_inv, norm_pow, inv_pow]
-  have hm : ∀ y : LocalField F q, y ∈ (valuation (LocalField F q)).integer ↔ ‖y‖ ≤ 1 := by
-    intro y
-    rw [Valuation.mem_integer_iff, ← map_one (valuation (LocalField F q)), valuation_norm_le]
-    simp
-  change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
-  rw [← hn]
-  constructor
-  · rintro ⟨u, rfl⟩
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
-  · intro hx
-    refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
-    rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
-    exact hx
 
 theorem high_shell_translation_is_cubic_unit_multiple
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
@@ -314,24 +288,12 @@ theorem high_shell_translation_is_cubic_unit_multiple
     (t : LocalField F q) (ht : t ∈ expandingBall F q π 1) :
     ∃ c : (LocalField F q)ˣ, localAbs (LocalField F q) c = 1 ∧
       x + t = (c ^ 3 : (LocalField F q)ˣ) * x := by
-  have hv : valuation (LocalField F q) (π : LocalField F q) < 1 := by
-    apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.lt_iff_lt.mp
-    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) <
-      IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1
-    rw [hπ, map_one]
-    norm_num
-  have hp : 0 < ‖(π : LocalField F q)‖ := norm_pos_iff.mpr π.ne_zero
-  have hp1 : ‖(π : LocalField F q)‖ < 1 := by
-    have h := not_le.mpr hv
-    rw [← map_one (valuation (LocalField F q)), valuation_norm_le] at h
-    simpa using not_le.mp h
-  have hb : 1 ≤ ‖(π : LocalField F q)‖⁻¹ := le_of_lt ((one_lt_inv₀ hp).mpr hp1)
+  have hb := (uniformizer_inv_norm_gt_one F q π hπ).le
   have hxt : ‖t‖ < ‖x‖ := by
     have hxn : ‖(π : LocalField F q)‖⁻¹ ^ (r - 1) < ‖x‖ :=
-      lt_of_not_ge (fun h => hx.2 ((ball_norm F q π (r-1) x).mpr h))
+      lt_of_not_ge (fun h => hx.2 ((expandingBall_norm F q π (r-1) x).mpr h))
     have htn : ‖t‖ ≤ ‖(π : LocalField F q)‖⁻¹ := by
-      simpa using (ball_norm F q π 1 t).mp ht
+      simpa using (expandingBall_norm F q π 1 t).mp ht
     exact lt_of_le_of_lt (htn.trans (by
       simpa using pow_le_pow_right₀ hb (show 1 ≤ r - 1 by omega))) hxn
   have hx0 : x ≠ 0 := by
@@ -416,6 +378,7 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneOppositeZero KPRankOneForwardTestVector
 open KPTameJacquetTestDuality KPTameValuationCoordinates
+open KPTameJacquetBruhatTests.Raw (expandingBall_norm valuation_norm_le uniformizer_inv_norm_gt_one)
 
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))

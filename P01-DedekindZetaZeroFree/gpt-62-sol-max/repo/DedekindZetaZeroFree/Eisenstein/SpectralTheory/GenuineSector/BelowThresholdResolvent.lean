@@ -35,21 +35,8 @@ local notation "Ractual" => R_U F ζ hζ U R P H μG hμG hR realization
 structure Properties : Prop where
   threshold_positive : 0 < d
 
-  compact_remainder : ∀ ε : ℝ, 0 < ε →
-    ∃ K : Hactual →L[ℂ] Hactual, IsCompactOperator K ∧
-      ∀ u : Hactual, (d - ε) * ‖B u‖ ^ 2 ≤
-        (inner ℂ (B u) (u - B u)).re + ‖K u‖ ^ 2
-
   resolvent_exact : ∀ z : ℂ, Ractual z = KPResolventPencil.shiftedResolvent B z
   norm_meromorphic : MeromorphicOn Ractual (KPBelowThresholdResolvent.domain d)
-  full_inverse_region :
-    KPResolventPencil.resolventSet Δ ∩ KPBelowThresholdResolvent.domain d =
-      KPBelowThresholdResolvent.domain d \ KPBelowThresholdResolvent.poleSet Δ d
-  base_inverse : KPResolventPencil.GenuineInverse Δ (-1) B
-  base_value : Ractual (-1) = B
-  bounded_positive : (B).IsPositive
-  bounded_selfadjoint : IsSelfAdjoint B
-  bounded_contraction : ‖B‖ ≤ 1
   norm_holomorphic_off_poles : AnalyticOnNhd ℂ Ractual
     (KPBelowThresholdResolvent.domain d \ KPBelowThresholdResolvent.poleSet Δ d)
   genuine_inverse_off_poles :
@@ -96,20 +83,6 @@ end DedekindZetaZeroFree.KPContActualSectorResolventSpecialization
 
 namespace DedekindZetaZeroFree
 
-private theorem eigen_not_resolvent_aux
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    (Δ : H →ₗ.[ℂ] H) (μ : ℝ)
-    (he : KPBelowThreshold.eigenspace Δ μ ≠ ⊥) :
-    (μ : ℂ) ∉ KPResolventPencil.resolventSet Δ := by
-  obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot he
-  obtain ⟨v, hv, rfl⟩ := (Submodule.mem_map).mp hx
-  intro hres
-  obtain ⟨R, hR⟩ := hres
-  have h := hR.2.2 v
-  have hz : Δ v - (μ : ℂ) • (v : H) = 0 := hv
-  rw [hz, map_zero] at h
-  exact hx0 h.symm
-
 theorem kp_cont_actual_sector_resolvent_specialization
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
@@ -121,129 +94,42 @@ theorem kp_cont_actual_sector_resolvent_specialization
     KPContActualSectorResolventSpecialization.Properties
       F ζ hζ U R P H μG hμG hR realization := by
   classical
-  have hd : (0 : ℝ) < (Module.finrank ℚ F : ℝ) / 2 := by
-    have h1 : 0 < Module.finrank ℚ F := Module.finrank_pos
+  let Δ := KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H μG hμG hR realization
+  let B := KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR realization
+  let d : ℝ := (Module.finrank ℚ F : ℝ) / 2
+  have hd : 0 < d := by
+    have := Module.finrank_pos (R := ℚ) (M := F)
+    dsimp [d]
     positivity
-  have hcoer : ∀ ε : ℝ, 0 < ε →
-      ∃ K : KPContSectorClosedLpSubspace.H F ζ hζ R U →L[ℂ]
-          KPContSectorClosedLpSubspace.H F ζ hζ R U,
-        IsCompactOperator K ∧
-        ∀ u : KPContSectorClosedLpSubspace.H F ζ hζ R U,
-          ((Module.finrank ℚ F : ℝ) / 2 - ε) *
-              ‖KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-                realization u‖ ^ 2 ≤
-            (inner ℂ
-              (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-                realization u)
-              (u - KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-                realization u)).re + ‖K u‖ ^ 2 :=
-    kp_cont_actual_compact_remainder_estimate F ζ hζ μG hμG U R hR P H realization
-  have hfr := (kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H
-    realization).friedrichs
-  obtain ⟨hmem, hbaseval, hBpos, hBsa, hBnorm, hmero, hregion, hanalytic,
-    hinvoff, hpoles, hlaurent⟩ :=
-    kp_cont_below_threshold_resolvent
-      (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H μG hμG hR realization)
-      hfr.laplacian_dense
-      (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR realization)
-      ((Module.finrank ℚ F : ℝ) / 2) hd hfr.laplacian_selfadjoint
-      hfr.laplacian_nonnegative hfr.genuine_inverse hcoer
-  obtain ⟨_, _, _, _, _, _, hreal, _, _, _, hwindow, _⟩ :=
-    kp_cont_resolvent_spectrum_transfer
-      (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H μG hμG hR realization)
-      hfr.laplacian_dense
-      (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR realization)
-      ((Module.finrank ℚ F : ℝ) / 2) hd hfr.laplacian_selfadjoint
-      hfr.laplacian_nonnegative hfr.genuine_inverse hcoer
-  refine ⟨hd, hcoer, (fun z => rfl), ?_, hregion, hfr.genuine_inverse, ?_,
-    hBpos, hBsa, hBnorm, ?_, ?_, ?_, ?_, ?_⟩
-  · exact hmero
-  · exact hbaseval
-  · exact hanalytic
-  · intro z hz
-    exact hinvoff z hz
-  ·
+  obtain ⟨K, hK, hbound⟩ :=
+    kp_cont_actual_compact_remainder_estimate F ζ hζ U R P H μG hμG hR realization
+  have hfr := (kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H realization).friedrichs
+  obtain ⟨_, _, _, _, _, hmero, _, hanalytic, hinv, hpoles, hlaurent⟩ :=
+    kp_cont_below_threshold_resolvent Δ hfr.laplacian_dense B d hd hfr.laplacian_selfadjoint
+      hfr.laplacian_nonnegative hfr.genuine_inverse (fun ε hε => ⟨K, hK, fun u =>
+        (mul_le_mul_of_nonneg_right (sub_le_self _ hε.le) (sq_nonneg _)).trans (hbound u)⟩)
+  refine ⟨hd, fun _ => rfl, hmero, hanalytic, hinv, ?_, hpoles, ?_⟩
+  · -- A meromorphic function is analytic in a punctured neighborhood of each point.
     intro z hz
-    by_cases hzim : z.im = 0
-    ·
-      have hzre : z.re < (Module.finrank ℚ F : ℝ) / 2 := by
-        by_contra h
-        exact hz ⟨z.re, not_lt.mp h, Complex.ext (by simp) (by simp [hzim])⟩
-      set r : ℝ := ((Module.finrank ℚ F : ℝ) / 2 - z.re) / 2 with hrdef
-      have hr : 0 < r := by rw [hrdef]; linarith
-      have hbd : z.re + r < (Module.finrank ℚ F : ℝ) / 2 := by rw [hrdef]; linarith
-      have hfin : (KPBelowThreshold.realSpectrum
-          (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-            realization) ∩ Set.Icc (z.re - r) (z.re + r)).Finite :=
-        hwindow (z.re - r) (z.re + r) hbd
-      refine ⟨r, hr, Set.Finite.subset (hfin.image Complex.ofReal) ?_⟩
-      intro w hw
-      obtain ⟨hwP, hwB⟩ := hw
-      obtain ⟨μ, hμd, heμ, rfl⟩ := hwP
-      rw [Metric.mem_closedBall, dist_eq_norm] at hwB
-      have hz_eq : z = (z.re : ℂ) := Complex.ext (by simp) (by simp [hzim])
-      have habs : |μ - z.re| ≤ r := by
-        rw [hz_eq, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at hwB
-        exact hwB
-      have hμmem : μ ∈ Set.Icc (z.re - r) (z.re + r) := by
-        rw [Set.mem_Icc]
-        exact ⟨by linarith [(abs_le.mp habs).1], by linarith [(abs_le.mp habs).2]⟩
-      have hμspec : μ ∈ KPBelowThreshold.realSpectrum
-          (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-            realization) :=
-        (hreal μ).mpr (eigen_not_resolvent_aux
-          (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H μG hμG hR
-            realization) μ heμ)
-      exact ⟨μ, ⟨hμspec, hμmem⟩, rfl⟩
-    ·
-      set r : ℝ := |z.im| / 2 with hrdef
-      have hr : 0 < r := by rw [hrdef]; exact half_pos (abs_pos.mpr hzim)
-      have hempty : KPBelowThresholdResolvent.poleSet
-          (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H μG hμG hR
-            realization) ((Module.finrank ℚ F : ℝ) / 2) ∩ Metric.closedBall z r = ∅ := by
-        rw [Set.eq_empty_iff_forall_notMem]
-        intro w hw
-        obtain ⟨hwP, hwB⟩ := hw
-        obtain ⟨μ, -, -, rfl⟩ := hwP
-        rw [Metric.mem_closedBall, dist_eq_norm] at hwB
-        have h1 : |z.im| ≤ ‖(μ : ℂ) - z‖ := by
-          have := RCLike.abs_im_le_norm ((μ : ℂ) - z)
-          simpa using this
-        have h2 : 2 * r = |z.im| := by rw [hrdef]; ring
-        nlinarith [hwB, h1, h2, hr]
-      refine ⟨r, hr, ?_⟩
-      rw [hempty]
-      exact Set.finite_empty
-  · intro z hz
-    exact hpoles z hz
+    obtain ⟨r, hr, h⟩ := Metric.nhds_basis_closedBall.mem_iff.mp
+      (eventually_nhdsWithin_iff.mp (hmero z hz).eventually_analyticAt)
+    refine ⟨r, hr, (Set.finite_singleton z).subset ?_⟩
+    intro w hw
+    by_contra hne
+    have hn := (h hw.2 hne).meromorphicOrderAt_nonneg
+    have hwd : w ∈ KPBelowThresholdResolvent.domain d := by
+      obtain ⟨μ, hμ, _, rfl⟩ := hw.1
+      rintro ⟨ν, hν, he⟩
+      exact hμ.not_ge (Complex.ofReal_injective he ▸ hν)
+    rw [(hpoles w hwd).mp hw.1] at hn
+    exact (by decide : ¬ (0 : WithTop ℤ) ≤ ((-1 : ℤ) : WithTop ℤ)) hn
   · intro μ hμd he
-    obtain ⟨hμ0, hPne, hPsa, hPP, hPrange, hPfd, hTend, hNonrem, hDisk⟩ :=
-      hlaurent μ hμd he
-    have hfix : ∀ u : KPContSectorClosedLpSubspace.H F ζ hζ R U,
-        u ∈ KPBelowThreshold.eigenspace
-          (KPContActualSectorFriedrichsSynthesis.Δ_U F ζ hζ U R P H μG hμG hR
-            realization) μ →
-        KPBelowThresholdResolvent.poleProjection
-          (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-            realization) μ u = u := by
-      intro u hu
-      have hu' : u ∈ (KPBelowThresholdResolvent.poleProjection
-          (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-            realization) μ).range := by
-        rw [hPrange]; exact hu
-      obtain ⟨v, hv⟩ := hu'
-      rw [← hv]
-      change (KPBelowThresholdResolvent.poleProjection
-          (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-            realization) μ *
-        KPBelowThresholdResolvent.poleProjection
-          (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-            realization) μ) v =
-        KPBelowThresholdResolvent.poleProjection
-          (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR
-            realization) μ v
-      rw [hPP]
-    exact ⟨hμ0, hPne, hPsa, hPP, hPrange, hPfd, hfix, hTend, hNonrem, hDisk⟩
+    obtain ⟨hμ, hPne, hPsa, hPP, hrange, hPfd, hTend, hNonrem, hDisk⟩ := hlaurent μ hμd he
+    refine ⟨hμ, hPne, hPsa, hPP, hrange, hPfd, ?_, hTend, hNonrem, hDisk⟩
+    intro u hu
+    rw [← hrange] at hu
+    obtain ⟨v, rfl⟩ := hu
+    exact DFunLike.congr_fun hPP v
 
 end DedekindZetaZeroFree
 

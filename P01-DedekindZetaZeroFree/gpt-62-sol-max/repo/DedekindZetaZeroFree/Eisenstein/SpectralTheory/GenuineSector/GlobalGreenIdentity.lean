@@ -9,62 +9,6 @@ noncomputable section
 open scoped Classical NumberField
 open MeasureTheory Topology
 
-namespace DedekindZetaZeroFree.KPContActualSectorGlobalGreen
-
-attribute [local instance 2000]
-  KPContSectorQuotientRelationsComparison.instMeasurableSpaceRawXU
-
-open KPContActualSectorSmoothTestModules
-open KPContActualSectorTestDifferentialDescent KPContActualSectorTestEmbeddings
-open KPContActualCotangentMeasurableFamilies KPContActualCotangentChartRestriction
-
-variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-
-structure Properties : Prop where
-  cotangent_pair_integrable : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
-    Integrable (pair (D_U φ).val W.val) (KPContActualSectorCotangentL2.muU F ζ hζ U R P)
-  scalar_pair_integrable : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
-    Integrable (scalarPair φ (δ_U W)) (KPContActualSectorCotangentL2.muU F ζ hζ U R P)
-  local_cotangent_pair_integrable : ∀ (a : ActualChart (U := U) (H := H))
-      (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
-    Integrable (fun y => inner ℂ (localCoefficient a (D_U φ).val y)
-      (localCoefficient a W.val y)) a.liftedMeasure
-  local_scalar_pair_integrable : ∀ (a : ActualChart (U := U) (H := H))
-      (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
-    Integrable (fun y => inner ℂ (localScalarCoefficient a φ y)
-      (localScalarCoefficient a (δ_U W) y)) a.liftedMeasure
-  green_integral : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
-    (∫ x, pair (D_U φ).val W.val x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) =
-      ∫ x, scalarPair φ (δ_U W) x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P
-  green : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
-    inner ℂ (j (D_U φ)) (j W) = inner ℂ (iota φ) (iota (δ_U W))
-  iota_injective : Function.Injective (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
-  j_injective : Function.Injective (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
-  formal_adjoint : (KPTestOperator.descend (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
-      (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) iota_injective
-      (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) D_U).IsFormalAdjoint
-    (KPTestOperator.descend (S := T_U F ζ hζ U R P H) (T := S_U F ζ hζ U R P H)
-      (j (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)) j_injective
-      (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H))
-      (δ_U (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)))
-  laplacian_pairing : ∀ φ ψ : S_U F ζ hζ U R P H,
-    inner ℂ (j (D_U φ)) (j (D_U ψ)) = inner ℂ (iota φ) (iota (δ_U (D_U ψ)))
-  descended_laplacian_pairing : ∀ φ ψ : KPTestOperator.testDomain
-      (iota (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H)),
-    inner ℂ (KPTestOperator.descend (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
-        iota iota_injective j D_U φ)
-        (KPTestOperator.descend (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
-          iota iota_injective j D_U ψ) =
-      inner ℂ (φ : KPContSectorClosedLpSubspace.H F ζ hζ R U)
-        (KPTestOperator.laplacian (S := S_U F ζ hζ U R P H) (T := T_U F ζ hζ U R P H)
-          iota iota_injective D_U δ_U ψ)
-
-end DedekindZetaZeroFree.KPContActualSectorGlobalGreen
-
 namespace DedekindZetaZeroFree.KPContActualGlobalGreen
 open KPContActualCotangentCountableShrinking KPContActualCotangentMeasurableFamilies
 open KPContActualSectorTestDifferentialDescent KPContActualSectorSmoothTestModules
@@ -78,7 +22,6 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 set_option maxHeartbeats 1000000 in
 private theorem localized_green
     (emb : KPContActualSectorTestEmbeddings.Properties (U := U) (H := H))
-    (dif : KPContActualSectorTestDifferentialDescent.Properties (U := U) (H := H))
     (a : ShrunkChart F ζ hζ U R P H) (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H)
     (η : RealSmoothCutoff F ζ hζ U R P H) (hηc : HasCompactSupport η.val)
     (hηs : tsupport η.val ⊆ a.baseDomain)
@@ -148,7 +91,7 @@ private theorem localized_green
       filter_upwards [(isOpen_omega_actual b).mem_nhds y.property,
         (hqcont b).continuousAt.preimage_mem_nhds (Q.neighborhood_open.mem_nhds hn)] with z hz hm
       simp [ψ, scalarMultiply, liftExtension, hz, cutoffLift, hθone (q b z) hm]
-    rw [dif.differential_chart, dif.differential_chart]
+    rw [differential_chart, differential_chart]
     unfold chartDifferential HyperbolicChart.differential HyperbolicChart.coordinateDerivative
     simp only [he.fderiv_eq]
   have hleft : pair (D_U φ).val Z.val = pair (D_U ψ).val Z.val := by
@@ -166,7 +109,7 @@ private theorem localized_green
     by_cases hz : (δ_U Z).val b y = 0
     · simp [hz]
     · have hs : q b y.val ∈ scalarSupport (δ_U Z).val := subset_closure ⟨b,y,rfl,hz⟩
-      have hn := Q.contains_compact (hZs (dif.codifferential_support Z hs))
+      have hn := Q.contains_compact (hZs (codifferential_support Z hs))
       have hψ : ψ.val b y = φ.val b y := by
         simp [ψ, scalarMultiply, cutoffLift, hθone _ hn]
       rw [hψ]
@@ -184,7 +127,7 @@ private theorem localized_green
     rw [emb.scalar_pair_chart]
     have hz : (δ_U Z).val b y = 0 := by
       by_contra hn
-      exact hx (hηs (hZs (dif.codifferential_support Z (subset_closure ⟨b,y,rfl,hn⟩))))
+      exact hx (hηs (hZs (codifferential_support Z (subset_closure ⟨b,y,rfl,hn⟩))))
     simp [hz]
   rw [hleft, hright, ← setIntegral_eq_integral_of_forall_compl_eq_zero hpairzero,
     ← setIntegral_eq_integral_of_forall_compl_eq_zero hscalarzero,
@@ -217,7 +160,6 @@ theorem kp_cont_actual_sector_global_green_equation
         ∫ x, scalarPair φ (δ_U W) x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
   intro φ W
   have emb := kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization
-  have dif := kp_cont_actual_sector_test_differential_descent F ζ hζ μG hμG U R hR P H realization
   let K := scalarSupport φ.val ∪ tsupport (normSquare W.val)
   have hK : IsCompact K := φ.property.2.2.union W.property.2
   obtain ⟨n,C,_,_,⟨Q⟩⟩ := kp_cont_actual_sector_finite_support_partition F ζ hζ U R P H K Set.univ
@@ -245,7 +187,7 @@ theorem kp_cont_actual_sector_global_green_equation
   have hloc (i : Fin n) :
       (∫ x, pair (D_U φ).val (Z i).val x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P) =
         ∫ x, scalarPair φ (δ_U (Z i)) x ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
-    apply localized_green emb dif (C i) φ W (η i) (Q.compact_support i)
+    apply localized_green emb (C i) φ W (η i) (Q.compact_support i)
       (fun x hx => (Q.support_subset i hx).1) (Q.lift i) (Q.lift_support_subset i)
     intro x
     have hr := Q.lift_restriction i ⟨labeledA (placeEquiv F ζ hζ) x.val,x.property⟩
@@ -279,38 +221,12 @@ theorem kp_cont_actual_sector_global_green
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H) :
-    KPContActualSectorGlobalGreen.Properties (F := F) (ζ := ζ) (hζ := hζ)
-      (U := U) (R := R) (P := P) (H := H) := by
-  have emb := kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization
-  have hgi := kp_cont_actual_sector_global_green_equation
-    F ζ hζ μG hμG U R hR P H realization
-  have hgreen : ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
+    ∀ (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H),
       inner ℂ (j (D_U φ)) (j W) = inner ℂ (iota φ) (iota (δ_U W)) := by
-    intro φ W
-    rw [emb.cotangent_inner (D_U φ) W, emb.scalar_inner φ (δ_U W)]
-    exact hgi φ W
-  refine
-    { cotangent_pair_integrable := fun φ W => emb.cotangent_pair_integrable (D_U φ) W
-      scalar_pair_integrable := fun φ W => emb.scalar_pair_integrable φ (δ_U W)
-      local_cotangent_pair_integrable := fun a φ W =>
-        KPTestL2.integrable_pairing a.liftedMeasure
-          (localCoefficient a (D_U φ).val) (localCoefficient a W.val)
-          (emb.cotangent_local_memLp a (D_U φ)) (emb.cotangent_local_memLp a W)
-      local_scalar_pair_integrable := fun a φ W =>
-        KPTestL2.integrable_pairing a.liftedMeasure
-          (localScalarCoefficient a φ) (localScalarCoefficient a (δ_U W))
-          (emb.scalar_local_memLp a φ) (emb.scalar_local_memLp a (δ_U W))
-      green_integral := fun φ W => hgi φ W
-      green := fun φ W => hgreen φ W
-      iota_injective := emb.iota_injective
-      j_injective := emb.j_injective
-      formal_adjoint :=
-        KPTestOperator.descend_formalAdjoint _ emb.iota_injective _ emb.j_injective
-          _ _ hgreen
-      laplacian_pairing := fun φ ψ => hgreen φ (D_U ψ)
-      descended_laplacian_pairing := fun φ ψ =>
-        KPTestGreenTransfer.laplacian_pairing _ emb.iota_injective _ emb.j_injective
-          _ _ hgreen φ ψ }
+  have emb := kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization
+  intro φ W
+  rw [emb.cotangent_inner (D_U φ) W, emb.scalar_inner φ (δ_U W)]
+  exact kp_cont_actual_sector_global_green_equation F ζ hζ μG hμG U R hR P H realization φ W
 
 end DedekindZetaZeroFree
 

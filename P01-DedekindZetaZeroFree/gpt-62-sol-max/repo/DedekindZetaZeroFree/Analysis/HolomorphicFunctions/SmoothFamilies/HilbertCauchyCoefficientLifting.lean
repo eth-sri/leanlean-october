@@ -34,9 +34,9 @@ private theorem cauchy_map {E F : Type*}
   have hm : L (∮ z in C(c, r), (z - c)⁻¹ ^ j • (z - c)⁻¹ • g z) =
       ∮ z in C(c, r), L ((z - c)⁻¹ ^ j • (z - c)⁻¹ • g z) := by
     rw [circleIntegral, circleIntegral, ← L.intervalIntegral_comp_comm hi'.out]
-    simp only [map_smul]
+    simp
   rw [hm]
-  simp only [map_smul]
+  simp
 
 private theorem cauchy_congr {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     (g h : ℂ → E) (c : ℂ) (r : ℝ) (hr : 0 ≤ r)
@@ -48,15 +48,13 @@ private theorem cauchy_congr {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ
   apply circleIntegral.integral_congr hr
   intro z hz
   dsimp only
-  rw [he hz]
+  grind
 
 private theorem zero_derivative {n : ℕ} (u : Space n → ℂ) :
     coordinateDerivative (⟨fun _ => 0, by simp⟩ : MultiIndex n 0) u = u := by
   have hn : ∀ l : List (Fin n), l.flatMap (fun _ => ([] : List (Fin n))) = [] := by
     intro l
-    induction l with
-    | nil => rfl
-    | cons i l ih => simpa using ih
+    simp
   simp [coordinateDerivative, MultiIndex.directions, coordinateDerivativeList, hn]
 
  def compactFamily {n : ℕ} (B : LocalBall n) (K : Set (Space n))

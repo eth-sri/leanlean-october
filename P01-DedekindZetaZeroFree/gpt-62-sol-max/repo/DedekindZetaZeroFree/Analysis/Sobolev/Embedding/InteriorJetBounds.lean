@@ -23,7 +23,7 @@ theorem mollify_tendsto_of_continuous {n : ℕ} (f : Space n → ℂ) (hf : Cont
   have hc : Continuous (fun c : ℝ => ∫ y, (φ y : ℂ) * f (x - c • y)) := by
     rw [← continuousOn_univ]
     apply continuousOn_integral_of_compact_support hs.isCompact
-    · exact (by fun_prop : Continuous (fun p : ℝ × Space n => (φ p.2 : ℂ) * f (x - p.1 • p.2))).continuousOn
+    · fun_prop
     · intro c y _ hy
       simp [image_eq_zero_of_notMem_tsupport hy]
   have ht : Tendsto (fun t : ℕ => δ / (t + 1 : ℕ)) atTop (nhds (0 : ℝ)) :=
@@ -49,7 +49,7 @@ theorem mollify_eq_of_ae {n : ℕ} (U : Set (Space n)) (hU : MeasurableSet U)
   apply integral_congr_ae
   filter_upwards [he] with y hy
   by_cases hs : y ∈ tsupport φ
-  · rw [hy (hsub y hs)]
+  · simp_all
   · simp [image_eq_zero_of_notMem_tsupport hs]
 
 private theorem coordinateDerivativeList_germ {n : ℕ} (l : List (Fin n))

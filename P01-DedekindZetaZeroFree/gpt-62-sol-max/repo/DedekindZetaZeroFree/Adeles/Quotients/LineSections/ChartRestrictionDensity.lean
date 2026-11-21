@@ -32,19 +32,19 @@ def density (p : Space (KPCuspLogShape.dimension F * 3)) : ℝ :=
 
 theorem coordinate_volume : Measure.map (coordinates F) volume =
     (volume : Measure (SymmetricSpace F)) := by
-  exact KPArchRealCoordinates.coordinate_volume (KPCuspLogShape.dimension F)
+  exact KPArchRealCoordinates.coordinate_volume ..
 
 theorem density_smooth : ContDiff ℝ (⊤ : ℕ∞) (density F) := by
-  exact KPArchRealCoordinates.density_smooth (KPCuspLogShape.dimension F)
+  exact KPArchRealCoordinates.density_smooth ..
 
 theorem density_positive (p : Space (KPCuspLogShape.dimension F * 3)) :
     0 < density F p := by
-  exact KPArchRealCoordinates.density_positive (KPCuspLogShape.dimension F) p
+  exact KPArchRealCoordinates.density_positive ..
 
 theorem density_bounds (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
     ∃ a b : ℝ, 0 < a ∧ ∀ p ∈ KPContLocalCubeEmbedding.closedCarrier A,
       a ≤ density F p ∧ density F p ≤ b := by
-  have hK : IsCompact (KPContLocalCubeEmbedding.closedCarrier A) :=
+  have hK :=
     isCompact_closedBall A.center A.radius
   have hne : (KPContLocalCubeEmbedding.closedCarrier A).Nonempty :=
     ⟨A.center, Metric.mem_closedBall_self A.radius_pos.le⟩
@@ -55,7 +55,7 @@ theorem density_bounds (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
 theorem metric_volume : Measure.map (coordinates F)
     (volume.withDensity (fun p => ENNReal.ofReal (density F p))) =
       KPArch.hyperbolicVolume (KPCuspLogShape.dimension F) := by
-  exact KPArchRealCoordinates.metric_volume (KPCuspLogShape.dimension F)
+  exact KPArchRealCoordinates.metric_volume ..
 
 def chartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) : Set (Space (KPCuspLogShape.dimension F * 3)) :=
@@ -132,8 +132,7 @@ theorem frameCoefficient_class (f : GenuineCoveredScalars F ζ hζ U)
     (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     frameCoefficient F ζ hζ U R P H f i (phaseClass F ζ hζ U ε) p =
-      (chi F ζ hζ ε : ℂ) * (S F ζ hζ U R P H f i).val (coordinates F p) := by
-  exact phaseCoefficient_class F ζ hζ U R P H (S F ζ hζ U R P H f) i ε (coordinates F p)
+      (chi F ζ hζ ε : ℂ) * (S F ζ hζ U R P H f i).val (coordinates F p) := rfl
 
 def overlapCoordinate (i : Fin (H.atlas U).componentCount)
     (γ : Component F ζ hζ U R P H i)
@@ -144,10 +143,6 @@ def overlapTransition (i : Fin (H.atlas U).componentCount)
     (γ : Component F ζ hζ U R P H i) (ε : rootsOfUnity 3 F) : Circle :=
   chi F ζ hζ ε * chi F ζ hζ (((H.atlas U).line i).rho γ)⁻¹
 
-theorem transition_unitary (i : Fin (H.atlas U).componentCount)
-    (γ : Component F ζ hζ U R P H i) (ε : rootsOfUnity 3 F) :
-    ‖(overlapTransition F ζ hζ U R P H i γ ε : ℂ)‖ = 1 :=
-  Circle.norm_coe _
 
 theorem frameCoefficient_overlap (f : GenuineCoveredScalars F ζ hζ U)
     (i : Fin (H.atlas U).componentCount) (m m' : PhaseSheets F ζ hζ U)
@@ -172,8 +167,7 @@ theorem frameCoefficient_overlap (f : GenuineCoveredScalars F ζ hζ U)
   simp only [overlapCoordinate, Homeomorph.apply_symm_apply]
   rw [hs]
   simp only [overlapTransition, map_mul, map_inv, Circle.coe_mul, Circle.coe_inv]
-  have hn : (chi F ζ hζ (((H.atlas U).line i).rho γ) : ℂ) ≠ 0 :=
-    Circle.coe_ne_zero _
+  
   field_simp
 
 theorem overlapCoordinate_quasiMeasurePreserving (i : Fin (H.atlas U).componentCount)
@@ -307,67 +301,6 @@ theorem quotient_measure (i : Fin (H.atlas U).componentCount) (x : SymmetricSpac
     rw [hB]; exact Set.image_subset_range _ _
   rw [← (H.disintegration U).component_measure i,
     Measure.restrict_restrict_of_subset hsub]
-
-structure DensityIdentities : Prop where
-  coordinate_volume : Measure.map (coordinates F) volume =
-    (volume : Measure (SymmetricSpace F))
-  density_smooth : ContDiff ℝ (⊤ : ℕ∞) (density F)
-  density_positive : ∀ p, 0 < density F p
-  metric_volume : Measure.map (coordinates F)
-    (volume.withDensity (fun p => ENNReal.ofReal (density F p))) =
-      KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)
-  isotropy_positive : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (_O : OrbifoldChart F ζ hζ U R P H i x),
-    0 < isotropyOrder F ζ hζ U R P H i x
-
-  quotient_measure : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x),
-    Measure.map (basePoint F ζ hζ U R P H i) (chartMeasure F ζ hζ U R P H i x O) =
-      (KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U).restrict
-        (baseChartImage F ζ hζ U R P H i x O)
-  local_integral : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x)
-    (g : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞), Measurable g →
-    (∫⁻ b in baseChartImage F ζ hζ U R P H i x O, g b
-      ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U) =
-    ((H.disintegration U).componentWeight i /
-      (isotropyOrder F ζ hζ U R P H i x : ℝ≥0∞)) *
-    ∫⁻ p in chartDomain F ζ hζ U R P H i x O,
-      g (basePoint F ζ hζ U R P H i p) * ENNReal.ofReal (density F p)
-  density_bounds : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3)),
-    KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O →
-    ∃ a b : ℝ, 0 < a ∧ ∀ p ∈ KPContLocalCubeEmbedding.closedCarrier A,
-      a ≤ density F p ∧ density F p ≤ b
-
-  null_sets : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3)),
-    KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O →
-    (chartMeasure F ζ hζ U R P H i x O).restrict A.carrier ≪ volume.restrict A.carrier ∧
-    volume.restrict A.carrier ≪ (chartMeasure F ζ hζ U R P H i x O).restrict A.carrier
-
-theorem densityIdentities : DensityIdentities F ζ hζ U R P H := by
-  refine ⟨coordinate_volume F, density_smooth F, density_positive F, metric_volume F,
-    isotropyOrder_pos F ζ hζ U R P H, quotient_measure F ζ hζ U R P H, ?_,
-    fun _ _ _ A _ => density_bounds F A, null_sets F ζ hζ U R P H⟩
-  intro i x O g hg
-  have hb : Measurable (basePoint F ζ hζ U R P H i) := by
-    have he : basePoint F ζ hζ U R P H i =
-      fun p => Quotient.mk _ (coordinates F p, (H.atlas U).representative i) := by
-      funext p
-      exact (H.atlas U).components_formula i _
-    rw [he]
-    exact (continuous_quotient_mk'.comp
-      ((coordinates F).continuous.prodMk continuous_const)).measurable
-  rw [← quotient_measure F ζ hζ U R P H i x O, lintegral_map hg hb,
-    chartMeasure, lintegral_smul_measure]
-  congr 1
-  rw [lintegral_withDensity_eq_lintegral_mul]
-  · simp only [Pi.mul_apply, mul_comm]
-  · exact (ENNReal.measurable_ofReal.comp (density_smooth F).continuous.measurable)
-  · exact hg.comp hb
 
 theorem basePoint_measurable (i : Fin (H.atlas U).componentCount) :
     Measurable (basePoint F ζ hζ U R P H i) := by
@@ -723,22 +656,6 @@ theorem restriction_representative (i : Fin (H.atlas U).componentCount) (x : Sym
     ((exactRepresentative_spec F ζ hζ U R P H u).trans hf.symm)]
   exact representativeL2_ae F ζ hζ U R P H i x O m A hA f
 
-theorem restriction_smaller_ball (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A B : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
-    (hB : KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i x O)
-    (hAB : A.carrier ⊆ B.carrier) (u : KPContSectorClosedLpSubspace.H F ζ hζ R U) :
-    ∀ᵐ p ∂volume.restrict A.carrier,
-      restriction F ζ hζ U R P H i x O m A hA u p =
-        restriction F ζ hζ U R P H i x O m B hB u p := by
-  let f := exactRepresentative F ζ hζ U R P H u
-  have ha := restriction_representative F ζ hζ U R P H i x O m A hA u f
-    (exactRepresentative_spec F ζ hζ U R P H u)
-  have hb := restriction_representative F ζ hζ U R P H i x O m B hB u f
-    (exactRepresentative_spec F ζ hζ U R P H u)
-  exact ha.trans (hb.filter_mono
-    (Measure.absolutelyContinuous_of_le (Measure.restrict_mono hAB le_rfl)).ae_le).symm
 
 theorem restriction_overlap (i : Fin (H.atlas U).componentCount) (x y : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (O' : OrbifoldChart F ζ hζ U R P H i y)
@@ -770,110 +687,6 @@ theorem restriction_overlap (i : Fin (H.atlas U).componentCount) (x y : Symmetri
   rw [hp, htp hmem.2]
   exact frameCoefficient_overlap F ζ hζ U R P H f.val i m m' ε γ hm p
 
-structure RestrictionFamily where
-  restriction : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3)),
-    KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O →
-    KPContSectorClosedLpSubspace.H F ζ hζ R U →L[ℂ] BallL2 A
-
-  representative : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
-    (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
-    (f : BorelL2Scalars F ζ hζ U R), scalarEmbedding F ζ hζ U R P H f = u →
-    MemLp (frameCoefficient F ζ hζ U R P H f.val i m) 2 (volume.restrict A.carrier) ∧
-    ∀ᵐ p ∂volume.restrict A.carrier,
-      restriction i x O m A hA u p = frameCoefficient F ζ hζ U R P H f.val i m p
-
-  covered_coefficient : ∀ (f : GenuineCoveredScalars F ζ hζ U)
-    (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (p : Space (KPCuspLogShape.dimension F * 3)) (hp : p ∈ chartDomain F ζ hζ U R P H i x O),
-    frameCoefficient F ζ hζ U R P H f i m p =
-      f.val (coveredChart F ζ hζ U R P H i x O
-        (Quotient.mk _ (m, (⟨coordinates F p, hp⟩ : O.neighborhood)))).val
-  bound : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O),
-    ∃ c : ℝ, 0 < c ∧ ∀ u, ‖restriction i x O m A hA u‖ ≤ c * ‖u‖
-  smaller_ball : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A B : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
-    (hB : KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i x O),
-    A.carrier ⊆ B.carrier → ∀ u, ∀ᵐ p ∂volume.restrict A.carrier,
-      restriction i x O m A hA u p = restriction i x O m B hB u p
-
-  overlap : ∀ (i : Fin (H.atlas U).componentCount) (x y : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (O' : OrbifoldChart F ζ hζ U R P H i y)
-    (m m' : PhaseSheets F ζ hζ U) (ε : rootsOfUnity 3 F)
-    (γ : Component F ζ hζ U R P H i)
-    (A B : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
-    (hB : KPContLocalCubeEmbedding.closedCarrier B ⊆ chartDomain F ζ hζ U R P H i y O'),
-    m = phaseClass F ζ hζ U ε * m' → ∀ u,
-    ∀ᵐ p ∂volume.restrict (A.carrier ∩ overlapCoordinate F ζ hζ U R P H i γ ⁻¹' B.carrier),
-      restriction i x O m A hA u p =
-        (overlapTransition F ζ hζ U R P H i γ ε : ℂ) *
-          restriction i y O' m' B hB u (overlapCoordinate F ζ hζ U R P H i γ p)
-  transition_unitary : ∀ (i : Fin (H.atlas U).componentCount)
-    (γ : Component F ζ hζ U R P H i) (ε : rootsOfUnity 3 F),
-    ‖(overlapTransition F ζ hζ U R P H i γ ε : ℂ)‖ = 1
-
-  stabilizer : ∀ (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
-    (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
-    (A : LocalBall (KPCuspLogShape.dimension F * 3))
-    (hA : KPContLocalCubeEmbedding.closedCarrier A ⊆ chartDomain F ζ hζ U R P H i x O)
-    (σ : MulAction.stabilizer (Component F ζ hζ U R P H i) x) (u : KPContSectorClosedLpSubspace.H F ζ hζ R U),
-    ∀ᵐ p ∂volume.restrict (A.carrier ∩ overlapCoordinate F ζ hζ U R P H i σ.val ⁻¹' A.carrier),
-      restriction i x O m A hA u (overlapCoordinate F ζ hζ U R P H i σ.val p) =
-        (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ) * restriction i x O m A hA u p
-
-def restrictionFamily : RestrictionFamily F ζ hζ U R P H where
-  restriction := restriction F ζ hζ U R P H
-  representative i x O m A hA u f hf :=
-    ⟨frameCoefficient_memLp F ζ hζ U R P H f i x O m A hA,
-      restriction_representative F ζ hζ U R P H i x O m A hA u f hf⟩
-  covered_coefficient := covered_coefficient F ζ hζ U R P H
-  bound i x O m A hA := by
-    obtain ⟨C,hC,hb⟩ := frameCoefficient_norm_bound F ζ hζ U R P H i x O m A hA
-    refine ⟨C,hC,fun u => ?_⟩
-    change ‖representativeL2 F ζ hζ U R P H i x O m A hA (exactRepresentative F ζ hζ U R P H u)‖ ≤ C * ‖u‖
-    simpa only [representativeL2, exactRepresentative_spec] using hb (exactRepresentative F ζ hζ U R P H u)
-  smaller_ball := restriction_smaller_ball F ζ hζ U R P H
-  overlap := restriction_overlap F ζ hζ U R P H
-  transition_unitary := transition_unitary F ζ hζ U R P H
-  stabilizer i x O m A hA σ u := by
-    have ho := restriction_overlap F ζ hζ U R P H i x x O O m m 1 σ.val A A hA hA
-      (by simp) u
-    filter_upwards [ho] with p hp
-    have ht : (overlapTransition F ζ hζ U R P H i σ.val 1 : ℂ) =
-        (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ)⁻¹ := by
-      simp [overlapTransition, map_inv]
-    rw [ht] at hp
-    have hne : (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ) ≠ 0 := Circle.coe_ne_zero _
-    have h := congrArg (fun z : ℂ => (chi F ζ hζ (((H.atlas U).line i).rho σ.val) : ℂ) * z) hp
-    simpa only [← mul_assoc, mul_inv_cancel₀ hne, one_mul] using h.symm
-
 end DedekindZetaZeroFree.KPContActualChartRestrictionDensity
-
-namespace DedekindZetaZeroFree
-
-theorem kp_cont_actual_chart_restriction_density
-    (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
-    (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-    (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-    (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-    (_actual : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H) :
-    KPContActualChartRestrictionDensity.DensityIdentities F ζ hζ U R P H ∧
-      Nonempty (KPContActualChartRestrictionDensity.RestrictionFamily F ζ hζ U R P H) := by
-  exact ⟨KPContActualChartRestrictionDensity.densityIdentities F ζ hζ U R P H,
-    ⟨KPContActualChartRestrictionDensity.restrictionFamily F ζ hζ U R P H⟩⟩
-
-end DedekindZetaZeroFree
 
 end

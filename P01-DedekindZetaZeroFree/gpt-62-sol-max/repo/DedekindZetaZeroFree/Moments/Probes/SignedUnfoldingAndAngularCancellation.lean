@@ -72,27 +72,6 @@ theorem SignedUnfolding.identity {N : TraceHaarTransport R} {Q : AdmissibleFlatS
     smoothedTheta_sign_eq R A]
   ring
 
-def CertifiedPacket.toMomentSource (C : CertifiedPacket R) : SelectedMomentSource R where
-  Ur := C.unfolding.Ur
-  units := C.unfolding.units
-  psi := Characters.psi R
-  primitive := Characters.primitive R
-  L := Characters.L R
-  norm_one := Characters.norm_one R
-  characters_compatible := Characters.compatible R
-  H := C.realization.H C.packet
-  profiles := finite_profiles_of_same_residue R C.profiles
-  reflected_domination := by
-    intro u hu h d hh hd hc Z hZ
-    refine ⟨C.unfolding.row_class u, ?_⟩
-    have he := C.unfolding.identity R C.descent u hu h d hh hd hc Z hZ
-    rw [mainTerm_eq_zero R C.upperZero, mainTerm_eq_zero R C.upperZero, add_zero, sub_zero] at he
-    rw [he]
-
-theorem momentSource_of_certified_packet (C : CertifiedPacket R) :
-    RootAligned R ∧ Nonempty (SelectedMomentSource R) :=
-  ⟨C.aligned, ⟨C.toMomentSource R⟩⟩
-
 end DedekindZetaZeroFree.MomentSources
 
 end

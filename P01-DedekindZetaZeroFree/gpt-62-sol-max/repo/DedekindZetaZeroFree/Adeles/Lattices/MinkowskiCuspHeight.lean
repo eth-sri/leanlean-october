@@ -112,11 +112,11 @@ private theorem iwasawa_norm (a b x : ℂ) (y : ℝ) (hy : 0 < y) :
   have hv : Matrix.vecMul ![a,b] (CuspShortRows.iwasawaMatrix (x,y)) =
       ![a * (Real.sqrt y : ℂ), (a*x+b) / (Real.sqrt y : ℂ)] := by
     ext j
-    fin_cases j <;> simp [CuspShortRows.iwasawaMatrix, Matrix.vecMul, Fin.sum_univ_two]
+    fin_cases j <;> simp [CuspShortRows.iwasawaMatrix, Matrix.vecMul]
     ring
   rw [hv, EuclideanSpace.norm_sq_eq]
   simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, norm_mul, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hs]
+    norm_mul, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hs]
   field_simp
   rw [show Real.sqrt y ^ 4 = y ^ 2 by nlinarith]
   rw [hs2]

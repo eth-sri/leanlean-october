@@ -64,7 +64,7 @@ private lemma detector_entire_bounded (F : Type) [Field F] [NumberField F] (U : 
         intro d _
         by_cases hn : d ≠ ⊥ ∧ (Ideal.absNorm d : ℝ) ≤ X
         · rw [if_pos hn]
-          have hnpos : 0 < Ideal.absNorm d :=
+          have hnpos :=
             Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn.1)
           have hn1 : (1 : ℝ) ≤ (Ideal.absNorm d : ℝ) := by exact_mod_cast hnpos
           have hμ : ‖(Detector.idealMoebius F d : ℂ)‖ ≤ 1 := by

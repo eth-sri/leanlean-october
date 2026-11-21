@@ -143,54 +143,14 @@ theorem weyl (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
   intro d _
   rw [mul_assoc, theta_weyl]
 
-theorem quotientUpper_projection (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (l : PositiveAxis) (y : Sheet R.A l) :
-    quotientUpper R C.sources C.realization C.packet v m b l (sheetProjection R.A l y) =
-      weightedUpper R C.sources C.realization C.packet v m b y.val := by
-  unfold quotientUpper
-  have h := Quotient.exact (Quotient.out_eq (sheetProjection R.A l y))
-  obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp h)
-  have hv := congrArg Subtype.val hγ
-  change γ.val.val * y.val = (Quotient.out (sheetProjection R.A l y)).val at hv
-  rw [← hv]
-  exact weighted_upper_descent C v m b ⟨γ.val.val, γ.property⟩ _
-
-theorem upperAverage_zero_for_smoothing (C : JointMellinGaussianSources R N) (v : R.A.UnitQuotient)
-    (m : ThetaReflectionData.Row R.A) (b : Bool) (l : PositiveAxis)
-    (hi : letI := C.transport.groupHaar_isHaar;
-      Integrable (quotientUpper R C.sources C.realization C.packet v m b l)
-        (sheetQuotientHaar R.A C.packet.v₀ C.transport.groupHaar l)) :
-    upperAverage R C.transport C.sources C.realization C.packet v m b l = 0 := by
-  letI := C.transport.groupHaar_isHaar
-  let t : R.A.G1 := ⟨DedekindZetaZeroFree.IdeleInsertion.infiniteInsertion R.A C.packet.v₀ (-1),
-    DedekindZetaZeroFree.IdeleInsertion.norm_insertion_one R C.packet.v₀ (-1) (by simp)⟩
-  apply DedekindZetaZeroFree.IdeleInsertion.quotient_integral_zero_of_odd R.A C.packet.v₀
-    C.transport.groupHaar l t (quotientUpper R C.sources C.realization C.packet v m b l) hi
-  intro y y' hy'
-  rw [quotientUpper_projection, quotientUpper_projection, hy']
-  exact DedekindZetaZeroFree.IdeleInsertion.weightedUpper_neg_one R C.packet C.constantTerm v m b C.packet.v₀ y.val
-
 def descent_of_jointMellinGaussianSources (C : JointMellinGaussianSources R N) :
     DigitsDescent R C.transport C.sources C.realization C.packet where
   mask_frequency := mask_frequency
-  theta_descent := theta_descent C
-  upper_descent := upper_descent C
   weighted_theta_descent := weighted_theta_descent C
   weighted_upper_descent := weighted_upper_descent C
   weyl := weyl C
   theta_integrable := selected_theta_quotient_integrable R C (weighted_theta_descent C)
   upper_integrable := selected_upper_quotient_integrable R C (weighted_upper_descent C)
-  smoothing_integrable := by
-    intro v m b Z hZ
-    have hi := selected_upper_quotient_integrable R C (weighted_upper_descent C)
-    have hz : (fun t : PositiveAxis => C.packet.kernel t.val *
-        upperAverage R C.transport C.sources C.realization C.packet v m b
-          ⟨t.val / Z, div_pos t.property hZ⟩) = 0 := by
-      funext t
-      rw [upperAverage_zero_for_smoothing C v m b _ (hi v m b _), mul_zero]
-      rfl
-    rw [hz]
-    exact integrable_zero _ _ _
 end QuotientDescent
 
 theorem weighted_digits_descent (R : PrincipalMellin.ActualRecipe S η)

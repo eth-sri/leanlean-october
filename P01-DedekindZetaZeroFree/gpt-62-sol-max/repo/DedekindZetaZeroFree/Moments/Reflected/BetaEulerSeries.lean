@@ -352,7 +352,7 @@ private theorem supportedExponent_surjective (f : ExteriorSquarefreeIdeal cS) :
   funext p
   change idealPrimeExponent p.val a = x p
   rw [hv]
-  simp [e, p.property]
+  simp [e]
 
 theorem betaIdealTerm_tsum (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) (hσ : 0 ≤ σ) :
     ∑' a : ↥(supportedExteriorIdeals f), betaIdealTerm f σ a = eulerIdeal f σ := by

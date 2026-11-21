@@ -15,7 +15,7 @@ variable {F : Type} [Field F] [NumberField F]
 
 private theorem classes_finite (A : SArithmeticData F) : Finite A.V := by
   have hn (n : ℕ) (h : n = 2 ∨ n = 3) : Finite (A.LocalPowerClasses n) := by
-    have hnpos : n ≠ 0 := by rcases h with rfl | rfl <;> norm_num
+    have hnpos : n ≠ 0 := by omega
     have hc := A.Vn_card F n h
     have : Finite (SArithmeticData.Vn F A n) := Nat.finite_of_card_ne_zero (by rw [hc]; exact pow_ne_zero _ hnpos)
     exact Finite.of_equiv _ (Equiv.sumPiEquivProdPi (fun v : A.Place => PowerQuotient (A.Completion v)ˣ n))

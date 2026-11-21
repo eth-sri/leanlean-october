@@ -3,7 +3,8 @@ module
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.FiniteExceptionalRepresentationData
 public import DedekindZetaZeroFree.Metaplectic.Torus.RationalCentralCharacter
 public import DedekindZetaZeroFree.Algebra.TensorProduct.RestrictedTensorSimplicity
-public import DedekindZetaZeroFree.Eisenstein.Continuation.SmoothMeromorphicFunctions
+public import DedekindZetaZeroFree.Eisenstein.Induction.HolomorphicSectionsAndResidueGerms
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.SpectralCoordinateAndPoleOrders
 public import DedekindZetaZeroFree.Eisenstein.Induction.BorelBruhatTwoCells
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.AdditivePeriodization
 public import DedekindZetaZeroFree.Eisenstein.Induction.ExceptionalParameterExponents
@@ -95,7 +96,6 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-abbrev B := KPGlobalTorusFunctionData.borel F ζ hζ
 abbrev A := KPGlobalTorusFunctionData.Adeles F
 abbrev Y := A F ⧸ AdeleRing.principalSubgroup (𝓞 F) F
 abbrev Places := KPHilbert.Place F

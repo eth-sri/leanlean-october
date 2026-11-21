@@ -39,20 +39,10 @@ def finiteSubgroup : Subgroup (actualCover F ζ hζ) :=
     ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
 
-abbrev FiniteLevel := CompactOpenLevel (finiteSubgroup F ζ hζ)
 
-def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (actualCover F ζ hζ) :=
-  U.toOpenSubgroup.toSubgroup.map (finiteSubgroup F ζ hζ).subtype
 
-abbrev centreMap := KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ
 
-def rightSubgroup (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    Subgroup (actualCover F ζ hζ) :=
-  if geometric then levelSubgroup F ζ hζ U ⊔ (centreMap F ζ hζ).range
-  else levelSubgroup F ζ hζ U
 
-abbrev actualLevelSpace (U : FiniteLevel F ζ hζ) (geometric : Bool) :=
-  DoubleQuotient (rationalSubgroup F ζ hζ) (rightSubgroup F ζ hζ U geometric)
 
 theorem actual_cover_lc_t2_group :
     T2Space (actualCover F ζ hζ) ∧ LocallyCompactSpace (actualCover F ζ hζ) ∧

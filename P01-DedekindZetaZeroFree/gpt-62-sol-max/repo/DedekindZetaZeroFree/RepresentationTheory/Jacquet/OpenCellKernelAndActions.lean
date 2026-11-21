@@ -30,7 +30,7 @@ private theorem orbit_lc {G V : Type*} [Group G] [TopologicalSpace G]
   · simpa using J.one_mem
   · intro x hx
     have he := congrArg (fun w => ρ g w) (hJ (g⁻¹ * x) hx)
-    simpa only [← Module.End.mul_apply, ← map_mul, mul_inv_cancel_left] using he
+    simp_all
 
 private theorem compact_avoids_inverse {K : Type*} [Field K] [TopologicalSpace K]
     [IsTopologicalRing K] [T1Space K] {S : Set K} (hS : IsCompact S) :
@@ -52,7 +52,7 @@ private theorem lc_covariant_smooth
     (C : Set G) (hC : IsCompact C)
     (hcover : (fun p : H × G => p.1.val * p.2) '' (Set.univ ×ˢ C) = Set.univ) :
     f ∈ SmoothInd H τ d := by
-  have hO : IsOpen {p : G × G | f.val (p.1 * p.2) = f.val p.1} :=
+  have hO :=
     ((hf.comp_continuous (continuous_fst.mul continuous_snd)).prodMk
       (hf.comp_continuous continuous_fst)) {p | p.1 = p.2}
   obtain ⟨U, V, hU, hV, hCU, h1V, hUV⟩ :=
@@ -70,7 +70,7 @@ private theorem lc_covariant_smooth
       intro a ha g
       have he := ha (g * a⁻¹)
       simpa only [inv_mul_cancel_right] using he.symm }
-  have hJo : IsOpen (J : Set G) := J.isOpen_of_mem_nhds
+  have hJo := J.isOpen_of_mem_nhds
     (Filter.mem_of_superset (hV.mem_nhds (h1V (Set.mem_singleton 1)))
       (fun l hl => hfix l hl))
   apply (mem_smoothSubmodule _ _).mpr

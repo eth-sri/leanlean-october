@@ -58,7 +58,7 @@ private lemma homogeneous_domination {ι : Type*} (E H : (ι → ℂ) → ℝ)
     · exact (hbound z).trans (mul_le_of_le_one_right hC hz)
   by_cases he : E x = 0
   · simpa [he] using hbound x
-  have hepos : 0 < E x := lt_of_le_of_ne (hE x) (Ne.symm he)
+  
   let t : ℝ := (Real.sqrt (E x))⁻¹
   have ht : t ^ 2 * E x = 1 := by
     dsimp [t]

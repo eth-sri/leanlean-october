@@ -205,12 +205,7 @@ noncomputable def
       rationalCyclotomicZHatField.algebra' _ _
       rationalCyclotomicZHatField_normal
   continuous_toFun := by
-    let : @Normal ℚ rationalCyclotomicZHatField _ _
-        rationalCyclotomicZHatField.algebra' :=
-      rationalCyclotomicZHatField_normal
-    exact
-      InfiniteGalois.restrictNormalHom_continuous
-        rationalCyclotomicZHatField
+    exact InfiniteGalois.restrictNormalHom_continuous ..
 
 /-- The actual global degree datum
 `d : Gal(ℚ̄/ℚ) → Multiplicative ZHat`, obtained by restriction to the
@@ -253,11 +248,7 @@ theorem rationalCyclotomicDegreeData_inertia :
         rationalCyclotomicZHatField.algebra' _ _
         rationalCyclotomicZHatField_normal).ker =
           rationalCyclotomicZHatField.fixingSubgroup
-    exact
-      @IntermediateField.restrictNormalHom_ker
-        ℚ (SeparableClosure ℚ) _ _ _
-        rationalCyclotomicZHatField
-        rationalCyclotomicZHatField_normal
+    exact @IntermediateField.restrictNormalHom_ker ..
   ext σ
   change
     σ ∈ rationalCyclotomicDegreeData.inertia ↔
@@ -276,8 +267,7 @@ theorem rationalCyclotomicDegreeData_inertia :
           1 := by
       apply rationalCyclotomicZHatFieldGalEquivZHat.injective
       simpa using hσ
-    have hker :
-        σ ∈ r.toMonoidHom.ker :=
+    have hker :=
       hrestrict
     exact hrker ▸ hker
   · intro hσ
@@ -293,17 +283,6 @@ theorem rationalCyclotomicDegreeData_inertia :
       MonoidHom.mem_ker.mp hker
     rw [hzero, map_one]
 
-/-- The field fixed by cyclotomic inertia is the actual cyclotomic
-`ZHat`-extension inside the chosen rational separable closure. -/
-theorem rationalCyclotomicDegreeData_fixedField_inertia :
-    LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ)
-        rationalCyclotomicDegreeData.inertia =
-      rationalCyclotomicZHatField := by
-  rw [rationalCyclotomicDegreeData_inertia]
-  exact
-    InfiniteGalois.fixedField_fixingSubgroup
-      rationalCyclotomicZHatField
 
 /-- For every abstract rational fixed field `F`, the field fixed by
 its cyclotomic inertia is the genuine compositum `Fℚ̃` in

@@ -19,7 +19,7 @@ private theorem idealSymbol_norm_le_one (A : SArithmeticData F) (σ : F →+* �
   unfold ThetaPhaseSeparation.idealSymbol
   rw [norm_prod]
   apply Finset.prod_le_one₀
-  · intro p _; exact norm_nonneg _
+  · simp
   · intro p _
     unfold symbol
     let q := supportPrime A I p
@@ -33,17 +33,19 @@ private theorem idealSymbol_norm_le_one (A : SArithmeticData F) (σ : F →+* �
         (χ.apply_mem_rootsOfUnity (Units.mk0 a ha))
       simpa using hn.le
 
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
+  (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+  (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive) (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
+include hψ hL
+
 private theorem separatedCoefficient_norm_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
     (T : ThetaPhaseSeparation.Frozen A) (d c : A.Exterior) :
     ‖ThetaPhaseSeparation.separatedCoefficient A G U σ ψ L T d c‖ ≤
       betaIdeal (activeSupport A T) T.a.val /
         (Real.sqrt (A.exteriorNorm c) * A.exteriorNorm T.n) := by
-  have hc : 0 < A.exteriorNorm c := lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ c.property.1)
+  
   have hn : 0 < A.exteriorNorm T.n := lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ T.n.property.1)
   have hbeta : 0 ≤ betaIdeal (activeSupport A T) T.a.val := by
     have h := factors_norm_le_betaIdeal A G U σ ψ hψ L hL T d c
@@ -66,11 +68,6 @@ private theorem separatedCoefficient_norm_bound
     positivity
 
 private theorem summand_positiveRowWeight_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
     (H : A.V → ℝ → ℂ) (K : ℝ) (hK : 0 < K)
     (hH : ∀ v x, 0 < x → ‖H v x‖ ≤ K / x)
     (T : ThetaPhaseSeparation.Frozen A) (d : A.Exterior)
@@ -101,8 +98,7 @@ private theorem summand_positiveRowWeight_bound
   calc
     _ ≤ (betaIdeal (activeSupport A T) T.a.val /
         (Real.sqrt (A.exteriorNorm c.val) * A.exteriorNorm T.n)) *
-        (K / ThetaPhaseSeparation.profileArgument A T d c.val Z) := by
-      exact mul_le_mul hcoeff hprofile (norm_nonneg _) (by positivity)
+        (K / ThetaPhaseSeparation.profileArgument A T d c.val Z) := mul_le_mul hcoeff hprofile (norm_nonneg _) (by positivity)
     _ = _ := by
       unfold positiveRowWeight ThetaPhaseSeparation.profileArgument rowNorm
       change _ = (K * (A.exteriorNorm d ^ 2 * A.exteriorNorm T.f ^ 2) / Z) *
@@ -112,6 +108,8 @@ private theorem summand_positiveRowWeight_bound
       rw [Real.rpow_neg_one]
       have hsc : 0 < Real.sqrt (A.exteriorNorm c.val) := Real.sqrt_pos.mpr hc
       field_simp
+
+end
 
  abbrev CompactMajorantIndex (A : SArithmeticData F) (h : A.Exterior) :=
   (f : {f : ExteriorSquarefreeIdeal A.cS //
@@ -219,11 +217,14 @@ private theorem compactWeightedMajorant_summable (A : SArithmeticData F) (h : A.
     0 ≤ compactRowMajorant A h :=
   tsum_nonneg (fun k => mul_nonneg (sq_nonneg _) (positiveRowWeight_nonneg (A := A) k.1.val k.2.2))
 
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
+  (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+  (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
+include hψ
+
 private theorem expansion_compactRowMajorant_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
     (H : A.V → ℝ → ℂ) (K : ℝ) (hK : 0 < K)
     (hH : ∀ v x, 0 < x → ‖H v x‖ ≤ K / x)
@@ -256,10 +257,6 @@ private theorem expansion_compactRowMajorant_bound
     _ = _ := by rw [tsum_mul_left]; rfl
 
 theorem bounded_norm_expansion
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
     (L : A.UnitQuotient → Fˣ →* ℂ)
     (hL : ∀ (u : A.UnitQuotient) (x : Fˣ), ‖L u x‖ = 1)
     (H : A.UnitQuotient → A.V → ℝ → ℂ)
@@ -298,6 +295,8 @@ theorem bounded_norm_expansion
     _ ≤ Kprofile * X ^ 2 * C :=
       mul_le_mul hc hr (compactRowMajorant_nonneg A h) (by positivity)
     _ ≤ 1 + Kprofile * X ^ 2 * C := by linarith
+
+end
 
 end
 end DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption
@@ -576,12 +575,14 @@ theorem idealSymbol_norm_le_one (A : SArithmeticData F) (σ : F →+* ℂ)
         (χ.apply_mem_rootsOfUnity (Units.mk0 a ha))
       simpa using hn.le
 
+section
+
+variable (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
+  (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
+  (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive) (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
+include hψ hL
+
 theorem separatedCoefficient_norm_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
     (T : ThetaPhaseSeparation.Frozen A) (d c : A.Exterior) :
     ‖ThetaPhaseSeparation.separatedCoefficient A G U σ ψ L T d c‖ ≤
       betaIdeal (activeSupport A T) T.a.val /
@@ -609,11 +610,6 @@ theorem separatedCoefficient_norm_bound
     positivity
 
 theorem summand_positiveRowWeight_bound
-    (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
-    (σ : F →+* ℂ)
-    (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
-    (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
-    (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
     (H : A.V → ℝ → ℂ) (K : ℝ) (hK : 0 < K)
     (hH : ∀ v x, 0 < x → ‖H v x‖ ≤ K / x)
     (T : ThetaPhaseSeparation.Frozen A) (d : A.Exterior)
@@ -655,6 +651,8 @@ theorem summand_positiveRowWeight_bound
       rw [Real.rpow_neg_one]
       have hsc : 0 < Real.sqrt (A.exteriorNorm c.val) := Real.sqrt_pos.mpr hc
       field_simp
+
+end
 
 abbrev CompactMajorantIndex (A : SArithmeticData F) (h : A.Exterior) :=
   (f : {f : ExteriorSquarefreeIdeal A.cS //

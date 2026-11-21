@@ -20,12 +20,12 @@ private theorem vector_expansion (d : ℕ) (u : Space d) :
   · rw [Finset.sum_eq_single j.2]
     · simp
     · intro k _ hk
-      simp [hk, Ne.symm hk, Prod.ext_iff]
+      simp [Ne.symm hk, Prod.ext_iff]
     · simp
   · intro i _ hi
     apply Finset.sum_eq_zero
     intro k _
-    simp [hi, Ne.symm hi, Prod.ext_iff]
+    simp [Ne.symm hi, Prod.ext_iff]
   · simp
 private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d) :
     metric d x (realGrad d f x) u = fderiv ℝ f x u := by
@@ -38,7 +38,7 @@ private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d)
   apply Finset.sum_congr rfl
   intro i _
   rw [Fin.sum_univ_three]
-  simp only [WithLp.ofLp_toLp, if_pos (show (2 : Fin 3) = 2 from rfl), ite_true,
+  simp only [ite_true,
     if_neg (by decide : ¬((0 : Fin 3) = 2)), if_neg (by decide : ¬((1 : Fin 3) = 2)), one_mul]
   calc _ = fderiv ℝ f x (coordinateVector d i 2) * u (i,2) +
       (Real.exp (-2 * x (i,2)) * Real.exp (2 * x (i,2))) *
@@ -117,7 +117,7 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →
       have hc := ((EuclideanSpace.proj (𝕜 := ℝ) (i,2)).hasFDerivAt (x := x)).const_mul 2
       have hc' : HasFDerivAt (fun y : Space d => 2*y (i,2)) ((2 : ℝ) • EuclideanSpace.proj (𝕜 := ℝ) (i,2)) x := hc
       rw [hc'.exp.fderiv]
-      simp [coordinateVector, hk, Ne.symm hk]
+      simp [coordinateVector, Ne.symm hk]
     rw [fderiv_fun_mul hE (hLf i k)]
     simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
       he, mul_zero, add_zero, hsecond]
@@ -134,8 +134,8 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →
   rw [h0, h1, h2, hprod i 0 (by decide), hprod i 1 (by decide), hsecond]
   have hm (a : ℝ) (z : ℂ) : L ((a : ℂ) * z) = a * L z := by
     rw [show (a : ℂ) * z = a • z by simp [Complex.real_smul], map_smul]; rfl
-  simp only [map_sub, map_neg, hm, realGrad, WithLp.ofLp_toLp, ite_true, one_mul, hfirst _ _ x hfd]
-  simp only [map_add, map_neg, hm]
+  simp only [map_sub, hm, realGrad, WithLp.ofLp_toLp, ite_true, one_mul, hfirst _ _ x hfd]
+  simp only [map_add, map_neg]
   have h2mul (z : ℂ) : L (2 * z) = 2 * L z := hm 2 z
   rw [h2mul]
   ring

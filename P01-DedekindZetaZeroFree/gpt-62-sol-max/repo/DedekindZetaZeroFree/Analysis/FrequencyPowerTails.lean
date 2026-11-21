@@ -73,8 +73,8 @@ private lemma shell_term_le (q : α → ℝ) (p K X : ℝ) (hp : 1 < p) (hX : 1 
         have := (hn a h2).2
         rw [h1] at this
         exact le_of_lt this
-      · simp [h2]
-    · simp [h1]
+      grind
+    grind
   rw [tsum_eq_sum hsupp]
   have hterm : ∀ a ∈ s, (if n a = k then (if X < q a then ENNReal.ofReal (q a ^ (-p)) else 0) else 0)
       ≤ ENNReal.ofReal (((2:ℝ)^k * X) ^ (-p)) := by

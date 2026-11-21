@@ -4,6 +4,8 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GradientForms.Local
 public import DedekindZetaZeroFree.Analysis.Sobolev.Cubes.GraphRellichCompactness
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Cusps.CutoffGraphApproximation
 
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnds.CoframeNormNaturality
+
 @[expose] public section
 
 noncomputable section
@@ -23,7 +25,7 @@ variable (hR : R.adelicHaar = μG)
 variable (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
 variable (K : Set (X_U F ζ hζ U)) (hK : IsCompact K)
 
-theorem actual_cutoff_value_bound (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) (x : KPCoreChartLocalizers.E (A.chart i).n) :
+theorem actual_cutoff_value_bound (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) (x : CoreChartLocalizers.E (A.chart i).n) :
     ‖A.cutoff i x‖ ≤ A.derivativeBound i 0 := by
   by_cases hx : x ∈ tsupport (A.cutoff i)
   · simpa only [norm_iteratedFDeriv_zero] using A.derivative_bounds i 0 x hx
@@ -31,7 +33,7 @@ theorem actual_cutoff_value_bound (A : Localizers F ζ hζ U R P H K hK) (i : Fi
     exact A.nonnegative_derivativeBound i 0
 
 theorem actual_cutoff_firstDerivative_bound (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) (r : Fin (A.chart i).n)
-    (x : KPCoreChartLocalizers.E (A.chart i).n) :
+    (x : CoreChartLocalizers.E (A.chart i).n) :
     ‖fderiv ℝ (A.cutoff i) x (EuclideanSpace.basisFun (Fin (A.chart i).n) ℝ r)‖ ≤
       A.derivativeBound i 1 := by
   by_cases hx : x ∈ tsupport (A.cutoff i)
@@ -52,7 +54,7 @@ include μG hμG hR realization in
 
 theorem actual_coefficient_coordinateDerivative (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
     (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H)
-    (r : Fin (A.chart i).n) (x : KPCoreChartLocalizers.E (A.chart i).n) :
+    (r : Fin (A.chart i).n) (x : CoreChartLocalizers.E (A.chart i).n) :
     KPCubeAverage.coordinateDerivative (A.chart i).n
       (actualLocalCoefficient F ζ hζ U R P H K hK A i f) r x =
       (A.cutoff i x : ℂ) * KPCubeAverage.coordinateDerivative (A.chart i).n
@@ -108,7 +110,7 @@ include μG hμG hR realization in
 
 theorem actual_coefficient_coordinateDerivative_sq_le (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
     (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H)
-    (r : Fin (A.chart i).n) (x : KPCoreChartLocalizers.E (A.chart i).n) :
+    (r : Fin (A.chart i).n) (x : CoreChartLocalizers.E (A.chart i).n) :
     ‖KPCubeAverage.coordinateDerivative (A.chart i).n
       (actualLocalCoefficient F ζ hζ U R P H K hK A i f) r x‖ ^ 2 ≤
       2 * (A.derivativeBound i 0 ^ 2 *
@@ -150,7 +152,7 @@ include μG hμG hR realization in
 
 theorem actual_coefficient_energy_bound (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
     (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H)
-    (x : KPCoreChartLocalizers.E (A.chart i).n) :
+    (x : CoreChartLocalizers.E (A.chart i).n) :
     ‖actualLocalCoefficient F ζ hζ U R P H K hK A i f x‖ ^ 2 +
       ∑ r : Fin (A.chart i).n, ‖KPCubeAverage.coordinateDerivative (A.chart i).n
         (actualLocalCoefficient F ζ hζ U R P H K hK A i f) r x‖ ^ 2 ≤
@@ -178,14 +180,14 @@ theorem actual_coefficient_energy_bound (A : Localizers F ζ hζ U R P H K hK) (
       ring
 
 theorem actual_chart_complex_ellipticity (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
-    (x : KPCoreChartLocalizers.E (A.chart i).n)
+    (x : CoreChartLocalizers.E (A.chart i).n)
     (hx : x ∈ tsupport (A.cutoff i))
     (η : Fin (A.chart i).n → ℂ) :
     A.ellipticity i * (∑ j, ‖η j‖ ^ 2) ≤
       ∑ j, ∑ k, (A.chart i).energyMatrix F ζ hζ H.totallyComplex U x j k *
         ((η j).re * (η k).re + (η j).im * (η k).im) := by
-  have hr := (A.metric_bounds i x hx (WithLp.toLp 2 (fun j => (η j).re))).1
-  have hi := (A.metric_bounds i x hx (WithLp.toLp 2 (fun j => (η j).im))).1
+  have hr := A.ellipticity_bound i x hx (WithLp.toLp 2 (fun j => (η j).re))
+  have hi := A.ellipticity_bound i x hx (WithLp.toLp 2 (fun j => (η j).im))
   rw [EuclideanSpace.real_norm_sq_eq] at hr hi
   simp only [WithLp.ofLp_toLp] at hr hi
   calc
@@ -199,7 +201,7 @@ theorem actual_chart_complex_ellipticity (A : Localizers F ζ hζ U R P H K hK) 
 include μG hμG hR realization in
 theorem actual_chart_coordinateDerivative_chain_rule (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
     (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H)
-    (r : Fin (A.chart i).n) (x : KPCoreChartLocalizers.E (A.chart i).n)
+    (r : Fin (A.chart i).n) (x : CoreChartLocalizers.E (A.chart i).n)
     (hx : x ∈ (A.chart i).extendedDomain) :
     KPCubeAverage.coordinateDerivative (A.chart i).n
       (fun y => (KPContActualSectorSmoothTestModules.scalarSections f (A.chart i).component).val ((A.chart i).coordinates y)) r x =
@@ -210,13 +212,13 @@ theorem actual_chart_coordinateDerivative_chain_rule (A : Localizers F ζ hζ U 
   have hs := (kp_cont_actual_sector_smooth_test_modules F ζ hζ μG hμG U R hR P H realization).scalar_smooth f
   have hcoord := ((A.chart i).smooth_coordinates.contDiffAt
     ((A.chart i).open_extendedDomain.mem_nhds hx)).differentiableAt (by simp)
-  exact congrArg (fun L : KPCoreChartLocalizers.E (A.chart i).n →L[ℝ] ℂ =>
+  exact congrArg (fun L : CoreChartLocalizers.E (A.chart i).n →L[ℝ] ℂ =>
     L (EuclideanSpace.basisFun (Fin (A.chart i).n) ℝ r))
     (fderiv_comp x ((hs (A.chart i).component).differentiable (by simp) _)
       hcoord)
 
 theorem actual_chart_coordinate_derivative_injective (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
-    (x : KPCoreChartLocalizers.E (A.chart i).n)
+    (x : CoreChartLocalizers.E (A.chart i).n)
     (hx : x ∈ (A.chart i).extendedDomain) :
     Function.Injective (fderiv ℝ (A.chart i).coordinates x) := by
   obtain ⟨inv, hinv, hleft⟩ := (A.chart i).smooth_inverse
@@ -232,10 +234,10 @@ theorem actual_chart_coordinate_derivative_injective (A : Localizers F ζ hζ U 
     rw [← fderiv_comp x hinvd hcoord, heq.fderiv_eq, fderiv_id]
   intro a b hab
   have hh := congrArg (fderiv ℝ inv ((A.chart i).coordinates x)) hab
-  have ha := congrArg (fun L : KPCoreChartLocalizers.E (A.chart i).n →L[ℝ]
-    KPCoreChartLocalizers.E (A.chart i).n => L a) hd
-  have hb := congrArg (fun L : KPCoreChartLocalizers.E (A.chart i).n →L[ℝ]
-    KPCoreChartLocalizers.E (A.chart i).n => L b) hd
+  have ha := congrArg (fun L : CoreChartLocalizers.E (A.chart i).n →L[ℝ]
+    CoreChartLocalizers.E (A.chart i).n => L a) hd
+  have hb := congrArg (fun L : CoreChartLocalizers.E (A.chart i).n →L[ℝ]
+    CoreChartLocalizers.E (A.chart i).n => L b) hd
   exact ha.symm.trans (hh.trans hb)
 
 namespace ActualChartEnergyGeometry
@@ -361,7 +363,7 @@ set_option maxHeartbeats 1600000 in
 set_option maxHeartbeats 1600000 in
 theorem actual_chart_derivative_pointwise_bound (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
       (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H)
-      (x : KPCoreChartLocalizers.E (A.chart i).n)
+      (x : CoreChartLocalizers.E (A.chart i).n)
       (hx : x ∈ tsupport (A.cutoff i)) :
     A.ellipticity i * (∑ r : Fin (A.chart i).n,
         ‖KPCubeAverage.coordinateDerivative (A.chart i).n
@@ -426,7 +428,7 @@ theorem actual_chart_derivative_pointwise_bound (A : Localizers F ζ hζ U R P H
     rfl]
   dsimp only at hb
   have hM' : (A.chart i).metricMatrix F ζ hζ H.totallyComplex U x = B.transpose * B := hM
-  simp only [KPCoreChartLocalizers.Chart.energyMatrix, hM', ContinuousLinearMap.comp_apply]
+  simp only [CoreChartLocalizers.Chart.energyMatrix, hM', ContinuousLinearMap.comp_apply]
   simp only [dotProduct, mulVec, Finset.mul_sum] at hb
   convert hb using 1
   congr 1 <;> apply Finset.sum_congr rfl <;> intro j hj <;>
@@ -436,112 +438,20 @@ theorem actual_chart_derivative_pointwise_bound (A : Localizers F ζ hζ U R P H
 end ActualChartEnergyGeometry
 
 namespace ActualChartCotangentBinding
-open KPContActualCotangentCountableShrinking KPContSectorPhaseComponentCharts
-open KPContSectorSmoothFramesSupport KPContCotangentActualOverlap
-open KPContCotangentOverlapRationalBranches KPContCotangentActualGenuineTwistIsotropy
-open KPContActualSectorSmoothTestModules KPContActualSectorTestDifferentialDescent
-open KPContActualCotangentMeasurableFamilies
-
-variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-
-private theorem bounds_shrink_at (i : Fin (H.atlas U).componentCount) (p : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
-  let O := Classical.choice (orbifoldChart_exists F ζ hζ U R P H i p)
-  let : Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) p) :=
-    chart_stabilizer_finite F ζ hζ U R P H i p O
-  let := Fintype.ofFinite (MulAction.stabilizer (Component F ζ hζ U R P H i) p)
-  obtain ⟨W,hWo,hpW,hWsub,hWc⟩ := exists_open_between_and_isCompact_closure
-    (isCompact_singleton (x := p)) O.isOpen (Set.singleton_subset_iff.mpr O.center_mem)
-  let V := ⋂ g : MulAction.stabilizer (Component F ζ hζ U R P H i) p,
-    (fun x : KPCuspGenuineMonodromy.SymmetricSpace F => (g.val : KPCuspArithmetic.PGL2 F) • x) ⁻¹' W
-  have hopen : IsOpen V := isOpen_iInter_of_finite fun g =>
-    hWo.preimage (KPCuspSiegel.continuous_action F g.val.val)
-  have hsub : V ⊆ W := by
-    intro x hx
-    simpa using Set.mem_iInter.mp hx (1 : MulAction.stabilizer (Component F ζ hζ U R P H i) p)
-  have hp : p ∈ V := by
-    apply Set.mem_iInter.mpr; intro g
-    change g.val • p ∈ W
-    rw [MulAction.mem_stabilizer_iff.mp g.property]
-    exact hpW (Set.mem_singleton p)
-  refine ⟨⟨i,p,O,V,hopen,hWc.of_isClosed_subset isClosed_closure (closure_mono hsub),
-    (closure_mono hsub).trans hWsub,?_⟩,rfl,rfl,hp⟩
-  intro g
-  ext x; constructor
-  · rintro ⟨y,hy,rfl⟩
-    apply Set.mem_iInter.mpr; intro h
-    simpa only [Set.mem_preimage, Subgroup.coe_mul, ← mul_smul] using Set.mem_iInter.mp hy (h*g)
-  · intro hx
-    refine ⟨(g.val : KPCuspArithmetic.PGL2 F)⁻¹ • x,?_, smul_inv_smul _ _⟩
-    apply Set.mem_iInter.mpr; intro h
-    simpa only [Set.mem_preimage, Subgroup.coe_mul, Subgroup.coe_inv, ← mul_smul]
-      using Set.mem_iInter.mp hx (h*g⁻¹)
-
-theorem actual_pairing_at_arch (f : S_U F ζ hζ U R P H)
-    (i : Fin (H.atlas U).componentCount) (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    (∑ j : Fin (d F), ∑ k : Fin 3,
-      ‖HyperbolicChart.differential (d F)
-        (fun x => (scalarSections f i).val (labeledA (placeEquiv F ζ hζ) x))
-        (labeledAInv (placeEquiv F ζ hζ) y) j k‖ ^ 2) =
-    (∑ j : Fin (d F), KPContActualSectorFriedrichsSynthesis.placePair (D_U f) (D_U f) j
-      ((H.atlas U).components ⟨i, Quotient.mk _ y⟩)).re := by
-  obtain ⟨a, hi, hcenter, hy⟩ := bounds_shrink_at (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i y
-  let x := labeledAInv (placeEquiv F ζ hζ) y
-  have hA : labeledA (placeEquiv F ζ hζ) x = y := by
-    funext k
-    simp [x, labeledA, labeledAInv]
-  have hx : x ∈ omega a := by
-    change labeledA (placeEquiv F ζ hζ) x ∈ a.domain
-    rw [hA]; exact hy
-  have hq : q a x = (H.atlas U).components ⟨i, Quotient.mk _ y⟩ := by
-    rw [(H.atlas U).components_formula]
-    change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      (Quotient.mk _ (labeledA (placeEquiv F ζ hζ) x)) = _
-    rw [hA, hi]
-  have hopen : IsOpen (omega a) := by
-    apply a.domain_open.preimage
-    apply continuous_pi
-    intro k
-    exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
-  have hsec : sectionFields (scalarSections f) = f.val :=
-    (Classical.choose_spec (scalar_gluing f)).1.2.2
-  have hgerm : liftExtension a (f.val a) =ᶠ[𝓝 x]
-      (fun z => (scalarSections f i).val (labeledA (placeEquiv F ζ hζ) z)) := by
-    filter_upwards [hopen.mem_nhds hx] with z hz
-    rw [liftExtension, dite_eq_left hz, ← hsec]
-    simp only [sectionFields, LiftedChart.coefficient, isotropyChart, ChartKind.representative,
-      map_one, Units.val_one, one_mul, one_smul]
-    rw [hi]
-  have hcoeff : ∀ j k, coefficient (D_U f).val a ⟨x, hx⟩ (j,k) =
-      HyperbolicChart.differential (d F)
-        (fun z => (scalarSections f i).val (labeledA (placeEquiv F ζ hζ) z)) x j k := by
-    intro j k
-    change (CotangentLogCoframe.j (d F)
-      (HyperbolicChart.differential (d F) (liftExtension a (f.val a)) x)) (j,k) = _
-    rw [CotangentLogCoframe.j_apply]
-    fin_cases k <;> simp only [HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative, hgerm.fderiv_eq]
-  rw [← hq]
-  simp only [KPContActualSectorFriedrichsSynthesis.placePair_chart F ζ hζ U R P H
-    (D_U f) (D_U f) _ a ⟨x,hx⟩, hcoeff, inner_self_eq_norm_sq_to_K]
-  simp [x, ← Complex.ofReal_pow]
+export KPContCuspCoframeNaturality (pairing_at_arch)
 
 end ActualChartCotangentBinding
 
 private theorem actual_chart_base_measurable (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) : AEMeasurable ((A.chart i).toBase F ζ hζ H.totallyComplex U)
     (volume.restrict (Metric.ball 0 (A.chart i).radius)) := by
-  letI : BorelSpace (KPCoreChartLocalizers.X F ζ hζ U) := ⟨rfl⟩
+  letI : BorelSpace (CoreChartLocalizers.X F ζ hζ U) := ⟨rfl⟩
   apply aemeasurable_restrict_of_measurable_subtype measurableSet_ball
   apply Continuous.measurable
   have hc := (A.chart i).smooth_coordinates.continuousOn.mono
     (Set.Subset.trans subset_closure (A.chart i).closed_ball_in_extension)
   have hcc := continuousOn_iff_continuous_restrict.mp hc
   have hq : Continuous (fun z : KPFiniteCuspAtlas.SymmetricSpace F =>
-      (Quotient.mk _ (z, (H.atlas U).representative (A.chart i).component) : KPCoreChartLocalizers.X F ζ hζ U)) :=
+      (Quotient.mk _ (z, (H.atlas U).representative (A.chart i).component) : CoreChartLocalizers.X F ζ hζ U)) :=
     continuous_quotient_mk'.comp (continuous_id.prodMk continuous_const)
   convert hq.comp hcc using 1
   rfl
@@ -564,7 +474,7 @@ theorem actual_chart_energy_transport (A : Localizers F ζ hζ U R P H K hK)
       ENNReal.ofReal ((Fintype.card ((A.chart i).G F ζ hζ H.totallyComplex U) : ℝ) / A.lower i) *
         ∫⁻ x, e x ∂muU F ζ hζ U R P := by
   let C := A.chart i
-  let ν := volume.restrict (Metric.ball (0 : KPCoreChartLocalizers.E C.n) C.radius)
+  let ν := volume.restrict (Metric.ball (0 : CoreChartLocalizers.E C.n) C.radius)
   let w := fun x => ENNReal.ofReal (actualWeight F ζ hζ U R P H C x)
   let b := C.toBase F ζ hζ H.totallyComplex U
   let N : ℝ≥0∞ := Fintype.card (C.G F ζ hζ H.totallyComplex U)
@@ -576,7 +486,7 @@ theorem actual_chart_energy_transport (A : Localizers F ζ hζ U R P H K hK)
   have hpos : ∀ᵐ x ∂ν, w x ≠ 0 := by
     filter_upwards [ae_restrict_mem measurableSet_ball] with x hx
     exact (ENNReal.ofReal_pos.mpr ((A.positive_lower i).trans_le
-      (A.density_bounds i x (subset_closure hx)).1)).ne'
+      (A.density_lower_bound i x (subset_closure hx)))).ne'
   have hac : ν ≪ ν.withDensity w := withDensity_absolutelyContinuous' hw hpos
   have hm : Measure.map b (ν.withDensity w) = N • (muU F ζ hζ U R P).restrict
       (C.O F ζ hζ H.totallyComplex U) := by
@@ -601,7 +511,7 @@ theorem actual_chart_energy_transport (A : Localizers F ζ hζ U R P H K hK)
         apply lintegral_mono_ae
         filter_upwards [ae_restrict_mem measurableSet_ball] with x hx
         have hlow : ENNReal.ofReal (A.lower i) ≤ w x := ENNReal.ofReal_le_ofReal
-          (A.density_bounds i x (subset_closure hx)).1
+          (A.density_lower_bound i x (subset_closure hx))
         calc
           _ = ((ENNReal.ofReal (A.lower i))⁻¹ * ENNReal.ofReal (A.lower i)) * e (b x) := by
             rw [ENNReal.inv_mul_cancel hl ENNReal.ofReal_ne_top, one_mul]
@@ -677,7 +587,7 @@ theorem actual_normal_coframe_normSquare (f : S_U F ζ hζ U R P H)
         (KPCuspCutoffGraph.fromArch F y) j k‖ ^ 2) =
       (normSquare (D_U f).val ((H.atlas U).components ⟨i, Quotient.mk _ y⟩) : ℝ) := by
   rw [← actual_place_sum_normSquare]
-  have hp := actual_pairing_at_arch f i y
+  have hp := pairing_at_arch f i y
   have hr := coframe_reindex (d F) (KPCuspLogShape.dimension F)
     (KPArch.complex_places_of_primitive_twelfth_root F ζ hζ).2.1.symm
     (scalarSections f i).val y
@@ -703,7 +613,7 @@ theorem actual_scalar_pair_at_arch (f : S_U F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (y : KPFiniteCuspAtlas.SymmetricSpace F) :
     (scalarPair f f ((H.atlas U).components ⟨i, Quotient.mk _ y⟩)).re =
       ‖(scalarSections f i).val y‖ ^ 2 := by
-  obtain ⟨a, hi, hcenter, hy⟩ := bounds_shrink_at (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i y
+  obtain ⟨a, hi, hcenter, hy⟩ := KPContActualCotangentCountableShrinking.Construction.shrink_exists (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i y
   let x := labeledAInv (placeEquiv F ζ hζ) y
   have hA : labeledA (placeEquiv F ζ hζ) x = y := by
     funext k
@@ -746,7 +656,7 @@ include μG hμG hR realization in
 
 theorem actual_coefficient_intrinsic_energy_bound (A : Localizers F ζ hζ U R P H K hK)
     (i : Fin A.count) (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H)
-    (x : KPCoreChartLocalizers.E (A.chart i).n) :
+    (x : CoreChartLocalizers.E (A.chart i).n) :
     ‖actualLocalCoefficient F ζ hζ U R P H K hK A i f x‖ ^ 2 +
       ∑ r : Fin (A.chart i).n, ‖KPCubeAverage.coordinateDerivative (A.chart i).n
         (actualLocalCoefficient F ζ hζ U R P H K hK A i f) r x‖ ^ 2 ≤
@@ -806,7 +716,7 @@ theorem actual_graph_test_norm_sq (f : KPContActualSectorSmoothTestModules.S_U F
     KPContActualSectorTestEmbeddings.j (KPContActualSectorTestDifferentialDescent.D_U f))‖ ^ 2 = _
   exact WithLp.prod_norm_sq_eq_of_L2 _
 
-theorem actual_smoothJet_norm_sq (n : ℕ) (a : ℝ) (g : KPCoreChartLocalizers.E n → ℂ)
+theorem actual_smoothJet_norm_sq (n : ℕ) (a : ℝ) (g : CoreChartLocalizers.E n → ℂ)
     (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
     ‖KPCubeGraphRellich.smoothJet n a g hg‖ ^ 2 =
       ∫ x, (‖g x‖ ^ 2 + ∑ r : Fin n, ‖KPCubeAverage.coordinateDerivative n g r x‖ ^ 2)
@@ -841,7 +751,7 @@ theorem actual_smooth_jet_bound (A : Localizers F ζ hζ U R P H K hK) :
   refine ⟨fun i => Real.sqrt (q i * (c i + d i)), fun i => Real.sqrt_nonneg _, ?_⟩
   intro i f
   let l := actualLocalCoefficient F ζ hζ U R P H K hK A i f
-  let B := Metric.ball (0 : KPCoreChartLocalizers.E (A.chart i).n) (A.chart i).radius
+  let B := Metric.ball (0 : CoreChartLocalizers.E (A.chart i).n) (A.chart i).radius
   let E := fun x => ‖l x‖ ^ 2 + ∑ r : Fin (A.chart i).n, ‖KPCubeAverage.coordinateDerivative (A.chart i).n l r x‖ ^ 2
   let e := fun x => c i * (KPContActualSectorTestEmbeddings.scalarPair f f x).re +
     d i * (KPContActualCotangentMeasurableFamilies.normSquare (KPContActualSectorTestDifferentialDescent.D_U f).val x : ℝ)

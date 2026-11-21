@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.RationalCyclotomicPrincipalProduct
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.InfiniteOnePlaceBaseNorm
 public import Mathlib.NumberTheory.NumberField.CMField
@@ -101,17 +102,7 @@ noncomputable local instance
     rationalComplexificationCyclotomicOrder
 
 /-- The complex number `I` is a primitive fourth root of unity. -/
-theorem complexI_isPrimitiveRoot_four :
-    IsPrimitiveRoot Complex.I 4 := by
-  convert Complex.isPrimitiveRoot_exp 4 (by norm_num) using 1
-  calc
-    Complex.I =
-        Complex.exp ((Real.pi : ℂ) / 2 * Complex.I) :=
-      Complex.exp_pi_div_two_mul_I.symm
-    _ = Complex.exp
-        (2 * (Real.pi : ℂ) * Complex.I / (4 : ℂ)) := by
-      congr 1
-      ring
+alias complexI_isPrimitiveRoot_four := Complex.isPrimitiveRoot_I
 
 /-- The concrete fourth-root cyclotomic field inside `ℂ`.
 

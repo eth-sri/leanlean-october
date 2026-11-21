@@ -29,30 +29,6 @@ private theorem mem_omega_iff (C : ShrunkChart F ζ hζ U R P H) (x : M F) :
     KPContActualSectorChartEquivariantInputs.toActual, Set.mem_preimage,
     LinearIsometryEquiv.symm_apply_apply]
 
-private theorem continuous_labeledA_self :
-    Continuous (labeledA (placeEquiv F ζ hζ) :
-      M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
-    (CotangentLogCoframe.A (d F)).continuous
-
-private theorem continuous_proj_self (C : ShrunkChart F ζ hζ U R P H) :
-    Continuous (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H C.component)) := by
-  show Continuous (Quotient.mk _)
-  exact continuous_quotient_mk'
-
-private theorem continuous_componentMap_self (C : ShrunkChart F ζ hζ U R P H) :
-    Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative C.component)) := by
-  have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := C.component))
-  simpa only [Function.comp_def, (H.atlas U).components_formula] using hh
-
-private theorem continuous_q (C : ShrunkChart F ζ hζ U R P H) :
-    Continuous (KPContCotangentOverlapRationalBranches.q C) :=
-  (continuous_componentMap_self C).comp ((continuous_proj_self C).comp continuous_labeledA_self)
-
 private theorem isotropyArrow_phase (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C)
     (x : M F) :
     (isotropyArrow C γ).phase x =
@@ -128,7 +104,7 @@ theorem scalar (C : ShrunkChart F ζ hζ U R P H)
           closure_mono (Set.image_mono hSK)
       _ = KPContCotangentOverlapRationalBranches.q C ''
             ((baseReindex (F := F)).symm '' tsupport h) :=
-          (hKcompact.image (continuous_q C)).isClosed.closure_eq
+          (hKcompact.image (KPContCotangentOverlapRationalBranches.continuous_chartProjection C)).isClosed.closure_eq
   have himage : KPContCotangentOverlapRationalBranches.q C ''
       ((baseReindex (F := F)).symm '' tsupport h) ⊆ C.baseDomain := by
     rintro z ⟨x, ⟨y, hy, hyx⟩, hqz⟩
@@ -164,7 +140,7 @@ theorem scalar (C : ShrunkChart F ζ hζ U R P H)
         (KPCuspGenuineMonodromy.chi F ζ hζ γ.val.2 : ℂ) *
           scalarReindex.symm (h (baseReindex (F := F) x))
       rw [he', scalarCocycle_apply, LinearIsometryEquiv.symm_apply_apply]
-    · exact IsCompact.of_isClosed_subset (hKcompact.image (continuous_q C))
+    · exact IsCompact.of_isClosed_subset (hKcompact.image (KPContCotangentOverlapRationalBranches.continuous_chartProjection C))
         isClosed_closure hsub
     · exact hsub.trans himage
   exact ⟨⟨f, hfmem⟩, fun x => by
@@ -204,7 +180,7 @@ theorem cotangent (C : ShrunkChart F ζ hζ U R P H)
           closure_mono (Set.image_mono hSK)
       _ = KPContCotangentOverlapRationalBranches.q C ''
             ((baseReindex (F := F)).symm '' tsupport h) :=
-          (hKcompact.image (continuous_q C)).isClosed.closure_eq
+          (hKcompact.image (KPContCotangentOverlapRationalBranches.continuous_chartProjection C)).isClosed.closure_eq
   have himage : KPContCotangentOverlapRationalBranches.q C ''
       ((baseReindex (F := F)).symm '' tsupport h) ⊆ C.baseDomain := by
     rintro z ⟨x, ⟨y, hy, hyx⟩, hqz⟩
@@ -255,7 +231,7 @@ theorem cotangent (C : ShrunkChart F ζ hζ U R P H)
         T (isotropyArrow C γ) x (omega_subset_larger C hx)
           (coefficientReindex.symm (h (baseReindex (F := F) x)))
       rw [he', hcoc γ x hx, LinearIsometryEquiv.symm_apply_apply]
-    · exact IsCompact.of_isClosed_subset (hKcompact.image (continuous_q C))
+    · exact IsCompact.of_isClosed_subset (hKcompact.image (KPContCotangentOverlapRationalBranches.continuous_chartProjection C))
         isClosed_closure hsub
     · exact hsub.trans himage
   exact ⟨⟨f, hfmem⟩, fun x => by

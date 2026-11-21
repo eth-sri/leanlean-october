@@ -12,7 +12,7 @@ open KPGlobalResidualConstruction KPActualReflectionData.NativeFlowJet
 variable (F : Type) [Field F] [NumberField F]
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
-open _root_.DedekindZetaZeroFree.KPSmoothCoreCasimirEnergy renaming matrix_path_hasDeriv_components → matrix_path_hasDeriv_components
+open _root_.DedekindZetaZeroFree.KPCplxHarmonicExtraction.CasimirTransfer.Transfer (matrix_path_hasDeriv_components)
 private theorem flow_entry_hasDeriv
     (b : KPSmoothActualFlowData.B F) (w : NumberField.InfinitePlace F) (i j : Fin 2) :
     HasDerivAt (fun t : ℝ => (flowMatrix F b t w).val i j)

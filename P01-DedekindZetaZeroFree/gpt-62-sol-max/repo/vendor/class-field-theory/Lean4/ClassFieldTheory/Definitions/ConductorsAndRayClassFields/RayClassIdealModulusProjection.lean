@@ -37,17 +37,18 @@ namespace ClassFieldTheory
 
 universe u
 
+section
+
+variable {K : Type u} [Field K] [NumberField K] (v : HeightOneSpectrum (𝓞 K))
+include v
+
  def rayLocalIntegralValue
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K))
     (y : (v.adicCompletionIntegers K).units) :
     v.adicCompletionIntegers K :=
   ((v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType y :
     (v.adicCompletionIntegers K)ˣ).1
 
-private theorem rayLocalHigherUnitMap_eq_one_iff
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
+private theorem rayLocalHigherUnitMap_eq_one_iff (n : ℕ)
     (y : (v.adicCompletionIntegers K).units) :
     rayLocalHigherUnitMap v n y = 1 ↔
       rayLocalIntegralValue v y - 1 ∈
@@ -64,8 +65,6 @@ private theorem rayLocalHigherUnitMap_eq_one_iff
       (1 : v.adicCompletionIntegers K)
 
 private theorem rayLocalHigherUnitGroup_antitone
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K))
     {m n : ℕ} (hmn : m ≤ n) :
     rayLocalHigherUnitGroup v n ≤ rayLocalHigherUnitGroup v m := by
   intro x hx
@@ -83,9 +82,14 @@ private theorem rayLocalHigherUnitGroup_antitone
   rw [rayLocalHigherUnitMap_eq_one_iff] at hy ⊢
   exact Ideal.pow_le_pow_right hmn hy
 
+end
+
+section
+
+variable {K : Type u} [Field K] [NumberField K] {m n : RayClassModulus K} (hmn : m ≤ n)
+include hmn
+
 private theorem rayCongruent_of_le
-    {K : Type u} [Field K] [NumberField K]
-    {m n : RayClassModulus K} (hmn : m ≤ n)
     {x : Kˣ} (hx : IsRayCongruent n x) :
     IsRayCongruent m x := by
   constructor
@@ -99,20 +103,18 @@ private theorem rayCongruent_of_le
   · intro v hv
     exact hx.2 v (hmn.2 hv)
 
- theorem rayPrimeToIdeals_antitone
-    {K : Type u} [Field K] [NumberField K]
-    {m n : RayClassModulus K} (hmn : m ≤ n) :
+ theorem rayPrimeToIdeals_antitone :
     rayClassPrimeToIdeals n ≤ rayClassPrimeToIdeals m := by
   intro I hI v hv
   exact hI v (Finsupp.support_mono hmn.1 hv)
 
- theorem rayPrincipalIdeals_antitone
-    {K : Type u} [Field K] [NumberField K]
-    {m n : RayClassModulus K} (hmn : m ≤ n) :
+ theorem rayPrincipalIdeals_antitone :
     rayPrincipalIdealSubgroup n ≤ rayPrincipalIdealSubgroup m := by
   apply Subgroup.closure_mono
   rintro I ⟨x, hx, hIx⟩
   exact ⟨x, rayCongruent_of_le hmn hx, hIx⟩
+
+end
 
 /-- The ideal-theoretic ray class group modulo a larger modulus projects to
 the ray class group modulo a smaller modulus. -/

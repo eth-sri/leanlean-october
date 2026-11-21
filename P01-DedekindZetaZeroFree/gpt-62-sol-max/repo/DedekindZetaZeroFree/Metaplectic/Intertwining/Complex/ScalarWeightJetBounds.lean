@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.Complex.NormalizedRowJetBounds
 public import Mathlib.Analysis.SpecialFunctions.Complex.LogDeriv
 
@@ -10,23 +11,7 @@ namespace DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParamete
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open scoped ContDiff Matrix.Norms.Elementwise
 
-lemma scalar_bottomRowNormSq_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by
-  have hn : 0 ≤ bottomRowNormSq g := by unfold bottomRowNormSq; positivity
-  by_contra hp
-  have hz : bottomRowNormSq g = 0 := le_antisymm (le_of_not_gt hp) hn
-  have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-    apply norm_eq_zero.mp
-    have : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 = 0 := by
-      unfold bottomRowNormSq at hz
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    nlinarith [norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0)]
-  have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-    apply norm_eq_zero.mp
-    have : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 := by
-      unfold bottomRowNormSq at hz
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    nlinarith [norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)]
-  exact Matrix.GeneralLinearGroup.det_ne_zero g (by simp [Matrix.det_fin_two, h0, h1])
+alias scalar_bottomRowNormSq_pos := DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.bottom_pos
 
 private lemma scalar_entry_contDiffOn {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {U : Set E} {g : E → ComplexGL2}

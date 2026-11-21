@@ -16,11 +16,10 @@ lemma maxSq_continuous {κ : Type*} [Fintype κ] [Nonempty κ]
     (P : κ → ℝ → ℂ) (hP : ∀ k, Continuous (P k)) : Continuous (maxSq P) := by
   apply Continuous.finset_sup'_apply
   intro k _
-  exact (hP k).norm.pow 2
+  fun_prop
 
 lemma le_maxSq {κ : Type*} [Fintype κ] [Nonempty κ]
-    (P : κ → ℝ → ℂ) (t : ℝ) (k : κ) : ‖P k t‖ ^ 2 ≤ maxSq P t := by
-  exact Finset.le_sup' (f := fun k => ‖P k t‖ ^ 2) (Finset.mem_univ k)
+    (P : κ → ℝ → ℂ) (t : ℝ) (k : κ) : ‖P k t‖ ^ 2 ≤ maxSq P t := Finset.le_sup' (f := fun k => ‖P k t‖ ^ 2) (Finset.mem_univ k)
 
 lemma maxSq_nonneg {κ : Type*} [Fintype κ] [Nonempty κ]
     (P : κ → ℝ → ℂ) (t : ℝ) : 0 ≤ maxSq P t :=
@@ -77,7 +76,7 @@ theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
       have ha : ‖P k t‖ ^ 2 - ‖P k x‖ ^ 2 ≤
           ‖‖P k x‖ ^ 2 - ‖P k t‖ ^ 2‖ := by
         rw [Real.norm_eq_abs]
-        linarith [neg_le_abs (‖P k x‖ ^ 2 - ‖P k t‖ ^ 2)]
+        grind
       change ‖‖P k x‖ ^ 2 - ‖P k t‖ ^ 2‖ ≤ ∫ u in t..x, H u at he
       have hl := le_maxSq P x k
       rw [hkt]
@@ -92,7 +91,7 @@ theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
         _ ≤ ∫ x in t..(t + 1), H x :=
           intervalIntegral.integral_mono_on (by linarith)
             (hMc.intervalIntegrable _ _) (hHc.intervalIntegrable _ _)
-            (fun x _ => by dsimp [H]; exact le_add_of_nonneg_right (maxSq_nonneg _ x))
+            (fun x _ => by exact le_add_of_nonneg_right (maxSq_nonneg _ x))
         _ ≤ I := intervalIntegral.integral_mono_interval (by linarith [ht.1])
           (by linarith) (by linarith [ht.2])
           (Filter.Eventually.of_forall hHnonneg) hI
@@ -104,9 +103,8 @@ theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
     dsimp [I] at hm havg
     linarith
   apply csSup_le
-  · exact ⟨M 0, 0, ⟨by linarith, hT⟩, rfl⟩
-  · rintro y ⟨t, ht, rfl⟩
-    exact hpoint t ht
+  · simp_all
+  grind
 
 def phase (q t : ℝ) : ℂ :=
   Complex.exp (-Complex.I * (t : ℂ) * (Real.log q : ℂ))
@@ -114,8 +112,7 @@ def phase (q t : ℝ) : ℂ :=
 lemma phase_norm (q t : ℝ) : ‖phase q t‖ = 1 := by
   simp [phase, Complex.norm_exp]
 
-lemma phase_contDiff (q : ℝ) : ContDiff ℝ 1 (phase q) := by
-  exact Complex.contDiff_exp.comp
+lemma phase_contDiff (q : ℝ) : ContDiff ℝ 1 (phase q) := Complex.contDiff_exp.comp
     ((contDiff_const.mul Complex.ofRealCLM.contDiff).mul contDiff_const)
 
 lemma phase_hasDerivAt (q t : ℝ) :
@@ -190,7 +187,7 @@ theorem finite_polynomial_maximal :
   have hpoint : ∀ t, (∑ i, H i t) ≤ R * (1 + L ^ 2) * E := by
     intro t
     have he : (∑ k, ‖b k * phase (q k) t‖ ^ 2) = E := by
-      simp [phase_norm, norm_mul, E]
+      simp [phase_norm, E]
     have hb := hprefix m ι A K hK hop (fun k => b k * phase (q k) t)
     rw [he] at hb
     let d := fun k => (-Complex.I * (Real.log (q k) : ℂ)) * b k

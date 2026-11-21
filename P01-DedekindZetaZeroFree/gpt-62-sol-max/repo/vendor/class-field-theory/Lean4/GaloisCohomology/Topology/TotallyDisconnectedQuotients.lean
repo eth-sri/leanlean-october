@@ -172,23 +172,5 @@ end QuotientGroup
 
 namespace ContinuousMonoidHom
 
-/-- A continuous homomorphism from a topological group to a totally disconnected
-topological group vanishes on the identity component. -/
-theorem connectedComponentOfOne_le_ker
-    {G H : Type*}
-    [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
-    [TotallyDisconnectedSpace H]
-    (f : G →ₜ* H) :
-    Subgroup.connectedComponentOfOne G ≤ f.ker := by
-  intro g hg
-  have hfg : f g ∈ connectedComponent (1 : H) := by
-    have hmap : f g ∈ connectedComponent (f (1 : G)) :=
-      f.continuous_toFun.mapsTo_connectedComponent (1 : G) hg
-    simpa only [map_one] using hmap
-  have hcomponent : connectedComponent (1 : H) = {1} :=
-    totallyDisconnectedSpace_iff_connectedComponent_singleton.mp inferInstance 1
-  change f g = 1
-  simpa only [hcomponent, Set.mem_singleton_iff] using hfg
 
 end ContinuousMonoidHom

@@ -227,20 +227,6 @@ open scoped Classical NumberField
 open IsDedekindDomain LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
 
- def rawValuationIdeal (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
-    (hv : v ∉ A.Sf) : Ideal A.R where
-  carrier := {r | v.valuation F (r : F) < 1}
-  zero_mem' := by simp
-  add_mem' := by
-    intro x y hx hy
-    change v.valuation F ((x : F) + (y : F)) < 1
-    exact (ValuationClass.map_add_le_max _ _ _).trans_lt (max_lt hx hy)
-  smul_mem' := by
-    intro x y hy
-    change v.valuation F ((x : F) * (y : F)) < 1
-    rw [map_mul]
-    exact (mul_le_mul_of_nonneg_right (x.property v hv) zero_le).trans_lt (by simpa using hy)
-
 theorem raw_plus_inducer_isKummer
     (A : SArithmeticData F) (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
@@ -264,14 +250,6 @@ theorem raw_plus_inducer_isKummer
     exact hv ((HeightOneSpectrum.ext (w.isMaximal.eq_of_le v.isPrime.ne_top hwv)) ▸ hw)
   let p : ExteriorPrime A := ⟨v, hexterior⟩
   have hIval : (primeIdeal p).val = v.asIdeal := rfl
-
-  have hmap_extend_le : A.extendIdeal (primeIdeal p) ≤ rawValuationIdeal A v hv := by
-    apply Ideal.map_le_iff_le_comap.mpr
-    intro a ha
-    change v.valuation F (((algebraMap (𝓞 F) A.R) a : A.R) : F) < 1
-    have hcoe : (((algebraMap (𝓞 F) A.R) a : A.R) : F) = algebraMap (𝓞 F) F a := rfl
-    rw [hcoe]
-    exact (v.valuation_lt_one_iff_mem (K := F) a).mpr (hIval ▸ ha)
 
   have hexp : idealPrimeExponent v.asIdeal U.ideal.val = 0 := by
     have h1 := ArithmeticContext.actual_generator_valuation A U.ideal U.u U.generates
@@ -307,18 +285,8 @@ theorem raw_plus_inducer_isKummer
     rw [← hdel, ← hIval, ← hχ (primeIdeal p)]
     exact AllRowEuler.UnitCovariance.residueCoefficient_eq (primeIdeal p) U.u
 
-  have hunit : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) := by
-    have hmax : (A.extendIdeal (primeIdeal p)).IsMaximal := by
-      apply Ideal.Quotient.maximal_of_isField
-      exact (A.exteriorLocalResidueEquiv (primeIdeal p) v rfl).toMulEquiv.isField
-        (Field.toIsField (SArithmeticData.exteriorLocalResidue v))
-    haveI := hmax
-    rw [isUnit_iff_ne_zero]
-    intro hz
-    have hmem : U.u ∈ A.extendIdeal (primeIdeal p) := Ideal.Quotient.eq_zero_iff_mem.mp hz
-    have hlt : v.valuation F (U.u : F) < 1 := hmap_extend_le hmem
-    rw [huval] at hlt
-    exact lt_irrefl 1 hlt
+  have hunit := FrequencyCharacterMasks.quotient_mk_isUnit_of_valuation_eq_one A
+    (primeIdeal p) v hIval hv U.u huval
   let q : (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ := hunit.unit
   have hqval : (q : A.R ⧸ A.extendIdeal (primeIdeal p)) =
       Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u := hunit.unit_spec
@@ -362,7 +330,7 @@ theorem raw_plus_inducer_isKummer
     have hval2 : v.valuation F
         ((U.u ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
           algebraMap (𝓞 F) A.R (A.primitive_zeta12.toInteger ^ (2 * j)) : A.R) : F) < 1 :=
-      hmap_extend_le hmem
+      FrequencyCharacterMasks.valuation_lt_one_of_mem_extend A v hv hIval.le hmem
     have hcoe2 : ((U.u ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
           algebraMap (𝓞 F) A.R (A.primitive_zeta12.toInteger ^ (2 * j)) : A.R) : F) =
         (U.u : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - (A.zeta12 ^ 2) ^ j := by

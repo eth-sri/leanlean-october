@@ -18,53 +18,10 @@ open KPGlobalTorusFiniteStages
 
 variable (C : CompatibleModelData F ζ hζ) (L : Level F ζ hζ C)
 
-theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
-    KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.torusRatio F t) = t.val := by
-  let A := Classical.choose t.property
-  have hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A = t.val ∧
-      A 1 0 = 0 ∧ A 0 1 = 0 := Classical.choose_spec t.property
-  let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).1.unit
-  let w := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).2.unit
-  have hu : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 0 0 := IsUnit.unit_spec _
-  have hw : (w : KPAdelicCoverRestrictedProduct.Adeles F) = A 1 1 := IsUnit.unit_spec _
-  have heq : A = KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹) *
-      Matrix.GeneralLinearGroup.scalar (Fin 2) w := by
-    apply Units.ext
-    ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
-    exact hw.symm
-  change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val
-  rw [← hA.1, heq]
-  have hs : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) w) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr ⟨w, rfl⟩
-  rw [(QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).map_mul, hs, mul_one]
-
-def torusPullbackBridge : KPGlobalTorusFunctionData.E F ζ hζ →* KPGlobalCubicIdelePairing.E F ζ hζ where
-  toFun e := ⟨(e.val, KPGlobalTorusFunctionData.p F ζ hζ e),
-    (diagonal_formula F ⟨_, e.property⟩).symm⟩
-  map_one' := by apply Subtype.ext; exact Prod.ext rfl (map_one _)
-  map_mul' x y := by apply Subtype.ext; exact Prod.ext rfl (map_mul _ _ _)
-
-private theorem torusPullbackBridge_injective :
-    Function.Injective (torusPullbackBridge F ζ hζ) := by
-  intro x y h
-  exact Subtype.ext (congrArg (fun t : KPGlobalCubicIdelePairing.E F ζ hζ => t.val.1) h)
-
 private theorem commute_iff_beta (x y : KPGlobalTorusFunctionData.E F ζ hζ) :
     Commute x y ↔ KPGlobalCubicIdelePairing.beta3 F ζ hζ
-      (KPGlobalProductPolarizationCharacter.pD F ζ hζ x) (KPGlobalProductPolarizationCharacter.pD F ζ hζ y) = 1 := by
-  have h := KPGlobalCubicIdelePairing.commutator_annihilators F ζ hζ
-    (torusPullbackBridge F ζ hζ x) (torusPullbackBridge F ζ hζ y)
-  constructor
-  · intro hc
-    exact h.mp (hc.map (torusPullbackBridge F ζ hζ))
-  · intro hb
-    apply torusPullbackBridge_injective F ζ hζ
-    simpa only [map_mul] using (h.mpr hb).eq
+      (KPGlobalProductPolarizationCharacter.pD F ζ hζ x) (KPGlobalProductPolarizationCharacter.pD F ζ hζ y) = 1 :=
+  KPGlobalCenterRationalCharacterExtension.commute_iff_beta F ζ hζ x y
 
 def phaseInclusion : phaseGroup F ζ hζ C L →* stageDomain F ζ hζ C L :=
   Subgroup.inclusion (phase_inside_domain F ζ hζ C L)
@@ -283,7 +240,7 @@ private theorem commutator_root (x y : KPGlobalTorusFunctionData.E F ζ hζ) :
   apply Subtype.ext
   have h := congrArg (fun t : KPGlobalCubicIdelePairing.E F ζ hζ => t.val.1)
     (KPGlobalCubicIdelePairing.actual_torus_commutator F ζ hζ
-      (torusPullbackBridge F ζ hζ x) (torusPullbackBridge F ζ hζ y))
+      (KPGlobalCenterRationalCharacterExtension.coveredTorusDiagonalRatioPullbackHom F ζ hζ x) (KPGlobalCenterRationalCharacterExtension.coveredTorusDiagonalRatioPullbackHom F ζ hζ y))
   rw [KPGlobalCenterRationalCharacter.centralRoot_formula]
   exact h
 

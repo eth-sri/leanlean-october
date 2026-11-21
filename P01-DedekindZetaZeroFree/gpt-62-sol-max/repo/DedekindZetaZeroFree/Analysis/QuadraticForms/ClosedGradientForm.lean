@@ -41,11 +41,6 @@ def closedGradientEnergy
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
     (D : H →ₗ.[ℂ] V) (u : D.closure.domain) : ℝ := ‖D.closure u‖ ^ 2
 
-def closedGradientEnergyNorm
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (u : D.closure.domain) : ℝ :=
-  Real.sqrt (‖(u : H)‖ ^ 2 + closedGradientEnergy D u)
 
 theorem closedGradientGraph_isClosed
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
@@ -98,12 +93,6 @@ theorem closedGradientSpace_inner
       inner ℂ (closedGradientCoordinate D w) (closedGradientCoordinate D z) := by
   exact WithLp.prod_inner_apply (w : WithLp 2 (H × V)) (z : WithLp 2 (H × V))
 
-theorem closedGradientEnergyNorm_eq_graphNorm
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-    (D : H →ₗ.[ℂ] V) (u : D.closure.domain) :
-    closedGradientEnergyNorm D u = ‖WithLp.toLp 2 ((u : H), D.closure u)‖ := by
-  exact (WithLp.prod_norm_eq_of_L2 (WithLp.toLp 2 ((u : H), D.closure u))).symm
 
 theorem closedGradientForm_nonnegative_dense
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
@@ -118,27 +107,6 @@ theorem closedGradientForm_nonnegative_dense
   simpa [closedGradientForm, closedGradientEnergy] using
     (inner_self_eq_norm_sq_to_K (𝕜 := ℂ) (D.closure u))
 
-theorem closedGradientForm_closed
-    {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
-    (D : H →ₗ.[ℂ] V) (hclosable : D.IsClosable)
-    (u : ℕ → D.closure.domain)
-    (hcauchy : CauchySeq (fun n => WithLp.toLp 2 ((u n : H), D.closure (u n)))) :
-    ∃ v : D.closure.domain,
-      Filter.Tendsto (fun n => closedGradientEnergyNorm D (u n - v))
-        Filter.atTop (nhds 0) := by
-  obtain ⟨w, hw⟩ := cauchySeq_tendsto_of_complete hcauchy
-  have hwmem : w ∈ closedGradientGraph D := by
-    apply (closedGradientGraph_isClosed D hclosable).mem_of_tendsto hw
-    exact Filter.Eventually.of_forall fun n => D.closure.mem_graph (u n)
-  obtain ⟨v, hvH, hvV⟩ := D.closure.mem_graph_iff.mp hwmem
-  have heq : WithLp.toLp 2 ((v : H), D.closure v) = w := by
-    apply (WithLp.linearEquiv 2 ℂ (H × V)).injective
-    exact Prod.ext hvH hvV
-  refine ⟨v, ?_⟩
-  have hn := (hw.sub_const w).norm
-  simpa only [sub_self, norm_zero, ← heq, closedGradientEnergyNorm_eq_graphNorm,
-    Submodule.coe_sub, LinearPMap.map_sub, ← WithLp.toLp_sub, Prod.mk_sub_mk] using hn
 
 theorem closedGradientForm_core
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]

@@ -23,14 +23,13 @@ local instance {F : Type} [Field F] [NumberField F]
   rw [Units.isEmbedding_val₀.isInducing.eq_induced, borel_comap]⟩
 private theorem real_addHaar_map_mul (μ : Measure ℝ) [μ.IsAddHaarMeasure] (c : ℝ) (hc : c ≠ 0) :
     μ.map (fun x => c*x) = (ENNReal.ofReal |c|)⁻¹ • μ := by
-  let L : ℝ →ₗ[ℝ] ℝ := LinearMap.mulLeft ℝ c
-  have hdet : L.det = c := by
-    exact LinearMap.det_mulLeft _
+  let L := LinearMap.mulLeft ℝ c
+  have hdet : L.det = c := LinearMap.det_mulLeft _
   have hmap := Measure.map_linearMap_addHaar_eq_smul_addHaar μ
     (f := L) (by rwa [hdet])
   convert hmap using 1
   · rfl
-  · rw [hdet, abs_inv, ENNReal.ofReal_inv_of_pos (abs_pos.mpr hc)]
+  simp_all
 
 private theorem realUnits_density_left (μ : Measure ℝ) [μ.IsAddHaarMeasure] :
     (Measure.comap Units.val
@@ -49,14 +48,12 @@ private theorem realUnits_density_left (μ : Measure ℝ) [μ.IsAddHaarMeasure] 
       (fun x : ℝ => (g : ℝ) * x) ⁻¹' (Units.val '' s) := by
     ext x
     constructor
-    · rintro ⟨u, hu, rfl⟩; exact ⟨g * u, hu, by simp⟩
+    · aesop
     · rintro ⟨u, hu, he⟩
       refine ⟨g⁻¹ * u, ?_, ?_⟩
       · simpa using hu
-      · change ((g⁻¹ * u : ℝˣ) : ℝ) = x
-        simp only [Units.val_mul]
-        rw [he]; simp
-  rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
+      simp_all
+  rw [hpre, withDensity_apply _ ((ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
   have hscale := real_addHaar_map_mul μ (g : ℝ) g.ne_zero
   have hmul (x : ℝ) : D ((g : ℝ) * x) = (ENNReal.ofReal |(g : ℝ)|)⁻¹ * D x := by
@@ -97,7 +94,7 @@ private theorem realUnits_density_isHaarMeasure (μ : Measure ℝ) [μ.IsAddHaar
     have hc : ContinuousOn (fun x : ℝ => |x|⁻¹) (Units.val '' K) := by
       apply ContinuousOn.inv₀ (by fun_prop)
       rintro x ⟨u, hu, rfl⟩
-      exact (abs_pos.mpr u.ne_zero).ne'
+      simp
     have hi := ContinuousOn.integrableOn_compact (μ := μ) (hK.image Units.continuous_val) hc
     rw [← ofReal_integral_eq_lintegral_ofReal hi (Filter.Eventually.of_forall (fun x => by positivity))]
     exact ENNReal.ofReal_ne_top
@@ -112,7 +109,7 @@ private theorem realUnits_density_integral (f : ℝ → ℂ) :
     ext x
     simp only [Set.mem_range, Set.mem_compl_iff, Set.mem_singleton_iff]
     constructor
-    · rintro ⟨u, rfl⟩; exact u.ne_zero
+    · aesop
     · intro hx; exact ⟨Units.mk0 x hx, rfl⟩
   rw [hrange]
   have hz : (volume.withDensity (fun x : ℝ => ENNReal.ofReal (|x|⁻¹))) {0} = 0 :=
@@ -130,7 +127,7 @@ theorem realUnits_haar_integral_density (ν : Measure ℝˣ) [ν.IsHaarMeasure] 
     ∃ c : ℝ, 0 < c ∧ ∀ f : ℝ → ℂ,
       (∫ u : ℝˣ, f u.val ∂ν) = c • (∫ x : ℝ, f x / ((|x| : ℝ) : ℂ)) := by
   letI : SecondCountableTopology ℝˣ := Units.isEmbedding_val₀.secondCountableTopology
-  let μ : Measure ℝˣ := Measure.comap Units.val
+  let μ := Measure.comap Units.val
     (volume.withDensity (fun x : ℝ => ENNReal.ofReal (|x|⁻¹)))
   letI : μ.IsHaarMeasure := realUnits_density_isHaarMeasure volume
   refine ⟨(ν.haarScalarFactor μ : ℝ), ?_, ?_⟩
@@ -405,21 +402,7 @@ def completionTensorFactor {F : Type} [Field F] [NumberField F]
   if hv : v.IsReal then gR ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x)
   else gC ⟨v, v.not_isReal_iff_isComplex.mp hv⟩ (InfinitePlace.Completion.extensionEmbedding v x)
 
-@[simp] theorem completionTensorFactor_real {F : Type} [Field F] [NumberField F]
-    (gR : {v : InfinitePlace F // v.IsReal} → SchwartzMap ℝ ℂ)
-    (gC : {v : InfinitePlace F // v.IsComplex} → SchwartzMap ℂ ℂ)
-    (v : InfinitePlace F) (hv : v.IsReal) (x : v.Completion) :
-    completionTensorFactor gR gC v x =
-      gR ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbeddingOfIsReal hv x) := by
-  simp [completionTensorFactor, hv]
 
-@[simp] theorem completionTensorFactor_complex {F : Type} [Field F] [NumberField F]
-    (gR : {v : InfinitePlace F // v.IsReal} → SchwartzMap ℝ ℂ)
-    (gC : {v : InfinitePlace F // v.IsComplex} → SchwartzMap ℂ ℂ)
-    (v : InfinitePlace F) (hv : v.IsComplex) (x : v.Completion) :
-    completionTensorFactor gR gC v x =
-      gC ⟨v, hv⟩ (InfinitePlace.Completion.extensionEmbedding v x) := by
-  simp [completionTensorFactor, v.not_isReal_iff_isComplex.mpr hv]
 
 set_option maxHeartbeats 1000000
 

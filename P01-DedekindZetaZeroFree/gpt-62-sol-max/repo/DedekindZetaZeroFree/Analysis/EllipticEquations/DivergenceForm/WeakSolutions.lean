@@ -18,6 +18,50 @@ def firstIndex {n : ℕ} (i : Fin n) : MultiIndex n 1 :=
     simp only [apply_ite Fin.val, Fin.val_one, Fin.val_zero]
     simp⟩
 
+theorem zero_dirs (n k : ℕ) : (zeroIndex n k).directions = [] := by
+  simp [MultiIndex.directions, zeroIndex]
+theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
+  classical
+  simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
+    Fin.val_zero, List.replicate_one, List.replicate_zero]
+  have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
+    intro l; induction l with
+    | nil => rfl
+    | cons j l ih => by_cases hj : j = i <;> simp [hj, ih]
+  have hrep : ∀ j : Fin n, List.replicate (if j = i then 1 else 0) j =
+      if j = i then [j] else [] := by intro j; split_ifs <;> simp
+  simp_rw [hrep]
+  rw [h, List.filter_eq]
+  simp
+theorem cases_idx {n : ℕ} (α : MultiIndex n 1) :
+    α = zeroIndex n 1 ∨ ∃ i : Fin n, α = firstIndex i := by
+  classical
+  by_cases hz : ∀ i, (α.val i).val = 0
+  · left; apply Subtype.ext; funext i; apply Fin.ext; exact hz i
+  · obtain ⟨i, hi⟩ := not_forall.mp hz
+    right; refine ⟨i, ?_⟩
+    have hs := Finset.sum_le_one_iff.mp α.property
+    have hone := (hs i i (Finset.mem_univ _) (Finset.mem_univ _) hi hi).2
+    apply Subtype.ext; funext j; apply Fin.ext
+    by_cases hji : j = i
+    · subst j; simpa [firstIndex] using hone
+    · have hj : (α.val j).val = 0 := by
+        by_contra hj
+        exact hji (hs j i (Finset.mem_univ _) (Finset.mem_univ _) hj hi).1
+      simpa [firstIndex, hji] using hj
+theorem first_degree {n : ℕ} (i : Fin n) : (firstIndex i).degree = 1 := by
+  simp only [firstIndex, MultiIndex.degree, apply_ite Fin.val, Fin.val_one, Fin.val_zero]
+  simp
+theorem first_ne_zero {n : ℕ} (i : Fin n) : firstIndex i ≠ zeroIndex n 1 := by
+  intro h
+  have he := congrArg (fun α : MultiIndex n 1 => (α.val i).val) h
+  simpa [firstIndex, zeroIndex] using he
+theorem first_inj {n : ℕ} : Function.Injective (@firstIndex n) := by
+  intro i j h
+  have he := congrArg (fun α : MultiIndex n 1 => (α.val i).val) h
+  by_contra hij
+  simpa [firstIndex, hij] using he
+
 def value {n k : ℕ} {B : LocalBall n} (u : IntegerSobolev B k) : BallL2 B :=
   u.derivatives (zeroIndex n k)
 

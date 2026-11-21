@@ -63,8 +63,7 @@ theorem rotated_jacquet_integral (β κ : ℂˣ) (f : PrincipalSeries positivePa
   have hrot : (∫ x : ℂ, F x ∂characterHaar β) =
       ∫ x : ℂ, F ((characterRotation β : ℂ) * x) ∂characterHaar β := by
     have hi := (KPCplxJacquetFunctional.jacquetIntegral_integrable β g).aestronglyMeasurable
-    have hm : Measure.map (fun x : ℂ => (characterRotation β : ℂ) * x)
-      (characterHaar β) = characterHaar β := characterHaar_rotation β
+    have hm := characterHaar_rotation β
     have hi' : AEStronglyMeasurable F (Measure.map
         (fun x : ℂ => (characterRotation β : ℂ) * x) (characterHaar β)) := by
       rw [hm]; exact hi
@@ -133,12 +132,11 @@ private lemma sliceEnvelope_integrable (h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) (b : 
   unfold rationalEnvelope
   have he : ρ ^ 2 + t ^ 2 ≤ ρ ^ 2 + ‖(⟨t, b⟩ : ℂ)‖ ^ 2 := by
     rw [Complex.sq_norm, Complex.normSq_mk]
-    nlinarith [sq_nonneg b]
+    nlinarith
   have hp := Real.rpow_le_rpow_of_nonpos
     (show 0 < ρ ^ 2 + t ^ 2 by positivity) he
     (show -(4 / 3 : ℝ) - (h : ℝ) / 2 ≤ 0 by
-      have hn : (0 : ℝ) ≤ (h : ℝ) := Nat.cast_nonneg _
-      linarith)
+      grind only)
   rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
   exact mul_le_mul_of_nonneg_left hp (Real.rpow_nonneg hρ.le _)
 
@@ -151,8 +149,7 @@ private lemma sliceEnvelope_tendsto_atTop (h : ℕ) (ρ b : ℝ) :
         Tendsto (fun t : ℝ => t ^ 2) atTop atTop)
     exact (tendsto_const_nhds.add_atTop (hh.atTop_add tendsto_const_nhds))
   have hp := (tendsto_rpow_neg_atTop (show 0 < (4 / 3 : ℝ) + (h : ℝ) / 2 by
-    have hn : (0 : ℝ) ≤ (h : ℝ) := Nat.cast_nonneg _
-    linarith)).comp ht
+    positivity)).comp ht
   convert hp.const_mul (ρ ^ (4 / 3 : ℝ)) using 1 <;> simp [rationalEnvelope, neg_add_rev, sub_eq_add_neg, add_comm]
 
 private lemma sliceEnvelope_tendsto_atBot (h : ℕ) (ρ b : ℝ) :

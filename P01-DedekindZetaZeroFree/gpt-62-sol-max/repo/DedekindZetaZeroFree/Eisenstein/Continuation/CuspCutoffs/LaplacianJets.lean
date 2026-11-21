@@ -169,7 +169,7 @@ private theorem component_holomorphy (b : Bool) (O : Set ℂ) (hO : IsOpen O)
     have hh' : KPCutoffSource.ChartSmoothHolomorphicOn B g KPContinuation.spectralDomain := by
       cases b <;> simp only [g, original, Bool.false_eq_true, if_false, if_true]
       · exact hh.1
-      · exact hh.2.1
+      · exact hh.2
     exact ⟨fun t hz => hh'.1 t (hOΩ hz),
       fun C hC hCB m => by
         obtain ⟨j,hj,hjval⟩ := hh'.2 C hC hCB m

@@ -37,7 +37,7 @@ private theorem character_rational_arch
       χ (x, 0) = Circle.exp (2 * Real.pi * KPArchTrace.infiniteTracePairing F x
         (algebraMap F (InfiniteAdeleRing F) a)) := by
   let χa := χ.compAddMonoidHom (archIn F)
-  have hca : Continuous χa := hc.comp (archIn_cont F)
+  have hca := hc.comp (archIn_cont F)
   obtain ⟨y, hy, _⟩ := KPArchTrace.infinite_character_classification F χa hca
   obtain ⟨T, k, I, _, hker, hI, hIfiber, _, _⟩ := kp_adelic_character_open_kernel F χ hc
   have hdiag : ∀ a : F, a ∈ (I : FractionalIdeal (𝓞 F)⁰ F) →

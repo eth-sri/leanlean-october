@@ -49,23 +49,20 @@ def sUnitKummerPrimeCount
       (enlargeByFiniteKummerRadicalSupport
         (K := K) (L := E) n hmu S) - r
 
+section
+
+variable {Omega : Type*} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
+  (E : IntermediateField K Omega) [FiniteDimensional K E] [IsGalois K E]
+  [IsMulCommutative Gal(E/K)] (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (p v : ℕ)
+  (hp : p.Prime) (hv : 0 < v) (hn : (n : ℕ) = p ^ v) (r : ℕ) (eG :
+      Gal(E/K) ≃*
+        (Fin r → Multiplicative (ZMod (n : ℕ))))
+  (S : Finset (HeightOneSpectrum (𝓞 K)))
+include n hmu p v hp hv hn r eG S
+
 /-- The `i`-th standard generator of the actual restriction kernel
 `Gal(N/E)`. -/
 noncomputable def sUnitKummerKernelGenerator
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :=
@@ -77,21 +74,7 @@ noncomputable def sUnitKummerKernelGenerator
 
 /-- The standard coordinate generators span the actual restriction kernel
 `Gal(N / E)`. -/
-theorem iSup_zpowers_sUnitKummerKernelGenerator_eq_top
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
+theorem iSup_zpowers_sUnitKummerKernelGenerator_eq_top :
     (⨆ i :
         Fin
           (sUnitKummerPrimeCount
@@ -174,20 +157,6 @@ theorem iSup_zpowers_sUnitKummerKernelGenerator_eq_top
 
 /-- Every standard restriction-kernel generator has exact order `n`. -/
 theorem orderOf_sUnitKummerKernelGenerator
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -219,20 +188,6 @@ theorem orderOf_sUnitKummerKernelGenerator
 /-- The cyclic fixed field attached to the `i`-th coordinate of the
 actual relative Galois group `Gal(N/E)`. -/
 noncomputable def sUnitKummerCoordinateFixedField
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :=
@@ -247,20 +202,6 @@ noncomputable def sUnitKummerCoordinateFixedField
 /-- Each coordinate fixed field has relative degree exactly `n` in
 the full `S`-unit Kummer field. -/
 theorem sUnitKummerCoordinateFixedField_finrank
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (E : IntermediateField K Omega)
-    [FiniteDimensional K E] [IsGalois K E]
-    [IsMulCommutative Gal(E/K)]
-    (n : ℕ+)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (p v : ℕ) (hp : p.Prime) (hv : 0 < v)
-    (hn : (n : ℕ) = p ^ v)
-    (r : ℕ)
-    (eG :
-      Gal(E/K) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : Fin
       (sUnitKummerPrimeCount
         (K := K) E n hmu r S)) :
@@ -285,6 +226,8 @@ theorem sUnitKummerCoordinateFixedField_finrank
     orderOf_sUnitKummerKernelGenerator
       (K := K) (Omega := Omega) E n hmu
       p v hp hv hn r eG S i]
+
+end
 
 end GeneralKummer
 

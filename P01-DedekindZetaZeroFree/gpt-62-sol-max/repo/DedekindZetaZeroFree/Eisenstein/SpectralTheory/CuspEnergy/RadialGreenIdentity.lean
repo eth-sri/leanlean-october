@@ -2,6 +2,8 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspDivergence.RadialDisintegration
 
+public import DedekindZetaZeroFree.Geometry.Hyperbolic.Cotangent.DifferentialCoframe
+
 @[expose] public section
 
 section
@@ -106,27 +108,7 @@ open KPMeanZeroWeightedEnergy
 namespace GreenFlux
 open HyperbolicChart
 
-theorem codifferential_star_mul (d : ℕ) (f : Space d → ℂ)
-    (W : Space d → Cotangent d) (x : Space d)
-    (hf : DifferentiableAt ℝ f x)
-    (hW : ∀ i k, DifferentiableAt ℝ (fun q => W q i k) x) :
-    codifferential d (fun q i k => star (f q) * W q i k) x =
-      star (f x) * codifferential d W x - pairing d (differential d f x) (W x) := by
-  have hm (i : Fin d) (j k : Fin 3) :
-      coordinateDerivative d i j (fun q => star (f q) * W q i k) x =
-        star (coordinateDerivative d i j f x) * W x i k +
-          star (f x) * coordinateDerivative d i j (fun q => W q i k) x := by
-    simpa [coordinateDerivative, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-      ContinuousLinearMap.comp_apply, Pi.mul_def, mul_comm, mul_left_comm, add_comm] using
-      congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i j))
-        ((hf.hasFDerivAt.star).mul (hW i k).hasFDerivAt).fderiv
-  simp only [codifferential, pairing, Finset.mul_sum, ← Finset.sum_sub_distrib]
-  apply Finset.sum_congr rfl
-  intro i hi
-  simp only [hm, differential, Fin.sum_univ_three]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
-    Matrix.vecHead, Matrix.vecTail, Function.comp_def, Fin.succ_zero_eq_one, star_mul, Complex.star_def, Complex.conj_ofReal]
-  ring
+export ScalarFluxDisintegration (codifferential_star_mul)
 
 private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
@@ -159,28 +141,7 @@ theorem codifferential_differential_at (d : ℕ) (g : Space d → ℂ) (x : Spac
     rw [two_mul, Real.exp_add, Complex.ofReal_mul]]
   ring
 
-private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
-    (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
-  have he : ContDiffAt ℝ (⊤ : ℕ∞) (fun q : Space d => (Real.exp (q (i,2)) : ℂ)) x :=
-    Complex.ofRealCLM.contDiff.contDiffAt.comp x
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt.exp)
-  fin_cases k
-  · simpa [differential] using derivative_smoothAt d g x hg i 2
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
-  · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
-
-private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
-  ext i <;> simp [arch, real]
-
-private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
-  apply contDiff_pi.mpr
-  intro i
-  apply ContDiff.prodMk
-  · exact Complex.equivRealProdCLM.symm.contDiff.comp
-      ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
-       (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+open HyperbolicChart (differential_smoothAt)
 
 private theorem smooth_height (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞)
     (fun x : Space d => KPCuspLogShape.meanHeight d (arch d x)) := by
@@ -206,7 +167,7 @@ private theorem representative_smoothAt (v : Representative ζ hζ S ρ V T)
   have hopen : IsOpen {z : KPArch.Space (KPCuspLogShape.dimension F) |
       T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z} :=
     isOpen_lt continuous_const (continuous_height _)
-  exact (v.smooth.contDiffAt (hopen.mem_nhds hx)).comp x (smooth_arch _).contDiffAt
+  exact (v.smooth.contDiffAt (hopen.mem_nhds hx)).comp x (KPMeanZeroWeightedEnergy.arch_contDiff _).contDiffAt
 
 def radialFlux (v : Representative ζ hζ S ρ V T) (η : ℝ → ℝ) :
     Space (KPCuspLogShape.dimension F) → Cotangent (KPCuspLogShape.dimension F) :=
@@ -263,7 +224,7 @@ theorem compact_radial_green_defect
       (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p))).re := by
   let d := KPCuspLogShape.dimension F
   let x := real d (KPCuspCharts.toArch F p)
-  have hx : arch d x = KPCuspCharts.toArch F p := arch_real d _
+  have hx : arch d x = KPCuspCharts.toArch F p := KPMeanZeroWeightedEnergy.arch_real_eq d _
   have ht : KPCuspLogShape.meanHeight d (arch d x) = p.2 := by
     rw [hx, KPCuspCharts.toArch_meanHeight F hd]
   by_cases hp : p.2 ∈ tsupport η

@@ -26,7 +26,7 @@ private lemma diff_bounds {d : Type*} [Fintype d] (f : C(UnitAddTorus d, ℂ)) (
   have heq : (fun x : d → ℝ => shiftDiff f a (fun i => (x i : UnitAddCircle))) = (fun x => F (x+a)) - F := by
     funext x
     change f (fun i => (x i : UnitAddCircle) + (a i : UnitAddCircle)) - _ = _
-    simp [F, AddCircle.coe_add, Pi.add_apply]
+    simp [F, Pi.add_apply]
   have ht : ContDiff ℝ (N+1 : ℕ) (fun x => F (x+a)) := hf.comp (contDiff_id.add contDiff_const)
   rw [heq]
   constructor
@@ -51,7 +51,7 @@ private lemma fourier_shift {d : Type*} [Fintype d] [DecidableEq d]
     · subst j
       rw [Pi.single_eq_same]
       simpa only [Int.cast_neg] using fourier_add_half_inv_index (neg_ne_zero.mpr hi) (by norm_num : (0:ℝ)<1) (t i)
-    · simp [Pi.single_eq_of_ne hji, hji]
+    · simp [hji]
   rw [Finset.prod_congr rfl h]
   rw [← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ i), ← Finset.mul_prod_erase Finset.univ (fun j => fourier (-(n j)) (t j)) (Finset.mem_univ i)]
   simp only [ite_true, neg_mul]
@@ -154,7 +154,7 @@ theorem compactTorus_mFourierCoeff_decay_of_deriv_bound
   congr 1
   apply Finset.prod_congr rfl
   intro i hi
-  simp [pow_two, mul_inv]
+  simp [pow_two]
 
 end
 end DedekindZetaZeroFree

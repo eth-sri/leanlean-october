@@ -164,7 +164,6 @@ private theorem exists_lift (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
       funext k; simp [labeledA, labeledAInv]
     rw [he]; exact z.property⟩
   refine ⟨cover.chart n, y, ?_⟩
-  change q (cover.chart n) y.val = x
   convert hz using 1
   unfold KPContCotangentOverlapRationalBranches.q ShrunkChart.toBase
   congr 2

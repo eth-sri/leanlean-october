@@ -87,7 +87,7 @@ theorem rootProjectorWord_exterior {Q : AdmissibleFlatSources R}
   · exact Q.exterior_spherical v 0 p hp b hb
   · intro q i
     unfold finiteRoot
-    rw [← ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R]
+    rw [← MomentSources.finite_root_injection R]
     exact finiteInjection_commute R q.val p (fun h => hp (h ▸ q.property)) _ b |>.symm
 
 end DedekindZetaZeroFree.FiniteWhittakerProjectors

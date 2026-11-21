@@ -314,14 +314,17 @@ theorem kummerRadicalExtensionRestrictedTranspose_injective
     (le_finiteKummerRadicalSubgroup_kummerRadicalExtension n hn Delta.1)
     (kummerRadicalExtension_internalRoots_adjoin_eq_top n Delta)
 
+section
+
+variable {L : Type*} [Field L] [Algebra K L] [IsGalois K L] (n : ℕ+)
+  (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (Delta : KummerSubgroup K n)
+include hmu
+
 /-- Each evaluation coordinate of the restricted transpose is continuous
 for the Krull topology on the Galois group and the discrete topology on
 `mu_n(E)`.  This is the closed-locus source for the compactness/FIP proof of
 surjectivity. -/
 theorem restrictedKummerTranspose_evaluation_continuous
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤
       finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (q : RestrictedRadicalQuotient n Delta) :
@@ -343,9 +346,6 @@ theorem restrictedKummerTranspose_evaluation_continuous
 These are the closed sets whose finite-intersection property yields the
 surjectivity half of the displayed Kummer formula. -/
 def restrictedKummerEvaluationLocus
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤
       finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (chi : RestrictedRadicalQuotient n Delta →*
@@ -355,9 +355,6 @@ def restrictedKummerEvaluationLocus
 
 /-- Every evaluation locus is closed. -/
 theorem restrictedKummerEvaluationLocus_isClosed
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤
       finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (chi : RestrictedRadicalQuotient n Delta →*
@@ -378,28 +375,11 @@ theorem restrictedKummerEvaluationLocus_isClosed
     (restrictedKummerTranspose_evaluation_continuous n hmu Delta hDelta q)
     continuous_const
 
-/-- Evaluation loci are compact as closed subsets of the profinite Galois
-group. -/
-theorem restrictedKummerEvaluationLocus_isCompact
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
-    (hDelta : Delta.1 ≤
-      finiteKummerRadicalSubgroup (K := K) (L := L) n)
-    (chi : RestrictedRadicalQuotient n Delta →*
-      nthRootsSubgroup L (n : ℕ))
-    (q : RestrictedRadicalQuotient n Delta) :
-    IsCompact (restrictedKummerEvaluationLocus n hmu Delta hDelta chi q) :=
-  (restrictedKummerEvaluationLocus_isClosed
-    n hmu Delta hDelta chi q).isCompact
 
 /-- Membership in all evaluation loci is exactly equality with the target
 character.  Together with compactness of `Gal(L/K)`, this identifies the
 precise finite-intersection problem remaining in the surjectivity proof. -/
 theorem mem_iInter_restrictedKummerEvaluationLocus_iff
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (hDelta : Delta.1 ≤
       finiteKummerRadicalSubgroup (K := K) (L := L) n)
     (chi : RestrictedRadicalQuotient n Delta →*
@@ -416,12 +396,17 @@ theorem mem_iInter_restrictedKummerEvaluationLocus_iff
   · intro h q
     exact DFunLike.congr_fun h q
 
+end
+
+section
+
+variable (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
+  (Delta : KummerSubgroup K n)
+include n hn hmu Delta
+
 /-- Every finite set of coordinates of a target character is realized by
 one Galois automorphism of the radical extension. -/
 theorem exists_kummerRadicalExtensionRestrictedTranspose_match_finset
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
     (S : Finset (RestrictedRadicalQuotient n Delta))
     (chi : RestrictedRadicalQuotient n Delta →*
       nthRootsSubgroup
@@ -463,10 +448,7 @@ theorem exists_kummerRadicalExtensionRestrictedTranspose_match_finset
 Compactness of the profinite Galois group upgrades the finite-coordinate
 realization theorem to a single automorphism realizing every coordinate.
 -/
-theorem kummerRadicalExtensionRestrictedTranspose_surjective
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n) :
+theorem kummerRadicalExtensionRestrictedTranspose_surjective :
     Function.Surjective
       (kummerRadicalExtensionRestrictedTranspose
         (K := K) (Omega := Omega) n hn hmu Delta) := by
@@ -500,10 +482,7 @@ theorem kummerRadicalExtensionRestrictedTranspose_surjective
 /-- **the Kummer correspondence, displayed Kummer formula.**  The canonical Kummer
 pairing identifies the Galois group of `K(√[n]{Delta})` with the full
 character group of `Delta / Kˣⁿ`. -/
-def kummerRadicalExtensionRestrictedTransposeMulEquiv
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n) :
+def kummerRadicalExtensionRestrictedTransposeMulEquiv :
     Gal(kummerRadicalExtension
         (K := K) (Omega := Omega) n Delta.1/K) ≃*
       (RestrictedRadicalQuotient n Delta →*
@@ -514,6 +493,8 @@ def kummerRadicalExtensionRestrictedTransposeMulEquiv
     (kummerRadicalExtensionRestrictedTranspose n hn hmu Delta)
     ⟨kummerRadicalExtensionRestrictedTranspose_injective n hn hmu Delta,
       kummerRadicalExtensionRestrictedTranspose_surjective n hn hmu Delta⟩
+
+end
 
 end RadicalExtensionPairing
 

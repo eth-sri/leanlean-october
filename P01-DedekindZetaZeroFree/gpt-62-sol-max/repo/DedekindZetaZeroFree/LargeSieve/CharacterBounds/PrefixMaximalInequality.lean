@@ -51,9 +51,8 @@ private lemma split_max {m : ℕ} (a b : Fin m → ℂ) (p : ℕ) (t : ℝ) (ht 
       apply Finset.sum_congr rfl
       intro k hk
       by_cases hk' : k.val < l.val
-      · have hkp : k.val < p := lt_of_lt_of_le hk' hp
-        simp [hk', hkp]
-      · simp [hk']
+      · grind only
+      grind
     rw [he]
     have h1 := prefix_le_max a (fun k => if k.val < p then b k else 0) l
     have h2 := max_nonneg a (fun k => if k.val < p then 0 else b k)
@@ -69,9 +68,8 @@ private lemma split_max {m : ℕ} (a b : Fin m → ℂ) (p : ℕ) (t : ℝ) (ht 
       apply Finset.sum_congr rfl
       intro k hk
       by_cases hkp : k.val < p
-      · have hkl : k.val < l.val := by omega
-        simp [hkp, hkl]
-      · by_cases hkl : k.val < l.val <;> simp [hkp, hkl]
+      · grind only
+      grind only
     rw [he]
     have hw := weighted_norm t ht (∑ k, a k * (if k.val < p then b k else 0))
       (detector_prefixSum a (fun k => if k.val < p then 0 else b k) l)
@@ -91,18 +89,14 @@ private lemma base_max {m : ℕ} (a b : Fin m → ℂ) (r : ℕ)
       intro k hk
       by_cases hbk : b k = 0
       · simp [hbk]
-      · have := hb k hbk
-        have hkl : k.val < l.val := by omega
-        simp [hkl]
+      grind only
     rw [he]
   · have he : detector_prefixSum a b l = 0 := by
       apply Finset.sum_eq_zero
       intro k hk
       by_cases hbk : b k = 0
       · simp [hbk]
-      · have := hb k hbk
-        have hkl : ¬k.val < l.val := by omega
-        simp [hkl]
+      grind only
     rw [he]
     simp
 
@@ -212,7 +206,6 @@ theorem detector_normCutoff_eq_prefix (m : ℕ) (q : Fin m → ℝ)
   refine ⟨⟨s.card, Nat.lt_succ_of_le (by simpa [s] using Finset.card_le_card (Finset.filter_subset (fun k : Fin m => q k ≤ x) Finset.univ))⟩, ?_⟩
   ext k
   simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-  change q k ≤ x ↔ k.val < s.card
   constructor
   · intro hk
     have hsub : (Finset.univ.filter fun i : Fin m => i.val ≤ k.val) ⊆ s := by

@@ -67,23 +67,27 @@ set_option backward.isDefEq.respectTransparency false
 open scoped NumberField Topology
 open IsDedekindDomain
 
-private abbrev Place (F : Type) [Field F] [NumberField F] :=
+section
+
+variable (F : Type) [Field F] [NumberField F]
+
+private abbrev Place :=
   NumberField.InfinitePlace F ⊕ HeightOneSpectrum (𝓞 F)
 
-private abbrev abv (F : Type) [Field F] [NumberField F] : Place F → AbsoluteValue F ℝ :=
+private abbrev abv : Place F → AbsoluteValue F ℝ :=
   Sum.elim (fun v => v.1) (fun v => NumberField.HeightOneSpectrum.adicAbv F v)
 
-private theorem abv_nontrivial (F : Type) [Field F] [NumberField F] (i : Place F) :
+private theorem abv_nontrivial (i : Place F) :
     (abv F i).IsNontrivial := by
   cases i with
   | inl v => exact v.isNontrivial
   | inr v =>
     obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot v.ne_bot
     refine ⟨algebraMap (𝓞 F) F x, ?_, ne_of_lt ?_⟩
-    · exact (IsFractionRing.injective (𝓞 F) F).ne (by simpa using hx0)
+    · simp_all
     · exact (v.adicAbv_coe_lt_one_iff (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v) x).mpr hx
 
-private theorem abv_inequivalent (F : Type) [Field F] [NumberField F] :
+private theorem abv_inequivalent :
     Pairwise (fun i j : Place F => ¬ (abv F i).IsEquiv (abv F j)) := by
   intro i j hij he
   cases i with
@@ -118,7 +122,7 @@ private theorem abv_inequivalent (F : Type) [Field F] [NumberField F] :
       exact (v.adicAbv_coe_lt_one_iff (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v) x).symm.trans
         (he.lt_one_iff.trans (w.adicAbv_coe_lt_one_iff (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal w) x))
 
-private theorem denseRange_abv_pi (F : Type) [Field F] [NumberField F] :
+private theorem denseRange_abv_pi :
     DenseRange (algebraMap F ((i : Place F) → WithAbs (abv F i))) := by
   classical
   apply dense_iff_inter_open.mpr
@@ -136,12 +140,12 @@ private theorem denseRange_abv_pi (F : Type) [Field F] [NumberField F] :
   intro i hi
   exact hx ⟨i, hi⟩ (Set.mem_univ _)
 
-private def localMap (F : Type) [Field F] [NumberField F] :
+private def localMap :
     ((i : Place F) → WithAbs (abv F i)) → LocalScalarProduct F :=
   fun x => (fun v => ((show WithAbs v.1 from x (Sum.inl v)) : v.Completion),
     fun v => NumberField.FinitePlace.embedding v (WithAbs.equiv (abv F (Sum.inr v)) (x (Sum.inr v))))
 
-private theorem finiteMap_isometry (F : Type) [Field F] [NumberField F]
+private theorem finiteMap_isometry
     (v : HeightOneSpectrum (𝓞 F)) :
     Isometry ((NumberField.FinitePlace.embedding v).comp
       (WithAbs.equiv (abv F (Sum.inr v))).toRingHom) := by
@@ -150,14 +154,14 @@ private theorem finiteMap_isometry (F : Type) [Field F] [NumberField F]
   rw [RingHom.comp_apply, NumberField.FinitePlace.norm_embedding]
   rfl
 
-private theorem localMap_continuous (F : Type) [Field F] [NumberField F] :
+private theorem localMap_continuous :
     Continuous (localMap F) := by
   apply Continuous.prodMk
   · exact continuous_pi (fun v => (NumberField.InfinitePlace.Completion.continuous_coe v).comp (continuous_apply (Sum.inl v)))
   · exact continuous_pi (fun v => (finiteMap_isometry F v).continuous.comp
       (continuous_apply (Sum.inr v)))
 
-private theorem localMap_denseRange (F : Type) [Field F] [NumberField F] :
+private theorem localMap_denseRange :
     DenseRange (localMap F) := by
   have hinf : DenseRange (fun x : (v : NumberField.InfinitePlace F) → WithAbs v.1 =>
       fun v => (x v : v.Completion)) := DenseRange.piMap (fun v => NumberField.InfinitePlace.Completion.denseRange_coe v)
@@ -185,11 +189,13 @@ private theorem localMap_denseRange (F : Type) [Field F] [NumberField F] :
     (Continuous.prodMap (continuous_pi (fun v => (NumberField.InfinitePlace.Completion.continuous_coe v).comp (continuous_apply v)))
       (continuous_pi (fun v => (finiteMap_isometry F v).continuous.comp (continuous_apply v))))
 
-theorem scalarDiagonal_denseRange (F : Type) [Field F] [NumberField F] :
+theorem scalarDiagonal_denseRange :
     DenseRange (scalarDiagonal F) := by
   have hd := (localMap_denseRange F).comp (denseRange_abv_pi F) (localMap_continuous F)
   convert hd using 1
   rfl
+
+end
 
 end
 end DedekindZetaZeroFree.KPRationalFlagCylinderApproximation
@@ -204,22 +210,26 @@ open scoped NumberField
 
 namespace PrimitiveColumn
 
-private lemma affine_val {K : Type*} [Field K] (x : K) :
+section
+
+variable {K : Type*} [Field K]
+
+private lemma affine_val (x : K) :
     (affineRepresentative x).val = !![1, 0; x, 1] := rfl
 
-private lemma affine_mul_neg {K : Type*} [Field K] (x : K) :
+private lemma affine_mul_neg (x : K) :
     affineRepresentative x * affineRepresentative (-x) = 1 := by
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [affine_val, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma affine_inv {K : Type*} [Field K] (x : K) :
+private lemma affine_inv (x : K) :
     (affineRepresentative x)⁻¹ = affineRepresentative (-x) := by
   apply inv_eq_of_mul_eq_one_left
   simpa using affine_mul_neg (-x)
 
-theorem affine_integral_completion {K : Type*} [Field K]
+theorem affine_integral_completion
     (A : ValuationSubring K) (x : K) :
     ∃ k b : GL (Fin 2) K,
       (∀ i j, k i j ∈ A) ∧ (∀ i j, k⁻¹ i j ∈ A) ∧
@@ -259,7 +269,7 @@ theorem affine_integral_completion {K : Type*} [Field K]
         Matrix.mul_apply, Fin.sum_univ_two, hx0]
     · rw [← mul_assoc, affine_mul_neg, one_mul]
 
-theorem factor_affine {K : Type*} [Field K] (g : GL (Fin 2) K)
+theorem factor_affine (g : GL (Fin 2) K)
     (h : g 0 0 ≠ 0) :
     ∃ x : K, ∃ b : GL (Fin 2) K, b 1 0 = 0 ∧ affineRepresentative x * b = g := by
   let x := g 1 0 / g 0 0
@@ -267,7 +277,7 @@ theorem factor_affine {K : Type*} [Field K] (g : GL (Fin 2) K)
   · simp [affine_val, Matrix.mul_apply, Fin.sum_univ_two, x, h]
   · rw [← mul_assoc, affine_mul_neg, one_mul]
 
-theorem local_affine_chart_hits_open {K : Type*} [Field K]
+theorem local_affine_chart_hits_open
     [TopologicalSpace K] [IsTopologicalRing K] [PerfectSpace K]
     (U : Set (GL (Fin 2) K)) (hU : IsOpen U) (hne : U.Nonempty) :
     ∃ x : K, ∃ b : GL (Fin 2) K, b 1 0 = 0 ∧ affineRepresentative x * b ∈ U := by
@@ -297,6 +307,8 @@ theorem local_affine_chart_hits_open {K : Type*} [Field K]
     obtain ⟨x, b, hb, he⟩ := factor_affine (f t) hft
     exact ⟨x, b, hb, he ▸ ht⟩
 
+end
+
 end PrimitiveColumn
 
 open IsDedekindDomain NumberField Matrix Topology Filter
@@ -312,18 +324,25 @@ def Good (S : Finset (V F)) (g : LF F) : Prop :=
     (∀ i j, (g.2 v)⁻¹ i j ∈ v.adicCompletionIntegers F)
 abbrev Domain (S : Finset (V F)) := {g : LF F // Good F S g}
 variable {F}
-lemma ev {S : Finset (V F)} (g : Domain F S) (i j : Fin 2) :
+section
+
+variable {S : Finset (V F)} (g : Domain F S)
+include S g
+
+lemma ev (i j : Fin 2) :
     ∀ᶠ v in cofinite, g.val.2 v i j ∈ v.adicCompletionIntegers F := by
   filter_upwards [(Finset.finite_toSet S).compl_mem_cofinite] with v hv
   exact (g.property v hv).1 i j
-lemma evi {S : Finset (V F)} (g : Domain F S) (i j : Fin 2) :
+lemma evi (i j : Fin 2) :
     ∀ᶠ v in cofinite, (g.val.2 v)⁻¹ i j ∈ v.adicCompletionIntegers F := by
   filter_upwards [(Finset.finite_toSet S).compl_mem_cofinite] with v hv
   exact (g.property v hv).2 i j
-def val {S : Finset (V F)} (g : Domain F S) : Matrix (Fin 2) (Fin 2) (AdeleRing (𝓞 F) F) :=
+def val : Matrix (Fin 2) (Fin 2) (AdeleRing (𝓞 F) F) :=
   fun i j => (fun v => g.val.1 v i j, ⟨fun v => g.val.2 v i j, ev g i j⟩)
-def inv {S : Finset (V F)} (g : Domain F S) : Matrix (Fin 2) (Fin 2) (AdeleRing (𝓞 F) F) :=
+def inv : Matrix (Fin 2) (Fin 2) (AdeleRing (𝓞 F) F) :=
   fun i j => (fun v => (g.val.1 v)⁻¹ i j, ⟨fun v => (g.val.2 v)⁻¹ i j, evi g i j⟩)
+
+end
 set_option backward.isDefEq.respectTransparency false in
 def assemble {S : Finset (V F)} (g : Domain F S) : GL (Fin 2) (AdeleRing (𝓞 F) F) where
   val := val g
@@ -736,13 +755,15 @@ theorem kp_rational_adelic_flag_density
       ⟨KPRationalFlagCylinderApproximation.affineRepresentative x, rfl⟩ hb
   · rw [kp_adelic_borel_eq_mirabolic_scalars F, mul_assoc]
 
-theorem kp_rational_adelic_cover_flag_density
-    (F : Type) [Field F] [NumberField F]
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    (π : G →* AdelicGL F) (hπcont : Continuous π) (hπopen : IsOpenMap π)
-    (hπsurj : Function.Surjective π)
-    (sF : Matrix.GeneralLinearGroup (Fin 2) F →* G)
-    (hsF : π.comp sF = rationalMap F) :
+section
+
+variable (F : Type) [Field F] [NumberField F] {G : Type*} [Group G] [TopologicalSpace G]
+  [IsTopologicalGroup G] (π : G →* AdelicGL F) (hπcont : Continuous π) (hπopen : IsOpenMap π)
+  (hπsurj : Function.Surjective π) (sF : Matrix.GeneralLinearGroup (Fin 2) F →* G)
+  (hsF : π.comp sF = rationalMap F)
+include hπcont hπopen hπsurj hsF
+
+theorem kp_rational_adelic_cover_flag_density :
     Dense (Set.range sF * (fullBorelPreimage F π : Set G)) := by
   have hS : (Set.range sF * (fullBorelPreimage F π : Set G)) =
       π ⁻¹' (Set.range (rationalMap F) *
@@ -768,12 +789,6 @@ theorem kp_rational_adelic_cover_flag_density
   exact dense_preimage_of_dense_image hπopen (kp_rational_adelic_flag_density F).1
 
 theorem kp_rational_adelic_cover_borel_vanishing
-    (F : Type) [Field F] [NumberField F]
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    (π : G →* AdelicGL F) (hπcont : Continuous π) (hπopen : IsOpenMap π)
-    (hπsurj : Function.Surjective π)
-    (sF : Matrix.GeneralLinearGroup (Fin 2) F →* G)
-    (hsF : π.comp sF = rationalMap F)
     (f : G → ℂ) (hf : Continuous f)
     (hleft : ∀ γ g, f (sF γ * g) = f g)
     (hB : ∀ b ∈ fullBorelPreimage F π, f b = 0) :
@@ -783,6 +798,8 @@ theorem kp_rational_adelic_cover_borel_vanishing
   rintro x ⟨a, ⟨γ, rfl⟩, b, hb, rfl⟩
   rw [hleft γ b, hB b hb]
   rfl
+
+end
 
 end DedekindZetaZeroFree
 

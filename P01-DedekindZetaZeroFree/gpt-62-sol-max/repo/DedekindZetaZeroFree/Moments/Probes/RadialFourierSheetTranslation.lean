@@ -15,11 +15,8 @@ variable {F : Type} [Field F] [NumberField F]
 
 local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
 
-local instance (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
 
-local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 
-local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
 def fieldUnit (A : SArithmeticData F) (r : A.R) (hr : r ≠ 0) : Fˣ :=
   Units.mk0 (r : F) (by exact_mod_cast hr)
@@ -50,7 +47,7 @@ private theorem norm_mul (A : SArithmeticData F) (x y : A.G) :
 
 private theorem norm_div (A : SArithmeticData F) (x y : A.G) :
     A.norm (x / y) = A.norm x / A.norm y := by
-  simp [SArithmeticData.norm, norm_div, div_pow, Finset.prod_div_distrib,
+  simp [SArithmeticData.norm, div_pow, Finset.prod_div_distrib,
     mul_div_mul_comm]
 
 private theorem norm_pos (A : SArithmeticData F) (x : A.G) : 0 < A.norm x := by
@@ -138,8 +135,8 @@ theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
       intro v
       by_cases hv : v = w
       · subst v
-        simp [ProbeSheet.complexNormFlow, Function.update_self]
-      · simp [ProbeSheet.complexNormFlow, hv, Function.update_self]
+        simp [Function.update_self]
+      · simp [hv]
     · rfl
   have hb := hbound T hT
   simp only [ProbeSheet.logDerivative, iteratedDeriv_zero, hflow] at hb

@@ -86,8 +86,7 @@ theorem relativeAdeleInfiniteComponent_tmul
     (a : NumberField.AdeleRing (𝓞 K) K) (x : L) :
     relativeAdeleInfiniteComponent
         (K := K) (L := L) v (a ⊗ₜ[K] x) =
-      a.1 v ⊗ₜ[K] x := by
-  simp [relativeAdeleInfiniteComponent]
+      a.1 v ⊗ₜ[K] x := rfl
 
 /-- Evaluation of an adele at a finite place, as a `K`-algebra
 homomorphism. -/
@@ -140,8 +139,7 @@ theorem relativeAdeleFiniteComponent_tmul
     (a : NumberField.AdeleRing (𝓞 K) K) (x : L) :
     relativeAdeleFiniteComponent (K := K) (L := L) v
         (a ⊗ₜ[K] x) =
-      a.2 v ⊗ₜ[K] x := by
-  simp [relativeAdeleFiniteComponent]
+      a.2 v ⊗ₜ[K] x := rfl
 
 omit [NumberField K] [NumberField L] in
 /-- Determinant norm commutes with scalar extension along a homomorphism

@@ -81,14 +81,16 @@ theorem finite_scaled_ball_conductor
     have hh := h (z / a) hza
     simpa only [← mul_assoc, div_mul_cancel₀ z ha] using hh
 
-theorem finite_scaled_ball_fourier
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F))
-    (e : AddChar (v.adicCompletion F) Circle)
-    (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hconductor : ∀ y, (∀ z : v.adicCompletion F, ‖z‖ ≤ 1 → e (z * y) = 1) ↔
+section
+
+variable (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (RingOfIntegers F))
+  (e : AddChar (v.adicCompletion F) Circle) (μ : Measure (v.adicCompletion F))
+  [μ.IsAddHaarMeasure] (hconductor : ∀ y, (∀ z : v.adicCompletion F, ‖z‖ ≤ 1 → e (z * y) = 1) ↔
       ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v)
-    (a : v.adicCompletion F) (ha : a ≠ 0) (y : v.adicCompletion F) :
+  (a : v.adicCompletion F) (ha : a ≠ 0)
+include hconductor ha
+
+theorem finite_scaled_ball_fourier (y : v.adicCompletion F) :
     (∫ z, (if ‖z‖ ≤ ‖a‖ then (1 : ℂ) else 0) * (e (-z * y) : ℂ) ∂μ) =
       if ‖a‖ * ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v then
         ((μ {z | ‖z‖ ≤ ‖a‖}).toReal : ℂ) else 0 := by
@@ -117,14 +119,7 @@ theorem finite_scaled_ball_fourier
   rw [integral_character_subgroup μ H hH χ hχ, hc]
   split_ifs <;> simp [H]
 
-theorem finite_translated_ball_fourier
-    (F : Type) [Field F] [NumberField F]
-    (v : HeightOneSpectrum (RingOfIntegers F))
-    (e : AddChar (v.adicCompletion F) Circle)
-    (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
-    (hconductor : ∀ y, (∀ z : v.adicCompletion F, ‖z‖ ≤ 1 → e (z * y) = 1) ↔
-      ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v)
-    (a : v.adicCompletion F) (ha : a ≠ 0) (b y : v.adicCompletion F) :
+theorem finite_translated_ball_fourier (b y : v.adicCompletion F) :
     (∫ z, (if ‖z - b‖ ≤ ‖a‖ then (1 : ℂ) else 0) * (e (-z * y) : ℂ) ∂μ) =
       (e (-b * y) : ℂ) *
         (if ‖a‖ * ‖y‖ ≤ (v.asIdeal.absNorm : ℝ) ^ differentExponent F v then
@@ -141,6 +136,8 @@ theorem finite_translated_ball_fourier
   rw [← hi]
   simp_rw [hf]
   rw [integral_const_mul, finite_scaled_ball_fourier F v e μ hconductor a ha y]
+
+end
 
 end DedekindZetaZeroFree.PoissonS.Covolume
 

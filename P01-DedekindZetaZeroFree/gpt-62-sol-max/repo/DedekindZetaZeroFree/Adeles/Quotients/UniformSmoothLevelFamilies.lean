@@ -21,34 +21,38 @@ def smoothArchInclusion (F : Type*) [Field F] [NumberField F]
   QuotientAddGroup.mk (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x, 0) :
     AdeleRing (𝓞 F) F)
 
-def HasSmoothAdditiveLevel {F : Type*} [Field F] [NumberField F]
+section
+
+variable {F : Type*} [Field F] [NumberField F]
+
+def HasSmoothAdditiveLevel
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (f : SmoothAdeleQuotient F → ℂ) : Prop :=
   ∀ (q : SmoothAdeleQuotient F) (h : finiteLevelImage K), f (q + h) = f q
 
-def smoothLevelPullback {F : Type*} [Field F] [NumberField F]
+def smoothLevelPullback
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (f : SmoothAdeleQuotient F → ℂ) (t : SmoothLevelTorus K) : ℂ :=
   f (smoothArchInclusion F (Quotient.out t))
 
-def smoothArchJet {F : Type*} [Field F] [NumberField F]
+def smoothArchJet
     (n : ℕ) (f : SmoothAdeleQuotient F → ℂ) (q : SmoothAdeleQuotient F) :=
   iteratedFDeriv ℝ n (fun x : mixedEmbedding.mixedSpace F =>
     f (q + smoothArchInclusion F x)) 0
 
-def IsArchSmooth {F : Type*} [Field F] [NumberField F]
+def IsArchSmooth
     (f : SmoothAdeleQuotient F → ℂ) : Prop :=
   Continuous f ∧
     (∀ q, ContDiff ℝ ∞ (fun x : mixedEmbedding.mixedSpace F =>
       f (q + smoothArchInclusion F x))) ∧
     ∀ n : ℕ, Continuous (smoothArchJet n f)
 
-def IsLevelTorusSmooth {F : Type*} [Field F] [NumberField F]
+def IsLevelTorusSmooth
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (g : SmoothLevelTorus K → ℂ) : Prop :=
   ContDiff ℝ ∞ (fun x : mixedEmbedding.mixedSpace F => g (QuotientAddGroup.mk x))
 
-private theorem smoothArchInclusion_add {F : Type*} [Field F] [NumberField F]
+private theorem smoothArchInclusion_add
     (x y : mixedEmbedding.mixedSpace F) :
     smoothArchInclusion F (x + y) = smoothArchInclusion F x + smoothArchInclusion F y := by
   let i : mixedEmbedding.mixedSpace F →+ AdeleRing (𝓞 F) F :=
@@ -63,8 +67,13 @@ private theorem smoothArchInclusion_add {F : Type*} [Field F] [NumberField F]
         simp only [map_add, add_zero] }
   exact (((QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)).comp i).map_add x y)
 
-private theorem smoothArchInclusion_lattice {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+end
+
+section
+
+variable {F : Type*} [Field F] [NumberField F] (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+
+private theorem smoothArchInclusion_lattice
     (x : mixedEmbedding.mixedSpace F) (hx : x ∈ finiteLevelLattice K) :
     smoothArchInclusion F x ∈ finiteLevelImage K := by
   obtain ⟨a, ha, rfl⟩ := (mem_finiteLevelLattice_iff K x).mp hx
@@ -81,8 +90,7 @@ private theorem smoothArchInclusion_lattice {F : Type*} [Field F] [NumberField F
   rw [InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
   simp only [map_neg, RingEquiv.symm_apply_apply, zero_sub, sub_zero]
 
-private theorem smoothLevel_periodic {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+private theorem smoothLevel_periodic
     (f : SmoothAdeleQuotient F → ℂ) (hf : HasSmoothAdditiveLevel K f)
     (x y : mixedEmbedding.mixedSpace F)
     (hxy : (QuotientAddGroup.mk x : SmoothLevelTorus K) = QuotientAddGroup.mk y) :
@@ -92,15 +100,13 @@ private theorem smoothLevel_periodic {F : Type*} [Field F] [NumberField F]
   have heq := hf (smoothArchInclusion F y) ⟨smoothArchInclusion F (x - y), hmem⟩
   simpa only [← smoothArchInclusion_add, add_sub_cancel] using heq
 
-theorem smoothLevelPullback_mk {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+theorem smoothLevelPullback_mk
     (f : SmoothAdeleQuotient F → ℂ) (hf : HasSmoothAdditiveLevel K f)
     (x : mixedEmbedding.mixedSpace F) :
     smoothLevelPullback K f (QuotientAddGroup.mk x) = f (smoothArchInclusion F x) := by
   exact smoothLevel_periodic K f hf _ x (Quotient.out_eq _)
 
-private theorem smooth_level_eq {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) {Y : Type*}
+private theorem smooth_level_eq {Y : Type*}
     (f : SmoothAdeleQuotient F → Y)
     (hf : ∀ q (h : finiteLevelImage K), f (q + h) = f q)
     {q r : SmoothAdeleQuotient F}
@@ -109,8 +115,7 @@ private theorem smooth_level_eq {F : Type*} [Field F] [NumberField F]
   have hm := QuotientAddGroup.eq_iff_sub_mem.mp hqr
   simpa only [add_sub_cancel] using hf r ⟨q - r, hm⟩
 
-private theorem smooth_level_representative {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+private theorem smooth_level_representative
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (q : SmoothAdeleQuotient F) :
@@ -122,8 +127,7 @@ private theorem smooth_level_representative {F : Type*} [Field F] [NumberField F
   induction t using QuotientAddGroup.induction_on with
   | H x => exact ⟨x, ht.symm.trans (he x)⟩
 
-private theorem smooth_archJet_level {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+private theorem smooth_archJet_level
     (f : SmoothAdeleQuotient F → ℂ) (hf : HasSmoothAdditiveLevel K f) (n : ℕ) :
     ∀ q (h : finiteLevelImage K), smoothArchJet n f (q + h) = smoothArchJet n f q := by
   intro q h
@@ -133,8 +137,7 @@ private theorem smooth_archJet_level {F : Type*} [Field F] [NumberField F]
   simpa only [add_assoc, add_comm (h : SmoothAdeleQuotient F) (smoothArchInclusion F x)] using
     hf (q + smoothArchInclusion F x) h
 
-private theorem smooth_family_continuous_iff {F : Type*} [Field F] [NumberField F]
-    (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
+private theorem smooth_family_continuous_iff
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
     {P Y : Type*} [TopologicalSpace P] [TopologicalSpace Y]
@@ -166,7 +169,13 @@ private theorem smooth_family_continuous_iff {F : Type*} [Field F] [NumberField 
     funext (fun z => hdE z.1 z.2)
   rw [h1, ← hE.continuous_comp_iff, heq]
 
-private theorem smooth_continuous_iff {F : Type*} [Field F] [NumberField F]
+end
+
+section
+
+variable {F : Type*} [Field F] [NumberField F]
+
+private theorem smooth_continuous_iff
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -181,7 +190,7 @@ private theorem smooth_continuous_iff {F : Type*} [Field F] [NumberField F]
   · intro hc
     exact (h.mpr (hc.comp continuous_snd)).comp ((continuous_const (y := ())).prodMk continuous_id)
 
-private theorem smooth_archJet_inclusion {F : Type*} [Field F] [NumberField F]
+private theorem smooth_archJet_inclusion
     (f : SmoothAdeleQuotient F → ℂ) (n : ℕ) (x : mixedEmbedding.mixedSpace F) :
     smoothArchJet n f (smoothArchInclusion F x) =
       iteratedFDeriv ℝ n (fun x => f (smoothArchInclusion F x)) x := by
@@ -190,7 +199,7 @@ private theorem smooth_archJet_inclusion {F : Type*} [Field F] [NumberField F]
   simpa only [add_zero] using iteratedFDeriv_comp_add_left n x
     (0 : mixedEmbedding.mixedSpace F) (f := fun x => f (smoothArchInclusion F x))
 
-theorem finiteLevel_smooth_iff {F : Type*} [Field F] [NumberField F]
+theorem finiteLevel_smooth_iff
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -225,7 +234,7 @@ theorem finiteLevel_smooth_iff {F : Type*} [Field F] [NumberField F]
       simpa only [smooth_archJet_inclusion] using
         hs.continuous_iteratedFDeriv (m := n) (by simp)
 
-def IsUniformArchSmoothFamily {F : Type*} [Field F] [NumberField F]
+def IsUniformArchSmoothFamily
     {P : Type*} [TopologicalSpace P]
     (f : P × SmoothAdeleQuotient F → ℂ)
     (B : (n : ℕ) → (Fin n → mixedEmbedding.mixedSpace F) → ℝ) : Prop :=
@@ -236,6 +245,8 @@ def IsUniformArchSmoothFamily {F : Type*} [Field F] [NumberField F]
     ∀ (n : ℕ) (v : Fin n → mixedEmbedding.mixedSpace F)
       (p : P) (q : SmoothAdeleQuotient F),
       ‖smoothArchJet n (fun q' => f (p, q')) q v‖ ≤ B n v
+
+end
 
 end
 end DedekindZetaZeroFree

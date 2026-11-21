@@ -54,7 +54,7 @@ theorem shellRestriction_E3 (C : Context Q) (B : ℝ) (unit : Bool) :
   rw [shellRestriction_pairs]
   apply Finset.sum_congr rfl
   intro p hp
-  have hp' : p ∈ C.pairs := hp
+  have hp' := hp
   have hpc := (Finset.mem_filter.mp hp').1
   have hc1 := (Finset.mem_product.mp hpc).1
   have hc2 := (Finset.mem_product.mp hpc).2
@@ -72,7 +72,7 @@ theorem finiteSup_mul_le (S : Finset (ℝ × ℝ)) (f : ℝ × ℝ → ℝ)
     k * ErrorRectangles.finiteSup S f ≤ R := by
   rw [mul_comm, ← le_div_iff₀ hk]
   apply csSup_le
-  · exact ⟨0, Or.inl rfl⟩
+  · simp
   rintro z (hz | ⟨P, hP, rfl⟩)
   · have hz0 : z = 0 := hz
     simpa only [hz0] using div_nonneg hR hk.le
@@ -97,9 +97,7 @@ private theorem max_prefix_bound (B M N n P η A : ℝ)
   have hx : max 1 (N/(n*P)) ≤ 2*N := max_le (by linarith)
     ((div_le_self hN0 hnP).trans (by linarith))
   have hbase : B * max 1 (N/(n*P)) ≤ 2*(M*N) := by
-    calc _ ≤ B*(2*N) := mul_le_mul_of_nonneg_left hx (by linarith)
-         _ ≤ M*(2*N) := mul_le_mul_of_nonneg_right hBM (by positivity)
-         _ = _ := by ring
+    nlinarith
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hbase hη) hA
 
 private theorem rectangle_thresholds (C : Context Q) (B α η A : ℝ)
@@ -121,12 +119,10 @@ private theorem rectangle_thresholds (C : Context Q) (B α η A : ℝ)
       C.estimatePrefactor * ErrorRectangles.originScore C B P ≤
         L*(2*C.M + norm C.d*t*(Real.sqrt C.M*B^(α-1/2)))) := by
   obtain ⟨h1, h2, hp1, hp2⟩ := ErrorRectangles.rectangle_endpoints C P hP
-  have hn0 : 0 < norm C.d := by linarith
   have bound : ∀ T : ℝ, 1 ≤ T →
       ErrorRectangles.U Q B (C.N/(norm C.d*T)) ≤
         (A*(2*(C.M*C.N))^η)*(max 1 ((C.N/norm C.d)/T)+B^α) := by
     intro T hT
-    have ht0 : 0 < T := by linarith
     calc _ ≤ A*(B*max 1 (C.N/(norm C.d*T)))^η *
         (max 1 (C.N/(norm C.d*T))+B^α) := hb _ (by positivity)
       _ ≤ A*(2*(C.M*C.N))^η *

@@ -44,7 +44,7 @@ lemma re_inner_apply_eq {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
       ‖B u‖ ^ 2 + (inner ℂ (B u) (Δ ⟨B u, hBdom u⟩)).re := by
   have key : inner ℂ (B u) u =
       inner ℂ (B u) ((Δ ⟨B u, hBdom u⟩ : H) + B u) := by
-    conv_rhs => rw [hleft u]
+    grind
   rw [key, inner_add_right, Complex.add_re]
   rw [show (inner ℂ (B u) (B u)).re = ‖B u‖ ^ 2 from by
     change RCLike.re (inner ℂ (B u) (B u)) = ‖B u‖ ^ 2
@@ -67,16 +67,12 @@ lemma norm_apply_le {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
     ‖B u‖ ≤ ‖u‖ := by
   have h := re_inner_apply_eq hBdom hleft u
   have hq := hpos ⟨B u, hBdom u⟩
-  have hlow : ‖B u‖ ^ 2 ≤ (inner ℂ (B u) u).re := by nlinarith [h, hq]
+  have hlow : ‖B u‖ ^ 2 ≤ (inner ℂ (B u) u).re := by linarith
   have hup : (inner ℂ (B u) u).re ≤ ‖B u‖ * ‖u‖ :=
     le_trans (Complex.re_le_norm _) (norm_inner_le_norm _ _)
   rcases eq_or_lt_of_le (norm_nonneg (B u)) with h0 | h0
-  · rw [← h0]; exact norm_nonneg u
-  · have hmul : ‖B u‖ * ‖B u‖ ≤ ‖B u‖ * ‖u‖ := by
-      calc ‖B u‖ * ‖B u‖ = ‖B u‖ ^ 2 := (sq ‖B u‖).symm
-        _ ≤ (inner ℂ (B u) u).re := hlow
-        _ ≤ ‖B u‖ * ‖u‖ := hup
-    exact le_of_mul_le_mul_left hmul h0
+  · grind
+  nlinarith
 
 lemma norm_le_one {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
     (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
@@ -137,7 +133,7 @@ lemma finite_of_compact_sq_lower_bound
   intro v
   have h := hlow v
   have hs := Real.sq_sqrt hc.le
-  have hsn := Real.sqrt_nonneg c
+  
   nlinarith [norm_nonneg v, norm_nonneg (K v)]
 
 lemma mem_eigenspace_iff (Δ : H →ₗ.[ℂ] H) (μ : ℝ) (v : H) :
@@ -150,10 +146,7 @@ lemma mem_eigenspace_iff (Δ : H →ₗ.[ℂ] H) (μ : ℝ) (v : H) :
     refine ⟨w.property, ?_⟩
     simpa only [LinearMap.mem_ker, LinearMap.sub_apply, LinearMap.smul_apply,
       Submodule.subtype_apply, sub_eq_zero, LinearPMap.toFun_eq_coe] using hw
-  · rintro ⟨hv, he⟩
-    refine ⟨⟨v, hv⟩, ?_, rfl⟩
-    simpa only [LinearMap.mem_ker, LinearMap.sub_apply, LinearMap.smul_apply,
-      Submodule.subtype_apply, sub_eq_zero, LinearPMap.toFun_eq_coe] using he
+  simp_all
 
 lemma finite_eigenspace_below_threshold
     (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) (d : ℝ)

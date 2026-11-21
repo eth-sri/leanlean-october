@@ -16,8 +16,8 @@ private theorem split_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     intro h
     apply g.det_ne_zero
     simp [Matrix.det_fin_two, hc, h]
-  have hdR : ‖g 1 1‖ ≠ 0 := norm_ne_zero_iff.mpr hd
-  have huR : ‖u‖ ≠ 0 := norm_ne_zero_iff.mpr hu
+  
+  
   apply Prod.ext
   · simp only [KPArch.action, KPArch.actionDenominator, hc, zero_mul, zero_add,
       norm_zero, zero_pow (by norm_num : 2 ≠ 0), star_zero, mul_zero, add_zero]
@@ -54,7 +54,7 @@ private theorem split_actual_affine_action (F : Type*) [Field F] [NumberField F]
   apply Prod.ext
   · change σ ((D.ratio g : Fˣ) : F) * p.1.1 i + σ (A 0 1) / σ (A 1 1) =
       σ ((D.ratio g : Fˣ) : F) * p.1.1 i + σ (A 0 1 / A 1 1)
-    rw [map_div₀]
+    simp
   · change p.2 + (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i + Real.log ‖σ _‖ =
       p.2 + ((p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i +
         Real.log ((KPCusp.complexPlace F i) ((D.ratio g : Fˣ) : F)))
@@ -188,9 +188,7 @@ def highRadialOrbitHomeomorph (F : Type*) [Field F] [NumberField F]
       Quotient.mk _ ⟨(p,t.val), t.property⟩ := rfl
 end DedekindZetaZeroFree.KPCuspChart
 
-namespace DedekindZetaZeroFree.KPCuspChart
 
-end DedekindZetaZeroFree.KPCuspChart
 
 namespace DedekindZetaZeroFree.KPCuspChart
 private theorem radial_sigmaFinite_comap {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
@@ -226,11 +224,7 @@ theorem radial_high_coordinate_measure
 
 end DedekindZetaZeroFree.KPCuspChart
 
-namespace DedekindZetaZeroFree.KPCuspChart
-end DedekindZetaZeroFree.KPCuspChart
 
-namespace DedekindZetaZeroFree.KPCuspChart
-end DedekindZetaZeroFree.KPCuspChart
 
 namespace DedekindZetaZeroFree.KPCuspChart
 open scoped Pointwise

@@ -16,9 +16,6 @@ open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport renaming scalar 
 open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport renaming scalar_injective → scalar_injective
 open _root_.DedekindZetaZeroFree.ScalarRationalProductTransport renaming scalar_borelP_kFinite_iff → scalar_borelP_kFinite_iff
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-local instance (P : KPGlobalTorusBorelTwistCompatibility.Polarization F ζ hζ) :
-    TopologicalSpace (KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ P) :=
-  KPGlobalTorusBorelTwistCompatibility.inducedTopology F ζ hζ P
 variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
 local notation "D" => KPLiteralChamber.literalIwasawa F ζ hζ K hK
 local notation "R0" => KPGlobalTorusBorelTwistCompatibility.twist F ζ hζ

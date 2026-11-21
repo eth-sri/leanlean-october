@@ -294,13 +294,8 @@ private theorem unitary_character_integral {Q : Type*} [AddCommGroup Q]
     by_contra hn
     exact hq ((mul_eq_left₀ hn).mp hi)
 
-local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 
-local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
 
-local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
 
 private theorem mFourier_add_point {d : Type*} [Fintype d]
     (n : d → ℤ) (q r : UnitAddTorus d) :

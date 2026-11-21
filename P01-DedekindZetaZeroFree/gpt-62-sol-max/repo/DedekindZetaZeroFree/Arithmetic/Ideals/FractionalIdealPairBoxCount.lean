@@ -29,7 +29,7 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
   let f : E → ι → ℤ := fun x i => ⌊b.repr x i⌋
   have hrepr (x : E) (hx : x ∈ s) (i : ι) : (f x i : ℝ) = b.repr x i := by
     obtain ⟨z, hz⟩ := (b.mem_span_iff_repr_mem ℤ x).mp (hs x hx).1 i
-    simpa [f, ← hz] using (Int.floor_intCast (R := ℝ) z)
+    simp [f, ← hz]
   have hf : Set.MapsTo f s (t : Set (ι → ℤ)) := by
     intro x hx
     apply Fintype.mem_piFinset.mpr

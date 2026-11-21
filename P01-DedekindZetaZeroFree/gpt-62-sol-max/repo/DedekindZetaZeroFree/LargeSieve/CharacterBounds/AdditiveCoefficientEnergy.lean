@@ -31,7 +31,7 @@ theorem finite_row_minkowski {ι κ : Type*} (M : Finset ι)
     have h2 : ‖g j‖ ≤ Real.sqrt (B * (u j) ^ 2) := by
       rw [← Real.sqrt_sq (norm_nonneg (g j))]
       exact Real.sqrt_le_sqrt h1
-    rwa [Real.sqrt_mul hB, Real.sqrt_sq (hu j)] at h2
+    simp_all
   have hsumg : Summable g :=
     Summable.of_norm_bounded (hsum.mul_left (Real.sqrt B)) hgnorm
   have hsum_norm : Summable (fun j => ‖g j‖) :=
@@ -92,7 +92,12 @@ private theorem sum_units {R : Type*} [CommMonoid R] [Fintype R]
     apply hf
     simpa only [Set.mem_range, IsUnit] using hx
   · intro x; rfl
- def presentation (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A) :
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+include A D
+
+ def presentation :
     ProbeSeparation.Presentation F A.Sf where
   generator I hI := D.generator (A.exteriorIdealEquiv.symm ⟨I,hI⟩)
   generator_nonzero I hI := (D.generates _).1
@@ -101,7 +106,7 @@ private theorem sum_units {R : Type*} [CommMonoid R] [Fintype R]
     exact h.trans (congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨I,hI⟩))
   lift I d := Quotient.out (d : A.R ⧸ I)
   lift_spec I d := Quotient.out_eq _
-private theorem generator_eq (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+private theorem generator_eq
     (s : A.Exterior) (h : Ideal.span {D.generator s} ≠ ⊥) :
     (presentation A D).generator (Ideal.span {D.generator s}) h = D.generator s := by
   change D.generator (A.exteriorIdealEquiv.symm _) = _
@@ -110,14 +115,14 @@ private theorem generator_eq (A : SArithmeticData F) (D : ComparisonPoissonCoeff
   rw [Equiv.apply_symm_apply]
   apply Subtype.ext
   exact (D.generates s).2
- theorem span_ne (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+ theorem span_ne
     (s : A.Exterior) : Ideal.span {D.generator s} ≠ ⊥ := by
   rw [(D.generates s).2]
   exact A.extendIdeal_ne_zero s
- def rho (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+ def rho
     (T : Finset A.Exterior) (i : Σ s : ↥T, (FiniteTransform.Residue A.R.toSubring (D.generator s))ˣ) :
     ProbeSeparation.ReducedPair F A.Sf := ⟨⟨Ideal.span {D.generator i.1}, span_ne A D i.1⟩, i.2⟩
-private theorem rho_injective (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+private theorem rho_injective
     (T : Finset A.Exterior) : Function.Injective (rho A D T) := by
   apply Function.Injective.sigma_map
     (β₂ := fun I : {I : Ideal A.R // I ≠ ⊥} => (A.R ⧸ I.val)ˣ)
@@ -129,13 +134,19 @@ private theorem rho_injective (A : SArithmeticData F) (D : ComparisonPoissonCoef
     apply Subtype.ext
     simpa only [A.exteriorIdealEquiv_apply, ← (D.generates s).2, ← (D.generates t).2] using congrArg Subtype.val h
   · intro s x y h; exact h
-private theorem rho_norm (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+
+end
+section
+
+variable (A : SArithmeticData F)
+
+private theorem rho_norm (D : ComparisonPoissonCoefficientData F A)
     (T : Finset A.Exterior) (i : Σ s : ↥T, (FiniteTransform.Residue A.R.toSubring (D.generator s))ˣ) :
     ProbeSeparation.denominatorNorm F (rho A D T i) = A.exteriorNorm i.1 := by
   change (Nat.card (A.R ⧸ Ideal.span {D.generator i.1}) : ℝ) = _
   rw [(D.generates i.1).2, A.exteriorResidue_card]
   rfl
-private theorem row_mem (A : SArithmeticData F) (N : ℝ) (hN : 1 ≤ N)
+private theorem row_mem (N : ℝ) (hN : 1 ≤ N)
     (K : Set A.G) {m : A.R} (hm : m ∈ NormalizedProbe.scaledIntegralRows A N K) :
     m ∈ ProbeAdditive.boxRows F A.Sf N (NormalizedProbe.asLocalPoint A '' K) := by
   obtain ⟨k, hk, he⟩ := hm
@@ -147,7 +158,7 @@ private theorem row_mem (A : SArithmeticData F) (N : ℝ) (hN : 1 ≤ N)
   rw [hmul]
   simp only [NormalizedProbe.radialSection, dif_pos (by linarith : 0 < N),
     NormalizedProbe.asLocalPoint, SArithmeticData.localToAdditive_radialSection]
-private theorem point_continuous (A : SArithmeticData F) : Continuous (NormalizedProbe.asLocalPoint A) := by
+private theorem point_continuous : Continuous (NormalizedProbe.asLocalPoint A) := by
   apply Continuous.prodMk
   · apply continuous_pi
     intro w
@@ -155,7 +166,7 @@ private theorem point_continuous (A : SArithmeticData F) : Continuous (Normalize
   · apply continuous_pi
     intro v
     exact Units.continuous_val.comp ((continuous_apply v).comp continuous_snd)
-private theorem indexed_sieve (A : SArithmeticData F)
+private theorem indexed_sieve
     (e : (v : A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
     (K : Set A.G) (hK : IsCompact K) :
@@ -231,7 +242,7 @@ private theorem indexed_sieve (A : SArithmeticData F)
         (sLocalDiagonal F A.Sf ((m : F) * ProbeSeparation.value F p x.val))‖^2 :=
       Finset.sum_le_sum_of_subset_of_nonneg hsub (by intros; positivity)
     _ ≤ _ := hh
-private theorem phase_eq (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+private theorem phase_eq (D : ComparisonPoissonCoefficientData F A)
     (e : (v : A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (hsame : ∀ x : F, D.additiveCharacter x = ProbeAdditive.phase F A.Sf e (sLocalDiagonal F A.Sf x))
     (T : Finset A.Exterior) (i : Σ s : ↥T, (FiniteTransform.Residue A.R.toSubring (D.generator s))ˣ)
@@ -248,12 +259,12 @@ private theorem phase_eq (A : SArithmeticData F) (D : ComparisonPoissonCoefficie
   change -( (m : F) * (((Quotient.out (i.2 : FiniteTransform.Residue A.R.toSubring (D.generator i.1)) : A.R) : F) / (D.generator i.1 : F))) = _
   simp only [FiniteTransform.canonicalLifts, Subalgebra.coe_neg]
   ring
- def coeff (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+ def coeff (D : ComparisonPoissonCoefficientData F A)
     (Y L : ℝ) (j : ℤ) (s : A.Exterior)
     (d : FiniteTransform.Residue A.R.toSubring (D.generator s)) : ℂ :=
   (Y⁻¹ : ℂ) * (Real.sqrt (A.exteriorNorm s) : ℂ)⁻¹ * D.character (D.generator s) d *
     ProbeLogWeight.mode L j (A.exteriorNorm s / Y)
-private theorem expansion (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+private theorem expansion (D : ComparisonPoissonCoefficientData F A)
     (e : (v : A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (hsame : ∀ x : F, D.additiveCharacter x = ProbeAdditive.phase F A.Sf e (sLocalDiagonal F A.Sf x))
     (T : Finset A.Exterior) (Y L : ℝ) (j : ℤ) (m : A.R) :
@@ -282,7 +293,7 @@ private theorem expansion (A : SArithmeticData F) (D : ComparisonPoissonCoeffici
   dsimp [coeff]
   ring
 
-theorem gauss_mode_row_sieve (A : SArithmeticData F)
+theorem gauss_mode_row_sieve
     (D : ComparisonPoissonCoefficientData F A)
     (e : (v : A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v))
@@ -333,6 +344,8 @@ theorem gauss_mode_row_sieve (A : SArithmeticData F)
     rw [expansion A D e hsame T Y L j m]
   rw [hleft]
   exact hh
+
+end
 
 end
 end DedekindZetaZeroFree.ProbeCoefficientEnergy
@@ -574,20 +587,23 @@ private lemma normalizedResidueCoefficient_energy {R : Type*} [CommRing R] [Fint
     _ ≤ q * (Y⁻¹ ^ 2 * q⁻¹) := mul_le_mul_of_nonneg_right hcard (by positivity)
     _ = Y⁻¹ ^ 2 := by field_simp
 
-private lemma gaussResidue_card (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+include A D
+
+private lemma gaussResidue_card
     (s : A.Exterior) : Nat.card (FiniteTransform.Residue A.R.toSubring (D.generator s)) =
       Ideal.absNorm s.val := by
   change Nat.card (A.R ⧸ Ideal.span {D.generator s}) = _
   rw [(D.generates s).2, A.exteriorResidue_card]
 
-def gaussFrequencyCoefficient (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (Y L : ℝ) (j : ℤ)
+def gaussFrequencyCoefficient (Y L : ℝ) (j : ℤ)
     (s : A.Exterior) (d : FiniteTransform.Residue A.R.toSubring (D.generator s)) : ℂ :=
   (Y⁻¹ : ℂ) * (Real.sqrt (A.exteriorNorm s) : ℂ)⁻¹ *
     D.character (D.generator s) d * ProbeLogWeight.mode L j (A.exteriorNorm s / Y)
 
-theorem gaussFrequencyCoefficient_square_energy (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (Y L : ℝ) (j : ℤ) (s : A.Exterior) :
+theorem gaussFrequencyCoefficient_square_energy (Y L : ℝ) (j : ℤ) (s : A.Exterior) :
     letI := D.finiteResidue (D.generator s) (D.generates s).1
     (∑ d : FiniteTransform.Residue A.R.toSubring (D.generator s),
       ‖gaussFrequencyCoefficient A D Y L j s d‖ ^ 2) ≤ Y⁻¹ ^ 2 := by
@@ -601,14 +617,12 @@ theorem gaussFrequencyCoefficient_square_energy (A : SArithmeticData F)
     (fun _ => ProbeLogWeight.mode L j (A.exteriorNorm s / Y))
     (fun _ => (ProbeLogWeight.norm_mode _ _ _).le)
 
-def gaussFrequencyEnergy (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A) (Y L : ℝ) (j : ℤ) (s : A.Exterior) : ℝ :=
+def gaussFrequencyEnergy (Y L : ℝ) (j : ℤ) (s : A.Exterior) : ℝ :=
   letI := D.finiteResidue (D.generator s) (D.generates s).1
   ∑ d : FiniteTransform.Residue A.R.toSubring (D.generator s),
     ‖gaussFrequencyCoefficient A D Y L j s d‖ ^ 2
 
-theorem gaussFrequencyEnergy_annular_bound (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
+theorem gaussFrequencyEnergy_annular_bound
     (v0 v1 : ℝ) (hv0 : 0 < v0) (hv1 : v0 ≤ v1) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ Y : ℝ, 1 ≤ Y →
       {s : A.Exterior | v0 * Y ≤ A.exteriorNorm s ∧ A.exteriorNorm s ≤ v1 * Y}.Finite ∧
@@ -642,8 +656,7 @@ theorem gaussFrequencyEnergy_annular_bound (A : SArithmeticData F)
     _ ≤ (C * Y) * Y⁻¹ ^ 2 := mul_le_mul_of_nonneg_right hc (sq_nonneg _)
     _ = C / Y := by field_simp; <;> ring
 
-theorem additiveCoefficient_scaled_normalization (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
+theorem additiveCoefficient_scaled_normalization
     (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
     (X Y : ℝ) (hX : 0 < X) (hY : 0 < Y) (t : A.G1) (m : A.R) :
     additiveCoefficient A D W0 W1 X Y t m =
@@ -687,6 +700,8 @@ theorem additiveCoefficient_scaled_normalization (A : SArithmeticData F)
   rw [tsum_congr hterm, tsum_mul_left]
   ring
 
+end
+
 private lemma asLocalPoint_mul (A : SArithmeticData F) (g h : A.G) :
     asLocalPoint A (g * h) = asLocalPoint A g * asLocalPoint A h := by rfl
 private lemma localUnits_point (A : SArithmeticData F) (g : A.G) :
@@ -713,8 +728,11 @@ private lemma sqrt_neg_half (v : ℝ) (hv : 0 < v) :
     (Real.sqrt v : ℂ)⁻¹ = (v ^ (-(1 / 2 : ℝ)) : ℝ) := by
   rw [Real.sqrt_eq_rpow, ← Complex.ofReal_inv, ← Real.rpow_neg hv.le]
 
-theorem additiveCoefficient_logweight (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
+section
+
+variable (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+
+theorem additiveCoefficient_logweight
     (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
     (X Y : ℝ) (hX : 0 < X) (hY : 0 < Y) (t : A.G1) (m : A.R) :
     additiveCoefficient A D W0 W1 X Y t m =
@@ -731,8 +749,7 @@ theorem additiveCoefficient_logweight (A : SArithmeticData F)
   unfold ProbeLogWeight.row
   ring
 
-theorem additiveCoefficient_logweight_expansion (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
+theorem additiveCoefficient_logweight_expansion
     (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
     (v0 v1 a L : ℝ) (K : Set (SLocalProduct F A.Sf))
     (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ)
@@ -750,7 +767,7 @@ theorem additiveCoefficient_logweight_expansion (A : SArithmeticData F)
   intro s
   rw [hcut _ (div_pos (A.exteriorNorm_pos s) hY)]
 
-private lemma finite_mode_exchange (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+private lemma finite_mode_exchange
     (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ) (hc : Summable (fun j => ‖c j‖))
     (L Y : ℝ) (T : Finset A.Exterior) (y : SLocalProduct F A.Sf) (m : A.R) :
     (∑ s ∈ T, gaussRow A D s m *
@@ -768,8 +785,7 @@ private lemma finite_mode_exchange (A : SArithmeticData F) (D : ComparisonPoisso
   · intro s hs
     exact (ProbeLogWeight.summable_norm_modes A c hc L (A.exteriorNorm s / Y) y).of_norm.mul_left _
 
-theorem additiveCoefficient_finite_fourier_exchange (A : SArithmeticData F)
-    (D : ComparisonPoissonCoefficientData F A)
+theorem additiveCoefficient_finite_fourier_exchange
     (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
     (v0 v1 a L : ℝ) (K : Set (SLocalProduct F A.Sf))
     (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ)
@@ -799,6 +815,8 @@ theorem additiveCoefficient_finite_fourier_exchange (A : SArithmeticData F)
         rw [if_pos (hf s hs)]
       _ = _ := finite_mode_exchange A D c hcnorm L Y T _ m
   · simp [ProbeLogWeight.truncatedSeries, (hT s).not.mp hs]
+
+end
 
 theorem principal_additiveCoefficient_square_energy (A : SArithmeticData F)
     (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)

@@ -129,54 +129,6 @@ theorem finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup
         _ = y := congrArg Subtype.val huy
         _ = x := hyx
 
-/-- A ray-class higher unit has valuation zero after transport to the
-absolute-value completion used by the finite-place Artin map.  This is the
-pointwise endpoint of
-`finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup`; consumers need
-not reopen the transported principal-unit subgroup. -/
-theorem finitePlaceCompletion_valuationMap_eq_zero_of_mem_localHigherUnitGroup
-    (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
-    (x : (v.adicCompletion K)ˣ)
-    (hx : x ∈ RayClass.localHigherUnitGroup v n) :
-    let vK := HeightOneSpectrum.adicAbv K v
-    letI : ValuativeRel vK.Completion :=
-      _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionValuativeRel v
-    letI : IsNonarchimedeanLocalField vK.Completion :=
-      _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v
-    IsNonarchimedeanLocalField.valuationMap vK.Completion
-        (Additive.ofMul
-          ((_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).symm x)) =
-      0 := by
-  let vK := HeightOneSpectrum.adicAbv K v
-  let : ValuativeRel vK.Completion :=
-    _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionValuativeRel v
-  let : IsNonarchimedeanLocalField vK.Completion :=
-    _root_.GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v
-  have hxMap :
-      x ∈
-        (LocalFieldTheory.fieldPrincipalUnits vK.Completion n).map
-          (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).toMonoidHom := by
-    dsimp only [vK]
-    rw [finitePlaceFieldPrincipalUnits_map_eq_localHigherUnitGroup v n]
-    exact hx
-  have hxPrincipal :
-      (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).symm x ∈
-        LocalFieldTheory.fieldPrincipalUnits vK.Completion n :=
-    (Subgroup.mem_map_equiv
-      (f := (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).toMulEquiv)).mp
-        hxMap
-  change
-    (_root_.finitePlaceCompletionUnitsContinuousMulEquiv v).symm x ∈
-      (LocalFieldTheory.principalUnits vK.Completion n).map
-        (IsNonarchimedeanLocalField.integerUnitsToFieldUnits
-          vK.Completion) at hxPrincipal
-  rcases hxPrincipal with ⟨u, _hu, hu⟩
-  rw [← hu]
-  dsimp only
-  rw [IsNonarchimedeanLocalField.valuationMap_apply]
-  exact
-    IsNonarchimedeanLocalField.v_integerUnitsToFieldUnits
-      vK.Completion u
 
 variable
     {L : Type}

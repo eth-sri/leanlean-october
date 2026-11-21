@@ -21,7 +21,7 @@ theorem mellin_shell_series_eq_geometric_tail
       (↑(m * (1 - q⁻¹)) : ℂ) *
         (Complex.exp (-s * (Real.log q : ℂ))) ^ N /
         (1 - Complex.exp (-s * (Real.log q : ℂ))) := by
-  have hqpos : 0 < q := lt_trans zero_lt_one hq
+  have hqpos := lt_trans zero_lt_one hq
   let Q : ℂ := Complex.exp (-s * (Real.log q : ℂ))
   have hQ : ‖Q‖ < 1 := by
     dsimp [Q]
@@ -135,8 +135,7 @@ theorem q_shell_haar_mass
       ext x
       simp only [Set.mem_setOf_eq, Set.mem_diff, ← hdiscrete x, not_lt]
       exact ⟨fun h => ⟨h.le, h.ge⟩, fun h => le_antisymm h.1 h.2⟩
-    have hfinite (k : ℤ) : μ {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} ≠ ⊤ := by
-      exact (show IsCompact {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} from by
+    have hfinite (k : ℤ) : μ {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} ≠ ⊤ := (show IsCompact {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ k} from by
         simpa only [Metric.closedBall, dist_zero_right] using
           isCompact_closedBall (0 : v.adicCompletion F) ((v.asIdeal.absNorm : ℝ) ^ k)).measure_lt_top.ne
     have hsubset : {x : v.adicCompletion F | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-n - 1)} ⊆

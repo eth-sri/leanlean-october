@@ -1,11 +1,12 @@
 module
 
-public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.ComplexHarmonicEigenvaluesAndSmoothness
+public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicKTypes
+public import Mathlib.RingTheory.MvPolynomial.EulerIdentity
 
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.FiniteFischerRaw
-open KPCplxIntertwinerEigenvalues
+open KPCplxHarmonicIntertwinerSpectrum
 open scoped BigOperators
 open MvPolynomial
 
@@ -20,7 +21,7 @@ private lemma deriv_radius (i : Fin 3) :
   · simp
   · intro j hj hji; simp [Pi.single_eq_of_ne hji]
   · simp
-private lemma radius_homogeneous : radiusQuadratic.IsHomogeneous 2 := by
+theorem radius_homogeneous : radiusQuadratic.IsHomogeneous 2 := by
   apply IsHomogeneous.sum
   intro i hi
   exact isHomogeneous_X_pow i 2
@@ -65,13 +66,13 @@ theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
       simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one, pow_succ]
       ring
 
-private lemma lap_hom {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
+theorem lap_hom {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
     (hp : p.IsHomogeneous n) : (polynomialLaplacian p).IsHomogeneous (n - 2) := by
   change (∑ i : Fin 3, pderiv i (pderiv i p)).IsHomogeneous _
   apply IsHomogeneous.sum
   intro i hi
   simpa only [Nat.sub_sub] using hp.pderiv.pderiv (i := i)
-private lemma lap_low {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
+theorem lap_low {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
     (hp : p.IsHomogeneous n) (hn : n ≤ 1) : polynomialLaplacian p = 0 := by
   have hzero {q : MvPolynomial (Fin 3) ℂ} (hq : q.IsHomogeneous 0) (i : Fin 3) :
       pderiv i q = 0 := by
@@ -162,5 +163,26 @@ theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
           and_false, ite_false, Nat.add_sub_cancel]
         change p = r + (p - r)
         ring
+
+/-- The Laplacian maps the radius-squared multiples of degree `n` polynomials
+onto all homogeneous polynomials of degree `n`. -/
+theorem exists_radial_preimage {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
+    (hp : p.IsHomogeneous n) :
+    ∃ q : MvPolynomial (Fin 3) ℂ, q.IsHomogeneous n ∧ polynomialLaplacian (radiusQuadratic * q) = p := by
+  obtain ⟨h, hh, he⟩ := homogeneous_fischer hp
+  let c (k : ℕ) : ℂ :=
+    2 * ((k + 1 : ℕ) : ℂ) * (2 * ((n - 2 * k : ℕ) : ℂ) + 2 * ((k + 1 : ℕ) : ℂ) + 1)
+  refine ⟨∑ k ∈ Finset.range (n / 2 + 1), radiusQuadratic ^ k * ((c k)⁻¹ • h k), ?_, ?_⟩
+  · apply IsHomogeneous.sum
+    intro k hk
+    have hk' := Finset.mem_range.mp hk
+    convert (radius_homogeneous.pow k).mul (harmonic_smul (hh k (by omega)) (c k)⁻¹).1 using 1
+    omega
+  · rw [Finset.mul_sum, map_sum, he]
+    apply Finset.sum_congr rfl
+    intro k hk
+    have hk' := Finset.mem_range.mp hk
+    rw [← mul_assoc, ← pow_succ']
+    exact radial_inverse (hh k (by omega)) k
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.FiniteFischerRaw

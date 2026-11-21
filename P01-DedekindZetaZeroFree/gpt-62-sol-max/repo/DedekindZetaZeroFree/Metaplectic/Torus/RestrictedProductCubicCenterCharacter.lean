@@ -35,7 +35,7 @@ theorem isUnit_diag_entries (v : KPHilbert.Place F)
     have h := (KubotaRankTwo.det (KPHilbert.Completion F v) g.g).isUnit
     rw [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, h10, h01] at h
     simpa using h
-  exact ⟨isUnit_of_mul_isUnit_left hdet, isUnit_of_mul_isUnit_right hdet⟩
+  grind
 
 theorem localValue_diag (v : KPHilbert.Place F) (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
     (h10 : g.g 1 0 = 0) (h01 : g.g 0 1 = 0) :

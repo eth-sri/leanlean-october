@@ -52,17 +52,14 @@ lemma gamma_vertical_integrable (a : ℝ) (ha : 0 < a) :
   have key : Real.rpow |t| (-((2 : ℕ) : ℝ)) ≤ 4 * (1 + |t|) ^ (-2 : ℝ) := by
     have h1 : Real.rpow |t| (-((2 : ℕ) : ℝ)) = (|t| ^ 2)⁻¹ := by
       show |t| ^ (-((2 : ℕ) : ℝ)) = _
-      rw [Real.rpow_neg (abs_nonneg t), Real.rpow_natCast]
+      simp
     have h2 : (1 + |t|) ^ (-2 : ℝ) = ((1 + |t|) ^ 2)⁻¹ := by
-      rw [Real.rpow_neg hp'.le, Real.rpow_two]
+      simp
     have e3 : (|t| ^ 2)⁻¹ = 1 / |t| ^ 2 := (one_div _).symm
     have e4 : ((1 + |t|) ^ 2)⁻¹ = 1 / (1 + |t|) ^ 2 := (one_div _).symm
     rw [h1, h2, e3, e4, mul_one_div, div_le_div_iff₀ (pow_pos hp 2) (pow_pos hp' 2)]
-    nlinarith [mul_nonneg (sub_nonneg.mpr ht) (by linarith : (0 : ℝ) ≤ 3 * |t| + 1)]
-  calc ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I)‖
-      ≤ C * Real.rpow |t| (-((2 : ℕ) : ℝ)) := hb
-    _ ≤ C * (4 * (1 + |t|) ^ (-2 : ℝ)) := mul_le_mul_of_nonneg_left key hC.le
-    _ = 4 * C * (1 + |t|) ^ (-2 : ℝ) := by ring
+    nlinarith
+  nlinarith
 
 lemma gamma_power_integrable (a : ℝ) (ha : 0 < a) (x : ℝ) (hx : 0 < x) :
     Integrable (fun t : ℝ => Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I) *

@@ -32,18 +32,18 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
 
+section
+
+variable (L M : Type) [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Field M] [ValuativeRel M] [TopologicalSpace M]
+  [IsNonarchimedeanLocalField M] (phi : L ≃+* M) (hmem : ∀ x : L,
+      x ∈ (ValuativeRel.valuation L).valuationSubring ↔
+        phi x ∈ (ValuativeRel.valuation M).valuationSubring)
+include phi hmem
+
 /-- A valuation-subring-preserving ring equivalence carries some unit of
 valuation one to a unit of valuation one. -/
-theorem exists_valuationOne_unit_of_ringEquiv
-    (L M : Type)
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Field M] [ValuativeRel M] [TopologicalSpace M]
-    [IsNonarchimedeanLocalField M]
-    (phi : L ≃+* M)
-    (hmem : ∀ x : L,
-      x ∈ (ValuativeRel.valuation L).valuationSubring ↔
-        phi x ∈ (ValuativeRel.valuation M).valuationSubring) :
+theorem exists_valuationOne_unit_of_ringEquiv :
     ∃ p : Lˣ,
       IsNonarchimedeanLocalField.valuationMap L
           (Additive.ofMul p) = 1 ∧
@@ -106,31 +106,13 @@ theorem exists_valuationOne_unit_of_ringEquiv
 
 /-- A chosen valuation-one unit whose image under a valuation-compatible
 ring equivalence also has valuation one. -/
-noncomputable def chosenValuationOneUnitOfRingEquiv
-    (L M : Type)
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Field M] [ValuativeRel M] [TopologicalSpace M]
-    [IsNonarchimedeanLocalField M]
-    (phi : L ≃+* M)
-    (hmem : ∀ x : L,
-      x ∈ (ValuativeRel.valuation L).valuationSubring ↔
-        phi x ∈ (ValuativeRel.valuation M).valuationSubring) :
+noncomputable def chosenValuationOneUnitOfRingEquiv :
     Lˣ :=
   Classical.choose
     (exists_valuationOne_unit_of_ringEquiv L M phi hmem)
 
 /-- The chosen transported unit has valuation one in its source field. -/
-theorem chosenValuationOneUnitOfRingEquiv_source
-    (L M : Type)
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Field M] [ValuativeRel M] [TopologicalSpace M]
-    [IsNonarchimedeanLocalField M]
-    (phi : L ≃+* M)
-    (hmem : ∀ x : L,
-      x ∈ (ValuativeRel.valuation L).valuationSubring ↔
-        phi x ∈ (ValuativeRel.valuation M).valuationSubring) :
+theorem chosenValuationOneUnitOfRingEquiv_source :
     IsNonarchimedeanLocalField.valuationMap L
         (Additive.ofMul
           (chosenValuationOneUnitOfRingEquiv L M phi hmem)) = 1 :=
@@ -139,22 +121,15 @@ theorem chosenValuationOneUnitOfRingEquiv_source
 
 /-- The image of the chosen transported unit has valuation one in the
 target field. -/
-theorem chosenValuationOneUnitOfRingEquiv_target
-    (L M : Type)
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Field M] [ValuativeRel M] [TopologicalSpace M]
-    [IsNonarchimedeanLocalField M]
-    (phi : L ≃+* M)
-    (hmem : ∀ x : L,
-      x ∈ (ValuativeRel.valuation L).valuationSubring ↔
-        phi x ∈ (ValuativeRel.valuation M).valuationSubring) :
+theorem chosenValuationOneUnitOfRingEquiv_target :
     IsNonarchimedeanLocalField.valuationMap M
         (Additive.ofMul
           (Units.mapEquiv phi.toMulEquiv
             (chosenValuationOneUnitOfRingEquiv L M phi hmem))) = 1 :=
   (Classical.choose_spec
     (exists_valuationOne_unit_of_ringEquiv L M phi hmem)).2
+
+end
 
 /-- Compatible ring equivalences between finite extensions preserve
 valuation-subring membership when their separable-closure transport preserves
@@ -199,16 +174,17 @@ theorem valuationSubring_mem_iff_of_separableClosureRingEquiv
   rw [hphi x, hpsi]
   rfl
 
+section
+
+variable (F E F₀ E₀ : Type) [Field F] [Field E] [Field F₀] [Field E₀] [Algebra F E]
+  [Algebra F₀ E₀] (phiF : F ≃+* F₀) (phiE : E ≃+* E₀) (hcomm :
+      RingHom.comp (algebraMap F₀ E₀) phiF.toRingHom =
+        RingHom.comp phiE.toRingHom (algebraMap F E))
+include phiF phiE hcomm
+
 /-- Field norms on units commute with compatible ring equivalences of the
 base and extension fields. -/
 theorem normUnits_mapEquiv
-    (F E F₀ E₀ : Type)
-    [Field F] [Field E] [Field F₀] [Field E₀]
-    [Algebra F E] [Algebra F₀ E₀]
-    (phiF : F ≃+* F₀) (phiE : E ≃+* E₀)
-    (hcomm :
-      RingHom.comp (algebraMap F₀ E₀) phiF.toRingHom =
-        RingHom.comp phiE.toRingHom (algebraMap F E))
     (y : Eˣ) :
     normUnits F₀ E₀ (Units.mapEquiv phiE.toMulEquiv y) =
       Units.mapEquiv phiF.toMulEquiv (normUnits F E y) := by
@@ -225,13 +201,6 @@ theorem normUnits_mapEquiv
 
 /-- Compatible ring equivalences preserve equality of unit norm classes. -/
 theorem normClass_mapEquiv
-    (F E F₀ E₀ : Type)
-    [Field F] [Field E] [Field F₀] [Field E₀]
-    [Algebra F E] [Algebra F₀ E₀]
-    (phiF : F ≃+* F₀) (phiE : E ≃+* E₀)
-    (hcomm :
-      RingHom.comp (algebraMap F₀ E₀) phiF.toRingHom =
-        RingHom.comp phiE.toRingHom (algebraMap F E))
     (a x : Fˣ)
     (h : normClass F E a = normClass F E x) :
     normClass F₀ E₀ (Units.mapEquiv phiF.toMulEquiv a) =
@@ -244,6 +213,8 @@ theorem normClass_mapEquiv
     normUnits_mapEquiv F E F₀ E₀ phiF phiE hcomm y
   rw [← map_div, hy]
   exact hnorm.symm
+
+end
 
 /-- A unit of valuation one in an abstract fixed field determines a prime
 element for the ambient local henselian valuation datum. -/

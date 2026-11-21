@@ -200,12 +200,16 @@ theorem exists_norm_eq_of_tateHZero_isZero
 
 namespace ValuationData
 
+section
+
+variable (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+  (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
+include v E hnormal
+
 /-- Normalized valuation is invariant under the Galois action in a finite
 tower.  The proof uses transitivity of the actual norm and its invariance
 under the normal-extension action. -/
 theorem valuationAt_normalExtensionAction
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
     (k : E.base.field.toSubgroup)
     (a : ambientFixedAddSubgroup A E.field.field) :
     v.valuationAt E.field
@@ -263,8 +267,6 @@ theorem valuationAt_normalExtensionAction
 
 /-- The action of `G_K` on the actual unit subgroup `U_L`. -/
 noncomputable def unitActionLinearMap
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
     (k : E.base.field.toSubgroup) :
     v.unitAddSubgroup E.field →ₗ[ℤ] v.unitAddSubgroup E.field where
   toFun u := ⟨normalExtensionAction A E.base.field E.field.field E.below
@@ -284,9 +286,7 @@ noncomputable def unitActionLinearMap
     exact map_zsmul (A.ρ k.1) n u.1.1
 
 /-- The `G_K`-representation on `U_L` before descending through `G_L`. -/
-noncomputable def unitRepresentationOverK
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal) :
+noncomputable def unitRepresentationOverK :
     Rep ℤ E.base.field.toSubgroup :=
   Rep.of
     { toFun := fun k => v.unitActionLinearMap E hnormal k
@@ -302,9 +302,7 @@ noncomputable def unitRepresentationOverK
         rw [map_mul]
         rfl }
 
-theorem unitRepresentationOverK_isTrivialOnExtension
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal) :
+theorem unitRepresentationOverK_isTrivialOnExtension :
     Representation.IsTrivial
       ((v.unitRepresentationOverK E hnormal).ρ.comp
         (extensionSubgroup E.base.field E.field.field E.below).subtype) := by
@@ -318,9 +316,7 @@ theorem unitRepresentationOverK_isTrivialOnExtension
     ⟨s.1.1, (mem_extensionSubgroup_iff E.base.field E.field.field E.below s.1).1 s.2⟩
 
 /-- The actual quotient representation on the unit group `U_L`. -/
-noncomputable def unitRepresentation
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal) :
+noncomputable def unitRepresentation :
     Rep ℤ (E.base.field.toSubgroup ⧸
       extensionSubgroup E.base.field E.field.field E.below) := by
   letI := hnormal
@@ -330,6 +326,8 @@ noncomputable def unitRepresentation
     v.unitRepresentationOverK_isTrivialOnExtension E hnormal
   exact (v.unitRepresentationOverK E hnormal).ofQuotient
     (extensionSubgroup E.base.field E.field.field E.below)
+
+end
 
 end ValuationData
 
@@ -376,11 +374,15 @@ def unitInclusion
     apply Subtype.ext
     rfl
 
+section
+
+variable (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
+  (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
+include v E hnormal
+
 /-- On underlying coefficients, the quotient action on `U_L` is the same
 coset action used in the relative norm. -/
 theorem unitRepresentation_action_coe
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
     (q : E.base.field.toSubgroup ⧸
       extensionSubgroup E.base.field E.field.field E.below)
     (u : v.unitAddSubgroup E.field) :
@@ -395,8 +397,6 @@ theorem unitRepresentation_action_coe
 /-- The representation norm on `U_L` is the relative field norm on
 underlying coefficients. -/
 theorem unitRepresentation_norm_coe
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
     (u : v.unitAddSubgroup E.field) :
     letI := Fintype.ofFinite
       (E.base.field.toSubgroup ⧸
@@ -432,8 +432,6 @@ theorem unitRepresentation_norm_coe
 /-- Actual `H⁰=0` eliminator needed after the reciprocity construction: every unit of
 `K` is the relative norm of a unit of an unramified Galois extension `L`. -/
 theorem exists_unit_relativeNorm_eq_of_tateHZero_isZero
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
     (hUnramified : E.IsUnramified D)
     (g : E.base.field.toSubgroup ⧸
       extensionSubgroup E.base.field E.field.field E.below)
@@ -477,8 +475,6 @@ theorem exists_unit_relativeNorm_eq_of_tateHZero_isZero
 /-- Actual `H⁻¹=0` eliminator on units: a unit of relative norm zero is
 in the image of `g-1`. -/
 theorem exists_unit_sigma_sub_eq_of_tateHMinusOne_isZero
-    (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
-    (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
     (g : E.base.field.toSubgroup ⧸
       extensionSubgroup E.base.field E.field.field E.below)
     (hg : ∀ x, x ∈ Subgroup.zpowers g) :
@@ -498,6 +494,8 @@ theorem exists_unit_sigma_sub_eq_of_tateHMinusOne_isZero
   let U := v.unitRepresentation E hnormal
   exact CyclicCohomology.normKernel_le_sigmaMinusOneRange_of_tateHMinusOne_isZero
     U g hg hzero u hu
+
+end
 
 /-- **the unit-cohomology axiom.** For every finite unramified Galois extension `L/K`,
 `H⁰(G(L/K),U_L)` and `H⁻¹(G(L/K),U_L)` vanish.

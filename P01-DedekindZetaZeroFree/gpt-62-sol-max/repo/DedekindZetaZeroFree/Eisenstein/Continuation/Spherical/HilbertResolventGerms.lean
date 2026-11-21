@@ -216,7 +216,6 @@ structure Properties : Prop where
 set_option synthInstance.maxSize 256 in
 private theorem aux
     (hι : Function.Injective ι)
-    (hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (hΩopen : IsOpen Ω) (hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (hf : DifferentiableOn ℂ f Ω) :
     Properties F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source := by
@@ -441,7 +440,6 @@ theorem kp_cont_actual_hilbert_simple_germs
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (_hι : Function.Injective ι)
-    (_hStage : KPContActualSphericalFlatStage.StageConclusions F ζ hζ C R P H U ι)
     (Ω : Set ℂ) (_hΩopen : IsOpen Ω) (_hΩ : Ω ⊆ KPContinuation.spectralDomain)
     (f : ℂ → S) (_hf : DifferentiableOn ℂ f Ω)
     {T : ℝ}
@@ -452,7 +450,7 @@ theorem kp_cont_actual_hilbert_simple_germs
     KPContActualHilbertSimpleGerms.Properties
       F ζ hζ C R P H U μG hμG hR realization ι buffer Ω f χ source := by
   exact KPContActualHilbertSimpleGerms.aux F ζ hζ C R P H U μG hμG hR realization
-    ι buffer Ω f χ source _hι _hStage _hΩopen _hΩ _hf
+    ι buffer Ω f χ source _hι _hΩopen _hΩ _hf
 end DedekindZetaZeroFree
 
 end

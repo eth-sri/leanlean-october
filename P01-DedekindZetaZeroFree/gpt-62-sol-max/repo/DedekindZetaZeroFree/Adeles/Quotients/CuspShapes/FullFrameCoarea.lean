@@ -16,7 +16,6 @@ namespace DedekindZetaZeroFree.KPMsNativeWeightedShapeSource.NativeCoarea
 open KPMsActualAngularSource KPCompactStabilizerHaarSources KPActualComponentHaarSources
 attribute [local instance] KPCompactStabilizerHaarSources.groupMeasurableSpace
   KPCompactStabilizerHaarSources.groupBorelSpace
-open _root_.DedekindZetaZeroFree.KPMsFixedHaarDisintegration renaming toRawTransport → toRawTransport
 open _root_.DedekindZetaZeroFree.FullAngularHaar.Constructor.JointMeasure renaming actual_high_cusp_joint_coarea → actual_high_cusp_joint_coarea
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -65,7 +64,7 @@ theorem actual_full_cusp_coarea
   obtain ⟨ν,e,c,hν,hνsf,hc,heBase,heFiber,hcoarea⟩ := actual_high_cusp_joint_coarea
     H.totallyComplex (S.atlasLevel (KPShift81CoherentLevel.level F ζ hζ V))
     (H.atlas (S.atlasLevel (KPShift81CoherentLevel.level F ζ hζ V))) R
-    (toRawTransport F ζ hζ P) j.1
+    P j.1
   exact ⟨ν,e,c,hν,hνsf,hc,heBase,heFiber,fun Y hY φ hφ =>
     hcoarea j.2 (KPMsFixedHaarDisintegration.logHeight (F := F) Y) hY.2 φ hφ⟩
 

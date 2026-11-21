@@ -52,7 +52,7 @@ theorem originalKernelUniform
       ∀ R x : ℝ, 1 ≤ R → 0 < x → R⁻¹ ≤ x →
         ‖C.originalKernel x‖ ≤ A * R := by
   let h : ℝ → ℂ := fun x => (W (x ^ 2) : ℂ)
-  have hh : ContDiff ℝ ∞ h := square_source_smooth W hW
+  have hh := square_source_smooth W hW
   have hs := square_source_support W hW
   have hc : HasCompactSupport h :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc hs
@@ -60,12 +60,12 @@ theorem originalKernelUniform
     intro x hx
     by_contra hn
     have hxmem := hs hn
-    exact (not_le_of_gt hx) hxmem.2
+    grind
   obtain ⟨N, A₀, hA₀, hbound⟩ := fieldTransform_uniform_euler_two_ended_bound
     (principalDiscriminant F) (principalComplexPlaces F) 2 0 0 1
     (principalDiscriminant_pos F) (principalComplexPlaces_pos F hF)
     (by norm_num) (by norm_num)
-  have hS : 0 ≤ Vendor.S 2 N h := Vendor.S_nonneg 2 (by norm_num) N h hh
+  have hS := Vendor.S_nonneg 2 (by norm_num) N h hh
   let A := A₀ * Vendor.S 2 N h + 1
   have hA : 0 < A := by dsimp [A]; positivity
   refine ⟨A, hA, ?_⟩
@@ -391,11 +391,7 @@ variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
 private lemma norm_mul (a b : Ideal (𝓞 F)) : norm (a*b) = norm a * norm b := by
   simp [norm, map_mul]
-private lemma norm_le_of_dvd {a b : Ideal (𝓞 F)} (hb : b ≠ ⊥) (h : a ∣ b) :
-    norm a ≤ norm b := by
-  unfold norm
-  exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hb))
-    (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp h))
+open DivisorBins (norm_le_of_dvd)
 
 private lemma norm_nonneg (a : Ideal (𝓞 F)) : 0 ≤ norm a := by
   unfold norm; positivity
@@ -789,113 +785,14 @@ open LargeDirect
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private theorem fixed_mass_le (C : Context Q) : fixedDivisorMass C ≤ (idealDivisorCount (c * C.d) : ℝ) := by
-  have hc : c ≠ ⊥ := by simpa only [C.core] using C.D.bad_ne_bot
-  have hcd : c * C.d ≠ ⊥ := mul_ne_zero hc C.hd0
-  have hsub : C.mobiusDivisors ⊆ idealDivisors (c * C.d) := by
-    intro f hf
-    apply (mem_idealDivisors hcd).mpr
-    have hr : (c * C.d).radical ≠ ⊥ := by
-      intro h
-      have := Ideal.le_radical (I := c * C.d)
-      rw [h] at this
-      exact hcd (le_bot_iff.mp this)
-    exact ((mem_idealDivisors hr).mp hf).trans (Ideal.dvd_iff_le.mpr Ideal.le_radical)
-  calc
-    fixedDivisorMass C ≤ ∑ f ∈ C.mobiusDivisors, (1 : ℝ) := by
-      apply Finset.sum_le_sum
-      intro f hf
-      have hf0 := ne_bot_of_mem_idealDivisors hf
-      have hn : 1 ≤ norm f := by
-        have hp : 0 < Ideal.absNorm f := Nat.pos_of_ne_zero (by simpa [Ideal.absNorm_eq_zero_iff] using hf0)
-        change 1 ≤ (Ideal.absNorm f : ℝ)
-        exact_mod_cast (Nat.succ_le_of_lt hp : 1 ≤ Ideal.absNorm f)
-      exact (div_le_one (by linarith : 0 < norm f)).mpr hn
-    _ = (C.mobiusDivisors.card : ℝ) := by simp
-    _ ≤ (idealDivisorCount (c * C.d) : ℝ) := by
-      exact_mod_cast Finset.card_le_card hsub
-private theorem rectangle_card_le (C : Context Q) (B : ℝ) :
-    ((middleDivisorRectangles C B).card : ℝ) ≤
-      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 : ℝ) ^ 2 := by
-  have h12 : (middleDivisorRectangles C B).card ≤
-      ((ErrorRectangles.scales (C.N / norm C.d)) ×ˢ
-        (ErrorRectangles.scales (C.N / norm C.d))).card := by
-    apply Finset.card_le_card
-    intro P hP
-    exact (Finset.mem_filter.mp (Finset.mem_filter.mp hP).1).1
-  have hs : (ErrorRectangles.scales (C.N / norm C.d)).card ≤
-      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := by
-    exact (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
-      ((Finset.card_image_le).trans (by rw [Finset.card_range])) 1)
-  have hd : (middleDivisorRectangles C B).card ≤
-      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := by
-    exact h12.trans (by
-      rw [Finset.card_product, pow_two]
-      exact Nat.mul_le_mul hs hs)
-  exact_mod_cast hd
-
 theorem fixed_cost_epsilon
     (η : ℝ) (hη : 0 < η) :
     ∃ J : ℝ, 0 < J ∧ ∀ C : Context Q,
       1 ≤ C.M → 1 ≤ C.N → 1 ≤ norm C.d → ∀ B : ℝ,
         fixedDivisorMass C * ((middleDivisorRectangles C B).card : ℝ) ≤
           J * Real.rpow (C.M * C.N * norm C.d) η := by
-  let e := η / 3
-  have he : 0 < e := by dsimp [e]; linarith
-  obtain ⟨A, hA, hdiv⟩ := ideal_divisor_count_le_rpow F e he
-  let T := max 1 (norm c)
-  let L := 2 + 1 / (e * Real.log 2)
-  let H := L * (2 : ℝ) ^ e
-  have hT : 0 < T := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hL : 0 < L := Vendor.dyadicLength_small_power_constant_pos he
-  have hH : 0 < H := mul_pos hL (Real.rpow_pos_of_pos (by norm_num) _)
-  refine ⟨(A * T ^ e) * H ^ 2, by positivity, ?_⟩
-  intro C hM hN hn B
-  let Z := C.M * C.N * norm C.d
-  have hMN : 1 ≤ C.M * C.N := one_le_mul_of_one_le_of_one_le hM hN
-  have hZ : 1 ≤ Z := one_le_mul_of_one_le_of_one_le hMN hn
-  have hnZ : norm C.d ≤ Z := le_mul_of_one_le_left (by linarith) hMN
-  have hNZ : C.N ≤ Z := by
-    dsimp [Z]
-    calc C.N ≤ C.M * C.N := le_mul_of_one_le_left (by linarith) hM
-      _ ≤ C.M * C.N * norm C.d := le_mul_of_one_le_right (by linarith) hn
-  have hf : fixedDivisorMass C ≤ (A * T ^ e) * Z ^ e := by
-    have hnorm : norm (c * C.d) = norm c * norm C.d := by
-      simp [norm, map_mul]
-    have hb : norm (c * C.d) ≤ T * Z := by
-      rw [hnorm]
-      exact mul_le_mul (le_max_right _ _) hnZ (by dsimp [norm]; positivity) hT.le
-    calc fixedDivisorMass C ≤ (idealDivisorCount (c * C.d) : ℝ) := fixed_mass_le C
-      _ ≤ A * (norm (c * C.d)) ^ e := hdiv _
-      _ ≤ A * (T * Z) ^ e := mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (by dsimp [norm]; positivity) hb he.le) (by linarith)
-      _ = (A * T ^ e) * Z ^ e := by rw [Real.mul_rpow hT.le (by linarith)]; ring
-  have hx : 2 * max 1 (C.N / norm C.d) ≤ 2 * Z := by
-    have hd : C.N / norm C.d ≤ C.N := (div_le_self (by linarith) hn)
-    exact mul_le_mul_of_nonneg_left (max_le hZ (hd.trans hNZ)) (by norm_num)
-  have hl : (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 : ℝ) ≤ H * Z ^ e := by
-    calc _ ≤ L * (2 * max 1 (C.N / norm C.d)) ^ e :=
-        Vendor.dyadicLength_small_power he (by
-          have := le_max_left (1 : ℝ) (C.N / norm C.d); linarith)
-      _ ≤ L * (2 * Z) ^ e := mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (by positivity) hx he.le) hL.le
-      _ = H * Z ^ e := by dsimp [H]; rw [Real.mul_rpow (by norm_num) (by linarith)]; ring
-  have hc : ((middleDivisorRectangles C B).card : ℝ) ≤ (H * Z ^ e) ^ 2 :=
-    (rectangle_card_le C B).trans (pow_le_pow_left₀ (by positivity) hl 2)
-  have hf0 : 0 ≤ fixedDivisorMass C := by
-    unfold fixedDivisorMass
-    exact Finset.sum_nonneg (fun f _ => by dsimp [norm]; positivity)
-  calc fixedDivisorMass C * ((middleDivisorRectangles C B).card : ℝ)
-      ≤ ((A * T ^ e) * Z ^ e) * (H * Z ^ e) ^ 2 :=
-        mul_le_mul hf hc (by positivity) (by positivity)
-    _ = ((A * T ^ e) * H ^ 2) * Z ^ η := by
-      have hp : Z ^ e * Z ^ e * Z ^ e = Z ^ η := by
-        rw [← Real.rpow_add (by linarith : 0 < Z), ← Real.rpow_add (by linarith : 0 < Z)]
-        congr 1
-        dsimp [e]
-        ring
-      calc _ = ((A * T ^ e) * H ^ 2) * (Z ^ e * Z ^ e * Z ^ e) := by ring
-           _ = _ := by rw [hp]
+  obtain ⟨J, hJ, hbound⟩ := fixed_mass_rectangles_epsilon (Q := Q) η hη
+  exact ⟨J, hJ, fun C hM hN hn B => hbound C hM hN hn _ (Finset.filter_subset _ _)⟩
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectKernelUniformity
 

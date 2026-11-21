@@ -97,7 +97,6 @@ private theorem inverse_shift_matrix_jets
       (matrixDomain F ×ˢ affineDomain F) := by
     apply hsm.congr
     intro p hp
-    change _ = q (matrixClass F (inverseShiftMatrix F b p))
     rw [inverseShiftMatrix_class F b p.1 hp.1 p.2 hp.2]
   exact (joint_spatial_jets_on _ ((matrixDomain_open F).prod (affineDomain_open F)) _ hsm' n).continuousOn
 
@@ -233,7 +232,7 @@ theorem shifted_kernel_contDiffOn
   intro z hz
   simp only [Function.comp_apply]
   rw [affineEll_toAffine F z hz]
-  simp only [Complex.real_smul, Complex.ofReal_mul]
+  simp only [Complex.real_smul]
 
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.RightConvolution
 

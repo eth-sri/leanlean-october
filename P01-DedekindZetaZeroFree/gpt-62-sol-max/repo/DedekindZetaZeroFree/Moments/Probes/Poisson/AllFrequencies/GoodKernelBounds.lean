@@ -4,6 +4,8 @@ public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.Reciprocals.Freq
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.KernelRegularity
 public import DedekindZetaZeroFree.Analysis.GaussianWeightConvolution
 
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.KernelNorm
+
 @[expose] public section
 
 namespace DedekindZetaZeroFree.Quantitative.RawGoodKernelBounds31
@@ -84,32 +86,6 @@ private theorem minus_inv_rect (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexity
     _ = C1 * (C2 * 2 ^ (ε / 2)) * (U ^ (ε / 2) * U ^ (ε / 2)) := by ring
     _ = _ := by rw [hU3]
 
-private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNorm D.recipe u)
-    (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ) (hZ : 0 < Z) :
-    ‖FixedData.rawKernel D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
-        ((v : ℂ) + (p.1 : ℂ) * Complex.I) Z‖ =
-      Z ^ (Scales.kernelExponent ξ.re y v) * frequencyNorm D.recipe u ^ (-v) *
-        WeightConvolution.weightModulus D ξ v y p *
-        ‖FixedData.rawFactor D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I)
-          ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ := by
-  unfold FixedData.rawKernel
-  have hZc : (0 : ℝ) < Z := hZ
-  have hqc : (0 : ℝ) < frequencyNorm D.recipe u := hq
-  have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
-    intro A B C X E R; ring
-  have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
-    intro A E X R; simp only [norm_mul]
-  rw [hre, hkey]
-  unfold WeightConvolution.weightModulus
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hZc, Complex.norm_cpow_eq_rpow_re_of_pos hqc]
-  simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
-    Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.add_im, Complex.sub_im,
-    Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, Complex.neg_im,
-    Complex.natCast_re, Complex.natCast_im, Complex.ofReal_natCast]
-  simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
-  unfold Scales.kernelExponent
-  try ring_nf
-
 private theorem rawFactor_combine (u : Frequency D.recipe) (U : ℝ) (hU : 0 < U)
     (hq : frequencyNorm D.recipe u < 2 * U) (hq0 : 0 < frequencyNorm D.recipe u) (ε : ℝ)
     (hε : 0 < ε) (ξ w z : ℂ) (C1 C2 C3 C4 P : ℝ)
@@ -164,7 +140,7 @@ private theorem rawKernel_majorant_aux (u : Frequency D.recipe) (U : ℝ) (hU0 :
       C * Z ^ (Scales.kernelExponent ξ.re Scales.wLine Scales.zLine) * U ^ ((1 / 25 : ℝ) + ε) *
         (WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p * (2 + |p.2|) ^ A) := by
   have hq0 : 0 < frequencyNorm D.recipe u := lt_of_lt_of_le hU0 hqU
-  rw [rawKernel_norm_eq D u hq0 ξ Scales.zLine Scales.wLine p Z hZ]
+  rw [RawKernelNorm.norm_rawKernel D u ξ Scales.zLine Scales.wLine p Z hZ]
   unfold Scales.kernelExponent
   have hqz : frequencyNorm D.recipe u ^ (-Scales.zLine) ≤ U ^ (-Scales.zLine) :=
     Real.rpow_le_rpow_of_nonpos hU0 hqU (by unfold Scales.zLine; norm_num)

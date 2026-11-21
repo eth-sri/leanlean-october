@@ -27,7 +27,7 @@ theorem literal_flat_multiplier_formula
     (literalIwasawa F ζ hζ K hK) t x k
   rw [hnorm]
   rw [KPLiteralExceptionalResidue.val_torus_root_compact, KPLiteralExceptionalResidue.val_torus_root_compact]
-  exact f.property.2.1 s t k
+  exact f.property.2.1 ..
 
 theorem literal_log_modulus_continuous
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K) :
@@ -439,23 +439,23 @@ private theorem chart_cont (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
   apply hh.congr_of_eventuallyEq
   exact Filter.Eventually.of_forall (fun y => KPLiteralChamber.right_insertion F ζ hζ y)
 
+section
+
+variable (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+  (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ)
+include K hK f n v s
+
 private def normalizedJet
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ)
     (g : KPLiteralRaw.G F ζ hζ) : ℂ :=
   Complex.exp (-s * (logM F ζ hζ K hK g : ℂ)) * jet F ζ hζ n v (f.val s) g
 
-private theorem normalizedJet_continuous
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ) :
+private theorem normalizedJet_continuous :
     Continuous (normalizedJet F ζ hζ K hK f n v s) := by
   exact (continuous_const.mul (Complex.continuous_ofReal.comp
     (literal_log_modulus_continuous F ζ hζ K hK))).cexp.mul
       (jet_continuous F ζ hζ n v (f.val s) (f.property.1 s).1)
 
 private theorem jet_zero_on_interior
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ)
     (g : KPLiteralRaw.G F ζ hζ) (hg : g ∈ interior {h | f.val 0 h = 0}) :
     jet F ζ hζ n v (f.val s) g = 0 := by
   have hb : archBase F ∈ archDomain F := by intro w; simp [archBase]
@@ -473,8 +473,6 @@ private theorem jet_zero_on_interior
   simp
 
 private theorem normalizedJet_interpolation
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
-    (f : Flat F ζ hζ K) (n : ℕ) (v : Fin n → ArchCoordinates F) (s : ℂ)
     (g : KPLiteralRaw.G F ζ hζ) :
     normalizedJet F ζ hζ K hK f n v s g =
       ∑ i : Fin (n+1), normalizedJet F ζ hζ K hK f n v (node n i) g * basisEval n i s := by
@@ -508,6 +506,8 @@ private theorem normalizedJet_interpolation
     exact continuous_finsetSum _ (fun i _ =>
       (normalizedJet_continuous F ζ hζ K hK f n v (node n i)).mul_const _)
   exact he.closure (normalizedJet_continuous F ζ hζ K hK f n v s) hc (hd g)
+
+end
 
 theorem literal_multiplier_spatial_jet_continuous
     (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
@@ -679,8 +679,13 @@ theorem rightJet_compactExtension_rational_eq
   unfold rightJet
   rw [he]
 
-theorem rightJet_induction_covariance (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+section
+
+variable (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K) (s : ℂ)
+  (j : KPGlobalResidualConstruction.Jet F)
+include K f
+
+theorem rightJet_induction_covariance
     (r : R F ζ hζ) (u : KPAdeles F) (g : G F ζ hζ) :
     rightJet F ζ hζ j (f.val s)
       ((r.val.val * KPGlobalTorusFunctionData.N F ζ hζ u) * g) =
@@ -701,8 +706,7 @@ theorem rightJet_induction_covariance (K : Subgroup (G F ζ hζ))
   rw [he, iteratedFDeriv_const_smul_apply' (jet_chart_smooth F ζ hζ K f s g j.1)]
   rfl
 
-theorem norm_rightJet_induction_covariance (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+theorem norm_rightJet_induction_covariance
     (r : R F ζ hζ) (u : KPAdeles F) (g : G F ζ hζ) :
     ‖rightJet F ζ hζ j (f.val s)
       ((r.val.val * KPGlobalTorusFunctionData.N F ζ hζ u) * g)‖ =
@@ -719,8 +723,7 @@ theorem norm_rightJet_induction_covariance (K : Subgroup (G F ζ hζ))
   norm_num
   ring
 
-theorem rightJet_N_invariant (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+theorem rightJet_N_invariant
     (x : KPAdeles F) (g : G F ζ hζ) :
     rightJet F ζ hζ j (f.val s) (KPGlobalTorusFunctionData.N F ζ hζ x * g) =
       rightJet F ζ hζ j (f.val s) g := by
@@ -728,16 +731,14 @@ theorem rightJet_N_invariant (K : Subgroup (G F ζ hζ))
     (1 : R F ζ hζ) x g
   simpa [KPGlobalExceptionalParameter.realLogPower] using h
 
-theorem rightJet_torus_root (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+theorem rightJet_torus_root
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
     rightJet F ζ hζ j (f.val s) ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       rightJet F ζ hζ j (f.val s) (t.val * g) := by
   rw [coveredTorus_normalizes_upperRoot F ζ hζ t x, mul_assoc,
     rightJet_N_invariant]
 
-theorem normalized_rightJet_R_invariant (K : Subgroup (G F ζ hζ))
-    (f : Flat F ζ hζ K) (s : ℂ) (j : KPGlobalResidualConstruction.Jet F)
+theorem normalized_rightJet_R_invariant
     (r : R F ζ hζ) (t : KPGlobalTorusFunctionData.E F ζ hζ) (g : G F ζ hζ) :
     ‖rightJet F ζ hζ j (f.val s) ((r.val * t).val * g)‖ /
         (((KPGlobalTorusFunctionData.delta F ζ hζ (r.val * t) : NNReal) : ℝ)) ^
@@ -756,6 +757,8 @@ theorem normalized_rightJet_R_invariant (K : Subgroup (G F ζ hζ))
   rw [Subgroup.coe_mul, mul_assoc, h, map_mul, Units.val_mul, NNReal.coe_mul,
     Real.mul_rpow (hd r.val).le (hd t).le]
   exact mul_div_mul_left _ _ (ne_of_gt (Real.rpow_pos_of_pos (hd r.val) _))
+
+end
 
 theorem rightJet_zero (v : Functions F ζ hζ) (g : G F ζ hζ)
     (m : Fin 0 → KPGlobalResidualConstruction.ArchCoordinates F) :

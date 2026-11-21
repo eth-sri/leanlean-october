@@ -294,11 +294,7 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
       ⟨⟨rfl⟩, (KPLocalChartTopology.complexCoordinates F ζ hζ w).injective⟩
     exact hi.secondCountableTopology
   | inr q =>
-    letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
-    letI : TopologicalSpace.SeparableSpace (q.adicCompletion F) :=
-      ⟨⟨Set.range (algebraMap F (q.adicCompletion F)), Set.countable_range _,
-        HeightOneSpectrum.denseRange_algebraMap F q⟩⟩
-    letI : SecondCountableTopology (q.adicCompletion F) := inferInstance
+    letI := KPAdelicTopology.completion_secondCountable F q
     letI : SecondCountableTopology (KPHilbert.Completion F (Sum.inr q)) := by
       change SecondCountableTopology (q.adicCompletion F)
       infer_instance
@@ -360,39 +356,10 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
     exact Set.mem_iUnion.mpr ⟨⟨g, hg⟩, hx⟩
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem restricted_secondCountable : SecondCountableTopology (RestrictedCover F ζ hζ) := by
-  letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
-  letI : Countable (𝓞 F) := Function.Injective.countable RingOfIntegers.coe_injective
-  letI : Countable (Ideal (𝓞 F)) := by
-    have h : Function.Surjective (fun s : Finset (𝓞 F) => Ideal.span (↑s : Set (𝓞 F))) := by
-      intro I
-      exact IsNoetherian.noetherian I
-    exact h.countable
-  letI : Countable (HeightOneSpectrum (𝓞 F)) :=
-    Function.Injective.countable (fun _ _ h => HeightOneSpectrum.ext h)
-  letI : ∀ v : KPHilbert.Place F, SecondCountableTopology
-      (KPLocalCover.CubicGL2Raw F ζ hζ v) := local_secondCountable F ζ hζ
-  let X := fun v : KPHilbert.Place F => KPLocalCover.CubicGL2Raw F ζ hζ v
-  let C := fun v : KPHilbert.Place F => (compact F ζ hζ v : Set (X v))
-  let f (s : Finset (KPHilbert.Place F)) :=
-    RestrictedProduct.inclusion X C (Filter.le_principal_iff.mpr s.finite_toSet.compl_mem_cofinite)
-  let U (s : Finset (KPHilbert.Place F)) : Set (RestrictedCover F ζ hζ) := Set.range (f s)
-  have hf (s : Finset (KPHilbert.Place F)) : Topology.IsOpenEmbedding (f s) :=
-    RestrictedProduct.isOpenEmbedding_inclusion_principal (compact_open F ζ hζ) _
-  letI (s : Finset (KPHilbert.Place F)) :
-      SecondCountableTopology (RestrictedProduct X C (Filter.principal (↑s : Set _)ᶜ)) :=
-    RestrictedProduct.isEmbedding_coe_of_principal.secondCountableTopology
-  letI : ∀ s : Finset (KPHilbert.Place F), SecondCountableTopology (U s) :=
-    fun s => (hf s).toIsEmbedding.toHomeomorph.symm.secondCountableTopology
-  apply TopologicalSpace.secondCountableTopology_of_countable_cover (U := U) (fun s => (hf s).isOpen_range)
-  apply Set.eq_univ_of_forall
-  intro a
-  have ha : {v | a v ∉ compact F ζ hζ v}.Finite := a.2
-  apply Set.mem_iUnion_of_mem ha.toFinset
-  refine Set.mem_range.mpr ⟨⟨a.1, ?_⟩, rfl⟩
-  intro v hv
-  change a v ∈ compact F ζ hζ v
-  simpa using hv
+theorem restricted_secondCountable : SecondCountableTopology (RestrictedCover F ζ hζ) := by
+  letI := KPAdelicTopology.finitePlace_countable F
+  letI := local_secondCountable F ζ hζ
+  exact KPAdelicTopology.restrictedProduct_secondCountable _ _ (compact_open F ζ hζ)
 
 theorem adelic_topological_cover :
     T2Space (CubicGL2Adelic F ζ hζ) ∧ LocallyCompactSpace (CubicGL2Adelic F ζ hζ) ∧

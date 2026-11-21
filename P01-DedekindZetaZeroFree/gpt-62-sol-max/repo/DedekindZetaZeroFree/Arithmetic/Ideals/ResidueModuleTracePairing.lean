@@ -18,11 +18,14 @@ namespace DedekindZetaZeroFree.Hecke
 
 variable {F : Type} [Field F] [NumberField F]
 
-theorem fractionalIdealQuotient_isTorsionBySet
-    (m : Ideal (NumberField.RingOfIntegers F))
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (hJI : J ≤ I)
-    (hratio : I * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) = J) :
+section
+
+variable (m : Ideal (NumberField.RingOfIntegers F))
+  (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJI : J ≤ I)
+  (hratio : I * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) = J)
+include m I J hJI hratio
+
+theorem fractionalIdealQuotient_isTorsionBySet :
     Module.IsTorsionBySet (NumberField.RingOfIntegers F)
       (fractionalIdealQuotient I J) (m : Set (NumberField.RingOfIntegers F)) := by
   apply (Module.isTorsionBySet_quotient_iff _ _).mpr
@@ -33,26 +36,24 @@ theorem fractionalIdealQuotient_isTorsionBySet
     FractionalIdeal.mul_mem_mul x.property
       ((FractionalIdeal.mem_coeIdeal _).mpr ⟨r, hr, rfl⟩)
 
-@[instance_reducible] def fractionalIdealQuotientResidueModule
-    (m : Ideal (NumberField.RingOfIntegers F))
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (hJI : J ≤ I)
-    (hratio : I * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) = J) :
+@[instance_reducible] def fractionalIdealQuotientResidueModule :
     Module (NumberField.RingOfIntegers F ⧸ m) (fractionalIdealQuotient I J) :=
   (fractionalIdealQuotient_isTorsionBySet m I J hJI hratio).module
 
-@[simp] theorem fractionalIdealQuotient_mk_smul
-    (m : Ideal (NumberField.RingOfIntegers F))
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (hJI : J ≤ I)
-    (hratio : I * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) = J) :
+@[simp] theorem fractionalIdealQuotient_mk_smul :
     letI := fractionalIdealQuotientResidueModule m I J hJI hratio
     ∀ (r : NumberField.RingOfIntegers F) (x : fractionalIdealQuotient I J),
       Ideal.Quotient.mk m r • x = r • x := by
   exact (fractionalIdealQuotient_isTorsionBySet m I J hJI hratio).mk_smul
 
+end
+
+section
+
+variable (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
+include m hm
+
 def idealRatioResidueLinearEquiv
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (hI : I ≠ 0) (hJI : J ≤ I)
     (hratio : I * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) = J) :
@@ -68,7 +69,6 @@ def idealRatioResidueLinearEquiv
       exact (idealRatioResidueEquiv m hm I J hI hJI hratio).map_smul r x }
 
 @[simp] theorem idealRatioResidueLinearEquiv_apply
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (hI : I ≠ 0) (hJI : J ≤ I)
     (hratio : I * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) = J)
@@ -76,8 +76,7 @@ def idealRatioResidueLinearEquiv
     idealRatioResidueLinearEquiv m hm I J hI hJI hratio x =
       idealRatioResidueEquiv m hm I J hI hJI hratio x := rfl
 
-@[instance_reducible] def residueTraceQuotientModule
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) :
+@[instance_reducible] def residueTraceQuotientModule :
     Module (NumberField.RingOfIntegers F ⧸ m)
       (fractionalIdealQuotient
         (traceDualFractionalIdeal (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
@@ -88,8 +87,7 @@ def idealRatioResidueLinearEquiv
     (by simpa only [one_mul] using
       traceDualFractionalIdeal_conductorScaled_mul m hm 1 one_ne_zero)
 
-def residueTraceQuotientPairing
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) :
+def residueTraceQuotientPairing :
     (NumberField.RingOfIntegers F ⧸ m) →
       fractionalIdealQuotient
         (traceDualFractionalIdeal (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
@@ -98,8 +96,7 @@ def residueTraceQuotientPairing
     ((residueFractionalIdeal_ne_zero_iff m).mpr hm)
     (residueFractionalIdeal_le_one m) (residueFractionalOneEquiv m k) t
 
-theorem residueTraceQuotientPairing_balance
-    (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) :
+theorem residueTraceQuotientPairing_balance :
     letI := residueTraceQuotientModule m hm
     ∀ (r k : NumberField.RingOfIntegers F ⧸ m)
       (t : fractionalIdealQuotient
@@ -117,6 +114,8 @@ theorem residueTraceQuotientPairing_balance
       (residueFractionalIdeal_le_one m) (residueFractionalOneEquiv m k) (r • t)
   rw [(residueFractionalOneEquiv m).map_smul]
   exact traceQuotientPairing_balance _ _ _ _ _ r _ t
+
+end
 
 end DedekindZetaZeroFree.Hecke
 

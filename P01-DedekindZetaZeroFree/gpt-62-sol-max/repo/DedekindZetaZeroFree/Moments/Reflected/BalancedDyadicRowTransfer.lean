@@ -15,8 +15,7 @@ namespace ActualRowTransfer
 variable {F : Type} [Field F] [NumberField F]
 
 def rowIdeal (A : SArithmeticData F) (m : ThetaReflectionData.Row A) : A.Exterior :=
-  A.exteriorIdealEquiv.symm ⟨Ideal.span {m.val}, by
-    exact fun h => m.property (Ideal.span_singleton_eq_bot.mp h)⟩
+  A.exteriorIdealEquiv.symm ⟨Ideal.span {m.val}, fun h => m.property (Ideal.span_singleton_eq_bot.mp h)⟩
 
 def canonicalRow (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (u : A.Rˣ) (I : A.Exterior) : ThetaReflectionData.Row A :=

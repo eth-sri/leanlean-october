@@ -460,25 +460,10 @@ variable (ρ : X_U F ζ hζ U → ℂ)
 
 structure MultiplierData where
   M_ρ : HU →L[ℂ] HU
-  m_ρ_K : H_K F ζ hζ U R P H (tsupport ρ) →L[ℂ] HU
   global_formula : ∀ u : HU,
     ((M_ρ u).val : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ U → ℂ)
       =ᵐ[KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U]
         (fun x => ρ (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) * u.val x)
-  localized_formula : ∀ v : H_K F ζ hζ U R P H (tsupport ρ),
-    ((m_ρ_K v).val : KPContSectorCoveredQuotientVocabulary.CoveredSpherical F ζ hζ U → ℂ)
-      =ᵐ[KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R U]
-        (fun x => ρ (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x) *
-          (((sectorLineIsometry F ζ hζ U R P H).symm
-            (zeroExtension F ζ hζ U R P H (tsupport ρ)
-              (isClosed_tsupport ρ).measurableSet v)).val x))
-  multiplication_factor : M_ρ = m_ρ_K.comp
-    (res_K F ζ hζ U R P H (tsupport ρ) (isClosed_tsupport ρ).measurableSet)
-
-  resolvent_factor : ∀ hρ : HasCompactSupport ρ,
-    M_ρ.comp BU = m_ρ_K.comp
-      ((r_K F ζ hζ U R P H μG hμG hR realization (tsupport ρ) hρ).comp
-        (b_U F ζ hζ U R P H μG hμG hR realization))
   localized_compact : IsCompactOperator (M_ρ.comp BU)
 
 theorem multiplierData_nonempty (hρ : SmoothScalar F ζ hζ U R P H ρ)
@@ -507,23 +492,6 @@ theorem multiplierData_nonempty (hρ : SmoothScalar F ζ hζ U R P H ρ)
     fun _ => rfl
   have hglob : ∀ u : HU, ((M u).val : CoveredSpherical F ζ hζ U → ℂ)
       =ᵐ[coveredMeasure F ζ hζ R U] (fun x => ρ (q F ζ hζ U x) * u.val x) := fun u => hM u
-  have hloc : ∀ v : H_K F ζ hζ U R P H (tsupport ρ),
-      ((m v).val : CoveredSpherical F ζ hζ U → ℂ)
-      =ᵐ[coveredMeasure F ζ hζ R U]
-        (fun x => ρ (q F ζ hζ U x) *
-          (((sectorLineIsometry F ζ hζ U R P H).symm
-            (zeroExtension F ζ hζ U R P H (tsupport ρ)
-              (isClosed_tsupport ρ).measurableSet v)).val x)) := by
-    intro v
-    have h := hM (ext v)
-    rw [hext_apply v] at h
-    change ((M (ext v)).val : CoveredSpherical F ζ hζ U → ℂ)
-      =ᵐ[coveredMeasure F ζ hζ R U]
-        (fun x => ρ (q F ζ hζ U x) *
-          (((sectorLineIsometry F ζ hζ U R P H).symm
-            (zeroExtension F ζ hζ U R P H (tsupport ρ)
-              (isClosed_tsupport ρ).measurableSet v)).val x))
-    exact h
   have hmul : M = m.comp
       (res_K F ζ hζ U R P H (tsupport ρ) (isClosed_tsupport ρ).measurableSet) := by
     apply ContinuousLinearMap.ext
@@ -556,7 +524,7 @@ theorem multiplierData_nonempty (hρ : SmoothScalar F ζ hζ U R P H ρ)
     rw [hresK]
     simp only [ContinuousLinearMap.comp_assoc,
       (b_U_properties F ζ hζ U R P H μG hμG hR realization).1]
-  refine ⟨⟨M, m, hglob, hloc, hmul, hres, ?_⟩⟩
+  refine ⟨⟨M, hglob, ?_⟩⟩
   rw [hres hcρ]
   exact ((restriction_isCompactOperator F ζ hζ U R P H μG hμG hR realization
     (tsupport ρ) hcρ).comp_clm (b_U F ζ hζ U R P H μG hμG hR realization)).continuous_comp

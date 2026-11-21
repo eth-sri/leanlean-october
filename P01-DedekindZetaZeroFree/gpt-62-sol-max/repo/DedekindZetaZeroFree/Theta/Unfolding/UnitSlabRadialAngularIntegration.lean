@@ -74,8 +74,7 @@ noncomputable instance countable_unitCoordinateLattice :
     (by
       intro g
       obtain ⟨z, hz⟩ := g.prop
-      refine ⟨z, Subtype.ext ?_⟩
-      simpa using hz)
+      exact ⟨z, Subtype.ext hz⟩)
 
 open Classical in
 

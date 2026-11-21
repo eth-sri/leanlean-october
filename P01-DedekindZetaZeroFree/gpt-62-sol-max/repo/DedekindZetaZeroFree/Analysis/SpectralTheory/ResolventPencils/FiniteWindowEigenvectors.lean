@@ -32,7 +32,7 @@ private lemma eigenvector_local_radius (μ : ℝ) (hn : μ + 1 ≠ 0) (J : Set �
  ∃ ε : ℝ, 0 < ε ∧ ∀ x : ℝ, |x - 1 / (1 + μ)| < ε → x ≠ 0 ∧ x⁻¹ - 1 ∈ J := by
  let t := 1 / (1 + μ)
  have ht : t ≠ 0 := by simpa [t, add_comm] using inv_ne_zero hn
- have he : t⁻¹ - 1 = μ := by simp [t, add_comm, hn]
+ have he : t⁻¹ - 1 = μ := by simp [t, add_comm]
  have hc : ContinuousAt (fun x : ℝ => x⁻¹ - 1) t :=
   (continuousAt_id.inv₀ ht).sub continuousAt_const
  have hj : (fun x : ℝ => x⁻¹ - 1) ⁻¹' J ∈ nhds t :=

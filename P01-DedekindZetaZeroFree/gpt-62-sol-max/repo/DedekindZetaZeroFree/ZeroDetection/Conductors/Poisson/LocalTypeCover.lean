@@ -87,29 +87,12 @@ theorem raw_local_tuple_cover (R : PrincipalMellin.ActualRecipe S η) :
     ∃ L : Set (Detector.FixedSResidue.FullLocalCharacters R.A), L.Finite ∧
       (∀ σ ∈ L, Detector.FixedSResidue.HasFiniteOrder R.A σ) ∧
       ∀ ω : Frequency R → Detector.PrimitiveFrequencyCharacter F,
-        (∀ (u : Frequency R) (U : AllRowEuler.InitialSeparation.RawFrequency R.A),
-          U.u = u.val.val → ∀ I : R.A.Exterior,
-            AllRowEuler.InitialSeparation.minusExteriorCoefficient R.σ R.target U I =
-              Detector.deletedPrimitiveIdealCoefficient F (ω u)
-                (RawHeckeRows.rawDeletionSet U) I.val) →
+        RawDenominatorExistence.Identifies R ω →
         ∀ u : Frequency R, ∃ σ ∈ L,
           Detector.HasFixedFullSLocalTuple F R.A (ω u) σ := by
-  classical
-  letI : IsPrincipalIdealRing R.A.R :=
-    R.A.principalIdealRing_of_classGroup_subsingleton R.classKilled
-  have hSix : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
-      ¬ (Ideal.absNorm v.asIdeal).Coprime 6 →
-        v ∈ (R.A.Sf : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) := by
-    intro v hv
-    by_contra hout
-    exact hv (ArithmeticContext.actual_outside_norm_coprime_six R.A v hout)
-  obtain ⟨V, e, he, hnorm⟩ :=
-    MinusArithmetic.actual_detector_frequency_representatives R
-  obtain ⟨K⟩ := Detector.kummer_frequency_family_exists F R.A.zeta12
-    R.A.primitive_zeta12 R.σ (R.A.Sf : Set _) R.A.Sf.finite_toSet hSix V
-  obtain ⟨η0, hη0, _, htarget⟩ := MinusArithmetic.target_primitive_inducer R
-  obtain ⟨T, hT⟩ :=
-    MinusArithmetic.raw_minus_family_identification R V e he K η0 hη0 htarget
+  letI : IsPrincipalIdealRing R.A.R := R.A.principalIdealRing_of_classGroup_subsingleton R.classKilled
+  obtain ⟨V, e, K, η0, hη0, T, hT, _⟩ := RawDenominatorExistence.exists_identified_family R
+  have hSix := RawDenominatorExistence.mem_bad_of_not_coprime_six R
   obtain ⟨L, hL, hOrder, hType⟩ :=
     frequency_denominator_full_local_tuples F R.A.zeta12 R.A.primitive_zeta12
       R.σ (R.A.Sf : Set _) R.A.Sf.finite_toSet hSix η0 hη0 R.A rfl

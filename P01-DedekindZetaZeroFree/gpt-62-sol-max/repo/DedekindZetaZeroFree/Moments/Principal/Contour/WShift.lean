@@ -72,19 +72,17 @@ theorem lvl2 {α β : Type*} [MeasurableSpace α] [MeasurableSpace β] (μ : Mea
     ‖∫ a, ∫ b, f a b ∂ν ∂μ‖ ≤ ∫ p, m p ∂(μ.prod ν) := by
   refine lvl2' μ ν (fun a => ∫ b, f a b ∂ν) m hm ?_
   filter_upwards [hm.prod_right_ae] with a ha
-  exact lvl1 ν (f a) (fun b => m (a, b)) ha (Filter.Eventually.of_forall (h a))
+  solve_by_elim [lvl1, Filter.Eventually.of_forall]
 
 open MeasureTheory in
 theorem lvl3 (F : ℝ → ℝ → ℝ → ℂ) (m : ℝ × ℝ × ℝ → ℝ) (hm : Integrable m)
     (h : ∀ a b d, ‖F a b d‖ ≤ m (a, b, d)) :
     ‖∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ, F a b d‖ ≤ ∫ p, m p := by
-  have hm' : Integrable m ((volume : Measure ℝ).prod ((volume : Measure ℝ).prod
-      (volume : Measure ℝ))) := hm
+  have hm' := hm
   refine lvl2' (volume : Measure ℝ) ((volume : Measure ℝ).prod (volume : Measure ℝ))
     (fun a => ∫ b : ℝ, ∫ d : ℝ, F a b d) m hm' ?_
   filter_upwards [hm'.prod_right_ae] with a ha
-  exact lvl2 (volume : Measure ℝ) (volume : Measure ℝ) (F a) (fun q => m (a, q)) ha
-    (fun b d => h a b d)
+  solve_by_elim [lvl2]
 
 open MeasureTheory in
 theorem cvi_iter_eq (x y v : ℝ) (k : ℂ → ℂ → ℂ → ℂ) :
@@ -198,64 +196,42 @@ theorem wsKR_eq (Z : ℝ) (hZ : 2 ≤ Z) (a d : ℝ) :
   unfold comparisonVerticalIntegral at h
   exact h.symm
 
+private theorem wsKP_majorant (y : ℝ) (hy₁ : 9 / 10 - EulerDomain.pad ≤ y) (hy₂ : y ≠ 1) :
+    ∃ g : ℝ × ℝ × ℝ → ℝ, MeasureTheory.Integrable g ∧ (∀ p, 0 ≤ g p) ∧
+      ∀ Z : ℝ, 2 ≤ Z → ∀ p : ℝ × ℝ × ℝ,
+        ‖wsKP D (ActualRowCount.principalRow D) Z y p.1 p.2.1 p.2.2‖ ≤
+        Z ^ Scales.kernelExponent Scales.rightLine y (1 / 6 + Scales.contourOffset) * g p := by
+  have hδ : (0 : ℝ) < Scales.contourOffset := by norm_num [Scales.contourOffset]
+  obtain ⟨g, hgi, hg0, hg⟩ := PrincipalKernelMajorants.kernel_majorant_paddedBox₂ D _
+    (ActualRowCount.principalRow_u D)
+    Scales.rightLine Scales.rightLine y y (1 / 6 + Scales.contourOffset) (1 / 6 + Scales.contourOffset)
+    (fun x hx => by linarith [hx.1])
+    (fun y' hy' => by simpa only [le_antisymm hy'.2 hy'.1] using And.intro hy₁ hy₂)
+    (fun v hv => by linarith [hv.1])
+  exact ⟨g, hgi, hg0, hg _ ⟨le_rfl, le_rfl⟩ _ ⟨le_rfl, le_rfl⟩ _ ⟨le_rfl, le_rfl⟩⟩
+
 set_option maxHeartbeats 1000000 in
 theorem wsKP_integrable (Z y : ℝ) (hZ : 2 ≤ Z) (hy1 : 9 / 10 - EulerDomain.pad ≤ y)
     (hy2 : y ≠ 1) :
     MeasureTheory.Integrable
       (fun p : ℝ × ℝ × ℝ => wsKP D (ActualRowCount.principalRow D) Z y p.1 p.2.1 p.2.2) := by
-  have hu := ActualRowCount.principalRow_u D
-  have hδ : (0 : ℝ) < Scales.contourOffset := by unfold Scales.contourOffset; norm_num
-  have hpad : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
-  obtain ⟨g, hgi, hg0, hg⟩ := PrincipalKernelMajorants.kernel_majorant_paddedBox₂ D _ hu
-    Scales.rightLine Scales.rightLine y y (1 / 6 + Scales.contourOffset) (1 / 6 + Scales.contourOffset)
-    (fun x hx => by linarith [hx.1])
-    (fun y' hy' => by
-      have h' : y' = y := le_antisymm hy'.2 hy'.1
-      rw [h']
-      exact ⟨hy1, hy2⟩)
-    (fun v hv => by linarith [hv.1])
+  obtain ⟨g, hgi, _, hg⟩ := wsKP_majorant D y hy1 hy2
+  have hδ : (0 : ℝ) < Scales.contourOffset := by norm_num [Scales.contourOffset]
+  have hpad : (0 : ℝ) < EulerDomain.pad := by norm_num [EulerDomain.pad]
   have hcont : Continuous
       (fun p : ℝ × ℝ × ℝ => wsKP D (ActualRowCount.principalRow D) Z y p.1 p.2.1 p.2.2) := by
-    have han := PrincipalKernelMajorants.kernel_analytic_paddedBox₂ D _ hu Z (by linarith)
-    have hmap : Continuous (fun p : ℝ × ℝ × ℝ =>
-        (((Scales.rightLine : ℂ) + (p.1 : ℂ) * Complex.I), ((y : ℂ) + (p.2.1 : ℂ) * Complex.I),
-          (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (p.2.2 : ℂ) * Complex.I))) := by fun_prop
-    set G : (ℂ × ℂ × ℂ) → ℂ := fun p => kernelWith D (PrincipalKernelDefinitions.rowContLocal D)
-      (ActualRowCount.principalRow D) p.1 p.2.1 p.2.2 Z with hG
-    set f : ℝ × ℝ × ℝ → (ℂ × ℂ × ℂ) := fun p =>
-        (((Scales.rightLine : ℂ) + (p.1 : ℂ) * Complex.I), ((y : ℂ) + (p.2.1 : ℂ) * Complex.I),
-          (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (p.2.2 : ℂ) * Complex.I)) with hf
-    have hmaps : Set.MapsTo f Set.univ
-        ((EulerDomain.paddedBox₂ ∩ PrincipalKernelMajorants.xiPrincipal ∩
-          PrincipalKernelMajorants.zPrincipal) \ PrincipalKernelMajorants.singW) := by
-      intro p _
-      have e1 : ((Scales.rightLine : ℂ) + (p.1 : ℂ) * Complex.I).re = Scales.rightLine := by simp
-      have e2 : ((y : ℂ) + (p.2.1 : ℂ) * Complex.I).re = y := by simp
-      have e3 : (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (p.2.2 : ℂ) * Complex.I).re =
-          1 / 6 + Scales.contourOffset := by simp
-      have hne : ((y : ℂ) + (p.2.1 : ℂ) * Complex.I) ≠ 1 := by
-        intro h
-        apply hy2
-        have := congrArg Complex.re h
-        rw [e2] at this
-        simpa using this
-      simp only [Set.mem_diff, Set.mem_inter_iff, EulerDomain.paddedBox₂, EulerDomain.box,
-        Set.mem_setOf_eq, PrincipalKernelMajorants.xiPrincipal, PrincipalKernelMajorants.zPrincipal,
-        PrincipalKernelMajorants.singW]
-      refine ⟨⟨⟨⟨?_, ?_, ?_⟩, ?_⟩, ?_⟩, ?_⟩
-      · linarith [e1, hpad]
-      · linarith [e2, hy1]
-      · linarith [e3, hpad]
-      · linarith [e1, hδ]
-      · linarith [e3, hδ]
-      · exact hne
-    have hcomp : ContinuousOn (G ∘ f) Set.univ :=
-      (han.continuousOn : ContinuousOn G _).comp hmap.continuousOn hmaps
-    exact continuousOn_univ.mp hcomp
-  refine MeasureTheory.Integrable.mono'
-    (hgi.const_mul (Z ^ Scales.kernelExponent Scales.rightLine y (1 / 6 + Scales.contourOffset))) hcont.aestronglyMeasurable
-    (Filter.Eventually.of_forall fun p => ?_)
-  exact hg Scales.rightLine ⟨le_rfl, le_rfl⟩ y ⟨le_rfl, le_rfl⟩ _ ⟨le_rfl, le_rfl⟩ Z hZ p
+    apply (PrincipalKernelMajorants.kernel_analytic_paddedBox₂ D _
+      (ActualRowCount.principalRow_u D) Z (by linarith)).continuousOn.comp_continuous
+      (f := fun p : ℝ × ℝ × ℝ => ((Scales.rightLine : ℂ) + (p.1 : ℂ) * Complex.I,
+        (y : ℂ) + (p.2.1 : ℂ) * Complex.I,
+        (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (p.2.2 : ℂ) * Complex.I))) (by fun_prop)
+    intro p
+    have hne : (y : ℂ) + (p.2.1 : ℂ) * Complex.I ≠ 1 :=
+      fun h => hy2 (by simpa using congrArg Complex.re h)
+    simp [EulerDomain.paddedBox₂, EulerDomain.box, PrincipalKernelMajorants.xiPrincipal,
+      PrincipalKernelMajorants.zPrincipal, PrincipalKernelMajorants.singW, hne]
+    grind only
+  exact MeasureTheory.Integrable.mono' (hgi.const_mul _) hcont.aestronglyMeasurable (.of_forall (hg Z hZ))
 
 theorem JCont_w_shift (Z : ℝ) (hZ : 2 ≤ Z) :
     JCont D (principalRows D) Scales.rightLine Scales.rightLine (1 / 6 + Scales.contourOffset) Z =
@@ -271,27 +247,16 @@ theorem JCont_w_shift (Z : ℝ) (hZ : 2 ≤ Z) :
   unfold Rw
   rw [JCont_eq_wsKP D Z Scales.rightLine, JCont_eq_wsKP D Z (9 / 10), Jwres_eq_wsKR]
   set c : ℂ := (2 * (Real.pi : ℂ))⁻¹ with hc
-  have e1 : ∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a b d =
-      ∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a q.1 q.2 :=
-    MeasureTheory.integral_congr_ae hP1
-  have e2 : ∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a b d =
-      ∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a q.1 q.2 :=
-    MeasureTheory.integral_congr_ae hQ1
+  have e1 := MeasureTheory.integral_congr_ae hP1
+  have e2 := MeasureTheory.integral_congr_ae hQ1
   have e3 : ∫ a : ℝ, ∫ d : ℝ, wsKR D (ActualRowCount.principalRow D) Z a d =
       ∫ a : ℝ, (c * (∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a q.1 q.2) -
         c * (∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a q.1 q.2)) := by
     refine MeasureTheory.integral_congr_ae ?_
     filter_upwards [hP2, hP3, hQ2, hQ3] with a ha2 ha3 hb2 hb3
-    have hd : ∀ d : ℝ, wsKR D (ActualRowCount.principalRow D) Z a d =
-        c * (∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a b d) - c * (∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a b d) :=
-      fun d => wsKR_eq D Z hZ a d
-    calc ∫ d : ℝ, wsKR D (ActualRowCount.principalRow D) Z a d
-        = ∫ d : ℝ, (c * (∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a b d) - c * (∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a b d)) := by
-          simp only [hd]
-      _ = c * (∫ d : ℝ, ∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a b d) - c * (∫ d : ℝ, ∫ b : ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a b d) := by
-          rw [MeasureTheory.integral_sub (ha3.const_mul c) (hb3.const_mul c),
-            MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
-      _ = _ := by rw [ha2, hb2]
+    simp_rw [wsKR_eq D Z hZ a]
+    rw [MeasureTheory.integral_sub (ha3.const_mul c) (hb3.const_mul c),
+      MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul, ha2, hb2]
   have e4 : ∫ a : ℝ, (c * (∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a q.1 q.2) -
         c * (∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z (9 / 10) a q.1 q.2)) =
       c * (∫ a : ℝ, ∫ q : ℝ × ℝ, wsKP D (ActualRowCount.principalRow D) Z Scales.rightLine a q.1 q.2) -
@@ -307,57 +272,19 @@ theorem Jpr_eq (Z : ℝ) (hZ : 2 ≤ Z) : Jpr D Z = Jwres D Z + Rw D Z := by
 theorem Rw_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
       ‖Rw D Z‖ ≤ C * Z ^ (Scales.mainExponent - 37749867 / 1000000000) := by
-  classical
-  have hu : (ActualRowCount.principalRow D).u = 1 := ActualRowCount.principalRow_u D
-  have hδ : (0 : ℝ) < Scales.contourOffset := by unfold Scales.contourOffset; norm_num
-  have hpad : (0 : ℝ) < EulerDomain.pad := by unfold EulerDomain.pad; norm_num
-  obtain ⟨g, hgi, hg0, hg⟩ := PrincipalKernelMajorants.kernel_majorant_paddedBox₂ D
-    (ActualRowCount.principalRow D) hu
-    Scales.rightLine Scales.rightLine (9 / 10) (9 / 10) (1 / 6 + Scales.contourOffset) (1 / 6 + Scales.contourOffset)
-    (fun x hx => by linarith [hx.1])
-    (fun y hy => by
-      have h9 : y = 9 / 10 := le_antisymm hy.2 hy.1
-      subst h9
-      exact ⟨by linarith, by norm_num⟩)
-    (fun v hv => by linarith [hv.1])
-  have hI : 0 ≤ ∫ p, g p := MeasureTheory.integral_nonneg hg0
-  set K : ℝ := ‖((2 * (Real.pi : ℂ))⁻¹)‖ ^ 3 * ∫ p, g p with hK
-  have hK0 : 0 ≤ K := mul_nonneg (pow_nonneg (norm_nonneg _) _) hI
-  refine ⟨K + 1, by linarith, fun Z hZ => ?_⟩
-  have hZ0 : 0 ≤ Z ^ (Scales.mainExponent - 37749867 / 1000000000) :=
-    Real.rpow_nonneg (by linarith) _
-  have hE := E_remainder
-  have hRw : Rw D Z = ((2 * (Real.pi : ℂ))⁻¹) ^ 3 * ∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ,
-      kernelWith D (PrincipalKernelDefinitions.rowContLocal D) (ActualRowCount.principalRow D)
-        ((Scales.rightLine : ℂ) + (a : ℂ) * Complex.I)
-        (((9 / 10 : ℝ) : ℂ) + (b : ℂ) * Complex.I)
-        (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (d : ℂ) * Complex.I) Z := by
-    unfold Rw JCont
-    rw [principalRows_eq, finsum_mem_singleton, rowCont_eq_local]
-    exact cvi_iter_eq _ _ _ _
-  have hbd := lvl3 (fun a b d => kernelWith D (PrincipalKernelDefinitions.rowContLocal D)
-      (ActualRowCount.principalRow D)
-      ((Scales.rightLine : ℂ) + (a : ℂ) * Complex.I)
-      (((9 / 10 : ℝ) : ℂ) + (b : ℂ) * Complex.I)
-      (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (d : ℂ) * Complex.I) Z)
-    (fun p => Z ^ (Scales.kernelExponent Scales.rightLine (9 / 10) (1 / 6 + Scales.contourOffset)) * g p)
-    (hgi.const_mul _)
-    (fun a b d => hg Scales.rightLine ⟨le_rfl, le_rfl⟩ (9 / 10) ⟨le_rfl, le_rfl⟩ _ ⟨le_rfl, le_rfl⟩
-      Z hZ (a, b, d))
-  rw [hE] at hbd
-  rw [hRw, norm_mul, norm_pow]
-  calc ‖((2 * (Real.pi : ℂ))⁻¹)‖ ^ 3 * ‖∫ a : ℝ, ∫ b : ℝ, ∫ d : ℝ,
-        kernelWith D (PrincipalKernelDefinitions.rowContLocal D) (ActualRowCount.principalRow D)
-        ((Scales.rightLine : ℂ) + (a : ℂ) * Complex.I)
-        (((9 / 10 : ℝ) : ℂ) + (b : ℂ) * Complex.I)
-        (((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (d : ℂ) * Complex.I) Z‖
-      ≤ ‖((2 * (Real.pi : ℂ))⁻¹)‖ ^ 3 *
-          ∫ p, Z ^ (Scales.mainExponent - 37749867 / 1000000000) * g p :=
-        mul_le_mul_of_nonneg_left hbd (pow_nonneg (norm_nonneg _) _)
-    _ = K * Z ^ (Scales.mainExponent - 37749867 / 1000000000) := by
-        rw [MeasureTheory.integral_const_mul, hK]; ring
-    _ ≤ (K + 1) * Z ^ (Scales.mainExponent - 37749867 / 1000000000) :=
-        mul_le_mul_of_nonneg_right (by linarith) hZ0
+  obtain ⟨g, hgi, hg0, hg⟩ := wsKP_majorant D (9 / 10) (by norm_num [EulerDomain.pad]) (by norm_num)
+  let K := ‖((2 * (Real.pi : ℂ))⁻¹)‖ ^ 3 * ∫ p, g p
+  have hK : 0 ≤ K := mul_nonneg (by positivity) (MeasureTheory.integral_nonneg hg0)
+  refine ⟨K + 1, by positivity, fun Z hZ => ?_⟩
+  have hbd := lvl3 (wsKP D (ActualRowCount.principalRow D) Z (9 / 10)) _ (hgi.const_mul _)
+    (fun a b d => hg Z hZ (a, b, d))
+  rw [E_remainder] at hbd
+  rw [Rw, JCont_eq_wsKP, norm_mul, norm_pow]
+  refine (mul_le_mul_of_nonneg_left hbd (by positivity)).trans ?_
+  rw [MeasureTheory.integral_const_mul]
+  calc
+    _ = K * _ := by dsimp [K]; ring
+    _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg (by linarith) _)
 
 end
 

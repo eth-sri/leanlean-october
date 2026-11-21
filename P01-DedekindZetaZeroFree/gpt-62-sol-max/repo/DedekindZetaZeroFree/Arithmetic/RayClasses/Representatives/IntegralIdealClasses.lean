@@ -12,9 +12,12 @@ open IsDedekindDomain UniqueFactorizationMonoid
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-theorem narrowIdealModulus_finiteSupport
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+section
+
+variable (K : Type) [Field K] [NumberField K] (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
+include m hm
+
+theorem narrowIdealModulus_finiteSupport :
     (Function.support (fun v : HeightOneSpectrum (𝓞 K) =>
       Multiset.count v.asIdeal (normalizedFactors m))).Finite := by
   have hf := (normalizedFactors m).toFinset.finite_toSet
@@ -22,31 +25,25 @@ theorem narrowIdealModulus_finiteSupport
   intro v hv
   exact Multiset.mem_toFinset.mpr (Multiset.count_ne_zero.mp hv)
 
-def narrowIdealModulus
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) : ClassFieldTheory.RayClassModulus K where
+def narrowIdealModulus : ClassFieldTheory.RayClassModulus K where
   finitePart := Finsupp.ofSupportFinite
     (fun v => Multiset.count v.asIdeal (normalizedFactors m))
     (narrowIdealModulus_finiteSupport K m hm)
   infinitePart := Finset.univ
 
-@[simp] theorem narrowIdealModulus_finitePart
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (v : HeightOneSpectrum (𝓞 K)) :
+@[simp] theorem narrowIdealModulus_finitePart (v : HeightOneSpectrum (𝓞 K)) :
     (narrowIdealModulus K m hm).finitePart v =
       Multiset.count v.asIdeal (normalizedFactors m) := by
   exact congrFun Finsupp.ofSupportFinite_coe v
 
-@[simp] theorem narrowIdealModulus_infinitePart
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
+@[simp] theorem narrowIdealModulus_infinitePart :
     (narrowIdealModulus K m hm).infinitePart = Finset.univ := by
   rfl
 
-abbrev RayIdealClass
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :=
+abbrev RayIdealClass :=
   ClassFieldTheory.RayClassGroup (narrowIdealModulus K m hm)
+
+end
 
 def rayIdealFractionalIdeal
     (K : Type) [Field K] [NumberField K]
@@ -62,10 +59,12 @@ def rayIdealFractionalIdeal
       (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
   rfl
 
-theorem rayIdealFractionalIdeal_mem_primeTo
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
-    (I : Ideal (𝓞 K)) (hI : I ≠ ⊥) (hcoprime : I ⊔ m = ⊤) :
+section
+
+variable (K : Type) [Field K] [NumberField K] (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (I : Ideal (𝓞 K))
+include I
+
+theorem rayIdealFractionalIdeal_mem_primeTo (hI : I ≠ ⊥) (hcoprime : I ⊔ m = ⊤) :
     rayIdealFractionalIdeal K I hI ∈
       ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus K m hm) := by
   intro v hv
@@ -83,17 +82,12 @@ theorem rayIdealFractionalIdeal_mem_primeTo
   rw [hcoprime] at hsup
   exact v.isPrime.ne_top (top_unique hsup)
 
-def rayIdealClassRepresentative
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
-    (I : Ideal (𝓞 K)) (hI : I ≠ ⊥) (hcoprime : I ⊔ m = ⊤) :
+def rayIdealClassRepresentative (hI : I ≠ ⊥) (hcoprime : I ⊔ m = ⊤) :
     ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus K m hm) :=
   ⟨rayIdealFractionalIdeal K I hI,
     rayIdealFractionalIdeal_mem_primeTo K m hm I hI hcoprime⟩
 
-def rayIdealClass
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (I : Ideal (𝓞 K)) :
+def rayIdealClass :
     Option (RayIdealClass K m hm) :=
   if h : I = ⊥ ∨ I ⊔ m ≠ ⊤ then none
   else some (QuotientGroup.mk'
@@ -103,26 +97,21 @@ def rayIdealClass
       (not_not.mp (fun hcoprime => h (Or.inr hcoprime)))))
 
 theorem rayIdealClass_eq_none
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (I : Ideal (𝓞 K))
     (h : I = ⊥ ∨ I ⊔ m ≠ ⊤) :
     rayIdealClass K m hm I = none := by
   simp [rayIdealClass, h]
 
-@[simp] theorem rayIdealClass_eq_none_iff
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (I : Ideal (𝓞 K)) :
+@[simp] theorem rayIdealClass_eq_none_iff :
     rayIdealClass K m hm I = none ↔ I = ⊥ ∨ I ⊔ m ≠ ⊤ := by
   by_cases h : I = ⊥ ∨ I ⊔ m ≠ ⊤ <;> simp [rayIdealClass, h]
 
-theorem rayIdealClass_eq_some
-    (K : Type) [Field K] [NumberField K]
-    (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
-    (I : Ideal (𝓞 K)) (hI : I ≠ ⊥) (hcoprime : I ⊔ m = ⊤) :
+theorem rayIdealClass_eq_some (hI : I ≠ ⊥) (hcoprime : I ⊔ m = ⊤) :
     rayIdealClass K m hm I = some (QuotientGroup.mk'
       (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo (narrowIdealModulus K m hm))
       (rayIdealClassRepresentative K m hm I hI hcoprime)) := by
   simp [rayIdealClass, hI, hcoprime]
+
+end
 
 theorem rayIdealClass_of_finitePrime
     (K : Type) [Field K] [NumberField K]

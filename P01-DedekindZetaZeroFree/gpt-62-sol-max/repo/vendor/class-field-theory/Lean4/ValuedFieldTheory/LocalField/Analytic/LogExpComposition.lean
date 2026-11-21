@@ -64,7 +64,7 @@ theorem hasSum_powerSeries_pow_coeff_mul_pow
           · subst d
             simp
           · simp [PowerSeries.coeff_one, hd]
-      simpa only [pow_zero] using hsingle'
+      grind
   | succ q ih =>
       have hprod := ih.mul_of_nonarchimedean hgy
       have hsigma :
@@ -91,13 +91,10 @@ theorem hasSum_powerSeries_pow_coeff_mul_pow
       rw [← Finset.sum_attach, Finset.attach_eq_univ]
       apply Finset.sum_congr rfl
       intro ij _
-      have hijsum : ij.1.1 + ij.1.2 = d :=
+      have hijsum :=
         Finset.mem_antidiagonal.mp ij.2
       have hpow : x ^ d = x ^ ij.1.1 * x ^ ij.1.2 := by
-        calc
-          x ^ d = x ^ (ij.1.1 + ij.1.2) :=
-            congrArg (fun n : ℕ => x ^ n) hijsum.symm
-          _ = x ^ ij.1.1 * x ^ ij.1.2 := pow_add _ _ _
+        grind only
       rw [hpow]
       ring
 
@@ -119,7 +116,7 @@ theorem valuation_powerSeries_pow_coeff_mul_pow_le
       rw [pow_succ, PowerSeries.coeff_mul, Finset.sum_mul]
       apply v.map_sum_le
       intro ij hij
-      have hijsum : ij.1 + ij.2 = d := Finset.mem_antidiagonal.mp hij
+      have hijsum := Finset.mem_antidiagonal.mp hij
       have heq :
           (PowerSeries.coeff ij.1 (g ^ q) * PowerSeries.coeff ij.2 g) * x ^ d =
             (PowerSeries.coeff ij.1 (g ^ q) * x ^ ij.1) *
@@ -127,7 +124,7 @@ theorem valuation_powerSeries_pow_coeff_mul_pow_le
         rw [← hijsum, pow_add]
         ring
       rw [heq, v.map_mul, pow_succ]
-      exact mul_le_mul (ih ij.1) (hcoeff ij.2) (by simp) (by simp)
+      solve_by_elim [mul_le_mul]
 
 /-- The valuation of a term in the expanded substitution is bounded by the
 corresponding outer-series term. -/
@@ -190,10 +187,7 @@ theorem summable_powerSeries_subst_sigma_of_outer_summable
       exact hz⟩
   have houterZero : Tendsto outerTerm cofinite (nhds (0 : K)) := by
     simpa [outerTerm] using houter.tendsto_cofinite_zero
-  have houterEventually :
-      ∀ᶠ q : ℕ in cofinite,
-        Valued.v (outerTerm q) <
-          MonoidWithZeroHom.ValueGroup₀.embedding γ.1 :=
+  have houterEventually :=
     houterZero.eventually hball
   let goodOuter : Set ℕ :=
     {q | Valued.v (outerTerm q) <
@@ -203,7 +197,7 @@ theorem summable_powerSeries_subst_sigma_of_outer_summable
       Valued.v (outerTerm q) <
         MonoidWithZeroHom.ValueGroup₀.embedding γ.1} ∈ cofinite
     exact houterEventually
-  have hbadOuterFinite : goodOuterᶜ.Finite :=
+  have hbadOuterFinite :=
     Filter.mem_cofinite.mp hgoodOuter
   let Q : Finset ℕ := hbadOuterFinite.toFinset
   have hpower : ∀ q : ℕ,
@@ -225,7 +219,7 @@ theorem summable_powerSeries_subst_sigma_of_outer_summable
     intro d hd
     exact hd
   let D : ℕ → Finset ℕ := fun q => (hbadFiberFinite q).toFinset
-  let E : Finset (Sigma fun _ : ℕ => ℕ) := Q.sigma D
+  let E := Q.sigma D
   apply Filter.mem_cofinite.mpr
   apply E.finite_toSet.subset
   intro qd hbad

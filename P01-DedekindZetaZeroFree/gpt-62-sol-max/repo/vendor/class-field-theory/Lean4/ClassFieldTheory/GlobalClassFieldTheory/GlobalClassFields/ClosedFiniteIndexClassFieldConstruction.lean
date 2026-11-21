@@ -38,20 +38,20 @@ open Reciprocity
 
 variable {K : Type} [Field K] [NumberField K]
 
+section
+
+variable (H : Subgroup (IdeleClassGroup K)) (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
+  [H.FiniteIndex]
+include H hclosed
+
 /-- The concrete finite Galois norm neighbourhood used to construct
 the class field of `H`. -/
-noncomputable abbrev closedFiniteIndexClassFieldNormAmbient
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] : Type :=
+noncomputable abbrev closedFiniteIndexClassFieldNormAmbient : Type :=
   closedFiniteIndexNormAmbient (K := K) H hclosed
 
 /-- The named norm-neighbourhood containment used by the selected
 ordinary class-field construction. -/
-theorem closedFiniteIndexClassFieldNormAmbient_normRange_le
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+theorem closedFiniteIndexClassFieldNormAmbient_normRange_le :
     (_root_.ideleClassNorm K
       (closedFiniteIndexClassFieldNormAmbient
         (K := K) H hclosed)).range ≤ H := by
@@ -61,10 +61,7 @@ theorem closedFiniteIndexClassFieldNormAmbient_normRange_le
 
 /-- The compatible abstract base subgroup used by the selected class
 field of `H`. -/
-noncomputable abbrev closedFiniteIndexClassFieldBaseSubgroup
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :=
+noncomputable abbrev closedFiniteIndexClassFieldBaseSubgroup :=
   numberFieldTowerBaseSubgroup K
     (closedFiniteIndexClassFieldNormAmbient
       (K := K) H hclosed)
@@ -74,10 +71,7 @@ definitionally the selected base subgroup.  Keeping this presentation
 transparent avoids dependent quotient transports through the opaque tower
 package in reciprocity consumers. -/
 noncomputable abbrev
-    closedFiniteIndexClassFieldReciprocityFiniteAbstractField
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+    closedFiniteIndexClassFieldReciprocityFiniteAbstractField :
     ClassFormation.FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ) :=
   numberFieldTowerReciprocityFiniteAbstractField K
@@ -86,10 +80,7 @@ noncomputable abbrev
 
 /-- The finite abelian subextension selected by a closed finite-index
 idèle-class subgroup. -/
-noncomputable abbrev closedFiniteIndexClassFieldSubextension
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+noncomputable abbrev closedFiniteIndexClassFieldSubextension :
     ClassFormation.FiniteAbelianSubextension
       (closedFiniteIndexClassFieldBaseSubgroup
         (K := K) H hclosed) :=
@@ -101,19 +92,13 @@ noncomputable abbrev closedFiniteIndexClassFieldSubextension
 
 /-- The canonical fixed-field copy of the original number field used
 by the selected class field of `H`. -/
-noncomputable abbrev closedFiniteIndexClassFieldBase
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] : Type :=
+noncomputable abbrev closedFiniteIndexClassFieldBase : Type :=
   ordinaryNormClassFieldBase K
     (closedFiniteIndexClassFieldNormAmbient
       (K := K) H hclosed)
 
 /-- The actual finite abelian class field selected by `H`. -/
-noncomputable abbrev closedFiniteIndexClassField
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] : Type :=
+noncomputable abbrev closedFiniteIndexClassField : Type :=
   ordinaryNormClassFieldExtension K
     (closedFiniteIndexClassFieldNormAmbient
       (K := K) H hclosed) H
@@ -122,16 +107,15 @@ noncomputable abbrev closedFiniteIndexClassField
 
 /-- The canonical equivalence from the original number field to the
 fixed-field base of its selected class field. -/
-noncomputable abbrev closedFiniteIndexClassFieldBaseEquiv
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
+noncomputable abbrev closedFiniteIndexClassFieldBaseEquiv :
     K ≃ₐ[ℚ]
       closedFiniteIndexClassFieldBase
         (K := K) H hclosed :=
   ordinaryNormClassFieldBaseEquiv K
     (closedFiniteIndexClassFieldNormAmbient
       (K := K) H hclosed)
+
+end
 end GlobalClassFields
 end GlobalClassFieldTheory
 

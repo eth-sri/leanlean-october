@@ -37,9 +37,9 @@ theorem decay_main (f h ζ : ℂ → ℂ) (a b T K C' k : ℝ) (hk : 0 ≤ k) (h
   have h3 := hC0 _ (by rw [hre]; exact hx.1) (by rw [hre]; exact hx.2) (by rw [him]; exact hy)
   rw [him] at h2 h3
   set z := (x : ℂ) + (y : ℂ) * I
-  have hy1 : 1 ≤ 1 + |y| := by linarith [abs_nonneg y]
+  have hy1 : 1 ≤ 1 + |y| := by simp
   have hpos : 0 < 1 + |y| := by linarith
-  have hkN : (1 + |y|) ^ k ≤ (1 + |y|) ^ (N : ℝ) :=
+  have hkN :=
     Real.rpow_le_rpow_of_exponent_le hy1 (Nat.le_ceil k)
   rw [Real.rpow_natCast] at hkN
   have hBM : (1 + |y|) ^ (-B) ≥ ((1 + |y|) ^ M)⁻¹ := by

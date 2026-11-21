@@ -152,10 +152,8 @@ open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoefficientProof renaming 
 open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoefficientProof renaming ext_prod_val → ThetaBranch.CanonicalCoefficientProof.ext_prod_val
 open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoefficientProof renaming ideal_factorization → ThetaBranch.CanonicalCoefficientProof.ideal_factorization
 open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoefficientProof renaming support_prod → ThetaBranch.CanonicalCoefficientProof.support_prod
-open _root_.DedekindZetaZeroFree.ThetaBranch.CanonicalCoefficientProof renaming exp_zero → ThetaBranch.CanonicalCoefficientProof.exp_zero
+open _root_.DedekindZetaZeroFree.ThetaBranch renaming exponent_zero → ThetaBranch.exponent_zero
  alias ThetaBranch.extSupport := ThetaBranch.CanonicalCoefficientProof.extSupport
-
-private alias ThetaBranch.exp_zero := ThetaBranch.CanonicalCoefficientProof.exp_zero
 
 lemma exterior_factorization (I : R.A.Exterior) (P : Finset (ThetaBranch.ExteriorPrime R.A))
     (hP : ThetaBranch.extSupport R.A I ⊆ P) :
@@ -172,7 +170,7 @@ lemma exterior_factorization (I : R.A.Exterior) (P : Finset (ThetaBranch.Exterio
   intro p hp hn
   have hs : p.val ∉ ThetaBranch.support I.val := by
     simpa only [ThetaBranch.extSupport, ThetaBranch.CanonicalCoefficientProof.mem_extSupport] using hn
-  rw [ThetaBranch.exp_zero _ _ hs, pow_zero]
+  rw [ThetaBranch.exponent_zero _ _ hs, pow_zero]
 
 lemma forwardExterior_generator {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exterior) :
@@ -181,12 +179,12 @@ lemma forwardExterior_generator {N : TraceHaarTransport R} (C : JointUpperVanish
   let P := ThetaBranch.extSupport R.A c.val ∪ ThetaBranch.extSupport R.A n
   have hc (p : ThetaBranch.ExteriorPrime R.A) (hp : p ∉ P) :
       idealPrimeExponent p.val.asIdeal c.val.val = 0 := by
-    apply ThetaBranch.exp_zero
+    apply ThetaBranch.exponent_zero
     exact fun h => hp (Finset.mem_union_left _
       (by simpa only [ThetaBranch.extSupport, ThetaBranch.CanonicalCoefficientProof.mem_extSupport] using h))
   have hn (p : ThetaBranch.ExteriorPrime R.A) (hp : p ∉ P) :
       idealPrimeExponent p.val.asIdeal n.val = 0 := by
-    apply ThetaBranch.exp_zero
+    apply ThetaBranch.exponent_zero
     exact fun h => hp (Finset.mem_union_right _
       (by simpa only [ThetaBranch.extSupport, ThetaBranch.CanonicalCoefficientProof.mem_extSupport] using h))
   let b := ∏ p ∈ P, R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) ^

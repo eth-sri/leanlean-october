@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.ComplexChartsAndSphericalSections
 
 @[expose] public section
@@ -203,72 +204,12 @@ lemma principalSeries_barrelled (s : ℝ) : BarrelledSpace ℝ (PrincipalSeries 
   letI := IsUniformAddGroup.uniformity_countably_generated (α := PrincipalSeries s)
   infer_instance
 
-section
-variable {E : Type*} [AddCommGroup E] [Module ℝ E] [UniformSpace E]
-    [IsUniformAddGroup E] [ContinuousSMul ℝ E] [BarrelledSpace ℝ E]
-    (A : E →ₗ[ℝ] (ℂ → ℂ)) (hA : ∀ f, ContDiff ℝ (⊤ : ℕ∞) (A f))
-
-noncomputable def derivativeEvaluationLinearMap (n : ℕ) (x : ℂ) : E →ₗ[ℝ] (ℂ [×n]→L[ℝ] ℂ) where
-  toFun f := iteratedFDeriv ℝ n (A f) x
-  map_add' f g := by
-    rw [A.map_add]
-    exact congrFun (iteratedFDeriv_add ((hA f).of_le (by simp)) ((hA g).of_le (by simp))) x
-  map_smul' c f := by
-    rw [A.map_smul]
-    exact iteratedFDeriv_const_smul_apply ((hA f).contDiffAt.of_le (by simp))
-
-lemma derivativeEvaluation_continuous (hA : ∀ f, ContDiff ℝ (⊤ : ℕ∞) (A f))
-    (hcont : ∀ x : ℂ, Continuous (fun f => A f x)) :
-    ∀ n : ℕ, ∀ x : ℂ, Continuous (fun f => iteratedFDeriv ℝ n (A f) x) := by
-  intro n
-  induction n with
-  | zero =>
-    intro x
-    simpa only [iteratedFDeriv_zero_eq_comp, Function.comp_def] using
-      (continuousMultilinearCurryFin0 ℝ ℂ ℂ).symm.continuous.comp (hcont x)
-  | succ n ih =>
-    intro x
-    have hc : Continuous (fun f => fderiv ℝ (iteratedFDeriv ℝ n (A f)) x) := by
-      apply continuous_clm_apply.mpr
-      intro v
-      let D (t : ℝ) : E →L[ℝ] (ℂ [×n]→L[ℝ] ℂ) :=
-        t⁻¹ • ((⟨derivativeEvaluationLinearMap A hA n (x + t • v), ih _⟩ : E →L[ℝ] _) -
-          (⟨derivativeEvaluationLinearMap A hA n x, ih _⟩ : E →L[ℝ] _))
-      have ht : Tendsto (fun t f => D t f) (𝓝[≠] (0 : ℝ))
-          (𝓝 (fun f => fderiv ℝ (iteratedFDeriv ℝ n (A f)) x v)) := by
-        rw [tendsto_pi_nhds]
-        intro f
-        have hd : Differentiable ℝ (iteratedFDeriv ℝ n (A f)) :=
-          ContDiff.differentiable_iteratedFDeriv (m := n)
-            (by exact_mod_cast (ENat.coe_lt_top n)) (hA f)
-        have hinner := ((hasFDerivAt_const (𝕜 := ℝ) x (0 : ℝ)).add
-          ((hasFDerivAt_id (𝕜 := ℝ) (0 : ℝ)).smul_const v))
-        have hh := (hd _).hasFDerivAt.comp (0 : ℝ) hinner
-        have hder : HasDerivAt (fun t : ℝ => iteratedFDeriv ℝ n (A f) (x + t • v))
-            (fderiv ℝ (iteratedFDeriv ℝ n (A f)) x v) 0 := by
-          convert hh.hasDerivAt using 1 <;> simp [Function.comp_def]
-        change Tendsto (fun t : ℝ => t⁻¹ •
-          (iteratedFDeriv ℝ n (A f) (x + t • v) - iteratedFDeriv ℝ n (A f) x)) _ _
-        simpa only [zero_add, zero_smul, add_zero] using hder.tendsto_slope_zero
-      exact (continuousLinearMapOfTendsto D ht).continuous
-    simpa only [iteratedFDeriv_succ_eq_comp_left, Function.comp_def] using
-      (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => ℂ) ℂ).symm.continuous.comp hc
-
-end
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 
 namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts Set
 
-lemma principalSeries_barrelled_complex (s : ℝ) : BarrelledSpace ℂ (PrincipalSeries s) := by
-  letI := principalSeries_t2 s
-  letI := principalSeries_metrizable s
-  letI := principalSeries_complete s
-  have htop : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
-  letI : ContinuousSMul ℂ (PrincipalSeries s) := htop.continuousSMul
-  letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
-  letI := IsUniformAddGroup.uniformity_countably_generated (α := PrincipalSeries s)
-  infer_instance
+alias principalSeries_barrelled_complex := DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.evaluation_principalSeries_barrelled_complex
 
 lemma closedDiscSup_lowerSemicontinuous {E : Type*} [TopologicalSpace E]
     (F : E → ℂ → ℝ) (hF : ∀ x : ℂ, Continuous (fun f => F f x))
@@ -290,44 +231,7 @@ lemma closedDiscSup_lowerSemicontinuous {E : Type*} [TopologicalSpace E]
   · intro x
     exact (hF x).lowerSemicontinuous
 
-lemma linearMap_continuous_of_point_evaluations (s t : ℝ)
-    (T : PrincipalSeries s →ₗ[ℂ] PrincipalSeries t)
-    (hT : ∀ g : ComplexGL2, Continuous (fun f => T f g)) : Continuous T := by
-  letI : BarrelledSpace ℝ (PrincipalSeries s) := principalSeries_barrelled s
-  letI : BarrelledSpace ℂ (PrincipalSeries s) := principalSeries_barrelled_complex s
-  have htop : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
-  letI : ContinuousSMul ℂ (PrincipalSeries s) := htop.continuousSMul
-  letI : ContinuousSMul ℝ (PrincipalSeries s) := ⟨by
-    have hh := (Complex.continuous_ofReal.comp continuous_fst).smul (continuous_snd :
-      Continuous (fun p : ℝ × PrincipalSeries s => p.2))
-    change Continuous (fun p : ℝ × PrincipalSeries s => (algebraMap ℝ ℂ) p.1 • p.2) at hh
-    simpa only [IsScalarTower.algebraMap_smul] using hh⟩
-  letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
-  let O : PrincipalSeries s →ₗ[ℝ] (ℂ → ℂ) :=
-    { toFun := fun f => openCoordinate (T f)
-      map_add' := by intros; ext; simp [openCoordinate]
-      map_smul' := by intros; ext; simp [openCoordinate] }
-  let I : PrincipalSeries s →ₗ[ℝ] (ℂ → ℂ) :=
-    { toFun := fun f => infinityCoordinate (T f)
-      map_add' := by intros; ext; simp [infinityCoordinate]
-      map_smul' := by intros; ext; simp [infinityCoordinate] }
-  have ho := derivativeEvaluation_continuous O (fun f => (T f).property.2.1)
-    (fun x => hT (weyl * upperUnipotent x))
-  have hi := derivativeEvaluation_continuous I (fun f => (T f).property.2.2)
-    (fun x => hT (lowerUnipotent x))
-  have ht : WithSeminorms (chartSeminorm t) := ⟨rfl⟩
-  apply ht.continuous_of_continuous_comp T
-  intro n
-  apply Seminorm.continuous_of_lowerSemicontinuous
-  change LowerSemicontinuous (fun f => chartSeminormValue t n (T f))
-  unfold chartSeminormValue
-  apply LowerSemicontinuous.sup
-  · apply closedDiscSup_lowerSemicontinuous
-    · intro x; exact (ho n x).norm
-    · intro f; exact ((T f).property.2.1.continuous_iteratedFDeriv (by simp)).norm
-  · apply closedDiscSup_lowerSemicontinuous
-    · intro x; exact (hi n x).norm
-    · intro f; exact ((T f).property.2.2.continuous_iteratedFDeriv (by simp)).norm
+alias linearMap_continuous_of_point_evaluations := DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.evaluation_linearMap_continuous_of_point_evaluations
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 

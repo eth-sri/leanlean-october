@@ -45,8 +45,7 @@ theorem henselFactorization_lowPart_coeff_of_le
   · simp
   · intro b _hb hbn
     simp [Polynomial.coeff_monomial, hbn]
-  · intro hnot
-    exact False.elim (hnot (Finset.mem_range.mpr (Nat.lt_succ_of_le hn)))
+  simp_all
 
 /-- coefficients above the cutoff vanish in `lowPart`. -/
 theorem henselFactorization_lowPart_coeff_eq_zero_of_lt
@@ -60,7 +59,7 @@ theorem henselFactorization_lowPart_coeff_eq_zero_of_lt
   have hbn : b ≠ n := by
     intro hbn
     have hn_le : n ≤ N := Nat.lt_succ_iff.mp (by simpa [hbn] using hb)
-    exact (Nat.not_lt_of_ge hn_le) hn
+    grind
   simp [Polynomial.coeff_monomial, hbn]
 
 /-- `lowPart` has the intended degree bound. -/
@@ -82,23 +81,13 @@ theorem henselFactorization_lowPart_map_eq_of_high_coeff_mem_ker
   by_cases hn : n ≤ N
   · rw [Polynomial.coeff_map, Polynomial.coeff_map,
       henselFactorization_lowPart_coeff_of_le (P := P) hn]
-  · have hlt : N < n := Nat.lt_of_not_ge hn
+  · have hlt := Nat.lt_of_not_ge hn
     have hker := hhigh n hlt
     rw [Polynomial.coeff_map, Polynomial.coeff_map,
       henselFactorization_lowPart_coeff_eq_zero_of_lt (P := P) hlt]
     rw [RingHom.mem_ker] at hker
     simpa using hker.symm
 
-/-- residue-map form of high-coefficient truncation. -/
-theorem henselFactorization_lowPart_residue_map_eq_of_high_coeff_mem_maximalIdeal
-    {R : Type*} [CommRing R] [IsLocalRing R] (N : ℕ) (P : R[X])
-    (hhigh : ∀ n : ℕ, N < n → P.coeff n ∈ IsLocalRing.maximalIdeal R) :
-    (henselFactorization_lowPart N P).map (IsLocalRing.residue R) =
-      P.map (IsLocalRing.residue R) := by
-  apply henselFactorization_lowPart_map_eq_of_high_coeff_mem_ker
-  intro n hn
-  have h := hhigh n hn
-  rwa [IsLocalRing.ker_residue]
 
 /-- kernel-level truncation: the correction congruence
 survives replacing a provisional correction polynomial by its low-degree part
@@ -117,22 +106,11 @@ theorem henselFactorization_correction_after_lowPart_ker
   have hmapQ :=
     henselFactorization_lowPart_map_eq_of_high_coeff_mem_ker φ N Q hhigh
   have hmapOld :
-      (g0 * Q + h0 * p - fn).map φ = 0 := by
-    exact (henselFactorization_map_eq_zero_iff_coeff_mem_ker
+      (g0 * Q + h0 * p - fn).map φ = 0 := (henselFactorization_map_eq_zero_iff_coeff_mem_ker
       φ (g0 * Q + h0 * p - fn)).2 hcorr
   have hmapNew :
       (g0 * henselFactorization_lowPart N Q + h0 * p - fn).map φ = 0 := by
-    calc
-      (g0 * henselFactorization_lowPart N Q + h0 * p - fn).map φ =
-          g0.map φ * (henselFactorization_lowPart N Q).map φ +
-            h0.map φ * p.map φ - fn.map φ := by
-        exact henselFactorization_map_mul_add_mul_sub φ g0 h0
-          (henselFactorization_lowPart N Q) p fn
-      _ = g0.map φ * Q.map φ + h0.map φ * p.map φ - fn.map φ := by
-        rw [hmapQ]
-      _ = (g0 * Q + h0 * p - fn).map φ := by
-        exact (henselFactorization_map_mul_add_mul_sub φ g0 h0 Q p fn).symm
-      _ = 0 := hmapOld
+    simp_all
   intro n
   exact (henselFactorization_map_eq_zero_iff_coeff_mem_ker
     φ (g0 * henselFactorization_lowPart N Q + h0 * p - fn)).1 hmapNew n
@@ -149,7 +127,7 @@ theorem henselFactorization_correction_after_lowPart_ideal
     (henselFactorization_lowPart N Q).natDegree ≤ N ∧
       ∀ n : ℕ,
         (g0 * henselFactorization_lowPart N Q + h0 * p - fn).coeff n ∈ I := by
-  let φ : R →+* R ⧸ I := Ideal.Quotient.mk I
+  let φ := Ideal.Quotient.mk I
   have hcorrKer :
       ∀ n : ℕ, (g0 * Q + h0 * p - fn).coeff n ∈ RingHom.ker φ := by
     intro n
@@ -181,22 +159,8 @@ theorem henselFactorization_correction_after_lowPart_span_singleton
       ∀ n : ℕ,
         (g0 * henselFactorization_lowPart N Q + h0 * p - fn).coeff n ∈
           Ideal.span ({π} : Set R) := by
-  exact henselFactorization_correction_after_lowPart_ideal
-    (I := Ideal.span ({π} : Set R)) N hcorr hhigh
+  apply henselFactorization_correction_after_lowPart_ideal <;> assumption
 
-/-- residue-field degree division: if the product with a
-nonzero degree-`m` polynomial has degree at most `d`, then the right factor
-has degree at most `d - m`. -/
-theorem henselFactorization_natDegree_right_le_tsub_of_mul_natDegree_le
-    {k : Type*} [Field k] {g Q : k[X]} {m d : ℕ}
-    (hgdeg : g.natDegree = m) (hg : g ≠ 0)
-    (hprod : (g * Q).natDegree ≤ d) :
-    Q.natDegree ≤ d - m := by
-  by_cases hQ : Q = 0
-  · simp [hQ]
-  · have hsum : m + Q.natDegree ≤ d := by
-      simpa [hgdeg, Polynomial.natDegree_mul hg hQ] using hprod
-    exact Nat.le_sub_of_add_le (by simpa [Nat.add_comm] using hsum)
 
 /-- unit-leading degree division over an arbitrary
 commutative ring: if the product with a degree-`m` polynomial whose leading
@@ -214,9 +178,9 @@ theorem henselFactorization_natDegree_right_le_tsub_of_unit_leading_mul_natDegre
     ⟨u, _hu, hmonic, _hdegree, hnatDegree⟩
   let G : R[X] := Polynomial.C (((u⁻¹ : Rˣ) : R)) * g
   have hGmonic : G.Monic := by
-    simpa [G] using hmonic
+    assumption
   have hGnat : G.natDegree = m := by
-    simpa [G, hgdeg] using hnatDegree
+    grind
   have hinvUnit : IsUnit (((u⁻¹ : Rˣ) : R)) := ⟨u⁻¹, rfl⟩
   have hGprod : (G * Q).natDegree ≤ d := by
     have hrewrite :
@@ -228,8 +192,8 @@ theorem henselFactorization_natDegree_right_le_tsub_of_unit_leading_mul_natDegre
   have hsum : m + Q.natDegree ≤ d := by
     have hmul := hGmonic.natDegree_mul' hQ
     rw [hGnat] at hmul
-    simpa [hmul] using hGprod
-  exact Nat.le_sub_of_add_le (by simpa [Nat.add_comm] using hsum)
+    grind
+  grind only
 
 /-- a unit-leading polynomial remains unit-leading with the
 same natural degree after mapping to a nontrivial target ring.  This supplies
@@ -298,31 +262,6 @@ theorem henselFactorization_span_singleton_quotient_unit_leadingCoeff_natDegree_
   exact henselFactorization_quotient_unit_leadingCoeff_natDegree_eq
     (I := Ideal.span ({π} : Set R)) hgunit hgdeg
 
-/-- residual degree bound for the polynomial
-`fn - h0 * p` that appears after the division step. -/
-theorem henselFactorization_residue_sub_mul_natDegree_le
-    {R : Type*} [CommRing R] [IsLocalRing R]
-    {fn h0 P : R[X]} {a b d : ℕ}
-    (hfn : (fn.map (IsLocalRing.residue R)).natDegree ≤ d)
-    (hh0 : (h0.map (IsLocalRing.residue R)).natDegree ≤ a)
-    (hP : (P.map (IsLocalRing.residue R)).natDegree ≤ b)
-    (hab : a + b ≤ d) :
-    ((fn - h0 * P).map (IsLocalRing.residue R)).natDegree ≤ d := by
-  have hmul :
-      (h0.map (IsLocalRing.residue R) *
-        P.map (IsLocalRing.residue R)).natDegree ≤ d :=
-    (Polynomial.natDegree_mul_le_of_le hh0 hP).trans hab
-  have hmap :
-      (fn - h0 * P).map (IsLocalRing.residue R) =
-        fn.map (IsLocalRing.residue R) -
-          h0.map (IsLocalRing.residue R) * P.map (IsLocalRing.residue R) := by
-    exact henselFactorization_map_sub_mul (IsLocalRing.residue R) fn h0 P
-  rw [hmap]
-  simpa using
-    (Polynomial.natDegree_sub_le_of_le
-      (p := fn.map (IsLocalRing.residue R))
-      (q := h0.map (IsLocalRing.residue R) *
-        P.map (IsLocalRing.residue R)) hfn hmul)
 
 /-- mapped degree bound for the polynomial `fn - h0*p` from
 degree bounds already available before mapping.  This is the quotient-level
@@ -341,13 +280,12 @@ theorem henselFactorization_map_sub_mul_natDegree_le_of_degree_bounds
     Polynomial.natDegree_map_le.trans hh0
   have hPmap : (P.map φ).natDegree ≤ b :=
     Polynomial.natDegree_map_le.trans hP
-  have hmul :
-      (h0.map φ * P.map φ).natDegree ≤ d :=
+  have hmul :=
     (Polynomial.natDegree_mul_le_of_le hh0map hPmap).trans hab
   have hmap :
       (fn - h0 * P).map φ =
         fn.map φ - h0.map φ * P.map φ := by
-    exact henselFactorization_map_sub_mul φ fn h0 P
+    exact henselFactorization_map_sub_mul ..
   rw [hmap]
   simpa using
     (Polynomial.natDegree_sub_le_of_le
@@ -367,66 +305,7 @@ theorem henselFactorization_span_singleton_quotient_sub_mul_natDegree_le_of_degr
   henselFactorization_map_sub_mul_natDegree_le_of_degree_bounds
     (Ideal.Quotient.mk (Ideal.span ({π} : Set R))) hfn hh0 hP hab
 
-/-- the correction congruence can be read in the product form
-needed for the high-coefficient degree argument. -/
-theorem henselFactorization_product_congruence_of_correction
-    {R : Type*} [CommRing R] [IsLocalRing R]
-    {g0 h0 fn p Q : R[X]}
-    (hcorr :
-      ∀ n : ℕ, (g0 * Q + h0 * p - fn).coeff n ∈ IsLocalRing.maximalIdeal R) :
-    ∀ n : ℕ, (g0 * Q - (fn - h0 * p)).coeff n ∈
-      IsLocalRing.maximalIdeal R := by
-  intro n
-  have heq : g0 * Q - (fn - h0 * p) = g0 * Q + h0 * p - fn := by
-    ring
-  rw [heq]
-  exact hcorr n
 
-/-- high-coefficient source for the correction truncation:
-if `g0 * Q` is congruent to a polynomial of residual degree at most `d`, and
-the residual degree of `g0` is `m`, then every coefficient of `Q` above
-`d - m` lies in the maximal ideal. -/
-theorem henselFactorization_high_coeff_mem_maximalIdeal_of_product_congruence_degree
-    {R : Type*} [CommRing R] [IsLocalRing R]
-    {g0 Q A : R[X]} {m d : ℕ}
-    (hgdeg : (g0.map (IsLocalRing.residue R)).natDegree = m)
-    (hg : g0.map (IsLocalRing.residue R) ≠ 0)
-    (hcong : ∀ n : ℕ, (g0 * Q - A).coeff n ∈ IsLocalRing.maximalIdeal R)
-    (hAdeg : (A.map (IsLocalRing.residue R)).natDegree ≤ d) :
-    ∀ n : ℕ, d - m < n → Q.coeff n ∈ IsLocalRing.maximalIdeal R := by
-  have hmap :
-      (g0 * Q - A).map (IsLocalRing.residue R) = 0 := by
-    apply (henselFactorization_map_eq_zero_iff_coeff_mem_ker
-      (IsLocalRing.residue R) (g0 * Q - A)).2
-    intro n
-    have h := hcong n
-    rwa [IsLocalRing.ker_residue]
-  have hsub :
-      g0.map (IsLocalRing.residue R) * Q.map (IsLocalRing.residue R) -
-        A.map (IsLocalRing.residue R) = 0 := by
-    simpa [henselFactorization_map_mul_sub] using hmap
-  have hprod_eq :
-      g0.map (IsLocalRing.residue R) * Q.map (IsLocalRing.residue R) =
-        A.map (IsLocalRing.residue R) :=
-    sub_eq_zero.mp hsub
-  have hprod_degree :
-      (g0.map (IsLocalRing.residue R) * Q.map (IsLocalRing.residue R)).natDegree ≤ d := by
-    rw [hprod_eq]
-    exact hAdeg
-  have hQdeg :
-      (Q.map (IsLocalRing.residue R)).natDegree ≤ d - m :=
-    henselFactorization_natDegree_right_le_tsub_of_mul_natDegree_le
-      (g := g0.map (IsLocalRing.residue R))
-      (Q := Q.map (IsLocalRing.residue R)) hgdeg hg hprod_degree
-  intro n hn
-  have hcoeff :
-      (Q.map (IsLocalRing.residue R)).coeff n = 0 :=
-    Polynomial.coeff_eq_zero_of_natDegree_lt (lt_of_le_of_lt hQdeg hn)
-  rw [Polynomial.coeff_map] at hcoeff
-  have hker : Q.coeff n ∈ RingHom.ker (IsLocalRing.residue R) := by
-    rw [RingHom.mem_ker]
-    exact hcoeff
-  rwa [IsLocalRing.ker_residue] at hker
 
 /-- high-coefficient source modulo `(π)`: if `g0 * Q` is
 congruent to a polynomial of degree at most `d` modulo `(π)`, and `g0` has
@@ -472,39 +351,25 @@ theorem henselFactorization_high_coeff_mem_span_singleton_of_product_congruence_
     (henselFactorization_quotient_map_coeff_eq_zero_iff_coeff_mem
       (Ideal.span ({π} : Set R)) Q n).1 (by simpa [φ] using hcoeff)
 
-/-- high-coefficient source specialized to the correction
-congruence produced by the division step. -/
-theorem henselFactorization_high_coeff_mem_maximalIdeal_of_correction_degree
-    {R : Type*} [CommRing R] [IsLocalRing R]
-    {g0 h0 fn p Q : R[X]} {m d : ℕ}
-    (hgdeg : (g0.map (IsLocalRing.residue R)).natDegree = m)
-    (hg : g0.map (IsLocalRing.residue R) ≠ 0)
-    (hcorr :
+
+section
+
+variable {R : Type*} [CommRing R] {π : R} {g0 h0 fn p Q : R[X]} {m d : ℕ} (hgunit :
+      IsUnit
+        ((g0.map (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).leadingCoeff))
+  (hgdeg :
+      (g0.map (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).natDegree = m)
+  (hcorr :
       ∀ n : ℕ, (g0 * Q + h0 * p - fn).coeff n ∈
-        IsLocalRing.maximalIdeal R)
-    (hAdeg : ((fn - h0 * p).map (IsLocalRing.residue R)).natDegree ≤ d) :
-    ∀ n : ℕ, d - m < n → Q.coeff n ∈ IsLocalRing.maximalIdeal R := by
-  exact henselFactorization_high_coeff_mem_maximalIdeal_of_product_congruence_degree
-    (g0 := g0) (Q := Q) (A := fn - h0 * p)
-    (m := m) (d := d) hgdeg hg
-    (henselFactorization_product_congruence_of_correction hcorr) hAdeg
+        Ideal.span ({π} : Set R))
+  (hAdeg :
+      ((fn - h0 * p).map
+        (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).natDegree ≤ d)
+include g0 h0 fn p Q hgunit hgdeg hcorr hAdeg
 
 /-- high-coefficient source modulo `(π)` specialized to the
 correction congruence produced by the division step. -/
-theorem henselFactorization_high_coeff_mem_span_singleton_of_correction_degree
-    {R : Type*} [CommRing R] {π : R}
-    {g0 h0 fn p Q : R[X]} {m d : ℕ}
-    (hgunit :
-      IsUnit
-        ((g0.map (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).leadingCoeff))
-    (hgdeg :
-      (g0.map (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).natDegree = m)
-    (hcorr :
-      ∀ n : ℕ, (g0 * Q + h0 * p - fn).coeff n ∈
-        Ideal.span ({π} : Set R))
-    (hAdeg :
-      ((fn - h0 * p).map
-        (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).natDegree ≤ d) :
+theorem henselFactorization_high_coeff_mem_span_singleton_of_correction_degree :
     ∀ n : ℕ, d - m < n → Q.coeff n ∈ Ideal.span ({π} : Set R) := by
   have hcong :
       ∀ n : ℕ, (g0 * Q - (fn - h0 * p)).coeff n ∈
@@ -522,20 +387,7 @@ theorem henselFactorization_high_coeff_mem_span_singleton_of_correction_degree
 principal correction congruence, the quotient-degree bound for `fn - h0*p`,
 and the unit-leading degree data for `g0` modulo `(π)`, the low-degree part of
 `Q` has degree at most `d-m` and keeps the correction congruence modulo `(π)`. -/
-theorem henselFactorization_correction_after_degree_truncation_span_singleton
-    {R : Type*} [CommRing R] {π : R}
-    {g0 h0 fn p Q : R[X]} {m d : ℕ}
-    (hgunit :
-      IsUnit
-        ((g0.map (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).leadingCoeff))
-    (hgdeg :
-      (g0.map (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).natDegree = m)
-    (hcorr :
-      ∀ n : ℕ, (g0 * Q + h0 * p - fn).coeff n ∈
-        Ideal.span ({π} : Set R))
-    (hAdeg :
-      ((fn - h0 * p).map
-        (Ideal.Quotient.mk (Ideal.span ({π} : Set R)))).natDegree ≤ d) :
+theorem henselFactorization_correction_after_degree_truncation_span_singleton :
     (henselFactorization_lowPart (d - m) Q).natDegree ≤ d - m ∧
       ∀ n : ℕ,
         (g0 * henselFactorization_lowPart (d - m) Q + h0 * p - fn).coeff n ∈
@@ -545,6 +397,8 @@ theorem henselFactorization_correction_after_degree_truncation_span_singleton
     (henselFactorization_high_coeff_mem_span_singleton_of_correction_degree
       (π := π) (g0 := g0) (h0 := h0) (fn := fn) (p := p)
       (Q := Q) (m := m) (d := d) hgunit hgdeg hcorr hAdeg)
+
+end
 
 /-- principal-ideal one-step correction after Bezout and
 division.  This is the displayed-factor route: the displayed factor
@@ -586,178 +440,9 @@ theorem henselFactorization_correction_after_division_degree_truncation_span_sin
     (Q := a * fn + h0 * q) (m := m) (d := d)
     hgunitQuot hgdegQuot hcorr hAdeg
 
-/-- the correction congruence survives replacing a provisional
-correction polynomial by its low-degree part when the omitted coefficients are
-already zero in the residue field. -/
-theorem henselFactorization_correction_after_lowPart
-    {R : Type*} [CommRing R] [IsLocalRing R]
-    {g0 h0 fn p Q : R[X]} (N : ℕ)
-    (hcorr :
-      ∀ n : ℕ, (g0 * Q + h0 * p - fn).coeff n ∈ IsLocalRing.maximalIdeal R)
-    (hhigh : ∀ n : ℕ, N < n → Q.coeff n ∈ IsLocalRing.maximalIdeal R) :
-    (henselFactorization_lowPart N Q).natDegree ≤ N ∧
-      ∀ n : ℕ,
-        (g0 * henselFactorization_lowPart N Q + h0 * p - fn).coeff n ∈
-          IsLocalRing.maximalIdeal R := by
-  refine ⟨henselFactorization_lowPart_natDegree_le N Q, ?_⟩
-  have hmapQ :=
-    henselFactorization_lowPart_residue_map_eq_of_high_coeff_mem_maximalIdeal
-      N Q hhigh
-  have hmapOld :
-      (g0 * Q + h0 * p - fn).map (IsLocalRing.residue R) = 0 := by
-    apply (henselFactorization_map_eq_zero_iff_coeff_mem_ker
-      (IsLocalRing.residue R) (g0 * Q + h0 * p - fn)).2
-    intro n
-    have h := hcorr n
-    rwa [IsLocalRing.ker_residue]
-  have hmapNew :
-      (g0 * henselFactorization_lowPart N Q + h0 * p - fn).map
-        (IsLocalRing.residue R) = 0 := by
-    calc
-      (g0 * henselFactorization_lowPart N Q + h0 * p - fn).map
-          (IsLocalRing.residue R) =
-          g0.map (IsLocalRing.residue R) *
-            (henselFactorization_lowPart N Q).map (IsLocalRing.residue R) +
-              h0.map (IsLocalRing.residue R) * p.map (IsLocalRing.residue R) -
-                fn.map (IsLocalRing.residue R) := by
-        exact henselFactorization_map_mul_add_mul_sub (IsLocalRing.residue R) g0 h0
-          (henselFactorization_lowPart N Q) p fn
-      _ = g0.map (IsLocalRing.residue R) * Q.map (IsLocalRing.residue R) +
-            h0.map (IsLocalRing.residue R) * p.map (IsLocalRing.residue R) -
-              fn.map (IsLocalRing.residue R) := by
-        rw [hmapQ]
-      _ = (g0 * Q + h0 * p - fn).map (IsLocalRing.residue R) := by
-        exact (henselFactorization_map_mul_add_mul_sub (IsLocalRing.residue R) g0 h0 Q p fn).symm
-      _ = 0 := hmapOld
-  intro n
-  have hker :=
-    (henselFactorization_map_eq_zero_iff_coeff_mem_ker
-      (IsLocalRing.residue R)
-      (g0 * henselFactorization_lowPart N Q + h0 * p - fn)).1 hmapNew n
-  rwa [IsLocalRing.ker_residue] at hker
 
-/-- one-step degree truncation of the provisional correction:
-under the correction congruence and the residual degree bound for
-`fn - h0*p`, the low-degree part of `Q` has degree at most `d - m` and keeps
-the correction congruence. -/
-theorem henselFactorization_correction_after_degree_truncation
-    {R : Type*} [CommRing R] [IsLocalRing R]
-    {g0 h0 fn p Q : R[X]} {m d : ℕ}
-    (hgdeg : (g0.map (IsLocalRing.residue R)).natDegree = m)
-    (hg : g0.map (IsLocalRing.residue R) ≠ 0)
-    (hcorr :
-      ∀ n : ℕ, (g0 * Q + h0 * p - fn).coeff n ∈
-        IsLocalRing.maximalIdeal R)
-    (hAdeg : ((fn - h0 * p).map (IsLocalRing.residue R)).natDegree ≤ d) :
-    (henselFactorization_lowPart (d - m) Q).natDegree ≤ d - m ∧
-      ∀ n : ℕ,
-        (g0 * henselFactorization_lowPart (d - m) Q + h0 * p - fn).coeff n ∈
-          IsLocalRing.maximalIdeal R := by
-  exact henselFactorization_correction_after_lowPart
-    (N := d - m) hcorr
-    (henselFactorization_high_coeff_mem_maximalIdeal_of_correction_degree
-      (g0 := g0) (h0 := h0) (fn := fn) (p := p) (Q := Q)
-      (m := m) (d := d) hgdeg hg hcorr hAdeg)
 
-/-- one-step correction after Bezout and division.  If
-`b*fn = g0*q + p` is the division output and the residual degree bounds from
-the proof are available, then the truncated provisional correction has
-degree at most `d-m` and gives the required congruence. -/
-theorem henselFactorization_correction_after_division_degree_truncation
-    {R : Type*} [CommRing R] [IsLocalRing R]
-    {a b g0 h0 fn q p : R[X]} {m d : ℕ}
-    (hgdeg : (g0.map (IsLocalRing.residue R)).natDegree = m)
-    (hg : g0.map (IsLocalRing.residue R) ≠ 0)
-    (hbez : (a * g0 + b * h0).map (IsLocalRing.residue R) = 1)
-    (hdiv : b * fn = g0 * q + p)
-    (hfn : (fn.map (IsLocalRing.residue R)).natDegree ≤ d)
-    (hh0 : (h0.map (IsLocalRing.residue R)).natDegree ≤ d - m)
-    (hp : (p.map (IsLocalRing.residue R)).natDegree ≤ m)
-    (hmd : m ≤ d) :
-    (henselFactorization_lowPart (d - m) (a * fn + h0 * q)).natDegree ≤ d - m ∧
-      ∀ n : ℕ,
-        (g0 * henselFactorization_lowPart (d - m) (a * fn + h0 * q) +
-            h0 * p - fn).coeff n ∈ IsLocalRing.maximalIdeal R := by
-  have hcorr :
-      ∀ n : ℕ, (g0 * (a * fn + h0 * q) + h0 * p - fn).coeff n ∈
-        IsLocalRing.maximalIdeal R :=
-    henselFactorization_correction_mem_maximalIdeal_after_division hbez hdiv
-  have hAdeg :
-      ((fn - h0 * p).map (IsLocalRing.residue R)).natDegree ≤ d :=
-    henselFactorization_residue_sub_mul_natDegree_le
-      (fn := fn) (h0 := h0) (P := p)
-      (a := d - m) (b := m) (d := d) hfn hh0 hp (by
-        rw [Nat.sub_add_cancel hmd])
-  exact henselFactorization_correction_after_degree_truncation
-    (g0 := g0) (h0 := h0) (fn := fn) (p := p)
-    (Q := a * fn + h0 * q) (m := m) (d := d)
-    hgdeg hg hcorr hAdeg
 
-/-- replacement of the initial lifted factors by the current
-inductive approximants in the correction congruence.  If `g` and `h` still
-reduce to `g0` and `h0`, then a correction congruence for `g0,h0` is also a
-correction congruence for `g,h`. -/
-theorem henselFactorization_correction_congruence_replace_initial_factors
-    {R : Type*} [CommRing R] [IsLocalRing R]
-    {g0 h0 g h fn p q : R[X]}
-    (hg : ∀ n : ℕ, (g - g0).coeff n ∈ IsLocalRing.maximalIdeal R)
-    (hh : ∀ n : ℕ, (h - h0).coeff n ∈ IsLocalRing.maximalIdeal R)
-    (hcorr :
-      ∀ n : ℕ, (g0 * q + h0 * p - fn).coeff n ∈
-        IsLocalRing.maximalIdeal R) :
-    ∀ n : ℕ, (g * q + h * p - fn).coeff n ∈
-      IsLocalRing.maximalIdeal R := by
-  have hgmap : g.map (IsLocalRing.residue R) =
-      g0.map (IsLocalRing.residue R) := by
-    have hzero : (g - g0).map (IsLocalRing.residue R) = 0 := by
-      apply (henselFactorization_map_eq_zero_iff_coeff_mem_ker
-        (IsLocalRing.residue R) (g - g0)).2
-      intro n
-      have hmem := hg n
-      rwa [IsLocalRing.ker_residue]
-    have hsub :
-        g.map (IsLocalRing.residue R) - g0.map (IsLocalRing.residue R) = 0 := by
-      simpa [Polynomial.map_sub] using hzero
-    exact sub_eq_zero.mp hsub
-  have hhmap : h.map (IsLocalRing.residue R) =
-      h0.map (IsLocalRing.residue R) := by
-    have hzero : (h - h0).map (IsLocalRing.residue R) = 0 := by
-      apply (henselFactorization_map_eq_zero_iff_coeff_mem_ker
-        (IsLocalRing.residue R) (h - h0)).2
-      intro n
-      have hmem := hh n
-      rwa [IsLocalRing.ker_residue]
-    have hsub :
-        h.map (IsLocalRing.residue R) - h0.map (IsLocalRing.residue R) = 0 := by
-      simpa [Polynomial.map_sub] using hzero
-    exact sub_eq_zero.mp hsub
-  have hcorrMap :
-      (g0 * q + h0 * p - fn).map (IsLocalRing.residue R) = 0 := by
-    apply (henselFactorization_map_eq_zero_iff_coeff_mem_ker
-      (IsLocalRing.residue R) (g0 * q + h0 * p - fn)).2
-    intro n
-    have hmem := hcorr n
-    rwa [IsLocalRing.ker_residue]
-  have hmap :
-      (g * q + h * p - fn).map (IsLocalRing.residue R) = 0 := by
-    calc
-      (g * q + h * p - fn).map (IsLocalRing.residue R) =
-          g.map (IsLocalRing.residue R) * q.map (IsLocalRing.residue R) +
-            h.map (IsLocalRing.residue R) * p.map (IsLocalRing.residue R) -
-              fn.map (IsLocalRing.residue R) := by
-        exact henselFactorization_map_mul_add_mul_sub (IsLocalRing.residue R) g h q p fn
-      _ = g0.map (IsLocalRing.residue R) * q.map (IsLocalRing.residue R) +
-            h0.map (IsLocalRing.residue R) * p.map (IsLocalRing.residue R) -
-              fn.map (IsLocalRing.residue R) := by
-        rw [hgmap, hhmap]
-      _ = (g0 * q + h0 * p - fn).map (IsLocalRing.residue R) := by
-        exact (henselFactorization_map_mul_add_mul_sub (IsLocalRing.residue R) g0 h0 q p fn).symm
-      _ = 0 := hcorrMap
-  intro n
-  have hker :=
-    (henselFactorization_map_eq_zero_iff_coeff_mem_ker
-      (IsLocalRing.residue R) (g * q + h * p - fn)).1 hmap n
-  rwa [IsLocalRing.ker_residue] at hker
 
 /-- principal-ideal version of replacement of the initial
 lifted factors by the current inductive approximants.  If `g` and `h` are

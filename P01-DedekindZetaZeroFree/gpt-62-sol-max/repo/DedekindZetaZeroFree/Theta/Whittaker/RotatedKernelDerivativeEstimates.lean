@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.ComplexChartsAndSphericalSections
 
 @[expose] public section
@@ -118,21 +119,7 @@ lemma integral_bound_of_rationalEnvelope (h : ℕ) (ρ C : ℝ) (hρ : 0 < ρ)
       integral_mono hf.norm hi hb
     _ = _ := by rw [integral_const_mul, rationalEnvelope_integral h ρ hρ]; ring
 
-lemma bottomRowNormSq_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by
-  have hn : 0 ≤ bottomRowNormSq g := by unfold bottomRowNormSq; positivity
-  by_contra hp
-  have hz : bottomRowNormSq g = 0 := le_antisymm (le_of_not_gt hp) hn
-  have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-    have : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 = 0 := by
-      unfold bottomRowNormSq at hz; nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    exact norm_eq_zero.mp ((sq_eq_zero_iff.mp this))
-  have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-    have : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 := by
-      unfold bottomRowNormSq at hz; nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    exact norm_eq_zero.mp ((sq_eq_zero_iff.mp this))
-  have hd := Matrix.GeneralLinearGroup.det_ne_zero g
-  apply hd
-  simp [Matrix.det_fin_two, h0, h1]
+alias bottomRowNormSq_pos := DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.bottom_pos
 
 end DedekindZetaZeroFree.KPCplxRotatedKernelEstimates
 

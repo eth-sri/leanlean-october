@@ -47,23 +47,6 @@ namespace WithZeroValuation
 variable {R : Type u}
 variable {Gamma : Type x} [LinearOrderedCommGroupWithZero Gamma]
 
-/-- A nontrivial `ℤᵐ⁰`-valued valuation is rank one via the standard strictly
-monotone embedding `ℤᵐ⁰ -> ℝ≥0`.  This is kept as an explicit definition, not
-a global instance, so later finite-dimensional closedness arguments can opt in
-without changing typeclass search everywhere. -/
-@[implicit_reducible]
-noncomputable def rankOne
-    [Ring R]
-    (v : _root_.Valuation R ℤᵐ⁰) [v.IsNontrivial] : v.RankOne where
-  hom' :=
-    (WithZeroMulInt.toNNReal (by norm_num : (2 : ℝ≥0) ≠ 0)).comp
-      MonoidWithZeroHom.ValueGroup₀.embedding
-  strictMono' :=
-    (WithZeroMulInt.toNNReal_strictMono
-      (by norm_num : (1 : ℝ≥0) < 2)).comp
-        MonoidWithZeroHom.ValueGroup₀.embedding_strictMono
-  exists_val_nontrivial :=
-    _root_.Valuation.IsNontrivial.exists_val_nontrivial (v := v)
 
 /-- A cyclic linearly ordered commutative group is multiplicatively
 Archimedean.  Mathlib supplies the valuation-theoretic equivalence

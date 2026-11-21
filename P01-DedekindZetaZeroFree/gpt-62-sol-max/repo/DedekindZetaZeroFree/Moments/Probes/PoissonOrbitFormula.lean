@@ -14,11 +14,8 @@ open MeasureTheory
 
 variable {F : Type} [Field F] [NumberField F]
 
-local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 
-local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
-local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
 
 def qA (A : SArithmeticData F) (c : ExteriorSquarefreeIdeal A.cS)
     (n : A.Exterior) : ℝ :=

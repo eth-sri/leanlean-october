@@ -24,10 +24,13 @@ private theorem exists_posSideSupport (h : ℝ → ℂ) (hhc : HasCompactSupport
   intro hxK
   exact absurd (hb hxK) (not_le.mpr (lt_of_le_of_lt (le_max_left _ _) hx))
 
-private theorem fieldTransform_logMellinPhysical
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
+section
+
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
+  (hhc : HasCompactSupport h)
+include hD hr hh hhc
+
+private theorem fieldTransform_logMellinPhysical (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
     LogMellinPhysical (fieldTransform D r h) δ (originPolynomial D r h) := by
   obtain ⟨b, hb, hb0⟩ := exists_posSideSupport h hhc
   refine ⟨hδ, fieldTransform_contDiffOn D r h hD hr hh hhc, ?_, ?_⟩
@@ -42,9 +45,7 @@ private theorem fieldTransform_logMellinPhysical
     refine ⟨C * S b N h, mul_nonneg hC.le hS, fun x hx hx1 => ?_⟩
     exact hbound h hh hhc hb0 x hx hx1
 
-private theorem B_differentiableAt_of_lt_one (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) {δ : ℝ} (hδ1 : δ < 1)
+private theorem B_differentiableAt_of_lt_one {δ : ℝ} (hδ1 : δ < 1)
     (s : ℂ) (hs : -δ < s.re) (hs0 : s ≠ 0) :
     DifferentiableAt ℂ (B D r h) s := by
   have hs1 : -1 < s.re := lt_trans (by linarith) hs
@@ -55,6 +56,8 @@ private theorem B_differentiableAt_of_lt_one (D : ℝ) (r : ℕ) (h : ℝ → �
     |>.congr_of_eventuallyEq ?_
   filter_upwards [hU] with s' hs'
   exact B_eq_A_div D r h hD hr hh hhc s' hs'.1 hs'.2
+
+end
 
 private theorem smooth_euler {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ f (Set.Ioi 0))
     (j : ℕ) : ContDiffOn ℝ ∞ (EulerIter j f) (Set.Ioi 0) := by
@@ -220,10 +223,13 @@ end DedekindZetaZeroFree.LargeSieve.Vendor.LogMellinAdmissible
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-theorem fieldTransform_logMellinAdmissible
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
+section
+
+variable (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
+  (hhc : HasCompactSupport h) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1)
+include hD hr hh hhc hδ hδ1
+
+theorem fieldTransform_logMellinAdmissible :
     Vendor.LogMellinAdmissible (fieldTransform D r h) δ
       (originPolynomial D r h) (B D r h) := by
   have hphys := Vendor.fieldTransform_logMellinPhysical D r h hD hr hh hhc δ hδ hδ1
@@ -254,15 +260,14 @@ theorem fieldTransform_logMellinAdmissible
     rw [hEq _ hσre hs0]
     exact hbound σ t hσ hσv ht
 
-theorem fieldTransform_comp_sq_logMellinAdmissible
-    (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
-    (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
-    (hhc : HasCompactSupport h) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
+theorem fieldTransform_comp_sq_logMellinAdmissible :
     Vendor.LogMellinAdmissible (fun x : ℝ => fieldTransform D r h (x ^ 2)) (2 * δ)
       ((originPolynomial D r h).comp (Polynomial.C (2 : ℂ) * Polynomial.X))
       (fun s : ℂ => (1 / 2 : ℂ) * B D r h (s / 2)) := by
   exact Vendor.LogMellinAdmissible.comp_sq
     (fieldTransform_logMellinAdmissible D r h hD hr hh hhc δ hδ hδ1)
+
+end
 
 end DedekindZetaZeroFree.LargeSieve
 

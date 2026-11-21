@@ -3,14 +3,18 @@ module
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicLocalization
 public import ValuedFieldTheory.Valuation.Completion.FiniteLocalization
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.Core
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.FiniteNormExtension
+public import ValuedFieldTheory.Valuation.AbsoluteValue.Completeness
+public import ValuedFieldTheory.Valuation.AbsoluteValue.ValuationSubring
+public import Mathlib.Analysis.Normed.Unbundled.SpectralNorm
+public import Mathlib.RingTheory.Norm.Transitivity
+public import Mathlib.RingTheory.Complex
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormula
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaAbsoluteValue
+
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaCoefficients
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaExtension
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaIntegralClosure
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.RamificationInvariants
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueExtensionCoefficients
+public import ValuedFieldTheory.Valuation.Henselian.IrreduciblePolynomialBounds
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueValuationSubring
 public import ValuedFieldTheory.Ramification.HilbertRamification.DecompositionGroup
 
@@ -76,16 +80,19 @@ def valuationPreservingWithAbsRingEquiv
           ((WithAbs.equiv w.1).symm x)) = σ x :=
   rfl
 
-theorem valuationPreservingWithAbsRingEquiv_isometry
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) :
+section
+
+variable (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x)
+include σ hσ
+
+theorem valuationPreservingWithAbsRingEquiv_isometry :
     Isometry (valuationPreservingWithAbsRingEquiv vK w σ) := by
   apply AddMonoidHomClass.isometry_of_norm
   intro x
   rw [WithAbs.norm_eq_apply_ofAbs, WithAbs.norm_eq_apply_ofAbs]
   exact hσ (WithAbs.equiv w.1 x)
 
-theorem valuationPreservingWithAbsRingEquiv_symm_isometry
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) :
+theorem valuationPreservingWithAbsRingEquiv_symm_isometry :
     Isometry (valuationPreservingWithAbsRingEquiv vK w σ).symm := by
   apply AddMonoidHomClass.isometry_of_norm
   intro x
@@ -95,16 +102,14 @@ theorem valuationPreservingWithAbsRingEquiv_symm_isometry
 
 /-- A valuation-preserving automorphism of `L` extends functorially to a ring
 automorphism of the metric completion of `(L,w)`. -/
-def valuationPreservingCompletionRingEquiv
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) :
+def valuationPreservingCompletionRingEquiv :
     w.1.Completion ≃+* w.1.Completion :=
   UniformSpace.Completion.mapRingEquiv
     (valuationPreservingWithAbsRingEquiv vK w σ)
     (valuationPreservingWithAbsRingEquiv_isometry vK w σ hσ).continuous
     (valuationPreservingWithAbsRingEquiv_symm_isometry vK w σ hσ).continuous
 
-@[simp] theorem valuationPreservingCompletionRingEquiv_toCompletion
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) (x : L) :
+@[simp] theorem valuationPreservingCompletionRingEquiv_toCompletion (x : L) :
     valuationPreservingCompletionRingEquiv vK w σ hσ
         (AbsoluteValue.toCompletion w.1 x) =
       AbsoluteValue.toCompletion w.1 (σ x) := by
@@ -122,7 +127,6 @@ def valuationPreservingCompletionRingEquiv
 
 /-- The extended automorphism fixes the embedded completed base field. -/
 theorem valuationPreservingCompletionRingEquiv_completionMap
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x)
     (x : vK.Completion) :
     valuationPreservingCompletionRingEquiv vK w σ hσ
         (AbsoluteValue.completionMap vK w.1 w.2 x) =
@@ -153,7 +157,6 @@ theorem valuationPreservingCompletionRingEquiv_completionMap
 
 /-- The completion lift preserves the algebraic localization `L K_v`. -/
 theorem valuationPreservingCompletionRingEquiv_mem_localization
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x)
     {z : w.1.Completion} (hz : z ∈ AbsoluteValue.algebraicLocalization vK w.1 w.2) :
     valuationPreservingCompletionRingEquiv vK w σ hσ z ∈
       AbsoluteValue.algebraicLocalization vK w.1 w.2 := by
@@ -185,7 +188,6 @@ theorem valuationPreservingCompletionRingEquiv_mem_localization
 
 /-- The inverse completion lift also preserves `L K_v`. -/
 theorem valuationPreservingCompletionRingEquiv_symm_mem_localization
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x)
     {z : w.1.Completion} (hz : z ∈ AbsoluteValue.algebraicLocalization vK w.1 w.2) :
     (valuationPreservingCompletionRingEquiv vK w σ hσ).symm z ∈
       AbsoluteValue.algebraicLocalization vK w.1 w.2 := by
@@ -235,8 +237,7 @@ theorem valuationPreservingCompletionRingEquiv_symm_mem_localization
 
 /-- A valuation-preserving automorphism of `L` extends to a
 `K_v`-automorphism of the algebraic localization. -/
-def valuationPreservingLocalizationAlgEquiv
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) :
+def valuationPreservingLocalizationAlgEquiv :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -272,8 +273,7 @@ def valuationPreservingLocalizationAlgEquiv
         exact valuationPreservingCompletionRingEquiv_completionMap
           vK w σ hσ x }
 
-@[simp] theorem valuationPreservingLocalizationAlgEquiv_toLocalization
-    (σ : L ≃ₐ[K] L) (hσ : ∀ x : L, w.1 (σ x) = w.1 x) (x : L) :
+@[simp] theorem valuationPreservingLocalizationAlgEquiv_toLocalization (x : L) :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -285,6 +285,8 @@ def valuationPreservingLocalizationAlgEquiv
   let := AbsoluteValue.completionAlgebra vK w.1 w.2
   apply Subtype.ext
   exact valuationPreservingCompletionRingEquiv_toCompletion vK w σ hσ x
+
+end
 
 end LocalizationLift
 

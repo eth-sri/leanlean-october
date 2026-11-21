@@ -60,13 +60,13 @@ theorem existsUnique_unitResidue (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
     have hn : p.valuation F (x : F) ≠ 0 := (Valuation.ne_zero_iff _).mpr x.ne_zero
     rw [← WithZero.exp_log hn, hlog, WithZero.exp_zero]
   obtain ⟨a, b, hab⟩ := p.exists_primeCompl_mul_eq_of_integer (x : F) hval.le
-  have hb : (b : 𝓞 F) ∉ p.asIdeal := b.property
+  have hb := b.property
   have hbF : ((b : 𝓞 F) : F) ≠ 0 := by
     exact_mod_cast (fun h => hb (h ▸ p.asIdeal.zero_mem) : (b : 𝓞 F) ≠ 0)
   have ha : a ∉ p.asIdeal := by
     apply p.valuation_eq_one_iff_notMem (K := F).mp
     rw [← hab, map_mul, hval, p.valuation_eq_one_iff_notMem (K := F).mpr hb, one_mul]
-  have hxdiv : (x : F) = (a : F) / ((b : 𝓞 F) : F) := (eq_div_iff hbF).mpr hab
+  have hxdiv := (eq_div_iff hbF).mpr hab
   refine ⟨Ideal.Quotient.mk p.asIdeal a / Ideal.Quotient.mk p.asIdeal b,
     ⟨a, b, ha, hb, hxdiv, rfl⟩, ?_⟩
   intro t ht
@@ -76,7 +76,7 @@ theorem existsUnique_unitResidue (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
     exact_mod_cast (fun h => hd (h ▸ p.asIdeal.zero_mem) : d ≠ 0)
   have hac : a * d = c * b := by
     apply NumberField.RingOfIntegers.ext
-    exact (div_eq_div_iff hbF hdF).mp (hxdiv.symm.trans hxcd)
+    grind
   apply (div_eq_div_iff
     (fun h => hd (Ideal.Quotient.eq_zero_iff_mem.mp h))
     (fun h => hb (Ideal.Quotient.eq_zero_iff_mem.mp h))).mpr
@@ -178,23 +178,19 @@ theorem support_outside (A : SArithmeticData F) (I : A.Exterior)
     exact sup_le hIp hcS
   exact p.isPrime.ne_top (top_le_iff.mp htop)
 
-private theorem order_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
+lemma ord_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
     order p (x * y) = order p x + order p y := by
   simp only [order, Units.val_mul, map_mul]
   rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
     ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
-
-private theorem order_zpow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℤ) :
+lemma ord_zpow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℤ) :
     order p (x ^ n) = n * order p x := by
   simp only [order, Units.val_zpow_eq_zpow_val, map_zpow₀, WithZero.log_zpow,
     smul_eq_mul]
   ring
 
-private theorem order_unit (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
-    order p.val u.val = 0 := by
-  have hv : p.val.valuation F (u.val : F) = 1 := by
-    exact u.property p.val p.property
-  simp [order, hv]
+lemma unit_ord (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
+    order p.val u.val = 0 := by simp [order, u.property p.val p.property]
 
  def boundIdeal (A : SArithmeticData F)
     (p : ExteriorPrime A) (n : ℕ) : Ideal A.R where
@@ -272,8 +268,8 @@ theorem localUnit_order (A : SArithmeticData F) (G : AllowedRecipe A)
     rw [generator_order]
     simp [primeIdeal, idealPrimeExponent,
       UniqueFactorizationMonoid.normalizedFactors_irreducible p.val.irreducible]
-  rw [localUnit, div_eq_mul_inv, order_mul]
-  rw [← zpow_neg_one, order_zpow, order_zpow, hg]
+  rw [localUnit, div_eq_mul_inv, ord_mul]
+  rw [← zpow_neg_one, ord_zpow, ord_zpow, hg]
   ring
 
 def gaussTwo (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -321,18 +317,24 @@ def cArgument (A : SArithmeticData F) (G : AllowedRecipe A)
     (G.generator v.c / G.generator (primeIdeal A p)) *
     (G.generator D.d * G.generator b.f) ^ (-2 : ℤ)
 
-private lemma mem_support_iff (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (p : HeightOneSpectrum (𝓞 F)) : p ∈ support I ↔ I ≤ p.asIdeal := by
+private lemma mem_support_factors {I : Ideal (𝓞 F)} {p : HeightOneSpectrum (𝓞 F)} :
+    p ∈ support I ↔ p.asIdeal ∈ UniqueFactorizationMonoid.normalizedFactors I := by
   simp only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset]
-  exact Ideal.mem_normalizedFactors_iff hI |>.trans (and_iff_right p.isPrime)
-private lemma exponent_zero (I : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∉ support I) : idealPrimeExponent p.asIdeal I = 0 := by
-  apply Multiset.count_eq_zero.mpr
-  simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hp
+
+private lemma mem_support_iff (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+    (p : HeightOneSpectrum (𝓞 F)) : p ∈ support I ↔ I ≤ p.asIdeal :=
+  mem_support_factors.trans ((Ideal.mem_normalizedFactors_iff hI).trans (and_iff_right p.isPrime))
+
+lemma exponent_zero (I : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
+    (hp : p ∉ support I) : idealPrimeExponent p.asIdeal I = 0 :=
+  Multiset.count_eq_zero.mpr fun h => hp (mem_support_factors.mpr h)
+
 private lemma exponent_one (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hs : Squarefree I)
-    (p : HeightOneSpectrum (𝓞 F)) (hp : p ∈ support I) : idealPrimeExponent p.asIdeal I = 1 := by
-  apply Multiset.count_eq_one_of_mem (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hI |>.mp hs)
-  simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hp
+    (p : HeightOneSpectrum (𝓞 F)) (hp : p ∈ support I) : idealPrimeExponent p.asIdeal I = 1 :=
+  Multiset.count_eq_one_of_mem
+    (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hI |>.mp hs)
+    (mem_support_factors.mp hp)
+
 private lemma support_divides (I J : Ideal (𝓞 F)) (hJ : J ≠ ⊥) (h : I ∣ J)
     (p : HeightOneSpectrum (𝓞 F)) (hp : p ∈ support I) : p ∈ support J := by
   have hI : I ≠ ⊥ := by
@@ -342,45 +344,30 @@ private lemma support_divides (I J : Ideal (𝓞 F)) (hJ : J ≠ ⊥) (h : I ∣
   exact (mem_support_iff J hJ p).mpr ((Ideal.dvd_iff_le.mp h).trans ((mem_support_iff I hI p).mp hp))
 private lemma support_radical (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (p : HeightOneSpectrum (𝓞 F)) : p ∈ support (idealRadical I) ↔ p ∈ support I := by
-  simp only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset]
-  rw [← Multiset.count_ne_zero, ← Multiset.count_ne_zero]
-  change idealPrimeExponent p.asIdeal (idealRadical I) ≠ 0 ↔
-    idealPrimeExponent p.asIdeal I ≠ 0
-  rw [idealPrimeExponent_radical I hI _ p.prime]
-  by_cases hp : p.asIdeal ∈ idealPrimeSupport I
-  · simp only [if_pos hp]
-    constructor
-    · intro _
-      exact Multiset.count_ne_zero.mpr (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hp)
-    · intro _; norm_num
-  · simp only [if_neg hp, ne_eq, not_true_eq_false, false_iff, not_not]
-    exact Multiset.count_eq_zero.mpr (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hp)
+  rw [mem_support_factors, ← Multiset.count_ne_zero]
+  change idealPrimeExponent p.asIdeal (idealRadical I) ≠ 0 ↔ _
+  rw [idealPrimeExponent_radical I hI _ p.prime, support, Finset.mem_preimage]
+  split <;> simp_all
+
 private lemma disjoint_support (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥)
     (hcop : I ⊔ J = ⊤) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∈ support I) : p ∉ support J := by
-  intro hq
-  have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
-    rw [← hcop]
-    exact sup_le ((mem_support_iff I hI p).mp hp) ((mem_support_iff J hJ p).mp hq)
-  exact p.isPrime.ne_top (top_le_iff.mp ht)
+    (hp : p ∈ support I) : p ∉ support J := fun hq =>
+  p.isPrime.ne_top (top_le_iff.mp (hcop.symm.le.trans (sup_le
+    ((mem_support_iff I hI p).mp hp) ((mem_support_iff J hJ p).mp hq))))
+
 private lemma coprime_parts (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b) (p : HeightOneSpectrum (𝓞 F)) :
-    (p ∈ support D.d.val ∨ p ∈ support b.f.val) →
-      p ∉ support v.c.val ∧ p ∉ support v.n.val := by
-  intro hp
-  have hd : D.d.val * b.f.val ≤ p.asIdeal := by
-    rcases hp with hp | hp
-    · exact Ideal.mul_le_left.trans ((mem_support_iff _ D.d.property.1 p).mp hp)
-    · exact Ideal.mul_le_right.trans ((mem_support_iff _ b.f.property.1 p).mp hp)
-  have hcn : v.c.val * v.n.val ⊔ D.d.val * b.f.val = ⊤ := v.coprime
-  constructor <;> intro h
-  · have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
-      rw [← hcn]; exact sup_le (Ideal.mul_le_left.trans ((mem_support_iff _ v.c.property.1 p).mp h)) hd
-    exact p.isPrime.ne_top (top_le_iff.mp ht)
-  · have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
-      rw [← hcn]; exact sup_le (Ideal.mul_le_right.trans ((mem_support_iff _ v.n.property.1 p).mp h)) hd
-    exact p.isPrime.ne_top (top_le_iff.mp ht)
+    (b : Branch A G m D) (v : Coordinates A G m D b) (p : HeightOneSpectrum (𝓞 F))
+    (hp : p ∈ support D.d.val ∨ p ∈ support b.f.val) :
+    p ∉ support v.c.val ∧ p ∉ support v.n.val := by
+  have hd : D.d.val * b.f.val ≤ p.asIdeal := hp.elim
+    (fun h => Ideal.mul_le_left.trans ((mem_support_iff _ D.d.property.1 p).mp h))
+    (fun h => Ideal.mul_le_right.trans ((mem_support_iff _ b.f.property.1 p).mp h))
+  have hne (h : v.c.val * v.n.val ≤ p.asIdeal) : False :=
+    p.isPrime.ne_top (top_le_iff.mp (v.coprime.symm.le.trans (sup_le h hd)))
+  exact ⟨fun h => hne (Ideal.mul_le_left.trans ((mem_support_iff _ v.c.property.1 p).mp h)),
+    fun h => hne (Ideal.mul_le_right.trans ((mem_support_iff _ v.n.property.1 p).mp h))⟩
+
 private lemma supported_a (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b)
@@ -396,24 +383,12 @@ private lemma f_in_h (A : SArithmeticData F) (G : AllowedRecipe A)
     (hp : p ∈ support b.f.val) : p ∈ support D.h.val := by
   exact (support_radical _ D.h.property.1 p).mp
     (support_divides _ _ (idealRadical_squarefree_nonzero _ D.h.property.1).2 b.divides_radical p hp)
-private lemma mul_order (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
-    order p (x * y) = order p x + order p y := by
-  simp only [order, Units.val_mul, map_mul]
-  rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
-    ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
-private lemma zpow_order (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℤ) :
-    order p (x ^ n) = n * order p x := by
-  simp only [order, Units.val_zpow_eq_zpow_val, map_zpow₀, WithZero.log_zpow, smul_eq_mul]
-  ring
-private lemma unit_order (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
-    order p.val u.val = 0 := by
-  simp [order, u.property p.val p.property]
 private lemma div_order (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
     order p (x / y) = order p x - order p y := by
-  rw [div_eq_mul_inv, mul_order, ← zpow_neg_one, zpow_order]; ring
+  rw [div_eq_mul_inv, ord_mul, ← zpow_neg_one, ord_zpow]; ring
 private lemma pow_order (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℕ) :
     order p (x ^ n) = (n : ℤ) * order p x := by
-  rw [← zpow_natCast, zpow_order]
+  rw [← zpow_natCast, ord_zpow]
 private lemma prime_exp (A : SArithmeticData F) (p : ExteriorPrime A) :
     idealPrimeExponent p.val.asIdeal (primeIdeal A p).val = 1 := by
   simp [primeIdeal, idealPrimeExponent, UniqueFactorizationMonoid.normalizedFactors_irreducible p.val.irreducible]
@@ -439,7 +414,7 @@ theorem coefficient_arguments_units (A : SArithmeticData F) (G : AllowedRecipe A
     have hn := exponent_zero _ _ (coprime_parts A G m D b v p.val (Or.inl hp)).2
     have hd := exponent_one _ D.d.property.1 D.squarefree p.val hp
     have hf' := exponent_zero _ _ hf
-    simp only [dArgument, mul_order, div_order, zpow_order, pow_order, unit_order,
+    simp only [dArgument, ord_mul, div_order, ord_zpow, pow_order, unit_ord,
       generator_order, prime_exp, ha, hc, hn, hd, hf']
     ring
   · intro p hp
@@ -448,7 +423,7 @@ theorem coefficient_arguments_units (A : SArithmeticData F) (G : AllowedRecipe A
     have hn := exponent_zero _ _ (coprime_parts A G m D b v p.val (Or.inr hp)).2
     have hd' := exponent_zero _ _ hd
     have hf := exponent_one _ b.f.property.1 b.squarefree p.val hp
-    simp only [fArgument, mul_order, div_order, zpow_order, pow_order, unit_order,
+    simp only [fArgument, ord_mul, div_order, ord_zpow, pow_order, unit_ord,
       generator_order, prime_exp, hc, hn, hd', hf]
     ring
   · intro p hp
@@ -460,7 +435,7 @@ theorem coefficient_arguments_units (A : SArithmeticData F) (G : AllowedRecipe A
     have hd := exponent_zero _ _ hnot.1
     have hf := exponent_zero _ _ hnot.2
     have hc := exponent_one _ v.c.property.1 v.c_squarefree p.val hp
-    simp only [cArgument, mul_order, div_order, zpow_order, pow_order, unit_order,
+    simp only [cArgument, ord_mul, div_order, ord_zpow, unit_ord,
       generator_order, prime_exp, ha, hd, hf, hc]
     ring
 
@@ -516,136 +491,19 @@ def branchCoefficient (A : SArithmeticData F) (G : AllowedRecipe A)
 
 namespace CanonicalCoefficientProof
 
-private lemma ord_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
-    order p (x * y) = order p x + order p y := by
-  simp only [order, Units.val_mul, map_mul]
-  rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
-    ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
-
-private lemma ord_zpow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℤ) :
-    order p (x ^ n) = n * order p x := by
-  simp only [order, Units.val_zpow_eq_zpow_val, map_zpow₀, WithZero.log_zpow,
-    smul_eq_mul]
-  ring
-
-private lemma ord_div (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
-    order p (x / y) = order p x - order p y := by
-  rw [div_eq_mul_inv, ord_mul, ← zpow_neg_one, ord_zpow]; ring
-
-private lemma ord_pow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℕ) :
-    order p (x ^ n) = (n : ℤ) * order p x := by
-  rw [← zpow_natCast, ord_zpow]
-
-private lemma exponent_zero_aux (I : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∉ support I) : idealPrimeExponent p.asIdeal I = 0 := by
-  apply Multiset.count_eq_zero.mpr
-  simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hp
-
-private lemma exponent_one_aux (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hs : Squarefree I)
-    (p : HeightOneSpectrum (𝓞 F)) (hp : p ∈ support I) : idealPrimeExponent p.asIdeal I = 1 := by
-  apply Multiset.count_eq_one_of_mem
-    (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hI |>.mp hs)
-  simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hp
-
-private lemma mem_support_iff_aux (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (p : HeightOneSpectrum (𝓞 F)) : p ∈ support I ↔ I ≤ p.asIdeal := by
-  simp only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset]
-  exact Ideal.mem_normalizedFactors_iff hI |>.trans (and_iff_right p.isPrime)
-
-private lemma support_divides_aux (I J : Ideal (𝓞 F)) (hJ : J ≠ ⊥) (h : I ∣ J)
-    (p : HeightOneSpectrum (𝓞 F)) (hp : p ∈ support I) : p ∈ support J := by
-  have hI : I ≠ ⊥ := by
-    intro hi
-    obtain ⟨K, hK⟩ := h
-    exact hJ (by simpa [hi] using hK)
-  exact (mem_support_iff_aux J hJ p).mpr
-    ((Ideal.dvd_iff_le.mp h).trans ((mem_support_iff_aux I hI p).mp hp))
-
-private lemma support_radical_aux (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (p : HeightOneSpectrum (𝓞 F)) : p ∈ support (idealRadical I) ↔ p ∈ support I := by
-  simp only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset]
-  rw [← Multiset.count_ne_zero, ← Multiset.count_ne_zero]
-  change idealPrimeExponent p.asIdeal (idealRadical I) ≠ 0 ↔
-    idealPrimeExponent p.asIdeal I ≠ 0
-  rw [idealPrimeExponent_radical I hI _ p.prime]
-  by_cases hp : p.asIdeal ∈ idealPrimeSupport I
-  · simp only [if_pos hp]
-    constructor
-    · intro _
-      exact Multiset.count_ne_zero.mpr
-        (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hp)
-    · intro _; norm_num
-  · simp only [if_neg hp, ne_eq, not_true_eq_false, false_iff, not_not]
-    exact Multiset.count_eq_zero.mpr
-      (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hp)
-
-private lemma disjoint_support_aux (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥)
-    (hcop : I ⊔ J = ⊤) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∈ support I) : p ∉ support J := by
-  intro hq
-  have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
-    rw [← hcop]
-    exact sup_le ((mem_support_iff_aux I hI p).mp hp) ((mem_support_iff_aux J hJ p).mp hq)
-  exact p.isPrime.ne_top (top_le_iff.mp ht)
-
-private lemma unit_ord_aux (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
-    order p.val u.val = 0 := by
-  simp [order, u.property p.val p.property]
-
-private lemma f_in_h_aux (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∈ support b.f.val) : p ∈ support D.h.val :=
-  (support_radical_aux _ D.h.property.1 p).mp
-    (support_divides_aux _ _ (idealRadical_squarefree_nonzero _ D.h.property.1).2
-      b.divides_radical p hp)
-
-private lemma supported_a_aux (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b)
-    (p : HeightOneSpectrum (𝓞 F)) (hp : p ∉ support b.f.val) : p ∉ support v.a.val := by
-  intro ha
-  exact hp (by
-    simpa only [support, Finset.mem_preimage] using
-      v.a_supported (show p.asIdeal ∈ idealPrimeSupport v.a.val by
-        simpa only [support, Finset.mem_preimage] using ha))
-
-private lemma coprime_parts_aux (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b) (p : HeightOneSpectrum (𝓞 F)) :
-    (p ∈ support D.d.val ∨ p ∈ support b.f.val) →
-      p ∉ support v.c.val ∧ p ∉ support v.n.val := by
-  intro hp
-  have hd : D.d.val * b.f.val ≤ p.asIdeal := by
-    rcases hp with hp | hp
-    · exact Ideal.mul_le_left.trans ((mem_support_iff_aux _ D.d.property.1 p).mp hp)
-    · exact Ideal.mul_le_right.trans ((mem_support_iff_aux _ b.f.property.1 p).mp hp)
-  have hcn : v.c.val * v.n.val ⊔ D.d.val * b.f.val = ⊤ := v.coprime
-  constructor <;> intro h
-  · have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
-      rw [← hcn]
-      exact sup_le (Ideal.mul_le_left.trans
-        ((mem_support_iff_aux _ v.c.property.1 p).mp h)) hd
-    exact p.isPrime.ne_top (top_le_iff.mp ht)
-  · have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
-      rw [← hcn]
-      exact sup_le (Ideal.mul_le_right.trans
-        ((mem_support_iff_aux _ v.n.property.1 p).mp h)) hd
-    exact p.isPrime.ne_top (top_le_iff.mp ht)
-
 private lemma not_mem_d_of_mem_f (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (p : HeightOneSpectrum (𝓞 F))
     (hp : p ∈ support b.f.val) : p ∉ support D.d.val :=
-  disjoint_support_aux _ _ D.h.property.1 D.d.property.1 D.coprime
-    p (f_in_h_aux A G m D b p hp)
+  disjoint_support _ _ D.h.property.1 D.d.property.1 D.coprime
+    p (f_in_h A G m D b p hp)
 
 private lemma not_mem_f_of_mem_d (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (p : HeightOneSpectrum (𝓞 F))
     (hp : p ∈ support D.d.val) : p ∉ support b.f.val := fun hf =>
-  disjoint_support_aux _ _ D.h.property.1 D.d.property.1 D.coprime p
-    (f_in_h_aux A G m D b p hf) hp
+  disjoint_support _ _ D.h.property.1 D.d.property.1 D.coprime p
+    (f_in_h A G m D b p hf) hp
 
 private theorem order_coordinateRepresentative_of_mem_d (A : SArithmeticData F)
     (G : AllowedRecipe A) (U : UnitRepresentatives A) (m : ThetaReflectionData.Row A)
@@ -653,15 +511,15 @@ private theorem order_coordinateRepresentative_of_mem_d (A : SArithmeticData F)
     (p : ExteriorPrime A) (hp : p.val ∈ support D.d.val) :
     order p.val (coordinateRepresentative A G U m D b v) = -2 := by
   have hf : p.val ∉ support b.f.val := not_mem_f_of_mem_d A G m D b p.val hp
-  have ha : p.val ∉ support v.a.val := supported_a_aux A G m D b v p.val hf
+  have ha : p.val ∉ support v.a.val := supported_a A G m D b v p.val hf
   have hc : p.val ∉ support v.c.val :=
-    (coprime_parts_aux A G m D b v p.val (Or.inl hp)).1
+    (coprime_parts A G m D b v p.val (Or.inl hp)).1
   have hn : p.val ∉ support v.n.val :=
-    (coprime_parts_aux A G m D b v p.val (Or.inl hp)).2
-  simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
-    unit_ord_aux, generator_order, exponent_zero_aux _ _ ha, exponent_zero_aux _ _ hc,
-    exponent_zero_aux _ _ hn, exponent_one_aux _ D.d.property.1 D.squarefree p.val hp,
-    exponent_zero_aux _ _ hf]
+    (coprime_parts A G m D b v p.val (Or.inl hp)).2
+  simp only [coordinateRepresentative, div_order, ord_mul, pow_order,
+    unit_ord, generator_order, exponent_zero _ _ ha, exponent_zero _ _ hc,
+    exponent_zero _ _ hn, exponent_one _ D.d.property.1 D.squarefree p.val hp,
+    exponent_zero _ _ hf]
   ring
 
 private theorem order_coordinateRepresentative_of_mem_f (A : SArithmeticData F)
@@ -672,12 +530,12 @@ private theorem order_coordinateRepresentative_of_mem_f (A : SArithmeticData F)
       idealPrimeExponent p.val.asIdeal v.a.val := by
   have hd : p.val ∉ support D.d.val := not_mem_d_of_mem_f A G m D b p.val hp
   have hc : p.val ∉ support v.c.val :=
-    (coprime_parts_aux A G m D b v p.val (Or.inr hp)).1
+    (coprime_parts A G m D b v p.val (Or.inr hp)).1
   have hn : p.val ∉ support v.n.val :=
-    (coprime_parts_aux A G m D b v p.val (Or.inr hp)).2
-  simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
-    unit_ord_aux, generator_order, exponent_zero_aux _ _ hd, exponent_zero_aux _ _ hc,
-    exponent_zero_aux _ _ hn, exponent_one_aux _ b.f.property.1 b.squarefree p.val hp]
+    (coprime_parts A G m D b v p.val (Or.inr hp)).2
+  simp only [coordinateRepresentative, div_order, ord_mul, pow_order,
+    unit_ord, generator_order, exponent_zero _ _ hd, exponent_zero _ _ hc,
+    exponent_zero _ _ hn, exponent_one _ b.f.property.1 b.squarefree p.val hp]
   ring
 
 private theorem order_coordinateRepresentative_of_not_mem (A : SArithmeticData F)
@@ -687,10 +545,10 @@ private theorem order_coordinateRepresentative_of_not_mem (A : SArithmeticData F
     order p.val (coordinateRepresentative A G U m D b v) =
       idealPrimeExponent p.val.asIdeal v.c.val +
         3 * idealPrimeExponent p.val.asIdeal v.n.val := by
-  have ha : p.val ∉ support v.a.val := supported_a_aux A G m D b v p.val hf
-  simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
-    unit_ord_aux, generator_order, exponent_zero_aux _ _ ha, exponent_zero_aux _ _ hd,
-    exponent_zero_aux _ _ hf]
+  have ha : p.val ∉ support v.a.val := supported_a A G m D b v p.val hf
+  simp only [coordinateRepresentative, div_order, ord_mul, pow_order,
+    unit_ord, generator_order, exponent_zero _ _ ha, exponent_zero _ _ hd,
+    exponent_zero _ _ hf]
   ring
 
 private theorem localUnit_coordinateRepresentative_of_mem_d (A : SArithmeticData F)
@@ -701,11 +559,10 @@ private theorem localUnit_coordinateRepresentative_of_mem_d (A : SArithmeticData
       dArgument A G U m D b v p := by
   rw [localUnit, order_coordinateRepresentative_of_mem_d A G U m D b v p hp]
   simp only [coordinateRepresentative, dArgument]
-  simp only [zpow_sub, zpow_add, zpow_neg, zpow_ofNat, zpow_natCast,
-    div_pow, mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
+  simp only [zpow_neg, zpow_ofNat, mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
   apply Units.ext
   simp only [Units.val_mul, Units.val_inv_eq_inv_val, Units.val_pow_eq_pow_val,
-    Units.val_zpow_eq_zpow_val, zpow_natCast, pow_one, ← Nat.cast_mul, ← pow_mul]
+    ← Nat.cast_mul, ← pow_mul]
   field_simp
   <;> ring
 
@@ -720,11 +577,11 @@ private theorem localUnit_coordinateRepresentative_of_mem_f (A : SArithmeticData
       (idealPrimeExponent p.val.asIdeal v.a.val : ℤ) - 2 := by omega
   rw [localUnit, ho']
   simp only [coordinateRepresentative, fArgument]
-  simp only [zpow_sub, zpow_add, zpow_neg, zpow_ofNat, zpow_natCast,
-    div_pow, mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
+  simp only [zpow_sub, zpow_neg, zpow_ofNat, zpow_natCast,
+    mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
   apply Units.ext
   simp only [Units.val_mul, Units.val_inv_eq_inv_val, Units.val_pow_eq_pow_val,
-    Units.val_zpow_eq_zpow_val, zpow_natCast, pow_one, ← Nat.cast_mul, ← pow_mul]
+    ← Nat.cast_mul, ← pow_mul]
   field_simp
   <;> ring
 
@@ -735,17 +592,17 @@ private theorem localUnit_coordinateRepresentative_of_mem_c (A : SArithmeticData
     localUnit A G p (coordinateRepresentative A G U m D b v) =
       cArgument A G U m D b v p * localUnit A G p (G.generator v.n) ^ 3 := by
   have hd : p.val ∉ support D.d.val := fun h =>
-    (coprime_parts_aux A G m D b v p.val (Or.inl h)).1 hp
+    (coprime_parts A G m D b v p.val (Or.inl h)).1 hp
   have hf : p.val ∉ support b.f.val := fun h =>
-    (coprime_parts_aux A G m D b v p.val (Or.inr h)).1 hp
+    (coprime_parts A G m D b v p.val (Or.inr h)).1 hp
   rw [localUnit, order_coordinateRepresentative_of_not_mem A G U m D b v p hd hf,
-    exponent_one_aux _ v.c.property.1 v.c_squarefree p.val hp]
+    exponent_one _ v.c.property.1 v.c_squarefree p.val hp]
   simp only [coordinateRepresentative, cArgument, localUnit, generator_order, Nat.cast_one]
-  simp only [zpow_sub, zpow_add, zpow_neg, zpow_ofNat, zpow_natCast,
-    div_pow, mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
+  simp only [zpow_add, zpow_neg, zpow_ofNat, zpow_natCast,
+    mul_pow, div_eq_mul_inv, mul_inv_rev, inv_pow]
   apply Units.ext
   simp only [Units.val_mul, Units.val_inv_eq_inv_val, Units.val_pow_eq_pow_val,
-    Units.val_zpow_eq_zpow_val, zpow_natCast, pow_one, ← Nat.cast_mul, ← pow_mul]
+    Units.val_zpow_eq_zpow_val, pow_one, ← Nat.cast_mul, ← pow_mul]
   field_simp
   ring_nf
   change (_ : F) ^ (idealPrimeExponent p.val.asIdeal v.n.val * 3) =
@@ -790,7 +647,7 @@ private lemma reduction_one_aux (p : HeightOneSpectrum (𝓞 F)) :
 
 private lemma reduction_pow_aux (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
     (hx : order p x = 0) (n : ℕ) : unitResidue p (x ^ n) = unitResidue p x ^ n := by
-  have hp (n : ℕ) : order p (x ^ n) = 0 := by rw [ord_pow, hx, mul_zero]
+  have hp (n : ℕ) : order p (x ^ n) = 0 := by rw [pow_order, hx, mul_zero]
   induction n with
   | zero => simp [reduction_one_aux]
   | succ n ih => rw [pow_succ, reduction_mul_aux p _ _ (hp n) hx, ih, pow_succ]
@@ -799,7 +656,7 @@ private theorem symbol_mul_cube_sq (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ExteriorPrime A) (x y : Fˣ) (hx : order p.val x = 0)
     (hy : order p.val y = 0) :
     symbol A σ p (x * y ^ 3) ^ 2 = symbol A σ p x ^ 2 := by
-  have hy3 : order p.val (y ^ 3) = 0 := by rw [ord_pow, hy, mul_zero]
+  have hy3 : order p.val (y ^ 3) = 0 := by rw [pow_order, hy, mul_zero]
   simp only [symbol, reduction_mul_aux _ _ _ hx hy3, reduction_pow_aux _ _ hy,
     map_mul, map_pow, mul_pow, ← pow_mul]
   rw [show 3 * 2 = 6 by norm_num,
@@ -891,11 +748,11 @@ private theorem branchLocalFactor_coordinateRepresentative_of_mem_f (A : SArithm
 private lemma rowIndex_d_aux (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (p : ExteriorPrime A) (hp : p.val ∈ support D.d.val) : rowIndex A m p.val = 1 := by
-  have hh := exponent_zero_aux _ _ (disjoint_support_aux _ _ D.d.property.1 D.h.property.1
+  have hh := exponent_zero _ _ (disjoint_support _ _ D.d.property.1 D.h.property.1
     (by rw [sup_comm]; exact D.coprime) p.val hp)
-  have hd := exponent_one_aux _ D.d.property.1 D.squarefree p.val hp
+  have hd := exponent_one _ D.d.property.1 D.squarefree p.val hp
   have hr : order p.val (ThetaReflectionData.rowUnit A m) = 1 := by
-    rw [D.row_eq, ord_mul, unit_ord_aux, generator_order, D.factorization]
+    rw [D.row_eq, ord_mul, unit_ord, generator_order, D.factorization]
     simp only [idealPrimeExponent,
       UniqueFactorizationMonoid.normalizedFactors_mul D.h.property.1 D.d.property.1,
       Multiset.count_add] at *
@@ -938,7 +795,7 @@ private theorem sphericalFactor_coordinateRepresentative_of_not_mem_c (A : SArit
     sphericalFactor A G σ ψ p (coordinateRepresentative A G U m D b v) =
       (idealNorm p.val.asIdeal : ℂ) ^ (-(idealPrimeExponent p.val.asIdeal v.n.val : ℤ)) := by
   have ho := order_coordinateRepresentative_of_not_mem A G U m D b v p hd hf
-  rw [exponent_zero_aux _ _ hc, Nat.cast_zero, zero_add] at ho
+  rw [exponent_zero _ _ hc, Nat.cast_zero, zero_add] at ho
   have hcard : Fintype.card (DHCubic.Residue F p.val) = idealNorm p.val.asIdeal := by
     simp only [idealNorm, Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
   have hcardC : (Fintype.card (DHCubic.Residue F p.val) : ℂ) =
@@ -972,8 +829,8 @@ private theorem coordinateFrequency_supported (A : SArithmeticData F) (G : Allow
     have hc : idealPrimeExponent p.val.asIdeal v.c.val = 0 ∨
         idealPrimeExponent p.val.asIdeal v.c.val = 1 := by
       by_cases h : p.val ∈ support v.c.val
-      · exact Or.inr (exponent_one_aux _ v.c.property.1 v.c_squarefree p.val h)
-      · exact Or.inl (exponent_zero_aux _ _ h)
+      · exact Or.inr (exponent_one _ v.c.property.1 v.c_squarefree p.val h)
+      · exact Or.inl (exponent_zero _ _ h)
     constructor
     · positivity
     · rcases hc with hc | hc <;> rw [hc] <;> omega
@@ -998,11 +855,11 @@ private theorem sphericalFactor_coordinateRepresentative_of_mem_c (A : SArithmet
         (Real.sqrt (idealNorm p.val.asIdeal) : ℂ)⁻¹ * gaussTwo A σ ψ p *
           symbol A σ p (cArgument A G U m D b v p) ^ 2 := by
   have hd : p.val ∉ support D.d.val := fun h =>
-    (coprime_parts_aux A G m D b v p.val (Or.inl h)).1 hp
+    (coprime_parts A G m D b v p.val (Or.inl h)).1 hp
   have hf : p.val ∉ support b.f.val := fun h =>
-    (coprime_parts_aux A G m D b v p.val (Or.inr h)).1 hp
+    (coprime_parts A G m D b v p.val (Or.inr h)).1 hp
   have ho := order_coordinateRepresentative_of_not_mem A G U m D b v p hd hf
-  rw [exponent_one_aux _ v.c.property.1 v.c_squarefree p.val hp, Nat.cast_one] at ho
+  rw [exponent_one _ v.c.property.1 v.c_squarefree p.val hp, Nat.cast_one] at ho
   rw [sphericalFactor, ho, symbol_localUnit_pow_three_add_one,
     symbol_localUnit_coordinateRepresentative_of_mem_c A G U σ m D b v p hp]
   have hn : (0 : ℤ) ≤ idealPrimeExponent p.val.asIdeal v.n.val := by positivity
@@ -1081,7 +938,7 @@ private theorem branchCoefficient_coordinateRepresentative_eq_prod (A : SArithme
   simp only [Finset.mem_union, not_or] at h
   have hsph := sphericalFactor_coordinateRepresentative_of_not_mem_c A G U σ ψ m D b v p
     h.1.1.1.1 h.1.1.1.2 h.1.2
-  rw [exponent_zero_aux _ _ h.2, Nat.cast_zero, neg_zero, zpow_zero] at hsph
+  rw [exponent_zero _ _ h.2, Nat.cast_zero, neg_zero, zpow_zero] at hsph
   apply hp
   change branchLocalFactor A G σ ψ m D b p (coordinateRepresentative A G U m D b v) = 1
   rw [branchLocalFactor_coordinateRepresentative_of_not_mem A G U σ ψ m D b v p h.1.1.1.1 h.1.1.1.2,
@@ -1158,59 +1015,13 @@ private lemma extend_prod {α M : Type*} [DecidableEq α] [CommMonoid M]
   congr 1
   exact Finset.filter_mem_eq_inter.trans (Finset.inter_eq_right.mpr h)
 
-private lemma mem_support_le (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (p : HeightOneSpectrum (𝓞 F)) : p ∈ support I ↔ I ≤ p.asIdeal := by
-  simp only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset]
-  exact Ideal.mem_normalizedFactors_iff hI |>.trans (and_iff_right p.isPrime)
-
 private lemma df_disjoint (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (b : Branch A G m D)
     (p : ExteriorPrime A) (hd : p.val ∈ support D.d.val) :
     p.val ∉ support D.h.val ∧ p.val ∉ support b.f.val := by
-  have hh : p.val ∉ support D.h.val := by
-    intro hp
-    apply p.val.isPrime.ne_top
-    apply top_le_iff.mp
-    rw [← D.coprime]
-    exact sup_le ((mem_support_le _ D.h.property.1 _).mp hp)
-      ((mem_support_le _ D.d.property.1 _).mp hd)
-  refine ⟨hh, ?_⟩
-  intro hf
-  have hrad : idealRadical D.h.val ≤ p.val.asIdeal :=
-    (Ideal.dvd_iff_le.mp b.divides_radical).trans
-      ((mem_support_le _ b.f.property.1 _).mp hf)
-  apply hh
-  apply (mem_support_le _ D.h.property.1 _).mpr
-  have hdvd : idealRadical D.h.val ∣ D.h.val := by
-    have hd := Multiset.toFinset_prod_dvd_prod (UniqueFactorizationMonoid.normalizedFactors D.h.val)
-    have he := associated_iff_eq.mp (UniqueFactorizationMonoid.prod_normalizedFactors D.h.property.1)
-    rw [he] at hd
-    simpa only [idealRadical, idealPrimeSupport, id_eq] using hd
-  exact (Ideal.dvd_iff_le.mp hdvd).trans hrad
-
-private lemma cn_disjoint (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m) (b : Branch A G m D)
-    (v : Coordinates A G m D b) (p : ExteriorPrime A)
-    (hdf : p.val ∈ support D.d.val ∨ p.val ∈ support b.f.val) :
-    p.val ∉ support v.c.val ∧ p.val ∉ support v.n.val := by
-  have hdfle : D.d.val * b.f.val ≤ p.val.asIdeal := by
-    rcases hdf with hd | hf
-    · exact Ideal.mul_le_left.trans ((mem_support_le _ D.d.property.1 _).mp hd)
-    · exact Ideal.mul_le_right.trans ((mem_support_le _ b.f.property.1 _).mp hf)
-  constructor <;> intro hp
-  · apply p.val.isPrime.ne_top
-    apply top_le_iff.mp
-    rw [← v.coprime]
-    exact sup_le (Ideal.mul_le_left.trans ((mem_support_le _ v.c.property.1 _).mp hp)) hdfle
-  · apply p.val.isPrime.ne_top
-    apply top_le_iff.mp
-    rw [← v.coprime]
-    exact sup_le (Ideal.mul_le_right.trans ((mem_support_le _ v.n.property.1 _).mp hp)) hdfle
-
-lemma exp_zero (I : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∉ support I) : idealPrimeExponent p.asIdeal I = 0 := by
-  apply Multiset.count_eq_zero.mpr
-  simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hp
+  have hh := disjoint_support _ _ D.d.property.1 D.h.property.1
+    ((sup_comm _ _).trans D.coprime) p.val hd
+  exact ⟨hh, fun hf => hh (f_in_h A G m D b p.val hf)⟩
 
 private theorem branchLocalFactor_coordinateRepresentative_product (A : SArithmeticData F)
     (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -1230,11 +1041,11 @@ private theorem branchLocalFactor_coordinateRepresentative_product (A : SArithme
   simp only [Finset.mem_sdiff, mem_extSupport]
   by_cases hd : p.val ∈ support D.d.val
   · obtain ⟨hh, hf⟩ := df_disjoint A G m D b p hd
-    obtain ⟨hc, hn⟩ := cn_disjoint A G m D b v p (Or.inl hd)
-    simp [hd, hh, hf, hc, exp_zero _ _ hn]
+    obtain ⟨hc, hn⟩ := coprime_parts A G m D b v p.val (Or.inl hd)
+    simp [hd, hh, hf, hc, exponent_zero _ _ hn]
   · by_cases hf : p.val ∈ support b.f.val
-    · obtain ⟨hc, hn⟩ := cn_disjoint A G m D b v p (Or.inr hf)
-      simp [hd, hf, hc, exp_zero _ _ hn]
+    · obtain ⟨hc, hn⟩ := coprime_parts A G m D b v p.val (Or.inr hf)
+      simp [hd, hf, hc, exponent_zero _ _ hn]
     · simp only [hd, hf, if_false, not_false_eq_true, and_true, mul_one]
       split_ifs <;> ring
 
@@ -1275,7 +1086,7 @@ private theorem branch_coefficient_exact_from_local (A : SArithmeticData F) (G :
       symm
       apply Finset.prod_subset (hs v.n (by tauto))
       intro p hp hn
-      simp [exp_zero _ _ (fun h => hn ((mem_extSupport A v.n p).mpr h))]
+      simp [exponent_zero _ _ (fun h => hn ((mem_extSupport A v.n p).mpr h))]
     simp_rw [zpow_neg, zpow_natCast]
     rw [Finset.prod_inv_distrib, he]
   have hc : (∏ p ∈ s, if p ∈ extSupport A v.c then (Real.sqrt (idealNorm p.val.asIdeal) : ℂ)⁻¹ else 1) =
@@ -1411,16 +1222,6 @@ private lemma digits_sixth {k : Type*} [Field k] [Fintype k]
     · congr 1
       field_simp
     · rfl
-lemma ord_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
-    order p (x * y) = order p x + order p y := by
-  simp only [order, Units.val_mul, map_mul]
-  rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
-    ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
-lemma ord_zpow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℤ) :
-    order p (x ^ n) = n * order p x := by
-  simp only [order, Units.val_zpow_eq_zpow_val, map_zpow₀, WithZero.log_zpow,
-    smul_eq_mul]
-  ring
 lemma reduction_spec (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
     (hx : order p x = 0) : IsUnitResidue p x (unitResidue p x) := by
   simpa only [unitResidue, dif_pos hx] using (existsUnique_unitResidue p x hx).exists.choose_spec
@@ -1457,10 +1258,6 @@ lemma char_order (A : SArithmeticData F) (σ : F →+* ℂ) (p : ExteriorPrime A
     orderOf (residueCharacter A σ p) = 6 := by
   apply DHCubic.orderOf_normalizedSextic_complex F A p.val p.property σ
   exact (DHCubic.existsUnique_normalizedSextic F A p.val p.property).exists.choose_spec
-lemma unit_ord (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
-    order p.val u.val = 0 := by
-  have hv : p.val.valuation F (u.val : F) = 1 := u.property p.val p.property
-  simp [order, hv]
 private lemma local_factor_sixth (A : SArithmeticData F) (G : AllowedRecipe A)
     (σ : F →+* ℂ) (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
@@ -1576,7 +1373,7 @@ private lemma rowIndex_d (A : SArithmeticData F) (G : AllowedRecipe A)
     (by rw [sup_comm]; exact D.coprime) p.val hp)
   have hd := exponent_one _ D.d.property.1 D.squarefree p.val hp
   have hr : order p.val (ThetaReflectionData.rowUnit A m) = 1 := by
-    rw [D.row_eq, order_mul, order_unit, generator_order, D.factorization]
+    rw [D.row_eq, ord_mul, unit_ord, generator_order, D.factorization]
     simp only [idealPrimeExponent,
       UniqueFactorizationMonoid.normalizedFactors_mul D.h.property.1 D.d.property.1,
       Multiset.count_add] at *
@@ -1892,7 +1689,6 @@ private lemma branchChoice_sum (A : SArithmeticData F) (G : AllowedRecipe A)
     · apply branchSupport_injective A G m D
       exact primeProduct_support A _
   · intro s hs hn
-    change (∏ p ∈ s, a p) * (∏ p ∈ H \ s, z p) = _
     rw [hp s (Finset.mem_powerset.mp hs)]
     simp only [subsetBranch, primeProduct_support]
     rfl
@@ -2021,23 +1817,6 @@ theorem sum_branches_frequency (A : SArithmeticData F) (G : AllowedRecipe A)
   | h x => exact sum_branches A G σ ψ m D x
 
 namespace CanonicalCoordinateProof
-private lemma ord_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
-    order p (x * y) = order p x + order p y := by
-  simp only [order, Units.val_mul, map_mul]
-  rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero)
-    ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
-private lemma ord_pow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℕ) :
-    order p (x ^ n) = (n : ℤ) * order p x := by
-  simp only [order, Units.val_pow_eq_pow_val, map_pow, WithZero.log_pow, smul_eq_mul]
-  ring
-private lemma ord_div (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
-    order p (x / y) = order p x - order p y := by
-  rw [div_eq_mul_inv, ord_mul]
-  simp only [order, Units.val_inv_eq_inv_val, map_inv₀, WithZero.log_inv]
-  ring
-private lemma ord_unit (A : SArithmeticData F) (p : ExteriorPrime A) (u : A.U) :
-    order p.val u.val = 0 := by simp [order, u.property p.val p.property]
-
  def primeEquiv (A : SArithmeticData F) :
     ExteriorPrime A ≃ ExteriorEulerPrimeIndex.exteriorPrimeRawIndex A.cS where
   toFun p := ⟨primeIdeal A p, p.val.prime⟩
@@ -2054,22 +1833,8 @@ def idealEquiv (A : SArithmeticData F) : A.Exterior ≃ (ExteriorPrime A →₀ 
     (Finsupp.domCongr (primeEquiv A).symm).toEquiv
 
 private theorem finite_order_support (A : SArithmeticData F) (x : Fˣ) :
-    {p : ExteriorPrime A | order p.val x ≠ 0}.Finite := by
-  have h := (HeightOneSpectrum.Support.finite (𝓞 F) (x : F)).union
-    (HeightOneSpectrum.Support.finite (𝓞 F) ((x⁻¹ : Fˣ) : F))
-  apply (h.preimage (f := fun p : ExteriorPrime A => p.val) Subtype.val_injective.injOn).subset
-  intro p hp
-  change p.val ∈ HeightOneSpectrum.Support (𝓞 F) (x : F) ∪
-    HeightOneSpectrum.Support (𝓞 F) ((x⁻¹ : Fˣ) : F)
-  by_contra hn
-  have hle : p.val.valuation F (x : F) ≤ 1 := le_of_not_gt (fun h => hn (Or.inl h))
-  have hinv : p.val.valuation F ((x⁻¹ : Fˣ) : F) ≤ 1 :=
-    le_of_not_gt (fun h => hn (Or.inr h))
-  have hv : p.val.valuation F (x : F) = 1 := by
-    apply le_antisymm hle
-    rw [Units.val_inv_eq_inv_val, map_inv₀] at hinv
-    exact (inv_le_one₀ (pos_iff_ne_zero.mpr ((Valuation.ne_zero_iff _).mpr x.ne_zero))).mp hinv
-  exact hp (by simp [order, hv])
+    {p : ExteriorPrime A | order p.val x ≠ 0}.Finite :=
+  (order_finite_support x).preimage Subtype.val_injective.injOn
 
 theorem order_eq_of_frequency_eq (A : SArithmeticData F) (x y : Fˣ)
     (h : (QuotientGroup.mk x : ThetaReflectionData.Frequency A) = QuotientGroup.mk y)
@@ -2082,42 +1847,12 @@ theorem order_eq_of_frequency_eq (A : SArithmeticData F) (x y : Fˣ)
   have hi : order p.val (x⁻¹ * y) = -order p.val x + order p.val y := by
     rw [ord_mul]
     simp only [order, Units.val_inv_eq_inv_val, map_inv₀, WithZero.log_inv]
-  rw [powMonoidHom_apply, ord_pow, ord_unit A p ⟨u, hu⟩, mul_zero, hi] at ho
+  rw [powMonoidHom_apply, pow_order, unit_ord A p ⟨u, hu⟩, mul_zero, hi] at ho
   omega
-private lemma exp_zero (I : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∉ support I) : idealPrimeExponent p.asIdeal I = 0 := by
-  apply Multiset.count_eq_zero.mpr
-  simpa only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset] using hp
 private lemma exp_le_one {A : SArithmeticData F} (I : A.Exterior) (hs : Squarefree I.val)
     (p : HeightOneSpectrum (𝓞 F)) : idealPrimeExponent p.asIdeal I.val ≤ 1 := by
   exact Multiset.nodup_iff_count_le_one.mp
     (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors I.property.1 |>.mp hs) _
-private lemma supported_a (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b)
-    (p : HeightOneSpectrum (𝓞 F)) (hp : p ∉ support b.f.val) : p ∉ support v.a.val := by
-  intro ha
-  exact hp (by simpa only [support, Finset.mem_preimage] using
-    v.a_supported (show p.asIdeal ∈ idealPrimeSupport v.a.val by
-      simpa only [support, Finset.mem_preimage] using ha))
-private lemma mem_support_iff (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
-    (p : HeightOneSpectrum (𝓞 F)) : p ∈ support I ↔ I ≤ p.asIdeal := by
-  simp only [support, Finset.mem_preimage, idealPrimeSupport, Multiset.mem_toFinset]
-  exact Ideal.mem_normalizedFactors_iff hI |>.trans (and_iff_right p.isPrime)
-private lemma coprime_parts (A : SArithmeticData F) (G : AllowedRecipe A)
-    (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
-    (b : Branch A G m D) (v : Coordinates A G m D b) (p : HeightOneSpectrum (𝓞 F))
-    (hp : p ∈ support D.d.val ∨ p ∈ support b.f.val) :
-    p ∉ support v.c.val ∧ p ∉ support v.n.val := by
-  have hd : D.d.val * b.f.val ≤ p.asIdeal := by
-    rcases hp with hp | hp
-    · exact Ideal.mul_le_left.trans ((mem_support_iff _ D.d.property.1 p).mp hp)
-    · exact Ideal.mul_le_right.trans ((mem_support_iff _ b.f.property.1 p).mp hp)
-  constructor <;> intro h
-  · exact p.isPrime.ne_top (top_le_iff.mp (v.coprime.symm.le.trans
-      (sup_le (Ideal.mul_le_left.trans ((mem_support_iff _ v.c.property.1 p).mp h)) hd)))
-  · exact p.isPrime.ne_top (top_le_iff.mp (v.coprime.symm.le.trans
-      (sup_le (Ideal.mul_le_right.trans ((mem_support_iff _ v.n.property.1 p).mp h)) hd)))
 private lemma ideal_ext (A : SArithmeticData F) (I J : A.Exterior)
     (h : ∀ p : ExteriorPrime A, idealPrimeExponent p.val.asIdeal I.val =
       idealPrimeExponent p.val.asIdeal J.val) : I = J := by
@@ -2141,15 +1876,15 @@ private theorem coordinate_ideals_eq (A : SArithmeticData F) (G : AllowedRecipe 
       have hw := CanonicalCoefficientProof.order_coordinateRepresentative_of_mem_f A G U m D b w p hf
       have hh := h p
       omega
-    · rw [exp_zero _ _ (supported_a A G m D b v _ hf),
-        exp_zero _ _ (supported_a A G m D b w _ hf)]
+    · rw [exponent_zero _ _ (supported_a A G m D b v _ hf),
+        exponent_zero _ _ (supported_a A G m D b w _ hf)]
   have hcn (p : ExteriorPrime A) :
       idealPrimeExponent p.val.asIdeal v.c.val = idealPrimeExponent p.val.asIdeal w.c.val ∧
       idealPrimeExponent p.val.asIdeal v.n.val = idealPrimeExponent p.val.asIdeal w.n.val := by
     by_cases hr : p.val ∈ support D.d.val ∨ p.val ∈ support b.f.val
     · obtain ⟨hvc, hvn⟩ := coprime_parts A G m D b v p.val hr
       obtain ⟨hwc, hwn⟩ := coprime_parts A G m D b w p.val hr
-      simp [exp_zero _ _ hvc, exp_zero _ _ hvn, exp_zero _ _ hwc, exp_zero _ _ hwn]
+      simp [exponent_zero _ _ hvc, exponent_zero _ _ hvn, exponent_zero _ _ hwc, exponent_zero _ _ hwn]
     · push Not at hr
       have hv := CanonicalCoefficientProof.order_coordinateRepresentative_of_not_mem A G U m D b v p hr.1 hr.2
       have hw := CanonicalCoefficientProof.order_coordinateRepresentative_of_not_mem A G U m D b w p hr.1 hr.2
@@ -2256,7 +1991,7 @@ private theorem coprime_of_exponents (A : SArithmeticData F) (I J : A.Exterior)
 theorem ratio_mem_sunit (A : SArithmeticData F) (x y : Fˣ)
     (h : ∀ p : ExteriorPrime A, order p.val x = order p.val y) : x / y ∈ A.U := by
   intro p hp
-  have ho : order p (x / y) = 0 := by rw [ord_div, h ⟨p, hp⟩, sub_self]
+  have ho : order p (x / y) = 0 := by rw [div_order, h ⟨p, hp⟩, sub_self]
   have hv : p.valuation F ((x / y : Fˣ) : F) ≠ 0 :=
     (Valuation.ne_zero_iff _).mpr (x / y).ne_zero
   have hl : WithZero.log (p.valuation F ((x / y : Fˣ) : F)) = 0 := by

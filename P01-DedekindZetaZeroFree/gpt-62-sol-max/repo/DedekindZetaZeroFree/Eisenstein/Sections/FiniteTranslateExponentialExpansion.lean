@@ -46,8 +46,7 @@ private theorem finite_translate_orbit {G : Type*} [Group G] [TopologicalSpace G
     · intro c x hx hxe
       simp only [map_smul, hxe]
   let b : K → N := fun k => ⟨k.val * a.val * k.val⁻¹, Subgroup.Normal.conj_mem inferInstance a.val a.property k.val⟩
-  have hb : Continuous b := by
-    exact ((continuous_subtype_val.mul continuous_const).mul continuous_subtype_val.inv).subtype_mk _
+  have hb : Continuous b := ((continuous_subtype_val.mul continuous_const).mul continuous_subtype_val.inv).subtype_mk _
   let c : K → N ⧸ U.toSubgroup := fun k => QuotientGroup.mk (b k)
   have hc : Continuous c := QuotientGroup.continuous_mk.comp hb
   have : DiscreteTopology (N ⧸ U.toSubgroup) := inferInstance
@@ -55,7 +54,7 @@ private theorem finite_translate_orbit {G : Type*} [Group G] [TopologicalSpace G
   let B := Set.range c
   let : Finite B := hB.to_subtype
   let r : B → K := fun m => Classical.choose m.property
-  have hr (m : B) : c (r m) = m.val := Classical.choose_spec m.property
+  have hr (m : B) := Classical.choose_spec m.property
   let spaces : B → Submodule ℂ V := fun m => W.map (ρ (b (r m)).val)
   have : ∀ m, FiniteDimensional ℂ (spaces m) := fun _ => inferInstance
   have : FiniteDimensional ℂ ↥(⨆ m, spaces m) := inferInstance
@@ -63,8 +62,8 @@ private theorem finite_translate_orbit {G : Type*} [Group G] [TopologicalSpace G
   apply Submodule.span_le.mpr
   rintro w ⟨k, rfl⟩
   let m : B := ⟨c k, Set.mem_range_self k⟩
-  have hmk : c (r m) = c k := hr m
-  have hj : (b (r m))⁻¹ * b k ∈ U := QuotientGroup.eq.mp hmk
+  have hmk := hr m
+  have hj := QuotientGroup.eq.mp hmk
   let j : U := ⟨(b (r m))⁻¹ * b k, hj⟩
   have he : b k = b (r m) * j.val := by simp [j]
   have he' : (b k).val * k.val = k.val * a.val := by simp [b, mul_assoc]

@@ -18,6 +18,31 @@ variable {F : Type} [Field F] [NumberField F]
 def divisorBin (P : ℝ) : Finset (Ideal (𝓞 F)) :=
   (boundedNormIdeals F (2 * P)).filter (ErrorRectangles.InBin P)
 
+lemma norm_le_of_dvd {a b : Ideal (𝓞 F)} (hb : b ≠ ⊥) (h : a ∣ b) :
+    norm a ≤ norm b := by
+  unfold norm
+  exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hb))
+    (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp h))
+
+lemma product_unique {u v a b x y : Ideal (𝓞 F)}
+    (huv : u ⊔ v = ⊤) (ha : a ∣ u) (hb : b ∣ v) (hx : x ∣ u) (hy : y ∣ v)
+    (heq : a*b = x*y) : a = x ∧ b = y := by
+  have hrel : IsRelPrime u v := by
+    intro z hz hz'
+    apply Ideal.isUnit_iff.mpr
+    apply top_unique
+    rw [← huv]
+    exact sup_le (Ideal.dvd_iff_le.mp hz) (Ideal.dvd_iff_le.mp hz')
+  have hax : a ∣ x := (hrel.of_dvd_left ha |>.of_dvd_right hy).dvd_of_dvd_mul_right
+    (heq ▸ dvd_mul_right a b)
+  have hxa : x ∣ a := (hrel.of_dvd_left hx |>.of_dvd_right hb).dvd_of_dvd_mul_right
+    (heq.symm ▸ dvd_mul_right x y)
+  have hby : b ∣ y := (hrel.symm.of_dvd_left hb |>.of_dvd_right hx).dvd_of_dvd_mul_left
+    (heq ▸ dvd_mul_left b a)
+  have hyb : y ∣ b := (hrel.symm.of_dvd_left hy |>.of_dvd_right ha).dvd_of_dvd_mul_left
+    (heq.symm ▸ dvd_mul_left y x)
+  exact ⟨dvd_antisymm hax hxa, dvd_antisymm hby hyb⟩
+
 theorem bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
     (hf0 : f ≠ ⊥) (hf : norm f ≤ 2 * X) :
     ∃ P ∈ ErrorRectangles.scales X, 1 ≤ P ∧ P ≤ 2 * X ∧ ErrorRectangles.InBin P f := by

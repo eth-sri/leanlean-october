@@ -41,7 +41,7 @@ private lemma exponent_nonneg_iff (y : Kˣ) :
 private lemma exponent_inv (y : Kˣ) :
     KPCubicExpansion.valuationExponent K y⁻¹ = -KPCubicExpansion.valuationExponent K y := by
   have h := KPCubicExpansion.valuationExponent_mul y y⁻¹
-  simpa [KPCubicExpansion.valuationExponent] using h
+  simp [KPCubicExpansion.valuationExponent]
 private lemma ball_units_iff (π y : Kˣ)
     (hπ : valuation K (π : K) = ValuativeRel.uniformizer K) (n : ℤ) :
     (y : K) ∈ integerBall K π n ↔ n ≤ KPCubicExpansion.valuationExponent K y := by
@@ -65,7 +65,7 @@ private lemma ball_units_iff (π y : Kˣ)
       rw [hv]
       omega
     refine ⟨⟨_, hm⟩, ?_⟩
-    simp [Units.val_mul, mul_assoc, mul_comm, mul_left_comm]
+    simp [Units.val_mul, mul_left_comm]
     exact mul_inv_cancel₀ (zpow_ne_zero n π.ne_zero)
 
 private lemma exponent_value (y : Kˣ) :

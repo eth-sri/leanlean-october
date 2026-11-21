@@ -25,7 +25,6 @@ set_option synthInstance.maxHeartbeats 120000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 local instance (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
-local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 
  theorem target_subgroup_eq :
     (KPSpatialSmoothing.P0 F ζ hζ).H = R F ζ hζ := by

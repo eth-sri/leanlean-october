@@ -1,5 +1,7 @@
 module
 
+meta import Batteries.Tactic.Alias
+public import DedekindZetaZeroFree.Analysis.HarmonicPolynomials.SphereRestriction
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.ComplexHarmonicEigenvaluesAndSmoothness
 
 @[expose] public section
@@ -7,9 +9,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.
 namespace DedekindZetaZeroFree.ComplexFractionalInverse
 open MeasureTheory Set
 open scoped RealInnerProductSpace
-
-abbrev Ambient := EuclideanSpace ℝ (Fin 3)
-abbrev Sphere := ↥(Metric.sphere (0 : Ambient) 1)
 
 noncomputable def sphereArea : Measure Sphere :=
   ((volume : Measure Ambient).toSphere Set.univ)⁻¹ •
@@ -54,11 +53,7 @@ theorem fractionalKernel_nonneg (α : ℝ) (hα : 0 < α) (x y : Sphere) :
 @[simp] theorem fractionalKernel_one (x y : Sphere) : fractionalKernel 1 x y = 1 := by
   simp [fractionalKernel]
 
-private lemma interval_kernel_integrable (α : ℝ) (hα : 0 < α) :
-    Integrable (fun t : ℝ => α * t ^ (α - 1)) (volume.restrict (Icc 0 1)) := by
-  have h := (intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := 1)
-    (r := α - 1) (by linarith)).const_mul α
-  exact (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num)).mp h
+private alias interval_kernel_integrable := DedekindZetaZeroFree.ComplexFractionalInverse.HarmonicIdentity.powerWeight_integrable
 
 private lemma interval_kernel_mass (α : ℝ) (hα : 0 < α) :
     (∫ t : ℝ in Icc 0 1, α * t ^ (α - 1)) = 1 := by

@@ -50,7 +50,7 @@ theorem bihomBilinForm_alternating
     (hAlt : ∀ x : G, H x x = 1) :
     (bihomBilinForm n G C H coeff).IsAlt := by
   intro x
-  exact (bihomBilinForm_eq_zero_iff n G C H coeff x x).2 (hAlt x.toMul)
+  simp_all
 
 theorem bihomBilinForm_nondegenerate
     (H : G →* G →* C) (coeff : Additive C ≃+ ZMod n)
@@ -62,8 +62,7 @@ theorem bihomBilinForm_nondegenerate
     change x.toMul = 1
     apply hLeft x.toMul
     intro y
-    exact (bihomBilinForm_eq_zero_iff n G C H coeff x (Additive.ofMul y)).1
-      (hx (Additive.ofMul y))
+    simp_all
   · intro y hy
     change y.toMul = 1
     apply hRight y.toMul

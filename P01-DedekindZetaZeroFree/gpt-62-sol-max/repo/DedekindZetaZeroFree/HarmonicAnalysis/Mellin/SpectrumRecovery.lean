@@ -23,11 +23,11 @@ theorem mellin_eq_of_eq_mellinInv (f : ℝ → ℂ) (A : ℂ → ℂ) (c : ℝ) 
   let g : ℝ → ℂ := fun u => Real.exp (-c * u) • f (Real.exp (-u))
   have hq : MeasureTheory.Integrable q := by
     convert hA_int.comp_mul_right' (show 2 * Real.pi ≠ 0 by positivity) using 1 <;>
-      simp [q, Complex.ofReal_mul, mul_comm, mul_left_comm, mul_assoc]
+      simp [q, Complex.ofReal_mul, mul_comm]
   have hqc : Continuous q := by
     convert hA_cont.comp (show Continuous (fun y : ℝ => 2 * Real.pi * y) by fun_prop) using 1
     funext y
-    simp [q, Function.comp_def, Complex.ofReal_mul, mul_comm, mul_left_comm, mul_assoc]
+    simp [q, Complex.ofReal_mul, mul_comm]
   have hreal : MellinConvergent f (c : ℂ) := by
     have hpow : ContinuousOn (fun x : ℝ => (x : ℂ) ^ ((c : ℂ) - z)) (Set.Ioi 0) :=
       continuousOn_of_forall_continuousAt fun x hx =>
@@ -70,7 +70,7 @@ theorem mellin_eq_of_eq_mellinInv (f : ℝ → ℂ) (A : ℂ → ℂ) (c : ℝ) 
     rw [hi, Real.log_exp, neg_neg]
     rw [← Complex.ofReal_neg, ← Complex.ofReal_cpow hx.le]
     rw [Real.rpow_def_of_pos hx, Real.log_exp]
-    simp only [Complex.real_smul, smul_eq_mul]
+    simp only [smul_eq_mul]
     rw [← mul_assoc, ← Complex.ofReal_mul, ← Real.exp_add]
     rw [show -c * u + -u * -c = 0 by ring]
     simp [q]

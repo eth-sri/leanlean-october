@@ -1,5 +1,7 @@
 module
 
+public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.TotallyPositiveResidueRepresentatives
+
 public import DedekindZetaZeroFree.ZeroDetection.Conductors.FrequencyTwistsAndLocalCharacters
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.ExteriorResidueCharacterInjectivity
 
@@ -105,27 +107,8 @@ theorem frequency_local_component_nontrivial_below_conductor
 private theorem positive_representative (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (a : 𝓞 F) :
     ∃ b : 𝓞 F, b - a ∈ m ∧ ∀ φ : F →+* ℝ, 0 < φ (b : F) := by
-  have hn : 0 < Ideal.absNorm m := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hm)
-  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := by
-    exact ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
-      have ht := Finset.single_le_sum (fun i (_ : i ∈ Finset.univ) =>
-        abs_nonneg ((i : F →+* ℝ) (a : F))) (Finset.mem_univ φ)
-      linarith [neg_le_abs (φ (a : F))]⟩
-  obtain ⟨B, hB⟩ := hb
-  obtain ⟨n, hnB⟩ := exists_nat_gt B
-  let b : 𝓞 F := a + (n * Ideal.absNorm m : ℕ)
-  have hp (φ : F →+* ℝ) : 0 < φ (b : F) := by
-    have hN : (1 : ℝ) ≤ Ideal.absNorm m := by exact_mod_cast hn
-    have hnb : (n : ℝ) ≤ (n : ℝ) * Ideal.absNorm m := by
-      nlinarith [(Nat.cast_nonneg n : (0:ℝ) ≤ n)]
-    change 0 < (φ.comp (algebraMap (𝓞 F) F)) (a + (n * Ideal.absNorm m : ℕ))
-    rw [map_add, map_natCast]
-    simp only [Nat.cast_mul, RingHom.comp_apply]
-    linarith [hB φ]
-  refine ⟨b, ?_, hp⟩
-  have hh : ((n * Ideal.absNorm m : ℕ) : 𝓞 F) ∈ m := by
-    simpa only [Nat.cast_mul] using m.mul_mem_left (n : 𝓞 F) m.absNorm_mem
-  simpa [b] using hh
+  obtain ⟨b, -, hb⟩ := LargeSieve.exists_totallyPositive_residue F m hm a
+  exact ⟨b, hb⟩
 
 private theorem completed_power_criterion
     (F : Type) [Field F] [NumberField F]

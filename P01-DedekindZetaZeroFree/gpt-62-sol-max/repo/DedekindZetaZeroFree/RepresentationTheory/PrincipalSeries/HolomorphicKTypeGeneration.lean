@@ -1,5 +1,6 @@
 module
 
+meta import Batteries.Tactic.Alias
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.HarmonicLieGeneration
 
 @[expose] public section
@@ -236,23 +237,7 @@ noncomputable def complexSpherical (z : ℂ) (g : ComplexGL2) : ℂ :=
     ‖((GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ / bottomRowNormSq g
   Complex.exp ((1 + 2 * ((positiveParameter : ℂ) + z)) * (Real.log ratio : ℂ))
 
-private lemma bottomRowNormSq_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by
-  unfold bottomRowNormSq
-  have hdet : (g : Matrix (Fin 2) (Fin 2) ℂ).det ≠ 0 :=
-    Matrix.GeneralLinearGroup.det_ne_zero g
-  by_contra h
-  push Not at h
-  have h10 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-    have h1 : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ = 0 := by
-      nlinarith [norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0),
-        norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)]
-    simpa using h1
-  have h11 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-    have h1 : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ = 0 := by
-      nlinarith [norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0),
-        norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)]
-    simpa using h1
-  exact hdet (by rw [det_fin_two, h10, h11]; ring)
+private alias bottomRowNormSq_pos := DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.bottom_pos
 
 theorem complexSpherical_zero (g : ComplexGL2) :
     complexSpherical 0 g = sphericalSection positiveParameter g := by

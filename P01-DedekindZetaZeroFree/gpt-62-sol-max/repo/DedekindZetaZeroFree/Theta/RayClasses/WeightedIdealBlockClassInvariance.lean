@@ -45,13 +45,13 @@ private theorem span_unit (e : (𝓞 F)ˣ) :
  apply FractionalIdeal.spanSingleton_eq_spanSingleton.mpr
  refine ⟨e⁻¹, ?_⟩
  change algebraMap (𝓞 F) F (↑e⁻¹ : 𝓞 F) * algebraMap (𝓞 F) F (e : 𝓞 F) = 1
- rw [← map_mul, Units.inv_mul, map_one]
+ simp
  def unitEquiv (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (e : (𝓞 F)ˣ) :
  {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)} ≃ {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)} where
  toFun x := ⟨algebraMap (𝓞 F) F (e : 𝓞 F) * x.val, by
-  rw [← Algebra.smul_def]; exact Submodule.smul_mem _ _ x.2⟩
+  exact Submodule.smul_mem _ _ x.2⟩
  invFun x := ⟨algebraMap (𝓞 F) F (↑e⁻¹ : 𝓞 F) * x.val, by
-  rw [← Algebra.smul_def]; exact Submodule.smul_mem _ _ x.2⟩
+  exact Submodule.smul_mem _ _ x.2⟩
  left_inv x := by
   apply Subtype.ext
   change algebraMap (𝓞 F) F (↑e⁻¹ : 𝓞 F) * (algebraMap (𝓞 F) F (e : 𝓞 F) * x.val) = x.val

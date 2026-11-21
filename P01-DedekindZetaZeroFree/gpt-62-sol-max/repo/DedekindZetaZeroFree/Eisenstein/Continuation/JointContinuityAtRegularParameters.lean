@@ -1,6 +1,9 @@
 module
 
-public import DedekindZetaZeroFree.Eisenstein.Continuation.RegularLocusJointContinuity
+public import DedekindZetaZeroFree.Eisenstein.Continuation.FixedLevelPoleSets
+import DedekindZetaZeroFree.Analysis.HolomorphicKernels.RectangularCauchyOperators
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Calculus.FDeriv.Defs
 public import DedekindZetaZeroFree.Eisenstein.Continuation.JointContinuityFromNumerators
 
 @[expose] public section

@@ -39,11 +39,6 @@ def Sigma_U : Set ℂ :=
 local notation "Σactual" => Sigma_U F ζ hζ U R P H μG hμG hR realization
 
 structure Properties : Prop where
-  threshold_positive : 0 < d
-
-  coordinate_avoids_nonnegative : ∀ s : ℂ, (1 : ℝ) / 3 < s.re →
-    a_U F s ∉ Complex.ofReal '' Set.Ici (0 : ℝ)
-
   chamber_regular : ∀ s : ℂ, (1 : ℝ) / 3 < s.re →
     s ∈ KPContinuation.spectralDomain \ Σactual ∧
     a_U F s ∈ KPBelowThresholdResolvent.domain d \
@@ -51,18 +46,6 @@ structure Properties : Prop where
   genuine_inverse : ∀ s : ℂ, (1 : ℝ) / 3 < s.re →
     KPResolventPencil.GenuineInverse Δ (a_U F s)
       (KPResolventPencil.shiftedResolvent B (a_U F s))
-  poles_disjoint_chamber : Disjoint Σactual {s : ℂ | (1 : ℝ) / 3 < s.re}
-
-  operator_holomorphic : AnalyticOnNhd ℂ
-    (fun s : ℂ => KPResolventPencil.shiftedResolvent B (a_U F s))
-    {s : ℂ | (1 : ℝ) / 3 < s.re}
-
-  correction_holomorphic : ∀ f : ℂ → Hactual,
-    AnalyticOnNhd ℂ f {s : ℂ | (1 : ℝ) / 3 < s.re} →
-    AnalyticOnNhd ℂ
-      (fun s : ℂ => -(KPResolventPencil.shiftedResolvent B (a_U F s) (f s)))
-      {s : ℂ | (1 : ℝ) / 3 < s.re}
-
 end DedekindZetaZeroFree.KPContActualChamberInverse
 
 namespace DedekindZetaZeroFree
@@ -139,38 +122,13 @@ theorem kp_cont_actual_chamber_inverse
       s ∉ KPContActualChamberInverse.Sigma_U F ζ hζ U R P H μG hμG hR realization := by
     intro s hs hmem
     exact havoid s hs (hpole_nonneg _ hmem.2)
-  have ha : AnalyticOnNhd ℂ (fun s : ℂ => KPContActualChamberInverse.a_U F s)
-      {s : ℂ | (1 : ℝ) / 3 < s.re} := by
-    unfold KPContActualChamberInverse.a_U
-    fun_prop
-  have hop : AnalyticOnNhd ℂ
-      (fun s : ℂ => KPResolventPencil.shiftedResolvent
-        (KPContActualSectorFriedrichsSynthesis.B_U F ζ hζ U R P H μG hμG hR realization)
-        (KPContActualChamberInverse.a_U F s))
-      {s : ℂ | (1 : ℝ) / 3 < s.re} := by
-    have hR_an := hspec.norm_holomorphic_off_poles
-    have hcomp := hR_an.comp ha (fun s hs => hchamber s hs)
-    unfold KPContActualSectorResolventSpecialization.R_U at hcomp
-    exact hcomp
-  refine ⟨hd, havoid, ?_, ?_, ?_, hop, ?_⟩
+  refine ⟨?_, ?_⟩
   · intro s hs
     exact ⟨⟨KPContinuation.convergenceHalfPlane_subset_spectralDomain hs, hSigma s hs⟩,
       hchamber s hs⟩
   · intro s hs
     have h := (hspec.genuine_inverse_off_poles _ (hchamber s hs)).1
     simpa only [KPContActualSectorResolventSpecialization.R_U] using h
-  · rw [Set.disjoint_left]
-    intro s hsSig hsC
-    exact hSigma s hsC hsSig
-  · intro f hf
-    have hev : AnalyticOnNhd ℂ
-        (fun p : (KPContSectorClosedLpSubspace.H F ζ hζ R U →L[ℂ]
-            KPContSectorClosedLpSubspace.H F ζ hζ R U) ×
-            KPContSectorClosedLpSubspace.H F ζ hζ R U => p.1 p.2) Set.univ :=
-      isBoundedBilinearMap_apply.contDiff.analyticOnNhd
-    have hcomp := hev.comp₂ hop hf (fun x _ => Set.mem_univ _)
-    exact hcomp.neg
-
 end DedekindZetaZeroFree
 
 end

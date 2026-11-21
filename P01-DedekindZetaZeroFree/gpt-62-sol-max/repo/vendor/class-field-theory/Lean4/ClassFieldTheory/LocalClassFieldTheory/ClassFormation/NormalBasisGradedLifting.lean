@@ -77,14 +77,18 @@ theorem chosenNormalBasisPrincipalUnitLatticeClass_galoisGroup
   simpa [y, galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure_smul,
     map_sub, map_one] using hfield.symm
 
+section
+
+variable (n : Nat) {Vn Vsucc : Subgroup 𝒪[L]ˣ} (hV : Vsucc ≤ Vn)
+  (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
+  (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
+      chosenNormalBasisPrincipalUnitSet K L (n + 1))
+include n Vn Vsucc hV hVn hVsucc
+
 /-- The actual action on `V^n` descends to the successive quotient
 `V^n / V^(n+1)`. -/
 @[implicit_reducible]
-def chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction
-    (n : Nat) {Vn Vsucc : Subgroup 𝒪[L]ˣ} (hV : Vsucc ≤ Vn)
-    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
-      chosenNormalBasisPrincipalUnitSet K L (n + 1)) :
+def chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction :
     MulDistribMulAction (Gal(L / K))
       (chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV) := by
   letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
@@ -109,10 +113,6 @@ def chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction
 /-- States the theorem `chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction_smul_mk`. -/
 @[simp]
 theorem chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction_smul_mk
-    (n : Nat) {Vn Vsucc : Subgroup 𝒪[L]ˣ} (hV : Vsucc ≤ Vn)
-    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
-      chosenNormalBasisPrincipalUnitSet K L (n + 1))
     (sigma : Gal(L / K)) (u : Vn) :
     letI := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction
       K L n Vn hVn
@@ -125,10 +125,6 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction_smul_mk
 /-- Any graded-piece equivalence whose value on representatives is `u - 1`
 is equivariant for the actual quotient action and the lattice action. -/
 theorem chosenNormalBasisPrincipalUnitSuccQuotMulEquiv_galoisGroup
-    (n : Nat) {Vn Vsucc : Subgroup 𝒪[L]ˣ} (hV : Vsucc ≤ Vn)
-    (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
-    (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
-      chosenNormalBasisPrincipalUnitSet K L (n + 1))
     (Phi : chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV ≃*
       Multiplicative (chosenNormalBasisLatticeSuccQuot K L n))
     (hPhi : ∀ u : Vn,
@@ -165,6 +161,8 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotMulEquiv_galoisGroup
   exact congrArg Multiplicative.ofAdd
     (chosenNormalBasisPrincipalUnitLatticeClass_galoisGroup
       (K := K) (L := L) n sigma (u : 𝒪[L]ˣ) (by exact hVn ▸ u.2))
+
+end
 
 /-- One-step `H⁰` lifting: sufficiently deep fixed units are
 a norm from the same level times a fixed unit one level deeper. -/

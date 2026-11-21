@@ -37,7 +37,7 @@ theorem finite_product_space {ι : Type*} (s : Finset ι)
   | empty =>
     refine ⟨Submodule.span ℂ {1}, Module.Finite.of_fg (Submodule.fg_span (Set.finite_singleton _)), ?_⟩
     intro f hf
-    simpa using (Submodule.subset_span (by simp : (1 : X → ℂ) ∈ ({1} : Set (X → ℂ))))
+    simp
   | @insert i s hi ih =>
     obtain ⟨V, hV, hv⟩ := ih (fun j hj => hU j (Finset.mem_insert_of_mem hj))
     letI := hV

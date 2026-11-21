@@ -143,22 +143,6 @@ def closedCollars [TopologicalSpace X] (ends : A → Set X)
     (height : A → X → ℝ) (T : ℝ) : Set X :=
   ⋃ a, closure {x | x ∈ ends a ∧ height a x ∈ Set.Icc T (T + 1)}
 
-theorem cutoffSum_at_every_cusp {T : ℝ} (ends : A → Set X)
-    (hdisjoint : Pairwise (fun a b => Disjoint (ends a) (ends b)))
-    (height : A → X → ℝ) (χ : A → SmoothCuspCutoff T)
-    (realize : ℂ → H →ₗ[ℂ] (X → ℂ)) (f : ℂ → H)
-    (a : A) (s : ℂ) (x : X) (hx : x ∈ ends a) (ht : T + 1 ≤ height a x) :
-    cutoffSum ends height (fun a => (χ a).toFun) realize f s x = realize s (f s) x := by
-  classical
-  unfold cutoffSum
-  rw [Finset.sum_eq_single a]
-  · simp [hx, (χ a).one_above _ ht]
-  · intro b _ hba
-    have hxb : x ∉ ends b := by
-      intro hb
-      exact Set.disjoint_left.mp (hdisjoint hba) hb hx
-    simp [hxb]
-  · simp
 
 end AllCusps
 
@@ -173,15 +157,6 @@ def ChartSmoothHolomorphicOn {n : ℕ} (B : KPContLocalNorm.LocalBall n)
         ∀ s ∈ Ω, ∀ α, ∀ x : K, j s α x =
           KPContLocalNorm.coordinateDerivative α (g s) x
 
-def ChartSobolevHolomorphicOn {n : ℕ} (B : KPContLocalNorm.LocalBall n)
-    (g : ℂ → KPContLocalNorm.Space n → ℂ) (Ω : Set ℂ) : Prop :=
-  ∀ k : ℕ, ∃ v : ℂ → (KPContLocalNorm.MultiIndex n k → KPContLocalNorm.BallL2 B),
-    DifferentiableOn ℂ v Ω ∧
-    ∀ s ∈ Ω, ∀ α,
-      MemLp (KPContLocalNorm.coordinateDerivative α (g s)) 2
-        (volume.restrict B.carrier) ∧
-      (fun x => v s α x) =ᵐ[volume.restrict B.carrier]
-        KPContLocalNorm.coordinateDerivative α (g s)
 
 end DedekindZetaZeroFree.KPCutoffSource
 

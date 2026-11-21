@@ -29,13 +29,13 @@ private lemma toArch_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k 
           (KPCuspLogShape.dimension F) i k := by
   funext j
   simp only [KPCuspCutoffGraph.toArch, KPContFlatCuspCasimirSpecialization.coordinateDirection,
-    HyperbolicChart.coordinateVector, WithLp.toLp]
+    HyperbolicChart.coordinateVector]
   by_cases hj : j = i
   · subst hj
     fin_cases k <;>
-      simp [Pi.single_eq_same, Prod.ext_iff, Complex.ext_iff, Prod.mk.injEq]
+      simp [Pi.single_eq_same, Prod.ext_iff, Complex.ext_iff]
   · rw [Pi.single_eq_of_ne hj]
-    simp [hj, Prod.ext_iff, Complex.ext_iff, Prod.mk.injEq]
+    simp [hj, Prod.ext_iff, Complex.ext_iff]
 
 private lemma archCLM_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
     archCLM F (HyperbolicChart.coordinateVector (KPCuspLogShape.dimension F) i k)
@@ -164,15 +164,13 @@ theorem bridge (F : Type) [Field F] [NumberField F]
 private lemma labeled_apply (d n : ℕ) (places : Fin d ≃ Fin n)
     (x : HyperbolicChart.Space d) (k : Fin n) :
     labeled d n places x k = CotangentLogCoframe.A d x (places.symm k) := by
-  simp [labeled, ContinuousLinearEquiv.piCongrLeft, LinearEquiv.piCongrLeft,
-    Equiv.piCongrLeft, Equiv.piCongrLeft', Equiv.piCongrLeft'_apply]
+  simp [labeled, ContinuousLinearEquiv.piCongrLeft, Equiv.piCongrLeft, Equiv.piCongrLeft']
 private lemma labeled_vector (d n : ℕ) (places : Fin d ≃ Fin n) (i : Fin d) (k : Fin 3) :
     labeled d n places (HyperbolicChart.coordinateVector d i k) =
       KPContFlatCuspCasimirSpecialization.coordinateDirection n (places i) k := by
   funext j
   simp only [labeled_apply, CotangentLogCoframe.A_apply,
-    HyperbolicChart.coordinateVector, WithLp.toLp,
-    KPContFlatCuspCasimirSpecialization.coordinateDirection]
+    HyperbolicChart.coordinateVector, KPContFlatCuspCasimirSpecialization.coordinateDirection]
   by_cases h : places.symm j = i
   · have hj : j = places i := by simpa using congrArg places h
     subst j

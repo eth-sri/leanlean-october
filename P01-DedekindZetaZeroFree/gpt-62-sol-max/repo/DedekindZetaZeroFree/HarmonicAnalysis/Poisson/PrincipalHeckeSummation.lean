@@ -37,8 +37,7 @@ private lemma regular_algebra (f : ℂ → ℂ) (s : ℂ) (hs0 : s ≠ 0) (hs1 :
   rw [dslope_of_ne _ hs1, slope_def_field, dslope_of_ne _ hs0,
     slope_def_field, dslope_of_ne _ (by norm_num : (1 : ℂ) ≠ 0), slope_def_field]
   simp only [sub_zero, div_one]
-  field_simp
-  <;> ring
+  grind
 private lemma residues_numerator {F : Type} [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F) (data : PrincipalHeckeData F)
     (h : ℝ → ℂ) (Q : ℂ → ℂ) (hQ : Differentiable ℂ Q) (hQ0 : Q 0 = h 0 / 2)
@@ -55,7 +54,7 @@ private lemma residues_numerator {F : Type} [Field F] [NumberField F]
     filter_upwards [self_mem_nhdsWithin] with s hs
     change s ≠ _ at hs
     unfold principalMellinIntegrand numerator
-    field_simp [hs, sub_ne_zero.mpr hs]
+    grind
   have ht0 : Tendsto (fun s : ℂ => numerator data Q X s / (s - 1))
       (𝓝[≠] (0 : ℂ)) (𝓝 (-numerator data Q X 0)) := by
     have H := ((hc.continuousAt.tendsto.div (tendsto_id.sub tendsto_const_nhds)
@@ -66,7 +65,7 @@ private lemma residues_numerator {F : Type} [Field F] [NumberField F]
     filter_upwards [self_mem_nhdsWithin] with s hs
     change s ≠ _ at hs
     unfold principalMellinIntegrand numerator
-    field_simp [hs, sub_ne_zero.mpr hs]
+    grind
   exact ⟨(tendsto_nhds_unique (ht1.congr' he1.symm)
       (principalMellinIntegrand_residue_one hF data Q hQ X hX)),
     (tendsto_nhds_unique (ht0.congr' he0.symm)

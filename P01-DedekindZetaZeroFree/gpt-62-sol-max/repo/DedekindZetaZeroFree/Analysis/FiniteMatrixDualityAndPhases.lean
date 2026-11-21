@@ -88,12 +88,12 @@ theorem operator_zero : operator (0 : Matrix m n ℂ) = 0 := by
 omit [DecidableEq m] in
 theorem operator_add (A B : Matrix m n ℂ) : operator (A + B) = operator A + operator B := by
   ext x i
-  simp [add_mul, Finset.sum_add_distrib]
+  simp []
 
 omit [DecidableEq m] in
 theorem operator_smul (c : ℂ) (A : Matrix m n ℂ) : operator (c • A) = c • operator A := by
   ext x i
-  simp [Finset.mul_sum, mul_assoc]
+  simp []
 
 omit [DecidableEq m] in
 theorem operator_sum {κ : Type*} (S : Finset κ) (A : κ → Matrix m n ℂ) :
@@ -179,7 +179,7 @@ theorem separated_phase_norm_le [Fintype k]
     (by
       intro i j
       simp only [one_mul, Matrix.transpose_apply]
-      simp only [ite_mul, one_mul, zero_mul, Finset.sum_ite_eq', Finset.mem_univ, if_true]
+      simp only [ite_mul, one_mul, zero_mul]
       simpa [mul_comm] using hA i j)
   have hn : ‖A.toEuclideanLin.toContinuousLinearMap‖ ≤
       (Fintype.card k : ℝ) * ‖A'.toEuclideanLin.toContinuousLinearMap‖ := by

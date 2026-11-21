@@ -26,8 +26,7 @@ private lemma contDiffOn_eulerIter {a : ℝ → ℂ} (ha : ContDiffOn ℝ ∞ a 
   | succ j ih =>
     have hderiv : ContDiffOn ℝ ∞ (deriv (EulerIter j a)) (Set.Ioi 0) :=
       ih.deriv_of_isOpen isOpen_Ioi (by simp)
-    have hmul : ContDiffOn ℝ ∞
-        (fun x : ℝ => (x : ℂ) * deriv (EulerIter j a) x) (Set.Ioi 0) :=
+    have hmul :=
       (Complex.ofRealCLM.contDiff.contDiffOn).mul hderiv
     refine hmul.congr ?_
     intro x hx
@@ -38,13 +37,13 @@ private lemma eulerIter_add_of_pos {a b : ℝ → ℂ}
     ∀ x : ℝ, 0 < x →
       EulerIter j (fun y => a y + b y) x = EulerIter j a x + EulerIter j b x := by
   induction j with
-  | zero => intro x hx; simp
+  | zero => simp
   | succ j ih =>
     intro x hx
-    have hda : DifferentiableAt ℝ (EulerIter j a) x :=
+    have hda :=
       ((contDiffOn_eulerIter ha j).differentiableOn (by simp)).differentiableAt
         (isOpen_Ioi.mem_nhds hx)
-    have hdb : DifferentiableAt ℝ (EulerIter j b) x :=
+    have hdb :=
       ((contDiffOn_eulerIter hb j).differentiableOn (by simp)).differentiableAt
         (isOpen_Ioi.mem_nhds hx)
     have hcongr : EulerIter j (fun y => a y + b y) =ᶠ[𝓝 x]
@@ -60,10 +59,10 @@ private lemma eulerIter_add_of_pos {a b : ℝ → ℂ}
 private lemma log_pow_le_rpow (k : ℕ) (ε : ℝ) (hε : 0 < ε)
     (x : ℝ) (hx0 : 0 < x) (hx1 : x ≤ 1) :
     |Real.log x| ^ k ≤ ((k.factorial : ℝ) / ε ^ k) * x ^ (-ε) := by
-  have hlog : Real.log x ≤ 0 := Real.log_nonpos hx0.le hx1
+  have hlog := Real.log_nonpos hx0.le hx1
   have ht : 0 ≤ -Real.log x := by linarith
-  have habs : |Real.log x| = -Real.log x := abs_of_nonpos hlog
-  have hεk : (0 : ℝ) < ε ^ k := pow_pos hε k
+  have habs := abs_of_nonpos hlog
+  have hεk := pow_pos hε k
   have hbound := Real.pow_div_factorial_le_exp (ε * (-Real.log x)) (mul_nonneg hε.le ht) k
   rw [mul_pow, div_le_iff₀ (by positivity : (0 : ℝ) < (k.factorial : ℝ))] at hbound
   have hexp : Real.exp (ε * (-Real.log x)) = x ^ (-ε) := by

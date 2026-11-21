@@ -46,8 +46,12 @@ private lemma locallyIntegrableOn_truncatedLogPolynomial (P : Polynomial ℂ) :
     ((continuousOn_eval_log_polynomial P).mono hk).integrableOn_compact hkcomp
   exact hint.indicator measurableSet_Ioo
 
-private lemma locallyIntegrableOn_logMellinRemainder {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) :
+section
+
+variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} (h : LogMellinPhysical f δ P)
+include δ h
+
+private lemma locallyIntegrableOn_logMellinRemainder :
     LocallyIntegrableOn (logMellinRemainder f P) (Set.Ioi 0) := by
   have hf : LocallyIntegrableOn f (Set.Ioi 0) :=
     h.contDiffOn.continuousOn.locallyIntegrableOn measurableSet_Ioi
@@ -55,8 +59,7 @@ private lemma locallyIntegrableOn_logMellinRemainder {f : ℝ → ℂ} {δ : ℝ
   change LocallyIntegrableOn (f - truncatedLogPolynomial P) (Set.Ioi 0)
   exact hf.sub ht
 
-private lemma logMellinRemainder_isBigO_origin {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) :
+private lemma logMellinRemainder_isBigO_origin :
     logMellinRemainder f P =O[𝓝[>] (0 : ℝ)] (fun x : ℝ => x ^ δ) := by
   obtain ⟨C, hC0, hC⟩ := h.origin_remainder 0
   refine Asymptotics.IsBigO.of_bound C ?_
@@ -69,8 +72,7 @@ private lemma logMellinRemainder_isBigO_origin {f : ℝ → ℂ} {δ : ℝ} {P :
   rw [hx, Real.norm_of_nonneg (Real.rpow_nonneg hx0.le δ)]
   exact hC x hx0 hx1.le
 
-private lemma logMellinRemainder_isBigO_top {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) (a : ℝ) :
+private lemma logMellinRemainder_isBigO_top (a : ℝ) :
     logMellinRemainder f P =O[atTop] (fun x : ℝ => x ^ (-a)) := by
   obtain ⟨C, hC0, hC⟩ := h.rapid_decay 0 (Nat.ceil a + 1)
   refine Asymptotics.IsBigO.of_bound C ?_
@@ -85,6 +87,8 @@ private lemma logMellinRemainder_isBigO_top {f : ℝ → ℂ} {δ : ℝ} {P : Po
   push_cast
   have := Nat.le_ceil a
   linarith
+
+end
 
 private lemma punctured_halfPlane_preconnected {δ : ℝ} (hδ : 0 < δ) :
     IsPreconnected {s : ℂ | -δ < s.re ∧ s ≠ 0} := by
@@ -199,7 +203,12 @@ private lemma contDiffOn_eval_log (P : Polynomial ℂ) :
     exact Complex.ofRealCLM.contDiff.comp_contDiffOn hlog
   exact h1.comp_contDiffOn h2
 
-private lemma eulerIter_sub_originPolynomial_eq {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} (h : LogMellinPhysical f δ P) (j : ℕ) :
+section
+
+variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} (h : LogMellinPhysical f δ P)
+include δ P h
+
+private lemma eulerIter_sub_originPolynomial_eq (j : ℕ) :
     ∀ x : ℝ, 0 < x →
       EulerIter j f x =
         EulerIter j (fun y => f y - P.eval (Real.log y : ℂ)) x +
@@ -215,7 +224,7 @@ private lemma eulerIter_sub_originPolynomial_eq {f : ℝ → ℂ} {δ : ℝ} {P 
   rw [hfun] at hsplit
   rw [hsplit, EulerIter_eval_log_polynomial P j x hx]
 
-private lemma eulerIter_eq_remainder_of_degree_lt {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} (h : LogMellinPhysical f δ P) (j : ℕ)
+private lemma eulerIter_eq_remainder_of_degree_lt (j : ℕ)
     (hj : P.natDegree < j) :
     ∀ x : ℝ, 0 < x →
       EulerIter j f x = EulerIter j (fun y => f y - P.eval (Real.log y : ℂ)) x := by
@@ -223,8 +232,7 @@ private lemma eulerIter_eq_remainder_of_degree_lt {f : ℝ → ℂ} {δ : ℝ} {
   rw [eulerIter_sub_originPolynomial_eq h j x hx, Polynomial.iterate_derivative_eq_zero hj]
   simp
 
-private lemma high_euler_mellin_differentiableAt {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) (n : ℕ) (hn : P.natDegree < n)
+private lemma high_euler_mellin_differentiableAt (n : ℕ) (hn : P.natDegree < n)
     (s : ℂ) (hs : -δ < s.re) : DifferentiableAt ℂ (mellin (EulerIter n f)) s := by
   obtain ⟨N, hN⟩ := exists_nat_gt s.re
   obtain ⟨C₂, hC₂, hbound₂⟩ := h.rapid_decay n N
@@ -243,17 +251,22 @@ private lemma high_euler_mellin_differentiableAt {f : ℝ → ℂ} {δ : ℝ} {P
     exact hbound₁ x hx.1 hx.2
   · exact hs
 
+end
+
 end Helpers
 
-theorem logMellinHolomorphicPart_differentiableAt {f : ℝ → ℂ} {δ : ℝ}
-    {P : Polynomial ℂ} (h : LogMellinPhysical f δ P) (s : ℂ) (hs : -δ < s.re) :
+section
+
+variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} (h : LogMellinPhysical f δ P)
+include δ h
+
+theorem logMellinHolomorphicPart_differentiableAt (s : ℂ) (hs : -δ < s.re) :
     DifferentiableAt ℂ (logMellinHolomorphicPart f P) s :=
   mellin_differentiableAt_of_isBigO_rpow (locallyIntegrableOn_logMellinRemainder h)
     (logMellinRemainder_isBigO_top h (s.re + 1)) (by linarith)
     (by simpa using logMellinRemainder_isBigO_origin h) hs
 
-theorem logMellinContinuation_eq_mellin {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) (s : ℂ) (hs : 0 < s.re) :
+theorem logMellinContinuation_eq_mellin (s : ℂ) (hs : 0 < s.re) :
     logMellinContinuation f P s = mellin f s := by
   have hfconv : MellinConvergent f s := h.euler_mellinConvergent 0 s hs
   have htconv : MellinConvergent (truncatedLogPolynomial P) s :=
@@ -265,8 +278,7 @@ theorem logMellinContinuation_eq_mellin {f : ℝ → ℂ} {δ : ℝ} {P : Polyno
     mellin_truncatedLogPolynomial P s hs]
   ring
 
-theorem logMellinContinuation_eq_euler {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) (n : ℕ) (hn : P.natDegree < n)
+theorem logMellinContinuation_eq_euler (n : ℕ) (hn : P.natDegree < n)
     (s : ℂ) (hs : -δ < s.re) (hs0 : s ≠ 0) :
     logMellinContinuation f P s =
       (-s) ^ (-(n : ℤ)) * mellin (EulerIter n f) s := by
@@ -284,8 +296,7 @@ theorem logMellinContinuation_eq_euler {f : ℝ → ℂ} {δ : ℝ} {P : Polynom
       zpow_neg, zpow_natCast, ← mul_assoc, inv_mul_cancel₀ (pow_ne_zero n (neg_ne_zero.mpr hz0)),
       one_mul]
 
-theorem logMellinContinuation_unique {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
-    (h : LogMellinPhysical f δ P) (H₀ : ℂ → ℂ)
+theorem logMellinContinuation_unique (H₀ : ℂ → ℂ)
     (hM : ∀ s : ℂ, 0 < s.re → H₀ s = mellin f s)
     (hR : ∀ s : ℂ, -δ < s.re → s ≠ 0 → DifferentiableAt ℂ H₀ s)
     (s : ℂ) (hs : -δ < s.re) (hs0 : s ≠ 0) :
@@ -296,6 +307,8 @@ theorem logMellinContinuation_unique {f : ℝ → ℂ} {δ : ℝ} {P : Polynomia
       (logPrincipalPart_differentiableAt P z hz0)
   · intro z hz
     exact (hM z hz).trans (logMellinContinuation_eq_mellin h z hz).symm
+
+end
 
 end DedekindZetaZeroFree.LargeSieve.Vendor
 

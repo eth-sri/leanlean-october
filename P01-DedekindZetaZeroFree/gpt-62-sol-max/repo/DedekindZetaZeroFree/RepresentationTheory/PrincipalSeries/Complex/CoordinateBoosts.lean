@@ -30,6 +30,16 @@ def matrixExponential (M : Matrix (Fin 2) (Fin 2) ℂ) : ComplexGL2 :=
 def rawRowNormSq (m : Matrix (Fin 2) (Fin 2) ℂ) : ℝ :=
   ‖m 1 0‖ ^ 2 + ‖m 1 1‖ ^ 2
 
+theorem rawRowNormSq_compact (k : ComplexSU2) : rawRowNormSq k = 1 := by
+  have hrow := congrArg (fun B : (Matrix (Fin 2) (Fin 2) ℂ) => (B 1 1).re)
+    (Matrix.mem_unitaryGroup_iff.mp (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1)
+  simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
+    Matrix.one_apply_eq] at hrow
+  change (((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0 * (starRingEnd ℂ) ((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0)) +
+    ((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1 * (starRingEnd ℂ) ((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1))).re = 1 at hrow
+  simpa only [rawRowNormSq, Complex.mul_conj', Complex.add_re, ← Complex.ofReal_pow,
+    Complex.ofReal_re] using hrow
+
 def rawNormalizedSphereCoordinate (m : Matrix (Fin 2) (Fin 2) ℂ) (i : Fin 3) : ℂ :=
   (![ (2 * (m 1 0 * star (m 1 1)).re : ℝ),
     (2 * (m 1 0 * star (m 1 1)).im : ℝ),
@@ -66,10 +76,10 @@ def liftRowSU2 (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) : ComplexSU2 :=
     · ext i j
       fin_cases i <;> fin_cases j <;>
         simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
+          Complex.mul_conj', ← Complex.ofReal_pow,
           ← Complex.ofReal_add, h, h', mul_comm]
-    · simp [Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h']⟩
+    · simp [Matrix.det_fin_two, Complex.mul_conj',
+        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h']⟩
 def liftSU2 (g : ComplexGL2) : ComplexSU2 :=
   liftRowSU2 ((g : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0 / Real.sqrt (rawRowNormSq g))
     ((g : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1 / Real.sqrt (rawRowNormSq g)) (by
@@ -85,9 +95,7 @@ private theorem liftSU2_coordinate (g : ComplexGL2) :
   ext i
   fin_cases i <;>
     simp [compactSphereCoordinate, rawNormalizedSphereCoordinate, liftSU2,
-      liftRowSU2, map_div₀, Complex.star_def, Complex.mul_re, Complex.mul_im, norm_div,
-      Complex.norm_real, Real.norm_eq_abs, sq_abs, div_pow, Real.sq_sqrt hp.le]
-  all_goals push_cast
+      liftRowSU2, Complex.mul_re, Complex.mul_im, Complex.norm_real, Real.norm_eq_abs, sq_abs, div_pow, Real.sq_sqrt hp.le]
   all_goals field_simp [Complex.ofReal_ne_zero.mpr hp.ne', Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hp).ne']
   all_goals rw [hr]
   all_goals ring
@@ -120,9 +128,10 @@ private theorem pauli_exp_det (j : Fin 3) (t : ℝ) :
   simpa [m] using hc
 
 open KPCplxPrincipalSeriesCharts
-private theorem lift_section (g : ComplexGL2) (hdet : (g : Matrix (Fin 2) (Fin 2) ℂ).det = 1)
-    (s : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
-    f g = ((rawRowNormSq g).rpow (-(1 + 2 * s)) : ℂ) * f (complexSU2Embedding (liftSU2 g)) := by
+theorem liftSU2_factor (g : ComplexGL2) :
+    ∃ (a d : ℂˣ) (b : ℂ), g = upperTriangular a d b * complexSU2Embedding (liftSU2 g) ∧
+      (a : ℂ) = (g : Matrix (Fin 2) (Fin 2) ℂ).det / (Real.sqrt (rawRowNormSq g) : ℂ) ∧
+      (d : ℂ) = (Real.sqrt (rawRowNormSq g) : ℂ) := by
   let r : ℝ := Real.sqrt (rawRowNormSq g)
   have hr : 0 < r := Real.sqrt_pos.mpr (rawRowNormSq_pos g)
   have hrc : (r : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hr.ne'
@@ -134,19 +143,26 @@ private theorem lift_section (g : ComplexGL2) (hdet : (g : Matrix (Fin 2) (Fin 2
   let d : ℂˣ := Units.mk0 (r : ℂ) hrc
   let a : ℂˣ := Matrix.GeneralLinearGroup.det g / d
   let b := ((g : (Matrix (Fin 2) (Fin 2) ℂ)) 0 0 * star ((g : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0) + (g : (Matrix (Fin 2) (Fin 2) ℂ)) 0 1 * star ((g : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1)) / r
-  have hf : g = upperTriangular a d b * complexSU2Embedding (liftSU2 g) := by
-    apply Matrix.GeneralLinearGroup.ext
+  refine ⟨a, d, b, ?_, ?_, rfl⟩
+  · apply Matrix.GeneralLinearGroup.ext
     intro i j
     change (g : (Matrix (Fin 2) (Fin 2) ℂ)) i j = ((!![(a : ℂ), b; 0, (d : ℂ)] : (Matrix (Fin 2) (Fin 2) ℂ)) * (liftSU2 g : (Matrix (Fin 2) (Fin 2) ℂ))) i j
     fin_cases i <;> fin_cases j <;>
       simp [liftSU2, liftRowSU2,
         Matrix.mul_apply, Fin.sum_univ_two, a, d, b,
-        Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, map_div₀, r]
+        Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, r]
     all_goals rw [show Real.sqrt (rawRowNormSq g) = r from rfl]
     all_goals field_simp [hrc]
     all_goals simp only [Complex.star_def] at hr2
     · linear_combination (g : (Matrix (Fin 2) (Fin 2) ℂ)) 0 0 * hr2
     · linear_combination (g : (Matrix (Fin 2) (Fin 2) ℂ)) 0 1 * hr2
+  · simp [a, d, r, Matrix.GeneralLinearGroup.val_det_apply]
+
+private theorem lift_section (g : ComplexGL2) (hdet : (g : Matrix (Fin 2) (Fin 2) ℂ).det = 1)
+    (s : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
+    f g = ((rawRowNormSq g).rpow (-(1 + 2 * s)) : ℂ) * f (complexSU2Embedding (liftSU2 g)) := by
+  obtain ⟨a, d, b, hf, ha, hd⟩ := liftSU2_factor g
+  have hr := Real.sqrt_pos.mpr (rawRowNormSq_pos g)
   calc
     f g = (inductionWeight s a d : ℂ) * f (complexSU2Embedding (liftSU2 g)) := by
       conv_lhs => rw [hf, f.property.1]
@@ -154,13 +170,10 @@ private theorem lift_section (g : ComplexGL2) (hdet : (g : Matrix (Fin 2) (Fin 2
   congr 1
   apply congrArg Complex.ofReal
   unfold inductionWeight complexAbs
-  have ha : (a : ℂ) = 1 / (r : ℂ) := by
-    simp [a, d, Matrix.GeneralLinearGroup.val_det_apply, hdet]
-  rw [ha]
-  simp only [d, Units.val_mk0, norm_div, norm_one, Complex.norm_real,
+  rw [ha, hd, hdet]
+  simp only [norm_div, norm_one, Complex.norm_real,
     Real.norm_eq_abs, abs_of_pos hr]
-  have hr2 : r ^ 2 = rawRowNormSq g := Real.sq_sqrt (rawRowNormSq_pos g).le
-  rw [div_div, ← pow_two, hr2]
+  rw [div_div, ← pow_two, Real.sq_sqrt (rawRowNormSq_pos g).le]
   change ((1 / rawRowNormSq g) ^ 2) ^ (1 / 2 + s) = (rawRowNormSq g) ^ (-(1 + 2 * s))
   rw [← Real.rpow_natCast_mul (one_div_nonneg.mpr (rawRowNormSq_pos g).le) 2]
   simp only [one_div]
@@ -168,7 +181,7 @@ private theorem lift_section (g : ComplexGL2) (hdet : (g : Matrix (Fin 2) (Fin 2
   congr 1
   ring
 
-private theorem actual_noncompact_normalized_compact_lift (j : Fin 3) (k : ComplexSU2) :
+theorem actual_noncompact_normalized_compact_lift (j : Fin 3) (k : ComplexSU2) :
     ∃ c : ℝ → ComplexSU2,
       c 0 = k ∧
       (∀ t i, compactSphereCoordinate (c t) i =
@@ -183,12 +196,7 @@ private theorem actual_noncompact_normalized_compact_lift (j : Fin 3) (k : Compl
       NormedSpace.exp (((0 : ℝ) : ℂ) • cartanMatrix (false, j)) = _
     simp only [Complex.ofReal_zero, zero_smul, NormedSpace.exp_zero, mul_one]
     rfl
-  have hnorm : rawRowNormSq (complexSU2Embedding k) = 1 := by
-    have h := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1
-    rw [Matrix.mem_unitaryGroup_iff] at h
-    have hh := congrArg (fun m : Matrix (Fin 2) (Fin 2) ℂ => (m 1 1).re) h
-    simpa [rawRowNormSq, complexSU2Embedding, Matrix.mul_apply, Fin.sum_univ_two,
-      Matrix.star_apply, Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow] using hh
+  have hnorm : rawRowNormSq (complexSU2Embedding k) = 1 := rawRowNormSq_compact k
   refine ⟨fun t => if t = 0 then k else liftSU2 (rawNoncompactPath j k t), by simp, ?_, ?_⟩
   · intro t i
     dsimp only
@@ -211,7 +219,7 @@ private theorem actual_noncompact_normalized_compact_lift (j : Fin 3) (k : Compl
       rw [Matrix.det_mul, (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2, one_mul]
       exact pauli_exp_det j t
 
-private theorem polynomial_profile_curve_derivative
+theorem polynomial_profile_curve_derivative
     (A : Fin 3 → MvPolynomial (Fin 3) ℂ) (x : Fin 3 → ℂ)
     (c : ℝ → Fin 3 → ℂ) (hc : c 0 = x)
     (hd : ∀ i, HasDerivAt (fun t => c t i) (MvPolynomial.eval x (A i)) 0)
@@ -228,29 +236,24 @@ private theorem polynomial_profile_curve_derivative
     convert hp.mul (hd i) using 1
     · simp only [map_mul, MvPolynomial.eval_X]; rfl
     · simp only [MvPolynomial.pderiv_mul, MvPolynomial.pderiv_X, map_add,
-        map_mul, MvPolynomial.eval_X, Finset.mul_sum, Finset.sum_mul, mul_add,
+        mul_add,
         Finset.sum_add_distrib, hc]
       simp only [map_sum, map_mul, MvPolynomial.eval_X, Pi.single_apply,
-        apply_ite, map_one, map_zero, mul_ite, mul_one, mul_zero,
+        apply_ite, mul_one, mul_zero,
         Finset.sum_ite_eq, Finset.mem_univ, if_true]
       rw [Finset.sum_mul]
-      simp only [mul_comm, mul_left_comm, mul_assoc, add_comm]
-
-def noncompactAxis (j : Fin 3) : Fin 3 := ![2, 0, 1] j
-
-def noncompactCoefficient (j : Fin 3) : ℂ :=
-  ![(Real.sqrt 2 : ℂ), (Real.sqrt 2 : ℂ), -(Real.sqrt 2 : ℂ)] j
+      simp only [mul_comm, mul_left_comm, add_comm]
 
 def noncompactVectorPolynomial (j i : Fin 3) : MvPolynomial (Fin 3) ℂ :=
-  MvPolynomial.C (noncompactCoefficient j) *
-    (MvPolynomial.C (if i = noncompactAxis j then 1 else 0) -
-      MvPolynomial.X (noncompactAxis j) * MvPolynomial.X i)
+  MvPolynomial.C (rawCoefficient j) *
+    (MvPolynomial.C (if i = rawAxis j then 1 else 0) -
+      MvPolynomial.X (rawAxis j) * MvPolynomial.X i)
 
 def noncompactWeightPolynomial (s : ℝ) (j : Fin 3) : MvPolynomial (Fin 3) ℂ :=
-  MvPolynomial.C (-noncompactCoefficient j * (1 + 2 * (s : ℂ))) *
-    MvPolynomial.X (noncompactAxis j)
+  MvPolynomial.C (-rawCoefficient j * (1 + 2 * (s : ℂ))) *
+    MvPolynomial.X (rawAxis j)
 
-private theorem weighted_polynomial_profile_curve_derivative
+theorem weighted_polynomial_profile_curve_derivative
     (A : Fin 3 → MvPolynomial (Fin 3) ℂ) (B : MvPolynomial (Fin 3) ℂ)
     (x : Fin 3 → ℂ) (c : ℝ → Fin 3 → ℂ) (hc : c 0 = x)
     (hd : ∀ i, HasDerivAt (fun t => c t i) (MvPolynomial.eval x (A i)) 0)
@@ -262,25 +265,10 @@ private theorem weighted_polynomial_profile_curve_derivative
   convert hwd.mul (polynomial_profile_curve_derivative A x c hc hd p) using 1
   simp only [hw, hc, one_mul, map_add, map_mul]
 
-def normalizedNoncompactRowNormSq (m : (Matrix (Fin 2) (Fin 2) ℂ)) : ℝ := ‖m 1 0‖ ^ 2 + ‖m 1 1‖ ^ 2
-def normalizedNoncompactSphereCoordinate (m : (Matrix (Fin 2) (Fin 2) ℂ)) (i : Fin 3) : ℂ :=
-  (![ (2 * (m 1 0 * star (m 1 1)).re : ℝ),
-    (2 * (m 1 0 * star (m 1 1)).im : ℝ),
-    (‖m 1 0‖ ^ 2 - ‖m 1 1‖ ^ 2 : ℝ)] i : ℂ) / (normalizedNoncompactRowNormSq m : ℂ)
-private theorem normalizedNoncompactRowNormSq_compact (k : ComplexSU2) : normalizedNoncompactRowNormSq k = 1 := by
-  have hrow := congrArg (fun B : (Matrix (Fin 2) (Fin 2) ℂ) => (B 1 1).re)
-    (Matrix.mem_unitaryGroup_iff.mp (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1)
-  simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Matrix.one_apply_eq] at hrow
-  change (((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0 * (starRingEnd ℂ) ((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0)) +
-    ((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1 * (starRingEnd ℂ) ((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1))).re = 1 at hrow
-  simpa only [normalizedNoncompactRowNormSq, Complex.mul_conj', Complex.add_re, ← Complex.ofReal_pow,
-    Complex.ofReal_re] using hrow
-
-private theorem noncompact_hopf_derivative_of_matrix_tangent (j : Fin 3) (k : ComplexSU2) (c : ℝ → (Matrix (Fin 2) (Fin 2) ℂ))
+theorem noncompact_hopf_derivative_of_matrix_tangent (j : Fin 3) (k : ComplexSU2) (c : ℝ → (Matrix (Fin 2) (Fin 2) ℂ))
     (hc : c 0 = k)
     (hd : ∀ a b, HasDerivAt (fun t => c t a b) (((k : (Matrix (Fin 2) (Fin 2) ℂ)) * noncompactMatrix j) a b) 0) :
-    ∀ i, HasDerivAt (fun t => normalizedNoncompactSphereCoordinate (c t) i)
+    ∀ i, HasDerivAt (fun t => rawNormalizedSphereCoordinate (c t) i)
       (MvPolynomial.eval (compactSphereCoordinate k) (noncompactVectorPolynomial j i)) 0 := by
   have ha := hd 1 0
   have hb := hd 1 1
@@ -291,62 +279,57 @@ private theorem noncompact_hopf_derivative_of_matrix_tangent (j : Fin 3) (k : Co
   have hbbr := Complex.reCLM.hasFDerivAt.comp_hasDerivAt 0 (hb.mul hb.star)
   have hnorm : ∀ z : ℂ, ‖z‖ ^ 2 = (z * star z).re := by
     intro z
-    simp [Complex.mul_re, Complex.sq_norm, Complex.normSq_apply, Complex.star_def]
-  have hB : HasDerivAt (fun t => normalizedNoncompactRowNormSq (c t))
+    simp [Complex.mul_re, Complex.sq_norm, Complex.normSq_apply]
+  have hB : HasDerivAt (fun t => rawRowNormSq (c t))
       (((((k : (Matrix (Fin 2) (Fin 2) ℂ)) * noncompactMatrix j) 1 0) * star ((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0) +
         (k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0 * star (((k : (Matrix (Fin 2) (Fin 2) ℂ)) * noncompactMatrix j) 1 0)).re +
        ((((k : (Matrix (Fin 2) (Fin 2) ℂ)) * noncompactMatrix j) 1 1) * star ((k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1) +
         (k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1 * star (((k : (Matrix (Fin 2) (Fin 2) ℂ)) * noncompactMatrix j) 1 1)).re) 0 := by
     convert haar.add hbbr using 1
-    · simp [normalizedNoncompactRowNormSq, hnorm, Function.comp_def]; rfl
+    · simp [rawRowNormSq, hnorm, Function.comp_def]; rfl
     · simp [hc]
-  have hne : (normalizedNoncompactRowNormSq (c 0) : ℂ) ≠ 0 := by rw [hc, normalizedNoncompactRowNormSq_compact]; simp
+  have hne : (rawRowNormSq (c 0) : ℂ) ≠ 0 := by rw [hc, rawRowNormSq_compact]; simp
   have hr : ((‖(k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 0‖ ^ 2 + ‖(k : (Matrix (Fin 2) (Fin 2) ℂ)) 1 1‖ ^ 2 : ℝ) : ℂ) = 1 := by
-    exact_mod_cast normalizedNoncompactRowNormSq_compact k
+    exact_mod_cast rawRowNormSq_compact k
   simp only [hnorm, Complex.mul_re, Complex.star_def, Complex.conj_re, Complex.conj_im] at hr
   push_cast at hr
   intro i
   fin_cases i
   · convert ((habr.const_mul 2).ofReal_comp.div hB.ofReal_comp hne) using 1
-    · simp [normalizedNoncompactSphereCoordinate, Function.comp_def, hnorm]; rfl
-    · simp only [hc, normalizedNoncompactRowNormSq_compact, Complex.ofReal_one, one_pow, div_one]
+    · simp [rawNormalizedSphereCoordinate, hnorm]; rfl
+    · simp only [hc, rawRowNormSq_compact, Complex.ofReal_one, one_pow, div_one]
       fin_cases j <;>
-        simp [hc, noncompactVectorPolynomial, noncompactCoefficient, noncompactAxis,
+        simp [hc, noncompactVectorPolynomial, rawCoefficient, rawAxis,
           noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two,
-          compactSphereCoordinate, hnorm, Complex.star_def, Complex.mul_re, Complex.mul_im]
-      all_goals push_cast
-      all_goals first | ring1 | linear_combination -(Real.sqrt 2 : ℂ) * hr | linear_combination (Real.sqrt 2 : ℂ) * hr
+          compactSphereCoordinate, hnorm, Complex.mul_re, Complex.mul_im]
       all_goals first | ring1 | linear_combination -(Real.sqrt 2 : ℂ) * hr | linear_combination (Real.sqrt 2 : ℂ) * hr
   · convert ((habi.const_mul 2).ofReal_comp.div hB.ofReal_comp hne) using 1
-    · simp [normalizedNoncompactSphereCoordinate, Function.comp_def, hnorm]; rfl
-    · simp only [hc, normalizedNoncompactRowNormSq_compact, Complex.ofReal_one, one_pow, div_one]
+    · simp [rawNormalizedSphereCoordinate, hnorm]; rfl
+    · simp only [hc, rawRowNormSq_compact, Complex.ofReal_one, one_pow, div_one]
       fin_cases j <;>
-        simp [hc, noncompactVectorPolynomial, noncompactCoefficient, noncompactAxis,
+        simp [hc, noncompactVectorPolynomial, rawCoefficient, rawAxis,
           noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two,
-          compactSphereCoordinate, hnorm, Complex.star_def, Complex.mul_re, Complex.mul_im]
-      all_goals push_cast
-      all_goals first | ring1 | linear_combination -(Real.sqrt 2 : ℂ) * hr | linear_combination (Real.sqrt 2 : ℂ) * hr
+          compactSphereCoordinate, hnorm, Complex.mul_re, Complex.mul_im]
       all_goals first | ring1 | linear_combination -(Real.sqrt 2 : ℂ) * hr | linear_combination (Real.sqrt 2 : ℂ) * hr
   · convert ((haar.sub hbbr).ofReal_comp.div hB.ofReal_comp hne) using 1
-    · simp [normalizedNoncompactSphereCoordinate, Function.comp_def, hnorm]; rfl
-    · simp only [hc, normalizedNoncompactRowNormSq_compact, Complex.ofReal_one, one_pow, div_one]
+    · simp [rawNormalizedSphereCoordinate, Function.comp_def, hnorm]; rfl
+    · simp only [hc, rawRowNormSq_compact, Complex.ofReal_one, one_pow, div_one]
       fin_cases j <;>
-        simp [hc, noncompactVectorPolynomial, noncompactCoefficient, noncompactAxis,
+        simp [hc, noncompactVectorPolynomial, rawCoefficient, rawAxis,
           noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two,
-          compactSphereCoordinate, hnorm, Complex.star_def, Complex.mul_re, Complex.mul_im]
-      all_goals push_cast
+          compactSphereCoordinate, hnorm, Complex.mul_re, Complex.mul_im]
       all_goals first | ring1 | linear_combination -(Real.sqrt 2 : ℂ) * hr | linear_combination (Real.sqrt 2 : ℂ) * hr
 
 open scoped Matrix.Norms.Operator in
 
-private theorem actual_noncompact_matrix_path_tangent (j : Fin 3) (k : ComplexSU2) :
+theorem actual_noncompact_matrix_path_tangent (j : Fin 3) (k : ComplexSU2) :
     (rawNoncompactPath j k 0 : Matrix (Fin 2) (Fin 2) ℂ) = k ∧
       ∀ a b, HasDerivAt
         (fun t : ℝ => (rawNoncompactPath j k t : Matrix (Fin 2) (Fin 2) ℂ) a b)
         (((k : Matrix (Fin 2) (Fin 2) ℂ) * noncompactMatrix j) a b) 0 := by
   constructor
   · simp [rawNoncompactPath, matrixExponential, complexSU2Embedding,
-      IsUnit.unit_spec, cartanMatrix]
+      cartanMatrix]
   · intro a b
     have hpoint : ∀ t : ℝ, (rawNoncompactPath j k t : Matrix (Fin 2) (Fin 2) ℂ) =
         (k : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • noncompactMatrix j) := by
@@ -369,9 +352,7 @@ private theorem actual_noncompact_matrix_path_tangent (j : Fin 3) (k : ComplexSU
     rw [hgoal]
     have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) (noncompactMatrix j) ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
     have hmat := h.const_mul (k : Matrix (Fin 2) (Fin 2) ℂ)
-    simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars,
-      ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero,
-      mul_one, one_mul] at hmat
+    simp only [Complex.ofRealCLM_apply, Complex.ofReal_one] at hmat
     have hi := (ContinuousLinearMap.proj a : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
     have hj := (ContinuousLinearMap.proj b : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
     change HasDerivAt (fun t : ℝ => ((k : Matrix (Fin 2) (Fin 2) ℂ) *
@@ -381,7 +362,7 @@ private theorem actual_noncompact_matrix_path_tangent (j : Fin 3) (k : ComplexSU
           (NormedSpace.exp (((0 : ℝ) : ℂ) • noncompactMatrix j) * noncompactMatrix j))) 1) a b) 0 at hj
     simpa using hj
 
-private theorem normalized_induction_weight_tangent
+theorem normalized_induction_weight_tangent
     (s : ℝ) (j : Fin 3) (k : ComplexSU2)
     (m : ℝ → Matrix (Fin 2) (Fin 2) ℂ) (hm : m 0 = k)
     (hd : ∀ a b, HasDerivAt (fun t => m t a b)
@@ -390,21 +371,10 @@ private theorem normalized_induction_weight_tangent
       HasDerivAt (fun t => ((rawRowNormSq (m t)).rpow (-(1 + 2 * s)) : ℂ))
         (-rawCoefficient j * (1 + 2 * (s : ℂ)) *
           compactSphereCoordinate k (rawAxis j)) 0 := by
-  have hrow : rawRowNormSq (k : Matrix (Fin 2) (Fin 2) ℂ) = 1 := by
-    have hh := congrArg (fun B : Matrix (Fin 2) (Fin 2) ℂ => (B 1 1).re)
-      (Matrix.mem_unitaryGroup_iff.mp (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1)
-    simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-      Matrix.one_apply_eq] at hh
-    change (((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 *
-      (starRingEnd ℂ) ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0)) +
-      ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1 *
-      (starRingEnd ℂ) ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1))).re = 1 at hh
-    simpa only [rawRowNormSq, Complex.mul_conj', Complex.add_re,
-      ← Complex.ofReal_pow, Complex.ofReal_re] using hh
-  have hB : rawRowNormSq (m 0) = 1 := by rw [hm, hrow]
+  have hB : rawRowNormSq (m 0) = 1 := by rw [hm, rawRowNormSq_compact]
   have hnorm : ∀ z : ℂ, ‖z‖ ^ 2 = (z * star z).re := by
     intro z
-    simp [Complex.mul_re, Complex.sq_norm, Complex.normSq_apply, Complex.star_def]
+    simp [Complex.mul_re, Complex.sq_norm, Complex.normSq_apply]
   have ha := hd 1 0
   have hb := hd 1 1
   have haar := Complex.reCLM.hasFDerivAt.comp_hasDerivAt 0 (ha.mul ha.star)
@@ -415,8 +385,7 @@ private theorem normalized_induction_weight_tangent
     · simp [rawRowNormSq, hnorm, Function.comp_def]; rfl
     · fin_cases j <;>
         simp [hm, rawCoefficient, rawAxis, noncompactMatrix, Matrix.mul_apply,
-          Fin.sum_univ_two, compactSphereCoordinate, hnorm, Complex.star_def,
-          Complex.mul_re, Complex.mul_im] <;> ring
+          Fin.sum_univ_two, compactSphereCoordinate, hnorm, Complex.mul_re, Complex.mul_im] <;> ring
   refine ⟨by simp [hB], ?_⟩
   have ht := (hderiv.rpow_const (p := -(1 + 2 * s))
     (Or.inl (by rw [hB]; norm_num))).ofReal_comp
@@ -429,17 +398,17 @@ private theorem euler_gradient (j : Fin 3) (s : ℝ) (m : ℕ)
     (p : MvPolynomial (Fin 3) ℂ) (hp : p.IsHomogeneous m) :
     noncompactWeightPolynomial s j * p +
       ∑ i : Fin 3, noncompactVectorPolynomial j i * pderiv i p =
-      noncompactCoefficient j •
-        (pderiv (noncompactAxis j) p - ((m : ℂ) + 1 + 2 * (s : ℂ)) • (X (noncompactAxis j) * p)) := by
+      rawCoefficient j •
+        (pderiv (rawAxis j) p - ((m : ℂ) + 1 + 2 * (s : ℂ)) • (X (rawAxis j) * p)) := by
   have he := hp.sum_X_mul_pderiv
   simp only [noncompactWeightPolynomial, noncompactVectorPolynomial,
     sub_mul, mul_sub, Finset.sum_sub_distrib, ← Finset.mul_sum, smul_eq_C_mul]
-  have ht : (∑ i : Fin 3, C (noncompactCoefficient j) * C (if i = noncompactAxis j then 1 else 0) * pderiv i p) =
-      C (noncompactCoefficient j) * pderiv (noncompactAxis j) p := by
+  have ht : (∑ i : Fin 3, C (rawCoefficient j) * C (if i = rawAxis j then 1 else 0) * pderiv i p) =
+      C (rawCoefficient j) * pderiv (rawAxis j) p := by
     simp [mul_ite]
   rw [ht]
-  have hu : (∑ i : Fin 3, C (noncompactCoefficient j) * (X (noncompactAxis j) * X i) * pderiv i p) =
-      C (noncompactCoefficient j) * X (noncompactAxis j) * (∑ i : Fin 3, X i * pderiv i p) := by
+  have hu : (∑ i : Fin 3, C (rawCoefficient j) * (X (rawAxis j) * X i) * pderiv i p) =
+      C (rawCoefficient j) * X (rawAxis j) * (∑ i : Fin 3, X i * pderiv i p) := by
     simp only [Finset.mul_sum]; apply Finset.sum_congr rfl; intro i hi; ring
   rw [hu, he]
   simp only [nsmul_eq_mul]
@@ -453,8 +422,8 @@ private theorem euler_gradient (j : Fin 3) (s : ℝ) (m : ℕ)
     (hp : p.IsHomogeneous m) (hf : compactRestriction s f = polynomialCompactRestriction p)
     (k : ComplexSU2) :
     HasDerivAt (fun t : ℝ => f (rawNoncompactPath j k t))
-      (noncompactCoefficient j * polynomialCompactRestriction
-        (pderiv (noncompactAxis j) p - ((m : ℂ) + 1 + 2 * (s : ℂ)) • (X (noncompactAxis j) * p)) k) 0 := by
+      (rawCoefficient j * polynomialCompactRestriction
+        (pderiv (rawAxis j) p - ((m : ℂ) + 1 + 2 * (s : ℂ)) • (X (rawAxis j) * p)) k) 0 := by
   obtain ⟨c, hc, hcoord, hfactor⟩ := actual_noncompact_normalized_compact_lift j k
   obtain ⟨hm, hd⟩ := actual_noncompact_matrix_path_tangent j k
   obtain ⟨hw, hwd⟩ := normalized_induction_weight_tangent s j k
@@ -465,14 +434,14 @@ private theorem euler_gradient (j : Fin 3) (s : ℝ) (m : ℕ)
     have ht := noncompact_hopf_derivative_of_matrix_tangent j k
       (fun t => (rawNoncompactPath j k t : Matrix (Fin 2) (Fin 2) ℂ)) hm hd i
     have he : (fun t => compactSphereCoordinate (c t) i) =
-        (fun t => normalizedNoncompactSphereCoordinate (rawNoncompactPath j k t) i) := by
+        (fun t => rawNormalizedSphereCoordinate (rawNoncompactPath j k t) i) := by
       funext t; exact hcoord t i
     rw [he]
     simpa only [noncompactVectorPolynomial, map_mul, map_sub, MvPolynomial.eval_C,
       MvPolynomial.eval_X] using ht
   have hdw : HasDerivAt (fun t => ((rawRowNormSq (rawNoncompactPath j k t)).rpow (-(1 + 2*s)) : ℂ))
       (MvPolynomial.eval (compactSphereCoordinate k) (noncompactWeightPolynomial s j)) 0 := by
-    simpa [rawCoefficient, rawAxis, noncompactCoefficient, noncompactAxis,
+    simpa [rawCoefficient, rawAxis, rawCoefficient, rawAxis,
       noncompactWeightPolynomial] using hwd
   have ht := weighted_polynomial_profile_curve_derivative
     (noncompactVectorPolynomial j) (noncompactWeightPolynomial s j)
@@ -492,9 +461,9 @@ open MvPolynomial
 open scoped Matrix.Norms.Elementwise BigOperators
 noncomputable def speed (j : Fin 3) : ℝ :=
   if j = 2 then -(1 / Real.sqrt 2) else 1 / Real.sqrt 2
-private theorem speed_coeff (j : Fin 3) : (speed j : ℂ) * noncompactCoefficient j = 1 := by
+private theorem speed_coeff (j : Fin 3) : (speed j : ℂ) * rawCoefficient j = 1 := by
   have h : (Real.sqrt 2 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_ne_zero'.mpr (by norm_num))
-  fin_cases j <;> simp [speed, noncompactCoefficient] <;> push_cast <;> field_simp
+  fin_cases j <;> simp [speed, rawCoefficient] <;> push_cast <;> field_simp
 
 open scoped Matrix.Norms.Operator in
 private theorem exp_smooth (j : Fin 3) (a b : Fin 2) :
@@ -531,7 +500,7 @@ theorem exists_coordinate_boost (i : Fin 3) :
               (polynomialCompactRestriction
                 (pderiv i p - ((m : ℂ) + 1 + 2 * (s : ℂ)) • (X i * p)) k) 0 := by
   let j : Fin 3 := ![1, 2, 0] i
-  have ha : noncompactAxis j = i := by fin_cases i <;> rfl
+  have ha : rawAxis j = i := by fin_cases i <;> rfl
   let γ : ℝ → ComplexGL2 := fun t =>
     matrixExponential (((speed j * t : ℝ) : ℂ) • cartanMatrix (false, j))
   refine ⟨γ, ?_, ?_, ?_⟩
@@ -546,8 +515,8 @@ theorem exists_coordinate_boost (i : Fin 3) :
   · intro s m p f hp hf k
     have hr := raw_derivative j s m p f hp hf k
     have hr' : HasDerivAt (fun t : ℝ => f (rawNoncompactPath j k t))
-        (noncompactCoefficient j * polynomialCompactRestriction
-          (pderiv (noncompactAxis j) p - ((m : ℂ) + 1 + 2 * (s : ℂ)) • (X (noncompactAxis j) * p)) k)
+        (rawCoefficient j * polynomialCompactRestriction
+          (pderiv (rawAxis j) p - ((m : ℂ) + 1 + 2 * (s : ℂ)) • (X (rawAxis j) * p)) k)
         (speed j * id (0 : ℝ)) := by simpa using hr
     have ht := hr'.scomp (0 : ℝ)
       ((hasDerivAt_id (0 : ℝ)).const_mul (speed j))

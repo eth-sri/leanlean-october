@@ -128,7 +128,7 @@ theorem quotient_subgroup_measurePreserving
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ x := by
       apply Quotient.sound
       apply QuotientGroup.rightRel_apply.mpr
-      simpa using (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ).inv_mem γ.property
+      simp
     rw [h]
   have hcomp : KPSmoothActualFlowData.rightTranslate F ζ hζ c ∘ KPSmoothLocalQuotientCharts.quotientMap F ζ hζ =
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ ∘

@@ -10,12 +10,7 @@ public import DedekindZetaZeroFree.Theta.Periods.TensorRealization.ScalarCore
 
 @[expose] public section
 
-namespace DedekindZetaZeroFree.ThetaExpansion
-open MomentSources
-variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-end DedekindZetaZeroFree.ThetaExpansion
 
 section
 

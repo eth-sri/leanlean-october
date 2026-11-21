@@ -276,91 +276,15 @@ theorem rationalCyclotomicPrincipalPrimeLevelIsAbelianGalois
     IsAbelianGalois ℚ (KummerTheory.rationalCyclotomicLevel m) :=
   rationalCyclotomicLevelIsAbelianGalois m
 
-/-- The canonical nontrivially normed field structure on the completion of
-`ℚ` at the rational prime `p`, exposed for principal-prime constructions. -/
-@[reducible]
-noncomputable def rationalPrimeFactorCompletionNontriviallyNormedField
-    (p : Nat.Primes) :
-    NontriviallyNormedField
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion :=
-  rationalFinitePlaceBaseNontriviallyNormedField p
 
-/-- The completion of `ℚ` at `p` is locally compact. -/
-theorem rationalPrimeFactorCompletionLocallyCompactSpace
-    (p : Nat.Primes) :
-    LocallyCompactSpace
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion :=
-  rationalFinitePlaceBaseLocallyCompactSpace p
 
-/-- The completion of `ℚ` at `p` carries its canonical ultrametric distance. -/
-theorem rationalPrimeFactorCompletionIsUltrametricDist
-    (p : Nat.Primes) :
-    IsUltrametricDist
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion :=
-  rationalFinitePlaceBaseIsUltrametricDist p
 
-/-- The canonical `ℝ≥0`-valued structure on the completion of `ℚ` at `p`. -/
-@[reducible]
-noncomputable def rationalPrimeFactorCompletionValued
-    (p : Nat.Primes) :
-    Valued
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion ℝ≥0 :=
-  rationalFinitePlaceBaseValued p
 
-/-- The valuative relation induced by the canonical valuation on the
-completion of `ℚ` at `p`. -/
-@[reducible]
-noncomputable def rationalPrimeFactorCompletionValuativeRel
-    (p : Nat.Primes) :
-    ValuativeRel
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion :=
-  rationalFinitePlaceBaseValuativeRel p
 
-/-- The canonical valuation on the completion of `ℚ` at `p` is nontrivial. -/
-theorem rationalPrimeFactorCompletionValuationIsNontrivial
-    (p : Nat.Primes) :
-    (Valued.v : Valuation
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion ℝ≥0).IsNontrivial :=
-  rationalFinitePlaceBaseValuationIsNontrivial p
 
-/-- The canonical valuation on the completion of `ℚ` at `p` is compatible
-with its field structure. -/
-theorem rationalPrimeFactorCompletionValuationCompatible
-    (p : Nat.Primes) :
-    (Valued.v : Valuation
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion ℝ≥0).Compatible :=
-  rationalFinitePlaceBaseValuationCompatible p
 
-/-- The canonical valuative relation on the completion at `p` is nontrivial. -/
-theorem rationalPrimeFactorCompletionValuativeRelIsNontrivial
-    (p : Nat.Primes) :
-    ValuativeRel.IsNontrivial
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion :=
-  rationalFinitePlaceBaseValuativeRelIsNontrivial p
 
-/-- The completion topology at `p` is induced by its canonical valuation. -/
-theorem rationalPrimeFactorCompletionIsValuativeTopology
-    (p : Nat.Primes) :
-    IsValuativeTopology
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion :=
-  rationalFinitePlaceBaseIsValuativeTopology p
 
-/-- The completion of `ℚ` at `p` is a nonarchimedean local field. -/
-theorem rationalPrimeFactorCompletionIsNonarchimedeanLocalField
-    (p : Nat.Primes) :
-    IsNonarchimedeanLocalField
-      (HeightOneSpectrum.adicAbv ℚ
-        (RayClass.rationalPrime p)).Completion :=
-  rationalFinitePlaceBaseIsNonarchimedeanLocalField p
 
 /-- The positive conductor of the `n`-th ramified cyclotomic level at
 `p`. -/
@@ -374,12 +298,6 @@ abbrev RationalCyclotomicPrincipalPrimeCompletion
   (HeightOneSpectrum.adicAbv ℚ
     (RayClass.rationalPrime p)).Completion
 
-/-- The chosen localized cyclotomic field at level `p ^ (n + 1)`. -/
-abbrev RationalCyclotomicPrincipalPrimeLocalizedLevel
-    (p : Nat.Primes) (n : ℕ) :=
-  rationalCyclotomicLocalizedCompletion
-    (rationalCyclotomicPrincipalPrimeModulus p n)
-    (RayClass.rationalPrime p)
 
 /-- The standard multiplicative Lubin--Tate field at level `n`. -/
 abbrev RationalCyclotomicPrincipalPrimePadicLevel
@@ -394,7 +312,7 @@ noncomputable def rationalFinitePlaceCompletionIntegerRingEquivPadicInt
     𝒪[(HeightOneSpectrum.adicAbv ℚ
         (RayClass.rationalPrime q)).Completion] ≃+*
       ℤ_[q.1] := by
-  let v : HeightOneSpectrum (𝓞 ℚ) :=
+  let v :=
     RayClass.rationalPrime q
   let vQ := HeightOneSpectrum.adicAbv ℚ v
   let eConcreteIntegers :
@@ -441,9 +359,7 @@ theorem rationalFinitePlaceCompletionIntegerRingEquivPadicInt_coe
           (HeightOneSpectrum.adicAbv ℚ
             (RayClass.rationalPrime q)).Completion a) =
       algebraMap ℤ_[q.1] ℚ_[q.1]
-        (rationalFinitePlaceCompletionIntegerRingEquivPadicInt q a) := by
-  exact
-    (IsFractionRing.ringEquivOfRingEquiv_algebraMap
+        (rationalFinitePlaceCompletionIntegerRingEquivPadicInt q a) := (IsFractionRing.ringEquivOfRingEquiv_algebraMap
       (rationalFinitePlaceCompletionIntegerRingEquivPadicInt q) a)
 
 /-- The canonical rational-completion equivalence preserves the canonical
@@ -892,24 +808,6 @@ theorem rationalPrincipalFiniteComponent_valuationMap
     rationalPrimeUnitFinitePlaceField_valuationMap]
   ring
 
-/-- The principal finite component of the rational prime itself has
-normalized local exponent `-1`. -/
-theorem rationalPrimePrincipalFiniteComponent_valuationMap
-    (q : Nat.Primes) :
-    IsNonarchimedeanLocalField.valuationMap
-        (HeightOneSpectrum.adicAbv ℚ
-          (RayClass.rationalPrime q)).Completion
-        (Additive.ofMul
-          ((finitePlaceCompletionUnitsContinuousMulEquiv
-            (RayClass.rationalPrime q)).symm
-            (IdeleGroup.finiteComponent
-              (RayClass.rationalPrime q)
-              (IdeleGroup.principalIdele ℚ
-                (rationalPrimeGeneratorUnit q))))) =
-      -1 := by
-  rw [rationalPrincipalFiniteComponent_valuationMap,
-    rationalPrimeGeneratorUnit_coe,
-    padicValRat.self q.2.one_lt]
 
 /-- A cyclotomic automorphism which raises the selected primitive root to
 the `q`-th power has cyclotomic character equal to the residue-prime unit. -/
@@ -1277,17 +1175,11 @@ noncomputable local instance
     KummerTheory.rationalCyclotomicLevel_isCyclotomicExtension
       (rationalCyclotomicPrincipalPrimeModulus p n)
 
- abbrev rationalCyclotomicPrincipalPrimePlace
-    (p : Nat.Primes) : HeightOneSpectrum (𝓞 ℚ) :=
-  rationalCyclotomicArtinPlace p
 
  abbrev rationalCyclotomicPrincipalPrimeLevel
     (m : ℕ+) :=
   rationalCyclotomicArtinLevel m
 
- abbrev rationalCyclotomicPrincipalPrimeExtension
-    (m : ℕ+) (p : Nat.Primes) :=
-  rationalCyclotomicArtinExtension m p
 
 /-- The `ℚ_[p]`-algebra structure on the localized cyclotomic completion,
 transported through the canonical comparison with the `p`-adic completion. -/
@@ -1682,27 +1574,6 @@ theorem chosenFinitePlaceArtinMonoidHom_apply_factor_of_extension_eq
         (K := K) (L := L) v
         (chosenFinitePlaceExtension (L := L) v))
 
-private theorem
-    chosenFinitePlaceArtinMonoidHom_apply_factor_of_extension_eq_at
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K v) L)
-    (hw : chosenFinitePlaceExtension (L := L) v = w)
-    (x : (v.adicCompletion K)ˣ) (z : L) :
-    chosenFinitePlaceArtinMonoidHom
-        (K := K) (L := L) v x z =
-      finitePlaceLocalToGlobalMonoidHom
-        (K := K) (L := L) v w
-        (finitePlaceLocalArtinMonoidHom
-          (K := K) (L := L) v w x) z := by
-  exact
-    congrArg (fun sigma : Gal(L / K) => sigma z)
-      (chosenFinitePlaceArtinMonoidHom_apply_factor_of_extension_eq
-        (K := K) (L := L) v w hw x)
 
 private theorem finitePlaceLocalToGlobalMonoidHom_apply_pow_of_localized_action
     {K L : Type}
@@ -1860,71 +1731,6 @@ private theorem finitePlaceLocalArtinMonoidHom_apply_semilinear
         (inferInstance : IsAbelianGalois K' L')
         eK eL hcomm hExt (finitePlaceLocalArtinInput v x) z
 
-/-- If a semilinearly identified target local Artin value is trivial, then the
-corresponding global finite-place Artin value is trivial.  This generic bridge
-keeps concrete completion and localization instance towers out of downstream
-proof terms. -/
-theorem finitePlaceArtinMonoidHomOfExtension_eq_one_of_semilinear
-    {K L K' L' : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [hKLfinite : FiniteDimensional K L] [IsAbelianGalois K L]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L'] [Algebra K' L']
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K v) L)
-    (eK : (HeightOneSpectrum.adicAbv K v).Completion ≃+* K')
-    (eL : LocalizedCompletion
-      (HeightOneSpectrum.adicAbv K v) w ≃+* L')
-    (hcomm : ∀ y : (HeightOneSpectrum.adicAbv K v).Completion,
-      eL (@algebraMap
-        (HeightOneSpectrum.adicAbv K v).Completion
-        (LocalizedCompletion (HeightOneSpectrum.adicAbv K v) w)
-        _ _ (finitePlaceLocalArtinLocalizedAlgebra v w) y) =
-        algebraMap K' L' (eK y))
-    (hExt : SemilinearValuationCompatible
-      (HeightOneSpectrum.adicAbv K v).Completion K' eK)
-    (x : (v.adicCompletion K)ˣ)
-    (htrivial :
-      LocalClassFieldTheory.abelianLocalArtinMonoidHom K' L'
-          (Units.map eK.toMonoidHom
-            (finitePlaceLocalArtinInput v x)) = 1) :
-    finitePlaceArtinMonoidHomOfExtension
-        (K := K) (L := L) v w x = 1 := by
-  rw [finitePlaceArtinMonoidHomOfExtension_factor,
-    MonoidHom.comp_apply]
-  have hlocal :
-      finitePlaceLocalArtinMonoidHom
-          (K := K) (L := L) v w x = 1 := by
-    rw [finitePlaceLocalArtinMonoidHom_apply_normalized]
-    exact
-      @abelianLocalArtinMonoidHom_eq_one_of_semilinear
-        (HeightOneSpectrum.adicAbv K v).Completion K'
-        (LocalizedCompletion (HeightOneSpectrum.adicAbv K v) w) L'
-        (inferInstance : Field
-          (HeightOneSpectrum.adicAbv K v).Completion)
-        (finitePlaceLocalArtinCompletionValuativeRel v)
-        (inferInstance : TopologicalSpace
-          (HeightOneSpectrum.adicAbv K v).Completion)
-        (finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v)
-        (inferInstance : Field K')
-        (inferInstance : ValuativeRel K')
-        (inferInstance : TopologicalSpace K')
-        (inferInstance : IsNonarchimedeanLocalField K')
-        (inferInstance : Field
-          (LocalizedCompletion (HeightOneSpectrum.adicAbv K v) w))
-        (inferInstance : Field L')
-        (finitePlaceLocalArtinLocalizedAlgebra v w)
-        (inferInstance : Algebra K' L')
-        (finitePlaceLocalArtinFiniteDimensional v w)
-        (finitePlaceLocalArtinIsAbelianGalois v w hKLfinite)
-        (inferInstance : FiniteDimensional K' L')
-        (inferInstance : IsAbelianGalois K' L')
-        eK eL hcomm hExt (finitePlaceLocalArtinInput v x) htrivial
-  rw [hlocal, map_one]
 
  noncomputable def rationalCyclotomicPrincipalPrimeLocalizedRoot
     (p : Nat.Primes) (n : ℕ) :
@@ -1980,43 +1786,6 @@ private theorem rationalCyclotomicPrincipalPrime_localizedBase_commutes
         (rationalFinitePlaceCompletionRingEquivPadic p y) :=
       eL.commutes (rationalFinitePlaceCompletionRingEquivPadic p y)
 
-/-- Specialized ramified-prime bridge from the standard `p`-adic Artin value
-to the canonical global finite-place Artin value.  The localized completion
-and all of its dependent instances remain private to this provider. -/
-theorem
-    rationalCyclotomicPrincipalPrime_finitePlaceArtinOfExtension_eq_one_of_padic
-    (p : Nat.Primes) (n : ℕ)
-    (x : ((RayClass.rationalPrime p).adicCompletion ℚ)ˣ)
-    (htrivial :
-      abelianLocalArtinMonoidHom ℚ_[p.1]
-          (RationalCyclotomicPrincipalPrimePadicLevel p n)
-          (Units.map
-            (rationalFinitePlaceCompletionRingEquivPadic p).toMonoidHom
-            (finitePlaceLocalArtinInput (RayClass.rationalPrime p) x)) = 1) :
-    finitePlaceArtinMonoidHomOfExtension
-        (K := ℚ)
-        (L := KummerTheory.rationalCyclotomicLevel
-          (rationalCyclotomicPrincipalPrimeModulus p n))
-        (RayClass.rationalPrime p)
-        (rationalCyclotomicChosenFinitePlaceExtension
-          (rationalCyclotomicPrincipalPrimeModulus p n)
-          (RayClass.rationalPrime p)) x = 1 := by
-  exact
-    finitePlaceArtinMonoidHomOfExtension_eq_one_of_semilinear
-      (K := ℚ)
-      (L := KummerTheory.rationalCyclotomicLevel
-        (rationalCyclotomicPrincipalPrimeModulus p n))
-      (K' := ℚ_[p.1])
-      (L' := RationalCyclotomicPrincipalPrimePadicLevel p n)
-      (RayClass.rationalPrime p)
-      (rationalCyclotomicChosenFinitePlaceExtension
-        (rationalCyclotomicPrincipalPrimeModulus p n)
-        (RayClass.rationalPrime p))
-      (rationalFinitePlaceCompletionRingEquivPadic p)
-      (rationalCyclotomicLocalizedCompletionPadicAlgEquiv p n).toRingEquiv
-      (rationalCyclotomicPrincipalPrime_localizedBase_commutes p n)
-      (rationalFinitePlaceCompletionRingEquivPadic_semilinearValuationCompatible p)
-      x htrivial
 
 private theorem
     padicMultiplicativePrimitiveRoot_rationalPrimeUnitParameterGaloisAction
@@ -2468,16 +2237,6 @@ noncomputable def rationalCyclotomicArtinLocalExponent
     (rationalCyclotomicArtinBaseAbv q).Completion
     (Additive.ofMul (rationalCyclotomicArtinLocalInput q x))
 
-/-- The chosen finite-place Artin value in a rational cyclotomic level, with
-the completion and Galois instance arguments frozen at the provider boundary. -/
-noncomputable def rationalCyclotomicChosenFinitePlaceArtinValue
-    (m : ℕ+) (q : Nat.Primes)
-    (x : ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ) :
-    Gal(KummerTheory.rationalCyclotomicLevel m / ℚ) :=
-  chosenFinitePlaceArtinMonoidHom
-    (K := ℚ)
-    (L := KummerTheory.rationalCyclotomicLevel m)
-    (RayClass.rationalPrime q) x
 
 private theorem rationalCyclotomicArtinLocalArtin_eq
     (m : ℕ+) (q : Nat.Primes)
@@ -2951,48 +2710,7 @@ theorem galEquivZMod_chosenFinitePlaceArtinMonoidHom_of_not_dvd
     galEquivZMod_chosenArithmeticFrobenius m q hq]
   rfl
 
-/-- Away from the cyclotomic level, a finite-place input of normalized
-valuation zero has trivial cyclotomic character. -/
-theorem
-    galEquivZMod_chosenFinitePlaceArtinMonoidHom_eq_one_of_not_dvd_of_localExponent_eq_zero
-    (m : ℕ+) (q : Nat.Primes)
-    (hq : ¬ q.1 ∣ (m : ℕ))
-    (x : ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ)
-    (hzero : rationalCyclotomicArtinLocalExponent q x = 0) :
-    IsCyclotomicExtension.Rat.galEquivZMod
-        (m : ℕ) (KummerTheory.rationalCyclotomicLevel m)
-        (chosenFinitePlaceArtinMonoidHom
-          (K := ℚ)
-          (L := KummerTheory.rationalCyclotomicLevel m)
-          (RayClass.rationalPrime q) x) =
-      1 := by
-  rw [chosenFinitePlaceArtin_eq_chosenArithmeticFrobenius_zpow
-      m q hq x,
-    map_zpow, galEquivZMod_chosenArithmeticFrobenius m q hq,
-    hzero, zpow_zero]
 
-/-- Away from the cyclotomic level, valuation zero makes the chosen
-finite-place Artin symbol itself trivial.  Returning the Galois element,
-rather than an equality between cyclotomic characters with frozen instance
-arguments, lets downstream restriction arguments apply their own canonical
-character without a dependent instance transport. -/
-theorem
-    chosenFinitePlaceArtinMonoidHom_eq_one_of_not_dvd_of_localExponent_eq_zero
-    (m : ℕ+) (q : Nat.Primes)
-    (hq : ¬ q.1 ∣ (m : ℕ))
-    (x : ((RayClass.rationalPrime q).adicCompletion ℚ)ˣ)
-    (hzero : rationalCyclotomicArtinLocalExponent q x = 0) :
-    chosenFinitePlaceArtinMonoidHom
-        (K := ℚ)
-        (L := KummerTheory.rationalCyclotomicLevel m)
-        (RayClass.rationalPrime q) x =
-      1 := by
-  apply
-    (IsCyclotomicExtension.Rat.galEquivZMod
-      (m : ℕ) (KummerTheory.rationalCyclotomicLevel m)).injective
-  simpa only [map_one] using
-    galEquivZMod_chosenFinitePlaceArtinMonoidHom_eq_one_of_not_dvd_of_localExponent_eq_zero
-      m q hq x hzero
 
 /-- For a rational principal idele, the unramified finite-place
 cyclotomic Artin symbol at `q` is `q` raised to the negative usual

@@ -73,9 +73,7 @@ theorem localHigherUnitMap_eq_one_iff
   rw [Units.ext_iff]
   change Ideal.Quotient.mk I (localIntegralValue v y) =
       Ideal.Quotient.mk I 1 ↔ _
-  exact Ideal.Quotient.mk_eq_mk_iff_sub_mem
-    (I := I) (localIntegralValue v y)
-      (1 : v.adicCompletionIntegers K)
+  exact Ideal.Quotient.mk_eq_mk_iff_sub_mem ..
 
 /-- Local higher-unit groups are contravariant in their depth. -/
 theorem localHigherUnitGroup_antitone
@@ -97,7 +95,7 @@ theorem isOpen_localHigherUnitGroup
       ((localHigherUnitGroup v n :
         Subgroup (v.adicCompletion K)ˣ) :
           Set (v.adicCompletion K)ˣ) := by
-  let D : Subgroup (v.adicCompletion K)ˣ :=
+  let D :=
     (v.adicCompletionIntegers K).units
   let I : Ideal (v.adicCompletionIntegers K) :=
     (IsLocalRing.maximalIdeal
@@ -111,14 +109,10 @@ theorem isOpen_localHigherUnitGroup
   have : CompactSpace (v.adicCompletionIntegers K) :=
     Valued.integer.properSpace_iff_compactSpace_integer.mp inferInstance
   have hIOpen : IsOpen (I : Set (v.adicCompletionIntegers K)) := by
-    exact IsLocalRing.isOpen_maximalIdeal_pow
-      (v.adicCompletionIntegers K) n
-  have hWOpen : IsOpen W := by
-    exact hIOpen.preimage (htoInteger.sub continuous_const)
-  have hDOpen : IsOpen (D : Set (v.adicCompletion K)ˣ) := by
-    exact isOpen_finiteLocalUnits K v
-  have himageOpen :
-      IsOpen (Subtype.val '' W : Set (v.adicCompletion K)ˣ) :=
+    exact IsLocalRing.isOpen_maximalIdeal_pow ..
+  have hWOpen : IsOpen W := hIOpen.preimage (htoInteger.sub continuous_const)
+  have hDOpen : IsOpen (D : Set (v.adicCompletion K)ˣ) := isOpen_finiteLocalUnits K v
+  have himageOpen :=
     hDOpen.isOpenEmbedding_subtypeVal.isOpenMap W hWOpen
   have heq :
       (localHigherUnitGroup v n :
@@ -132,7 +126,7 @@ theorem isOpen_localHigherUnitGroup
       refine ⟨y, ?_, rfl⟩
       exact (localHigherUnitMap_eq_one_iff v n y).1 hy
     · rintro ⟨y, hyW, rfl⟩
-      let y' : (v.adicCompletionIntegers K).units := y
+      let y' := y
       apply (mem_localHigherUnitGroup_iff v n y).2
       refine ⟨y', rfl, ?_⟩
       exact (localHigherUnitMap_eq_one_iff v n y').2 hyW
@@ -238,28 +232,7 @@ theorem isOpen_infinitePositiveSubgroup (v : InfinitePlace K) :
     rw [htop]
     exact isOpen_univ
 
-/-- The positivity subgroup in the product of all infinite local groups is
-open. -/
-theorem isOpen_infinitePositivePiSubgroup :
-    IsOpen
-      ((Subgroup.pi Set.univ (fun v : InfinitePlace K ↦
-          infinitePositiveSubgroup v) :
-        Subgroup ((v : InfinitePlace K) → v.Completionˣ)) :
-          Set ((v : InfinitePlace K) → v.Completionˣ)) := by
-  change IsOpen
-    (Set.univ.pi fun v : InfinitePlace K ↦
-      (infinitePositiveSubgroup v : Set v.Completionˣ))
-  exact isOpen_set_pi Set.finite_univ fun v _ ↦
-    isOpen_infinitePositiveSubgroup v
 
-/-- The narrow archimedean congruence subgroup is open. -/
-theorem isOpen_narrowInfiniteCongruenceSubgroup :
-    IsOpen
-      ((narrowInfiniteCongruenceSubgroup (K := K) :
-        Subgroup (InfiniteIdeleGroup K)) :
-          Set (InfiniteIdeleGroup K)) :=
-  isOpen_infinitePositivePiSubgroup.preimage
-    ContinuousMulEquiv.piUnits.continuous
 
 /-- The archimedean congruence subgroup selected by a full modulus is open. -/
 theorem isOpen_infiniteCongruenceSubgroup (m : Modulus K) :
@@ -1087,23 +1060,6 @@ theorem modulusInsideClosedFiniteIndex_spec
   chosenModulusInside_spec H
     (H.isOpen_of_isClosed_of_finiteIndex hclosed)
 
-/-- A subgroup of the idele class group is closed of
-finite index exactly when it contains a ray congruence subgroup. -/
-theorem isClosed_and_finiteIndex_iff_exists_congruenceSubgroup_le
-    (H : Subgroup (IdeleClassGroup K)) :
-    (IsClosed (H : Set (IdeleClassGroup K)) ∧ H.FiniteIndex) ↔
-      ∃ m : Modulus K, m.congruenceSubgroup ≤ H := by
-  constructor
-  · rintro ⟨hHclosed, hHfinite⟩
-    let : H.FiniteIndex := hHfinite
-    exact exists_congruenceSubgroup_le_of_isOpen H
-      (H.isOpen_of_isClosed_of_finiteIndex hHclosed)
-  · rintro ⟨m, hm⟩
-    have hHopen : IsOpen (H : Set (IdeleClassGroup K)) :=
-      Subgroup.isOpen_mono hm (isOpen_congruenceSubgroup m)
-    have : H.FiniteIndex :=
-      Subgroup.finiteIndex_of_le hm
-    exact ⟨H.isClosed_of_isOpen hHopen, inferInstance⟩
 
 end RayClass
 

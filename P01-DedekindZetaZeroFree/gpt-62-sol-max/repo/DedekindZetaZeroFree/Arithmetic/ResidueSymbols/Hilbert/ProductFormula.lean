@@ -15,59 +15,64 @@ noncomputable section
 set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-theorem actualHilbert_roots (A : SArithmeticData F) (n : ℕ+)
+section
+
+variable (A : SArithmeticData F)
+include A
+
+theorem actualHilbert_roots (n : ℕ+)
     (hn : IsLocalRootOrder n) : (primitiveRoots (n : ℕ) F).Nonempty :=
   ⟨_, (mem_primitiveRoots n.pos).2 (A.primitive_root n hn)⟩
 
-def actualRawHilbert (A : SArithmeticData F) (n : ℕ+)
+def actualRawHilbert (n : ℕ+)
     (hn : IsLocalRootOrder n) : ClassFieldTheory.GlobalHilbertPairingFamily F n :=
   ClassFieldTheory.finitePlaceAdicHilbertPairingFamily F n (A.actualHilbert_roots n hn)
 
-def actualLocalHilbert (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+def actualLocalHilbert (v : HeightOneSpectrum (𝓞 F))
     (n : ℕ+) (hn : IsLocalRootOrder n) :
     PowerQuotient (v.adicCompletion F)ˣ n →*
       PowerQuotient (v.adicCompletion F)ˣ n →* rootsOfUnity n F :=
   A.finiteSymbolInverseTransport v n hn (A.actualRawHilbert n hn v)
 
-def actualLocalSymbol (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+def actualLocalSymbol (v : HeightOneSpectrum (𝓞 F))
     (n : ℕ+) (hn : IsLocalRootOrder n) (a b : (v.adicCompletion F)ˣ) :
     rootsOfUnity n F :=
   A.actualLocalHilbert v n hn
     (QuotientGroup.mk' (powMonoidHom (α := (v.adicCompletion F)ˣ) n).range a)
     (QuotientGroup.mk' (powMonoidHom (α := (v.adicCompletion F)ˣ) n).range b)
 
-def H_S (A : SArithmeticData F) (x y : A.G) : rootsOfUnity 6 F :=
+def H_S (x y : A.G) : rootsOfUnity 6 F :=
   ∏ v : {v // v ∈ A.Sf}, A.actualLocalSymbol v.val 6 (Or.inr (Or.inr rfl))
     (x.2 v) (y.2 v)
 
-theorem actualRawHilbert_isLocal (A : SArithmeticData F) (n : ℕ+)
+theorem actualRawHilbert_isLocal (n : ℕ+)
     (hn : IsLocalRootOrder n) (v : HeightOneSpectrum (𝓞 F)) :
     ClassFieldTheory.HilbertPairing.IsLocalHilbertPairing (A.actualRawHilbert n hn v) :=
   ClassFieldTheory.finitePlaceAdicHilbertPairingFamily_isLocallyHilbert F n
     (A.actualHilbert_roots n hn) v
 
-theorem actualLocalHilbert_local_value (A : SArithmeticData F)
+theorem actualLocalHilbert_local_value
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ+) (hn : IsLocalRootOrder n)
     (a b : PowerQuotient (v.adicCompletion F)ˣ n) :
     A.finiteRootsEquiv v n hn (A.actualLocalHilbert v n hn a b) =
       (A.actualRawHilbert n hn v a b)⁻¹ :=
   NormalizedSymbolTransport.map_inverseTransport _ _ _ _
 
-theorem actualLocalHilbert_skew (A : SArithmeticData F)
+theorem actualLocalHilbert_skew
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ+) (hn : IsLocalRootOrder n)
     (a b : PowerQuotient (v.adicCompletion F)ˣ n) :
     A.actualLocalHilbert v n hn a b = (A.actualLocalHilbert v n hn b a)⁻¹ :=
   NormalizedSymbolTransport.inverseTransport_skew _ _
     (A.actualRawHilbert_isLocal n hn v).2.1 a b
 
-theorem actualLocalHilbert_left_nondegenerate (A : SArithmeticData F)
+theorem actualLocalHilbert_left_nondegenerate
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ+) (hn : IsLocalRootOrder n)
     (a : PowerQuotient (v.adicCompletion F)ˣ n)
     (ha : ∀ b, A.actualLocalHilbert v n hn a b = 1) : a = 1 :=
   NormalizedSymbolTransport.inverseTransport_left_nondegenerate _ _
     (A.actualRawHilbert_isLocal n hn v).2.2.1.1 a ha
 
-theorem H_S_mul_left (A : SArithmeticData F) (x z y : A.G) :
+theorem H_S_mul_left (x z y : A.G) :
     A.H_S (x * z) y = A.H_S x y * A.H_S z y := by
   classical
   unfold H_S actualLocalSymbol
@@ -75,14 +80,14 @@ theorem H_S_mul_left (A : SArithmeticData F) (x z y : A.G) :
     Finset.prod_mul_distrib]
   exact Finset.prod_mul_distrib
 
-theorem H_S_mul_right (A : SArithmeticData F) (x y z : A.G) :
+theorem H_S_mul_right (x y z : A.G) :
     A.H_S x (y * z) = A.H_S x y * A.H_S x z := by
   classical
   unfold H_S actualLocalSymbol
   simp only [Prod.snd_mul, Pi.mul_apply, map_mul, Finset.prod_mul_distrib]
   exact Finset.prod_mul_distrib
 
-theorem H_S_skew (A : SArithmeticData F) (x y : A.G) :
+theorem H_S_skew (x y : A.G) :
     A.H_S x y = (A.H_S y x)⁻¹ := by
   classical
   calc
@@ -93,7 +98,7 @@ theorem H_S_skew (A : SArithmeticData F) (x y : A.G) :
       exact A.actualLocalHilbert_skew v.val 6 (Or.inr (Or.inr rfl)) _ _
     _ = _ := Finset.prod_inv_distrib _
 
-theorem actualLocalSymbol_diagonal (A : SArithmeticData F)
+theorem actualLocalSymbol_diagonal
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ+) (hn : IsLocalRootOrder n) (a b : Fˣ) :
     A.actualLocalSymbol v n hn
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)
@@ -104,7 +109,7 @@ theorem actualLocalSymbol_diagonal (A : SArithmeticData F)
   rw [map_inv]
   rfl
 
-theorem actualSextic_productFormula (A : SArithmeticData F) (a b : Fˣ) :
+theorem actualSextic_productFormula (a b : Fˣ) :
     (∏ᶠ v : HeightOneSpectrum (𝓞 F), A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl))
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom b)) = 1 := by
@@ -127,8 +132,14 @@ theorem actualSextic_productFormula (A : SArithmeticData F) (a b : Fˣ) :
       exact A.actualLocalSymbol_diagonal v 6 (Or.inr (Or.inr rfl)) a b
     _ = 1 := by rw [finprod_inv_distrib, hraw, inv_one]
 
-private theorem raw_exponent (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (m n : ℕ+)
+end
+
+section
+
+variable (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+include A
+
+private theorem raw_exponent (m n : ℕ+)
     (hm : IsLocalRootOrder m) (hn : IsLocalRootOrder n)
     (hmn : (m : ℕ) ∣ (n : ℕ)) (a b : (v.adicCompletion F)ˣ) :
     (A.actualRawHilbert m hm v (ClassFieldTheory.powerClass _ m a)
@@ -173,8 +184,7 @@ private theorem raw_exponent (A : SArithmeticData F)
       (Nat.cast_ne_zero.mpr m.ne_zero) (Nat.cast_ne_zero.mpr n.ne_zero)
       (hroots m hm) (hroots n hn) hmn (eu.symm a) (eu.symm b))
 
-theorem actualLocalSymbol_two_six (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :
+theorem actualLocalSymbol_two_six (a b : (v.adicCompletion F)ˣ) :
     (A.finiteRootsEquiv v 2 (Or.inl rfl)
       (A.actualLocalSymbol v 2 (Or.inl rfl) a b) : (v.adicCompletion F)ˣ) =
     (A.finiteRootsEquiv v 6 (Or.inr (Or.inr rfl))
@@ -186,8 +196,7 @@ theorem actualLocalSymbol_two_six (A : SArithmeticData F)
       exact A.raw_exponent v 2 6
         (Or.inl rfl) (Or.inr (Or.inr rfl)) (by decide) a b)
 
-theorem actualLocalSymbol_three_six (A : SArithmeticData F)
-    (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :
+theorem actualLocalSymbol_three_six (a b : (v.adicCompletion F)ˣ) :
     (A.finiteRootsEquiv v 3 (Or.inr (Or.inl rfl))
       (A.actualLocalSymbol v 3 (Or.inr (Or.inl rfl)) a b) : (v.adicCompletion F)ˣ) =
     (A.finiteRootsEquiv v 6 (Or.inr (Or.inr rfl))
@@ -199,7 +208,7 @@ theorem actualLocalSymbol_three_six (A : SArithmeticData F)
       exact A.raw_exponent v 3 6 (Or.inr (Or.inl rfl))
         (Or.inr (Or.inr rfl)) (by decide) a b)
 
-private theorem outside (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+private theorem outside
     (hv : v ∉ A.Sf) (a b : A.U) :
     A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl))
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a.val)
@@ -222,6 +231,8 @@ private theorem outside (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     exact (congrArg (KummerTheory.nthRootsSubgroupEquivRootsOfUnity F 6) h).trans
       (map_one _)
   exact (congrArg Inv.inv (hf.trans hh)).trans (inv_one)
+
+end
 
 theorem H_S_sunit_isotropy (A : SArithmeticData F) (a b : A.U) :
     A.H_S (A.diagonal a.val) (A.diagonal b.val) = 1 := by

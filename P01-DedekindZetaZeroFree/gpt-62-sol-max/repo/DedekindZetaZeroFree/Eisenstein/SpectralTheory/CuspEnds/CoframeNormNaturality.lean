@@ -2,6 +2,8 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSector.FriedrichsLaplacian
 
+public import DedekindZetaZeroFree.Geometry.Hyperbolic.Cotangent.DifferentialCoframe
+
 @[expose] public section
 
 noncomputable section
@@ -10,119 +12,7 @@ open MeasureTheory Topology
 
 namespace DedekindZetaZeroFree.KPContCuspCoframeNaturality
 
-private theorem sum_real_basis {I : Type*} [Fintype I] [DecidableEq I]
-    (b : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] ℝ) :
-    ∑ i, (L (b i)) ^ 2 = ‖(InnerProductSpace.toDual ℝ (EuclideanSpace ℝ I)).symm L‖ ^ 2 := by
-  simpa only [InnerProductSpace.toDual_symm_apply] using
-    b.sum_sq_inner_left ((InnerProductSpace.toDual ℝ (EuclideanSpace ℝ I)).symm L)
-
-private theorem sum_complex_basis {I : Type*} [Fintype I] [DecidableEq I]
-    (b c : OrthonormalBasis I ℝ (EuclideanSpace ℝ I)) (L : EuclideanSpace ℝ I →L[ℝ] ℂ) :
-    ∑ i, ‖L (b i)‖ ^ 2 = ∑ i, ‖L (c i)‖ ^ 2 := by
-  have hRe := (sum_real_basis b (Complex.reCLM.comp L)).trans
-    (sum_real_basis c (Complex.reCLM.comp L)).symm
-  have hIm := (sum_real_basis b (Complex.imCLM.comp L)).trans
-    (sum_real_basis c (Complex.imCLM.comp L)).symm
-  simp only [ContinuousLinearMap.comp_apply, Complex.reCLM_apply, Complex.imCLM_apply] at hRe hIm
-  simp only [Complex.sq_norm, Complex.normSq_apply, Finset.sum_add_distrib]
-  simpa only [pow_two] using congrArg₂ (· + ·) hRe hIm
-
-private theorem differential_frame (d : ℕ) (f : HyperbolicChart.Space d → ℂ) (x : HyperbolicChart.Space d) (k : Fin d × Fin 3) :
-    (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) k =
-      fderiv ℝ f x (CotangentLogCoframe.H d x
-        (EuclideanSpace.basisFun _ ℝ k)) := by
-  rcases k with ⟨i, k⟩
-  fin_cases k
-  · have hh : CotangentLogCoframe.H d x (EuclideanSpace.basisFun _ ℝ (i, (0 : Fin 3))) =
-        HyperbolicChart.coordinateVector d i 2 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-    change (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) (i, (0 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H d x
-        (EuclideanSpace.basisFun _ ℝ (i, (0 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative]
-  · have hh : CotangentLogCoframe.H d x (EuclideanSpace.basisFun _ ℝ (i, (1 : Fin 3))) =
-        Real.exp (x (i, 2)) • HyperbolicChart.coordinateVector d i 0 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-      split_ifs with h <;> simp_all
-    change (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) (i, (1 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H d x
-        (EuclideanSpace.basisFun _ ℝ (i, (1 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative, RCLike.real_smul_eq_coe_mul]
-  · have hh : CotangentLogCoframe.H d x (EuclideanSpace.basisFun _ ℝ (i, (2 : Fin 3))) =
-        Real.exp (x (i, 2)) • HyperbolicChart.coordinateVector d i 1 := by
-      ext ⟨j, k⟩
-      fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C,
-        HyperbolicChart.coordinateVector, EuclideanSpace.basisFun_apply, eq_comm]
-      split_ifs with h <;> simp_all
-    change (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) (i, (2 : Fin 3)) =
-      fderiv ℝ f x (CotangentLogCoframe.H d x
-        (EuclideanSpace.basisFun _ ℝ (i, (2 : Fin 3))))
-    rw [hh]
-    simp [CotangentLogCoframe.j, HyperbolicChart.differential,
-      HyperbolicChart.coordinateDerivative, RCLike.real_smul_eq_coe_mul]
-
-private theorem differential_norm_isometry (d : ℕ)
-    (ψ : HyperbolicChart.Space d → HyperbolicChart.Space d)
-    (x : HyperbolicChart.Space d)
-    (hψ : DifferentiableAt ℝ ψ x)
-    (hm : ∀ v w, HyperbolicChart.metric d (ψ x)
-      (fderiv ℝ ψ x v) (fderiv ℝ ψ x w) = HyperbolicChart.metric d x v w)
-    (f : HyperbolicChart.Space d → ℂ) (hf : DifferentiableAt ℝ f (ψ x)) :
-    (∑ i, ∑ k, ‖HyperbolicChart.differential d (f ∘ ψ) x i k‖ ^ 2) =
-    ∑ i, ∑ k, ‖HyperbolicChart.differential d f (ψ x) i k‖ ^ 2 := by
-  let Q : EuclideanSpace ℝ (Fin d × Fin 3) →L[ℝ] EuclideanSpace ℝ (Fin d × Fin 3) :=
-    (CotangentLogCoframe.C d (ψ x)).toContinuousLinearMap.comp
-      ((fderiv ℝ ψ x).comp (CotangentLogCoframe.H d x).toContinuousLinearMap)
-  have hQ : ∀ v w, inner ℝ (Q v) (Q w) = inner ℝ v w := by
-    intro v w
-    change inner ℝ (CotangentLogCoframe.C d (ψ x)
-      (fderiv ℝ ψ x (CotangentLogCoframe.H d x v)))
-      (CotangentLogCoframe.C d (ψ x) (fderiv ℝ ψ x (CotangentLogCoframe.H d x w))) = _
-    rw [CotangentLogCoframe.inner_C, hm, ← CotangentLogCoframe.inner_C]
-    simp [CotangentLogCoframe.H]
-  let q : EuclideanSpace ℝ (Fin d × Fin 3) ≃ₗᵢ[ℝ] EuclideanSpace ℝ (Fin d × Fin 3) :=
-    LinearIsometryEquiv.ofSurjective
-      {toLinearMap := Q.toLinearMap,
-       norm_map' := (LinearMap.norm_map_iff_inner_map_map Q).2 hQ}
-      (by
-        apply LinearMap.surjective_of_injective
-        exact (show EuclideanSpace ℝ (Fin d × Fin 3) →ₗᵢ[ℝ] EuclideanSpace ℝ (Fin d × Fin 3) from
-          {toLinearMap := Q.toLinearMap,
-           norm_map' := (LinearMap.norm_map_iff_inner_map_map Q).2 hQ}).injective)
-  let L := (fderiv ℝ f (ψ x)).comp (CotangentLogCoframe.H d (ψ x)).toContinuousLinearMap
-  have hh : ∀ v, fderiv ℝ ψ x (CotangentLogCoframe.H d x v) =
-      CotangentLogCoframe.H d (ψ x) (q v) := by
-    intro v
-    apply (CotangentLogCoframe.C d (ψ x)).injective
-    simp only [CotangentLogCoframe.H, ContinuousLinearEquiv.apply_symm_apply]
-    rfl
-  have hsum := sum_complex_basis ((EuclideanSpace.basisFun (Fin d × Fin 3) ℝ).map q)
-    (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ) L
-  rw [Fintype.sum_prod_type, Fintype.sum_prod_type] at hsum
-  convert hsum using 1
-  · apply Finset.sum_congr rfl
-    intro i _
-    apply Finset.sum_congr rfl
-    intro k _
-    rw [← CotangentLogCoframe.j_apply d (HyperbolicChart.differential d (f ∘ ψ) x) i k,
-      differential_frame, fderiv_comp x hf hψ]
-    simp only [ContinuousLinearMap.comp_apply, hh, OrthonormalBasis.map_apply, L]
-    rfl
-  · apply Finset.sum_congr rfl
-    intro i _
-    apply Finset.sum_congr rfl
-    intro k _
-    rw [← CotangentLogCoframe.j_apply d (HyperbolicChart.differential d f (ψ x)) i k,
-      differential_frame]
-    rfl
+open CotangentLogCoframe (differential_norm_isometry)
 
  def rationalCoordinates (F : Type) [Field F] [NumberField F]
     (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F))
@@ -198,40 +88,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem shrink_at (i : Fin (H.atlas U).componentCount) (p : KPCuspGenuineMonodromy.SymmetricSpace F) :
-    ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
-  let O := Classical.choice (orbifoldChart_exists F ζ hζ U R P H i p)
-  let : Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) p) :=
-    chart_stabilizer_finite F ζ hζ U R P H i p O
-  let := Fintype.ofFinite (MulAction.stabilizer (Component F ζ hζ U R P H i) p)
-  obtain ⟨W,hWo,hpW,hWsub,hWc⟩ := exists_open_between_and_isCompact_closure
-    (isCompact_singleton (x := p)) O.isOpen (Set.singleton_subset_iff.mpr O.center_mem)
-  let V := ⋂ g : MulAction.stabilizer (Component F ζ hζ U R P H i) p,
-    (fun x : KPCuspGenuineMonodromy.SymmetricSpace F => (g.val : KPCuspArithmetic.PGL2 F) • x) ⁻¹' W
-  have hopen : IsOpen V := isOpen_iInter_of_finite fun g =>
-    hWo.preimage (KPCuspSiegel.continuous_action F g.val.val)
-  have hsub : V ⊆ W := by
-    intro x hx
-    simpa using Set.mem_iInter.mp hx (1 : MulAction.stabilizer (Component F ζ hζ U R P H i) p)
-  have hp : p ∈ V := by
-    apply Set.mem_iInter.mpr; intro g
-    change g.val • p ∈ W
-    rw [MulAction.mem_stabilizer_iff.mp g.property]
-    exact hpW (Set.mem_singleton p)
-  refine ⟨⟨i,p,O,V,hopen,hWc.of_isClosed_subset isClosed_closure (closure_mono hsub),
-    (closure_mono hsub).trans hWsub,?_⟩,rfl,rfl,hp⟩
-  intro g
-  ext x; constructor
-  · rintro ⟨y,hy,rfl⟩
-    apply Set.mem_iInter.mpr; intro h
-    simpa only [Set.mem_preimage, Subgroup.coe_mul, ← mul_smul] using Set.mem_iInter.mp hy (h*g)
-  · intro hx
-    refine ⟨(g.val : KPCuspArithmetic.PGL2 F)⁻¹ • x,?_, smul_inv_smul _ _⟩
-    apply Set.mem_iInter.mpr; intro h
-    simpa only [Set.mem_preimage, Subgroup.coe_mul, Subgroup.coe_inv, ← mul_smul]
-      using Set.mem_iInter.mp hx (h*g⁻¹)
-
-private theorem pairing_at_arch (f : S_U F ζ hζ U R P H)
+theorem pairing_at_arch (f : S_U F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (y : KPCuspGenuineMonodromy.SymmetricSpace F) :
     (∑ j : Fin (d F), ∑ k : Fin 3,
       ‖HyperbolicChart.differential (d F)
@@ -239,7 +96,7 @@ private theorem pairing_at_arch (f : S_U F ζ hζ U R P H)
         (labeledAInv (placeEquiv F ζ hζ) y) j k‖ ^ 2) =
     (∑ j : Fin (d F), KPContActualSectorFriedrichsSynthesis.placePair (D_U f) (D_U f) j
       ((H.atlas U).components ⟨i, Quotient.mk _ y⟩)).re := by
-  obtain ⟨a, hi, hcenter, hy⟩ := shrink_at (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i y
+  obtain ⟨a, hi, hcenter, hy⟩ := KPContActualCotangentCountableShrinking.Construction.shrink_exists (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i y
   let x := labeledAInv (placeEquiv F ζ hζ) y
   have hA : labeledA (placeEquiv F ζ hζ) x = y := by
     funext k

@@ -67,23 +67,23 @@ theorem norm_rawinitialRowIntegral_le (u : Frequency D.recipe) (Z : ℝ) :
   rw [norm_mul]
   exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (norm_nonneg _)
 
-theorem omittedSum_norm_le_scale :
+theorem nonprincipalSum_norm_le_scale :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ Z : ℝ, 0 < Z →
-      ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤ C * (Z / 2) ^ Einit := by
+      ‖nonprincipalSum D Z‖ ≤ C * (Z / 2) ^ Einit := by
   have hsum := rawInitialIntegrand_norm_summable D 2 (by norm_num)
   set c : ℝ := ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖
-  refine ⟨c * ∑' f : TwistedProbeRowDefinitions.TwistedRow D,
+  refine ⟨c * ∑' f : NonprincipalFrequency D,
     ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D f.val 2 t‖,
     mul_nonneg (norm_nonneg _) (tsum_nonneg fun f => integral_nonneg fun t => norm_nonneg _),
     fun Z hZ => ?_⟩
-  have hsub : Summable (fun f : TwistedProbeRowDefinitions.TwistedRow D =>
+  have hsub : Summable (fun f : NonprincipalFrequency D =>
       ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D f.val 2 t‖) :=
     hsum.comp_injective Subtype.val_injective
-  have hmaj : Summable (fun f : TwistedProbeRowDefinitions.TwistedRow D =>
+  have hmaj : Summable (fun f : NonprincipalFrequency D =>
       c * ((Z / 2) ^ Einit * ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D f.val 2 t‖)) :=
     (hsub.mul_left ((Z / 2) ^ Einit)).mul_left c
-  rw [omittedSum_eq_twisted D Z hZ]
-  have hle : ∀ f : TwistedProbeRowDefinitions.TwistedRow D,
+  simp only [nonprincipalSum, initialRowIntegral_eq D _ Z hZ]
+  have hle : ∀ f : NonprincipalFrequency D,
       ‖rawinitialRowIntegral D f.val Z‖ ≤
         c * ((Z / 2) ^ Einit * ∫ t : ℝ × ℝ × ℝ, ‖rawInitialIntegrand D f.val 2 t‖) := by
     intro f
@@ -95,10 +95,10 @@ theorem omittedSum_norm_le_scale :
   apply le_of_eq
   ring
 
-theorem omittedSum_norm_le :
+theorem nonprincipalSum_norm_le :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →
-      ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤ C * Z ^ Scales.kernelExponent 4 4 2 := by
-  obtain ⟨C, hC, h⟩ := omittedSum_norm_le_scale D
+      ‖nonprincipalSum D Z‖ ≤ C * Z ^ Scales.kernelExponent 4 4 2 := by
+  obtain ⟨C, hC, h⟩ := nonprincipalSum_norm_le_scale D
   have h2 : (0 : ℝ) < 2 ^ Einit := Real.rpow_pos_of_pos (by norm_num) _
   refine ⟨(C + 1) / 2 ^ Einit, by positivity, fun Z hZ => ?_⟩
   have hZ0 : 0 < Z := by linarith
@@ -110,9 +110,9 @@ theorem omittedSum_norm_le :
   apply div_le_div_of_nonneg_right _ h2.le
   nlinarith
 
-theorem omittedSum_locally_bounded (T : ℝ) (hT : 2 ≤ T) :
-    ∃ M : ℝ, ∀ Z : ℝ, 2 ≤ Z → Z ≤ T → ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤ M := by
-  obtain ⟨C, hC, h⟩ := omittedSum_norm_le D
+theorem nonprincipalSum_locally_bounded (T : ℝ) (hT : 2 ≤ T) :
+    ∃ M : ℝ, ∀ Z : ℝ, 2 ≤ Z → Z ≤ T → ‖nonprincipalSum D Z‖ ≤ M := by
+  obtain ⟨C, hC, h⟩ := nonprincipalSum_norm_le D
   refine ⟨C * T ^ Scales.kernelExponent 4 4 2, fun Z hZ hZT => (h Z hZ).trans ?_⟩
   have hE : 0 < Scales.kernelExponent 4 4 2 := Einit_pos
   exact mul_le_mul_of_nonneg_left
@@ -139,11 +139,11 @@ theorem bound_all_of_bound_ge {f : ℝ → ℂ} {p Z₀ C : ℝ} (hp : 0 < p) (h
     have := le_abs_self M
     nlinarith [le_max_right C 0, le_max_left C 0]
 
-theorem omittedSum_bound_all_of_bound_ge {p Z₀ C : ℝ} (hp : 0 < p) (hZ₀ : 2 ≤ Z₀)
-    (hbd : ∀ Z : ℝ, Z₀ ≤ Z → ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤ C * Z ^ p) :
+theorem nonprincipalSum_bound_all_of_bound_ge {p Z₀ C : ℝ} (hp : 0 < p) (hZ₀ : 2 ≤ Z₀)
+    (hbd : ∀ Z : ℝ, Z₀ ≤ Z → ‖nonprincipalSum D Z‖ ≤ C * Z ^ p) :
     ∃ C' : ℝ, 0 < C' ∧ ∀ Z : ℝ, 2 ≤ Z →
-      ‖PoissonFrequencyDecomposition.omittedSum D Z‖ ≤ C' * Z ^ p :=
-  bound_all_of_bound_ge hp hZ₀ (omittedSum_locally_bounded D) hbd
+      ‖nonprincipalSum D Z‖ ≤ C' * Z ^ p :=
+  bound_all_of_bound_ge hp hZ₀ (nonprincipalSum_locally_bounded D) hbd
 
 end
 

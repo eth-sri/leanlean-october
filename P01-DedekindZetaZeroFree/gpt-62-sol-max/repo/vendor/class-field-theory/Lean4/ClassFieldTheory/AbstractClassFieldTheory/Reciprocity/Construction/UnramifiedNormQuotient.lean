@@ -42,12 +42,15 @@ variable {G : Type u} [Group G] [TopologicalSpace G]
 
 namespace DegreeData
 
+section
+
+variable (D : DegreeData G) (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hnormal : (extensionSubgroup K.field L hLK).Normal]
+include D K hnormal
+
 /-- The degree-one lift `φ_K` used in the unramified norm-quotient equivalence. -/
-def chosenUnramifiedFrobeniusLift
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal] :
+def chosenUnramifiedFrobeniusLift :
     D.FrobeniusElements K L hLK := by
   let φ : K.field.toSubgroup := Classical.choose
     (D.normalizedDegree_surjective K
@@ -65,11 +68,7 @@ Establishes the identity `D.frobeniusExponent K L hLK (D.chosenUnramifiedFrobeni
 1`.
 -/
 @[simp]
-theorem chosenUnramifiedFrobeniusLift_exponent
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal] :
+theorem chosenUnramifiedFrobeniusLift_exponent :
     D.frobeniusExponent K L hLK
       (D.chosenUnramifiedFrobeniusLift K L hLK) = 1 := by
   apply proCIntegerOne_pow_nat_injective
@@ -92,11 +91,7 @@ theorem chosenUnramifiedFrobeniusLift_exponent
     _ = (Multiplicative.ofAdd (1 : ZHat)) ^ 1 := (pow_one _).symm
 
 /-- The arithmetic Frobenius `φ_{L/K}`, obtained by restricting `φ_K`. -/
-def unramifiedFrobenius
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal] :
+def unramifiedFrobenius :
     K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK :=
   D.frobeniusRestriction K L hLK
     (D.chosenUnramifiedFrobeniusLift K L hLK)
@@ -104,10 +99,6 @@ def unramifiedFrobenius
 /-- In an unramified extension, arithmetic Frobenius generates the actual
 finite Galois quotient. -/
 theorem unramifiedFrobenius_generates
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
@@ -129,10 +120,6 @@ theorem unramifiedFrobenius_generates
 /-- Additive form of the preceding generator statement, matching the
 domain of the reciprocity homomorphism in the finite reciprocity equivalence. -/
 theorem unramifiedFrobenius_zmultiples_eq_top
-    (D : DegreeData G) (K : FiniteResidueAbstractField D)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
@@ -150,6 +137,8 @@ theorem unramifiedFrobenius_zmultiples_eq_top
     change Additive.ofMul
       ((D.unramifiedFrobenius K L hLK) ^ m) = x
     exact congrArg Additive.ofMul hm
+
+end
 
 end DegreeData
 
@@ -186,11 +175,14 @@ private theorem valueModulo_eq_zero_iff
         ((QuotientAddGroup.mk' (nsmulWithin v.valueGroup n)) (n • w)) = 0
     rw [hq, map_zero]
 
- def unramifiedValuationHom
-    (v : ValuationData D A) (K : FiniteAbstractField G)
-    (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] :
+section
+
+variable (v : ValuationData D A) (K : FiniteAbstractField G) (L : ClosedSubgroup G)
+  (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
+include v
+
+ def unramifiedValuationHom :
     ambientFixedAddSubgroup A K.field →+
       ZMod ((FiniteAbstractFieldExtension.ofInclusion L K hLK).degree : ℕ) :=
   (v.valueModulo
@@ -199,10 +191,6 @@ private theorem valueModulo_eq_zero_iff
     (v.valuationAt K)
 
 theorem finiteNormSubgroup_le_unramifiedValuationHom_ker
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     finiteNormSubgroup A K.field L hLK ≤
@@ -228,10 +216,6 @@ theorem finiteNormSubgroup_le_unramifiedValuationHom_ker
 
 /-- The valuation map induced on the finite norm quotient. -/
 def unramifiedNormQuotientValuation
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     FiniteNormQuotient A K.field L hLK →+
@@ -246,10 +230,6 @@ K.field L hLK a) = v.unramifiedValuationHom K L hLK a`.
 -/
 @[simp]
 theorem unramifiedNormQuotientValuation_finiteNormClass
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D)
     (a : ambientFixedAddSubgroup A K.field) :
@@ -263,10 +243,6 @@ The specified map is surjective: `Function.Surjective (v.unramifiedNormQuotientV
 hUnramified)`.
 -/
 theorem unramifiedNormQuotientValuation_surjective
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
     Function.Surjective
@@ -284,13 +260,18 @@ theorem unramifiedNormQuotientValuation_surjective
   rw [ha]
   exact hc
 
+end
+
+section
+
+variable (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
+  (K : FiniteAbstractField G) (L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.field.toSubgroup)
+  [hnormal : (extensionSubgroup K.field L hLK).Normal]
+include v hAxiom hnormal
+
 /-- The unit argument: modulo valuation, the unit-cohomology axiom makes the
 remaining unit an actual norm. -/
 theorem unramifiedNormQuotientValuation_injective
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     [hfinite : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
@@ -378,10 +359,6 @@ theorem unramifiedNormQuotientValuation_injective
 /-- **the unramified norm-quotient equivalence (valuation part).**  For finite unramified `L / K`,
 valuation induces `A_K / N_{L/K}A_L ≃ ℤ/[L:K]ℤ`. -/
 def unramifiedReciprocity_valuationEquiv
-    (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hnormal : (extensionSubgroup K.field L hLK).Normal]
     [Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
     (hUnramified :
       (DegreeData.AbstractExtension.mk L K.field hLK).IsUnramified D) :
@@ -392,6 +369,8 @@ def unramifiedReciprocity_valuationEquiv
     ⟨v.unramifiedNormQuotientValuation_injective hAxiom K L hLK
         hUnramified,
       v.unramifiedNormQuotientValuation_surjective K L hLK hUnramified⟩
+
+end
 
 /-- A prime class has exact additive order `[L : K]` in an unramified
 norm quotient.  The lower bound is read after reduction in `ℤ̂/nℤ̂`; the

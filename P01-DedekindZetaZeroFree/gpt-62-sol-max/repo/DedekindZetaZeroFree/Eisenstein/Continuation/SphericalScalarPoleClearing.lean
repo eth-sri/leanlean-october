@@ -12,7 +12,6 @@ open MeasureTheory Filter
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.SphericalScalarProducer
 open KPContActualSphericalRightFieldIdentification KPContActualCutoffPlusClearedGerm
 open _root_.DedekindZetaZeroFree renaming canonicalRealization → canonicalRealization
-open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 open _root_.DedekindZetaZeroFree.KPContinuation.NativeWordCompactHolomorphy renaming actualRightWord_compact_holomorphy → actualRightWord_compact_holomorphy
 open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.LiteralWordChamber renaming lift_eq → lift_eq
 set_option maxHeartbeats 1600000
@@ -98,7 +97,7 @@ local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
       KPCutoffSource.SmoothCuspCutoff T := fun _ => cutoff T
   have hf : DifferentiableOn ℂ (fun _ : ℂ => (1 : ℂ)) KPContinuation.spectralDomain :=
     differentiableOn_const _
-  obtain ⟨buffer, source, domain, W, hW, ⟨formula⟩⟩ :=
+  obtain ⟨buffer, source, W, hW, formula⟩ :=
     kp_cont_actual_chamber_formula_equality F ζ hζ C R.adelicHaar R.adelic_isHaar R rfl
       P H U realization ι hι (fun _ => 1) hf T hT χ
   let Z : ℂ → Smooth := E F ζ hζ C R P H U KPContinuation.spectralDomain
@@ -107,21 +106,20 @@ local notation "G" => KPContSectorCoveredQuotientVocabulary.ActualCover F ζ hζ
     source.descent.cutoff W
   refine ⟨Z, ?_, ?_⟩
   · intro s hs g
-    rw [formula.group_equal s hs g]
+    rw [formula s hs g]
     unfold KPContActualChamberNormalSeries.E
     congr 1
     funext q
     unfold KPContActualChamberNormalSeries.term KPContActualSphericalFlatStage.L
       KPContFlatCommonLevelKernel.L
     simp [ι, lift_eq]
-  · have hStage := stageConclusions F ζ hζ C R P H U ι hι
-    have hHilb := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
-      R.adelicHaar R.adelic_isHaar rfl realization ι hι hStage
+  · have hHilb := kp_cont_actual_hilbert_simple_germs F ζ hζ C R P H U
+      R.adelicHaar R.adelic_isHaar rfl realization ι hι
       KPContinuation.spectralDomain KPContinuation.spectralDomain_isOpen Set.Subset.rfl
       (fun _ => 1) hf buffer χ source
     intro c hc
     obtain ⟨r, hr, hb, hi, w, hw, he, _⟩ := hHilb.simple_germs c hc
-    obtain ⟨N⟩ := hW.continuation.every_germ c hc r hr hb hi w hw he
+    obtain ⟨N⟩ := hW.every_germ c hc r hr hb hi w hw he
     exact ⟨r, hr, hb, numerator F ζ hζ C R P H U source.descent.cutoff c N.W,
       N.numerator_data, N.punctured_group⟩
 

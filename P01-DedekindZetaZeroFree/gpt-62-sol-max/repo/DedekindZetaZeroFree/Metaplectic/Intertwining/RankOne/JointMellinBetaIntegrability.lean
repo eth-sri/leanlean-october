@@ -109,7 +109,7 @@ theorem mellin_integrable
   have hmax : e (max γ 1) ≠ 0 := by
     have hh : (0 : ValuativeRel.ValueGroupWithZero K) < max γ 1 :=
       lt_of_lt_of_le zero_lt_one (le_max_right _ _)
-    simpa using (e.toOrderIso.strictMono hh).ne'
+    simp
   let shell : ℕ → Set Kˣ := fun n => {x | A (x : K) = q ^ (M - (n : ℤ))}
   have hm (n : ℕ) : MeasurableSet (shell n) :=
     (hA.comp he.measurable) (measurableSet_singleton _)
@@ -134,7 +134,7 @@ theorem mellin_integrable
     exact mul_neg_of_neg_of_pos (neg_neg_of_pos hs) (Real.log_pos hq))
   have hw (n : ℕ) : ‖w n‖ = Real.exp (s.re * ((M : ℝ) * Real.log q)) * r ^ n := by
     rw [Complex.norm_exp]
-    simp only [w, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
+    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
       Real.log_zpow, Int.cast_sub, Int.cast_natCast]
     rw [show s.re * (((M : ℝ) - (n : ℝ)) * Real.log q) =
       s.re * ((M : ℝ) * Real.log q) + (n : ℝ) * (-s.re * Real.log q) by ring,
@@ -164,7 +164,7 @@ theorem mellin_integrable
     exact hx (by simp [f, hh]))
   let k : ℤ := WithZero.log (e (ValuativeRel.valuation K (x : K)))
   have hek : e (ValuativeRel.valuation K (x : K)) ≠ 0 := by
-    simpa [e] using (Valuation.ne_zero_iff _).mpr x.ne_zero
+    simp [e]
   have hk : k ≤ M := (WithZero.log_le_log hek hmax).mpr
     (e.toOrderIso.monotone ((hγ ⟨(x : K), hxφ, rfl⟩).trans (le_max_left _ _)))
   refine Set.mem_iUnion.mpr ⟨(M - k).toNat, ?_⟩

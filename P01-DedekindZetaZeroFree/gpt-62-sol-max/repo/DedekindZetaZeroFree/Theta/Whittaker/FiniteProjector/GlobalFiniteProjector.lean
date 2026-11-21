@@ -51,7 +51,7 @@ theorem selected_root_fixed_near_zero {Q : AdmissibleFlatSources R}
       (actualFiniteAction R D q.val
         (KPPGLLocalCover.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q.val) t)
           (x ⟨Sum.inr q.val, hq⟩))))) g = _ at hi
-  rw [ht, Function.update_eq_self, ExteriorWhittakerValues.StoredWhittaker.finite_root_injection R] at hi
+  rw [ht, Function.update_eq_self, MomentSources.finite_root_injection R] at hi
   exact hi.symm
 
 theorem common_root_sublevel {Q : AdmissibleFlatSources R} {T : Realization R Q}

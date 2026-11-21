@@ -24,23 +24,6 @@ theorem continuous_pregroupingSheet_integrable (N : TraceHaarTransport R)
     (μ := kernelHaar R.A w N.groupHaar) (pregroupingDomain R.A).compact_closure).mono_set
       subset_closure
 
-theorem frequency_sheet_integrable (N : TraceHaarTransport R)
-    {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
-    (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
-    (ξ : ThetaReflectionData.Frequency R.A)
-    (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
-    (l : PositiveAxis) :
-    letI := N.groupHaar_isHaar;
-    Integrable (fun z : Sheet R.A l => ‖digitWeight R m d *
-      frequencyValue R Q T v ξ (signedArgument R m b z.val d)‖)
-      (pregroupingSheetHaar R.A P.v₀ N.groupHaar l) := by
-  letI := N.groupHaar_isHaar
-  have hc : Continuous (fun z : Sheet R.A l => digitWeight R m d *
-      frequencyValue R Q T v ξ (signedArgument R m b z.val d)) :=
-    continuous_const.mul ((frequencyValue_continuous R T v ξ).comp
-      ((DigitMasks.signedArgument_continuous R m b d).comp continuous_subtype_val))
-  exact (continuous_pregroupingSheet_integrable R N P.v₀ l _ hc).norm
-
 theorem orbit_sheet_integrable (N : TraceHaarTransport R)
     {Q : AdmissibleFlatSources R} (T : Realization R Q) (P : Packet R Q)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)

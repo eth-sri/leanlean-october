@@ -22,7 +22,7 @@ private lemma cfc_eigen (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (r : ℝ)
     have hi := (ContinuousLinearMap.isUnit_iff_bijective.mp h).1
     apply hu
     apply hi
-    simpa [he, Algebra.algebraMap_eq_smul_one] using (show (r • (1 : H →L[ℂ] H) - B) u = 0 by simp [he])
+    simp [he, Algebra.algebraMap_eq_smul_one]
   let x : spectrum ℝ B := ⟨r, hr⟩
   have hh : ∀ g : C(spectrum ℝ B, ℝ), (cfcHom hB g) u = g x • u := by
     intro g

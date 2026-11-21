@@ -8,7 +8,7 @@ open scoped NumberField Classical BigOperators
 
 open NumberField IsDedekindDomain
 
-namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+namespace DedekindZetaZeroFree.KPGlobalCubicIdelePairing
 
 noncomputable section
 
@@ -26,4 +26,4 @@ end CubicIdeleDecomposition
 
 end
 
-end DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+end DedekindZetaZeroFree.KPGlobalCubicIdelePairing

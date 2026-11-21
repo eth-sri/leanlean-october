@@ -137,41 +137,18 @@ theorem chart_solution_difference_jet_estimate {n : ℕ} (D : LineChart n)
   have hCD : Metric.closedBall C.center C.radius ⊆ D.outer.carrier :=
     Metric.closedBall_subset_ball (by dsimp [C, B]; linarith)
   have hsub : C.carrier ⊆ D.outer.carrier := Metric.ball_subset_closedBall.trans hCD
-  let DR : KPContLocalEnergy.SobolevEnergyEstimates.Raw.Coefficients D.outer D.densityLower
-      D.densityUpper D.ellipticityLower D.ellipticityUpper :=
-    { density := D.coefficients.density
-      matrix := D.coefficients.matrix
-      density_smooth := D.coefficients.density_smooth
-      matrix_smooth := D.coefficients.matrix_smooth
-      density_bounds := D.coefficients.density_bounds
-      symmetric := D.coefficients.symmetric
-      ellipticity := D.coefficients.ellipticity
-      upper_bound := D.coefficients.upper_bound }
-  let DC : Coefficients C D.densityLower D.densityUpper
-      D.ellipticityLower D.ellipticityUpper :=
-    { density := D.coefficients.density
-      matrix := D.coefficients.matrix
-      density_smooth := D.coefficients.density_smooth.mono hsub
-      matrix_smooth := fun i j => (D.coefficients.matrix_smooth i j).mono hsub
-      density_bounds := fun x hx => D.coefficients.density_bounds x (hsub hx)
-      symmetric := fun x hx => D.coefficients.symmetric x (hsub hx)
-      ellipticity := fun x hx => D.coefficients.ellipticity x (hsub hx)
-      upper_bound := fun x hx => D.coefficients.upper_bound x (hsub hx) }
-  have hDC : KPContLocalRegularity.SmoothNearClosedBall DC :=
-    ⟨D.outer.carrier, Metric.isOpen_ball, hCD,
-      D.coefficients.density_smooth, D.coefficients.matrix_smooth⟩
-  obtain ⟨L, hL, he, _⟩ := kp_cont_local_regularity_iterate_fixed_coefficients n B C
+  let DC := KPContLocalRegularity.SobolevIteration.restrictCoefficients hsub D.coefficients
+  have hDC := KPContLocalRegularity.restrictCoefficients_smooth hsub hCD D.coefficients
+  obtain ⟨L, hL, he⟩ := kp_cont_local_regularity_iterate_fixed_coefficients n B C
     rfl hBCr D.densityLower D.densityUpper D.ellipticityLower D.ellipticityUpper
     ‖a₀‖ D.densityLower_pos D.ellipticityLower_pos (norm_nonneg _) DC hDC (m+n)
   obtain ⟨E, hE, hjet⟩ := finite_jet_bound_of_sobolev_representative A B hAB (m+2)
   refine ⟨C, hCD, E*L, mul_pos hE hL, ?_⟩
   intro a₁ u₁ u₀ g₁ g₀ f₁ f₀ he₁ he₀ hf₁ hf₀ hu₁ hu₀ w hw α x
-  have he₁R : KPContLocalEnergy.SobolevEnergyEstimates.Raw.WeakEquation DR a₁ u₁ g₁ := he₁
-  have he₀R : KPContLocalEnergy.SobolevEnergyEstimates.Raw.WeakEquation DR a₀ u₀ g₀ := he₀
   obtain ⟨v₁, q₁, hv₁, hq₁, _, _, heq₁⟩ :=
-    KPContLocalRegularity.SobolevIteration.restrict_weak_equation hsub DR a₁ u₁ g₁ he₁R
+    KPContLocalRegularity.SobolevIteration.restrict_weak_equation hsub D.coefficients a₁ u₁ g₁ he₁
   obtain ⟨v₀, q₀, hv₀, hq₀, _, _, heq₀⟩ :=
-    KPContLocalRegularity.SobolevIteration.restrict_weak_equation hsub DR a₀ u₀ g₀ he₀R
+    KPContLocalRegularity.SobolevIteration.restrict_weak_equation hsub D.coefficients a₀ u₀ g₀ he₀
   have hw' : Represents w (fun y => q₁ y - q₀ y + (a₁-a₀) * value v₁ y) := by
     filter_upwards [hw, hq₁, hq₀, hv₁ (zeroIndex n 1),
       ae_restrict_of_ae_restrict_of_subset hsub hu₁] with y hwy hq₁y hq₀y hv₁y hu₁y

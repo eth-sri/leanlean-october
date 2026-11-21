@@ -1,18 +1,18 @@
 module
 
 public import DedekindZetaZeroFree.Theta.Unfolding.SignedAbsoluteUnfolding
-public import DedekindZetaZeroFree.Moments.Comparison.CompatibleThetaMomentData
 
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources
 
-theorem selected_certified_packet_exists
+theorem selected_rank_one_expansion
     {F : Type} [Field F] [NumberField F]
     (S : SArithmeticData F) (η : RayClassCharacter F S.modulus)
     (hη : η.IsPrincipal) (P : PrincipalRayHeckeData F S.modulus η) :
-    ∃ R : PrincipalMellin.ActualRecipe S η, Nonempty (CertifiedPacket R) := by
+    ∃ R : PrincipalMellin.ActualRecipe S η,
+      RootAligned R ∧ Nonempty (SelectedMomentSource R) := by
   obtain ⟨R, hR⟩ := root_aligned_recipe_exists S η hη P
   obtain ⟨N⟩ := trace_haar_transport_exists R hR
   have p5 := admissible_flat_sources R hR N
@@ -26,15 +26,6 @@ theorem selected_certified_packet_exists
   have p13 := same_residue_profiles R N p12
   have p14 := reverse_joint_absolute R N p13
   have p15 := both_upper_averages_zero R N p14
-  obtain ⟨C⟩ := signed_unfolding R hR N p15
-  exact ⟨R, ⟨C.certified R⟩⟩
-
-theorem selected_rank_one_expansion
-    {F : Type} [Field F] [NumberField F]
-    (S : SArithmeticData F) (η : RayClassCharacter F S.modulus)
-    (hη : η.IsPrincipal) (P : PrincipalRayHeckeData F S.modulus η) :
-    ∃ R : PrincipalMellin.ActualRecipe S η,
-      RootAligned R ∧ Nonempty (SelectedMomentSource R) := by
-  obtain ⟨R, ⟨C⟩⟩ := selected_certified_packet_exists S η hη P
-  exact ⟨R, selected_moment_source_of_certified_packet R C⟩
+  obtain ⟨C⟩ := p15
+  exact ⟨R, hR, ⟨selectedMomentSource R C⟩⟩
 end DedekindZetaZeroFree.ThetaExpansion

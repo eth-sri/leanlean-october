@@ -38,7 +38,7 @@ theorem actualReference_ne_zero (hC : C.exceptional = R.A.Sf)
     (v : KPHilbert.Place F) (hv : v ∉ bad R.A P C) :
     actualReference R P C μ hμ v ≠ 0 := by
   intro hz
-  apply finiteQuotientReference_ne_zero R P C μ hμ hC v hv
+  apply finiteQuotientReference_ne_zero R P C μ hμ v hv
   apply (actualFactorEquiv R P C μ hμ v).injective
   exact hz.trans (map_zero (actualFactorEquiv R P C μ hμ v)).symm
 

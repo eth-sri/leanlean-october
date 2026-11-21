@@ -43,15 +43,18 @@ namespace higherPrincipalUnitGroup
 
 variable (F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, v} K)
 
+section
+
+variable (e : K ≃+* K) (hmem :
+      ∀ x : K,
+        x ∈ F.valuation.valuationSubring ↔
+          e x ∈ F.valuation.valuationSubring)
+include e hmem
+
 /-- A field automorphism preserving the chosen valuation ring induces a ring
 automorphism of the valuation ring.  This is the unit/residue source used
 before invoking local reciprocity in the local-field arguments. -/
-def valuationSubringRingEquivOfPreserves
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring) :
+def valuationSubringRingEquivOfPreserves :
     F.valuationSubring ≃+* F.valuationSubring :=
   RingEquiv.restrict e F.valuation.valuationSubring
     F.valuation.valuationSubring hmem
@@ -59,11 +62,6 @@ def valuationSubringRingEquivOfPreserves
 /-- A valuation-ring-preserving field automorphism preserves every power of the
 maximal ideal of the chosen valuation ring. -/
 theorem valuationSubringRingEquivOfPreserves_mem_maximalIdeal_pow_iff
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
     (n : ℕ) (x : F.valuationSubring) :
     valuationSubringRingEquivOfPreserves F e hmem x ∈ F.maximalIdeal ^ n ↔
       x ∈ F.maximalIdeal ^ n := by
@@ -91,12 +89,7 @@ theorem valuationSubringRingEquivOfPreserves_mem_maximalIdeal_pow_iff
 
 /-- The residue-field automorphism induced by a field automorphism preserving
 the chosen valuation ring. -/
-noncomputable def valuationSubringResidueFieldEquivOfPreserves
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring) :
+noncomputable def valuationSubringResidueFieldEquivOfPreserves :
     F.residueField ≃+* F.residueField := by
   let r := valuationSubringRingEquivOfPreserves F e hmem
   letI : IsLocalHom (r : F.valuationSubring →+* F.valuationSubring) :=
@@ -109,11 +102,6 @@ Establishes the identity `valuationSubringResidueFieldEquivOfPreserves F e hmem 
 F.residueMap (valuationSubringRingEquivOfPreserves F e hmem x)`.
 -/
 @[simp] theorem valuationSubringResidueFieldEquivOfPreserves_apply_residue
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
     (x : F.valuationSubring) :
     valuationSubringResidueFieldEquivOfPreserves F e hmem (F.residueMap x) =
       F.residueMap (valuationSubringRingEquivOfPreserves F e hmem x) := by
@@ -124,12 +112,7 @@ F.residueMap (valuationSubringRingEquivOfPreserves F e hmem x)`.
   rfl
 
 /-- The induced automorphism on valuation-ring units. -/
-def valuationSubringUnitEquivOfPreserves
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring) :
+def valuationSubringUnitEquivOfPreserves :
     F.valuationSubringˣ ≃* F.valuationSubringˣ :=
   Units.mapEquiv
     (valuationSubringRingEquivOfPreserves F e hmem).toMulEquiv
@@ -140,11 +123,6 @@ The defining evaluation formula for `valuationSubringUnitEquivOfPreserves` is
 valuationSubringRingEquivOfPreserves F e hmem (u : F.valuationSubring)`.
 -/
 @[simp] theorem valuationSubringUnitEquivOfPreserves_apply
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
     (u : F.valuationSubringˣ) :
     ((valuationSubringUnitEquivOfPreserves F e hmem u :
         F.valuationSubringˣ) : F.valuationSubring) =
@@ -152,32 +130,10 @@ valuationSubringRingEquivOfPreserves F e hmem (u : F.valuationSubring)`.
         (u : F.valuationSubring) :=
   rfl
 
-/-- Compatibility between the induced unit action and the induced residue-field
-action. -/
-theorem residueUnitHom_valuationSubringUnitEquivOfPreserves
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (u : F.valuationSubringˣ) :
-    higherPrincipalUnitGroup.residueUnitHom F
-        (valuationSubringUnitEquivOfPreserves F e hmem u) =
-      Units.map
-        (valuationSubringResidueFieldEquivOfPreserves F e hmem).toMonoidHom
-        (higherPrincipalUnitGroup.residueUnitHom F u) := by
-  apply Units.ext
-  simp [higherPrincipalUnitGroup.residueUnitHom,
-    valuationSubringUnitEquivOfPreserves_apply]
 
 /-- The induced automorphism on valuation-ring units preserves every concrete
 principal-unit level `U^n`. -/
 theorem valuationSubringUnitEquivOfPreserves_mem_principalUnit_iff
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
     (n : ℕ) (u : F.valuationSubringˣ) :
     valuationSubringUnitEquivOfPreserves F e hmem u ∈
         higherPrincipalUnitGroup F n ↔
@@ -196,11 +152,6 @@ theorem valuationSubringUnitEquivOfPreserves_mem_principalUnit_iff
 /-- The subgroup map form of principal-unit preservation for a
 valuation-ring-preserving field automorphism. -/
 theorem higherPrincipalUnitGroup_map_valuationSubringUnitEquivOfPreserves
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
     (n : ℕ) :
     (higherPrincipalUnitGroup F n).map
         (valuationSubringUnitEquivOfPreserves F e hmem :
@@ -220,11 +171,6 @@ theorem higherPrincipalUnitGroup_map_valuationSubringUnitEquivOfPreserves
 /-- A valuation-ring-preserving field automorphism induces an automorphism on
 `O^*/U^n` for every concrete principal-unit level. -/
 noncomputable def unitsModPrincipalUnitEquivOfPreserves
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
     (n : ℕ) :
     F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F n ≃*
       F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F n :=
@@ -239,11 +185,6 @@ Establishes the identity `unitsModPrincipalUnitEquivOfPreserves F e hmem n (Quot
 (valuationSubringUnitEquivOfPreserves F e hmem u)`.
 -/
 @[simp] theorem unitsModPrincipalUnitEquivOfPreserves_mk
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
     (n : ℕ) (u : F.valuationSubringˣ) :
     unitsModPrincipalUnitEquivOfPreserves F e hmem n
         (QuotientGroup.mk' (higherPrincipalUnitGroup F n) u) =
@@ -251,138 +192,13 @@ Establishes the identity `unitsModPrincipalUnitEquivOfPreserves F e hmem n (Quot
         (valuationSubringUnitEquivOfPreserves F e hmem u) :=
   rfl
 
-/-- If the induced action on residue-field units is trivial, then the
-valuation-ring unit displacement lies in the first principal-unit group. -/
-theorem unitEquiv_div_mem_principalUnit_one_of_residueUnitHom_fixed
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (hres :
-      ∀ u : F.valuationSubringˣ,
-        higherPrincipalUnitGroup.residueUnitHom F
-            (valuationSubringUnitEquivOfPreserves F e hmem u) =
-          higherPrincipalUnitGroup.residueUnitHom F u)
-    (u : F.valuationSubringˣ) :
-    valuationSubringUnitEquivOfPreserves F e hmem u / u ∈
-      higherPrincipalUnitGroup F 1 := by
-  rw [← higherPrincipalUnitGroup.residueUnitHom_eq_one_iff]
-  rw [map_div, hres u]
-  simp
+end
 
-/-- Quotient form of
-`unitEquiv_div_mem_principalUnit_one_of_residueUnitHom_fixed`: residue-trivial
-unit action fixes `O^*/U^1`. -/
-theorem unitEquiv_mod_principalUnit_one_eq_of_residueUnitHom_fixed
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (hres :
-      ∀ u : F.valuationSubringˣ,
-        higherPrincipalUnitGroup.residueUnitHom F
-            (valuationSubringUnitEquivOfPreserves F e hmem u) =
-          higherPrincipalUnitGroup.residueUnitHom F u)
-    (u : F.valuationSubringˣ) :
-    QuotientGroup.mk' (higherPrincipalUnitGroup F 1)
-        (valuationSubringUnitEquivOfPreserves F e hmem u) =
-      QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u := by
-  exact
-    (QuotientGroup.eq_iff_div_mem
-      (N := higherPrincipalUnitGroup F 1)
-      (x := valuationSubringUnitEquivOfPreserves F e hmem u)
-      (y := u)).2
-      (unitEquiv_div_mem_principalUnit_one_of_residueUnitHom_fixed
-        F e hmem hres u)
 
-/-- Residue-field fixed-point form of
-`unitEquiv_div_mem_principalUnit_one_of_residueUnitHom_fixed`: if the induced
-residue-field automorphism is pointwise trivial, then every valuation-ring unit
-has first-principal-unit displacement. -/
-theorem unitEquiv_div_mem_principalUnit_one_of_residueFieldEquiv_fixed
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (hres :
-      ∀ x : F.residueField,
-        valuationSubringResidueFieldEquivOfPreserves F e hmem x = x)
-    (u : F.valuationSubringˣ) :
-    valuationSubringUnitEquivOfPreserves F e hmem u / u ∈
-      higherPrincipalUnitGroup F 1 :=
-  unitEquiv_div_mem_principalUnit_one_of_residueUnitHom_fixed
-    F e hmem
-    (by
-      intro v
-      rw [residueUnitHom_valuationSubringUnitEquivOfPreserves]
-      apply Units.ext
-      exact hres
-        ((higherPrincipalUnitGroup.residueUnitHom F v : F.residueFieldˣ) :
-          F.residueField))
-    u
 
-/-- Quotient form of
-`unitEquiv_div_mem_principalUnit_one_of_residueFieldEquiv_fixed`. -/
-theorem unitEquiv_mod_principalUnit_one_eq_of_residueFieldEquiv_fixed
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (hres :
-      ∀ x : F.residueField,
-        valuationSubringResidueFieldEquivOfPreserves F e hmem x = x)
-    (u : F.valuationSubringˣ) :
-    QuotientGroup.mk' (higherPrincipalUnitGroup F 1)
-        (valuationSubringUnitEquivOfPreserves F e hmem u) =
-      QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u := by
-  exact
-    (QuotientGroup.eq_iff_div_mem
-      (N := higherPrincipalUnitGroup F 1)
-      (x := valuationSubringUnitEquivOfPreserves F e hmem u)
-      (y := u)).2
-      (unitEquiv_div_mem_principalUnit_one_of_residueFieldEquiv_fixed
-        F e hmem hres u)
 
-/-- If the induced residue-field automorphism is pointwise trivial, then the
-induced automorphism of `O^*/U^1` is pointwise trivial. -/
-theorem unitsModPrincipalUnitEquivOfPreserves_one_apply_eq_of_residueFieldEquiv_fixed
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (hres :
-      ∀ x : F.residueField,
-        valuationSubringResidueFieldEquivOfPreserves F e hmem x = x)
-    (q : F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F 1) :
-    unitsModPrincipalUnitEquivOfPreserves F e hmem 1 q = q := by
-  obtain ⟨u, rfl⟩ := QuotientGroup.mk'_surjective
-    (higherPrincipalUnitGroup F 1) q
-  rw [unitsModPrincipalUnitEquivOfPreserves_mk]
-  exact unitEquiv_mod_principalUnit_one_eq_of_residueFieldEquiv_fixed
-    F e hmem hres u
 
-/-- Equivalence form of
-`unitsModPrincipalUnitEquivOfPreserves_one_apply_eq_of_residueFieldEquiv_fixed`. -/
-theorem unitsModPrincipalUnitEquivOfPreserves_one_eq_refl_of_residueFieldEquiv_fixed
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (hres :
-      ∀ x : F.residueField,
-        valuationSubringResidueFieldEquivOfPreserves F e hmem x = x) :
-    unitsModPrincipalUnitEquivOfPreserves F e hmem 1 =
-      MulEquiv.refl (F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F 1) := by
-  ext q
-  exact
-    unitsModPrincipalUnitEquivOfPreserves_one_apply_eq_of_residueFieldEquiv_fixed
-      F e hmem hres q
+
 end higherPrincipalUnitGroup
 
 end CompleteDVF

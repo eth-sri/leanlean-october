@@ -12,16 +12,17 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-theorem normConductorRayClassModulus_infinitePart
-    (K E : Type) [Field K] [NumberField K] [Field E] [NumberField E]
-    [Algebra K E] [IsAbelianGalois K E] :
+section
+
+variable (K E : Type) [Field K] [NumberField K] [Field E] [NumberField E] [Algebra K E]
+  [IsAbelianGalois K E]
+
+theorem normConductorRayClassModulus_infinitePart :
     (ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus K E).infinitePart =
       Finset.univ := by
   rfl
 
 theorem normConductorFiniteSupport
-    (K E : Type) [Field K] [NumberField K] [Field E] [NumberField E]
-    [Algebra K E] [IsAbelianGalois K E]
     (p : HeightOneSpectrum (𝓞 K)) :
     (ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus K E).finitePart p = 0 ↔
       ∀ w : HeightOneSpectrum (𝓞 E), w.asIdeal.LiesOver p.asIdeal →
@@ -43,9 +44,7 @@ theorem normConductorFiniteSupport
     mem_ramifiedBaseFinitePlaces_iff]
   simp only [not_exists, not_and, not_not]
 
-theorem narrowIdealModulus_normConductor
-    (K E : Type) [Field K] [NumberField K] [Field E] [NumberField E]
-    [Algebra K E] [IsAbelianGalois K E] :
+theorem narrowIdealModulus_normConductor :
     let c := ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus K E
     let m := finiteRayModulusIdeal K c.finitePart
     let hm := finiteRayModulusIdeal_ne_bot K c.finitePart
@@ -55,8 +54,6 @@ theorem narrowIdealModulus_normConductor
     (normConductorRayClassModulus_infinitePart K E)
 
 theorem normConductorIdeal_coprime
-    (K E : Type) [Field K] [NumberField K] [Field E] [NumberField E]
-    [Algebra K E] [IsAbelianGalois K E]
     (p : HeightOneSpectrum (𝓞 K)) :
     let c := ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus K E
     let m := finiteRayModulusIdeal K c.finitePart
@@ -66,6 +63,8 @@ theorem normConductorIdeal_coprime
   intro c m
   rw [finiteRayModulusIdeal_coprime]
   exact normConductorFiniteSupport K E p
+
+end
 
 end DedekindZetaZeroFree.AbelianQuotient
 

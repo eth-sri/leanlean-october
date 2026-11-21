@@ -36,50 +36,6 @@ variable (hι : Function.Injective ι) (f : ℂ → S)
 variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
 variable (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
 
-include hs in
-
-theorem actual_component_casimir
- (i : Fin (H.atlas (atlasLevel F ζ hζ C R P H U)).componentCount)
- (z : KPArch.Space (KPCuspLogShape.dimension F)) :
- KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
-   (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 s i).val z =
- KPContActualChamberCasimirJets.lambda F s *
-   (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 s i).val z := by
- obtain ⟨O⟩ := KPContSectorPhaseComponentCharts.orbifoldChart_exists F ζ hζ
-   (atlasLevel F ζ hζ C R P H U) R P H i z
- let p := KPContCotangentActualOverlap.placeEquiv F ζ hζ
- let a : KPContActualChamberCasimirJets.Frame F ζ hζ C R P H U i :=
-   { kind := .orbifold z O
-     places := p
-     splitting := fun _ => 1
-     splitting_locallyConstant := IsLocallyConstant.const 1 }
- let x := KPContCotangentActualOverlap.labeledAInv p z
- have hxz : KPContCotangentActualOverlap.labeledA p x = z := by
-   funext k
-   simp only [x, KPContCotangentActualOverlap.labeledAInv, KPContCotangentActualOverlap.labeledA]
-   rw [ContinuousLinearEquiv.apply_symm_apply, Equiv.apply_symm_apply]
- have hx : x ∈ a.omega := by
-   change KPContCotangentActualOverlap.labeledA p x ∈ O.neighborhood
-   rw [hxz]
-   exact O.center_mem
- have hh := KPContActualChamberCasimirJets.casimir F ζ hζ C R P H U ι f hι hf s hs a x hx
- have he : KPContActualChamberCasimirJets.frameJet F ζ hζ C R P H U ι f hι hf 0 s a =
-   fun y => (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 s i).val
-     (KPContCotangentActualOverlap.labeledA p y) := by
-   funext y
-   simp [KPContActualChamberCasimirJets.frameJet, KPContCotangentActualOverlap.LiftedChart.coefficient,
-     a, KPContCotangentActualOverlap.ChartKind.representative]
- rw [he] at hh
- have hb := KPContArchLaplacianCoordinateBridge.bridge_equiv _ _ p
-   (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 s i).val
-   (KPContActualChamberCasimirJets.lineJet_smooth F ζ hζ C R P H U ι f hι hf 0 s hs i) x
- change _ = HyperbolicChart.laplacian _ (fun y =>
-   (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 s i).val
-     (KPContCotangentActualOverlap.labeledA p y)) x at hb
- rw [←hb] at hh
- change KPContActualSphericalFlatStage.localLaplacian _ _
-   (KPContCotangentActualOverlap.labeledA p x) = _ at hh
- simpa only [hxz] using hh
 
 include hι hf hs in
 

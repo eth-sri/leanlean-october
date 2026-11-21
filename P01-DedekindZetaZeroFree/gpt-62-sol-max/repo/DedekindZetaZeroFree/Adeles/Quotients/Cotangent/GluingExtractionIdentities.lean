@@ -55,15 +55,13 @@ private lemma indicatorFields_apply_of_mem (cover : CountableCover F ζ hζ U R 
     (v : Family (U := U) (H := H)) (n : ℕ) (y : omega (cover.chart n))
     (hy : q (cover.chart n) y.val ∈ basePiece cover n) :
     indicatorFields cover v n y = coefficient v (cover.chart n) y := by
-  show ({y : omega (cover.chart n) | q (cover.chart n) y.val ∈ basePiece cover n}).indicator
-      (coefficient v (cover.chart n)) y = coefficient v (cover.chart n) y
-  exact Set.indicator_of_mem (show y ∈ _ from hy) _
+  apply Set.indicator_of_mem <;> assumption
 
 private lemma e_eq_indicatorFields (cover : CountableCover F ζ hζ U R P H)
     (v : Family (U := U) (H := H)) (n : ℕ) (y : (cover.chart n).domain) :
     e cover v n y = indicatorFields cover v n (coordinates (cover.chart n) y) := by
   by_cases h : y ∈ liftedPiece cover n
-  · have hy : q (cover.chart n) (coordinates (cover.chart n) y).val ∈ basePiece cover n :=
+  · have hy :=
       (coordinates_mem_coordinatePiece_iff cover n y).mpr h
     rw [show e cover v n y = coefficient v (cover.chart n) (coordinates (cover.chart n) y) from by
           unfold e localCoefficient
@@ -77,27 +75,11 @@ private lemma e_eq_indicatorFields (cover : CountableCover F ζ hζ U R P H)
         exact Set.indicator_of_notMem hy _]
 
 private lemma continuous_labeledA_placeEquiv :
-    Continuous (labeledA (placeEquiv F ζ hζ)) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+    Continuous (labeledA (placeEquiv F ζ hζ)) :=
+  labeledA_continuous (placeEquiv F ζ hζ)
 
-private lemma measurable_q (a : ShrunkChart F ζ hζ U R P H) : Measurable (q a) := by
-  have hcm : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
-      ((H.atlas U).representative a.component)) := by
-    have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
-        (H.atlas U).components ∘ Sigma.mk a.component := by
-      funext x; exact ((H.atlas U).components_formula a.component x).symm
-    rw [he]
-    exact ((H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk).continuous
-  have hproj : Measurable (KPCuspSiegel.projection F
-      (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)) :=
-    measurable_quotient_mk''
-  have hcomp : q a = KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component)
-      ∘ KPCuspSiegel.projection F (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
-      ∘ labeledA (placeEquiv F ζ hζ) := rfl
-  rw [hcomp]
-  exact hcm.measurable.comp (hproj.comp continuous_labeledA_placeEquiv.measurable)
+private lemma measurable_q (a : ShrunkChart F ζ hζ U R P H) : Measurable (q a) :=
+  (KPContCotangentOverlapRationalBranches.continuous_chartProjection a).measurable
 
 private lemma labeledAInv_labeledA
     (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) (x : M F) :
@@ -270,7 +252,7 @@ def gluedFamily (cover : CountableCover F ζ hζ U R P H)
     (u : PieceHilbert cover) (f : PieceSequence cover)
     (hf : RepresentsComponents cover f u) : SquareFiniteFamily (U := U) (H := H) :=
   ⟨G cover f,
-    (kp_cont_actual_cotangent_glued_piece_integral F ζ hζ μG hμG U R hR P H cover).gluing_squareFinite f u hf⟩
+    kp_cont_actual_cotangent_gluing_squareFinite F ζ hζ μG hμG U R hR P H cover f u hf⟩
 
 lemma indicator_gluing_family_aux (cover : CountableCover F ζ hζ U R P H)
     (v : SquareFiniteFamily (U := U) (H := H)) :

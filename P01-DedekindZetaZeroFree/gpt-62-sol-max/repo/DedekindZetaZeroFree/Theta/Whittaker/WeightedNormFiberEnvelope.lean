@@ -45,12 +45,10 @@ theorem productPowerMajorant_le_sheet_bound (A : SArithmeticData F)
       (fun w : InfinitePlace F => ‖(y.1 w : w.Completion)‖ ^ 2) (Finset.mem_univ v₀)).symm
   have hRpos : 0 < R := by
     rw [hR]
-    exact mul_pos
-      (Finset.prod_pos fun w _ => pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2)
-      (Finset.prod_pos fun v _ => norm_pos_iff.mpr (Units.ne_zero _))
+    simp [mul_pos, Finset.prod_pos, pow_pos, norm_pos_iff.mpr, Units.ne_zero]
   have hrpos : 0 < ‖(y.1 v₀ : v₀.Completion)‖ ^ 2 :=
     pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2
-  have hxpos : (0 : ℝ) < (x : ℝ) := x.property
+  have hxpos := x.property
   have hkey : ‖(y.1 v₀ : v₀.Completion)‖ ^ 2 * R = (x : ℝ) := by
     rw [hR, ← mul_assoc, ← hsplit]
     exact hnorm
@@ -64,13 +62,7 @@ theorem productPowerMajorant_le_sheet_bound (A : SArithmeticData F)
     exact h.symm
   have hdist : ((‖(y.1 v₀ : v₀.Completion)‖ ^ 2) ^ (-s)) =
       ((x : ℝ) ^ (-s)) * (R ^ s) := by
-    calc ((‖(y.1 v₀ : v₀.Completion)‖ ^ 2) ^ (-s))
-        = ((‖(y.1 v₀ : v₀.Completion)‖ ^ 2) ^ (-s)) * 1 := (mul_one _).symm
-      _ = ((‖(y.1 v₀ : v₀.Completion)‖ ^ 2) ^ (-s)) *
-            ((R ^ (-s)) * (R ^ s)) := by rw [hcancel]
-      _ = (((‖(y.1 v₀ : v₀.Completion)‖ ^ 2) ^ (-s)) * (R ^ (-s))) *
-            (R ^ s) := by ring
-      _ = ((x : ℝ) ^ (-s)) * (R ^ s) := by rw [← hmul]
+    grind only
   have hRs : (R ^ s) =
       (∏ w ∈ Finset.univ.erase v₀, ((‖(y.1 w : w.Completion)‖ ^ 2) ^ s)) *
         ∏ v : A.Sf, (‖(y.2 v : v.val.adicCompletion F)‖ ^ s) := by

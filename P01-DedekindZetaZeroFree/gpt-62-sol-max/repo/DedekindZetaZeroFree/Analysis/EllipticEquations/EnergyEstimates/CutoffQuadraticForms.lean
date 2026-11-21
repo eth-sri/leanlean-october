@@ -20,12 +20,12 @@ theorem lp_norm_sq_eq_integral {n : ℕ} {B : LocalBall n} (f : BallL2 B) :
     ‖f‖ ^ 2 = ∫ x in B.carrier, ‖f x‖ ^ 2 := by
   have h1 : RCLike.re (inner ℂ f f) = ‖f‖ ^ 2 := by
     rw [inner_self_eq_norm_sq_to_K]
-    exact re_ofReal_sq ‖f‖
+    exact re_ofReal_sq ..
   rw [← h1, MeasureTheory.L2.inner_def, ← integral_re (MeasureTheory.L2.integrable_inner f f)]
   apply integral_congr_ae
   filter_upwards with x
   rw [inner_self_eq_norm_sq_to_K]
-  exact re_ofReal_sq ‖f x‖
+  exact re_ofReal_sq ..
 private theorem raw_complex_quadratic_real {n : ℕ} (a : Matrix (Fin n) (Fin n) ℝ)
     (g : Fin n → ℂ) :
     (∑ i, ∑ j, (a i j : ℂ) * g j * star (g i)).re =
@@ -40,7 +40,7 @@ private theorem raw_complex_quadratic_real {n : ℕ} (a : Matrix (Fin n) (Fin n)
   intro j _
   change ((a i j : ℂ) * g j * star (g i)).re = _
   simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-    zero_mul, sub_zero, zero_add, Complex.star_def, Complex.conj_re, Complex.conj_im]
+    zero_mul, sub_zero, Complex.star_def, Complex.conj_re, Complex.conj_im]
   ring
 
 theorem Raw.Coefficients.complex_ellipticity {n : ℕ} {B : LocalBall n}
@@ -71,17 +71,15 @@ theorem Raw.Coefficients.matrix_entry_bound {n : ℕ} {B : LocalBall n} {cρ Cρ
   classical
   have hdi : κ ≤ D.matrix x i i := by
     have hh := D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ))
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using hh
+    simp_all
   have hdiu : D.matrix x i i ≤ Λ := by
     have hh := D.upper_bound x hx (EuclideanSpace.single i (1 : ℝ))
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using hh
+    simp_all
   have hdju : D.matrix x j j ≤ Λ := by
     have hh := D.upper_bound x hx (EuclideanSpace.single j (1 : ℝ))
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply, mul_ite, ite_mul] using hh
+    simp_all
   by_cases hij : i = j
-  · subst j
-    rw [abs_of_nonneg (hκ.trans hdi)]
-    exact hdiu
+  · grind
   · have hplus := D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ) + EuclideanSpace.single j (1 : ℝ))
     have hminus := D.ellipticity x hx (EuclideanSpace.single i (1 : ℝ) - EuclideanSpace.single j (1 : ℝ))
     have hp : 0 ≤ ∑ a, ∑ b, D.matrix x a b *
@@ -93,13 +91,12 @@ theorem Raw.Coefficients.matrix_entry_bound {n : ℕ} {B : LocalBall n} {cρ Cρ
         (EuclideanSpace.single i (1 : ℝ) - EuclideanSpace.single j (1 : ℝ)) b :=
       (mul_nonneg hκ (sq_nonneg _)).trans hminus
     simp only [PiLp.add_apply, PiLp.sub_apply, EuclideanSpace.single_apply,
-      mul_add, add_mul, mul_sub, sub_mul, Finset.sum_add_distrib, Finset.sum_sub_distrib,
-      mul_ite, ite_mul, mul_zero, zero_mul, mul_one, one_mul, Finset.sum_ite_eq,
-      Finset.mem_univ, if_true] at hp hm
+      mul_add, mul_sub, Finset.sum_add_distrib, Finset.sum_sub_distrib,
+      mul_ite, mul_zero, mul_one] at hp hm
     simp only [Finset.sum_ite_eq', Finset.mem_univ, if_true,
       Finset.sum_add_distrib, Finset.sum_sub_distrib] at hp hm
     rw [D.symmetric x hx j i] at hp hm
-    exact abs_le.mpr ⟨by linarith, by linarith⟩
+    grind
 
 theorem Raw.Coefficients.mixed_cutoff_form_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (hκ : 0 ≤ κ)
@@ -260,7 +257,7 @@ theorem pointwise_cutoff_coercivity {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ :
   rw [hsplit, mul_add]
   rw [← Complex.ofReal_pow]
   simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
-    Complex.mul_im, zero_mul, mul_zero, sub_zero, zero_add]
+    Complex.mul_im, zero_mul, sub_zero]
   nlinarith
 
 theorem pointwise_cutoff_lower_order {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}

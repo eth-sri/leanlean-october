@@ -3,7 +3,8 @@ module
 public import DedekindZetaZeroFree.LFunctions.Tate.ComplexLocalMellinIdentity
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.TensorTransformsAndLatticeSummability
 public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanAdditiveCharacters
-public import DedekindZetaZeroFree.LFunctions.Tate.UnitShellFourierIntegrability
+public import DedekindZetaZeroFree.LFunctions.Tate.Local.AnnularFourierMellin
+public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.LocalSchwartzInversion
 public import DedekindZetaZeroFree.LFunctions.Tate.UnitShellFourierNonvanishing
 
 @[expose] public section
@@ -86,11 +87,8 @@ theorem coordinateTensor_ne_zero
     simp only [coordinateTensor, archTensor, x,
       PoissonArch.infiniteAdeleToSpace_coordinates, RingEquiv.apply_symm_apply]
     apply mul_ne_zero
-    · exact Finset.prod_ne_zero_iff.mpr (fun v hv => hz v)
-    · apply Finset.prod_ne_zero_iff.mpr
-      intro v hv
-      have hmem := (TateFiniteShell.mem_unitShell_iff F v.val 1).mpr (map_one _)
-      simp [TateFiniteShell.annularTest, hmem]
+    · solve_by_elim [Finset.prod_ne_zero_iff.mpr]
+    simp [Finset.prod_ne_zero_iff.mpr, TateFiniteShell.mem_unitShell_iff, map_one, TateFiniteShell.annularTest]
   intro h
   exact hx (congrFun h x)
 

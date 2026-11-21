@@ -29,13 +29,8 @@ theorem jacquetIntegral_integrable (β : ℂˣ) (f : PrincipalSeries positivePar
   have h := (KPCplxIntertwinerEigenvalues.intertwinerIntegral_exists β f).1 1
   simp only [mul_one] at h
   refine h.mul_bdd (c := 1) ?_ ?_
-  · have hcont : Continuous (fun x : ℂ => (character (β : ℂ) (-x) : ℂ)) := by
-      refine continuous_subtype_val.comp ?_
-      show Continuous (fun x : ℂ => Circle.exp (((β : ℂ) * (-x)).re))
-      exact Circle.exp.continuous.comp (by fun_prop)
-    exact hcont.aestronglyMeasurable
-  · filter_upwards with x
-    rw [Circle.norm_coe]
+  · fun_prop
+  simp
 
 noncomputable def jacquetLinearMap (β : ℂˣ) :
     PrincipalSeries positiveParameter →ₗ[ℂ] ℂ where

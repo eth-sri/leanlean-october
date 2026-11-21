@@ -12,7 +12,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.NormOneCofactor
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPRankOneShellRepair
-open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingGeometry renaming arch_center → arch_center
+open KPGlobalTorusFiniteStagesCofinality (arch_center)
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 private theorem central_norm_one_correction

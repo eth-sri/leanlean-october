@@ -165,7 +165,7 @@ private theorem zeroExtension_continuous (τ T : ℝ) (hτ : a.threshold ≤ τ)
   · have he : zeroExtension a τ c φ =ᶠ[𝓝 x] (fun y => φ (t a τ c y)) := by
       filter_upwards [(end_open a τ c).mem_nhds hx] with y hy
       exact Set.indicator_of_mem hy _
-    have ht := (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).2.2.1 c
+    have ht := (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).2.2 c
     have hf : ContinuousAt (fun y => φ (t a τ c y)) x :=
       hφ.continuousAt.comp ((ht x hx).continuousAt ((end_open a τ c).mem_nhds hx))
     exact hf.congr he.symm

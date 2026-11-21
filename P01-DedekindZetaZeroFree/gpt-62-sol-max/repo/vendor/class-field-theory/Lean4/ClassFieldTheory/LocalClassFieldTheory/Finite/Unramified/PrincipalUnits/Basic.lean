@@ -30,33 +30,26 @@ open LocalFieldTheory
 open LocalFieldTheory.IsNonarchimedeanLocalField
 open Filter
 
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
+  [Module.Finite 𝒪[K] 𝒪[L]]
+  [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat)
+
 /-- In an actual unramified valuation extension, the actual integer-unit norm
 sends `U_L^n` into `U_K^n`. -/
-theorem normIntegerUnits_mem_principalUnits_of_unramifiedValuation_of_isIntegralClosure
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (u : 𝒪[L]ˣ) (hu : u ∈ principalUnits L n) :
+theorem normIntegerUnits_mem_principalUnits_of_unramifiedValuation_of_isIntegralClosure (u : 𝒪[L]ˣ) (hu : u ∈ principalUnits L n) :
     normIntegerUnits K L u ∈ principalUnits K n := by
   apply principalUnits_of_integerUnitsMap_mem_principalUnits_of_unramifiedValuation K L n
   exact integerUnitsMap_normIntegerUnits_mem_principalUnits_of_isIntegralClosure K L n u hu
 
 /-- Actual integral-closure version of the integer-unit norm restricted to
 principal units in an actual unramified valuation extension. -/
-noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat) :
+noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure :
     principalUnits L n →* principalUnits K n where
   toFun u :=
     ⟨normIntegerUnits K L u.1,
@@ -73,14 +66,6 @@ noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure
 /-- States the theorem `principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_apply`. -/
 @[simp]
 theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_apply
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat)
     (u : principalUnits L n) :
     ((principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L n u :
         principalUnits K n) : 𝒪[K]ˣ) =
@@ -90,21 +75,14 @@ theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_apply
 /-- Base-extending the integral-closure unramified
 principal-unit norm recovers the extension-side norm expressed through the
 integral-closure Galois product. -/
-theorem principalUnitsMap_normOfUnramifiedValuationOfIsIntegralClosure_eq_normExtensionSide
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (u : principalUnits L n) :
+theorem principalUnitsMap_normOfUnramifiedValuationOfIsIntegralClosure_eq_normExtensionSide (u : principalUnits L n) :
     principalUnitsMapOfUnramifiedValuation K L n
         (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L n u) =
       principalUnitsNormExtensionSideOfIsIntegralClosure K L n u := by
   ext
   rfl
+
+end
 
 namespace UnramifiedPrincipalUnits
 
@@ -135,18 +113,20 @@ theorem norm_oneAdd_sub_galoisSum_mem_next
 
 end UnramifiedPrincipalUnits
 
+section
+
+variable (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+  [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
+  [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
+  [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
+  [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
+  [Module.Finite 𝒪[K] 𝒪[L]]
+  [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat)
+
 /-- The integral-closure norm on successive principal-unit
 quotients.  This is the quotient map used in the unramified norm calculation before
 identifying the associated graded map with residue trace. -/
-noncomputable def principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat) :
+noncomputable def principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure :
     PrincipalUnitsSuccQuot L n →* PrincipalUnitsSuccQuot K n :=
   principalUnitsSuccQuotLift n
     ((principalUnitsSuccQuotMk K n).comp
@@ -165,14 +145,6 @@ noncomputable def principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClo
 /-- States the theorem `principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_mk`. -/
 @[simp]
 theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_mk
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] (n : Nat)
     (u : principalUnits L n) :
     principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure K L n
         (principalUnitsSuccQuotMk L n u) =
@@ -182,16 +154,7 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_mk
 
 /-- The integral-closure associated-graded norm-product
 calculation in the unramified norm calculation. -/
-theorem principalUnitsSuccQuotMap_normOfUnramifiedValuationOfIsIntegralClosure_oneAdd_base_eq_sum
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n : Nat) (hn : 1 ≤ n) (a : (𝓂[L] ^ n : Ideal 𝒪[L])) :
+theorem principalUnitsSuccQuotMap_normOfUnramifiedValuationOfIsIntegralClosure_oneAdd_base_eq_sum (hn : 1 ≤ n) (a : (𝓂[L] ^ n : Ideal 𝒪[L])) :
     let b : (𝓂[L] ^ n : Ideal 𝒪[L]) :=
       ⟨Finset.univ.sum fun σ : Gal(L / K) =>
           galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ (a : 𝒪[L]),
@@ -219,6 +182,8 @@ theorem principalUnitsSuccQuotMap_normOfUnramifiedValuationOfIsIntegralClosure_o
       simpa [b] using
     UnramifiedPrincipalUnits.norm_oneAdd_sub_galoisSum_mem_next
           K L n hn a)
+
+end
 
 
 end LocalClassFieldTheory

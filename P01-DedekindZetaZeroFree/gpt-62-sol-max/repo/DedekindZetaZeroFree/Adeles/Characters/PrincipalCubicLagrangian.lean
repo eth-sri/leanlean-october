@@ -302,7 +302,6 @@ private lemma exists_classkill (T : Finset (KPHilbert.Place F)) :
       obtain ⟨a, ha⟩ := hp _ I.isUnit
       apply ClassGroup.mk_eq_one_iff.mpr
       rw [show (I : Submodule ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F) F) = Submodule.span _ {(a : F)} by
-        change ((I : FractionalIdeal ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F)⁰ F) : Submodule ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F) F) = _
         rw [ha, FractionalIdeal.coe_spanSingleton]]
       exact ⟨⟨(a : F), rfl⟩⟩
     exact ⟨fun C D => (hOne C).trans (hOne D).symm⟩

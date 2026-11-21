@@ -18,92 +18,9 @@ def aInfinity (u : InfinitePlace F → ℝ) : KPGlobalTorusFunctionData.E F ζ h
   KPGlobalTorusFunctionData.torusArchChart F ζ hζ
     (fun v => (Real.exp (u v) : ℂ))
 
- def archUnit (z : InfinitePlace F → ℂ) (w : InfinitePlace F) : w.Completionˣ :=
-  let e := InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)
-  if h : z w = 0 then 1 else Units.mk0 (e.symm (z w))
-    (by exact fun h0 => h (by simpa using congrArg e h0))
-
- def archIdele (z : InfinitePlace F → ℂ) : KPGlobalTorusFunctionData.Ideles F where
-  val := (fun w => (archUnit F ζ hζ z w).val, 1)
-  inv := (fun w => (archUnit F ζ hζ z w).inv, 1)
-  val_inv := by
-    apply Prod.ext
-    · funext w; exact (archUnit F ζ hζ z w).val_inv
-    · exact one_mul _
-  inv_val := by
-    apply Prod.ext
-    · funext w; exact (archUnit F ζ hζ z w).inv_val
-    · exact one_mul _
-
-private theorem arch_eval (z : InfinitePlace F → ℂ) (v : KPHilbert.Place F) :
-    KPGlobalCubicIdelePairing.ideleEval F v (archIdele F ζ hζ z) =
-      (match v with | Sum.inl w => archUnit F ζ hζ z w | Sum.inr q => 1) := by
-  cases v with
-  | inl w => apply Units.ext; rfl
-  | inr q => apply Units.ext; rfl
-
-private theorem arch_cube (z : InfinitePlace F → ℂ) :
-    archIdele F ζ hζ z ∈ CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F) := by
-  apply (QuotientGroup.eq_one_iff _).mp
-  apply KPGlobalCubicIdelePairing.classComparison_injective F
-  rw [map_one]
-  apply RestrictedProduct.ext
-  intro v
-  change KPGlobalCubicIdelePairing.localClass F v
-    (KPGlobalCubicIdelePairing.ideleEval F v (archIdele F ζ hζ z)) = 1
-  cases v with
-  | inl w =>
-    letI := KPGlobalCubicIdelePairing.local_complex_trivial F w
-    exact Subsingleton.elim _ _
-  | inr q => rw [arch_eval]; exact map_one _
-
-private theorem arch_tuple (z : InfinitePlace F → ℂ) :
-    KPGlobalCenterRationalCharacter.diagonalTuple F ζ hζ (archIdele F ζ hζ z) =
-      KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ z := by
-  apply RestrictedProduct.ext
-  intro v
-  change KPStandardLocalRootLifts.A F ζ hζ v
-    (KPGlobalCubicIdelePairing.ideleEval F v (archIdele F ζ hζ z)) = _
-  rw [arch_eval]
-  cases v with
-  | inl w => rfl
-  | inr q => exact KPStandardLocalRootLifts.A_one F ζ hζ (Sum.inr q)
-
-private theorem arch_center (z : InfinitePlace F → ℂ) :
-    ∃ c : KPGlobalCenterRationalCharacter.Z F ζ hζ,
-      c.val = KPGlobalTorusFunctionData.torusArchChart F ζ hζ z ∧
-      KPGlobalCenterRationalCharacter.omegaA F ζ hζ c =
-        KPGlobalCenterRationalCharacter.positiveComplex
-          (KPGlobalCenterRationalCharacter.nu F ζ hζ c.val) := by
-  let y : CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F) :=
-    ⟨archIdele F ζ hζ z, arch_cube F ζ hζ z⟩
-  let c := KPGlobalCenterRationalCharacter.cubeLift F ζ hζ y
-  have hc : c.val = KPGlobalTorusFunctionData.torusArchChart F ζ hζ z := by
-    apply Subtype.ext
-    rw [KPGlobalCenterRationalCharacter.cubeLift_formula]
-    change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-      (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ
-        (KPGlobalCenterRationalCharacter.diagonalTuple F ζ hζ (archIdele F ζ hζ z))) = _
-    rw [arch_tuple]
-    rfl
-  refine ⟨c, hc, ?_⟩
-  have ho := KPGlobalCenterRationalCharacter.omegaA_cube F ζ hζ y
-  have hn := KPGlobalCenterRationalCharacter.omegaA_norm F ζ hζ c
-  have hp (u : (ℝ≥0)ˣ) :
-      ‖((KPGlobalCenterRationalCharacter.positiveComplex u : ℂˣ) : ℂ)‖ = ((u : ℝ≥0) : ℝ) := by
-    change ‖(((u : ℝ≥0) : ℝ) : ℂ)‖ = _
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
-  rw [ho, hp] at hn
-  have hu : KPGlobalCenterRationalCharacter.sixthPower
-      (KPGlobalTorusFunctionData.ideleAbs F y.val) =
-      KPGlobalCenterRationalCharacter.nu F ζ hζ c.val := by
-    apply Units.ext
-    exact NNReal.eq hn
-  exact ho.trans (congrArg KPGlobalCenterRationalCharacter.positiveComplex hu)
-
 theorem aInfinity_mem_center (u : InfinitePlace F → ℝ) :
     aInfinity F ζ hζ u ∈ KPGlobalCenterRationalCharacter.Z F ζ hζ := by
-  obtain ⟨c, hc, -⟩ := arch_center F ζ hζ (fun v => (Real.exp (u v) : ℂ))
+  obtain ⟨c, hc, -⟩ := KPGlobalTorusFiniteStagesCofinality.arch_center F ζ hζ (fun v => (Real.exp (u v) : ℂ))
   have ha : aInfinity F ζ hζ u = (c : KPGlobalTorusFunctionData.E F ζ hζ) := by
     change KPGlobalTorusFunctionData.torusArchChart F ζ hζ
       (fun v => (Real.exp (u v) : ℂ)) = (c : KPGlobalTorusFunctionData.E F ζ hζ)
@@ -161,7 +78,7 @@ theorem source_character (s : ℂ) (u : InfinitePlace F → ℝ) :
     ((KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ s).character
       (sourceElement F ζ hζ s u) : ℂ) =
         Complex.exp (((1 : ℂ) / 6 + s) * ((2 * ∑ v, u v : ℝ) : ℂ)) := by
-  obtain ⟨c, hc, hχc⟩ := arch_center F ζ hζ (fun v => (Real.exp (u v) : ℂ))
+  obtain ⟨c, hc, hχc⟩ := KPGlobalTorusFiniteStagesCofinality.arch_center F ζ hζ (fun v => (Real.exp (u v) : ℂ))
   have hcE : c.val = aInfinity F ζ hζ u := hc
   have hR : aInfinity F ζ hζ u ∈ KPGlobalCenterRationalCharacter.R F ζ hζ :=
     aInfinity_mem_rational F ζ hζ u

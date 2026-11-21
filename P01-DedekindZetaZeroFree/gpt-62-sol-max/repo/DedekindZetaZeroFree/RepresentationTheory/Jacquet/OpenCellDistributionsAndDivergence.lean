@@ -20,7 +20,7 @@ theorem smooth_interval_primitive (f : ℝ → ℂ)
   refine ⟨intervalIntegral.differentiable_integral_of_continuous hf.continuous, ?_⟩
   have hd : deriv (fun x => ∫ t in a..x, f t) = f := by
     funext x
-    exact hf.continuous.deriv_integral f a x
+    exact hf.continuous.deriv_integral ..
   rw [hd]
   exact hf
 
@@ -35,7 +35,7 @@ theorem mean_zero_real_test_has_primitive
     intro hmem
     have hb := hbound hmem
     simp only [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs, abs_lt] at hb
-    rcases hx with hx | hx <;> linarith
+    grind only
   let p : ℝ → ℂ := fun x => ∫ t in (-R)..x, f t
   have hpzero (x : ℝ) (hx : x ∉ Icc (-R) R) : p x = 0 := by
     simp only [mem_Icc, not_and_or, not_le] at hx
@@ -44,16 +44,12 @@ theorem mean_zero_real_test_has_primitive
       apply intervalIntegral.integral_zero_ae
       filter_upwards [] with t ht
       simp only [uIoc_of_ge (le_of_lt hx), mem_Ioc] at ht
-      exact hz t (Or.inl ht.2)
+      grind
     · dsimp [p]
       rw [intervalIntegral.integral_of_le (by linarith : -R ≤ x)]
       rw [setIntegral_eq_integral_of_forall_compl_eq_zero]
       · exact hf
-      · intro t ht
-        simp only [mem_Ioc, not_and_or, not_lt, not_le] at ht
-        rcases ht with ht | ht
-        · exact hz t (Or.inl ht)
-        · exact hz t (Or.inr (by linarith))
+      grind
   let g : 𝓓((⊤ : TopologicalSpace.Opens ℝ), ℂ) :=
     ⟨p, smooth_interval_primitive f f.contDiff (-R),
       (HasCompactSupport.intro (isCompact_Icc : IsCompact (Icc (-R) R)) hpzero),
@@ -62,9 +58,13 @@ theorem mean_zero_real_test_has_primitive
   intro x
   exact f.continuous.deriv_integral f (-R) x
 
- theorem smooth_fiber_convolution (F : ℝ × ℝ → ℂ)
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) (R : ℝ)
-    (hzero : ∀ x y, x ∉ Icc (-R) R → F (x,y) = 0)
+section
+
+variable (F : ℝ × ℝ → ℂ) (hF : ContDiff ℝ (⊤ : ℕ∞) F) (R : ℝ)
+  (hzero : ∀ x y, x ∉ Icc (-R) R → F (x,y) = 0)
+include hF R hzero
+
+ theorem smooth_fiber_convolution
     (u : ℝ → ℝ) (hu : LocallyIntegrable u volume) :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun p : ℝ × ℝ => ∫ t : ℝ, u t • F (p.1-t,p.2)) := by
@@ -82,9 +82,7 @@ theorem mean_zero_real_test_has_primitive
           rfl)
   simpa [convolution_def, g, contDiffOn_univ] using hc
 
- theorem smooth_fiber_integral (F : ℝ × ℝ → ℂ)
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) (R : ℝ)
-    (hzero : ∀ x y, x ∉ Icc (-R) R → F (x,y) = 0) :
+ theorem smooth_fiber_integral :
     ContDiff ℝ (⊤ : ℕ∞) (fun y : ℝ => ∫ t : ℝ, F (t,y)) := by
   have hc := smooth_fiber_convolution F hF R hzero (fun _ => 1)
     (locallyIntegrable_const (1 : ℝ))
@@ -97,9 +95,7 @@ theorem mean_zero_real_test_has_primitive
     exact integral_neg_eq_self (fun t : ℝ => F (t,y)) volume
   simpa only [Function.comp_def, heq] using hc'
 
- theorem smooth_fiber_lower_integral (F : ℝ × ℝ → ℂ)
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) (R : ℝ)
-    (hzero : ∀ x y, x ∉ Icc (-R) R → F (x,y) = 0) :
+ theorem smooth_fiber_lower_integral :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun p : ℝ × ℝ => ∫ t in Iio p.1, F (t,p.2)) := by
   classical
@@ -116,10 +112,12 @@ theorem mean_zero_real_test_has_primitive
     apply integral_congr_ae
     filter_upwards [] with t
     by_cases ht : 0 < t
-    · simp [ht, show p.1 - t < p.1 by linarith]
-    · simp [ht, show ¬ p.1 - t < p.1 by linarith]
+    · simp_all
+    simp_all
   rw [← heq]
   exact hc
+
+end
 
  theorem hasDerivAt_lower_integral (f : ℝ → ℂ) (hf : Continuous f)
     (hfi : Integrable f) (x : ℝ) :

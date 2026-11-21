@@ -31,10 +31,10 @@ theorem reflectedSquareSpectrum_differentiableOn
     (hsupp : Function.support W ⊆ Set.Icc a b)
     (ha : 0 < a) (hab : a < b) :
     DifferentiableOn ℂ (reflectedSquareSpectrum D r W) {s : ℂ | 0 < s.re} := by
-  have hpow : Differentiable ℂ (fun s : ℂ => (D : ℂ) ^ ((s - 1) / 2)) :=
+  have hpow :=
     ((differentiable_id.sub_const 1).div_const (2 : ℂ)).const_cpow
       (Or.inl (Complex.ofReal_ne_zero.mpr (ne_of_gt hD)))
-  have hmel : Differentiable ℂ (fun s : ℂ => mellin W ((1 + s) / 2)) :=
+  have hmel :=
     (Vendor.compact_mellin_differentiable W a b hW hsupp ha hab).comp
       (((differentiable_const (1 : ℂ)).add differentiable_id).div_const (2 : ℂ))
   exact (((differentiable_const (c := (1 / 2 : ℂ))).differentiableOn.mul
@@ -55,7 +55,7 @@ theorem reflectedSquareSpectrum_eq_of_im_ne_zero
   have hq := Vendor.originMellinQ_eq_mellin_div_Gammaℂ W hW hc ((1 + s) / 2)
     (by simp [Complex.div_re, Complex.add_re]; linarith)
   have hdup := Vendor.reflected_square_gamma_duplication s hsi
-  have hDne : (D : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hD)
+  have hDne := Complex.ofReal_ne_zero.mpr (ne_of_gt hD)
   have hcp : (D : ℂ) ^ (s - 1 / 2) * (D : ℂ) ^ ((1 - s) / 2 - 1 / 2) =
       (D : ℂ) ^ ((s - 1) / 2) := by
     rw [← Complex.cpow_add _ _ hDne]
@@ -75,23 +75,9 @@ theorem reflectedSquareSpectrum_eq_of_im_ne_zero
         (Complex.Gammaℂ (1 - s / 2))⁻¹) ^ r := by
     rw [hpow, ← mul_pow, ← mul_pow]
     apply congrArg (fun z : ℂ => z ^ r)
-    calc
-      _ = Complex.Gammaℂ s * Complex.Gammaℂ ((1 - s) / 2) /
-          (Complex.Gammaℂ (1 - s) * Complex.Gammaℂ ((1 + s) / 2)) := by
-        simp only [div_eq_mul_inv, mul_inv_rev]
-        ring
-      _ = _ := by rw [hdup, div_eq_mul_inv]
+    grind only
   rw [div_eq_mul_inv]
-  calc
-    _ = (1 / 2 : ℂ) * ((D : ℂ) ^ (s - 1 / 2) *
-        (D : ℂ) ^ ((1 - s) / 2 - 1 / 2)) *
-        ((Complex.Gammaℂ s * (Complex.Gammaℂ (1 - s))⁻¹) ^ r *
-        Complex.Gammaℂ ((1 - s) / 2) ^ r *
-        ((Complex.Gammaℂ ((1 + s) / 2))⁻¹ ^ (r - 1) *
-        (Complex.Gammaℂ ((1 + s) / 2))⁻¹)) * mellin W ((1 + s) / 2) := by
-      rw [hcp, hgam]
-      simp only [div_eq_mul_inv]
-    _ = _ := by simp only [div_eq_mul_inv]; ring
+  grind only
 
 private lemma square_S_mono (b : ℝ) (m n : ℕ) (W : ℝ → ℂ)
     (hmn : m ≤ n) : Vendor.S b m W ≤ Vendor.S b n W := by

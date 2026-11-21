@@ -82,7 +82,7 @@ private lemma md_eval (i j : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : md i j f (e.sy
   unfold mixedDeriv
   congr 2
   ext u
-  exact dyn_eval j f u y
+  exact dyn_eval ..
 private lemma fourier_dx (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dx f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (t : ℂ)) * 𝓕 f (e.symm (t,s)) := by
   rw [dx, SchwartzMap.fourier_lineDerivOp_eq]
   have hh : (inner ℝ · ax).HasTemperateGrowth := by fun_prop

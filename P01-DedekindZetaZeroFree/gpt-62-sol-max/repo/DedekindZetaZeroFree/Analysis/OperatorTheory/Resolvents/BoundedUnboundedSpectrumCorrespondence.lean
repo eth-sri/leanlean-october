@@ -50,10 +50,13 @@ theorem spectrum_iff_pencil
     rfl
   rw [heq]
 
-theorem spectrum_mem_iff_resolventSet
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
-    (B : H →L[ℂ] H) (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H)) (B : H →L[ℂ] H)
+include hDense
+
+theorem spectrum_mem_iff_resolventSet (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
     (μ : ℝ) (hμ : 0 ≤ μ) :
     (((1 + μ)⁻¹ : ℝ) : ℂ) ∈ spectrum ℂ B ↔
       (μ : ℂ) ∉ KPResolventPencil.resolventSet Δ := by
@@ -61,10 +64,7 @@ theorem spectrum_mem_iff_resolventSet
   rw [← realSpectrum_mem_iff_resolventSet Δ hDense B hbase μ]
   exact Iff.rfl
 
-theorem eigenspace_transfer
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
-    (B : H →L[ℂ] H) (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
+theorem eigenspace_transfer (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
     (μ : ℝ) (hμ : 0 ≤ μ) :
     KPBelowThreshold.eigenspace Δ μ =
       KPIsolatedProjection.eigenspace B ((1 + μ)⁻¹) := by
@@ -127,10 +127,7 @@ theorem eigenspace_transfer
     have hl : Δ ⟨B x, hR x⟩ = x - B x := eq_sub_iff_add_eq.mpr (hleft x)
     rw [hDx, hl, hx, smul_sub, smul_smul, hcβ, one_smul, hs, hμc, sub_self]
 
-private theorem inverse_isPositive
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-    (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
-    (B : H →L[ℂ] H) (hΔ : IsSelfAdjoint Δ)
+private theorem inverse_isPositive (hΔ : IsSelfAdjoint Δ)
     (hpos : ∀ v : Δ.domain, 0 ≤ (inner ℂ (v : H) (Δ v)).re)
     (hdom : ∀ u : H, B u ∈ Δ.domain)
     (hleft : ∀ u : H, Δ ⟨B u, hdom u⟩ + B u = u) : B.IsPositive := by
@@ -149,8 +146,13 @@ private theorem inverse_isPositive
       rw [hf]
     _ = inner ℂ x (B y) := by rw [hleft]
 
+end
+
+section
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+
 private theorem positive_spectrum_interval
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (B : H →L[ℂ] H) (hp : B.IsPositive) (hn : ‖B‖ ≤ 1) :
     spectrum ℂ B ⊆ Complex.ofReal '' Set.Icc (0 : ℝ) 1 := by
   intro z hz
@@ -171,7 +173,6 @@ private theorem positive_spectrum_interval
   exact ⟨z.re, ⟨h0, hz1⟩, he.symm⟩
 
 private theorem reciprocal_isolated
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     (hspec : spectrum ℂ B ⊆ Complex.ofReal '' Set.Icc (0 : ℝ) 1)
     (μ : ℝ) (hμ : 0 ≤ μ)
@@ -211,7 +212,6 @@ private theorem reciprocal_isolated
   rw [htβ]
 
 theorem kp_cont_resolvent_spectrum_transfer
-    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
     (B : H →L[ℂ] H) (d : ℝ) (hd : 0 < d)
     (hΔ : IsSelfAdjoint Δ)
@@ -314,5 +314,7 @@ theorem kp_cont_resolvent_spectrum_transfer
     rw [Filter.principal_mono]
     intro y hy
     exact ⟨hy.1, lt_of_le_of_lt hy.2.2 hbd⟩
+
+end
 
 end DedekindZetaZeroFree

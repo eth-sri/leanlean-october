@@ -49,7 +49,7 @@ private theorem cutoff_error_bound {E F : Type*}
       (∑ i ∈ Finset.range (n + 1),
         (n.choose i : ℝ) * (SchwartzMap.seminorm ℝ 0 i u + 1) *
           SchwartzMap.seminorm ℝ (k + 1) (n - i) f) / R := by
-  have hRp : 0 < R := lt_of_lt_of_le zero_lt_one hR
+  have hRp := lt_of_lt_of_le zero_lt_one hR
   have hs : ContDiff ℝ (n : ℕ∞ω) (fun x => u (R⁻¹ • x) - 1) :=
     ((u.smooth n).comp (contDiff_id.const_smul _)).sub contDiff_const
   have he : (g - f : SchwartzMap E F) =
@@ -628,9 +628,13 @@ theorem translated_product_support (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 �
   rw [Metric.mem_closedBall, dist_zero_right, he]
   exact (norm_add_le _ _).trans (add_le_add hxy hy') |>.trans_eq (add_comm 1 r)
 
-def translatedProduct (ι : Type*) [Fintype ι]
-    (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+section
+
+variable (ι : Type*) [Fintype ι] (g : ι → SchwartzMap ℂ ℂ)
+  (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+include g hgR
+
+def translatedProduct
     (y : ι → ℂ) : SchwartzMap (ι → ℂ) ℂ :=
   (HasCompactSupport.intro (f := fun x : ι → ℂ => ∏ i, g i (x i - y i))
     (isCompact_closedBall y 1) (by
@@ -645,23 +649,25 @@ def translatedProduct (ι : Type*) [Fintype ι]
     simpa [Metric.mem_closedBall, dist_zero_right] using hgR i hi)).toSchwartzMap
     (contDiff_prod fun i _ => (g i).smooth'.comp ((contDiff_apply ℝ ℂ i).sub contDiff_const))
 
-theorem translatedProduct_apply (ι : Type*) [Fintype ι]
-    (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+theorem translatedProduct_apply
     (y x : ι → ℂ) : translatedProduct ι g hgR y x = ∏ i, g i (x i - y i) := rfl
 
-theorem translatedProduct_mem_span (ι : Type*) [Fintype ι]
-    (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+theorem translatedProduct_mem_span
     (y : ι → ℂ) : translatedProduct ι g hgR y ∈ Submodule.span ℂ
       {u : SchwartzMap (ι → ℂ) ℂ | ∃ k : ι → SchwartzMap ℂ ℂ,
         ∀ z, u z = ∏ i, k i (z i)} := by
   apply Submodule.subset_span
   exact ⟨fun i => (g i).compSubConstCLM ℂ (y i), fun z => rfl⟩
 
-theorem quadrature_tensor_support (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 ≤ r)
-    (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+end
+
+section
+
+variable (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 ≤ r) (g : ι → SchwartzMap ℂ ℂ)
+  (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
+include hr
+
+theorem quadrature_tensor_support
     (m : ℕ) (c : Fin m → ℂ) (y : Fin m → ι → ℂ)
     (hy : ∀ j, y j ∈ Metric.closedBall 0 r) :
     (∑ j, c j • translatedProduct ι g hgR (y j)) ∈ Submodule.span ℂ
@@ -684,9 +690,6 @@ theorem quadrature_tensor_support (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 �
     simp [hz]
 
 theorem finite_tensor_approximation_of_quadrature
-    (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 ≤ r)
-    (g : ι → SchwartzMap ℂ ℂ)
-    (hgR : ∀ i, Function.support (g i : ℂ → ℂ) ⊆ Metric.closedBall 0 1)
     (s : SchwartzMap (ι → ℂ) ℂ) (N : ℕ) (ε : ℝ)
     (hq : ∃ (m : ℕ) (c : Fin m → ℂ) (y : Fin m → ι → ℂ),
       (∀ j, y j ∈ Metric.closedBall 0 r) ∧
@@ -703,6 +706,8 @@ theorem finite_tensor_approximation_of_quadrature
   obtain ⟨m, c, y, hy, hjet⟩ := hq
   obtain ⟨ht, hsupp⟩ := quadrature_tensor_support ι r hr g hgR m c y hy
   exact ⟨∑ j, c j • translatedProduct ι g hgR (y j), ht, hsupp, hjet⟩
+
+end
 namespace KernelAux
 
 variable {ι : Type*} [Fintype ι]

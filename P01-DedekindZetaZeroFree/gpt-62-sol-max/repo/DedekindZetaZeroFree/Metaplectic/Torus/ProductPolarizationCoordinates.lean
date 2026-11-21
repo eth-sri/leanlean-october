@@ -28,6 +28,9 @@ def pD : E F ζ hζ →* D F :=
   (QuotientGroup.mk' (CubicCharacters.cubes (KPGlobalCenterRationalCharacter.Ideles F))).comp
     (KPGlobalTorusFunctionData.p F ζ hζ)
 
+theorem pD_continuous : Continuous (pD F ζ hζ) :=
+  QuotientGroup.continuous_mk.comp (KPGlobalTorusFunctionData.p_continuous F ζ hζ)
+
 def B (P : CompatibleLocalData F ζ hζ) : Subgroup (E F ζ hζ) :=
   (M F ζ hζ P).comap (pD F ζ hζ)
 
@@ -40,52 +43,10 @@ def rawB (P : CompatibleLocalData F ζ hζ) :
     ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
 
- theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
-    KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.torusRatio F t) = t.val := by
-  let A := Classical.choose t.property
-  have hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A = t.val ∧
-      A 1 0 = 0 ∧ A 0 1 = 0 := Classical.choose_spec t.property
-  let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).1.unit
-  let w := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).2.unit
-  have hu : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 0 0 := IsUnit.unit_spec _
-  have hw : (w : KPAdelicCoverRestrictedProduct.Adeles F) = A 1 1 := IsUnit.unit_spec _
-  have heq : A = KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹) *
-      Matrix.GeneralLinearGroup.scalar (Fin 2) w := by
-    apply Units.ext
-    ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
-    exact hw.symm
-  change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val
-  rw [← hA.1, heq]
-  have hs : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) w) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr ⟨w, rfl⟩
-  rw [(QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).map_mul, hs, mul_one]
- def torusPullbackBridge : E F ζ hζ →* KPGlobalCubicIdelePairing.E F ζ hζ where
-  toFun e := ⟨(e.val, KPGlobalTorusFunctionData.p F ζ hζ e),
-    (diagonal_formula F ⟨_, e.property⟩).symm⟩
-  map_one' := by apply Subtype.ext; exact Prod.ext rfl (map_one _)
-  map_mul' x y := by apply Subtype.ext; exact Prod.ext rfl (map_mul _ _ _)
-
-private theorem torusPullbackBridge_injective :
-    Function.Injective (torusPullbackBridge F ζ hζ) := by
-  intro x y h
-  exact Subtype.ext (congrArg (fun t : KPGlobalCubicIdelePairing.E F ζ hζ => t.val.1) h)
-
 private theorem commute_iff_beta (x y : E F ζ hζ) :
     Commute x y ↔ KPGlobalCubicIdelePairing.beta3 F ζ hζ
-      (pD F ζ hζ x) (pD F ζ hζ y) = 1 := by
-  have h := KPGlobalCubicIdelePairing.commutator_annihilators F ζ hζ
-    (torusPullbackBridge F ζ hζ x) (torusPullbackBridge F ζ hζ y)
-  constructor
-  · intro hc
-    exact h.mp (hc.map (torusPullbackBridge F ζ hζ))
-  · intro hb
-    apply torusPullbackBridge_injective F ζ hζ
-    simpa only [map_mul] using (h.mpr hb).eq
+      (pD F ζ hζ x) (pD F ζ hζ y) = 1 :=
+  KPGlobalCenterRationalCharacterExtension.commute_iff_beta F ζ hζ x y
 
  def baseEval (v : KPHilbert.Place F) :
     KPAdelicCoverRestrictedProduct.AdelicPGL2 F →* KPPGLLocalCover.LocalPGL2 F v :=
@@ -121,7 +82,7 @@ private theorem raw_local (P : CompatibleLocalData F ζ hζ)
   let e : E F ζ hζ := b
   have hproj : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ b.val =
       KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.p F ζ hζ e) :=
-    (diagonal_formula F ⟨_, b.property⟩).symm
+    (KPGlobalCenterRationalCharacterExtension.principalCubicLagrangianPreimage_diagonalPGL_torusRatio F ⟨_, b.property⟩).symm
   have he' : b.val = KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) := he
   have hlocal : KPPGLLocalCover.projection F ζ hζ v
@@ -182,7 +143,7 @@ private theorem pD_surjective : Function.Surjective (pD F ζ hζ) := by
   let e : E F ζ hζ := ⟨g, ht⟩
   have hp : KPGlobalTorusFunctionData.p F ζ hζ e = y := by
     apply diagonal_injective F
-    exact (diagonal_formula F ⟨_, e.property⟩).trans hg
+    exact (KPGlobalCenterRationalCharacterExtension.principalCubicLagrangianPreimage_diagonalPGL_torusRatio F ⟨_, e.property⟩).trans hg
   refine ⟨e, ?_⟩
   change QuotientGroup.mk' _ (KPGlobalTorusFunctionData.p F ζ hζ e) = _
   rw [hp]
@@ -253,7 +214,7 @@ private theorem maximal_mem_of_annihilates {G : Type*} [CommGroup G]
   rw [← heq]
   exact Subgroup.mem_sup_right (Subgroup.mem_zpowers x)
 
-private theorem product_maximal_isotropic (P : CompatibleLocalData F ζ hζ) :
+theorem product_maximal_isotropic (P : CompatibleLocalData F ζ hζ) :
     IsMaximalIsotropic F (KPGlobalCubicIdelePairing.beta3 F ζ hζ) (M F ζ hζ P) := by
   obtain ⟨e, he⟩ := KPGlobalCubicIdelePairing.restricted_cube_quotient F
   refine ⟨?_, ?_⟩
